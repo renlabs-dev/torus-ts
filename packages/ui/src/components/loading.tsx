@@ -6,7 +6,9 @@ export function Loading(props: { className?: string }): JSX.Element {
     <div className={cn("mr-1 grid place-content-center")} role="status">
       <svg
         aria-hidden="true"
-        className={cn(`h-8 w-8 animate-spin fill-green-500 text-white/20 ${className}`)}
+        className={cn(
+          `h-8 w-8 animate-spin fill-green-500 text-white/20 ${className}`,
+        )}
         fill="none"
         viewBox="0 0 100 101"
         xmlns="http://www.w3.org/2000/svg"
