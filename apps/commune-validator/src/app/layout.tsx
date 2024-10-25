@@ -12,7 +12,7 @@ import { Wallet, WalletButton } from "@commune-ts/wallet";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { cairo, oxanium } from "~/utils/fonts";
-import { DelegatedModulesList } from "./components/delegated-modules-list";
+import { DelegatedList } from "./components/delegated-list";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -35,13 +35,13 @@ export default function RootLayout({
           <Wallet />
           <div className="flex w-full animate-fade-down border-b border-white/20 py-2.5">
             <div className="mx-auto flex max-w-screen-md items-center gap-1 px-2">
-              <InformationCircleIcon className="h-10 w-10 text-green-500 md:h-5 md:w-5" />
+              <InformationCircleIcon className="h-10 w-10 text-green-500 md:h-6 md:w-6" />
               <p className="text-gray-400">
                 To assign weights to modules, you need to stake on our
                 validator. Click{" "}
                 <Link
                   href="/tutorial"
-                  className="text-green-500 hover:underline"
+                  className="font-semibold text-green-500 hover:underline"
                 >
                   here
                 </Link>{" "}
@@ -62,7 +62,8 @@ export default function RootLayout({
             wallet={<WalletButton />}
           />
           <TRPCReactProvider>
-            {children} <DelegatedModulesList />
+            <DelegatedList />
+            {children}
           </TRPCReactProvider>
           <Footer />
         </Providers>

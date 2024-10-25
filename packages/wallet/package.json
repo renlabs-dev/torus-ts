@@ -15,7 +15,7 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
     "tailwind:watch": "tailwindcss -i ./src/style.css -o ./src/output.css --watch",
-    "type-check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "prettier": "@commune-ts/prettier-config",
   "dependencies": {

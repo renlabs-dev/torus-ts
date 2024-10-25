@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { Loading } from "@commune-ts/ui/loading";
 
-import { MainSection } from "./components/sections/main";
+import { Wallet } from "./components/sections/wallet";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function Page(): JSX.Element {
   return (
     <Suspense fallback={<Loading />}>
-      <MainSection />
+      <Wallet />
     </Suspense>
   );
 }

@@ -2,8 +2,7 @@ import { match } from "rustie";
 
 import type { ProposalStatus } from "@commune-ts/types";
 import { useCommune } from "@commune-ts/providers/use-commune";
-
-import { Label } from "../label";
+import { Badge } from "@commune-ts/ui";
 
 interface RewardLabelProps {
   result: ProposalStatus;
@@ -17,54 +16,46 @@ export function RewardLabel(props: RewardLabelProps): JSX.Element {
 
   const isUnrewarded = unrewardedProposals?.includes(proposalId);
 
-  return match(result)({
-    open() {
-      return (
-        <Label
-          className={`w-auto border border-purple-500 bg-purple-500/10 py-1.5 text-center text-purple-500 lg:text-left ${className}`}
-        >
-          Unrewarded
-        </Label>
-      );
-    },
-    accepted() {
-      return (
-        <Label
-          className={`w-auto border ${
-            isUnrewarded
-              ? "border-purple-500 bg-purple-500/10 text-purple-500"
-              : "border-green-500 bg-green-500/10 text-green-500"
-          } py-1.5 text-center lg:text-left ${className}`}
-        >
-          {isUnrewarded ? "Unrewarded" : "Rewarded"}
-        </Label>
-      );
-    },
-    expired() {
-      return (
-        <Label
-          className={`w-auto border ${
-            isUnrewarded
-              ? "border-purple-500 bg-purple-500/10 text-purple-500"
-              : "border-green-500 bg-green-500/10 text-green-500"
-          } py-1.5 text-center lg:text-left ${className}`}
-        >
-          {isUnrewarded ? "Unrewarded" : "Rewarded"}
-        </Label>
-      );
-    },
-    refused() {
-      return (
-        <Label
-          className={`w-auto border ${
-            isUnrewarded
-              ? "border-purple-500 bg-purple-500/10 text-purple-500"
-              : "border-green-500 bg-green-500/10 text-green-500"
-          } py-1.5 text-center lg:text-left ${className}`}
-        >
-          {isUnrewarded ? "Unrewarded" : "Rewarded"}
-        </Label>
-      );
-    },
-  });
+  const getRewardStatus = () => {
+    return match(result)({
+      open: () => ({
+        text: "Unrewarded",
+        className: "border-purple-500 bg-purple-500/10 text-purple-500",
+      }),
+      accepted: () =>
+        isUnrewarded
+          ? {
+              text: "Unrewarded",
+              className: "border-purple-500 bg-purple-500/10 text-purple-500",
+            }
+          : {
+              text: "Rewarded",
+              className: "border-green-500 bg-green-500/10 text-green-500",
+            },
+      expired: () =>
+        isUnrewarded
+          ? {
+              text: "Unrewarded",
+              className: "border-purple-500 bg-purple-500/10 text-purple-500",
+            }
+          : {
+              text: "Rewarded",
+              className: "border-green-500 bg-green-500/10 text-green-500",
+            },
+      refused: () =>
+        isUnrewarded
+          ? {
+              text: "Unrewarded",
+              className: "border-purple-500 bg-purple-500/10 text-purple-500",
+            }
+          : {
+              text: "Rewarded",
+              className: "border-green-500 bg-green-500/10 text-green-500",
+            },
+    });
+  };
+
+  const { text, className: statusClassName } = getRewardStatus();
+
+  return <Badge className={`${statusClassName} ${className}`}>{text}</Badge>;
 }

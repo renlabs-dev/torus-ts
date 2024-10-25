@@ -64,10 +64,12 @@
     }
   },
   "globalEnv": [
+    "DEBUG",
     "POSTGRES_URL",
     "DISCORD_API_TOKEN",
     "DISCORD_API_ENDPOINT",
     "PINATA_JWT",
+    "JWT_SECRET",
     "AUTH_DISCORD_ID",
     "AUTH_DISCORD_SECRET",
     "AUTH_REDIRECT_PROXY_URL",

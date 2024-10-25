@@ -2,7 +2,7 @@
 
 import type { SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { DispatchError } from "@polkadot/types/interfaces";
+import type { Balance, DispatchError } from "@polkadot/types/interfaces";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { toast } from "react-toastify";
@@ -18,6 +18,7 @@ import type {
   InjectedExtension,
   LastBlock,
   ProposalState,
+  RegisterModule,
   RemoveVote,
   SS58Address,
   Stake,
@@ -62,8 +63,11 @@ interface CommuneContextType {
   accounts: InjectedAccountWithMeta[] | undefined;
   selectedAccount: InjectedAccountWithMeta | null;
   setSelectedAccount: (arg: InjectedAccountWithMeta | null) => void;
-
-  handleWalletModal: (state?: boolean) => void;
+  estimateFee: (
+    recipientAddress: string,
+    amount: string,
+  ) => Promise<Balance | null>;
+  handleWalletModal(state?: boolean): void;
   openWalletModal: boolean;
 
   addStake: (stake: Stake) => Promise<void>;
@@ -73,6 +77,7 @@ interface CommuneContextType {
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
+  registerModule: (registerModule: RegisterModule) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   addDaoApplication: (application: AddDaoApplication) => Promise<void>;
   addTransferDaoTreasuryProposal: (
@@ -112,6 +117,11 @@ interface CommuneContextType {
 
   daosWithMeta: DaoState[] | undefined;
   isDaosLoading: boolean;
+
+  signHex: (msgHex: `0x${string}`) => Promise<{
+    signature: `0x${string}`;
+    address: string;
+  }>;
 }
 
 const CommuneContext = createContext<CommuneContextType | null>(null);
@@ -344,6 +354,30 @@ export function CommuneProvider({
     await sendTransaction("Transfer Stake", transaction, callback);
   }
 
+  // == Subspace ==
+
+  async function registerModule({
+    subnetName,
+    address,
+    name,
+    moduleId,
+    metadata,
+    callback,
+  }: RegisterModule): Promise<void> {
+    if (!api?.tx.subspaceModule?.register) return;
+
+    console.log(api.tx.subspaceModule);
+
+    const transaction = api.tx.subspaceModule.register(
+      subnetName,
+      name,
+      address,
+      moduleId,
+      metadata,
+    );
+    await sendTransaction("Register Module", transaction, callback);
+  }
+
   // == Governance ==
 
   async function voteProposal({
@@ -410,6 +444,39 @@ export function CommuneProvider({
       transaction,
       callback,
     );
+  }
+
+  async function estimateFee(
+    recipientAddress: string,
+    amount: string,
+  ): Promise<Balance | null> {
+    try {
+      // Check if the API is ready and has the transfer function
+      if (!api || !api.isReady) {
+        console.error("API is not ready");
+        return null;
+      }
+
+      // Check if all required parameters are provided
+      if (!amount || !selectedAccount) {
+        console.error("Missing required parameters");
+        return null;
+      }
+
+      // Create the transaction
+      const transaction = api.tx.balances.transferKeepAlive(
+        recipientAddress,
+        amount,
+      );
+
+      // Estimate the fee
+      const info = await transaction.paymentInfo(selectedAccount.address);
+
+      return info.partialFee;
+    } catch (error) {
+      console.error("Error estimating fee:", error);
+      return null;
+    }
   }
 
   async function updateDelegatingVotingPower({
@@ -515,6 +582,33 @@ export function CommuneProvider({
     return { ...dao, customData };
   });
 
+  /**
+   * Sings a message in hex format
+   * @param msgHex message in hex to sign
+   */
+  async function signHex(
+    msgHex: `0x${string}`,
+  ): Promise<{ signature: `0x${string}`; address: string }> {
+    if (!selectedAccount || !communeApi.web3FromAddress) {
+      throw new Error("No selected account");
+    }
+    const injector = await communeApi.web3FromAddress(selectedAccount.address);
+
+    if (!injector.signer.signRaw) {
+      throw new Error("Signer does not support signRaw");
+    }
+    const result = await injector.signer.signRaw({
+      address: selectedAccount.address,
+      data: msgHex,
+      type: "bytes",
+    });
+
+    return {
+      signature: result.signature,
+      address: selectedAccount.address,
+    };
+  }
+
   return (
     <CommuneContext.Provider
       value={{
@@ -523,7 +617,7 @@ export function CommuneProvider({
         isConnected,
         setIsConnected,
         isInitialized,
-
+        estimateFee,
         accounts,
         selectedAccount,
         setSelectedAccount,
@@ -540,6 +634,8 @@ export function CommuneProvider({
         removeStake,
         transfer,
         transferStake,
+
+        registerModule,
 
         voteProposal,
         removeVoteProposal,
@@ -575,6 +671,8 @@ export function CommuneProvider({
 
         daosWithMeta,
         isDaosLoading,
+
+        signHex,
       }}
     >
       {children}

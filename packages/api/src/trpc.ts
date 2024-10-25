@@ -6,11 +6,15 @@
  * tl;dr - this is where all the tRPC server stuff is created and plugged in.
  * The pieces you will need to use are documented accordingly near the end
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { assert } from "tsafe";
 import { ZodError } from "zod";
 
 import { db } from "@commune-ts/db/client";
+
+import type { SessionData } from "./auth";
+import { decodeSessionToken } from "./auth";
 
 /**
  * 1. CONTEXT
@@ -27,12 +31,37 @@ import { db } from "@commune-ts/db/client";
 export const createTRPCContext = (opts: {
   headers: Headers;
   session: null;
+  jwtSecret: string;
+  authOrigin: string;
 }) => {
+  const { jwtSecret } = opts;
+
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
   console.log(">>> tRPC Request from", source);
 
+  const [authType, authToken] = (
+    opts.headers.get("authorization") ??
+    opts.headers.get("Authorization") ??
+    ""
+  ).split(" ");
+
+  let sessionData: SessionData | null = null;
+  if (authToken) {
+    try {
+      sessionData = decodeSessionToken(authToken, jwtSecret);
+      assert(sessionData.uri === opts.authOrigin);
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      console.error(`Failed to validate JWT: ${err}`);
+    }
+  }
+
   return {
     db,
+    authType,
+    sessionData,
+    jwtSecret,
+    authOrigin: opts.authOrigin,
   };
 };
 
@@ -79,3 +108,37 @@ export const createTRPCRouter = t.router;
  * tRPC API.
  */
 export const publicProcedure = t.procedure;
+
+/**
+ * Protected procedure
+ *
+ * This is a procedure that requires authentication to be accessed.
+ * header: { Authorization: "Bearer <token>" }
+ *
+ * if the token is valid, the user will always be available in the context as `ctx.user`.
+ *
+ * If the token is invalid, expired, or the user is not found, it will throw an error.
+ */
+export const authenticatedProcedure = t.procedure.use(
+  async function isAuthenticated(opts) {
+    if (!opts.ctx.authType) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must have an active session",
+      });
+    }
+    if (opts.ctx.authType !== "Bearer") {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid or unsupported authentication type",
+      });
+    }
+    if (!opts.ctx.sessionData?.userKey) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid or expired token",
+      });
+    }
+    return opts.next(opts);
+  },
+);

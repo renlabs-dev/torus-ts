@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
+import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import SuperJSON from "superjson";
 
 import type { AppRouter } from "@commune-ts/api";
+import { createAuthLink, makeAuthenticateUserFn } from "@commune-ts/api/client";
+import { useCommune } from "@commune-ts/providers/use-commune";
 
 import { env } from "~/env";
 
@@ -14,54 +15,69 @@ const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        // With SSR, we usually want to set some default staleTime
-        // above 0 to avoid refetching immediately on the client
         staleTime: 30 * 1000,
       },
     },
   });
 
-let clientQueryClientSingleton: QueryClient | undefined = undefined;
+let clientQueryClientSingleton: QueryClient | undefined;
 const getQueryClient = () => {
   if (typeof window === "undefined") {
-    // Server: always make a new query client
     return createQueryClient();
   } else {
-    // Browser: use singleton pattern to keep the same query client
-    return (clientQueryClientSingleton ??= createQueryClient());
+    if (!clientQueryClientSingleton) {
+      clientQueryClientSingleton = createQueryClient();
+    }
+    return clientQueryClientSingleton;
   }
 };
 
 export const api = createTRPCReact<AppRouter>();
 
-export function TRPCReactProvider(props: { children: React.ReactNode }) {
+export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
-  const [trpcClient] = useState(() =>
-    api.createClient({
-      links: [
-        loggerLink({
-          enabled: (op) =>
-            env.NODE_ENV === "development" ||
-            (op.direction === "down" && op.result instanceof Error),
-        }),
-        unstable_httpBatchStreamLink({
-          transformer: SuperJSON,
-          url: getBaseUrl() + "/api/trpc",
-          headers() {
-            const headers = new Headers();
-            headers.set("x-trpc-source", "nextjs-react");
-            return headers;
-          },
-        }),
-      ],
-    }),
+  const { signHex } = useCommune();
+
+  const getStoredAuthorization = () => localStorage.getItem("authorization");
+  const setStoredAuthorization = (authorization: string) =>
+    localStorage.setItem("authorization", authorization);
+
+  const authenticateUser = makeAuthenticateUserFn(
+    getBaseUrl(),
+    env.NEXT_PUBLIC_AUTH_ORIGIN,
+    setStoredAuthorization,
+    signHex,
   );
+
+  const trpcClient = api.createClient({
+    links: [
+      createAuthLink(authenticateUser, getStoredAuthorization),
+      loggerLink({
+        enabled: (op) =>
+          env.NODE_ENV === "development" ||
+          (op.direction === "down" && op.result instanceof Error),
+      }),
+      httpBatchLink({
+        url: getBaseUrl() + "/api/trpc",
+        headers() {
+          const headers: Record<string, string> = {};
+          headers["x-trpc-source"] = "nextjs-react";
+          const authorization = localStorage.getItem("authorization");
+          if (authorization) {
+            headers.authorization = authorization;
+          }
+          return headers;
+        },
+        transformer: SuperJSON,
+      }),
+    ],
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
       <api.Provider client={trpcClient} queryClient={queryClient}>
-        {props.children}
+        {children}
       </api.Provider>
     </QueryClientProvider>
   );

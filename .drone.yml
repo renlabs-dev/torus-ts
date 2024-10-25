@@ -10,7 +10,7 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/agicommies/commune-page
+      repo: ghcr.io/renlabs-dev/commune-page
       tags:
         - latest
         - ${DRONE_BRANCH}
@@ -53,46 +53,23 @@ trigger:
 ---
 kind: pipeline
 type: docker
-name: community-validator and worker
+name: community-validator
 
 steps:
-  - name: app-build
+  - name: build
     image: plugins/docker
     settings:
       registry: ghcr.io
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/agicommies/community-validator
+      repo: ghcr.io/renlabs-dev/community-validator
       tags:
         - latest
         - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=commune-validator
-    when:
-      paths:
-        exclude:
-          - apps/commune-worker/**
-
-  - name: worker-build
-    image: plugins/docker
-    settings:
-      registry: ghcr.io
-      username: ${DRONE_COMMIT_AUTHOR}
-      password:
-        from_secret: DOCKER_TOKEN
-      repo: ghcr.io/agicommies/commune-worker
-      tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
-      dockerfile: docker/Dockerfile
-      build_args: APP_NAME=commune-worker
-    when:
-      paths:
-        exclude:
-          - apps/commune-validator/**
 
   - name: deploy
     image: digitalocean/doctl:latest
@@ -109,9 +86,6 @@ steps:
       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
-    depends_on:
-      - app-build
-      - worker-build
 
 trigger:
   branch:
@@ -122,6 +96,60 @@ trigger:
     - push
   paths:
     exclude:
+      - apps/commune-worker/**
+      - apps/commune-governance/**
+      - apps/commune-page/**
+      - apps/communex-page/**
+      - apps/sample-app/**
+      - apps/commune-wallet/**
+      - apps/commune-cache/**
+---
+kind: pipeline
+type: docker
+name: commune-worker
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/commune-worker
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=commune-worker
+
+  - name: deploy
+    image: digitalocean/doctl:latest
+    environment:
+      DO_CTL_TOKEN:
+        from_secret: DO_CTL_TOKEN
+    commands:
+      - apk add jq
+      - export PATH=$PATH:/app
+      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "commune-worker" || echo "dev-commune-worker" )
+      - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
+      - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
+      - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
+      - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
+      - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+
+trigger:
+  branch:
+    - drone
+    - main
+    - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/commune-validator/**
       - apps/commune-governance/**
       - apps/commune-page/**
       - apps/communex-page/**
@@ -141,7 +169,7 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/agicommies/commune-governance
+      repo: ghcr.io/renlabs-dev/commune-governance
       tags:
         - latest
         - ${DRONE_BRANCH}
@@ -194,7 +222,7 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/agicommies/commune-wallet
+      repo: ghcr.io/renlabs-dev/commune-wallet
       tags:
         - latest
         - ${DRONE_BRANCH}
@@ -247,7 +275,7 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/agicommies/commune-cache
+      repo: ghcr.io/renlabs-dev/commune-cache
       tags:
         - latest
         - ${DRONE_BRANCH}

@@ -48,18 +48,18 @@ export function ViewComment({
 
   const sortedComments = proposalComments
     ? [...proposalComments].sort((a, b) => {
-        if (sortBy === "newest") {
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        } else if (sortBy === "oldest") {
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        } else {
-          return b.upvotes - a.upvotes;
-        }
-      })
+      if (sortBy === "newest") {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      } else if (sortBy === "oldest") {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      } else {
+        return b.upvotes - a.upvotes;
+      }
+    })
     : [];
 
   const { data: userVotes } = api.proposalComment.byUserId.useQuery(
@@ -81,31 +81,30 @@ export function ViewComment({
 
   const handleVote = async (commentId: string, voteType: VoteType) => {
     if (!selectedAccount?.address) {
-      return toast.error("Please connect your wallet to vote");
+      toast.error("Please connect your wallet to vote");
+      return;
     }
 
     setVotingCommentId(commentId);
 
     try {
-      const comment = proposalComments?.find((c) => c.id === commentId);
-      if (!comment) return;
+      const commentExists = proposalComments?.some((c) => c.id === commentId);
+      if (!commentExists) return;
 
-      const currentVote = localVotes[commentId] ?? userVotes?.[commentId];
+      const currentVote = Object.hasOwn(localVotes, commentId)
+        ? localVotes[commentId]
+        : userVotes?.[commentId];
 
-      if (currentVote === voteType) {
-        await deleteVoteMutation.mutateAsync({
-          commentId,
-          userKey: selectedAccount.address,
-        });
-        setLocalVotes((prev) => ({ ...prev, [commentId]: null }));
+      const isRemovingVote = currentVote === voteType;
+      const newVoteType = isRemovingVote ? null : voteType;
+
+      if (isRemovingVote) {
+        await deleteVoteMutation.mutateAsync({ commentId });
       } else {
-        await castVoteMutation.mutateAsync({
-          commentId,
-          userKey: selectedAccount.address,
-          voteType,
-        });
-        setLocalVotes((prev) => ({ ...prev, [commentId]: voteType }));
+        await castVoteMutation.mutateAsync({ commentId, voteType });
       }
+
+      setLocalVotes((prev) => ({ ...prev, [commentId]: newVoteType }));
     } catch (err) {
       console.error("Error voting:", err);
     } finally {
@@ -127,11 +126,10 @@ export function ViewComment({
               <button
                 key={option}
                 onClick={() => setSortBy(option as typeof sortBy)}
-                className={`px-3 py-1 text-sm ${
-                  sortBy === option
-                    ? "border border-green-500 bg-green-500/20 text-white"
-                    : "border border-white/20 bg-[#898989]/5 text-gray-300 hover:bg-gray-600/50"
-                }`}
+                className={`px-3 py-1 text-sm ${sortBy === option
+                  ? "border border-green-500 bg-green-500/20 text-white"
+                  : "border border-white/20 bg-[#898989]/5 text-gray-300 hover:bg-gray-600/50"
+                  }`}
               >
                 {option === "newest"
                   ? "Newest"
@@ -179,54 +177,50 @@ export function ViewComment({
               <div
                 className={`flex max-h-[25vh] w-full flex-col gap-3 overflow-auto pb-3 ${sortedComments.length >= 3 && "pr-2"}`}
               >
-                {sortedComments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className="relative flex w-full flex-col gap-2 border border-white/20 bg-[#898989]/5 p-2 pb-4"
-                  >
-                    <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-                          <UserIcon className="h-4 w-4" />{" "}
-                          {comment.userName && comment.userName}
-                        </span>
-                        {smallAddress(comment.userKey)}{" "}
+                {sortedComments.map((comment) => {
+                  const currentVote = Object.hasOwn(localVotes, comment.id)
+                    ? localVotes[comment.id]
+                    : userVotes?.[comment.id];
+
+                  return (
+                    <div
+                      key={comment.id}
+                      className="relative flex w-full flex-col gap-2 border border-white/20 bg-[#898989]/5 p-2 pb-4"
+                    >
+                      <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
+                            <UserIcon className="h-4 w-4" />{" "}
+                            {comment.userName && comment.userName}
+                          </span>
+                          {smallAddress(comment.userKey)}{" "}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleVote(comment.id, VoteType.UP)}
+                            disabled={votingCommentId === comment.id}
+                            className={`flex items-center ${currentVote === VoteType.UP ? "text-green-500" : ""}`}
+                          >
+                            <ChevronDoubleUpIcon className="h-5 w-5" />
+                            <span>{comment.upvotes}</span>
+                          </button>
+                          <button
+                            onClick={() => handleVote(comment.id, VoteType.DOWN)}
+                            disabled={votingCommentId === comment.id}
+                            className={`flex items-center ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
+                          >
+                            <ChevronDoubleDownIcon className="h-5 w-5" />
+                            <span>{comment.downvotes}</span>
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleVote(comment.id, VoteType.UP)}
-                          disabled={votingCommentId === comment.id}
-                          className={`flex items-center ${
-                            (localVotes[comment.id] ??
-                              userVotes?.[comment.id]) === VoteType.UP
-                              ? "text-green-500"
-                              : ""
-                          }`}
-                        >
-                          <ChevronDoubleUpIcon className="h-5 w-5" />
-                          <span>{comment.upvotes}</span>
-                        </button>
-                        <button
-                          onClick={() => handleVote(comment.id, VoteType.DOWN)}
-                          disabled={votingCommentId === comment.id}
-                          className={`flex items-center ${
-                            (localVotes[comment.id] ??
-                              userVotes?.[comment.id]) === VoteType.DOWN
-                              ? "text-red-500"
-                              : ""
-                          }`}
-                        >
-                          <ChevronDoubleDownIcon className="h-5 w-5" />
-                          <span>{comment.downvotes}</span>
-                        </button>
+                      <p className="p-2">{comment.content}</p>
+                      <div className="absolute bottom-2 right-2">
+                        <ReportComment commentId={comment.id} />
                       </div>
                     </div>
-                    <p className="p-2">{comment.content}</p>
-                    <div className="absolute bottom-2 right-2">
-                      <ReportComment commentId={comment.id} />
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <p>No comments yet</p>

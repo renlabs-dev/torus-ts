@@ -125,7 +125,7 @@ const subnetCardsData = [
     title: "Subnet Template",
     description:
       "Look at the Github Subnet template, to learn how to build a subnet.",
-    link: "https://github.com/agicommies/commune-subnet-template",
+    link: "https://github.com/renlabs-dev/commune-subnet-template",
   },
 ];
 
@@ -144,7 +144,7 @@ const subnetListCardsData = [
     title: "Synthia",
     description:
       "Continuous stream of synthetic training data with verified quality at scale.",
-    link: "https://github.com/agicommies/synthia",
+    link: "https://github.com/renlabs-dev/synthia",
   },
 ];
 

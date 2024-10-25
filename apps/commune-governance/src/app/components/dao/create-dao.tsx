@@ -8,7 +8,18 @@ import { z } from "zod";
 import type { TransactionResult } from "@commune-ts/types";
 import { useCommune } from "@commune-ts/providers/use-commune";
 import { toast } from "@commune-ts/providers/use-toast";
-import { TransactionStatus } from "@commune-ts/ui";
+import {
+  Button,
+  Input,
+  Label,
+  Separator,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+  TransactionStatus,
+} from "@commune-ts/ui";
 
 import { cairo } from "~/utils/fonts";
 
@@ -30,11 +41,7 @@ export function CreateDao(): JSX.Element {
   const [body, setBody] = useState("");
 
   const [uploading, setUploading] = useState(false);
-
-  const [editMode, setEditMode] = useState(true);
-  function toggleEditMode(): void {
-    setEditMode(!editMode);
-  }
+  const [activeTab, setActiveTab] = useState("edit");
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -134,111 +141,87 @@ export function CreateDao(): JSX.Element {
   }
 
   return (
-    <form onSubmit={HandleSubmit}>
-      <div className="flex flex-col gap-4 pt-4">
-        <div className="flex gap-2">
-          <button
-            className={`border px-4 py-1 ${editMode ? "border-green-500 bg-green-500/5 text-green-500" : "border-gray-500 text-gray-400"} hover:border-green-600 hover:bg-green-600/5 hover:text-green-600`}
-            onClick={toggleEditMode}
-            type="button"
-          >
-            Edit
-          </button>
-          <button
-            className={`border px-4 py-1 ${!editMode ? "border-green-500 bg-green-500/5 text-green-500" : "border-gray-500 text-gray-400"} hover:border-green-600 hover:bg-green-600/5 hover:text-green-600`}
-            onClick={toggleEditMode}
-            type="button"
-          >
-            Preview
-          </button>
-        </div>
-        <div className="flex flex-col">
-          {editMode ? (
-            <div className="flex flex-col gap-3">
-              <input
-                className="w-full bg-white/10 p-3 text-white"
-                onChange={(e) => {
-                  setApplicationKey(e.target.value);
-                }}
-                placeholder="Application Key (ss58)"
-                type="text"
-                value={applicationKey}
-              />
-              <input
-                className="w-full bg-white/10 p-3 text-white"
-                onChange={(e) => {
-                  setDiscordId(e.target.value);
-                }}
-                placeholder="Discord ID"
-                type="text"
-                value={discordId}
-              />
-              <input
-                className="w-full bg-white/10 p-3 text-white"
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                }}
-                placeholder="Application title"
-                type="text"
-                value={title}
-              />
-              <textarea
-                className="w-full bg-white/10 p-3 text-white"
-                onChange={(e) => {
-                  setBody(e.target.value);
-                }}
-                placeholder="Application body... (Markdown supported) / HTML tags are not supported)"
-                rows={5}
-                value={body}
-              />
-            </div>
-          ) : (
-            <div className="p-4">
-              {body ? (
-                <MarkdownPreview
-                  className={`${cairo.className} max-h-[40vh] overflow-auto`}
-                  source={`# ${title}\n${body}`}
-                  style={{
-                    backgroundColor: "transparent",
-                    color: "white",
-                  }}
-                />
-              ) : null}
-              {/* TODO: skeleton for markdown body */}
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <button
-            className={`relative w-full border px-4 py-2 font-semibold ${isConnected ? "border-green-500 text-green-500 hover:bg-green-500/5 active:top-1" : "border-gray-500 text-gray-500"}`}
-            disabled={!isConnected}
-            type="submit"
-          >
-            {uploading ? "Uploading..." : "Submit S2 Application"}
-          </button>
-        </div>
-        {transactionStatus.status && (
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
+    <form
+      onSubmit={HandleSubmit}
+      className="flex flex-col gap-4 text-green-500"
+    >
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="edit">Edit Content</TabsTrigger>
+          <TabsTrigger value="preview">Preview Content</TabsTrigger>
+        </TabsList>
+        <TabsContent value="edit" className="flex flex-col gap-3">
+          <Input
+            onChange={(e) => setApplicationKey(e.target.value)}
+            placeholder="Application Key (ss58)"
+            type="text"
+            value={applicationKey}
           />
-        )}
-
-        <div className="mt-1 flex items-start gap-1 text-white">
-          <InformationCircleIcon className="mt-0.5 h-4 w-4 fill-green-500 text-sm" />
-          <span className="text-sm">
-            Please make sure, that your application meets all of the criteria
-            defined in this{" "}
-            <Link
-              className="text-blue-500 hover:underline"
-              href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/SuhIlcUugotYhf2QmVTd3mI05RCycqSFrJfCxuEHet0"
-              target="_blank"
-            >
-              article
-            </Link>
-            , or you are at risk of getting denied by the Module Curation DAO.
-          </span>
-        </div>
+          <Input
+            onChange={(e) => setDiscordId(e.target.value)}
+            placeholder="Discord ID"
+            type="text"
+            value={discordId}
+          />
+          <Separator />
+          <Input
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Application title"
+            type="text"
+            value={title}
+          />
+          <Textarea
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Application body... (Markdown supported) / HTML tags are not supported)"
+            rows={5}
+            value={body}
+          />
+        </TabsContent>
+        <TabsContent value="preview" className="bg-muted p-4">
+          {body ? (
+            <MarkdownPreview
+              className={`${cairo.className} max-h-[40vh] overflow-auto`}
+              source={`# ${title}\n${body}`}
+              style={{
+                backgroundColor: "transparent",
+                color: "white",
+              }}
+            />
+          ) : (
+            <Label className="text-sm text-white">
+              Fill the body to preview here :)
+            </Label>
+          )}
+        </TabsContent>
+      </Tabs>
+      <Button
+        size="xl"
+        type="submit"
+        variant="default-green"
+        disabled={!isConnected}
+      >
+        {uploading ? "Uploading..." : "Submit S2 Application"}
+      </Button>
+      {transactionStatus.status && (
+        <TransactionStatus
+          status={transactionStatus.status}
+          message={transactionStatus.message}
+        />
+      )}
+      <div className="flex flex-wrap items-center gap-1 text-sm text-white">
+        <InformationCircleIcon className="h-4 w-4 fill-green-500" />
+        <Label className="text-sm text-white">
+          Please make sure, that your application meets all of the criteria
+          defined in this{" "}
+          <Link
+            className="text-green-500 hover:underline"
+            href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q"
+            target="_blank"
+          >
+            article
+          </Link>
+          , or you are at risk of getting denied by the Module Curation DAO.
+        </Label>
       </div>
     </form>
   );

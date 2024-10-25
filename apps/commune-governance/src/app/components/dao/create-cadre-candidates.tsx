@@ -84,7 +84,6 @@ export function CreateCadreCandidates() {
       createCadreCandidateMutation.mutate({
         discordId,
         content,
-        userKey: selectedAccount.address,
       });
     } catch (err) {
       if (err instanceof z.ZodError) {

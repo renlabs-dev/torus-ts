@@ -1,26 +1,39 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
 
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { encodeAddress } from "@polkadot/util-crypto";
+import { assert } from "tsafe";
 
-import {
+import type {
   Api,
-  isSS58,
   LastBlock,
-  modulePropResolvers,
-  OptionalProperties,
+  NetworkSubnetConfig,
   SS58Address,
   StakeOutData,
-  SUBSPACE_MODULE_SCHEMA,
   SubspaceModule,
   VoteWithStake,
 } from "@commune-ts/types";
+import type {
+  ChainEntry,
+  SubspacePalletName,
+  SubspaceStorageName,
+} from "@commune-ts/utils";
 import {
-  assertOrThrow,
+  checkSS58,
+  GOVERNANCE_CONFIG_SCHEMA,
+  isSS58,
+  MODULE_BURN_CONFIG_SCHEMA,
+  NetworkSubnetConfigSchema,
+  STAKE_FROM_SCHEMA,
+  STAKE_OUT_DATA_SCHEMA,
+  SUBSPACE_MODULE_SCHEMA,
+} from "@commune-ts/types";
+import {
+  getPropsToMap,
   handleDaos,
   handleProposals,
-  newSubstrateModule,
-  StorageEntry,
+  standardizeUidToSS58address,
 } from "@commune-ts/utils";
 
 export { ApiPromise };
@@ -49,7 +62,7 @@ export async function queryBalance(api: Api, address: SS58Address | string) {
   }
   const {
     data: { free: freeBalance },
-  } = (await api.query.system!.account(address)) || {};
+  } = await api.query.system.account(address);
   return BigInt(freeBalance.toString());
 }
 
@@ -83,7 +96,7 @@ export async function pushToWhitelist(
   moduleKey: SS58Address,
   mnemonic: string | undefined,
 ) {
-  if (!api?.tx.governanceModule?.addToWhitelist) return false;
+  if (!api.tx.governanceModule?.addToWhitelist) return false;
 
   const keyring = new Keyring({ type: "sr25519" });
 
@@ -93,14 +106,35 @@ export async function pushToWhitelist(
   const sudoKeypair = keyring.addFromUri(mnemonic);
   const accountId = encodeAddress(moduleKey, 42);
 
-  const tx = await api.tx.governanceModule.addToWhitelist(accountId);
+  const tx = api.tx.governanceModule.addToWhitelist(accountId);
 
-  const extrinsic = await tx.signAndSend(sudoKeypair).catch((err) => {
-    console.error(err);
-    return false;
-  });
-  console.log(`Extrinsic: ${extrinsic}`);
-  return true;
+  const extrinsic = await tx
+    .signAndSend(sudoKeypair)
+    .catch((err) => {
+      console.error(err);
+      return false;
+    })
+    .then(() => {
+      console.log(`Extrinsic: ${extrinsic}`);
+      return true;
+    });
+}
+
+export async function queryWhitelist(api: Api): Promise<SS58Address[]> {
+  assert(api.query.governanceModule?.legitWhitelist != undefined);
+
+  const whitelist = [];
+
+  const entries = await api.query.governanceModule.legitWhitelist.entries();
+  for (const [keys, _value] of entries) {
+    assert(keys.args[0]);
+    const key = keys.args[0].toPrimitive();
+    assert(typeof key === "string");
+    const address = checkSS58(key);
+    whitelist.push(address);
+  }
+
+  return whitelist;
 }
 
 export async function removeFromWhitelist(
@@ -108,22 +142,26 @@ export async function removeFromWhitelist(
   moduleKey: SS58Address,
   mnemonic: string | undefined,
 ) {
-  if (!api?.tx.governanceModule?.removeFromWhitelist) return false;
+  if (!api.tx.governanceModule?.removeFromWhitelist) return false;
   if (!mnemonic) {
     throw new Error("No sudo mnemonic provided");
   }
 
   const accountId = encodeAddress(moduleKey, 42);
-  const tx = await api.tx.governanceModule.removeFromWhitelist(accountId);
+  const tx = api.tx.governanceModule.removeFromWhitelist(accountId);
 
   const keyring = new Keyring({ type: "sr25519" });
   const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx.signAndSend(sudoKeypair).catch((err) => {
-    console.error(err);
-    return false;
-  });
-
-  return true;
+  const extrinsic = await tx
+    .signAndSend(sudoKeypair)
+    .catch((err) => {
+      console.error(err);
+      return false;
+    })
+    .then(() => {
+      console.log(`Extrinsic: ${extrinsic}`);
+      return true;
+    });
 }
 
 export async function refuseDaoApplication(
@@ -131,19 +169,25 @@ export async function refuseDaoApplication(
   proposalId: number,
   mnemonic: string | undefined,
 ) {
-  if (!api?.tx.governanceModule?.refuseDaoApplication) return false;
+  if (!api.tx.governanceModule?.refuseDaoApplication) return false;
   if (!mnemonic) {
     throw new Error("No sudo mnemonic provided");
   }
 
-  const tx = await api.tx.governanceModule.refuseDaoApplication(proposalId);
+  const tx = api.tx.governanceModule.refuseDaoApplication(proposalId);
 
   const keyring = new Keyring({ type: "sr25519" });
   const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx.signAndSend(sudoKeypair).catch((err) => {
-    console.error(err);
-    return false;
-  });
+  const extrinsic = await tx
+    .signAndSend(sudoKeypair)
+    .catch((err) => {
+      console.error(err);
+      return false;
+    })
+    .then(() => {
+      console.log(`Extrinsic: ${extrinsic}`);
+      return true;
+    });
 
   return true;
 }
@@ -195,8 +239,9 @@ export async function queryGlobalGovernanceConfig(
     throw new Error("globalGovernanceConfig is falsey");
   }
 
-  const config = await globalGovernanceConfig();
+  const config = (await globalGovernanceConfig()) as GovernanceConfiguration;
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!config) {
     throw new Error("Failed to fetch global governance config");
   }
@@ -205,29 +250,26 @@ export async function queryGlobalGovernanceConfig(
 
   // Safely parse each field
   if ("proposalCost" in config) {
-    parsedConfig.proposalCost = BigInt((config as any).proposalCost.toString());
+    parsedConfig.proposalCost = BigInt(config.proposalCost?.toString() ?? "0");
   }
   if ("proposalExpiration" in config) {
-    parsedConfig.proposalExpiration = (
-      config as any
-    ).proposalExpiration.toNumber();
+    parsedConfig.proposalExpiration = config.proposalExpiration;
   }
   if ("voteMode" in config) {
-    parsedConfig.voteMode = (config as any).voteMode.type as VoteMode;
+    parsedConfig.voteMode = config.voteMode;
   }
   if ("proposalRewardTreasuryAllocation" in config) {
-    parsedConfig.proposalRewardTreasuryAllocation = (
-      config as any
-    ).proposalRewardTreasuryAllocation.toNumber();
+    parsedConfig.proposalRewardTreasuryAllocation =
+      config.proposalRewardTreasuryAllocation;
   }
   if ("maxProposalRewardTreasuryAllocation" in config) {
     parsedConfig.maxProposalRewardTreasuryAllocation = BigInt(
-      (config as any).maxProposalRewardTreasuryAllocation.toString(),
+      config.maxProposalRewardTreasuryAllocation?.toString() ?? "0",
     );
   }
   if ("proposalRewardInterval" in config) {
     parsedConfig.proposalRewardInterval = BigInt(
-      (config as any).proposalRewardInterval.toString(),
+      config.proposalRewardInterval?.toString() ?? "0",
     );
   }
 
@@ -260,7 +302,7 @@ export function getRewardAllocation(
 
 export async function queryRewardAllocation(api: Api) {
   const balance = await queryDaoTreasuryAddress(api).then((result) =>
-    queryBalance(api, result as SS58Address),
+    queryBalance(api, result!),
   );
 
   const governanceConfig = await queryGlobalGovernanceConfig(api);
@@ -292,6 +334,23 @@ export async function queryStakeOut(
   return stakeOutData;
 }
 
+//TODO: solve the duplication
+export async function queryStakeOutCORRECT(
+  communeCacheUrl: string,
+): Promise<StakeOutData> {
+  const response = await fetch(`${communeCacheUrl}/api/stake-out`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch data");
+  }
+  const stakeOutData = STAKE_OUT_DATA_SCHEMA.parse(await response.json());
+  return stakeOutData;
+}
+
 export async function queryCalculateStakeOut(api: Api) {
   // StakeTo is the list of keys that have staked to that key.
   const stakeToQuery = await api.query.subspaceModule?.stakeTo?.entries();
@@ -304,7 +363,7 @@ export async function queryCalculateStakeOut(api: Api) {
   const perAddr = new Map<string, bigint>();
 
   for (const [keyRaw, valueRaw] of stakeToQuery) {
-    const [fromAddrRaw, toAddrRaw] = keyRaw.args;
+    const [fromAddrRaw] = keyRaw.args;
     const fromAddr = fromAddrRaw!.toString();
 
     const staked = BigInt(valueRaw.toString());
@@ -335,6 +394,9 @@ export async function queryStakeFrom(
   return stakeOutData;
 }
 
+/**
+ * NOTE: This function might be wrong.
+ */
 export async function queryCalculateStakeFrom(api: Api) {
   // Stake From is the list of keys that the key has staked to.
 
@@ -348,7 +410,7 @@ export async function queryCalculateStakeFrom(api: Api) {
   const perAddr = new Map<string, bigint>();
 
   for (const [storageKey, value] of stakeFromQuery) {
-    const addr = storageKey.toString();
+    const addr = storageKey.toString(); // NOTE: this key should have two values like in `queryCalculateStakeOut`
 
     const staked = BigInt(value.toString());
 
@@ -406,7 +468,7 @@ export async function processVotesAndStakes(
     totalStakeMap.set(address, totalStake);
   }
 
-  // Process all votes and push it to an array to avoid spreding
+  // Process all votes and push it to an array to avoid spread
   const processedVotes: VoteWithStake[] = [];
   votesFor.map((address) => {
     processedVotes.push({
@@ -457,48 +519,151 @@ export async function queryUserTotalStaked(
  * @param extraProps if empty, only the required properties are returned (netuid, uid, key)
  * @param netuidWhitelist if empty, modules from all subnets are returned
  */
-export async function queryRegisteredModulesInfo<
-  P extends OptionalProperties<SubspaceModule>,
->(
+
+export async function querySubnetParams(
   api: Api,
-  extraProps: P[] = [],
-  netuidWhitelist?: number[],
-): Promise<SubspaceModule[]> {
-  netuidWhitelist = netuidWhitelist?.length
-    ? Array.from(new Set(netuidWhitelist))
-    : undefined;
+): Promise<NetworkSubnetConfig[]> {
+  const subnetProps: SubspaceStorageName[] = [
+    "subnetNames",
+    "immunityPeriod",
+    "minAllowedWeights",
+    "maxAllowedWeights",
+    "tempo",
+    "maxAllowedUids",
+    "founder",
+    "founderShare",
+    "incentiveRatio",
+    "trustRatio",
+    "maxWeightAge",
+    "bondsMovingAverage",
+    "maximumSetWeightCallsPerEpoch",
+    "minValidatorStake",
+    "maxAllowedValidators",
+    "moduleBurnConfig",
+    "subnetMetadata",
+  ];
+  const props: Record<SubspacePalletName, SubspaceStorageName[]> = {
+    subspaceModule: subnetProps,
+    subnetEmissionModule: ["subnetEmission"],
+    governanceModule: ["subnetGovernanceConfig"],
+  } as Record<SubspacePalletName, SubspaceStorageName[]>;
+  const subnetInfo = await queryChain(api, props);
+  const subnetNames = subnetInfo.subnetNames;
 
-  console.log("Fetching module keys from the chain...");
-
-  const keyEntries = (await api.query.subspaceModule!.keys!.entries())
-    .map((entry) => new StorageEntry(entry))
-    .filter(
-      (entry: StorageEntry) =>
-        !netuidWhitelist || netuidWhitelist.includes(entry.netuid),
-    );
-
-  console.log(`Fetched ${keyEntries.length} module keys`);
-
-  const modulesMap = newSubstrateModuleMap(keyEntries.map(newSubstrateModule));
-
-  await enrichSubspaceModules(api, modulesMap, extraProps, netuidWhitelist);
-
-  console.log("modules per netuid:");
-  for (const [netuid, map] of modulesMap) {
-    console.log(`netuid ${netuid}: ${map.size} modules`);
+  const subnets: NetworkSubnetConfig[] = [];
+  for (const [netuid, _] of Object.entries(subnetNames)) {
+    const subnet: NetworkSubnetConfig = NetworkSubnetConfigSchema.parse({
+      subnetNames: subnetInfo.subnetNames[netuid]!,
+      immunityPeriod: subnetInfo.immunityPeriod[netuid]!,
+      minAllowedWeights: subnetInfo.minAllowedWeights[netuid]!,
+      maxAllowedWeights: subnetInfo.maxAllowedWeights[netuid]!,
+      tempo: subnetInfo.tempo[netuid]!,
+      maxAllowedUids: subnetInfo.maxAllowedUids[netuid]!,
+      founder: subnetInfo.founder[netuid]!,
+      founderShare: subnetInfo.founderShare[netuid]!,
+      incentiveRatio: subnetInfo.incentiveRatio[netuid]!,
+      trustRatio: subnetInfo.trustRatio[netuid]!,
+      maxWeightAge: subnetInfo.maxWeightAge[netuid]!,
+      bondsMovingAverage: subnetInfo.bondsMovingAverage[netuid],
+      maximumSetWeightCallsPerEpoch:
+        subnetInfo.maximumSetWeightCallsPerEpoch[netuid],
+      minValidatorStake: subnetInfo.minValidatorStake[netuid]!,
+      maxAllowedValidators: subnetInfo.maxAllowedValidators[netuid],
+      moduleBurnConfig: MODULE_BURN_CONFIG_SCHEMA.parse(
+        subnetInfo.moduleBurnConfig[netuid],
+      ),
+      subnetMetadata: subnetInfo.subnetMetadata[netuid],
+      netuid: netuid,
+      subnetGovernanceConfig: GOVERNANCE_CONFIG_SCHEMA.parse(
+        subnetInfo.subnetGovernanceConfig[netuid],
+      ),
+      subnetEmission: subnetInfo.subnetEmission[netuid],
+    });
+    subnets.push(subnet);
   }
+  return subnets;
+}
 
-  const modules = Array.from(modulesMap.values()).flatMap((map) =>
-    Array.from(map.values()),
-  );
+export function keyStakeFrom(
+  targetKey: SS58Address,
+  stakeFromStorage: Map<SS58Address, Map<SS58Address, bigint>>,
+) {
+  const stakerMap = stakeFromStorage.get(targetKey);
+  let totalStake = 0n;
+  if (stakerMap === undefined) {
+    console.log("could not find map for key: ", targetKey);
+    return totalStake;
+  }
+  for (const stake of stakerMap.values()) {
+    totalStake += stake;
+  }
+  return totalStake;
+}
 
-  return modules
-    .map((m) => SUBSPACE_MODULE_SCHEMA.safeParse(m))
-    .filter(
-      (parsed) =>
-        parsed.success || console.error("UNEXPECTED ERROR: ", parsed.error),
-    )
-    .map((parsed) => parsed.data!);
+export async function queryRegisteredModulesInfo(
+  api: Api,
+  netuid: number,
+  blockNumber: number,
+): Promise<SubspaceModule[]> {
+  console.log("Fetching module keys from the chain...");
+  const keyQuery: { subspaceModule: SubspaceStorageName[] } = {
+    subspaceModule: ["keys"],
+  };
+  const uidToSS58Query = await queryChain(api, keyQuery, netuid);
+  const uidToSS58 = uidToSS58Query.keys as Record<string, SS58Address>;
+  const moduleProps: SubspaceStorageName[] = [
+    "name",
+    "address",
+    "registrationBlock",
+    "metadata",
+    "lastUpdate",
+    "emission",
+    "incentive",
+    "dividends",
+    "delegationFee",
+    "stakeFrom",
+  ];
+
+  const extraPropsQuery: { subspaceModule: SubspaceStorageName[] } = {
+    subspaceModule: moduleProps,
+  };
+  const modulesInfo = await queryChain(api, extraPropsQuery, netuid);
+  const processedModules = standardizeUidToSS58address(modulesInfo, uidToSS58);
+  const moduleMap: SubspaceModule[] = [];
+  const parsedStakeFromStorage = STAKE_FROM_SCHEMA.parse({
+    stakeFromStorage: processedModules.stakeFrom,
+  });
+
+  for (const uid of Object.keys(uidToSS58)) {
+    const moduleKey = uidToSS58[uid];
+    if (moduleKey === undefined) {
+      console.error(`Module key not found for uid ${uid}`);
+      continue;
+    }
+    const module = SUBSPACE_MODULE_SCHEMA.parse({
+      uid: uid,
+      key: moduleKey,
+      netuid: netuid,
+      name: processedModules.name[moduleKey],
+      address: processedModules.address[moduleKey],
+      registrationBlock: processedModules.registrationBlock[moduleKey],
+      metadata: processedModules.metadata[moduleKey],
+      lastUpdate: processedModules.lastUpdate[moduleKey],
+      atBlock: blockNumber,
+      emission: processedModules.emission[moduleKey],
+      incentive: processedModules.incentive[moduleKey],
+      dividends: processedModules.dividends[moduleKey],
+      delegationFee: processedModules.delegationFee[moduleKey],
+      totalStaked: keyStakeFrom(
+        moduleKey,
+        parsedStakeFromStorage.stakeFromStorage,
+      ),
+      totalStakers:
+        parsedStakeFromStorage.stakeFromStorage.get(moduleKey)?.size ?? 0,
+    });
+    moduleMap.push(module);
+  }
+  return moduleMap;
 }
 
 /**
@@ -506,104 +671,36 @@ export async function queryRegisteredModulesInfo<
  *
  * @returns the same moduleMap passed as argument
  */
-async function enrichSubspaceModules<
-  P extends OptionalProperties<SubspaceModule>,
->(
+export async function queryChain<T extends SubspaceStorageName>(
   api: Api,
-  moduleMap: Map<number, Map<SS58Address, SubspaceModule>>,
-  props: P[],
-  netuidWhitelist?: number[] | undefined,
-): Promise<Map<number, Map<SS58Address, SubspaceModule>>> {
-  if (props.length === 0) {
-    return moduleMap;
+  props: Partial<Record<SubspacePalletName, T[]>>,
+  netuidWhitelist?: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<Record<T, Record<string, string | Record<string, any>>>> {
+  if (Object.keys(props).length === 0) {
+    return {} as Record<T, Record<string, string>>;
   }
-  props = Array.from(new Set(props));
-
-  const uidKeyMap = newUidKeyMap(moduleMap);
-
-  await Promise.all(
-    props.map(async (prop) => {
-      console.log(`Fetching "${prop}" entries...`);
-      const entries = (await api.query.subspaceModule?.[prop]?.entries())
-        ?.map((entry) => new StorageEntry(entry))
-        .filter(
-          (entry: StorageEntry) =>
-            !netuidWhitelist || netuidWhitelist.includes(entry.netuid),
-        );
-
-      assertOrThrow(Array.isArray(entries), `entries of "${prop}" is an array`);
-
-      console.log(`Fetched ${entries?.length} "${prop}" entries`);
-
-      for (const entry of entries) {
-        const netuid = entry.netuid;
-        const key = entry.resolveKey(uidKeyMap);
-
-        const module = moduleMap.get(netuid)?.get(key);
-
-        if (!module) {
-          if (process.env.DEBUG === "true") {
-            console.info(
-              `WARNING: while resolving "${prop}", key ${netuid}::${key} not found in moduleMap`,
-            );
-          }
-          continue;
-        }
-
-        const parsedValue = modulePropResolvers[prop](entry.value);
-
-        if (!parsedValue.success) {
-          console.error(
-            `Error parsing "${prop}" for module ${netuid}::${key} - fallback to undefined`,
-          );
-          console.error(parsedValue.error);
-          continue;
-        }
-
-        module[prop] = parsedValue.data;
-      }
-    }),
-  );
-
-  return moduleMap;
+  // TODO: accept multiple netuids
+  const modulePropMap: Record<T, Record<string, string>> = {} as Record<
+    T,
+    Record<string, string>
+  >;
+  const moduletas = await getPropsToMap(props, api, netuidWhitelist);
+  const entries = Object.entries(moduletas) as [T, ChainEntry][];
+  entries.map(([prop, entry]) => {
+    modulePropMap[prop] = entry.queryStorage(netuidWhitelist);
+  });
+  return modulePropMap;
 }
 
-/**
- * maps netuid -> uid -> key
- */
-function newUidKeyMap(
-  moduleMap: Map<number, Map<SS58Address, SubspaceModule>>,
-): Map<number, Map<number, SS58Address>> {
-  const uidKeyMap = new Map<number, Map<number, SS58Address>>();
-
-  for (const [netuid, keyMap] of moduleMap) {
-    if (!uidKeyMap.has(netuid)) {
-      uidKeyMap.set(netuid, new Map());
-    }
-
-    for (const [key, module] of keyMap) {
-      uidKeyMap.get(netuid)!.set(module.uid, key);
-    }
-  }
-
-  return uidKeyMap;
+export async function getSubnetList(api: Api): Promise<Record<string, string>> {
+  const result = await queryChain(api, { subspaceModule: ["subnetNames"] });
+  const subnetNames = result.subnetNames;
+  return subnetNames as Record<string, string>;
 }
 
-/**
- * maps netuid -> key -> SubspaceModule
- */
-function newSubstrateModuleMap(
-  subspaceModules: SubspaceModule[],
-): Map<number, Map<SS58Address, SubspaceModule>> {
-  const moduleMap = new Map<number, Map<SS58Address, SubspaceModule>>();
-
-  for (const module of subspaceModules) {
-    if (!moduleMap.has(module.netuid)) {
-      moduleMap.set(module.netuid, new Map());
-    }
-
-    moduleMap.get(module.netuid)!.set(module.key, module);
-  }
-
-  return moduleMap;
+export async function getModuleBurn(api: Api): Promise<Record<string, string>> {
+  const result = await queryChain(api, { subspaceModule: ["burn"] });
+  const burn = result.burn;
+  return burn as Record<string, string>;
 }

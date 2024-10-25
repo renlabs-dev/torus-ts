@@ -9,7 +9,7 @@ import type {
   ProposalStatus,
 } from "@commune-ts/types";
 import {
-  bigintDivision,
+  bigintDivision_WRONG,
   formatToken,
   paramNameToDisplayName,
 } from "@commune-ts/utils";
@@ -138,7 +138,7 @@ export function calcProposalFavorablePercent(
     if (totalStake === 0n) {
       return null;
     }
-    const ratio = bigintDivision(stakeFor, totalStake);
+    const ratio = bigintDivision_WRONG(stakeFor, totalStake);
     const percentage = ratio * 100;
     return percentage;
   }
@@ -194,7 +194,7 @@ export function handleProposalQuorumPercent(
 ): JSX.Element {
   function quorumPercent(stakeFor: bigint, stakeAgainst: bigint): JSX.Element {
     const percentage =
-      bigintDivision(stakeFor + stakeAgainst, totalStake) * 100;
+      bigintDivision_WRONG(stakeFor + stakeAgainst, totalStake) * 100;
     const percentDisplay = `${Number.isNaN(percentage) ? "—" : percentage.toFixed(1)}%`;
     return <span className="text-yellow-600">{`(${percentDisplay})`}</span>;
   }

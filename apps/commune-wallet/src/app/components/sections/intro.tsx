@@ -1,30 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
-import Image from "next/image";
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
-
-import type { InjectedAccountWithMeta } from "@commune-ts/ui";
-import { useCommune } from "@commune-ts/providers/use-commune";
 import { Loading, NoWalletExtensionDisplay } from "@commune-ts/ui";
-
 import { oxanium } from "~/utils/fonts";
-import { Wallet } from "./wallet";
+import { useCommune } from "@commune-ts/providers/use-commune";
+import { useEffect } from "react";
+import { WalletSections } from "./wallet-sections";
+import Image from "next/image";
+import React from "react";
+import type { InjectedAccountWithMeta } from "@commune-ts/ui";
 
 interface IntroSectionProps {
-  showWallets: boolean;
-  setShowWallets: (show: boolean) => void;
   onWalletSwitch: () => void;
+  setShowWallets: (show: boolean) => void;
+  showWallets: boolean;
 }
 
 export function IntroSection(props: IntroSectionProps) {
   const {
     accounts,
-    setSelectedAccount,
-    selectedAccount,
-    setIsConnected,
     handleConnect,
     isInitialized,
+    selectedAccount,
+    setIsConnected,
+    setSelectedAccount,
   } = useCommune();
 
   const handleConnectWallet = async () => {
@@ -37,8 +36,12 @@ export function IntroSection(props: IntroSectionProps) {
   };
 
   const handleSelectWallet = (account: InjectedAccountWithMeta) => {
-    localStorage.setItem("favoriteWalletAddress", account.address);
+    const currentWallet = localStorage.getItem("favoriteWalletAddress");
+    if (account.address === currentWallet) return;
+
     setSelectedAccount(account);
+    localStorage.removeItem("authorization");
+    localStorage.setItem("favoriteWalletAddress", account.address);
     setIsConnected(true);
     props.setShowWallets(false);
     props.onWalletSwitch();
@@ -53,7 +56,7 @@ export function IntroSection(props: IntroSectionProps) {
   return (
     <>
       {props.showWallets ? (
-        <Wallet.Root>
+        <WalletSections.Root>
           <div className="flex w-full animate-fade-up items-center justify-between pb-4">
             <button
               onClick={handleBack}
@@ -72,11 +75,10 @@ export function IntroSection(props: IntroSectionProps) {
                 <button
                   key={index}
                   onClick={() => handleSelectWallet(account)}
-                  className={`w-full p-4 text-left transition duration-200 ${
-                    selectedAccount?.address === account.address
-                      ? "border border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30"
-                      : "border border-white/20 text-white hover:bg-white/10"
-                  }`}
+                  className={`w-full p-4 text-left transition duration-200 ${selectedAccount?.address === account.address
+                    ? "border border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30"
+                    : "border border-white/20 text-white hover:bg-white/10"
+                    }`}
                 >
                   <p className="font-semibold">
                     {account.meta.name?.toUpperCase()}
@@ -88,9 +90,9 @@ export function IntroSection(props: IntroSectionProps) {
               <NoWalletExtensionDisplay />
             )}
           </div>
-        </Wallet.Root>
+        </WalletSections.Root>
       ) : (
-        <Wallet.Root>
+        <WalletSections.Root>
           <div className="col-span-1 flex items-center pb-6">
             <Image
               src="/logo-green.svg"
@@ -120,7 +122,7 @@ export function IntroSection(props: IntroSectionProps) {
               {isInitialized ? "Connect Wallet" : <Loading />}
             </button>
           </div>
-        </Wallet.Root>
+        </WalletSections.Root>
       )}
     </>
   );

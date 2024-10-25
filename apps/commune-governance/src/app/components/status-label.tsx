@@ -1,52 +1,42 @@
 import { match } from "rustie";
 
 import type { ProposalStatus } from "@commune-ts/types";
-
-import { Label } from "./label";
+import { Badge } from "@commune-ts/ui";
 
 interface StatusLabelProps {
   result: ProposalStatus;
-  className?: string;
 }
 
 export function StatusLabel(props: StatusLabelProps): JSX.Element {
-  const { result, className = "" } = props;
+  const { result } = props;
 
   return match(result)({
     open() {
       return (
-        <Label
-          className={`w-auto border border-yellow-500 bg-yellow-500/10 py-1.5 text-center text-yellow-500 lg:text-left ${className}`}
-        >
+        <Badge className="border-yellow-500 bg-yellow-500/10 text-yellow-500">
           Active
-        </Label>
+        </Badge>
       );
     },
     accepted() {
       return (
-        <Label
-          className={`w-auto border border-green-500 bg-green-500/10 py-1.5 text-center  text-green-500 lg:text-left ${className}`}
-        >
+        <Badge className="border-green-500 bg-green-500/10 text-green-500">
           Accepted
-        </Label>
+        </Badge>
       );
     },
     expired() {
       return (
-        <Label
-          className={`w-auto border border-gray-500 bg-gray-500/10 py-1.5 text-center text-gray-500 lg:text-left ${className}`}
-        >
+        <Badge className="border-gray-500 bg-gray-500/10 text-gray-500">
           Expired
-        </Label>
+        </Badge>
       );
     },
     refused() {
       return (
-        <Label
-          className={`w-auto border border-red-500 bg-red-500/10 py-1.5 text-center text-red-500 lg:text-left ${className}`}
-        >
+        <Badge className="border-red-500 bg-red-500/10 text-red-500">
           Refused
-        </Label>
+        </Badge>
       );
     },
   });

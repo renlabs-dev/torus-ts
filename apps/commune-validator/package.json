@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "next build",
+    "build:turbo": "pnpm with-env turbo run build",
     "dev": "next dev --port 3002",
     "lint": "eslint",
     "start": "next start",
-    "type-check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
     "@commune-ts/api": "workspace:*",
@@ -37,6 +39,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
+    "dotenv-cli": "^7.4.2",
     "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",

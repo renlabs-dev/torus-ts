@@ -7,7 +7,6 @@ import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { z } from "zod";
 
 import type { AppRouter } from "@commune-ts/api";
-import { useCommune } from "@commune-ts/providers/use-commune";
 import { toast } from "@commune-ts/providers/use-toast";
 
 import { api } from "~/trpc/react";
@@ -34,8 +33,6 @@ export function ReportComment({ commentId }: ReportCommentProps) {
   });
 
   const [errors, setErrors] = useState<Partial<ReportFormData>>({});
-
-  const { selectedAccount } = useCommune();
 
   const reportCommentMutation =
     api.proposalComment.createCommentReport.useMutation({
@@ -85,7 +82,6 @@ export function ReportComment({ commentId }: ReportCommentProps) {
     if (validateForm()) {
       reportCommentMutation.mutate({
         commentId,
-        userKey: selectedAccount?.address,
         reason: formData.reason,
         content: formData.content,
       });

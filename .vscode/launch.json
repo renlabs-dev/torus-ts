@@ -2,12 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Next.js",
       "type": "node-terminal",
+      "name": "debug commune-worker",
       "request": "launch",
-      "command": "pnpm dev",
-      "cwd": "${workspaceFolder}/apps/nextjs/",
-      "skipFiles": ["<node_internals>/**"]
+      "command": "pnpm run dev",
+      "cwd": "${workspaceFolder}/apps/commune-worker",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ]
 }

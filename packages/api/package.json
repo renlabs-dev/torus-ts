@@ -8,7 +8,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
-    }
+    },
+    "./client": "./src/client.ts"
   },
   "scripts": {
     "build": "tsc",
@@ -22,7 +23,12 @@
   "dependencies": {
     "@commune-ts/db": "workspace:*",
     "@commune-ts/types": "workspace:*",
+    "@commune-ts/utils": "workspace:*",
+    "@polkadot/util": "catalog:",
+    "@polkadot/util-crypto": "catalog:",
+    "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
+    "jsonwebtoken": "^9.0.2",
     "superjson": "2.2.1",
     "zod": "catalog:"
   },
@@ -30,6 +36,7 @@
     "@commune-ts/eslint-config": "workspace:*",
     "@commune-ts/prettier-config": "workspace:*",
     "@commune-ts/tsconfig": "workspace:*",
+    "@types/jsonwebtoken": "^9.0.6",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

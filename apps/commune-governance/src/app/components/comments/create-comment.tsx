@@ -22,16 +22,15 @@ export function CreateComment({
   ModeType: "PROPOSAL" | "DAO";
 }) {
   const router = useRouter();
+  const { selectedAccount, stakeOut } = useCommune();
+  const { data: cadreUsers } = api.dao.byCadre.useQuery();
+
   const [content, setContent] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [remainingChars, setRemainingChars] = useState(MAX_CHARACTERS);
 
   let userStakeWeight: bigint | null = null;
-
-  const { selectedAccount, stakeOut } = useCommune();
-
-  const { data: cadreUsers } = api.dao.byCadre.useQuery();
 
   const CreateComment = api.proposalComment.createComment.useMutation({
     onSuccess: () => {
@@ -45,7 +44,7 @@ export function CreateComment({
     setRemainingChars(MAX_CHARACTERS - content.length);
   }, [content]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -74,12 +73,11 @@ export function CreateComment({
     }
 
     try {
-      CreateComment.mutate({
+      await CreateComment.mutateAsync({
         content,
         proposalId,
         governanceModel: ModeType,
         userName: name || undefined,
-        userKey: String(selectedAccount.address),
       });
       toast.success("Comment submitted successfully!, Reloading page...");
       setTimeout(() => {

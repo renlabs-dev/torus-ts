@@ -3,3 +3,39 @@
 @tailwind utilities;
 
 @import url("../../../../packages/ui/src/components/scrollbar-style.css");
+
+@layer base {
+  :root {
+    --background: 150, 11%, 7%;
+    --foreground: 0 0% 95%;
+    --background-green: 142 49% 11%;
+    --background-cyan: 183 43% 10%;
+    --card: 120 9% 4%;
+    --card-foreground: 0 0% 95%;
+    --popover: 150, 11%, 7%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 150 5% 16%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 135 12% 12%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
+    --chart-1: 142 88% 28%;
+    --chart-2: 139 65% 20%;
+    --chart-3: 140 74% 24%;
+    --chart-4: 137 55% 15%;
+    --chart-5: 141 40% 9%;
+    --chart-secondary-1: 221.2 83.2% 53.3%;
+    --chart-secondary-2: 212 95% 68%;
+    --chart-secondary-3: 216 92% 60%;
+    --chart-secondary-4: 210 98% 78%;
+    --chart-secondary-5: 212 97% 87%;
+  }
+}

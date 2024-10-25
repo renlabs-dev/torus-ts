@@ -1,6 +1,5 @@
 import type { DaoApplicationStatus } from "@commune-ts/types";
-
-import { Label } from "../label";
+import { Badge } from "@commune-ts/ui";
 
 interface StatusLabelProps {
   daoStatus: DaoApplicationStatus;
@@ -10,24 +9,24 @@ export const DaoStatusLabel = (props: StatusLabelProps): JSX.Element => {
   const { daoStatus } = props;
   const votingStatus = {
     Pending: (
-      <Label className="w-auto border border-yellow-500 bg-yellow-500/10 py-1.5 text-center text-yellow-500 lg:text-left">
+      <Badge className="border-yellow-500 bg-yellow-500/10 text-yellow-500">
         Active
-      </Label>
+      </Badge>
     ),
     Accepted: (
-      <Label className="w-auto border border-green-500 bg-green-500/10 py-1.5 text-center text-green-500 lg:text-left">
+      <Badge className="border-green-500 bg-green-500/10 text-green-500">
         Accepted
-      </Label>
+      </Badge>
     ),
     Refused: (
-      <Label className="w-auto border border-red-500 bg-red-500/10 py-1.5 text-center text-red-500 lg:text-left">
+      <Badge className="border-red-500 bg-red-500/10 text-red-500">
         Refused
-      </Label>
+      </Badge>
     ),
     Removed: (
-      <Label className="w-auto border border-rose-500 bg-rose-500/10 py-1.5 text-center text-rose-500 lg:text-left">
+      <Badge className="border-rose-500 bg-rose-500/10 text-rose-500">
         Removed
-      </Label>
+      </Badge>
     ),
   };
   return votingStatus[daoStatus];

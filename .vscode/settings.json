@@ -15,5 +15,18 @@
     "worker",
     "package",
     "tooling"
-  ]
+  ],
+  "cSpell.words": [
+    "comrads",
+    "ipfs",
+    "keypair",
+    "nanos",
+    "netuid",
+    "perc",
+    "polkadot",
+    "trpc",
+    "uid",
+    "uids"
+  ],
+  "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }]
 }

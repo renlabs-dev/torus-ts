@@ -8,7 +8,7 @@
     "dev": "next dev --port 3008",
     "lint": "eslint",
     "start": "next start",
-    "type-check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@commune-ts/providers": "workspace:*",

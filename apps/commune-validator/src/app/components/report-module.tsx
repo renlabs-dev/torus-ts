@@ -5,21 +5,18 @@ import { XMarkIcon } from "@heroicons/react/16/solid";
 import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { z } from "zod";
 
-import { useCommune } from "@commune-ts/providers/use-commune";
 import { toast } from "@commune-ts/providers/use-toast";
 
 import { api } from "~/trpc/react";
 
-enum ReportReason {
-  spam = "spam",
-  harassment = "harassment",
-  hateSpeech = "hateSpeech",
-  violence = "violence",
-  sexualContent = "sexualContent",
-}
-
 const reportSchema = z.object({
-  reason: z.nativeEnum(ReportReason),
+  reason: z.enum([
+    "SPAM",
+    "VIOLENCE",
+    "HARASSMENT",
+    "HATE_SPEECH",
+    "SEXUAL_CONTENT",
+  ] as const),
   content: z.string().min(10).max(500),
 });
 
@@ -32,17 +29,15 @@ interface ReportModuleProps {
 export function ReportModule({ moduleId }: ReportModuleProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState<ReportFormData>({
-    reason: ReportReason.spam,
+    reason: "SPAM",
     content: "",
   });
   const [errors, setErrors] = useState<Partial<ReportFormData>>({});
 
-  const { selectedAccount } = useCommune();
-
   const reportModuleMutation = api.module.createModuleReport.useMutation({
     onSuccess: () => {
       setModalOpen(false);
-      setFormData({ reason: ReportReason.spam, content: "" });
+      setFormData({ reason: "SPAM", content: "" });
       setErrors({});
     },
   });
@@ -55,11 +50,7 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
     e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    if (name === "reason") {
-      setFormData((prev) => ({ ...prev, [name]: value as ReportReason }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validateForm = (): boolean => {
@@ -84,7 +75,6 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
     if (validateForm()) {
       reportModuleMutation.mutate({
         moduleId,
-        userKey: selectedAccount?.address,
         reason: formData.reason,
         content: formData.content,
       });
@@ -128,15 +118,13 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
                   name="reason"
                   value={formData.reason}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 bg-black/40  p-2"
+                  className="w-full border border-gray-300 bg-black/40 p-2"
                 >
-                  <option value={ReportReason.spam}>Spam</option>
-                  <option value={ReportReason.harassment}>Harassment</option>
-                  <option value={ReportReason.hateSpeech}>Hate Speech</option>
-                  <option value={ReportReason.violence}>Violence</option>
-                  <option value={ReportReason.sexualContent}>
-                    Sexual Content
-                  </option>
+                  <option value="SPAM">Spam</option>
+                  <option value="VIOLENCE">Violence</option>
+                  <option value="HARASSMENT">Harassment</option>
+                  <option value="HATE_SPEECH">Hate Speech</option>
+                  <option value="SEXUAL_CONTENT">Sexual Content</option>
                 </select>
                 {errors.reason && (
                   <p className="mt-1 text-xs text-red-500">{errors.reason}</p>

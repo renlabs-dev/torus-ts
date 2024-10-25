@@ -6,6 +6,8 @@ import type { ApiPromise } from "@polkadot/api";
 import { useQueries, useQuery } from "@tanstack/react-query";
 
 import {
+  getModuleBurn,
+  getSubnetList,
   processVotesAndStakes,
   queryBalance,
   queryDaosEntries,
@@ -163,6 +165,26 @@ export function useUserTotalStaked(
     queryKey: ["user_total_staked", address],
     enabled: api != null,
     queryFn: () => queryUserTotalStaked(api!, address!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useSubnetList(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["subnet_list"],
+    enabled: api != null,
+    queryFn: () => getSubnetList(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useModuleBurn(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["module_burn"],
+    enabled: api != null,
+    queryFn: () => getModuleBurn(api!),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

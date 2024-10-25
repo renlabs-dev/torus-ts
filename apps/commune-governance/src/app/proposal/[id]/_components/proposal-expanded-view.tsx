@@ -4,6 +4,7 @@ import { ArrowPathIcon } from "@heroicons/react/20/solid";
 
 import type { ProposalStatus, SS58Address } from "@commune-ts/types";
 import { useCommune } from "@commune-ts/providers/use-commune";
+import { Badge } from "@commune-ts/ui";
 import { MarkdownView } from "@commune-ts/ui/markdown-view";
 import {
   getExpirationTime,
@@ -14,7 +15,6 @@ import {
 import type { VoteStatus } from "../../../components/vote-label";
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
-import { Label } from "~/app/components/label";
 import { ProposalTypeLabel } from "~/app/components/proposal/proposal-type-label";
 import { ProposalVoteCard } from "~/app/components/proposal/proposal-vote-card";
 import { RewardLabel } from "~/app/components/proposal/reward-label";
@@ -179,13 +179,13 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
         <div className="w-full">
           <ViewComment modeType="PROPOSAL" proposalId={content.id} />
         </div>
-        <div className="m-2 hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between border border-white/20 bg-[#898989]/5 p-6 text-white backdrop-blur-md  animate-delay-200 md:flex">
+        <div className="m-2 hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between border border-white/20 bg-[#898989]/5 p-6 text-white backdrop-blur-md animate-delay-200 md:flex">
           <CreateComment proposalId={content.id} ModeType="PROPOSAL" />
         </div>
       </div>
 
       <div className="flex flex-col lg:w-1/3">
-        <div className="m-2 animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400  backdrop-blur-md animate-delay-200">
+        <div className="m-2 animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-200">
           <div className="flex flex-col gap-3">
             <div>
               <span>ID</span>
@@ -219,9 +219,9 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
         <div className="m-2 animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-300">
           <SectionHeaderText text="Subnet / Status / Reward Status / Type" />
           <div className="flex w-full flex-col items-center gap-2 md:flex-row">
-            <Label className="border border-white bg-white/5 text-white">
+            <Badge className="border-white bg-white/5 text-white">
               {content.netuid}
-            </Label>
+            </Badge>
             <StatusLabel result={content.status} />
             <RewardLabel proposalId={content.id} result={content.status} />
             <ProposalTypeLabel result={content.data} />

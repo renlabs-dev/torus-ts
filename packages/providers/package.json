@@ -16,7 +16,7 @@
     "@commune-ts/utils": "workspace:*",
     "@polkadot/api": "catalog:",
     "@polkadot/api-augment": "catalog:",
-    "@polkadot/extension-dapp": "^0.52.3",
+    "@polkadot/extension-dapp": "catalog:",
     "@polkadot/extension-inject": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/util-crypto": "catalog:",

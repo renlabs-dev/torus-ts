@@ -14,7 +14,7 @@ import {
   PROPOSAL_COMMENT_INSERT_SCHEMA,
 } from "@commune-ts/db/validation";
 
-import { publicProcedure } from "../trpc";
+import { authenticatedProcedure, publicProcedure } from "../trpc";
 
 export const proposalCommentRouter = {
   // GET
@@ -63,22 +63,28 @@ export const proposalCommentRouter = {
     return ctx.db.query.commentReportSchema.findMany();
   }),
   // POST
-  createComment: publicProcedure
+  createComment: authenticatedProcedure
     .input(PROPOSAL_COMMENT_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(proposalCommentSchema).values(input);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
+      await ctx.db.insert(proposalCommentSchema).values({ ...input, userKey });
     }),
-  createCommentReport: publicProcedure
+  createCommentReport: authenticatedProcedure
     .input(COMMENT_REPORT_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(commentReportSchema).values(input);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
+      await ctx.db.insert(commentReportSchema).values({ ...input, userKey });
     }),
-  castVote: publicProcedure
+  castVote: authenticatedProcedure
     .input(COMMENT_INTERACTION_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
       await ctx.db
         .insert(commentInteractionSchema)
-        .values(input)
+        .values({ ...input, userKey })
         .onConflictDoUpdate({
           target: [
             commentInteractionSchema.commentId,
@@ -89,13 +95,14 @@ export const proposalCommentRouter = {
           },
         });
     }),
-  deleteVote: publicProcedure
-    .input(z.object({ commentId: z.string(), userKey: z.string() }))
+  deleteVote: authenticatedProcedure
+    .input(z.object({ commentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const userKey = ctx.sessionData?.userKey;
       await ctx.db
         .delete(commentInteractionSchema)
         .where(
-          sql`${commentInteractionSchema.commentId} = ${input.commentId} AND ${commentInteractionSchema.userKey} = ${input.userKey}`,
+          sql`${commentInteractionSchema.commentId} = ${input.commentId} AND ${commentInteractionSchema.userKey} = ${userKey}`,
         );
     }),
 } satisfies TRPCRouterRecord;

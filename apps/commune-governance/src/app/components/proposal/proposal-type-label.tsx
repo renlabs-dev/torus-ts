@@ -1,8 +1,7 @@
 import { match } from "rustie";
 
 import type { ProposalData } from "@commune-ts/types";
-
-import { Label } from "../label";
+import { Badge } from "@commune-ts/ui";
 
 interface ProposalTypeLabelProps {
   result: ProposalData;
@@ -13,47 +12,37 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
   return match(result)({
     globalCustom() {
       return (
-        <Label
-          className={`w-auto border border-emerald-500 bg-emerald-500/10 py-1.5 text-center text-emerald-500 lg:text-left`}
-        >
+        <Badge className="border-emerald-500 bg-emerald-500/10 text-emerald-500">
           Global Custom
-        </Label>
+        </Badge>
       );
     },
     globalParams() {
       return (
-        <Label
-          className={`w-auto border border-blue-500 bg-blue-500/10 py-1.5 text-center  text-blue-500 lg:text-left`}
-        >
+        <Badge className="border-blue-500 bg-blue-500/10 text-blue-500">
           Global Params
-        </Label>
+        </Badge>
       );
     },
     subnetCustom() {
       return (
-        <Label
-          className={`w-auto border border-sky-500 bg-sky-500/10 py-1.5 text-center text-sky-500 lg:text-left`}
-        >
+        <Badge className="border-sky-500 bg-sky-500/10 text-sky-500">
           Subnet Custom
-        </Label>
+        </Badge>
       );
     },
     subnetParams() {
       return (
-        <Label
-          className={`w-auto border border-cyan-500 bg-cyan-500/10 py-1.5 text-center text-cyan-500 lg:text-left`}
-        >
+        <Badge className="border-cyan-500 bg-cyan-500/10 text-cyan-500">
           Subnet Params
-        </Label>
+        </Badge>
       );
     },
     transferDaoTreasury() {
       return (
-        <Label
-          className={`w-auto border border-teal-500 bg-teal-500/10 py-1.5 text-center text-teal-500 lg:text-left`}
-        >
+        <Badge className="border-teal-500 bg-teal-500/10 text-teal-500">
           Transfer DAO Treasury
-        </Label>
+        </Badge>
       );
     },
   });

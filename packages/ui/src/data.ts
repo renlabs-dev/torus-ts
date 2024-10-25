@@ -1,6 +1,7 @@
 export const links = {
   about: "/about",
-  docs: "/docs/getting-started/intro",
+
+  docs: "https://communeai.org/docs/getting-started/intro",
   cadre: "/cadre",
 
   blog: "https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5",
@@ -11,6 +12,7 @@ export const links = {
 
   explorer: "https://stats.communex.ai/",
   governance: "https://governance.communeai.org/",
+  validator: "https://validator.communeai.org/",
   landing_page: "https://communeai.org/",
   wallet: "https://wallet.communeai.org/",
 };

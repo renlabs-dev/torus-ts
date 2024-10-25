@@ -217,8 +217,12 @@ export function Wallet() {
   const router = useRouter();
 
   function handleWalletSelection(wallet: InjectedAccountWithMeta): void {
-    localStorage.setItem("favoriteWalletAddress", wallet.address);
+    const currentWallet = localStorage.getItem("favoriteWalletAddress");
+    if (wallet.address === currentWallet) return;
+
     setSelectedAccount(wallet);
+    localStorage.removeItem("authorization");
+    localStorage.setItem("favoriteWalletAddress", wallet.address);
     setIsConnected(true);
     setIsWalletSelectionView(false);
     setUserStakeWeight(calculateUserStakeWeight());
@@ -235,8 +239,8 @@ export function Wallet() {
   }, [selectedAccount]);
 
   useEffect(() => {
-    const freeBalance = fromNano(balance ?? 0);
-    const stakedBalance = fromNano(userStakeWeight ?? 0);
+    const freeBalance = Number(fromNano(balance ?? 0));
+    const stakedBalance = Number(fromNano(userStakeWeight ?? 0));
     const availablePercentage =
       (freeBalance * 100) / (stakedBalance + freeBalance);
 
@@ -475,8 +479,7 @@ export function Wallet() {
                     disabled={
                       transactionStatus.status === "PENDING" ||
                       !validator ||
-                      !amount ||
-                      inputError.value === null
+                      !amount
                     }
                     type="submit"
                   >

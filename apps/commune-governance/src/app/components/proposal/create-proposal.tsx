@@ -8,7 +8,17 @@ import { z } from "zod";
 import type { TransactionResult } from "@commune-ts/types";
 import { useCommune } from "@commune-ts/providers/use-commune";
 import { toast } from "@commune-ts/providers/use-toast";
-import { TransactionStatus } from "@commune-ts/ui";
+import {
+  Button,
+  Input,
+  Label,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+  TransactionStatus,
+} from "@commune-ts/ui";
 
 import { cairo } from "~/utils/fonts";
 
@@ -23,12 +33,9 @@ export function CreateProposal(): JSX.Element {
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [uploading, setUploading] = useState(false);
 
-  const [editMode, setEditMode] = useState(true);
-  function toggleEditMode(): void {
-    setEditMode(!editMode);
-  }
+  const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState("edit");
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -124,92 +131,72 @@ export function CreateProposal(): JSX.Element {
   }
 
   return (
-    <form onSubmit={HandleSubmit}>
-      <div className="mt-4 flex flex-col gap-4">
-        <div className="flex gap-2">
-          <button
-            className={`border px-4 py-1 ${editMode ? "border-green-500 bg-green-500/5 text-green-500" : "border-gray-500 text-gray-400"} hover:border-green-600 hover:bg-green-600/5 hover:text-green-600`}
-            onClick={toggleEditMode}
-            type="button"
-          >
-            Edit
-          </button>
-          <button
-            className={`border px-4 py-1 ${!editMode ? "border-green-500 bg-green-500/5 text-green-500" : "border-gray-500 text-gray-400"} hover:border-green-600 hover:bg-green-600/5 hover:text-green-600`}
-            onClick={toggleEditMode}
-            type="button"
-          >
-            Preview
-          </button>
-        </div>
-        <div className="flex flex-col">
-          {editMode ? (
-            <div className="flex flex-col gap-3">
-              <input
-                className="w-full bg-white/10 p-3 text-white"
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                }}
-                placeholder="Your proposal title here..."
-                type="text"
-                value={title}
-              />
-              <textarea
-                className="w-full bg-white/10 p-3 text-white"
-                onChange={(e) => {
-                  setBody(e.target.value);
-                }}
-                placeholder="here... (Markdown supported / HTML tags are not supported)"
-                rows={5}
-                value={body}
-              />
-            </div>
-          ) : (
-            <div className="p-4">
-              {body ? (
-                <MarkdownPreview
-                  className={`${cairo.className} max-h-[40vh] overflow-auto`}
-                  source={`# ${title}\n${body}`}
-                  style={{
-                    backgroundColor: "transparent",
-                    color: "white",
-                  }}
-                />
-              ) : null}
-              {/* TODO: skeleton for markdown body */}
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <button
-            className={`relative w-full border px-4 py-2 font-semibold ${isConnected ? "border-green-500 text-green-500 hover:bg-green-500/5 active:top-1" : "border-gray-500 text-gray-500"}`}
-            disabled={!isConnected}
-            type="submit"
-          >
-            {uploading ? "Uploading..." : "Submit Proposal"}
-          </button>
-        </div>
-        {transactionStatus.status && (
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
+    <form
+      onSubmit={HandleSubmit}
+      className="flex flex-col gap-4 text-green-500"
+    >
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="edit">Edit Content</TabsTrigger>
+          <TabsTrigger value="preview">Preview Content</TabsTrigger>
+        </TabsList>
+        <TabsContent value="edit" className="flex flex-col gap-3">
+          <Input
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Your proposal title here..."
+            type="text"
+            value={title}
           />
-        )}
-        <div className="flex flex-wrap items-center gap-1 pt-2 text-sm text-white">
-          <div className="flex items-center gap-1">
-            <InformationCircleIcon className="h-4 w-4 fill-green-500" />
-            <span>Want a different approach?</span>
-          </div>
-          <span>
-            <Link
-              className="text-blue-500 hover:underline"
-              href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q"
-              target="_blank"
-            >
-              Check how to create a proposal with the CLI tool
-            </Link>
-          </span>
-        </div>
+          <Textarea
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Your proposal body here... (Markdown supported / HTML tags are not supported)"
+            rows={5}
+            value={body}
+          />
+        </TabsContent>
+        <TabsContent value="preview" className="bg-muted p-4">
+          {body ? (
+            <MarkdownPreview
+              className={`${cairo.className} max-h-[40vh] overflow-auto`}
+              source={`# ${title}\n${body}`}
+              style={{
+                backgroundColor: "transparent",
+                color: "white",
+              }}
+            />
+          ) : (
+            <Label className="text-sm text-white">
+              Fill the body to preview here :)
+            </Label>
+          )}
+        </TabsContent>
+      </Tabs>
+      <Button
+        size="xl"
+        type="submit"
+        variant="default-green"
+        disabled={!isConnected}
+      >
+        {uploading ? "Uploading..." : "Submit Proposal"}
+      </Button>
+      {transactionStatus.status && (
+        <TransactionStatus
+          status={transactionStatus.status}
+          message={transactionStatus.message}
+        />
+      )}
+      <div className="flex flex-wrap items-center gap-1 text-sm text-white">
+        <InformationCircleIcon className="h-4 w-4 fill-green-500" />
+        <Label className="text-sm text-white">
+          Want a different approach?{" "}
+          <Link
+            className="text-green-500 hover:underline"
+            href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q"
+            target="_blank"
+          >
+            Check how to create a proposal with the CLI tool
+          </Link>
+        </Label>
       </div>
     </form>
   );

@@ -43,6 +43,7 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner /build/out/full/ .
 RUN POSTGRES_URL="postgres://postgres:password@localhost:5432/database" \
     PINATA_JWT="junk" \
+    JWT_SECRET="12345678" \
     pnpm turbo run build --filter=${APP_NAME}
 
 

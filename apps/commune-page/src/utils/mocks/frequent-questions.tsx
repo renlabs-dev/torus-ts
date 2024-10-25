@@ -69,7 +69,7 @@ export const faqData = [
     answer: (
       <span>
         Please refer to our{" "}
-        <Hyperlink href="https://commune-t.pages.dev/docs/next/Introduction">
+        <Hyperlink href="https://communeai.org/docs/getting-started/intro">
           introduction page
         </Hyperlink>{" "}
         where you can find all details.

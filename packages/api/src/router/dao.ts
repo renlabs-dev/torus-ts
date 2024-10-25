@@ -16,7 +16,7 @@ import {
   DAO_VOTE_INSERT_SCHEMA,
 } from "@commune-ts/db/validation";
 
-import { publicProcedure } from "../trpc";
+import { authenticatedProcedure, publicProcedure } from "../trpc";
 
 export const daoRouter = {
   // GET
@@ -37,9 +37,11 @@ export const daoRouter = {
     return ctx.db.query.cadreCandidatesSchema.findMany();
   }),
   // POST
-  createVote: publicProcedure
+  createVote: authenticatedProcedure
     .input(DAO_VOTE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
       await ctx.db
         .update(daoVoteSchema)
         .set({
@@ -47,18 +49,23 @@ export const daoRouter = {
         })
         .where(
           and(
-            eq(daoVoteSchema.userKey, input.userKey),
+            eq(daoVoteSchema.userKey, userKey),
             eq(daoVoteSchema.daoId, input.daoId),
             isNull(daoVoteSchema.deletedAt),
           ),
         )
         .execute();
 
-      await ctx.db.insert(daoVoteSchema).values(input).execute();
+      await ctx.db
+        .insert(daoVoteSchema)
+        .values({ ...input, userKey: userKey })
+        .execute();
     }),
-  deleteVote: publicProcedure
-    .input(z.object({ userKey: z.string(), daoId: z.number() }))
+  deleteVote: authenticatedProcedure
+    .input(z.object({ daoId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
       await ctx.db
         .update(daoVoteSchema)
         .set({
@@ -66,19 +73,29 @@ export const daoRouter = {
         })
         .where(
           and(
-            eq(daoVoteSchema.userKey, input.userKey),
+            eq(daoVoteSchema.userKey, userKey),
             eq(daoVoteSchema.daoId, input.daoId),
           ),
         );
     }),
-  addCadreCandidates: publicProcedure
+  addCadreCandidates: authenticatedProcedure
     .input(CADRE_CANDIDATES_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(cadreCandidatesSchema).values(input).execute();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
+      await ctx.db
+        .insert(cadreCandidatesSchema)
+        .values({ ...input, userKey: userKey })
+        .execute();
     }),
-  createCadreVote: publicProcedure
+  createCadreVote: authenticatedProcedure
     .input(CADRE_VOTE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(cadreVoteSchema).values(input).execute();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
+      await ctx.db
+        .insert(cadreVoteSchema)
+        .values({ ...input, userKey: userKey })
+        .execute();
     }),
 } satisfies TRPCRouterRecord;

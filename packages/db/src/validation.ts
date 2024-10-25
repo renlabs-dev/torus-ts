@@ -11,6 +11,7 @@ import {
   moduleReport,
   proposalCommentSchema,
   userModuleData,
+  userSubnetDataSchema,
   VoteType,
 } from "./schema";
 
@@ -47,6 +48,7 @@ export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
   id: true,
   createdAt: true,
   deletedAt: true,
+  userKey: true,
 });
 
 export const COMMENT_INTERACTION_INSERT_SCHEMA = createInsertSchema(
@@ -57,6 +59,7 @@ export const COMMENT_INTERACTION_INSERT_SCHEMA = createInsertSchema(
 ).omit({
   id: true,
   createdAt: true,
+  userKey: true,
 });
 
 export const COMMENT_REPORT_INSERT_SCHEMA = createInsertSchema(
@@ -72,6 +75,7 @@ export const COMMENT_REPORT_INSERT_SCHEMA = createInsertSchema(
 ).omit({
   id: true,
   createdAt: true,
+  userKey: true,
 });
 
 export const MODULE_REPORT_INSERT_SCHEMA = createInsertSchema(moduleReport, {
@@ -95,11 +99,21 @@ export const USER_MODULE_DATA_INSERT_SCHEMA = createInsertSchema(
   id: true,
 });
 
+export const USER_SUBNET_DATA_INSERT_SCHEMA = createInsertSchema(
+  userSubnetDataSchema,
+  {
+    weight: z.number().positive(),
+  },
+).omit({
+  id: true,
+});
+
 export const DAO_VOTE_INSERT_SCHEMA = createInsertSchema(daoVoteSchema).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  userKey: true,
 });
 
 export const CADRE_INSERT_SCHEMA = createInsertSchema(cadreSchema).omit({
@@ -115,6 +129,7 @@ export const CADRE_CANDIDATES_INSERT_SCHEMA = createInsertSchema(
   id: true,
   createdAt: true,
   deletedAt: true,
+  userKey: true,
 });
 
 export const CADRE_VOTE_INSERT_SCHEMA = createInsertSchema(
@@ -124,4 +139,5 @@ export const CADRE_VOTE_INSERT_SCHEMA = createInsertSchema(
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  userKey: true,
 });

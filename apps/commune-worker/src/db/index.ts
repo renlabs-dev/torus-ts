@@ -1,32 +1,149 @@
 import type { SQL, Table } from "@commune-ts/db";
-import type { GovernanceModeType, SubspaceModule } from "@commune-ts/types";
+import type { GovernanceModeType } from "@commune-ts/types";
 import { getTableColumns, sql } from "@commune-ts/db";
 import { db } from "@commune-ts/db/client";
 import {
   cadreSchema,
+  computedModuleWeightsSchema,
+  computedSubnetWeights,
   daoVoteSchema,
   governanceNotificationSchema,
   moduleData,
+  subnetDataSchema,
 } from "@commune-ts/db/schema";
 
 export type NewVote = typeof daoVoteSchema.$inferInsert;
+export type Module = typeof moduleData.$inferInsert;
+export type Subnet = typeof subnetDataSchema.$inferInsert;
+export type ModuleWeight = typeof computedModuleWeightsSchema.$inferInsert;
+export type SubnetWeight = typeof computedSubnetWeights.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 
-export async function upsertModuleData(
-  modules: SubspaceModule[],
-  atBlock: number,
-) {
+export async function insertModuleWeight(weights: ModuleWeight[]) {
+  await db
+    .insert(computedModuleWeightsSchema)
+    .values(
+      weights.map((w) => ({
+        moduleId: w.moduleId,
+        stakeWeight: w.stakeWeight,
+        percWeight: w.percWeight,
+        atBlock: w.atBlock,
+      })),
+    )
+    .execute();
+}
+
+export async function insertSubnetWeight(weights: SubnetWeight[]) {
+  await db
+    .insert(computedSubnetWeights)
+    .values(
+      weights.map((w) => ({
+        netuid: w.netuid,
+        stakeWeight: w.stakeWeight,
+        percWeight: w.percWeight,
+        atBlock: w.atBlock,
+      })),
+    )
+    .execute();
+}
+
+export async function upsertSubnetData(subnets: Subnet[]) {
+  await db
+    .insert(subnetDataSchema)
+    .values(
+      subnets.map((s) => ({
+        netuid: s.netuid,
+        name: s.name,
+        tempo: s.tempo,
+        minAllowedWeights: s.minAllowedWeights,
+        maxAllowedWeights: s.maxAllowedWeights,
+        maxAllowedUids: s.maxAllowedUids,
+        maxWeightAge: s.maxWeightAge,
+        trustRatio: s.trustRatio,
+        founderShare: s.founderShare,
+        incentiveRatio: s.incentiveRatio,
+        founder: s.founder,
+        maximumSetWeightCallsPerEpoch: s.maximumSetWeightCallsPerEpoch,
+        bondsMa: s.bondsMa,
+        immunityPeriod: s.immunityPeriod,
+        subnetMetadata: s.subnetMetadata,
+        proposalCost: s.proposalCost,
+        proposalExpiration: s.proposalExpiration,
+        voteMode: s.voteMode,
+        proposalRewardTreasuryAllocation: s.proposalRewardTreasuryAllocation,
+        maxProposalRewardTreasuryAllocation:
+          s.maxProposalRewardTreasuryAllocation,
+        proposalRewardInterval: s.proposalRewardInterval,
+        minBurn: s.minBurn,
+        maxBurn: s.maxBurn,
+        adjustmentAlpha: s.adjustmentAlpha,
+        targetRegistrationsInterval: s.targetRegistrationsInterval,
+        targetRegistrationsPerInterval: s.targetRegistrationsPerInterval,
+        maxRegistrationsPerInterval: s.maxRegistrationsPerInterval,
+        minValidatorStake: s.minValidatorStake,
+        maxAllowedValidators: s.maxAllowedValidators,
+        atBlock: s.atBlock,
+        subnetEmission: s.subnetEmission,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [subnetDataSchema.netuid],
+      set: buildConflictUpdateColumns(subnetDataSchema, [
+        "atBlock",
+        "name",
+        "tempo",
+        "minAllowedWeights",
+        "maxAllowedWeights",
+        "maxAllowedUids",
+        "maxWeightAge",
+        "trustRatio",
+        "founderShare",
+        "incentiveRatio",
+        "founder",
+        "maximumSetWeightCallsPerEpoch",
+        "bondsMa",
+        "immunityPeriod",
+        "subnetMetadata",
+        "proposalCost",
+        "proposalExpiration",
+        "voteMode",
+        "proposalRewardTreasuryAllocation",
+        "maxProposalRewardTreasuryAllocation",
+        "proposalRewardInterval",
+        "minBurn",
+        "maxBurn",
+        "adjustmentAlpha",
+        "targetRegistrationsInterval",
+        "targetRegistrationsPerInterval",
+        "maxRegistrationsPerInterval",
+        "minValidatorStake",
+        "maxAllowedValidators",
+      ]),
+    })
+    .execute();
+}
+
+export async function upsertModuleData(modules: Module[]) {
   await db
     .insert(moduleData)
     .values(
       modules.map((m) => ({
         netuid: m.netuid,
-        moduleKey: m.key,
+        moduleId: m.moduleId,
+        moduleKey: m.moduleKey,
         name: m.name,
-        atBlock,
-        addressUri: m.address,
-        metadataUri: m.metadata,
+        atBlock: m.atBlock,
         registrationBlock: m.registrationBlock,
+        addressUri: m.addressUri,
+        metadataUri: m.metadataUri,
+        emission: m.emission,
+        incentive: m.incentive,
+        dividend: m.dividend,
+        delegationFee: m.delegationFee,
+        totalStaked: m.totalStaked,
+        totalStakers: m.totalStakers,
+        totalRewards: m.totalRewards,
+        isWhitelisted: m.isWhitelisted,
       })),
     )
     .onConflictDoUpdate({
@@ -37,6 +154,15 @@ export async function upsertModuleData(
         "metadataUri",
         "registrationBlock",
         "name",
+        "emission",
+        "incentive",
+        "dividend",
+        "delegationFee",
+        "totalStaked",
+        "totalStakers",
+        "totalRewards",
+        "isWhitelisted",
+        "moduleId",
       ]),
     })
     .execute();
@@ -52,6 +178,7 @@ export interface VotesByProposal {
 export async function vote(new_vote: NewVote) {
   await db.insert(daoVoteSchema).values(new_vote);
 }
+
 export async function addSeenProposal(proposal: NewNotification) {
   await db.insert(governanceNotificationSchema).values(proposal);
 }

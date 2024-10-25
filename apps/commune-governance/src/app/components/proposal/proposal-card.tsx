@@ -6,6 +6,8 @@ import { ArrowRightIcon } from "@heroicons/react/20/solid";
 
 import type { ProposalState } from "@commune-ts/types";
 import { useCommune } from "@commune-ts/providers/use-commune";
+import { Badge } from "@commune-ts/ui";
+import { MarkdownView } from "@commune-ts/ui/markdown-view";
 import { removeEmojis, smallAddress } from "@commune-ts/utils";
 
 import type { VoteStatus } from "../vote-label";
@@ -16,12 +18,10 @@ import {
   handleProposalStakeVoted,
 } from "../../../utils";
 import { Card } from "../card";
-import { Label } from "../label";
 import { StatusLabel } from "../status-label";
 import { VoteLabel } from "../vote-label";
 import { ProposalTypeLabel } from "./proposal-type-label";
 import { RewardLabel } from "./reward-label";
-import { MarkdownView } from "@commune-ts/ui/markdown-view";
 
 export interface ProposalCardProps {
   proposalState: ProposalState;
@@ -93,9 +93,9 @@ export function ProposalCard(props: ProposalCardProps): JSX.Element {
             <div className="mb-2 flex w-full flex-col justify-center gap-2 md:flex-row lg:mb-0 lg:ml-auto lg:w-auto lg:flex-row lg:justify-end lg:pl-4">
               <VoteLabel vote={voted} />
               <ProposalTypeLabel result={proposalState.data} />
-              <Label className="border border-gray-200 bg-white/5 text-gray-200">
+              <Badge className="border-gray-200 bg-white/5 text-gray-200">
                 {netuid !== "GLOBAL" ? `Subnet ${netuid}` : "Global"}
-              </Label>
+              </Badge>
               <RewardLabel
                 result={proposalState.status}
                 proposalId={proposalState.id}

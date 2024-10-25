@@ -1,4 +1,4 @@
-import { Label } from "./label";
+import { Badge } from "@commune-ts/ui";
 
 export type VoteStatus = "FAVORABLE" | "AGAINST" | "UNVOTED";
 
@@ -12,14 +12,14 @@ export function VoteLabel(props: VoteLabelProps): JSX.Element {
   const votingStatus = {
     UNVOTED: <></>,
     FAVORABLE: (
-      <Label className="border border-green-500 bg-green-500/10 text-green-500">
+      <Badge className="border-green-500 bg-green-500/10 text-green-500">
         Favorable
-      </Label>
+      </Badge>
     ),
     AGAINST: (
-      <Label className="border border-red-500 bg-red-500/10 text-red-500">
+      <Badge className="border-red-500 bg-red-500/10 text-red-500">
         Against
-      </Label>
+      </Badge>
     ),
   };
 
