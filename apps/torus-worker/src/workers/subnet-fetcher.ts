@@ -1,7 +1,4 @@
-import {
-  queryLastBlock,
-  querySubnetParams,
-} from "@torus-ts/subspace/queries";
+import { queryLastBlock, querySubnetParams } from "@torus-ts/subspace/queries";
 
 import type { WorkerProps } from "../common";
 import { BLOCK_TIME, isNewBlock, log, sleep } from "../common";

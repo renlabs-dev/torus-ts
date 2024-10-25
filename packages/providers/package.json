@@ -11,9 +11,6 @@
     "./hooks": "./src/hooks/index.ts"
   },
   "dependencies": {
-    "@torus-ts/subspace": "workspace:*",
-    "@torus-ts/types": "workspace:*",
-    "@torus-ts/utils": "workspace:*",
     "@polkadot/api": "catalog:",
     "@polkadot/api-augment": "catalog:",
     "@polkadot/extension-dapp": "catalog:",
@@ -21,6 +18,9 @@
     "@polkadot/types": "catalog:",
     "@polkadot/util-crypto": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/types": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
     "multiformats": "catalog:",
     "next": "catalog:",
     "react": "catalog:react18",

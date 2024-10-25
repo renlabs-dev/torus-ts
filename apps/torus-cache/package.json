@@ -20,20 +20,20 @@
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
-    "@torus-ts/subspace": "workspace:*",
     "@polkadot/api": "catalog:",
     "@t3-oss/env-core": "^0.11.1",
+    "@torus-ts/subspace": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "json-bigint": "^1.0.0",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@polkadot/api-augment": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@torus-ts/types": "workspace:*",
-    "@polkadot/api-augment": "catalog:",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/json-bigint": "^1.0.4",

@@ -11,15 +11,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@heroicons/react": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
     "@torus-ts/providers": "workspace:*",
     "@torus-ts/types": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "@torus-ts/wallet": "workspace:*",
-    "@heroicons/react": "catalog:",
-    "@t3-oss/env-nextjs": "catalog:",
-    "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
@@ -33,10 +33,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tailwind-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@next/eslint-plugin-next": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",

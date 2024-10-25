@@ -21,11 +21,11 @@
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
+    "@polkadot/util": "catalog:",
+    "@polkadot/util-crypto": "catalog:",
     "@torus-ts/db": "workspace:*",
     "@torus-ts/types": "workspace:*",
     "@torus-ts/utils": "workspace:*",
-    "@polkadot/util": "catalog:",
-    "@polkadot/util-crypto": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "jsonwebtoken": "^9.0.2",

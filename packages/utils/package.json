@@ -7,8 +7,8 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@torus-ts/types": "workspace:*",
     "@polkadot/util": "catalog:",
+    "@torus-ts/types": "workspace:*",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "tsafe": "catalog:"

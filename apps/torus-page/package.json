@@ -11,13 +11,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@torus-ts/ui": "workspace:*",
     "@headlessui/react": "^2.0.4",
     "@heroicons/react": "catalog:",
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
     "@next/mdx": "^14.2.5",
     "@t3-oss/env-nextjs": "catalog:",
+    "@torus-ts/ui": "workspace:*",
     "@types/mdx": "^2.0.13",
     "@types/three": "^0.165.0",
     "gsap": "^3.12.5",
@@ -36,11 +36,11 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "catalog:",
+    "@tailwindcss/typography": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tailwind-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@next/eslint-plugin-next": "catalog:",
-    "@tailwindcss/typography": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",

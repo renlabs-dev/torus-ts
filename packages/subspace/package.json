@@ -9,12 +9,12 @@
     "./queries": "./queries/index.ts"
   },
   "dependencies": {
-    "@torus-ts/types": "workspace:*",
-    "@torus-ts/utils": "workspace:*",
     "@polkadot/api": "catalog:",
     "@polkadot/api-augment": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/util-crypto": "catalog:",
+    "@torus-ts/types": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "tsafe": "catalog:",
