@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("../../../../packages/ui/src/components/scrollbar-style.css");

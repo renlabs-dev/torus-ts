@@ -206,6 +206,109 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
+  apps/commune-forum:
+    dependencies:
+      '@commune-ts/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@commune-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@commune-ts/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
+      '@commune-ts/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@commune-ts/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@commune-ts/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@commune-ts/wallet':
+        specifier: workspace:*
+        version: link:../../packages/wallet
+      '@heroicons/react':
+        specifier: 'catalog:'
+        version: 2.1.5(react@18.3.1)
+      '@t3-oss/env-nextjs':
+        specifier: 'catalog:'
+        version: 0.10.1(typescript@5.6.3)(zod@3.23.8)
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.59.13(react@18.3.1)
+      '@trpc/client':
+        specifier: 'catalog:'
+        version: 11.0.0-rc.571(@trpc/server@11.0.0-rc.571)
+      '@trpc/react-query':
+        specifier: 'catalog:'
+        version: 11.0.0-rc.571(@tanstack/react-query@5.59.13(react@18.3.1))(@trpc/client@11.0.0-rc.571(@trpc/server@11.0.0-rc.571))(@trpc/server@11.0.0-rc.571)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@trpc/server':
+        specifier: 'catalog:'
+        version: 11.0.0-rc.571
+      '@uiw/react-markdown-preview':
+        specifier: ^5.1.1
+        version: 5.1.3(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      luxon:
+        specifier: ^3.5.0
+        version: 3.5.0
+      next:
+        specifier: 'catalog:'
+        version: 14.2.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: catalog:react18
+        version: 18.3.1
+      react-dom:
+        specifier: catalog:react18
+        version: 18.3.1(react@18.3.1)
+      rustie:
+        specifier: 'catalog:'
+        version: 0.2.0
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.7.5
+      zod:
+        specifier: 'catalog:'
+        version: 3.23.8
+    devDependencies:
+      '@commune-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@commune-ts/tailwind-config':
+        specifier: workspace:*
+        version: link:../../tooling/tailwind
+      '@commune-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@next/eslint-plugin-next':
+        specifier: 'catalog:'
+        version: 14.2.15
+      '@types/luxon':
+        specifier: ^3.4.2
+        version: 3.4.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.16.11
+      '@types/react':
+        specifier: catalog:react18
+        version: 18.3.11
+      '@types/react-dom':
+        specifier: catalog:react18
+        version: 18.3.1
+      jiti:
+        specifier: 'catalog:'
+        version: 1.21.6
+      postcss:
+        specifier: 'catalog:'
+        version: 8.4.47
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 3.4.13(ts-node@10.9.2(@types/node@20.16.11)(typescript@5.6.3))
+      typescript:
+        specifier: 'catalog:'
+        version: 5.6.3
+
   apps/commune-governance:
     dependencies:
       '@commune-ts/api':
@@ -3030,6 +3133,9 @@ packages:
   '@types/jsonwebtoken@9.0.7':
     resolution: {integrity: sha512-ugo316mmTYBl2g81zDFnZ7cfxlut3o+/EQdaP7J8QN2kY6lJ22hmQYCK5EHcJHbrW+dkCGSCPgbG8JtYj6qSrg==}
 
+  '@types/luxon@3.4.2':
+    resolution: {integrity: sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==}
+
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
 
@@ -4957,6 +5063,10 @@ packages:
 
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
+    engines: {node: '>=12'}
+
+  luxon@3.5.0:
+    resolution: {integrity: sha512-rh+Zjr6DNfUYR3bPwJEnuwDdqMbxZW7LOQfUN4B54+Cl+0o5zaU9RJ6bcidfDtC1cWCZXQ+nvX8bf6bAji37QQ==}
     engines: {node: '>=12'}
 
   make-error@1.3.6:
@@ -8373,11 +8483,11 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 20.16.11
+      '@types/node': 22.7.5
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.16.11
+      '@types/node': 22.7.5
 
   '@types/cors@2.8.17':
     dependencies:
@@ -8419,7 +8529,7 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 20.16.11
+      '@types/node': 22.7.5
       '@types/qs': 6.9.16
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -8461,6 +8571,8 @@ snapshots:
     dependencies:
       '@types/node': 22.7.5
 
+  '@types/luxon@3.4.2': {}
+
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -8501,12 +8613,12 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 20.16.11
+      '@types/node': 22.7.5
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 20.16.11
+      '@types/node': 22.7.5
       '@types/send': 0.17.4
 
   '@types/stats.js@0.17.3': {}
@@ -10753,6 +10865,8 @@ snapshots:
       yallist: 3.1.1
 
   lru-cache@7.18.3: {}
+
+  luxon@3.5.0: {}
 
   make-error@1.3.6: {}
 

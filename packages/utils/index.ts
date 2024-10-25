@@ -2,7 +2,6 @@ import { BN, stringToHex } from "@polkadot/util";
 import { CID } from "multiformats/cid";
 import { match } from "rustie";
 import { AssertionError } from "tsafe";
-
 import type {
   AnyTuple,
   Api,
@@ -360,10 +359,7 @@ export function getSubspaceStorageMappingKind(
   prop: SubspaceStorageName,
 ): StorageTypes | null {
   const vecProps: SubspaceStorageName[] = [
-    "emission",
-    "incentive",
-    "dividends",
-    "lastUpdate",
+    "emission", "incentive", "dividends", "lastUpdate",
   ];
   const netuidMapProps: SubspaceStorageName[] = [
     "metadata",
@@ -502,20 +498,20 @@ export class NetuidMapEntries implements ChainEntry {
     return moduleIdToPropValue;
   }
 }
-
 export class DoubleMapEntries implements ChainEntry {
-  constructor(private readonly entries: [StorageKey<AnyTuple>, Codec][]) {}
+  constructor(private readonly entries: [StorageKey<AnyTuple>, Codec][]) { }
   queryStorage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const moduleIdToPropValue: Record<any, Record<any, any>> = {};
 
-    this.entries.forEach((entry) => {
+    this.entries.forEach(entry => {
       const keyFrom = entry[0].args[0]?.toPrimitive() as string;
       const keyTo = entry[0].args[1]?.toPrimitive() as string;
       if (moduleIdToPropValue[keyFrom] === undefined) {
         moduleIdToPropValue[keyFrom] = {};
       }
       moduleIdToPropValue[keyFrom][keyTo] = entry[1].toPrimitive() as string;
+
     });
     return moduleIdToPropValue;
   }
@@ -677,3 +673,4 @@ export const signData = async <T>(
     address,
   };
 };
+

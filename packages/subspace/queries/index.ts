@@ -21,12 +21,12 @@ import type {
 } from "@commune-ts/utils";
 import {
   checkSS58,
+  STAKE_OUT_DATA_SCHEMA,
   GOVERNANCE_CONFIG_SCHEMA,
   isSS58,
+  STAKE_FROM_SCHEMA,
   MODULE_BURN_CONFIG_SCHEMA,
   NetworkSubnetConfigSchema,
-  STAKE_FROM_SCHEMA,
-  STAKE_OUT_DATA_SCHEMA,
   SUBSPACE_MODULE_SCHEMA,
 } from "@commune-ts/types";
 import {
@@ -35,6 +35,7 @@ import {
   handleProposals,
   standardizeUidToSS58address,
 } from "@commune-ts/utils";
+
 
 export { ApiPromise };
 

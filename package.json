@@ -2,6 +2,7 @@
   "name": "commune-ts",
   "private": true,
   "scripts": {
+    "api:build": "turbo -F @commune-ts/api build",
     "build": "turbo run build",
     "clean": "git clean -xdf node_modules",
     "clean:all": "find . -type d \\( -name 'node_modules' -o -name '.next' -o -name '.turbo' -o -name 'dist' -o -name '.cache' \\) -prune -exec rm -rf '{}' +",
@@ -12,6 +13,7 @@
     "dev:api": "turbo watch dev -F @commune-ts/api",
     "dev:cache": "turbo dev -F commune-cache",
     "dev:db": "turbo watch dev -F @commune-ts/db",
+    "dev:forum": "turbo watch dev -F commune-forum",
     "dev:governance": "turbo watch dev -F commune-governance",
     "dev:page": "turbo watch dev -F commune-page",
     "dev:roadmap": "turbo watch dev -F communex-roadmap",

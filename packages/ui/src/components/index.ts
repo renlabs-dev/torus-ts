@@ -136,6 +136,16 @@ export {
 } from "./table";
 export { Separator } from "./separator";
 export {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./pagination";
+
+export {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,

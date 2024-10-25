@@ -372,7 +372,6 @@ async function getUserSubnetWeightMap(): Promise<
       userSubnetDataSchema,
       eq(subnetDataSchema.netuid, userSubnetDataSchema.netuid),
     );
-
   const weightMap = new Map<string, Map<number, bigint>>();
   result.forEach((entry) => {
     if (!weightMap.has(entry.userKey)) {
