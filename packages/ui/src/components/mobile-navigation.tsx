@@ -19,22 +19,22 @@ export function MobileNavigation(props: MobileNavigationProps) {
     {
       href: links.discord,
       icon: "/discord-icon.svg",
-      alt: "Commune's Discord Link",
+      alt: "torus's Discord Link",
     },
     {
       href: links.github,
       icon: "/github-icon.svg",
-      alt: "Commune's GitHub Link",
+      alt: "torus's GitHub Link",
     },
     {
       href: links.telegram,
       icon: "/telegram-icon.svg",
-      alt: "Commune's Telegram Link",
+      alt: "torus's Telegram Link",
     },
     {
       href: links.x,
       icon: "/x-icon.svg",
-      alt: "Commune's X Link",
+      alt: "torus's X Link",
     },
   ];
 

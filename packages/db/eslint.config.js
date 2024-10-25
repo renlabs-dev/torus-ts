@@ -1,4 +1,4 @@
-import baseConfig, { restrictEnvAccess } from "@commune-ts/eslint-config/base";
+import baseConfig, { restrictEnvAccess } from "@torus-ts/eslint-config/base";
 
 /** @type {import('typescript-eslint').Config} */
 export default [

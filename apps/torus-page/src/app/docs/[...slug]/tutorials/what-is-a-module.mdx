@@ -1,0 +1,19 @@
+# What Is a Module
+
+Module is the most general term for an active entity in the torus protocol.
+
+A Module is a registered key on a subnet able to receive weights and emissions by other registered keys. In the most general sense a Module is a onchain identifier residing in a global namespace wrapped around a offchain object, which can be anything that is computable behind an endpoint, from AI models, datasets, storage, scrapers to raw compute. Anything that can be turned into an API. This separates all computation from the chain and allows Modules to be arbitrarily complex and computationally expensive systems.
+
+Modules can act purely as a onchain identifier without a functional endpoint, representing something like a developer, collective funding initiative or project getting supported by the protocol.
+
+Modules can be both validators or miners. Modules with Stake setting weights on other Modules (miners) are Validators.
+
+The Module terminology is primarily useful in the context of the general subnet 0. On yuma subnets, it is more useful to just directly call the modules miners or validators.
+
+### Miner Implementation
+
+To learn about miner implementation read [Create a Miner](/docs/mining/create-miner).
+
+### Validator Implementation
+
+To learn about validator implementation read [Create a Validator](/docs/validating/create-validator).

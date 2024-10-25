@@ -1,1 +1,1 @@
-export * from "@commune-ts/types";
+export * from "@torus-ts/types";

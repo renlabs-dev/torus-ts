@@ -1,7 +1,7 @@
 import * as jwt from "jsonwebtoken";
 import { z } from "zod";
 
-import { ADDRESS_SCHEMA } from "@commune-ts/types";
+import { ADDRESS_SCHEMA } from "@torus-ts/types";
 
 export const SESSION_DATA_SCHEMA = z.object({
   userKey: ADDRESS_SCHEMA,
@@ -13,7 +13,7 @@ export type SessionData = z.infer<typeof SESSION_DATA_SCHEMA>;
 const JWT_OPTIONS: jwt.SignOptions = {
   algorithm: "HS256",
   expiresIn: "6h",
-  // issuer: "commune-ts",
+  // issuer: "torus-ts",
 };
 
 export const createSessionToken = (

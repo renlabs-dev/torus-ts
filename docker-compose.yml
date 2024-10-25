@@ -8,7 +8,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=commune-ts-db
+      - POSTGRES_DB=torus-ts-db
   admin:
     image: adminer
     restart: always
@@ -16,12 +16,12 @@ services:
       - postgres
     ports:
       - 8080:8080
-  commune-cache:
+  torus-cache:
     build:
       context: .
       dockerfile: tooling/dockerfile/backend-service.Dockerfile
       args:
-        - PROJECT=commune-cache
+        - PROJECT=torus-cache
         - PORT=3010
     environment:
       - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
@@ -29,18 +29,18 @@ services:
     command: npm start
     ports:
       - 3010:3010
-  commune-worker:
+  torus-worker:
     depends_on:
       - postgres
     build:
       context: .
       dockerfile: tooling/dockerfile/backend-service.Dockerfile
       args:
-        - PROJECT=commune-worker
+        - PROJECT=torus-worker
         - PORT=3020
     environment:
       - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
-      - POSTGRES_URL=postgres://postgres:password@postgres:5432/commune-ts-db
+      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
       - PORT=3020
     ports:
       - 3020:3020

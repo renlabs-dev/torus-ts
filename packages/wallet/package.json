@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/wallet",
+  "name": "@torus-ts/wallet",
   "version": "0.0.0",
   "license": "MIT",
   "sideEffects": [
@@ -17,15 +17,15 @@
     "tailwind:watch": "tailwindcss -i ./src/style.css -o ./src/output.css --watch",
     "typecheck": "tsc --noEmit"
   },
-  "prettier": "@commune-ts/prettier-config",
+  "prettier": "@torus-ts/prettier-config",
   "dependencies": {
-    "@commune-ts/types": "workspace:*",
-    "@commune-ts/utils": "workspace:*"
+    "@torus-ts/types": "workspace:*",
+    "@torus-ts/utils": "workspace:*"
   },
   "devDependencies": {
-    "@commune-ts/eslint-config": "workspace:*",
-    "@commune-ts/tailwind-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tailwind-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
     "@types/react": "catalog:react18",
     "eslint": "catalog:",
     "postcss": "catalog:",
@@ -35,8 +35,8 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@commune-ts/providers": "workspace:*",
-    "@commune-ts/ui": "workspace:*",
+    "@torus-ts/providers": "workspace:*",
+    "@torus-ts/ui": "workspace:*",
     "next": "catalog:",
     "react": "catalog:react18"
   }

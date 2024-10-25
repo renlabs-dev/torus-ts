@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { assert } from "tsafe";
 import { ZodError } from "zod";
 
-import { db } from "@commune-ts/db/client";
+import { db } from "@torus-ts/db/client";
 
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";

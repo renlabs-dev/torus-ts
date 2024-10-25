@@ -1,5 +1,5 @@
 {
-  "extends": "@commune-ts/tsconfig/base.json",
+  "extends": "@torus-ts/tsconfig/base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
   },

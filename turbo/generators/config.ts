@@ -10,13 +10,13 @@ interface PackageJson {
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
   plop.setGenerator("init", {
-    description: "Generate a new package for the commune-ts monorepo",
+    description: "Generate a new package for the torus-ts monorepo",
     prompts: [
       {
         type: "input",
         name: "name",
         message:
-          "What is the name of the package? (You can skip the `@commune-ts/` prefix)",
+          "What is the name of the package? (You can skip the `@torus-ts/` prefix)",
       },
       {
         type: "input",
@@ -28,8 +28,8 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
     actions: [
       (answers) => {
         if ("name" in answers && typeof answers.name === "string") {
-          if (answers.name.startsWith("@commune-ts/")) {
-            answers.name = answers.name.replace("@commune-ts/", "");
+          if (answers.name.startsWith("@torus-ts/")) {
+            answers.name = answers.name.replace("@torus-ts/", "");
           }
         }
         return "Config sanitized";

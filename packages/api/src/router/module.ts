@@ -1,17 +1,17 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq, sql } from "@commune-ts/db";
+import { and, eq, sql } from "@torus-ts/db";
 import {
   computedModuleWeightsSchema,
   moduleData,
   moduleReport,
   userModuleData,
-} from "@commune-ts/db/schema";
+} from "@torus-ts/db/schema";
 import {
   MODULE_REPORT_INSERT_SCHEMA,
   USER_MODULE_DATA_INSERT_SCHEMA,
-} from "@commune-ts/db/validation";
+} from "@torus-ts/db/validation";
 
 import { authenticatedProcedure, publicProcedure } from "../trpc";
 

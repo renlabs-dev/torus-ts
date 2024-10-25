@@ -1,5 +1,5 @@
 {
-  "extends": "@commune-ts/tsconfig/internal-package.json",
+  "extends": "@torus-ts/tsconfig/internal-package.json",
   "compilerOptions": {
     "lib": ["ES2022", "dom", "dom.iterable"],
     "jsx": "preserve",

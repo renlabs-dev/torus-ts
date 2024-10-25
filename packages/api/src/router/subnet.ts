@@ -1,13 +1,13 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq, sql } from "@commune-ts/db";
+import { and, eq, sql } from "@torus-ts/db";
 import {
   computedSubnetWeights,
   subnetDataSchema,
   userSubnetDataSchema,
-} from "@commune-ts/db/schema";
-import { USER_SUBNET_DATA_INSERT_SCHEMA } from "@commune-ts/db/validation";
+} from "@torus-ts/db/schema";
+import { USER_SUBNET_DATA_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 import { authenticatedProcedure, publicProcedure } from "../trpc";
 

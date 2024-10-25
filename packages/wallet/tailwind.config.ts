@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-import baseConfig from "@commune-ts/tailwind-config/web";
+import baseConfig from "@torus-ts/tailwind-config/web";
 
 const config: Config = {
   content: ["./src/**/*.tsx"],

@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/prettier-config",
+  "name": "@torus-ts/prettier-config",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,14 +11,14 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "typecheck": "tsc --noEmit"
   },
-  "prettier": "@commune-ts/prettier-config",
+  "prettier": "@torus-ts/prettier-config",
   "dependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
     "prettier": "catalog:",
     "prettier-plugin-tailwindcss": "^0.6.6"
   },
   "devDependencies": {
-    "@commune-ts/tsconfig": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

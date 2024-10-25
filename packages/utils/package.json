@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/utils",
+  "name": "@torus-ts/utils",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,16 +7,16 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@commune-ts/types": "workspace:*",
+    "@torus-ts/types": "workspace:*",
     "@polkadot/util": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "tsafe": "catalog:"
   },
   "devDependencies": {
-    "@commune-ts/eslint-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*",
-    "@commune-ts/types": "workspace:*"
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/types": "workspace:*"
   },
   "compilerOptions": {
     "module": "ESNext",

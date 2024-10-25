@@ -1,0 +1,49 @@
+{
+  "name": "torus-cache",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules",
+    "dev": "pnpm with-env tsx ./src/index.ts",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "start": "node ./dist/index.js",
+    "start:local": "pnpm with-env pnpm start",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "prettier": "@torus-ts/prettier-config",
+  "dependencies": {
+    "@torus-ts/subspace": "workspace:*",
+    "@polkadot/api": "catalog:",
+    "@t3-oss/env-core": "^0.11.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "json-bigint": "^1.0.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/prettier-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/types": "workspace:*",
+    "@polkadot/api-augment": "catalog:",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/json-bigint": "^1.0.4",
+    "@types/node": "catalog:",
+    "dotenv-cli": "catalog:",
+    "eslint": "catalog:",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.1.4",
+    "prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/eslint-config",
+  "name": "@torus-ts/eslint-config",
   "version": "0.3.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "typecheck": "tsc --noEmit"
   },
-  "prettier": "@commune-ts/prettier-config",
+  "prettier": "@torus-ts/prettier-config",
   "dependencies": {
     "@eslint/compat": "^1.1.1",
     "@next/eslint-plugin-next": "^14.2.5",
@@ -25,8 +25,8 @@
     "typescript-eslint": "^8.3.0"
   },
   "devDependencies": {
-    "@commune-ts/prettier-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*",
+    "@torus-ts/prettier-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

@@ -1,20 +1,20 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq, isNull } from "@commune-ts/db";
+import { and, eq, isNull } from "@torus-ts/db";
 
-import "@commune-ts/db/schema";
+import "@torus-ts/db/schema";
 
 import {
   cadreCandidatesSchema,
   cadreVoteSchema,
   daoVoteSchema,
-} from "@commune-ts/db/schema";
+} from "@torus-ts/db/schema";
 import {
   CADRE_CANDIDATES_INSERT_SCHEMA,
   CADRE_VOTE_INSERT_SCHEMA,
   DAO_VOTE_INSERT_SCHEMA,
-} from "@commune-ts/db/validation";
+} from "@torus-ts/db/validation";
 
 import { authenticatedProcedure, publicProcedure } from "../trpc";
 

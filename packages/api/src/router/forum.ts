@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, asc, desc, eq, sql } from "@commune-ts/db";
+import { and, asc, desc, eq, sql } from "@torus-ts/db";
 import {
   forumCategoriesSchema,
   forumCommentSchema,
@@ -9,7 +9,7 @@ import {
   forumPostSchema,
   forumPostViewCountSchema,
   forumPostVotesSchema,
-} from "@commune-ts/db/schema";
+} from "@torus-ts/db/schema";
 
 import { authenticatedProcedure, publicProcedure } from "../trpc";
 

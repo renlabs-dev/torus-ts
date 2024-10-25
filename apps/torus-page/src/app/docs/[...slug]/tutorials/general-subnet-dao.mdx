@@ -1,0 +1,28 @@
+# Subnet 0 Module Curation DAO
+
+The general subnet (netuid 0) has no consensus to protect against dishonest actors and hence needs an alternative solution. The Module Curation DAO is perpetually curating a onchain whitelist of module key addresses that have a clear value proposition to torus based on their collective 2/3 majority-based evaluation. The whitelist acts as a condition to be registered on subnet 0.
+
+New modules have to submit an application to the DAO, which will be reviewed, discussed and voted on by its members. Members can start votes to remove existing modules from the whitelist.
+
+note: since the whitelist stores the ss58 addresses, modules will not have to reapply to the DAO after getting deregistered
+
+Capacities of the S2 DAO:
+
+- approve modules to join the whitelist
+- remove modules from the whitelist
+- add DAO members
+- remove DAO members
+
+The DAO starts at initially 12 members and is capped at 21 members.
+
+# DAO Interface
+
+For high daily participation rate the DAO is native to discord, ran through a discord bot with a dedicated channel on the official torus AI discord. Applicants and members run bot commands, which can be done easily from the phone. The discord bot is a centrally managed multisignature address.
+
+# DAO Decentralization
+
+This compromise in decentralization for UX is mitigated by storing the public address of the multisignature key as a global chain parameter. This means if the entity running the bot becomes unavailable, corrupted or is otherwise unable to continue running the bot, the decentralized onchain governance process can vote to change the global parameter to a new multisignature address. This effectively allows the community to replace the bot with a new instance on the fly, as the bot is fully open source and can be operated by anyone.
+
+# DAO Participation Reward
+
+All Module Curation DAO activity is tracked and tied to the members. This allows to retrospectively or actively distribute rewards to members for participation. At launch, there will be no reward, but it can be expected that after the implementation of the DAO treasury rewards are distributed retrospectively to members.

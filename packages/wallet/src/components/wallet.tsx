@@ -9,15 +9,15 @@ import { useRouter } from "next/navigation";
 import type {
   InjectedAccountWithMeta,
   TransactionResult,
-} from "@commune-ts/types";
-import { useCommune } from "@commune-ts/providers/use-commune";
-import { isSS58 } from "@commune-ts/types";
+} from "@torus-ts/types";
+import { useTorus } from "@torus-ts/providers/use-torus";
+import { isSS58 } from "@torus-ts/types";
 import {
   CopyButton,
   NoWalletExtensionDisplay,
   TransactionStatus,
-} from "@commune-ts/ui";
-import { formatToken, fromNano, smallAddress } from "@commune-ts/utils";
+} from "@torus-ts/ui";
+import { formatToken, fromNano, smallAddress } from "@torus-ts/utils";
 
 import { WalletButton } from "./";
 
@@ -39,7 +39,7 @@ export function Wallet() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     handleWalletModal,
     openWalletModal,
-  } = useCommune();
+  } = useTorus();
 
   const [activeMenu, setActiveMenu] = useState<MenuType>(null);
   const [validator, setValidator] = useState<string>("");

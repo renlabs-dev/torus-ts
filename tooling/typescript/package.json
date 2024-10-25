@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/tsconfig",
+  "name": "@torus-ts/tsconfig",
   "version": "0.1.0",
   "private": true,
   "files": [

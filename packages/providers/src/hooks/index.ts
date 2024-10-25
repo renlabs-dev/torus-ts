@@ -20,7 +20,7 @@ import {
   queryStakeOut,
   queryUnrewardedProposals,
   queryUserTotalStaked,
-} from "@commune-ts/subspace/queries";
+} from "@torus-ts/subspace/queries";
 
 import type { Api, LastBlock, Nullish, SS58Address } from "../types";
 import {
@@ -121,21 +121,21 @@ export function useRewardAllocation(api: Api | Nullish) {
 
 // == subspaceModule ==
 
-export function useAllStakeOut(communeCacheUrl: string) {
+export function useAllStakeOut(torusCacheUrl: string) {
   return useQuery({
     queryKey: ["stake_out"],
-    enabled: communeCacheUrl != null,
-    queryFn: () => queryStakeOut(communeCacheUrl),
+    enabled: torusCacheUrl != null,
+    queryFn: () => queryStakeOut(torusCacheUrl),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
 
-export function useStakeFrom(communeCacheUrl: string) {
+export function useStakeFrom(torusCacheUrl: string) {
   return useQuery({
     queryKey: ["stake_from"],
-    enabled: communeCacheUrl != null,
-    queryFn: () => queryStakeFrom(communeCacheUrl),
+    enabled: torusCacheUrl != null,
+    queryFn: () => queryStakeFrom(torusCacheUrl),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -143,7 +143,7 @@ export function useStakeFrom(communeCacheUrl: string) {
 
 export function useProcessVotesAndStakes(
   api: Api | Nullish,
-  communeCacheUrl: string,
+  torusCacheUrl: string,
   votesFor: SS58Address[],
   votesAgainst: SS58Address[],
 ) {
@@ -151,7 +151,7 @@ export function useProcessVotesAndStakes(
     queryKey: ["process_votes_and_stakes"],
     enabled: api != null,
     queryFn: () =>
-      processVotesAndStakes(api!, communeCacheUrl, votesFor, votesAgainst),
+      processVotesAndStakes(api!, torusCacheUrl, votesFor, votesAgainst),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

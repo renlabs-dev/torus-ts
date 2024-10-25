@@ -24,7 +24,7 @@ export function Footer({ shouldBeFixed = false, className = "" }): JSX.Element {
           </div>
 
           <p className="flex justify-end text-sm text-gray-400 md:w-4/12">
-            &copy; 2024 Commune, Inc.
+            &copy; 2024 torus, Inc.
           </p>
         </div>
       </div>

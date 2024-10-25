@@ -13,12 +13,12 @@ import type {
   StakeOutData,
   SubspaceModule,
   VoteWithStake,
-} from "@commune-ts/types";
+} from "@torus-ts/types";
 import type {
   ChainEntry,
   SubspacePalletName,
   SubspaceStorageName,
-} from "@commune-ts/utils";
+} from "@torus-ts/utils";
 import {
   checkSS58,
   STAKE_OUT_DATA_SCHEMA,
@@ -28,13 +28,13 @@ import {
   MODULE_BURN_CONFIG_SCHEMA,
   NetworkSubnetConfigSchema,
   SUBSPACE_MODULE_SCHEMA,
-} from "@commune-ts/types";
+} from "@torus-ts/types";
 import {
   getPropsToMap,
   handleDaos,
   handleProposals,
   standardizeUidToSS58address,
-} from "@commune-ts/utils";
+} from "@torus-ts/utils";
 
 
 export { ApiPromise };
@@ -320,9 +320,9 @@ export async function queryNotDelegatingVotingPower(api: Api) {
 // == subspaceModule ==
 
 export async function queryStakeOut(
-  communeCacheUrl: string,
+  torusCacheUrl: string,
 ): Promise<StakeOutData> {
-  const response = await fetch(`${communeCacheUrl}/api/stake-out`, {
+  const response = await fetch(`${torusCacheUrl}/api/stake-out`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -337,9 +337,9 @@ export async function queryStakeOut(
 
 //TODO: solve the duplication
 export async function queryStakeOutCORRECT(
-  communeCacheUrl: string,
+  torusCacheUrl: string,
 ): Promise<StakeOutData> {
-  const response = await fetch(`${communeCacheUrl}/api/stake-out`, {
+  const response = await fetch(`${torusCacheUrl}/api/stake-out`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -380,9 +380,9 @@ export async function queryCalculateStakeOut(api: Api) {
 }
 
 export async function queryStakeFrom(
-  communeCacheUrl: string,
+  torusCacheUrl: string,
 ): Promise<StakeOutData> {
-  const response = await fetch(`${communeCacheUrl}/api/stake-from`, {
+  const response = await fetch(`${torusCacheUrl}/api/stake-from`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -427,15 +427,15 @@ export async function queryCalculateStakeFrom(api: Api) {
 
 export async function processVotesAndStakes(
   api: Api,
-  communeCacheUrl: string,
+  torusCacheUrl: string,
   votesFor: SS58Address[],
   votesAgainst: SS58Address[],
 ): Promise<VoteWithStake[]> {
   // Get addresses not delegating voting power and get stake information
   const [notDelegatingAddresses, stakeFrom, stakeOut] = await Promise.all([
     queryNotDelegatingVotingPower(api),
-    queryStakeFrom(communeCacheUrl),
-    queryStakeOut(communeCacheUrl),
+    queryStakeFrom(torusCacheUrl),
+    queryStakeOut(torusCacheUrl),
   ]);
 
   const notDelegatingSet = new Set(notDelegatingAddresses);

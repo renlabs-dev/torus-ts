@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/ui",
+  "name": "@torus-ts/ui",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -24,7 +24,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
-  "prettier": "@commune-ts/prettier-config",
+  "prettier": "@torus-ts/prettier-config",
   "dependencies": {
     "@heroicons/react": "catalog:",
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -49,10 +49,10 @@
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
-    "@commune-ts/eslint-config": "workspace:*",
-    "@commune-ts/prettier-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*",
-    "@commune-ts/types": "workspace:*",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/prettier-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/types": "workspace:*",
     "@types/react": "catalog:react18",
     "eslint": "catalog:",
     "prettier": "catalog:",

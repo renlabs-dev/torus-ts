@@ -10,7 +10,7 @@
     "cssVariables": true
   },
   "aliases": {
-    "utils": "@commune-ts/ui",
+    "utils": "@torus-ts/ui",
     "components": "src/components/",
     "ui": "src/components/"
   }

@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import * as schema from "@commune-ts/db/schema";
+import * as schema from "@torus-ts/db/schema";
 
 /**
  * Cache the database connection in development. This avoids creating a new connection on every HMR

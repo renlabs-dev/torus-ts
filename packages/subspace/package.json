@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/subspace",
+  "name": "@torus-ts/subspace",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,8 +9,8 @@
     "./queries": "./queries/index.ts"
   },
   "dependencies": {
-    "@commune-ts/types": "workspace:*",
-    "@commune-ts/utils": "workspace:*",
+    "@torus-ts/types": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
     "@polkadot/api": "catalog:",
     "@polkadot/api-augment": "catalog:",
     "@polkadot/types": "catalog:",
@@ -21,8 +21,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@commune-ts/eslint-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
     "tsx": "catalog:"
   },
   "compilerOptions": {

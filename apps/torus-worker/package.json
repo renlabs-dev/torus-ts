@@ -1,0 +1,46 @@
+{
+  "name": "torus-worker",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules",
+    "dev": "pnpm with-env tsx ./src/index.ts",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "start": "node ./dist/index.js",
+    "start:local": "pnpm with-env pnpm start",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/types": "workspace:*",
+    "@polkadot/api": "catalog:",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@torus-ts/db": "workspace:*",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/prettier-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
+    "@polkadot/api": "^11.1.1",
+    "@polkadot/api-augment": "catalog:",
+    "@types/express": "^4.17.21",
+    "@types/node": "catalog:",
+    "axios": "^1.7.7",
+    "dotenv-cli": "catalog:",
+    "eslint": "catalog:",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.4",
+    "prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -23,7 +23,7 @@ export const createTable = pgTableCreator((name) => `${name}`);
 export const ss58Address = (name: string) => varchar(name, { length: 256 });
 
 /**
- * Modules registered on the Commune chain.
+ * Modules registered on the torus chain.
  *
  * lastSeenBlock = max(atBlock)
  * atBlock == lastSeenBlock         --> registered
@@ -102,7 +102,7 @@ export const userModuleData = createTable(
 );
 
 /**
- * Subnets registered on the commune chain.
+ * Subnets registered on the torus chain.
  */
 export const subnetDataSchema = createTable("subnet_data", {
   id: serial("id").primaryKey(),

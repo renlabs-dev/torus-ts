@@ -1,7 +1,7 @@
 // tailwind config is required for editor support
 
 import type { Config } from "tailwindcss";
-import sharedConfig from "@commune-ts/tailwind-config";
+import sharedConfig from "@torus-ts/tailwind-config";
 
 const config: Pick<Config, "content" | "presets"> = {
   content: ["./src/**/*.{tsx,ts,jsx,js}"],

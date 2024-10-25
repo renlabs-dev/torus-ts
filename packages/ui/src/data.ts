@@ -1,20 +1,20 @@
 export const links = {
   about: "/about",
 
-  docs: "https://communeai.org/docs/getting-started/intro",
+  docs: "https://torusai.org/docs/getting-started/intro",
   cadre: "/cadre",
 
   blog: "https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5",
   discord: "https://discord.com/invite/A8JGkZ9Dmm",
-  github: "https://github.com/commune-ai",
-  telegram: "https://t.me/communecommunity",
-  x: "https://twitter.com/communeaidotorg",
+  github: "https://github.com/torus-ai",
+  telegram: "https://t.me/toruscommunity",
+  x: "https://twitter.com/torusaidotorg",
 
-  explorer: "https://stats.communex.ai/",
-  governance: "https://governance.communeai.org/",
-  validator: "https://validator.communeai.org/",
-  landing_page: "https://communeai.org/",
-  wallet: "https://wallet.communeai.org/",
+  explorer: "https://stats.torusx.ai/",
+  governance: "https://governance.torusai.org/",
+  validator: "https://validator.torusai.org/",
+  landing_page: "https://torusai.org/",
+  wallet: "https://wallet.torusai.org/",
 };
 
 export const landingPageButtons = [

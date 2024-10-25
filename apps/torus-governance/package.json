@@ -1,0 +1,48 @@
+{
+  "name": "torus-governance",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3001",
+    "lint": "eslint",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@torus-ts/api": "workspace:*",
+    "@torus-ts/providers": "workspace:*",
+    "@torus-ts/types": "workspace:*",
+    "@torus-ts/ui": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
+    "@torus-ts/wallet": "workspace:*",
+    "@heroicons/react": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@trpc/client": "catalog:",
+    "@trpc/react-query": "catalog:",
+    "@trpc/server": "catalog:",
+    "@uiw/react-markdown-preview": "^5.1.1",
+    "next": "catalog:",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18",
+    "rustie": "catalog:",
+    "superjson": "2.2.1",
+    "tsafe": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tailwind-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@next/eslint-plugin-next": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react18",
+    "@types/react-dom": "catalog:react18",
+    "jiti": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}

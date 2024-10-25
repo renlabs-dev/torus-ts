@@ -4,8 +4,8 @@ import "../output.css";
 
 import Image from "next/image";
 
-import { useCommune } from "@commune-ts/providers/use-commune";
-import { smallAddress } from "@commune-ts/utils";
+import { useTorus } from "@torus-ts/providers/use-torus";
+import { smallAddress } from "@torus-ts/utils";
 
 interface TWalletButtonProps {
   customHandler?: () => void;
@@ -21,7 +21,7 @@ export function WalletButton(props: TWalletButtonProps) {
     accounts,
     isInitialized,
     handleConnect,
-  } = useCommune();
+  } = useTorus();
 
   if (!isInitialized) {
     return (

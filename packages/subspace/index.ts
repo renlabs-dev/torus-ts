@@ -11,7 +11,7 @@ console.log("Hello from Subspace!");
 // == Start API ==
 
 const wsProvider = new WsProvider(
-  "wss://testnet-commune-api-node-1.communeai.net",
+  "wss://testnet-torus-api-node-1.torusai.net",
 );
 const api = await ApiPromise.create({ provider: wsProvider });
 

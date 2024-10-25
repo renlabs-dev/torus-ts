@@ -6,7 +6,7 @@
   "packageRules": [
     {
       "matchPackagePatterns": [
-        "^@commune-ts/"
+        "^@torus-ts/"
       ],
       "enabled": false
     }

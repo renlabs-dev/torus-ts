@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/db",
+  "name": "@torus-ts/db",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -34,7 +34,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "dotenv -e ../../.env --"
   },
-  "prettier": "@commune-ts/prettier-config",
+  "prettier": "@torus-ts/prettier-config",
   "dependencies": {
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
@@ -42,9 +42,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@commune-ts/eslint-config": "workspace:*",
-    "@commune-ts/prettier-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/prettier-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "dotenv-cli": "catalog:",
     "drizzle-kit": "^0.24.2",

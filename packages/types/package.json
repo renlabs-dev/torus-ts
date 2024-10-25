@@ -1,5 +1,5 @@
 {
-  "name": "@commune-ts/types",
+  "name": "@torus-ts/types",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,8 +16,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@commune-ts/eslint-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*"
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*"
   },
   "compilerOptions": {
     "module": "ESNext",

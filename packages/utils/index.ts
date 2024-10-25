@@ -19,13 +19,13 @@ import type {
   SS58Address,
   StorageKey,
   ZodSchema,
-} from "@commune-ts/types";
+} from "@torus-ts/types";
 import {
   CUSTOM_METADATA_SCHEMA,
   DAO_APPLICATIONS_SCHEMA,
   PROPOSAL_SCHEMA,
   URL_SCHEMA,
-} from "@commune-ts/types";
+} from "@torus-ts/types";
 
 /**
  * == Subspace refresh times ==

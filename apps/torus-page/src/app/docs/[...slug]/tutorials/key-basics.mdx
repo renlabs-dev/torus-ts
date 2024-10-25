@@ -1,0 +1,69 @@
+# Key Basics
+
+## Introduction
+
+Managing keys is a fundamental aspect of using the **torusX** CLI. This section provides a comprehensive guide on how to create, retrieve, and manage keys within the system. Whether you're looking to generate a new key, view details of existing keys, or list all keys along with their balances, the following commands will facilitate these operations efficiently.
+
+## Creating a Key
+
+To create a new key, use the following command:
+
+```sh
+comx key create key_name
+```
+
+This command generates a new key with the specified name and stores it securely on disk.
+
+## Import Wallet From pre-existing Mnemonic
+
+To import a key from pre-existing mnemonic, use the following command:
+
+```bash
+comx key regen <my-wallet-name> <mnemonic>
+```
+
+## Retrieving Key Information
+
+You can retrieve detailed information about a specific key by using:
+
+```sh
+comx key show key_name
+
+For sensitive information, such as the private key, add the `--show-private` flag:
+
+# Add the `--show-private` flag to show sensitive fields like private key.
+comx key show key_name --show-private
+```
+
+This command displays both public and private key details, ensuring you have access to all necessary information securely.
+
+## Listing Keys
+
+To list all keys stored on your system, execute:
+
+```sh
+# Lists the names and addresses of keys stored on disk.
+comx key list
+```
+
+This command provides a quick overview of the names and addresses of all keys saved on disk, allowing for easy management and access.
+
+## Listing Keys with Balances
+
+For a detailed view of the keys along with their respective balances, use:
+
+```bash
+# Lists keys stored on disk with their balance (free, staked and total).
+comx key balances
+```
+
+This lists all keys along with their free, staked, and total balances, offering a comprehensive snapshot of your key's financial status.
+You can also sort the balance by **all, free, staked** (default all summed balances).
+
+For example
+
+```bash
+comx key balances --sort-balance free
+```
+
+Will return the keys sorted by their free balance

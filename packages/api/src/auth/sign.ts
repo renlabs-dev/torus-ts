@@ -3,8 +3,8 @@
 import { hexToString, stringToHex } from "@polkadot/util";
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto";
 
-import type { SignedPayload } from "@commune-ts/types";
-import { AUTH_REQ_SCHEMA, checkSS58 } from "@commune-ts/types";
+import type { SignedPayload } from "@torus-ts/types";
+import { AUTH_REQ_SCHEMA, checkSS58 } from "@torus-ts/types";
 
 export const signData = async <T>(
   signer: (

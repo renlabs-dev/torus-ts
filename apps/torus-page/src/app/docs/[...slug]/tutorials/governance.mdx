@@ -1,0 +1,123 @@
+# Governance
+
+torus AI governance is based on the principles of decentralization, transparency, and community-driven decision-making. It is designed to ensure that the torus protocol remains secure, efficient, and adaptive to the evolving landscape of the world. Ideas of anyone can rise from the bottom up towards implementation.
+
+### Key Components of torus Governance
+
+#### 1. **Decentralized Governance Model**
+
+torus's governance model is decentralized, meaning that decisions are made by a distributed network of stakeholders rather than a centralized authority. This approach ensures that no single entity has full control over the protocol's direction or operation. Only ideas the majority finds reasonable can be actualized.
+
+#### 2. DAO Proposals
+
+Community members can submit proposals for changes to the torus protocol, such as protocol upgrades, parameter adjustments, or funding requests. These proposals are subject to a voting process, where stakeholders can approve or reject them based on their merits.
+
+You can view and vote on proposals on the [Community Proposals](https://governance.torusai.org/) website.
+
+#### 3. **Voting Mechanism**
+
+torus's voting mechanism allows stakeholders to cast votes on community proposals, with each stakeholder's voting power proportional to their stake. This system ensures that decisions are made by those who have a vested interest in the protocol's success and an increased likelihood of understanding.
+
+### How to Participate in Community Proposals
+
+#### 1. **Acquire Tokens**
+
+To participate in a proposal, you need to acquire tokens through mining, purchasing, or earning them through other protocol activities. These tokens represent your voting power and influence within the governance system.
+
+#### 2. **Review Community Proposals**
+
+Visit the [Community Proposals](https://governance.torusai.org/) website to view the latest proposals submitted by community members. Each proposal contains details about the proposed change, its rationale, and the potential impact on the network.
+
+#### 3. **Cast Your Vote**
+
+When a governance proposal is open for voting, use your governance tokens to cast your vote in favor of or against the proposal. Consider the potential impact of the proposal on the protocol and community, and vote accordingly to support the best interests of the collective.
+
+#### 4. **Monitor Voting Results**
+
+After the voting period ends, monitor the results to see whether the proposal was approved or rejected by the community. This outcome will determine if the proposal is executed or discarded.
+
+### Participate Through CLI
+
+torusX CLI fully supports all governance processes, thy are located under the **network** and **subnet** subcommand.
+
+#### 1. Listing Proposals
+
+```bash
+comx network list-proposals
+```
+
+#### 2. Voting on Proposal
+
+```bash
+comx network vote-proposal <proposal-id> [--key] [--disagree]
+```
+
+If you don't specify a key you want to vote with, all keys on your disk will be used.
+
+#### 3. Making a Proposal
+
+**Note** that this will burn an amount specified as a global parameter under the **proposal_cost** filed. If your **proposal passes**, the amount will be **fully returned** back to the same wallet, that submitted the proposal.
+
+1. Changing Global Parameters
+
+```bash
+comx network propose-globally <key-name>
+[--max-allowed-modules]
+[--max-registrations-per-block]
+[--target-registrations-interval]
+[--target-registrations-per-interval]
+[--unit-emission]
+[--max-name-length]
+[--burn-rate]
+[--min-burn]
+[--max-burn]
+[--min-stake]
+[--min-weight-stake]
+[--max-allowed-subnets]
+[--adjustment-alpha]
+[--floor-delegation-fee]
+[--max-allowed-weights]
+[--nominator]
+[--proposal-cost]
+[--proposal-expiration]
+[--proposal-participation-threshold]
+```
+
+The call to the blockchain then gets processed as follows.
+
+2. Custom Proposal
+
+First go to the [Governance Page](https://governance.torusai.org/), click **New Proposal** and follow the steps to create the contents of your proposal. Copy the format and host it with an IPFS provider of your choice. For a full guidance follow [this article](https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q).
+After retrieving the IPFS cid
+
+```bash
+comx network add-custom-proposal <key-name> <cid>
+```
+
+3. Changing Subnet Parameters
+
+```bash
+comx subnet propose-on-subnet <netuid> <key-name>
+[--name]
+[--founder]
+[--founder-share]
+[--immunity-period]
+[--incentive-ratio]
+[--max-allowed-uids]
+[--max-allowed-weights]
+[--min-allowed-weights]
+[--max-stake]
+[--min-stake]
+[--tempo]
+[--trust-ratio]
+[--vote-mode]
+[--max-weight-age]
+```
+
+4. Custom Subnet Proposal
+
+First upload the contents of the proposal to IPFS (process described above)
+
+```bash
+comx subnet add-custom-proposal <netuid> <key-name> <cid>
+```

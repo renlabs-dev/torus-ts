@@ -3,7 +3,7 @@ import { createTRPCClient, httpBatchLink, TRPCClientError } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import SuperJSON from "superjson";
 
-import { createAuthReqData, signData } from "@commune-ts/utils";
+import { createAuthReqData, signData } from "@torus-ts/utils";
 
 import type { AppRouter } from "./root";
 

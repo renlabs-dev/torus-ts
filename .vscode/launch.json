@@ -3,10 +3,10 @@
   "configurations": [
     {
       "type": "node-terminal",
-      "name": "debug commune-worker",
+      "name": "debug torus-worker",
       "request": "launch",
       "command": "pnpm run dev",
-      "cwd": "${workspaceFolder}/apps/commune-worker",
+      "cwd": "${workspaceFolder}/apps/torus-worker",
       "skipFiles": [
         "<node_internals>/**"
       ]

@@ -1,6 +1,6 @@
 kind: pipeline
 type: docker
-name: commune-page
+name: torus-page
 
 steps:
   - name: build
@@ -10,13 +10,13 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/commune-page
+      repo: ghcr.io/renlabs-dev/torus-page
       tags:
         - latest
         - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
-      build_args: APP_NAME=commune-page
+      build_args: APP_NAME=torus-page
 
   - name: deploy
     image: digitalocean/doctl:latest
@@ -27,7 +27,7 @@ steps:
       - apk add jq
       - export PATH=$PATH:/app
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "commune-page" || echo "dev-commune-page" )
+      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-page" || echo "dev-torus-page" )
       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
@@ -43,13 +43,13 @@ trigger:
     - push
   paths:
     exclude:
-      - apps/commune-governance/**
-      - apps/commune-validator/**
-      - apps/communex-page/**
-      - apps/commune-worker/**
+      - apps/torus-governance/**
+      - apps/torus-validator/**
+      - apps/torusx-page/**
+      - apps/torus-worker/**
       - apps/sample-app/**
-      - apps/commune-wallet/**
-      - apps/commune-cache/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
@@ -69,7 +69,7 @@ steps:
         - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
-      build_args: APP_NAME=commune-validator
+      build_args: APP_NAME=torus-validator
 
   - name: deploy
     image: digitalocean/doctl:latest
@@ -96,17 +96,17 @@ trigger:
     - push
   paths:
     exclude:
-      - apps/commune-worker/**
-      - apps/commune-governance/**
-      - apps/commune-page/**
-      - apps/communex-page/**
+      - apps/torus-worker/**
+      - apps/torus-governance/**
+      - apps/torus-page/**
+      - apps/torusx-page/**
       - apps/sample-app/**
-      - apps/commune-wallet/**
-      - apps/commune-cache/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
-name: commune-worker
+name: torus-worker
 
 steps:
   - name: build
@@ -116,13 +116,13 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/commune-worker
+      repo: ghcr.io/renlabs-dev/torus-worker
       tags:
         - latest
         - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
-      build_args: APP_NAME=commune-worker
+      build_args: APP_NAME=torus-worker
 
   - name: deploy
     image: digitalocean/doctl:latest
@@ -133,7 +133,7 @@ steps:
       - apk add jq
       - export PATH=$PATH:/app
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "commune-worker" || echo "dev-commune-worker" )
+      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-worker" || echo "dev-torus-worker" )
       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
@@ -149,17 +149,17 @@ trigger:
     - push
   paths:
     exclude:
-      - apps/commune-validator/**
-      - apps/commune-governance/**
-      - apps/commune-page/**
-      - apps/communex-page/**
+      - apps/torus-validator/**
+      - apps/torus-governance/**
+      - apps/torus-page/**
+      - apps/torusx-page/**
       - apps/sample-app/**
-      - apps/commune-wallet/**
-      - apps/commune-cache/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
-name: commune-governance
+name: torus-governance
 
 steps:
   - name: build
@@ -169,13 +169,13 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/commune-governance
+      repo: ghcr.io/renlabs-dev/torus-governance
       tags:
         - latest
         - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
-      build_args: APP_NAME=commune-governance
+      build_args: APP_NAME=torus-governance
 
   - name: deploy
     image: digitalocean/doctl:latest
@@ -186,7 +186,7 @@ steps:
       - apk add jq
       - export PATH=$PATH:/app
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "commune-governance" || echo "dev-commune-governance" )
+      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-governance" || echo "dev-torus-governance" )
       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
@@ -202,17 +202,17 @@ trigger:
     - push
   paths:
     exclude:
-      - apps/commune-page/**
-      - apps/commune-validator/**
-      - apps/communex-page/**
-      - apps/commune-worker/**
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torusx-page/**
+      - apps/torus-worker/**
       - apps/sample-app/**
-      - apps/commune-wallet/**
-      - apps/commune-cache/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
-name: commune-wallet
+name: torus-wallet
 
 steps:
   - name: build
@@ -222,13 +222,13 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/commune-wallet
+      repo: ghcr.io/renlabs-dev/torus-wallet
       tags:
         - latest
         - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
-      build_args: APP_NAME=commune-wallet
+      build_args: APP_NAME=torus-wallet
 
   - name: deploy
     image: digitalocean/doctl:latest
@@ -239,7 +239,7 @@ steps:
       - apk add jq
       - export PATH=$PATH:/app
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "commune-wallet" || echo "dev-commune-wallet" )
+      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-wallet" || echo "dev-torus-wallet" )
       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
@@ -255,17 +255,17 @@ trigger:
     - push
   paths:
     exclude:
-      - apps/commune-page/**
-      - apps/commune-validator/**
-      - apps/communex-page/**
-      - apps/commune-worker/**
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torusx-page/**
+      - apps/torus-worker/**
       - apps/sample-app/**
-      - apps/commune-governance/**
-      - apps/commune-cache/**
+      - apps/torus-governance/**
+      - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
-name: commune-cache
+name: torus-cache
 
 steps:
   - name: build
@@ -275,13 +275,13 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/commune-cache
+      repo: ghcr.io/renlabs-dev/torus-cache
       tags:
         - latest
         - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
-      build_args: APP_NAME=commune-cache
+      build_args: APP_NAME=torus-cache
 
   - name: deploy
     image: digitalocean/doctl:latest
@@ -292,7 +292,7 @@ steps:
       - apk add jq
       - export PATH=$PATH:/app
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "commune-cache" || echo "dev-commune-cache" )
+      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-cache" || echo "dev-torus-cache" )
       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
@@ -308,10 +308,10 @@ trigger:
     - push
   paths:
     exclude:
-      - apps/commune-page/**
-      - apps/commune-validator/**
-      - apps/communex-page/**
-      - apps/commune-worker/**
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torusx-page/**
+      - apps/torus-worker/**
       - apps/sample-app/**
-      - apps/commune-governance/**
-      - apps/commune-wallet/**
+      - apps/torus-governance/**
+      - apps/torus-wallet/**

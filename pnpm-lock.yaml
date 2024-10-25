@@ -111,7 +111,7 @@ importers:
 
   .:
     devDependencies:
-      '@commune-ts/prettier-config':
+      '@torus-ts/prettier-config':
         specifier: workspace:*
         version: link:tooling/prettier
       '@turbo/gen':
@@ -133,17 +133,17 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/commune-cache:
+  apps/torus-cache:
     dependencies:
-      '@commune-ts/subspace':
-        specifier: workspace:*
-        version: link:../../packages/subspace
       '@polkadot/api':
         specifier: 'catalog:'
         version: 13.2.1
       '@t3-oss/env-core':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.6.3)(zod@3.23.8)
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../../packages/subspace
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -157,21 +157,21 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/prettier-config':
-        specifier: workspace:*
-        version: link:../../tooling/prettier
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@polkadot/api-augment':
         specifier: 'catalog:'
         version: 13.2.1
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@types/cors':
         specifier: ^2.8.17
         version: 2.8.17
@@ -206,29 +206,8 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/commune-forum:
+  apps/torus-forum:
     dependencies:
-      '@commune-ts/api':
-        specifier: workspace:*
-        version: link:../../packages/api
-      '@commune-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@commune-ts/providers':
-        specifier: workspace:*
-        version: link:../../packages/providers
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@commune-ts/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@commune-ts/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      '@commune-ts/wallet':
-        specifier: workspace:*
-        version: link:../../packages/wallet
       '@heroicons/react':
         specifier: 'catalog:'
         version: 2.1.5(react@18.3.1)
@@ -238,6 +217,27 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.59.13(react@18.3.1)
+      '@torus-ts/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@torus-ts/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@torus-ts/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@torus-ts/wallet':
+        specifier: workspace:*
+        version: link:../../packages/wallet
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.571(@trpc/server@11.0.0-rc.571)
@@ -272,18 +272,18 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
       '@next/eslint-plugin-next':
         specifier: 'catalog:'
         version: 14.2.15
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tailwind-config':
+        specifier: workspace:*
+        version: link:../../tooling/tailwind
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
       '@types/luxon':
         specifier: ^3.4.2
         version: 3.4.2
@@ -309,26 +309,8 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/commune-governance:
+  apps/torus-governance:
     dependencies:
-      '@commune-ts/api':
-        specifier: workspace:*
-        version: link:../../packages/api
-      '@commune-ts/providers':
-        specifier: workspace:*
-        version: link:../../packages/providers
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@commune-ts/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@commune-ts/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      '@commune-ts/wallet':
-        specifier: workspace:*
-        version: link:../../packages/wallet
       '@heroicons/react':
         specifier: 'catalog:'
         version: 2.1.5(react@18.3.1)
@@ -338,6 +320,24 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.59.13(react@18.3.1)
+      '@torus-ts/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@torus-ts/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@torus-ts/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@torus-ts/wallet':
+        specifier: workspace:*
+        version: link:../../packages/wallet
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.571(@trpc/server@11.0.0-rc.571)
@@ -372,18 +372,18 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
       '@next/eslint-plugin-next':
         specifier: 'catalog:'
         version: 14.2.15
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tailwind-config':
+        specifier: workspace:*
+        version: link:../../tooling/tailwind
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.11
@@ -406,11 +406,8 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/commune-page:
+  apps/torus-page:
     dependencies:
-      '@commune-ts/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@headlessui/react':
         specifier: ^2.0.4
         version: 2.1.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -429,6 +426,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.10.1(typescript@5.6.3)(zod@3.23.8)
+      '@torus-ts/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@types/mdx':
         specifier: ^2.0.13
         version: 2.0.13
@@ -478,21 +478,21 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
       '@next/eslint-plugin-next':
         specifier: 'catalog:'
         version: 14.2.15
       '@tailwindcss/typography':
         specifier: 'catalog:'
         version: 0.5.15(tailwindcss@3.4.13(ts-node@10.9.2(@types/node@20.16.11)(typescript@5.6.3)))
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tailwind-config':
+        specifier: workspace:*
+        version: link:../../tooling/tailwind
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.11
@@ -518,23 +518,8 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/commune-validator:
+  apps/torus-validator:
     dependencies:
-      '@commune-ts/api':
-        specifier: workspace:*
-        version: link:../../packages/api
-      '@commune-ts/providers':
-        specifier: workspace:*
-        version: link:../../packages/providers
-      '@commune-ts/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@commune-ts/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      '@commune-ts/wallet':
-        specifier: workspace:*
-        version: link:../../packages/wallet
       '@heroicons/react':
         specifier: 'catalog:'
         version: 2.1.5(react@18.3.1)
@@ -544,6 +529,21 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.59.13(react@18.3.1)
+      '@torus-ts/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@torus-ts/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
+      '@torus-ts/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@torus-ts/wallet':
+        specifier: workspace:*
+        version: link:../../packages/wallet
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.571(@trpc/server@11.0.0-rc.571)
@@ -572,18 +572,18 @@ importers:
         specifier: ^4.5.4
         version: 4.5.5(@types/react@18.3.11)(react@18.3.1)
     devDependencies:
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
       '@next/eslint-plugin-next':
         specifier: 'catalog:'
         version: 14.2.15
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tailwind-config':
+        specifier: workspace:*
+        version: link:../../tooling/tailwind
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.11
@@ -609,20 +609,20 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/commune-wallet:
+  apps/torus-wallet:
     dependencies:
-      '@commune-ts/providers':
-        specifier: workspace:*
-        version: link:../../packages/providers
-      '@commune-ts/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@heroicons/react':
         specifier: 'catalog:'
         version: 2.1.5(react@18.3.1)
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.10.1(typescript@5.6.3)(zod@3.23.8)
+      '@torus-ts/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
+      '@torus-ts/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 'catalog:'
         version: 14.2.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -636,24 +636,24 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/subspace':
-        specifier: workspace:*
-        version: link:../../packages/subspace
-      '@commune-ts/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
       '@next/eslint-plugin-next':
         specifier: 'catalog:'
         version: 14.2.15
       '@tailwindcss/typography':
         specifier: 'catalog:'
         version: 0.5.15(tailwindcss@3.4.13(ts-node@10.9.2(@types/node@20.16.11)(typescript@5.6.3)))
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../../packages/subspace
+      '@torus-ts/tailwind-config':
+        specifier: workspace:*
+        version: link:../../tooling/tailwind
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.11
@@ -676,39 +676,39 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/commune-worker:
+  apps/torus-worker:
     dependencies:
-      '@commune-ts/subspace':
-        specifier: workspace:*
-        version: link:../../packages/subspace
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@polkadot/api':
         specifier: 'catalog:'
         version: 13.2.1
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../../packages/subspace
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       express:
         specifier: ^4.19.2
         version: 4.21.1
     devDependencies:
-      '@commune-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/prettier-config':
-        specifier: workspace:*
-        version: link:../../tooling/prettier
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@commune-ts/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
       '@polkadot/api-augment':
         specifier: 'catalog:'
         version: 13.2.1
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.21
@@ -737,87 +737,23 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  apps/communex-page:
-    dependencies:
-      '@commune-ts/providers':
-        specifier: workspace:*
-        version: link:../../packages/providers
-      '@commune-ts/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@commune-ts/wallet':
-        specifier: workspace:*
-        version: link:../../packages/wallet
-      '@heroicons/react':
-        specifier: 'catalog:'
-        version: 2.1.5(react@18.3.1)
-      '@t3-oss/env-nextjs':
-        specifier: 'catalog:'
-        version: 0.10.1(typescript@5.6.3)(zod@3.23.8)
-      next:
-        specifier: 'catalog:'
-        version: 14.2.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: catalog:react18
-        version: 18.3.1
-      react-dom:
-        specifier: catalog:react18
-        version: 18.3.1(react@18.3.1)
-      zod:
-        specifier: 'catalog:'
-        version: 3.23.8
-    devDependencies:
-      '@commune-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@commune-ts/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
-      '@commune-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@next/eslint-plugin-next':
-        specifier: 'catalog:'
-        version: 14.2.15
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.16.11
-      '@types/react':
-        specifier: catalog:react18
-        version: 18.3.11
-      '@types/react-dom':
-        specifier: catalog:react18
-        version: 18.3.1
-      jiti:
-        specifier: 'catalog:'
-        version: 1.21.6
-      postcss:
-        specifier: 'catalog:'
-        version: 8.4.47
-      tailwindcss:
-        specifier: 'catalog:'
-        version: 3.4.13(ts-node@10.9.2(@types/node@20.16.11)(typescript@5.6.3))
-      typescript:
-        specifier: 'catalog:'
-        version: 5.6.3
-
   packages/api:
     dependencies:
-      '@commune-ts/db':
-        specifier: workspace:*
-        version: link:../db
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../types
-      '@commune-ts/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@polkadot/util':
         specifier: 'catalog:'
         version: 13.1.1
       '@polkadot/util-crypto':
         specifier: 'catalog:'
         version: 13.1.1(@polkadot/util@13.1.1)
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../db
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../types
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.571(@trpc/server@11.0.0-rc.571)
@@ -834,13 +770,13 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/prettier-config':
+      '@torus-ts/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/jsonwebtoken':
@@ -871,13 +807,13 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/prettier-config':
+      '@torus-ts/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -901,15 +837,6 @@ importers:
 
   packages/providers:
     dependencies:
-      '@commune-ts/subspace':
-        specifier: workspace:*
-        version: link:../subspace
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../types
-      '@commune-ts/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@polkadot/api':
         specifier: 'catalog:'
         version: 13.2.1
@@ -931,6 +858,15 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.59.13(react@18.3.1)
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../subspace
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../types
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../utils
       multiformats:
         specifier: 'catalog:'
         version: 13.3.0
@@ -956,10 +892,10 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -977,12 +913,6 @@ importers:
 
   packages/subspace:
     dependencies:
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../types
-      '@commune-ts/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@polkadot/api':
         specifier: 'catalog:'
         version: 13.2.1
@@ -995,6 +925,12 @@ importers:
       '@polkadot/util-crypto':
         specifier: 'catalog:'
         version: 13.1.1(@polkadot/util@13.1.1)
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../types
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../utils
       multiformats:
         specifier: 'catalog:'
         version: 13.3.0
@@ -1008,10 +944,10 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       tsx:
@@ -1042,10 +978,10 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
 
@@ -1115,16 +1051,16 @@ importers:
         specifier: ^2.5.2
         version: 2.5.4
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/prettier-config':
+      '@torus-ts/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
-      '@commune-ts/types':
+      '@torus-ts/types':
         specifier: workspace:*
         version: link:../types
       '@types/react':
@@ -1145,12 +1081,12 @@ importers:
 
   packages/utils:
     dependencies:
-      '@commune-ts/types':
-        specifier: workspace:*
-        version: link:../types
       '@polkadot/util':
         specifier: 'catalog:'
         version: 13.1.1
+      '@torus-ts/types':
+        specifier: workspace:*
+        version: link:../types
       multiformats:
         specifier: 'catalog:'
         version: 13.3.0
@@ -1161,38 +1097,38 @@ importers:
         specifier: 'catalog:'
         version: 1.7.5
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
 
   packages/wallet:
     dependencies:
-      '@commune-ts/providers':
+      '@torus-ts/providers':
         specifier: workspace:*
         version: link:../providers
-      '@commune-ts/types':
+      '@torus-ts/types':
         specifier: workspace:*
         version: link:../types
-      '@commune-ts/ui':
+      '@torus-ts/ui':
         specifier: workspace:*
         version: link:../ui
-      '@commune-ts/utils':
+      '@torus-ts/utils':
         specifier: workspace:*
         version: link:../utils
       next:
         specifier: 'catalog:'
         version: 14.2.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@commune-ts/tailwind-config':
+      '@torus-ts/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/react':
@@ -1236,7 +1172,7 @@ importers:
         version: 7.37.1(eslint@9.12.0(jiti@1.21.6))
       eslint-plugin-react-hooks:
         specifier: rc
-        version: 5.1.0-rc-1631855f-20241023(eslint@9.12.0(jiti@1.21.6))
+        version: 5.1.0-rc-cae764ce-20241025(eslint@9.12.0(jiti@1.21.6))
       eslint-plugin-turbo:
         specifier: ^2.1.1
         version: 2.1.3(eslint@9.12.0(jiti@1.21.6))
@@ -1244,10 +1180,10 @@ importers:
         specifier: ^8.3.0
         version: 8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3)
     devDependencies:
-      '@commune-ts/prettier-config':
+      '@torus-ts/prettier-config':
         specifier: workspace:*
         version: link:../prettier
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       eslint:
@@ -1274,7 +1210,7 @@ importers:
         specifier: ^0.6.6
         version: 0.6.8(@ianvs/prettier-plugin-sort-imports@4.3.1(prettier@3.3.3))(prettier@3.3.3)
     devDependencies:
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       typescript:
@@ -1296,13 +1232,13 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(tailwindcss@3.4.13(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.6.3)))
     devDependencies:
-      '@commune-ts/eslint-config':
+      '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../eslint
-      '@commune-ts/prettier-config':
+      '@torus-ts/prettier-config':
         specifier: workspace:*
         version: link:../prettier
-      '@commune-ts/tsconfig':
+      '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       eslint:
@@ -4196,8 +4132,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-react-hooks@5.1.0-rc-1631855f-20241023:
-    resolution: {integrity: sha512-ohDko9xwausG054sm2kvM0ZssnaZ0jRBL3tduCR9Bo3rott+zD8O9p6PC5B+LN/6f2RwKRNCdN2WcrkNul/ljg==}
+  eslint-plugin-react-hooks@5.1.0-rc-cae764ce-20241025:
+    resolution: {integrity: sha512-T0dII19NLMIDsd/kbOrPSVnbr0IhlFITOQoCVZuHDBatzGUY6p9wFPuAei7tQYpOnBhdywGIdx2nR4w/cfkcsA==}
     engines: {node: '>=10'}
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
@@ -9787,7 +9723,7 @@ snapshots:
       safe-regex-test: 1.0.3
       string.prototype.includes: 2.0.0
 
-  eslint-plugin-react-hooks@5.1.0-rc-1631855f-20241023(eslint@9.12.0(jiti@1.21.6)):
+  eslint-plugin-react-hooks@5.1.0-rc-cae764ce-20241025(eslint@9.12.0(jiti@1.21.6)):
     dependencies:
       eslint: 9.12.0(jiti@1.21.6)
 

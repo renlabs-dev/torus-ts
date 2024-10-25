@@ -1,9 +1,9 @@
 {
-  "name": "@commune-ts/providers",
+  "name": "@torus-ts/providers",
   "version": "0.0.0",
   "license": "MIT",
   "exports": {
-    "./use-commune": "./src/context/commune.tsx",
+    "./use-torus": "./src/context/torus.tsx",
     "./use-toast": "./src/context/toast.tsx",
     "./context": "./src/index.tsx",
     "./utils": "./src/utils/index.ts",
@@ -11,9 +11,9 @@
     "./hooks": "./src/hooks/index.ts"
   },
   "dependencies": {
-    "@commune-ts/subspace": "workspace:*",
-    "@commune-ts/types": "workspace:*",
-    "@commune-ts/utils": "workspace:*",
+    "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/types": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
     "@polkadot/api": "catalog:",
     "@polkadot/api-augment": "catalog:",
     "@polkadot/extension-dapp": "catalog:",
@@ -31,8 +31,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@commune-ts/eslint-config": "workspace:*",
-    "@commune-ts/tsconfig": "workspace:*",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
