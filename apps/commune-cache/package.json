@@ -43,7 +43,6 @@
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.4",
     "prettier": "catalog:",
-    "ts-node": "^10.9.2",
     "tsx": "catalog:",
     "typescript": "catalog:"
   }
