@@ -67,7 +67,7 @@ interface CommuneContextType {
     recipientAddress: string,
     amount: string,
   ) => Promise<Balance | null>;
-  handleWalletModal(state?: boolean): void;
+  handleWalletModal: (state?: boolean) => void;
   openWalletModal: boolean;
 
   addStake: (stake: Stake) => Promise<void>;
