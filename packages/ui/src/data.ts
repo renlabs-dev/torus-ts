@@ -1,6 +1,8 @@
 export const links = {
   about: "/about",
+
   docs: "https://communeai.org/docs/getting-started/intro",
+  cadre: "/cadre",
 
   blog: "https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5",
   discord: "https://discord.com/invite/A8JGkZ9Dmm",

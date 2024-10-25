@@ -232,7 +232,7 @@ export function CommuneProvider({
     }
   }
 
-  function handleWalletModal(state?: boolean): void {
+  const handleWalletModal = (state?: boolean): void => {
     setOpenWalletModal(state || !openWalletModal);
   }
 

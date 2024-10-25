@@ -43,6 +43,7 @@ export default function RootLayout({
               navigationLinks={[
                 { name: "Homepage", href: links.landing_page, external: true },
                 { name: "Join Community", href: links.discord, external: true },
+                { name: "Cadre", href: links.cadre, external: false },
               ]}
             />
             {children}
