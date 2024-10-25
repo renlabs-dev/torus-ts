@@ -101,7 +101,6 @@ This stack comes from [create-t3-app](https://github.com/t3-oss/create-t3-app).
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
 - [ESLint](https://eslint.org/) for code linting
 - [Prettier](https://prettier.io) for code formatting
-
 - Turbo
   - [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
   - [Caching](https://turbo.build/repo/docs/core-concepts/caching)

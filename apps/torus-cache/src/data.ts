@@ -1,5 +1,7 @@
 import JSONBigInt from "json-bigint";
 
+// TODO: use `superjson` instead of `json-bigint`
+
 import type { ApiPromise, LastBlock, StakeOutData } from "@torus-ts/types";
 import {
   queryCalculateStakeFrom,

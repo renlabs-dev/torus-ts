@@ -3,6 +3,8 @@
 import JSONBigInt from "json-bigint";
 import fetch from "node-fetch";
 
+// TODO: use `superjson` instead of `json-bigint`
+
 const result = await fetch("http://localhost:3000/api/stake-out");
 
 const JSONBig = JSONBigInt({
