@@ -4,7 +4,7 @@ import type { Header } from "@polkadot/types/interfaces";
 import type { Codec, IU8a } from "@polkadot/types/types";
 import type { Enum, Tagged } from "rustie";
 import type { Variant } from "rustie/dist/enum";
-import type { z } from "zod";
+import { z } from "zod";
 
 
 import type {
