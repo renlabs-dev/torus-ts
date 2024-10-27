@@ -24,12 +24,12 @@ export function Header(props: HeaderProps): JSX.Element {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full animate-fade-down border-b border-white/20 bg-[#898989]/5 backdrop-blur-md",
+        "fixed left-3 right-3 top-3 mx-auto flex max-w-screen-2xl animate-fade-down rounded-md border border-white/20 bg-[#898989]/5 backdrop-blur-md",
       )}
     >
-      <nav
+      <div
         className={cn(
-          "mx-auto flex w-full max-w-screen-2xl items-center justify-between px-3 py-3",
+          "mx-auto flex w-full items-center justify-between px-3 py-3",
         )}
       >
         <a className={cn("flex items-center gap-3")} href="/">
@@ -49,12 +49,12 @@ export function Header(props: HeaderProps): JSX.Element {
             {props.title}
           </h3>
         </a>
-        <div className={cn("flex items-center")}>
-          <div className={cn("hidden pr-6 lg:flex lg:gap-6")}>
+        <nav className={cn("flex-grow")}>
+          <div className={cn("hidden justify-end lg:flex")}>
             {props.navigationLinks?.map(({ name, href, external }) => (
               <a
                 className={cn(
-                  "flex flex-col items-center text-lg font-normal leading-6 text-white transition duration-500 hover:text-green-500",
+                  "mx-3 flex flex-col items-center text-lg font-normal leading-6 text-white transition duration-500 hover:text-green-500",
                 )}
                 href={href}
                 key={name}
@@ -64,15 +64,16 @@ export function Header(props: HeaderProps): JSX.Element {
               </a>
             ))}
           </div>
+        </nav>
 
+        <div className={cn("flex items-center")}>
           {props.wallet}
-
           <MobileNavigation
             navigationLinks={props.navigationLinks}
             genericContent={props.mobileContent}
           />
         </div>
-      </nav>
+      </div>
     </header>
   );
 }

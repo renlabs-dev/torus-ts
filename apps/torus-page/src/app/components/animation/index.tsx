@@ -28,8 +28,8 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
   const object = {
     tubeRadius: 4,
     torusRadius: 4.5,
-    radialSegments: 30,
-    tabularSegments: 60,
+    radialSegments: 50,
+    tabularSegments: 100,
     yPosition: 2.5,
   };
 
@@ -201,6 +201,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     const positions = torusGeometry.attributes.position!.array;
     const normals = torusGeometry.attributes.normal!.array;
     const maxPosition = Math.max(...positions);
+    const minPosition = Math.min(...positions);
 
     const customGeometry = new THREE.BufferGeometry();
 
@@ -208,13 +209,19 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     const scales = [];
 
     for (let i = 0; i < positions.length; i += 3) {
-      const r = positions[i]! / maxPosition + 0.3;
-      const g = positions[i]! / maxPosition + 3;
-      const b = positions[i]! / maxPosition + 0.3;
+      // Normalize the position value between 0 and 1
+      const normalizedPos =
+        (positions[i]! - minPosition) / (maxPosition - minPosition);
 
-      colors.push(r, g * 2, b);
+      // Adjust these values to create a more purple-blush color, ensuring no black points
+      const r = normalizedPos * 1; // Range from 0.5 to 1.0
+      const g = normalizedPos * 0.5; // Range from 0.2 to 0.5
+      const b = normalizedPos * 2; // Range from 0.5 to 1.0
+
+      colors.push(r, g, b * 2);
       scales.push(getRandNum(0.5, 3));
     }
+
     customGeometry.setAttribute(
       "position",
       new THREE.BufferAttribute(new Float32Array(positions), 3),

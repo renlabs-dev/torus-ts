@@ -16,7 +16,6 @@
     "dev:forum": "turbo watch dev -F torus-forum",
     "dev:governance": "turbo watch dev -F torus-governance",
     "dev:page": "turbo watch dev -F torus-page",
-    "dev:roadmap": "turbo watch dev -F torusx-roadmap",
     "dev:validator": "turbo watch dev -F torus-validator",
     "dev:wallet": "turbo watch dev -F torus-wallet",
     "dev:wallet-pkg": "turbo watch dev -F @torus-ts/wallet",
