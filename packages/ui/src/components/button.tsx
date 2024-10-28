@@ -12,7 +12,7 @@ const buttonVariants = cva(
       variant: {
         base: "border",
         default:
-          "border border-white/20 bg-[#898989]/5 bg-background text-white hover:border-green-500 hover:bg-background-green hover:text-green-500 active:bg-green-500/40",
+          "hover:bg-background-purple border border-white/20 bg-[#898989]/5 bg-background text-white hover:border-purple-500 hover:text-purple-500 active:bg-purple-500/40",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         ghost: "hover:bg-accent hover:text-accent-foreground",

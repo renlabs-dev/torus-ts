@@ -19,18 +19,20 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
   canvas.classList.add("webgl");
   container.appendChild(canvas);
 
+  const isMobile = window.innerWidth <= 768;
+
   const sizes = {
     width: container.clientWidth,
     height: container.clientHeight,
   };
+
   const clock = new THREE.Clock();
 
   const object = {
-    tubeRadius: 4,
-    torusRadius: 4.5,
-    radialSegments: 50,
-    tabularSegments: 100,
-    yPosition: 2.5,
+    tubeRadius: 4.1,
+    torusRadius: 5,
+    radialSegments: 60,
+    tabularSegments: 120,
   };
 
   let scene: THREE.Scene;
@@ -59,9 +61,8 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     objectsGroup = new THREE.Group();
     objectsGroup.add(points);
     objectsGroup.add(lines);
-    objectsGroup.rotation.x =
-      -Math.PI * (window.innerWidth <= 768 ? 0.25 : 0.35);
-    objectsGroup.position.y = window.innerWidth <= 768 ? 7.5 : 2.5;
+    objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.25 : 0.35);
+    objectsGroup.position.y = isMobile ? 7.5 : 2.5;
     scene.add(objectsGroup);
   }
 
@@ -114,7 +115,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     // Randomly connect each vertex with up to 2 random neighbors that follow it in the array
     const numVertices = positions.length / 3;
     for (let i = 0; i < numVertices; i++) {
-      const numConnections = Math.floor(Math.random() * 3); // Random number of connections (0, 1, or 2)
+      const numConnections = Math.floor(Math.random() * 2); // Random number of connections (0, 1, or 2)
       const possibleConnections: unknown[] = [];
 
       // Find possible connections
@@ -168,8 +169,6 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     const lineMaterial = new THREE.ShaderMaterial({
       vertexShader: pointsVertexShader,
       fragmentShader: linesFragmentShader,
-      wireframe: false,
-      depthWrite: false,
       blending: THREE.AdditiveBlending,
       vertexColors: true,
       uniforms: {
@@ -209,15 +208,12 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     const scales = [];
 
     for (let i = 0; i < positions.length; i += 3) {
-      // Normalize the position value between 0 and 1
       const normalizedPos =
         (positions[i]! - minPosition) / (maxPosition - minPosition);
 
-      // Adjust these values to create a more purple-blush color, ensuring no black points
-      const r = normalizedPos * 1; // Range from 0.5 to 1.0
-      const g = normalizedPos * 0.5; // Range from 0.2 to 0.5
-      const b = normalizedPos * 2; // Range from 0.5 to 1.0
-
+      const r = normalizedPos * 1;
+      const g = normalizedPos * 0.5;
+      const b = normalizedPos * 2;
       colors.push(r, g, b * 2);
       scales.push(getRandNum(0.5, 3));
     }
@@ -264,8 +260,8 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     scene = new THREE.Scene();
   }
 
-  const fov = window.innerWidth <= 768 ? 90 : 60;
-  const cameraRotation = window.innerWidth <= 768 ? 12 : 1;
+  const fov = isMobile ? 90 : 60;
+  const cameraRotation = isMobile ? 12 : 1;
 
   function createCamera() {
     camera = new THREE.PerspectiveCamera(
@@ -369,7 +365,7 @@ export default function Animation() {
     <div
       id="graph"
       ref={graphRef}
-      className="fixed left-0 top-0 -z-50 h-full w-full"
+      className="fixed left-0 top-0 -z-50 h-full w-full border border-red-500"
       style={{ overflow: "hidden" }}
     />
   );

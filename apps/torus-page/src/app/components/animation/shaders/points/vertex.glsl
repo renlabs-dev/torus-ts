@@ -95,13 +95,13 @@ float turbulence( vec3 p ) {
   float t = -.5;
   for (float f = 1.0 ; f <= 10.0 ; f++ ){
     float power = pow( 2.0, f );
-    t += abs( pnoise( 1.5 * vec3( power * p ), vec3( 10.0, 10.0, 10.0 ) ) / power );
+    t += abs( pnoise( 0.5 * vec3( power * p ), vec3( 10.0, 10.0, 10.0 ) ) / power );
   }
   return t;
 }
 
 float f( vec3 p ) {
-  return pnoise( 1.2 * vec3( p ), vec3( 20.0, 20.0, 20.0 ) );
+  return pnoise( 1.5 * vec3( p ), vec3( 20.0, 20.0, 20.0 ) );
 }
 
 // Vertex Shader
@@ -132,13 +132,13 @@ void main() {
   float y = position.y;
   float z = position.z;
 
-  float timeShift = uTime * 1.2;
+  float timeShift = uTime * 1.0;
 
   // Theta remains constant, based on the initial layout of vertices
-  float theta = atan(y, x) + timeShift * 0.5;
+  float theta = atan(y, x) + timeShift * 1.0;
 
   // Calculate the effective radius from the torus center to the x-y projection of the point
-  float xyRadius = sqrt(x * x + y * y);
+  float xyRadius = sqrt(x * x + y * y );
 
   // Compute cos(phi)
   float cosPhi = (xyRadius - R) / r;
