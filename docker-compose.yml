@@ -1,47 +1,82 @@
 services:
-  postgres:
-    image: postgres:16-alpine
+
+  subspace:
+    image: subspace:local-main
+    command: bash -c "/subspace/extra/insert-authority-keys.sh; /subspace/extra/run-node.sh"
+    environment:
+      SUBSPACE_BASE_PATH: /subspace/node-data
+      SUBSPACE_CHAIN_SPEC: /subspace/specs/local.json
+      SUBSPACE_ACCOUNT: alice
+      PORT: 30341
+      RPC_PORT: 9951
     ports:
-      - 5432:5432
+      - 9951:9951
     volumes:
-      - ~/apps/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=torus-ts-db
-  admin:
-    image: adminer
-    restart: always
-    depends_on:
-      - postgres
-    ports:
-      - 8080:8080
-  torus-cache:
-    build:
-      context: .
-      dockerfile: tooling/dockerfile/backend-service.Dockerfile
-      args:
-        - PROJECT=torus-cache
-        - PORT=3010
-    environment:
-      - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
-      - PORT=3010
-    command: npm start
-    ports:
-      - 3010:3010
-  torus-worker:
-    depends_on:
-      - postgres
-    build:
-      context: .
-      dockerfile: tooling/dockerfile/backend-service.Dockerfile
-      args:
-        - PROJECT=torus-worker
-        - PORT=3020
-    environment:
-      - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
-      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
-      - PORT=3020
-    ports:
-      - 3020:3020
-    command: npm start
+      - subspace-data:/subspace/node-data
+      - ./data/chain-specs:/subspace/specs:ro
+      - ./docker/subspace-extra:/subspace/extra:ro
+
+  # postgres:
+  #   image: postgres:16-alpine
+  #   ports:
+  #     - 5432:5432
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+  #   environment:
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_DB=torus-ts-db
+
+  # torus-cache:
+  #   build:
+  #     context: .
+  #     dockerfile: tooling/dockerfile/backend-service.Dockerfile
+  #     args:
+  #       - PROJECT=torus-cache
+  #   environment:
+  #     - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
+  #     - PORT=8000
+  #   command: npm start
+  #   ports:
+  #     - 3011:8000
+
+  # torus-worker:
+  #   depends_on:
+  #     - postgres
+  #   build:
+  #     context: .
+  #     dockerfile: tooling/dockerfile/backend-service.Dockerfile
+  #     args:
+  #       - PROJECT=torus-worker
+  #   environment:
+  #     - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
+  #     - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+  #     - PORT=8000
+  #   ports:
+  #     - 3012:8000
+  #   command: npm start
+
+  # torus-validator:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile
+  #     args:
+  #       APP_NAME: torus-validator
+
+  # torus-governance:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile
+  #     args:
+  #       APP_NAME: torus-governance
+
+  # torus-page:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile
+  #     args:
+  #       APP_NAME: torus-page
+
+volumes:
+  subspace-data:
+  db-data:

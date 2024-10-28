@@ -11,3 +11,6 @@ fix:
 
 build:
 	pnpm run build
+
+copy-specs:
+	cp ../subspace/specs/* ./data/chain-specs/
