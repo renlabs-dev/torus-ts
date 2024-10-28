@@ -3,7 +3,6 @@ import { match } from "rustie";
 import type {
   CustomMetadataState,
   DAOCardFields,
-  Proposal,
   ProposalCardFields,
   ProposalState,
   ProposalStatus,
@@ -64,9 +63,8 @@ function handleProposalParams(
   params: Record<string, unknown>,
   netuid: number | "GLOBAL",
 ): ProposalCardFields {
-  const title = `Parameters proposal #${proposalId} for ${
-    netuid == "GLOBAL" ? "global network" : `subnet ${netuid}`
-  }`;
+  const title = `Parameters proposal #${proposalId} for ${netuid == "GLOBAL" ? "global network" : `subnet ${netuid}`
+    }`;
   return {
     title,
     body: paramsToMarkdown(params),
@@ -106,26 +104,6 @@ export const handleCustomProposal = (
       );
     },
   });
-
-export function getProposalNetuid(proposal: Proposal): number | null {
-  return match(proposal.data)({
-    globalCustom(/*v: string*/): null {
-      return null;
-    },
-    globalParams(/*v: unknown*/): null {
-      return null;
-    },
-    subnetCustom({ subnetId }): number {
-      return subnetId;
-    },
-    subnetParams({ subnetId }): number {
-      return subnetId;
-    },
-    transferDaoTreasury(/*{ account, amount }*/): null {
-      return null;
-    },
-  });
-}
 
 export function calcProposalFavorablePercent(
   proposalStatus: ProposalStatus,
