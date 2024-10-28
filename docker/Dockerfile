@@ -28,6 +28,7 @@ RUN turbo prune ${APP_NAME} --docker
 FROM base AS builder
 ARG APP_NAME
 
+# TODO: fix hardcoded vars on Dockerfile
 ENV NEXT_PUBLIC_WS_PROVIDER_URL="wss://api.torusai.net"
 ENV NEXT_PUBLIC_CACHE_PROVIDER_URL="https://cache.torusai.org"
 
@@ -41,6 +42,7 @@ RUN pnpm install --frozen-lockfile
 
 # Build the app
 COPY --from=pruner /build/out/full/ .
+# TODO: fix hardcoded vars on Dockerfile
 RUN POSTGRES_URL="postgres://postgres:password@localhost:5432/database" \
     PINATA_JWT="junk" \
     JWT_SECRET="12345678" \

@@ -16,66 +16,96 @@ services:
       - ./data/chain-specs:/subspace/specs:ro
       - ./docker/subspace-extra:/subspace/extra:ro
 
-  # postgres:
-  #   image: postgres:16-alpine
-  #   ports:
-  #     - 5432:5432
-  #   volumes:
-  #     - db-data:/var/lib/postgresql/data
-  #   environment:
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_DB=torus-ts-db
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=torus-ts-db
 
   # torus-cache:
   #   build:
   #     context: .
-  #     dockerfile: tooling/dockerfile/backend-service.Dockerfile
+  #     dockerfile: docker/Dockerfile
   #     args:
-  #       - PROJECT=torus-cache
+  #       - APP_NAME=torus-cache
   #   environment:
   #     - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
   #     - PORT=8000
-  #   command: npm start
   #   ports:
   #     - 3011:8000
 
   # torus-worker:
-  #   depends_on:
-  #     - postgres
   #   build:
   #     context: .
-  #     dockerfile: tooling/dockerfile/backend-service.Dockerfile
+  #     dockerfile: docker/Dockerfile
   #     args:
-  #       - PROJECT=torus-worker
+  #       - APP_NAME=torus-worker
   #   environment:
   #     - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
   #     - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
   #     - PORT=8000
   #   ports:
   #     - 3012:8000
-  #   command: npm start
 
-  # torus-validator:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile
-  #     args:
-  #       APP_NAME: torus-validator
+  torus-governance:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: torus-governance
+    environment:
+      - NEXT_PUBLIC_WS_PROVIDER_URL=ws://subspace:9951
+      - NEXT_PUBLIC_CACHE_PROVIDER_URL=http://FIXME
+      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - JWT_SECRET=12345678
+      - PINATA_JWT=${PINATA_JWT}
+    ports:
+      - 3021:8000
 
-  # torus-governance:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile
-  #     args:
-  #       APP_NAME: torus-governance
+  torus-page:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: torus-page
+    ports:
+      - 3022:8000
 
-  # torus-page:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile
-  #     args:
-  #       APP_NAME: torus-page
+  torus-validator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: torus-validator
+    environment:
+      - NEXT_PUBLIC_WS_PROVIDER_URL=ws://subspace:9951
+      - NEXT_PUBLIC_CACHE_PROVIDER_URL=http://FIXME
+      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - JWT_SECRET=12345678
+      - PINATA_JWT=${PINATA_JWT}
+    ports:
+      - 3023:8000
+
+  torus-wallet:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: torus-validator
+    environment:
+      - NEXT_PUBLIC_WS_PROVIDER_URL=ws://subspace:9951
+      - NEXT_PUBLIC_CACHE_PROVIDER_URL=http://FIXME
+      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - JWT_SECRET=12345678
+    ports:
+      - 3024:8000
+
+# TODO: Traefik for local Docker services
 
 volumes:
   subspace-data:
