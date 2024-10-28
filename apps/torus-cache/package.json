@@ -25,7 +25,7 @@
     "@torus-ts/subspace": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "json-bigint": "^1.0.0",
+    "superjson": "2.2.1",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -36,7 +36,6 @@
     "@torus-ts/types": "workspace:*",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/json-bigint": "^1.0.4",
     "@types/node": "catalog:",
     "dotenv-cli": "catalog:",
     "eslint": "catalog:",

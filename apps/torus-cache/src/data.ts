@@ -1,8 +1,11 @@
-import JSONBigInt from "json-bigint";
+import SuperJSON from "superjson";
 
-// TODO: use `superjson` instead of `json-bigint`
-
-import type { ApiPromise, LastBlock, StakeOutData } from "@torus-ts/types";
+import type {
+  ApiPromise,
+  LastBlock,
+  StakeFromData,
+  StakeOutData,
+} from "@torus-ts/types";
 import {
   queryCalculateStakeFrom,
   queryCalculateStakeOut,
@@ -12,20 +15,15 @@ import {
 import { setup } from "./server";
 import { log, sleep } from "./utils";
 
-const JSONBig = JSONBigInt({
-  useNativeBigInt: true,
-  alwaysParseAsBig: true,
-  strict: true,
-});
-
 const UPDATE_INTERVAL = 1000; //1 second
 
-let stakeFromData: StakeOutData = {
+let stakeFromData: StakeFromData = {
   total: -1n,
   perAddr: {},
   atBlock: -1n,
   atTime: new Date(),
 };
+
 let stakeOutData: StakeOutData = {
   total: -1n,
   perAddr: {},
@@ -34,18 +32,18 @@ let stakeOutData: StakeOutData = {
 };
 
 const stakeOutDataStringified = {
-  data: JSONBig.stringify(stakeOutData),
+  data: SuperJSON.stringify(stakeOutData),
   atBlock: -1n,
 };
 
 const stakeFromDataStringified = {
-  data: JSONBig.stringify(stakeFromData),
+  data: SuperJSON.stringify(stakeFromData),
   atBlock: -1n,
 };
 
 export function getStakeOutDataStringified() {
   if (stakeOutDataStringified.atBlock !== stakeOutData.atBlock) {
-    stakeOutDataStringified.data = JSONBig.stringify(stakeOutData);
+    stakeOutDataStringified.data = SuperJSON.stringify(stakeOutData);
     stakeOutDataStringified.atBlock = stakeOutData.atBlock;
   }
   return stakeOutDataStringified.data;
@@ -53,7 +51,7 @@ export function getStakeOutDataStringified() {
 
 export function getStakeFromDataStringified() {
   if (stakeFromDataStringified.atBlock !== stakeFromData.atBlock) {
-    stakeFromDataStringified.data = JSONBig.stringify(stakeFromData);
+    stakeFromDataStringified.data = SuperJSON.stringify(stakeFromData);
     stakeFromDataStringified.atBlock = stakeFromData.atBlock;
   }
   return stakeFromDataStringified.data;

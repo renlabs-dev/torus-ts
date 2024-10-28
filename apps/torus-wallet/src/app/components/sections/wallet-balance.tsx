@@ -15,6 +15,7 @@ export function WalletBalance(props: WalletBalanceProps) {
   const { userTotalStaked } = useTorus();
   const [freeBalancePercentage, setFreeBalancePercentage] = useState(0);
   const [totalStakedBalance, setTotalStakedBalance] = useState<bigint>(0n);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Calculate the total staked balance from userTotalStaked
@@ -29,6 +30,7 @@ export function WalletBalance(props: WalletBalanceProps) {
   }, [userTotalStaked]);
 
   useEffect(() => {
+    setIsLoading(true)
     const freeBalance = Number(props.balance ?? 0);
     const stakedBalance = Number(totalStakedBalance);
     const availablePercentage =
@@ -39,6 +41,7 @@ export function WalletBalance(props: WalletBalanceProps) {
       return;
     }
     setFreeBalancePercentage(availablePercentage);
+    setIsLoading(false)
   }, [props.balance, totalStakedBalance]);
 
   return (
@@ -66,7 +69,7 @@ export function WalletBalance(props: WalletBalanceProps) {
           </div>
           <div className="text-right">
             <p className="text-xl text-red-500">
-              {totalStakedBalance ? formatToken(totalStakedBalance) : "---"}
+              {isLoading ? "---" : formatToken(totalStakedBalance)}
               <span className="ml-1 text-sm font-light text-gray-400">
                 COMAI
               </span>
@@ -74,7 +77,7 @@ export function WalletBalance(props: WalletBalanceProps) {
             <p className="text-xs text-gray-500">Staked Balance</p>
           </div>
         </div>
-        {totalStakedBalance ? (
+        {!isLoading && (freeBalancePercentage && totalStakedBalance >= 0) ? (
           <div className="relative flex h-2 w-full pt-1">
             <span
               className="absolute h-2 bg-green-500"

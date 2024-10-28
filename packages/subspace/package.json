@@ -17,6 +17,7 @@
     "@torus-ts/utils": "workspace:*",
     "multiformats": "catalog:",
     "rustie": "catalog:",
+    "superjson": "2.2.1",
     "tsafe": "catalog:",
     "zod": "catalog:"
   },

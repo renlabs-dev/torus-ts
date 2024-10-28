@@ -11,6 +11,7 @@ import type {
   NetworkSubnetConfig,
   SS58Address,
   StakeOutData,
+  StakeFromData,
   SubspaceModule,
   VoteWithStake,
 } from "@torus-ts/types";
@@ -21,12 +22,12 @@ import type {
 } from "@torus-ts/utils";
 import {
   checkSS58,
-  STAKE_OUT_DATA_SCHEMA,
   GOVERNANCE_CONFIG_SCHEMA,
   isSS58,
-  STAKE_FROM_SCHEMA,
   MODULE_BURN_CONFIG_SCHEMA,
   NetworkSubnetConfigSchema,
+  STAKE_DATA_SCHEMA,
+  STAKE_FROM_SCHEMA,
   SUBSPACE_MODULE_SCHEMA,
 } from "@torus-ts/types";
 import {
@@ -35,6 +36,7 @@ import {
   handleProposals,
   standardizeUidToSS58address,
 } from "@torus-ts/utils";
+import SuperJSON from "superjson";
 
 
 export { ApiPromise };
@@ -331,24 +333,11 @@ export async function queryStakeOut(
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }
-  const stakeOutData = response.json() as unknown as StakeOutData;
-  return stakeOutData;
-}
-
-//TODO: solve the duplication
-export async function queryStakeOutCORRECT(
-  torusCacheUrl: string,
-): Promise<StakeOutData> {
-  const response = await fetch(`${torusCacheUrl}/api/stake-out`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to fetch data");
-  }
-  const stakeOutData = STAKE_OUT_DATA_SCHEMA.parse(await response.json());
+  const responseData = await response.text();
+  
+  const deserializedData = SuperJSON.parse(responseData);
+  
+  const stakeOutData = STAKE_DATA_SCHEMA.parse(deserializedData);
   return stakeOutData;
 }
 
@@ -381,7 +370,7 @@ export async function queryCalculateStakeOut(api: Api) {
 
 export async function queryStakeFrom(
   torusCacheUrl: string,
-): Promise<StakeOutData> {
+): Promise<StakeFromData> {
   const response = await fetch(`${torusCacheUrl}/api/stake-from`, {
     method: "GET",
     headers: {
@@ -391,16 +380,16 @@ export async function queryStakeFrom(
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }
-  const stakeOutData = response.json() as unknown as StakeOutData;
-  return stakeOutData;
+
+  const responseData = await response.text();
+
+  const deserializedData = SuperJSON.parse(responseData);
+  const stakeFromData = STAKE_DATA_SCHEMA.parse(deserializedData);
+  return stakeFromData
 }
 
-/**
- * NOTE: This function might be wrong.
- */
 export async function queryCalculateStakeFrom(api: Api) {
-  // Stake From is the list of keys that the key has staked to.
-
+  // StakeFrom is the list of nominators that have staked to a validator.
   const stakeFromQuery = await api.query.subspaceModule?.stakeFrom?.entries();
 
   if (!stakeFromQuery) {
@@ -410,13 +399,14 @@ export async function queryCalculateStakeFrom(api: Api) {
   let total = 0n;
   const perAddr = new Map<string, bigint>();
 
-  for (const [storageKey, value] of stakeFromQuery) {
-    const addr = storageKey.toString(); // NOTE: this key should have two values like in `queryCalculateStakeOut`
+  for (const [keyRaw, valueRaw] of stakeFromQuery) {
+    const [toAddrRaw] = keyRaw.args;
+    const toAddr = toAddrRaw!.toString();
 
-    const staked = BigInt(value.toString());
+    const staked = BigInt(valueRaw.toString());
 
     total += staked;
-    perAddr.set(addr, staked);
+    perAddr.set(toAddr, (perAddr.get(toAddr) ?? 0n) + staked);
   }
 
   return {

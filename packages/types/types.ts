@@ -87,24 +87,23 @@ export type WithMetadataState<T> = T & { customData?: CustomMetadataState };
 
 // == Stake ==
 
-export interface StakeOutData {
+interface StakeData {
   total: bigint;
   perAddr: Record<string, bigint>;
   atBlock: bigint;
   atTime: Date;
 }
 
-export const STAKE_OUT_DATA_SCHEMA = z.object({
+export type StakeOutData = StakeData
+
+export type StakeFromData = StakeData
+
+export const STAKE_DATA_SCHEMA = z.object({
   total: z.coerce.bigint(),
   perAddr: z.record(z.string(), z.coerce.bigint()),
   atBlock: z.coerce.bigint(),
   atTime: z.coerce.date(),
 });
-
-export interface StakeFromData {
-  total: bigint;
-  perAddr: Map<string, bigint>;
-}
 
 export interface VoteWithStake {
   address: SS58Address;
