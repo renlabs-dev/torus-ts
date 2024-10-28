@@ -1,20 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import JSONBigInt from "json-bigint";
+import { STAKE_DATA_SCHEMA } from "@torus-ts/types";
 import fetch from "node-fetch";
+import SuperJSON from "superjson";
 
 // TODO: use `superjson` instead of `json-bigint`
 
 const result = await fetch("http://localhost:3000/api/stake-out");
+const data = await result.text()
 
-const JSONBig = JSONBigInt({
-  useNativeBigInt: true,
-  alwaysParseAsBig: true,
-  strict: true,
-});
+const parsedData = SuperJSON.parse(data);
+const stakeOutData = STAKE_DATA_SCHEMA.parse(parsedData); 
 
-const data = await JSONBig.parse(await result.text());
-
-console.log(data.perAddr);
-
-console.log("total: ", data.total);
+console.log(stakeOutData.perAddr);
+console.log("total: ", stakeOutData.total);

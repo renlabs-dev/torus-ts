@@ -335,9 +335,9 @@ export async function queryStakeOut(
   }
   const responseData = await response.text();
   
-  const deserializedData = SuperJSON.parse(responseData);
+  const parsedData = SuperJSON.parse(responseData);
   
-  const stakeOutData = STAKE_DATA_SCHEMA.parse(deserializedData);
+  const stakeOutData = STAKE_DATA_SCHEMA.parse(parsedData);
   return stakeOutData;
 }
 
@@ -383,8 +383,8 @@ export async function queryStakeFrom(
 
   const responseData = await response.text();
 
-  const deserializedData = SuperJSON.parse(responseData);
-  const stakeFromData = STAKE_DATA_SCHEMA.parse(deserializedData);
+  const parsedData = SuperJSON.parse(responseData);
+  const stakeFromData = STAKE_DATA_SCHEMA.parse(parsedData);
   return stakeFromData
 }
 
