@@ -36,7 +36,6 @@ export function Wallet() {
     stakeOut,
     balance,
     accounts,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     handleWalletModal,
     openWalletModal,
   } = useTorus();
@@ -260,11 +259,10 @@ export function Wallet() {
         <div className="tw-flex tw-flex-col tw-gap-y-4 tw-overflow-y-auto tw-p-4">
           {accounts?.map((item) => (
             <button
-              className={`tw-text-md tw-flex tw-cursor-pointer tw-items-center tw-gap-x-3 tw-overflow-auto tw-border tw-px-4 tw-py-2 ${
-                selectedAccount?.address === item.address
+              className={`tw-text-md tw-flex tw-cursor-pointer tw-items-center tw-gap-x-3 tw-overflow-auto tw-border tw-px-4 tw-py-2 ${selectedAccount?.address === item.address
                   ? "tw-border-green-500"
                   : "tw-border-white/20"
-              }`}
+                }`}
               key={item.address}
               onClick={() => handleWalletSelection(item)}
               type="button"
@@ -370,11 +368,10 @@ export function Wallet() {
                   {walletActions.map((action) => {
                     return (
                       <button
-                        className={`tw-flex tw-w-full tw-flex-col tw-items-center tw-border-white/20 tw-px-3.5 tw-py-3 tw-text-gray-400 tw-transition tw-duration-200 hover:tw-bg-white/5 ${
-                          activeMenu == action.name.toLocaleLowerCase()
+                        className={`tw-flex tw-w-full tw-flex-col tw-items-center tw-border-white/20 tw-px-3.5 tw-py-3 tw-text-gray-400 tw-transition tw-duration-200 hover:tw-bg-white/5 ${activeMenu == action.name.toLocaleLowerCase()
                             ? action.bgColor
                             : ""
-                        }`}
+                          }`}
                         key={action.name}
                         onClick={() => {
                           action.handleMenuClick(
@@ -399,9 +396,8 @@ export function Wallet() {
                 </div>
               </div>
               <div
-                className={`tw-flex tw-flex-col tw-gap-4 tw-border-t tw-animate-fade-down tw-border-white/20 tw-p-4 tw-text-white ${
-                  activeMenu ? "tw-flex" : "tw-hidden"
-                }`}
+                className={`tw-flex tw-flex-col tw-gap-4 tw-border-t tw-animate-fade-down tw-border-white/20 tw-p-4 tw-text-white ${activeMenu ? "tw-flex" : "tw-hidden"
+                  }`}
               >
                 <form
                   className="tw-flex tw-w-full tw-flex-col tw-gap-4"
@@ -410,8 +406,8 @@ export function Wallet() {
                   <div className="tw-w-full">
                     <span className="tw-text-base">
                       {activeMenu === "stake" ||
-                      // activeMenu === "transfer" ||
-                      activeMenu === "unstake" ? (
+                        // activeMenu === "transfer" ||
+                        activeMenu === "unstake" ? (
                         <div className="tw-flex tw-flex-col tw-items-end tw-gap-3 md:tw-flex-row">
                           <p>Validator Address</p>
                           <a
@@ -438,8 +434,8 @@ export function Wallet() {
                       }}
                       placeholder={
                         activeMenu === "stake" ||
-                        // activeMenu === "transfer" ||
-                        activeMenu === "unstake"
+                          // activeMenu === "transfer" ||
+                          activeMenu === "unstake"
                           ? "Enter the full address of the validator"
                           : "Enter full address of the recipient"
                       }

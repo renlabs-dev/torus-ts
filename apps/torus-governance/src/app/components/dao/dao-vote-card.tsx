@@ -25,31 +25,28 @@ export function DaoVoteCard(props: {
 
   const [vote, setVote] = useState<DaoVote["daoVoteType"]>();
 
+  const utils = api.useUtils();
   const { data: votes } = api.dao.byId.useQuery({ id: daoId });
   const { data: cadreUsers } = api.dao.byCadre.useQuery();
-
   const userVote = votes?.find(
     (vote) => vote.userKey === selectedAccount?.address,
   );
 
   const createVoteMutation = api.dao.createVote.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Vote submitted successfully!");
-      setTimeout(() => {
-        window.location.reload();
-      }, 700);
+
+      await utils.dao.byId.invalidate({ id: daoId });
     },
     onError: (error) => {
       toast.error(`Error submitting vote: ${error.message}`);
     },
   });
   const deleteVoteMutation = api.dao.deleteVote.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Vote removed successfully!");
       setVote(undefined);
-      setTimeout(() => {
-        window.location.reload();
-      }, 700);
+      await utils.dao.byId.invalidate({ id: daoId });
     },
     onError: (error) => {
       toast.error(`Error removing vote: ${error.message}`);
@@ -173,11 +170,10 @@ export function DaoVoteCard(props: {
             <>
               <div className="flex w-full gap-4">
                 <button
-                  className={`w-full border border-green-600 py-1 ${
-                    vote === "ACCEPT"
-                      ? "border-green-500 bg-green-500/10 text-green-500"
-                      : "text-green-600"
-                  } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
+                  className={`w-full border border-green-600 py-1 ${vote === "ACCEPT"
+                    ? "border-green-500 bg-green-500/10 text-green-500"
+                    : "text-green-600"
+                    } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
                   onClick={() => handleVotePreference("ACCEPT")}
                   type="button"
                   disabled={createVoteMutation.isPending}
@@ -185,11 +181,10 @@ export function DaoVoteCard(props: {
                   Approve
                 </button>
                 <button
-                  className={`w-full border border-red-600 py-1 ${
-                    vote === "REFUSE"
-                      ? "border-red-500 bg-red-500/10 text-red-500"
-                      : "text-red-500"
-                  } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
+                  className={`w-full border border-red-600 py-1 ${vote === "REFUSE"
+                    ? "border-red-500 bg-red-500/10 text-red-500"
+                    : "text-red-500"
+                    } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
                   onClick={() => handleVotePreference("REFUSE")}
                   type="button"
                   disabled={createVoteMutation.isPending}
@@ -198,11 +193,10 @@ export function DaoVoteCard(props: {
                 </button>
               </div>
               <button
-                className={`mt-4 w-full border p-1.5 ${
-                  !vote || createVoteMutation.isPending
-                    ? "cursor-not-allowed border-gray-400 text-gray-400"
-                    : "border-blue-400 bg-blue-500/10 text-blue-400"
-                } `}
+                className={`mt-4 w-full border p-1.5 ${!vote || createVoteMutation.isPending
+                  ? "cursor-not-allowed border-gray-400 text-gray-400"
+                  : "border-blue-400 bg-blue-500/10 text-blue-400"
+                  } `}
                 disabled={!vote || createVoteMutation.isPending}
                 onClick={handleVote}
                 type="button"

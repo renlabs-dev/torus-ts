@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
@@ -21,7 +20,6 @@ export function CreateComment({
   proposalId: number;
   ModeType: "PROPOSAL" | "DAO";
 }) {
-  const router = useRouter();
   const { selectedAccount, stakeOut } = useTorus();
   const { data: cadreUsers } = api.dao.byCadre.useQuery();
 
@@ -32,9 +30,9 @@ export function CreateComment({
 
   let userStakeWeight: bigint | null = null;
 
+  const utils = api.useUtils();
   const CreateComment = api.proposalComment.createComment.useMutation({
     onSuccess: () => {
-      router.refresh();
       setContent("");
       setRemainingChars(MAX_CHARACTERS);
     },
@@ -79,10 +77,9 @@ export function CreateComment({
         governanceModel: ModeType,
         userName: name || undefined,
       });
-      toast.success("Comment submitted successfully!, Reloading page...");
-      setTimeout(() => {
-        window.location.reload();
-      }, 700);
+      toast.success("Comment submitted successfully!");
+      await utils.proposalComment.byId.invalidate({ proposalId: proposalId });
+
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0]?.message ?? "Invalid input");
