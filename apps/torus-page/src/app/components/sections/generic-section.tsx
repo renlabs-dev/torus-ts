@@ -1,8 +1,8 @@
-import type { ForwardRefExoticComponent, SVGProps } from "react";
+// import type { ForwardRefExoticComponent, SVGProps } from "react";
 
 interface Feature {
   description: string;
-  icon: ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref">>;
+  // icon: ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref">>;
 }
 
 interface GenericSectionProps {
@@ -41,10 +41,10 @@ export function GenericSection({
             key={feature.description}
           >
             <div className="inline font-semibold text-white">
-              <feature.icon
+              {/* <feature.icon
                 aria-hidden="true"
                 className="absolute left-0 top-1 h-5 w-5 fill-green-500"
-              />
+              /> */}
             </div>
             <p className="inline">{feature.description}</p>
           </div>
