@@ -15,6 +15,7 @@ import { isSS58 } from "@torus-ts/types";
 import {
   CopyButton,
   NoWalletExtensionDisplay,
+  ScrollArea,
   TransactionStatus,
 } from "@torus-ts/ui";
 import { formatToken, fromNano, smallAddress } from "@torus-ts/utils";
@@ -256,29 +257,31 @@ export function Wallet() {
 
     if (isWalletSelectionView) {
       return (
-        <div className="tw-flex tw-flex-col tw-gap-y-4 tw-overflow-y-auto tw-p-4">
-          {accounts?.map((item) => (
-            <button
-              className={`tw-text-md tw-flex tw-cursor-pointer tw-items-center tw-gap-x-3 tw-overflow-auto tw-border tw-px-4 tw-py-2 ${
-                selectedAccount?.address === item.address
-                  ? "tw-border-green-500"
-                  : "tw-border-white/20"
-              }`}
-              key={item.address}
-              onClick={() => handleWalletSelection(item)}
-              type="button"
-            >
-              <div className="tw-flex tw-flex-col tw-items-start tw-gap-1">
-                <span className="tw-font-semibold tw-text-white">
-                  {item.meta.name}
-                </span>
-                <p className="tw-text-sm tw-font-thin tw-text-gray-300">
-                  {smallAddress(item.address, 17)}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
+        <ScrollArea style={{ height: "300px" }}>
+          <div className="tw-flex tw-flex-col tw-gap-y-4 tw-p-4">
+            {accounts?.map((item) => (
+              <button
+                className={`tw-text-md tw-flex tw-cursor-pointer tw-items-center tw-gap-x-3 tw-overflow-auto tw-border tw-px-4 tw-py-2 ${
+                  selectedAccount?.address === item.address
+                    ? "tw-border-green-500"
+                    : "tw-border-white/20"
+                }`}
+                key={item.address}
+                onClick={() => handleWalletSelection(item)}
+                type="button"
+              >
+                <div className="tw-flex tw-flex-col tw-items-start tw-gap-1">
+                  <span className="tw-font-semibold tw-text-white">
+                    {item.meta.name}
+                  </span>
+                  <p className="tw-text-sm tw-font-thin tw-text-gray-300">
+                    {smallAddress(item.address, 17)}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
       );
     }
 
@@ -300,6 +303,7 @@ export function Wallet() {
           setIsWalletSelectionView(false);
         }}
       />
+
       <div className="tw-max-w-screen-2xl tw-mx-auto tw-w-full tw-fixed tw-z-[100]">
         <div className="tw-absolute tw-animate-fade-down tw-top-16 tw-w-auto xl:tw-w-1/4 tw-right-0 !tw-z-[150] tw-m-3 tw-flex-col tw-border tw-border-white/20 tw-bg-stone-950/70 tw-backdrop-blur-md">
           <SelectWalletModal />
