@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeftIcon } from "@heroicons/react/16/solid";
-import { GlobeAltIcon } from "@heroicons/react/24/outline";
 
 import { formatToken, smallAddress } from "@torus-ts/utils";
 
 import type { Subnet } from "~/utils/types";
 import { api } from "~/trpc/server";
+import { ArrowLeft, Globe } from "lucide-react";
 
 const DIGITS = /^\d+$/;
 
@@ -43,7 +42,7 @@ export default async function SubnetPage({ params }: Params) {
             href="/subnets"
             className="flex animate-fade-left items-center gap-1 border border-white/20 bg-[#898989]/5 p-2 pr-3 text-white backdrop-blur-md transition duration-200 hover:border-cyan-500 hover:bg-cyan-500/10"
           >
-            <ArrowLeftIcon className="h-5 w-5 text-cyan-500" />
+            <ArrowLeft className="h-5 w-5 text-cyan-500" />
             Go back to Subnets list
           </Link>
           {subnet.subnetMetadata && (
@@ -52,7 +51,7 @@ export default async function SubnetPage({ params }: Params) {
               href={subnet.subnetMetadata}
               className="flex animate-fade-left items-center gap-1 border border-white/20 bg-[#898989]/5 p-2 pr-3 text-white backdrop-blur-md transition duration-200 hover:border-cyan-500 hover:bg-cyan-500/10"
             >
-              <GlobeAltIcon className="h-5 w-5 text-cyan-500" />
+              <Globe className="h-5 w-5 text-cyan-500" />
               View More
             </Link>
           )}

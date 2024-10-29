@@ -1,9 +1,8 @@
 "use client";
 
-import { ChartPieIcon } from "@heroicons/react/24/outline";
-
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
+import { ChartPie } from "lucide-react";
 
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
 
@@ -40,13 +39,12 @@ export function DelegateSubnetWeight(props: DelegateSubnetWeightProps) {
   return (
     <button
       onClick={handleDelegateClick}
-      className={`flex w-fit items-center gap-2 border border-white/20 bg-[#898989]/5 p-2 text-sm text-white backdrop-blur-md transition duration-200 ${
-        isSubnetDelegated
+      className={`flex w-fit items-center gap-2 border border-white/20 bg-[#898989]/5 p-2 text-sm text-white backdrop-blur-md transition duration-200 ${isSubnetDelegated
           ? "hover:border-red-500 hover:bg-red-500/20"
           : "hover:border-cyan-500 hover:bg-cyan-500/10"
-      }`}
+        }`}
     >
-      <ChartPieIcon
+      <ChartPie
         className={`h-5 w-5 ${isSubnetDelegated ? "text-red-500" : "text-cyan-500"}`}
       />
       {isSubnetDelegated ? "Remove" : "Allocate"}

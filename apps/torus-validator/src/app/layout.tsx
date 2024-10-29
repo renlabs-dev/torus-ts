@@ -2,7 +2,6 @@ import "../styles/globals.css";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
 import { Providers } from "@torus-ts/providers/context";
 import { links } from "@torus-ts/ui/data";
@@ -13,6 +12,7 @@ import { Wallet, WalletButton } from "@torus-ts/wallet";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cairo, oxanium } from "~/utils/fonts";
 import { DelegatedList } from "./components/delegated-list";
+import { Info } from "lucide-react";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -35,7 +35,7 @@ export default function RootLayout({
           <Wallet />
           <div className="flex w-full animate-fade-down border-b border-white/20 py-2.5">
             <div className="mx-auto flex max-w-screen-md items-center gap-1 px-2">
-              <InformationCircleIcon className="h-10 w-10 text-green-500 md:h-6 md:w-6" />
+              <Info className="h-10 w-10 text-green-500 md:h-6 md:w-6" />
               <p className="text-gray-400">
                 To assign weights to modules, you need to stake on our
                 validator. Click{" "}

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeftIcon } from "@heroicons/react/16/solid";
 
 import { Card } from "@torus-ts/ui";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
@@ -13,6 +12,7 @@ import {
 import type { Module } from "~/utils/types";
 import { ReportModule } from "~/app/components/report-module";
 import { api } from "~/trpc/server";
+import { ArrowLeft } from "lucide-react";
 
 interface Params {
   params: {
@@ -60,7 +60,7 @@ export default async function ModulePage({ params }: Params) {
           href="/modules"
           className="absolute z-10 flex animate-fade-left items-center gap-1 border border-white/20 bg-[#898989]/5 p-2 pr-3 text-white backdrop-blur-md transition duration-200 hover:border-green-500 hover:bg-green-500/10"
         >
-          <ArrowLeftIcon className="h-5 w-5 text-green-500" />
+          <ArrowLeft className="h-5 w-5 text-green-500" />
           Go back to modules list
         </Link>
         <h1 className="flex-grow animate-fade-right text-center text-3xl font-semibold">

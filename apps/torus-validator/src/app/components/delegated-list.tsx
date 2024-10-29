@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
@@ -25,6 +24,7 @@ import { formatToken, smallAddress } from "@torus-ts/utils";
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
 import { api } from "~/trpc/react";
+import { ChevronsUp, X } from "lucide-react";
 
 export function DelegatedList() {
   const pathname = usePathname();
@@ -442,10 +442,9 @@ export function DelegatedList() {
                 )}
               >
                 {isOpen ? "COLLAPSE " : "EXPAND "}
-                <ChevronUpIcon
-                  className={`h-5 w-5 transform transition-transform ${
-                    isOpen ? "rotate-180" : ""
-                  }`}
+                <ChevronsUp
+                  className={`h-5 w-5 transform transition-transform ${isOpen ? "rotate-180" : ""
+                    }`}
                 />
               </Button>
             </div>
@@ -500,7 +499,7 @@ export function DelegatedList() {
                               variant="default-red"
                               onClick={() => removeModule(module.id)}
                             >
-                              <XMarkIcon className="h-5 w-5" />
+                              <X className="h-5 w-5" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -545,7 +544,7 @@ export function DelegatedList() {
                             variant="default-red"
                             onClick={() => removeSubnet(subnet.id)}
                           >
-                            <XMarkIcon className="h-5 w-5" />
+                            <X className="h-5 w-5" />
                           </Button>
                         </TableCell>
                       </TableRow>

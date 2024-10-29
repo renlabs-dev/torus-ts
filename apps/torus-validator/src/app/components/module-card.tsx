@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRightIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
-
 import { Label } from "@torus-ts/ui";
 import { smallAddress } from "@torus-ts/utils";
 
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
 import { CopySquareButton } from "./copy-square-button";
 import { DelegateModuleWeight } from "./delegate-module-weight";
+import { ArrowRight, Grid2X2 } from "lucide-react";
 
 interface ModuleCardProps {
   id: number;
@@ -40,7 +39,7 @@ export function ModuleCard(props: ModuleCardProps) {
 
       <div className="flex items-center justify-between gap-2">
         <span className="flex w-full items-center gap-1 border border-white/20 bg-[#898989]/5 py-2 pl-2 backdrop-blur-md md:text-sm 2xl:text-base">
-          <Squares2X2Icon className="h-6 w-6 text-green-500" />{" "}
+          <Grid2X2 className="h-6 w-6 text-green-500" />{" "}
           {smallAddress(String(props.moduleKey))}
         </span>
         <CopySquareButton address={props.moduleKey} />
@@ -55,7 +54,7 @@ export function ModuleCard(props: ModuleCardProps) {
           className="flex w-full items-center justify-between border border-white/20 bg-[#898989]/5 p-2 pl-3 text-white backdrop-blur-md transition duration-200 hover:border-green-500 hover:bg-green-500/10"
           href={`module/${props.moduleKey}`}
         >
-          View More <ArrowRightIcon className="h-5 w-5 text-green-500" />
+          View More <ArrowRight className="h-5 w-5 text-green-500" />
         </Link>
       </div>
     </div>

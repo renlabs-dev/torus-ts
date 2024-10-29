@@ -2,18 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import {
-  BoltIcon,
-  RectangleGroupIcon,
-  ScaleIcon,
-  Squares2X2Icon,
-  WalletIcon,
-} from "@heroicons/react/24/outline";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/utils";
+import { Grid2X2, Scale, SquareStack, Wallet, Zap } from "lucide-react";
 
 function handleCopyClick(text: string) {
   copyToClipboard(text);
@@ -22,7 +16,7 @@ function handleCopyClick(text: string) {
 
 export const tutorialData = {
   "1": {
-    icon: <WalletIcon className="h-5 w-5" />,
+    icon: <Wallet className="h-5 w-5" />,
     description: "Creating a wallet",
     steps: [
       "Install the polkadot.js or SubWallet browser extension",
@@ -31,7 +25,7 @@ export const tutorialData = {
     ],
   },
   "2": {
-    icon: <BoltIcon className="h-5 w-5" />,
+    icon: <Zap className="h-5 w-5" />,
     description: "Staking on the Community Validator",
     steps: [
       "Navigate to the staking tab in your wallet",
@@ -56,7 +50,7 @@ export const tutorialData = {
     ],
   },
   "3": {
-    icon: <ScaleIcon className="h-5 w-5" />,
+    icon: <Scale className="h-5 w-5" />,
     description: "Assigning weights to modules or subnets",
     steps: [
       "Visit the modules page and select your preferred modules",
@@ -122,19 +116,19 @@ const TutorialPage = () => {
             onClick={handleConnectWallet}
             className="flex w-fit items-center gap-2 text-nowrap border border-green-500 bg-green-600/5 px-4 py-2.5 font-semibold text-green-500 backdrop-blur-md transition duration-200 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50"
           >
-            <WalletIcon className="h-6 w-6" /> Open Wallet Modal
+            <Wallet className="h-6 w-6" /> Open Wallet Modal
           </button>
           <Link
             href="/modules"
             className="flex w-fit items-center gap-2 text-nowrap border border-green-500 bg-green-600/5 px-4 py-2.5 font-semibold text-green-500 backdrop-blur-md transition duration-200 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50"
           >
-            <Squares2X2Icon className="h-6 w-6" /> Go to Modules
+            <Grid2X2 className="h-6 w-6" /> Go to Modules
           </Link>
           <Link
             href="/subnets"
             className="flex w-fit items-center gap-2 text-nowrap border border-cyan-500 bg-cyan-600/5 px-4 py-2.5 font-semibold text-cyan-500 backdrop-blur-md transition duration-200 hover:border-cyan-400 hover:bg-cyan-500/15 active:bg-cyan-500/50"
           >
-            <RectangleGroupIcon className="h-6 w-6" /> Go to Subnets
+            <SquareStack className="h-6 w-6" /> Go to Subnets
           </Link>
         </div>
       </div>

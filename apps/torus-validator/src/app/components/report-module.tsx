@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { XMarkIcon } from "@heroicons/react/16/solid";
-import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
 
 import { api } from "~/trpc/react";
+import { TriangleAlert, X } from "lucide-react";
 
 const reportSchema = z.object({
   reason: z.enum([
@@ -90,7 +89,7 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
         type="button"
         className="flex items-center gap-1 border border-red-500 p-1 px-2 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
       >
-        <ExclamationTriangleIcon className="mt-0.5 h-4 w-4" /> Report Module
+        <TriangleAlert className="mt-0.5 h-4 w-4" /> Report Module
       </button>
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -108,7 +107,7 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
                 onClick={toggleModalMenu}
                 type="button"
               >
-                <XMarkIcon className="h-6 w-6" />
+                <X className="h-6 w-6" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6">

@@ -13,7 +13,6 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@heroicons/react": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
@@ -24,6 +23,7 @@
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
+    "lucide-react": "^0.454.0",
     "next": "catalog:",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",

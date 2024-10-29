@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRightIcon } from "@heroicons/react/16/solid";
-
 import { smallAddress } from "@torus-ts/utils";
 
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
 import { DelegateSubnetWeight } from "./delegate-subnet-weight";
+import { ArrowRight } from "lucide-react";
 
 interface SubnetCardWeightProps {
   id: number; // TODO: rename to `netuid`
@@ -45,7 +44,7 @@ export default function SubnetCard({
             className="flex w-full items-center justify-between gap-2 border border-white/20 bg-[#898989]/5 p-2 pl-3 text-sm text-white backdrop-blur-md transition duration-200 hover:border-cyan-500 hover:bg-cyan-500/10 hover:text-cyan-500 md:w-fit"
             href={`subnet/${id}`}
           >
-            View More <ArrowRightIcon className="h-4 w-4" />
+            View More <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>

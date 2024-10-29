@@ -2,12 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChartPieIcon,
-  CircleStackIcon,
-  Squares2X2Icon,
-  SquaresPlusIcon,
-} from "@heroicons/react/24/outline";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
@@ -31,6 +25,7 @@ import { ModuleBarChart } from "./components/charts/module-bar-chart";
 import { SubnetPieChart } from "./components/charts/subnet-pie-chart";
 import { DelegatedScroll } from "./components/delegated-scroll";
 import { StatsCard } from "./components/stats-card";
+import { ChartPie, Database, Grid2X2, Grid2x2Plus } from "lucide-react";
 
 const TOP_MODULES_NUM = 7;
 
@@ -56,15 +51,15 @@ export default function Page() {
 
   const moduleStakeData = computedWeightedModules
     ? separateTopNModules(TOP_MODULES_NUM)(computedWeightedModules)
-        // .sort((a, b) => Number(b.stakeWeight - a.stakeWeight))
-        .map((module) => {
-          return {
-            moduleName: module.moduleName ?? "",
-            stakeWeight: String(module.stakeWeight),
-            percWeight: module.percWeight,
-            percFormat: `${(module.percWeight * 100).toFixed(1)} %`,
-          };
-        })
+      // .sort((a, b) => Number(b.stakeWeight - a.stakeWeight))
+      .map((module) => {
+        return {
+          moduleName: module.moduleName ?? "",
+          stakeWeight: String(module.stakeWeight),
+          percWeight: module.percWeight,
+          percFormat: `${(module.percWeight * 100).toFixed(1)} %`,
+        };
+      })
     : null;
 
   const delegatedModulesData = delegatedModules.map((module) => ({
@@ -129,13 +124,13 @@ export default function Page() {
         <div className="mb-4 flex w-full flex-col border-b border-white/20 md:flex-row md:gap-3">
           <div className="flex w-full animate-fade-down flex-col gap-4 pb-4 animate-delay-500 md:flex-row">
             <StatsCard
-              Icon={Squares2X2Icon}
+              Icon={Grid2X2}
               text="Total Modules"
               value={`${modules?.length ? modules.length : 0}`}
               color="green"
             />
             <StatsCard
-              Icon={SquaresPlusIcon}
+              Icon={Grid2x2Plus}
               text="Your Modules"
               value={`${delegatedModules.length}`}
               color="green"
@@ -144,13 +139,13 @@ export default function Page() {
           <div className="mb-4 hidden border-l border-white/20 md:block" />
           <div className="flex w-full animate-fade-down flex-col gap-4 pb-4 animate-delay-500 md:flex-row">
             <StatsCard
-              Icon={CircleStackIcon}
+              Icon={Database}
               text="Total Subnets"
               value={`${subnets?.length ? subnets.length : 0}`}
               color="cyan"
             />
             <StatsCard
-              Icon={ChartPieIcon}
+              Icon={ChartPie}
               text="Your Subnets"
               value={`${delegatedSubnets.length}`}
               color="cyan"
