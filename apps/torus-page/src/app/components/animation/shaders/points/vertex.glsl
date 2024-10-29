@@ -101,7 +101,7 @@ float turbulence( vec3 p ) {
 }
 
 float f( vec3 p ) {
-  return pnoise( 1.5 * vec3( p ), vec3( 20.0, 20.0, 20.0 ) );
+  return pnoise( 0.1 * vec3( p ), vec3( 20.0, 20.0, 20.0 ) );
 }
 
 // Vertex Shader
@@ -132,7 +132,7 @@ void main() {
   float y = position.y;
   float z = position.z;
 
-  float timeShift = uTime * 1.0;
+  float timeShift = uTime * 0.4;
 
   // Theta remains constant, based on the initial layout of vertices
   float theta = atan(y, x) + timeShift * 1.0;
@@ -167,7 +167,7 @@ void main() {
 
   gl_Position = projectedPosition;
 
-  gl_PointSize = 40.0 * aScale;
+  gl_PointSize = 45.0 * aScale;
   gl_PointSize *= (1.0 / - viewPosition.z);
 
   float opacity = uColorOpacity;

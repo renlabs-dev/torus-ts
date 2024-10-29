@@ -30,7 +30,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
 
   const object = {
     tubeRadius: 4.1,
-    torusRadius: 5,
+    torusRadius: 5.3,
     radialSegments: 60,
     tabularSegments: 120,
   };
@@ -62,7 +62,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     objectsGroup.add(points);
     objectsGroup.add(lines);
     objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.25 : 0.35);
-    objectsGroup.position.y = isMobile ? 7.5 : 2.5;
+    objectsGroup.position.y = isMobile ? 7.5 : 1.8;
     scene.add(objectsGroup);
   }
 
@@ -115,7 +115,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     // Randomly connect each vertex with up to 2 random neighbors that follow it in the array
     const numVertices = positions.length / 3;
     for (let i = 0; i < numVertices; i++) {
-      const numConnections = Math.floor(Math.random() * 2); // Random number of connections (0, 1, or 2)
+      const numConnections = Math.floor(Math.random() * 1.7); // Random number of connections (0, 1, or 2)
       const possibleConnections: unknown[] = [];
 
       // Find possible connections
@@ -211,10 +211,11 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
       const normalizedPos =
         (positions[i]! - minPosition) / (maxPosition - minPosition);
 
-      const r = normalizedPos * 1;
-      const g = normalizedPos * 0.5;
-      const b = normalizedPos * 2;
-      colors.push(r, g, b * 2);
+      const r = 0.35 + normalizedPos * 0.35;
+      const g = 0.15 + normalizedPos * 0.15;
+      const b = 0.6 + normalizedPos * 1.3;
+
+      colors.push(r, g, b);
       scales.push(getRandNum(0.5, 3));
     }
 
@@ -326,7 +327,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
   function playIntroAnimation() {
     camera.position.set(0, 0, 5);
 
-    const finalPosition = new THREE.Vector3(0, 1, 20);
+    const finalPosition = new THREE.Vector3(0, 1, 19);
 
     const tl = gsap.timeline();
 

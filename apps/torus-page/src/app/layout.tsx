@@ -10,7 +10,7 @@ import { cairo, oxanium } from "~/utils/fonts";
 
 export const metadata: Metadata = {
   robots: "all",
-  title: "Torus",
+  title: "𝐓𝐨𝐫𝐮𝐬",
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description: "Most advanced decentralized AI Protocol",
 };
