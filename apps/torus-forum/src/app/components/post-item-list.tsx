@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { VotesDisplay } from "./votes-display";
-import { ChatBubbleLeftRightIcon, EyeIcon } from "@heroicons/react/16/solid";
 import { smallAddress } from "@torus-ts/utils";
 import { cairo } from "~/utils/fonts";
 import { DateTime } from "luxon";
 import { CategoriesTag } from "./categories-tag";
+import { Eye, MessagesSquare } from "lucide-react";
 
 function formatInteractionNumbers(num: number): string {
   const absNum = Math.abs(num);
@@ -93,11 +93,11 @@ export const PostItem: React.FC<PostItemProps> = (props) => {
             </div>
             <div className="flex items-center justify-center w-full gap-3 sm:justify-end lg:w-fit">
               <div className="flex items-center justify-center w-1/3 gap-2 px-3 py-2 space-x-0 text-sm text-center text-green-500 border divide-x divide-white/10 border-white/10 lg:w-auto">
-                <ChatBubbleLeftRightIcon className="fill-green-500" height={16} />
+                <MessagesSquare className="fill-green-500" height={16} />
                 {!post.commentCount ? formatInteractionNumbers(post.commentCount) : 0}
               </div>
               <div className="flex items-center justify-center w-1/3 gap-2 px-3 py-2 space-x-0 text-sm text-center text-green-500 border divide-x divide-white/10 border-white/10">
-                <EyeIcon className="fill-green-500" height={16} />
+                <Eye className="fill-green-500" height={16} />
                 {post.viewCount ? formatInteractionNumbers(post.viewCount) : 0}
               </div>
               <VotesDisplay className="w-1/3" upVotes={post.upvotes ? formatInteractionNumbers(post.upvotes) : 0} downVotes={post.downvotes ? formatInteractionNumbers(post.downvotes) : 0} />

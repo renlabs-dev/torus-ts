@@ -1,7 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronsDown } from 'lucide-react'
 
 interface DropdownButton {
   title: string | JSX.Element,
@@ -21,7 +19,7 @@ export const Dropdown = (props: DropdownButton) => {
         animate-fade-down p-4 text-white transition hover:border-green-500 hover:bg-green-500/10 hover:text-green-500
         ">
           {title}
-          <ChevronDownIcon aria-hidden="true" className="w-5 h-5 -mr-1 text-gray-400" />
+          <ChevronsDown aria-hidden="true" className="w-5 h-5 -mr-1 text-gray-400" />
         </MenuButton>
       </div>
 

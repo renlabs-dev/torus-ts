@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ArrowLongDownIcon } from "@heroicons/react/16/solid";
 import type { Category } from "./categories-selector";
 import { CategoriesSelector } from "./categories-selector";
 import { cairo } from "~/utils/fonts";
+import { MoveDown } from "lucide-react";
 
 type SortField = "createdAt" | "upvotes";
 type SortOrder = "asc" | "desc";
@@ -38,7 +38,7 @@ const RenderSorters: React.FC<RenderSortersProps> = React.memo(({ sortFieldLabel
         ${sortField === field ? 'border-green-500 bg-green-500/10 text-green-500' : 'bg-white/5  border-white/20 hover:border-green-500 hover:text-green-500'}`}
         >
           {label}
-          <ArrowLongDownIcon
+          <MoveDown
             height={16}
             className={`transition duration-200 animate-delay-700 text-green-500
           ${sortField === field ? orderStyles[sortOrder] : 'invisible'}`}

@@ -1,17 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ChevronDoubleDownIcon,
-  ChevronDoubleUpIcon,
-  UserIcon,
-} from "@heroicons/react/20/solid";
 
 import { smallAddress } from "@torus-ts/utils";
 
 import { api } from "~/trpc/react";
 import { ReportComment } from "./report-comment";
 import { DateTime } from "luxon";
+import { ChevronsDown, ChevronsUp, UserCircle } from "lucide-react";
 
 export enum VoteType {
   UP = "UP",
@@ -82,7 +78,7 @@ export function ViewComment({
               <div className="flex justify-between px-2 py-1 pb-2 border-b border-white/20">
                 <span className="flex items-center gap-1">
                   <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-                    <UserIcon className="w-4 h-4" />
+                    <UserCircle className="w-4 h-4" />
                   </span>{" "}
                   Loading user address...
                 </span>
@@ -91,14 +87,14 @@ export function ViewComment({
                     disabled={true}
                     className={`flex items-center text-gray-300`}
                   >
-                    <ChevronDoubleUpIcon className="w-5 h-5" />
+                    <ChevronsUp className="w-5 h-5" />
                     <span>-</span>
                   </button>
                   <button
                     disabled={true}
                     className={`flex items-center text-gray-300`}
                   >
-                    <ChevronDoubleDownIcon className="w-5 h-5" />
+                    <ChevronsDown className="w-5 h-5" />
                     <span>-</span>
                   </button>
                 </div>

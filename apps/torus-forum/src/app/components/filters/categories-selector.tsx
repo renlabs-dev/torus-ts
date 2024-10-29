@@ -7,12 +7,8 @@ import {
   ListboxOption,
   ListboxOptions,
 } from "@headlessui/react";
-import {
-  CheckIcon,
-  ChevronUpDownIcon,
-  XMarkIcon,
-} from "@heroicons/react/20/solid";
 import React from "react";
+import { Check, ChevronsUp, X } from "lucide-react";
 
 export interface Category {
   id: number | null;
@@ -66,12 +62,12 @@ export const CategoriesSelector: React.FC<CategoriesSelectorProps> = React.memo(
             </span>
             <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
               {selectedCategory ? (
-                <XMarkIcon
+                <X
                   className="w-5 h-5 text-gray-400 cursor-pointer pointer-events-auto"
                   onClick={handleClearSelection}
                 />
               ) : (
-                <ChevronUpDownIcon
+                <ChevronsUp
                   aria-hidden="true"
                   className="w-5 h-5 text-gray-400"
                 />
@@ -96,7 +92,7 @@ export const CategoriesSelector: React.FC<CategoriesSelectorProps> = React.memo(
                     </span>
                     {selected && category.id !== null && (
                       <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-green-500">
-                        <CheckIcon
+                        <Check
                           aria-hidden="true"
                           className="w-5 h-5"
                         />

@@ -1,5 +1,5 @@
 "use client"
-import { XMarkIcon } from "@heroicons/react/20/solid";
+import { X } from "lucide-react";
 
 export const Modal = (props: { title: string, children: React.ReactNode, handleModal: () => void, modalOpen: boolean }) => {
   const { title, handleModal, modalOpen, children } = props;
@@ -32,7 +32,7 @@ export const Modal = (props: { title: string, children: React.ReactNode, handleM
                 onClick={() => handleModal()}
                 type="button"
               >
-                <XMarkIcon className="w-6 h-6" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 

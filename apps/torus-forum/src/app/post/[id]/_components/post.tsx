@@ -4,7 +4,6 @@ import {
   removeEmojis,
   smallAddress,
 } from "@torus-ts/utils";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 
 import Link from "next/link";
 
@@ -14,6 +13,7 @@ import { PostDate } from "./date";
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
 import { VotePostButton } from "./vote-post-button";
+import { ExternalLink } from "lucide-react";
 
 export async function Post(props: { postId: string }): Promise<JSX.Element> {
   const { postId } = props;
@@ -38,7 +38,7 @@ export async function Post(props: { postId: string }): Promise<JSX.Element> {
               text={post.title}
             />
             <Link href={post.href} target="_blank" className="flex gap-2 text-blue-500 hover:text-blue-400">
-              Post Link <ArrowTopRightOnSquareIcon width={16} />
+              Post Link <ExternalLink width={16} />
             </Link>
             <span className="text-sm text-gray-400 break-words">({post.href})</span>
           </div>

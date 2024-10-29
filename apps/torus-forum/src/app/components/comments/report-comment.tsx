@@ -2,14 +2,13 @@
 
 import type { inferProcedureOutput } from "@trpc/server";
 import { useState } from "react";
-import { XMarkIcon } from "@heroicons/react/16/solid";
-import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { z } from "zod";
 
 import type { AppRouter } from "@torus-ts/api";
 import { toast } from "@torus-ts/providers/use-toast";
 
 import { api } from "~/trpc/react";
+import { TriangleAlert, X } from "lucide-react";
 
 type ProposalComment = inferProcedureOutput<
   AppRouter["proposalComment"]["byReport"]
@@ -97,7 +96,7 @@ export function ReportComment({ commentId }: ReportCommentProps) {
         type="button"
         className="border border-red-500 p-1 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
       >
-        <ExclamationTriangleIcon className="h-4 w-4" />
+        <TriangleAlert className="h-4 w-4" />
       </button>
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -115,7 +114,7 @@ export function ReportComment({ commentId }: ReportCommentProps) {
                 onClick={toggleModalMenu}
                 type="button"
               >
-                <XMarkIcon className="h-6 w-6" />
+                <X className="h-6 w-6" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6">
