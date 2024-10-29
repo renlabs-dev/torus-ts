@@ -1,11 +1,11 @@
 "use client";
 
-import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import { ImageIcon } from "../image-icon";
 import { toast } from "@torus-ts/providers/use-toast";
 import { copyToClipboard, smallAddress } from "@torus-ts/subspace/utils";
 import React from "react";
 import type { InjectedAccountWithMeta } from "@torus-ts/ui";
+import { ChevronsLeft } from "lucide-react";
 
 interface WalletHeaderProps {
   onSwitchWallet: () => void;
@@ -46,7 +46,7 @@ export function WalletHeader(props: WalletHeaderProps) {
           onClick={props.onSwitchWallet}
           className="flex w-full items-center justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50 md:w-fit"
         >
-          <ChevronLeftIcon className="w-6 h-6" /> Switch Wallet
+          <ChevronsLeft className="w-6 h-6" /> Switch Wallet
         </button>
       </div>
     </div>

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeftIcon } from "@heroicons/react/16/solid";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { formatToken, smallAddress } from "@torus-ts/providers/utils";
+import { ChevronsLeft } from "lucide-react";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";
@@ -114,7 +114,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
             onClick={props.onBack}
             className="flex w-full items-center justify-center text-nowrap border border-amber-500 bg-amber-600/5 px-4 py-2.5 font-semibold text-amber-500 transition duration-200 hover:border-amber-400 hover:bg-amber-500/15 active:bg-amber-500/50"
           >
-            <ChevronLeftIcon className="h-6 w-6" /> Back to Field Options
+            <ChevronsLeft className="h-6 w-6" /> Back to Field Options
           </button>
         </div>
       </div>

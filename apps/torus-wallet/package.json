@@ -11,10 +11,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@heroicons/react": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "@torus-ts/providers": "workspace:*",
     "@torus-ts/ui": "workspace:*",
+    "lucide-react": "^0.454.0",
     "next": "catalog:",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
