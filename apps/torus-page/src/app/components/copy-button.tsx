@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";lid";
+import { useState } from "react";
 import { Copy } from "lucide-react";
 
 interface CodeComponentProps {
