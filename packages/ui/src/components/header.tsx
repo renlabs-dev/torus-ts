@@ -72,7 +72,7 @@ export function Header(props: HeaderProps): JSX.Element {
   return (
     <header
       className={cn(
-        "fixed left-3 right-3 top-3 z-50 mx-auto flex max-w-screen-2xl animate-fade-down rounded-md border border-white/20 bg-[#898989]/5 backdrop-blur-md",
+        "fixed left-6 right-6 top-6 z-50 mx-auto flex max-w-screen-2xl animate-fade-down rounded-md border border-white/20 bg-[#898989]/5 backdrop-blur-md",
       )}
     >
       <div

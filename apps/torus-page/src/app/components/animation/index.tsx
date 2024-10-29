@@ -365,7 +365,7 @@ export default function Animation() {
     <div
       id="graph"
       ref={graphRef}
-      className="fixed left-0 top-0 -z-50 h-full w-full border border-red-500"
+      className="fixed left-0 top-0 -z-50 h-full w-full"
       style={{ overflow: "hidden" }}
     />
   );
