@@ -1,17 +1,3 @@
-import {
-  ChartBarIcon,
-  CircleStackIcon,
-  CubeIcon,
-  GiftTopIcon,
-  ScaleIcon,
-  ServerStackIcon,
-  ShareIcon,
-  ShieldCheckIcon,
-  SignalIcon,
-  SparklesIcon,
-  SquaresPlusIcon,
-  UsersIcon,
-} from "@heroicons/react/20/solid";
 
 export const sections = [
   {
@@ -23,12 +9,12 @@ export const sections = [
       {
         description:
           "torus follows a modular, reusable and minimal architecture philosophy, able to quickly add, adapt and compose parts of the system on the fly.",
-        icon: SquaresPlusIcon,
+        // icon: SquaresPlusIcon,
       },
       {
         description:
           "torus assumes to be continually innovated and build upon through the DAO, making a scalable and robust architecture a foundational requirement.",
-        icon: ShareIcon,
+        // icon: ShareIcon,
       },
     ],
   },
@@ -41,7 +27,7 @@ export const sections = [
       {
         description:
           "Subnets and other economic applications run and scale in parallel, allowing to host highly specialized and complimentary mechanisms",
-        icon: ServerStackIcon,
+        // icon: ServerStackIcon,
       },
     ],
   },
@@ -54,12 +40,12 @@ export const sections = [
       {
         description:
           "The blockchain is only responsible for the economic information. all mechanisms and applications build on torus run offchain without constraints.",
-        icon: CircleStackIcon,
+        // icon: CircleStackIcon,
       },
       {
         description:
           "This allows subnets and applications to be arbitrarily complex and computationally expensive, without facing blockchain limitations.",
-        icon: SparklesIcon,
+        // icon: SparklesIcon,
       },
     ],
   },
@@ -71,11 +57,11 @@ export const sections = [
     features: [
       {
         description: `All changes to torus are decided collectively by the DAO. No central authority has full control over the Protocol.`,
-        icon: ShieldCheckIcon,
+        // icon: ShieldCheckIcon,
       },
       {
         description: `DAO participation is incentivized to motivate holders to take part in deciding their destiny.`,
-        icon: ScaleIcon,
+        // icon: ScaleIcon,
       },
     ],
   },
@@ -87,11 +73,11 @@ export const sections = [
     features: [
       {
         description: `There was never any bureaucracy or rigid hierarchy, torus was birthed out of cypherpunk ideals.`,
-        icon: SignalIcon,
+        // icon: SignalIcon,
       },
       {
         description: `Anyone can become a core contributor and grow to wield big impact. Ideas efficiently rise from the bottom up to implementation.`,
-        icon: UsersIcon,
+        // icon: UsersIcon,
       },
     ],
   },
@@ -103,15 +89,15 @@ export const sections = [
     features: [
       {
         description: `torus is continuously optimizing the allocation of emissions to create positive sum competitions.`,
-        icon: ChartBarIcon,
+        // icon: ChartBarIcon,
       },
       {
         description: `The current standard framework is a 50/50 reward split between miners and validators. miners compete to optimize or solve what validators define. validators evaluate the performance of miners.`,
-        icon: CubeIcon,
+        // icon: CubeIcon,
       },
       {
         description: `Rewards are distributed every 100 blocks, with a block time of 8 seconds.`,
-        icon: GiftTopIcon,
+        // icon: GiftTopIcon,
       },
     ],
   },

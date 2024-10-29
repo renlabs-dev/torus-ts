@@ -2,14 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Bars3Icon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  XMarkIcon,
-} from "@heroicons/react/20/solid";
 
 import { tutorials } from "../docs/[...slug]/tutorials";
+import { ChevronsLeft, ChevronsRight, Menu, X } from "lucide-react";
 
 interface DocSidebarProps {
   prefix: string;
@@ -82,7 +77,7 @@ export function DocSidebar(props: DocSidebarProps): JSX.Element {
             type="button"
           >
             <span className="sr-only">Close menu</span>
-            <ChevronLeftIcon
+            <ChevronsLeft
               aria-hidden="true"
               className="h-6 w-6 fill-white"
             />
@@ -97,7 +92,7 @@ export function DocSidebar(props: DocSidebarProps): JSX.Element {
               placeholder="Search"
             />
             {searchValue.length > 0 && (
-              <XMarkIcon
+              <X
                 width={18}
                 color="white"
                 className="h-auto w-auto"
@@ -141,12 +136,12 @@ export function DocSidebar(props: DocSidebarProps): JSX.Element {
             onClick={toggleMobileMenu}
             type="button"
           >
-            <Bars3Icon className="fill-white" width={16} />
+            <Menu className="fill-white" width={16} />
           </button>
           <span className="mr-2 font-light">
             {tutorials[activeTutorial]?.title}
           </span>
-          <ChevronRightIcon width={16} />
+          <ChevronsRight width={16} />
           <span className="ml-2 font-semibold text-white">
             {tutorials[activeTutorial]?.contents[activeContent]?.name}
           </span>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { DocumentDuplicateIcon } from "@heroicons/react/20/solid";
+import { useState } from "react";lid";
+import { Copy } from "lucide-react";
 
 interface CodeComponentProps {
   code: string;
@@ -28,9 +28,9 @@ export function CopyButton(props: CodeComponentProps): JSX.Element {
       onClick={() => void copyTextToClipboard(code)}
       type="button"
     >
-      {!copied && <DocumentDuplicateIcon height={16} />}
+      {!copied && <Copy height={16} />}
       {copied ? (
-        <DocumentDuplicateIcon color="text-green-500" height={16} />
+        <Copy color="text-green-500" height={16} />
       ) : null}
     </button>
   );

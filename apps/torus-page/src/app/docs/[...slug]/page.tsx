@@ -1,8 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowLongLeftIcon,
-  ArrowLongRightIcon,
-} from "@heroicons/react/20/solid";
+import { MoveRight, MoveLeft } from "lucide-react"
 
 import { DocSidebar } from "../../components/doc-sidebar";
 import { tutorials } from "./tutorials";
@@ -93,7 +90,7 @@ export default function Docs({ params }: { params: { slug: string } }) {
                   {previousContent?.content?.name}
                 </span>
                 <span className="text-titleDark flex text-xs">
-                  <ArrowLongLeftIcon className="mr-2" width={14} />
+                  <MoveLeft className="mr-2" width={14} />
                   Previous
                 </span>
               </Link>
@@ -106,7 +103,7 @@ export default function Docs({ params }: { params: { slug: string } }) {
                 <span className="text-white">{nextContent?.content?.name}</span>
                 <span className="text-titleDark flex text-xs">
                   Next
-                  <ArrowLongRightIcon className="ml-2" width={14} />
+                  <MoveRight className="ml-2" width={14} />
                 </span>
               </Link>
             )}
