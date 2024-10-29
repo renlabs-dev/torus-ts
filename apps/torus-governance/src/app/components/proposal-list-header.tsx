@@ -1,4 +1,4 @@
-import { LinkIcon } from "@heroicons/react/20/solid";
+import { Link } from "lucide-react";
 
 import type { SS58Address } from "@torus-ts/types";
 import { toast } from "@torus-ts/providers/use-toast";
@@ -52,12 +52,12 @@ export function ProposalListHeader(
         <Button onClick={handleCopyClick} size="xl">
           {daoTreasury ? (
             <span className="flex text-pretty">
-              <LinkIcon className="mr-2 h-5 w-5" />
+              <Link className="mr-2 h-5 w-5" />
               {smallAddress(daoTreasury)}
             </span>
           ) : (
             <span className="flex animate-pulse text-pretty">
-              <LinkIcon className="mr-2 h-5 w-5" />
+              <Link className="mr-2 h-5 w-5" />
               Loading address...
             </span>
           )}

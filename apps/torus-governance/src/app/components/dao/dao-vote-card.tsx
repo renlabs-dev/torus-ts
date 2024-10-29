@@ -2,7 +2,6 @@
 
 import type { inferProcedureOutput } from "@trpc/server";
 import { useState } from "react";
-import { BackspaceIcon, ReceiptRefundIcon } from "@heroicons/react/24/outline";
 
 import type { AppRouter } from "@torus-ts/api";
 import type { DaoApplicationStatus } from "@torus-ts/types";
@@ -13,6 +12,7 @@ import { WalletButton } from "@torus-ts/wallet";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { SectionHeaderText } from "../section-header-text";
+import { Delete, TicketX } from "lucide-react";
 
 type DaoVote = inferProcedureOutput<AppRouter["dao"]["byId"]>[0];
 
@@ -154,7 +154,7 @@ export function DaoVoteCard(props: {
             disabled={deleteVoteMutation.isPending}
           >
             {deleteVoteMutation.isPending ? "Removing..." : "Remove Vote"}{" "}
-            <ReceiptRefundIcon className="h-5 w-5" />
+            <TicketX className="h-5 w-5" />
           </button>
         </div>
       </>
@@ -233,7 +233,7 @@ export function DaoVoteCard(props: {
               {createVoteMutation.isPending || deleteVoteMutation.isPending
                 ? "Processing..."
                 : "Vote to remove from whitelist"}{" "}
-              <BackspaceIcon className="h-5 w-5" />
+              <Delete className="h-5 w-5" />
             </button>
           ) : (
             <WalletButton />

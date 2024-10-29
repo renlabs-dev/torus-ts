@@ -1,7 +1,5 @@
 "use client";
 
-import { ArrowPathIcon } from "@heroicons/react/20/solid";
-
 import type { DaoApplicationStatus } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
@@ -14,6 +12,7 @@ import { DaoStatusLabel } from "~/app/components/dao/dao-status-label";
 import { DaoVoteCard } from "~/app/components/dao/dao-vote-card";
 import { SectionHeaderText } from "~/app/components/section-header-text";
 import { handleCustomDaos } from "../../../../utils";
+import { LoaderCircle } from "lucide-react";
 
 interface CustomContent {
   paramId: number;
@@ -46,7 +45,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
     return (
       <div className="flex w-full items-center justify-center lg:h-[calc(100svh-203px)]">
         <h1 className="text-2xl text-white">Loading...</h1>
-        <ArrowPathIcon className="ml-2 animate-spin" color="#FFF" width={20} />
+        <LoaderCircle className="ml-2 animate-spin" color="#FFF" width={20} />
       </div>
     );
 

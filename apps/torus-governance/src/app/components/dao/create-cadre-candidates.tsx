@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
@@ -10,6 +9,7 @@ import { useTorus } from "@torus-ts/providers/use-torus";
 import { formatToken } from "@torus-ts/utils";
 
 import { api } from "~/trpc/react";
+import { ChevronsDown } from "lucide-react";
 
 const MAX_CONTENT_CHARACTERS = 500;
 const MIN_STAKE_REQUIRED = 5000;
@@ -107,7 +107,7 @@ export function CreateCadreCandidates() {
         className={`flex w-full items-center justify-between text-nowrap border py-2.5 pl-4 pr-2.5 font-semibold transition duration-200 ${isOpen ? "border-teal-500 bg-teal-600/5 text-teal-500 hover:border-teal-400 hover:bg-teal-500/15 active:bg-teal-500/50" : "border-green-500 bg-green-600/5 text-green-500 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50"}`}
       >
         Apply to be a S2 DAO Member
-        <ChevronDownIcon
+        <ChevronsDown
           className={`h-6 w-6 ${isOpen ? "rotate-180 transform" : ""}`}
         />
       </button>

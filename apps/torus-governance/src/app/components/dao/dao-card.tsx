@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowRightIcon } from "@heroicons/react/20/solid";
 
 import type { DaoState } from "@torus-ts/types";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
@@ -9,6 +8,7 @@ import { handleCustomDaos } from "../../../utils";
 import { Card } from "../card";
 import { Skeleton } from "../skeleton";
 import { DaoStatusLabel } from "./dao-status-label";
+import { ArrowRight } from "lucide-react";
 
 interface DaoCardProps {
   daoState: DaoState;
@@ -51,7 +51,7 @@ export function DaoCard(props: DaoCardProps): JSX.Element {
                     href={`/dao/${daoState.id}`}
                   >
                     View full S2 Application
-                    <ArrowRightIcon className="ml-auto w-5 lg:ml-2" />
+                    <ArrowRight className="ml-auto w-5 lg:ml-2" />
                   </Link>
                 </div>
                 <span className="line-clamp-1 block w-full truncate text-base text-green-500">

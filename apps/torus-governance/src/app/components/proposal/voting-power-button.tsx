@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  ArrowPathIcon,
-  InformationCircleIcon,
-} from "@heroicons/react/20/solid";
 
 import type { TransactionResult } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 
 import { SectionHeaderText } from "../section-header-text";
+import { Info, LoaderCircle } from "lucide-react";
 
 export function VotingPowerButton(): JSX.Element | null {
   const { selectedAccount, updateDelegatingVotingPower, notDelegatingVoting } =
@@ -84,7 +81,7 @@ export function VotingPowerButton(): JSX.Element | null {
             }}
             type="button"
           >
-            <InformationCircleIcon className="h-7 w-7 pt-1.5 text-green-500" />
+            <Info className="h-7 w-7 pt-1.5 text-green-500" />
           </button>
           {showTooltip ? (
             <div className="absolute bottom-10 right-0 w-64 border border-white/20 bg-black/80 p-3 text-sm text-gray-200 shadow-lg backdrop-blur-md">
@@ -99,7 +96,7 @@ export function VotingPowerButton(): JSX.Element | null {
         >
           {votingStatus.message}
           {votingStatus.status === "PENDING" && (
-            <ArrowPathIcon className="ml-2 animate-spin" width={16} />
+            <LoaderCircle className="ml-2 animate-spin" width={16} />
           )}
         </p>
       ) : null}

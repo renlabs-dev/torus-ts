@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { InformationCircleIcon } from "@heroicons/react/20/solid";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
 
@@ -21,6 +20,7 @@ import {
 } from "@torus-ts/ui";
 
 import { cairo } from "~/utils/fonts";
+import { Info } from "lucide-react";
 
 const proposalSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -186,7 +186,7 @@ export function CreateProposal(): JSX.Element {
         />
       )}
       <div className="flex flex-wrap items-center gap-1 text-sm text-white">
-        <InformationCircleIcon className="h-4 w-4 fill-green-500" />
+        <Info className="h-4 w-4 fill-green-500" />
         <Label className="text-sm text-white">
           Want a different approach?{" "}
           <Link

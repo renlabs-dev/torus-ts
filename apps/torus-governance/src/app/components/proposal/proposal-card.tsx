@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon } from "@heroicons/react/20/solid";
 
 import type { ProposalState } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
@@ -22,6 +21,7 @@ import { StatusLabel } from "../status-label";
 import { VoteLabel } from "../vote-label";
 import { ProposalTypeLabel } from "./proposal-type-label";
 import { RewardLabel } from "./reward-label";
+import { ArrowRight } from "lucide-react";
 
 export interface ProposalCardProps {
   proposalState: ProposalState;
@@ -124,7 +124,7 @@ export function ProposalCard(props: ProposalCardProps): JSX.Element {
                     href={`/proposal/${proposalState.id}`}
                   >
                     View full proposal
-                    <ArrowRightIcon className="ml-auto w-5 lg:ml-2" />
+                    <ArrowRight className="ml-auto w-5 lg:ml-2" />
                   </Link>
                 </div>
                 <span className="line-clamp-1 block w-full truncate text-base text-white">

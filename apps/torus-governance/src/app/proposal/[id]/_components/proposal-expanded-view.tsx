@@ -1,7 +1,5 @@
 "use client";
 
-import { ArrowPathIcon } from "@heroicons/react/20/solid";
-
 import type { ProposalStatus, SS58Address } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Badge } from "@torus-ts/ui";
@@ -25,6 +23,7 @@ import {
 } from "../../../../utils";
 import { VotingPowerButton } from "../../../components/proposal/voting-power-button";
 import { StatusLabel } from "../../../components/status-label";
+import { LoaderCircle } from "lucide-react";
 
 interface CustomContent {
   paramId: number;
@@ -157,7 +156,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
     return (
       <div className="flex min-h-screen w-full items-center justify-center lg:h-auto">
         <h1 className="text-2xl text-white">Loading...</h1>
-        <ArrowPathIcon className="ml-2 animate-spin" color="#FFF" width={20} />
+        <LoaderCircle className="ml-2 animate-spin" color="#FFF" width={20} />
       </div>
     );
 

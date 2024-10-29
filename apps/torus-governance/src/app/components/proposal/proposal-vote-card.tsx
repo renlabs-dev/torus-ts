@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { ReceiptRefundIcon } from "@heroicons/react/24/outline";
 import { match } from "rustie";
 
 import type { ProposalStatus, TransactionResult } from "@torus-ts/types";
@@ -13,6 +11,7 @@ import { WalletButton } from "@torus-ts/wallet";
 import type { VoteStatus } from "../vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { SectionHeaderText } from "../section-header-text";
+import { LoaderCircle, TicketX } from "lucide-react";
 
 export function ProposalVoteCard(props: {
   proposalStatus: ProposalStatus;
@@ -82,7 +81,7 @@ export function ProposalVoteCard(props: {
             onClick={handleRemoveVote}
             type="button"
           >
-            Remove Vote <ReceiptRefundIcon className="h-5 w-5" />
+            Remove Vote <TicketX className="h-5 w-5" />
           </button>
           {votingStatus.status && (
             <TransactionStatus
@@ -145,7 +144,7 @@ export function ProposalVoteCard(props: {
             >
               {votingStatus.message}
               {votingStatus.status === "PENDING" && (
-                <ArrowPathIcon className="ml-2 animate-spin" width={16} />
+                <LoaderCircle className="ml-2 animate-spin" width={16} />
               )}
             </p>
           ) : null}

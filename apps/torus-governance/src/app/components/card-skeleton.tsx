@@ -1,4 +1,4 @@
-import ArrowRightIcon from "@heroicons/react/16/solid/ArrowRightIcon";
+import { ArrowRight } from "lucide-react";
 
 import { Card } from "./card";
 
@@ -41,7 +41,7 @@ export function CardSkeleton(): JSX.Element {
           <div className="mr-3 w-full py-2 lg:w-auto lg:min-w-fit lg:py-0">
             <div className="min-w-auto flex w-full items-center border border-white/10 px-2 py-4 text-sm text-white lg:w-auto lg:px-4">
               Loading full proposal
-              <ArrowRightIcon className="ml-auto w-5 lg:ml-2" />
+              <ArrowRight className="ml-auto w-5 lg:ml-2" />
             </div>
           </div>
           <span className="line-clamp-1 block w-full truncate text-base text-white">

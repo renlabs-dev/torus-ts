@@ -1,11 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ChevronDoubleDownIcon,
-  ChevronDoubleUpIcon,
-  UserIcon,
-} from "@heroicons/react/20/solid";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
@@ -13,6 +8,7 @@ import { smallAddress } from "@torus-ts/utils";
 
 import { api } from "~/trpc/react";
 import { ReportComment } from "./report-comment";
+import { ChevronsDown, ChevronsUp, CircleUser } from "lucide-react";
 
 export enum VoteType {
   UP = "UP",
@@ -48,18 +44,18 @@ export function ViewComment({
 
   const sortedComments = proposalComments
     ? [...proposalComments].sort((a, b) => {
-        if (sortBy === "newest") {
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        } else if (sortBy === "oldest") {
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        } else {
-          return b.upvotes - a.upvotes;
-        }
-      })
+      if (sortBy === "newest") {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      } else if (sortBy === "oldest") {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      } else {
+        return b.upvotes - a.upvotes;
+      }
+    })
     : [];
 
   const { data: userVotes } = api.proposalComment.byUserId.useQuery(
@@ -126,11 +122,10 @@ export function ViewComment({
               <button
                 key={option}
                 onClick={() => setSortBy(option as typeof sortBy)}
-                className={`px-3 py-1 text-sm ${
-                  sortBy === option
-                    ? "border border-green-500 bg-green-500/20 text-white"
-                    : "border border-white/20 bg-[#898989]/5 text-gray-300 hover:bg-gray-600/50"
-                }`}
+                className={`px-3 py-1 text-sm ${sortBy === option
+                  ? "border border-green-500 bg-green-500/20 text-white"
+                  : "border border-white/20 bg-[#898989]/5 text-gray-300 hover:bg-gray-600/50"
+                  }`}
               >
                 {option === "newest"
                   ? "Newest"
@@ -148,7 +143,7 @@ export function ViewComment({
               <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
                 <span className="flex items-center gap-1">
                   <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-                    <UserIcon className="h-4 w-4" />
+                    <CircleUser className="h-4 w-4" />
                   </span>{" "}
                   Loading user address...
                 </span>
@@ -157,14 +152,14 @@ export function ViewComment({
                     disabled={true}
                     className={`flex items-center text-gray-300`}
                   >
-                    <ChevronDoubleUpIcon className="h-5 w-5" />
+                    <ChevronsUp className="h-5 w-5" />
                     <span>-</span>
                   </button>
                   <button
                     disabled={true}
                     className={`flex items-center text-gray-300`}
                   >
-                    <ChevronDoubleDownIcon className="h-5 w-5" />
+                    <ChevronsDown className="h-5 w-5" />
                     <span>-</span>
                   </button>
                 </div>
@@ -191,7 +186,7 @@ export function ViewComment({
                       <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
                         <div className="flex items-center gap-2">
                           <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-                            <UserIcon className="h-4 w-4" />{" "}
+                            <CircleUser className="h-4 w-4" />{" "}
                             {comment.userName && comment.userName}
                           </span>
                           {smallAddress(comment.userKey)}{" "}
@@ -202,7 +197,7 @@ export function ViewComment({
                             disabled={votingCommentId === comment.id}
                             className={`flex items-center ${currentVote === VoteType.UP ? "text-green-500" : ""}`}
                           >
-                            <ChevronDoubleUpIcon className="h-5 w-5" />
+                            <ChevronsUp className="h-5 w-5" />
                             <span>{comment.upvotes}</span>
                           </button>
                           <button
@@ -212,7 +207,7 @@ export function ViewComment({
                             disabled={votingCommentId === comment.id}
                             className={`flex items-center ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
                           >
-                            <ChevronDoubleDownIcon className="h-5 w-5" />
+                            <ChevronsDown className="h-5 w-5" />
                             <span>{comment.downvotes}</span>
                           </button>
                         </div>

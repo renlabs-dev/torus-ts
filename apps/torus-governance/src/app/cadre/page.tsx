@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import { ArrowLeft } from "lucide-react";
 import { CadreSectionContainer, CadreMembersList, CadreRequestsList } from "./_components";
 
 export default function CadrePage() {
@@ -9,7 +9,7 @@ export default function CadrePage() {
         className="my-6 ml-2 flex w-fit animate-fade-down items-center justify-center gap-2 border border-white/20 bg-[#898989]/5 px-5 py-3 text-gray-400 backdrop-blur-md transition duration-200 hover:border-green-500 hover:bg-green-500/20 hover:text-green-500"
         href="/"
       >
-        <ArrowLeftIcon className="h-6 text-green-500" />
+        <ArrowLeft className="h-6 text-green-500" />
         Go Back to Proposals List
       </Link>
 
