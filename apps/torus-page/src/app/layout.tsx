@@ -2,6 +2,7 @@ import "../styles/globals.css";
 
 import type { Metadata } from "next";
 
+import { Footer } from "@torus-ts/ui";
 import { links } from "@torus-ts/ui/data";
 import { Header } from "@torus-ts/ui/header";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
           title="Torus"
         />
         {children}
+        <Footer />
       </body>
     </html>
   );

@@ -1,34 +1,47 @@
-import { links } from "..";
+import {
+  Button,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+  links,
+} from "..";
+import { Icons } from "./icons";
 
-export function Footer({ shouldBeFixed = false, className = "" }): JSX.Element {
+export function Footer() {
   return (
-    <footer
-      className={`${shouldBeFixed && "fixed"} bottom-0 hidden w-full animate-fade-up border-t border-white/20 bg-[#898989]/5 backdrop-blur-md animate-delay-700 md:block ${className}`}
-    >
-      <div className="mx-auto max-w-screen-2xl">
-        <div className="flex flex-col items-center justify-between gap-2 px-4 py-4 md:flex-row">
-          <p className="hidden w-4/12 text-sm text-gray-400 lg:block">
-            Making decentralized AI for everyone.
-          </p>
-
-          <div className="flex justify-center gap-6 md:w-4/12">
-            {socialList.map((item) => (
-              <a
-                className="text-subtitle leading-6 hover:text-gray-800 hover:underline"
-                href={item.href}
-                key={item.name}
-              >
-                {item.icon}
-              </a>
-            ))}
+    <div className="fixed bottom-0 right-0 z-50 hidden animate-delay-700 md:block">
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <Button variant="link">@torus</Button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-72">
+          <div className="flex justify-between space-x-4">
+            <div className="h-fit w-fit rounded-full bg-accent p-1.5">
+              <Icons.logo className="h-10 w-10" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold">Torus</h4>
+              <p className="text-sm">
+                Made by the community, powered by{" "}
+                <a href={links.x} className="text-purple-300 hover:underline">
+                  Ren Labs
+                </a>
+                .
+              </p>
+              <div className="flex space-x-3 pt-3">
+                {socialList.map((social) => {
+                  return (
+                    <a key={social.name} href={social.href}>
+                      {social.icon}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-
-          <p className="flex justify-end text-sm text-gray-400 md:w-4/12">
-            &copy; 2024 torus, Inc.
-          </p>
-        </div>
-      </div>
-    </footer>
+        </HoverCardContent>
+      </HoverCard>
+    </div>
   );
 }
 
@@ -36,32 +49,21 @@ const socialList = [
   {
     name: "Discord",
     href: links.discord,
-    icon: (
-      <img alt="Discord icon" height={26} src="/discord-icon.svg" width={26} />
-    ),
+    icon: <Icons.discord className="h-3.5 w-3.5" />,
   },
   {
     name: "X",
     href: links.x,
-    icon: <img alt="X icon" height={22} src="/x-icon.svg" width={22} />,
+    icon: <Icons.x className="h-3.5 w-3.5" />,
   },
   {
     name: "GitHub",
     href: links.github,
-    icon: (
-      <img alt="Github icon" height={23} src="/github-icon.svg" width={23} />
-    ),
+    icon: <Icons.github className="h-3.5 w-3.5" />,
   },
   {
     name: "Telegram",
     href: links.telegram,
-    icon: (
-      <img
-        alt="Telegram icon"
-        height={22}
-        src="/telegram-icon.svg"
-        width={22}
-      />
-    ),
+    icon: <Icons.telegram className="h-3.5 w-3.5" />,
   },
 ];

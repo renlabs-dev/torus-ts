@@ -72,7 +72,7 @@ export function Header(props: HeaderProps): JSX.Element {
   return (
     <header
       className={cn(
-        "fixed left-6 right-6 top-3 z-50 mx-auto flex max-w-screen-2xl animate-fade-down justify-center",
+        "fixed left-0 right-0 top-0 z-50 mx-auto flex animate-fade-down justify-center bg-gradient-to-b from-[#0A0521] via-[#0A0521] to-transparent pb-6 pt-3",
       )}
     >
       <NavigationMenu>
