@@ -68,6 +68,7 @@ const apps: { title: string; href: string; description: string }[] = [
 ];
 
 export function Header(props: HeaderProps): JSX.Element {
+  console.log(props.font);
   return (
     <header
       className={cn(
