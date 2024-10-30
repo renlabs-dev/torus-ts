@@ -31,8 +31,8 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
   const object = {
     tubeRadius: 4.1,
     torusRadius: 5.3,
-    radialSegments: 60,
-    tabularSegments: 120,
+    radialSegments: 30,
+    tabularSegments: 60,
   };
 
   let scene: THREE.Scene;
@@ -61,8 +61,8 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     objectsGroup = new THREE.Group();
     objectsGroup.add(points);
     objectsGroup.add(lines);
-    objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.25 : 0.35);
-    objectsGroup.position.y = isMobile ? 7.5 : 1.7;
+    objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.35 : 0.35);
+    objectsGroup.position.y = isMobile ? 2.5 : 1.7;
     scene.add(objectsGroup);
   }
 
@@ -115,7 +115,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     // Randomly connect each vertex with up to 2 random neighbors that follow it in the array
     const numVertices = positions.length / 3;
     for (let i = 0; i < numVertices; i++) {
-      const numConnections = Math.floor(Math.random() * 1.7); // Random number of connections (0, 1, or 2)
+      const numConnections = Math.floor(Math.random() * 3); // Random number of connections (0, 1, or 2)
       const possibleConnections: unknown[] = [];
 
       // Find possible connections
@@ -185,58 +185,59 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
   }
 
   function createPoints() {
-    const { torusRadius, tubeRadius, radialSegments, tabularSegments } = object;
+    const { torusRadius, tubeRadius } = object;
+    const fixedPointCount = 10000; // Adjust this number as needed
 
-    const torusGeometry = new THREE.TorusGeometry(
-      torusRadius,
-      tubeRadius,
-      radialSegments,
-      tabularSegments,
-    );
-
-    torusGeometry.computeVertexNormals();
-
-    // Copy the positions from the TorusGeometry
-    const positions = torusGeometry.attributes.position!.array;
-    const normals = torusGeometry.attributes.normal!.array;
-    const maxPosition = Math.max(...positions);
-    const minPosition = Math.min(...positions);
-
-    const customGeometry = new THREE.BufferGeometry();
-
+    const positions = [];
     const colors = [];
     const scales = [];
+    const normals = [];
 
-    for (let i = 0; i < positions.length; i += 3) {
+    for (let i = 0; i < fixedPointCount; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI * 2;
+
+      const x = (torusRadius + tubeRadius * Math.cos(phi)) * Math.cos(theta);
+      const y = (torusRadius + tubeRadius * Math.cos(phi)) * Math.sin(theta);
+      const z = tubeRadius * Math.sin(phi);
+
+      positions.push(x, y, z);
+
       const normalizedPos =
-        (positions[i]! - minPosition) / (maxPosition - minPosition);
-
-      const r = 0.25 + normalizedPos * 0.25;
-      const g = 0.13 + normalizedPos * 0.13;
-      const b = 0.55 + normalizedPos * 1.2;
+        (y + torusRadius + tubeRadius) / ((torusRadius + tubeRadius) * 2);
+      const r = 0.05 + normalizedPos * 0.15; // Very low red for a cool, dark tone
+      const g = 0.1 + normalizedPos * 0.2; // Low green for subtle teal tints
+      const b = 0.3 + normalizedPos * 0.4; // Moderate to high blue, but darker overall
 
       colors.push(r, g, b);
       scales.push(getRandNum(0.5, 3));
+
+      // Calculate normals
+      const nx = Math.cos(theta) * Math.cos(phi);
+      const ny = Math.sin(theta) * Math.cos(phi);
+      const nz = Math.sin(phi);
+      normals.push(nx, ny, nz);
     }
+
+    const customGeometry = new THREE.BufferGeometry();
 
     customGeometry.setAttribute(
       "position",
-      new THREE.BufferAttribute(new Float32Array(positions), 3),
+      new THREE.Float32BufferAttribute(positions, 3),
     );
-
     customGeometry.setAttribute(
       "color",
-      new THREE.BufferAttribute(new Float32Array(colors), 3),
+      new THREE.Float32BufferAttribute(colors, 3),
     );
-
     customGeometry.setAttribute(
       "normal",
-      new THREE.BufferAttribute(new Float32Array(normals), 3),
+      new THREE.Float32BufferAttribute(normals, 3),
     );
     customGeometry.setAttribute(
       "aScale",
-      new THREE.BufferAttribute(new Float32Array(scales), 1),
+      new THREE.Float32BufferAttribute(scales, 1),
     );
+
     const torusMaterial = new THREE.ShaderMaterial({
       vertexShader: pointsVertexShader,
       fragmentShader: pointsFragmentShader,
@@ -261,7 +262,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     scene = new THREE.Scene();
   }
 
-  const fov = isMobile ? 90 : 60;
+  const fov = isMobile ? 70 : 60;
   const cameraRotation = isMobile ? 12 : 1;
 
   function createCamera() {
@@ -366,7 +367,7 @@ export default function Animation() {
     <div
       id="graph"
       ref={graphRef}
-      className="fixed left-0 top-0 h-full w-full opacity-70"
+      className="absolute top-0 -z-10 h-full w-full opacity-80"
       style={{ overflow: "hidden" }}
     />
   );
