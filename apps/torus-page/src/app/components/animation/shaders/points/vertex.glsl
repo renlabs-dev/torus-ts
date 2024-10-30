@@ -167,8 +167,8 @@ void main() {
 
   gl_Position = projectedPosition;
 
-  gl_PointSize = 57.0 * aScale;
-  gl_PointSize *= (0.05);
+  gl_PointSize = 45.0 * aScale;
+  gl_PointSize *= (1.0 / - viewPosition.z * 1.3);
 
   float opacity = uColorOpacity;
 
