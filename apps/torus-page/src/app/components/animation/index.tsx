@@ -211,9 +211,9 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
       const normalizedPos =
         (positions[i]! - minPosition) / (maxPosition - minPosition);
 
-      const r = 0.3 + normalizedPos * 0.3;
-      const g = 0.15 + normalizedPos * 0.15;
-      const b = 0.6 + normalizedPos * 1.3;
+      const r = 0.25 + normalizedPos * 0.25;
+      const g = 0.13 + normalizedPos * 0.13;
+      const b = 0.55 + normalizedPos * 1.2;
 
       colors.push(r, g, b);
       scales.push(getRandNum(0.5, 3));
@@ -366,7 +366,7 @@ export default function Animation() {
     <div
       id="graph"
       ref={graphRef}
-      className="fixed left-0 top-0 h-full w-full opacity-60"
+      className="fixed left-0 top-0 h-full w-full opacity-70"
       style={{ overflow: "hidden" }}
     />
   );
