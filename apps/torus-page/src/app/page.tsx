@@ -1,26 +1,17 @@
-import { Button } from "@torus-ts/ui";
-
 import Animation from "./components/animation";
 
 export default function Page(): JSX.Element {
   return (
-    <div
-      className={`mx-auto flex min-h-[100svh] max-w-screen-2xl animate-fade flex-col transition duration-700 animate-delay-700`}
-    >
-      <div className="flex-grow">
-        <Animation />
+    <>
+      <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center pb-[4.6em]">
+        <h1 className="animate-fade-up text-9xl font-thin tracking-wide shadow-sm animate-delay-[1000ms]">
+          Torus
+        </h1>
+        <h3 className="animate-fade-up leading-9 tracking-tight shadow-sm animate-delay-[1200ms] md:text-[1.675rem]">
+          Peer-to-peer Incentivized coordination network.
+        </h3>
       </div>
-
-      <div className="flex items-end justify-between px-4 pb-8">
-        <p className="animate-fade-up font-medium animate-delay-1000 md:text-xl">
-          <span className="text-purple-400">Peer-to-peer </span>
-          Incentivized coordination network.
-        </p>
-
-        <Button variant="link" className="text-lg">
-          View More
-        </Button>
-      </div>
-    </div>
+      <Animation />
+    </>
   );
 }

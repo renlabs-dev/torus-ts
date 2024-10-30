@@ -4,7 +4,6 @@ import Link from "next/link";
 
 import {
   cn,
-  MobileNavigation,
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
@@ -84,13 +83,14 @@ export function Header(props: HeaderProps): JSX.Element {
                 <li className="row-span-3">
                   <NavigationMenuLink asChild>
                     <a
-                      className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                      className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/30 to-muted/50 p-6 no-underline outline-none focus:shadow-md"
                       href="/"
                     >
-                      <Icons.logo className="h-6 w-6" />
+                      <Icons.logo className="h-8 w-8" />
                       <div className="mb-2 mt-4 text-lg font-medium">Torus</div>
                       <p className="text-sm leading-tight text-muted-foreground">
-                        Peer-to-peer Incentivized coordination network.
+                        Protocol and Market System for Incentive-driven
+                        Coordination of Decentralized AI.
                       </p>
                     </a>
                   </NavigationMenuLink>

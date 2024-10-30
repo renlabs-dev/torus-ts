@@ -62,7 +62,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     objectsGroup.add(points);
     objectsGroup.add(lines);
     objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.25 : 0.35);
-    objectsGroup.position.y = isMobile ? 7.5 : 1.8;
+    objectsGroup.position.y = isMobile ? 7.5 : 1.7;
     scene.add(objectsGroup);
   }
 
@@ -211,7 +211,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
       const normalizedPos =
         (positions[i]! - minPosition) / (maxPosition - minPosition);
 
-      const r = 0.35 + normalizedPos * 0.35;
+      const r = 0.3 + normalizedPos * 0.3;
       const g = 0.15 + normalizedPos * 0.15;
       const b = 0.6 + normalizedPos * 1.3;
 
@@ -366,7 +366,7 @@ export default function Animation() {
     <div
       id="graph"
       ref={graphRef}
-      className="fixed left-0 top-0 -z-50 h-full w-full"
+      className="fixed left-0 top-0 -z-50 h-full w-full opacity-80"
       style={{ overflow: "hidden" }}
     />
   );
