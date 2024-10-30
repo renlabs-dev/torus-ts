@@ -76,7 +76,21 @@ export function Header(props: HeaderProps): JSX.Element {
       )}
     >
       <NavigationMenu>
-        <NavigationMenuList>
+        <NavigationMenuList className="flex flex-col md:flex-row">
+          <NavigationMenuItem>
+            <Link href="/" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Home
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/docs" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Documentation
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
             <NavigationMenuContent>
@@ -119,20 +133,6 @@ export function Header(props: HeaderProps): JSX.Element {
                 ))}
               </ul>
             </NavigationMenuContent>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link href="/docs" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Documentation
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link href="/" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Home
-              </NavigationMenuLink>
-            </Link>
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>

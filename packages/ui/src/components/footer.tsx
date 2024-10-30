@@ -1,18 +1,14 @@
-import {
-  Button,
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-  links,
-} from "..";
+import { HoverCard, HoverCardContent, HoverCardTrigger, links } from "..";
 import { Icons } from "./icons";
 
 export function Footer() {
   return (
-    <div className="fixed bottom-0 right-0 z-50 hidden animate-delay-700 md:block">
+    <div className="fixed bottom-0 right-0 z-50 block px-4 py-2 animate-delay-700">
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Button variant="link">@torus</Button>
+          <button className="text-sm hover:cursor-pointer hover:underline">
+            @torus
+          </button>
         </HoverCardTrigger>
         <HoverCardContent className="w-72">
           <div className="flex justify-between space-x-4">
