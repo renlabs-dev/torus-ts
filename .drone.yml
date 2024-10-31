@@ -315,3 +315,4 @@ trigger:
       - apps/sample-app/**
       - apps/torus-governance/**
       - apps/torus-wallet/**
+
