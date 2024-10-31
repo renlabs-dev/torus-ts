@@ -52,6 +52,8 @@ RUN POSTGRES_URL="postgres://postgres:password@localhost:5432/database" \
 # ======== runner layer ======== #
 FROM base AS runner
 
+LABEL org.opencontainers.image.source https://github.com/renlabs-dev/torus-ts
+
 ARG APP_NAME
 
 ENV PORT=8000
