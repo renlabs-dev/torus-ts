@@ -7,7 +7,6 @@ export { CopyButton } from "./copy-button";
 export { Footer } from "./footer";
 export { Header } from "./header";
 export { Loading } from "./loading";
-export { MobileNavigation } from "./mobile-navigation";
 export { NoWalletExtensionDisplay } from "./no-wallet-extension-display";
 export { TransactionStatus } from "./transaction-status";
 export { Container } from "./container";
@@ -155,3 +154,8 @@ export {
 } from "./chart";
 export type { ChartConfig } from "./chart";
 export { ScrollArea, ScrollBar } from "./scroll-area";
+export {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "./collapsible";

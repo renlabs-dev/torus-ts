@@ -62,7 +62,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     objectsGroup.add(points);
     objectsGroup.add(lines);
     objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.35 : 0.36);
-    objectsGroup.position.y = isMobile ? 2.5 : 1.8;
+    objectsGroup.position.y = isMobile ? 2.5 : 1.75;
     scene.add(objectsGroup);
   }
 
@@ -262,7 +262,7 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     scene = new THREE.Scene();
   }
 
-  const fov = isMobile ? 70 : 60;
+  const fov = isMobile ? 70 : 58;
   const cameraRotation = isMobile ? 12 : 1;
 
   function createCamera() {

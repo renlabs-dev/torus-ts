@@ -1,12 +1,10 @@
+import { Footer, Header } from "@torus-ts/ui/components";
+
 import "../styles/globals.css";
 
 import type { Metadata } from "next";
 
-import { Footer } from "@torus-ts/ui";
-import { links } from "@torus-ts/ui/data";
-import { Header } from "@torus-ts/ui/header";
-
-import { firaMono, oxanium } from "~/utils/fonts";
+import { firaMono } from "~/utils/fonts";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -25,23 +23,7 @@ export default function RootLayout({
       <body
         className={`bg-[#04061C] bg-[url('/bg-pattern.svg')] bg-cover text-gray-200 ${firaMono.className} overscroll-none`}
       >
-        <Header
-          font={oxanium.className}
-          logoSrc="/logo.svg"
-          navigationLinks={[
-            { name: "Governance", href: links.governance, external: true },
-            {
-              name: "Community Validator",
-              href: links.validator,
-              external: true,
-            },
-            { name: "Docs", href: links.docs, external: false },
-            { name: "Blog", href: links.blog, external: true },
-            { name: "Wallet", href: links.wallet, external: true },
-            { name: "Join Community", href: links.discord, external: true },
-          ]}
-          title="Torus"
-        />
+        <Header />
         {children}
         <Footer />
       </body>

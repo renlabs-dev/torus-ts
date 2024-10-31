@@ -17,30 +17,61 @@ export const links = {
   wallet: "https://wallet.torusai.org/",
 };
 
-export const landingPageButtons = [
+export const navApps: { title: string; href: string; description: string }[] = [
   {
-    href: links.governance,
-    name: "DAO",
-    icon: "/governance-icon.svg",
+    title: "Bridge",
+    href: "/",
+    description: "Bridge your assets to the Torus network.",
   },
   {
-    href: links.docs,
-    name: "DOCS",
-    icon: "/docs-icon.svg",
-  },
-  // {
-  //   href: links.explorer,
-  //   name: "SCAN",
-  //   icon: "/view-more-icon.svg",
-  // },
-  {
-    href: links.about,
-    name: "ABOUT",
-    icon: "/arrow-link-icon.svg",
+    title: "Governance Portal",
+    href: "/",
+    description:
+      "Participate in the governance of the Torus network and earn rewards.",
   },
   {
-    href: links.discord,
-    name: "JOIN COMMUNITY",
-    icon: "/join-community.svg",
+    title: "Consensus Subnet Portal",
+    href: "/",
+    description:
+      "Allocate resources to modules and subnets curated by the DAO.",
   },
+  {
+    title: "Documentation",
+    href: "/",
+    description: "Learn how to use the Torus network.",
+  },
+  {
+    title: "Web Wallet",
+    href: "/",
+    description: "Manage your assets with secure and decentralized wallet.",
+  },
+  {
+    title: "Blog",
+    href: "/",
+    description: "Stay updated with the latest news and updates.",
+  },
+];
+
+export const navStart: { title: string; href: string; description: string }[] =
+  [
+    {
+      title: "View More",
+      href: "/about",
+      description: "Learn more about Torus.",
+    },
+    {
+      title: "Join Community",
+      href: "/join",
+      description: "Be a part of the Torus community.",
+    },
+    {
+      title: "Whitepaper",
+      href: "/paper",
+      description: "Learn the protocol fundamental structure and principles.",
+    },
+  ];
+
+export const navItems: { title: string; href: string }[] = [
+  { title: "Home", href: "/" },
+  { title: "Documentation", href: "/docs/getting-started/intro" },
 ];
