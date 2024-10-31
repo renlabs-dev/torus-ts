@@ -2,7 +2,7 @@ import { sections } from "~/utils/mocks/sections-mock";
 
 export default function Page(): JSX.Element {
   return (
-    <main className="flex w-full animate-fade-up flex-col pt-60 md:pt-40">
+    <main className="flex w-full animate-fade-up flex-col pt-24 md:pt-40">
       {sections.map((section) => (
         <section
           id={section.sectionName}
