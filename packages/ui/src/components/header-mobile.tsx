@@ -3,15 +3,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { CaretSortIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 
+import { links } from "../data";
 import { Button } from "./button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./collapsible";
-import { FooterContent } from "./footer";
+import { Icons } from "./icons";
+import { ScrollArea } from "./scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "./sheet";
 
 interface HeaderMobileProps {
@@ -37,10 +38,11 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="pr-0">
-        <div className="mt-1 flex items-center">
-          <span className="font-bold">Navigation Menu</span>
+        <div className="flex items-center">
+          <Icons.logo className="mr-1.5 h-7 w-7" />
+          <span className="mt-0.5 font-bold">Torus</span>
         </div>
-        <ScrollArea className="my-4 h-[calc(100vh-8rem)] py-6 pl-1">
+        <ScrollArea className="my-4 mr-2 h-[calc(100vh-10rem)] py-6 pl-1">
           <div className="flex flex-col space-y-3">
             {items.map((item) => (
               <Link
@@ -77,9 +79,12 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
                       onClick={() => {
                         setOpen(false);
                       }}
-                      className="block px-2 py-1 text-sm"
+                      className="block flex flex-col px-2 py-1 text-sm"
                     >
-                      {item.title}
+                      <span className="mb-0.5 font-bold text-white underline">
+                        {item.title}
+                      </span>
+                      <span>{item.description}</span>
                     </Link>
                   ))}
                 </div>
@@ -108,9 +113,12 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
                       onClick={() => {
                         setOpen(false);
                       }}
-                      className="block px-2 py-1 text-sm"
+                      className="block flex flex-col px-2 py-1 text-sm"
                     >
-                      {item.title}
+                      <span className="mb-0.5 font-bold text-white underline">
+                        {item.title}
+                      </span>
+                      <span>{item.description}</span>
                     </Link>
                   ))}
                 </div>
@@ -118,10 +126,49 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
             </Collapsible>
           </div>
         </ScrollArea>
-        <div className="absolute bottom-0 mb-5 mr-6 w-fit rounded-md border bg-background p-3">
-          <FooterContent />
+
+        <div className="absolute bottom-0 bg-gradient-to-t from-[#090C20] via-[#090C20] to-transparent p-3 pb-6 pt-36">
+          <div className="mb-3 flex items-center justify-start space-x-6 md:space-x-3">
+            {socialList.map((social) => {
+              return (
+                <a key={social.name} href={social.href}>
+                  {social.icon}
+                </a>
+              );
+            })}
+          </div>
+          <p className="text-start">
+            Made by the community, powered by{" "}
+            <Link href="/" className="text-cyan-200 underline">
+              Ren Labs
+            </Link>
+            .
+          </p>
         </div>
       </SheetContent>
     </Sheet>
   );
 }
+
+const socialList = [
+  {
+    name: "Discord",
+    href: links.discord,
+    icon: <Icons.discord className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+  },
+  {
+    name: "X",
+    href: links.x,
+    icon: <Icons.x className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+  },
+  {
+    name: "GitHub",
+    href: links.github,
+    icon: <Icons.github className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+  },
+  {
+    name: "Telegram",
+    href: links.telegram,
+    icon: <Icons.telegram className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+  },
+];

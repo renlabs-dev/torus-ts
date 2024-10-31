@@ -1,7 +1,7 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger, links } from "..";
 import { Icons } from "./icons";
 
-export function FooterContent() {
+function FooterContent() {
   return (
     <div className="flex justify-between space-x-4">
       <div className="h-fit w-fit rounded-full bg-accent p-1.5">
