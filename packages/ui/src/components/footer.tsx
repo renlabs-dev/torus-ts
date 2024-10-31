@@ -16,7 +16,7 @@ export function FooterContent() {
           </a>
           .
         </p>
-        <div className="flex space-x-3 pt-3">
+        <div className="flex space-x-6 pt-3 md:space-x-3">
           {socialList.map((social) => {
             return (
               <a key={social.name} href={social.href}>
@@ -49,21 +49,21 @@ const socialList = [
   {
     name: "Discord",
     href: links.discord,
-    icon: <Icons.discord className="h-3.5 w-3.5" />,
+    icon: <Icons.discord className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
   {
     name: "X",
     href: links.x,
-    icon: <Icons.x className="h-3.5 w-3.5" />,
+    icon: <Icons.x className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
   {
     name: "GitHub",
     href: links.github,
-    icon: <Icons.github className="h-3.5 w-3.5" />,
+    icon: <Icons.github className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
   {
     name: "Telegram",
     href: links.telegram,
-    icon: <Icons.telegram className="h-3.5 w-3.5" />,
+    icon: <Icons.telegram className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
 ];

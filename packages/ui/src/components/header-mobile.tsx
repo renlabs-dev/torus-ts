@@ -11,7 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./collapsible";
-import { Icons } from "./icons";
+import { FooterContent } from "./footer";
 import { Sheet, SheetContent, SheetTrigger } from "./sheet";
 
 interface HeaderMobileProps {
@@ -30,16 +30,15 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
       <SheetTrigger asChild>
         <Button
           variant="ghost"
-          className="mr-4 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="mr-6 mt-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
-          <HamburgerMenuIcon className="h-6 w-6" />
+          <HamburgerMenuIcon className="h-7 w-7" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="pr-0">
-        <div className="flex items-center">
-          <Icons.logo className="mb-0.5 mr-2 h-8 w-8" />
-          <span className="font-bold">Torus</span>
+        <div className="mt-1 flex items-center">
+          <span className="font-bold">Navigation Menu</span>
         </div>
         <ScrollArea className="my-4 h-[calc(100vh-8rem)] py-6 pl-1">
           <div className="flex flex-col space-y-3">
@@ -69,8 +68,8 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
                   </Button>
                 </CollapsibleTrigger>
               </div>
-              <CollapsibleContent className="mt-2 space-y-2" asChild>
-                <>
+              <CollapsibleContent asChild>
+                <div className="mt-2 space-y-2">
                   {start.map((item) => (
                     <Link
                       key={item.href}
@@ -83,10 +82,9 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
                       {item.title}
                     </Link>
                   ))}
-                </>
+                </div>
               </CollapsibleContent>
             </Collapsible>
-
             <Collapsible
               open={openApps}
               onOpenChange={setOpenApps}
@@ -101,25 +99,28 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
                   </Button>
                 </CollapsibleTrigger>
               </div>
-              <CollapsibleContent className="mt-2 space-y-2" asChild>
-                <>
-                  {apps.map((app) => (
+              <CollapsibleContent asChild>
+                <div className="mt-2 space-y-2">
+                  {apps.map((item) => (
                     <Link
-                      key={app.href}
-                      href={app.href}
+                      key={item.href}
+                      href={item.href}
                       onClick={() => {
                         setOpen(false);
                       }}
                       className="block px-2 py-1 text-sm"
                     >
-                      {app.title}
+                      {item.title}
                     </Link>
                   ))}
-                </>
+                </div>
               </CollapsibleContent>
             </Collapsible>
           </div>
         </ScrollArea>
+        <div className="absolute bottom-0 mb-5 mr-6 w-fit rounded-md border bg-background p-3">
+          <FooterContent />
+        </div>
       </SheetContent>
     </Sheet>
   );
