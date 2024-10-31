@@ -6,6 +6,7 @@ export default function Page(): JSX.Element {
       {sections.map((section) => (
         <section
           id={section.sectionName}
+          key={section.sectionName}
           className="mx-auto mb-12 flex max-w-2xl flex-col gap-4 px-4 text-center"
         >
           <span>
