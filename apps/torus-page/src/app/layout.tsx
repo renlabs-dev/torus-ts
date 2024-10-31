@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`bg-[url('/bg-pattern.svg')] bg-cover text-gray-200 ${firaMono.className}`}
+        className={`bg-[#04061C] bg-[url('/bg-pattern.svg')] bg-cover text-gray-200 ${firaMono.className} overscroll-none`}
       >
         <Header
           font={oxanium.className}

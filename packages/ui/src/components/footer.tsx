@@ -5,10 +5,8 @@ export function Footer() {
   return (
     <div className="fixed bottom-0 right-0 z-50 block px-4 py-2 animate-delay-700">
       <HoverCard>
-        <HoverCardTrigger asChild>
-          <button className="text-sm hover:cursor-pointer hover:underline">
-            @torus
-          </button>
+        <HoverCardTrigger className="text-sm hover:cursor-pointer hover:underline">
+          @torus
         </HoverCardTrigger>
         <HoverCardContent className="w-72">
           <div className="flex justify-between space-x-4">

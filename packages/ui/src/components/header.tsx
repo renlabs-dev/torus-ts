@@ -85,7 +85,7 @@ export function Header(props: HeaderProps): JSX.Element {
             </Link>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link href="/docs" legacyBehavior passHref>
+            <Link href="/docs/getting-started/intro" legacyBehavior passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                 Documentation
               </NavigationMenuLink>

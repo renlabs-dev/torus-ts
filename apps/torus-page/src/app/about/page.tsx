@@ -1,24 +1,31 @@
 import { sections } from "~/utils/mocks/sections-mock";
-import { AboutSection } from "../components/sections/about-section";
 
 export default function Page(): JSX.Element {
   return (
-    <main className="flex w-full max-w-screen-2xl animate-fade-up flex-col justify-center">
-      <div className="mx-auto mt-24 flex-grow">
-        {sections.map((section, index) => {
-          return (
-            <AboutSection
-              features={section.features}
-              iconSrc={section.iconSrc}
-              index={index}
-              key={section.title}
-              sectionName={section.sectionName}
-              subtitle={section.subtitle}
-              title={section.title}
-            />
-          );
-        })}
-      </div>
+    <main className="flex w-full animate-fade-up flex-col pt-60 md:pt-40">
+      {sections.map((section) => (
+        <section
+          id={section.sectionName}
+          className="mx-auto mb-12 flex max-w-2xl flex-col gap-4 px-4 text-center"
+        >
+          <span>
+            <p className="text-3xl font-semibold tracking-tight text-white">
+              {section.title}
+            </p>
+            <h2 className="text-base font-medium text-gray-400">
+              {section.subtitle}
+            </h2>
+          </span>
+          {section.features.map((feature) => (
+            <div
+              key={feature.description}
+              className="flex items-center justify-start gap-4 px-3"
+            >
+              <p className="inline">{feature.description}</p>
+            </div>
+          ))}
+        </section>
+      ))}
     </main>
   );
 }

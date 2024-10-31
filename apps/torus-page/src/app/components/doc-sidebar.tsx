@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ChevronsLeft, ChevronsRight, Menu, X } from "lucide-react";
 
 import { tutorials } from "../docs/[...slug]/tutorials";
-import { ChevronsLeft, ChevronsRight, Menu, X } from "lucide-react";
 
 interface DocSidebarProps {
   prefix: string;
@@ -61,7 +61,7 @@ export function DocSidebar(props: DocSidebarProps): JSX.Element {
       <div
         aria-hidden="true"
         aria-label="Global"
-        className={`fixed z-10 h-[calc(100svh-69px)] w-full backdrop-blur-sm lg:h-[calc(100svh-123px)] lg:w-[17rem] lg:backdrop-blur-none ${mobileMenuOpen ? "visible" : "hidden"} lg:block`}
+        className={`fixed z-10 h-[calc(100svh-69px)] w-full pt-12 backdrop-blur-sm lg:h-[calc(100svh-123px)] lg:w-[17rem] lg:backdrop-blur-none ${mobileMenuOpen ? "visible" : "hidden"} lg:block`}
       >
         <div
           id="background-blurred"
@@ -77,10 +77,7 @@ export function DocSidebar(props: DocSidebarProps): JSX.Element {
             type="button"
           >
             <span className="sr-only">Close menu</span>
-            <ChevronsLeft
-              aria-hidden="true"
-              className="h-6 w-6 fill-white"
-            />
+            <ChevronsLeft aria-hidden="true" className="h-6 w-6 fill-white" />
           </button>
           <div className="mb-4 mt-8 flex h-fit items-center pr-4 lg:mt-0">
             <input
@@ -111,7 +108,7 @@ export function DocSidebar(props: DocSidebarProps): JSX.Element {
                     return (
                       <Link
                         //eslint-disable-next-line
-                        className={`relative mt-0 flex items-center border-l border-gray-600/70 p-3 ${params.slug[1] === content.href && params.slug[0] === tutorial.tutorialId ? "text-white" : " text-gray-400 hover:text-gray-200"}`}
+                        className={`relative mt-0 flex items-center border-l border-gray-600/70 p-3 ${params.slug[1] === content.href && params.slug[0] === tutorial.tutorialId ? "text-white" : "text-gray-400 hover:text-gray-200"}`}
                         href={`${prefix}/${tutorial.tutorialId}/${content.href}`}
                         key={content.name}
                       >

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MoveRight, MoveLeft } from "lucide-react"
+import { MoveLeft, MoveRight } from "lucide-react";
 
 import { DocSidebar } from "../../components/doc-sidebar";
 import { tutorials } from "./tutorials";
@@ -66,7 +66,7 @@ export default function Docs({ params }: { params: { slug: string } }) {
       />
 
       <div className="flex h-[calc(100svh-118px)] w-full animate-fade-up flex-col items-center overflow-y-scroll pt-6 md:pt-10 lg:h-[calc(100svh-123px)] lg:pl-[19.5rem]">
-        <div className="prose prose-invert flex w-full max-w-[100%] flex-col px-8 sm:max-w-[80%] xl:max-w-[70%] 2xl:max-w-screen-2xl">
+        <div className="prose prose-invert mt-24 flex w-full max-w-[100%] flex-col px-8 sm:max-w-[80%] xl:max-w-[70%] 2xl:max-w-screen-2xl">
           <div className="mb-6 flex w-full">
             <Link
               className="text-titleDark flex rounded-xl text-center text-sm font-medium no-underline hover:underline"
