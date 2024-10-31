@@ -1,6 +1,7 @@
+"use client";
+
 import { Link } from "lucide-react";
 
-import type { SS58Address } from "@torus-ts/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import {
   Button,
@@ -14,19 +15,16 @@ import {
 import { smallAddress } from "@torus-ts/utils";
 
 import { CreateModal } from "./modal";
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo } from "react";
+import { useTorus } from "@torus-ts/providers/use-torus";
 
-type ViewMode = "proposals" | "daos";
+const viewModes = ["proposals", "daos"]
 
-interface ProposalListHeaderProps {
-  viewMode: string;
-  setViewMode: (mode: "proposals" | "daos") => void;
-  daoTreasury: SS58Address | undefined;
-}
-
-export function ProposalListHeader(
-  props: ProposalListHeaderProps,
-): JSX.Element {
-  const { setViewMode, viewMode, daoTreasury } = props;
+export function ProposalListHeader(): JSX.Element {
+  const { daoTreasury } = useTorus();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   function handleCopyClick(): void {
     navigator.clipboard
@@ -39,9 +37,25 @@ export function ProposalListHeader(
       });
   }
 
-  const handleViewChange = (value: string) => {
-    setViewMode(value as ViewMode);
-  };
+  const viewMode = useMemo(() => searchParams.get('view') ?? '', [searchParams]);
+
+  const updateView = useCallback((newView: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', newView);
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  const handleViewChange = useCallback((value: string) => {
+    if (value !== viewMode && viewModes.includes(value)) {
+      updateView(value);
+    }
+  }, [viewMode, updateView]);
+
+  useEffect(() => {
+    if (!viewModes.includes(viewMode)) {
+      updateView('proposals');
+    }
+  }, [viewMode, updateView]);
 
   return (
     <div className="mt-10 flex w-full flex-row justify-between gap-6 divide-gray-500 lg:mt-0 lg:max-w-screen-2xl lg:pt-5">

@@ -1,5 +1,3 @@
-"use client";
-
 import { CreateModal } from "./modal";
 
 export function FooterDivider(): JSX.Element {
