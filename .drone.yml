@@ -53,7 +53,7 @@ trigger:
 ---
 kind: pipeline
 type: docker
-name: community-validator
+name: torus-validator
 
 steps:
   - name: build
@@ -63,7 +63,7 @@ steps:
       username: ${DRONE_COMMIT_AUTHOR}
       password:
         from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/community-validator
+      repo: ghcr.io/renlabs-dev/torus-validator
       tags:
         - latest
         - ${DRONE_BRANCH}
@@ -80,7 +80,7 @@ steps:
       - apk add jq
       - export PATH=$PATH:/app
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "community-validator" || echo "dev-community-validator" )
+      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-validator" || echo "dev-torus-validator" )
       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
