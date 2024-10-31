@@ -61,8 +61,8 @@ function CreateAnimation({ container }: { container: HTMLElement }) {
     objectsGroup = new THREE.Group();
     objectsGroup.add(points);
     objectsGroup.add(lines);
-    objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.35 : 0.35);
-    objectsGroup.position.y = isMobile ? 2.5 : 1.7;
+    objectsGroup.rotation.x = -Math.PI * (isMobile ? 0.35 : 0.36);
+    objectsGroup.position.y = isMobile ? 2.5 : 1.8;
     scene.add(objectsGroup);
   }
 
