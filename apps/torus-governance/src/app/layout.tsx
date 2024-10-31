@@ -3,14 +3,11 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 
 import { Providers } from "@torus-ts/providers/context";
-import { links } from "@torus-ts/ui/data";
-import { Footer } from "@torus-ts/ui/footer";
-import { Header } from "@torus-ts/ui/header";
-import { Wallet, WalletButton } from "@torus-ts/wallet";
+import { Footer, Header } from "@torus-ts/ui";
+import { Wallet } from "@torus-ts/wallet";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import { cairo, oxanium } from "~/utils/fonts";
-import { MobileHeaderContent } from "./components/mobile-header-content";
+import { cairo } from "~/utils/fonts";
 import ProposalRewardCard from "./components/proposal-reward-card";
 
 export const metadata: Metadata = {
@@ -34,18 +31,7 @@ export default function RootLayout({
           <ProposalRewardCard />
           <TRPCReactProvider>
             <Wallet />
-            <Header
-              font={oxanium.className}
-              logoSrc="/logo.svg"
-              title="Community Governance"
-              wallet={<WalletButton />}
-              mobileContent={<MobileHeaderContent />}
-              navigationLinks={[
-                { name: "Homepage", href: links.landing_page, external: true },
-                { name: "Join Community", href: links.discord, external: true },
-                { name: "Cadre", href: links.cadre, external: false },
-              ]}
-            />
+            <Header />
             {children}
             <Footer />
           </TRPCReactProvider>
