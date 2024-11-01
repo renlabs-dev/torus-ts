@@ -21,8 +21,6 @@ import {
   TransactionStatus,
 } from "@torus-ts/ui";
 
-import { cairo } from "~/utils/fonts";
-
 const transferDaoTreasuryProposalSchema = z.object({
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Body is required"),
@@ -177,7 +175,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
         <TabsContent value="preview" className="bg-muted p-4">
           {body ? (
             <MarkdownPreview
-              className={`${cairo.className} max-h-[40vh] overflow-auto`}
+              className="max-h-[40vh] overflow-auto"
               source={`# ${title}\n${body}`}
               style={{
                 backgroundColor: "transparent",

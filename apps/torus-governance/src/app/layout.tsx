@@ -1,21 +1,26 @@
 import "../styles/globals.css";
 
 import type { Metadata } from "next";
+import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Providers } from "@torus-ts/providers/context";
-import { Footer, Header } from "@torus-ts/ui";
-import { Wallet } from "@torus-ts/wallet";
+import { Layout } from "@torus-ts/ui/components";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import { cairo } from "~/utils/fonts";
 import ProposalRewardCard from "./components/proposal-reward-card";
 
 export const metadata: Metadata = {
   robots: "all",
-  title: "Community Governance",
+  title: "𝐓𝐨𝐫𝐮𝐬",
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "Making decentralized AI for everyone",
+  description: "Most advanced decentralized AI Protocol.",
 };
+
+export const firaMono = FiraMono({
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+});
 
 export default function RootLayout({
   children,
@@ -23,20 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <html lang="en">
-      <body
-        className={`bg-[#111713] bg-[url('/bg-pattern.svg')] ${cairo.className} animate-fade-in h-full`}
-      >
-        <Providers>
-          <ProposalRewardCard />
-          <TRPCReactProvider>
-            <Wallet />
-            <Header />
-            {children}
-            <Footer />
-          </TRPCReactProvider>
-        </Providers>
-      </body>
-    </html>
+    <Layout font={firaMono}>
+      <Providers>
+        <ProposalRewardCard />
+        <TRPCReactProvider>{children}</TRPCReactProvider>
+      </Providers>
+    </Layout>
   );
 }

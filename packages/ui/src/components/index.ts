@@ -159,3 +159,4 @@ export {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "./collapsible";
+export { Layout } from "./layout";

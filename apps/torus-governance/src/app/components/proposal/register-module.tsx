@@ -26,8 +26,6 @@ import {
 } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils";
 
-import { cairo } from "~/utils/fonts";
-
 const moduleSchema = z.object({
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Body is required"),
@@ -225,7 +223,7 @@ export function RegisterModule(): JSX.Element {
         <TabsContent value="preview" className="bg-muted p-4">
           {body ? (
             <MarkdownPreview
-              className={`${cairo.className} max-h-[40vh] overflow-auto`}
+              className="max-h-[40vh] overflow-auto"
               source={`# ${title}\n${body}`}
               style={{
                 backgroundColor: "transparent",

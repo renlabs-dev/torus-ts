@@ -1,4 +1,4 @@
-import { sections } from "~/utils/mocks/sections-mock";
+import { sections } from "~/utils/sections-mock";
 
 export default function Page(): JSX.Element {
   return (

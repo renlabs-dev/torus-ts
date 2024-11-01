@@ -81,10 +81,12 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
                       }}
                       className="block flex flex-col px-2 py-1 text-sm"
                     >
-                      <span className="mb-0.5 font-bold text-white underline">
+                      <span className="mb-0.5 font-bold underline">
                         {item.title}
                       </span>
-                      <span>{item.description}</span>
+                      <span className="text-muted-foreground">
+                        {item.description}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -115,10 +117,12 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
                       }}
                       className="block flex flex-col px-2 py-1 text-sm"
                     >
-                      <span className="mb-0.5 font-bold text-white underline">
+                      <span className="mb-0.5 font-bold underline">
                         {item.title}
                       </span>
-                      <span>{item.description}</span>
+                      <span className="text-muted-foreground">
+                        {item.description}
+                      </span>
                     </Link>
                   ))}
                 </div>

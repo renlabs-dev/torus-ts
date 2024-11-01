@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import { Info } from "lucide-react";
 import { z } from "zod";
 
 import type { TransactionResult } from "@torus-ts/types";
@@ -18,9 +19,6 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
-
-import { cairo } from "~/utils/fonts";
-import { Info } from "lucide-react";
 
 const proposalSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -157,7 +155,7 @@ export function CreateProposal(): JSX.Element {
         <TabsContent value="preview" className="bg-muted p-4">
           {body ? (
             <MarkdownPreview
-              className={`${cairo.className} max-h-[40vh] overflow-auto`}
+              className="max-h-[40vh] overflow-auto"
               source={`# ${title}\n${body}`}
               style={{
                 backgroundColor: "transparent",
