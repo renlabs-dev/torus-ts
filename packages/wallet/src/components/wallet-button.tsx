@@ -16,11 +16,10 @@ export function WalletButton(props: TWalletButtonProps) {
   const { customHandler, className } = props;
   const {
     selectedAccount,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     handleWalletModal,
     accounts,
     isInitialized,
-    handleConnect,
+    handleGetWallets,
   } = useTorus();
 
   if (!isInitialized) {
@@ -39,7 +38,7 @@ export function WalletButton(props: TWalletButtonProps) {
   }
 
   const handleConnectWallet = async () => {
-    await handleConnect();
+    await handleGetWallets();
     handleWalletModal();
   };
 

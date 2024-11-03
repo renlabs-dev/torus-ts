@@ -21,7 +21,6 @@ function ToastProvider({
         rtl={false}
         theme="dark"
       />
-
       {children}
     </>
   );

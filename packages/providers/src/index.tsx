@@ -18,4 +18,5 @@ function Providers({ children }: { children: ReactNode }): JSX.Element {
     </ReactQueryProvider>
   );
 }
+
 export { Providers };

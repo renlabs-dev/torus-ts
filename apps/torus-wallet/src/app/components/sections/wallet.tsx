@@ -43,8 +43,8 @@ export function Wallet() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAccount, stakeOut]);
 
-  const handleSwitchWallet = () => {
-    handleGetWallets();
+  const handleSwitchWallet = async () => {
+    await handleGetWallets();
     setShowWallets(true);
   };
 

@@ -6,6 +6,7 @@ import type { Balance, DispatchError } from "@polkadot/types/interfaces";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { toast } from "react-toastify";
+import { WalletDropdown } from "@torus-ts/ui/components";
 
 import type {
   AddCustomProposal,
@@ -58,8 +59,10 @@ interface TorusContextType {
   setIsConnected: (arg: boolean) => void;
   isInitialized: boolean;
 
-  handleGetWallets: () => void;
-  handleConnect: () => Promise<void>;
+  handleSelectWallet: (account: InjectedAccountWithMeta) => void;
+  handleGetWallets: () => Promise<void>;
+  handleLogout: () => void;
+
   accounts: InjectedAccountWithMeta[] | undefined;
   selectedAccount: InjectedAccountWithMeta | null;
   setSelectedAccount: (arg: InjectedAccountWithMeta | null) => void;
@@ -192,7 +195,7 @@ export function TorusProvider({
     }
   }
 
-  async function handleConnect() {
+  async function handleGetWallets(): Promise<void> {
     try {
       const allAccounts = await getWallets();
       if (allAccounts) {
@@ -203,11 +206,32 @@ export function TorusProvider({
     }
   }
 
+  const handleSelectWallet = (account: InjectedAccountWithMeta) => {
+    const currentWallet = localStorage.getItem("favoriteWalletAddress");
+    if (account.address === currentWallet) return;
+
+    setSelectedAccount(account);
+    localStorage.removeItem("authorization");
+    localStorage.setItem("favoriteWalletAddress", account.address);
+    setIsConnected(true);
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("authorization");
+    localStorage.removeItem("favoriteWalletAddress");
+    setSelectedAccount(null);
+    setIsConnected(false);
+  }
+
   useEffect(() => {
     const favoriteWalletAddress = localStorage.getItem("favoriteWalletAddress");
     if (favoriteWalletAddress) {
       const fetchWallets = async () => {
         const walletList = await getWallets();
+        if (!walletList) {
+          console.error("No wallet list found");
+        }
+        setAccounts(walletList)
         const accountExist = walletList?.find(
           (wallet) => wallet.address === favoriteWalletAddress,
         );
@@ -218,19 +242,8 @@ export function TorusProvider({
       };
       fetchWallets().catch(console.error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitialized]);
 
-  async function handleGetWallets(): Promise<void> {
-    try {
-      const allAccounts = await getWallets();
-      if (allAccounts) {
-        setAccounts(allAccounts);
-      }
-    } catch (error) {
-      return undefined;
-    }
-  }
 
   const handleWalletModal = (state?: boolean): void => {
     setOpenWalletModal(state || !openWalletModal);
@@ -619,9 +632,10 @@ export function TorusProvider({
         accounts,
         selectedAccount,
         setSelectedAccount,
+        handleLogout,
         handleGetWallets,
-        handleConnect,
 
+        handleSelectWallet,
         handleWalletModal,
         openWalletModal,
 
@@ -674,6 +688,15 @@ export function TorusProvider({
       }}
     >
       {children}
+      <WalletDropdown
+        accounts={accounts}
+        balance={balance}
+        selectedAccount={selectedAccount}
+        handleGetWallets={handleGetWallets}
+        handleLogout={handleLogout}
+        handleSelectWallet={handleSelectWallet}
+        stakeOut={stakeOut}
+      />
     </TorusContext.Provider>
   );
 }

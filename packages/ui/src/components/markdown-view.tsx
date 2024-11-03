@@ -3,8 +3,8 @@
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
 interface MarkdownViewProps {
-  source: string;
   className?: string;
+  source: string;
 }
 export function MarkdownView(props: MarkdownViewProps): JSX.Element {
   const { source, className } = props;

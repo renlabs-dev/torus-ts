@@ -61,11 +61,10 @@ export const tutorialData = {
 };
 
 const TutorialPage = () => {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const { handleConnect, handleWalletModal } = useTorus();
+  const { handleGetWallets, handleWalletModal } = useTorus();
 
   const handleConnectWallet = async () => {
-    await handleConnect();
+    await handleGetWallets();
     handleWalletModal();
   };
   return (
