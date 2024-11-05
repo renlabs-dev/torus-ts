@@ -1,4 +1,4 @@
-import "@polkadot/api-augment";
+import "@polkadot/api/augment";
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
