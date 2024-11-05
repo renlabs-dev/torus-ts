@@ -959,6 +959,9 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@22.8.4)(typescript@5.6.3)
       tsx:
         specifier: 'catalog:'
         version: 4.19.2
