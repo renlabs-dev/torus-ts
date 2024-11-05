@@ -14,11 +14,12 @@ catalog:
   "@heroicons/react": ^2.1.5
   "@t3-oss/env-nextjs": ^0.10.1
   "dotenv-cli": ^7.4.2
-  "@polkadot/api": ^13.0.1
-  "@polkadot/util": ^13.0.2
-  "@polkadot/util-crypto": ^13.0.2
-  "@polkadot/types": ^13.0.1
-  "@polkadot/api-augment": ^13.0.1
+  "@polkadot/api": ^13.2.1
+  "@polkadot/util": ^13.2.1
+  "@polkadot/util-crypto": ^13.2.1
+  "@polkadot/typegen": ^13.2.1
+  "@polkadot/types": ^13.2.1
+  "@polkadot/api-augment": ^13.2.1
   "@polkadot/extension-dapp": ^0.52.3
   "@polkadot/extension-inject": ^0.52.3
   eslint: ^9.9.0

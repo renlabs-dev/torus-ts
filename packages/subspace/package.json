@@ -9,7 +9,8 @@
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "generate-substrate-types": "polkadot-types-from-chain --package @torus-ts/subspace/interfaces --endpoint ../../data/metadata/mainnet.json --output ./src/interfaces",
+    "generate-types-from-defs": "polkadot-types-from-defs --package @torus-ts/subspace/interfaces --input ./src/interfaces --endpoint ../../data/metadata/mainnet.json",
+    "generate-types-from-chain": "polkadot-types-from-chain --package @torus-ts/subspace/interfaces --endpoint ../../data/metadata/mainnet.json --output ./src/interfaces",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -27,7 +28,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@polkadot/typegen": "^14.2.2",
+    "@polkadot/typegen": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "tsx": "catalog:"

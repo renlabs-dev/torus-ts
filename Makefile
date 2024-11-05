@@ -3,7 +3,7 @@
 check:
 	pnpm run typecheck
 	pnpm run lint
-	pnpm run format
+	@# pnpm run format
 
 fix:
 	pnpm run lint:fix

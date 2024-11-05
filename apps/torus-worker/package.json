@@ -25,7 +25,6 @@
     "express": "^4.19.2"
   },
   "devDependencies": {
-    "@polkadot/api": "^11.1.1",
     "@polkadot/api-augment": "catalog:",
     "@torus-ts/db": "workspace:*",
     "@torus-ts/eslint-config": "workspace:*",
