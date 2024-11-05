@@ -5,7 +5,7 @@ import { BN } from "@polkadot/util";
 
 import type { TransactionResult, Transfer } from "@torus-ts/providers/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { fromNano, toNano } from "@torus-ts/subspace/utils";
+import { fromNano, toNano } from "@torus-ts/utils";
 import { TransactionStatus } from "@torus-ts/ui";
 
 import type { GenericActionProps } from "../wallet-actions";

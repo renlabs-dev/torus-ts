@@ -1,5 +1,4 @@
-.PHONY: check fix build
-FORCE:
+.PHONY: check fix build copy-specs
 
 check:
 	pnpm run typecheck
@@ -18,3 +17,5 @@ copy-specs:
 
 data/metadata/%.json: FORCE
 	scripts/get_metadata.sh $* > $@
+
+FORCE:

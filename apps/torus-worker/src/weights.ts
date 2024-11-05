@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { bigintDivision } from "@torus-ts/subspace/utils";
+import { bigintDivision } from "@torus-ts/utils";
 
 /** Related to weights computation */
 

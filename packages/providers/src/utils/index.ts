@@ -1,1 +1,1 @@
-export * from "@torus-ts/subspace/utils";
+export * from "@torus-ts/utils";

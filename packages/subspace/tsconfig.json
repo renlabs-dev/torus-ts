@@ -2,7 +2,7 @@
   "extends": "@torus-ts/tsconfig/internal-package.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
     "composite": false,
     "declaration": true,
@@ -12,6 +12,6 @@
     "noEmit": false,
     "emitDeclarationOnly": false
   },
-  "include": ["*.ts", "types", "utils", "queries"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

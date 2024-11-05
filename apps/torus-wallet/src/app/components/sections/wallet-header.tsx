@@ -2,7 +2,7 @@
 
 import { ImageIcon } from "../image-icon";
 import { toast } from "@torus-ts/providers/use-toast";
-import { copyToClipboard, smallAddress } from "@torus-ts/subspace/utils";
+import { copyToClipboard, smallAddress } from "@torus-ts/utils";
 import React from "react";
 import type { InjectedAccountWithMeta } from "@torus-ts/ui";
 import { ChevronsLeft } from "lucide-react";

@@ -1,6 +1,6 @@
 "use client";
 
-import { fromNano } from "@torus-ts/subspace/utils";
+import { fromNano } from "@torus-ts/utils";
 import { TransactionStatus } from "@torus-ts/ui";
 import { ValidatorsList } from "../../validators-list";
 import React, { useState } from "react";

@@ -6,7 +6,7 @@ import {
   flattenResult,
   parseIpfsUri,
   processDaoMetadata,
-} from "@torus-ts/subspace/utils";
+} from "@torus-ts/utils";
 
 import type { WorkerProps } from "../common";
 import type { NewNotification } from "../db";

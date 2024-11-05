@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 
 import type { InjectedAccountWithMeta } from "@torus-ts/ui";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { formatToken } from "@torus-ts/subspace/utils";
+import { formatToken } from "@torus-ts/utils";
 
 interface WalletBalanceProps {
   balance: bigint | undefined;
