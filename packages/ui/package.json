@@ -7,7 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./styles.css": "./dist/index.css",
-    "./header": "./src/components/header/index.tsx",
+    "./header": "./src/components/header.tsx",
     "./copy-button": "./src/components/copy-button.tsx",
     "./footer": "./src/components/footer.tsx",
     "./loading": "./src/components/loading.tsx",

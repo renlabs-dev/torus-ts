@@ -4,13 +4,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Providers } from "@torus-ts/providers/context";
-import { links } from "@torus-ts/ui/data";
+// import { links } from "@torus-ts/ui/data";
 import { Footer } from "@torus-ts/ui/footer";
 import { Header } from "@torus-ts/ui/header";
-import { Wallet, WalletButton } from "@torus-ts/wallet";
+import { Wallet } from "@torus-ts/wallet";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import { cairo, oxanium } from "~/utils/fonts";
+import { cairo } from "~/utils/fonts";
 import { DelegatedList } from "./components/delegated-list";
 import { Info } from "lucide-react";
 
@@ -50,16 +50,17 @@ export default function RootLayout({
             </div>
           </div>
           <Header
-            font={oxanium.className}
-            logoSrc="/logo.svg"
-            navigationLinks={[
-              { name: "Governance", href: links.governance, external: true },
-              { name: "Docs", href: links.docs, external: false },
-              { name: "Blog", href: links.blog, external: true },
-              { name: "Join Community", href: links.discord, external: true },
-            ]}
-            title="torus AI"
-            wallet={<WalletButton />}
+            // FIXME
+            // font={oxanium.className}
+            // logoSrc="/logo.svg"
+            // navigationLinks={[
+            //   { name: "Governance", href: links.governance, external: true },
+            //   { name: "Docs", href: links.docs, external: false },
+            //   { name: "Blog", href: links.blog, external: true },
+            //   { name: "Join Community", href: links.discord, external: true },
+            // ]}
+            // title="torus AI"
+            // wallet={<WalletButton />}
           />
           <TRPCReactProvider>
             <DelegatedList />

@@ -20,15 +20,15 @@ interface IntroSectionProps {
 export function IntroSection(props: IntroSectionProps) {
   const {
     accounts,
-    handleConnect,
+    // handleConnect,
     isInitialized,
     selectedAccount,
     setIsConnected,
     setSelectedAccount,
   } = useTorus();
 
-  const handleConnectWallet = async () => {
-    await handleConnect();
+  const handleConnectWallet = () => {
+    // await handleConnect();
     props.setShowWallets(true);
   };
 
