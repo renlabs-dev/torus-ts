@@ -30,6 +30,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@polkadot/typegen": "^14.2.2",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "tsx": "catalog:"
