@@ -8,6 +8,14 @@
     "./types": "./types/index.ts",
     "./queries": "./queries/index.ts"
   },
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "-generate-substrate-types": "polkadot-types-from-chain --package @polkadot/types --output packages/types/src/interfaces --endpoint wss://testnet-commune-api-node-1.communeai.net --strictPairs --strictEnums --removeRedundant --latest 100",
+    "generate-substrate-types": "polkadot-types-from-chain --package @torus-ts/subspace/interfaces --endpoint ../../data/metadata/mainnet.json --output ./src/interfaces"
+  },
   "dependencies": {
     "@polkadot/api": "catalog:",
     "@polkadot/api-augment": "catalog:",
