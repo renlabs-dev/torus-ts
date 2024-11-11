@@ -3,10 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "//": "@torus-ts/subspace needs to be builded and imported indirectly,",
+  "//": "otherwise dependant packages may typecheck it's sources and cause",
+  "//": "conflict in the generated/augmented types",
   "exports": {
-    "./queries": "./src/queries/index.ts"
+    "./queries": {
+      "types": "./dist/queries/index.d.ts",
+      "default": "./dist/queries/index.js"
+    }
   },
   "scripts": {
+    "build": "tsc",
     "clean": "rm -rf .turbo node_modules",
     "dev": "tsx --inspect ./src/main.ts",
     "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
