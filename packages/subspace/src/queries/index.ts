@@ -39,7 +39,13 @@ import {
   standardizeUidToSS58address,
 } from "@torus-ts/utils";
 
-import { sb_address, sb_array, sb_basic_enum, sb_bigint, z_map } from "../types";
+import {
+  sb_address,
+  sb_array,
+  sb_basic_enum,
+  sb_bigint,
+  z_map,
+} from "../types";
 
 export { ApiPromise };
 

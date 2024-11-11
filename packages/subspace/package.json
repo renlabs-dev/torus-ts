@@ -9,7 +9,7 @@
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "dev": "tsx --inspect ./src/main.ts",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
     "generate-types-from-chain": "tsx ../../node_modules/.bin/polkadot-types-from-chain --package @torus-ts/subspace/interfaces --endpoint ../../data/metadata/mainnet.json --output ./src/interfaces",
     "generate-types-from-defs": "tsx ../../node_modules/.bin/polkadot-types-from-defs --package @torus-ts/subspace/interfaces --input ./src/interfaces --endpoint ../../data/metadata/mainnet.json",
     "lint": "eslint",
