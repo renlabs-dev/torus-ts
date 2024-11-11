@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api/augment";
 
+import type { z } from "zod";
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { encodeAddress } from "@polkadot/util-crypto";
+import SuperJSON from "superjson";
 import { assert } from "tsafe";
 
 import type {
@@ -10,8 +12,8 @@ import type {
   LastBlock,
   NetworkSubnetConfig,
   SS58Address,
-  StakeOutData,
   StakeFromData,
+  StakeOutData,
   SubspaceModule,
   VoteWithStake,
 } from "@torus-ts/types";
@@ -36,12 +38,10 @@ import {
   handleProposals,
   standardizeUidToSS58address,
 } from "@torus-ts/utils";
-import SuperJSON from "superjson";
 
+import { sb_address, sb_array, sb_basic_enum, sb_bigint, z_map } from "../types";
 
 export { ApiPromise };
-
-// == chain ==
 
 export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
   const blockHeader = await api.rpc.chain.getHeader();
@@ -58,7 +58,6 @@ export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
   };
 }
 
-// == system ==
 export async function queryBalance(api: Api, address: SS58Address | string) {
   if (!isSS58(address)) {
     throw new Error("Invalid address format, expected SS58");
@@ -69,10 +68,8 @@ export async function queryBalance(api: Api, address: SS58Address | string) {
   return BigInt(freeBalance.toString());
 }
 
-// == governanceModule ==
-
 export async function queryProposalsEntries(api: Api) {
-  const proposalsQuery = await api.query.governanceModule?.proposals?.entries();
+  const proposalsQuery = await api.query.governanceModule.proposals.entries();
 
   const [proposals, proposalsErrs] = handleProposals(proposalsQuery);
   for (const err of proposalsErrs) {
@@ -84,7 +81,7 @@ export async function queryProposalsEntries(api: Api) {
 
 export async function queryDaosEntries(api: Api) {
   const daosQuery =
-    await api.query.governanceModule?.curatorApplications?.entries();
+    await api.query.governanceModule.curatorApplications.entries();
 
   const [daos, daosErrs] = handleDaos(daosQuery);
   for (const err of daosErrs) {
@@ -99,8 +96,6 @@ export async function pushToWhitelist(
   moduleKey: SS58Address,
   mnemonic: string | undefined,
 ) {
-  if (!api.tx.governanceModule?.addToWhitelist) return false;
-
   const keyring = new Keyring({ type: "sr25519" });
 
   if (!mnemonic) {
@@ -124,8 +119,6 @@ export async function pushToWhitelist(
 }
 
 export async function queryWhitelist(api: Api): Promise<SS58Address[]> {
-  assert(api.query.governanceModule?.legitWhitelist != undefined);
-
   const whitelist = [];
 
   const entries = await api.query.governanceModule.legitWhitelist.entries();
@@ -145,7 +138,6 @@ export async function removeFromWhitelist(
   moduleKey: SS58Address,
   mnemonic: string | undefined,
 ) {
-  if (!api.tx.governanceModule?.removeFromWhitelist) return false;
   if (!mnemonic) {
     throw new Error("No sudo mnemonic provided");
   }
@@ -172,7 +164,6 @@ export async function refuseDaoApplication(
   proposalId: number,
   mnemonic: string | undefined,
 ) {
-  if (!api.tx.governanceModule?.refuseDaoApplication) return false;
   if (!mnemonic) {
     throw new Error("No sudo mnemonic provided");
   }
@@ -196,102 +187,50 @@ export async function refuseDaoApplication(
 }
 
 export async function queryDaoTreasuryAddress(api: Api) {
-  return api.query.governanceModule
-    ?.daoTreasuryAddress?.()
-    .then((address) => address.toHuman() as SS58Address);
+  const addr = await api.query.governanceModule.daoTreasuryAddress();
+  return checkSS58(addr.toString());
 }
 
 export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
   const unrewardedProposals =
-    await api.query.governanceModule?.unrewardedProposals?.entries();
-
-  if (!unrewardedProposals) {
-    throw new Error("unrewardedProposals is falsey");
-  }
+    await api.query.governanceModule.unrewardedProposals.entries();
 
   return unrewardedProposals
     .map(([key]) => {
       // The key is a StorageKey, which contains the proposal ID
       // We need to extract the proposal ID from this key and convert it to a number
-      const proposalId = key.args[0]?.toString();
+      const proposalId = key.args[0].toString();
       return proposalId ? parseInt(proposalId, 10) : NaN;
     })
     .filter((id): id is number => !isNaN(id));
 }
 
-enum VoteMode {
-  Vote,
-}
+const GOVERNANCE_CONFIGURATION_SCHEMA = z_map({
+  proposalCost: sb_bigint,
+  proposalExpiration: sb_bigint,
+  voteMode: sb_basic_enum(["Vote", "Authority"]),
+  proposalRewardTreasuryAllocation: sb_bigint,
+  maxProposalRewardTreasuryAllocation: sb_bigint,
+  proposalRewardInterval: sb_bigint,
+});
 
-interface GovernanceConfiguration {
-  proposalCost?: bigint;
-  proposalExpiration?: number;
-  voteMode?: VoteMode;
-  proposalRewardTreasuryAllocation?: number;
-  maxProposalRewardTreasuryAllocation?: bigint;
-  proposalRewardInterval?: bigint;
-}
+type GovernanceConfiguration = z.infer<typeof GOVERNANCE_CONFIGURATION_SCHEMA>;
 
 export async function queryGlobalGovernanceConfig(
   api: Api,
 ): Promise<GovernanceConfiguration> {
-  const globalGovernanceConfig =
-    api.query.governanceModule?.globalGovernanceConfig;
-
-  if (!globalGovernanceConfig) {
-    throw new Error("globalGovernanceConfig is falsey");
-  }
-
-  const config = (await globalGovernanceConfig()) as unknown as GovernanceConfiguration;
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!config) {
-    throw new Error("Failed to fetch global governance config");
-  }
-
-  const parsedConfig: GovernanceConfiguration = {};
-
-  // Safely parse each field
-  if ("proposalCost" in config) {
-    parsedConfig.proposalCost = BigInt(config.proposalCost?.toString() ?? "0");
-  }
-  if ("proposalExpiration" in config) {
-    parsedConfig.proposalExpiration = config.proposalExpiration;
-  }
-  if ("voteMode" in config) {
-    parsedConfig.voteMode = config.voteMode;
-  }
-  if ("proposalRewardTreasuryAllocation" in config) {
-    parsedConfig.proposalRewardTreasuryAllocation =
-      config.proposalRewardTreasuryAllocation;
-  }
-  if ("maxProposalRewardTreasuryAllocation" in config) {
-    parsedConfig.maxProposalRewardTreasuryAllocation = BigInt(
-      config.maxProposalRewardTreasuryAllocation?.toString() ?? "0",
-    );
-  }
-  if ("proposalRewardInterval" in config) {
-    parsedConfig.proposalRewardInterval = BigInt(
-      config.proposalRewardInterval?.toString() ?? "0",
-    );
-  }
-
-  return parsedConfig;
+  const config = await api.query.governanceModule.globalGovernanceConfig();
+  const parsed_config = GOVERNANCE_CONFIGURATION_SCHEMA.parse(config);
+  return parsed_config;
 }
 
 export function getRewardAllocation(
-  treasuryBalance: bigint,
   governanceConfig: GovernanceConfiguration,
+  treasuryBalance: bigint,
 ) {
-  if (governanceConfig.proposalRewardTreasuryAllocation == null) return null;
-  if (governanceConfig.maxProposalRewardTreasuryAllocation == null) return null;
-
-  const allocationPercentage = BigInt(
-    governanceConfig.proposalRewardTreasuryAllocation,
-  );
-  const maxAllocation = BigInt(
-    governanceConfig.maxProposalRewardTreasuryAllocation,
-  );
+  const allocationPercentage =
+    governanceConfig.proposalRewardTreasuryAllocation;
+  const maxAllocation = governanceConfig.maxProposalRewardTreasuryAllocation;
 
   let allocation = (treasuryBalance * allocationPercentage) / 100n;
 
@@ -303,23 +242,21 @@ export function getRewardAllocation(
   return allocation;
 }
 
-export async function queryRewardAllocation(api: Api) {
-  const balance = await queryDaoTreasuryAddress(api).then((result) =>
-    queryBalance(api, result!),
-  );
-
+export async function queryRewardAllocation(api: Api): Promise<bigint> {
+  const treasury_address = await queryDaoTreasuryAddress(api);
+  const balance = await queryBalance(api, treasury_address);
   const governanceConfig = await queryGlobalGovernanceConfig(api);
-
-  return getRewardAllocation(balance, governanceConfig);
+  return getRewardAllocation(governanceConfig, balance);
 }
 
-export async function queryNotDelegatingVotingPower(api: Api) {
-  return api.query.governanceModule
-    ?.notDelegatingVotingPower?.()
-    .then((power) => power.toHuman() as SS58Address[]);
-}
+const NOT_DELEGATING_VOTING_POWER_SCHEMA = sb_array(sb_address);
 
-// == subspaceModule ==
+export async function queryNotDelegatingVotingPower(
+  api: Api,
+): Promise<SS58Address[]> {
+  const value = await api.query.governanceModule.notDelegatingVotingPower();
+  return NOT_DELEGATING_VOTING_POWER_SCHEMA.parse(value);
+}
 
 export async function queryStakeOut(
   torusCacheUrl: string,
@@ -334,27 +271,23 @@ export async function queryStakeOut(
     throw new Error("Failed to fetch data");
   }
   const responseData = await response.text();
-  
+
   const parsedData = SuperJSON.parse(responseData);
-  
+
   const stakeOutData = STAKE_DATA_SCHEMA.parse(parsedData);
   return stakeOutData;
 }
 
 export async function queryCalculateStakeOut(api: Api) {
   // StakeTo is the list of keys that have staked to that key.
-  const stakeToQuery = await api.query.subspaceModule?.stakeTo?.entries();
-
-  if (!stakeToQuery) {
-    throw new Error("stakeTo is probably undefined");
-  }
+  const stakeToQuery = await api.query.subspaceModule.stakeTo.entries();
 
   let total = 0n;
   const perAddr = new Map<string, bigint>();
 
   for (const [keyRaw, valueRaw] of stakeToQuery) {
     const [fromAddrRaw] = keyRaw.args;
-    const fromAddr = fromAddrRaw!.toString();
+    const fromAddr = fromAddrRaw.toString();
 
     const staked = BigInt(valueRaw.toString());
 
@@ -385,23 +318,19 @@ export async function queryStakeFrom(
 
   const parsedData = SuperJSON.parse(responseData);
   const stakeFromData = STAKE_DATA_SCHEMA.parse(parsedData);
-  return stakeFromData
+  return stakeFromData;
 }
 
 export async function queryCalculateStakeFrom(api: Api) {
   // StakeFrom is the list of nominators that have staked to a validator.
-  const stakeFromQuery = await api.query.subspaceModule?.stakeFrom?.entries();
-
-  if (!stakeFromQuery) {
-    throw new Error("stakeFrom is probably undefined");
-  }
+  const stakeFromQuery = await api.query.subspaceModule.stakeFrom.entries();
 
   let total = 0n;
   const perAddr = new Map<string, bigint>();
 
   for (const [keyRaw, valueRaw] of stakeFromQuery) {
-    const [toAddrRaw] = keyRaw.args;
-    const toAddr = toAddrRaw!.toString();
+    const [toAddrRaw, _fromAddrRaw] = keyRaw.args;
+    const toAddr = toAddrRaw.toString();
 
     const staked = BigInt(valueRaw.toString());
 
@@ -482,34 +411,25 @@ export async function processVotesAndStakes(
   return sortedVotes;
 }
 
+// TODO: rename `queryUserTotalStaked`, it's not adding up the stakes, so it's not a total
 export async function queryUserTotalStaked(
   api: Api,
   address: SS58Address | string,
 ) {
-  const stakeEntries =
-    await api.query.subspaceModule?.stakeTo?.entries(address);
+  const stakeEntries = await api.query.subspaceModule.stakeTo.entries(address);
 
-  const stakes = stakeEntries?.map(([key, value]) => {
+  const stakes = stakeEntries.map(([key, value]) => {
     const [, stakeToAddress] = key.args;
-    const stake = value.toString();
+    const stake = BigInt(value.toString());
 
     return {
-      address: stakeToAddress!.toString(),
+      address: stakeToAddress.toString(),
       stake,
     };
   });
 
-  // Filter out any entries with zero stake
-  return stakes?.filter((stake) => stake.stake !== "0");
+  return stakes.filter((stake) => stake.stake !== 0n);
 }
-
-// === modules ===
-
-/**
- * @param api
- * @param extraProps if empty, only the required properties are returned (netuid, uid, key)
- * @param netuidWhitelist if empty, modules from all subnets are returned
- */
 
 export async function querySubnetParams(
   api: Api,
@@ -582,7 +502,7 @@ export function keyStakeFrom(
   const stakerMap = stakeFromStorage.get(targetKey);
   let totalStake = 0n;
   if (stakerMap === undefined) {
-    console.log("could not find map for key: ", targetKey);
+    console.warn("Could not StakeFrom map for key: ", targetKey);
     return totalStake;
   }
   for (const stake of stakerMap.values()) {
@@ -676,8 +596,8 @@ export async function queryChain<T extends SubspaceStorageName>(
     T,
     Record<string, string>
   >;
-  const moduletas = await getPropsToMap(props, api, netuidWhitelist);
-  const entries = Object.entries(moduletas) as [T, ChainEntry][];
+  const moduleEntries = await getPropsToMap(props, api, netuidWhitelist);
+  const entries = Object.entries(moduleEntries) as [T, ChainEntry][];
   entries.map(([prop, entry]) => {
     modulePropMap[prop] = entry.queryStorage(netuidWhitelist);
   });
