@@ -242,7 +242,7 @@ export async function queryGlobalGovernanceConfig(
     throw new Error("globalGovernanceConfig is falsey");
   }
 
-  const config = (await globalGovernanceConfig()) as GovernanceConfiguration;
+  const config = (await globalGovernanceConfig()) as unknown as GovernanceConfiguration;
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!config) {
