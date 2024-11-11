@@ -13,7 +13,6 @@ import { VoterList } from "~/app/components/proposal/voter-list";
 import {
   handleCustomProposal,
 } from "../../../../utils";
-import { VotingPowerButton } from "../../../components/proposal/voting-power-button";
 import { StatusLabel } from "../../../components/status-label";
 import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
