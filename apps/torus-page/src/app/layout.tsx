@@ -23,5 +23,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }): JSX.Element {
-  return <Layout font={firaMono}>{children}</Layout>;
+  return <Layout font={firaMono} className="bg-[url('/bg-pattern.svg')]">{children}</Layout>;
 }

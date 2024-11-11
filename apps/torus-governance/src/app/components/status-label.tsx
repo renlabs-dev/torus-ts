@@ -4,37 +4,37 @@ import type { ProposalStatus } from "@torus-ts/types";
 import { Badge } from "@torus-ts/ui";
 
 interface StatusLabelProps {
-  result: ProposalStatus;
+  status: ProposalStatus;
 }
 
 export function StatusLabel(props: StatusLabelProps): JSX.Element {
-  const { result } = props;
+  const { status } = props;
 
-  return match(result)({
+  return match(status)({
     open() {
       return (
-        <Badge className="border-yellow-500 bg-yellow-500/10 text-yellow-500">
+        <Badge variant="solid" className="text-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/10">
           Active
         </Badge>
       );
     },
     accepted() {
       return (
-        <Badge className="border-green-500 bg-green-500/10 text-green-500">
+        <Badge variant="solid" className="text-green-500 bg-green-500/10 hover:bg-green-500/10">
           Accepted
         </Badge>
       );
     },
     expired() {
       return (
-        <Badge className="border-gray-500 bg-gray-500/10 text-gray-500">
+        <Badge variant="solid" className="text-gray-500 bg-gray-500/10 hover:bg-gray-500/10">
           Expired
         </Badge>
       );
     },
     refused() {
       return (
-        <Badge className="border-red-500 bg-red-500/10 text-red-500">
+        <Badge variant="solid" className="text-red-500 bg-red-500/10 hover:bg-red-500/10">
           Refused
         </Badge>
       );

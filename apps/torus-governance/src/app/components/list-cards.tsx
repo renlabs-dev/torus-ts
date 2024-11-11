@@ -2,12 +2,13 @@
 
 import { useTorus } from "@torus-ts/providers/use-torus";
 import type { ProposalStatus, SS58Address } from "@torus-ts/types";
-import { DaoCard } from "./dao/dao-card";
-import { ProposalCard } from "./proposal/proposal-card";
+import { CardViewData } from "./card-view-data";
 import { CardSkeleton } from "./card-skeleton";
 import type { VoteStatus } from "./vote-label";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { handleCustomDaos, handleCustomProposal } from "~/utils";
+import Link from "next/link";
 
 function getUserVoteStatus(proposalStatus: ProposalStatus, selectedAccountAddress: SS58Address): VoteStatus {
   if (!("open" in proposalStatus)) return "UNVOTED";
@@ -27,7 +28,7 @@ const NoContentFound = () => {
   )
 }
 
-type ViewModes = "proposals" | "daos";
+type ViewModes = "proposals" | "daos-applications" | null;
 
 export const ListCards = () => {
   const {
@@ -43,7 +44,7 @@ export const ListCards = () => {
 
   const viewMode = useMemo((): ViewModes => {
     const currentView = searchParams.get('view')
-    if (currentView !== "proposals" && currentView !== "daos") return "proposals"
+    if (currentView !== "proposals" && currentView !== "daos-applications") return null
     return currentView as ViewModes
   }, [searchParams]);
 
@@ -63,7 +64,7 @@ export const ListCards = () => {
 
   const handleIsLoading = (viewMode: ViewModes): boolean => {
     switch (viewMode) {
-      case "daos":
+      case "daos-applications":
         return isLoadingDaos;
       case "proposals":
         return isLoadingProposals;
@@ -72,43 +73,63 @@ export const ListCards = () => {
     }
   }
 
-  const renderProposals = useMemo((): JSX.Element[] | undefined => {
-    const proposalsContent = proposalsWithMeta?.map((proposal) => {
-      const voted = getUserVoteStatus(
-        proposal.status,
-        selectedAccount?.address as SS58Address,
-      );
+  const renderProposals = useMemo((): JSX.Element[] => {
+    if (!proposalsWithMeta) return [];
 
-      return (
-        <div key={proposal.id}>
-          <ProposalCard
-            key={proposal.id}
-            proposalState={proposal}
-            voted={voted}
-          />
-        </div>
-      );
-    });
-    return proposalsContent;
+    return proposalsWithMeta
+      .map((proposal) => {
+        const { title, invalid } = handleCustomProposal(proposal);
+
+        if (invalid) return null;
+
+        const voted = getUserVoteStatus(
+          proposal.status,
+          selectedAccount?.address as SS58Address
+        );
+
+        return (
+          <Link href={`/proposal/${proposal.id}`} key={proposal.id}>
+            <CardViewData
+              title={title}
+              author={proposal.proposer}
+              voted={voted}
+              proposalType={proposal.data}
+              proposalStatus={proposal.status}
+              dueDate
+            />
+          </Link>
+        );
+      })
+      .filter((element): element is JSX.Element => element !== null);
   }, [proposalsWithMeta, selectedAccount?.address]);
 
-  const renderDaos = useMemo((): JSX.Element[] | undefined => {
-    const daosContent = daosWithMeta?.map((dao) => {
-      return (
-        <div key={dao.id}>
-          <DaoCard daoState={dao} key={dao.id} />
-        </div>
-      );
-    });
+  const renderDaos = useMemo((): JSX.Element[] => {
+    if (!daosWithMeta) return [];
 
-    return daosContent;
-  }, [daosWithMeta])
+    return daosWithMeta
+      .map((dao) => {
+        const { title, body } = handleCustomDaos(dao.id, dao.customData ?? null);
+
+        if (!body) return null;
+
+        return (
+          <Link href={`/dao/${dao.id}`} key={dao.id}>
+            <CardViewData
+              title={title}
+              author={dao.userId}
+              daoStatus={dao.status}
+            />
+          </Link>
+        );
+      })
+      .filter((element): element is JSX.Element => element !== null);
+  }, [daosWithMeta]);
 
   const content = useMemo(() => {
     switch (viewMode) {
       case "proposals":
         return renderProposals;
-      case "daos":
+      case "daos-applications":
         return renderDaos;
       default:
         return null;
@@ -117,7 +138,7 @@ export const ListCards = () => {
 
   const renderLoading = () => {
     return (
-      <div className="w-full space-y-10 py-10">
+      <div className="w-full space-y-6">
         <div className="animate-fade-up animate-delay-200">
           <CardSkeleton />
         </div>
@@ -134,7 +155,7 @@ export const ListCards = () => {
   if (handleIsLoading(viewMode)) return renderLoading()
 
   return (
-    <div className="w-full space-y-10 py-10">
+    <div className="flex flex-col gap-6">
       {content ?? <NoContentFound />}
     </div>
   )

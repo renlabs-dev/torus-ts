@@ -217,7 +217,7 @@ export function DaoVoteCard(props: {
       return (
         <div>
           <GovernanceStatusNotOpen
-            statusText="Accepted"
+            status="ACCEPTED"
             governanceModel="DAO"
           />
 
@@ -242,11 +242,11 @@ export function DaoVoteCard(props: {
       );
     case "Removed":
       return (
-        <GovernanceStatusNotOpen statusText="Removed" governanceModel="DAO" />
+        <GovernanceStatusNotOpen status="REMOVED" governanceModel="DAO" />
       );
     case "Refused":
       return (
-        <GovernanceStatusNotOpen statusText="Refused" governanceModel="DAO" />
+        <GovernanceStatusNotOpen status="REFUSED" governanceModel="DAO" />
       );
   }
 }

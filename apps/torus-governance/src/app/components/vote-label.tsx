@@ -12,12 +12,12 @@ export function VoteLabel(props: VoteLabelProps): JSX.Element {
   const votingStatus = {
     UNVOTED: <></>,
     FAVORABLE: (
-      <Badge className="border-green-500 bg-green-500/10 text-green-500">
+      <Badge variant="solid" className="text-green-500 bg-green-500/10">
         Favorable
       </Badge>
     ),
     AGAINST: (
-      <Badge className="border-red-500 bg-red-500/10 text-red-500">
+      <Badge variant="solid" className="text-red-500 bg-red-500/10">
         Against
       </Badge>
     ),

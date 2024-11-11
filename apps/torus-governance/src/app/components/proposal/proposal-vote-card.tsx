@@ -5,13 +5,119 @@ import { match } from "rustie";
 
 import type { ProposalStatus, TransactionResult } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { TransactionStatus } from "@torus-ts/ui";
+import { Button, TransactionStatus, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
 import { WalletButton } from "@torus-ts/wallet";
 
 import type { VoteStatus } from "../vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import { SectionHeaderText } from "../section-header-text";
-import { LoaderCircle, TicketX } from "lucide-react";
+import { TicketX } from "lucide-react";
+
+const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
+
+const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
+  return (
+    <div className="hidden border-muted animate-fade-down animate-delay-500 md:block">
+      <div className="pb-6 pl-0">
+        <h3>Cast your vote</h3>
+      </div>
+      {props.children}
+    </div>
+  )
+}
+
+const AlreadyVotedCardContent = (
+  props: {
+    voted: VoteStatus,
+    votingStatus: TransactionResult,
+    handleRemoveVote: () => void
+  }
+): JSX.Element => {
+  const { voted, votingStatus, handleRemoveVote } = props;
+
+  const getVotedText = (voted: VoteStatus): JSX.Element => {
+    if (voted === "FAVORABLE") {
+      return (
+        <span className="text-green-400">You already voted in favor</span>
+      )
+    }
+    return <span className="text-red-400">You already voted against</span>
+  }
+
+  return (
+    <div className="flex flex-col w-full gap-2">
+      {getVotedText(voted)}
+      <Button
+        variant="default"
+        className="flex w-full items-center justify-between rounded-lg text-white text-nowrap px-4 py-2.5 text-center font-semibold transition duration-200"
+        onClick={handleRemoveVote}
+        type="button"
+      >
+        Remove Vote <TicketX className="w-5 h-5" />
+      </Button>
+      {votingStatus.status && (
+        <TransactionStatus
+          status={votingStatus.status}
+          message={votingStatus.message}
+        />
+      )}
+    </div>
+  )
+}
+
+const VoteCardFunctionsContent = (
+  props: {
+    vote: VoteStatus,
+    votingStatus: TransactionResult,
+    isConnected: boolean,
+    handleVote: () => void
+    setVote: (vote: VoteStatus) => void;
+  }
+): JSX.Element => {
+  const { handleVote, setVote, isConnected, vote, votingStatus } = props;
+
+  if (!isConnected) {
+    return (<WalletButton />)
+  }
+
+  function handleVotePreference(value: VoteStatus | "") {
+    if (value === "" || value === "UNVOTED") return setVote("UNVOTED");
+    return setVote(value);
+  }
+
+  return (
+    <>
+      <ToggleGroup type="single" value={vote} onValueChange={(voteType: VoteStatus | "") => handleVotePreference(voteType)} className="flex w-full gap-4">
+        {voteOptions.map((option) => (
+          <ToggleGroupItem
+            variant="outline"
+            value={option}
+            className={`w-full capitalize ${votingStatus.status === "PENDING" && "cursor-not-allowed"} ${option === vote ? "border-white" : "border-muted bg-card"}`}
+            disabled={votingStatus.status === "PENDING"}
+          >
+            {option.toLocaleLowerCase()}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+
+      <Button
+        variant="default"
+        className={`mt-4 mb-1 w-full rounded-lg ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
+        disabled={vote === "UNVOTED" || votingStatus.status === "PENDING"}
+        onClick={handleVote}
+        type="button"
+      >
+        {vote === "UNVOTED" ? "Choose a vote" : "Vote"}
+      </Button>
+
+      {votingStatus.status && (
+        <TransactionStatus
+          status={votingStatus.status}
+          message={votingStatus.message}
+        />
+      )}
+    </>
+  )
+}
 
 export function ProposalVoteCard(props: {
   proposalStatus: ProposalStatus;
@@ -21,22 +127,12 @@ export function ProposalVoteCard(props: {
   const { proposalId, voted = "UNVOTED", proposalStatus } = props;
   const { isConnected, voteProposal, removeVoteProposal } = useTorus();
 
-  const [vote, setVote] = useState("UNVOTED");
+  const [vote, setVote] = useState<VoteStatus>("UNVOTED");
   const [votingStatus, setVotingStatus] = useState<TransactionResult>({
     status: null,
     finalized: false,
     message: null,
   });
-
-  function handleVotePreference(value: VoteStatus): void {
-    if (vote === "UNVOTED" || vote !== value) {
-      setVote(value);
-      return;
-    }
-    if (vote === value) {
-      setVote("UNVOTED");
-    }
-  }
 
   function handleCallback(callbackReturn: TransactionResult): void {
     setVotingStatus(callbackReturn);
@@ -65,114 +161,60 @@ export function ProposalVoteCard(props: {
 
   if (voted !== "UNVOTED") {
     return (
-      <>
-        <SectionHeaderText text="Cast your vote" />
-        <div className="flex w-full flex-col gap-2">
-          <span>
-            You already voted{" "}
-            {voted === "FAVORABLE" ? (
-              <b className="text-green-500">in favor</b>
-            ) : (
-              <b className="text-red-500">against</b>
-            )}
-          </span>
-          <button
-            className="flex w-full items-center justify-between text-nowrap border border-amber-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-amber-500 transition duration-200 hover:border-amber-400 hover:bg-amber-500/15 active:bg-amber-500/50"
-            onClick={handleRemoveVote}
-            type="button"
-          >
-            Remove Vote <TicketX className="h-5 w-5" />
-          </button>
-          {votingStatus.status && (
-            <TransactionStatus
-              status={votingStatus.status}
-              message={votingStatus.message}
-            />
-          )}
-        </div>
-      </>
+      <CardBarebones>
+        <AlreadyVotedCardContent
+          handleRemoveVote={handleRemoveVote}
+          voted={voted}
+          votingStatus={votingStatus}
+        />
+      </CardBarebones>
     );
   }
 
   return match(proposalStatus)({
     open() {
       return (
-        <>
-          <SectionHeaderText text="Cast your vote" />
-          {isConnected ? (
-            <div className="flex w-full gap-4">
-              <button
-                className={`w-full border border-green-600 py-1 ${vote === "FAVORABLE" ? "border-green-500 bg-green-500/10 text-green-500" : "text-green-600"} ${votingStatus.status === "PENDING" && "cursor-not-allowed"}`}
-                disabled={votingStatus.status === "PENDING"}
-                onClick={() => {
-                  handleVotePreference("FAVORABLE");
-                }}
-                type="button"
-              >
-                Favorable
-              </button>
-              <button
-                className={`w-full border border-red-600 py-1 ${vote === "AGAINST" ? "border-red-500 bg-red-500/10 text-red-500" : "text-red-500"} ${votingStatus.status === "PENDING" && "cursor-not-allowed"}`}
-                disabled={votingStatus.status === "PENDING"}
-                onClick={() => {
-                  handleVotePreference("AGAINST");
-                }}
-                type="button"
-              >
-                Against
-              </button>
-            </div>
-          ) : null}
+        <CardBarebones>
+          <VoteCardFunctionsContent
+            isConnected={isConnected}
+            handleVote={handleVote}
+            vote={vote}
+            setVote={setVote}
+            votingStatus={votingStatus} />
+        </CardBarebones>
 
-          {!isConnected && <WalletButton />}
-
-          {isConnected ? (
-            <button
-              className={`mt-4 w-full border p-1.5 ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed border-gray-400 text-gray-400" : "border-blue-400 bg-blue-500/10 text-blue-400"} `}
-              disabled={vote === "UNVOTED" || votingStatus.status === "PENDING"}
-              onClick={handleVote}
-              type="button"
-            >
-              {vote === "UNVOTED" && "Choose Before Voting"}
-              {vote !== "UNVOTED" && "Vote"}
-            </button>
-          ) : null}
-
-          {votingStatus.status ? (
-            <p
-              className={`${votingStatus.status === "PENDING" && "text-yellow-300"} ${votingStatus.status === "ERROR" && "text-red-300"} ${votingStatus.status === "SUCCESS" && "text-green-300"} flex text-left text-base`}
-            >
-              {votingStatus.message}
-              {votingStatus.status === "PENDING" && (
-                <LoaderCircle className="ml-2 animate-spin" width={16} />
-              )}
-            </p>
-          ) : null}
-        </>
       );
     },
     accepted() {
       return (
-        <GovernanceStatusNotOpen
-          statusText="Accepted"
-          governanceModel="PROPOSAL"
-        />
+        <CardBarebones>
+          <GovernanceStatusNotOpen
+            status="ACCEPTED"
+            governanceModel="PROPOSAL"
+          />
+        </CardBarebones>
+
       );
     },
     expired() {
       return (
-        <GovernanceStatusNotOpen
-          statusText="Expired"
-          governanceModel="PROPOSAL"
-        />
+        <CardBarebones>
+          <GovernanceStatusNotOpen
+            status="EXPIRED"
+            governanceModel="PROPOSAL"
+          />
+        </CardBarebones>
+
       );
     },
     refused() {
       return (
-        <GovernanceStatusNotOpen
-          statusText="Refused"
-          governanceModel="PROPOSAL"
-        />
+        <CardBarebones>
+          <GovernanceStatusNotOpen
+            status="REFUSED"
+            governanceModel="PROPOSAL"
+          />
+        </CardBarebones>
       );
     },
   });

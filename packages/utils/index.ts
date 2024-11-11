@@ -250,7 +250,6 @@ export const copyToClipboard = (text: string) => {
 export function getExpirationTime(
   blockNumber: number | undefined,
   expirationBlock: number,
-  shouldReturnRemainingTime: boolean,
 ) {
   if (!blockNumber) return "Unknown";
 
@@ -258,7 +257,6 @@ export function getExpirationTime(
   const secondsRemaining = blocksRemaining * 8; // 8 seconds per block
 
   const expirationDate = new Date(Date.now() + secondsRemaining * 1000);
-  const currentDate = new Date();
 
   // Format the date as MM/DD/YYYY
   const month = (expirationDate.getMonth() + 1).toString().padStart(2, "0");
@@ -266,16 +264,29 @@ export function getExpirationTime(
   const year = expirationDate.getFullYear();
 
   const formattedDate = `${month}/${day}/${year}`;
+  return formattedDate
 
-  // Check if the expiration time has passed
-  if (expirationDate <= currentDate) {
-    return `${formattedDate} ${shouldReturnRemainingTime ? "(Matured)" : ""}`;
-  }
+}
 
-  // Calculate hours remaining
-  const hoursRemaining = Math.floor(secondsRemaining / 3600);
+export function getCreationTime(
+  blockNumber: number | undefined,
+  creationBlock: number,
+) {
+  if (!blockNumber) return "Unknown";
 
-  return `${formattedDate} ${shouldReturnRemainingTime ? `(${hoursRemaining} hours)` : ""}`;
+  const blocksAgo = blockNumber - creationBlock;
+  const secondsPassed = blocksAgo * 8; // 8 seconds per block
+
+  const creationDate = new Date(Date.now() - secondsPassed * 1000);
+
+  // Format the date as MM/DD/YYYY
+  const month = (creationDate.getMonth() + 1).toString().padStart(2, "0");
+  const day = creationDate.getDate().toString().padStart(2, "0");
+  const year = creationDate.getFullYear();
+
+  const formattedDate = `${month}/${day}/${year}`;
+
+  return formattedDate
 }
 
 export interface ChainEntry {

@@ -4,9 +4,10 @@ import type { ProposalStatus } from "@torus-ts/types";
 import { useProcessVotesAndStakes } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { copyToClipboard, formatToken, smallAddress } from "@torus-ts/utils";
+import { copyToClipboard, smallAddress } from "@torus-ts/utils";
 
-import { SectionHeaderText } from "../section-header-text";
+import { Button, Card, CardHeader } from "@torus-ts/ui";
+import { useLayoutEffect, useState } from "react";
 
 interface VoterListProps {
   proposalStatus: ProposalStatus;
@@ -14,6 +15,8 @@ interface VoterListProps {
 
 export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
   const { api, torusCacheUrl } = useTorus();
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
 
   const votesFor = "open" in proposalStatus ? proposalStatus.open.votesFor : [];
   const votesAgainst =
@@ -25,30 +28,55 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
     isError,
   } = useProcessVotesAndStakes(api, torusCacheUrl, votesFor, votesAgainst);
 
+  useLayoutEffect(() => {
+    if (!containerNode) {
+      return;
+    }
+
+    const handleScroll = () => {
+      const { scrollHeight, scrollTop, clientHeight } = containerNode;
+      setIsAtBottom(scrollHeight - scrollTop === clientHeight);
+    };
+
+    containerNode.addEventListener("scroll", handleScroll);
+
+    handleScroll();
+
+    return () => {
+      containerNode.removeEventListener("scroll", handleScroll);
+    };
+  }, [containerNode]);
+
   if (isLoading) {
     return (
-      <div className="m-2 h-full animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-[1200ms]">
-        <SectionHeaderText text="Voters List" />
+      <Card className="p-6 border-muted animate-fade-down animate-delay-500">
+        <CardHeader className="pt-0 pl-0">
+          <h3>Voters List</h3>
+        </CardHeader>
         <p className="animate-pulse">Loading voters...</p>
-      </div>
+      </Card>
     );
   }
 
   if (isError) {
     return (
-      <div className="m-2 h-full animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-[1200ms]">
-        <SectionHeaderText text="Voters List" />
-        <p>Error loading voters. Please try again later.</p>
-      </div>
+      <Card className="p-6 border-muted animate-fade-down animate-delay-500">
+        <CardHeader className="pt-0 pl-0">
+          <h3>Voters List</h3>
+        </CardHeader>
+        <p className="text-red-400">Error loading voters. Please try again later.</p>
+      </Card>
     );
   }
 
   if (!voters || voters.length === 0) {
     return (
-      <div className="m-2 h-full animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-[1200ms]">
-        <SectionHeaderText text="Voters List" />
-        <p>This proposal has no voters yet or is closed.</p>
-      </div>
+      <Card className="p-6 border-muted animate-fade-down animate-delay-500">
+        <CardHeader className="pt-0 pl-0">
+          <h3>Voters List</h3>
+        </CardHeader>
+        <p className="text-muted-foreground">This proposal has no voters yet or is closed.</p>
+      </Card>
     );
   }
 
@@ -58,17 +86,18 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
   };
 
   return (
-    <div className="m-2 h-full animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-[1200ms]">
-      <SectionHeaderText text="Voters List" />
-      <div className="max-h-72 overflow-y-auto">
-        {voters.map(({ address, vote, stake }, index) => (
-          <div key={index} className="mb-2 flex items-end justify-between pr-2">
-            <button
-              className="text-white transition duration-300 hover:text-green-500"
-              onClick={() => handleCopyAddress(address as string)}
-            >
-              {smallAddress(address as string)}
-            </button>
+    <div className="flex flex-col gap-4">
+      <span className="text-lg">
+        <h3>Voters List</h3>
+      </span>
+      <div className="relative flex flex-col w-full gap-2 pr-2 overflow-auto max-h-72" ref={setContainerNode}>
+        {[...voters, ...voters, ...voters, ...voters, ...voters, ...voters].map(({ address, vote }) => (
+          <Button
+            variant="default"
+            className="flex items-center justify-between w-full px-6 py-8 rounded-lg border-muted hover:text-muted-foreground animate-fade-down animate-delay-500"
+            onClick={() => handleCopyAddress(address as string)}
+          >
+            {smallAddress(address as string)}
             <div className="flex flex-col items-end">
               <span
                 className={
@@ -77,12 +106,12 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
               >
                 {vote}
               </span>
-              <span className="text-sm text-gray-400">
-                {stake === 0n ? "No Stake Info" : formatToken(Number(stake))}
-              </span>
             </div>
-          </div>
+          </Button>
         ))}
+        <span
+          className={`fixed -bottom-5 flex items-end justify-center w-full ${isAtBottom ? "h-4 animate-fade" : "h-24 animate-fade"} duration-100 transition-all  bg-gradient-to-b from-[#04061C1A] to-[#04061C]`}
+        />
       </div>
     </div>
   );

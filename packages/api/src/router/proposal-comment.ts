@@ -7,6 +7,7 @@ import {
   commentReportSchema,
   proposalCommentDigestView,
   proposalCommentSchema,
+  VoteType,
 } from "@torus-ts/db/schema";
 import {
   COMMENT_INTERACTION_INSERT_SCHEMA,
@@ -26,6 +27,7 @@ export const proposalCommentRouter = {
       }),
     )
     .query(({ ctx, input }) => {
+      
       return ctx.db
         .select()
         .from(proposalCommentDigestView)
@@ -46,18 +48,17 @@ export const proposalCommentRouter = {
           voteType: commentInteractionSchema.voteType,
         })
         .from(commentInteractionSchema)
+        .innerJoin(
+          proposalCommentSchema,
+          eq(proposalCommentSchema.id, commentInteractionSchema.commentId)
+        )
         .where(
-          sql`${commentInteractionSchema.userKey} = ${input.userKey} AND ${commentInteractionSchema.commentId} IN (
-          SELECT id FROM ${proposalCommentSchema} WHERE ${proposalCommentSchema.proposalId} = ${input.proposalId}
-        )`,
+          sql`${commentInteractionSchema.userKey} = ${input.userKey} AND ${proposalCommentSchema.proposalId} = ${input.proposalId}`
         );
-      return votes.reduce(
-        (acc, vote) => {
-          acc[vote.commentId] = vote.voteType;
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
+        
+        return Object.fromEntries(
+          votes.map(vote => [vote.commentId, vote.voteType as VoteType])
+        );
     }),
   byReport: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.query.commentReportSchema.findMany();

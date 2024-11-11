@@ -50,8 +50,8 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
     );
 
   return (
-    <div className="flex w-full flex-col md:flex-row">
-      <div className="flex h-full w-full flex-col lg:w-2/3">
+    <div className="flex flex-col w-full md:flex-row">
+      <div className="flex flex-col w-full h-full lg:w-2/3">
         <div className="m-2 flex h-full animate-fade-down flex-col border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-100 md:max-h-[60vh] md:min-h-[50vh]">
           <SectionHeaderText
             text={content.title ?? "No Custom Metadata Title"}
@@ -88,7 +88,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
         <div className="m-2 animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-200">
           <div className="flex items-center gap-3">
             <DaoStatusLabel
-              daoStatus={content.status as DaoApplicationStatus}
+              status={content.status as DaoApplicationStatus}
             />
           </div>
         </div>

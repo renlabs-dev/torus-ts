@@ -7,7 +7,6 @@ import { Providers } from "@torus-ts/providers/context";
 import { Layout } from "@torus-ts/ui/components";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import ProposalRewardCard from "./components/proposal-reward-card";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -30,7 +29,6 @@ export default function RootLayout({
   return (
     <Layout font={firaMono}>
       <Providers>
-        <ProposalRewardCard />
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </Providers>
     </Layout>

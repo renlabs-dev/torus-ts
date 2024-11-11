@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 
-import { SectionHeaderText } from "../section-header-text";
-import { Info, LoaderCircle } from "lucide-react";
+import { Info } from "lucide-react";
+import { Button, Card, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TransactionStatus } from "@torus-ts/ui";
 
 export function VotingPowerButton(): JSX.Element | null {
   const { selectedAccount, updateDelegatingVotingPower, notDelegatingVoting } =
@@ -18,14 +18,12 @@ export function VotingPowerButton(): JSX.Element | null {
     message: null,
   });
 
-  const [isPowerUser, setIsPowerUser] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  useEffect(() => {
+  const isPowerUser = useMemo(() => {
     if (selectedAccount?.address && notDelegatingVoting) {
       const isUserPower = notDelegatingVoting.includes(selectedAccount.address);
-      setIsPowerUser(isUserPower);
+      return isUserPower;
     }
+    return false;
   }, [selectedAccount, notDelegatingVoting]);
 
   function handleCallback(callbackReturn: TransactionResult): void {
@@ -35,7 +33,7 @@ export function VotingPowerButton(): JSX.Element | null {
   if (!selectedAccount) {
     return (
       <button
-        className="w-full border border-gray-500 py-1 font-semibold text-gray-500 transition duration-200 hover:border-gray-600 hover:bg-gray-500/10"
+        className="w-full py-1 font-semibold text-gray-500 transition duration-200 border border-gray-500 hover:border-gray-600 hover:bg-gray-500/10"
         disabled={true}
       >
         Add wallet to Become a Power User
@@ -51,55 +49,42 @@ export function VotingPowerButton(): JSX.Element | null {
   }
 
   const tooltipText =
-    "By default, your voting power is delegated to a validator. If you're not a validator and prefer to manage your own votes, click here!";
+    "By default, your voting power is delegated to a validator. If you prefer to manage your own votes, become a power user.";
 
   return (
-    <div>
-      <SectionHeaderText text="Vote power settings" />
-      <div className="flex w-full flex-row items-center justify-center gap-3">
-        <button
-          className="w-11/12 border border-green-500 bg-green-600/5 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15"
-          onClick={() => {
-            handleVote();
-          }}
-          type="submit"
-        >
-          {isPowerUser
-            ? "Enable vote power delegation"
-            : "Click to Become a Power User"}
-        </button>
-        <div className="relative w-1/12">
-          <button
-            onClick={() => {
-              setShowTooltip(!showTooltip);
-            }}
-            onMouseEnter={() => {
-              setShowTooltip(true);
-            }}
-            onMouseLeave={() => {
-              setShowTooltip(false);
-            }}
-            type="button"
-          >
-            <Info className="h-7 w-7 pt-1.5 text-green-500" />
-          </button>
-          {showTooltip ? (
-            <div className="absolute bottom-10 right-0 w-64 border border-white/20 bg-black/80 p-3 text-sm text-gray-200 shadow-lg backdrop-blur-md">
+    <Card className="hidden p-6 border-muted animate-fade-down animate-delay-500 md:block">
+      <CardHeader className="pt-0 pl-0">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="flex gap-2 items-center">
+              <h3>Vote power settings</h3>
+              <Info size={16} />
+            </TooltipTrigger>
+            <TooltipContent className="border-muted max-w-72 text-muted-foreground">
               {tooltipText}
-            </div>
-          ) : null}
-        </div>
-      </div>
-      {votingStatus.status ? (
-        <p
-          className={`${votingStatus.status === "PENDING" && "text-yellow-300"} ${votingStatus.status === "ERROR" && "text-red-300"} ${votingStatus.status === "SUCCESS" && "text-green-300"} flex text-left text-base`}
-        >
-          {votingStatus.message}
-          {votingStatus.status === "PENDING" && (
-            <LoaderCircle className="ml-2 animate-spin" width={16} />
-          )}
-        </p>
-      ) : null}
-    </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </CardHeader>
+
+      <Button
+        className="w-full py-2.5 flex items-center font-semibold transition duration-200 rounded-lg"
+        onClick={() => {
+          handleVote();
+        }}
+        type="submit"
+      >
+        {isPowerUser
+          ? "Enable vote power delegation"
+          : "Click to Become a Power User"}
+      </Button>
+
+      {votingStatus.status && (
+        <TransactionStatus
+          status={votingStatus.status}
+          message={votingStatus.message}
+        />
+      )}
+    </Card>
   );
 }

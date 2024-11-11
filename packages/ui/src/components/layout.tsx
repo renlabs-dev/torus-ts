@@ -12,15 +12,17 @@ interface NextFont {
 interface LayoutProps {
   children: React.ReactNode;
   font: NextFont;
+  className?: string
 }
 
-export function Layout({ children, font }: LayoutProps): JSX.Element {
+export function Layout({ children, font, className }: LayoutProps): JSX.Element {
   return (
     <html lang="en">
       <body
         className={cn(
           font.className,
-          `overscroll-none bg-[#04061C] bg-[url('/bg-pattern.svg')] bg-cover text-white`,
+          `overscroll-none bg-[#04061C] bg-cover text-white relative`,
+          className
         )}
       >
         <Header />

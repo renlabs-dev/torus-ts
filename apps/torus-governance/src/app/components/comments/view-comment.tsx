@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
@@ -8,11 +8,50 @@ import { smallAddress } from "@torus-ts/utils";
 
 import { api } from "~/trpc/react";
 import { ReportComment } from "./report-comment";
-import { ChevronsDown, ChevronsUp, CircleUser } from "lucide-react";
+import { ChevronsDown, ChevronsUp, CircleUser, ClockArrowDown, ClockArrowUp, ThumbsUp, TriangleAlert } from "lucide-react";
+import { Button, Card, CardContent, CardHeader, Skeleton, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
 
 export enum VoteType {
   UP = "UP",
   DOWN = "DOWN",
+}
+
+type SorterTypes = "newest" | "oldest" | "mostUpvotes"
+
+const commentSorters: { icon: JSX.Element, sortBy: SorterTypes }[] = [
+  {
+    icon: <ClockArrowDown />,
+    sortBy: "oldest",
+  },
+  {
+    icon: <ClockArrowUp />,
+    sortBy: "newest",
+  },
+  {
+    icon: <ThumbsUp />,
+    sortBy: "mostUpvotes",
+  },
+];
+
+const LoadingComments = () => {
+  return (
+    <Card className="relative flex flex-col w-full gap-2 p-2 pb-4 bg-card border-muted">
+      <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
+        <span className="flex items-center gap-2">
+          <Skeleton className="w-24 h-5" />
+          <Skeleton className="w-48 h-5" />
+        </span>
+        <div className="flex gap-1">
+          <Skeleton className="h-6 w-7" />
+          <Skeleton className="h-6 w-7" />
+        </div>
+      </CardHeader>
+      <CardContent className="flex px-2 ">
+        <Skeleton className="w-48 h-5" />
+        <Skeleton className="absolute w-8 bottom-2 right-2 h-7" />
+      </CardContent>
+    </Card>
+  )
 }
 
 export function ViewComment({
@@ -23,10 +62,9 @@ export function ViewComment({
   modeType: "PROPOSAL" | "DAO";
 }) {
   const { selectedAccount } = useTorus();
-  const [votingCommentId, setVotingCommentId] = useState<string | null>(null);
-  const [localVotes, setLocalVotes] = useState<Record<string, VoteType | null>>(
-    {},
-  );
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
+  const [commentId, setCommentId] = useState<string | null>(null);
 
   const {
     data: proposalComments,
@@ -35,15 +73,20 @@ export function ViewComment({
     refetch,
   } = api.proposalComment.byId.useQuery(
     { type: modeType, proposalId },
-    { enabled: !!proposalId },
+    { enabled: typeof proposalId === "number" },
   );
 
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "mostUpvotes">(
+  const [localVotes, setLocalVotes] = useState<Record<string, VoteType | null>>(
+    {},
+  );
+
+  const [sortBy, setSortBy] = useState<SorterTypes>(
     "oldest",
   );
 
-  const sortedComments = proposalComments
-    ? [...proposalComments].sort((a, b) => {
+  const sortedComments = useMemo(() => {
+    if (!proposalComments) return []
+    return [...proposalComments].sort((a, b) => {
       if (sortBy === "newest") {
         return (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -56,176 +99,193 @@ export function ViewComment({
         return b.upvotes - a.upvotes;
       }
     })
-    : [];
+  }, [proposalComments, sortBy])
 
-  const { data: userVotes } = api.proposalComment.byUserId.useQuery(
+  const { data: userVotes, refetch: refetchUserVotes } = api.proposalComment.byUserId.useQuery(
     { proposalId, userKey: selectedAccount?.address ?? "" },
-    { enabled: !!selectedAccount?.address && !!proposalId },
+    { enabled: !!selectedAccount?.address && typeof proposalId === "number" },
   );
 
+  useEffect(() => {
+    const fetchUserVotes = async () => {
+      if (!selectedAccount?.address) return;
+      await refetchUserVotes()
+    }
+    fetchUserVotes().catch(console.error)
+  }, [refetchUserVotes, selectedAccount?.address])
+
   const castVoteMutation = api.proposalComment.castVote.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: async () => {
+      await Promise.all([
+        refetchUserVotes(),
+        refetch()
+      ])
+    },
   });
 
   const deleteVoteMutation = api.proposalComment.deleteVote.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: async () => {
+      await Promise.all([
+        refetchUserVotes(),
+        refetch()
+      ])
+    },
   });
 
-  if (error) {
-    console.error("Error fetching proposal comments:", error);
-  }
+  const localUserVotes = useMemo(() => {
+    return { ...userVotes, ...localVotes }
+  }, [userVotes, localVotes])
 
-  const handleVote = async (commentId: string, voteType: VoteType) => {
+  const handleVote = useCallback(async (commentId: string, voteType: VoteType) => {
     if (!selectedAccount?.address) {
       toast.error("Please connect your wallet to vote");
       return;
     }
 
-    setVotingCommentId(commentId);
-
     try {
       const commentExists = proposalComments?.some((c) => c.id === commentId);
-      if (!commentExists) return;
+      if (!commentExists) {
+        toast.error("Comment not found");
+        return;
+      }
 
-      const currentVote = Object.hasOwn(localVotes, commentId)
-        ? localVotes[commentId]
-        : userVotes?.[commentId];
-
+      const currentVote = userVotes?.[commentId];
       const isRemovingVote = currentVote === voteType;
-      const newVoteType = isRemovingVote ? null : voteType;
+
+      setLocalVotes((prevVotes) => ({
+        ...prevVotes,
+        [commentId]: isRemovingVote ? null : voteType,
+      }));
 
       if (isRemovingVote) {
         await deleteVoteMutation.mutateAsync({ commentId });
       } else {
         await castVoteMutation.mutateAsync({ commentId, voteType });
       }
-
-      setLocalVotes((prev) => ({ ...prev, [commentId]: newVoteType }));
-    } catch (err) {
-      console.error("Error voting:", err);
-    } finally {
-      setVotingCommentId(null);
     }
-  };
+    catch (err) {
+      console.error("Error voting:", err);
+      toast.error("There was an error processing your vote. Please try again.");
+      setLocalVotes((prevVotes) => ({
+        ...prevVotes,
+        [commentId]: userVotes?.[commentId] as VoteType | null ?? null,
+      }));
+    }
+  }, [selectedAccount?.address, proposalComments, userVotes, castVoteMutation, deleteVoteMutation])
+
+  const handleCommentSorter = useCallback((sortBy: SorterTypes | "") => {
+    setSortBy(sortBy || "oldest");
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!containerNode) {
+      return;
+    }
+
+    const handleScroll = () => {
+      const { scrollHeight, scrollTop, clientHeight } = containerNode;
+      setIsAtBottom(scrollHeight - scrollTop === clientHeight);
+    };
+
+    containerNode.addEventListener("scroll", handleScroll);
+
+    handleScroll();
+
+    return () => {
+      containerNode.removeEventListener("scroll", handleScroll);
+    };
+  }, [containerNode]);
+
+  if (error) {
+    toast.error("Failed to load comments. Please try again later.");
+    return <div>Error loading comments</div>;
+  }
+  if (isLoading) return <LoadingComments />
+  if (!sortedComments.length) return <div className="text-muted-foreground">No comments yet</div>
 
   return (
-    <div className="flex w-full flex-col">
-      <div className="m-2 flex h-full min-h-max animate-fade-down flex-col items-center justify-between border border-white/20 bg-[#898989]/5 p-6 text-white backdrop-blur-md animate-delay-200">
-        <div className="mb-4 flex w-full flex-col items-center justify-between gap-1 border-b border-gray-500 border-white/20 pb-2 text-gray-400 md:flex-row">
-          <h2 className="w-full text-start font-semibold">
+    <div className="flex flex-col w-full h-full ">
+      <div className="flex flex-col items-center justify-between h-full text-white min-h-max animate-fade-down animate-delay-200">
+        <div className="flex flex-col items-center justify-between w-full gap-1 pb-2 mb-4 md:flex-row">
+          <h2 className="w-full text-lg font-semibold text-start">
             {modeType === "PROPOSAL"
-              ? "Community Comments"
+              ? "Proposal Discussion"
               : "DAO Cadre Comments"}
           </h2>
-          <div className="flex w-full space-x-2 md:justify-end">
-            {["oldest", "newest", "mostUpvotes"].map((option) => (
-              <button
-                key={option}
-                onClick={() => setSortBy(option as typeof sortBy)}
-                className={`px-3 py-1 text-sm ${sortBy === option
-                  ? "border border-green-500 bg-green-500/20 text-white"
-                  : "border border-white/20 bg-[#898989]/5 text-gray-300 hover:bg-gray-600/50"
+          <ToggleGroup type="single" value={sortBy} onValueChange={(value: SorterTypes) => handleCommentSorter(value)} className="flex gap-2">
+            {commentSorters.map((sorter) => (
+              <ToggleGroupItem
+                key={sorter.sortBy}
+                variant="outline"
+                value={sorter.sortBy}
+                className={`px-3 py-1 text-sm ${sortBy === sorter.sortBy
+                  ? "border-white"
+                  : "bg-card text-muted-foreground"
                   }`}
               >
-                {option === "newest"
-                  ? "Newest"
-                  : option === "oldest"
-                    ? "Oldest"
-                    : "Most Upvotes"}
-              </button>
+                {sorter.icon}
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
         </div>
 
-        {isLoading ? (
-          <>
-            <div className="flex w-full animate-pulse flex-col gap-2 border border-white/20 bg-[#898989]/5 p-2">
-              <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
-                <span className="flex items-center gap-1">
-                  <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-                    <CircleUser className="h-4 w-4" />
-                  </span>{" "}
-                  Loading user address...
-                </span>
-                <div className="flex gap-1">
-                  <button
-                    disabled={true}
-                    className={`flex items-center text-gray-300`}
-                  >
-                    <ChevronsUp className="h-5 w-5" />
-                    <span>-</span>
-                  </button>
-                  <button
-                    disabled={true}
-                    className={`flex items-center text-gray-300`}
-                  >
-                    <ChevronsDown className="h-5 w-5" />
-                    <span>-</span>
-                  </button>
-                </div>
-              </div>
-              <p className="p-2">Loading...</p>
-            </div>
-          </>
-        ) : (
-          <>
-            {sortedComments.length ? (
-              <div
-                className={`flex max-h-[25vh] w-full flex-col gap-3 overflow-auto pb-3 ${sortedComments.length >= 3 && "pr-2"}`}
+        <div className="flex flex-col w-full gap-2 pr-2 overflow-auto max-h-72" ref={setContainerNode}>
+          {sortedComments.map((comment) => {
+            const currentVote = localUserVotes[comment.id];
+            return (
+              <Card
+                key={comment.id}
+                className="relative flex flex-col w-full gap-2 p-2 pb-4 bg-card border-muted"
               >
-                {sortedComments.map((comment) => {
-                  const currentVote = Object.hasOwn(localVotes, comment.id)
-                    ? localVotes[comment.id]
-                    : userVotes?.[comment.id];
-
-                  return (
-                    <div
-                      key={comment.id}
-                      className="relative flex w-full flex-col gap-2 border border-white/20 bg-[#898989]/5 p-2 pb-4"
+                <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-sm">
+                      <CircleUser className="w-4 h-4" />{" "}
+                      {comment.userName && comment.userName}
+                    </span>
+                    {smallAddress(comment.userKey)}{" "}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleVote(comment.id, VoteType.UP)}
+                      // disabled={votingCommentId === comment.id}
+                      className={`flex items-center ${currentVote === VoteType.UP ? "text-green-500" : ""}`}
                     >
-                      <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-                            <CircleUser className="h-4 w-4" />{" "}
-                            {comment.userName && comment.userName}
-                          </span>
-                          {smallAddress(comment.userKey)}{" "}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleVote(comment.id, VoteType.UP)}
-                            disabled={votingCommentId === comment.id}
-                            className={`flex items-center ${currentVote === VoteType.UP ? "text-green-500" : ""}`}
-                          >
-                            <ChevronsUp className="h-5 w-5" />
-                            <span>{comment.upvotes}</span>
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleVote(comment.id, VoteType.DOWN)
-                            }
-                            disabled={votingCommentId === comment.id}
-                            className={`flex items-center ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
-                          >
-                            <ChevronsDown className="h-5 w-5" />
-                            <span>{comment.downvotes}</span>
-                          </button>
-                        </div>
-                      </div>
-                      <p className="p-2">{comment.content}</p>
-                      <div className="absolute bottom-2 right-2">
-                        <ReportComment commentId={comment.id} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p>No comments yet</p>
-            )}
-          </>
-        )}
+                      <ChevronsUp className="w-5 h-5" />
+                      <span>{comment.upvotes}</span>
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleVote(comment.id, VoteType.DOWN)
+                      }
+                      // disabled={votingCommentId === comment.id}
+                      className={`flex items-center ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
+                    >
+                      <ChevronsDown className="w-5 h-5" />
+                      <span>{comment.downvotes}</span>
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-2">
+                  <p className="text-muted-foreground">{comment.content}</p>
+                  <Button
+                    variant="default"
+                    onClick={() => setCommentId(comment.id)}
+                    type="button"
+                    className="absolute rounded-md bottom-2 right-2 border border-red-500 px-1.5 h-7 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
+                  >
+                    <TriangleAlert size={16} />
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          })}
+          <span
+            className={`fixed bottom-0 flex items-end justify-center w-full ${isAtBottom ? "h-0 animate-fade" : "h-8 animate-fade"} duration-75 delay-none transition-all  bg-gradient-to-b from-[#04061C1A] to-[#04061C]`}
+          />
+        </div>
       </div>
+      <ReportComment commentId={commentId} setCommentId={setCommentId} />
     </div>
   );
 }

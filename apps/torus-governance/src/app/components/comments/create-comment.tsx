@@ -8,6 +8,7 @@ import { useTorus } from "@torus-ts/providers/use-torus";
 import { formatToken } from "@torus-ts/utils";
 
 import { api } from "~/trpc/react";
+import { Button } from "@torus-ts/ui";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
@@ -78,7 +79,7 @@ export function CreateComment({
         userName: name || undefined,
       });
       toast.success("Comment submitted successfully!");
-      await utils.proposalComment.byId.invalidate({ proposalId: proposalId });
+      await utils.proposalComment.byId.invalidate({ proposalId });
 
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -111,52 +112,59 @@ export function CreateComment({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
-      <div className="mb-2 w-full border-b border-gray-500 border-white/20 pb-1 text-gray-400">
-        <h2 className="text-start font-semibold">Create a Comment</h2>
-      </div>
-      <div className="relative">
-        <textarea
-          placeholder="Your comment here"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="h-24 w-full resize-none bg-gray-600/10 p-3 text-white"
-          maxLength={MAX_CHARACTERS}
-        />
-        <span className="absolute bottom-2 right-2 text-sm text-gray-400">
-          {remainingChars} characters left
-        </span>
-      </div>
-      <input
-        type="text"
-        placeholder="Your name here (optional)"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="mb-2 w-full bg-gray-600/10 p-3 text-white"
-        maxLength={MAX_NAME_CHARACTERS}
-      />
-      {error && <p className="text-sm text-red-500">{error}</p>}
-      <button
-        type="submit"
-        className="bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={
-          isSubmitDisabled() ||
-          CreateComment.isPending ||
-          !selectedAccount?.address ||
-          content.length === 0
-        }
-      >
-        {CreateComment.isPending ? "Submitting..." : "Submit"}
-      </button>
-      {isSubmitDisabled() && !error && (
-        <p className="text-sm text-yellow-500">
-          {!selectedAccount?.address
-            ? "Please connect your wallet to submit a comment."
-            : ModeType === "PROPOSAL"
-              ? `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`
-              : "Only Cadre members can submit comments in DAO Applications."}
-        </p>
-      )}
-    </form>
+    <div className="flex-col items-center justify-between hidden text-white h-fit min-h-max animate-fade-down animate-delay-200 md:flex">
+      <form onSubmit={handleSubmit} className="flex flex-col w-full gap-2">
+        <div className="w-full pb-1 mb-2">
+          <h2 className="text-lg font-semibold text-start">Create a Comment</h2>
+        </div>
+        <div className="relative">
+          <textarea
+            placeholder="Type your message here..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full h-24 p-3 text-white border rounded-lg resize-none placeholder:text-muted-foreground bg-card border-muted"
+            maxLength={MAX_CHARACTERS}
+          />
+          <span className="absolute text-sm text-muted-foreground bottom-3 right-4">
+            {remainingChars} characters left
+          </span>
+        </div>
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Type your name (optional)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full p-3 text-white border rounded-lg bg-card placeholder:text-muted-foreground border-muted"
+            maxLength={MAX_NAME_CHARACTERS}
+          />
+          <Button
+            type="submit"
+            variant="default"
+            className="py-6 transition rounded-lg"
+            disabled={
+              isSubmitDisabled() ||
+              CreateComment.isPending ||
+              !selectedAccount?.address ||
+              content.length === 0
+            }
+          >
+            {CreateComment.isPending ? "Posting..." : "Post"}
+          </Button>
+        </div>
+
+        {isSubmitDisabled() && !error && (
+          <p className="mt-2 text-sm text-yellow-500">
+            {!selectedAccount?.address
+              ? "Please connect your wallet to submit a comment."
+              : ModeType === "PROPOSAL"
+                ? `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`
+                : "Only Cadre members can submit comments in DAO Applications."}
+          </p>
+        )}
+      </form>
+    </div>
   );
 }
