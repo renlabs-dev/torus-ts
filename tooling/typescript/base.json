@@ -3,12 +3,10 @@
   "compilerOptions": {
     /** Base Options */
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true, // TODO: test
     "target": "ES2022",
-    "lib": [
-      "ES2022"
-    ],
-    "allowJs": true,
+    "lib": ["ES2022"],
+    "allowJs": false,
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
@@ -19,17 +17,10 @@
     /** Strictness */
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "checkJs": true,
     /** Transpile using Bundler (not tsc) */
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "noEmit": true
   },
-  "exclude": [
-    "node_modules",
-    "build",
-    "dist",
-    ".next",
-    ".expo"
-  ]
+  "exclude": ["${configDir}/node_modules", "${configDir}/dist"]
 }

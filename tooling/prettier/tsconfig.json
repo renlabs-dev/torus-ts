@@ -1,5 +1,9 @@
 {
   "extends": "@torus-ts/tsconfig/base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true
+  },
   "include": ["."],
   "exclude": ["node_modules"]
 }

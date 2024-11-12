@@ -20,7 +20,7 @@
     "generate-types-from-chain": "tsx ../../node_modules/.bin/polkadot-types-from-chain --package @torus-ts/subspace/interfaces --endpoint ../../data/metadata/mainnet.json --output ./src/interfaces",
     "generate-types-from-defs": "tsx ../../node_modules/.bin/polkadot-types-from-defs --package @torus-ts/subspace/interfaces --input ./src/interfaces --endpoint ../../data/metadata/mainnet.json",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@polkadot/api": "catalog:",

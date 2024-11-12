@@ -31,7 +31,7 @@
     "migrate": "pnpm with-env drizzle-kit generate --custom",
     "push": "pnpm with-env drizzle-kit push",
     "studio": "pnpm with-env drizzle-kit studio",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "typecheck": "tsc --noEmit",
     "with-env": "dotenv -e ../../.env --"
   },
   "prettier": "@torus-ts/prettier-config",

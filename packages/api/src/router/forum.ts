@@ -245,7 +245,8 @@ export const forumRouter = {
     .mutation(async ({ ctx, input }) => {
       try {
         // Ensure either content or href is provided, but not both
-        if (!(input.content ?? input.href) || (input.content && input.href)) {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        if (!(input.content || input.href) || (input.content && input.href)) {
           throw new Error(
             "Either content or href must be provided, but not both.",
           );

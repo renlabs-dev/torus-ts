@@ -1,14 +1,13 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
+import type { VoteType } from "@torus-ts/db/schema";
 import { and, eq, sql } from "@torus-ts/db";
-import type {
-  VoteType} from "@torus-ts/db/schema";
 import {
   commentInteractionSchema,
   commentReportSchema,
   proposalCommentDigestView,
-  proposalCommentSchema
+  proposalCommentSchema,
 } from "@torus-ts/db/schema";
 import {
   COMMENT_INTERACTION_INSERT_SCHEMA,

@@ -1,11 +1,3 @@
 {
-  "extends": "@torus-ts/tsconfig/internal-package.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
-    "noEmit": false,
-    "emitDeclarationOnly": false
-  },
-  "include": ["*.ts", "src"],
-  "exclude": ["load-test.js"]
+  "extends": "@torus-ts/tsconfig/app-node.json"
 }

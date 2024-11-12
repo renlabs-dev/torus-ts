@@ -1,12 +1,22 @@
 {
+  // TypeScript
   "typescript.tsdk": "node_modules/typescript/lib",
+
+  // Eslint
   "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
   ],
   "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
+
+  // Editor
   "editor.formatOnSave": true,
+  "files.associations": {
+    "**/tooling/typescript/*.json": "jsonc"
+  },
+
+  // Conventional Commits
   "conventionalCommits.scopes": [
     "cache",
     "governance",
@@ -18,10 +28,13 @@
     "package",
     "tooling"
   ],
+
+  // Spell Check
   "cSpell.words": [
     "communeai",
     "comrads",
     "daos",
+    "heroicons",
     "ipfs",
     "keypair",
     "lucide",
@@ -32,13 +45,16 @@
     "oxanium",
     "perc",
     "polkadot",
+    "prettiercache",
     "rootnet",
     "rustie",
     "superjson",
     "tanstack",
     "toastify",
+    "topo",
     "trpc",
     "tsafe",
+    "tsbuildinfo",
     "typegen",
     "uid",
     "uids",

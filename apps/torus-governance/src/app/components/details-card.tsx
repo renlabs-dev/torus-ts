@@ -1,6 +1,6 @@
 import { Card, CardHeader } from "@torus-ts/ui"
 import { smallAddress, getCreationTime, getExpirationTime } from "@torus-ts/utils"
-import { VoteText } from "./vote-text"
+// import { VoteText } from "./vote-text"
 import type { VoteStatus } from "./vote-label"
 import type { ProposalState } from "@torus-ts/types"
 
@@ -13,7 +13,7 @@ interface DetailsCardProps {
 }
 
 export const DetailsCard = (props: DetailsCardProps) => {
-  const { content, lastBlockNumber, voted } = props
+  const { content, lastBlockNumber } = props
   return (
     <Card className="p-6 animate-fade-down animate-delay-200">
       <CardHeader className="pt-0 pl-0">
@@ -33,7 +33,7 @@ export const DetailsCard = (props: DetailsCardProps) => {
         <div className="flex justify-between text-muted-foreground">
           <span>Vote Status</span>
           <span className="flex items-center text-white">
-            <VoteText vote={voted} />
+            {/* FIXME <VoteText vote={voted} /> */}
           </span>
         </div>
         <div className="flex justify-between text-muted-foreground">

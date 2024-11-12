@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["${configDir}/src/*"]
+    },
+    "plugins": [{ "name": "next" }],
+    "tsBuildInfoFile": "${configDir}/.cache/tsbuildinfo.json",
+    "module": "esnext"
+  },
+  "include": ["${configDir}", "${configDir}/.next/types/**/*.ts"],
+  "exclude": ["${configDir}/node_modules", "${configDir}/.next"]
+}

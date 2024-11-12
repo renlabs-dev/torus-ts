@@ -86,7 +86,7 @@ export type WithMetadataState<T> = T & { customData?: CustomMetadataState };
 
 // == Stake ==
 
-interface StakeData {
+export interface StakeData {
   total: bigint;
   perAddr: Record<string, bigint>;
   atBlock: bigint;

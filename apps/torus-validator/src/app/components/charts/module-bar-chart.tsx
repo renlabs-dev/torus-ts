@@ -1,6 +1,5 @@
 "use client";
 
-import type { ChartConfig } from "node_modules/@torus-ts/ui/src/components/chart";
 import {
   Bar,
   BarChart,
@@ -10,6 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
+import type { ChartConfig } from "@torus-ts/ui/components";
 import {
   Card,
   CardContent,

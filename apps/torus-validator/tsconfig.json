@@ -1,16 +1,16 @@
 {
-  "extends": "@torus-ts/tsconfig/base.json",
+  "extends": "@torus-ts/tsconfig/app-next.json",
+  // We need these `baseUrl`, `paths`, `include` options in all Next apps
+  // tsconfig files because Next is dumb
   "compilerOptions": {
-    "lib": ["es2022", "dom", "dom.iterable"],
-    "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
-    },
-    "plugins": [{ "name": "next" }],
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
-    "module": "esnext"
+    }
   },
-  "include": [".", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "${configDir}",
+    "${configDir}/.next/types/**/*.ts",
+    ".next/types/**/*.ts"
+  ]
 }

@@ -1,6 +1,8 @@
 {
   "name": "@torus-ts/providers",
   "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "license": "MIT",
   "exports": {
     "./use-torus": "./src/context/torus.tsx",
@@ -9,6 +11,12 @@
     "./utils": "./src/utils/index.ts",
     "./types": "./src/types/index.ts",
     "./hooks": "./src/hooks/index.ts"
+  },
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
+    "//lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@polkadot/api": "catalog:",
