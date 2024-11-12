@@ -15,7 +15,6 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-  Separator,
 } from "@torus-ts/ui";
 
 // Adjust the import path as needed
