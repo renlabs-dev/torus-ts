@@ -52,11 +52,11 @@ export function VotingPowerButton(): JSX.Element | null {
     "By default, your voting power is delegated to a validator. If you prefer to manage your own votes, become a power user.";
 
   return (
-    <Card className="hidden p-6 border-muted animate-fade-down animate-delay-500 md:block">
+    <Card className="hidden p-6 animate-fade-down animate-delay-500 md:block">
       <CardHeader className="pt-0 pl-0">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="flex gap-2 items-center">
+            <TooltipTrigger className="flex items-center gap-2">
               <h3>Vote power settings</h3>
               <Info size={16} />
             </TooltipTrigger>
@@ -68,7 +68,7 @@ export function VotingPowerButton(): JSX.Element | null {
       </CardHeader>
 
       <Button
-        className="w-full py-2.5 flex items-center font-semibold transition duration-200 rounded-lg"
+        className="w-full py-2.5 flex items-center font-semibold transition duration-200"
         onClick={() => {
           handleVote();
         }}

@@ -4,7 +4,7 @@ import { CardHeader, CardContent, Card, CardTitle } from "@torus-ts/ui";
 import { Clock, Crown } from "lucide-react";
 import { DaoStatusLabel } from "./dao/dao-status-label";
 import { ProposalTypeLabel } from "./proposal/proposal-type-label";
-import { smallAddress } from "@torus-ts/utils";
+import { getExpirationTime, smallAddress } from "@torus-ts/utils";
 import { StatusLabel } from "./status-label";
 import { VoteLabel } from "./vote-label";
 import type { DaoApplicationStatus, ProposalData, ProposalStatus, SS58Address } from "@torus-ts/types";
@@ -13,7 +13,8 @@ import type { VoteStatus } from "./vote-label";
 export interface ProposalCardProps {
   author: SS58Address;
   daoStatus?: DaoApplicationStatus;
-  dueDate?: boolean;
+  expirationBlock?: number;
+  currentBlock?: number;
   proposalStatus?: ProposalStatus;
   proposalType?: ProposalData;
   title: string | null;
@@ -40,11 +41,11 @@ const VotePercentageBar = () => {
 }
 
 export function CardViewData(props: ProposalCardProps): JSX.Element {
-  const { voted, title, author, proposalType, proposalStatus, daoStatus, dueDate } = props;
+  const { voted, title, author, proposalType, proposalStatus, daoStatus, expirationBlock, currentBlock } = props;
 
   return (
     <>
-      <Card className="p-6 border-muted hover:bg-accent/70">
+      <Card className="p-6 hover:bg-accent/70">
         <CardHeader className="flex flex-row justify-between px-0 pt-0 pb-4">
           <div className="flex items-center gap-5 w-fit">
             <span className="line-clamp-1 flex items-center gap-1.5 w-fit truncate text-sm text-muted-foreground">
@@ -52,10 +53,10 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
               {smallAddress(author)}
             </span>
 
-            {dueDate && (
+            {expirationBlock && (
               <span className="line-clamp-1 flex items-center gap-1.5 w-fit truncate text-sm text-muted-foreground">
                 <Clock size={14} />
-                Ends in 14 hours
+                Ends {getExpirationTime(currentBlock, expirationBlock, true)}
               </span>
             )}
 

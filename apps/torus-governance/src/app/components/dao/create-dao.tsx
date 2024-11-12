@@ -141,10 +141,10 @@ export function CreateDao(): JSX.Element {
   return (
     <form
       onSubmit={HandleSubmit}
-      className="flex flex-col gap-4 text-green-500"
+      className="flex flex-col gap-4"
     >
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList className="mb-3">
           <TabsTrigger value="edit">Edit Content</TabsTrigger>
           <TabsTrigger value="preview">Preview Content</TabsTrigger>
         </TabsList>
@@ -175,7 +175,7 @@ export function CreateDao(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="bg-muted p-4">
+        <TabsContent value="preview" className="p-4 rounded-md bg-muted">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -195,7 +195,7 @@ export function CreateDao(): JSX.Element {
       <Button
         size="xl"
         type="submit"
-        variant="default-green"
+        variant="default"
         disabled={!isConnected}
       >
         {uploading ? "Uploading..." : "Submit S2 Application"}
@@ -206,19 +206,20 @@ export function CreateDao(): JSX.Element {
           message={transactionStatus.message}
         />
       )}
-      <div className="flex flex-wrap items-center gap-1 text-sm text-white">
-        <Info className="h-4 w-4 fill-green-500" />
+      <div className="flex items-start gap-2 text-sm text-white">
+        <Info className="mt-[1px]" size={16} />
         <Label className="text-sm text-white">
-          Please make sure, that your application meets all of the criteria
-          defined in this{" "}
+          Please ensure that your application meets all the criteria defined in this
+          {" "}
           <Link
-            className="text-green-500 hover:underline"
+            className="text-primary hover:underline"
             href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q"
             target="_blank"
           >
             article
           </Link>
-          , or you are at risk of getting denied by the Module Curation DAO.
+          {" "}
+          to avoid being denied by the Module Curation DAO.
         </Label>
       </div>
     </form>

@@ -97,13 +97,13 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
         className="absolute inset-0 bg-card/30 backdrop-blur-sm"
         onClick={() => setCommentId(null)}
       />
-      <Card className="relative w-full max-w-screen-md text-left text-white border rounded-lg h-fit animate-fade-in-down border-muted bg-card">
+      <Card className="relative w-full max-w-screen-md text-left text-white h-fit animate-fade-in-down">
         <CardHeader className="flex flex-row items-center justify-between gap-3 px-6 pt-6">
           <h3 className="pl-2 text-xl font-bold leading-6">
             Report Comment
           </h3>
           <Button
-            className="p-2 transition duration-200 rounded-lg"
+            className="p-2 transition duration-200"
             onClick={() => setCommentId(null)}
             type="button"
             variant="ghost"
@@ -154,7 +154,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
               <Button
                 type="button"
                 variant="destructive"
-                className="px-4 py-2 text-white transition duration-200 rounded-lg "
+                className="px-4 py-2 text-white transition duration-200"
                 disabled={reportCommentMutation.isPending}
                 onClick={() => setCommentId(null)}
               >
@@ -163,7 +163,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
               <Button
                 type="submit"
                 variant="default"
-                className="px-4 py-2 text-white transition duration-200 rounded-lg "
+                className="px-4 py-2 text-white transition duration-200"
                 disabled={reportCommentMutation.isPending}
               >
                 {reportCommentMutation.isPending ? "Submitting..." : "Submit"}

@@ -1,8 +1,7 @@
-// import { BalanceSection } from "./components/balance-section";
+
 // import { Container } from "@torus-ts/ui";
-// import { FooterDivider } from "./components/footer-divider";
 import { ListCards } from "./components/list-cards";
-// import { ProposalListHeader } from "./components/proposal-list-header";
+import { CreateModal } from "./components/modal";
 import { Sidebar } from "./components/sidebar";
 
 export default function HomePage(): JSX.Element {
@@ -13,14 +12,12 @@ export default function HomePage(): JSX.Element {
         <div className="mx-auto flex w-full max-w-screen-xl animate-fade-in-down flex-col items-center justify-center text-white">
           <div className="flex w-full justify-center gap-4 pb-12 pt-24">
             <Sidebar />
-            <div className="w-full">
+            <div className="w-full gap-6 flex flex-col">
+              <CreateModal />
               <ListCards />
             </div>
           </div>
         </div>
-        {/* <BalanceSection className="hidden lg:flex" /> */}
-        {/* <ProposalListHeader /> */}
-        {/* <FooterDivider /> */}
         {/* </Container> */}
       </div>
     </main>

@@ -38,13 +38,13 @@ const handleUserVotes = ({
     "open" in proposalStatus &&
     proposalStatus.open.votesFor.includes(selectedAccountAddress)
   ) {
-    return "APPROVED";
+    return "FAVORABLE";
   }
   if (
     "open" in proposalStatus &&
     proposalStatus.open.votesAgainst.includes(selectedAccountAddress)
   ) {
-    return "REFUSED";
+    return "AGAINST";
   }
 
   return "UNVOTED";
@@ -85,7 +85,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
 
   if (isProposalsLoading || !proposalsWithMeta)
     return (
-      <div className="flex h-full w-full items-center justify-center lg:h-auto">
+      <div className="flex items-center justify-center w-full h-full lg:h-auto">
         <h1 className="text-2xl text-white">Loading...</h1>
         <LoaderCircle className="ml-2 animate-spin" color="#FFF" width={20} />
       </div>
@@ -94,14 +94,14 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
   if (!content) return <div>No content found.</div>;
 
   return (
-    <div className="flex w-full flex-col gap-8">
-      <div className="flex w-full flex-row items-center gap-2">
+    <div className="flex flex-col w-full gap-8">
+      <div className="flex flex-row items-center w-full gap-2">
         <ProposalTypeLabel proposalType={content.data} />
         <StatusLabel status={content.status} />
         <RewardLabel proposalId={content.id} result={content.status} />
       </div>
       <div className="flex w-full gap-10">
-        <div className="flex h-full w-full flex-col gap-14 lg:w-2/3">
+        <div className="flex flex-col w-full h-full gap-14 lg:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
 
           <ProposalVoteCard

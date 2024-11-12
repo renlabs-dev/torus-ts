@@ -49,7 +49,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
 
   if (isLoading) {
     return (
-      <Card className="p-6 border-muted animate-fade-down animate-delay-500">
+      <Card className="p-6 animate-fade-down animate-delay-500">
         <CardHeader className="pt-0 pl-0">
           <h3>Voters List</h3>
         </CardHeader>
@@ -60,7 +60,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
 
   if (isError) {
     return (
-      <Card className="p-6 border-muted animate-fade-down animate-delay-500">
+      <Card className="p-6 animate-fade-down animate-delay-500">
         <CardHeader className="pt-0 pl-0">
           <h3>Voters List</h3>
         </CardHeader>
@@ -95,7 +95,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
           <Button
             variant="default"
             key={address}
-            className="flex items-center justify-between w-full px-6 py-8 rounded-lg border-muted hover:text-muted-foreground animate-fade-down animate-delay-500"
+            className="flex items-center justify-between w-full px-6 py-8 border-muted hover:text-muted-foreground animate-fade-down animate-delay-500"
             onClick={() => handleCopyAddress(address as string)}
           >
             {smallAddress(address as string)}

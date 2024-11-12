@@ -2,7 +2,7 @@ import { Card, CardHeader, CardContent, Skeleton } from "@torus-ts/ui";
 
 export function CardSkeleton(): JSX.Element {
   return (
-    <Card className="p-6 border-muted">
+    <Card className="p-6">
       <CardHeader className="flex flex-row items-center justify-between px-0 pt-0 pb-5 space-y-0">
         <div className="flex items-center gap-5 w-fit">
           <Skeleton className="py-3 min-w-40" />

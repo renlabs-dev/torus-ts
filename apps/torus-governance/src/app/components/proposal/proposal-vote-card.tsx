@@ -17,11 +17,11 @@ import { WalletButton } from "@torus-ts/wallet";
 import type { VoteStatus } from "../vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 
-const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["APPROVED", "REFUSED"];
+const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
-    <div className="hidden animate-fade-down border-muted animate-delay-500 md:block">
+    <div className="hidden animate-fade-down animate-delay-500 md:block">
       <div className="pb-6 pl-0">
         <h3>Cast your vote</h3>
       </div>
@@ -38,22 +38,22 @@ const AlreadyVotedCardContent = (props: {
   const { voted, votingStatus, handleRemoveVote } = props;
 
   const getVotedText = (voted: VoteStatus): JSX.Element => {
-    if (voted === "APPROVED") {
+    if (voted === "FAVORABLE") {
       return <span className="text-green-400">You already voted in favor</span>;
     }
     return <span className="text-red-400">You already voted against</span>;
   };
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className="flex flex-col w-full gap-2">
       {getVotedText(voted)}
       <Button
         variant="default"
-        className="flex w-full items-center justify-between text-nowrap rounded-lg px-4 py-2.5 text-center font-semibold text-white transition duration-200"
+        className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
         onClick={handleRemoveVote}
         type="button"
       >
-        Remove Vote <TicketX className="h-5 w-5" />
+        Remove Vote <TicketX className="w-5 h-5" />
       </Button>
       {votingStatus.status && (
         <TransactionStatus
@@ -108,7 +108,7 @@ const VoteCardFunctionsContent = (props: {
 
       <Button
         variant="default"
-        className={`mb-1 mt-4 w-full rounded-lg ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
+        className={`mb-1 mt-4 w-full ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
         disabled={vote === "UNVOTED" || votingStatus.status === "PENDING"}
         onClick={handleVote}
         type="button"
@@ -146,7 +146,7 @@ export function ProposalVoteCard(props: {
   }
 
   function handleVote(): void {
-    const voteBoolean = vote === "APPROVED" ? true : false;
+    const voteBoolean = vote === "FAVORABLE" ? true : false;
     void voteProposal({
       proposalId,
       vote: voteBoolean,

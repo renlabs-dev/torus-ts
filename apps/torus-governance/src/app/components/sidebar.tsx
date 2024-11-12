@@ -46,13 +46,13 @@ function SidebarContent() {
   }, [defaultView, router, searchParams, viewMode]);
 
   return (
-    <div className="flex max-h-fit min-w-fit flex-col gap-6">
-      <Card className="flex flex-col gap-1.5 p-6 border-muted bg-background">
+    <div className="flex flex-col gap-6 max-h-fit min-w-fit">
+      <Card className="flex flex-col gap-1.5 p-6">
         {navSidebarOptions.map((view) => (
           <Link href={`?view=${view.href}`} key={view.href} prefetch>
             <Button
               variant="ghost"
-              className={`w-full justify-between gap-4 rounded-md border-none p-2 text-lg ${viewMode === view.href ? "bg-accent" : ""}`}
+              className={`w-full justify-between gap-4 border-none px-3 text-lg ${viewMode === view.href ? "bg-accent" : ""}`}
             >
               {view.title}
               <Check
@@ -123,20 +123,20 @@ export const Sidebar = () => {
 
 function SidebarSkeleton() {
   return (
-    <div className="flex max-h-fit min-w-fit flex-col rounded-lg border border-muted bg-background">
+    <div className="flex flex-col border rounded-md max-h-fit min-w-fit border-muted bg-background">
       <div className="flex flex-col gap-1.5 p-6">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-10 w-full" />
+          <Skeleton key={i} className="w-full h-10" />
         ))}
       </div>
       <Separator className="w-full" />
       <div className="flex flex-col gap-6 p-8 py-6">
-        <Skeleton className="h-6 w-1/2" />
-        <Skeleton className="h-6 w-3/4" />
+        <Skeleton className="w-1/2 h-6" />
+        <Skeleton className="w-3/4 h-6" />
       </div>
       <Separator className="w-full" />
       <div className="flex flex-col p-8 py-6">
-        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="w-1/2 h-6" />
       </div>
     </div>
   );

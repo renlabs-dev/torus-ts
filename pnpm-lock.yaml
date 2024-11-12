@@ -350,6 +350,9 @@ importers:
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.3.1)
+      luxon:
+        specifier: ^3.5.0
+        version: 3.5.0
       next:
         specifier: 'catalog:'
         version: 15.0.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -384,6 +387,9 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
+      '@types/luxon':
+        specifier: ^3.4.2
+        version: 3.4.2
       '@types/node':
         specifier: 'catalog:'
         version: 20.17.6
@@ -1111,6 +1117,9 @@ importers:
       '@torus-ts/types':
         specifier: workspace:*
         version: link:../types
+      luxon:
+        specifier: ^3.5.0
+        version: 3.5.0
       multiformats:
         specifier: 'catalog:'
         version: 13.3.1
@@ -1127,6 +1136,9 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
+      '@types/luxon':
+        specifier: ^3.4.2
+        version: 3.4.2
 
   packages/wallet:
     dependencies:

@@ -19,8 +19,8 @@ function getUserVoteStatus(
   if (!("open" in proposalStatus)) return "UNVOTED";
 
   const { votesFor, votesAgainst } = proposalStatus.open;
-  if (votesFor.includes(selectedAccountAddress)) return "APPROVED";
-  if (votesAgainst.includes(selectedAccountAddress)) return "REFUSED";
+  if (votesFor.includes(selectedAccountAddress)) return "FAVORABLE";
+  if (votesAgainst.includes(selectedAccountAddress)) return "AGAINST";
 
   return "UNVOTED";
 }
@@ -43,9 +43,11 @@ const ListCardsContent = () => {
     isDaosLoading,
     selectedAccount,
     isInitialized,
+    lastBlock
   } = useTorus();
 
   const searchParams = useSearchParams();
+  const currentBlock = lastBlock?.blockNumber;
 
   const viewMode = useMemo((): ViewModes => {
     const currentView = searchParams.get("view");
@@ -99,13 +101,14 @@ const ListCardsContent = () => {
               voted={voted}
               proposalType={proposal.data}
               proposalStatus={proposal.status}
-              dueDate
+              expirationBlock={proposal.expirationBlock}
+              currentBlock={currentBlock}
             />
           </Link>
         );
       })
       .filter((element): element is JSX.Element => element !== null);
-  }, [proposalsWithMeta, selectedAccount?.address]);
+  }, [currentBlock, proposalsWithMeta, selectedAccount?.address]);
 
   const renderDaos = useMemo((): JSX.Element[] => {
     if (!daosWithMeta) return [];

@@ -161,7 +161,7 @@ export function RegisterModule(): JSX.Element {
   return (
     <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList className="mb-3">
           <TabsTrigger value="edit">Edit Content</TabsTrigger>
           <TabsTrigger value="preview">Preview Content</TabsTrigger>
         </TabsList>
@@ -220,7 +220,7 @@ export function RegisterModule(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="bg-muted p-4">
+        <TabsContent value="preview" className="p-4 rounded-md bg-muted">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -240,9 +240,8 @@ export function RegisterModule(): JSX.Element {
       <Button
         size="xl"
         type="submit"
-        variant="default-green"
+        variant="default"
         disabled={!isConnected}
-        className="text-green-500"
       >
         {uploading ? "Uploading..." : "Submit Module"}
       </Button>

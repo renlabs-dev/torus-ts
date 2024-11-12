@@ -15,7 +15,7 @@ interface DetailsCardProps {
 export const DetailsCard = (props: DetailsCardProps) => {
   const { content, lastBlockNumber, voted } = props
   return (
-    <Card className="p-6 border animate-fade-down border-muted animate-delay-200">
+    <Card className="p-6 animate-fade-down animate-delay-200">
       <CardHeader className="pt-0 pl-0">
         <h3>Details</h3>
       </CardHeader>

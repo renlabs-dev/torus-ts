@@ -14,7 +14,7 @@ export const VoteData = (
 
   if (favorablePercent === null) {
     return (
-      <Card className="p-6 border-muted animate-fade-down animate-delay-500">
+      <Card className="p-6 animate-fade-down animate-delay-500">
         <CardHeader className="pt-0 pl-0">
           <h3>Voting</h3>
         </CardHeader>

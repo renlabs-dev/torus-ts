@@ -35,7 +35,7 @@ const commentSorters: { icon: JSX.Element, sortBy: SorterTypes }[] = [
 
 const LoadingComments = () => {
   return (
-    <Card className="relative flex flex-col w-full gap-2 p-2 pb-4 bg-card border-muted">
+    <Card className="relative flex flex-col w-full gap-2 p-2 pb-4">
       <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
         <span className="flex items-center gap-2">
           <Skeleton className="w-24 h-5" />
@@ -235,7 +235,7 @@ export function ViewComment({
             return (
               <Card
                 key={comment.id}
-                className="relative flex flex-col w-full gap-2 p-2 pb-4 bg-card border-muted"
+                className="relative flex flex-col w-full gap-2 p-2 pb-4"
               >
                 <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
                   <div className="flex items-center gap-2">
@@ -272,7 +272,7 @@ export function ViewComment({
                     variant="default"
                     onClick={() => setCommentId(comment.id)}
                     type="button"
-                    className="absolute rounded-md bottom-2 right-2 border border-red-500 px-1.5 h-7 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
+                    className="absolute bottom-2 right-2 border border-red-500 px-1.5 h-7 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
                   >
                     <TriangleAlert size={16} />
                   </Button>

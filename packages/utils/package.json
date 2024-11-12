@@ -9,6 +9,7 @@
   "dependencies": {
     "@polkadot/util": "catalog:",
     "@torus-ts/types": "workspace:*",
+    "luxon": "^3.5.0",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "tsafe": "catalog:"
@@ -16,7 +17,8 @@
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@torus-ts/types": "workspace:*"
+    "@torus-ts/types": "workspace:*",
+    "@types/luxon": "^3.4.2"
   },
   "compilerOptions": {
     "module": "ESNext",

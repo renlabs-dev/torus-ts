@@ -1,7 +1,6 @@
-export type Vote = "FAVORABLE" | "AGAINST" | "UNVOTED";
-
+import type { VoteStatus } from "./vote-label";
 interface VoteTextProps {
-  vote: Vote;
+  vote: VoteStatus;
 }
 
 export function VoteText(props: VoteTextProps): JSX.Element {

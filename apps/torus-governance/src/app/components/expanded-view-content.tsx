@@ -41,7 +41,7 @@ export const ExpandedViewContent = (
     <div
       className={`flex h-fit animate-fade-down flex-col transition-all animate-delay-100`}
     >
-      <h2 className="break-words pb-5 text-2xl font-bold text-white">
+      <h2 className="pb-5 text-2xl font-bold text-white break-words">
         {title ?? "Title not found"}
       </h2>
       <div
@@ -55,7 +55,7 @@ export const ExpandedViewContent = (
             className={`absolute bottom-0 flex h-24 w-full items-end justify-center ${expandedText ? "animate-accordion-up bg-transparent" : "animate-accordion-down bg-gradient-to-b from-[#04061C1A] to-[#04061C]"}`}
           >
             <Button
-              className="flex w-32 items-center gap-2 rounded-md"
+              className="flex items-center w-32 gap-2"
               onClick={() => handleExpandedText()}
               variant="default"
               aria-expanded={expandedText}

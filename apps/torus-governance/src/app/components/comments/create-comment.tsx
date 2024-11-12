@@ -122,7 +122,7 @@ export function CreateComment({
             placeholder="Type your message here..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full h-24 p-3 text-white border rounded-lg resize-none placeholder:text-muted-foreground bg-card border-muted"
+            className="w-full h-24 p-3 text-white border rounded-md resize-none placeholder:text-muted-foreground bg-card border-muted"
             maxLength={MAX_CHARACTERS}
           />
           <span className="absolute text-sm text-muted-foreground bottom-3 right-4">
@@ -137,13 +137,13 @@ export function CreateComment({
             placeholder="Type your name (optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 text-white border rounded-lg bg-card placeholder:text-muted-foreground border-muted"
+            className="w-full p-3 text-white border rounded-md bg-card placeholder:text-muted-foreground border-muted"
             maxLength={MAX_NAME_CHARACTERS}
           />
           <Button
             type="submit"
             variant="default"
-            className="py-6 transition rounded-lg"
+            className="py-6 transition"
             disabled={
               isSubmitDisabled() ||
               CreateComment.isPending ||

@@ -1,6 +1,6 @@
 import { Badge } from "@torus-ts/ui";
 
-export type VoteStatus = "APPROVED" | "REFUSED" | "UNVOTED";
+export type VoteStatus = "FAVORABLE" | "AGAINST" | "UNVOTED";
 
 interface VoteLabelProps {
   vote: VoteStatus;
@@ -11,14 +11,14 @@ export function VoteLabel(props: VoteLabelProps): JSX.Element {
 
   const votingStatus = {
     UNVOTED: <></>,
-    APPROVED: (
+    FAVORABLE: (
       <Badge variant="solid" className="bg-green-500/10 text-green-500">
-        Approved
+        Favorable
       </Badge>
     ),
-    REFUSED: (
+    AGAINST: (
       <Badge variant="solid" className="bg-red-500/10 text-red-500">
-        Refused
+        Against
       </Badge>
     ),
   };
