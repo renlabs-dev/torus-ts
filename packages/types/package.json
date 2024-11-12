@@ -6,6 +6,11 @@
   "exports": {
     ".": "./index.ts"
   },
+  "scripts": {
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
   "dependencies": {
     "@polkadot/api": "catalog:",
     "@polkadot/extension-inject": "catalog:",

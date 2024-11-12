@@ -3,14 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "//": "@torus-ts/subspace needs to be builded and imported indirectly,",
+  "//": "otherwise dependant packages may typecheck it's sources and cause",
+  "//": "conflict in the generated/augmented types",
   "exports": {
-    "./queries": "./src/queries/index.ts"
+    "./queries": {
+      "types": "./dist/queries/index.d.ts",
+      "default": "./dist/queries/index.js"
+    }
   },
   "scripts": {
+    "build": "tsc",
     "clean": "rm -rf .turbo node_modules",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "generate-types-from-defs": "tsx ../../node_modules/.bin/polkadot-types-from-defs --package @torus-ts/subspace/interfaces --input ./src/interfaces --endpoint ../../data/metadata/mainnet.json",
+    "dev": "tsx --inspect ./src/main.ts",
+    "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
     "generate-types-from-chain": "tsx ../../node_modules/.bin/polkadot-types-from-chain --package @torus-ts/subspace/interfaces --endpoint ../../data/metadata/mainnet.json --output ./src/interfaces",
+    "generate-types-from-defs": "tsx ../../node_modules/.bin/polkadot-types-from-defs --package @torus-ts/subspace/interfaces --input ./src/interfaces --endpoint ../../data/metadata/mainnet.json",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },

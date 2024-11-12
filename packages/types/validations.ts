@@ -3,11 +3,7 @@ import { decodeAddress } from "@polkadot/util-crypto";
 import { assert } from "tsafe";
 import { z } from "zod";
 
-import type {
-  DaoApplicationStatus,
-  Proposal,
-  SS58Address,
-} from "./types";
+import type { DaoApplicationStatus, Proposal, SS58Address } from "./types";
 
 export function checkSS58(value: string | SS58Address): SS58Address {
   try {
@@ -21,11 +17,16 @@ export function checkSS58(value: string | SS58Address): SS58Address {
 export function isSS58(value: string | null | undefined): value is SS58Address {
   try {
     decodeAddress(value);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_e) {
     return false;
   }
   return true;
 }
+
+export const SS58Address_schema = z
+  .string()
+  .refine<SS58Address>(isSS58, "Invalid SS58 address");
 
 export const CUSTOM_METADATA_SCHEMA = z.object({
   title: z.string().optional(),
@@ -143,13 +144,14 @@ export const SUBSPACE_MODULE_REGISTRATION_BLOCK_SCHEMA = z.coerce.number();
 export const SUBSPACE_MODULE_METADATA_SCHEMA = z.string(); // TODO: validate it's a valid ipfs hash or something (?)
 export const SUBSPACE_MODULE_LAST_UPDATE_SCHEMA = z.any();
 export const STAKE_FROM_SCHEMA = z.object({
-  stakeFromStorage: z.record(
-    ADDRESS_SCHEMA,
-    z.record(ADDRESS_SCHEMA, z.coerce.bigint())
-  ).transform(
-    (val) => {
+  stakeFromStorage: z
+    .record(ADDRESS_SCHEMA, z.record(ADDRESS_SCHEMA, z.coerce.bigint()))
+    .transform((val) => {
       const map = new Map<SS58Address, Map<SS58Address, bigint>>();
-      const stakeMapEntries = Object.entries(val) as [SS58Address, Record<SS58Address, bigint>][];
+      const stakeMapEntries = Object.entries(val) as [
+        SS58Address,
+        Record<SS58Address, bigint>,
+      ][];
       for (const [stakedInto, stakerMap] of stakeMapEntries) {
         const innerMap = new Map<SS58Address, bigint>();
         const stakers = Object.entries(stakerMap) as [SS58Address, bigint][];
@@ -159,8 +161,7 @@ export const STAKE_FROM_SCHEMA = z.object({
         map.set(stakedInto, innerMap);
       }
       return map;
-    },
-  ),
+    }),
 });
 
 export const SUBSPACE_MODULE_SCHEMA = z.object({

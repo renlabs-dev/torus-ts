@@ -2,14 +2,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node-terminal",
       "name": "debug torus-worker",
+      "type": "node-terminal",
       "request": "launch",
       "command": "pnpm run dev",
       "cwd": "${workspaceFolder}/apps/torus-worker",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "debug subspace",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run dev",
+      "cwd": "${workspaceFolder}/packages/subspace",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

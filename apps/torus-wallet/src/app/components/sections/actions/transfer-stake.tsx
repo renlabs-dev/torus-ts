@@ -57,7 +57,7 @@ export function TransferStakeAction(
     setInputError((prev) => ({ ...prev, fromValidator: null, value: null }));
 
     const validator = stakedValidators.find(
-      (v: { address: string; stake: string }) => v.address === address,
+      (v: { address: string; stake: bigint }) => v.address === address,
     );
     if (validator) {
       const stakedAmount = fromNano(validator.stake);
@@ -114,7 +114,7 @@ export function TransferStakeAction(
     setFromValidator(validator.address);
     setCurrentView("wallet");
     const validatorData = stakedValidators.find(
-      (v: { address: string; stake: string }) =>
+      (v: { address: string; stake: bigint }) =>
         v.address === validator.address,
     );
     if (validatorData) {

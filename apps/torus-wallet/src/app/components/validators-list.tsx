@@ -17,7 +17,7 @@ interface Validator {
   name: string;
   description: string;
   address: string;
-  stake?: string;
+  stake?: bigint;
 }
 
 export function ValidatorsList(props: ValidatorsListProps) {

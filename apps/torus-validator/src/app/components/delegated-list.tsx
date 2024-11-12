@@ -108,7 +108,7 @@ export function DelegatedList() {
   const validatorAddress = "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2";
 
   function userWeightPower(
-    userStakes: { address: string; stake: string }[] | undefined,
+    userStakes: { address: string; stake: bigint }[] | undefined,
     validatorAddress: string,
   ) {
     if (!userStakes) {
@@ -116,7 +116,7 @@ export function DelegatedList() {
     }
     const data = userStakes
       .filter((stake) => validatorAddress.includes(stake.address))
-      .reduce((sum, stake) => sum + BigInt(stake.stake), BigInt(0));
+      .reduce((sum, stake) => sum + stake.stake, 0n);
 
     return formatToken(Number(data));
   }

@@ -113,7 +113,8 @@ interface TorusContextType {
   stakeOut: StakeOutData | undefined;
   isStakeOutLoading: boolean;
 
-  userTotalStaked: { address: string; stake: string }[] | undefined;
+  // TODO: rename to `userStaked` or something, as it's not adding up the stakes
+  userTotalStaked: { address: string; stake: bigint }[] | undefined;
   isUserTotalStakedLoading: boolean;
 
   proposalsWithMeta: ProposalState[] | undefined;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";

@@ -48,7 +48,7 @@ export function UnstakeAction(
     setAmount("");
     setInputError({ recipient: null, value: null });
     const validator = stakedValidators.find(
-      (v: { address: string; stake: string }) => v.address === address,
+      (v: { address: string; stake: bigint }) => v.address === address,
     );
     if (validator) {
       setStakedAmount(fromNano(validator.stake));
@@ -92,7 +92,7 @@ export function UnstakeAction(
     setRecipient(validator.address);
     setCurrentView("wallet");
     const validatorData = stakedValidators.find(
-      (v: { address: string; stake: string }) =>
+      (v: { address: string; stake: bigint }) =>
         v.address === validator.address,
     );
     if (validatorData) {
