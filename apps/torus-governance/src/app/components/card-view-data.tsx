@@ -1,6 +1,4 @@
-"use client";
-
-import { CardHeader, CardContent, Card, CardTitle } from "@torus-ts/ui";
+import { CardHeader, CardContent, Card, CardTitle, Skeleton } from "@torus-ts/ui";
 import { Clock, Crown } from "lucide-react";
 import { DaoStatusLabel } from "./dao/dao-status-label";
 import { ProposalTypeLabel } from "./proposal/proposal-type-label";
@@ -9,6 +7,7 @@ import { StatusLabel } from "./status-label";
 import { VoteLabel } from "./vote-label";
 import type { DaoApplicationStatus, ProposalData, ProposalStatus, SS58Address } from "@torus-ts/types";
 import type { VoteStatus } from "./vote-label";
+import { calcProposalFavorablePercent } from "~/utils";
 
 export interface ProposalCardProps {
   author: SS58Address;
@@ -21,21 +20,44 @@ export interface ProposalCardProps {
   voted?: VoteStatus;
 }
 
-const VotePercentageBar = () => {
+const VotePercentageBar = (props: {
+  proposalStatus: ProposalCardProps["proposalStatus"];
+}) => {
+  const { proposalStatus } = props;
+
+  if (!proposalStatus) return null
+
+  const favorablePercent = calcProposalFavorablePercent(proposalStatus)
+
+  if (favorablePercent === null) {
+    return (
+      <div className="flex justify-between w-full animate-pulse">
+        <Skeleton className="py-4 w-full !rounded-full" />
+      </div>
+    )
+  }
+
+  const againstPercent = 100 - favorablePercent;
   return (
-    <div className="flex justify-between w-full">
-      <span className="flex items-center justify-start w-1/2 gap-2 px-3 py-1 text-sm text-left rounded-r-none bg-muted rounded-xl">
-        Favorable
-        <span className="text-muted-foreground">
-          50.0%
-        </span>
-      </span>
-      <span className="flex items-center justify-end w-1/2 gap-2 px-3 py-1 text-sm text-right rounded-l-none rounded-xl bg-accent">
-        Against
-        <span className="text-muted-foreground">
-          50.0%
-        </span>
-      </span>
+    <div className="relative w-full h-8 bg-accent rounded-full overflow-hidden ">
+      <div
+        className="bg-muted h-full rounded-full rounded-r-none "
+        style={{ width: `${favorablePercent}%` }}
+      />
+      <div className="absolute inset-0 flex justify-between items-center px-3 text-sm">
+        <div className="flex items-center gap-2">
+          Favorable
+          <span className="text-muted-foreground">
+            {favorablePercent.toFixed(2)}%
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          Against
+          <span className="text-muted-foreground">
+            {againstPercent.toFixed(2)}%
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
@@ -83,7 +105,8 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
               {title}
             </CardTitle>
           )}
-          <VotePercentageBar />
+
+          {proposalStatus && <VotePercentageBar proposalStatus={proposalStatus} />}
         </CardContent >
       </Card >
     </>
