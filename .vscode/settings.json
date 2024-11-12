@@ -5,6 +5,8 @@
       "mode": "auto"
     }
   ],
+  "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
+  "editor.formatOnSave": true,
   "conventionalCommits.scopes": [
     "cache",
     "governance",
@@ -40,6 +42,5 @@
     "typegen",
     "uid",
     "uids"
-  ],
-  "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }]
+  ]
 }
