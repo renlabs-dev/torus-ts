@@ -6,7 +6,6 @@ import type { Enum, Tagged } from "rustie";
 import type { Variant } from "rustie/dist/enum";
 import { z } from "zod";
 
-
 import type {
   CUSTOM_METADATA_SCHEMA,
   DAO_APPLICATIONS_SCHEMA,
@@ -94,9 +93,9 @@ interface StakeData {
   atTime: Date;
 }
 
-export type StakeOutData = StakeData
+export type StakeOutData = StakeData;
 
-export type StakeFromData = StakeData
+export type StakeFromData = StakeData;
 
 export const STAKE_DATA_SCHEMA = z.object({
   total: z.coerce.bigint(),
