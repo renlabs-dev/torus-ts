@@ -350,9 +350,6 @@ importers:
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.3.1)
-      luxon:
-        specifier: ^3.5.0
-        version: 3.5.0
       next:
         specifier: 'catalog:'
         version: 15.0.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -387,9 +384,6 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
-      '@types/luxon':
-        specifier: ^3.4.2
-        version: 3.4.2
       '@types/node':
         specifier: 'catalog:'
         version: 20.17.6
@@ -1208,7 +1202,7 @@ importers:
         version: 7.37.2(eslint@9.14.0(jiti@1.21.6))
       eslint-plugin-react-hooks:
         specifier: rc
-        version: 5.1.0-rc-ed15d500-20241110(eslint@9.14.0(jiti@1.21.6))
+        version: 5.1.0-rc-2ec26bc4-20241111(eslint@9.14.0(jiti@1.21.6))
       eslint-plugin-turbo:
         specifier: ^2.1.1
         version: 2.2.3(eslint@9.14.0(jiti@1.21.6))
@@ -4187,8 +4181,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-react-hooks@5.1.0-rc-ed15d500-20241110:
-    resolution: {integrity: sha512-haCpY5fh8E4E1WOSg+KvEC0nX2mN9OuEzpihogf6HL8XTo7LIrb8n5foJxwI4NvhGAhD5z9joGrtSY4pTH4x3Q==}
+  eslint-plugin-react-hooks@5.1.0-rc-2ec26bc4-20241111:
+    resolution: {integrity: sha512-bwtAFS/NJTQWytrkV81hzF+Dizf7rsB+P/nMhSvTqRbuJzDVG8ocy9Y2ixomFacY44PxhEPNWIiaI+4O8hxBLw==}
     engines: {node: '>=10'}
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
@@ -9910,7 +9904,7 @@ snapshots:
       safe-regex-test: 1.0.3
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-react-hooks@5.1.0-rc-ed15d500-20241110(eslint@9.14.0(jiti@1.21.6)):
+  eslint-plugin-react-hooks@5.1.0-rc-2ec26bc4-20241111(eslint@9.14.0(jiti@1.21.6)):
     dependencies:
       eslint: 9.14.0(jiti@1.21.6)
 
