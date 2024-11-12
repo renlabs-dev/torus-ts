@@ -17,7 +17,7 @@ import { WalletButton } from "@torus-ts/wallet";
 import type { VoteStatus } from "../vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 
-const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
+const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["APPROVED", "REFUSED"];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
@@ -38,7 +38,7 @@ const AlreadyVotedCardContent = (props: {
   const { voted, votingStatus, handleRemoveVote } = props;
 
   const getVotedText = (voted: VoteStatus): JSX.Element => {
-    if (voted === "FAVORABLE") {
+    if (voted === "APPROVED") {
       return <span className="text-green-400">You already voted in favor</span>;
     }
     return <span className="text-red-400">You already voted against</span>;
@@ -113,7 +113,7 @@ const VoteCardFunctionsContent = (props: {
         onClick={handleVote}
         type="button"
       >
-        {vote === "UNVOTED" ? "Choose a vote" : "Vote"}
+        {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
       </Button>
 
       {votingStatus.status && (
@@ -146,7 +146,7 @@ export function ProposalVoteCard(props: {
   }
 
   function handleVote(): void {
-    const voteBoolean = vote === "FAVORABLE" ? true : false;
+    const voteBoolean = vote === "APPROVED" ? true : false;
     void voteProposal({
       proposalId,
       vote: voteBoolean,

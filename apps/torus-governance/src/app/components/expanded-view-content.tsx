@@ -1,18 +1,21 @@
+import { useEffect, useRef, useState } from "react";
+import { MoveDown } from "lucide-react";
+
 import { Button } from "@torus-ts/ui";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
 import { removeEmojis } from "@torus-ts/utils";
-import { MoveDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
 interface ExpandedViewContentProps {
   title: string | null;
   body: string | null;
 }
 
-export const ExpandedViewContent = (props: ExpandedViewContentProps): JSX.Element => {
+export const ExpandedViewContent = (
+  props: ExpandedViewContentProps,
+): JSX.Element => {
   const { body, title } = props;
   const contentRef = useRef<HTMLDivElement>(null);
-  const [expandedText, setExpandedText] = useState(false)
+  const [expandedText, setExpandedText] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
   const handleExpandedText = () => {
@@ -23,7 +26,7 @@ export const ExpandedViewContent = (props: ExpandedViewContentProps): JSX.Elemen
       });
     }
     setExpandedText(!expandedText);
-  }
+  };
 
   useEffect(() => {
     // Check if the content is overflowing to decide whether to show the expand/collapse button
@@ -35,29 +38,37 @@ export const ExpandedViewContent = (props: ExpandedViewContentProps): JSX.Elemen
   }, [body]);
 
   return (
-    <div className={`flex h-fit animate-fade-down flex-col animate-delay-100 transition-all`}>
-      <h2 className="pb-5 text-2xl font-bold text-white break-words">
+    <div
+      className={`flex h-fit animate-fade-down flex-col transition-all animate-delay-100`}
+    >
+      <h2 className="break-words pb-5 text-2xl font-bold text-white">
         {title ?? "Title not found"}
       </h2>
       <div
         ref={contentRef}
-        className={`relative lg:overflow-hidden ${expandedText ? "pb-12 max-h-full" : 'pb-0  max-h-[250px]'} duration-1000 transition-all`}>
+        className={`relative block lg:overflow-hidden ${expandedText ? "max-h-full pb-12" : "max-h-[250px] pb-0"} transition-all duration-1000`}
+      >
         <MarkdownView source={removeEmojis(body ?? "Content not found.")} />
 
         {isOverflowing && (
-          <div className={`absolute bottom-0 flex items-end justify-center w-full h-24 ${expandedText ? "bg-transparent animate-accordion-up" : "bg-gradient-to-b from-[#04061C1A] to-[#04061C] animate-accordion-down"}`}>
+          <div
+            className={`absolute bottom-0 flex h-24 w-full items-end justify-center ${expandedText ? "animate-accordion-up bg-transparent" : "animate-accordion-down bg-gradient-to-b from-[#04061C1A] to-[#04061C]"}`}
+          >
             <Button
-              className="flex items-center gap-2 rounded-md w-32"
+              className="flex w-32 items-center gap-2 rounded-md"
               onClick={() => handleExpandedText()}
               variant="default"
               aria-expanded={expandedText}
             >
               {expandedText ? "Collapse" : "Expand"}
-              <MoveDown size={16} className={`${expandedText ? "rotate-180" : "rotate-0"} duration-500 transition-transform`} />
+              <MoveDown
+                size={16}
+                className={`${expandedText ? "rotate-180" : "rotate-0"} transition-transform duration-500`}
+              />
             </Button>
           </div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};

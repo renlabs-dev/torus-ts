@@ -19,8 +19,8 @@ function getUserVoteStatus(
   if (!("open" in proposalStatus)) return "UNVOTED";
 
   const { votesFor, votesAgainst } = proposalStatus.open;
-  if (votesFor.includes(selectedAccountAddress)) return "FAVORABLE";
-  if (votesAgainst.includes(selectedAccountAddress)) return "AGAINST";
+  if (votesFor.includes(selectedAccountAddress)) return "APPROVED";
+  if (votesAgainst.includes(selectedAccountAddress)) return "REFUSED";
 
   return "UNVOTED";
 }
@@ -92,7 +92,7 @@ const ListCardsContent = () => {
         );
 
         return (
-          <Link href={`/proposal/${proposal.id}`} key={proposal.id}>
+          <Link href={`/proposal/${proposal.id}`} key={proposal.id} prefetch>
             <CardViewData
               title={title}
               author={proposal.proposer}
@@ -120,7 +120,7 @@ const ListCardsContent = () => {
         if (!body) return null;
 
         return (
-          <Link href={`/dao/${dao.id}`} key={dao.id}>
+          <Link href={`/dao/${dao.id}`} key={dao.id} prefetch>
             <CardViewData
               title={title}
               author={dao.userId}

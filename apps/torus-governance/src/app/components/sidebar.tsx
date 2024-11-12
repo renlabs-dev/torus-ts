@@ -1,14 +1,15 @@
 "use client";
 
-import React, { Suspense, useCallback, useEffect, useMemo } from "react";
+import React, { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, Copy } from "lucide-react";
 
 import { useBalance } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { Button, Separator, Skeleton } from "@torus-ts/ui";
+import { Button, Card, Separator, Skeleton } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils";
+import Link from "next/link";
 
 const navSidebarOptions = [
   { title: "Proposals", href: "proposals" },
@@ -21,9 +22,6 @@ function SidebarContent() {
   const { rewardAllocation, daoTreasury, api } = useTorus();
   const { data: daosTreasuries } = useBalance(api, daoTreasury);
 
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
   function handleCopyClick(value: string): void {
     navigator.clipboard
       .writeText(value)
@@ -35,60 +33,39 @@ function SidebarContent() {
       });
   }
 
-  const viewMode = useMemo(
-    () => searchParams.get("view") ?? "",
-    [searchParams],
-  );
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const updateView = useCallback(
-    (newView: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("view", newView);
-      router.push(`?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams],
-  );
-
-  const handleViewChange = useCallback(
-    (value: string) => {
-      if (
-        value !== viewMode &&
-        navSidebarOptions.find((view) => view.href === value)
-      ) {
-        updateView(value);
-      }
-    },
-    [viewMode, updateView],
-  );
+  const defaultView = navSidebarOptions[0].href;
+  const viewMode = searchParams.get('view');
 
   useEffect(() => {
-    if (!navSidebarOptions.find((view) => view.href === viewMode)) {
-      updateView("proposals");
+    if (!viewMode || !navSidebarOptions.find((view) => view.href === viewMode)) {
+      router.push(`?view=${defaultView}`, { scroll: false });
     }
-  }, [viewMode, updateView]);
+  }, [defaultView, router, searchParams, viewMode]);
 
   return (
-    <div className="flex max-h-fit min-w-fit flex-col rounded-lg border border-muted bg-background">
-      <div className="flex flex-col gap-1.5 p-6">
+    <div className="flex max-h-fit min-w-fit flex-col gap-6">
+      <Card className="flex flex-col gap-1.5 p-6 border-muted bg-background">
         {navSidebarOptions.map((view) => (
-          <Button
-            onClick={() => handleViewChange(view.href)}
-            key={view.href}
-            variant="ghost"
-            className={`w-full justify-between gap-4 rounded-md border-none p-2 text-lg`}
-          >
-            {view.title}
-            <Check
-              size={16}
-              className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
-            />
-          </Button>
+          <Link href={`?view=${view.href}`} key={view.href} prefetch>
+            <Button
+              variant="ghost"
+              className={`w-full justify-between gap-4 rounded-md border-none p-2 text-lg ${viewMode === view.href ? "bg-accent" : ""}`}
+            >
+              {view.title}
+              <Check
+                size={16}
+                className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
+              />
+            </Button>
+          </Link>
+
         ))}
-      </div>
+      </Card>
 
-      <Separator className="w-full" />
-
-      <div className="flex flex-col gap-6 p-8 py-6">
+      <Card className="flex flex-col gap-6 p-8 py-6 border-muted bg-background">
         <div>
           {daosTreasuries && (
             <p className="flex items-end gap-1 text-base">
@@ -119,22 +96,19 @@ function SidebarContent() {
             DAO treasury address
           </span>
         </div>
-      </div>
-
-      <Separator className="w-full" />
-
-      <div className="flex flex-col p-8 py-6">
-        {!rewardAllocation && <Skeleton className="flex w-1/2 py-3" />}
-        {rewardAllocation && (
-          <p className="flex items-end gap-1 text-base">
-            {formatToken(Number(rewardAllocation))}
-            <span className="mb-0.5 text-xs">TOR</span>
-          </p>
-        )}
-        <span className="text-sm text-muted-foreground">
-          Next DAO incentives payout
-        </span>
-      </div>
+        <div className="flex flex-col">
+          {!rewardAllocation && <Skeleton className="flex w-1/2 py-3" />}
+          {rewardAllocation && (
+            <p className="flex items-end gap-1 text-base">
+              {formatToken(Number(rewardAllocation))}
+              <span className="mb-0.5 text-xs">TOR</span>
+            </p>
+          )}
+          <span className="text-sm text-muted-foreground">
+            Next DAO incentives payout
+          </span>
+        </div>
+      </Card>
     </div>
   );
 }

@@ -91,9 +91,10 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
         <h3>Voters List</h3>
       </span>
       <div className="relative flex flex-col w-full gap-2 pr-2 overflow-auto max-h-72" ref={setContainerNode}>
-        {[...voters, ...voters, ...voters, ...voters, ...voters, ...voters].map(({ address, vote }) => (
+        {voters.map(({ address, vote }) => (
           <Button
             variant="default"
+            key={address}
             className="flex items-center justify-between w-full px-6 py-8 rounded-lg border-muted hover:text-muted-foreground animate-fade-down animate-delay-500"
             onClick={() => handleCopyAddress(address as string)}
           >
