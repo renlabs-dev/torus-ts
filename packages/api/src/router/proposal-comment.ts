@@ -27,7 +27,6 @@ export const proposalCommentRouter = {
       }),
     )
     .query(({ ctx, input }) => {
-      
       return ctx.db
         .select()
         .from(proposalCommentDigestView)
@@ -50,15 +49,15 @@ export const proposalCommentRouter = {
         .from(commentInteractionSchema)
         .innerJoin(
           proposalCommentSchema,
-          eq(proposalCommentSchema.id, commentInteractionSchema.commentId)
+          eq(proposalCommentSchema.id, commentInteractionSchema.commentId),
         )
         .where(
-          sql`${commentInteractionSchema.userKey} = ${input.userKey} AND ${proposalCommentSchema.proposalId} = ${input.proposalId}`
+          sql`${commentInteractionSchema.userKey} = ${input.userKey} AND ${proposalCommentSchema.proposalId} = ${input.proposalId}`,
         );
-        
-        return Object.fromEntries(
-          votes.map(vote => [vote.commentId, vote.voteType as VoteType])
-        );
+
+      return Object.fromEntries(
+        votes.map((vote) => [vote.commentId, vote.voteType as VoteType]),
+      );
     }),
   byReport: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.query.commentReportSchema.findMany();
