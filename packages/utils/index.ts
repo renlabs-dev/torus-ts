@@ -284,28 +284,6 @@ export function getCreationTime(
   return creationDate.toLocaleString(DateTime.DATETIME_SHORT);
 }
 
-export function getCreationTimeFormatted(
-  blockNumber: number | undefined,
-  creationBlock: number,
-) {
-  if (!blockNumber) return "Unknown";
-
-  const blocksAgo = blockNumber - creationBlock;
-  const secondsPassed = blocksAgo * 8; // 8 seconds per block
-
-  const creationDate = DateTime.now().minus({seconds:  secondsPassed})
-
-
-  // Format the date as MM/DD/YYYY
-  const month = (creationDate.getMonth() + 1).toString().padStart(2, "0");
-  const day = creationDate.getDate().toString().padStart(2, "0");
-  const year = creationDate.getFullYear();
-
-  const formattedDate = `${month}/${day}/${year}`;
-
-  return formattedDate
-}
-
 export interface ChainEntry {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   queryStorage(netuid?: number): Record<any, any>;
