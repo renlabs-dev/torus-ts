@@ -1,16 +1,21 @@
-"use client"
+"use client";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
-import type { ProposalStatus, SS58Address } from "@torus-ts/types";
-import { CardViewData } from "./card-view-data";
-import { CardSkeleton } from "./card-skeleton";
-import type { VoteStatus } from "./vote-label";
-import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import { handleCustomDaos, handleCustomProposal } from "~/utils";
+import { Suspense, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-function getUserVoteStatus(proposalStatus: ProposalStatus, selectedAccountAddress: SS58Address): VoteStatus {
+import type { ProposalStatus, SS58Address } from "@torus-ts/types";
+import { useTorus } from "@torus-ts/providers/use-torus";
+
+import type { VoteStatus } from "./vote-label";
+import { handleCustomDaos, handleCustomProposal } from "~/utils";
+import { CardSkeleton } from "./card-skeleton";
+import { CardViewData } from "./card-view-data";
+
+function getUserVoteStatus(
+  proposalStatus: ProposalStatus,
+  selectedAccountAddress: SS58Address,
+): VoteStatus {
   if (!("open" in proposalStatus)) return "UNVOTED";
 
   const { votesFor, votesAgainst } = proposalStatus.open;
@@ -25,12 +30,12 @@ const NoContentFound = () => {
     <div>
       <p>Content not found.</p>
     </div>
-  )
-}
+  );
+};
 
 type ViewModes = "proposals" | "daos-applications" | null;
 
-export const ListCards = () => {
+const ListCardsContent = () => {
   const {
     proposalsWithMeta,
     isProposalsLoading,
@@ -43,24 +48,23 @@ export const ListCards = () => {
   const searchParams = useSearchParams();
 
   const viewMode = useMemo((): ViewModes => {
-    const currentView = searchParams.get('view')
-    if (currentView !== "proposals" && currentView !== "daos-applications") return null
-    return currentView as ViewModes
+    const currentView = searchParams.get("view");
+    if (currentView !== "proposals" && currentView !== "daos-applications")
+      return null;
+    return currentView as ViewModes;
   }, [searchParams]);
 
   const isLoadingDaos = useMemo(() => {
-    if (!isInitialized) return true
-    if (!daosWithMeta || isDaosLoading) return true
-    return false
-
-  }, [isInitialized, daosWithMeta, isDaosLoading])
+    if (!isInitialized) return true;
+    if (!daosWithMeta || isDaosLoading) return true;
+    return false;
+  }, [isInitialized, daosWithMeta, isDaosLoading]);
 
   const isLoadingProposals = useMemo(() => {
-    if (isInitialized === false) return true
-    if (!proposalsWithMeta || isProposalsLoading) return true
-    return false
-  }, [isInitialized, proposalsWithMeta, isProposalsLoading])
-
+    if (isInitialized === false) return true;
+    if (!proposalsWithMeta || isProposalsLoading) return true;
+    return false;
+  }, [isInitialized, proposalsWithMeta, isProposalsLoading]);
 
   const handleIsLoading = (viewMode: ViewModes): boolean => {
     switch (viewMode) {
@@ -71,7 +75,7 @@ export const ListCards = () => {
       default:
         return false;
     }
-  }
+  };
 
   const renderProposals = useMemo((): JSX.Element[] => {
     if (!proposalsWithMeta) return [];
@@ -84,7 +88,7 @@ export const ListCards = () => {
 
         const voted = getUserVoteStatus(
           proposal.status,
-          selectedAccount?.address as SS58Address
+          selectedAccount?.address as SS58Address,
         );
 
         return (
@@ -108,7 +112,10 @@ export const ListCards = () => {
 
     return daosWithMeta
       .map((dao) => {
-        const { title, body } = handleCustomDaos(dao.id, dao.customData ?? null);
+        const { title, body } = handleCustomDaos(
+          dao.id,
+          dao.customData ?? null,
+        );
 
         if (!body) return null;
 
@@ -149,14 +156,20 @@ export const ListCards = () => {
           <CardSkeleton />
         </div>
       </div>
-    )
-  }
+    );
+  };
 
-  if (handleIsLoading(viewMode)) return renderLoading()
+  if (handleIsLoading(viewMode)) return renderLoading();
 
   return (
-    <div className="flex flex-col gap-6">
-      {content ?? <NoContentFound />}
-    </div>
-  )
-}
+    <div className="flex flex-col gap-6">{content ?? <NoContentFound />}</div>
+  );
+};
+
+export const ListCards = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ListCardsContent />
+    </Suspense>
+  );
+};

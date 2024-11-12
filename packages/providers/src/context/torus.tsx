@@ -6,6 +6,7 @@ import type { Balance, DispatchError } from "@polkadot/types/interfaces";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { toast } from "react-toastify";
+
 import { WalletDropdown } from "@torus-ts/ui/components";
 
 import type {
@@ -214,14 +215,14 @@ export function TorusProvider({
     localStorage.removeItem("authorization");
     localStorage.setItem("favoriteWalletAddress", account.address);
     setIsConnected(true);
-  }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("authorization");
     localStorage.removeItem("favoriteWalletAddress");
     setSelectedAccount(null);
     setIsConnected(false);
-  }
+  };
 
   useEffect(() => {
     const favoriteWalletAddress = localStorage.getItem("favoriteWalletAddress");
@@ -229,9 +230,9 @@ export function TorusProvider({
       const fetchWallets = async () => {
         const walletList = await getWallets();
         if (!walletList) {
-          console.error("No wallet list found");
+          console.warn("No wallet list found");
         }
-        setAccounts(walletList)
+        setAccounts(walletList);
         const accountExist = walletList?.find(
           (wallet) => wallet.address === favoriteWalletAddress,
         );
@@ -243,7 +244,6 @@ export function TorusProvider({
       fetchWallets().catch(console.error);
     }
   }, [isInitialized]);
-
 
   const handleWalletModal = (state?: boolean): void => {
     setOpenWalletModal(state || !openWalletModal);
