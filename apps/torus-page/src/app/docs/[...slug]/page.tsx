@@ -6,7 +6,8 @@ import { tutorials } from "./tutorials";
 
 export const runtime = "edge";
 
-export default function Docs({ params }: { params: { slug: string } }) {
+export default async function Docs(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const prefix = `/docs`;
 
   const activeTutorial = tutorials.findIndex(
