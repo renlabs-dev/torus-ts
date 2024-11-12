@@ -41,6 +41,7 @@
     "tsafe",
     "typegen",
     "uid",
-    "uids"
+    "uids",
+    "UNVOTED"
   ]
 }
