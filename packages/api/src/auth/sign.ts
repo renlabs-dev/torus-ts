@@ -1,5 +1,3 @@
-"use server";
-
 import { hexToString, stringToHex } from "@polkadot/util";
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto";
 import { z } from "zod";
