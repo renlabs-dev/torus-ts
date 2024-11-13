@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 
 import Animation from "./components/animation";
@@ -7,7 +8,9 @@ export default function Page(): JSX.Element {
   return (
     <>
       <div className="absolute bottom-0 left-0 z-50 m-2 w-fit animate-fade">
-        <Bridge />
+        <Suspense fallback="...loading">
+          <Bridge />
+        </Suspense>
       </div>
 
       <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center pb-[4.6em]">

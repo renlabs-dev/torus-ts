@@ -22,7 +22,6 @@ import {
   cn,
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -37,8 +36,7 @@ export function Bridge() {
     accounts,
     balance,
     handleGetWallets,
-    handleSelectWallet,
-    selectedAccount,
+
     stakeOut,
   } = useTorus();
   const [bridgeAccount, setBridgeAccount] =
@@ -109,13 +107,12 @@ export function Bridge() {
               )}
             </Button>
           </DropdownMenuTrigger>
-
-          <DropdownMenuContent className={cn("w-64 border border-muted")}>
+          <DropdownMenuContent className={cn("border border-muted")}>
             <DropdownMenuLabel>
               Select a wallet to bridge from
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <ScrollArea className={cn("max-h-48 overflow-y-auto")}>
+            <ScrollArea className={cn("overflow-y-auto")}>
               <DropdownMenuRadioGroup
                 value={bridgeAccount?.address ?? ""}
                 onValueChange={handleWalletSelection}
