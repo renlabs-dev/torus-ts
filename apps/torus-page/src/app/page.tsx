@@ -1,10 +1,15 @@
 import Image from "next/image";
 
 import Animation from "./components/animation";
+import { Bridge } from "./components/bridge";
 
 export default function Page(): JSX.Element {
   return (
     <>
+      <div className="absolute bottom-0 left-0 z-50 m-2 w-fit animate-fade">
+        <Bridge />
+      </div>
+
       <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center pb-[4.6em]">
         <h1 className="block animate-fade-up text-6xl font-semibold tracking-wide shadow-sm animate-delay-[1000ms] md:hidden">
           Torus

@@ -174,3 +174,17 @@ export { ToggleGroup, ToggleGroupItem } from "./toggle-group";
 export { Toggle, toggleVariants } from "./toggle";
 export { TransactionStatus } from "./transaction-status";
 export { WalletDropdown } from "./wallet-dropdown";
+export { Alert, AlertTitle, AlertDescription } from "./alert";
+export {
+  AlertDialog,
+  AlertDialogPortal,
+  AlertDialogOverlay,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "./alert-dialog";

@@ -41,6 +41,7 @@
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/queries": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
