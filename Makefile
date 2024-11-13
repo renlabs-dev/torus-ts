@@ -1,6 +1,7 @@
 .PHONY: check fix build copy-specs
 
 check:
+	pnpm install
 	pnpm run typecheck
 	pnpm run lint
 	@# pnpm run format

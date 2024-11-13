@@ -6,12 +6,10 @@ import type {
   ProposalCardFields,
   ProposalState,
   ProposalStatus,
-} from "@torus-ts/types";
-import {
-  bigintDivision_WRONG,
-  formatToken,
-  paramNameToDisplayName,
-} from "@torus-ts/utils";
+} from "@torus-ts/subspace/old";
+import { paramNameToDisplayName } from "@torus-ts/subspace/old";
+import { bigintDivision_WRONG } from "@torus-ts/utils";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 const paramsToMarkdown = (params: Record<string, unknown>): string => {
   const items = [];
@@ -63,8 +61,9 @@ function handleProposalParams(
   params: Record<string, unknown>,
   netuid: number | "GLOBAL",
 ): ProposalCardFields {
-  const title = `Parameters proposal #${proposalId} for ${netuid == "GLOBAL" ? "global network" : `subnet ${netuid}`
-    }`;
+  const title = `Parameters proposal #${proposalId} for ${
+    netuid == "GLOBAL" ? "global network" : `subnet ${netuid}`
+  }`;
   return {
     title,
     body: paramsToMarkdown(params),

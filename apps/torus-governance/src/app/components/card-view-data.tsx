@@ -1,13 +1,27 @@
-import { CardHeader, CardContent, Card, CardTitle, Skeleton } from "@torus-ts/ui";
 import { Clock, Crown } from "lucide-react";
-import { DaoStatusLabel } from "./dao/dao-status-label";
-import { ProposalTypeLabel } from "./proposal/proposal-type-label";
-import { getExpirationTime, smallAddress } from "@torus-ts/utils";
-import { StatusLabel } from "./status-label";
-import { VoteLabel } from "./vote-label";
-import type { DaoApplicationStatus, ProposalData, ProposalStatus, SS58Address } from "@torus-ts/types";
+
+import type { SS58Address } from "@torus-ts/subspace/address";
+import type {
+  DaoApplicationStatus,
+  ProposalData,
+  ProposalStatus,
+} from "@torus-ts/subspace/old";
+import { getExpirationTime } from "@torus-ts/subspace/old";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+} from "@torus-ts/ui";
+import { smallAddress } from "@torus-ts/utils/subspace";
+
 import type { VoteStatus } from "./vote-label";
 import { calcProposalFavorablePercent } from "~/utils";
+import { DaoStatusLabel } from "./dao/dao-status-label";
+import { ProposalTypeLabel } from "./proposal/proposal-type-label";
+import { StatusLabel } from "./status-label";
+import { VoteLabel } from "./vote-label";
 
 export interface ProposalCardProps {
   author: SS58Address;
@@ -25,26 +39,26 @@ const VotePercentageBar = (props: {
 }) => {
   const { proposalStatus } = props;
 
-  if (!proposalStatus) return null
+  if (!proposalStatus) return null;
 
-  const favorablePercent = calcProposalFavorablePercent(proposalStatus)
+  const favorablePercent = calcProposalFavorablePercent(proposalStatus);
 
   if (favorablePercent === null) {
     return (
-      <div className="flex justify-between w-full animate-pulse">
-        <Skeleton className="py-4 w-full !rounded-full" />
+      <div className="flex w-full animate-pulse justify-between">
+        <Skeleton className="w-full !rounded-full py-4" />
       </div>
-    )
+    );
   }
 
   const againstPercent = 100 - favorablePercent;
   return (
-    <div className="relative w-full h-8 bg-accent rounded-full overflow-hidden ">
+    <div className="relative h-8 w-full overflow-hidden rounded-full bg-accent">
       <div
-        className="bg-muted h-full rounded-full rounded-r-none "
+        className="h-full rounded-full rounded-r-none bg-muted"
         style={{ width: `${favorablePercent}%` }}
       />
-      <div className="absolute inset-0 flex justify-between items-center px-3 text-sm">
+      <div className="absolute inset-0 flex items-center justify-between px-3 text-sm">
         <div className="flex items-center gap-2">
           Favorable
           <span className="text-muted-foreground">
@@ -59,43 +73,45 @@ const VotePercentageBar = (props: {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export function CardViewData(props: ProposalCardProps): JSX.Element {
-  const { voted, title, author, proposalType, proposalStatus, daoStatus, expirationBlock, currentBlock } = props;
+  const {
+    voted,
+    title,
+    author,
+    proposalType,
+    proposalStatus,
+    daoStatus,
+    expirationBlock,
+    currentBlock,
+  } = props;
 
   return (
     <>
       <Card className="p-6 hover:bg-accent/70">
-        <CardHeader className="flex flex-row justify-between px-0 pt-0 pb-4">
-          <div className="flex items-center gap-5 w-fit">
-            <span className="line-clamp-1 flex items-center gap-1.5 w-fit truncate text-sm text-muted-foreground">
+        <CardHeader className="flex flex-row justify-between px-0 pb-4 pt-0">
+          <div className="flex w-fit items-center gap-5">
+            <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">
               <Crown size={14} />
               {smallAddress(author)}
             </span>
 
             {expirationBlock && (
-              <span className="line-clamp-1 flex items-center gap-1.5 w-fit truncate text-sm text-muted-foreground">
+              <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">
                 <Clock size={14} />
                 Ends {getExpirationTime(currentBlock, expirationBlock, true)}
               </span>
             )}
-
           </div>
           <div className="flex gap-2">
             {voted && <VoteLabel vote={voted} />}
 
-            {proposalType && (
-              <ProposalTypeLabel proposalType={proposalType} />
-            )}
+            {proposalType && <ProposalTypeLabel proposalType={proposalType} />}
 
-            {proposalStatus && (
-              <StatusLabel status={proposalStatus} />
-            )}
-            {daoStatus && (
-              <DaoStatusLabel status={daoStatus} />
-            )}
+            {proposalStatus && <StatusLabel status={proposalStatus} />}
+            {daoStatus && <DaoStatusLabel status={daoStatus} />}
           </div>
         </CardHeader>
 
@@ -106,9 +122,11 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
             </CardTitle>
           )}
 
-          {proposalStatus && <VotePercentageBar proposalStatus={proposalStatus} />}
-        </CardContent >
-      </Card >
+          {proposalStatus && (
+            <VotePercentageBar proposalStatus={proposalStatus} />
+          )}
+        </CardContent>
+      </Card>
     </>
   );
 }

@@ -1,11 +1,10 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 
-import type { AuthReq } from "@torus-ts/types";
-import { SIGNED_PAYLOAD_SCHEMA } from "@torus-ts/types";
+import type { AuthReq } from "@torus-ts/utils/auth";
 
 import { createSessionToken } from "../auth";
-import { verifySignedData } from "../auth/sign";
+import { SIGNED_PAYLOAD_SCHEMA, verifySignedData } from "../auth/sign";
 import { publicProcedure } from "../trpc";
 
 // Maps nonce -> timestamp

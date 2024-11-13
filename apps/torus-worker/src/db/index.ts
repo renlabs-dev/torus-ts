@@ -1,5 +1,5 @@
 import type { SQL, Table } from "@torus-ts/db";
-import type { GovernanceModeType } from "@torus-ts/types";
+import type { GovernanceModeType } from "@torus-ts/subspace/old";
 import { getTableColumns, sql } from "@torus-ts/db";
 import { db } from "@torus-ts/db/client";
 import {

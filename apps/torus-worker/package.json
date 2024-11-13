@@ -21,7 +21,6 @@
   "dependencies": {
     "@polkadot/api": "catalog:",
     "@torus-ts/subspace": "workspace:*",
-    "@torus-ts/types": "workspace:*",
     "express": "^4.19.2"
   },
   "devDependencies": {

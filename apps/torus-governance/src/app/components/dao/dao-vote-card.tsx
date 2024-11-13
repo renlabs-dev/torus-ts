@@ -2,9 +2,10 @@
 
 import type { inferProcedureOutput } from "@trpc/server";
 import { useState } from "react";
+import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
-import type { DaoApplicationStatus } from "@torus-ts/types";
+import type { DaoApplicationStatus } from "@torus-ts/subspace/old";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { WalletButton } from "@torus-ts/wallet";
@@ -12,7 +13,6 @@ import { WalletButton } from "@torus-ts/wallet";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { SectionHeaderText } from "../section-header-text";
-import { Delete, TicketX } from "lucide-react";
 
 type DaoVote = inferProcedureOutput<AppRouter["dao"]["byId"]>[0];
 
@@ -170,10 +170,11 @@ export function DaoVoteCard(props: {
             <>
               <div className="flex w-full gap-4">
                 <button
-                  className={`w-full border border-green-600 py-1 ${vote === "ACCEPT"
-                    ? "border-green-500 bg-green-500/10 text-green-500"
-                    : "text-green-600"
-                    } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
+                  className={`w-full border border-green-600 py-1 ${
+                    vote === "ACCEPT"
+                      ? "border-green-500 bg-green-500/10 text-green-500"
+                      : "text-green-600"
+                  } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
                   onClick={() => handleVotePreference("ACCEPT")}
                   type="button"
                   disabled={createVoteMutation.isPending}
@@ -181,10 +182,11 @@ export function DaoVoteCard(props: {
                   Approve
                 </button>
                 <button
-                  className={`w-full border border-red-600 py-1 ${vote === "REFUSE"
-                    ? "border-red-500 bg-red-500/10 text-red-500"
-                    : "text-red-500"
-                    } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
+                  className={`w-full border border-red-600 py-1 ${
+                    vote === "REFUSE"
+                      ? "border-red-500 bg-red-500/10 text-red-500"
+                      : "text-red-500"
+                  } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
                   onClick={() => handleVotePreference("REFUSE")}
                   type="button"
                   disabled={createVoteMutation.isPending}
@@ -193,10 +195,11 @@ export function DaoVoteCard(props: {
                 </button>
               </div>
               <button
-                className={`mt-4 w-full border p-1.5 ${!vote || createVoteMutation.isPending
-                  ? "cursor-not-allowed border-gray-400 text-gray-400"
-                  : "border-blue-400 bg-blue-500/10 text-blue-400"
-                  } `}
+                className={`mt-4 w-full border p-1.5 ${
+                  !vote || createVoteMutation.isPending
+                    ? "cursor-not-allowed border-gray-400 text-gray-400"
+                    : "border-blue-400 bg-blue-500/10 text-blue-400"
+                } `}
                 disabled={!vote || createVoteMutation.isPending}
                 onClick={handleVote}
                 type="button"
@@ -216,10 +219,7 @@ export function DaoVoteCard(props: {
     case "Accepted":
       return (
         <div>
-          <GovernanceStatusNotOpen
-            status="ACCEPTED"
-            governanceModel="DAO"
-          />
+          <GovernanceStatusNotOpen status="ACCEPTED" governanceModel="DAO" />
 
           {isConnected ? (
             <button
@@ -241,12 +241,8 @@ export function DaoVoteCard(props: {
         </div>
       );
     case "Removed":
-      return (
-        <GovernanceStatusNotOpen status="REMOVED" governanceModel="DAO" />
-      );
+      return <GovernanceStatusNotOpen status="REMOVED" governanceModel="DAO" />;
     case "Refused":
-      return (
-        <GovernanceStatusNotOpen status="REFUSED" governanceModel="DAO" />
-      );
+      return <GovernanceStatusNotOpen status="REFUSED" governanceModel="DAO" />;
   }
 }

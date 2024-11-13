@@ -30,18 +30,18 @@ export function CreateModal() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default" className="px-4 w-fit" size="xl">
+        <Button variant="default" className="w-fit px-4" size="xl">
           Propose Change
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[100%] max-w-screen-xl gap-6 md:w-[80%] border-muted">
+      <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Propose Change
           </DialogTitle>
         </DialogHeader>
-        <Select value={selectedView} onValueChange={setSelectedView} >
-          <SelectTrigger className="w-2/4 p-3 text-white border-transparent bg-accent">
+        <Select value={selectedView} onValueChange={setSelectedView}>
+          <SelectTrigger className="w-2/4 border-transparent bg-accent p-3 text-white">
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
           <SelectContent className="border-muted">

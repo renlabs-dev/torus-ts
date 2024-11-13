@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { smallAddress } from "@torus-ts/utils";
+import { ArrowRight } from "lucide-react";
+
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
 import { DelegateSubnetWeight } from "./delegate-subnet-weight";
-import { ArrowRight } from "lucide-react";
 
 interface SubnetCardWeightProps {
   id: number; // TODO: rename to `netuid`

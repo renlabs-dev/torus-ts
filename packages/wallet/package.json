@@ -13,14 +13,14 @@
     "build": "tailwindcss -i ./src/style.css -o ./dist/index.css --minify",
     "dev": "tailwindcss -i ./src/style.css -o ./src/output.css --watch",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint",
+    "-lint": "eslint",
     "tailwind:watch": "tailwindcss -i ./src/style.css -o ./src/output.css --watch",
-    "typecheck": "tsc --noEmit"
+    "-typecheck": "tsc --noEmit"
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
     "@torus-ts/providers": "workspace:*",
-    "@torus-ts/types": "workspace:*",
+    "@torus-ts/subspace": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "next": "catalog:",

@@ -1,9 +1,9 @@
-import type { ApiPromise } from "@torus-ts/subspace/queries";
 import type {
   DaoApplications,
   DaoApplicationStatus,
   LastBlock,
-} from "@torus-ts/types";
+} from "@torus-ts/subspace/old";
+import type { ApiPromise } from "@torus-ts/subspace/queries";
 import {
   pushToWhitelist,
   queryDaosEntries,

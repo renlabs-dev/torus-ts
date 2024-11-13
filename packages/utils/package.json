@@ -4,12 +4,15 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./auth": "./src/auth.ts",
+    "./ipfs": "./src/ipfs.ts",
+    "./subspace": "./src/subspace.ts",
+    "./typing": "./src/typing.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",
-    "@torus-ts/types": "workspace:*",
-    "luxon": "^3.5.0",
+    "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "tsafe": "catalog:"
@@ -17,7 +20,6 @@
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@torus-ts/types": "workspace:*",
     "@types/luxon": "^3.4.2"
   },
   "compilerOptions": {

@@ -2,7 +2,7 @@ import type { ZodRawShape, ZodType } from "zod";
 import { BTreeSet, Enum, GenericAccountId, UInt } from "@polkadot/types";
 import { z } from "zod";
 
-import { SS58Address_schema } from "@torus-ts/types";
+import { ADDRESS_SCHEMA } from "./address";
 
 // == Zod ==
 
@@ -54,7 +54,7 @@ export const GenericAccountId_schema = z.custom<GenericAccountId>(
 
 export const sb_address = GenericAccountId_schema.transform((val) =>
   val.toString(),
-).pipe(SS58Address_schema);
+).pipe(ADDRESS_SCHEMA);
 
 // == Collections ==
 

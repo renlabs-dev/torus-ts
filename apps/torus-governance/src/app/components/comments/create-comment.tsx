@@ -5,10 +5,10 @@ import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { formatToken } from "@torus-ts/utils";
+import { Button } from "@torus-ts/ui";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 import { api } from "~/trpc/react";
-import { Button } from "@torus-ts/ui";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
@@ -80,7 +80,6 @@ export function CreateComment({
       });
       toast.success("Comment submitted successfully!");
       await utils.proposalComment.byId.invalidate({ proposalId });
-
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0]?.message ?? "Invalid input");
@@ -112,20 +111,20 @@ export function CreateComment({
   };
 
   return (
-    <div className="flex-col items-center justify-between hidden text-white h-fit min-h-max animate-fade-down animate-delay-200 md:flex">
-      <form onSubmit={handleSubmit} className="flex flex-col w-full gap-2">
-        <div className="w-full pb-1 mb-2">
-          <h2 className="text-lg font-semibold text-start">Create a Comment</h2>
+    <div className="hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200 md:flex">
+      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
+        <div className="mb-2 w-full pb-1">
+          <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
         </div>
         <div className="relative">
           <textarea
             placeholder="Type your message here..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full h-24 p-3 text-white border rounded-md resize-none placeholder:text-muted-foreground bg-card border-muted"
+            className="h-24 w-full resize-none rounded-md border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
             maxLength={MAX_CHARACTERS}
           />
-          <span className="absolute text-sm text-muted-foreground bottom-3 right-4">
+          <span className="absolute bottom-3 right-4 text-sm text-muted-foreground">
             {remainingChars} characters left
           </span>
         </div>
@@ -137,7 +136,7 @@ export function CreateComment({
             placeholder="Type your name (optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 text-white border rounded-md bg-card placeholder:text-muted-foreground border-muted"
+            className="w-full rounded-md border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
             maxLength={MAX_NAME_CHARACTERS}
           />
           <Button

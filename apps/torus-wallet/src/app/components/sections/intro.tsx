@@ -2,14 +2,14 @@
 
 import React, { useEffect } from "react";
 import Image from "next/image";
+import { ChevronsLeft } from "lucide-react";
 
-import type { InjectedAccountWithMeta } from "@torus-ts/ui";
+import type { InjectedAccountWithMeta } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Loading, NoWalletExtensionDisplay } from "@torus-ts/ui";
 
 import { oxanium } from "~/utils/fonts";
 import { WalletSections } from "./wallet-sections";
-import { ChevronsLeft } from "lucide-react";
 
 interface IntroSectionProps {
   onWalletSwitch: () => void;
@@ -76,10 +76,11 @@ export function IntroSection(props: IntroSectionProps) {
                 <button
                   key={index}
                   onClick={() => handleSelectWallet(account)}
-                  className={`w-full p-4 text-left transition duration-200 ${selectedAccount?.address === account.address
+                  className={`w-full p-4 text-left transition duration-200 ${
+                    selectedAccount?.address === account.address
                       ? "border border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30"
                       : "border border-white/20 text-white hover:bg-white/10"
-                    }`}
+                  }`}
                 >
                   <p className="font-semibold">
                     {account.meta.name?.toUpperCase()}

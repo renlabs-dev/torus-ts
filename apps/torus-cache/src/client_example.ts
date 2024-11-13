@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import SuperJSON from "superjson";
 
-import { STAKE_DATA_SCHEMA } from "@torus-ts/types";
+import { STAKE_DATA_SCHEMA } from "@torus-ts/subspace/old";
 
 // TODO: use `superjson` instead of `json-bigint`
 

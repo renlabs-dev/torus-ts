@@ -2,9 +2,18 @@
 
 import { hexToString, stringToHex } from "@polkadot/util";
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto";
+import { z } from "zod";
 
-import type { SignedPayload } from "@torus-ts/types";
-import { AUTH_REQ_SCHEMA, checkSS58 } from "@torus-ts/types";
+import { checkSS58 } from "@torus-ts/subspace/address";
+import { AUTH_REQ_SCHEMA } from "@torus-ts/utils/auth";
+
+export const SIGNED_PAYLOAD_SCHEMA = z.object({
+  payload: z.string({ description: "in hex" }),
+  signature: z.string({ description: "in hex" }),
+  address: z.string({ description: "in hex" }),
+});
+
+export type SignedPayload = z.infer<typeof SIGNED_PAYLOAD_SCHEMA>;
 
 export const signData = async <T>(
   signer: (
@@ -33,8 +42,9 @@ export const verifySignedData = async (signedInput: SignedPayload) => {
     throw new Error("Invalid signature");
   }
 
-  const unmarshed = JSON.parse(hexToString(payload)) as unknown;
-  const validated = AUTH_REQ_SCHEMA.safeParse(unmarshed);
+  const decoded = JSON.parse(hexToString(payload)) as unknown;
+  const validated = AUTH_REQ_SCHEMA.safeParse(decoded);
+
   if (!validated.success) {
     throw new Error(`Invalid payload: ${validated.error.message}`);
   }

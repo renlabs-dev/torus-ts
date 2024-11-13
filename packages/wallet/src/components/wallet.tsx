@@ -9,16 +9,16 @@ import { useRouter } from "next/navigation";
 import type {
   InjectedAccountWithMeta,
   TransactionResult,
-} from "@torus-ts/types";
+} from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { isSS58 } from "@torus-ts/types";
+import { isSS58 } from "@torus-ts/subspace/address";
+import { formatToken, fromNano, smallAddress } from "@torus-ts/subspace/old";
 import {
   CopyButton,
   NoWalletExtensionDisplay,
   ScrollArea,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { formatToken, fromNano, smallAddress } from "@torus-ts/utils";
 
 import { WalletButton } from "./";
 

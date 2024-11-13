@@ -4,7 +4,8 @@ import { useState } from "react";
 import { TicketX } from "lucide-react";
 import { match } from "rustie";
 
-import type { ProposalStatus, TransactionResult } from "@torus-ts/types";
+import type { ProposalStatus } from "@torus-ts/subspace/old";
+import type { TransactionResult } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
@@ -45,7 +46,7 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <div className="flex flex-col w-full gap-2">
+    <div className="flex w-full flex-col gap-2">
       {getVotedText(voted)}
       <Button
         variant="default"
@@ -53,7 +54,7 @@ const AlreadyVotedCardContent = (props: {
         onClick={handleRemoveVote}
         type="button"
       >
-        Remove Vote <TicketX className="w-5 h-5" />
+        Remove Vote <TicketX className="h-5 w-5" />
       </Button>
       {votingStatus.status && (
         <TransactionStatus

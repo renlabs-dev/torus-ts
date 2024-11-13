@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { ChevronsUp, X } from "lucide-react";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
+import { formatToken, smallAddress } from "@torus-ts/subspace/old";
 import {
   Button,
   Card,
@@ -19,12 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from "@torus-ts/ui";
-import { formatToken, smallAddress } from "@torus-ts/utils";
 
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
 import { api } from "~/trpc/react";
-import { ChevronsUp, X } from "lucide-react";
 
 export function DelegatedList() {
   const pathname = usePathname();
@@ -443,8 +443,9 @@ export function DelegatedList() {
               >
                 {isOpen ? "COLLAPSE " : "EXPAND "}
                 <ChevronsUp
-                  className={`h-5 w-5 transform transition-transform ${isOpen ? "rotate-180" : ""
-                    }`}
+                  className={`h-5 w-5 transform transition-transform ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
                 />
               </Button>
             </div>

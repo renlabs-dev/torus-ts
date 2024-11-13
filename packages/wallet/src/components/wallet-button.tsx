@@ -5,7 +5,7 @@ import "../output.css";
 import Image from "next/image";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { smallAddress } from "@torus-ts/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 interface TWalletButtonProps {
   customHandler?: () => void;

@@ -14,7 +14,6 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import type { InjectedAccountWithMeta, StakeOutData } from "@torus-ts/types";
 import {
   Accordion,
   AccordionContent,
@@ -33,7 +32,16 @@ import {
   links,
   ScrollArea,
 } from "@torus-ts/ui";
-import { formatToken, smallAddress } from "@torus-ts/utils";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+
+import type { InjectedAccountWithMeta } from "../types";
+
+export interface StakeOutData {
+  total: bigint;
+  perAddr: Record<string, bigint>;
+  atBlock: bigint;
+  atTime: Date;
+}
 
 interface WalletFunctionsProps {
   balance: bigint | undefined;

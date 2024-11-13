@@ -7,12 +7,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { toast } from "react-toastify";
 
-import { WalletDropdown } from "@torus-ts/ui/components";
-
 import type {
-  AddCustomProposal,
-  AddDaoApplication,
-  addTransferDaoTreasuryProposal,
   BaseDao,
   BaseProposal,
   DaoState,
@@ -20,17 +15,25 @@ import type {
   InjectedExtension,
   LastBlock,
   ProposalState,
+  StakeOutData,
+} from "@torus-ts/subspace/old";
+import type {
+  AddCustomProposal,
+  AddDaoApplication,
+  addTransferDaoTreasuryProposal,
   RegisterModule,
   RemoveVote,
-  SS58Address,
   Stake,
-  StakeOutData,
   TransactionResult,
   Transfer,
   TransferStake,
   UpdateDelegatingVotingPower,
   Vote,
-} from "../types";
+} from "@torus-ts/ui/types";
+import { SS58Address } from "@torus-ts/subspace/address";
+import { WalletDropdown } from "@torus-ts/ui/components";
+import { toNano2 } from "@torus-ts/utils/subspace";
+
 import {
   useAllStakeOut,
   useBalance,
@@ -44,7 +47,6 @@ import {
   useUnrewardedProposals,
   useUserTotalStaked,
 } from "../hooks";
-import { calculateAmount } from "../utils";
 
 interface torusApiState {
   web3Accounts: (() => Promise<InjectedAccountWithMeta[]>) | null;
@@ -143,7 +145,7 @@ export function TorusProvider({
   torusCacheUrl,
 }: TorusProviderProps): JSX.Element {
   const [api, setApi] = useState<ApiPromise | null>(null);
-  const [torusApi, settorusApi] = useState<torusApiState>({
+  const [torusApi, setTorusApi] = useState<torusApiState>({
     web3Enable: null,
     web3Accounts: null,
     web3FromAddress: null,
@@ -159,11 +161,11 @@ export function TorusProvider({
 
   // == Initialize Polkadot ==
 
-  async function loadtorusApi(): Promise<void> {
+  async function loadTorusApi(): Promise<void> {
     const { web3Accounts, web3Enable, web3FromAddress } = await import(
       "@polkadot/extension-dapp"
     );
-    settorusApi({
+    setTorusApi({
       web3Enable,
       web3Accounts,
       web3FromAddress,
@@ -175,7 +177,7 @@ export function TorusProvider({
   }
 
   useEffect(() => {
-    void loadtorusApi();
+    void loadTorusApi();
 
     return () => {
       void api?.disconnect();
@@ -322,7 +324,7 @@ export function TorusProvider({
 
     const transaction = api.tx.subspaceModule.addStake(
       validator,
-      calculateAmount(amount),
+      toNano2(amount),
     );
     await sendTransaction("Staking", transaction, callback);
   }
@@ -336,17 +338,14 @@ export function TorusProvider({
 
     const transaction = api.tx.subspaceModule.removeStake(
       validator,
-      calculateAmount(amount),
+      toNano2(amount),
     );
     await sendTransaction("Unstaking", transaction, callback);
   }
 
   async function transfer({ to, amount, callback }: Transfer): Promise<void> {
     if (!api?.tx.balances.transferAllowDeath) return;
-    const transaction = api.tx.balances.transferAllowDeath(
-      to,
-      calculateAmount(amount),
-    );
+    const transaction = api.tx.balances.transferAllowDeath(to, toNano2(amount));
     await sendTransaction("Transfer", transaction, callback);
   }
 
@@ -361,7 +360,7 @@ export function TorusProvider({
     const transaction = api.tx.subspaceModule.transferStake(
       fromValidator,
       toValidator,
-      calculateAmount(amount),
+      toNano2(amount),
     );
     await sendTransaction("Transfer Stake", transaction, callback);
   }
@@ -448,7 +447,7 @@ export function TorusProvider({
 
     const transaction = api.tx.governanceModule.addTransferDaoTreasuryProposal(
       IpfsHash,
-      calculateAmount(value),
+      toNano2(value),
       dest,
     );
     await sendTransaction(

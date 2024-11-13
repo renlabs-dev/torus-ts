@@ -3,8 +3,7 @@ import {
   ExclamationCircleIcon,
 } from "@heroicons/react/24/solid";
 
-import type { TransactionResult } from "@torus-ts/types";
-
+import type { TransactionResult } from "../types/transactions";
 import { cn, Loading } from "..";
 
 interface TransactionStatusProps {

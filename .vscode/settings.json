@@ -34,11 +34,13 @@
     "communeai",
     "comrads",
     "daos",
+    "datetime",
     "dotenv",
     "heroicons",
     "ipfs",
     "keypair",
     "lucide",
+    "luxon",
     "multiformats",
     "nanos",
     "netuid",
@@ -61,6 +63,7 @@
     "typegen",
     "uid",
     "uids",
+    "unstake",
     "UNVOTED"
   ]
 }

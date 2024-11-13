@@ -1,13 +1,20 @@
 "use client";
 
+import React, { useState } from "react";
+
+import type {
+  InjectedAccountWithMeta,
+  Stake,
+  Transfer,
+  TransferStake,
+} from "@torus-ts/ui/types";
+
+import type { ColorType, MenuType } from "~/utils/types";
 import { IconButton } from "../icon-button";
 import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
-import React, { useState } from "react";
-import type { ColorType, MenuType } from "~/utils/types";
-import type { Stake, Transfer, TransferStake, InjectedAccountWithMeta } from "@torus-ts/providers/types";
 
 export interface GenericActionProps {
   balance: bigint | undefined;
@@ -34,7 +41,7 @@ export function WalletActions(props: WalletActionsProps) {
 
   return (
     <>
-      <div className="grid w-full grid-cols-1 gap-4 pt-4 animate-fade-up animate-delay-300 md:grid-cols-4">
+      <div className="grid w-full animate-fade-up grid-cols-1 gap-4 pt-4 animate-delay-300 md:grid-cols-4">
         {buttons.map((button) => (
           <IconButton
             key={button.src}
