@@ -51,6 +51,7 @@
     "class-variance-authority": "^0.7.0",
     "cmdk": "^1.0.0",
     "input-otp": "^1.2.4",
+    "react": "catalog:react18",
     "recharts": "^2.13.0-alpha.4",
     "tailwind-merge": "^2.5.2"
   },
@@ -64,8 +65,5 @@
     "prettier": "catalog:",
     "react": "catalog:react18",
     "typescript": "catalog:"
-  },
-  "peerDependencies": {
-    "react": "catalog:react18"
   }
 }

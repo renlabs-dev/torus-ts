@@ -19,8 +19,12 @@
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
+    "@torus-ts/providers": "workspace:*",
     "@torus-ts/types": "workspace:*",
-    "@torus-ts/utils": "workspace:*"
+    "@torus-ts/ui": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
+    "next": "catalog:",
+    "react": "catalog:react18"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
@@ -30,14 +34,7 @@
     "eslint": "catalog:",
     "postcss": "catalog:",
     "prettier": "catalog:",
-    "react": "catalog:react18",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
-  },
-  "peerDependencies": {
-    "@torus-ts/providers": "workspace:*",
-    "@torus-ts/ui": "workspace:*",
-    "next": "catalog:",
-    "react": "catalog:react18"
   }
 }
