@@ -95,16 +95,12 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
 
   return (
     <div className="flex w-full flex-col gap-8">
-      {/* Header Labels */}
       <div className="flex w-full flex-row items-center gap-2">
         <ProposalTypeLabel proposalType={content.data} />
         <StatusLabel status={content.status} />
         <RewardLabel proposalId={content.id} result={content.status} />
       </div>
-
-      {/* Main Content */}
-      <div className="flex w-full flex-col gap-10 lg:flex-row">
-        {/* Left Column */}
+      <div className="flex w-full gap-10">
         <div className="flex h-full w-full flex-col gap-14 lg:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
 

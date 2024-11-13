@@ -10,6 +10,7 @@ import {
 import {
   ChevronsDown,
   ChevronsUp,
+  CircleUser,
   ClockArrowDown,
   ClockArrowUp,
   ThumbsUp,
@@ -104,7 +105,6 @@ export function ViewComment({
   );
 
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
-  const [isVoting, setIsVoting] = useState(false);
 
   const sortedComments = useMemo(() => {
     if (!proposalComments) return [];
@@ -166,7 +166,6 @@ export function ViewComment({
           toast.error("Comment not found");
           return;
         }
-        setIsVoting(true);
 
         const currentVote = userVotes?.[commentId];
         const isRemovingVote = currentVote === voteType;
@@ -190,8 +189,6 @@ export function ViewComment({
           ...prevVotes,
           [commentId]: (userVotes?.[commentId] as VoteType | null) ?? null,
         }));
-      } finally {
-        setIsVoting(false);
       }
     },
     [
@@ -237,7 +234,7 @@ export function ViewComment({
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200">
-        <div className="mb-4 flex w-full flex-row items-center justify-between gap-1 pb-2">
+        <div className="mb-4 flex w-full flex-col items-center justify-between gap-1 pb-2 md:flex-row">
           <h2 className="w-full text-start text-lg font-semibold">
             {modeType === "PROPOSAL"
               ? "Proposal Discussion"
@@ -278,13 +275,12 @@ export function ViewComment({
                 className="relative flex w-full flex-col gap-2 p-2 pb-4"
               >
                 <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
-                  <div className="flex-start flex flex-col gap-2 md:flex-row md:items-center">
-                    {comment.userName && (
-                      <span className="flex w-fit items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-sm">
-                        {comment.userName}
-                      </span>
-                    )}
-                    {smallAddress(comment.userKey)}
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-sm">
+                      <CircleUser className="h-4 w-4" />{" "}
+                      {comment.userName && comment.userName}
+                    </span>
+                    {smallAddress(comment.userKey)}{" "}
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -294,11 +290,11 @@ export function ViewComment({
                     >
                       <ChevronsUp className="h-5 w-5" />
                       <span>{comment.upvotes}</span>
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={() => handleVote(comment.id, VoteType.DOWN)}
-                      disabled={isVoting || !selectedAccount?.address}
-                      className={`flex items-center border-none px-1 ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
+                      // disabled={votingCommentId === comment.id}
+                      className={`flex items-center ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
                     >
                       <ChevronsDown className="h-5 w-5" />
                       <span>{comment.downvotes}</span>

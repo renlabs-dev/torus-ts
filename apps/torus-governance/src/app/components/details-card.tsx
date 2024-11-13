@@ -8,7 +8,6 @@ import { Card, CardHeader } from "@torus-ts/ui";
 
 // import { VoteText } from "./vote-text"
 import type { VoteStatus } from "./vote-label";
-import { VoteText } from "./vote-text";
 
 type Content = Omit<
   ProposalState,
@@ -22,7 +21,7 @@ interface DetailsCardProps {
 }
 
 export const DetailsCard = (props: DetailsCardProps) => {
-  const { content, lastBlockNumber, voted } = props;
+  const { content, lastBlockNumber } = props;
   return (
     <Card className="animate-fade-down p-6 animate-delay-200">
       <CardHeader className="pl-0 pt-0">
