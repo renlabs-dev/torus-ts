@@ -16,8 +16,8 @@ interface WalletHeaderProps {
 }
 
 export function WalletHeader(props: WalletHeaderProps) {
-  function handleCopy() {
-    copyToClipboard(props.selectedAccount.address);
+  async function handleCopy() {
+    await copyToClipboard(props.selectedAccount.address);
     toast.success("Address copied to clipboard");
   }
 

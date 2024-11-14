@@ -9,8 +9,8 @@ import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 
-function handleCopyClick(text: string) {
-  copyToClipboard(text);
+async function handleCopyClick(text: string) {
+  await copyToClipboard(text);
   toast.success("Copied validator address to clipboard");
 }
 

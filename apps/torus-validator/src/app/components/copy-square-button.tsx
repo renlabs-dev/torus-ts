@@ -10,8 +10,8 @@ interface CopySquareButtonProps {
 }
 
 export function CopySquareButton(props: CopySquareButtonProps) {
-  function handleCopy() {
-    copyToClipboard(props.address);
+  async function handleCopy() {
+    await copyToClipboard(props.address);
     toast.success("Copied to clipboard");
   }
   return (
