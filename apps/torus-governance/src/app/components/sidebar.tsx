@@ -47,12 +47,12 @@ function SidebarContent() {
 
   return (
     <div className="flex flex-col gap-6 max-h-fit min-w-fit">
-      <Card className="flex flex-col gap-1.5 p-6">
+      <Card className="flex flex-col gap-1.5 p-5">
         {navSidebarOptions.map((view) => (
           <Link href={`?view=${view.href}`} key={view.href} prefetch>
             <Button
               variant="ghost"
-              className={`w-full justify-between gap-4 border-none px-3 text-lg ${viewMode === view.href ? "bg-accent" : ""}`}
+              className={`w-full justify-between gap-4 border-none px-3 text-base ${viewMode === view.href ? "bg-accent" : ""}`}
             >
               {view.title}
               <Check
@@ -65,7 +65,7 @@ function SidebarContent() {
         ))}
       </Card>
 
-      <Card className="flex flex-col gap-6 p-8 py-6 border-muted bg-background">
+      <Card className="flex flex-col gap-6 px-7 py-5 border-muted bg-background">
         <div>
           {daosTreasuries && (
             <p className="flex items-end gap-1 text-base">

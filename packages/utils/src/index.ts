@@ -26,7 +26,7 @@ import {
   PROPOSAL_SCHEMA,
   URL_SCHEMA,
 } from "@torus-ts/types";
-import { DateTime } from "luxon";
+import { DateTime } from "luxon"
 
 /**
  * == Subspace refresh times ==
@@ -256,12 +256,15 @@ export function getExpirationTime(
   if (!blockNumber) return "Unknown";
 
   const blocksRemaining = expirationBlock - blockNumber;
+
   const secondsRemaining = blocksRemaining * 8; // 8 seconds per block
 
   const expirationDate = DateTime.now().plus({seconds:  secondsRemaining})
+
   if(relative){
     return expirationDate.toRelative();
   }
+
   return expirationDate.toLocaleString(DateTime.DATETIME_SHORT);
 }
 

@@ -232,9 +232,6 @@ importers:
       '@torus-ts/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@torus-ts/wallet':
-        specifier: workspace:*
-        version: link:../../packages/wallet
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.630(@trpc/server@11.0.0-rc.630(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -332,9 +329,6 @@ importers:
       '@torus-ts/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@torus-ts/wallet':
-        specifier: workspace:*
-        version: link:../../packages/wallet
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.630(@trpc/server@11.0.0-rc.630(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -375,6 +369,9 @@ importers:
       '@next/eslint-plugin-next':
         specifier: 'catalog:'
         version: 14.2.17
+      '@tailwindcss/typography':
+        specifier: 'catalog:'
+        version: 0.5.15(tailwindcss@3.4.14(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3)))
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
@@ -535,9 +532,6 @@ importers:
       '@torus-ts/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@torus-ts/wallet':
-        specifier: workspace:*
-        version: link:../../packages/wallet
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.630(@trpc/server@11.0.0-rc.630(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -1133,55 +1127,6 @@ importers:
       '@types/luxon':
         specifier: ^3.4.2
         version: 3.4.2
-
-  packages/wallet:
-    dependencies:
-      '@torus-ts/providers':
-        specifier: workspace:*
-        version: link:../providers
-      '@torus-ts/types':
-        specifier: workspace:*
-        version: link:../types
-      '@torus-ts/ui':
-        specifier: workspace:*
-        version: link:../ui
-      '@torus-ts/utils':
-        specifier: workspace:*
-        version: link:../utils
-      next:
-        specifier: 'catalog:'
-        version: 15.0.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: catalog:react18
-        version: 18.3.1
-    devDependencies:
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/tailwind-config':
-        specifier: workspace:*
-        version: link:../../tooling/tailwind
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/react':
-        specifier: catalog:react18
-        version: 18.3.12
-      eslint:
-        specifier: 'catalog:'
-        version: 9.14.0(jiti@1.21.6)
-      postcss:
-        specifier: 'catalog:'
-        version: 8.4.49
-      prettier:
-        specifier: 'catalog:'
-        version: 3.3.3
-      tailwindcss:
-        specifier: 'catalog:'
-        version: 3.4.14(ts-node@10.9.2(@types/node@22.9.0)(typescript@5.6.3))
-      typescript:
-        specifier: 'catalog:'
-        version: 5.6.3
 
   tooling/eslint:
     dependencies:

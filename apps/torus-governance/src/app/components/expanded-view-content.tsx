@@ -39,20 +39,20 @@ export const ExpandedViewContent = (
 
   return (
     <div
-      className={`flex h-fit animate-fade-down flex-col transition-all animate-delay-100`}
+      className={`flex h-fit animate-fade-down flex-col  animate-delay-100`}
     >
       <h2 className="pb-5 text-2xl font-bold text-white break-words">
         {title ?? "Title not found"}
       </h2>
       <div
         ref={contentRef}
-        className={`relative block lg:overflow-hidden ${expandedText ? "max-h-full pb-12" : "max-h-[250px] pb-0"} transition-all duration-1000`}
+        className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-12" : "max-h-[250px] pb-0"} duration-1000`}
       >
-        <MarkdownView source={removeEmojis(body ?? "Content not found.")} />
+        <MarkdownView source={removeEmojis(body ?? "Content not found.")} className="" />
 
         {isOverflowing && (
           <div
-            className={`absolute bottom-0 flex h-24 w-full items-end justify-center ${expandedText ? "animate-accordion-up bg-transparent" : "animate-accordion-down bg-gradient-to-b from-[#04061C1A] to-[#04061C]"}`}
+            className={`absolute bottom-0 flex h-24 w-full items-end justify-center ${expandedText ? "animate-accordion-up bg-transparent" : "animate-accordion-down bg-gradient-to-b from-[#04061C1A] to-[#04061C]"} `}
           >
             <Button
               className="flex items-center w-32 gap-2"

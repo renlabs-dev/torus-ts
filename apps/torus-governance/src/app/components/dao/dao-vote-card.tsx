@@ -7,7 +7,6 @@ import type { AppRouter } from "@torus-ts/api";
 import type { DaoApplicationStatus } from "@torus-ts/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { WalletButton } from "@torus-ts/wallet";
 
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
@@ -209,8 +208,7 @@ export function DaoVoteCard(props: {
               </button>
             </>
           ) : null}
-
-          {!isConnected && <WalletButton />}
+          {/* TODO: Review logic to connect an account and handle the case when isConnected is false*/}
         </>
       );
     case "Accepted":
@@ -221,7 +219,7 @@ export function DaoVoteCard(props: {
             governanceModel="DAO"
           />
 
-          {isConnected ? (
+          {isConnected && (
             <button
               className="mt-6 flex w-full items-center justify-between text-nowrap border border-red-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-red-500 transition duration-200 hover:border-red-400 hover:bg-red-500/15 active:bg-red-500/50"
               onClick={handleRemoveFromWhitelist}
@@ -235,9 +233,8 @@ export function DaoVoteCard(props: {
                 : "Vote to remove from whitelist"}{" "}
               <Delete className="h-5 w-5" />
             </button>
-          ) : (
-            <WalletButton />
           )}
+          {/* TODO: Review logic to connect an account and handle the case when isConnected is false*/}
         </div>
       );
     case "Removed":

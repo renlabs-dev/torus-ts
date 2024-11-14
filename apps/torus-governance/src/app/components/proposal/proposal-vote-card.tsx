@@ -12,7 +12,6 @@ import {
   ToggleGroupItem,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { WalletButton } from "@torus-ts/wallet";
 
 import type { VoteStatus } from "../vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
@@ -45,7 +44,7 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <div className="flex flex-col w-full gap-2">
+    <div className="flex w-full flex-col gap-2">
       {getVotedText(voted)}
       <Button
         variant="default"
@@ -53,7 +52,7 @@ const AlreadyVotedCardContent = (props: {
         onClick={handleRemoveVote}
         type="button"
       >
-        Remove Vote <TicketX className="w-5 h-5" />
+        Remove Vote <TicketX className="h-5 w-5" />
       </Button>
       {votingStatus.status && (
         <TransactionStatus
@@ -72,10 +71,10 @@ const VoteCardFunctionsContent = (props: {
   handleVote: () => void;
   setVote: (vote: VoteStatus) => void;
 }): JSX.Element => {
-  const { handleVote, setVote, isConnected, vote, votingStatus } = props;
+  const { handleVote, setVote, vote, votingStatus } = props;
 
-  if (!isConnected) {
-    return <WalletButton />;
+  {
+    /* TODO: Review logic to connect an account and handle the case when isConnected is false*/
   }
 
   function handleVotePreference(value: VoteStatus | "") {

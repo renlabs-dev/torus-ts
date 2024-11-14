@@ -7,7 +7,6 @@ import { Providers } from "@torus-ts/providers/context";
 // import { links } from "@torus-ts/ui/data";
 import { Footer } from "@torus-ts/ui/footer";
 import { Header } from "@torus-ts/ui/header";
-import { Wallet } from "@torus-ts/wallet";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { cairo } from "~/utils/fonts";
@@ -31,8 +30,8 @@ export default function RootLayout({
       <body
         className={`bg-[#111713] bg-[url('/bg-pattern.svg')] ${cairo.className} animate-fade-in`}
       >
+        {/* TODO: A WALLET QUE TAVA AQUI FOI DE BASE */}
         <Providers>
-          <Wallet />
           <div className="flex w-full animate-fade-down border-b border-white/20 py-2.5">
             <div className="mx-auto flex max-w-screen-md items-center gap-1 px-2">
               <Info className="h-10 w-10 text-green-500 md:h-6 md:w-6" />
@@ -50,17 +49,17 @@ export default function RootLayout({
             </div>
           </div>
           <Header
-            // FIXME
-            // font={oxanium.className}
-            // logoSrc="/logo.svg"
-            // navigationLinks={[
-            //   { name: "Governance", href: links.governance, external: true },
-            //   { name: "Docs", href: links.docs, external: false },
-            //   { name: "Blog", href: links.blog, external: true },
-            //   { name: "Join Community", href: links.discord, external: true },
-            // ]}
-            // title="torus AI"
-            // wallet={<WalletButton />}
+          // FIXME
+          // font={oxanium.className}
+          // logoSrc="/logo.svg"
+          // navigationLinks={[
+          //   { name: "Governance", href: links.governance, external: true },
+          //   { name: "Docs", href: links.docs, external: false },
+          //   { name: "Blog", href: links.blog, external: true },
+          //   { name: "Join Community", href: links.discord, external: true },
+          // ]}
+          // title="torus AI"
+          // wallet={<WalletButton />}
           />
           <TRPCReactProvider>
             <DelegatedList />

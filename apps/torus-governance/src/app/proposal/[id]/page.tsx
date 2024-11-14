@@ -13,7 +13,7 @@ export default async function CardView({
   }
 
   return (
-    <div className="flex flex-col w-full max-w-screen-xl pt-12 mx-auto">
+    <div className="flex flex-col w-full max-w-screen-xl pt-12 mx-auto px-4">
       <Breadcrumb className="pt-12 pb-8">
         <BreadcrumbList>
           <BreadcrumbItem>

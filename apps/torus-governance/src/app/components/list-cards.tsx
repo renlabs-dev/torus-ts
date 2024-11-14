@@ -8,7 +8,11 @@ import type { ProposalStatus, SS58Address } from "@torus-ts/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 
 import type { VoteStatus } from "./vote-label";
-import { handleCustomDaos, handleCustomProposal } from "~/utils";
+import {
+  calcProposalFavorablePercent,
+  handleCustomDaos,
+  handleCustomProposal,
+} from "~/utils";
 import { CardSkeleton } from "./card-skeleton";
 import { CardViewData } from "./card-view-data";
 
@@ -43,7 +47,7 @@ const ListCardsContent = () => {
     isDaosLoading,
     selectedAccount,
     isInitialized,
-    lastBlock
+    lastBlock,
   } = useTorus();
 
   const searchParams = useSearchParams();
@@ -103,6 +107,7 @@ const ListCardsContent = () => {
               proposalStatus={proposal.status}
               expirationBlock={proposal.expirationBlock}
               currentBlock={currentBlock}
+              favorablePercent={calcProposalFavorablePercent(proposal.status)}
             />
           </Link>
         );

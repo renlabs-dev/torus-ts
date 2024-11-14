@@ -19,7 +19,6 @@
     "@torus-ts/providers": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
-    "@torus-ts/wallet": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",

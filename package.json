@@ -18,7 +18,6 @@
     "dev:page": "turbo watch dev -F torus-page",
     "dev:validator": "turbo watch dev -F torus-validator",
     "dev:wallet": "turbo watch dev -F torus-wallet",
-    "dev:wallet-pkg": "turbo watch dev -F @torus-ts/wallet",
     "dev:worker": "turbo watch dev -F torus-worker",
     "docker:build:torus-cache:digitalocean": "docker build -f ./tooling/dockerfile/backend-service.Dockerfile -t torus-cache:latest --build-arg PORT=8080 --build-arg PROJECT=torus-cache --platform linux/amd64,linux/arm64 . && docker tag torus-cache:latest ghcr.io/renlabs-dev/torus-cache:latest  && docker push ghcr.io/renlabs-dev/torus-cache:latest",
     "format": "turbo run format --continue -- --cache --cache-location .cache/.prettiercache",
