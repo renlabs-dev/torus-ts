@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "// FIXME typecheck": "tsc --noEmit",
     "build": "next build",
     "dev": "next dev --port 3009",
     "lint": "eslint",
-    "start": "next start",
-    "// FIXME typecheck": "tsc --noEmit"
+    "start": "next start"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "catalog:",

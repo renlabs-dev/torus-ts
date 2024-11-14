@@ -2,8 +2,8 @@
   "name": "@torus-ts/providers",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "license": "MIT",
+  "type": "module",
   "exports": {
     "./use-torus": "./src/context/torus.tsx",
     "./use-toast": "./src/context/toast.tsx",
@@ -13,9 +13,9 @@
     "./hooks": "./src/hooks/index.ts"
   },
   "scripts": {
+    "//lint": "eslint",
     "clean": "rm -rf .turbo node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
-    "//lint": "eslint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
