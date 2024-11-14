@@ -82,8 +82,8 @@ catalogs:
       specifier: ^3.3.3
       version: 3.3.3
     rustie:
-      specifier: ^0.2.0
-      version: 0.2.0
+      specifier: ^0.4.0
+      version: 0.4.0
     tailwindcss:
       specifier: ^3.4.10
       version: 3.4.14
@@ -258,7 +258,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       rustie:
         specifier: 'catalog:'
-        version: 0.2.0
+        version: 0.4.0
       tsafe:
         specifier: 'catalog:'
         version: 1.8.4
@@ -352,7 +352,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       rustie:
         specifier: 'catalog:'
-        version: 0.2.0
+        version: 0.4.0
       superjson:
         specifier: 2.2.1
         version: 2.2.1
@@ -875,7 +875,7 @@ importers:
         version: 10.0.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rustie:
         specifier: 'catalog:'
-        version: 0.2.0
+        version: 0.4.0
       tsafe:
         specifier: 'catalog:'
         version: 1.8.4
@@ -924,7 +924,7 @@ importers:
         version: 13.3.1
       rustie:
         specifier: 'catalog:'
-        version: 0.2.0
+        version: 0.4.0
       superjson:
         specifier: 2.2.1
         version: 2.2.1
@@ -1070,7 +1070,7 @@ importers:
         version: 13.3.1
       rustie:
         specifier: 'catalog:'
-        version: 0.2.0
+        version: 0.4.0
       tsafe:
         specifier: 'catalog:'
         version: 1.8.4
@@ -1104,7 +1104,7 @@ importers:
         version: 7.37.2(eslint@9.14.0(jiti@1.21.6))
       eslint-plugin-react-hooks:
         specifier: rc
-        version: 5.1.0-rc.1(eslint@9.14.0(jiti@1.21.6))
+        version: 5.1.0-rc-b01722d5-20241114(eslint@9.14.0(jiti@1.21.6))
       eslint-plugin-turbo:
         specifier: ^2.1.1
         version: 2.2.3(eslint@9.14.0(jiti@1.21.6))
@@ -4075,8 +4075,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-react-hooks@5.1.0-rc.1:
-    resolution: {integrity: sha512-nAD017D/00XFwjP4F7cXaIbCxQ9A4pGaqjLs5347px37w/WclOtPqz8bBiTQFoj+teVQei6Ahr1h1aZiuaXMSw==}
+  eslint-plugin-react-hooks@5.1.0-rc-b01722d5-20241114:
+    resolution: {integrity: sha512-MtdHtFrEaX6i0WWpz+heHCuAQIvMoCKICIgB39VaiPrwqrMMlWLn01KXSCBhu9aRx0ZQUZbtVV+A/LNR+1FJWA==}
     engines: {node: '>=10'}
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
@@ -5881,8 +5881,8 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
-  rustie@0.2.0:
-    resolution: {integrity: sha512-Rozr6cLn3U5shexKw6joYEbLdEJ+kQotMWHLsoG40DGBIW/vacSNSqTv8vVc5NElogATIgfio4zxi3MhPiShyQ==}
+  rustie@0.4.0:
+    resolution: {integrity: sha512-GjvAn9ZJzuUloSs65f2GkvNQbXb1VtU0RTvfZBI60oFmV1faChD/EXSvQdecmOX9VLFNR4PoZtmkjiQq9W6Xog==}
 
   rxjs@6.6.7:
     resolution: {integrity: sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==}
@@ -9772,7 +9772,7 @@ snapshots:
       safe-regex-test: 1.0.3
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-react-hooks@5.1.0-rc.1(eslint@9.14.0(jiti@1.21.6)):
+  eslint-plugin-react-hooks@5.1.0-rc-b01722d5-20241114(eslint@9.14.0(jiti@1.21.6)):
     dependencies:
       eslint: 9.14.0(jiti@1.21.6)
 
@@ -12192,7 +12192,7 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
-  rustie@0.2.0: {}
+  rustie@0.4.0: {}
 
   rxjs@6.6.7:
     dependencies:

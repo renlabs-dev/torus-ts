@@ -3,6 +3,16 @@ import { z } from "zod";
 
 export * from "./typing";
 
+// == Branded Types / Nominal Types ==
+
+export declare const BRAND_TAG_KEY: unique symbol;
+
+export interface BrandTag<T> {
+  readonly [BRAND_TAG_KEY]: T;
+}
+
+export type Brand<T, V> = BrandTag<T> & V;
+
 // == Assertion ==
 
 export function assertOrThrow(

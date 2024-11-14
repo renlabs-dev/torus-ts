@@ -1,4 +1,4 @@
-import { match } from "rustie";
+import { if_let, match } from "rustie";
 
 import type {
   CustomMetadataState,
@@ -119,50 +119,37 @@ export function calcProposalFavorablePercent(
     const percentage = ratio * 100;
     return percentage;
   }
-  return match(proposalStatus)({
-    open: ({ stakeFor, stakeAgainst }) =>
+  return if_let(proposalStatus, "expired")(
+    () => null,
+    ({ stakeFor, stakeAgainst }) =>
+      // open, accepted, refused
       calcStakePercent(stakeFor, stakeAgainst),
-    accepted: ({ stakeFor, stakeAgainst }) =>
-      calcStakePercent(stakeFor, stakeAgainst),
-    refused: ({ stakeFor, stakeAgainst }) =>
-      calcStakePercent(stakeFor, stakeAgainst),
-    expired: () => null,
-  });
+  );
 }
 
 export function handleProposalVotesInFavor(proposalStatus: ProposalStatus) {
-  return match(proposalStatus)({
-    open: ({ stakeFor }) => formatToken(Number(stakeFor)),
-    accepted: ({ stakeFor }) => formatToken(Number(stakeFor)),
-    refused: ({ stakeFor }) => formatToken(Number(stakeFor)),
-    expired: () => "—",
-  });
+  return if_let(proposalStatus, "expired")(
+    () => "—",
+    ({ stakeFor }) => formatToken(Number(stakeFor)),
+  );
 }
 
 export function handleProposalVotesAgainst(proposalStatus: ProposalStatus) {
-  return match(proposalStatus)({
-    open: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
-    accepted: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
-    refused: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
-    expired: () => "—",
-  });
+  return if_let(proposalStatus, "expired")(
+    () => "—",
+    ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
+  );
 }
 
 export function handleProposalStakeVoted(
   proposalStatus: ProposalStatus,
 ): string {
-  // TODO: extend rustie `if_let` to provide other variants on else arm
-  // const txt = if_let(proposalStatus)("expired")(() => "—")(({ stakeFor }) => formatToken(Number(stakeFor)));
-
-  return match(proposalStatus)({
-    open: ({ stakeFor, stakeAgainst }) =>
+  return if_let(proposalStatus, "expired")(
+    () => "—",
+    ({ stakeFor, stakeAgainst }) =>
+      // open, accepted, refused
       formatToken(Number(stakeFor + stakeAgainst)),
-    accepted: ({ stakeFor, stakeAgainst }) =>
-      formatToken(Number(stakeFor + stakeAgainst)),
-    refused: ({ stakeFor, stakeAgainst }) =>
-      formatToken(Number(stakeFor + stakeAgainst)),
-    expired: () => "—",
-  });
+  );
 }
 
 export function handleProposalQuorumPercent(
@@ -175,16 +162,12 @@ export function handleProposalQuorumPercent(
     const percentDisplay = `${Number.isNaN(percentage) ? "—" : percentage.toFixed(1)}%`;
     return <span className="text-yellow-600">{`(${percentDisplay})`}</span>;
   }
-  return match(proposalStatus)({
-    open: ({ stakeFor, stakeAgainst }) => quorumPercent(stakeFor, stakeAgainst),
-    accepted: ({ stakeFor, stakeAgainst }) =>
+  return if_let(proposalStatus, "expired")(
+    () => <span className="text-yellow-600">{` (Matured)`}</span>,
+    ({ stakeFor, stakeAgainst }) =>
+      // open, accepted, refused
       quorumPercent(stakeFor, stakeAgainst),
-    refused: ({ stakeFor, stakeAgainst }) =>
-      quorumPercent(stakeFor, stakeAgainst),
-    expired: () => {
-      return <span className="text-yellow-600">{` (Matured)`}</span>;
-    },
-  });
+  );
 }
 
 // == DAO Applications ==

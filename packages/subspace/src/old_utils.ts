@@ -411,13 +411,12 @@ export const paramNameToDisplayName = (paramName: string): string => {
 };
 
 export function appendErrorInfo(
-  error: CustomDataError,
+  err_msg: string,
   info: string,
   sep = " ",
-): CustomDataError {
-  const old_info = error.message;
-  const message = old_info + sep + info;
-  return { message };
+): { Err: CustomDataError } {
+  const message = err_msg + sep + info;
+  return { Err: { message } };
 }
 
 export async function processMetadata(
@@ -460,8 +459,8 @@ export async function fetchCustomMetadata(
 ): Promise<Result<CustomMetadata, CustomDataError>> {
   const r = parseIpfsUri(metadataField);
 
-  const result = match(r)({
-    async Ok(cid): Promise<Result<CustomMetadata, CustomDataError>> {
+  return await match(r)({
+    async Ok(cid) {
       const url = buildIpfsGatewayUrl(cid); // this is wrong
       const metadata =
         kind == "proposal"
@@ -469,11 +468,9 @@ export async function fetchCustomMetadata(
           : await processDaoMetadata(url, entryId);
       return metadata;
     },
-    async Err(err_message) {
-      return Promise.resolve({
-        Err: appendErrorInfo(err_message, `for ${kind} ${entryId}`),
-      });
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async Err({ message }) {
+      return appendErrorInfo(message, `for ${kind} ${entryId}`);
     },
   });
-  return result;
 }

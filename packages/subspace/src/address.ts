@@ -1,8 +1,9 @@
-import type { Tagged } from "rustie";
 import { decodeAddress } from "@polkadot/util-crypto";
 import { z } from "zod";
 
-export type SS58Address = Tagged<"SS58Address", string>;
+import type { Brand } from "@torus-ts/utils";
+
+export type SS58Address = Brand<"SS58Address", string>;
 
 export function checkSS58(value: string | SS58Address): SS58Address {
   try {

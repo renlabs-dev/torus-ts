@@ -1,4 +1,4 @@
-import { match } from "rustie";
+import { if_let, match } from "rustie";
 
 import type {
   CustomMetadataState,
@@ -151,18 +151,12 @@ export function handleProposalVotesAgainst(proposalStatus: ProposalStatus) {
 export function handleProposalStakeVoted(
   proposalStatus: ProposalStatus,
 ): string {
-  // TODO: extend rustie `if_let` to provide other variants on else arm
-  // const txt = if_let(proposalStatus)("expired")(() => "—")(({ stakeFor }) => formatToken(Number(stakeFor)));
-
-  return match(proposalStatus)({
-    open: ({ stakeFor, stakeAgainst }) =>
+  return if_let(proposalStatus, "expired")(
+    () => "—",
+    ({ stakeFor, stakeAgainst }) =>
+      // open, accepted, refused
       formatToken(Number(stakeFor + stakeAgainst)),
-    accepted: ({ stakeFor, stakeAgainst }) =>
-      formatToken(Number(stakeFor + stakeAgainst)),
-    refused: ({ stakeFor, stakeAgainst }) =>
-      formatToken(Number(stakeFor + stakeAgainst)),
-    expired: () => "—",
-  });
+  );
 }
 
 export function handleProposalQuorumPercent(
@@ -175,16 +169,10 @@ export function handleProposalQuorumPercent(
     const percentDisplay = `${Number.isNaN(percentage) ? "—" : percentage.toFixed(1)}%`;
     return <span className="text-yellow-600">{`(${percentDisplay})`}</span>;
   }
-  return match(proposalStatus)({
-    open: ({ stakeFor, stakeAgainst }) => quorumPercent(stakeFor, stakeAgainst),
-    accepted: ({ stakeFor, stakeAgainst }) =>
-      quorumPercent(stakeFor, stakeAgainst),
-    refused: ({ stakeFor, stakeAgainst }) =>
-      quorumPercent(stakeFor, stakeAgainst),
-    expired: () => {
-      return <span className="text-yellow-600">{` (Matured)`}</span>;
-    },
-  });
+  return if_let(proposalStatus, "expired")(
+    () => <span className="text-yellow-600">{` (Matured)`}</span>,
+    ({ stakeFor, stakeAgainst }) => quorumPercent(stakeFor, stakeAgainst),
+  );
 }
 
 // == DAO Applications ==
