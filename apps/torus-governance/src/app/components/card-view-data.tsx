@@ -1,13 +1,14 @@
 import { Clock, Crown } from "lucide-react";
 
+import type { SS58Address } from "@torus-ts/subspace/address";
 import type {
   DaoApplicationStatus,
   ProposalData,
   ProposalStatus,
-  SS58Address,
-} from "@torus-ts/types";
+} from "@torus-ts/subspace/old";
+import { getExpirationTime } from "@torus-ts/subspace/old";
 import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui";
-import { getExpirationTime, smallAddress } from "@torus-ts/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 import type { VoteStatus } from "./vote-label";
 import { DaoStatusLabel } from "./dao/dao-status-label";

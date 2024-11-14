@@ -1,4 +1,4 @@
-import type { SS58Address } from "@torus-ts/types";
+import type { SS58Address } from "@torus-ts/subspace/address";
 import {
   queryLastBlock,
   queryRegisteredModulesInfo,

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChartPie, Database, Grid2X2, Grid2x2Plus } from "lucide-react";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
@@ -14,7 +15,7 @@ import {
   Label,
   Separator,
 } from "@torus-ts/ui";
-import { fromNano } from "@torus-ts/utils";
+import { fromNano } from "@torus-ts/utils/subspace";
 
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
@@ -25,7 +26,6 @@ import { ModuleBarChart } from "./components/charts/module-bar-chart";
 import { SubnetPieChart } from "./components/charts/subnet-pie-chart";
 import { DelegatedScroll } from "./components/delegated-scroll";
 import { StatsCard } from "./components/stats-card";
-import { ChartPie, Database, Grid2X2, Grid2x2Plus } from "lucide-react";
 
 const TOP_MODULES_NUM = 7;
 
@@ -51,15 +51,15 @@ export default function Page() {
 
   const moduleStakeData = computedWeightedModules
     ? separateTopNModules(TOP_MODULES_NUM)(computedWeightedModules)
-      // .sort((a, b) => Number(b.stakeWeight - a.stakeWeight))
-      .map((module) => {
-        return {
-          moduleName: module.moduleName ?? "",
-          stakeWeight: String(module.stakeWeight),
-          percWeight: module.percWeight,
-          percFormat: `${(module.percWeight * 100).toFixed(1)} %`,
-        };
-      })
+        // .sort((a, b) => Number(b.stakeWeight - a.stakeWeight))
+        .map((module) => {
+          return {
+            moduleName: module.moduleName ?? "",
+            stakeWeight: String(module.stakeWeight),
+            percWeight: module.percWeight,
+            percFormat: `${(module.percWeight * 100).toFixed(1)} %`,
+          };
+        })
     : null;
 
   const delegatedModulesData = delegatedModules.map((module) => ({

@@ -3,10 +3,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { BN } from "@polkadot/util";
 
-import type { TransactionResult, Transfer } from "@torus-ts/providers/types";
+import type { TransactionResult, Transfer } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { fromNano, toNano } from "@torus-ts/utils";
 import { TransactionStatus } from "@torus-ts/ui";
+import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
 import type { GenericActionProps } from "../wallet-actions";
 

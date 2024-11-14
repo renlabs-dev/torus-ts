@@ -7,9 +7,29 @@
   "//": "otherwise dependant packages may typecheck it's sources and cause",
   "//": "conflict in the generated/augmented types",
   "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./old": {
+      "default": "./dist/old.js",
+      "types": "./dist/old.d.ts"
+    },
+    "./old_types": {
+      "default": "./dist/old_types.js",
+      "types": "./dist/old_types.d.ts"
+    },
+    "./old_utils": {
+      "default": "./dist/old_utils.js",
+      "types": "./dist/old_utils.d.ts"
+    },
+    "./address": {
+      "default": "./dist/address.js",
+      "types": "./dist/address.d.ts"
+    },
     "./queries": {
-      "types": "./dist/queries/index.d.ts",
-      "default": "./dist/queries/index.js"
+      "default": "./dist/queries/index.js",
+      "types": "./dist/queries/index.d.ts"
     }
   },
   "scripts": {
@@ -26,8 +46,8 @@
     "@polkadot/api": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/util-crypto": "catalog:",
-    "@torus-ts/types": "workspace:*",
     "@torus-ts/utils": "workspace:*",
+    "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "superjson": "2.2.1",

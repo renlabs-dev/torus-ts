@@ -1,8 +1,9 @@
 "use client";
 
-import { toast } from "@torus-ts/providers/use-toast";
-import { copyToClipboard } from "@torus-ts/utils";
 import { Copy } from "lucide-react";
+
+import { toast } from "@torus-ts/providers/use-toast";
+import { copyToClipboard } from "@torus-ts/ui/utils";
 
 interface CopySquareButtonProps {
   address: string;

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 
 import type { InjectedAccountWithMeta } from "@torus-ts/ui";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { formatToken } from "@torus-ts/utils";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 interface WalletBalanceProps {
   balance: bigint | undefined;
@@ -30,7 +30,7 @@ export function WalletBalance(props: WalletBalanceProps) {
   }, [userTotalStaked]);
 
   useEffect(() => {
-    setIsLoading(true)
+    setIsLoading(true);
     const freeBalance = Number(props.balance ?? 0);
     const stakedBalance = Number(totalStakedBalance);
     const availablePercentage =
@@ -41,7 +41,7 @@ export function WalletBalance(props: WalletBalanceProps) {
       return;
     }
     setFreeBalancePercentage(availablePercentage);
-    setIsLoading(false)
+    setIsLoading(false);
   }, [props.balance, totalStakedBalance]);
 
   return (
@@ -77,7 +77,7 @@ export function WalletBalance(props: WalletBalanceProps) {
             <p className="text-xs text-gray-500">Staked Balance</p>
           </div>
         </div>
-        {!isLoading && (freeBalancePercentage && totalStakedBalance >= 0) ? (
+        {!isLoading && freeBalancePercentage && totalStakedBalance >= 0 ? (
           <div className="relative flex h-2 w-full pt-1">
             <span
               className="absolute h-2 bg-green-500"

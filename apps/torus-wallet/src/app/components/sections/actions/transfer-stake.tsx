@@ -2,13 +2,10 @@
 
 import React, { useState } from "react";
 
-import type {
-  TransactionResult,
-  TransferStake,
-} from "@torus-ts/providers/types";
+import type { TransactionResult, TransferStake } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { fromNano } from "@torus-ts/utils";
 import { TransactionStatus } from "@torus-ts/ui";
+import { fromNano } from "@torus-ts/utils/subspace";
 
 import type { GenericActionProps } from "../wallet-actions";
 import { ValidatorsList } from "../../validators-list";

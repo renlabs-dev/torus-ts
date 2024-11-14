@@ -27,7 +27,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui";
-import { smallAddress } from "@torus-ts/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 import { api } from "~/trpc/react";
 import { ReportComment } from "./report-comment";

@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-import type { DaoApplications, GovernanceModeType } from "@torus-ts/types";
-import {
-  buildIpfsGatewayUrl,
-  flattenResult,
-  parseIpfsUri,
-  processDaoMetadata,
-} from "@torus-ts/utils";
+import type {
+  DaoApplications,
+  GovernanceModeType,
+} from "@torus-ts/subspace/old";
+import { processDaoMetadata } from "@torus-ts/subspace/old";
+import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
+import { flattenResult } from "@torus-ts/utils/typing";
 
 import type { WorkerProps } from "../common";
 import type { NewNotification } from "../db";

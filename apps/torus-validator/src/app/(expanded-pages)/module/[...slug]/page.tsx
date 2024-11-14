@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
-import { Card } from "@torus-ts/ui";
-import { MarkdownView } from "@torus-ts/ui/markdown-view";
 import {
   fetchCustomMetadata,
   formatToken,
   smallAddress,
-} from "@torus-ts/utils";
+} from "@torus-ts/subspace/old";
+import { Card } from "@torus-ts/ui";
+import { MarkdownView } from "@torus-ts/ui/markdown-view";
 
 import type { Module } from "~/utils/types";
 import { ReportModule } from "~/app/components/report-module";
 import { api } from "~/trpc/server";
-import { ArrowLeft } from "lucide-react";
 
 interface Params {
   params: {

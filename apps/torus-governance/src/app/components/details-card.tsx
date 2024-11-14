@@ -1,11 +1,12 @@
-import type { ProposalState } from "@torus-ts/types";
-import { Card, CardHeader } from "@torus-ts/ui";
+import type { ProposalState } from "@torus-ts/subspace/old";
 import {
   getCreationTime,
   getExpirationTime,
   smallAddress,
-} from "@torus-ts/utils";
+} from "@torus-ts/subspace/old";
+import { Card, CardHeader } from "@torus-ts/ui";
 
+// import { VoteText } from "./vote-text"
 import type { VoteStatus } from "./vote-label";
 import { VoteText } from "./vote-text";
 

@@ -66,6 +66,9 @@ catalogs:
     jiti:
       specifier: ^1.21.6
       version: 1.21.6
+    luxon:
+      specifier: ^3.5.0
+      version: 3.5.0
     multiformats:
       specifier: ^13.2.3
       version: 13.3.1
@@ -172,9 +175,6 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
-      '@torus-ts/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@types/cors':
         specifier: ^2.8.17
         version: 2.8.17
@@ -223,9 +223,9 @@ importers:
       '@torus-ts/providers':
         specifier: workspace:*
         version: link:../../packages/providers
-      '@torus-ts/types':
+      '@torus-ts/subspace':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/subspace
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -320,9 +320,9 @@ importers:
       '@torus-ts/providers':
         specifier: workspace:*
         version: link:../../packages/providers
-      '@torus-ts/types':
+      '@torus-ts/subspace':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/subspace
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -526,6 +526,9 @@ importers:
       '@torus-ts/providers':
         specifier: workspace:*
         version: link:../../packages/providers
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../../packages/subspace
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -678,9 +681,6 @@ importers:
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../../packages/subspace
-      '@torus-ts/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       express:
         specifier: ^4.19.2
         version: 4.21.1
@@ -742,9 +742,9 @@ importers:
       '@torus-ts/db':
         specifier: workspace:*
         version: link:../db
-      '@torus-ts/types':
+      '@torus-ts/subspace':
         specifier: workspace:*
-        version: link:../types
+        version: link:../subspace
       '@torus-ts/utils':
         specifier: workspace:*
         version: link:../utils
@@ -855,9 +855,6 @@ importers:
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../subspace
-      '@torus-ts/types':
-        specifier: workspace:*
-        version: link:../types
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../ui
@@ -919,12 +916,12 @@ importers:
       '@polkadot/util-crypto':
         specifier: 'catalog:'
         version: 13.2.3(@polkadot/util@13.2.3)
-      '@torus-ts/types':
-        specifier: workspace:*
-        version: link:../types
       '@torus-ts/utils':
         specifier: workspace:*
         version: link:../utils
+      luxon:
+        specifier: 'catalog:'
+        version: 3.5.0
       multiformats:
         specifier: 'catalog:'
         version: 13.3.1
@@ -953,37 +950,6 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.19.2
-
-  packages/types:
-    dependencies:
-      '@polkadot/api':
-        specifier: 'catalog:'
-        version: 14.2.3
-      '@polkadot/extension-inject':
-        specifier: 'catalog:'
-        version: 0.52.3(@polkadot/api@14.2.3)(@polkadot/util@13.2.3)
-      '@polkadot/types':
-        specifier: 'catalog:'
-        version: 14.2.3
-      '@polkadot/util-crypto':
-        specifier: 'catalog:'
-        version: 13.2.3(@polkadot/util@13.2.3)
-      rustie:
-        specifier: 'catalog:'
-        version: 0.2.0
-      tsafe:
-        specifier: 'catalog:'
-        version: 1.8.4
-      zod:
-        specifier: 'catalog:'
-        version: 3.23.8
-    devDependencies:
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
 
   packages/ui:
     dependencies:
@@ -1081,9 +1047,6 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
-      '@torus-ts/types':
-        specifier: workspace:*
-        version: link:../types
       '@types/react':
         specifier: catalog:react18
         version: 18.3.12
@@ -1102,11 +1065,8 @@ importers:
       '@polkadot/util':
         specifier: 'catalog:'
         version: 13.2.3
-      '@torus-ts/types':
-        specifier: workspace:*
-        version: link:../types
       luxon:
-        specifier: ^3.5.0
+        specifier: 'catalog:'
         version: 3.5.0
       multiformats:
         specifier: 'catalog:'
@@ -1147,7 +1107,7 @@ importers:
         version: 7.37.2(eslint@9.14.0(jiti@1.21.6))
       eslint-plugin-react-hooks:
         specifier: rc
-        version: 5.1.0-rc-2ec26bc4-20241111(eslint@9.14.0(jiti@1.21.6))
+        version: 5.1.0-rc-7ac8e612-20241113(eslint@9.14.0(jiti@1.21.6))
       eslint-plugin-turbo:
         specifier: ^2.1.1
         version: 2.2.3(eslint@9.14.0(jiti@1.21.6))
@@ -4126,8 +4086,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-react-hooks@5.1.0-rc-2ec26bc4-20241111:
-    resolution: {integrity: sha512-bwtAFS/NJTQWytrkV81hzF+Dizf7rsB+P/nMhSvTqRbuJzDVG8ocy9Y2ixomFacY44PxhEPNWIiaI+4O8hxBLw==}
+  eslint-plugin-react-hooks@5.1.0-rc-7ac8e612-20241113:
+    resolution: {integrity: sha512-uulvjvLYvt7glRFznJdR+ruLXGsYke1IrhfdI4chxzlOLbIQ+tAhLdmqK9jWmZZoKlCu91/LqBl5gxauSPZ6Kg==}
     engines: {node: '>=10'}
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
@@ -8517,15 +8477,15 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 20.17.6
+      '@types/node': 22.9.0
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.17.6
+      '@types/node': 22.9.0
 
   '@types/cors@2.8.17':
     dependencies:
-      '@types/node': 20.17.6
+      '@types/node': 22.9.0
 
   '@types/d3-array@3.2.1': {}
 
@@ -8573,7 +8533,7 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 20.17.6
+      '@types/node': 22.9.0
       '@types/qs': 6.9.17
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -8655,12 +8615,12 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 20.17.6
+      '@types/node': 22.9.0
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 20.17.6
+      '@types/node': 22.9.0
       '@types/send': 0.17.4
 
   '@types/stats.js@0.17.3': {}
@@ -9849,7 +9809,7 @@ snapshots:
       safe-regex-test: 1.0.3
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-react-hooks@5.1.0-rc-2ec26bc4-20241111(eslint@9.14.0(jiti@1.21.6)):
+  eslint-plugin-react-hooks@5.1.0-rc-7ac8e612-20241113(eslint@9.14.0(jiti@1.21.6)):
     dependencies:
       eslint: 9.14.0(jiti@1.21.6)
 

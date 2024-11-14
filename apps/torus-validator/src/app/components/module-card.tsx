@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowRight, Grid2X2 } from "lucide-react";
+
 import { Label } from "@torus-ts/ui";
-import { smallAddress } from "@torus-ts/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
 import { CopySquareButton } from "./copy-square-button";
 import { DelegateModuleWeight } from "./delegate-module-weight";
-import { ArrowRight, Grid2X2 } from "lucide-react";
 
 interface ModuleCardProps {
   id: number;

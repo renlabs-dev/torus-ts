@@ -5,7 +5,7 @@ import type {
   LastBlock,
   StakeFromData,
   StakeOutData,
-} from "@torus-ts/types";
+} from "@torus-ts/subspace/old";
 import {
   queryCalculateStakeFrom,
   queryCalculateStakeOut,

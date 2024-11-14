@@ -1,3 +1,7 @@
+export * from "./transactions";
+
+// == Accounts ==
+
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 
 export interface InjectedAccountWithMeta {
@@ -9,3 +13,5 @@ export interface InjectedAccountWithMeta {
   };
   type?: KeypairType;
 }
+
+// ==

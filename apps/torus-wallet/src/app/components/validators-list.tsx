@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronsLeft } from "lucide-react";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { formatToken, smallAddress } from "@torus-ts/providers/utils";
-import { ChevronsLeft } from "lucide-react";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";

@@ -2,12 +2,13 @@
 
 import { useLayoutEffect, useState } from "react";
 
-import type { ProposalStatus } from "@torus-ts/types";
+import type { ProposalStatus } from "@torus-ts/subspace/old";
 import { useProcessVotesAndStakes } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button, Card, CardHeader } from "@torus-ts/ui";
-import { copyToClipboard, smallAddress } from "@torus-ts/utils";
+import { copyToClipboard } from "@torus-ts/ui/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 interface VoterListProps {
   proposalStatus: ProposalStatus;
@@ -86,8 +87,8 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
     );
   }
 
-  const handleCopyAddress = (address: string) => {
-    copyToClipboard(address);
+  const handleCopyAddress = async (address: string) => {
+    await copyToClipboard(address);
     toast.success("Address copied to clipboard");
   };
 

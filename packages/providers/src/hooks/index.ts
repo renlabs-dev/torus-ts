@@ -1,10 +1,18 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
 
 import type { ApiPromise } from "@polkadot/api";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, UseQueryResult } from "@tanstack/react-query";
 
+import type { ListItem } from "@torus-ts/utils/typing";
+import {
+  Api,
+  fetchCustomMetadata,
+  LastBlock,
+  Proposal,
+  StakeData,
+  VoteWithStake,
+} from "@torus-ts/subspace/old";
 import {
   getModuleBurn,
   getSubnetList,
@@ -22,17 +30,48 @@ import {
   queryUserTotalStaked,
 } from "@torus-ts/subspace/queries";
 
-import type { Api, LastBlock, Nullish, SS58Address } from "../types";
-import {
-  fetchCustomMetadata,
-  LAST_BLOCK_STALE_TIME,
-  PROPOSALS_STALE_TIME,
-  STAKE_STALE_TIME,
-} from "../utils";
+import type { Nullish } from "../types";
 
-// == chain ==
+import "../utils";
 
-export function useLastBlock(api: ApiPromise | Nullish) {
+import { SS58Address } from "@torus-ts/subspace/address";
+
+// == Constants ==
+
+/**
+ * == Subspace refresh times ==
+ *
+ * TODO: these values should be passed as parameters in the functions passed by the apps (env).
+ *
+ * Time to consider last block query un-fresh. Half block time is the expected
+ * time for a new block at a random point in time, so:
+ * block_time / 2  ==  8 seconds / 2  ==  4 seconds
+ */
+export const LAST_BLOCK_STALE_TIME = (1000 * 8) / 2;
+
+/**
+ * Time to consider proposals query state un-fresh. They don't change a lot,
+ * only when a new proposal is created and people should be able to see new
+ * proposals fast enough.
+ *
+ * 1 minute (arbitrary).
+ */
+export const PROPOSALS_STALE_TIME = 1000 * 60;
+
+/**
+ * Time to consider stake query state un-fresh. They also don't change a lot,
+ * only when people move their stake / delegation. That changes the way votes
+ * are computed, but only very marginally for a given typical stake change, with
+ * a small chance of a relevant difference in displayed state.
+ * 5 minutes (arbitrary).
+ */
+export const STAKE_STALE_TIME = 1000 * 60 * 5; // 5 minutes (arbitrary)
+
+// == Chain ==
+
+export function useLastBlock(
+  api: ApiPromise | Nullish,
+): UseQueryResult<LastBlock, Error> {
   return useQuery({
     queryKey: ["last_block"],
     enabled: api != null,
@@ -42,7 +81,7 @@ export function useLastBlock(api: ApiPromise | Nullish) {
   });
 }
 
-// == system ==
+// == System ==
 
 export function useBalance(
   api: Api | Nullish,
@@ -57,9 +96,11 @@ export function useBalance(
   });
 }
 
-// == governanceModule ==
+// == Governance Module ==
 
-export function useProposals(api: Api | Nullish) {
+export function useProposals(
+  api: Api | Nullish,
+): UseQueryResult<Proposal[], Error> {
   return useQuery({
     queryKey: ["proposals"],
     enabled: api != null,
@@ -79,7 +120,9 @@ export function useDaos(api: Api | Nullish) {
   });
 }
 
-export function useDaoTreasury(api: Api | Nullish) {
+export function useDaoTreasury(
+  api: Api | Nullish,
+): UseQueryResult<SS58Address, Error> {
   return useQuery({
     queryKey: ["dao_treasury"],
     enabled: api != null,
@@ -89,7 +132,9 @@ export function useDaoTreasury(api: Api | Nullish) {
   });
 }
 
-export function useNotDelegatingVoting(api: Api | Nullish) {
+export function useNotDelegatingVoting(
+  api: Api | Nullish,
+): UseQueryResult<SS58Address[], Error> {
   return useQuery({
     queryKey: ["not_delegating_voting_power"],
     enabled: api != null,
@@ -119,22 +164,24 @@ export function useRewardAllocation(api: Api | Nullish) {
   });
 }
 
-// == subspaceModule ==
+// == Subspace Module ==
 
-export function useAllStakeOut(torusCacheUrl: string) {
+export function useAllStakeOut(
+  torusCacheUrl: string,
+): UseQueryResult<StakeData, Error> {
   return useQuery({
     queryKey: ["stake_out"],
-    enabled: torusCacheUrl != null,
     queryFn: () => queryStakeOut(torusCacheUrl),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
 
-export function useStakeFrom(torusCacheUrl: string) {
+export function useStakeFrom(
+  torusCacheUrl: string,
+): UseQueryResult<StakeData, Error> {
   return useQuery({
     queryKey: ["stake_from"],
-    enabled: torusCacheUrl != null,
     queryFn: () => queryStakeFrom(torusCacheUrl),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
@@ -146,7 +193,7 @@ export function useProcessVotesAndStakes(
   torusCacheUrl: string,
   votesFor: SS58Address[],
   votesAgainst: SS58Address[],
-) {
+): UseQueryResult<VoteWithStake[], Error> {
   return useQuery({
     queryKey: ["process_votes_and_stakes"],
     enabled: api != null,
@@ -226,8 +273,6 @@ export function useCustomMetadata<T extends BaseProposal | BaseDao>(
   return useQueries({
     queries,
     combine: (results) => {
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      type ListItem<L> = L extends (infer T)[] ? T : never;
       const outputs = new Map<number, ListItem<typeof results>>();
       results.forEach((result) => {
         const { data } = result;

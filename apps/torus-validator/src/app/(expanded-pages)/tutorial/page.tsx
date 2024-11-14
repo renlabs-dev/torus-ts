@@ -2,12 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
+import { Grid2X2, Scale, SquareStack, Wallet, Zap } from "lucide-react";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button } from "@torus-ts/ui";
-import { copyToClipboard } from "@torus-ts/utils";
-import { Grid2X2, Scale, SquareStack, Wallet, Zap } from "lucide-react";
+import { copyToClipboard } from "@torus-ts/ui/utils";
 
 function handleCopyClick(text: string) {
   copyToClipboard(text);

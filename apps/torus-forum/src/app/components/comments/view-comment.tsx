@@ -1,31 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronsDown, ChevronsUp, UserCircle } from "lucide-react";
+import { DateTime } from "luxon";
 
-import { smallAddress } from "@torus-ts/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 import { api } from "~/trpc/react";
 import { ReportComment } from "./report-comment";
-import { DateTime } from "luxon";
-import { ChevronsDown, ChevronsUp, UserCircle } from "lucide-react";
 
 export enum VoteType {
   UP = "UP",
   DOWN = "DOWN",
 }
 
-export function ViewComment({
-  postId,
-}: {
-  postId: string;
-}) {
-  const {
-    data: postComments,
-    isLoading,
-  } = api.forum.getCommentsByPost.useQuery(
-    { postId },
-    { enabled: !!postId },
-  );
+export function ViewComment({ postId }: { postId: string }) {
+  const { data: postComments, isLoading } =
+    api.forum.getCommentsByPost.useQuery({ postId }, { enabled: !!postId });
 
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "mostUpvotes">(
     "oldest",
@@ -33,23 +24,23 @@ export function ViewComment({
 
   const sortedComments = postComments
     ? [...postComments].sort((a, b) => {
-      if (sortBy === "newest") {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      } else {
-        return (
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-      }
-    })
+        if (sortBy === "newest") {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        } else {
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        }
+      })
     : [];
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex w-full flex-col">
       <div className="m-2 flex h-full min-h-max animate-fade-down flex-col items-center justify-between border border-white/20 bg-[#898989]/5 p-6 text-white backdrop-blur-md animate-delay-200">
-        <div className="flex flex-col items-center justify-between w-full gap-1 pb-2 mb-4 text-gray-400 border-b border-gray-500 border-white/20 md:flex-row">
-          <h2 className="w-full font-semibold text-start">
+        <div className="mb-4 flex w-full flex-col items-center justify-between gap-1 border-b border-gray-500 border-white/20 pb-2 text-gray-400 md:flex-row">
+          <h2 className="w-full text-start font-semibold">
             Community Comments
           </h2>
           <div className="flex w-full space-x-2 md:justify-end">
@@ -57,10 +48,11 @@ export function ViewComment({
               <button
                 key={option}
                 onClick={() => setSortBy(option as typeof sortBy)}
-                className={`px-3 py-1 text-sm ${sortBy === option
-                  ? "border border-green-500 bg-green-500/20 text-white"
-                  : "border border-white/20 bg-[#898989]/5 text-gray-300 hover:bg-gray-600/50"
-                  }`}
+                className={`px-3 py-1 text-sm ${
+                  sortBy === option
+                    ? "border border-green-500 bg-green-500/20 text-white"
+                    : "border border-white/20 bg-[#898989]/5 text-gray-300 hover:bg-gray-600/50"
+                }`}
               >
                 {option === "newest"
                   ? "Newest"
@@ -75,10 +67,10 @@ export function ViewComment({
         {isLoading ? (
           <>
             <div className="flex w-full animate-pulse flex-col gap-2 border border-white/20 bg-[#898989]/5 p-2">
-              <div className="flex justify-between px-2 py-1 pb-2 border-b border-white/20">
+              <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
                 <span className="flex items-center gap-1">
                   <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-                    <UserCircle className="w-4 h-4" />
+                    <UserCircle className="h-4 w-4" />
                   </span>{" "}
                   Loading user address...
                 </span>
@@ -87,14 +79,14 @@ export function ViewComment({
                     disabled={true}
                     className={`flex items-center text-gray-300`}
                   >
-                    <ChevronsUp className="w-5 h-5" />
+                    <ChevronsUp className="h-5 w-5" />
                     <span>-</span>
                   </button>
                   <button
                     disabled={true}
                     className={`flex items-center text-gray-300`}
                   >
-                    <ChevronsDown className="w-5 h-5" />
+                    <ChevronsDown className="h-5 w-5" />
                     <span>-</span>
                   </button>
                 </div>
@@ -114,11 +106,13 @@ export function ViewComment({
                       key={comment.id}
                       className="relative flex w-full flex-col gap-2 border border-white/20 bg-[#898989]/5 p-2 pb-4"
                     >
-                      <div className="flex justify-between px-2 py-1 pb-2 border-b border-white/20">
+                      <div className="flex justify-between border-b border-white/20 px-2 py-1 pb-2">
                         <div className="flex items-center gap-2">
                           By: {smallAddress(comment.userKey)}{" "}
                           <span className="text-sm text-gray-300">
-                            {DateTime.fromJSDate(comment.createdAt).toLocal().toRelative()}
+                            {DateTime.fromJSDate(comment.createdAt)
+                              .toLocal()
+                              .toRelative()}
                           </span>
                         </div>
                       </div>
@@ -127,7 +121,7 @@ export function ViewComment({
                         <ReportComment commentId={comment.id} />
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             ) : (

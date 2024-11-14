@@ -24,7 +24,7 @@
     "@polkadot/util": "catalog:",
     "@polkadot/util-crypto": "catalog:",
     "@torus-ts/db": "workspace:*",
-    "@torus-ts/types": "workspace:*",
+    "@torus-ts/subspace": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",

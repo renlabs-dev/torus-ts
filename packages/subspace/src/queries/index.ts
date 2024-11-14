@@ -7,38 +7,36 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import SuperJSON from "superjson";
 import { assert } from "tsafe";
 
+import type { SS58Address } from "../address";
 import type {
   Api,
   LastBlock,
   NetworkSubnetConfig,
-  SS58Address,
   StakeFromData,
   StakeOutData,
   SubspaceModule,
   VoteWithStake,
-} from "@torus-ts/types";
+} from "../old_types";
 import type {
   ChainEntry,
   SubspacePalletName,
   SubspaceStorageName,
-} from "@torus-ts/utils";
+} from "../old_utils";
+import { checkSS58, isSS58 } from "../address";
 import {
-  checkSS58,
   GOVERNANCE_CONFIG_SCHEMA,
-  isSS58,
   MODULE_BURN_CONFIG_SCHEMA,
   NetworkSubnetConfigSchema,
   STAKE_DATA_SCHEMA,
   STAKE_FROM_SCHEMA,
   SUBSPACE_MODULE_SCHEMA,
-} from "@torus-ts/types";
+} from "../old_types";
 import {
   getPropsToMap,
   handleDaos,
   handleProposals,
   standardizeUidToSS58address,
-} from "@torus-ts/utils";
-
+} from "../old_utils";
 import {
   sb_address,
   sb_array,

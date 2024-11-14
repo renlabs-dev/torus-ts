@@ -1,4 +1,7 @@
-import type { NetworkSubnetConfig, SubspaceModule } from "@torus-ts/types";
+import type {
+  NetworkSubnetConfig,
+  SubspaceModule,
+} from "@torus-ts/subspace/old";
 
 import type { Module, Subnet } from "./index.js";
 

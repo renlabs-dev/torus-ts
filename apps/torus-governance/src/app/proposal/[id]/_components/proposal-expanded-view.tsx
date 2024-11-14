@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { LoaderCircle } from "lucide-react";
 
-import type { ProposalStatus, SS58Address } from "@torus-ts/types";
+import type { ProposalStatus, SS58Address } from "@torus-ts/subspace/old";
 import { useTorus } from "@torus-ts/providers/use-torus";
 
 import type { VoteStatus } from "../../../components/vote-label";

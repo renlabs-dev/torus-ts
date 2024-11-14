@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronsDown } from "lucide-react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { formatToken } from "@torus-ts/utils";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 import { api } from "~/trpc/react";
-import { ChevronsDown } from "lucide-react";
 
 const MAX_CONTENT_CHARACTERS = 500;
 const MIN_STAKE_REQUIRED = 5000;

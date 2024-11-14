@@ -1,1 +1,2 @@
-export * from "@torus-ts/types";
+// TODO: remove this file
+export * from "@torus-ts/utils/typing";

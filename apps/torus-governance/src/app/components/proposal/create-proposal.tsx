@@ -5,7 +5,7 @@ import MarkdownPreview from "@uiw/react-markdown-preview";
 import { Info } from "lucide-react";
 import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/types";
+import type { TransactionResult } from "@torus-ts/ui/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
@@ -129,10 +129,7 @@ export function CreateProposal(): JSX.Element {
   }
 
   return (
-    <form
-      onSubmit={HandleSubmit}
-      className="flex flex-col gap-4"
-    >
+    <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-3">
           <TabsTrigger value="edit">Edit Content</TabsTrigger>
@@ -152,7 +149,7 @@ export function CreateProposal(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="p-3 bg-muted">
+        <TabsContent value="preview" className="bg-muted p-3">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -169,12 +166,7 @@ export function CreateProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button
-        size="xl"
-        type="submit"
-        variant="default"
-        disabled={!isConnected}
-      >
+      <Button size="xl" type="submit" variant="default" disabled={!isConnected}>
         {uploading ? "Uploading..." : "Submit Proposal"}
       </Button>
       {transactionStatus.status && (

@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/types";
+import type { TransactionResult } from "@torus-ts/ui/types";
 import { useModuleBurn, useSubnetList } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
@@ -24,7 +24,7 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { formatToken } from "@torus-ts/utils";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 const moduleSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -220,7 +220,7 @@ export function RegisterModule(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="p-4 rounded-md bg-muted">
+        <TabsContent value="preview" className="rounded-md bg-muted p-4">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -237,12 +237,7 @@ export function RegisterModule(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button
-        size="xl"
-        type="submit"
-        variant="default"
-        disabled={!isConnected}
-      >
+      <Button size="xl" type="submit" variant="default" disabled={!isConnected}>
         {uploading ? "Uploading..." : "Submit Module"}
       </Button>
 
