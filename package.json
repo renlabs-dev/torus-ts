@@ -25,7 +25,6 @@
     "lint": "turbo run lint --continue -- --cache --cache-location .cache/.eslintcache",
     "lint:fix": "turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
-    "prepare": "husky",
     "sort:packages": "find . -name \"package.json\" -not -path \"**/node_modules/**\" -type f -print0 | xargs -0 -I {} pnpm sort-package-json \"{}\"",
     "typecheck": "turbo run typecheck",
     "ui-add": "turbo run ui-add"
