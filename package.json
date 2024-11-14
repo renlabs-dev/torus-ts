@@ -25,7 +25,6 @@
     "lint": "turbo run lint --continue -- --cache --cache-location .cache/.eslintcache",
     "lint:fix": "turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
-    "sort:packages": "find . -name \"package.json\" -not -path \"**/node_modules/**\" -type f -print0 | xargs -0 -I {} pnpm sort-package-json \"{}\"",
     "typecheck": "turbo run typecheck",
     "ui-add": "turbo run ui-add"
   },
@@ -35,7 +34,6 @@
     "@turbo/gen": "^2.1.1",
     "husky": "^9.1.4",
     "prettier": "catalog:",
-    "sort-package-json": "^2.10.1",
     "turbo": "^2.1.1",
     "typescript": "catalog:"
   },
