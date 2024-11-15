@@ -285,13 +285,13 @@ export function ViewComment({
                   <div className="flex items-center gap-1">
                     <Button
                       onClick={() => handleVote(comment.id, VoteType.UP)}
-                      disabled={isVoting || !selectedAccount?.address}
+                      // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center border-none px-1 ${currentVote === VoteType.UP ? "text-green-500" : ""}`}
                     >
                       <ChevronsUp className="h-5 w-5" />
                       <span>{comment.upvotes}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleVote(comment.id, VoteType.DOWN)}
                       // disabled={votingCommentId === comment.id}
                       className={`flex items-center ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
