@@ -166,7 +166,7 @@ export function CreateProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="xl" type="submit" variant="default" disabled={!isConnected}>
+      <Button size="lg" type="submit" variant="default" disabled={!isConnected}>
         {uploading ? "Uploading..." : "Submit Proposal"}
       </Button>
       {transactionStatus.status && (

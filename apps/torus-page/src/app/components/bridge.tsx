@@ -1,15 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, LoaderCircle, Replace } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import type { InjectedAccountWithMeta } from "@torus-ts/ui";
+import type { TransactionResult } from "@torus-ts/ui";
+import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Alert,
   AlertDescription,
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -27,20 +30,64 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
   ScrollArea,
+  TransactionStatus,
 } from "@torus-ts/ui";
-import { formatToken, smallAddress } from "@torus-ts/utils";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+
+const formSchema = z.object({
+  amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+    message: "Amount must be a positive number.",
+  }),
+});
 
 export function Bridge() {
   const {
     accounts,
     balance,
     handleGetWallets,
-
+    handleSelectWallet,
+    selectedAccount,
     stakeOut,
+    bridge,
   } = useTorus();
-  const [bridgeAccount, setBridgeAccount] =
-    useState<InjectedAccountWithMeta | null>(null);
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
+    {
+      status: null,
+      message: null,
+      finalized: false,
+    },
+  );
+
+  const handleCallback = (callbackReturn: TransactionResult) => {
+    setTransactionStatus(callbackReturn);
+
+    if (
+      callbackReturn.status === "SUCCESS" ||
+      callbackReturn.status === "ERROR"
+    ) {
+      form.reset();
+      setIsOpen(false);
+    }
+  };
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      amount: "",
+    },
+  });
 
   const handleGetAccounts = async () => {
     if (accounts?.length === 0) {
@@ -58,19 +105,46 @@ export function Bridge() {
       return;
     }
 
-    setBridgeAccount(accountExists);
+    if (selectedAccount && selectedAccount.address === accountExists.address) {
+      console.log("Account already selected");
+      return;
+    }
+
+    handleSelectWallet(accountExists);
   };
 
   const userStakeWeight = useMemo(() => {
-    if (stakeOut != null && bridgeAccount != null) {
-      const userStakeEntry = stakeOut.perAddr[bridgeAccount.address];
+    if (stakeOut != null && selectedAccount != null) {
+      const userStakeEntry = stakeOut.perAddr[selectedAccount.address];
       return userStakeEntry ?? 0n;
     }
     return 0n;
-  }, [stakeOut, bridgeAccount]);
+  }, [stakeOut, selectedAccount]);
+
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setTransactionStatus({
+      status: "STARTING",
+      finalized: false,
+      message: "Starting transaction",
+    });
+    try {
+      await bridge({ amount: data.amount, callback: handleCallback });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error(`Error bridging assets`);
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Insufficient balance",
+      });
+      // Close the modal on error
+      setIsOpen(false);
+    }
+  };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger>
         <Alert className="flex flex-col items-start transition duration-100 hover:bg-accent/50">
           <Replace className="h-5 w-5" />
@@ -94,10 +168,10 @@ export function Bridge() {
         <DropdownMenu onOpenChange={handleGetAccounts}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
-              {bridgeAccount ? (
+              {selectedAccount ? (
                 <span>
-                  {bridgeAccount.meta.name} (
-                  {smallAddress(bridgeAccount.address)})
+                  {selectedAccount.meta.name} (
+                  {smallAddress(selectedAccount.address)})
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
@@ -114,7 +188,7 @@ export function Bridge() {
             <DropdownMenuSeparator />
             <ScrollArea className={cn("overflow-y-auto")}>
               <DropdownMenuRadioGroup
-                value={bridgeAccount?.address ?? ""}
+                value={selectedAccount?.address ?? ""}
                 onValueChange={handleWalletSelection}
               >
                 {!accounts && (
@@ -147,21 +221,53 @@ export function Bridge() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {bridgeAccount && (
+        {selectedAccount && (
           <div className="mt-4">
-            <p>Selected Wallet: {bridgeAccount.meta.name}</p>
-            <p>Address: {smallAddress(bridgeAccount.address)}</p>
-            <p>Balance: {formatToken(balance ?? 0n)} TOR</p>
-            <p>Staked: {formatToken(userStakeWeight)} TOR</p>
+            <div>Selected Wallet: {selectedAccount.meta.name}</div>
+            <div>Address: {smallAddress(selectedAccount.address)}</div>
+            <div>Balance: {formatToken(balance ?? 0n)} TOR</div>
+            <div>Staked: {formatToken(userStakeWeight)} TOR</div>
           </div>
         )}
 
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction disabled={!bridgeAccount}>
-            Bridge Assets
-          </AlertDialogAction>
-        </AlertDialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount to Bridge</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0.00" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Enter the amount of COMAI you want to bridge.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <AlertDialogFooter>
+              <div className="flex w-full items-center justify-between">
+                <div className="mb-1">
+                  {transactionStatus.status && (
+                    <TransactionStatus
+                      status={transactionStatus.status}
+                      message={transactionStatus.message}
+                    />
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Button type="submit" disabled={!selectedAccount}>
+                    Bridge Assets
+                  </Button>
+                </div>
+              </div>
+            </AlertDialogFooter>
+          </form>
+        </Form>
       </AlertDialogContent>
     </AlertDialog>
   );

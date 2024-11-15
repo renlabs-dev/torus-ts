@@ -22,6 +22,11 @@ export interface Transfer {
   callback?: (status: TransactionResult) => void;
 }
 
+export interface Bridge {
+  amount: string;
+  callback?: (status: TransactionResult) => void;
+}
+
 export interface TransferStake {
   fromValidator: string;
   toValidator: string;

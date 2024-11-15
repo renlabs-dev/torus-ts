@@ -7,6 +7,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { toast } from "react-toastify";
 
+import type { SS58Address } from "@torus-ts/subspace/address";
 import type {
   BaseDao,
   BaseProposal,
@@ -21,6 +22,7 @@ import type {
   AddCustomProposal,
   AddDaoApplication,
   addTransferDaoTreasuryProposal,
+  Bridge,
   RegisterModule,
   RemoveVote,
   Stake,
@@ -30,7 +32,6 @@ import type {
   UpdateDelegatingVotingPower,
   Vote,
 } from "@torus-ts/ui/types";
-import { SS58Address } from "@torus-ts/subspace/address";
 import { WalletDropdown } from "@torus-ts/ui/components";
 import { toNano2 } from "@torus-ts/utils/subspace";
 
@@ -76,6 +77,7 @@ interface TorusContextType {
   handleWalletModal: (state?: boolean) => void;
   openWalletModal: boolean;
 
+  bridge: (bridge: Bridge) => Promise<void>;
   addStake: (stake: Stake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
   transfer: (transfer: Transfer) => Promise<void>;
@@ -187,13 +189,12 @@ export function TorusProvider({
 
   async function getWallets(): Promise<InjectedAccountWithMeta[] | undefined> {
     if (!torusApi.web3Enable || !torusApi.web3Accounts) return;
-    const extensions = await torusApi.web3Enable("torus Ai");
-    if (!extensions) {
-      toast.error("No account selected");
-    }
+    await torusApi.web3Enable("torus Ai");
+
     try {
       const response = await torusApi.web3Accounts();
       return response;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       return undefined;
     }
@@ -246,10 +247,11 @@ export function TorusProvider({
       };
       fetchWallets().catch(console.error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitialized]);
 
   const handleWalletModal = (state?: boolean): void => {
-    setOpenWalletModal(state || !openWalletModal);
+    setOpenWalletModal(state ?? !openWalletModal);
   };
 
   // == Transaction Handler ==
@@ -347,6 +349,12 @@ export function TorusProvider({
     if (!api?.tx.balances.transferAllowDeath) return;
     const transaction = api.tx.balances.transferAllowDeath(to, toNano2(amount));
     await sendTransaction("Transfer", transaction, callback);
+  }
+
+  async function bridge({ amount, callback }: Bridge): Promise<void> {
+    if (!api?.tx.subspaceModule?.bridge) return;
+    const transaction = api.tx.subspaceModule.bridge(toNano2(amount));
+    await sendTransaction("Bridge", transaction, callback);
   }
 
   async function transferStake({
@@ -463,7 +471,7 @@ export function TorusProvider({
   ): Promise<Balance | null> {
     try {
       // Check if the API is ready and has the transfer function
-      if (!api || !api.isReady) {
+      if (!api?.isReady) {
         console.error("API is not ready");
         return null;
       }
@@ -496,7 +504,7 @@ export function TorusProvider({
   }: UpdateDelegatingVotingPower): Promise<void> {
     if (
       !api?.tx.governanceModule?.enableVotePowerDelegation ||
-      !api?.tx.governanceModule.disableVotePowerDelegation
+      !api.tx.governanceModule.disableVotePowerDelegation
     )
       return;
 
@@ -641,6 +649,8 @@ export function TorusProvider({
 
         balance,
         isBalanceLoading,
+
+        bridge,
 
         addStake,
         removeStake,
