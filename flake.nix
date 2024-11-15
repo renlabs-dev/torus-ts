@@ -12,6 +12,8 @@
           buildInputs = [
             pkgs.nodejs_20
             pkgs.pnpm
+            # Run scripts locally
+            pkgs.just
             # Run Github actions locally
             pkgs.act
           ];

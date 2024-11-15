@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+# I'd like to not have to use bash, but the alternative would be adding Python
+
+set -e
+set -o pipefail
+
+usage_exit() {
+  echo "Usage: " 1>&2
+  echo "  $0 with-env <command...>" 1>&2
+  echo "  $0 dev <app-name> [--tui]" 1>&2
+  exit 1
+}
+
+cmd_with_env() {
+  if [ -f ".env" ]; then
+    set -a
+    source .env
+    set +a
+  fi
+  "$@"
+}
+
+cmd_dev() {
+  if [ -z "$1" ]; then
+    usage_exit
+  fi
+
+  positional_args=()
+  for arg in "$@"; do
+    case "$arg" in
+    --tui)
+      use_tui=1
+      ;;
+    --watch)
+      use_watch=1
+      ;;
+    --* | -*)
+      echo "Unknown option: $arg" 1>&2
+      usage_exit
+      ;;
+    *)
+      positional_args+=("$arg")
+      shift 1
+      ;;
+    esac
+  done
+
+  if [ ${#positional_args[@]} -eq 0 ]; then
+    echo "Error: No app name provided." 1>&2
+    usage_exit
+  elif [ ${#positional_args[@]} -gt 1 ]; then
+    echo "Error: Extra arguments after app name will be ignored: ${positional_args[*]:1}" 1>&2
+    usage_exit
+  fi
+
+  app_name="${positional_args[0]}"
+
+  flags=()
+  if [ -n "$use_tui" ]; then
+    flags+=("--ui=tui")
+  fi
+
+  turbo_cmd="run"
+  if [ -n "$use_watch" ]; then
+    turbo_cmd="watch"
+  fi
+
+  if [ -f ".env" ]; then
+    set -a
+    source .env
+    set +a
+  fi
+
+  turbo "$turbo_cmd" dev "${flags[@]}" -F "$app_name"
+}
+
+if [ -z "$1" ]; then
+  usage_exit
+fi
+cmd="$1"
+shift 1
+
+case "$cmd" in
+with-env)
+  cmd_with_env "$@"
+  ;;
+dev)
+  cmd_dev "$@"
+  ;;
+*)
+  usage_exit
+  ;;
+esac
