@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreditCard, LoaderCircle, Replace } from "lucide-react";
+import {
+  CreditCard,
+  LoaderCircle,
+  Lock,
+  LockOpen,
+  Replace,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -10,6 +16,10 @@ import type { TransactionResult } from "@torus-ts/ui";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
   Alert,
   AlertDescription,
   AlertDialog,
@@ -22,6 +32,7 @@ import {
   AlertDialogTrigger,
   AlertTitle,
   Button,
+  Card,
   cn,
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +54,8 @@ import {
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
+import { UnstakeAction } from "./unstake";
+
 const formSchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
     message: "Amount must be a positive number.",
@@ -58,6 +71,7 @@ export function Bridge() {
     selectedAccount,
     stakeOut,
     bridge,
+    removeStake,
   } = useTorus();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -144,7 +158,7 @@ export function Bridge() {
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+    <AlertDialog open={true} onOpenChange={setIsOpen}>
       <AlertDialogTrigger>
         <Alert className="flex flex-col items-start transition duration-100 hover:bg-accent/50">
           <Replace className="h-5 w-5" />
@@ -171,7 +185,7 @@ export function Bridge() {
               {selectedAccount ? (
                 <span>
                   {selectedAccount.meta.name} (
-                  {smallAddress(selectedAccount.address)})
+                  {smallAddress(selectedAccount.address, 12)})
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
@@ -182,10 +196,6 @@ export function Bridge() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className={cn("border border-muted")}>
-            <DropdownMenuLabel>
-              Select a wallet to bridge from
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
             <ScrollArea className={cn("overflow-y-auto")}>
               <DropdownMenuRadioGroup
                 value={selectedAccount?.address ?? ""}
@@ -222,14 +232,37 @@ export function Bridge() {
         </DropdownMenu>
 
         {selectedAccount && (
-          <div className="mt-4">
-            <div>Selected Wallet: {selectedAccount.meta.name}</div>
-            <div>Address: {smallAddress(selectedAccount.address)}</div>
-            <div>Balance: {formatToken(balance ?? 0n)} TOR</div>
-            <div>Staked: {formatToken(userStakeWeight)} TOR</div>
+          <div className="flex justify-between gap-2">
+            <Card className="flex w-full flex-col items-center gap-2 p-3">
+              <div className="flex flex-row items-center gap-1">
+                <LockOpen className="h-3 w-3" />{" "}
+                <p className="text-sm">Balance</p>
+              </div>
+              <p>{formatToken(balance ?? 0n)} TOR</p>
+            </Card>
+            <Card className="flex w-full flex-col items-center gap-2 p-3">
+              <div className="flex flex-row items-center gap-1">
+                <Lock className="h-3 w-3" /> <p className="text-sm">Staked</p>
+              </div>
+              <p>{formatToken(userStakeWeight)} TOR</p>
+            </Card>
           </div>
         )}
-
+        <Card className="mb-2 px-4">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1" className="border-b-0">
+              <AccordionTrigger>Want to unstake your balance?</AccordionTrigger>
+              <AccordionContent>
+                <UnstakeAction
+                  removeStake={removeStake}
+                  balance={balance}
+                  selectedAccount={selectedAccount!}
+                  userStakeWeight={userStakeWeight}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </Card>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
