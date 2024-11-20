@@ -8,7 +8,7 @@ import type {
   TransactionResult,
 } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { TransactionStatus } from "@torus-ts/ui";
+import { Button, Input, TransactionStatus } from "@torus-ts/ui";
 import { fromNano } from "@torus-ts/utils/subspace";
 
 import { ValidatorsList } from "./validators-list";
@@ -127,29 +127,27 @@ export function UnstakeAction(
           userAddress={props.selectedAccount.address}
         />
       ) : (
-        <div className="mt-4 w-full">
+        <div className="w-full">
           <form
             onSubmit={handleSubmit}
             className="flex w-full animate-fade-down flex-col gap-4 pt-4"
           >
             <div className="w-full">
-              <span className="text-base">Validator Address</span>
               <div className="flex flex-row gap-3">
-                <input
+                <Input
                   type="text"
                   value={recipient}
                   required
                   onChange={handleRecipientChange}
-                  placeholder="The full address of the validator"
-                  className="w-full border border-white/20 bg-[#898989]/5 p-2"
+                  placeholder="Validador address"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setCurrentView("stakedValidators")}
-                  className="flex w-fit items-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15"
                 >
                   Staked Validators
-                </button>
+                </Button>
               </div>
               {inputError.recipient && (
                 <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
@@ -158,25 +156,23 @@ export function UnstakeAction(
               )}
             </div>
             <div className="w-full">
-              <p className="text-base">Value</p>
               <div className="flex w-full gap-1">
-                <input
+                <Input
                   type="number"
                   value={amount}
                   required
                   onChange={handleAmountChange}
                   placeholder="The amount of COMAI to unstake"
-                  className="w-full border border-white/20 bg-[#898989]/5 p-2 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:text-gray-600/50 disabled:placeholder:text-gray-600/50"
                   disabled={!recipient}
                 />
                 {stakedAmount && (
-                  <button
+                  <Button
                     type="button"
                     onClick={handleMaxClick}
-                    className="ml-2 whitespace-nowrap border border-blue-500 bg-blue-600/5 px-4 py-2 font-semibold text-blue-500 transition duration-200 hover:border-blue-400 hover:bg-blue-500/15"
+                    variant="outline"
                   >
                     Max
-                  </button>
+                  </Button>
                 )}
               </div>
               {inputError.value && (
@@ -185,23 +181,21 @@ export function UnstakeAction(
                 </p>
               )}
             </div>
-            <div className="mt-4 border-t border-white/20 pt-4">
-              <button
-                type="submit"
-                disabled={
-                  transactionStatus.status === "PENDING" ||
-                  !amount ||
-                  !recipient ||
-                  (stakedAmount &&
-                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                    amount > stakedAmount) ||
-                  !!inputError.value
-                }
-                className="flex w-full justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:bg-transparent"
-              >
-                Start Transaction
-              </button>
-            </div>
+
+            <Button
+              type="submit"
+              disabled={
+                transactionStatus.status === "PENDING" ||
+                !amount ||
+                !recipient ||
+                (stakedAmount &&
+                  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                  amount > stakedAmount) ||
+                !!inputError.value
+              }
+            >
+              Start Transaction
+            </Button>
           </form>
           {transactionStatus.status && (
             <TransactionStatus
