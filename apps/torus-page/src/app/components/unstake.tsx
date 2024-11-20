@@ -188,9 +188,10 @@ export function UnstakeAction(
                 transactionStatus.status === "PENDING" ||
                 !amount ||
                 !recipient ||
-                (stakedAmount &&
-                  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                  amount > stakedAmount) ||
+                !stakedAmount ||
+                // (stakedAmount &&
+                //   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                //   amount > stakedAmount) ||
                 !!inputError.value
               }
             >

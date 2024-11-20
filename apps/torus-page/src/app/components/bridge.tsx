@@ -36,10 +36,8 @@ import {
   cn,
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   Form,
   FormControl,
@@ -52,6 +50,7 @@ import {
   ScrollArea,
   TransactionStatus,
 } from "@torus-ts/ui";
+import { getExpirationTime } from "@torus-ts/utils";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 import { UnstakeAction } from "./unstake";
@@ -72,6 +71,7 @@ export function Bridge() {
     stakeOut,
     bridge,
     removeStake,
+    lastBlock,
   } = useTorus();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -157,13 +157,18 @@ export function Bridge() {
     }
   };
 
+  const currentBlock = lastBlock?.blockNumber ?? 0;
+
+  const torusBridgeExpirationTime = currentBlock + (14 * 24 * 60 * 60) / 8;
+
   return (
-    <AlertDialog open={true} onOpenChange={setIsOpen}>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger>
         <Alert className="flex flex-col items-start transition duration-100 hover:bg-accent/50">
           <Replace className="h-5 w-5" />
           <AlertTitle className="font-bold">
-            Click here to Bridge your assets to Torus! (30 days left)
+            Click here to Bridge your assets to Torus! Closing in (
+            {getExpirationTime(currentBlock, torusBridgeExpirationTime)})
           </AlertTitle>
           <AlertDescription>
             You can now bridge your assets from Commune AI to Torus Network for

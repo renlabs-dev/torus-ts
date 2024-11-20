@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChevronsLeft } from "lucide-react";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
+import { Button } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 interface ValidatorsListProps {
@@ -68,17 +69,15 @@ export function ValidatorsList(props: ValidatorsListProps) {
   return (
     <div className="mt-4 w-full animate-fade-down border-t border-white/20 pt-2">
       <div className="mb-4 border-b border-white/20">
-        <h3 className="text-lg font-semibold text-gray-300">
-          Select a Validator
-        </h3>
-        <p className="pb-2 text-gray-300">
+        <h3 className="font-bold text-gray-300">Select a Validator</h3>
+        <p className="pb-2 text-sm text-gray-300">
           Once you select a validator, it will automatically fill the field with
           their address. View all validators list{" "}
           <Link
             href="https://www.comstats.org/"
             target="_blank"
             rel="noreferrer"
-            className="text-green-500 hover:underline"
+            className="text-primary hover:underline"
           >
             here
           </Link>
@@ -87,10 +86,10 @@ export function ValidatorsList(props: ValidatorsListProps) {
       </div>
       <div className="flex animate-fade-down flex-col gap-y-4 animate-delay-200">
         {currentList.map((item) => (
-          <button
+          <Button
             key={item.address}
             onClick={() => props.onSelectValidator({ address: item.address })}
-            className="flex w-full items-center justify-center text-nowrap border border-green-500 bg-green-600/5 px-3 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50"
+            variant="outline"
           >
             <div className="flex w-full flex-col items-start gap-1">
               <div className="flex w-full flex-row items-start justify-between md:flex-row">
@@ -107,16 +106,11 @@ export function ValidatorsList(props: ValidatorsListProps) {
                 </span>
               </div>
             </div>
-          </button>
+          </Button>
         ))}
-        <div className="animate-fade-down border-t border-white/20 pt-4 animate-delay-300">
-          <button
-            onClick={props.onBack}
-            className="flex w-full items-center justify-center text-nowrap border border-amber-500 bg-amber-600/5 px-4 py-2.5 font-semibold text-amber-500 transition duration-200 hover:border-amber-400 hover:bg-amber-500/15 active:bg-amber-500/50"
-          >
-            <ChevronsLeft className="h-6 w-6" /> Back to Field Options
-          </button>
-        </div>
+        <Button onClick={props.onBack}>
+          <ChevronsLeft className="h-6 w-6" /> Back to Field Options
+        </Button>
       </div>
     </div>
   );
