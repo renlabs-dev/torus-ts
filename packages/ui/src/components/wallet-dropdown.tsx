@@ -178,11 +178,11 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
-    <div className={cn("fixed right-8 top-3 z-[100]")}>
+    <div className={cn("fixed right-6 top-5 z-[100]")}>
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className={cn("px-2 py-1")}>
-            <WalletCards />
+            <WalletCards className={cn("!h-6 !w-6")} />
           </Button>
         </DropdownMenuTrigger>
 

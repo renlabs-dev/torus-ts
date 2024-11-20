@@ -7,21 +7,15 @@ import type {
   ProposalStatus,
 } from "@torus-ts/subspace/old";
 import { getExpirationTime } from "@torus-ts/subspace/old";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Skeleton,
-} from "@torus-ts/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
 import type { VoteStatus } from "./vote-label";
-import { calcProposalFavorablePercent } from "~/utils";
 import { DaoStatusLabel } from "./dao/dao-status-label";
 import { ProposalTypeLabel } from "./proposal/proposal-type-label";
 import { StatusLabel } from "./status-label";
 import { VoteLabel } from "./vote-label";
+import { VotePercentageBar } from "./vote-percentage-bar";
 
 export interface ProposalCardProps {
   author: SS58Address;
@@ -35,48 +29,6 @@ export interface ProposalCardProps {
   voted?: VoteStatus;
 }
 
-const VotePercentageBar = (props: {
-  proposalStatus: ProposalCardProps["proposalStatus"];
-}) => {
-  const { proposalStatus } = props;
-
-  if (!proposalStatus) return null;
-
-  const favorablePercent = calcProposalFavorablePercent(proposalStatus);
-
-  if (favorablePercent === null) {
-    return (
-      <div className="flex w-full animate-pulse justify-between">
-        <Skeleton className="w-full !rounded-full py-4" />
-      </div>
-    );
-  }
-
-  const againstPercent = 100 - favorablePercent;
-  return (
-    <div className="relative h-8 w-full overflow-hidden rounded-full bg-accent">
-      <div
-        className="h-full rounded-full rounded-r-none bg-muted"
-        style={{ width: `${favorablePercent}%` }}
-      />
-      <div className="absolute inset-0 flex items-center justify-between px-3 text-sm">
-        <div className="flex items-center gap-2">
-          Favorable
-          <span className="text-muted-foreground">
-            {favorablePercent.toFixed(2)}%
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          Against
-          <span className="text-muted-foreground">
-            {againstPercent.toFixed(2)}%
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export function CardViewData(props: ProposalCardProps): JSX.Element {
   const {
     voted,
@@ -85,6 +37,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
     proposalType,
     proposalStatus,
     daoStatus,
+    favorablePercent,
     expirationBlock,
     currentBlock,
   } = props;
@@ -126,8 +79,8 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
             </CardTitle>
           )}
 
-          {proposalStatus && (
-            <VotePercentageBar proposalStatus={proposalStatus} />
+          {favorablePercent && (
+            <VotePercentageBar favorablePercent={favorablePercent} />
           )}
         </CardContent>
       </Card>
