@@ -17,6 +17,22 @@ import {
 import { CardSkeleton } from "./card-skeleton";
 import { CardViewData } from "./card-view-data";
 
+const ListCardsLoadingSkeleton = () => {
+  return (
+    <div className="w-full space-y-6">
+      <div className="animate-fade-up animate-delay-200">
+        <CardSkeleton />
+      </div>
+      <div className="animate-fade-up animate-delay-500">
+        <CardSkeleton />
+      </div>
+      <div className="animate-fade-up animate-delay-700">
+        <CardSkeleton />
+      </div>
+    </div>
+  );
+};
+
 function getUserVoteStatus(
   proposalStatus: ProposalStatus,
   selectedAccountAddress: SS58Address,
@@ -170,23 +186,7 @@ const ListCardsContent = () => {
     }
   }, [viewMode, renderProposals, renderDaos]);
 
-  const renderLoading = () => {
-    return (
-      <div className="w-full space-y-6">
-        <div className="animate-fade-up animate-delay-200">
-          <CardSkeleton />
-        </div>
-        <div className="animate-fade-up animate-delay-500">
-          <CardSkeleton />
-        </div>
-        <div className="animate-fade-up animate-delay-700">
-          <CardSkeleton />
-        </div>
-      </div>
-    );
-  };
-
-  if (handleIsLoading(viewMode)) return renderLoading();
+  if (handleIsLoading(viewMode)) return <ListCardsLoadingSkeleton />;
 
   return (
     <div className="flex flex-col gap-6">{content ?? <NoContentFound />}</div>
@@ -195,7 +195,7 @@ const ListCardsContent = () => {
 
 export const ListCards = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<ListCardsLoadingSkeleton />}>
       <ListCardsContent />
     </Suspense>
   );
