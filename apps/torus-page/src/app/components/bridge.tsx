@@ -261,6 +261,7 @@ export function Bridge() {
                 <UnstakeAction
                   removeStake={removeStake}
                   balance={balance}
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   selectedAccount={selectedAccount!}
                   userStakeWeight={userStakeWeight}
                 />

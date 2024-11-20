@@ -106,7 +106,7 @@ export default function Page() {
         </div>
         <div className="mb-4 flex w-full flex-col border-b border-white/20 text-center md:flex-row md:gap-3">
           <div className="flex w-full animate-fade-down flex-col gap-4 pb-4 animate-delay-300 md:flex-row">
-            <Button size="xl" className="w-full" asChild>
+            <Button size="lg" className="w-full" asChild>
               <Link href="/modules">Go to Modules view</Link>
             </Button>
           </div>
@@ -114,7 +114,7 @@ export default function Page() {
           <div className="flex w-full animate-fade-down flex-col gap-4 pb-4 animate-delay-300 md:flex-row">
             <Button
               asChild
-              size="xl"
+              size="lg"
               className="w-full hover:border-cyan-500 hover:bg-background-cyan hover:text-cyan-500 active:bg-cyan-500/30"
             >
               <Link href="/subnets">Go to Subnets view</Link>
@@ -214,7 +214,7 @@ export default function Page() {
             </Link>
             :
           </Label>
-          <Button variant="default-green" className="w-full md:w-fit" asChild>
+          <Button variant="link" className="w-full md:w-fit" asChild>
             <Link href="/tutorial">Get Started!</Link>
           </Button>
         </Card>
