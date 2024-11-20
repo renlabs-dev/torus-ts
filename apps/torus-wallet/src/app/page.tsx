@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { Loading } from "@torus-ts/ui/loading";
+import { Loading } from "@torus-ts/ui";
 
 import { Wallet } from "./components/sections/wallet";
 

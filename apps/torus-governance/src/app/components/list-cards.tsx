@@ -89,9 +89,17 @@ const ListCardsContent = () => {
 
     return proposalsWithMeta
       .map((proposal) => {
-        const { title, invalid } = handleCustomProposal(proposal);
-
+        const { title, invalid, body } = handleCustomProposal(proposal);
         if (invalid) return null;
+
+        const search = searchParams.get("search")?.toLocaleLowerCase();
+        if (
+          search &&
+          !title?.toLocaleLowerCase().includes(search) &&
+          !body?.toLocaleLowerCase().includes(search) &&
+          !proposal.proposer.toLocaleLowerCase().includes(search)
+        )
+          return null;
 
         const voted = getUserVoteStatus(
           proposal.status,
@@ -114,7 +122,7 @@ const ListCardsContent = () => {
         );
       })
       .filter((element): element is JSX.Element => element !== null);
-  }, [currentBlock, proposalsWithMeta, selectedAccount?.address]);
+  }, [currentBlock, proposalsWithMeta, searchParams, selectedAccount?.address]);
 
   const renderDaos = useMemo((): JSX.Element[] => {
     if (!daosWithMeta) return [];
@@ -128,6 +136,16 @@ const ListCardsContent = () => {
 
         if (!body) return null;
 
+        const search = searchParams.get("search")?.toLocaleLowerCase();
+
+        if (
+          search &&
+          !title?.toLocaleLowerCase().includes(search) &&
+          !body.toLocaleLowerCase().includes(search) &&
+          !dao.userId.toLocaleLowerCase().includes(search)
+        )
+          return null;
+
         return (
           <Link href={`/dao/${dao.id}`} key={dao.id} prefetch>
             <CardViewData
@@ -139,7 +157,7 @@ const ListCardsContent = () => {
         );
       })
       .filter((element): element is JSX.Element => element !== null);
-  }, [daosWithMeta]);
+  }, [daosWithMeta, searchParams]);
 
   const content = useMemo(() => {
     switch (viewMode) {

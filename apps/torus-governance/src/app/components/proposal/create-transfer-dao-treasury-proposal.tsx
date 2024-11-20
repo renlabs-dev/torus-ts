@@ -186,7 +186,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="xl" type="submit" variant="default" disabled={!isConnected}>
+      <Button size="lg" type="submit" variant="outline" disabled={!isConnected}>
         {uploading ? "Uploading..." : "Submit transfer dao treasury proposal"}
       </Button>
       {transactionStatus.status && (

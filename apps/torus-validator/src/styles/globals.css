@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("../../../../packages/ui/src/components/scrollbar-style.css");
-
 @layer base {
   :root {
     --background: 150, 11%, 7%;

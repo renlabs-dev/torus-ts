@@ -688,6 +688,7 @@ export function TorusProvider({
       }}
     >
       {children}
+
       <WalletDropdown
         accounts={accounts}
         balance={balance}

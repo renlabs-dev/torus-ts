@@ -1,7 +1,15 @@
-import { ProposalExpandedView } from "./_components/proposal-expanded-view";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@torus-ts/ui"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@torus-ts/ui";
 
-export default async function CardView({
+import { ProposalExpandedView } from "./_components/proposal-expanded-view";
+
+export default async function ProposalView({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -13,20 +21,24 @@ export default async function CardView({
   }
 
   return (
-    <div className="flex flex-col w-full max-w-screen-xl pt-12 mx-auto px-4">
-      <Breadcrumb className="pt-12 pb-8">
+    <div className="mx-auto flex w-full max-w-screen-xl flex-col px-4 pt-12">
+      <Breadcrumb className="pb-8 pt-12">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/?view=proposals">Proposals List</BreadcrumbLink>
+            <BreadcrumbLink href="/?view=proposals">
+              Proposals List
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage className="text-muted-foreground">Proposal ID: {id}</BreadcrumbPage>
+            <BreadcrumbPage className="text-muted-foreground">
+              Proposal {id}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="flex flex-col justify-between w-full h-full mb-6 text-white divide-gray-500 md:mb-12 lg:flex-row">
+      <div className="mb-6 flex h-full w-full flex-col justify-between divide-gray-500 text-white md:mb-12 lg:flex-row">
         <ProposalExpandedView paramId={Number(id)} />
       </div>
     </div>

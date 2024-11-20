@@ -189,7 +189,7 @@ export function CreateDao(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="xl" type="submit" variant="default" disabled={!isConnected}>
+      <Button size="lg" type="submit" variant="outline" disabled={!isConnected}>
         {uploading ? "Uploading..." : "Submit S2 Application"}
       </Button>
       {transactionStatus.status && (

@@ -4,8 +4,8 @@ import type { Metadata } from "next";
 
 import { Providers } from "@torus-ts/providers/context";
 // import { links } from "@torus-ts/ui/data";
-// import { Footer } from "@torus-ts/ui/footer";
-import { Header } from "@torus-ts/ui/header";
+// import { Footer } from "@torus-ts/ui";
+import { Header } from "@torus-ts/ui";
 
 import { cairo } from "~/utils/fonts";
 
@@ -28,14 +28,14 @@ export default function RootLayout({
       >
         <Providers>
           <Header
-            // font={oxanium.className}
-            // logoSrc="/logo.svg"
-            // navigationLinks={[
-            //   { name: "Governance", href: links.governance, external: true },
-            //   { name: "Blog", href: links.blog, external: true },
-            //   { name: "Join Community", href: links.discord, external: true },
-            // ]}
-            // title="Torus Wallet"
+          // font={oxanium.className}
+          // logoSrc="/logo.svg"
+          // navigationLinks={[
+          //   { name: "Governance", href: links.governance, external: true },
+          //   { name: "Blog", href: links.blog, external: true },
+          //   { name: "Join Community", href: links.discord, external: true },
+          // ]}
+          // title="Torus Wallet"
           />
           {children}
           {/* FIXME <Footer className="md:hidden lg:block" /> */}

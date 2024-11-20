@@ -278,27 +278,29 @@ export function ViewComment({
                 className="relative flex w-full flex-col gap-2 p-2 pb-4"
               >
                 <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
-                  <div className="flex-start flex flex-col gap-2 md:flex-row md:items-center">
+                  <div className="flex-start flex flex-row gap-2 md:flex-row md:items-center">
                     {comment.userName && (
                       <span className="flex w-fit items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-sm">
                         {comment.userName}
                       </span>
                     )}
-                    {smallAddress(comment.userKey)}
+                    {smallAddress(comment.userKey, 4)}
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
+                      variant="outline"
                       onClick={() => handleVote(comment.id, VoteType.UP)}
                       disabled={isVoting || !selectedAccount?.address}
-                      className={`flex items-center border-none px-1 ${currentVote === VoteType.UP ? "text-green-500" : ""}`}
+                      className={`flex items-center px-1 ${currentVote === VoteType.UP ? "text-green-500" : "hover:text-green-500"} `}
                     >
                       <ChevronsUp className="h-5 w-5" />
                       <span>{comment.upvotes}</span>
                     </Button>
                     <Button
+                      variant="outline"
                       onClick={() => handleVote(comment.id, VoteType.DOWN)}
                       disabled={isVoting || !selectedAccount?.address}
-                      className={`flex items-center border-none px-1 ${currentVote === VoteType.DOWN ? "text-red-500" : ""}`}
+                      className={`flex items-center px-1 ${currentVote === VoteType.DOWN ? "text-red-500" : "hover:text-red-500"}`}
                     >
                       <ChevronsDown className="h-5 w-5" />
                       <span>{comment.downvotes}</span>
@@ -308,10 +310,10 @@ export function ViewComment({
                 <CardContent className="px-2">
                   <p className="text-muted-foreground">{comment.content}</p>
                   <Button
-                    variant="default"
+                    variant="outline"
                     onClick={() => setCommentId(comment.id)}
                     type="button"
-                    className="absolute bottom-2 right-2 h-7 border border-red-500 px-1.5 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
+                    className="absolute bottom-2 right-2 h-7 border border-red-500 px-1.5 text-red-500 opacity-30 transition duration-200 hover:text-red-500 hover:opacity-100"
                   >
                     <TriangleAlert size={16} />
                   </Button>

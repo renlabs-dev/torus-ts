@@ -30,7 +30,11 @@ export function CreateModal() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default" className="w-fit px-4" size="xl">
+        <Button
+          variant="outline"
+          className="hidden w-fit px-4 md:block"
+          size="lg"
+        >
           Propose Change
         </Button>
       </DialogTrigger>

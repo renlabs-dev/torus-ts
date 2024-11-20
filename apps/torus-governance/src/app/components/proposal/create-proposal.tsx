@@ -149,7 +149,7 @@ export function CreateProposal(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="bg-muted p-3">
+        <TabsContent value="preview" className="rounded-md bg-muted p-3">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -166,7 +166,7 @@ export function CreateProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="xl" type="submit" variant="default" disabled={!isConnected}>
+      <Button size="lg" type="submit" variant="outline" disabled={!isConnected}>
         {uploading ? "Uploading..." : "Submit Proposal"}
       </Button>
       {transactionStatus.status && (

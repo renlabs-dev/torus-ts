@@ -25,14 +25,13 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf .turbo node_modules",
-    "dev": "tsc --watch",
+    "dev": "tsc && drizzle-kit studio",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
-    "migrate": "pnpm with-env drizzle-kit generate --custom",
-    "push": "pnpm with-env drizzle-kit push",
-    "studio": "pnpm with-env drizzle-kit studio",
-    "typecheck": "tsc --noEmit",
-    "with-env": "dotenv -e ../../.env --"
+    "migrate": "drizzle-kit generate --custom",
+    "push": "drizzle-kit push",
+    "studio": "drizzle-kit studio",
+    "typecheck": "tsc --noEmit"
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {

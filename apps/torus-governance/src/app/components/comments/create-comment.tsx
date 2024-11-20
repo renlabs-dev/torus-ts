@@ -141,7 +141,7 @@ export function CreateComment({
           />
           <Button
             type="submit"
-            variant="default"
+            variant="outline"
             className="py-6 transition"
             disabled={
               isSubmitDisabled() ||

@@ -50,7 +50,7 @@ db-push:
   pnpm exec turbo -F @torus-ts/db push
 
 db-studio:
-  pnpm exec turbo -F @torus-ts/db studio
+  pnpm exec turbo -F @torus-ts/db dev
 
 # -- Cleaning --
 

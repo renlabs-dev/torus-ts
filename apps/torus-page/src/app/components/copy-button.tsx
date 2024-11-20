@@ -29,9 +29,7 @@ export function CopyButton(props: CodeComponentProps): JSX.Element {
       type="button"
     >
       {!copied && <Copy height={16} />}
-      {copied ? (
-        <Copy color="text-green-500" height={16} />
-      ) : null}
+      {copied ? <Copy color="text-green-500" height={16} /> : null}
     </button>
   );
 }

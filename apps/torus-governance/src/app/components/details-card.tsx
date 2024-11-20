@@ -1,4 +1,4 @@
-import type { ProposalState } from "@torus-ts/subspace/old";
+import type { SS58Address } from "@torus-ts/subspace/old";
 import {
   getCreationTime,
   getExpirationTime,
@@ -6,23 +6,16 @@ import {
 } from "@torus-ts/subspace/old";
 import { Card, CardHeader } from "@torus-ts/ui";
 
-// import { VoteText } from "./vote-text"
-import type { VoteStatus } from "./vote-label";
-import { VoteText } from "./vote-text";
-
-type Content = Omit<
-  ProposalState,
-  "proposalCost" | "metadata" | "customData" | "data"
->;
-
 interface DetailsCardProps {
-  content: Content;
+  author: SS58Address;
+  id: number;
+  creationBlock: number;
+  expirationBlock?: number;
   lastBlockNumber: number;
-  voted: VoteStatus;
 }
 
 export const DetailsCard = (props: DetailsCardProps) => {
-  const { content, lastBlockNumber, voted } = props;
+  const { author, id, creationBlock, expirationBlock, lastBlockNumber } = props;
   return (
     <Card className="animate-fade-down p-6 animate-delay-200">
       <CardHeader className="pl-0 pt-0">
@@ -31,36 +24,30 @@ export const DetailsCard = (props: DetailsCardProps) => {
       <div className="flex flex-col gap-3">
         <div className="flex justify-between text-muted-foreground">
           <span>ID</span>
-          <span className="flex items-center text-white">{content.id}</span>
+          <span className="flex items-center text-white">{id}</span>
         </div>
+
         <div className="flex justify-between text-muted-foreground">
           <span>Author</span>
           <span className="flex items-center text-white">
-            {smallAddress(content.proposer)}
+            {smallAddress(author)}
           </span>
         </div>
-
-        {!("expired" in content.status) && (
-          <div className="flex justify-between text-muted-foreground">
-            <span>Vote Status</span>
-            <span className="flex items-center text-white">
-              <VoteText vote={voted} />
-            </span>
-          </div>
-        )}
 
         <div className="flex justify-between text-muted-foreground">
           <span>Start date</span>
           <span className="flex items-end gap-1 text-white">
-            {getCreationTime(lastBlockNumber, content.creationBlock)}
+            {getCreationTime(lastBlockNumber, creationBlock)}
           </span>
         </div>
-        <div className="flex justify-between text-muted-foreground">
-          <span>End Time</span>
-          <span className="flex items-end gap-1 text-white">
-            {getExpirationTime(lastBlockNumber, content.expirationBlock)}
-          </span>
-        </div>
+        {expirationBlock && (
+          <div className="flex justify-between text-muted-foreground">
+            <span>End Time</span>
+            <span className="flex items-end gap-1 text-white">
+              {getExpirationTime(lastBlockNumber, expirationBlock)}
+            </span>
+          </div>
+        )}
       </div>
     </Card>
   );

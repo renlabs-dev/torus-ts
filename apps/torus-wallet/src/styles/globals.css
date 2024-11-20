@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("../../../../packages/ui/src/components/scrollbar-style.css");
-
 :root {
   scroll-behavior: smooth;
 }

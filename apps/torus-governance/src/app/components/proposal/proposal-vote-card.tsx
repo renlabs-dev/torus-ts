@@ -48,7 +48,7 @@ const AlreadyVotedCardContent = (props: {
     <div className="flex w-full flex-col gap-2">
       {getVotedText(voted)}
       <Button
-        variant="default"
+        variant="outline"
         className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
         onClick={handleRemoveVote}
         type="button"
@@ -107,7 +107,7 @@ const VoteCardFunctionsContent = (props: {
       </ToggleGroup>
 
       <Button
-        variant="default"
+        variant="outline"
         className={`mb-1 mt-4 w-full ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
         disabled={vote === "UNVOTED" || votingStatus.status === "PENDING"}
         onClick={handleVote}

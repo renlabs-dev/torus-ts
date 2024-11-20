@@ -36,6 +36,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
       status: dao.status,
       author: dao.userId,
       id: dao.id,
+      creationBlock: dao.blockNumber,
     };
     return daoContent;
   }

@@ -76,7 +76,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
       id: proposal.id,
       status: proposal.status,
       data: proposal.data,
-      proposer: proposal.proposer,
+      author: proposal.proposer,
       expirationBlock: proposal.expirationBlock,
       creationBlock: proposal.creationBlock,
       voted,
@@ -111,9 +111,11 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
           {/* Mobile Details Section */}
           <div className="flex w-full flex-col gap-6 transition-all lg:hidden">
             <DetailsCard
-              content={content}
+              author={content.author}
+              id={content.id}
+              creationBlock={content.creationBlock}
+              expirationBlock={content.expirationBlock}
               lastBlockNumber={lastBlock?.blockNumber ?? 0}
-              voted={content.voted}
             />
             <ProposalVoteCard
               proposalId={content.id}
@@ -121,7 +123,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
               voted={content.voted}
             />
             <VoteData proposalStatus={content.status} />
-            <VoterList proposalStatus={content.status} />
+            {/* <VoterList proposalStatus={content.status} /> */}
           </div>
 
           {/* Desktop Proposal Vote Card */}
@@ -146,9 +148,11 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
         {/* Right Column */}
         <div className="hidden flex-col gap-6 transition-all lg:flex xl:w-1/3">
           <DetailsCard
-            content={content}
+            author={content.author}
+            id={content.id}
+            creationBlock={content.creationBlock}
+            expirationBlock={content.expirationBlock}
             lastBlockNumber={lastBlock?.blockNumber ?? 0}
-            voted={content.voted}
           />
           <VoteData proposalStatus={content.status} />
         </div>
