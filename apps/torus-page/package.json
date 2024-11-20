@@ -40,6 +40,8 @@
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tailwind-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/providers": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",

@@ -104,7 +104,6 @@ export function ViewComment({
   );
 
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
-  const [isVoting, setIsVoting] = useState(false);
 
   const sortedComments = useMemo(() => {
     if (!proposalComments) return [];
@@ -166,7 +165,6 @@ export function ViewComment({
           toast.error("Comment not found");
           return;
         }
-        setIsVoting(true);
 
         const currentVote = userVotes?.[commentId];
         const isRemovingVote = currentVote === voteType;
@@ -190,8 +188,6 @@ export function ViewComment({
           ...prevVotes,
           [commentId]: (userVotes?.[commentId] as VoteType | null) ?? null,
         }));
-      } finally {
-        setIsVoting(false);
       }
     },
     [
@@ -237,7 +233,7 @@ export function ViewComment({
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200">
-        <div className="mb-4 flex w-full flex-row items-center justify-between gap-1 pb-2">
+        <div className="mb-4 flex w-full flex-col items-center justify-between gap-1 pb-2 md:flex-row">
           <h2 className="w-full text-start text-lg font-semibold">
             {modeType === "PROPOSAL"
               ? "Proposal Discussion"
@@ -290,7 +286,7 @@ export function ViewComment({
                     <Button
                       variant="outline"
                       onClick={() => handleVote(comment.id, VoteType.UP)}
-                      disabled={isVoting || !selectedAccount?.address}
+                      // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === VoteType.UP ? "text-green-500" : "hover:text-green-500"} `}
                     >
                       <ChevronsUp className="h-5 w-5" />
@@ -299,7 +295,7 @@ export function ViewComment({
                     <Button
                       variant="outline"
                       onClick={() => handleVote(comment.id, VoteType.DOWN)}
-                      disabled={isVoting || !selectedAccount?.address}
+                      // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === VoteType.DOWN ? "text-red-500" : "hover:text-red-500"}`}
                     >
                       <ChevronsDown className="h-5 w-5" />

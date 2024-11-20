@@ -27,14 +27,14 @@ export function TransactionStatus({
     : { color: "", Icon: null };
 
   return (
-    <p
-      className={cn("flex items-center gap-1 pt-2 text-left text-base", color)}
+    <div
+      className={cn("flex items-center gap-1 pt-2 text-left text-sm", color)}
     >
       {status && status !== "SUCCESS" && status !== "ERROR" && (
         <Loading className={color} />
       )}
       {Icon && <Icon className="h-5 w-5" />}
       {message}
-    </p>
+    </div>
   );
 }

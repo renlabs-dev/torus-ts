@@ -2,17 +2,18 @@
 import "@polkadot/api-augment";
 
 import type { ApiPromise } from "@polkadot/api";
-import { useQueries, useQuery, UseQueryResult } from "@tanstack/react-query";
+import type { UseQueryResult } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 
-import type { ListItem } from "@torus-ts/utils/typing";
-import {
+import type {
   Api,
-  fetchCustomMetadata,
   LastBlock,
   Proposal,
   StakeData,
   VoteWithStake,
 } from "@torus-ts/subspace/old";
+import type { ListItem } from "@torus-ts/utils/typing";
+import { fetchCustomMetadata } from "@torus-ts/subspace/old";
 import {
   getModuleBurn,
   getSubnetList,
@@ -34,7 +35,7 @@ import type { Nullish } from "../types";
 
 import "../utils";
 
-import { SS58Address } from "@torus-ts/subspace/address";
+import type { SS58Address } from "@torus-ts/subspace/address";
 
 // == Constants ==
 
