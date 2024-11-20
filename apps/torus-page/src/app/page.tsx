@@ -12,7 +12,6 @@ export default function Page(): JSX.Element {
           <Bridge />
         </Suspense>
       </div>
-
       <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center pb-[4.6em]">
         <h1 className="block animate-fade-up text-6xl font-semibold tracking-wide shadow-sm animate-delay-[1000ms] md:hidden">
           Torus

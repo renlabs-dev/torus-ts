@@ -13,12 +13,14 @@ interface LayoutProps {
   children: React.ReactNode;
   font: NextFont;
   className?: string;
+  shouldDisplayHeader?: boolean;
 }
 
 export function Layout({
   children,
   font,
   className,
+  shouldDisplayHeader = true,
 }: LayoutProps): JSX.Element {
   return (
     <html lang="en">
@@ -29,7 +31,7 @@ export function Layout({
           className,
         )}
       >
-        <Header />
+        {shouldDisplayHeader && <Header />}
         {children}
         <Footer />
       </body>

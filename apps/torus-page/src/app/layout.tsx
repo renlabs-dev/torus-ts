@@ -6,6 +6,8 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 import { Providers } from "@torus-ts/providers/context";
 import { Layout } from "@torus-ts/ui/components";
 
+import { Header } from "./components/header";
+
 export const metadata: Metadata = {
   robots: "all",
   title: "𝐓𝐨𝐫𝐮𝐬",
@@ -25,7 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono} className="bg-[url('/bg-pattern.svg')]">
+    <Layout
+      font={firaMono}
+      shouldDisplayHeader={false}
+      className="bg-[url('/bg-pattern.svg')]"
+    >
+      <Header />
       <Providers>{children}</Providers>
     </Layout>
   );

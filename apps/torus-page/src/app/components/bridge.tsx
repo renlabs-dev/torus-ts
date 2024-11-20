@@ -167,7 +167,7 @@ export function Bridge() {
         <Alert className="flex flex-col items-start transition duration-100 hover:bg-accent/50">
           <Replace className="h-5 w-5" />
           <AlertTitle className="font-bold">
-            Click here to Bridge your assets to Torus! Closing in (
+            Click here to Bridge your assets to Torus! Closes at (
             {getExpirationTime(currentBlock, torusBridgeExpirationTime)})
           </AlertTitle>
           <AlertDescription>

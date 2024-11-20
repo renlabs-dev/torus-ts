@@ -1,4 +1,5 @@
-import { HoverCard, HoverCardContent, HoverCardTrigger, links } from "..";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from ".";
+import { links } from "../data";
 import { Icons } from "./icons";
 
 function FooterContent() {
