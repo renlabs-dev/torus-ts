@@ -432,7 +432,6 @@ export function DelegatedList() {
                 </Button>
               ))}
               <Button
-                variant="base"
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                   "w-full gap-1 rounded-full",
@@ -497,7 +496,7 @@ export function DelegatedList() {
                           <TableCell>
                             <Button
                               size="icon"
-                              variant="default-red"
+                              variant="outline"
                               onClick={() => removeModule(module.id)}
                             >
                               <X className="h-5 w-5" />
@@ -542,7 +541,7 @@ export function DelegatedList() {
                         <TableCell>
                           <Button
                             size="icon"
-                            variant="default-red"
+                            variant="outline"
                             onClick={() => removeSubnet(subnet.id)}
                           >
                             <X className="h-5 w-5" />
@@ -568,7 +567,7 @@ export function DelegatedList() {
                       ? delegatedModules.length === 0
                       : delegatedSubnets.length === 0
                   }
-                  variant="default-purple"
+                  variant="outline"
                   className="w-full rounded-full"
                 >
                   Auto-Complete to 100%
@@ -577,7 +576,7 @@ export function DelegatedList() {
                 <Button
                   onClick={handleRemoveAllWeight}
                   disabled={isSubmitting || !hasItemsToClear}
-                  variant="default-red"
+                  variant="outline"
                   className="w-full rounded-full"
                 >
                   {isSubmitting
@@ -588,7 +587,6 @@ export function DelegatedList() {
               <Separator className="my-4" />
               <Button
                 onClick={handleSubmit}
-                variant="base"
                 className={cn(
                   "w-full rounded-full",
                   activeTab === "subnets"

@@ -38,7 +38,9 @@ export const ExpandedViewContent = (
   }, [body]);
 
   return (
-    <div className={`flex h-fit animate-fade-down flex-col animate-delay-100`}>
+    <div
+      className={`flex h-fit animate-fade-down flex-col transition-all animate-delay-100`}
+    >
       <h2 className="break-words pb-5 text-2xl font-bold text-white">
         {title ?? "Title not found"}
       </h2>

@@ -50,7 +50,7 @@ function SidebarContent() {
 
   return (
     <div className="flex max-h-fit min-w-fit flex-col gap-6">
-      <Card className="flex flex-col gap-1.5 p-5">
+      <Card className="flex flex-col gap-1.5 p-6">
         {navSidebarOptions.map((view) => (
           <Link href={`?view=${view.href}`} key={view.href} prefetch>
             <Button
@@ -67,7 +67,7 @@ function SidebarContent() {
         ))}
       </Card>
 
-      <Card className="flex flex-col gap-6 border-muted bg-background px-7 py-5">
+      <Card className="flex flex-col gap-6 border-muted bg-background p-8 py-6">
         <div>
           {daosTreasuries && (
             <p className="flex items-end gap-1 text-base">
