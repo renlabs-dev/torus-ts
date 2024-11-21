@@ -6,7 +6,7 @@ function FooterContent() {
   return (
     <div className="flex justify-between space-x-4">
       <div className="h-fit w-fit rounded-full bg-accent p-1.5">
-        <Icons.logo className="h-10 w-10" />
+        <Icons.logo className="m-1 h-4 w-4" />
       </div>
       <div className="space-y-1">
         <h4 className="text-sm font-semibold">Torus</h4>

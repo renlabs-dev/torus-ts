@@ -5,16 +5,16 @@ export const links = {
   cadre: "/cadre",
 
   blog: "https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5",
-  discord: "https://discord.com/invite/A8JGkZ9Dmm",
-  github: "https://github.com/torus-ai",
-  telegram: "https://t.me/toruscommunity",
-  x: "https://twitter.com/torusaidotorg",
+  discord: "https://discord.gg/torus",
+  github: "https://github.com/renlabs-dev",
+  telegram: "https://t.me/torusnetwork",
+  x: "https://twitter.com/torus_network",
 
-  explorer: "https://stats.torusx.ai/",
-  governance: "https://governance.torusai.org/",
-  validator: "https://validator.torusai.org/",
-  landing_page: "https://torusai.org/",
-  wallet: "https://wallet.torusai.org/",
+  explorer: "https://explorer.torus.netowrk",
+  governance: "https://governance.torus.netowrk/",
+  validator: "https://validator.torus.netowrk/",
+  landing_page: "https://torus.netowrk/",
+  wallet: "https://wallet.torus.netowrk/",
 };
 
 export const navApps: { title: string; href: string; description: string }[] = [
@@ -73,5 +73,5 @@ export const navStart: { title: string; href: string; description: string }[] =
 
 export const navItems: { title: string; href: string }[] = [
   { title: "Home", href: "/" },
-  { title: "Documentation", href: "/docs/getting-started/intro" },
+  // { title: "Documentation", href: "/docs/getting-started/intro" },
 ];

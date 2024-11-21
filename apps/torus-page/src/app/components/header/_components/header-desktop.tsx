@@ -66,13 +66,20 @@ export function HeaderDesktop({
         <NavigationMenuItem>
           <NavigationMenuTrigger>Applications</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-              {apps.map((app) => (
-                <ListItem key={app.title} title={app.title} href={app.href}>
-                  {app.description}
-                </ListItem>
-              ))}
-            </ul>
+            <div className="relative">
+              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                {apps.map((app) => (
+                  <ListItem key={app.title} title={app.title} href={app.href}>
+                    {app.description}
+                  </ListItem>
+                ))}
+              </ul>
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                <span className="text-lg font-bold text-white">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
           </NavigationMenuContent>
         </NavigationMenuItem>
       </NavigationMenuList>
