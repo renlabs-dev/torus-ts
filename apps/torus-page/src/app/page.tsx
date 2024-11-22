@@ -1,12 +1,18 @@
 import { Suspense } from "react";
 import Image from "next/image";
 
-import Animation from "./components/animation";
 import { Bridge } from "./components/bridge";
+import { TorusObject } from "./components/torus";
 
 export default function Page(): JSX.Element {
   return (
     <>
+      <div
+        className="absolute top-0 -z-10 h-full w-full opacity-80"
+        style={{ overflow: "hidden" }}
+      >
+        <TorusObject />
+      </div>
       <div className="absolute bottom-0 left-0 z-50 m-2 w-fit animate-fade">
         <Suspense fallback="...loading">
           <Bridge />
@@ -28,7 +34,6 @@ export default function Page(): JSX.Element {
           Peer-to-peer Incentivized coordination network.
         </h3>
       </div>
-      <Animation />
     </>
   );
 }
