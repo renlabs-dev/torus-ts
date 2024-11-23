@@ -1,8 +1,18 @@
 import type { ZodRawShape, ZodType } from "zod";
-import { BTreeSet, Enum, GenericAccountId, UInt } from "@polkadot/types";
+import {
+  BTreeSet,
+  Bytes,
+  Enum,
+  GenericAccountId,
+  Null,
+  Struct,
+  UInt,
+} from "@polkadot/types";
 import { z } from "zod";
 
-import { ADDRESS_SCHEMA } from "./address";
+import { SS58_SCHEMA } from "../address";
+
+export { sb_enum } from "./sb_enum";
 
 // == Zod ==
 
@@ -16,6 +26,57 @@ export declare type ZodRawCreateParams =
     }
   | undefined;
 
+/**
+ * Similar to `z.object()` but accepts `Map`.
+ */
+export const z_map = <T extends ZodRawShape>(
+  shape: T,
+  params?: ZodRawCreateParams,
+) =>
+  z
+    .custom<Map<unknown, unknown>>((data) => data instanceof Map, "not a Map")
+    .transform((map, ctx) => {
+      const obj: Record<string | number | symbol, unknown> = {};
+      for (const [key, value] of map.entries()) {
+        if (
+          typeof key !== "string" &&
+          typeof key !== "number" &&
+          typeof key !== "symbol"
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Map key must be a string, number, or symbol. Received ${typeof key}`,
+          });
+          continue;
+        }
+        console.log(key);
+        obj[key] = value;
+      }
+      return obj;
+    })
+    .pipe(z.object(shape, params));
+
+// == Struct ==
+
+export const Struct_schema = z.custom<Struct>(
+  (val) => val instanceof Struct,
+  "not a substrate Struct",
+);
+
+export const sb_struct = <T extends ZodRawShape>(
+  shape: T,
+  params?: ZodRawCreateParams,
+) => Struct_schema.pipe(z_map(shape, params));
+
+// == Null ==
+
+export const Null_schema = z.custom<Null>(
+  (val) => val instanceof Null,
+  "not a substrate Null",
+);
+
+export const sb_null = Null_schema.transform((val) => val.toPrimitive());
+
 // == Numbers ==
 
 export const UInt_schema = z.custom<UInt>(
@@ -27,6 +88,24 @@ export const sb_bigint = UInt_schema.transform((val) =>
   BigInt(val.toPrimitive()),
 );
 
+// == String ==
+
+export const Bytes_schema = z.custom<Bytes>(
+  (val) => val instanceof Bytes,
+  "not a substrate Bytes",
+);
+
+export const sb_string = Bytes_schema.transform<string>((val, ctx) => {
+  if (!val.isUtf8) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Bytes is not valid UTF8`,
+    });
+    return z.NEVER;
+  }
+  return val.toUtf8();
+});
+
 // == Enum ==
 
 export const Enum_schema = z.custom<Enum>(
@@ -34,7 +113,10 @@ export const Enum_schema = z.custom<Enum>(
   "not an substrate Enum",
 );
 
-export const sb_basic_enum = (variants: [string, ...string[]]) =>
+export const sb_basic_enum = (
+  variants: [string, ...string[]],
+  params: ZodRawCreateParams = {},
+) =>
   Enum_schema.transform((val, ctx) => {
     if (!val.isBasic) {
       ctx.addIssue({
@@ -43,7 +125,7 @@ export const sb_basic_enum = (variants: [string, ...string[]]) =>
       });
     }
     return val.type;
-  }).pipe(z.enum(variants));
+  }).pipe(z.enum(variants, params));
 
 // == Address ==
 
@@ -54,20 +136,13 @@ export const GenericAccountId_schema = z.custom<GenericAccountId>(
 
 export const sb_address = GenericAccountId_schema.transform((val) =>
   val.toString(),
-).pipe(ADDRESS_SCHEMA);
+).pipe(SS58_SCHEMA);
 
 // == Collections ==
 
 export const BTreeSet_schema = z.custom<BTreeSet>(
   (val) => val instanceof BTreeSet,
 );
-
-interface ForEach<T> {
-  forEach(
-    callbackfn: (value: T, value2: T, set: ForEach<T>) => void,
-    // thisArg?: any,
-  ): void;
-}
 
 export const sb_array = <T, S extends ZodType<T, z.ZodTypeDef, unknown>>(
   inner: S,
@@ -101,32 +176,3 @@ export const sb_array = <T, S extends ZodType<T, z.ZodTypeDef, unknown>>(
       });
       return xs;
     });
-
-/**
- * Similar to `z.object()` but accepts `Map`.
- */
-export const z_map = <T extends ZodRawShape>(
-  shape: T,
-  params?: ZodRawCreateParams,
-) =>
-  z
-    .custom<Map<unknown, unknown>>((data) => data instanceof Map, "not a Map")
-    .transform((map, ctx) => {
-      const obj: Record<string | number | symbol, unknown> = {};
-      for (const [key, value] of map.entries()) {
-        if (
-          typeof key !== "string" &&
-          typeof key !== "number" &&
-          typeof key !== "symbol"
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Map key must be a string, number, or symbol. Received ${typeof key}`,
-          });
-          continue;
-        }
-        obj[key] = value;
-      }
-      return obj;
-    })
-    .pipe(z.object(shape, params));

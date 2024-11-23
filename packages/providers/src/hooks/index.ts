@@ -23,7 +23,7 @@ import {
   queryDaoTreasuryAddress,
   queryLastBlock,
   queryNotDelegatingVotingPower,
-  queryProposalsEntries,
+  queryProposals,
   queryRewardAllocation,
   queryStakeFrom,
   queryStakeOut,
@@ -105,7 +105,7 @@ export function useProposals(
   return useQuery({
     queryKey: ["proposals"],
     enabled: api != null,
-    queryFn: () => queryProposalsEntries(api!),
+    queryFn: () => queryProposals(api!),
     staleTime: PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });

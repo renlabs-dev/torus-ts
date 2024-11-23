@@ -1,10 +1,6 @@
-import { BN } from "@polkadot/util";
 import { DateTime } from "luxon";
-import { match } from "rustie";
-import { AssertionError } from "tsafe";
+import { assert, AssertionError } from "tsafe";
 import { z } from "zod";
-
-import type { Result } from "./typing";
 
 export * from "./typing";
 
@@ -27,6 +23,12 @@ export function assertOrThrow(
   if (!condition) {
     throw new AssertionError(message);
   }
+}
+
+export const is_error = (err: unknown): err is Error => err instanceof Error;
+
+export function check_error(err: unknown): asserts err is Error {
+  return assert(is_error(err));
 }
 
 // == Numeric ==

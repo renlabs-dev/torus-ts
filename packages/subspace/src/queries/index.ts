@@ -34,7 +34,6 @@ import {
 import {
   getPropsToMap,
   handleDaos,
-  handleProposals,
   standardizeUidToSS58address,
 } from "../old_utils";
 import {
@@ -42,8 +41,10 @@ import {
   sb_array,
   sb_basic_enum,
   sb_bigint,
-  z_map,
+  sb_struct,
 } from "../types";
+
+export { queryProposals } from "../modules/governance";
 
 export { ApiPromise };
 
@@ -70,17 +71,6 @@ export async function queryBalance(api: Api, address: SS58Address | string) {
     data: { free: freeBalance },
   } = await api.query.system.account(address);
   return BigInt(freeBalance.toString());
-}
-
-export async function queryProposalsEntries(api: Api) {
-  const proposalsQuery = await api.query.governanceModule.proposals.entries();
-
-  const [proposals, proposalsErrs] = handleProposals(proposalsQuery);
-  for (const err of proposalsErrs) {
-    console.error(err);
-  }
-
-  return proposals;
 }
 
 export async function queryDaosEntries(api: Api) {
@@ -209,7 +199,7 @@ export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
     .filter((id): id is number => !isNaN(id));
 }
 
-const GOVERNANCE_CONFIGURATION_SCHEMA = z_map({
+const GOVERNANCE_CONFIGURATION_SCHEMA = sb_struct({
   proposalCost: sb_bigint,
   proposalExpiration: sb_bigint,
   voteMode: sb_basic_enum(["Vote", "Authority"]),

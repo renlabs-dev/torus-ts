@@ -9,7 +9,7 @@ import { z } from "zod";
 import type { Result } from "@torus-ts/utils";
 
 import type { SS58Address } from "./address";
-import { ADDRESS_SCHEMA } from "./address";
+import { SS58_SCHEMA } from "./address";
 
 export type {
   InjectedAccountWithMeta,
@@ -134,8 +134,8 @@ export type DaoApplicationStatus =
 
 export const DAO_APPLICATIONS_SCHEMA = z.object({
   id: z.number(),
-  userId: ADDRESS_SCHEMA,
-  payingFor: ADDRESS_SCHEMA,
+  userId: SS58_SCHEMA,
+  payingFor: SS58_SCHEMA,
   data: z.string(),
   blockNumber: z.number(),
   status: z
@@ -162,8 +162,8 @@ export type DaoState = WithMetadataState<DaoApplications>;
 export const PROPOSAL_STATUS_SCHEMA = z.union([
   z.object({
     open: z.object({
-      votesFor: z.array(ADDRESS_SCHEMA),
-      votesAgainst: z.array(ADDRESS_SCHEMA),
+      votesFor: z.array(SS58_SCHEMA),
+      votesAgainst: z.array(SS58_SCHEMA),
       stakeFor: TOKEN_AMOUNT_SCHEMA,
       stakeAgainst: TOKEN_AMOUNT_SCHEMA,
     }),
@@ -199,7 +199,7 @@ export const PROPOSAL_DATA_SCHEMA = z.union([
   }),
   z.object({
     transferDaoTreasury: z.object({
-      account: ADDRESS_SCHEMA,
+      account: SS58_SCHEMA,
       amount: TOKEN_AMOUNT_SCHEMA,
     }),
   }),
@@ -207,7 +207,7 @@ export const PROPOSAL_DATA_SCHEMA = z.union([
 
 export const PROPOSAL_SCHEMA = z.object({
   id: z.number(),
-  proposer: ADDRESS_SCHEMA,
+  proposer: SS58_SCHEMA,
   expirationBlock: z.number(),
   data: PROPOSAL_DATA_SCHEMA,
   status: PROPOSAL_STATUS_SCHEMA,
@@ -302,7 +302,7 @@ export const SUBSPACE_MODULE_METADATA_SCHEMA = z.string(); // TODO: validate it'
 export const SUBSPACE_MODULE_LAST_UPDATE_SCHEMA = z.any();
 export const STAKE_FROM_SCHEMA = z.object({
   stakeFromStorage: z
-    .record(ADDRESS_SCHEMA, z.record(ADDRESS_SCHEMA, z.coerce.bigint()))
+    .record(SS58_SCHEMA, z.record(SS58_SCHEMA, z.coerce.bigint()))
     .transform((val) => {
       const map = new Map<SS58Address, Map<SS58Address, bigint>>();
       const stakeMapEntries = Object.entries(val) as [
@@ -323,7 +323,7 @@ export const STAKE_FROM_SCHEMA = z.object({
 
 export const SUBSPACE_MODULE_SCHEMA = z.object({
   netuid: z.coerce.number(),
-  key: ADDRESS_SCHEMA,
+  key: SS58_SCHEMA,
   uid: z.coerce.number().int(),
   name: SUBSPACE_MODULE_NAME_SCHEMA.optional(),
   address: SUBSPACE_MODULE_ADDRESS_SCHEMA.optional(),
@@ -347,5 +347,5 @@ export type SubspaceModule = z.infer<typeof SUBSPACE_MODULE_SCHEMA>;
 
 export const QUERY_PARAMS_SCHEMA = z.object({
   netuid: z.number(),
-  address: ADDRESS_SCHEMA,
+  address: SS58_SCHEMA,
 });

@@ -24,6 +24,6 @@ export function isSS58(value: string | null | undefined): value is SS58Address {
   return true;
 }
 
-export const ADDRESS_SCHEMA = z
+export const SS58_SCHEMA = z
   .string()
   .refine<SS58Address>(isSS58, "Invalid SS58 address");

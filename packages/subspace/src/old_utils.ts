@@ -14,14 +14,9 @@ import type {
   CustomDataError,
   CustomMetadata,
   DaoApplications,
-  Proposal,
   StorageKey,
 } from "./old_types";
-import {
-  CUSTOM_METADATA_SCHEMA,
-  DAO_APPLICATIONS_SCHEMA,
-  PROPOSAL_SCHEMA,
-} from "./old_types";
+import { CUSTOM_METADATA_SCHEMA, DAO_APPLICATIONS_SCHEMA } from "./old_types";
 
 export * from "@torus-ts/utils/subspace";
 
@@ -81,12 +76,6 @@ export function handleEntries<T>(
   }
   entries.reverse();
   return [entries, errors];
-}
-
-export function handleProposals(
-  rawProposals: [unknown, Codec][] | undefined,
-): [Proposal[], Error[]] {
-  return handleEntries(rawProposals, parseProposal);
 }
 
 export function handleDaos(
@@ -390,15 +379,6 @@ export function parseDaos(valueRaw: Codec): DaoApplications | null {
     return null;
   }
   return validated.data as unknown as DaoApplications;
-}
-
-export function parseProposal(valueRaw: Codec): Proposal | null {
-  const value = valueRaw.toPrimitive();
-  const validated = PROPOSAL_SCHEMA.safeParse(value);
-  if (!validated.success) {
-    return null;
-  }
-  return validated.data;
 }
 
 export const paramNameToDisplayName = (paramName: string): string => {
