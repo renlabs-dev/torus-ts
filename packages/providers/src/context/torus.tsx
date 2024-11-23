@@ -3,6 +3,10 @@
 import type { SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { Balance, DispatchError } from "@polkadot/types/interfaces";
+import type {
+  QueryObserverResult,
+  RefetchOptions,
+} from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { toast } from "react-toastify";
@@ -107,6 +111,9 @@ interface TorusContextType {
 
   notDelegatingVoting: string[] | undefined;
   isNotDelegatingVotingLoading: boolean;
+  refetchNotDelegatingVoting: (
+    options?: RefetchOptions,
+  ) => Promise<QueryObserverResult<SS58Address[], Error>>;
 
   unrewardedProposals: number[] | undefined;
   isUnrewardedProposalsLoading: boolean;
@@ -537,8 +544,11 @@ export function TorusProvider({
   );
 
   // Not Delegating Voting Power Set
-  const { data: notDelegatingVoting, isLoading: isNotDelegatingVotingLoading } =
-    useNotDelegatingVoting(lastBlock?.apiAtBlock);
+  const {
+    data: notDelegatingVoting,
+    isLoading: isNotDelegatingVotingLoading,
+    refetch: refetchNotDelegatingVoting,
+  } = useNotDelegatingVoting(lastBlock?.apiAtBlock);
 
   // Unrewarded Proposals
   const { data: unrewardedProposals, isLoading: isUnrewardedProposalsLoading } =
@@ -675,6 +685,7 @@ export function TorusProvider({
 
         notDelegatingVoting,
         isNotDelegatingVotingLoading,
+        refetchNotDelegatingVoting,
 
         unrewardedProposals,
         isUnrewardedProposalsLoading,

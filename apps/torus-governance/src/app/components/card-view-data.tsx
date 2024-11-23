@@ -1,3 +1,5 @@
+"use client";
+
 import { Clock, Crown } from "lucide-react";
 
 import type { SS58Address } from "@torus-ts/subspace/address";
@@ -42,9 +44,11 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
     currentBlock,
   } = props;
 
+  const isProposalOpen = proposalStatus && "open" in proposalStatus;
+
   return (
     <>
-      <Card className="p-6 hover:bg-accent/70">
+      <Card className="p-4 hover:bg-accent/70 lg:p-6">
         <CardHeader className="flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0 xl:flex-row">
           <div className="flex w-fit flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-5">
             <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">
@@ -79,7 +83,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
             </CardTitle>
           )}
 
-          {favorablePercent && (
+          {isProposalOpen && (
             <VotePercentageBar favorablePercent={favorablePercent} />
           )}
         </CardContent>

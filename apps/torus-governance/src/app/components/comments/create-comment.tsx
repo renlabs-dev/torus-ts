@@ -112,10 +112,13 @@ export function CreateComment({
 
   return (
     <div className="hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200 md:flex">
-      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
-        <div className="mb-2 w-full pb-1">
-          <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
-        </div>
+      <div className="mb-2 w-full pb-1">
+        <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
+      </div>
+      <form
+        onSubmit={handleSubmit}
+        className={`flex w-full flex-col gap-2 ${!selectedAccount && "blur-sm"}`}
+      >
         <div className="relative">
           <textarea
             placeholder="Type your message here..."
@@ -164,6 +167,11 @@ export function CreateComment({
           </p>
         )}
       </form>
+      {!selectedAccount && (
+        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
+          <span>Connect your wallet to comment</span>
+        </div>
+      )}
     </div>
   );
 }

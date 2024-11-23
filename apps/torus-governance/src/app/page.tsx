@@ -9,7 +9,7 @@ import { SidebarLinks } from "./components/sidebar-links";
 
 export default function HomePage(): JSX.Element {
   return (
-    <main className="flex w-full flex-col items-center justify-center px-6">
+    <main className="flex w-full flex-col items-center justify-center px-4 md:px-6">
       <div className="h-full w-full pt-12">
         {/* <Container> */}
         <div className="mx-auto flex w-full max-w-screen-xl animate-fade-in-down flex-col items-center justify-center text-white">

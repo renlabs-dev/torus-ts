@@ -75,6 +75,58 @@ const LoadingComments = () => {
   );
 };
 
+interface CommentsHeaderProps {
+  sortBy: SorterTypes;
+  isLoading: boolean;
+  proposalComments: {
+    userKey: string;
+    id: string;
+    createdAt: Date;
+    content: string;
+    proposalId: number;
+    governanceModel: "PROPOSAL" | "DAO" | "FORUM" | null;
+    userName: string | null;
+    upvotes: number;
+    downvotes: number;
+  }[];
+  handleCommentSorter: (value: SorterTypes) => void;
+  modeType: "PROPOSAL" | "DAO";
+}
+
+const CommentsHeader = (props: CommentsHeaderProps) => {
+  const { sortBy, isLoading, proposalComments, handleCommentSorter, modeType } =
+    props;
+  return (
+    <div className="mb-4 flex w-full flex-row items-center justify-between gap-1 pb-2">
+      <h2 className="w-full text-start text-lg font-semibold">
+        {modeType === "PROPOSAL" ? "Proposal Discussion" : "DAO Cadre Comments"}
+      </h2>
+      <ToggleGroup
+        type="single"
+        value={sortBy}
+        disabled={isLoading || proposalComments.length === 0}
+        onValueChange={(value: SorterTypes) => handleCommentSorter(value)}
+        className="flex gap-2"
+      >
+        {commentSorters.map((sorter) => (
+          <ToggleGroupItem
+            key={sorter.sortBy}
+            variant="outline"
+            value={sorter.sortBy}
+            className={`px-3 py-1 text-sm ${
+              sortBy === sorter.sortBy
+                ? "border-white"
+                : "bg-card text-muted-foreground"
+            }`}
+          >
+            {sorter.icon}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
+  );
+};
+
 export function ViewComment({
   proposalId,
   modeType,
@@ -226,41 +278,27 @@ export function ViewComment({
     toast.error("Failed to load comments. Please try again later.");
     return <div>Error loading comments</div>;
   }
+
   if (isLoading) return <LoadingComments />;
-  if (!sortedComments.length)
-    return <div className="text-muted-foreground">No comments yet</div>;
 
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200">
-        <div className="mb-4 flex w-full flex-col items-center justify-between gap-1 pb-2 md:flex-row">
-          <h2 className="w-full text-start text-lg font-semibold">
-            {modeType === "PROPOSAL"
-              ? "Proposal Discussion"
-              : "DAO Cadre Comments"}
-          </h2>
-          <ToggleGroup
-            type="single"
-            value={sortBy}
-            onValueChange={(value: SorterTypes) => handleCommentSorter(value)}
-            className="flex gap-2"
-          >
-            {commentSorters.map((sorter) => (
-              <ToggleGroupItem
-                key={sorter.sortBy}
-                variant="outline"
-                value={sorter.sortBy}
-                className={`px-3 py-1 text-sm ${
-                  sortBy === sorter.sortBy
-                    ? "border-white"
-                    : "bg-card text-muted-foreground"
-                }`}
-              >
-                {sorter.icon}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </div>
+        <CommentsHeader
+          sortBy={sortBy}
+          isLoading={isLoading}
+          proposalComments={proposalComments ?? []}
+          handleCommentSorter={handleCommentSorter}
+          modeType={modeType}
+        />
+
+        {!sortedComments.length && (
+          <Card className="flex h-full w-full items-center justify-center p-4">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <span className="text-muted-foreground">No comments yet</span>
+            </div>
+          </Card>
+        )}
 
         <div
           className="flex max-h-72 w-full flex-col gap-2 overflow-auto pr-2"
@@ -274,13 +312,15 @@ export function ViewComment({
                 className="relative flex w-full flex-col gap-2 p-2 pb-4"
               >
                 <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
-                  <div className="flex-start flex flex-row gap-2 md:flex-row md:items-center">
+                  <div className="flex-start flex flex-row items-center gap-1.5 md:flex-row">
                     {comment.userName && (
-                      <span className="flex w-fit items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-sm">
+                      <span className="rounded-full bg-accent px-2 py-0.5 text-center text-sm">
                         {comment.userName}
                       </span>
                     )}
-                    {smallAddress(comment.userKey, 4)}
+                    <span className="text-sm text-muted-foreground">
+                      {smallAddress(comment.userKey, 3)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -322,6 +362,7 @@ export function ViewComment({
           />
         </div>
       </div>
+
       <ReportComment commentId={commentId} setCommentId={setCommentId} />
     </div>
   );

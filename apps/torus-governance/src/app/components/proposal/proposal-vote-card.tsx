@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TicketX } from "lucide-react";
 import { match } from "rustie";
 
 import type { ProposalStatus } from "@torus-ts/subspace/old";
 import type { TransactionResult } from "@torus-ts/ui/types";
+import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
@@ -16,6 +17,7 @@ import {
 
 import type { VoteStatus } from "../vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
+import { VotePowerSettings } from "../vote-power-settings";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
@@ -69,10 +71,12 @@ const VoteCardFunctionsContent = (props: {
   vote: VoteStatus;
   votingStatus: TransactionResult;
   isConnected: boolean;
+  isPowerUser: boolean;
   handleVote: () => void;
   setVote: (vote: VoteStatus) => void;
 }): JSX.Element => {
-  const { handleVote, setVote, vote, votingStatus } = props;
+  const { handleVote, setVote, vote, votingStatus, isPowerUser, isConnected } =
+    props;
 
   {
     /* TODO: Review logic to connect an account and handle the case when isConnected is false*/
@@ -84,45 +88,60 @@ const VoteCardFunctionsContent = (props: {
   }
 
   return (
-    <>
-      <ToggleGroup
-        type="single"
-        value={vote}
-        onValueChange={(voteType: VoteStatus | "") =>
-          handleVotePreference(voteType)
-        }
-        className="flex w-full gap-4"
+    <div className="flex w-full flex-col items-end gap-4">
+      <div
+        className={`relative z-20 flex w-full flex-col items-end gap-2 ${!isConnected && "blur-sm"}`}
       >
-        {voteOptions.map((option) => (
-          <ToggleGroupItem
-            key={option}
-            variant="outline"
-            value={option}
-            className={`w-full capitalize ${votingStatus.status === "PENDING" && "cursor-not-allowed"} ${option === vote ? "border-white" : "border-muted bg-card"}`}
-            disabled={votingStatus.status === "PENDING"}
-          >
-            {option.toLocaleLowerCase()}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+        {isConnected && <VotePowerSettings isPowerUser={isPowerUser} />}
+        <ToggleGroup
+          type="single"
+          value={vote}
+          onValueChange={(voteType: VoteStatus | "") =>
+            handleVotePreference(voteType)
+          }
+          disabled={votingStatus.status === "PENDING" || !isPowerUser}
+          className="flex w-full gap-2"
+        >
+          {voteOptions.map((option) => (
+            <ToggleGroupItem
+              key={option}
+              variant="outline"
+              value={option}
+              className={`w-full capitalize ${votingStatus.status === "PENDING" && "cursor-not-allowed"} ${option === vote ? "border-white" : "border-muted bg-card"}`}
+              disabled={votingStatus.status === "PENDING"}
+            >
+              {option.toLocaleLowerCase()}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
 
-      <Button
-        variant="outline"
-        className={`mb-1 mt-4 w-full ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
-        disabled={vote === "UNVOTED" || votingStatus.status === "PENDING"}
-        onClick={handleVote}
-        type="button"
-      >
-        {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
-      </Button>
+        <Button
+          variant="outline"
+          className={`w-full ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
+          disabled={
+            vote === "UNVOTED" ||
+            votingStatus.status === "PENDING" ||
+            !isPowerUser
+          }
+          onClick={handleVote}
+          type="button"
+        >
+          {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
+        </Button>
 
-      {votingStatus.status && (
-        <TransactionStatus
-          status={votingStatus.status}
-          message={votingStatus.message}
-        />
+        {votingStatus.status && (
+          <TransactionStatus
+            status={votingStatus.status}
+            message={votingStatus.message}
+          />
+        )}
+      </div>
+      {!isConnected && (
+        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
+          <span>Connect your wallet to vote</span>
+        </div>
       )}
-    </>
+    </div>
   );
 };
 
@@ -132,7 +151,13 @@ export function ProposalVoteCard(props: {
   voted: VoteStatus;
 }): JSX.Element {
   const { proposalId, voted = "UNVOTED", proposalStatus } = props;
-  const { isConnected, voteProposal, removeVoteProposal } = useTorus();
+  const {
+    isConnected,
+    voteProposal,
+    removeVoteProposal,
+    selectedAccount,
+    notDelegatingVoting,
+  } = useTorus();
 
   const [vote, setVote] = useState<VoteStatus>("UNVOTED");
   const [votingStatus, setVotingStatus] = useState<TransactionResult>({
@@ -143,15 +168,30 @@ export function ProposalVoteCard(props: {
 
   function handleCallback(callbackReturn: TransactionResult): void {
     setVotingStatus(callbackReturn);
+    console.log(callbackReturn);
+    if (callbackReturn.finalized && callbackReturn.status === "SUCCESS") {
+      toast.success("This page will reload in 5 seconds");
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+    }
   }
 
   function handleVote(): void {
     const voteBoolean = vote === "FAVORABLE" ? true : false;
-    void voteProposal({
-      proposalId,
-      vote: voteBoolean,
-      callback: handleCallback,
-    });
+    try {
+      void voteProposal({
+        proposalId,
+        vote: voteBoolean,
+        callback: handleCallback,
+      });
+    } catch {
+      setVotingStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Error voting",
+      });
+    }
   }
 
   function handleRemoveVote(): void {
@@ -160,11 +200,28 @@ export function ProposalVoteCard(props: {
       finalized: false,
       message: "Starting vote removal",
     });
-    void removeVoteProposal({
-      proposalId,
-      callback: handleCallback,
-    });
+    try {
+      void removeVoteProposal({
+        proposalId,
+        callback: handleCallback,
+      });
+    } catch (error) {
+      console.error(error);
+      setVotingStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Error removing vote",
+      });
+    }
   }
+
+  const isPowerUser = useMemo(() => {
+    if (selectedAccount?.address && notDelegatingVoting) {
+      const isUserPower = notDelegatingVoting.includes(selectedAccount.address);
+      return isUserPower;
+    }
+    return false;
+  }, [selectedAccount, notDelegatingVoting]);
 
   if (voted !== "UNVOTED") {
     return (
@@ -187,6 +244,7 @@ export function ProposalVoteCard(props: {
             handleVote={handleVote}
             vote={vote}
             setVote={setVote}
+            isPowerUser={isPowerUser}
             votingStatus={votingStatus}
           />
         </CardBarebones>

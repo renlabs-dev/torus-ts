@@ -1,9 +1,11 @@
 import { Skeleton } from "@torus-ts/ui";
 
 export const VotePercentageBar = (props: {
-  favorablePercent: number | null;
+  favorablePercent: number | null | undefined;
 }) => {
   const { favorablePercent } = props;
+
+  if (favorablePercent === undefined) return null;
 
   if (favorablePercent === null) {
     return (
@@ -22,13 +24,13 @@ export const VotePercentageBar = (props: {
         style={{ width: `${favorablePercent}%` }}
       />
       <div className="absolute inset-0 flex items-center justify-between px-3 text-sm">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs">
           Favorable
           <span className="text-muted-foreground">
             {favorablePercent.toFixed(2)}%
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs">
           Against
           <span className="text-muted-foreground">
             {againstPercent.toFixed(2)}%

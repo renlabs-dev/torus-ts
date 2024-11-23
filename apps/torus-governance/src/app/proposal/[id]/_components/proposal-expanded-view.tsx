@@ -17,7 +17,6 @@ import { RewardLabel } from "~/app/components/proposal/reward-label";
 import { VoterList } from "~/app/components/proposal/voter-list";
 import { VoteData } from "~/app/components/vote-data";
 import { handleCustomProposal } from "../../../../utils";
-// import { VotingPowerButton } from "../../../components/proposal/voting-power-button";
 import { StatusLabel } from "../../../components/status-label";
 
 interface CustomContent {
@@ -101,11 +100,11 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
         <RewardLabel proposalId={content.id} result={content.status} />
       </div>
       <div className="flex w-full gap-10">
-        <div className="flex h-full w-full flex-col gap-14 lg:w-2/3">
+        <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
 
           {/* Mobile Details Section */}
-          <div className="flex w-full flex-col gap-6 transition-all lg:hidden">
+          <div className="flex w-full flex-col gap-6 transition-all md:hidden">
             <DetailsCard
               author={content.author}
               id={content.id}
@@ -119,11 +118,10 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
               voted={content.voted}
             />
             <VoteData proposalStatus={content.status} />
-            {/* <VoterList proposalStatus={content.status} /> */}
           </div>
 
           {/* Desktop Proposal Vote Card */}
-          <div className="hidden lg:block">
+          <div className="hidden md:block">
             <ProposalVoteCard
               proposalId={content.id}
               proposalStatus={content.status}
@@ -142,7 +140,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
         </div>
 
         {/* Right Column */}
-        <div className="hidden flex-col gap-6 transition-all lg:flex xl:w-1/3">
+        <div className="hidden flex-col gap-6 transition-all md:flex xl:w-1/3">
           <DetailsCard
             author={content.author}
             id={content.id}

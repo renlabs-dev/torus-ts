@@ -52,7 +52,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
 
   if (isLoading) {
     return (
-      <Card className="animate-fade-down p-6 animate-delay-500">
+      <Card className="animate-fade-down p-4 animate-delay-500 md:p-6">
         <CardHeader className="pl-0 pt-0">
           <h3>Voters List</h3>
         </CardHeader>
@@ -63,7 +63,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
 
   if (isError) {
     return (
-      <Card className="animate-fade-down p-6 animate-delay-500">
+      <Card className="animate-fade-down p-4 animate-delay-500 md:p-6">
         <CardHeader className="pl-0 pt-0">
           <h3>Voters List</h3>
         </CardHeader>
@@ -76,7 +76,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
 
   if (!voters || voters.length === 0) {
     return (
-      <Card className="animate-fade-down border-muted p-6 animate-delay-500">
+      <Card className="animate-fade-down border-muted p-4 animate-delay-500 md:p-6">
         <CardHeader className="pl-0 pt-0">
           <h3>Voters List</h3>
         </CardHeader>
@@ -103,7 +103,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
       >
         {voters.map(({ address, vote }) => (
           <Button
-            variant="default"
+            variant="outline"
             key={address}
             className="flex w-full animate-fade-down items-center justify-between border-muted px-6 py-8 animate-delay-500 hover:text-muted-foreground"
             onClick={() => handleCopyAddress(address as string)}
