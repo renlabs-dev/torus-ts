@@ -15,6 +15,7 @@
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
     "@next/mdx": "^14.2.5",
+    "@react-three/drei": "^9.117.3",
     "@react-three/fiber": "9.0.0-alpha.8",
     "@t3-oss/env-nextjs": "catalog:",
     "@torus-ts/ui": "workspace:*",
