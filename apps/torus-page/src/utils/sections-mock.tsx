@@ -89,3 +89,21 @@ export const sections = [
     ],
   },
 ];
+
+export const bridge = [
+  {
+    sectionName: "bridge",
+    title: "Bridge Info",
+    subtitle: "learn more about the bridge",
+    features: [
+      {
+        description:
+          "The Torus bridge is a decentralized bridge that allows users to bridge assets from Commune AI to Torus.",
+      },
+      {
+        description:
+          "The bridge is a one-way bridge, allowing users to bridge assets from Commune AI to Torus.",
+      },
+    ],
+  },
+];

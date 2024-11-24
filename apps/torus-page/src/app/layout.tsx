@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Providers } from "@torus-ts/providers/context";
-import { Layout } from "@torus-ts/ui/components";
+import { cn, Footer } from "@torus-ts/ui/components";
 
 import { Header } from "./components/header";
 
@@ -27,13 +27,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout
-      font={firaMono}
-      shouldDisplayHeader={false}
-      className="bg-[url('/bg-pattern.svg')]"
-    >
-      <Header />
-      <Providers>{children}</Providers>
-    </Layout>
+    <html lang="en">
+      <body
+        className={cn(
+          firaMono.className,
+          `relative overscroll-none bg-[#04061C] bg-cover text-white`,
+        )}
+      >
+        <Providers>
+          <Header />
+          {children}
+          <Footer />
+        </Providers>
+      </body>
+    </html>
   );
 }

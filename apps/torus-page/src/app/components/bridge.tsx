@@ -2,13 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CreditCard,
-  LoaderCircle,
-  Lock,
-  LockOpen,
-  Replace,
-} from "lucide-react";
+import { CreditCard, LoaderCircle, Lock, LockOpen } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -20,8 +14,6 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  Alert,
-  AlertDescription,
   AlertDialog,
   AlertDialogCancel,
   AlertDialogContent,
@@ -30,7 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  AlertTitle,
   Button,
   Card,
   cn,
@@ -163,18 +154,9 @@ export function Bridge() {
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger>
-        <Alert className="flex flex-col items-start transition duration-100 hover:bg-accent/50">
-          <Replace className="h-5 w-5" />
-          <AlertTitle className="font-bold">
-            Click here to Bridge your assets to Torus! Closes at (
-            {getExpirationTime(currentBlock, torusBridgeExpirationTime)})
-          </AlertTitle>
-          <AlertDescription>
-            You can now bridge your assets from Commune AI to Torus Network for
-            a limited period of time.
-          </AlertDescription>
-        </Alert>
+      <AlertDialogTrigger className="mb-2 w-full overflow-hidden border-b bg-accent/50 p-3">
+        Click here to Bridge your assets to the Torus Network. (Bridge Closes
+        At: {getExpirationTime(currentBlock, torusBridgeExpirationTime)})
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
