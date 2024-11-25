@@ -35,6 +35,8 @@ import type { Nullish } from "../types";
 
 import "../utils";
 
+import SuperJSON from "superjson";
+
 import type { SS58Address } from "@torus-ts/subspace/address";
 
 // == Constants ==
@@ -268,6 +270,7 @@ export function useCustomMetadata<T extends BaseProposal | BaseDao>(
         return [id, data];
       },
       refetchOnWindowFocus: false,
+      queryKeyHashFn: () => SuperJSON.stringify(metadataField),
     };
   });
 
