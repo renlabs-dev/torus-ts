@@ -178,7 +178,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
-    <div className={cn("fixed right-6 top-5 z-[100]")}>
+    <div className={cn("fixed right-6 top-5 z-[100] hidden md:block")}>
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className={cn("px-2 py-1")}>

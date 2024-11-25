@@ -29,11 +29,15 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
   const [openApps, setOpenApps] = React.useState(false);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet
+      open={open}
+      onOpenChange={setOpen}
+      aria-label="Mobile Navigation Menu"
+    >
       <SheetTrigger asChild>
         <Button
           variant="ghost"
-          className="mr-6 mt-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="mr-6 mt-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <HamburgerMenuIcon className="h-7 w-7" />
           <span className="sr-only">Toggle Menu</span>
@@ -66,9 +70,15 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Getting started</h4>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-expanded={openStarting}
+                  >
                     <CaretSortIcon className="h-4 w-4" />
-                    <span className="sr-only">Toggle</span>
+                    <span className="sr-only">
+                      Toggle Getting Started Section
+                    </span>
                   </Button>
                 </CollapsibleTrigger>
               </div>
@@ -137,7 +147,11 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
           <div className="mb-3 flex items-center justify-start space-x-6 md:space-x-3">
             {socialList.map((social) => {
               return (
-                <a key={social.name} href={social.href}>
+                <a
+                  key={social.name}
+                  href={social.href}
+                  aria-label={`Visit our ${social.name} page`}
+                >
                   {social.icon}
                 </a>
               );

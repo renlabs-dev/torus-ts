@@ -10,14 +10,18 @@ export function Header(): JSX.Element {
   return (
     <header
       className={cn(
-        "fixed left-0 right-0 top-0 z-50 flex animate-fade-down flex-col items-center justify-center bg-gradient-to-b from-[#020518] via-[#020518] to-transparent pb-6",
+        "fixed left-0 right-0 top-0 z-50 flex w-full animate-fade-down flex-col items-center justify-end bg-gradient-to-b from-[#020518] via-[#020518] to-transparent pb-6 pt-2 md:justify-center",
       )}
     >
-      <Suspense fallback="...loading">
-        <Bridge />
-      </Suspense>
       <HeaderDesktop apps={navApps} start={navStart} items={navItems} />
-      <HeaderMobile apps={navApps} start={navStart} items={navItems} />
+      <div className="flex w-full justify-end md:hidden">
+        <HeaderMobile apps={navApps} start={navStart} items={navItems} />
+      </div>
+      <div className="hidden md:block">
+        <Suspense fallback="...loading">
+          <Bridge />
+        </Suspense>
+      </div>
     </header>
   );
 }

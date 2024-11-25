@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreditCard, LoaderCircle, Lock, LockOpen } from "lucide-react";
+import { CreditCard, Info, LoaderCircle, Lock, LockOpen } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -37,11 +38,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
   Input,
   ScrollArea,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { getExpirationTime } from "@torus-ts/utils";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 import { UnstakeAction } from "./unstake";
@@ -62,7 +65,6 @@ export function Bridge() {
     stakeOut,
     bridge,
     removeStake,
-    lastBlock,
   } = useTorus();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -148,19 +150,36 @@ export function Bridge() {
     }
   };
 
-  const currentBlock = lastBlock?.blockNumber ?? 0;
-
-  const torusBridgeExpirationTime = currentBlock + (14 * 24 * 60 * 60) / 8;
-
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger className="mb-2 w-full overflow-hidden border-b bg-accent/50 p-3">
-        Click here to Bridge your assets to the Torus Network. (Bridge Closes
-        At: {getExpirationTime(currentBlock, torusBridgeExpirationTime)})
+      <AlertDialogTrigger className="mt-6 w-fit overflow-hidden rounded-md border border-border bg-accent/50 p-3 px-4">
+        <span className="underline">Click here</span> to Bridge your assets to
+        the Torus Network. (Bridge Closes: 11/9/24, 6:00 PM UTC)
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Bridge your assets</AlertDialogTitle>
+          <AlertDialogTitle className="flex w-full items-center justify-between">
+            <span>Bridge your assets</span>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Info className="h-5 w-5" />
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80">
+                <p className="text-sm">
+                  Bridge your COMAI assets to the Torus Network. This will allow
+                  you to use your COMAI assets on the Torus Network,{" "}
+                  <Link
+                    href="/bridge"
+                    target="_blank"
+                    className="text-primary underline"
+                  >
+                    Learn more
+                  </Link>
+                  .
+                </p>
+              </HoverCardContent>
+            </HoverCard>
+          </AlertDialogTitle>
           <AlertDialogDescription>
             Select the wallet you want to bridge assets from:
           </AlertDialogDescription>
