@@ -35,10 +35,18 @@ const fragmentShader = `
   void main() {
     vec2 uv = vUv;
     float u = uv.x * 1.5 * PI;
-    float v = uv.y * PI;
+    float v = fract(uv.y + 0.5) * PI;
 
-    float seamFactor = smoothstep(0.0, 0.05, uv.x) * smoothstep(1.0, 0.95, uv.x) *
-      smoothstep(0.0, 0.05, uv.y) * smoothstep(1.0, 0.95, uv.y);
+    float smoothSize = 0.20;
+
+    float seamFactor =
+      1.0
+      // * smoothstep(0.0, 0.05, uv.x)
+      // * smoothstep(1.0, 0.95, uv.x)
+      // * smoothstep(0.0, 0.05, uv.y)
+      // * smoothstep(1.0, 0.95, uv.y)
+      // * smoothstep(0.5-smoothSize, 0.5+smoothSize, uv.y)
+    ;
 
     float flowU = createLine(u * 8.0 + time * speed, lineThickness) * seamFactor;
     float flowV = createLine(v * 8.0 - time * speed, lineThickness) * seamFactor;
