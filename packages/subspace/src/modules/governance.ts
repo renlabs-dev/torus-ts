@@ -8,6 +8,7 @@ import { check_error } from "@torus-ts/utils";
 import type { Api } from "../old_types";
 import {
   sb_address,
+  sb_array,
   sb_bigint,
   sb_enum,
   sb_null,
@@ -15,17 +16,18 @@ import {
   sb_some,
   sb_string,
   sb_struct,
+  sb_to_primitive,
 } from "../types";
 
 // == Proposals ==
 
 export const PROPOSAL_DATA_SCHEMA = sb_enum({
   GlobalCustom: sb_null,
-  GlobalParams: z.unknown(),
-  SubnetCustom: sb_struct({ subnetId: sb_bigint }),
+  GlobalParams: sb_to_primitive.pipe(z.record(z.unknown())),
+  SubnetCustom: sb_struct({ subnetId: sb_number }),
   SubnetParams: sb_struct({
-    subnetId: sb_bigint,
-    params: z.unknown(),
+    subnetId: sb_number,
+    params: sb_to_primitive.pipe(z.record(z.unknown())),
   }),
   TransferDaoTreasury: sb_struct({
     account: sb_address,
@@ -37,8 +39,8 @@ export type ProposalData = z.infer<typeof PROPOSAL_DATA_SCHEMA>;
 
 export const PROPOSAL_STATUS_SCHEMA = sb_enum({
   Open: sb_struct({
-    // votesFor: sb_array(sb_address),
-    // votesAgainst: sb_array(sb_address),
+    votesFor: sb_array(sb_address),
+    votesAgainst: sb_array(sb_address),
     stakeFor: sb_bigint,
     stakeAgainst: sb_bigint,
   }),

@@ -10,7 +10,7 @@ interface ProposalTypeLabelProps {
 export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
   const { proposalType } = props;
   return match(proposalType)({
-    globalCustom() {
+    GlobalCustom() {
       return (
         <Badge
           variant="solid"
@@ -20,7 +20,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
-    globalParams() {
+    GlobalParams() {
       return (
         <Badge
           variant="solid"
@@ -30,7 +30,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
-    subnetCustom() {
+    SubnetCustom() {
       return (
         <Badge
           variant="solid"
@@ -40,7 +40,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
-    subnetParams() {
+    SubnetParams() {
       return (
         <Badge
           variant="solid"
@@ -50,7 +50,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
-    transferDaoTreasury() {
+    TransferDaoTreasury() {
       return (
         <Badge
           variant="solid"

@@ -11,7 +11,7 @@ export function StatusLabel(props: StatusLabelProps): JSX.Element {
   const { status } = props;
 
   return match(status)({
-    open() {
+    Open() {
       return (
         <Badge
           variant="solid"
@@ -21,7 +21,7 @@ export function StatusLabel(props: StatusLabelProps): JSX.Element {
         </Badge>
       );
     },
-    accepted() {
+    Accepted() {
       return (
         <Badge
           variant="solid"
@@ -31,7 +31,7 @@ export function StatusLabel(props: StatusLabelProps): JSX.Element {
         </Badge>
       );
     },
-    expired() {
+    Expired() {
       return (
         <Badge
           variant="solid"
@@ -41,7 +41,7 @@ export function StatusLabel(props: StatusLabelProps): JSX.Element {
         </Badge>
       );
     },
-    refused() {
+    Refused() {
       return (
         <Badge
           variant="solid"

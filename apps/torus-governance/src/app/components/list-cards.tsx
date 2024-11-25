@@ -37,9 +37,9 @@ function getUserVoteStatus(
   proposalStatus: ProposalStatus,
   selectedAccountAddress: SS58Address,
 ): VoteStatus {
-  if (!("open" in proposalStatus)) return "UNVOTED";
+  if (!("Open" in proposalStatus)) return "UNVOTED";
 
-  const { votesFor, votesAgainst } = proposalStatus.open;
+  const { votesFor, votesAgainst } = proposalStatus.Open;
   if (votesFor.includes(selectedAccountAddress)) return "FAVORABLE";
   if (votesAgainst.includes(selectedAccountAddress)) return "AGAINST";
 

@@ -75,27 +75,27 @@ export const handleCustomProposal = (
   proposal: ProposalState,
 ): ProposalCardFields =>
   match(proposal.data)({
-    globalCustom(): ProposalCardFields {
+    GlobalCustom(): ProposalCardFields {
       return handleCustomProposalData(
         proposal.id,
         proposal.customData ?? null,
         "GLOBAL",
       );
     },
-    subnetCustom({ subnetId }): ProposalCardFields {
+    SubnetCustom({ subnetId }): ProposalCardFields {
       return handleCustomProposalData(
         proposal.id,
         proposal.customData ?? null,
         subnetId,
       );
     },
-    globalParams(params): ProposalCardFields {
+    GlobalParams(params): ProposalCardFields {
       return handleProposalParams(proposal.id, params, "GLOBAL");
     },
-    subnetParams({ subnetId, params }): ProposalCardFields {
+    SubnetParams({ subnetId, params }): ProposalCardFields {
       return handleProposalParams(proposal.id, params, subnetId);
     },
-    transferDaoTreasury(): ProposalCardFields {
+    TransferDaoTreasury(): ProposalCardFields {
       return handleCustomProposalData(
         proposal.id,
         proposal.customData ?? null,
@@ -119,7 +119,7 @@ export function calcProposalFavorablePercent(
     const percentage = ratio * 100;
     return percentage;
   }
-  return if_let(proposalStatus, "expired")(
+  return if_let(proposalStatus, "Expired")(
     () => null,
     ({ stakeFor, stakeAgainst }) =>
       // open, accepted, refused
@@ -128,14 +128,14 @@ export function calcProposalFavorablePercent(
 }
 
 export function handleProposalVotesInFavor(proposalStatus: ProposalStatus) {
-  return if_let(proposalStatus, "expired")(
+  return if_let(proposalStatus, "Expired")(
     () => "—",
     ({ stakeFor }) => formatToken(Number(stakeFor)),
   );
 }
 
 export function handleProposalVotesAgainst(proposalStatus: ProposalStatus) {
-  return if_let(proposalStatus, "expired")(
+  return if_let(proposalStatus, "Expired")(
     () => "—",
     ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
   );
@@ -144,7 +144,7 @@ export function handleProposalVotesAgainst(proposalStatus: ProposalStatus) {
 export function handleProposalStakeVoted(
   proposalStatus: ProposalStatus,
 ): string {
-  return if_let(proposalStatus, "expired")(
+  return if_let(proposalStatus, "Expired")(
     () => "—",
     ({ stakeFor, stakeAgainst }) =>
       // open, accepted, refused
@@ -162,7 +162,7 @@ export function handleProposalQuorumPercent(
     const percentDisplay = `${Number.isNaN(percentage) ? "—" : percentage.toFixed(1)}%`;
     return <span className="text-yellow-600">{`(${percentDisplay})`}</span>;
   }
-  return if_let(proposalStatus, "expired")(
+  return if_let(proposalStatus, "Expired")(
     () => <span className="text-yellow-600">{` (Matured)`}</span>,
     ({ stakeFor, stakeAgainst }) =>
       // open, accepted, refused

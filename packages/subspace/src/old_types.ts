@@ -2,14 +2,24 @@ import type { ApiPromise } from "@polkadot/api";
 import type { ApiDecoration } from "@polkadot/api/types";
 import type { Header } from "@polkadot/types/interfaces";
 import type { IU8a } from "@polkadot/types/types";
-import type { Extends } from "tsafe";
-import { assert } from "tsafe";
 import { z } from "zod";
 
 import type { Result } from "@torus-ts/utils";
 
 import type { SS58Address } from "./address";
+import type { Proposal } from "./modules/governance";
 import { SS58_SCHEMA } from "./address";
+
+export {
+  PROPOSAL_SCHEMA,
+  PROPOSAL_STATUS_SCHEMA,
+  PROPOSAL_DATA_SCHEMA,
+} from "./modules/governance";
+export type {
+  Proposal,
+  ProposalData,
+  ProposalStatus,
+} from "./modules/governance";
 
 export type {
   InjectedAccountWithMeta,
@@ -159,79 +169,9 @@ export type DaoState = WithMetadataState<DaoApplications>;
 
 // == Proposals ==
 
-export const PROPOSAL_STATUS_SCHEMA = z.union([
-  z.object({
-    open: z.object({
-      votesFor: z.array(SS58_SCHEMA),
-      votesAgainst: z.array(SS58_SCHEMA),
-      stakeFor: TOKEN_AMOUNT_SCHEMA,
-      stakeAgainst: TOKEN_AMOUNT_SCHEMA,
-    }),
-  }),
-  z.object({
-    accepted: z.object({
-      block: z.number(),
-      stakeFor: TOKEN_AMOUNT_SCHEMA,
-      stakeAgainst: TOKEN_AMOUNT_SCHEMA,
-    }),
-  }),
-  z.object({
-    refused: z.object({
-      block: z.number(),
-      stakeFor: TOKEN_AMOUNT_SCHEMA,
-      stakeAgainst: TOKEN_AMOUNT_SCHEMA,
-    }),
-  }),
-  z.object({
-    expired: z.null(),
-  }),
-]);
-
-export const PROPOSAL_DATA_SCHEMA = z.union([
-  z.object({ globalCustom: z.null() }),
-  z.object({ globalParams: z.record(z.unknown()) }),
-  z.object({ subnetCustom: z.object({ subnetId: z.number() }) }),
-  z.object({
-    subnetParams: z.object({
-      subnetId: z.number(),
-      params: z.record(z.unknown()),
-    }),
-  }),
-  z.object({
-    transferDaoTreasury: z.object({
-      account: SS58_SCHEMA,
-      amount: TOKEN_AMOUNT_SCHEMA,
-    }),
-  }),
-]);
-
-export const PROPOSAL_SCHEMA = z.object({
-  id: z.number(),
-  proposer: SS58_SCHEMA,
-  expirationBlock: z.number(),
-  data: PROPOSAL_DATA_SCHEMA,
-  status: PROPOSAL_STATUS_SCHEMA,
-  metadata: z.string(),
-  proposalCost: TOKEN_AMOUNT_SCHEMA,
-  creationBlock: z.number(),
-});
-
-export type ProposalStatus = z.infer<typeof PROPOSAL_STATUS_SCHEMA>;
-export type ProposalData = z.infer<typeof PROPOSAL_DATA_SCHEMA>;
-
-export interface Proposal {
-  id: number;
-  proposer: SS58Address;
-  expirationBlock: number;
-  data: ProposalData;
-  status: ProposalStatus;
-  metadata: string;
-  proposalCost: bigint;
-  creationBlock: number;
-}
-
-assert<Extends<Proposal, z.infer<typeof PROPOSAL_SCHEMA>>>();
-assert<Extends<z.infer<typeof PROPOSAL_SCHEMA>, Proposal>>();
+// export type ProposalStatus = z.infer<typeof PROPOSAL_STATUS_SCHEMA>;
+// export type ProposalData = z.infer<typeof PROPOSAL_DATA_SCHEMA>;
+// export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;
 
 export type ProposalState = WithMetadataState<Proposal>;
 

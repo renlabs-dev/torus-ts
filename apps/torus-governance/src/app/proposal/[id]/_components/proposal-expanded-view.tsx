@@ -34,14 +34,14 @@ const handleUserVotes = ({
     return "UNVOTED";
 
   if (
-    "open" in proposalStatus &&
-    proposalStatus.open.votesFor.includes(selectedAccountAddress)
+    "Open" in proposalStatus &&
+    proposalStatus.Open.votesFor.includes(selectedAccountAddress)
   ) {
     return "FAVORABLE";
   }
   if (
-    "open" in proposalStatus &&
-    proposalStatus.open.votesAgainst.includes(selectedAccountAddress)
+    "Open" in proposalStatus &&
+    proposalStatus.Open.votesAgainst.includes(selectedAccountAddress)
   ) {
     return "AGAINST";
   }

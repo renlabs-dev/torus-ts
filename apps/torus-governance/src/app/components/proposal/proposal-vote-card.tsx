@@ -236,7 +236,7 @@ export function ProposalVoteCard(props: {
   }
 
   return match(proposalStatus)({
-    open() {
+    Open() {
       return (
         <CardBarebones>
           <VoteCardFunctionsContent
@@ -250,7 +250,7 @@ export function ProposalVoteCard(props: {
         </CardBarebones>
       );
     },
-    accepted() {
+    Accepted() {
       return (
         <CardBarebones>
           <GovernanceStatusNotOpen
@@ -260,7 +260,7 @@ export function ProposalVoteCard(props: {
         </CardBarebones>
       );
     },
-    expired() {
+    Expired() {
       return (
         <CardBarebones>
           <GovernanceStatusNotOpen
@@ -270,7 +270,7 @@ export function ProposalVoteCard(props: {
         </CardBarebones>
       );
     },
-    refused() {
+    Refused() {
       return (
         <CardBarebones>
           <GovernanceStatusNotOpen

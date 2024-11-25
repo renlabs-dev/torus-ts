@@ -1,4 +1,3 @@
-import type { Codec } from "@polkadot/types/types";
 import type { ZodRawShape, ZodType, ZodTypeAny } from "zod";
 import {
   BTreeSet,
@@ -10,6 +9,7 @@ import {
   Struct,
   UInt,
 } from "@polkadot/types";
+import { AnyJson, Codec } from "@polkadot/types/types";
 import { match } from "rustie";
 import { z } from "zod";
 
@@ -59,6 +59,31 @@ export const z_map = <T extends ZodRawShape>(
       return obj;
     })
     .pipe(z.object(shape, params));
+
+// == Default toPrimitive Conversion ==
+
+interface ToPrimitive {
+  toPrimitive(disableAscii?: boolean): AnyJson;
+}
+
+export const sb_to_primitive = z.unknown().transform<AnyJson>((val, ctx) => {
+  if (!(typeof val === "object" && val !== null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.invalid_type,
+      expected: "object",
+      received: typeof val,
+    });
+    return z.NEVER;
+  }
+  if (!("toPrimitive" in val && typeof val.toPrimitive === "function")) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "toPrimitive not present, it's not a Codec",
+    });
+    return z.NEVER;
+  }
+  return (val as ToPrimitive).toPrimitive();
+});
 
 // == Struct ==
 

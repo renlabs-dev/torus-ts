@@ -75,27 +75,27 @@ export const handleCustomProposal = (
   proposal: ProposalState,
 ): ProposalCardFields =>
   match(proposal.data)({
-    globalCustom(): ProposalCardFields {
+    GlobalCustom(): ProposalCardFields {
       return handleCustomProposalData(
         proposal.id,
         proposal.customData ?? null,
         "GLOBAL",
       );
     },
-    subnetCustom({ subnetId }): ProposalCardFields {
+    SubnetCustom({ subnetId }): ProposalCardFields {
       return handleCustomProposalData(
         proposal.id,
         proposal.customData ?? null,
         subnetId,
       );
     },
-    globalParams(params): ProposalCardFields {
+    GlobalParams(params): ProposalCardFields {
       return handleProposalParams(proposal.id, params, "GLOBAL");
     },
-    subnetParams({ subnetId, params }): ProposalCardFields {
+    SubnetParams({ subnetId, params }): ProposalCardFields {
       return handleProposalParams(proposal.id, params, subnetId);
     },
-    transferDaoTreasury(): ProposalCardFields {
+    TransferDaoTreasury(): ProposalCardFields {
       return handleCustomProposalData(
         proposal.id,
         proposal.customData ?? null,
@@ -120,38 +120,38 @@ export function calcProposalFavorablePercent(
     return percentage;
   }
   return match(proposalStatus)({
-    open: ({ stakeFor, stakeAgainst }) =>
+    Open: ({ stakeFor, stakeAgainst }) =>
       calcStakePercent(stakeFor, stakeAgainst),
-    accepted: ({ stakeFor, stakeAgainst }) =>
+    Accepted: ({ stakeFor, stakeAgainst }) =>
       calcStakePercent(stakeFor, stakeAgainst),
-    refused: ({ stakeFor, stakeAgainst }) =>
+    Refused: ({ stakeFor, stakeAgainst }) =>
       calcStakePercent(stakeFor, stakeAgainst),
-    expired: () => null,
+    Expired: () => null,
   });
 }
 
 export function handleProposalVotesInFavor(proposalStatus: ProposalStatus) {
   return match(proposalStatus)({
-    open: ({ stakeFor }) => formatToken(Number(stakeFor)),
-    accepted: ({ stakeFor }) => formatToken(Number(stakeFor)),
-    refused: ({ stakeFor }) => formatToken(Number(stakeFor)),
-    expired: () => "—",
+    Open: ({ stakeFor }) => formatToken(Number(stakeFor)),
+    Accepted: ({ stakeFor }) => formatToken(Number(stakeFor)),
+    Refused: ({ stakeFor }) => formatToken(Number(stakeFor)),
+    Expired: () => "—",
   });
 }
 
 export function handleProposalVotesAgainst(proposalStatus: ProposalStatus) {
   return match(proposalStatus)({
-    open: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
-    accepted: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
-    refused: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
-    expired: () => "—",
+    Open: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
+    Accepted: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
+    Refused: ({ stakeAgainst }) => formatToken(Number(stakeAgainst)),
+    Expired: () => "—",
   });
 }
 
 export function handleProposalStakeVoted(
   proposalStatus: ProposalStatus,
 ): string {
-  return if_let(proposalStatus, "expired")(
+  return if_let(proposalStatus, "Expired")(
     () => "—",
     ({ stakeFor, stakeAgainst }) =>
       // open, accepted, refused
@@ -169,7 +169,7 @@ export function handleProposalQuorumPercent(
     const percentDisplay = `${Number.isNaN(percentage) ? "—" : percentage.toFixed(1)}%`;
     return <span className="text-yellow-600">{`(${percentDisplay})`}</span>;
   }
-  return if_let(proposalStatus, "expired")(
+  return if_let(proposalStatus, "Expired")(
     () => <span className="text-yellow-600">{` (Matured)`}</span>,
     ({ stakeFor, stakeAgainst }) => quorumPercent(stakeFor, stakeAgainst),
   );

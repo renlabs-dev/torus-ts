@@ -18,11 +18,11 @@ export function RewardLabel(props: RewardLabelProps): JSX.Element {
 
   const getRewardStatus = () => {
     return match(result)({
-      open: () => ({
+      Open: () => ({
         text: "Unrewarded",
         className: "bg-purple-500/10 text-purple-500",
       }),
-      accepted: () =>
+      Accepted: () =>
         isUnrewarded
           ? {
               text: "Unrewarded",
@@ -32,7 +32,7 @@ export function RewardLabel(props: RewardLabelProps): JSX.Element {
               text: "Rewarded",
               className: "bg-green-500/10 text-green-500",
             },
-      expired: () =>
+      Expired: () =>
         isUnrewarded
           ? {
               text: "Unrewarded",
@@ -42,7 +42,7 @@ export function RewardLabel(props: RewardLabelProps): JSX.Element {
               text: "Rewarded",
               className: "bg-green-500/10 text-green-500",
             },
-      refused: () =>
+      Refused: () =>
         isUnrewarded
           ? {
               text: "Unrewarded",

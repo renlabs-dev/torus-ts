@@ -21,9 +21,9 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
     null,
   );
 
-  const votesFor = "open" in proposalStatus ? proposalStatus.open.votesFor : [];
+  const votesFor = "Open" in proposalStatus ? proposalStatus.Open.votesFor : [];
   const votesAgainst =
-    "open" in proposalStatus ? proposalStatus.open.votesAgainst : [];
+    "Open" in proposalStatus ? proposalStatus.Open.votesAgainst : [];
 
   const {
     data: voters,
