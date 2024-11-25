@@ -37,8 +37,8 @@ export type ProposalData = z.infer<typeof PROPOSAL_DATA_SCHEMA>;
 
 export const PROPOSAL_STATUS_SCHEMA = sb_enum({
   Open: sb_struct({
-    votes_for: sb_array(sb_address),
-    votes_against: sb_array(sb_address),
+    // votesFor: sb_array(sb_address),
+    // votesAgainst: sb_array(sb_address),
     stakeFor: sb_bigint,
     stakeAgainst: sb_bigint,
   }),

@@ -54,7 +54,6 @@ export const z_map = <T extends ZodRawShape>(
           });
           continue;
         }
-        console.log(key);
         obj[key] = value;
       }
       return obj;
