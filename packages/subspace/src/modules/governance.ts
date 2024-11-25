@@ -8,10 +8,10 @@ import { check_error } from "@torus-ts/utils";
 import type { Api } from "../old_types";
 import {
   sb_address,
-  sb_array,
   sb_bigint,
   sb_enum,
   sb_null,
+  sb_number,
   sb_some,
   sb_string,
   sb_struct,
@@ -58,14 +58,14 @@ export const PROPOSAL_STATUS_SCHEMA = sb_enum({
 export type ProposalStatus = z.infer<typeof PROPOSAL_STATUS_SCHEMA>;
 
 export const PROPOSAL_SCHEMA = sb_struct({
-  id: sb_bigint,
+  id: sb_number,
   proposer: sb_address,
-  expirationBlock: sb_bigint,
+  expirationBlock: sb_number,
   data: PROPOSAL_DATA_SCHEMA,
   status: PROPOSAL_STATUS_SCHEMA,
   metadata: sb_string,
   proposalCost: sb_bigint,
-  creationBlock: sb_bigint,
+  creationBlock: sb_number,
 });
 
 export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;

@@ -145,6 +145,19 @@ export const sb_bigint = UInt_schema.transform((val) =>
   BigInt(val.toPrimitive()),
 );
 
+export const sb_number = UInt_schema.transform((val, ctx): number => {
+  const num = val.toPrimitive();
+  if (typeof num !== "number") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.invalid_type,
+      expected: "number",
+      received: typeof num,
+    });
+    return z.NEVER;
+  }
+  return num;
+});
+
 // == String ==
 
 export const Bytes_schema = z.custom<Bytes>(
