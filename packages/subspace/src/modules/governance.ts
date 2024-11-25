@@ -12,6 +12,7 @@ import {
   sb_bigint,
   sb_enum,
   sb_null,
+  sb_some,
   sb_string,
   sb_struct,
 } from "../types";
@@ -87,7 +88,7 @@ export async function queryProposals(api: Api) {
 export function handleProposals<K extends Codec>(
   rawProposals: [K, Codec][],
 ): [Proposal[], Error[]] {
-  return handleMapEntries(rawProposals, PROPOSAL_SCHEMA);
+  return handleMapEntries(rawProposals, sb_some(PROPOSAL_SCHEMA));
 }
 
 export function handleMapEntries<

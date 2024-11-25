@@ -1,14 +1,19 @@
-import type { ZodRawShape, ZodType } from "zod";
+import type { Codec } from "@polkadot/types/types";
+import type { ZodRawShape, ZodType, ZodTypeAny } from "zod";
 import {
   BTreeSet,
   Bytes,
   Enum,
   GenericAccountId,
   Null,
+  Option as polkadot_Option,
   Struct,
   UInt,
 } from "@polkadot/types";
+import { match } from "rustie";
 import { z } from "zod";
+
+import type { Option } from "@torus-ts/utils";
 
 import { SS58_SCHEMA } from "../address";
 
@@ -76,6 +81,59 @@ export const Null_schema = z.custom<Null>(
 );
 
 export const sb_null = Null_schema.transform((val) => val.toPrimitive());
+
+// == Option ==
+
+export const Option_schema = z.custom<polkadot_Option<Codec>>(
+  (val) => val instanceof polkadot_Option,
+  "not a substrate Option",
+);
+
+export const sb_option = <T extends ZodTypeAny>(
+  inner: T,
+): ZodType<Option<z.output<T>>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+  Option_schema.transform((val, ctx): Option<z.output<T>> => {
+    type Out = z.output<T>;
+    if (val.isNone) {
+      const none: Option<Out> = { None: null };
+      return none;
+    } else if (val.isSome) {
+      const result = inner.safeParse(val.unwrap());
+      if (!result.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Error in Option inner value: ${result.error.message}`,
+          path: [...ctx.path, "Some"],
+        });
+        return z.NEVER;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const value: Out = result.data;
+      const some: Option<Out> = { Some: value };
+      return some;
+    }
+    throw new Error("Invalid Option");
+  });
+
+export const sb_some = <T extends ZodTypeAny>(
+  inner: T,
+): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+  sb_option<T>(inner).transform(
+    (val, ctx): z.output<T> =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      match(val)({
+        None: () => {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Expected Some`,
+            path: [...ctx.path, "Some"],
+          });
+          return z.NEVER;
+        },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        Some: (value) => value,
+      }),
+  );
 
 // == Numbers ==
 

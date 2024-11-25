@@ -20,6 +20,7 @@ import {
   sb_bigint,
   sb_enum,
   sb_null,
+  sb_some,
   sb_string,
   sb_struct,
 } from "./types";
@@ -51,8 +52,8 @@ console.log("API connected");
 const proposals = await api.query.governanceModule.proposals.entries();
 
 for (const [key, value] of proposals) {
-  const proposal = value.unwrap();
-  const parsed = PROPOSAL_SCHEMA.parse(proposal);
+  const proposal = value;
+  const parsed = sb_some(PROPOSAL_SCHEMA).parse(proposal);
 
   match(parsed.status)({
     Open: (status) => {
