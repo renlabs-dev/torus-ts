@@ -68,7 +68,7 @@ const Torus: FC = () => {
   const uniforms = useMemo(
     () => ({
       time: { value: 0 },
-      intensity: { value: 1 },
+      intensity: { value: 0.8 },
       speed: { value: 0.08 },
       lineThickness: { value: 0.01 },
       pixelSize: { value: 8 },
@@ -99,17 +99,14 @@ const Torus: FC = () => {
 
   return (
     <mesh ref={torusRef} scale={[1.8, 1.8, 1.8]} rotation={[Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[0.53, 0.49, 128, 128]} />
+      <torusGeometry args={[0.53, 0.49, 256, 256]} />
       <primitive object={shaderMaterial} attach="material" />
     </mesh>
   );
 };
 
 export const TorusObject: FC = () => (
-  <Canvas
-    camera={{ fov: 80, near: 0.1, far: 1000, position: [0, 0, 3] }}
-    dpr={window.devicePixelRatio / 4}
-  >
+  <Canvas camera={{ fov: 80, near: 0.1, far: 1000, position: [0, 0, 3] }}>
     <Suspense fallback={null}>
       <Torus />
     </Suspense>
