@@ -143,7 +143,7 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
           </div>
           <p className="text-start">
             Made by the community, powered by{" "}
-            <Link href="/" className="text-cyan-200 underline">
+            <Link href="/" className="underline">
               Ren Labs
             </Link>
             .
