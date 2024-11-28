@@ -2,8 +2,7 @@
 
 import type { FC } from "react";
 import type { Mesh } from "three";
-import { useMemo, useRef } from "react";
-import { OrbitControls } from "@react-three/drei";
+import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -53,10 +52,10 @@ const fragmentShader = `
 
     float pattern = max(flowU, flowV);
 
-    vec3 lightBlue = vec3(0.2, 0.6, 1.0);
+    vec3 color = vec3(0.3, 0.3, 0.3);
     float pulse = sin(time * 0.1) * 0.25 + 0.75;
 
-    vec3 finalColor = lightBlue;
+    vec3 finalColor = color;
     float finalOpacity = pattern * intensity * pulse;
 
     gl_FragColor = vec4(finalColor, finalOpacity);
@@ -69,9 +68,10 @@ const Torus: FC = () => {
   const uniforms = useMemo(
     () => ({
       time: { value: 0 },
-      intensity: { value: 12 },
-      speed: { value: 0.1 },
+      intensity: { value: 1 },
+      speed: { value: 0.08 },
       lineThickness: { value: 0.01 },
+      pixelSize: { value: 8 },
     }),
     [],
   );
@@ -99,15 +99,19 @@ const Torus: FC = () => {
 
   return (
     <mesh ref={torusRef} scale={[1.8, 1.8, 1.8]} rotation={[Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[0.53, 0.49, 600, 600]} />
+      <torusGeometry args={[0.53, 0.49, 128, 128]} />
       <primitive object={shaderMaterial} attach="material" />
     </mesh>
   );
 };
 
 export const TorusObject: FC = () => (
-  <Canvas camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 0, 3] }}>
-    <Torus />
-    <OrbitControls />
+  <Canvas
+    camera={{ fov: 80, near: 0.1, far: 1000, position: [0, 0, 3] }}
+    dpr={window.devicePixelRatio / 4}
+  >
+    <Suspense fallback={null}>
+      <Torus />
+    </Suspense>
   </Canvas>
 );

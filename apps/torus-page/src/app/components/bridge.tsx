@@ -152,7 +152,7 @@ export function Bridge() {
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger className="mt-6 w-fit overflow-hidden rounded-md border border-border bg-accent/50 p-3 px-4">
+      <AlertDialogTrigger className="mt-6 w-fit overflow-hidden rounded-md border border-border bg-card p-3 px-4">
         <span className="underline">Click here</span> to Bridge your assets to
         the Torus Network. (Bridge Closes: 11/9/24, 6:00 PM UTC)
       </AlertDialogTrigger>

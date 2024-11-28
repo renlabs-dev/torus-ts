@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={cn(
           firaMono.className,
-          `relative overscroll-none bg-[#04061C] bg-cover text-white`,
+          `relative overscroll-none bg-background bg-cover text-white`,
         )}
       >
         <Providers>

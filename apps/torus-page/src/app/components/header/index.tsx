@@ -10,7 +10,7 @@ export function Header(): JSX.Element {
   return (
     <header
       className={cn(
-        "fixed left-0 right-0 top-0 z-50 flex w-full animate-fade-down flex-col items-center justify-end bg-gradient-to-b from-[#020518] via-[#020518] to-transparent pb-6 pt-2 md:justify-center",
+        "fixed left-0 right-0 top-0 z-50 flex w-full animate-fade-down flex-col items-center justify-end bg-gradient-to-b from-background via-background to-transparent pb-6 pt-2 md:justify-center",
       )}
     >
       <HeaderDesktop apps={navApps} start={navStart} items={navItems} />
