@@ -6,7 +6,7 @@ export default function Page(): JSX.Element {
   return (
     <>
       <div
-        className="absolute top-0 z-50 h-full w-full animate-fade animate-delay-700"
+        className="absolute top-0 h-full w-full animate-fade animate-delay-700"
         style={{ overflow: "hidden" }}
       >
         <TorusObject />
@@ -21,7 +21,7 @@ export default function Page(): JSX.Element {
           width={1000}
           height={1000}
           src="/asci-text.svg"
-          className="hidden h-[60vh] w-[60vh] animate-fade-up animate-delay-[1000ms] md:block"
+          className="-z-50 hidden h-[60vh] w-[60vh] animate-fade-up animate-delay-[1000ms] md:block"
         />
         {/* <Image
           priority
