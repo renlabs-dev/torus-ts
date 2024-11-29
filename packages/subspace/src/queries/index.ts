@@ -31,26 +31,26 @@ import {
   STAKE_FROM_SCHEMA,
   SUBSPACE_MODULE_SCHEMA,
 } from "../old_types";
-import {
-  getPropsToMap,
-  handleDaos,
-  standardizeUidToSS58address,
-} from "../old_utils";
+import { getPropsToMap, standardizeUidToSS58address } from "../old_utils";
+import { sb_blocks } from "../types";
 import {
   sb_address,
   sb_array,
   sb_basic_enum,
   sb_bigint,
   sb_struct,
-} from "../types";
+} from "../types/zod";
 
-export { queryProposals } from "../modules/governance";
+export {
+  queryProposals,
+  queryDaoApplications as queryDaosEntries, // TODO: rename
+} from "../modules/governance";
 
 export { ApiPromise };
 
 export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
   const blockHeader = await api.rpc.chain.getHeader();
-  const blockNumber = blockHeader.number.toNumber();
+  const blockNumber = sb_blocks.parse(blockHeader.number);
   const blockHash = blockHeader.hash;
   const blockHashHex = blockHash.toHex();
   const apiAtBlock = await api.at(blockHeader.hash);
@@ -71,18 +71,6 @@ export async function queryBalance(api: Api, address: SS58Address | string) {
     data: { free: freeBalance },
   } = await api.query.system.account(address);
   return BigInt(freeBalance.toString());
-}
-
-export async function queryDaosEntries(api: Api) {
-  const daosQuery =
-    await api.query.governanceModule.curatorApplications.entries();
-
-  const [daos, daosErrs] = handleDaos(daosQuery);
-  for (const err of daosErrs) {
-    console.error(err);
-  }
-
-  return daos;
 }
 
 export async function pushToWhitelist(
@@ -264,11 +252,11 @@ export async function queryStakeOut(
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }
+
   const responseData = await response.text();
-
   const parsedData = SuperJSON.parse(responseData);
-
   const stakeOutData = STAKE_DATA_SCHEMA.parse(parsedData);
+
   return stakeOutData;
 }
 
@@ -309,9 +297,9 @@ export async function queryStakeFrom(
   }
 
   const responseData = await response.text();
-
   const parsedData = SuperJSON.parse(responseData);
   const stakeFromData = STAKE_DATA_SCHEMA.parse(parsedData);
+
   return stakeFromData;
 }
 

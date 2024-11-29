@@ -7,20 +7,11 @@ import { z } from "zod";
 import type { Result } from "@torus-ts/utils";
 
 import type { SS58Address } from "./address";
-import type { Proposal } from "./modules/governance";
+import type { DaoApplications, Proposal } from "./modules/governance";
 import type { Blocks } from "./types";
 import { SS58_SCHEMA } from "./address";
 
-export {
-  PROPOSAL_SCHEMA,
-  PROPOSAL_STATUS_SCHEMA,
-  PROPOSAL_DATA_SCHEMA,
-} from "./modules/governance";
-export type {
-  Proposal,
-  ProposalData,
-  ProposalStatus,
-} from "./modules/governance";
+export * from "./modules/governance";
 
 export type {
   InjectedAccountWithMeta,
@@ -125,41 +116,6 @@ export interface ProposalStakeInfo {
 }
 
 // == DAO Applications ==
-
-export const TOKEN_AMOUNT_SCHEMA = z
-  .string()
-  .or(z.number())
-  .transform((value) => BigInt(value));
-
-export enum DaoApplicationVote {
-  FAVORABLE = "FAVORABLE",
-  AGAINST = "AGAINST",
-  REFUSE = "REFUSE",
-}
-
-export type DaoApplicationStatus =
-  | "Accepted"
-  | "Refused"
-  | "Pending"
-  | "Removed";
-
-export const DAO_APPLICATIONS_SCHEMA = z.object({
-  id: z.number(),
-  userId: SS58_SCHEMA,
-  payingFor: SS58_SCHEMA,
-  data: z.string(),
-  blockNumber: z.number(),
-  status: z
-    .string()
-    .refine(
-      (value) => ["Pending", "Accepted", "Refused", "Removed"].includes(value),
-      "Invalid DAO status format",
-    )
-    .transform((value) => value as DaoApplicationStatus),
-  applicationCost: TOKEN_AMOUNT_SCHEMA,
-});
-
-export type DaoApplications = z.infer<typeof DAO_APPLICATIONS_SCHEMA>;
 
 export interface DAOCardFields {
   title: string | null;

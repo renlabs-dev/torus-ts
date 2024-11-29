@@ -13,11 +13,10 @@ import type {
   CustomDaoMetadata,
   CustomDataError,
   CustomMetadata,
-  DaoApplications,
   StorageKey,
 } from "./old_types";
 import type { Blocks } from "./types";
-import { CUSTOM_METADATA_SCHEMA, DAO_APPLICATIONS_SCHEMA } from "./old_types";
+import { CUSTOM_METADATA_SCHEMA } from "./old_types";
 
 export * from "@torus-ts/utils/subspace";
 
@@ -59,31 +58,6 @@ export const PARAM_FIELD_DISPLAY_NAMES = {
 } as const;
 
 // == Handlers ==
-
-export function handleEntries<T>(
-  rawEntries: [unknown, Codec][] | undefined,
-  parser: (value: Codec) => T | null,
-): [T[], Error[]] {
-  const entries: T[] = [];
-  const errors: Error[] = [];
-  for (const entry of rawEntries ?? []) {
-    const [, valueRaw] = entry;
-    const parsedEntry = parser(valueRaw);
-    if (parsedEntry == null) {
-      errors.push(new Error(`Invalid entry: ${entry.toString()}`));
-      continue;
-    }
-    entries.push(parsedEntry);
-  }
-  entries.reverse();
-  return [entries, errors];
-}
-
-export function handleDaos(
-  rawDaos: [unknown, Codec][] | undefined,
-): [DaoApplications[], Error[]] {
-  return handleEntries(rawDaos, parseDaos);
-}
 
 // == Time ==
 
@@ -362,24 +336,6 @@ export class DoubleMapEntries implements ChainEntry {
     });
     return moduleIdToPropValue;
   }
-}
-
-export function parseAddress(valueRaw: Codec): DaoApplications | null {
-  const value = valueRaw.toPrimitive();
-  const validated = DAO_APPLICATIONS_SCHEMA.safeParse(value);
-  if (!validated.success) {
-    return null;
-  }
-  return validated.data as unknown as DaoApplications;
-}
-
-export function parseDaos(valueRaw: Codec): DaoApplications | null {
-  const value = valueRaw.toPrimitive();
-  const validated = DAO_APPLICATIONS_SCHEMA.safeParse(value);
-  if (!validated.success) {
-    return null;
-  }
-  return validated.data as unknown as DaoApplications;
 }
 
 export const paramNameToDisplayName = (paramName: string): string => {

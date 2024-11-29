@@ -25,7 +25,6 @@ import {
   queryNotDelegatingVotingPower,
   queryProposals,
   queryRewardAllocation,
-  queryStakeFrom,
   queryStakeOut,
   queryUnrewardedProposals,
   queryUserTotalStaked,
@@ -177,19 +176,20 @@ export function useAllStakeOut(
     queryFn: () => queryStakeOut(torusCacheUrl),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
+    // throwOnError: false, // TODO
   });
 }
 
-export function useStakeFrom(
-  torusCacheUrl: string,
-): UseQueryResult<StakeData, Error> {
-  return useQuery({
-    queryKey: ["stake_from"],
-    queryFn: () => queryStakeFrom(torusCacheUrl),
-    staleTime: STAKE_STALE_TIME,
-    refetchOnWindowFocus: false,
-  });
-}
+// export function useStakeFrom(
+//   torusCacheUrl: string,
+// ): UseQueryResult<StakeData, Error> {
+//   return useQuery({
+//     queryKey: ["stake_from"],
+//     queryFn: () => queryStakeFrom(torusCacheUrl),
+//     staleTime: STAKE_STALE_TIME,
+//     refetchOnWindowFocus: false,
+//   });
+// }
 
 export function useProcessVotesAndStakes(
   api: Api | Nullish,

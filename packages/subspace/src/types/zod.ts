@@ -8,7 +8,6 @@ import {
   Null,
   Option as polkadot_Option,
   Struct,
-  UInt,
 } from "@polkadot/types";
 import { match } from "rustie";
 import { z } from "zod";
@@ -62,7 +61,7 @@ export const z_map = <T extends ZodRawShape>(
 
 // == Default toPrimitive Conversion ==
 
-interface ToPrimitive {
+export interface ToPrimitive {
   toPrimitive(disableAscii?: boolean): AnyJson;
 }
 
@@ -161,24 +160,47 @@ export const sb_some = <T extends ZodTypeAny>(
 
 // == Numbers ==
 
-export const UInt_schema = z.custom<UInt>(
-  (val) => val instanceof UInt,
-  "not a substrate UInt",
-);
+// export const UInt_schema = z.custom<UInt>(
+//   (val) => val instanceof UInt,
+//   "not a substrate UInt",
+// );
 
-export const sb_bigint = UInt_schema.pipe(z.coerce.bigint());
+export interface ToBigInt {
+  toBigInt(): bigint;
+}
 
-export const sb_number = UInt_schema.transform((val, ctx): number => {
-  const num = val.toPrimitive();
-  if (typeof num !== "number") {
+export const ToBigInt_schema = z.unknown().transform<ToBigInt>((val, ctx) => {
+  if (!(typeof val === "object" && val !== null)) {
     ctx.addIssue({
       code: z.ZodIssueCode.invalid_type,
-      expected: "number",
-      received: typeof num,
+      expected: "object",
+      received: typeof val,
     });
     return z.NEVER;
   }
-  return num;
+  if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "toBigInt not present, it's not a Codec conversible to BigInt",
+    });
+    return z.NEVER;
+  }
+  return val as ToBigInt;
+});
+
+export const sb_bigint = ToBigInt_schema.transform((val) => val.toBigInt());
+
+export const sb_number = ToBigInt_schema.transform((val, ctx): number => {
+  const num = val.toBigInt();
+  const result = Number(num);
+  if (!Number.isSafeInteger(result)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Expected a safe Number integer, got ${num}`,
+    });
+    return z.NEVER;
+  }
+  return result;
 });
 
 export const sb_number_int = sb_number.pipe(z.number().int());

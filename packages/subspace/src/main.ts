@@ -8,7 +8,6 @@ import { match } from "rustie";
 
 import { SS58_SCHEMA } from "./address";
 import { PROPOSAL_SCHEMA } from "./modules/governance";
-import { TOKEN_AMOUNT_SCHEMA } from "./old_types";
 import {
   getRewardAllocation,
   queryGlobalGovernanceConfig,

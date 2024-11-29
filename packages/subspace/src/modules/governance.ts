@@ -1,6 +1,5 @@
-import type { StorageKey } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
-import type { ZodType, ZodTypeDef } from "zod";
+import type { ZodTypeAny } from "zod";
 import { z } from "zod";
 
 import { assert_error } from "@torus-ts/utils";
@@ -8,7 +7,9 @@ import { assert_error } from "@torus-ts/utils";
 import type { Api } from "../old_types";
 import {
   sb_address,
+  sb_amount,
   sb_array,
+  sb_basic_enum,
   sb_bigint,
   sb_blocks,
   sb_enum,
@@ -19,6 +20,31 @@ import {
   sb_struct,
   sb_to_primitive,
 } from "../types";
+
+// == Misc ==
+
+export function handleMapEntries<K extends Codec, T extends ZodTypeAny>(
+  rawEntries: [K, Codec][],
+  schema: T,
+): [z.output<T>[], Error[]] {
+  type Out = z.output<T>;
+  const entries: Out[] = [];
+  const errors: Error[] = [];
+  for (const entry of rawEntries) {
+    const [, valueRaw] = entry;
+    try {
+      var parsed = schema.parse(valueRaw) as Out;
+    } catch (err) {
+      assert_error(err);
+      errors.push(err);
+      continue;
+    }
+
+    entries.push(parsed);
+  }
+  entries.reverse();
+  return [entries, errors];
+}
 
 // == Proposals ==
 
@@ -73,52 +99,54 @@ export const PROPOSAL_SCHEMA = sb_struct({
 
 export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;
 
-export type SbMapEntries<K extends Codec> = [StorageKey<[K]>, Codec][];
-export type SbDoubleMapEntries<K1 extends Codec, K2 extends Codec> = [
-  StorageKey<[K1, K2]>,
-  Codec,
-];
-
-export async function queryProposals(api: Api) {
-  const proposalsQuery = await api.query.governanceModule.proposals.entries();
-  const [proposals, proposalsErrs] = handleProposals(proposalsQuery);
-  for (const err of proposalsErrs) {
+export async function queryProposals(api: Api): Promise<Proposal[]> {
+  const query = await api.query.governanceModule.proposals.entries();
+  const [proposals, errs] = handleMapEntries(query, sb_some(PROPOSAL_SCHEMA));
+  for (const err of errs) {
+    // TODO: refactor out
     console.error(err);
   }
   return proposals;
 }
 
-export function handleProposals<K extends Codec>(
-  rawProposals: [K, Codec][],
-): [Proposal[], Error[]] {
-  return handleMapEntries(rawProposals, sb_some(PROPOSAL_SCHEMA));
-}
+// == Aplications ==
 
-export function handleMapEntries<
-  K extends Codec,
-  T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  S extends ZodType<T, ZodTypeDef, any>,
->(rawEntries: [K, Codec][], schema: S): [T[], Error[]] {
-  const entries: T[] = [];
-  const errors: Error[] = [];
-  for (const entry of rawEntries) {
-    const [, valueRaw] = entry;
+export const DAO_APPLICATION_STATUS_SCHEMA = sb_basic_enum([
+  "Accepted",
+  "Refused",
+  "Pending",
+  "Removed",
+]);
 
-    try {
-      var parsed = schema.parse(valueRaw);
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
-      continue;
-    }
+export type DaoApplicationStatus = z.infer<
+  typeof DAO_APPLICATION_STATUS_SCHEMA
+>;
 
-    if (parsed == null) {
-      errors.push(new Error(`Invalid entry: ${entry.toString()}`));
-      continue;
-    }
-    entries.push(parsed);
+export const DAO_APPLICATIONS_SCHEMA = sb_struct({
+  id: sb_id,
+  userId: sb_address,
+  payingFor: sb_address,
+  data: sb_string,
+  blockNumber: sb_blocks,
+  status: DAO_APPLICATION_STATUS_SCHEMA,
+  applicationCost: sb_amount,
+});
+
+export type DaoApplications = z.infer<typeof DAO_APPLICATIONS_SCHEMA>;
+
+export async function queryDaoApplications(
+  api: Api,
+): Promise<DaoApplications[]> {
+  const query = await api.query.governanceModule.curatorApplications.entries();
+
+  const [daos, errs] = handleMapEntries(
+    query,
+    sb_some(DAO_APPLICATIONS_SCHEMA),
+  );
+  for (const err of errs) {
+    // TODO: refactor out
+    console.error(err);
   }
-  entries.reverse();
-  return [entries, errors];
+
+  return daos;
 }
