@@ -11,4 +11,9 @@ export default [
   ...reactConfig,
   ...nextjsConfig,
   ...restrictEnvAccess,
+  {
+    rules: {
+      "no-html-link-for-pages": "off",
+    },
+  },
 ];
