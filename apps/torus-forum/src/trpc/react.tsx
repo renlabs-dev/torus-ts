@@ -17,7 +17,7 @@ const createQueryClient = () =>
     defaultOptions: {
       queries: {
         staleTime: 30 * 1000,
-        throwOnError: true,
+        // throwOnError: true, // TODO
       },
     },
   });

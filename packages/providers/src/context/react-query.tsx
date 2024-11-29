@@ -6,12 +6,11 @@ const createQueryClient = (): QueryClient =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        throwOnError: true,
+        // throwOnError: true, // TODO
       },
     },
   });
 
-// eslint-disable-next-line no-undef-init
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 function getQueryClient(): QueryClient {
   if (typeof window === "undefined") {
