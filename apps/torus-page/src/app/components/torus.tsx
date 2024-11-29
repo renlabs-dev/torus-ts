@@ -24,6 +24,9 @@ const fragmentShader = `
 
   const float PI = 3.1415926535897932384626433832795;
 
+  const float lineDensityU = 40.0;
+  const float lineDensityV = 24.0;
+
   float createLine(float value, float width) {
     float halfWidth = width * 0.2;
     float wrappedValue = fract(value);
@@ -33,8 +36,8 @@ const fragmentShader = `
 
   void main() {
     vec2 uv = vUv;
-    float u = uv.x * 1.5 * PI;
-    float v = fract(uv.y + 0.5) * PI;
+    float u = uv.x;
+    float v = fract(uv.y + 0.5);
 
     float smoothSize = 0.20;
 
@@ -47,8 +50,8 @@ const fragmentShader = `
       // * smoothstep(0.5-smoothSize, 0.5+smoothSize, uv.y)
     ;
 
-    float flowU = createLine(u * 8.0 + time * speed, lineThickness) * seamFactor;
-    float flowV = createLine(v * 8.0 - time * speed, lineThickness) * seamFactor;
+    float flowU = createLine(u * lineDensityU + time * speed, lineThickness) * seamFactor;
+    float flowV = createLine(v * lineDensityV - time * speed, lineThickness) * seamFactor;
 
     float pattern = max(flowU, flowV);
 
