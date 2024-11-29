@@ -92,7 +92,7 @@ export function useBalance(
 ) {
   return useQuery({
     queryKey: ["balance", address],
-    enabled: api != null && address !== null,
+    enabled: api != null && address != null,
     queryFn: () => queryBalance(api!, address!),
     staleTime: LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
