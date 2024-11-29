@@ -52,7 +52,7 @@ const fragmentShader = `
 
     float pattern = max(flowU, flowV);
 
-    vec3 color = vec3(0.4, 0.4, 0.4);
+    vec3 color = vec3(0.6, 0.6, 0.6);
     float pulse = sin(time * 0.1) * 0.25 + 0.75;
 
     vec3 finalColor = color;
@@ -69,7 +69,7 @@ const Torus: FC = () => {
     () => ({
       time: { value: 0 },
       intensity: { value: 0.8 },
-      speed: { value: 0.08 },
+      speed: { value: 0.1 },
       lineThickness: { value: 0.01 },
       pixelSize: { value: 8 },
     }),
