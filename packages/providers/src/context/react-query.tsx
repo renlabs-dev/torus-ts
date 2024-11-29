@@ -2,7 +2,14 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const createQueryClient = (): QueryClient => new QueryClient();
+const createQueryClient = (): QueryClient =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        throwOnError: true,
+      },
+    },
+  });
 
 // eslint-disable-next-line no-undef-init
 let clientQueryClientSingleton: QueryClient | undefined = undefined;

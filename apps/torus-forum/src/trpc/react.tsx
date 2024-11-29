@@ -1,5 +1,6 @@
 "use client";
 
+// TODO: modularize
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
@@ -16,6 +17,7 @@ const createQueryClient = () =>
     defaultOptions: {
       queries: {
         staleTime: 30 * 1000,
+        throwOnError: true,
       },
     },
   });
