@@ -1,6 +1,7 @@
 import { Copy } from "lucide-react";
 
 import type { SS58Address } from "@torus-ts/subspace/old";
+import type { Blocks } from "@torus-ts/subspace/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import {
   getCreationTime,
@@ -13,9 +14,9 @@ import { copyToClipboard } from "@torus-ts/ui/utils";
 interface DetailsCardProps {
   author: SS58Address;
   id: number;
-  creationBlock: number;
-  expirationBlock?: number;
-  lastBlockNumber: number;
+  creationBlock: Blocks;
+  expirationBlock?: Blocks;
+  lastBlockNumber: Blocks;
 }
 
 export const DetailsCard = (props: DetailsCardProps) => {

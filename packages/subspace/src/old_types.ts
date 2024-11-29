@@ -8,6 +8,7 @@ import type { Result } from "@torus-ts/utils";
 
 import type { SS58Address } from "./address";
 import type { Proposal } from "./modules/governance";
+import type { Blocks } from "./types";
 import { SS58_SCHEMA } from "./address";
 
 export {
@@ -110,7 +111,7 @@ export interface VoteWithStake {
 
 export interface LastBlock {
   blockHeader: Header;
-  blockNumber: number;
+  blockNumber: Blocks;
   blockHash: IU8a;
   blockHashHex: `0x${string}`;
   apiAtBlock: ApiDecoration<"promise">;
@@ -168,10 +169,6 @@ export interface DAOCardFields {
 export type DaoState = WithMetadataState<DaoApplications>;
 
 // == Proposals ==
-
-// export type ProposalStatus = z.infer<typeof PROPOSAL_STATUS_SCHEMA>;
-// export type ProposalData = z.infer<typeof PROPOSAL_DATA_SCHEMA>;
-// export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;
 
 export type ProposalState = WithMetadataState<Proposal>;
 

@@ -16,6 +16,7 @@ import type {
   DaoApplications,
   StorageKey,
 } from "./old_types";
+import type { Blocks } from "./types";
 import { CUSTOM_METADATA_SCHEMA, DAO_APPLICATIONS_SCHEMA } from "./old_types";
 
 export * from "@torus-ts/utils/subspace";
@@ -87,8 +88,8 @@ export function handleDaos(
 // == Time ==
 
 export function getExpirationTime(
-  blockNumber: number | undefined,
-  expirationBlock: number,
+  blockNumber: Blocks | undefined,
+  expirationBlock: Blocks,
   relative = false,
 ): string {
   if (!blockNumber) return "Unknown";
@@ -104,13 +105,13 @@ export function getExpirationTime(
 }
 
 export function getCreationTime(
-  blockNumber: number | undefined,
-  creationBlock: number,
+  blockNumber: Blocks | undefined,
+  referenceBlock: Blocks,
   relative = false,
 ) {
   if (!blockNumber) return "Unknown";
 
-  const blocksAgo = blockNumber - creationBlock;
+  const blocksAgo = blockNumber - referenceBlock;
   const secondsPassed = blocksAgo * 8; // 8 seconds per block
 
   const creationDate = DateTime.now().minus({ seconds: secondsPassed });

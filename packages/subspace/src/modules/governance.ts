@@ -3,16 +3,17 @@ import type { Codec } from "@polkadot/types/types";
 import type { ZodType, ZodTypeDef } from "zod";
 import { z } from "zod";
 
-import { check_error } from "@torus-ts/utils";
+import { assert_error } from "@torus-ts/utils";
 
 import type { Api } from "../old_types";
 import {
   sb_address,
   sb_array,
   sb_bigint,
+  sb_blocks,
   sb_enum,
+  sb_id,
   sb_null,
-  sb_number,
   sb_some,
   sb_string,
   sb_struct,
@@ -24,9 +25,9 @@ import {
 export const PROPOSAL_DATA_SCHEMA = sb_enum({
   GlobalCustom: sb_null,
   GlobalParams: sb_to_primitive.pipe(z.record(z.unknown())),
-  SubnetCustom: sb_struct({ subnetId: sb_number }),
+  SubnetCustom: sb_struct({ subnetId: sb_id }),
   SubnetParams: sb_struct({
-    subnetId: sb_number,
+    subnetId: sb_id,
     params: sb_to_primitive.pipe(z.record(z.unknown())),
   }),
   TransferDaoTreasury: sb_struct({
@@ -60,14 +61,14 @@ export const PROPOSAL_STATUS_SCHEMA = sb_enum({
 export type ProposalStatus = z.infer<typeof PROPOSAL_STATUS_SCHEMA>;
 
 export const PROPOSAL_SCHEMA = sb_struct({
-  id: sb_number,
+  id: sb_id,
   proposer: sb_address,
-  expirationBlock: sb_number,
+  expirationBlock: sb_blocks,
   data: PROPOSAL_DATA_SCHEMA,
   status: PROPOSAL_STATUS_SCHEMA,
   metadata: sb_string,
   proposalCost: sb_bigint,
-  creationBlock: sb_number,
+  creationBlock: sb_blocks,
 });
 
 export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;
@@ -107,7 +108,7 @@ export function handleMapEntries<
     try {
       var parsed = schema.parse(valueRaw);
     } catch (err) {
-      check_error(err);
+      assert_error(err);
       errors.push(err);
       continue;
     }

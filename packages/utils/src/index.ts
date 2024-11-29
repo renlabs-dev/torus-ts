@@ -27,11 +27,22 @@ export function assertOrThrow(
 
 export const is_error = (err: unknown): err is Error => err instanceof Error;
 
-export function check_error(err: unknown): asserts err is Error {
+export function assert_error(err: unknown): asserts err is Error {
   return assert(is_error(err));
 }
 
 // == Numeric ==
+
+export function check_int(value: unknown): bigint {
+  if (typeof value === "bigint") {
+    return value;
+  } else if (typeof value === "number") {
+    if (Number.isInteger(value)) return BigInt(value);
+    else throw new Error(`Expected integer, got ${value}`);
+  } else {
+    throw new Error(`Expected integer`);
+  }
+}
 
 // TODO: fix wrong `bigintDivision`
 export function bigintDivision_WRONG(

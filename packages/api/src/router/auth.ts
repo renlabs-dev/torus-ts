@@ -16,7 +16,6 @@ export const authRouter = {
     .input(SIGNED_PAYLOAD_SCHEMA)
     .mutation(async ({ ctx, input }) => {
       try {
-        // eslint-disable-next-line no-var
         var { address, payload } = await verifySignedData(input);
       } catch (err) {
         throw new TRPCError({

@@ -23,6 +23,10 @@
       "default": "./dist/old_utils.js",
       "types": "./dist/old_utils.d.ts"
     },
+    "./types": {
+      "default": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
     "./address": {
       "default": "./dist/address.js",
       "types": "./dist/address.d.ts"
