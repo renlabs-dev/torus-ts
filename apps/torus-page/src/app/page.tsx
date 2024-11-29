@@ -6,22 +6,22 @@ export default function Page(): JSX.Element {
   return (
     <>
       <div
-        className="opacity-60s absolute top-0 h-full w-full animate-fade animate-delay-700"
+        className="absolute top-0 z-50 h-full w-full animate-fade animate-delay-700"
         style={{ overflow: "hidden" }}
       >
         <TorusObject />
       </div>
       <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center">
-        {/* <h1 className="block animate-fade-up text-6xl font-semibold tracking-wide shadow-sm animate-delay-[1000ms] md:hidden">
+        <h1 className="block animate-fade-up text-6xl font-semibold tracking-wide shadow-sm animate-delay-[1000ms] md:hidden">
           Torus
-        </h1> */}
+        </h1>
         <Image
           priority
           alt="Torus"
           width={1000}
           height={1000}
           src="/asci-text.svg"
-          className="hidden animate-fade-up animate-delay-[1000ms] md:block md:h-[145px] md:w-[550px] lg:h-[170px] lg:w-[650px] 2xl:h-[350px] 2xl:w-[950px]"
+          className="hidden h-[60vh] w-[60vh] animate-fade-up animate-delay-[1000ms] md:block"
         />
         {/* <Image
           priority

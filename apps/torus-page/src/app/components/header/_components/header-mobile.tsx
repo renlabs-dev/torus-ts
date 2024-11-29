@@ -143,7 +143,7 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
           </div>
         </ScrollArea>
 
-        <div className="absolute bottom-0 bg-gradient-to-t from-[#090C20] via-[#090C20] to-transparent p-3 pb-6 pt-24">
+        <div className="absolute bottom-0 bg-gradient-to-t from-background via-background to-transparent p-3 pb-6 pt-24">
           <div className="mb-3 flex items-center justify-start space-x-6 md:space-x-3">
             {socialList.map((social) => {
               return (

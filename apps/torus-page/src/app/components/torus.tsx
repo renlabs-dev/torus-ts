@@ -52,7 +52,7 @@ const fragmentShader = `
 
     float pattern = max(flowU, flowV);
 
-    vec3 color = vec3(0.3, 0.3, 0.3);
+    vec3 color = vec3(0.4, 0.4, 0.4);
     float pulse = sin(time * 0.1) * 0.25 + 0.75;
 
     vec3 finalColor = color;
