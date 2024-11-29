@@ -17,7 +17,7 @@ function FooterContent() {
           </a>
           .
         </p>
-        <div className="flex space-x-6 pt-3 md:space-x-3">
+        {/* <div className="flex space-x-6 pt-3 md:space-x-3">
           {socialList.map((social) => {
             return (
               <a key={social.name} href={social.href}>
@@ -25,7 +25,7 @@ function FooterContent() {
               </a>
             );
           })}
-        </div>
+        </div> */}
       </div>
     </div>
   );
