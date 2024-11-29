@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { ChevronsLeft } from "lucide-react";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { Button } from "@torus-ts/ui";
+import { Button, ScrollArea } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 interface ValidatorsListProps {
@@ -26,8 +25,8 @@ export function ValidatorsList(props: ValidatorsListProps) {
 
   const validatorsList = [
     {
-      name: "torusx",
-      description: "Validator of torusx platform.",
+      name: "communex",
+      description: "Validator of communex platform.",
       address: "5DUWKpGBneBbna6PFHZk18Gp9wyvLUFPiWy5maAARjRjayPp",
     },
     {
@@ -67,47 +66,34 @@ export function ValidatorsList(props: ValidatorsListProps) {
   const currentList = getValidatorsList();
 
   return (
-    <div className="mt-4 w-full animate-fade-down border-t border-white/20 pt-2">
-      <div className="mb-4 border-b border-white/20">
-        <h3 className="font-bold text-gray-300">Select a Validator</h3>
-        <p className="pb-2 text-sm text-gray-300">
-          Once you select a validator, it will automatically fill the field with
-          their address. View all validators list{" "}
-          <Link
-            href="https://www.comstats.org/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-primary hover:underline"
-          >
-            here
-          </Link>
-          .
-        </p>
-      </div>
+    <div className="w-full animate-fade-down pt-2">
       <div className="flex animate-fade-down flex-col gap-y-4 animate-delay-200">
-        {currentList.map((item) => (
-          <Button
-            key={item.address}
-            onClick={() => props.onSelectValidator({ address: item.address })}
-            variant="outline"
-          >
-            <div className="flex w-full flex-col items-start gap-1">
-              <div className="flex w-full flex-row items-start justify-between md:flex-row">
-                <span className="flex gap-1">
-                  {item.name !== "" && (
-                    <p className="text-white">
-                      {item.name.toLocaleUpperCase()} /
-                    </p>
-                  )}
-                  <p>{item.description}</p>
-                </span>
-                <span className="text-gray-300">
-                  {smallAddress(item.address)}
-                </span>
+        <h3 className="font-bold text-gray-300">Select a Validator</h3>
+        <ScrollArea className="h-[150px] w-full rounded-md pr-4">
+          {currentList.map((item) => (
+            <Button
+              key={item.address}
+              onClick={() => props.onSelectValidator({ address: item.address })}
+              variant="outline"
+              className="mb-2 w-full"
+            >
+              <div className="flex w-full flex-col items-start gap-1">
+                <div className="flex w-full flex-row items-start justify-between md:flex-row">
+                  <span className="flex gap-1">
+                    {item.name !== "" && (
+                      <p className="text-white">
+                        {item.name.toLocaleUpperCase()}
+                      </p>
+                    )}
+                  </span>
+                  <span className="text-gray-300">
+                    {smallAddress(item.address)}
+                  </span>
+                </div>
               </div>
-            </div>
-          </Button>
-        ))}
+            </Button>
+          ))}
+        </ScrollArea>
         <Button onClick={props.onBack}>
           <ChevronsLeft className="h-6 w-6" /> Back to Field Options
         </Button>
