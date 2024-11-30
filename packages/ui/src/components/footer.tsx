@@ -46,7 +46,7 @@ export function Footer() {
   );
 }
 
-const socialList = [
+const _socialList = [
   {
     name: "Discord",
     href: links.discord,
