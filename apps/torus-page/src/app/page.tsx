@@ -12,7 +12,7 @@ export default function Page(): JSX.Element {
         <TorusObject />
       </div>
       <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center">
-        <h1 className="block animate-fade-up text-6xl font-semibold tracking-wide shadow-sm animate-delay-[1000ms] md:hidden">
+        <h1 className="block animate-fade-up text-7xl font-semibold tracking-wide shadow-sm animate-delay-[1000ms] md:hidden">
           Torus
         </h1>
         <Image
@@ -21,7 +21,7 @@ export default function Page(): JSX.Element {
           width={1000}
           height={1000}
           src="/asci-text.svg"
-          className="-z-50 hidden h-[60vh] w-[60vh] animate-fade animate-delay-[1000ms] md:block"
+          className="-z-50 hidden h-[70vh] animate-fade px-6 animate-delay-[1000ms] md:block"
         />
         {/* <Image
           priority
