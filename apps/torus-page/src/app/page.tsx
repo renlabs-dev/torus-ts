@@ -21,7 +21,7 @@ export default function Page(): JSX.Element {
           width={1000}
           height={1000}
           src="/asci-text.svg"
-          className="-z-50 hidden animate-fade px-6 animate-delay-[1000ms] md:block xl:w-[65vh] 2xl:w-[70vh]"
+          className="-z-50 hidden animate-fade px-6 animate-delay-[1000ms] md:block xl:w-[68vh] 2xl:w-[85vh]"
         />
         {/* <Image
           priority
