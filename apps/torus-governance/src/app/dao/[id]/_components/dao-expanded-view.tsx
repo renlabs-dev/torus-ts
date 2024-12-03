@@ -2,7 +2,6 @@
 
 import { LoaderCircle } from "lucide-react";
 
-import type { DaoApplicationStatus } from "@torus-ts/subspace/old";
 import { useTorus } from "@torus-ts/providers/use-torus";
 
 import { CreateComment } from "~/app/components/comments/create-comment";
@@ -53,7 +52,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-row items-center gap-2">
-        <DaoStatusLabel status={content.status as DaoApplicationStatus} />
+        <DaoStatusLabel status={content.status} />
       </div>
       <div className="flex w-full justify-between gap-10">
         <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
