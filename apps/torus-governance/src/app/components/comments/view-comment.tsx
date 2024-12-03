@@ -128,10 +128,10 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
 };
 
 export function ViewComment({
-  proposalId,
+  id,
   modeType,
 }: {
-  proposalId: number;
+  id: number;
   modeType: "PROPOSAL" | "DAO";
 }) {
   const { selectedAccount } = useTorus();
@@ -147,8 +147,8 @@ export function ViewComment({
     isLoading,
     refetch,
   } = api.proposalComment.byId.useQuery(
-    { type: modeType, proposalId },
-    { enabled: typeof proposalId === "number" },
+    { type: modeType, proposalId: id },
+    { enabled: typeof id === "number" },
   );
 
   const [localVotes, setLocalVotes] = useState<Record<string, VoteType | null>>(
@@ -176,8 +176,8 @@ export function ViewComment({
 
   const { data: userVotes, refetch: refetchUserVotes } =
     api.proposalComment.byUserId.useQuery(
-      { proposalId, userKey: selectedAccount?.address ?? "" },
-      { enabled: !!selectedAccount?.address && typeof proposalId === "number" },
+      { proposalId: id, userKey: selectedAccount?.address ?? "" },
+      { enabled: !!selectedAccount?.address && typeof id === "number" },
     );
 
   useEffect(() => {

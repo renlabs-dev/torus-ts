@@ -21,22 +21,23 @@ export default async function DaoView({
   }
 
   return (
-    <div className="mx-auto flex max-w-screen-2xl flex-col px-4">
+    <div className="mx-auto flex w-full max-w-screen-xl flex-col px-4 pt-12">
       <Breadcrumb className="pb-8 pt-12">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/?view=proposals">
-              Proposals List
+            <BreadcrumbLink href="/?view=daos-applications">
+              DAO Applications List
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage className="text-muted-foreground">
-              Proposal {id}
+              DAO Application #{id}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
       <div className="mb-6 flex h-full w-full flex-col justify-between divide-gray-500 text-white md:mb-12 lg:flex-row">
         <DaoExpandedView paramId={Number(id)} />
       </div>

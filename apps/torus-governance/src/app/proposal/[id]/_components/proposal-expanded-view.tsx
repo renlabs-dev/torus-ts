@@ -92,6 +92,8 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
 
   if (!content) return <div>No content found.</div>;
 
+  const isProposalOpen = "Open" in content.status;
+
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-row items-center gap-2">
@@ -112,35 +114,41 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
               expirationBlock={content.expirationBlock}
               lastBlockNumber={lastBlock?.blockNumber ?? 0}
             />
-            <ProposalVoteCard
-              proposalId={content.id}
-              proposalStatus={content.status}
-              voted={content.voted}
-            />
-            <VoteData proposalStatus={content.status} />
+            {isProposalOpen && (
+              <>
+                <ProposalVoteCard
+                  proposalId={content.id}
+                  proposalStatus={content.status}
+                  voted={content.voted}
+                />
+                <VoteData proposalStatus={content.status} />
+              </>
+            )}
           </div>
 
           {/* Desktop Proposal Vote Card */}
-          <div className="hidden md:block">
-            <ProposalVoteCard
-              proposalId={content.id}
-              proposalStatus={content.status}
-              voted={content.voted}
-            />
-          </div>
+          {isProposalOpen && (
+            <div className="hidden md:block">
+              <ProposalVoteCard
+                proposalId={content.id}
+                proposalStatus={content.status}
+                voted={content.voted}
+              />
+            </div>
+          )}
 
           {/* Comments Section */}
-          <ViewComment modeType="PROPOSAL" proposalId={content.id} />
-          <CreateComment proposalId={content.id} ModeType="PROPOSAL" />
+          <ViewComment modeType="PROPOSAL" id={content.id} />
+          <CreateComment id={content.id} ModeType="PROPOSAL" />
 
           {/* Desktop Voter List */}
           <div className="hidden lg:block">
-            <VoterList proposalStatus={content.status} />
+            {isProposalOpen && <VoterList proposalStatus={content.status} />}
           </div>
         </div>
 
         {/* Right Column */}
-        <div className="hidden flex-col gap-6 transition-all md:flex xl:w-1/3">
+        <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
           <DetailsCard
             author={content.author}
             id={content.id}
@@ -148,7 +156,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
             expirationBlock={content.expirationBlock}
             lastBlockNumber={lastBlock?.blockNumber ?? 0}
           />
-          <VoteData proposalStatus={content.status} />
+          {isProposalOpen && <VoterList proposalStatus={content.status} />}
         </div>
       </div>
     </div>

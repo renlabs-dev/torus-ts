@@ -2,16 +2,16 @@
 
 import { LoaderCircle } from "lucide-react";
 
+import type { DaoApplicationStatus } from "@torus-ts/subspace/old";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { MarkdownView } from "@torus-ts/ui/markdown-view";
-import { smallAddress } from "@torus-ts/utils/subspace";
 
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
 import { CreateCadreCandidates } from "~/app/components/dao/create-cadre-candidates";
 import { DaoStatusLabel } from "~/app/components/dao/dao-status-label";
 import { DaoVoteCard } from "~/app/components/dao/dao-vote-card";
-import { SectionHeaderText } from "~/app/components/section-header-text";
+import { DetailsCard } from "~/app/components/details-card";
+import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { handleCustomDaos } from "../../../../utils";
 
 interface CustomContent {
@@ -21,7 +21,7 @@ interface CustomContent {
 export function DaoExpandedView(props: CustomContent): JSX.Element {
   const { paramId } = props;
 
-  const { daosWithMeta, isDaosLoading } = useTorus();
+  const { daosWithMeta, isDaosLoading, lastBlock } = useTorus();
 
   function handleDaosContent() {
     const dao = daosWithMeta?.find((d) => d.id === paramId);
@@ -51,53 +51,51 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
     );
 
   return (
-    <div className="flex w-full flex-col md:flex-row">
-      <div className="flex h-full w-full flex-col lg:w-2/3">
-        <div className="m-2 flex h-full animate-fade-down flex-col border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-100 md:max-h-[60vh] md:min-h-[50vh]">
-          <SectionHeaderText
-            text={content.title ?? "No Custom Metadata Title"}
-          />
-          <div className="h-full lg:overflow-auto">
-            <MarkdownView source={(content.body as string | undefined) ?? ""} />
-          </div>
-        </div>
-        <div className="w-full">
-          <ViewComment modeType="DAO" proposalId={content.id} />
-        </div>
-        <div className="m-2 hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between border border-white/20 bg-[#898989]/5 p-6 text-white backdrop-blur-md animate-delay-200 md:flex">
-          <CreateComment proposalId={content.id} ModeType="DAO" />
-        </div>
+    <div className="flex w-full flex-col gap-8">
+      <div className="flex w-full flex-row items-center gap-2">
+        <DaoStatusLabel status={content.status as DaoApplicationStatus} />
       </div>
+      <div className="flex w-full justify-between gap-10">
+        <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
+          <ExpandedViewContent body={content.body} title={content.title} />
 
-      <div className="flex flex-col lg:w-1/3">
-        <div className="m-2 animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-200">
-          <div className="flex flex-col gap-3">
-            <div>
-              <span className="text-gray-500">ID</span>
-              <span className="flex items-center text-white">{content.id}</span>
-            </div>
+          {/* Mobile Details Section */}
+          <div className="flex w-full flex-col gap-6 transition-all md:hidden">
+            <DetailsCard
+              author={content.author}
+              id={content.id}
+              creationBlock={content.creationBlock}
+              lastBlockNumber={lastBlock?.blockNumber ?? 0}
+            />
+            <DaoVoteCard daoId={content.id} daoStatus={content.status} />
+            {/* <VoteData proposalStatus={content.status} /> */}
+          </div>
 
-            <div>
-              <span className="text-gray-500">Author</span>
-              <span className="flex items-center text-white">
-                {smallAddress(content.author, 16)}
-              </span>
-            </div>
+          {/* Desktop Proposal Vote Card */}
+          <div className="hidden md:block">
+            <DaoVoteCard daoId={content.id} daoStatus={content.status} />
+          </div>
+
+          {/* Comments Section */}
+          <ViewComment modeType="DAO" id={content.id} />
+          <CreateComment id={content.id} ModeType="DAO" />
+
+          {/* Desktop Voter List */}
+          <div className="hidden lg:block">
+            {/* <VoterList proposalStatus={content.status} /> */}
           </div>
         </div>
 
-        <div className="m-2 animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-200">
-          <div className="flex items-center gap-3">
-            <DaoStatusLabel status={content.status} />
-          </div>
-        </div>
-
-        <div className="m-2 hidden animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-500 md:block">
-          <DaoVoteCard daoId={content.id} daoStatus={content.status} />
-        </div>
-
-        <div className="m-2 hidden animate-fade-down border border-white/20 bg-[#898989]/5 p-6 text-gray-400 backdrop-blur-md animate-delay-700 md:block">
+        {/* Right Column */}
+        <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
+          <DetailsCard
+            author={content.author}
+            id={content.id}
+            creationBlock={content.creationBlock}
+            lastBlockNumber={lastBlock?.blockNumber ?? 0}
+          />
           <CreateCadreCandidates />
+          {/* <VoteData proposalStatus={content.status} /> */}
         </div>
       </div>
     </div>

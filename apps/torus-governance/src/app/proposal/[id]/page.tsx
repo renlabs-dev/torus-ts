@@ -32,7 +32,7 @@ export default async function ProposalView({
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage className="text-muted-foreground">
-              Proposal {id}
+              Proposal #{id}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>

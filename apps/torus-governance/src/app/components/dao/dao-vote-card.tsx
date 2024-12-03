@@ -1,19 +1,148 @@
 "use client";
 
 import type { inferProcedureOutput } from "@trpc/server";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
 import type { DaoApplicationStatus } from "@torus-ts/subspace/old";
+import type { TransactionResult } from "@torus-ts/ui/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
+import {
+  Button,
+  ToggleGroup,
+  ToggleGroupItem,
+  TransactionStatus,
+} from "@torus-ts/ui";
 
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import { SectionHeaderText } from "../section-header-text";
 
 type DaoVote = inferProcedureOutput<AppRouter["dao"]["byId"]>[0];
+
+const voteOptions: DaoVote["daoVoteType"][] = ["ACCEPT", "REFUSE"];
+
+const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
+  return (
+    <div className="hidden animate-fade-down animate-delay-500 md:block">
+      <div className="pb-6 pl-0">
+        <h3>Cast your vote</h3>
+      </div>
+      {props.children}
+    </div>
+  );
+};
+
+const AlreadyVotedCardContent = (props: {
+  voted: Omit<DaoVote["daoVoteType"], "REMOVE">;
+  votingStatus: TransactionResult["status"];
+  handleRemoveVote: () => void;
+}): JSX.Element => {
+  const { voted, votingStatus, handleRemoveVote } = props;
+
+  const getVotedText = (
+    voted: Omit<DaoVote["daoVoteType"], "REMOVE">,
+  ): JSX.Element => {
+    if (voted === "ACCEPT") {
+      return <span className="text-green-400">You already voted in favor</span>;
+    }
+    return <span className="text-red-400">You already voted against</span>;
+  };
+
+  return (
+    <div className="flex w-full flex-col gap-2">
+      {getVotedText(voted)}
+      <Button
+        variant="outline"
+        className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
+        onClick={handleRemoveVote}
+        type="button"
+      >
+        Remove Vote <TicketX className="h-5 w-5" />
+      </Button>
+      {votingStatus && (
+        <TransactionStatus status={votingStatus} message={votingStatus} />
+      )}
+    </div>
+  );
+};
+
+const VoteCardFunctionsContent = (props: {
+  vote: DaoVote["daoVoteType"] | "UNVOTED";
+  votingStatus: TransactionResult["status"];
+  isConnected: boolean;
+  isCadreUser: boolean;
+  handleVote: () => void;
+  setVote: (vote: DaoVote["daoVoteType"] | "UNVOTED") => void;
+}): JSX.Element => {
+  const { handleVote, setVote, vote, votingStatus, isCadreUser, isConnected } =
+    props;
+
+  function handleVotePreference(value: DaoVote["daoVoteType"] | "") {
+    if (value === "") return setVote("UNVOTED");
+    return setVote(value);
+  }
+
+  return (
+    <div className="flex w-full flex-col items-end gap-4">
+      <div
+        className={`relative z-20 flex w-full flex-col items-start gap-2 ${(!isConnected || !isCadreUser) && "blur-md"}`}
+      >
+        <ToggleGroup
+          type="single"
+          value={vote}
+          onValueChange={(voteType) =>
+            handleVotePreference(voteType as DaoVote["daoVoteType"] | "")
+          }
+          disabled={votingStatus === "PENDING" || !isCadreUser}
+          className="flex w-full gap-2"
+        >
+          {voteOptions.map((option) => (
+            <ToggleGroupItem
+              key={option}
+              variant="outline"
+              value={option}
+              className={`w-full capitalize ${votingStatus === "PENDING" && "cursor-not-allowed"} ${option === vote ? "border-white" : "border-muted bg-card"}`}
+              disabled={votingStatus === "PENDING"}
+            >
+              {option.toLocaleLowerCase()}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+
+        <Button
+          variant="outline"
+          className={`w-full ${vote === "UNVOTED" || votingStatus === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
+          disabled={
+            vote === "UNVOTED" || votingStatus === "PENDING" || !isCadreUser
+          }
+          onClick={handleVote}
+          type="button"
+        >
+          {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
+        </Button>
+
+        {votingStatus && (
+          <TransactionStatus status={votingStatus} message={votingStatus} />
+        )}
+      </div>
+      {!isConnected && (
+        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
+          <span>Connect your wallet to vote</span>
+        </div>
+      )}
+      {isConnected && !isCadreUser && (
+        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
+          <span>
+            You must be a Cadre Member to be able to vote on DAO Applications.
+            Consider applying to become a Cadre Member.
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export function DaoVoteCard(props: {
   daoStatus: DaoApplicationStatus;
@@ -22,205 +151,142 @@ export function DaoVoteCard(props: {
   const { daoId, daoStatus } = props;
   const { isConnected, selectedAccount } = useTorus();
 
-  const [vote, setVote] = useState<DaoVote["daoVoteType"]>();
+  const [vote, setVote] = useState<DaoVote["daoVoteType"] | "UNVOTED">(
+    "UNVOTED",
+  );
+  const [votingStatus, setVotingStatus] =
+    useState<TransactionResult["status"]>(null);
 
   const utils = api.useUtils();
   const { data: votes } = api.dao.byId.useQuery({ id: daoId });
   const { data: cadreUsers } = api.dao.byCadre.useQuery();
+
   const userVote = votes?.find(
     (vote) => vote.userKey === selectedAccount?.address,
+  );
+
+  const isCadreUser = useMemo(
+    () => cadreUsers?.some((user) => user.userKey === selectedAccount?.address),
+    [cadreUsers, selectedAccount],
   );
 
   const createVoteMutation = api.dao.createVote.useMutation({
     onSuccess: async () => {
       toast.success("Vote submitted successfully!");
-
       await utils.dao.byId.invalidate({ id: daoId });
+      setVotingStatus("SUCCESS");
     },
     onError: (error) => {
       toast.error(`Error submitting vote: ${error.message}`);
+      setVotingStatus("ERROR");
     },
   });
+
   const deleteVoteMutation = api.dao.deleteVote.useMutation({
     onSuccess: async () => {
       toast.success("Vote removed successfully!");
-      setVote(undefined);
       await utils.dao.byId.invalidate({ id: daoId });
+      setVotingStatus("SUCCESS");
     },
     onError: (error) => {
       toast.error(`Error removing vote: ${error.message}`);
+      setVotingStatus("ERROR");
     },
   });
 
-  function handleRemoveFromWhitelist(): void {
+  const ensureConnected = (): boolean => {
     if (!selectedAccount?.address) {
-      toast.error("Please connect your wallet to vote.");
-      return;
+      toast.error("Please connect your wallet.");
+      return false;
     }
+    return true;
+  };
 
-    if (!cadreUsers?.some((user) => user.userKey === selectedAccount.address)) {
-      toast.error("Only Cadre members can vote to remove from the whitelist.");
-      return;
+  const ensureIsCadreUser = (): boolean => {
+    if (!isCadreUser) {
+      toast.error("Only Cadre members can perform this action.");
+      return false;
     }
+    return true;
+  };
 
-    if (userVote && vote) {
-      // If user has already voted, first remove the existing vote
+  const submitVote = (daoVoteType: DaoVote["daoVoteType"]): void => {
+    if (!ensureConnected() || !ensureIsCadreUser()) return;
+
+    setVotingStatus("PENDING");
+    const proceedWithVote = () => {
+      createVoteMutation.mutate({ daoId, daoVoteType });
+    };
+
+    if (userVote) {
+      // Remove existing vote before submitting a new one
       deleteVoteMutation.mutate(
+        { daoId },
         {
-          daoId,
-        },
-        {
-          onSuccess: () => {
-            // After successful deletion, create a new "remove" vote
-            createVoteMutation.mutate({
-              daoId,
-              daoVoteType: vote,
-            });
-          },
+          onSuccess: proceedWithVote,
         },
       );
     } else {
-      // If user hasn't voted yet, directly create a "remove" vote
-      createVoteMutation.mutate({
-        daoId,
-        daoVoteType: "REMOVE",
-      });
+      proceedWithVote();
     }
-  }
+  };
 
-  function handleVotePreference(value: DaoVote["daoVoteType"]) {
-    if (value === vote) {
-      setVote(undefined);
-    }
-    setVote(value);
-  }
+  const handleRemoveFromWhitelist = () => {
+    submitVote("REMOVE");
+  };
 
-  function handleVote() {
-    if (!selectedAccount?.address) {
-      toast.error("Please connect your wallet to vote.");
-      return;
-    }
-
-    if (!cadreUsers?.some((user) => user.userKey === selectedAccount.address)) {
-      toast.error("Only Cadre members can vote.");
-      return;
-    }
-
-    if (!vote) {
+  const handleVote = () => {
+    if (vote === "UNVOTED") {
       toast.error("Please select a valid vote option.");
       return;
     }
+    submitVote(vote);
+  };
 
-    createVoteMutation.mutate({
-      daoId,
-      daoVoteType: vote,
-    });
-  }
+  const handleRemoveVote = (): void => {
+    if (!ensureConnected()) return;
+    setVotingStatus("PENDING");
 
-  function handleRemoveVote(): void {
-    if (!selectedAccount?.address) {
-      toast.error("Please connect your wallet to remove your vote.");
-      return;
-    }
-
-    deleteVoteMutation.mutate({
-      daoId,
-    });
-  }
+    deleteVoteMutation.mutate({ daoId });
+  };
 
   if (
     (userVote && daoStatus === "Pending") ||
     (daoStatus === "Accepted" && userVote?.daoVoteType === "REMOVE")
   ) {
     return (
-      <>
-        <SectionHeaderText text="Cast your vote" />
-        <div className="flex w-full flex-col gap-2">
-          <span>
-            You already voted to{" "}
-            {userVote.daoVoteType === "ACCEPT" ? (
-              <b className="text-green-500">Accept</b>
-            ) : userVote.daoVoteType === "REFUSE" ? (
-              <b className="text-red-500">Refuse</b>
-            ) : (
-              <b className="text-red-500">Remove from the whitelist</b>
-            )}{" "}
-          </span>
-          <button
-            className="flex w-full items-center justify-between text-nowrap border border-amber-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-amber-500 transition duration-200 hover:border-amber-400 hover:bg-amber-500/15 active:bg-amber-500/50"
-            onClick={handleRemoveVote}
-            type="button"
-            disabled={deleteVoteMutation.isPending}
-          >
-            {deleteVoteMutation.isPending ? "Removing..." : "Remove Vote"}{" "}
-            <TicketX className="h-5 w-5" />
-          </button>
-        </div>
-      </>
+      <CardBarebones>
+        <AlreadyVotedCardContent
+          handleRemoveVote={handleRemoveVote}
+          voted={userVote.daoVoteType}
+          votingStatus={votingStatus}
+        />
+      </CardBarebones>
     );
   }
 
   switch (daoStatus) {
     case "Pending":
       return (
-        <>
-          <SectionHeaderText text="Cast your vote" />
-          {isConnected ? (
-            <>
-              <div className="flex w-full gap-4">
-                <button
-                  className={`w-full border border-green-600 py-1 ${
-                    vote === "ACCEPT"
-                      ? "border-green-500 bg-green-500/10 text-green-500"
-                      : "text-green-600"
-                  } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
-                  onClick={() => handleVotePreference("ACCEPT")}
-                  type="button"
-                  disabled={createVoteMutation.isPending}
-                >
-                  Approve
-                </button>
-                <button
-                  className={`w-full border border-red-600 py-1 ${
-                    vote === "REFUSE"
-                      ? "border-red-500 bg-red-500/10 text-red-500"
-                      : "text-red-500"
-                  } ${createVoteMutation.isPending && "cursor-not-allowed"}`}
-                  onClick={() => handleVotePreference("REFUSE")}
-                  type="button"
-                  disabled={createVoteMutation.isPending}
-                >
-                  Refuse
-                </button>
-              </div>
-              <button
-                className={`mt-4 w-full border p-1.5 ${
-                  !vote || createVoteMutation.isPending
-                    ? "cursor-not-allowed border-gray-400 text-gray-400"
-                    : "border-blue-400 bg-blue-500/10 text-blue-400"
-                } `}
-                disabled={!vote || createVoteMutation.isPending}
-                onClick={handleVote}
-                type="button"
-              >
-                {createVoteMutation.isPending
-                  ? "Voting..."
-                  : !vote
-                    ? "Choose Before Voting"
-                    : "Vote"}
-              </button>
-            </>
-          ) : null}
-          {/* TODO: Review logic to connect an account and handle the case when isConnected is false*/}
-        </>
+        <CardBarebones>
+          <VoteCardFunctionsContent
+            isConnected={isConnected}
+            handleVote={handleVote}
+            votingStatus={votingStatus}
+            vote={vote}
+            setVote={setVote}
+            isCadreUser={!!isCadreUser}
+          />
+        </CardBarebones>
       );
     case "Accepted":
       return (
         <div>
-          <GovernanceStatusNotOpen status="ACCEPTED" governanceModel="DAO" />
-
-          {isConnected && (
-            <button
+          <CardBarebones>
+            <GovernanceStatusNotOpen status="ACCEPTED" governanceModel="DAO" />
+          </CardBarebones>
+          {isConnected && isCadreUser && (
+            <Button
               className="mt-6 flex w-full items-center justify-between text-nowrap border border-red-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-red-500 transition duration-200 hover:border-red-400 hover:bg-red-500/15 active:bg-red-500/50"
               onClick={handleRemoveFromWhitelist}
               type="button"
@@ -230,16 +296,24 @@ export function DaoVoteCard(props: {
             >
               {createVoteMutation.isPending || deleteVoteMutation.isPending
                 ? "Processing..."
-                : "Vote to remove from whitelist"}{" "}
+                : "Vote to remove from whitelist"}
               <Delete className="h-5 w-5" />
-            </button>
+            </Button>
           )}
           {/* TODO: Review logic to connect an account and handle the case when isConnected is false*/}
         </div>
       );
     case "Removed":
-      return <GovernanceStatusNotOpen status="REMOVED" governanceModel="DAO" />;
+      return (
+        <CardBarebones>
+          <GovernanceStatusNotOpen status="REMOVED" governanceModel="DAO" />
+        </CardBarebones>
+      );
     case "Refused":
-      return <GovernanceStatusNotOpen status="REFUSED" governanceModel="DAO" />;
+      return (
+        <CardBarebones>
+          <GovernanceStatusNotOpen status="REFUSED" governanceModel="DAO" />
+        </CardBarebones>
+      );
   }
 }

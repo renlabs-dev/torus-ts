@@ -17,7 +17,7 @@ import {
 
 import type { VoteStatus } from "../vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import { VotePowerSettings } from "../vote-power-settings";
+import { VotePowerSettings } from "./vote-power-settings";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
@@ -78,10 +78,6 @@ const VoteCardFunctionsContent = (props: {
   const { handleVote, setVote, vote, votingStatus, isPowerUser, isConnected } =
     props;
 
-  {
-    /* TODO: Review logic to connect an account and handle the case when isConnected is false*/
-  }
-
   function handleVotePreference(value: VoteStatus | "") {
     if (value === "" || value === "UNVOTED") return setVote("UNVOTED");
     return setVote(value);
@@ -90,7 +86,7 @@ const VoteCardFunctionsContent = (props: {
   return (
     <div className="flex w-full flex-col items-end gap-4">
       <div
-        className={`relative z-20 flex w-full flex-col items-end gap-2 ${!isConnected && "blur-sm"}`}
+        className={`relative z-20 flex w-full flex-col items-end gap-2 ${!isConnected && "blur-md"}`}
       >
         {isConnected && <VotePowerSettings isPowerUser={isPowerUser} />}
         <ToggleGroup

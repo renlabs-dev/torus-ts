@@ -15,10 +15,10 @@ const MAX_NAME_CHARACTERS = 300;
 const MIN_STAKE_REQUIRED = 5000;
 
 export function CreateComment({
-  proposalId,
+  id,
   ModeType,
 }: {
-  proposalId: number;
+  id: number;
   ModeType: "PROPOSAL" | "DAO";
 }) {
   const { selectedAccount, stakeOut } = useTorus();
@@ -74,12 +74,12 @@ export function CreateComment({
     try {
       await CreateComment.mutateAsync({
         content,
-        proposalId,
+        proposalId: id,
         governanceModel: ModeType,
         userName: name || undefined,
       });
       toast.success("Comment submitted successfully!");
-      await utils.proposalComment.byId.invalidate({ proposalId });
+      await utils.proposalComment.byId.invalidate({ proposalId: id });
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0]?.message ?? "Invalid input");
