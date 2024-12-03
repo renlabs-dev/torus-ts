@@ -14,6 +14,7 @@ interface LayoutProps {
   font: NextFont;
   className?: string;
   shouldDisplayHeader?: boolean;
+  appName?: string;
 }
 
 export function Layout({
@@ -21,6 +22,7 @@ export function Layout({
   font,
   className,
   shouldDisplayHeader = true,
+  appName,
 }: LayoutProps): JSX.Element {
   return (
     <html lang="en">
@@ -31,7 +33,7 @@ export function Layout({
           className,
         )}
       >
-        {shouldDisplayHeader && <Header />}
+        {shouldDisplayHeader && <Header appName={appName} />}
         {children}
         <Footer />
       </body>

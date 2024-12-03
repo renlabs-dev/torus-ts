@@ -8,9 +8,11 @@ import { Layout } from "@torus-ts/ui/components";
 
 import { TRPCReactProvider } from "~/trpc/react";
 
+const APP_NAME = "Torus Governance";
+
 export const metadata: Metadata = {
   robots: "all",
-  title: "𝐓𝐨𝐫𝐮𝐬",
+  title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description: "Most advanced decentralized AI Protocol.",
 };
@@ -27,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono}>
+    <Layout font={firaMono} appName={APP_NAME}>
       <Providers>
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </Providers>

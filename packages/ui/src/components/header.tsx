@@ -1,16 +1,16 @@
+import Link from "next/link";
+
 import { cn } from ".";
 import { Icons } from "./icons";
 
-export function Header(): JSX.Element {
+export function Header(props: { appName?: string }): JSX.Element {
+  const { appName } = props;
   return (
-    <header
-      className={cn(
-        "fixed left-0 top-0 z-50 mx-auto flex animate-fade-down justify-end bg-gradient-to-b from-background via-background to-transparent px-4 pb-6 pt-3",
-      )}
-    >
-      <a className="h-fit w-fit rounded-full bg-accent p-1.5" href="/">
+    <header className={cn("fixed left-6 top-3 z-50 flex animate-fade-down")}>
+      <Link className="flex h-fit w-fit gap-4 p-1.5" href="/">
         <Icons.logo className="h-6 w-6" />
-      </a>
+        {appName}
+      </Link>
     </header>
   );
 }
