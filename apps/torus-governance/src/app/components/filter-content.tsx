@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback } from "react";
+import { Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchIcon } from "lucide-react";
 
 import { Input } from "@torus-ts/ui";
 
-export const FilterContent = () => {
+export const Filter = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -43,5 +43,13 @@ export const FilterContent = () => {
         className="border-none focus-visible:ring-0"
       />
     </div>
+  );
+};
+
+export const FilterContent = () => {
+  return (
+    <Suspense>
+      <Filter />
+    </Suspense>
   );
 };

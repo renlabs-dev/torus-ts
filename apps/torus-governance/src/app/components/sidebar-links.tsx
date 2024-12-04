@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { Suspense, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
@@ -24,7 +24,7 @@ const navSidebarOptions = [
   // { title: "DAO Members Dashboard", href: "dao-members-dashboard" },
 ] as const;
 
-export const SidebarLinks = () => {
+export const Sidebar = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -93,5 +93,13 @@ export const SidebarLinks = () => {
         </Card>
       </div>
     </>
+  );
+};
+
+export const SidebarLinks = () => {
+  return (
+    <Suspense>
+      <Sidebar />
+    </Suspense>
   );
 };

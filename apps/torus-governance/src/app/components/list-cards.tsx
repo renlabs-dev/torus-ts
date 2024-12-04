@@ -101,7 +101,6 @@ const ListCardsContent = () => {
   };
 
   const renderProposals = useMemo((): JSX.Element[] => {
-    console.log("proposalsWithMeta", proposalsWithMeta);
     if (!proposalsWithMeta) return [];
 
     return proposalsWithMeta
