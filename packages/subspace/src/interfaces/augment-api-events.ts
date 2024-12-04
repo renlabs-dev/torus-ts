@@ -6,10 +6,10 @@
 import '@polkadot/api-base/types/events';
 
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Result, U256, U8aFixed, Vec, bool, u16, u32, u64 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u16, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256, Permill } from '@polkadot/types/interfaces/runtime';
-import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletSubspaceGlobalParams, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import type { AccountId32, H256 } from '@polkadot/types/interfaces/runtime';
+import type { FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletSubspaceParamsGlobalGlobalParams, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -111,51 +111,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       [key: string]: AugmentedEvent<ApiType>;
     };
-    baseFee: {
-      BaseFeeOverflow: AugmentedEvent<ApiType, []>;
-      NewBaseFeePerGas: AugmentedEvent<ApiType, [fee: U256], { fee: U256 }>;
-      NewElasticity: AugmentedEvent<ApiType, [elasticity: Permill], { elasticity: Permill }>;
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>;
-    };
-    ethereum: {
-      /**
-       * An ethereum transaction was successfully executed.
-       **/
-      Executed: AugmentedEvent<ApiType, [from: H160, to: H160, transactionHash: H256, exitReason: EvmCoreErrorExitReason, extraData: Bytes], { from: H160, to: H160, transactionHash: H256, exitReason: EvmCoreErrorExitReason, extraData: Bytes }>;
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>;
-    };
-    evm: {
-      /**
-       * A contract has been created at given address.
-       **/
-      Created: AugmentedEvent<ApiType, [address: H160], { address: H160 }>;
-      /**
-       * A contract was attempted to be created, but the execution failed.
-       **/
-      CreatedFailed: AugmentedEvent<ApiType, [address: H160], { address: H160 }>;
-      /**
-       * A contract has been executed successfully with states applied.
-       **/
-      Executed: AugmentedEvent<ApiType, [address: H160], { address: H160 }>;
-      /**
-       * A contract has been executed with errors. States are reverted with only gas fees applied.
-       **/
-      ExecutedFailed: AugmentedEvent<ApiType, [address: H160], { address: H160 }>;
-      /**
-       * Ethereum events from contracts.
-       **/
-      Log: AugmentedEvent<ApiType, [log: EthereumLog], { log: EthereumLog }>;
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>;
-    };
     governanceModule: {
       /**
        * A new application has been created.
@@ -238,11 +193,50 @@ declare module '@polkadot/api-base/types/events' {
        **/
       [key: string]: AugmentedEvent<ApiType>;
     };
+    offworker: {
+      /**
+       * New authorities were successfully added
+       **/
+      AuthoritiesAdded: AugmentedEvent<ApiType, []>;
+      /**
+       * Offchain worker sent decrypted weights
+       **/
+      DecryptedWeightsSent: AugmentedEvent<ApiType, [subnetId: u16, blockNumber: u64, worker: AccountId32], { subnetId: u16, blockNumber: u64, worker: AccountId32 }>;
+      /**
+       * Decryption node successfully sent decrypted weights back to the runtime on time
+       **/
+      DecryptionNodeCallbackSuccess: AugmentedEvent<ApiType, [subnetId: u16, nodeId: AccountId32], { subnetId: u16, nodeId: AccountId32 }>;
+      /**
+       * Offchain worker sent keep_alive message
+       **/
+      KeepAliveSent: AugmentedEvent<ApiType, [blockNumber: u64, worker: AccountId32], { blockNumber: u64, worker: AccountId32 }>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
     subnetEmissionModule: {
       /**
-       * Subnets tempo has finished
+       * Decryption node was banned, as it failed to send decrypted weights back to the runtime
        **/
-      EpochFinished: AugmentedEvent<ApiType, [u16]>;
+      DecryptionNodeBanned: AugmentedEvent<ApiType, [subnetId: u16, nodeId: AccountId32], { subnetId: u16, nodeId: AccountId32 }>;
+      /**
+       * Decryption node was called by the runtime to send decrypted weights back, if node fails
+       * to do so on time, it will get banned
+       **/
+      DecryptionNodeCallbackScheduled: AugmentedEvent<ApiType, [subnetId: u16, nodeId: AccountId32, banBlock: u64], { subnetId: u16, nodeId: AccountId32, banBlock: u64 }>;
+      /**
+       * Weight copying decryption was canceled
+       **/
+      DecryptionNodeCanceled: AugmentedEvent<ApiType, [subnetId: u16, nodeId: AccountId32], { subnetId: u16, nodeId: AccountId32 }>;
+      /**
+       * Weight copying decryption node was rotated
+       **/
+      DecryptionNodeRotated: AugmentedEvent<ApiType, [subnetId: u16, previousNodeId: AccountId32, newNodeId: AccountId32], { subnetId: u16, previousNodeId: AccountId32, newNodeId: AccountId32 }>;
+      /**
+       * Subnets tempo has finished or Snapshot has been taken
+       **/
+      EpochFinalized: AugmentedEvent<ApiType, [u16]>;
       /**
        * Generic event
        **/
@@ -250,9 +244,17 @@ declare module '@polkadot/api-base/types/events' {
     };
     subspaceModule: {
       /**
+       * Event created when user bridged tokens
+       **/
+      Bridged: AugmentedEvent<ApiType, [AccountId32, u64]>;
+      /**
+       * Event created when assets were returned from the bridge
+       **/
+      BridgeWithdrawn: AugmentedEvent<ApiType, [AccountId32, u64]>;
+      /**
        * Event created when global parameters are updated
        **/
-      GlobalParamsUpdated: AugmentedEvent<ApiType, [PalletSubspaceGlobalParams]>;
+      GlobalParamsUpdated: AugmentedEvent<ApiType, [PalletSubspaceParamsGlobalGlobalParams]>;
       /**
        * Event created when a module account has been deregistered from the chain
        **/

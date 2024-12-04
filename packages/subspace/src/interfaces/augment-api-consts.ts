@@ -119,13 +119,43 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       [key: string]: Codec;
     };
+    offworker: {
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec;
+    };
     subnetEmissionModule: {
       decimals: u8 & AugmentedConst<ApiType>;
+      decryptionNodeRotationInterval: u64 & AugmentedConst<ApiType>;
+      /**
+       * The extra buffer period in blocks that runtime will wait before banning a decryption
+       * node. So the final count is `MaxEncryptionPeriod + EncryptionPeriodBuffer`
+       **/
+      encryptionPeriodBuffer: u64 & AugmentedConst<ApiType>;
       halvingInterval: u64 & AugmentedConst<ApiType>;
+      /**
+       * Maximum number of authorities.
+       **/
+      maxAuthorities: u32 & AugmentedConst<ApiType>;
       /**
        * The maximum token supply.
        **/
       maxSupply: u64 & AugmentedConst<ApiType>;
+      /**
+       * The number of consecutive missed pings after which a decryption node is considered
+       * inactive
+       **/
+      missedPingsForInactivity: u8 & AugmentedConst<ApiType>;
+      /**
+       * The duration (in blocks) for which an offchain worker is banned after being cancelled
+       **/
+      offchainWorkerBanDuration: u64 & AugmentedConst<ApiType>;
+      /**
+       * The interval (in blocks) at which the decryption node should send a keep-alive
+       **/
+      pingInterval: u64 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/

@@ -6,10 +6,10 @@
 import '@polkadot/api-base/types/submittable';
 
 import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableExtrinsicFunction } from '@polkadot/api-base/types';
-import type { Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { Bytes, Compact, Option, U8aFixed, Vec, bool, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, Call, H160, H256, MultiAddress, Percent, Permill } from '@polkadot/types/interfaces/runtime';
-import type { EthereumTransactionTransactionV2, NodeSubspaceRuntimeOriginCaller, PalletBalancesAdjustmentDirection, PalletGovernanceApiVoteMode, PalletMultisigTimepoint, PalletSubspaceGlobalGeneralBurnConfiguration, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
+import type { AccountId32, Call, H256, MultiAddress, Percent } from '@polkadot/types/interfaces/runtime';
+import type { NodeSubspaceRuntimeOriginCaller, PalletBalancesAdjustmentDirection, PalletGovernanceApiVoteMode, PalletMultisigTimepoint, PalletOffworkerDecryptedWeightsPayload, PalletOffworkerKeepAlivePayload, PalletSubspaceParamsBurnGeneralBurnConfiguration, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpRuntimeMultiSignature, SpWeightsWeightV2Weight, SubstrateFixedFixedI128 } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -18,6 +18,16 @@ export type __SubmittableExtrinsicFunction<ApiType extends ApiTypes> = Submittab
 declare module '@polkadot/api-base/types/submittable' {
   interface AugmentedSubmittables<ApiType extends ApiTypes> {
     balances: {
+      /**
+       * Burn the specified liquid free balance from the origin account.
+       * 
+       * If the origin's account ends up below the existential deposit as a result
+       * of the burn and `keep_alive` is false, the account will be reaped.
+       * 
+       * Unlike sending funds to a _burn_ address, which merely makes the funds inaccessible,
+       * this `burn` operation will reduce total issuance by the amount _burned_.
+       **/
+      burn: AugmentedSubmittable<(value: Compact<u64> | AnyNumber | Uint8Array, keepAlive: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u64>, bool]>;
       /**
        * Adjust the total issuance in a saturating way.
        * 
@@ -96,60 +106,12 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
-    baseFee: {
-      setBaseFeePerGas: AugmentedSubmittable<(fee: U256 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256]>;
-      setElasticity: AugmentedSubmittable<(elasticity: Permill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Permill]>;
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>;
-    };
-    dynamicFee: {
-      noteMinGasPriceTarget: AugmentedSubmittable<(target: U256 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256]>;
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>;
-    };
-    ethereum: {
-      /**
-       * Transact an Ethereum transaction.
-       **/
-      transact: AugmentedSubmittable<(transaction: EthereumTransactionTransactionV2 | { Legacy: any } | { EIP2930: any } | { EIP1559: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [EthereumTransactionTransactionV2]>;
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>;
-    };
-    evm: {
-      /**
-       * Issue an EVM call operation. This is similar to a message call transaction in Ethereum.
-       **/
-      call: AugmentedSubmittable<(source: H160 | string | Uint8Array, target: H160 | string | Uint8Array, input: Bytes | string | Uint8Array, value: U256 | AnyNumber | Uint8Array, gasLimit: u64 | AnyNumber | Uint8Array, maxFeePerGas: U256 | AnyNumber | Uint8Array, maxPriorityFeePerGas: Option<U256> | null | Uint8Array | U256 | AnyNumber, nonce: Option<U256> | null | Uint8Array | U256 | AnyNumber, accessList: Vec<ITuple<[H160, Vec<H256>]>> | ([H160 | string | Uint8Array, Vec<H256> | (H256 | string | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [H160, H160, Bytes, U256, u64, U256, Option<U256>, Option<U256>, Vec<ITuple<[H160, Vec<H256>]>>]>;
-      /**
-       * Issue an EVM create operation. This is similar to a contract creation transaction in
-       * Ethereum.
-       **/
-      create: AugmentedSubmittable<(source: H160 | string | Uint8Array, init: Bytes | string | Uint8Array, value: U256 | AnyNumber | Uint8Array, gasLimit: u64 | AnyNumber | Uint8Array, maxFeePerGas: U256 | AnyNumber | Uint8Array, maxPriorityFeePerGas: Option<U256> | null | Uint8Array | U256 | AnyNumber, nonce: Option<U256> | null | Uint8Array | U256 | AnyNumber, accessList: Vec<ITuple<[H160, Vec<H256>]>> | ([H160 | string | Uint8Array, Vec<H256> | (H256 | string | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [H160, Bytes, U256, u64, U256, Option<U256>, Option<U256>, Vec<ITuple<[H160, Vec<H256>]>>]>;
-      /**
-       * Issue an EVM create2 operation.
-       **/
-      create2: AugmentedSubmittable<(source: H160 | string | Uint8Array, init: Bytes | string | Uint8Array, salt: H256 | string | Uint8Array, value: U256 | AnyNumber | Uint8Array, gasLimit: u64 | AnyNumber | Uint8Array, maxFeePerGas: U256 | AnyNumber | Uint8Array, maxPriorityFeePerGas: Option<U256> | null | Uint8Array | U256 | AnyNumber, nonce: Option<U256> | null | Uint8Array | U256 | AnyNumber, accessList: Vec<ITuple<[H160, Vec<H256>]>> | ([H160 | string | Uint8Array, Vec<H256> | (H256 | string | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [H160, Bytes, H256, U256, u64, U256, Option<U256>, Option<U256>, Vec<ITuple<[H160, Vec<H256>]>>]>;
-      /**
-       * Withdraw balance from EVM into currency/balances pallet.
-       **/
-      withdraw: AugmentedSubmittable<(address: H160 | string | Uint8Array, value: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H160, u64]>;
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>;
-    };
     governanceModule: {
       addDaoApplication: AugmentedSubmittable<(applicationKey: AccountId32 | string | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes]>;
       addGlobalCustomProposal: AugmentedSubmittable<(data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      addGlobalParamsProposal: AugmentedSubmittable<(data: Bytes | string | Uint8Array, maxNameLength: u16 | AnyNumber | Uint8Array, minNameLength: u16 | AnyNumber | Uint8Array, maxAllowedSubnets: u16 | AnyNumber | Uint8Array, maxAllowedModules: u16 | AnyNumber | Uint8Array, maxRegistrationsPerBlock: u16 | AnyNumber | Uint8Array, maxAllowedWeights: u16 | AnyNumber | Uint8Array, floorDelegationFee: Percent | AnyNumber | Uint8Array, floorFounderShare: u8 | AnyNumber | Uint8Array, minWeightStake: u64 | AnyNumber | Uint8Array, curator: AccountId32 | string | Uint8Array, proposalCost: u64 | AnyNumber | Uint8Array, proposalExpiration: u32 | AnyNumber | Uint8Array, generalSubnetApplicationCost: u64 | AnyNumber | Uint8Array, kappa: u16 | AnyNumber | Uint8Array, rho: u16 | AnyNumber | Uint8Array, subnetImmunityPeriod: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u16, u16, u16, u16, u16, u16, Percent, u8, u64, AccountId32, u64, u32, u64, u16, u16, u64]>;
+      addGlobalParamsProposal: AugmentedSubmittable<(data: Bytes | string | Uint8Array, maxNameLength: u16 | AnyNumber | Uint8Array, minNameLength: u16 | AnyNumber | Uint8Array, maxAllowedSubnets: u16 | AnyNumber | Uint8Array, maxAllowedModules: u16 | AnyNumber | Uint8Array, maxRegistrationsPerBlock: u16 | AnyNumber | Uint8Array, maxAllowedWeights: u16 | AnyNumber | Uint8Array, floorStakeDelegationFee: Percent | AnyNumber | Uint8Array, floorValidatorWeightFee: Percent | AnyNumber | Uint8Array, floorFounderShare: u8 | AnyNumber | Uint8Array, minWeightStake: u64 | AnyNumber | Uint8Array, curator: AccountId32 | string | Uint8Array, proposalCost: u64 | AnyNumber | Uint8Array, proposalExpiration: u32 | AnyNumber | Uint8Array, generalSubnetApplicationCost: u64 | AnyNumber | Uint8Array, kappa: u16 | AnyNumber | Uint8Array, rho: u16 | AnyNumber | Uint8Array, subnetImmunityPeriod: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u16, u16, u16, u16, u16, u16, Percent, Percent, u8, u64, AccountId32, u64, u32, u64, u16, u16, u64]>;
       addSubnetCustomProposal: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u16, Bytes]>;
-      addSubnetParamsProposal: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array, founder: AccountId32 | string | Uint8Array, founderShare: u16 | AnyNumber | Uint8Array, name: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, immunityPeriod: u16 | AnyNumber | Uint8Array, incentiveRatio: u16 | AnyNumber | Uint8Array, maxAllowedUids: u16 | AnyNumber | Uint8Array, maxAllowedWeights: u16 | AnyNumber | Uint8Array, minAllowedWeights: u16 | AnyNumber | Uint8Array, maxWeightAge: u64 | AnyNumber | Uint8Array, tempo: u16 | AnyNumber | Uint8Array, trustRatio: u16 | AnyNumber | Uint8Array, maximumSetWeightCallsPerEpoch: u16 | AnyNumber | Uint8Array, voteMode: PalletGovernanceApiVoteMode | 'Authority' | 'Vote' | number | Uint8Array, bondsMa: u64 | AnyNumber | Uint8Array, moduleBurnConfig: PalletSubspaceGlobalGeneralBurnConfiguration | { minBurn?: any; maxBurn?: any; adjustmentAlpha?: any; targetRegistrationsInterval?: any; targetRegistrationsPerInterval?: any; maxRegistrationsPerInterval?: any } | string | Uint8Array, minValidatorStake: u64 | AnyNumber | Uint8Array, maxAllowedValidators: Option<u16> | null | Uint8Array | u16 | AnyNumber) => SubmittableExtrinsic<ApiType>, [u16, Bytes, AccountId32, u16, Bytes, Option<Bytes>, u16, u16, u16, u16, u16, u64, u16, u16, u16, PalletGovernanceApiVoteMode, u64, PalletSubspaceGlobalGeneralBurnConfiguration, u64, Option<u16>]>;
+      addSubnetParamsProposal: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array, founder: AccountId32 | string | Uint8Array, founderShare: u16 | AnyNumber | Uint8Array, name: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, immunityPeriod: u16 | AnyNumber | Uint8Array, incentiveRatio: u16 | AnyNumber | Uint8Array, maxAllowedUids: u16 | AnyNumber | Uint8Array, maxAllowedWeights: u16 | AnyNumber | Uint8Array, minAllowedWeights: u16 | AnyNumber | Uint8Array, maxWeightAge: u64 | AnyNumber | Uint8Array, tempo: u16 | AnyNumber | Uint8Array, maximumSetWeightCallsPerEpoch: Option<u16> | null | Uint8Array | u16 | AnyNumber, voteMode: PalletGovernanceApiVoteMode | 'Authority' | 'Vote' | number | Uint8Array, bondsMa: u64 | AnyNumber | Uint8Array, moduleBurnConfig: PalletSubspaceParamsBurnGeneralBurnConfiguration | { minBurn?: any; maxBurn?: any; adjustmentAlpha?: any; targetRegistrationsInterval?: any; targetRegistrationsPerInterval?: any; maxRegistrationsPerInterval?: any } | string | Uint8Array, minValidatorStake: u64 | AnyNumber | Uint8Array, maxAllowedValidators: Option<u16> | null | Uint8Array | u16 | AnyNumber, useWeightsEncryption: bool | boolean | Uint8Array, copierMargin: SubstrateFixedFixedI128 | { bits?: any } | string | Uint8Array, maxEncryptionPeriod: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [u16, Bytes, AccountId32, u16, Bytes, Option<Bytes>, u16, u16, u16, u16, u16, u64, u16, Option<u16>, PalletGovernanceApiVoteMode, u64, PalletSubspaceParamsBurnGeneralBurnConfiguration, u64, Option<u16>, bool, SubstrateFixedFixedI128, Option<u64>]>;
       addToWhitelist: AugmentedSubmittable<(moduleKey: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       addTransferDaoTreasuryProposal: AugmentedSubmittable<(data: Bytes | string | Uint8Array, value: u64 | AnyNumber | Uint8Array, dest: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u64, AccountId32]>;
       disableVotePowerDelegation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
@@ -323,20 +285,39 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
+    offworker: {
+      addAuthorities: AugmentedSubmittable<(newAuthorities: Vec<ITuple<[AccountId32, ITuple<[Bytes, Bytes]>]>> | ([AccountId32 | string | Uint8Array, ITuple<[Bytes, Bytes]> | [Bytes | string | Uint8Array, Bytes | string | Uint8Array]])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[AccountId32, ITuple<[Bytes, Bytes]>]>>]>;
+      sendDecryptedWeights: AugmentedSubmittable<(payload: PalletOffworkerDecryptedWeightsPayload | { subnetId?: any; decryptedWeights?: any; delta?: any; blockNumber?: any; public?: any; forcedSendByRotation?: any } | string | Uint8Array, signature: SpRuntimeMultiSignature | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletOffworkerDecryptedWeightsPayload, SpRuntimeMultiSignature]>;
+      sendPing: AugmentedSubmittable<(payload: PalletOffworkerKeepAlivePayload | { publicKey?: any; blockNumber?: any; public?: any } | string | Uint8Array, signature: SpRuntimeMultiSignature | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletOffworkerKeepAlivePayload, SpRuntimeMultiSignature]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
+    subnetEmissionModule: {
+      delegateWeightControl: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, target: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u16, AccountId32]>;
+      removeWeightControl: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u16]>;
+      setWeights: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, uids: Vec<u16> | (u16 | AnyNumber | Uint8Array)[], weights: Vec<u16> | (u16 | AnyNumber | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [u16, Vec<u16>, Vec<u16>]>;
+      setWeightsEncrypted: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, encryptedWeights: Bytes | string | Uint8Array, decryptedWeightsHash: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u16, Bytes, Bytes]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
     subspaceModule: {
       addStake: AugmentedSubmittable<(moduleKey: AccountId32 | string | Uint8Array, amount: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64]>;
       addStakeMultiple: AugmentedSubmittable<(moduleKeys: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], amounts: Vec<u64> | (u64 | AnyNumber | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>, Vec<u64>]>;
-      delegateRootnetControl: AugmentedSubmittable<(target: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      bridge: AugmentedSubmittable<(amount: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      bridgeWithdraw: AugmentedSubmittable<(amount: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
       deregister: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u16]>;
       register: AugmentedSubmittable<(networkName: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, address: Bytes | string | Uint8Array, moduleKey: AccountId32 | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Bytes, AccountId32, Option<Bytes>]>;
       registerSubnet: AugmentedSubmittable<(name: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Option<Bytes>]>;
       removeStake: AugmentedSubmittable<(moduleKey: AccountId32 | string | Uint8Array, amount: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64]>;
       removeStakeMultiple: AugmentedSubmittable<(moduleKeys: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], amounts: Vec<u64> | (u64 | AnyNumber | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>, Vec<u64>]>;
-      setWeights: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, uids: Vec<u16> | (u16 | AnyNumber | Uint8Array)[], weights: Vec<u16> | (u16 | AnyNumber | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [u16, Vec<u16>, Vec<u16>]>;
       transferMultiple: AugmentedSubmittable<(destinations: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], amounts: Vec<u64> | (u64 | AnyNumber | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>, Vec<u64>]>;
       transferStake: AugmentedSubmittable<(moduleKey: AccountId32 | string | Uint8Array, newModuleKey: AccountId32 | string | Uint8Array, amount: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, u64]>;
-      updateModule: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, name: Bytes | string | Uint8Array, address: Bytes | string | Uint8Array, delegationFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, metadata: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [u16, Bytes, Bytes, Option<Percent>, Option<Bytes>]>;
-      updateSubnet: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, founder: AccountId32 | string | Uint8Array, founderShare: u16 | AnyNumber | Uint8Array, name: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, immunityPeriod: u16 | AnyNumber | Uint8Array, incentiveRatio: u16 | AnyNumber | Uint8Array, maxAllowedUids: u16 | AnyNumber | Uint8Array, maxAllowedWeights: u16 | AnyNumber | Uint8Array, minAllowedWeights: u16 | AnyNumber | Uint8Array, maxWeightAge: u64 | AnyNumber | Uint8Array, tempo: u16 | AnyNumber | Uint8Array, trustRatio: u16 | AnyNumber | Uint8Array, maximumSetWeightCallsPerEpoch: u16 | AnyNumber | Uint8Array, voteMode: PalletGovernanceApiVoteMode | 'Authority' | 'Vote' | number | Uint8Array, bondsMa: u64 | AnyNumber | Uint8Array, moduleBurnConfig: PalletSubspaceGlobalGeneralBurnConfiguration | { minBurn?: any; maxBurn?: any; adjustmentAlpha?: any; targetRegistrationsInterval?: any; targetRegistrationsPerInterval?: any; maxRegistrationsPerInterval?: any } | string | Uint8Array, minValidatorStake: u64 | AnyNumber | Uint8Array, maxAllowedValidators: Option<u16> | null | Uint8Array | u16 | AnyNumber) => SubmittableExtrinsic<ApiType>, [u16, AccountId32, u16, Bytes, Option<Bytes>, u16, u16, u16, u16, u16, u64, u16, u16, u16, PalletGovernanceApiVoteMode, u64, PalletSubspaceGlobalGeneralBurnConfiguration, u64, Option<u16>]>;
+      updateModule: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, name: Bytes | string | Uint8Array, address: Bytes | string | Uint8Array, stakeDelegationFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, validatorWeightFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, metadata: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [u16, Bytes, Bytes, Option<Percent>, Option<Percent>, Option<Bytes>]>;
+      updateSubnet: AugmentedSubmittable<(netuid: u16 | AnyNumber | Uint8Array, founder: AccountId32 | string | Uint8Array, founderShare: u16 | AnyNumber | Uint8Array, name: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, immunityPeriod: u16 | AnyNumber | Uint8Array, incentiveRatio: u16 | AnyNumber | Uint8Array, maxAllowedUids: u16 | AnyNumber | Uint8Array, maxAllowedWeights: u16 | AnyNumber | Uint8Array, minAllowedWeights: u16 | AnyNumber | Uint8Array, maxWeightAge: u64 | AnyNumber | Uint8Array, tempo: u16 | AnyNumber | Uint8Array, maximumSetWeightCallsPerEpoch: Option<u16> | null | Uint8Array | u16 | AnyNumber, voteMode: PalletGovernanceApiVoteMode | 'Authority' | 'Vote' | number | Uint8Array, bondsMa: u64 | AnyNumber | Uint8Array, moduleBurnConfig: PalletSubspaceParamsBurnGeneralBurnConfiguration | { minBurn?: any; maxBurn?: any; adjustmentAlpha?: any; targetRegistrationsInterval?: any; targetRegistrationsPerInterval?: any; maxRegistrationsPerInterval?: any } | string | Uint8Array, minValidatorStake: u64 | AnyNumber | Uint8Array, maxAllowedValidators: Option<u16> | null | Uint8Array | u16 | AnyNumber, useWeightsEncryption: bool | boolean | Uint8Array, copierMargin: SubstrateFixedFixedI128 | { bits?: any } | string | Uint8Array, maxEncryptionPeriod: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [u16, AccountId32, u16, Bytes, Option<Bytes>, u16, u16, u16, u16, u16, u64, u16, Option<u16>, PalletGovernanceApiVoteMode, u64, PalletSubspaceParamsBurnGeneralBurnConfiguration, u64, Option<u16>, bool, SubstrateFixedFixedI128, Option<u64>]>;
       /**
        * Generic tx
        **/
@@ -544,7 +525,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * ## Complexity
        * - O(1).
        **/
-      dispatchAs: AugmentedSubmittable<(asOrigin: NodeSubspaceRuntimeOriginCaller | { system: any } | { Void: any } | { Ethereum: any } | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [NodeSubspaceRuntimeOriginCaller, Call]>;
+      dispatchAs: AugmentedSubmittable<(asOrigin: NodeSubspaceRuntimeOriginCaller | { system: any } | { Void: any } | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [NodeSubspaceRuntimeOriginCaller, Call]>;
       /**
        * Send a batch of dispatch calls.
        * Unlike `batch`, it allows errors and won't interrupt.

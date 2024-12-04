@@ -6,10 +6,10 @@
 import '@polkadot/api-base/types/storage';
 
 import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/api-base/types';
-import type { BTreeSet, Bytes, Null, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { BTreeSet, Bytes, Null, Option, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256, Percent, Permill } from '@polkadot/types/interfaces/runtime';
-import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesIdAmount, PalletBalancesReserveData, PalletEvmCodeMetadata, PalletGovernanceApiGovernanceConfiguration, PalletGovernanceDaoCuratorApplication, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletSubnetEmissionApiSubnetConsensus, PalletSubspaceGlobalGeneralBurnConfiguration, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest } from '@polkadot/types/lookup';
+import type { AccountId32, H256, Percent } from '@polkadot/types/interfaces/runtime';
+import type { FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletGovernanceApiGovernanceConfiguration, PalletGovernanceDaoCuratorApplication, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletSubnetEmissionApiSubnetConsensus, PalletSubnetEmissionEncryptionMechanism, PalletSubnetEmissionSubnetConsensusUtilParamsConsensusParams, PalletSubnetEmissionSubnetDecryptionInfo, PalletSubspaceMinimumFees, PalletSubspaceParamsBurnGeneralBurnConfiguration, PalletSubspaceValidatorFees, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, SubstrateFixedFixedI128 } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -64,11 +64,11 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Freeze locks on account balances.
        **/
-      freezes: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<PalletBalancesIdAmount>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      freezes: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<FrameSupportTokensMiscIdAmount>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
        * Holds on account balances.
        **/
-      holds: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<PalletBalancesIdAmount>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      holds: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<FrameSupportTokensMiscIdAmount>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
        * The total units of outstanding deactivated balance in the system.
        **/
@@ -95,65 +95,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       [key: string]: QueryableStorageEntry<ApiType>;
     };
-    baseFee: {
-      baseFeePerGas: AugmentedQuery<ApiType, () => Observable<U256>, []> & QueryableStorageEntry<ApiType, []>;
-      elasticity: AugmentedQuery<ApiType, () => Observable<Permill>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    dynamicFee: {
-      minGasPrice: AugmentedQuery<ApiType, () => Observable<U256>, []> & QueryableStorageEntry<ApiType, []>;
-      targetMinGasPrice: AugmentedQuery<ApiType, () => Observable<Option<U256>>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    ethereum: {
-      blockHash: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<H256>, [U256]> & QueryableStorageEntry<ApiType, [U256]>;
-      /**
-       * The current Ethereum block.
-       **/
-      currentBlock: AugmentedQuery<ApiType, () => Observable<Option<EthereumBlock>>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * The current Ethereum receipts.
-       **/
-      currentReceipts: AugmentedQuery<ApiType, () => Observable<Option<Vec<EthereumReceiptReceiptV3>>>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * The current transaction statuses.
-       **/
-      currentTransactionStatuses: AugmentedQuery<ApiType, () => Observable<Option<Vec<FpRpcTransactionStatus>>>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Current building block's transactions and receipts.
-       **/
-      pending: AugmentedQuery<ApiType, () => Observable<Vec<ITuple<[EthereumTransactionTransactionV2, FpRpcTransactionStatus, EthereumReceiptReceiptV3]>>>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    evm: {
-      accountCodes: AugmentedQuery<ApiType, (arg: H160 | string | Uint8Array) => Observable<Bytes>, [H160]> & QueryableStorageEntry<ApiType, [H160]>;
-      accountCodesMetadata: AugmentedQuery<ApiType, (arg: H160 | string | Uint8Array) => Observable<Option<PalletEvmCodeMetadata>>, [H160]> & QueryableStorageEntry<ApiType, [H160]>;
-      accountStorages: AugmentedQuery<ApiType, (arg1: H160 | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<H256>, [H160, H256]> & QueryableStorageEntry<ApiType, [H160, H256]>;
-      suicided: AugmentedQuery<ApiType, (arg: H160 | string | Uint8Array) => Observable<Option<Null>>, [H160]> & QueryableStorageEntry<ApiType, [H160]>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    evmChainId: {
-      /**
-       * The EVM chain ID.
-       **/
-      chainId: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
     governanceModule: {
       curator: AugmentedQuery<ApiType, () => Observable<AccountId32>, []> & QueryableStorageEntry<ApiType, []>;
       curatorApplications: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceDaoCuratorApplication>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
@@ -173,6 +114,10 @@ declare module '@polkadot/api-base/types/storage' {
        * A map of all proposals, indexed by their IDs.
        **/
       proposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
+      /**
+       * Determines whether smart contract can be deployed by everyone or only by the curator
+       **/
+      restrictContractDeploy: AugmentedQuery<ApiType, () => Observable<bool>, []> & QueryableStorageEntry<ApiType, []>;
       subnetGovernanceConfig: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<PalletGovernanceApiGovernanceConfiguration>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       unrewardedProposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposalUnrewardedProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
       /**
@@ -234,11 +179,55 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       [key: string]: QueryableStorageEntry<ApiType>;
     };
+    offworker: {
+      /**
+       * The amount of delta between comulative copier dividends and compulative delegator dividends.
+       **/
+      irrationalityDelta: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<SubstrateFixedFixedI128>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * The amount of actual consensus sum stake. Used for a simulated consensus.
+       **/
+      measuredStakeAmount: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>;
+    };
     subnetEmissionModule: {
+      /**
+       * Association of signing public keys with associated rsa encryption public keys.
+       **/
+      authorities: AugmentedQuery<ApiType, () => Observable<Vec<ITuple<[AccountId32, ITuple<[Bytes, Bytes]>]>>>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Stores non responsive decryption nodes
+       **/
+      bannedDecryptionNodes: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<u64>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      /**
+       * Netuid, to block number to consensus parameters
+       **/
+      consensusParameters: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletSubnetEmissionSubnetConsensusUtilParamsConsensusParams>>, [u16, u64]> & QueryableStorageEntry<ApiType, [u16, u64]>;
+      /**
+       * Stores offchain workers that are going to be banned, if their weights aren't received within
+       * the buffer period
+       * Subnet: u16 , Decryption Node: AccountId, Buffer: BlockNumber (current block + buffer)
+       **/
+      decryptionNodeBanQueue: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<u64>, [u16, AccountId32]> & QueryableStorageEntry<ApiType, [u16, AccountId32]>;
+      decryptionNodeCursor: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * This storage is managed dynamically based on the do_keep_alive offchain worker call
+       * It is built from the authority keys
+       **/
+      decryptionNodes: AugmentedQuery<ApiType, () => Observable<Vec<PalletSubnetEmissionSubnetDecryptionInfo>>, []> & QueryableStorageEntry<ApiType, []>;
       pendingEmission: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u64>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       subnetConsensusType: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<PalletSubnetEmissionApiSubnetConsensus>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Decryption Node Info assigned to subnet
+       **/
+      subnetDecryptionData: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<PalletSubnetEmissionSubnetDecryptionInfo>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       subnetEmission: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u64>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       unitEmission: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
+      weightEncryptionData: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Option<PalletSubnetEmissionEncryptionMechanism>>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
+      weights: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Option<Vec<ITuple<[u16, u16]>>>>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
       /**
        * Generic query
        **/
@@ -247,14 +236,18 @@ declare module '@polkadot/api-base/types/storage' {
     subspaceModule: {
       active: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<bool>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       address: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Bytes>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
+      alphaValues: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<ITuple<[u16, u16]>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       bonds: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[u16, u16]>>>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
       bondsMovingAverage: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u64>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      bridged: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<u64>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       burn: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u64>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       consensus: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
-      delegationFee: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Percent>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      copierMargin: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<SubstrateFixedFixedI128>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       dividends: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       emission: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u64>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
-      floorDelegationFee: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Minimum share percentage for subnet founders
+       **/
       floorFounderShare: AugmentedQuery<ApiType, () => Observable<u8>, []> & QueryableStorageEntry<ApiType, []>;
       founder: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<AccountId32>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       founderShare: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
@@ -264,53 +257,114 @@ declare module '@polkadot/api-base/types/storage' {
       kappa: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       keys: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Option<AccountId32>>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
       lastUpdate: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u64>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Maximum allowed modules globally
+       **/
       maxAllowedModules: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Maximum number of allowed subnets
+       **/
       maxAllowedSubnets: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       maxAllowedUids: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       maxAllowedValidators: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       maxAllowedWeights: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Global maximum allowed weights
+       **/
       maxAllowedWeightsGlobal: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      maxEncryptionPeriod: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<u64>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       maximumSetWeightCallsPerEpoch: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Maximum allowed length for names
+       **/
       maxNameLength: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Maximum allowed registrations per block
+       **/
       maxRegistrationsPerBlock: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       maxWeightAge: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u64>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       metadata: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<Bytes>>, [u16, AccountId32]> & QueryableStorageEntry<ApiType, [u16, AccountId32]>;
       minAllowedWeights: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Storage for minimum fees that can be updated via runtime
+       **/
+      minFees: AugmentedQuery<ApiType, () => Observable<PalletSubspaceMinimumFees>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Global minimum allowed stake
+       **/
       minimumAllowedStake: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Minimum allowed length for names
+       **/
       minNameLength: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       minValidatorStake: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u64>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Minimum stake weight
+       **/
       minWeightStake: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
-      moduleBurnConfig: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<PalletSubspaceGlobalGeneralBurnConfiguration>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      moduleBurnConfig: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<PalletSubspaceParamsBurnGeneralBurnConfiguration>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       n: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       name: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Bytes>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
       pruningScores: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       rank: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       registrationBlock: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<u64>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
+      /**
+       * Number of registrations in the current block
+       **/
       registrationsPerBlock: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       registrationsThisInterval: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       rho: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
-      rootnetControlDelegation: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<AccountId32>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       rootNetWeightCalls: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<Null>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       setWeightCallsPerEpoch: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<u16>, [u16, AccountId32]> & QueryableStorageEntry<ApiType, [u16, AccountId32]>;
+      /**
+       * Maps (from_account, to_account) to stake amount
+       **/
       stakeFrom: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<u64>, [AccountId32, AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32, AccountId32]>;
+      /**
+       * Maps (to_account, from_account) to stake amount
+       **/
       stakeTo: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<u64>, [AccountId32, AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32, AccountId32]>;
+      /**
+       * Minimum burn amount for subnet registration
+       **/
       subnetBurn: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
-      subnetBurnConfig: AugmentedQuery<ApiType, () => Observable<PalletSubspaceGlobalGeneralBurnConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * General burn configuration for subnet registration
+       **/
+      subnetBurnConfig: AugmentedQuery<ApiType, () => Observable<PalletSubspaceParamsBurnGeneralBurnConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Available subnet IDs that can be reused
+       **/
       subnetGaps: AugmentedQuery<ApiType, () => Observable<BTreeSet<u16>>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Subnet immunity period
+       **/
       subnetImmunityPeriod: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
       subnetMetadata: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<Bytes>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       subnetNames: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Bytes>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       subnetRegistrationBlock: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Option<u64>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Subnet registrations in current interval
+       **/
       subnetRegistrationsThisInterval: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       tempo: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Total stake in the system
+       **/
       totalStake: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
       trust: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
-      trustRatio: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<u16>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       uids: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<u16>>, [u16, AccountId32]> & QueryableStorageEntry<ApiType, [u16, AccountId32]>;
+      useWeightsEncryption: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<bool>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
+      /**
+       * Maps validator accounts to their fee configuration
+       **/
+      validatorFeeConfig: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<PalletSubspaceValidatorFees>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       validatorPermits: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<bool>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
       validatorTrust: AugmentedQuery<ApiType, (arg: u16 | AnyNumber | Uint8Array) => Observable<Vec<u16>>, [u16]> & QueryableStorageEntry<ApiType, [u16]>;
-      weights: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[u16, u16]>>>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
-      weightSetAt: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: u16 | AnyNumber | Uint8Array) => Observable<Option<u64>>, [u16, u16]> & QueryableStorageEntry<ApiType, [u16, u16]>;
+      /**
+       * Control delegation per account
+       **/
+      weightSettingDelegation: AugmentedQuery<ApiType, (arg1: u16 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<AccountId32>>, [u16, AccountId32]> & QueryableStorageEntry<ApiType, [u16, AccountId32]>;
       /**
        * Generic query
        **/

@@ -65,78 +65,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    ethereum: {
-      /**
-       * Signature is invalid.
-       **/
-      InvalidSignature: AugmentedError<ApiType>;
-      /**
-       * Pre-log is present, therefore transact is not allowed.
-       **/
-      PreLogExists: AugmentedError<ApiType>;
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>;
-    };
-    evm: {
-      /**
-       * Not enough balance to perform action
-       **/
-      BalanceLow: AugmentedError<ApiType>;
-      /**
-       * Calculating total fee overflowed
-       **/
-      FeeOverflow: AugmentedError<ApiType>;
-      /**
-       * Gas limit is too high.
-       **/
-      GasLimitTooHigh: AugmentedError<ApiType>;
-      /**
-       * Gas limit is too low.
-       **/
-      GasLimitTooLow: AugmentedError<ApiType>;
-      /**
-       * Gas price is too low.
-       **/
-      GasPriceTooLow: AugmentedError<ApiType>;
-      /**
-       * The chain id is invalid.
-       **/
-      InvalidChainId: AugmentedError<ApiType>;
-      /**
-       * Nonce is invalid
-       **/
-      InvalidNonce: AugmentedError<ApiType>;
-      /**
-       * the signature is invalid.
-       **/
-      InvalidSignature: AugmentedError<ApiType>;
-      /**
-       * Calculating total payment overflowed
-       **/
-      PaymentOverflow: AugmentedError<ApiType>;
-      /**
-       * EVM reentrancy
-       **/
-      Reentrancy: AugmentedError<ApiType>;
-      /**
-       * EIP-3607,
-       **/
-      TransactionMustComeFromEOA: AugmentedError<ApiType>;
-      /**
-       * Undefined error.
-       **/
-      Undefined: AugmentedError<ApiType>;
-      /**
-       * Withdraw fee failed
-       **/
-      WithdrawFailed: AugmentedError<ApiType>;
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>;
-    };
     governanceModule: {
       /**
        * Key has already voted on given Proposal.
@@ -370,6 +298,32 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
+    offworker: {
+      /**
+       * Send more decrypted weights than expected epoch count
+       **/
+      DecryptedWeightsLengthMismatch: AugmentedError<ApiType>;
+      /**
+       * Attempted to send empty decrypted weights
+       **/
+      EmptyDecryptedWeights: AugmentedError<ApiType>;
+      /**
+       * Decryption key is invalid for a given subnet
+       **/
+      InvalidDecryptionKey: AugmentedError<ApiType>;
+      /**
+       * Subnet ID is invalid
+       **/
+      InvalidSubnetId: AugmentedError<ApiType>;
+      /**
+       * Attempted to add more authorities than the maximum allowed
+       **/
+      TooManyAuthorities: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
     subspaceModule: {
       /**
        * The module is already registered in the active set.
@@ -392,9 +346,18 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       BalanceNotRemoved: AugmentedError<ApiType>;
       /**
+       * Cannot decrease fees below their current values.
+       * Fees can only be increased to prevent economic attacks.
+       **/
+      CannotDecreaseFee: AugmentedError<ApiType>;
+      /**
        * Failed to convert between u64 and T::Balance.
        **/
       CouldNotConvertToBalance: AugmentedError<ApiType>;
+      /**
+       * The validator is delegating weights to another validator
+       **/
+      DelegatingControl: AugmentedError<ApiType>;
       /**
        * Vectors have different lengths.
        **/
@@ -416,6 +379,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidAdjustmentAlpha: AugmentedError<ApiType>;
       /**
+       * The copier margin must be between 0 and 1
+       **/
+      InvalidCopierMargin: AugmentedError<ApiType>;
+      /**
+       * Floor Founder Share must be between 0 and 100
+       **/
+      InvalidFloorFounderShare: AugmentedError<ApiType>;
+      /**
        * The founder share is invalid.
        **/
       InvalidFounderShare: AugmentedError<ApiType>;
@@ -427,6 +398,10 @@ declare module '@polkadot/api-base/types/errors' {
        * The incentive ratio is invalid.
        **/
       InvalidIncentiveRatio: AugmentedError<ApiType>;
+      /**
+       * Kappa has to be more than 0
+       **/
+      InvalidKappa: AugmentedError<ApiType>;
       /**
        * The maximum allowed modules value is invalid.
        **/
@@ -452,6 +427,14 @@ declare module '@polkadot/api-base/types/errors' {
        * The maximum burn value is invalid.
        **/
       InvalidMaxBurn: AugmentedError<ApiType>;
+      /**
+       * The encryption period is too short or long, minimum is 360 blocks max is 20_880 blocks
+       **/
+      InvalidMaxEncryptionPeriod: AugmentedError<ApiType>;
+      /**
+       * The maximum allowed set weight calls per epoch must be more than 0
+       **/
+      InvalidMaximumSetWeightCallsPerEpoch: AugmentedError<ApiType>;
       /**
        * The maximum name length is invalid.
        **/
@@ -481,6 +464,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidMinDelegationFee: AugmentedError<ApiType>;
       /**
+       * The provided minimum fees are invalid. This can happen when:
+       * - Stake delegation fee is below the system minimum
+       * - Validator weight fee is below the system minimum
+       * - Either fee exceeds 100%
+       **/
+      InvalidMinFees: AugmentedError<ApiType>;
+      /**
        * The minimum immunity stake is invalid.
        **/
       InvalidMinImmunityStake: AugmentedError<ApiType>;
@@ -505,13 +495,25 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidModuleName: AugmentedError<ApiType>;
       /**
+       * Some module parameter is invalid
+       **/
+      InvalidModuleParams: AugmentedError<ApiType>;
+      /**
        * The proposal expiration is invalid.
        **/
       InvalidProposalExpiration: AugmentedError<ApiType>;
       /**
+       * Rho must be more than 0
+       **/
+      InvalidRho: AugmentedError<ApiType>;
+      /**
        * Invalid shares distribution.
        **/
       InvalidShares: AugmentedError<ApiType>;
+      /**
+       * Subnet Immunity Period has to be more than 0
+       **/
+      InvalidSubnetImmunityPeriod: AugmentedError<ApiType>;
       /**
        * The module metadata is invalid.
        **/
@@ -598,6 +600,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoSelfWeight: AugmentedError<ApiType>;
       /**
+       * The validator is not delegating weights to another validator
+       **/
+      NotDelegatingControl: AugmentedError<ApiType>;
+      /**
+       * General error for not having enough balance
+       **/
+      NotEnoughBalance: AugmentedError<ApiType>;
+      /**
        * Insufficient balance to register.
        **/
       NotEnoughBalanceToRegister: AugmentedError<ApiType>;
@@ -613,6 +623,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Insufficient balance to transfer.
        **/
       NotEnoughBalanceToTransfer: AugmentedError<ApiType>;
+      /**
+       * Not having enough tokens to bridge back
+       **/
+      NotEnoughBridgedTokens: AugmentedError<ApiType>;
       /**
        * Insufficient stake per weight.
        **/
@@ -670,6 +684,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       StillRegistered: AugmentedError<ApiType>;
       /**
+       * Subnet is using encrypted weight calls
+       **/
+      SubnetEncrypted: AugmentedError<ApiType>;
+      /**
        * The module metadata is too long.
        **/
       SubnetMetadataTooLong: AugmentedError<ApiType>;
@@ -686,9 +704,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SubnetNameTooShort: AugmentedError<ApiType>;
       /**
-       * The target rootnet validator is delegating weights to another validator
+       * Subnet is not using encrypted weight calls
        **/
-      TargetIsDelegatingControl: AugmentedError<ApiType>;
+      SubnetNotEncrypted: AugmentedError<ApiType>;
       /**
        * Too many keys provided.
        **/
@@ -706,7 +724,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TooManySubnetRegistrationsPerInterval: AugmentedError<ApiType>;
       /**
-       * Uid is not in general subnet legit whitelist
+       * Uid is not present in LegitWhitelist, it needs to be whitelisted by DAO
        **/
       UidNotWhitelisted: AugmentedError<ApiType>;
       /**
