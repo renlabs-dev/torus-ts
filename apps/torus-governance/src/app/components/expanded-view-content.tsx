@@ -52,7 +52,7 @@ export const ExpandedViewContent = (
 
         {isOverflowing && (
           <div
-            className={`absolute bottom-0 flex h-24 w-full items-end justify-center ${expandedText ? "animate-accordion-up bg-transparent" : "animate-accordion-down bg-gradient-to-b from-[#04061C1A] to-[#04061C]"} `}
+            className={`absolute bottom-0 flex h-24 w-full items-end justify-center ${expandedText ? "animate-accordion-up bg-transparent" : "animate-accordion-down bg-gradient-to-b from-transparent to-background"} `}
           >
             <Button
               className="flex w-32 items-center gap-2"

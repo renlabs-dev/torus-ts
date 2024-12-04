@@ -2,38 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
+/* width */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: hsl(228 20% 20%);
+  border-radius: 2px;
+  margin: 1px 0 1px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: hsl(220 15% 70%);
+  border-radius: 2px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(220 30% 95%);
+}
+
 @layer base {
   :root {
-    --background: 150, 11%, 7%;
-    --foreground: 0 0% 95%;
-    --background-green: 142 49% 11%;
-    --background-cyan: 183 43% 10%;
-    --card: 120 9% 4%;
-    --card-foreground: 0 0% 95%;
-    --popover: 150, 11%, 7%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 142 71% 45%;
-    --primary-foreground: 144.9 80.4% 10%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 150 5% 16%;
+    --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 135 12% 12%;
+    --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
+    --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 142.4 71.8% 29.2%;
-    --chart-1: 142 88% 28%;
-    --chart-2: 139 65% 20%;
-    --chart-3: 140 74% 24%;
-    --chart-4: 137 55% 15%;
-    --chart-5: 141 40% 9%;
-    --chart-secondary-1: 221.2 83.2% 43%;
-    --chart-secondary-2: 212 95% 58%;
-    --chart-secondary-3: 216 92% 50%;
-    --chart-secondary-4: 210 98% 68%;
-    --chart-secondary-5: 212 97% 77%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 225 80% 55%;
+    --chart-2: 215 90% 65%;
+    --chart-3: 220 85% 60%;
+    --chart-4: 210 95% 75%;
+    --chart-5: 215 90% 85%;
+    --chart-secondary-1: 220 70% 50%;
+    --chart-secondary-2: 160 60% 45%;
+    --chart-secondary-3: 30 80% 55%;
+    --chart-secondary-4: 280 65% 60%;
+    --chart-secondary-5: 340 75% 55%;
   }
 }
