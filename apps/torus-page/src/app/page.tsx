@@ -4,7 +4,7 @@ import { TorusObject } from "./components/torus";
 
 export default function Page(): JSX.Element {
   return (
-    <>
+    <main>
       <div
         className="absolute top-0 h-full w-full animate-fade animate-delay-700"
         style={{ overflow: "hidden" }}
@@ -35,6 +35,6 @@ export default function Page(): JSX.Element {
           Peer-to-peer Incentivized coordination network.
         </h3> */}
       </div>
-    </>
+    </main>
   );
 }
