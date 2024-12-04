@@ -8,6 +8,7 @@ import { match } from "rustie";
 
 import { SS58_SCHEMA } from "./address";
 import { PROPOSAL_SCHEMA } from "./modules/governance";
+import { queryBridgedBalance, queryBridgedBalances } from "./modules/subspace";
 import {
   getRewardAllocation,
   queryGlobalGovernanceConfig,
@@ -27,7 +28,8 @@ import {
 // import { queryStakeFrom } from "./queries";
 
 // const NODE_URL = "wss://testnet-commune-api-node-1.communeai.net";
-const NODE_URL = "wss://api.communeai.net";
+// const NODE_URL = "wss://api.communeai.net";
+const NODE_URL = "ws://localhost:9951";
 
 const wsProvider = new WsProvider(NODE_URL);
 const api = await ApiPromise.create({ provider: wsProvider });
@@ -48,29 +50,34 @@ console.log("API connected");
 // // const not_delegating = await queryNotDelegatingVotingPower(api);
 // // console.log(`Not delegating voting power:`, not_delegating);
 
-const proposals = await api.query.governanceModule.proposals.entries();
+// const proposals = await api.query.governanceModule.proposals.entries();
 
-for (const [key, value] of proposals) {
-  const proposal = value;
-  const parsed = sb_some(PROPOSAL_SCHEMA).parse(proposal);
+// for (const [key, value] of proposals) {
+//   const proposal = value;
+//   const parsed = sb_some(PROPOSAL_SCHEMA).parse(proposal);
 
-  match(parsed.status)({
-    Open: (status) => {
-      console.log(status);
-    },
-    Accepted: (status) => {
-      console.log(status);
-    },
-    Refused: (status) => {
-      console.log(status);
-    },
-    Expired: (status) => {
-      console.log(status);
-    },
-  });
-}
+//   match(parsed.status)({
+//     Open: (status) => {
+//       console.log(status);
+//     },
+//     Accepted: (status) => {
+//       console.log(status);
+//     },
+//     Refused: (status) => {
+//       console.log(status);
+//     },
+//     Expired: (status) => {
+//       console.log(status);
+//     },
+//   });
+// }
 
 // const proposal_data_raw = proposal.data;
+
+const [balances, errors] = await queryBridgedBalances(api);
+
+console.log(balances);
+console.warn(errors);
 
 debugger;
 
