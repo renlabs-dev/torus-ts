@@ -1,161 +1,161 @@
-kind: pipeline
-type: docker
-name: torus-page
+# kind: pipeline
+# type: docker
+# name: torus-page
 
-steps:
-  - name: build
-    image: plugins/docker
-    settings:
-      registry: ghcr.io
-      username: ${DRONE_COMMIT_AUTHOR}
-      password:
-        from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/torus-page
-      tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
-      dockerfile: docker/Dockerfile
-      build_args: APP_NAME=torus-page
+# steps:
+#   - name: build
+#     image: plugins/docker
+#     settings:
+#       registry: ghcr.io
+#       username: ${DRONE_COMMIT_AUTHOR}
+#       password:
+#         from_secret: DOCKER_TOKEN
+#       repo: ghcr.io/renlabs-dev/torus-page
+#       tags:
+#         - latest
+#         - ${DRONE_BRANCH}
+#         - ${DRONE_COMMIT_SHA:0:7}
+#       dockerfile: docker/Dockerfile
+#       build_args: APP_NAME=torus-page
 
-  - name: deploy
-    image: digitalocean/doctl:latest
-    environment:
-      DO_CTL_TOKEN:
-        from_secret: DO_CTL_TOKEN
-    commands:
-      - apk add jq
-      - export PATH=$PATH:/app
-      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-page" || echo "dev-torus-page" )
-      - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-      - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-      - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-      - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-      - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+#   - name: deploy
+#     image: digitalocean/doctl:latest
+#     environment:
+#       DO_CTL_TOKEN:
+#         from_secret: DO_CTL_TOKEN
+#     commands:
+#       - apk add jq
+#       - export PATH=$PATH:/app
+#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-page" || echo "dev-torus-page" )
+#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
+#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
+#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
+#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
+#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
 
-trigger:
-  branch:
-    - drone
-    - main
-    - dev
-  event:
-    - push
-  paths:
-    exclude:
-      - apps/torus-governance/**
-      - apps/torus-validator/**
-      - apps/torusx-page/**
-      - apps/torus-worker/**
-      - apps/sample-app/**
-      - apps/torus-wallet/**
-      - apps/torus-cache/**
----
-kind: pipeline
-type: docker
-name: torus-validator
+# trigger:
+#   branch:
+#     - drone
+#     - main
+#     - dev
+#   event:
+#     - push
+#   paths:
+#     exclude:
+#       - apps/torus-governance/**
+#       - apps/torus-validator/**
+#       - apps/torusx-page/**
+#       - apps/torus-worker/**
+#       - apps/sample-app/**
+#       - apps/torus-wallet/**
+#       - apps/torus-cache/**
+# ---
+# kind: pipeline
+# type: docker
+# name: torus-validator
 
-steps:
-  - name: build
-    image: plugins/docker
-    settings:
-      registry: ghcr.io
-      username: ${DRONE_COMMIT_AUTHOR}
-      password:
-        from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/torus-validator
-      tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
-      dockerfile: docker/Dockerfile
-      build_args: APP_NAME=torus-validator
+# steps:
+#   - name: build
+#     image: plugins/docker
+#     settings:
+#       registry: ghcr.io
+#       username: ${DRONE_COMMIT_AUTHOR}
+#       password:
+#         from_secret: DOCKER_TOKEN
+#       repo: ghcr.io/renlabs-dev/torus-validator
+#       tags:
+#         - latest
+#         - ${DRONE_BRANCH}
+#         - ${DRONE_COMMIT_SHA:0:7}
+#       dockerfile: docker/Dockerfile
+#       build_args: APP_NAME=torus-validator
 
-  - name: deploy
-    image: digitalocean/doctl:latest
-    environment:
-      DO_CTL_TOKEN:
-        from_secret: DO_CTL_TOKEN
-    commands:
-      - apk add jq
-      - export PATH=$PATH:/app
-      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-validator" || echo "dev-torus-validator" )
-      - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-      - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-      - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-      - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-      - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+#   - name: deploy
+#     image: digitalocean/doctl:latest
+#     environment:
+#       DO_CTL_TOKEN:
+#         from_secret: DO_CTL_TOKEN
+#     commands:
+#       - apk add jq
+#       - export PATH=$PATH:/app
+#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-validator" || echo "dev-torus-validator" )
+#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
+#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
+#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
+#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
+#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
 
-trigger:
-  branch:
-    - drone
-    - main
-    - dev
-  event:
-    - push
-  paths:
-    exclude:
-      - apps/torus-worker/**
-      - apps/torus-governance/**
-      - apps/torus-page/**
-      - apps/torusx-page/**
-      - apps/sample-app/**
-      - apps/torus-wallet/**
-      - apps/torus-cache/**
----
-kind: pipeline
-type: docker
-name: torus-worker
+# trigger:
+#   branch:
+#     - drone
+#     - main
+#     - dev
+#   event:
+#     - push
+#   paths:
+#     exclude:
+#       - apps/torus-worker/**
+#       - apps/torus-governance/**
+#       - apps/torus-page/**
+#       - apps/torusx-page/**
+#       - apps/sample-app/**
+#       - apps/torus-wallet/**
+#       - apps/torus-cache/**
+# ---
+# kind: pipeline
+# type: docker
+# name: torus-worker
 
-steps:
-  - name: build
-    image: plugins/docker
-    settings:
-      registry: ghcr.io
-      username: ${DRONE_COMMIT_AUTHOR}
-      password:
-        from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/torus-worker
-      tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
-      dockerfile: docker/Dockerfile
-      build_args: APP_NAME=torus-worker
+# steps:
+#   - name: build
+#     image: plugins/docker
+#     settings:
+#       registry: ghcr.io
+#       username: ${DRONE_COMMIT_AUTHOR}
+#       password:
+#         from_secret: DOCKER_TOKEN
+#       repo: ghcr.io/renlabs-dev/torus-worker
+#       tags:
+#         - latest
+#         - ${DRONE_BRANCH}
+#         - ${DRONE_COMMIT_SHA:0:7}
+#       dockerfile: docker/Dockerfile
+#       build_args: APP_NAME=torus-worker
 
-  - name: deploy
-    image: digitalocean/doctl:latest
-    environment:
-      DO_CTL_TOKEN:
-        from_secret: DO_CTL_TOKEN
-    commands:
-      - apk add jq
-      - export PATH=$PATH:/app
-      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-worker" || echo "dev-torus-worker" )
-      - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-      - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-      - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-      - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-      - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+#   - name: deploy
+#     image: digitalocean/doctl:latest
+#     environment:
+#       DO_CTL_TOKEN:
+#         from_secret: DO_CTL_TOKEN
+#     commands:
+#       - apk add jq
+#       - export PATH=$PATH:/app
+#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-worker" || echo "dev-torus-worker" )
+#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
+#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
+#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
+#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
+#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
 
-trigger:
-  branch:
-    - drone
-    - main
-    - dev
-  event:
-    - push
-  paths:
-    exclude:
-      - apps/torus-validator/**
-      - apps/torus-governance/**
-      - apps/torus-page/**
-      - apps/torusx-page/**
-      - apps/sample-app/**
-      - apps/torus-wallet/**
-      - apps/torus-cache/**
+# trigger:
+#   branch:
+#     - drone
+#     - main
+#     - dev
+#   event:
+#     - push
+#   paths:
+#     exclude:
+#       - apps/torus-validator/**
+#       - apps/torus-governance/**
+#       - apps/torus-page/**
+#       - apps/torusx-page/**
+#       - apps/sample-app/**
+#       - apps/torus-wallet/**
+#       - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
@@ -209,59 +209,59 @@ trigger:
       - apps/sample-app/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
----
-kind: pipeline
-type: docker
-name: torus-wallet
+# ---
+# # kind: pipeline
+# type: docker
+# name: torus-wallet
 
-steps:
-  - name: build
-    image: plugins/docker
-    settings:
-      registry: ghcr.io
-      username: ${DRONE_COMMIT_AUTHOR}
-      password:
-        from_secret: DOCKER_TOKEN
-      repo: ghcr.io/renlabs-dev/torus-wallet
-      tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
-      dockerfile: docker/Dockerfile
-      build_args: APP_NAME=torus-wallet
+# steps:
+#   - name: build
+#     image: plugins/docker
+#     settings:
+#       registry: ghcr.io
+#       username: ${DRONE_COMMIT_AUTHOR}
+#       password:
+#         from_secret: DOCKER_TOKEN
+#       repo: ghcr.io/renlabs-dev/torus-wallet
+#       tags:
+#         - latest
+#         - ${DRONE_BRANCH}
+#         - ${DRONE_COMMIT_SHA:0:7}
+#       dockerfile: docker/Dockerfile
+#       build_args: APP_NAME=torus-wallet
 
-  - name: deploy
-    image: digitalocean/doctl:latest
-    environment:
-      DO_CTL_TOKEN:
-        from_secret: DO_CTL_TOKEN
-    commands:
-      - apk add jq
-      - export PATH=$PATH:/app
-      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-wallet" || echo "dev-torus-wallet" )
-      - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-      - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-      - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-      - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-      - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+#   - name: deploy
+#     image: digitalocean/doctl:latest
+#     environment:
+#       DO_CTL_TOKEN:
+#         from_secret: DO_CTL_TOKEN
+#     commands:
+#       - apk add jq
+#       - export PATH=$PATH:/app
+#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-wallet" || echo "dev-torus-wallet" )
+#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
+#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
+#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
+#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
+#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
 
-trigger:
-  branch:
-    - drone
-    - main
-    - dev
-  event:
-    - push
-  paths:
-    exclude:
-      - apps/torus-page/**
-      - apps/torus-validator/**
-      - apps/torusx-page/**
-      - apps/torus-worker/**
-      - apps/sample-app/**
-      - apps/torus-governance/**
-      - apps/torus-cache/**
+# trigger:
+#   branch:
+#     - drone
+#     - main
+#     - dev
+#   event:
+#     - push
+#   paths:
+#     exclude:
+#       - apps/torus-page/**
+#       - apps/torus-validator/**
+#       - apps/torusx-page/**
+#       - apps/torus-worker/**
+#       - apps/sample-app/**
+#       - apps/torus-governance/**
+#       - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
@@ -315,4 +315,3 @@ trigger:
       - apps/sample-app/**
       - apps/torus-governance/**
       - apps/torus-wallet/**
-
