@@ -1,8 +1,4 @@
-import type { Codec } from "@polkadot/types/types";
-import type { ZodTypeAny } from "zod";
 import { z } from "zod";
-
-import { assert_error } from "@torus-ts/utils";
 
 import type { Api } from "../old_types";
 import {
@@ -20,31 +16,7 @@ import {
   sb_struct,
   sb_to_primitive,
 } from "../types";
-
-// == Misc ==
-
-export function handleMapEntries<K extends Codec, T extends ZodTypeAny>(
-  rawEntries: [K, Codec][],
-  schema: T,
-): [z.output<T>[], Error[]] {
-  type Out = z.output<T>;
-  const entries: Out[] = [];
-  const errors: Error[] = [];
-  for (const entry of rawEntries) {
-    const [, valueRaw] = entry;
-    try {
-      var parsed = schema.parse(valueRaw) as Out;
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
-      continue;
-    }
-
-    entries.push(parsed);
-  }
-  entries.reverse();
-  return [entries, errors];
-}
+import { handleMapValues } from "./_common";
 
 // == Proposals ==
 
@@ -101,7 +73,7 @@ export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;
 
 export async function queryProposals(api: Api): Promise<Proposal[]> {
   const query = await api.query.governanceModule.proposals.entries();
-  const [proposals, errs] = handleMapEntries(query, sb_some(PROPOSAL_SCHEMA));
+  const [proposals, errs] = handleMapValues(query, sb_some(PROPOSAL_SCHEMA));
   for (const err of errs) {
     // TODO: refactor out
     console.error(err);
@@ -139,10 +111,7 @@ export async function queryDaoApplications(
 ): Promise<DaoApplications[]> {
   const query = await api.query.governanceModule.curatorApplications.entries();
 
-  const [daos, errs] = handleMapEntries(
-    query,
-    sb_some(DAO_APPLICATIONS_SCHEMA),
-  );
+  const [daos, errs] = handleMapValues(query, sb_some(DAO_APPLICATIONS_SCHEMA));
   for (const err of errs) {
     // TODO: refactor out
     console.error(err);
