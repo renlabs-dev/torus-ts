@@ -46,7 +46,7 @@ export const ExpandedViewContent = (
       </h2>
       <div
         ref={contentRef}
-        className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-12" : "max-h-[200px] pb-0"} duration-1000`}
+        className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-12" : "max-h-[250px] pb-0"} duration-1000`}
       >
         <MarkdownView source={removeEmojisLmao(body ?? "Content not found.")} />
 

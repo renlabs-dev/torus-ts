@@ -29,7 +29,7 @@ export function Layout({
       <body
         className={cn(
           font.className,
-          `relative overscroll-none bg-[#04061C] bg-cover text-white`,
+          `relative overscroll-none bg-[#04061C] text-white`,
           className,
         )}
       >

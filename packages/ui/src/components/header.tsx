@@ -8,7 +8,7 @@ export function Header(props: { appName?: string }): JSX.Element {
   return (
     <header
       className={cn(
-        "fixed z-[75] flex w-fit animate-fade-down px-4 py-2 md:px-6",
+        "absolute z-[75] flex animate-fade-down rounded-md bg-[#04061C] px-4 py-2 md:px-6",
       )}
     >
       <Link className="flex h-fit w-fit gap-4 p-1.5" href="/">
