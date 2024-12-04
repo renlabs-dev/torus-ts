@@ -244,13 +244,20 @@ export function Bridge() {
                 <LockOpen className="h-3 w-3" />{" "}
                 <p className="text-sm">Balance</p>
               </div>
-              <p>{formatToken(balance ?? 0n)} TOR</p>
+              <p>{formatToken(balance ?? 0n)} COMAI</p>
             </Card>
             <Card className="flex w-full flex-col items-center gap-2 p-3">
               <div className="flex flex-row items-center gap-1">
                 <Lock className="h-3 w-3" /> <p className="text-sm">Staked</p>
               </div>
-              <p>{formatToken(userStakeWeight)} TOR</p>
+              <p>{formatToken(userStakeWeight)} COMAI</p>
+            </Card>
+            <Card className="flex w-full flex-col items-center gap-2 p-3">
+              <div className="flex flex-row items-center gap-1">
+                <Lock className="h-3 w-3" /> <p className="text-sm">Bridged</p>
+              </div>
+              {/* TODO */}
+              <p>{1000.0} TOR</p>
             </Card>
           </div>
         )}
