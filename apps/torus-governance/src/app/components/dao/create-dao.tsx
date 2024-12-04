@@ -150,12 +150,14 @@ export function CreateDao(): JSX.Element {
             onChange={(e) => setApplicationKey(e.target.value)}
             placeholder="Application Key (ss58)"
             type="text"
+            required
             value={applicationKey}
           />
           <Input
             onChange={(e) => setDiscordId(e.target.value)}
             placeholder="Discord ID"
             type="text"
+            required
             value={discordId}
           />
           <Separator />
@@ -163,12 +165,14 @@ export function CreateDao(): JSX.Element {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Application title"
             type="text"
+            required
             value={title}
           />
           <Textarea
             onChange={(e) => setBody(e.target.value)}
             placeholder="Application body... (Markdown supported) / HTML tags are not supported)"
             rows={5}
+            required
             value={body}
           />
         </TabsContent>

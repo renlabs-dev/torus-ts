@@ -106,7 +106,7 @@ const ListCardsContent = () => {
     return proposalsWithMeta
       .map((proposal) => {
         const { title, invalid, body } = handleCustomProposal(proposal);
-        if (invalid) return null;
+        if (invalid || (!title && !body)) return null;
 
         const search = searchParams.get("search")?.toLocaleLowerCase();
         if (

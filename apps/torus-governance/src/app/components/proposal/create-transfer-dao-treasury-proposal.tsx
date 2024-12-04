@@ -147,12 +147,14 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
             onChange={(e) => setDest(e.target.value)}
             placeholder="Destination"
             type="text"
+            required
             value={dest}
           />
           <Input
             onChange={(e) => setValue(e.target.value)}
             placeholder="Value"
             type="text"
+            required
             value={value}
           />
           <Separator />
@@ -160,6 +162,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Application title"
             type="text"
+            required
             value={title}
           />
           <Textarea
@@ -167,6 +170,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
             placeholder="Application body... (Markdown supported) / HTML tags are not supported)"
             rows={5}
             value={body}
+            required
           />
         </TabsContent>
         <TabsContent value="preview" className="rounded-md bg-muted p-4">

@@ -140,12 +140,14 @@ export function CreateProposal(): JSX.Element {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Your proposal title here..."
             type="text"
+            required
             value={title}
           />
           <Textarea
             onChange={(e) => setBody(e.target.value)}
             placeholder="Your proposal body here... (Markdown supported / HTML tags are not supported)"
             rows={5}
+            required
             value={body}
           />
         </TabsContent>
