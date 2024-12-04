@@ -43,11 +43,6 @@ export function Wallet() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAccount, stakeOut]);
 
-  const handleSwitchWallet = async () => {
-    await handleGetWallets();
-    setShowWallets(true);
-  };
-
   return (
     <main className="flex min-h-[86dvh] flex-col items-center justify-center gap-3 text-white">
       {selectedAccount && !showWallets ? (
@@ -56,14 +51,6 @@ export function Wallet() {
             MAIN NET
           </p>
           <WalletSections.Root>
-            <WalletSections.Header
-              onSwitchWallet={handleSwitchWallet}
-              selectedAccount={selectedAccount}
-            />
-            <WalletSections.Balance
-              balance={balance}
-              selectedAccount={selectedAccount}
-            />
             <WalletSections.Actions
               addStake={addStake}
               balance={balance}
@@ -72,6 +59,10 @@ export function Wallet() {
               transfer={transfer}
               transferStake={transferStake}
               userStakeWeight={userStakeWeight}
+            />
+            <WalletSections.Balance
+              balance={balance}
+              selectedAccount={selectedAccount}
             />
           </WalletSections.Root>
         </>
