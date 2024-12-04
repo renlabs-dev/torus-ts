@@ -14,7 +14,6 @@ export function Wallet() {
     // Wallet
     addStake,
     balance,
-    handleGetWallets,
     removeStake,
     selectedAccount,
     stakeOut,
