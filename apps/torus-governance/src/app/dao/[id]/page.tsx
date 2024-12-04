@@ -21,7 +21,7 @@ export default async function DaoView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-screen-xl flex-col px-4 pt-12">
+    <div className="mx-auto flex w-full max-w-screen-xl flex-col px-4 pt-12 md:px-6">
       <Breadcrumb className="pb-8 pt-12">
         <BreadcrumbList>
           <BreadcrumbItem>

@@ -1,20 +1,25 @@
 import "../styles/globals.css";
 
 import type { Metadata } from "next";
+import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Providers } from "@torus-ts/providers/context";
-// import { links } from "@torus-ts/ui/data";
-// import { Footer } from "@torus-ts/ui";
-import { Header } from "@torus-ts/ui";
+import { Layout } from "@torus-ts/ui/components";
 
-import { cairo } from "~/utils/fonts";
+const APP_NAME = "Torus Wallet";
 
 export const metadata: Metadata = {
   robots: "all",
-  title: "torus AI",
+  title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "Making decentralized AI for everyone",
+  description: "Most advanced decentralized AI Protocol.",
 };
+
+export const firaMono = FiraMono({
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+});
 
 export default function RootLayout({
   children,
@@ -22,25 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <html lang="en">
-      <body
-        className={`relative bg-[#111713] bg-[url('/bg-pattern.svg')] ${cairo.className} animate-fade-in`}
-      >
-        <Providers>
-          <Header
-          // font={oxanium.className}
-          // logoSrc="/logo.svg"
-          // navigationLinks={[
-          //   { name: "Governance", href: links.governance, external: true },
-          //   { name: "Blog", href: links.blog, external: true },
-          //   { name: "Join Community", href: links.discord, external: true },
-          // ]}
-          // title="Torus Wallet"
-          />
-          {children}
-          {/* FIXME <Footer className="md:hidden lg:block" /> */}
-        </Providers>
-      </body>
-    </html>
+    <Layout font={firaMono} appName={APP_NAME}>
+      <Providers>{children}</Providers>
+    </Layout>
   );
 }

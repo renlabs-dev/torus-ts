@@ -26,6 +26,9 @@
   background: hsl(220 30% 95%);
 }
 
+:root {
+  scroll-behavior: smooth;
+}
 @layer base {
   :root {
     --background: 228 57% 8%;

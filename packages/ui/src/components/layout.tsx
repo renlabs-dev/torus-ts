@@ -33,9 +33,11 @@ export function Layout({
           className,
         )}
       >
-        {shouldDisplayHeader && <Header appName={appName} />}
-        {children}
-        <Footer />
+        <div className={cn("mx-auto max-w-screen-xl")}>
+          {shouldDisplayHeader && <Header appName={appName} />}
+          {children}
+          <Footer />
+        </div>
       </body>
     </html>
   );
