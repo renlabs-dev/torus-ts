@@ -80,6 +80,12 @@ export function UnstakeAction(
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    setTransactionStatus({
+      status: "STARTING",
+      finalized: false,
+      message: "Starting transaction",
+    });
+
     event.preventDefault();
 
     const handleCallback = (callbackReturn: TransactionResult) => {

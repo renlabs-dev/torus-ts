@@ -7,7 +7,7 @@ export function Loading(props: { className?: string }): JSX.Element {
       <svg
         aria-hidden="true"
         className={cn(
-          `h-5 w-5 animate-spin fill-cyan-500 text-white/20 ${className}`,
+          `h-5 w-5 animate-spin fill-background text-white/20 ${className}`,
         )}
         fill="none"
         viewBox="0 0 100 101"

@@ -34,7 +34,7 @@ export function TransactionStatus({
         <Loading className={color} />
       )}
       {Icon && <Icon className="h-5 w-5" />}
-      {message}
+      <p className="mt-0.5">{message}</p>
     </div>
   );
 }
