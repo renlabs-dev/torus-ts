@@ -293,9 +293,13 @@ export function TorusProvider({
                 status: "SUCCESS",
                 message: `${transactionType} successful`,
               });
-              // setTimeout(() => {
-              //   window.location.reload();
-              // }, 2000);
+              setTimeout(() => {
+                callback?.({
+                  status: null,
+                  message: null,
+                  finalized: false,
+                });
+              }, 6000);
             } else if (failed) {
               const [dispatchError] = failed.event.data as unknown as [
                 DispatchError,

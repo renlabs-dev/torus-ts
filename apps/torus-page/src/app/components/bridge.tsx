@@ -4,7 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreditCard, Info, LoaderCircle, Lock, LockOpen } from "lucide-react";
+import {
+  ArrowRightLeft,
+  CreditCard,
+  Info,
+  LoaderCircle,
+  Lock,
+  LockOpen,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -84,15 +91,18 @@ export function Bridge() {
     selectedAccount?.address as SS58Address,
   );
 
-  console.log(bridgedBalance);
-
   const { data: bridgedBalances } = useBridgedBalances(api);
 
-  console.log(bridgedBalances);
+  let bridgedBalancesSum = 0n;
 
-  const [isOpen, setIsOpen] = useState(() => {
-    return searchParams.get("bridge") === "open";
-  });
+  if (bridgedBalances?.[0]) {
+    const balancesMap = bridgedBalances[0];
+    for (const balance of balancesMap.values()) {
+      bridgedBalancesSum += balance;
+    }
+  }
+
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const bridgeParam = searchParams.get("bridge");
@@ -200,10 +210,11 @@ export function Bridge() {
       <AlertDialogTrigger className="mt-6 flex w-fit flex-col items-center gap-2 overflow-hidden rounded-md border border-border bg-card p-3 px-4">
         <span>
           <span className="underline">Click here</span> to Bridge your assets to
-          the Torus Network.
+          Torus.
         </span>
         <span className="text-sm">
-          (Bridge Closes: 11/9/24, 6:00 PM UTC) / Total Bridged: 2497249.99 TOR
+          (Bridge Closes: 1/1/25, 1:00 PM UTC) / Total Bridged:{" "}
+          {formatToken(bridgedBalancesSum)} TOR
         </span>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -304,10 +315,13 @@ export function Bridge() {
             </Card>
             <Card className="flex w-full flex-col items-center gap-2 p-3">
               <div className="flex flex-row items-center gap-1">
-                <Lock className="h-3 w-3" /> <p className="text-sm">Bridged</p>
+                <ArrowRightLeft className="h-3 w-3" />{" "}
+                <p className="text-sm">Bridged</p>
               </div>
               {/* TODO */}
-              <p className="text-xs">{1000.0} TOR</p>
+              <p className="text-xs">
+                {formatToken(bridgedBalance ? bridgedBalance : 0)} TOR
+              </p>
             </Card>
           </div>
         )}

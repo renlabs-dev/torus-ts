@@ -54,7 +54,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
   function getValidatorsList(): Validator[] {
     if (props.listType === "staked" && userTotalStaked) {
       return userTotalStaked.map((item) => ({
-        name: ``,
+        name: `Staked amount: ${formatToken(Number(item.stake))}`,
         description: `Staked amount: ${formatToken(Number(item.stake))}`,
         address: item.address,
         stake: item.stake,
