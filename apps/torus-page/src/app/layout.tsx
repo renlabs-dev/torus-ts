@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   robots: "all",
   title: "𝐓𝐨𝐫𝐮𝐬",
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "Most advanced decentralized AI Protocol.",
+  description: "The thermodynamic god's favorite child.",
 };
 
 export const firaMono = FiraMono({

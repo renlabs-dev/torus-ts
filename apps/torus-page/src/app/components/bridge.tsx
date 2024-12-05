@@ -1,13 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, Info, LoaderCircle, Lock, LockOpen } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import type { TransactionResult } from "@torus-ts/ui";
+import type { Brand } from "@torus-ts/utils";
+import {
+  useBridgedBalance,
+  useBridgedBalances,
+} from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
@@ -57,6 +63,7 @@ const formSchema = z.object({
 
 export function Bridge() {
   const {
+    api,
     accounts,
     balance,
     handleGetWallets,
@@ -67,7 +74,45 @@ export function Bridge() {
     removeStake,
   } = useTorus();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  type SS58Address = Brand<"SS58Address", string>;
+
+  const { data: bridgedBalance } = useBridgedBalance(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
+
+  console.log(bridgedBalance);
+
+  const { data: bridgedBalances } = useBridgedBalances(api);
+
+  console.log(bridgedBalances);
+
+  const [isOpen, setIsOpen] = useState(() => {
+    return searchParams.get("bridge") === "open";
+  });
+
+  useEffect(() => {
+    const bridgeParam = searchParams.get("bridge");
+    if (bridgeParam === "open" && !isOpen) {
+      setIsOpen(true);
+    } else if (bridgeParam !== "open" && isOpen) {
+      setIsOpen(false);
+    }
+  }, [searchParams, isOpen]);
+
+  const setIsOpenAndUpdateURL = (open: boolean) => {
+    setIsOpen(open);
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (open) {
+      newSearchParams.set("bridge", "open");
+    } else {
+      newSearchParams.delete("bridge");
+    }
+    router.push(`?${newSearchParams.toString()}`, { scroll: false });
+  };
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -151,10 +196,15 @@ export function Bridge() {
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger className="mt-6 w-fit overflow-hidden rounded-md border border-border bg-card p-3 px-4">
-        <span className="underline">Click here</span> to Bridge your assets to
-        the Torus Network. (Bridge Closes: 11/9/24, 6:00 PM UTC)
+    <AlertDialog open={isOpen} onOpenChange={setIsOpenAndUpdateURL}>
+      <AlertDialogTrigger className="mt-6 flex w-fit flex-col items-center gap-2 overflow-hidden rounded-md border border-border bg-card p-3 px-4">
+        <span>
+          <span className="underline">Click here</span> to Bridge your assets to
+          the Torus Network.
+        </span>
+        <span className="text-sm">
+          (Bridge Closes: 11/9/24, 6:00 PM UTC) / Total Bridged: 2497249.99 TOR
+        </span>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -244,20 +294,20 @@ export function Bridge() {
                 <LockOpen className="h-3 w-3" />{" "}
                 <p className="text-sm">Balance</p>
               </div>
-              <p>{formatToken(balance ?? 0n)} COMAI</p>
+              <p className="text-xs">{formatToken(balance ?? 0n)} COMAI</p>
             </Card>
             <Card className="flex w-full flex-col items-center gap-2 p-3">
               <div className="flex flex-row items-center gap-1">
                 <Lock className="h-3 w-3" /> <p className="text-sm">Staked</p>
               </div>
-              <p>{formatToken(userStakeWeight)} COMAI</p>
+              <p className="text-xs">{formatToken(userStakeWeight)} COMAI</p>
             </Card>
             <Card className="flex w-full flex-col items-center gap-2 p-3">
               <div className="flex flex-row items-center gap-1">
                 <Lock className="h-3 w-3" /> <p className="text-sm">Bridged</p>
               </div>
               {/* TODO */}
-              <p>{1000.0} TOR</p>
+              <p className="text-xs">{1000.0} TOR</p>
             </Card>
           </div>
         )}

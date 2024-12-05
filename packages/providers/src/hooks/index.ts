@@ -13,6 +13,7 @@ import type {
   VoteWithStake,
 } from "@torus-ts/subspace/old";
 import type { ListItem } from "@torus-ts/utils/typing";
+import { queryBridgedBalance, queryBridgedBalances } from "@torus-ts/subspace";
 import { fetchCustomMetadata } from "@torus-ts/subspace/old";
 import {
   getModuleBurn,
@@ -235,6 +236,29 @@ export function useModuleBurn(api: Api | Nullish) {
     queryKey: ["module_burn"],
     enabled: api != null,
     queryFn: () => getModuleBurn(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useBridgedBalances(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["bridged_balances"],
+    enabled: api != null,
+    queryFn: () => queryBridgedBalances(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useBridgedBalance(
+  api: Api | Nullish,
+  address: SS58Address | null,
+) {
+  return useQuery({
+    queryKey: ["bridged_balance"],
+    enabled: api != null && address != null,
+    queryFn: () => queryBridgedBalance(api!, address!),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

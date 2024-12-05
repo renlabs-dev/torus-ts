@@ -23,17 +23,6 @@ export default function Page(): JSX.Element {
           src="/asci-text.svg"
           className="-z-50 hidden animate-fade px-6 animate-delay-[1000ms] md:block xl:w-[68vh] 2xl:w-[85vh]"
         />
-        {/* <Image
-          priority
-          alt="Torus"
-          width={1000}
-          height={1000}
-          src="/logo.svg"
-          className="mb-4 h-[40px] w-[100px] animate-fade-up animate-delay-[1000ms]"
-        /> */}
-        {/* <h3 className="animate-fade-up text-center text-2xl font-thin leading-9 tracking-tight shadow-sm animate-delay-[1200ms] md:text-[1.240rem] lg:text-[1.450rem] 2xl:text-[1.642rem]">
-          Peer-to-peer Incentivized coordination network.
-        </h3> */}
       </div>
     </main>
   );
