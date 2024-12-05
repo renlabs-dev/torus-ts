@@ -318,7 +318,6 @@ export function Bridge() {
                 <ArrowRightLeft className="h-3 w-3" />{" "}
                 <p className="text-sm">Bridged</p>
               </div>
-              {/* TODO */}
               <p className="text-xs">
                 {formatToken(bridgedBalance ? bridgedBalance : 0)} TOR
               </p>

@@ -177,6 +177,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
+    // keep this hidden for know so we dont have to refactor the component structure to not have this on the LP but have the provider context
     <div className="top-0 z-[70] mx-auto hidden w-full max-w-screen-xl justify-end">
       <div className="mx-auto hidden animate-fade-down justify-end px-6 py-3.5 md:flex">
         <DropdownMenu onOpenChange={handleGetAccounts}>
