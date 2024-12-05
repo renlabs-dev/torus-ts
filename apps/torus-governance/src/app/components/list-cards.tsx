@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -67,8 +67,11 @@ const ListCardsContent = () => {
     lastBlock,
   } = useTorus();
 
+  const contentRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const currentBlock = lastBlock?.blockNumber;
+
+  const [isOverflowing, setIsOverflowing] = useState(false);
 
   const viewMode = useMemo((): ViewModes => {
     const currentView = searchParams.get("view");
@@ -186,10 +189,28 @@ const ListCardsContent = () => {
     }
   }, [viewMode, renderProposals, renderDaos]);
 
+  useEffect(() => {
+    if (contentRef.current) {
+      const contentHeight = contentRef.current.scrollHeight;
+      const maxAllowedHeight = window.innerHeight - 280;
+      setIsOverflowing(contentHeight > maxAllowedHeight);
+      scrollTo({ top: 100, behavior: "smooth" });
+    }
+  }, [viewMode, content]);
+
   if (handleIsLoading(viewMode)) return <ListCardsLoadingSkeleton />;
 
   return (
-    <div className="flex flex-col gap-6">{content ?? <NoContentFound />}</div>
+    <div
+      ref={contentRef}
+      className={`max-h-[calc(100vh-280px)] overflow-y-auto md:max-h-[calc(100vh-210px)]`}
+    >
+      <div
+        className={`flex flex-col-reverse gap-6 ${isOverflowing ? "pr-1 md:pr-2" : ""}`}
+      >
+        {content ?? <NoContentFound />}
+      </div>
+    </div>
   );
 };
 
