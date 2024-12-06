@@ -1,4 +1,11 @@
 {
+  // Liveshare
+  "liveshare.allowGuestDebugControl": true,
+  "liveshare.allowGuestTaskControl": true,
+  "liveshare.languages.allowGuestCommandControl": true,
+  "liveshare.openSharedServers": false,
+  "liveshare.publishWorkspaceInfo": true,
+
   // TypeScript
   "typescript.tsdk": "node_modules/typescript/lib",
 
