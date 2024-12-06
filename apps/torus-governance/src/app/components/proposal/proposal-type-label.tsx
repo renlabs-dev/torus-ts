@@ -20,6 +20,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
+    // TODO: REMOVE GlobalParams on Torus V0 release
     GlobalParams() {
       return (
         <Badge
@@ -30,6 +31,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
+    // TODO: REMOVE SubnetCustom on Torus V0 release
     SubnetCustom() {
       return (
         <Badge
@@ -40,6 +42,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
+    // TODO: REMOVE SubnetParams on Torus V0 release
     SubnetParams() {
       return (
         <Badge
