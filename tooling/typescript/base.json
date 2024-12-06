@@ -3,7 +3,7 @@
   "compilerOptions": {
     /** Base Options */
     "esModuleInterop": true,
-    "skipLibCheck": true, // TODO: test
+    "skipLibCheck": true,
     "target": "ES2022",
     "lib": ["ES2022"],
     "allowJs": false,

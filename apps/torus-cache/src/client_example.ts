@@ -3,8 +3,6 @@ import SuperJSON from "superjson";
 
 import { STAKE_DATA_SCHEMA } from "@torus-ts/subspace/old";
 
-// TODO: use `superjson` instead of `json-bigint`
-
 const result = await fetch("http://localhost:3000/api/stake-out");
 const data = await result.text();
 

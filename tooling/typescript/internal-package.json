@@ -7,7 +7,7 @@
     "declaration": true,
     "declarationMap": true,
     // "emitDeclarationOnly": true,
-    "noEmit": false // TODO: test
+    "noEmit": false
   },
   "include": ["${configDir}/src"],
   "exclude": ["${configDir}/node_modules", "${configDir}/dist"]
