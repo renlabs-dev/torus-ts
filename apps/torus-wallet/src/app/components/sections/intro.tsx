@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import Image from "next/image";
-import { ChevronsLeft } from "lucide-react";
+import { ChevronsLeft, CornerRightUp } from "lucide-react";
 
 import type { InjectedAccountWithMeta } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
@@ -55,6 +55,15 @@ export function IntroSection(props: IntroSectionProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAccount, props.onWalletSwitch]);
   return (
+    // <>
+    //   <div className="fixed inset-0 mx-auto flex min-h-full w-full max-w-screen-xl items-start justify-end py-1">
+    //     <div className="mr-6 mt-14 flex gap-4">
+    //       <span className="text-xl">Connect your wallet to get started</span>
+    //       <CornerRightUp size={24} />
+    //     </div>
+    //   </div>
+    // </>
+
     <>
       {props.showWallets ? (
         <WalletSections.Root>

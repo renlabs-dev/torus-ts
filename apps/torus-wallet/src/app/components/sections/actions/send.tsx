@@ -5,7 +5,7 @@ import { BN } from "@polkadot/util";
 
 import type { TransactionResult, Transfer } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { TransactionStatus } from "@torus-ts/ui";
+import { Button, Input, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
 import type { GenericActionProps } from "../wallet-actions";
@@ -151,88 +151,88 @@ export function SendAction(
   }, [amount, maxAmount]);
 
   return (
-    <div className="mt-4 w-full">
+    <>
       <form
         onSubmit={handleSubmit}
-        className="flex w-full animate-fade-down flex-col gap-4 pt-4"
+        className="flex w-full animate-fade-down flex-col gap-4"
       >
-        <div className="w-full">
-          <span className="text-base">To Address</span>
-          <input
+        <div className="flex flex-col gap-2">
+          <span className="text-base">To</span>
+          <Input
             type="text"
             value={recipient}
             required
             onChange={handleRecipientChange}
-            placeholder="The full address of the recipient"
-            className="w-full border border-white/20 bg-[#898989]/5 p-2"
+            placeholder="Address"
+            className="w-full border p-2"
           />
-          {inputError.recipient && (
-            <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
-              {inputError.recipient}
-            </p>
-          )}
         </div>
-        <div className="w-full">
-          <p className="text-base">Value</p>
-          <div className="flex w-full gap-1">
-            <input
+        {inputError.recipient && (
+          <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
+            {inputError.recipient}
+          </p>
+        )}
+        <div className="flex flex-col gap-2">
+          <p className="text-base">Amount</p>
+          <div className="flex w-full items-center gap-1">
+            <Input
               type="number"
               value={amount}
-              max={parseFloat(maxAmount)}
+              max={maxAmount}
               required
               onChange={handleAmountChange}
-              placeholder="The amount of COMAI to send"
-              className="w-full border border-white/20 bg-[#898989]/5 p-2 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:text-gray-600/50 disabled:placeholder:text-gray-600/50"
+              placeholder="0.1"
+              className="w-full p-2 disabled:cursor-not-allowed"
               disabled={!recipient || isEstimating}
             />
-            <button
+
+            <Button
               type="button"
               onClick={handleMaxClick}
               className="ml-2 whitespace-nowrap border border-blue-500 bg-blue-600/5 px-4 py-2 font-semibold text-blue-500 transition duration-200 hover:border-blue-400 hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:border-gray-600/50 disabled:hover:bg-transparent"
               disabled={!recipient || isEstimating}
             >
               Max
-            </button>
+            </Button>
           </div>
-          {inputError.value && (
-            <p className="mb-1 mt-2 flex text-left text-base text-red-400">
-              {inputError.value}
-            </p>
-          )}
-          {isEstimating && (
-            <p className="mt-2 text-sm text-gray-400">Estimating fee...</p>
-          )}
-          {estimatedFee && (
-            <p className="mt-2 text-sm text-gray-400">
-              Estimated fee: {(Number(estimatedFee) * 1.1).toFixed(9)} COMAI
-            </p>
-          )}
-          {maxAmount && (
-            <button
-              onClick={() => setAmount(maxAmount)}
-              type="button"
-              className="mt-2 text-sm text-gray-400"
-            >
-              Maximum transferable amount:{" "}
-              <span className="text-green-500">{maxAmount} COMAI</span>
-            </button>
-          )}
         </div>
-        <div className="mt-4 border-t border-white/20 pt-4">
-          <button
-            type="submit"
-            disabled={
-              transactionStatus.status === "PENDING" ||
-              !amount ||
-              !recipient ||
-              isEstimating ||
-              !!inputError.value
-            }
-            className="flex w-full justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:bg-transparent"
+
+        {inputError.value && (
+          <p className="mb-1 mt-2 flex text-left text-base text-red-400">
+            {inputError.value}
+          </p>
+        )}
+        {isEstimating && (
+          <p className="mt-2 text-sm text-gray-400">Estimating fee...</p>
+        )}
+        {estimatedFee && (
+          <p className="mt-2 text-sm text-gray-400">
+            Estimated fee: {(Number(estimatedFee) * 1.1).toFixed(9)} COMAI
+          </p>
+        )}
+        {maxAmount && (
+          <Button
+            onClick={() => setAmount(maxAmount)}
+            type="button"
+            className="mt-2 text-sm text-gray-400"
           >
-            Start Transaction
-          </button>
-        </div>
+            Maximum transferable amount:{" "}
+            <span className="text-green-500">{maxAmount} COMAI</span>
+          </Button>
+        )}
+        <Button
+          type="submit"
+          disabled={
+            transactionStatus.status === "PENDING" ||
+            !amount ||
+            !recipient ||
+            isEstimating ||
+            !!inputError.value
+          }
+          className="flex w-full justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:bg-transparent"
+        >
+          Start Transaction
+        </Button>
       </form>
       {transactionStatus.status && (
         <TransactionStatus
@@ -240,6 +240,6 @@ export function SendAction(
           message={transactionStatus.message}
         />
       )}
-    </div>
+    </>
   );
 }

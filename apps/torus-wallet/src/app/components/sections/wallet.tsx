@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { CornerRightUp } from "lucide-react";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
 
+import { SidebarLinks } from "../sidebar-links";
 import { IntroSection } from "./intro";
 import { WalletSections } from "./wallet-sections";
 
@@ -43,35 +45,46 @@ export function Wallet() {
   }, [selectedAccount, stakeOut]);
 
   return (
-    <main className="flex min-h-[86dvh] flex-col items-center justify-center gap-3 text-white">
-      {selectedAccount && !showWallets ? (
-        <>
-          <p className="animate-fade text-gray-400 animate-delay-700">
-            MAIN NET
-          </p>
-          <WalletSections.Root>
-            <WalletSections.Actions
-              addStake={addStake}
-              balance={balance}
-              removeStake={removeStake}
-              selectedAccount={selectedAccount}
-              transfer={transfer}
-              transferStake={transferStake}
-              userStakeWeight={userStakeWeight}
-            />
-            <WalletSections.Balance
-              balance={balance}
-              selectedAccount={selectedAccount}
-            />
-          </WalletSections.Root>
-        </>
-      ) : (
+    <main className="relative mx-auto flex h-screen min-w-full flex-col items-center gap-3 text-white">
+      {/* {selectedAccount && !showWallets ? ( */}
+      <>
+        {/* {!selectedAccount && (
+          <>
+            <span className="absolute right-5 top-2.5 h-1.5 w-1.5 rounded-full bg-muted" />
+            <span className="absolute right-5 top-2.5 h-1.5 w-1.5 animate-ping rounded-full bg-muted-foreground animate-duration-[1500ms]" />
+            <div className="absolute inset-0 mx-auto hidden min-h-full w-full max-w-screen-xl items-start justify-end py-1 md:flex">
+              <div className="mr-7 mt-12 flex animate-pulse items-center gap-3 animate-duration-[1500ms]">
+                <span className="text-base">
+                  Connect your wallet to get started
+                </span>
+                <CornerRightUp size={22} className="mb-3" />
+              </div>
+            </div>
+          </>
+        )} */}
+        <div className="mt-[20vh] flex w-full gap-6">
+          <div className="flex w-1/5 flex-col gap-4">
+            <SidebarLinks />
+            <WalletSections.Balance />
+          </div>
+          <WalletSections.Actions
+            addStake={addStake}
+            balance={balance}
+            removeStake={removeStake}
+            selectedAccount={selectedAccount}
+            transfer={transfer}
+            transferStake={transferStake}
+            userStakeWeight={userStakeWeight}
+          />
+        </div>
+      </>
+      {/* ) : (
         <IntroSection
           onWalletSwitch={refreshUserStakeWeight}
           setShowWallets={setShowWallets}
           showWallets={showWallets}
         />
-      )}
+      )} */}
     </main>
   );
 }

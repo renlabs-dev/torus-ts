@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 
 import type {
   InjectedAccountWithMeta,
@@ -8,9 +8,8 @@ import type {
   Transfer,
   TransferStake,
 } from "@torus-ts/ui/types";
+import { Card, Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
 
-import type { ColorType, MenuType } from "~/utils/types";
-import { IconButton } from "../icon-button";
 import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
@@ -30,34 +29,34 @@ export interface WalletActionsProps extends GenericActionProps {
 }
 
 export function WalletActions(props: WalletActionsProps) {
-  const [activeMenu, setActiveMenu] = useState<MenuType>(null);
-
   const buttons = [
-    { src: "send-icon.svg", text: "Send", color: "red" },
-    { src: "stake-icon.svg", text: "Stake", color: "amber" },
-    { src: "unstake-icon.svg", text: "Unstake", color: "purple" },
-    { src: "transfer-icon.svg", text: "Transfer Stake", color: "green" },
+    { text: "Send", component: <SendAction {...props} /> },
+    { text: "Stake", component: <StakeAction {...props} /> },
+    { text: "Unstake", component: <UnstakeAction {...props} /> },
+    { text: "Transfer", component: <TransferStakeAction {...props} /> },
   ];
 
   return (
     <>
-      <div className="grid w-full animate-fade-up grid-cols-1 gap-4 pt-4 animate-delay-300 md:grid-cols-4">
-        {buttons.map((button) => (
-          <IconButton
-            key={button.src}
-            activeMenu={activeMenu}
-            color={button.color as ColorType}
-            setActiveMenu={setActiveMenu}
-            src={button.src}
-            text={button.text}
-          />
-        ))}
-      </div>
-
-      {activeMenu === "Send" && <SendAction {...props} />}
-      {activeMenu === "Stake" && <StakeAction {...props} />}
-      {activeMenu === "Unstake" && <UnstakeAction {...props} />}
-      {activeMenu === "Transfer Stake" && <TransferStakeAction {...props} />}
+      <Tabs
+        defaultValue={buttons[0]?.text}
+        className="flex w-4/5 flex-col gap-4"
+      >
+        <TabsList className="grid w-full grid-cols-4">
+          {buttons.map((button) => (
+            <TabsTrigger key={button.text} value={button.text}>
+              {button.text}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {buttons.map((button) => {
+          return (
+            <TabsContent key={button.text} value={button.text}>
+              <Card className="p-6">{button.component}</Card>
+            </TabsContent>
+          );
+        })}
+      </Tabs>
     </>
   );
 }

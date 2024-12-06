@@ -29,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   links,
+  NoWalletExtensionDisplay,
   ScrollArea,
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
@@ -331,6 +332,8 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                 </AccordionItem>
               </Accordion>
             )}
+
+            {accounts && accounts.length === 0 && <NoWalletExtensionDisplay />}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

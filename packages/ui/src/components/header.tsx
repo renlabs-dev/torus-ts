@@ -7,9 +7,7 @@ export function Header(props: { appName?: string }): JSX.Element {
   const { appName } = props;
   return (
     <header
-      className={cn(
-        "absolute z-[75] flex animate-fade-down bg-background px-4 py-2 md:px-6",
-      )}
+      className={cn("absolute z-[75] flex animate-fade-down px-4 py-2 md:px-6")}
     >
       <Link className="flex h-fit w-fit gap-4 p-1.5" href="/">
         <Icons.logo className="h-6 w-6" />
