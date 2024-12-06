@@ -1,8 +1,7 @@
-import type { ZodSchema } from "zod";
 import { DateTime } from "luxon";
 import { match } from "rustie";
 
-import type { Result } from "@torus-ts/utils";
+import type { CustomDataError, Result } from "@torus-ts/utils";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 
 import type { SS58Address } from "./address";
@@ -10,8 +9,6 @@ import type {
   AnyTuple,
   Api,
   Codec,
-  CustomDaoMetadata,
-  CustomDataError,
   CustomMetadata,
   StorageKey,
 } from "./old_types";
@@ -346,68 +343,3 @@ export const paramNameToDisplayName = (paramName: string): string => {
     ] ?? paramName
   );
 };
-
-export function appendErrorInfo(
-  err_msg: string,
-  info: string,
-  sep = " ",
-): { Err: CustomDataError } {
-  const message = err_msg + sep + info;
-  return { Err: { message } };
-}
-
-export async function processMetadata(
-  zodSchema: ZodSchema,
-  url: string,
-  entryId: number,
-  kind?: string,
-) {
-  const response = await fetch(url);
-  const obj: unknown = await response.json();
-
-  const validated = zodSchema.safeParse(obj);
-  if (!validated.success) {
-    const message = `Invalid metadata for ${kind} ${entryId} at ${url}`;
-    return { Err: { message } };
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  return { Ok: validated.data };
-}
-
-export async function processProposalMetadata(url: string, entryId: number) {
-  return await processMetadata(
-    CUSTOM_METADATA_SCHEMA,
-    url,
-    entryId,
-    "proposal",
-  );
-}
-export async function processDaoMetadata(
-  url: string,
-  entryId: number,
-): Promise<Result<CustomDaoMetadata, CustomDataError>> {
-  return await processMetadata(CUSTOM_METADATA_SCHEMA, url, entryId, "dao");
-}
-
-export async function fetchCustomMetadata(
-  kind: "proposal" | "dao",
-  entryId: number,
-  metadataField: string,
-): Promise<Result<CustomMetadata, CustomDataError>> {
-  const r = parseIpfsUri(metadataField);
-
-  return await match(r)({
-    async Ok(cid) {
-      const url = buildIpfsGatewayUrl(cid); // this is wrong
-      const metadata =
-        kind == "proposal"
-          ? await processProposalMetadata(url, entryId)
-          : await processDaoMetadata(url, entryId);
-      return metadata;
-    },
-    // eslint-disable-next-line @typescript-eslint/require-await
-    async Err({ message }) {
-      return appendErrorInfo(message, `for ${kind} ${entryId}`);
-    },
-  });
-}

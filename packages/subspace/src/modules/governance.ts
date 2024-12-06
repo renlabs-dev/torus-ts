@@ -1,7 +1,16 @@
+import { Keyring } from "@polkadot/api";
+import { encodeAddress } from "@polkadot/util-crypto";
+import { assert } from "tsafe";
 import { z } from "zod";
 
+import "@polkadot/api/augment";
+
+import type { ApiPromise } from "@polkadot/api";
+
+import type { SS58Address } from "../address";
 import type { Api } from "../old_types";
-import { checkSS58, SS58Address } from "../address";
+import { checkSS58 } from "../address";
+import { queryCachedStakeFrom, queryCachedStakeOut } from "../cached-queries";
 import {
   sb_address,
   sb_amount,
@@ -18,7 +27,9 @@ import {
   sb_to_primitive,
 } from "../types";
 import { handleMapValues } from "./_common";
+import { queryFreeBalance } from "./subspace";
 
+export type GovernanceModeType = "PROPOSAL" | "DAO";
 // == Proposals ==
 
 export const PROPOSAL_DATA_SCHEMA = sb_enum({
@@ -82,6 +93,80 @@ export async function queryProposals(api: Api): Promise<Proposal[]> {
   return proposals;
 }
 
+// -- Votes --
+
+interface VoteWithStake {
+  address: SS58Address;
+  stake: bigint;
+  vote: "In Favor" | "Against";
+}
+export async function processVotesAndStakes(
+  api: Api,
+  torusCacheUrl: string,
+  votesFor: SS58Address[],
+  votesAgainst: SS58Address[],
+): Promise<VoteWithStake[]> {
+  // Get addresses not delegating voting power and get stake information
+  const [notDelegatingAddresses, stakeFrom, stakeOut] = await Promise.all([
+    queryNotDelegatingVotingPower(api),
+    queryCachedStakeFrom(torusCacheUrl),
+    queryCachedStakeOut(torusCacheUrl),
+  ]);
+
+  const notDelegatingSet = new Set(notDelegatingAddresses);
+
+  const stakeOutMap = new Map(
+    Object.entries(stakeOut.perAddr).map(([key, value]) => [
+      key,
+      BigInt(value),
+    ]),
+  );
+
+  const stakeFromMap = new Map(
+    Object.entries(stakeFrom.perAddr).map(([key, value]) => [
+      key,
+      BigInt(value),
+    ]),
+  );
+
+  // Pre-calculate total stake for each address
+  const totalStakeMap = new Map<SS58Address, bigint>();
+  const allAddresses = new Set([...votesFor, ...votesAgainst]);
+
+  for (const address of allAddresses) {
+    const stakeFrom = stakeFromMap.get(address) ?? 0n;
+    const stakeOut = stakeOutMap.get(address) ?? 0n;
+
+    const totalStake =
+      stakeOut > 0n && !notDelegatingSet.has(address)
+        ? 0n
+        : stakeFrom + stakeOut;
+    totalStakeMap.set(address, totalStake);
+  }
+
+  // Process all votes and push it to an array to avoid spread
+  const processedVotes: VoteWithStake[] = [];
+  votesFor.map((address) => {
+    processedVotes.push({
+      address,
+      stake: totalStakeMap.get(address) ?? 0n,
+      vote: "In Favor" as const,
+    });
+  });
+
+  votesAgainst.map((address) => {
+    processedVotes.push({
+      address,
+      stake: totalStakeMap.get(address) ?? 0n,
+      vote: "Against" as const,
+    });
+  });
+
+  // Sort the processed votes
+  const sortedVotes = processedVotes.sort((a, b) => Number(b.stake - a.stake));
+  return sortedVotes;
+}
+
 // == Applications ==
 
 export const DAO_APPLICATION_STATUS_SCHEMA = sb_basic_enum([
@@ -121,6 +206,8 @@ export async function queryDaoApplications(
   return daos;
 }
 
+// == Dao Treasury ==
+
 export type DaoTreasuryAddress = z.infer<typeof sb_address>;
 
 export async function queryDaoTreasuryAddress(
@@ -137,7 +224,7 @@ export async function queryNotDelegatingVotingPower(
   return sb_array(sb_address).parse(value);
 }
 
-// ---------------------------------
+// == Governance Configuration ==
 
 const GOVERNANCE_CONFIGURATION_SCHEMA = sb_struct({
   proposalCost: sb_bigint,
@@ -156,4 +243,126 @@ export async function queryGlobalGovernanceConfig(
   const config = await api.query.governanceModule.globalGovernanceConfig();
   const parsed_config = GOVERNANCE_CONFIGURATION_SCHEMA.parse(config);
   return parsed_config;
+}
+
+export function getRewardAllocation(
+  governanceConfig: GovernanceConfiguration,
+  treasuryBalance: bigint,
+) {
+  const allocationPercentage =
+    governanceConfig.proposalRewardTreasuryAllocation;
+  const maxAllocation = governanceConfig.maxProposalRewardTreasuryAllocation;
+
+  let allocation = (treasuryBalance * allocationPercentage) / 100n;
+
+  if (allocation > maxAllocation) allocation = maxAllocation;
+
+  // Here there is a "decay" calculation for the n-th proposal reward that
+  // we are ignoring, as we want only the first.
+
+  return allocation;
+}
+
+export async function queryRewardAllocation(api: Api): Promise<bigint> {
+  const treasuryAddress = await queryDaoTreasuryAddress(api);
+  const balance = await queryFreeBalance(api, treasuryAddress);
+  const governanceConfig = await queryGlobalGovernanceConfig(api);
+  return getRewardAllocation(governanceConfig, balance);
+}
+
+// == Whitelist ==
+
+export async function pushToWhitelist(
+  api: ApiPromise,
+  moduleKey: SS58Address,
+  mnemonic: string | undefined,
+) {
+  const keyring = new Keyring({ type: "sr25519" });
+
+  if (!mnemonic) {
+    throw new Error("No sudo mnemonic provided");
+  }
+  const sudoKeypair = keyring.addFromUri(mnemonic);
+  const accountId = encodeAddress(moduleKey, 42);
+
+  const tx = api.tx.governanceModule.addToWhitelist(accountId);
+
+  const extrinsic = await tx
+    .signAndSend(sudoKeypair)
+    .catch((err) => {
+      console.error(err);
+      return false;
+    })
+    .then(() => {
+      console.log(`Extrinsic: ${extrinsic}`);
+      return true;
+    });
+}
+
+export async function queryWhitelist(api: Api): Promise<SS58Address[]> {
+  const whitelist = [];
+
+  const entries = await api.query.governanceModule.legitWhitelist.entries();
+  for (const [keys, _value] of entries) {
+    assert(keys.args[0]);
+    const key = keys.args[0].toPrimitive();
+    assert(typeof key === "string");
+    const address = checkSS58(key);
+    whitelist.push(address);
+  }
+
+  return whitelist;
+}
+
+export async function removeFromWhitelist(
+  api: ApiPromise,
+  moduleKey: SS58Address,
+  mnemonic: string | undefined,
+) {
+  if (!mnemonic) {
+    throw new Error("No sudo mnemonic provided");
+  }
+
+  const accountId = encodeAddress(moduleKey, 42);
+  const tx = api.tx.governanceModule.removeFromWhitelist(accountId);
+
+  const keyring = new Keyring({ type: "sr25519" });
+  const sudoKeypair = keyring.addFromUri(mnemonic);
+  const extrinsic = await tx
+    .signAndSend(sudoKeypair)
+    .catch((err) => {
+      console.error(err);
+      return false;
+    })
+    .then(() => {
+      console.log(`Extrinsic: ${extrinsic}`);
+      return true;
+    });
+}
+
+export async function refuseDaoApplication(
+  api: ApiPromise,
+  proposalId: number,
+  mnemonic: string | undefined,
+) {
+  if (!mnemonic) {
+    throw new Error("No sudo mnemonic provided");
+  }
+
+  const tx = api.tx.governanceModule.refuseDaoApplication(proposalId);
+
+  const keyring = new Keyring({ type: "sr25519" });
+  const sudoKeypair = keyring.addFromUri(mnemonic);
+  const extrinsic = await tx
+    .signAndSend(sudoKeypair)
+    .catch((err) => {
+      console.error(err);
+      return false;
+    })
+    .then(() => {
+      console.log(`Extrinsic: ${extrinsic}`);
+      return true;
+    });
+
+  return true;
 }

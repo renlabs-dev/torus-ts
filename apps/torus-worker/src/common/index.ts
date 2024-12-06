@@ -4,10 +4,10 @@ import type {
   LastBlock,
 } from "@torus-ts/subspace/old";
 import type { ApiPromise } from "@torus-ts/subspace/queries";
+import { queryLastBlock } from "@torus-ts/subspace";
 import {
   pushToWhitelist,
   queryDaosEntries,
-  queryLastBlock,
   refuseDaoApplication,
   removeFromWhitelist,
 } from "@torus-ts/subspace/queries";

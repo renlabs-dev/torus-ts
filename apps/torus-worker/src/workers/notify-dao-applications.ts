@@ -1,10 +1,7 @@
 import { z } from "zod";
 
-import type {
-  DaoApplications,
-  GovernanceModeType,
-} from "@torus-ts/subspace/old";
-import { processDaoMetadata } from "@torus-ts/subspace/old";
+import type { DaoApplications, GovernanceModeType } from "@torus-ts/subspace";
+import { processDaoMetadata } from "@torus-ts/subspace";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
 

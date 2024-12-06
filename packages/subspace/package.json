@@ -11,29 +11,9 @@
       "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./old": {
-      "default": "./dist/old.js",
-      "types": "./dist/old.d.ts"
-    },
-    "./old_types": {
-      "default": "./dist/old_types.js",
-      "types": "./dist/old_types.d.ts"
-    },
-    "./old_utils": {
-      "default": "./dist/old_utils.js",
-      "types": "./dist/old_utils.d.ts"
-    },
     "./types": {
       "default": "./dist/types/index.js",
       "types": "./dist/types/index.d.ts"
-    },
-    "./address": {
-      "default": "./dist/address.js",
-      "types": "./dist/address.d.ts"
-    },
-    "./queries": {
-      "default": "./dist/queries/index.js",
-      "types": "./dist/queries/index.d.ts"
     }
   },
   "scripts": {

@@ -13,13 +13,16 @@ import type {
   VoteWithStake,
 } from "@torus-ts/subspace/old";
 import type { ListItem } from "@torus-ts/utils/typing";
-import { queryBridgedBalance, queryBridgedBalances } from "@torus-ts/subspace";
+import {
+  queryBridgedBalance,
+  queryBridgedBalances,
+  queryFreeBalance,
+} from "@torus-ts/subspace";
 import { fetchCustomMetadata } from "@torus-ts/subspace/old";
 import {
   getModuleBurn,
   getSubnetList,
   processVotesAndStakes,
-  queryBalance,
   queryDaosEntries,
   queryDaoTreasuryAddress,
   queryLastBlock,
@@ -86,14 +89,14 @@ export function useLastBlock(
 
 // == System ==
 
-export function useBalance(
+export function useFreeBalance(
   api: Api | Nullish,
-  address: SS58Address | string | Nullish,
+  address: SS58Address | Nullish,
 ) {
   return useQuery({
-    queryKey: ["balance", address],
+    queryKey: ["free_balance", address],
     enabled: api != null && address != null,
-    queryFn: () => queryBalance(api!, address!),
+    queryFn: () => queryFreeBalance(api!, address!),
     staleTime: LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -266,12 +269,12 @@ export function useBridgedBalance(
 
 // == Custom metadata ==
 
-interface BaseProposal {
+export interface BaseProposal {
   id: number;
   metadata: string;
 }
 
-interface BaseDao {
+export interface BaseDao {
   id: number;
   data: string;
 }

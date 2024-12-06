@@ -1,15 +1,11 @@
 import { CID } from "multiformats/cid";
 
-import type { Result } from "./typing";
+import type { CustomDataError, Result } from "./typing";
 import { URL_SCHEMA } from ".";
 
 export function buildIpfsGatewayUrl(cid: CID): string {
   const cidStr = cid.toString();
   return `https://ipfs.io/ipfs/${cidStr}`;
-}
-
-export interface CustomDataError {
-  message: string;
 }
 
 export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {

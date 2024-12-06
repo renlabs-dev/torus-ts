@@ -1,11 +1,14 @@
+import type { ApiPromise } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { assert } from "tsafe";
 
-import type { SS58Address } from "@torus-ts/subspace/address";
-import type { LastBlock, SubspaceStorageName } from "@torus-ts/subspace/old";
-import type { ApiPromise } from "@torus-ts/subspace/queries";
+import type {
+  LastBlock,
+  SS58Address,
+  SubspaceStorageName,
+} from "@torus-ts/subspace";
 import { and, eq, sql } from "@torus-ts/db";
 import { db } from "@torus-ts/db/client";
 import {
@@ -14,8 +17,11 @@ import {
   userModuleData,
   userSubnetDataSchema,
 } from "@torus-ts/db/schema";
-import { STAKE_FROM_SCHEMA } from "@torus-ts/subspace/old";
-import { queryChain, queryLastBlock } from "@torus-ts/subspace/queries";
+import {
+  queryChain,
+  queryLastBlock,
+  STAKE_FROM_SCHEMA,
+} from "@torus-ts/subspace";
 
 import type { ModuleWeight, SubnetWeight } from "../db";
 import {

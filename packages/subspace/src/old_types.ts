@@ -23,56 +23,11 @@ export type { StorageKey } from "@polkadot/types";
 
 export type { AnyTuple, Codec } from "@polkadot/types/types";
 
-export type GovernanceModeType = "PROPOSAL" | "DAO";
-
 export type Api = ApiDecoration<"promise"> | ApiPromise;
 
 // == Base Types ==
 
-export interface BaseProposal {
-  id: number;
-  metadata: string;
-}
-
-export interface BaseDao {
-  id: number;
-  data: string;
-}
-
 // == Custom Metadata ==
-
-export const CUSTOM_METADATA_SCHEMA = z.object({
-  title: z.string().optional(),
-  body: z.string().optional(),
-});
-
-export type CustomMetadata = z.infer<typeof CUSTOM_METADATA_SCHEMA>;
-
-export const DAO_METADATA_SCHEMA = z.object({
-  title: z.string(),
-  body: z.string(),
-  discord_id: z.string(),
-});
-
-export type CustomDaoMetadata = z.infer<typeof DAO_METADATA_SCHEMA>;
-
-export interface CustomDataError {
-  message: string;
-}
-
-export function isCustomDataError(obj: object): obj is CustomDataError {
-  return (
-    typeof obj === "object" &&
-    "Err" in obj &&
-    typeof obj.Err === "object" &&
-    obj.Err !== null &&
-    "message" in obj.Err
-  );
-}
-
-export type CustomMetadataState = Result<CustomMetadata, CustomDataError>;
-
-export type WithMetadataState<T> = T & { customData?: CustomMetadataState };
 
 // == Stake ==
 
@@ -187,12 +142,6 @@ export const NetworkSubnetConfigSchema = z.object({
 
 export type NetworkSubnetConfig = z.infer<typeof NetworkSubnetConfigSchema>;
 
-export const SUBSPACE_MODULE_NAME_SCHEMA = z.string();
-export const SUBSPACE_MODULE_ADDRESS_SCHEMA = z.string();
-export const NUMBER_SCHEMA = z.coerce.number();
-export const SUBSPACE_MODULE_REGISTRATION_BLOCK_SCHEMA = z.coerce.number();
-export const SUBSPACE_MODULE_METADATA_SCHEMA = z.string(); // TODO: validate it's a valid ipfs hash or something (?)
-export const SUBSPACE_MODULE_LAST_UPDATE_SCHEMA = z.any();
 export const STAKE_FROM_SCHEMA = z.object({
   stakeFromStorage: z
     .record(SS58_SCHEMA, z.record(SS58_SCHEMA, z.coerce.bigint()))
@@ -212,33 +161,4 @@ export const STAKE_FROM_SCHEMA = z.object({
       }
       return map;
     }),
-});
-
-export const SUBSPACE_MODULE_SCHEMA = z.object({
-  netuid: z.coerce.number(),
-  key: SS58_SCHEMA,
-  uid: z.coerce.number().int(),
-  name: SUBSPACE_MODULE_NAME_SCHEMA.optional(),
-  address: SUBSPACE_MODULE_ADDRESS_SCHEMA.optional(),
-  registrationBlock: SUBSPACE_MODULE_REGISTRATION_BLOCK_SCHEMA.optional(),
-  metadata: SUBSPACE_MODULE_METADATA_SCHEMA.optional(),
-  lastUpdate: SUBSPACE_MODULE_LAST_UPDATE_SCHEMA.optional(),
-  atBlock: z.coerce.number().optional(),
-
-  emission: z.coerce.bigint().optional(),
-  incentive: z.coerce.bigint().optional(),
-  dividends: z.coerce.bigint().optional(),
-  delegationFee: z.coerce.number().optional(),
-
-  totalStaked: z.coerce.bigint(),
-  totalStakers: z.coerce.number(),
-});
-
-export type SubspaceModule = z.infer<typeof SUBSPACE_MODULE_SCHEMA>;
-
-// == Other ==
-
-export const QUERY_PARAMS_SCHEMA = z.object({
-  netuid: z.number(),
-  address: SS58_SCHEMA,
 });
