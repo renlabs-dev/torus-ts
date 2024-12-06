@@ -106,7 +106,7 @@ export class ZodSubstrateEnum<
   }
 
   /**
-   * The constructor of the discriminated union schema. Its behaviour is very similar to that of the normal z.union() constructor.
+   * The constructor of the discriminated union schema. Its behavior is very similar to that of the normal z.union() constructor.
    * However, it only allows a union of objects, all of which need to share a discriminator property. This property must
    * have a different value for each object in the union.
    * @param discriminator the name of the discriminator property

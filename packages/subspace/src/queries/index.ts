@@ -48,30 +48,30 @@ export {
 
 export { ApiPromise };
 
-export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
-  const blockHeader = await api.rpc.chain.getHeader();
-  const blockNumber = sb_blocks.parse(blockHeader.number);
-  const blockHash = blockHeader.hash;
-  const blockHashHex = blockHash.toHex();
-  const apiAtBlock = await api.at(blockHeader.hash);
-  return {
-    blockHeader,
-    blockNumber,
-    blockHash,
-    blockHashHex,
-    apiAtBlock,
-  };
-}
+// export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
+//   const blockHeader = await api.rpc.chain.getHeader();
+//   const blockNumber = sb_blocks.parse(blockHeader.number);
+//   const blockHash = blockHeader.hash;
+//   const blockHashHex = blockHash.toHex();
+//   const apiAtBlock = await api.at(blockHeader.hash);
+//   return {
+//     blockHeader,
+//     blockNumber,
+//     blockHash,
+//     blockHashHex,
+//     apiAtBlock,
+//   };
+// }
 
-export async function queryBalance(api: Api, address: SS58Address | string) {
-  if (!isSS58(address)) {
-    throw new Error("Invalid address format, expected SS58");
-  }
-  const {
-    data: { free: freeBalance },
-  } = await api.query.system.account(address);
-  return BigInt(freeBalance.toString());
-}
+// export async function queryBalance(api: Api, address: SS58Address | string) {
+//   if (!isSS58(address)) {
+//     throw new Error("Invalid address format, expected SS58");
+//   }
+//   const {
+//     data: { free: freeBalance },
+//   } = await api.query.system.account(address);
+//   return BigInt(freeBalance.toString());
+// }
 
 export async function pushToWhitelist(
   api: ApiPromise,
@@ -168,10 +168,10 @@ export async function refuseDaoApplication(
   return true;
 }
 
-export async function queryDaoTreasuryAddress(api: Api) {
-  const addr = await api.query.governanceModule.daoTreasuryAddress();
-  return checkSS58(addr.toString());
-}
+// export async function queryDaoTreasuryAddress(api: Api) {
+//   const addr = await api.query.governanceModule.daoTreasuryAddress();
+//   return checkSS58(addr.toString());
+// }
 
 export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
   const unrewardedProposals =
@@ -231,100 +231,100 @@ export async function queryRewardAllocation(api: Api): Promise<bigint> {
   return getRewardAllocation(governanceConfig, balance);
 }
 
-const NOT_DELEGATING_VOTING_POWER_SCHEMA = sb_array(sb_address);
+// const NOT_DELEGATING_VOTING_POWER_SCHEMA = sb_array(sb_address);
 
-export async function queryNotDelegatingVotingPower(
-  api: Api,
-): Promise<SS58Address[]> {
-  const value = await api.query.governanceModule.notDelegatingVotingPower();
-  return NOT_DELEGATING_VOTING_POWER_SCHEMA.parse(value);
-}
+// export async function queryNotDelegatingVotingPower(
+//   api: Api,
+// ): Promise<SS58Address[]> {
+//   const value = await api.query.governanceModule.notDelegatingVotingPower();
+//   return NOT_DELEGATING_VOTING_POWER_SCHEMA.parse(value);
+// }
 
-export async function queryStakeOut(
-  torusCacheUrl: string,
-): Promise<StakeOutData> {
-  const response = await fetch(`${torusCacheUrl}/api/stake-out`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to fetch data");
-  }
+// export async function queryStakeOut(
+//   torusCacheUrl: string,
+// ): Promise<StakeOutData> {
+//   const response = await fetch(`${torusCacheUrl}/api/stake-out`, {
+//     method: "GET",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//   });
+//   if (!response.ok) {
+//     throw new Error("Failed to fetch data");
+//   }
 
-  const responseData = await response.text();
-  const parsedData = SuperJSON.parse(responseData);
-  const stakeOutData = STAKE_DATA_SCHEMA.parse(parsedData);
+//   const responseData = await response.text();
+//   const parsedData = SuperJSON.parse(responseData);
+//   const stakeOutData = STAKE_DATA_SCHEMA.parse(parsedData);
 
-  return stakeOutData;
-}
+//   return stakeOutData;
+// }
 
-export async function queryCalculateStakeOut(api: Api) {
-  // StakeTo is the list of keys that have staked to that key.
-  const stakeToQuery = await api.query.subspaceModule.stakeTo.entries();
+// export async function queryCalculateStakeOut(api: Api) {
+//   // StakeTo is the list of keys that have staked to that key.
+//   const stakeToQuery = await api.query.subspaceModule.stakeTo.entries();
 
-  let total = 0n;
-  const perAddr = new Map<string, bigint>();
+//   let total = 0n;
+//   const perAddr = new Map<string, bigint>();
 
-  for (const [keyRaw, valueRaw] of stakeToQuery) {
-    const [fromAddrRaw] = keyRaw.args;
-    const fromAddr = fromAddrRaw.toString();
+//   for (const [keyRaw, valueRaw] of stakeToQuery) {
+//     const [fromAddrRaw] = keyRaw.args;
+//     const fromAddr = fromAddrRaw.toString();
 
-    const staked = BigInt(valueRaw.toString());
+//     const staked = BigInt(valueRaw.toString());
 
-    total += staked;
-    perAddr.set(fromAddr, (perAddr.get(fromAddr) ?? 0n) + staked);
-  }
+//     total += staked;
+//     perAddr.set(fromAddr, (perAddr.get(fromAddr) ?? 0n) + staked);
+//   }
 
-  return {
-    total,
-    perAddr,
-  };
-}
+//   return {
+//     total,
+//     perAddr,
+//   };
+// }
 
-export async function queryStakeFrom(
-  torusCacheUrl: string,
-): Promise<StakeFromData> {
-  const response = await fetch(`${torusCacheUrl}/api/stake-from`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to fetch data");
-  }
+// export async function queryStakeFrom(
+//   torusCacheUrl: string,
+// ): Promise<StakeFromData> {
+//   const response = await fetch(`${torusCacheUrl}/api/stake-from`, {
+//     method: "GET",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//   });
+//   if (!response.ok) {
+//     throw new Error("Failed to fetch data");
+//   }
 
-  const responseData = await response.text();
-  const parsedData = SuperJSON.parse(responseData);
-  const stakeFromData = STAKE_DATA_SCHEMA.parse(parsedData);
+//   const responseData = await response.text();
+//   const parsedData = SuperJSON.parse(responseData);
+//   const stakeFromData = STAKE_DATA_SCHEMA.parse(parsedData);
 
-  return stakeFromData;
-}
+//   return stakeFromData;
+// }
 
-export async function queryCalculateStakeFrom(api: Api) {
-  // StakeFrom is the list of nominators that have staked to a validator.
-  const stakeFromQuery = await api.query.subspaceModule.stakeFrom.entries();
+// export async function queryCalculateStakeFrom(api: Api) {
+//   // StakeFrom is the list of nominators that have staked to a validator.
+//   const stakeFromQuery = await api.query.subspaceModule.stakeFrom.entries();
 
-  let total = 0n;
-  const perAddr = new Map<string, bigint>();
+//   let total = 0n;
+//   const perAddr = new Map<string, bigint>();
 
-  for (const [keyRaw, valueRaw] of stakeFromQuery) {
-    const [toAddrRaw, _fromAddrRaw] = keyRaw.args;
-    const toAddr = toAddrRaw.toString();
+//   for (const [keyRaw, valueRaw] of stakeFromQuery) {
+//     const [toAddrRaw, _fromAddrRaw] = keyRaw.args;
+//     const toAddr = toAddrRaw.toString();
 
-    const staked = BigInt(valueRaw.toString());
+//     const staked = BigInt(valueRaw.toString());
 
-    total += staked;
-    perAddr.set(toAddr, (perAddr.get(toAddr) ?? 0n) + staked);
-  }
+//     total += staked;
+//     perAddr.set(toAddr, (perAddr.get(toAddr) ?? 0n) + staked);
+//   }
 
-  return {
-    total,
-    perAddr,
-  };
-}
+//   return {
+//     total,
+//     perAddr,
+//   };
+// }
 
 export async function processVotesAndStakes(
   api: Api,
@@ -393,25 +393,24 @@ export async function processVotesAndStakes(
   return sortedVotes;
 }
 
-// TODO: rename `queryUserTotalStaked`, it's not adding up the stakes, so it's not a total
-export async function queryUserTotalStaked(
-  api: Api,
-  address: SS58Address | string,
-) {
-  const stakeEntries = await api.query.subspaceModule.stakeTo.entries(address);
+// export async function queryUserTotalStaked(
+//   api: Api,
+//   address: SS58Address | string,
+// ) {
+//   const stakeEntries = await api.query.subspaceModule.stakeTo.entries(address);
 
-  const stakes = stakeEntries.map(([key, value]) => {
-    const [, stakeToAddress] = key.args;
-    const stake = BigInt(value.toString());
+//   const stakes = stakeEntries.map(([key, value]) => {
+//     const [, stakeToAddress] = key.args;
+//     const stake = BigInt(value.toString());
 
-    return {
-      address: stakeToAddress.toString(),
-      stake,
-    };
-  });
+//     return {
+//       address: stakeToAddress.toString(),
+//       stake,
+//     };
+//   });
 
-  return stakes.filter((stake) => stake.stake !== 0n);
-}
+//   return stakes.filter((stake) => stake.stake !== 0n);
+// }
 
 export async function querySubnetParams(
   api: Api,

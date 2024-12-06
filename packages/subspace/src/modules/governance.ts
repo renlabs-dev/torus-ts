@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { Api } from "../old_types";
+import { checkSS58, SS58Address } from "../address";
 import {
   sb_address,
   sb_amount,
@@ -81,7 +82,7 @@ export async function queryProposals(api: Api): Promise<Proposal[]> {
   return proposals;
 }
 
-// == Aplications ==
+// == Applications ==
 
 export const DAO_APPLICATION_STATUS_SCHEMA = sb_basic_enum([
   "Accepted",
@@ -118,4 +119,41 @@ export async function queryDaoApplications(
   }
 
   return daos;
+}
+
+export type DaoTreasuryAddress = z.infer<typeof sb_address>;
+
+export async function queryDaoTreasuryAddress(
+  api: Api,
+): Promise<DaoTreasuryAddress> {
+  const addr = await api.query.governanceModule.daoTreasuryAddress();
+  return sb_address.parse(addr);
+}
+
+export async function queryNotDelegatingVotingPower(
+  api: Api,
+): Promise<SS58Address[]> {
+  const value = await api.query.governanceModule.notDelegatingVotingPower();
+  return sb_array(sb_address).parse(value);
+}
+
+// ---------------------------------
+
+const GOVERNANCE_CONFIGURATION_SCHEMA = sb_struct({
+  proposalCost: sb_bigint,
+  proposalExpiration: sb_bigint,
+  voteMode: sb_basic_enum(["Vote", "Authority"]),
+  proposalRewardTreasuryAllocation: sb_bigint,
+  maxProposalRewardTreasuryAllocation: sb_bigint,
+  proposalRewardInterval: sb_bigint,
+});
+
+type GovernanceConfiguration = z.infer<typeof GOVERNANCE_CONFIGURATION_SCHEMA>;
+
+export async function queryGlobalGovernanceConfig(
+  api: Api,
+): Promise<GovernanceConfiguration> {
+  const config = await api.query.governanceModule.globalGovernanceConfig();
+  const parsed_config = GOVERNANCE_CONFIGURATION_SCHEMA.parse(config);
+  return parsed_config;
 }
