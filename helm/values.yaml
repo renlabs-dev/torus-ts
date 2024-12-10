@@ -1,6 +1,9 @@
 deployment:
   reloadOnChange: true
 
+  imagePullSecrets:
+    - name: renlabs-ghcr-secret
+
   env:
     NEXT_PUBLIC_WS_PROVIDER_URL:
       valueFrom:
