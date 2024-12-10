@@ -2,13 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import {
-  fetchCustomMetadata,
-  formatToken,
-  smallAddress,
-} from "@torus-ts/subspace/old";
+import { fetchCustomMetadata } from "@torus-ts/subspace";
 import { Card } from "@torus-ts/ui";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 import type { Module } from "~/utils/types";
 import { ReportModule } from "~/app/components/report-module";

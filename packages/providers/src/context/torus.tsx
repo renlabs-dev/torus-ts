@@ -2,6 +2,7 @@
 
 import type { SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
+import type { InjectedExtension } from "@polkadot/extension-inject/types";
 import type { Balance, DispatchError } from "@polkadot/types/interfaces";
 import type {
   QueryObserverResult,
@@ -13,19 +14,18 @@ import { toast } from "react-toastify";
 
 import type {
   CustomMetadataState,
-  DaoState,
-  InjectedAccountWithMeta,
-  InjectedExtension,
+  DaoApplications,
   LastBlock,
-  ProposalState,
+  Proposal,
   SS58Address,
-  StakeOutData,
+  StakeData,
 } from "@torus-ts/subspace";
 import type {
   AddCustomProposal,
   AddDaoApplication,
   addTransferDaoTreasuryProposal,
   Bridge,
+  InjectedAccountWithMeta,
   RegisterModule,
   RemoveVote,
   Stake,
@@ -35,6 +35,7 @@ import type {
   UpdateDelegatingVotingPower,
   Vote,
 } from "@torus-ts/ui/types";
+import { checkSS58 } from "@torus-ts/subspace";
 import { WalletDropdown } from "@torus-ts/ui/components";
 import { toNano2 } from "@torus-ts/utils/subspace";
 
@@ -125,7 +126,7 @@ interface TorusContextType {
   rewardAllocation: bigint | null | undefined;
   isRewardAllocationLoading: boolean;
 
-  stakeOut: StakeOutData | undefined;
+  stakeOut: StakeData | undefined;
   isStakeOutLoading: boolean;
 
   // TODO: rename to `userStaked` or something, as it's not adding up the stakes
@@ -541,9 +542,13 @@ export function TorusProvider({
 
   // Balance
 
+  const userAddress = selectedAccount?.address
+    ? checkSS58(selectedAccount.address)
+    : null;
+
   const { data: balance, isLoading: isBalanceLoading } = useFreeBalance(
     lastBlock?.apiAtBlock,
-    selectedAccount?.address,
+    userAddress,
   );
 
   // Dao Treasury

@@ -8,7 +8,7 @@ import "@polkadot/api/augment";
 import type { ApiPromise } from "@polkadot/api";
 
 import type { SS58Address } from "../address";
-import type { Api } from "../old_types";
+import type { Api } from "./_common";
 import { checkSS58 } from "../address";
 import { queryCachedStakeFrom, queryCachedStakeOut } from "../cached-queries";
 import {
@@ -30,6 +30,7 @@ import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
 
 export type GovernanceModeType = "PROPOSAL" | "DAO";
+
 // == Proposals ==
 
 export const PROPOSAL_DATA_SCHEMA = sb_enum({
@@ -93,13 +94,29 @@ export async function queryProposals(api: Api): Promise<Proposal[]> {
   return proposals;
 }
 
+// TODO: Refactor
+export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
+  const unrewardedProposals =
+    await api.query.governanceModule.unrewardedProposals.entries();
+
+  return unrewardedProposals
+    .map(([key]) => {
+      // The key is a StorageKey, which contains the proposal ID
+      // We need to extract the proposal ID from this key and convert it to a number
+      const proposalId = key.args[0].toString();
+      return proposalId ? parseInt(proposalId, 10) : NaN;
+    })
+    .filter((id): id is number => !isNaN(id));
+}
+
 // -- Votes --
 
-interface VoteWithStake {
+export interface VoteWithStake {
   address: SS58Address;
   stake: bigint;
   vote: "In Favor" | "Against";
 }
+
 export async function processVotesAndStakes(
   api: Api,
   torusCacheUrl: string,

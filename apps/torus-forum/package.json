@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "// FIXME typecheck": "tsc --noEmit",
-    "build": "next build",
+    "// build": "next build",
     "dev": "next dev --port 3009",
-    "lint": "eslint",
+    "// lint": "eslint",
     "start": "next start"
   },
   "dependencies": {

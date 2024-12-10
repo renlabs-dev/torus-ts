@@ -1,30 +1,26 @@
+import type { ApiPromise } from "@polkadot/api";
 import SuperJSON from "superjson";
 
-import type {
-  ApiPromise,
-  LastBlock,
-  StakeFromData,
-  StakeOutData,
-} from "@torus-ts/subspace/old";
+import type { LastBlock, StakeData } from "@torus-ts/subspace";
 import {
-  queryCalculateStakeFrom,
-  queryCalculateStakeOut,
   queryLastBlock,
-} from "@torus-ts/subspace/queries";
+  queryStakeIn,
+  queryStakeOut,
+} from "@torus-ts/subspace";
 
 import { setup } from "./server";
 import { log, sleep } from "./utils";
 
-const UPDATE_INTERVAL = 1000; //1 second
+const UPDATE_INTERVAL = 1000;
 
-let stakeFromData: StakeFromData = {
+let stakeFromData: StakeData = {
   total: -1n,
   perAddr: {},
   atBlock: -1n,
   atTime: new Date(),
 };
 
-let stakeOutData: StakeOutData = {
+let stakeOutData: StakeData = {
   total: -1n,
   perAddr: {},
   atBlock: -1n,
@@ -59,7 +55,7 @@ export function getStakeFromDataStringified() {
 
 const updateStakeFrom = async (api: ApiPromise, lastBlock: LastBlock) => {
   try {
-    const stakeFrom = await queryCalculateStakeFrom(api);
+    const stakeFrom = await queryStakeIn(api);
     stakeFromData = {
       total: stakeFrom.total,
       perAddr: Object.fromEntries(stakeFrom.perAddr),
@@ -77,7 +73,7 @@ const updateStakeFrom = async (api: ApiPromise, lastBlock: LastBlock) => {
 
 const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
   try {
-    const stakeOut = await queryCalculateStakeOut(api);
+    const stakeOut = await queryStakeOut(api);
     stakeOutData = {
       total: stakeOut.total,
       perAddr: Object.fromEntries(stakeOut.perAddr),

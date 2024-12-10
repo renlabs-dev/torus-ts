@@ -1,4 +1,4 @@
-import type { DaoApplicationStatus } from "@torus-ts/subspace/old";
+import type { DaoApplicationStatus } from "@torus-ts/subspace";
 import { Badge } from "@torus-ts/ui";
 
 interface StatusLabelProps {

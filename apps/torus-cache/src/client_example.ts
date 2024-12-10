@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import SuperJSON from "superjson";
 
-import { STAKE_DATA_SCHEMA } from "@torus-ts/subspace/old";
+import { STAKE_DATA_SCHEMA } from "@torus-ts/subspace";
 
 const result = await fetch("http://localhost:3000/api/stake-out");
 const data = await result.text();

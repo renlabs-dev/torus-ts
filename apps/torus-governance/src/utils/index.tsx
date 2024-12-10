@@ -1,15 +1,67 @@
 import { if_let, match } from "rustie";
 
-import type {
-  CustomMetadataState,
-  DAOCardFields,
-  ProposalCardFields,
-  ProposalState,
-  ProposalStatus,
-} from "@torus-ts/subspace/old";
-import { paramNameToDisplayName } from "@torus-ts/subspace/old";
+import type { ProposalState } from "@torus-ts/providers/use-torus";
+import type { CustomMetadataState, ProposalStatus } from "@torus-ts/subspace";
 import { bigintDivision_WRONG } from "@torus-ts/utils";
 import { formatToken } from "@torus-ts/utils/subspace";
+
+export interface ProposalCardFields {
+  title: string | null;
+  body: string | null;
+  netuid: number | "GLOBAL";
+  invalid?: boolean;
+}
+
+export interface DAOCardFields {
+  title: string | null;
+  body: string | null;
+}
+
+export const PARAM_FIELD_DISPLAY_NAMES = {
+  // # Global
+  maxNameLength: "Max Name Length",
+  maxAllowedSubnets: "Max Allowed Subnets",
+  maxAllowedModules: "Max Allowed Modules",
+  unitEmission: "Unit Emission",
+  floorDelegationFee: "Floor Delegation Fee",
+  maxRegistrationsPerBlock: "Max Registrations Per Block",
+  targetRegistrationsPerInterval: "Target Registrations Per Interval",
+  targetRegistrationsInterval: "Target Registrations Interval",
+  burnRate: "Burn Rate",
+  minBurn: "Min Burn",
+  maxBurn: "Max Burn",
+  adjustmentAlpha: "Adjustment Alpha",
+  minStake: "Min Stake",
+  maxAllowedWeights: "Max Allowed Weights",
+  minWeightStake: "Min Weight Stake",
+  proposalCost: "Proposal Cost",
+  proposalExpiration: "Proposal Expiration",
+  proposalParticipationThreshold: "Proposal Participation Threshold",
+  // # Subnet
+  founder: "Founder",
+  founderShare: "Founder Share",
+  immunityPeriod: "Immunity Period",
+  incentiveRatio: "Incentive Ratio",
+  maxAllowedUids: "Max Allowed UIDs",
+  // maxAllowedWeights: "Max Allowed Weights",
+  maxStake: "Max Stake",
+  maxWeightAge: "Max Weight Age",
+  minAllowedWeights: "Min Allowed Weights",
+  // minStake: "Min Stake",
+  name: "Name",
+  tempo: "Tempo",
+  trustRatio: "Trust Ratio",
+  voteMode: "Vote Mode",
+} as const;
+
+export const paramNameToDisplayName = (paramName: string): string => {
+  return (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    PARAM_FIELD_DISPLAY_NAMES[
+      paramName as keyof typeof PARAM_FIELD_DISPLAY_NAMES
+    ] ?? paramName
+  );
+};
 
 const paramsToMarkdown = (params: Record<string, unknown>): string => {
   const items = [];

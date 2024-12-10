@@ -1,16 +1,17 @@
+import type { ApiPromise } from "@polkadot/api";
+
 import type {
   DaoApplications,
   DaoApplicationStatus,
   LastBlock,
-} from "@torus-ts/subspace/old";
-import type { ApiPromise } from "@torus-ts/subspace/queries";
-import { queryLastBlock } from "@torus-ts/subspace";
+} from "@torus-ts/subspace";
 import {
   pushToWhitelist,
-  queryDaosEntries,
+  queryDaoApplications,
+  queryLastBlock,
   refuseDaoApplication,
   removeFromWhitelist,
-} from "@torus-ts/subspace/queries";
+} from "@torus-ts/subspace";
 
 import type { VotesByProposal } from "../db";
 import { computeTotalVotesPerDao, countCadreKeys } from "../db";
@@ -70,7 +71,7 @@ export async function getApplications(
   api: ApiPromise,
   applicationTypes: DaoApplicationStatus[],
 ) {
-  const dao_entries = await queryDaosEntries(api);
+  const dao_entries = await queryDaoApplications(api);
   const pending_daos = dao_entries.filter((app) =>
     applicationTypes.includes(app.status),
   );

@@ -4,7 +4,7 @@ import { z } from "zod";
 export const STAKE_DATA_SCHEMA = z.object({
   total: z.bigint(),
   perAddr: z.record(z.string(), z.bigint()),
-  atBlock: z.number(),
+  atBlock: z.bigint(),
   atTime: z.coerce.date(),
 });
 

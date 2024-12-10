@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@torus-ts/subspace/old";
+import type { ProposalStatus } from "@torus-ts/subspace";
 import { Card, CardHeader } from "@torus-ts/ui/components";
 
 import {

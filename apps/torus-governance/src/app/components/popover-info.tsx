@@ -2,7 +2,7 @@
 
 import { Copy, Ellipsis } from "lucide-react";
 
-import { useBalance } from "@torus-ts/providers/hooks";
+import { useFreeBalance } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {
@@ -16,7 +16,7 @@ import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 export const PopoverInfo = () => {
   const { rewardAllocation, daoTreasury, api } = useTorus();
-  const { data: daosTreasuries } = useBalance(api, daoTreasury);
+  const { data: daosTreasuries } = useFreeBalance(api, daoTreasury);
 
   function handleCopyClick(value: string): void {
     navigator.clipboard
@@ -38,7 +38,7 @@ export const PopoverInfo = () => {
       </PopoverTrigger>
       <PopoverContent className="mr-5 flex w-fit flex-col gap-6 border-muted bg-background px-4 py-4">
         <div>
-          {daosTreasuries && (
+          {daosTreasuries !== undefined && (
             <p className="flex items-end gap-1 text-base">
               {formatToken(daosTreasuries)}
               <span className="mb-0.5 text-xs">TOR</span>
@@ -69,7 +69,7 @@ export const PopoverInfo = () => {
         </div>
         <div className="flex flex-col">
           {!rewardAllocation && <Skeleton className="flex w-1/2 py-3" />}
-          {rewardAllocation && (
+          {rewardAllocation !== undefined && (
             <p className="flex items-end gap-1 text-base">
               {formatToken(Number(rewardAllocation))}
               <span className="mb-0.5 text-xs">TOR</span>

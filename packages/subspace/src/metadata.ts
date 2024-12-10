@@ -84,7 +84,6 @@ export async function fetchCustomMetadata(
     },
     // eslint-disable-next-line @typescript-eslint/require-await
     async Err({ message }) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return appendErrorInfo(message, `for ${kind} ${entryId}`);
     },
   });
