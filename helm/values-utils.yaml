@@ -1,0 +1,13 @@
+staticSecret:
+  enabled: true
+  secrets:
+    torus-{{ .Values.environmentName }}-web-apps:
+      type: kv-v2
+      mount: torus_infra
+      path: "{{ .Values.environmentName }}_web_apps"
+      destination:
+        name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+        create: true
+        overwrite: true
+      refreshAfter: 30s
+      vaultAuthRef: "torus-{{ .Values.environmentName }}-web-apps-torus-{{ .Values.environmentName }}-web-apps-default"

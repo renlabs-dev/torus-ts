@@ -1,0 +1,40 @@
+environments:
+  dev:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - namespace: torus-dev-web-apps
+      - environmentName: dev
+      - wssApiEndpoint: wss://testnet.api.communeai.net
+      - releaseName: dev-torus-cache
+      - ingressHost: dev.cache.torus.network
+  prod:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - namespace: torus-prod-web-apps
+      - environmentName: prod
+      - wssApiEndpoint: wss://api.communeai.net
+      - releaseName: torus-cache
+      - ingressHost: cache.torus.network
+---
+helmDefaults:
+  wait: true
+  createNamespace: false
+
+repositories:
+  - name: renlabs
+    url: https://charts.renlabs.dev/
+
+releases:
+  - name: "{{ .Values.releaseName }}"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - ingress:
+          hosts:
+            - host: "{{ .Values.ingressHost }}"
+              paths:
+                - path: /
+                  pathType: Prefix

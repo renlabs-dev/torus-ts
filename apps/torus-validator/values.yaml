@@ -1,0 +1,15 @@
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/torus-validator
+
+  env:
+    JWT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: jwt_secret
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: torus_validator_db_url

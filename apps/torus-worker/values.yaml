@@ -1,0 +1,40 @@
+cacheUrl: ""
+
+ingress:
+  enabled: false
+
+service:
+  enabled: false
+
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/torus-worker
+
+  command: ["pnpm", "tsx", "./src/index.ts"]
+
+  startupProbe:
+    httpGet:
+      path: /api/health
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  env:
+    torus_VALIDATOR_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: torus_validator_mnemonic
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: torus_validator_db_url
+    DAO_NOTIFIER_DISCORD_WEBHOOK_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: dao_notifier_discord_webhook_url
