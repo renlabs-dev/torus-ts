@@ -151,7 +151,6 @@ export const CreateExternalPost: React.FC<CreatePostProps> = (props) => {
         </div>
         <div className="mb-6 flex items-center space-x-2">
           <Checkbox
-            iconColor="bg-green-500/20 text-white"
             className="border-green-500"
             id="anonymous"
             onCheckedChange={handleIsAnonCheckbox}
