@@ -6,7 +6,7 @@ environments:
       - namespace: torus-dev-web-apps
       - environmentName: dev
       - wssApiEndpoint: wss://testnet.api.communeai.net # TODO: change this to the Torus API when launched
-      - cacheUrl: https://dev.cache.communeai.net # TODO: change this to the Torus cache URL
+      - cacheUrl: https://dev.cache.torus.network
       - releaseName: dev-torus-wallet
       - ingressHost: dev.wallet.torus.network
   prod:
@@ -16,7 +16,7 @@ environments:
       - namespace: torus-prod-web-apps
       - environmentName: prod
       - wssApiEndpoint: wss://api.communeai.net # TODO: change this to the Torus API when launched
-      - cacheUrl: https://cache.communeai.net # TODO: change this to the Torus cache URL
+      - cacheUrl: https://cache.torus.network
       - releaseName: torus-wallet
       - ingressHost: wallet.torus.network
 ---
