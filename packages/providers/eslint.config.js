@@ -13,6 +13,8 @@ export default [
   ...restrictEnvAccess,
   {
     rules: {
+      // Not working
+      // https://github.com/vercel/next.js/discussions/24254
       "no-html-link-for-pages": "off",
     },
   },
