@@ -163,7 +163,6 @@ export const CreatePost: React.FC<CreatePostProps> = (props) => {
         {editMode && (
           <div className="mb-6 flex items-center space-x-2">
             <Checkbox
-              iconColor="bg-green-500/20 text-white"
               className="border-green-500"
               id="anonymous"
               onCheckedChange={handleIsAnonCheckbox}

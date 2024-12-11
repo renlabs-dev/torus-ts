@@ -1,5 +1,5 @@
 import type { SQL, Table } from "@torus-ts/db";
-import type { GovernanceModeType } from "@torus-ts/subspace/old";
+import type { GovernanceModeType } from "@torus-ts/subspace";
 import { getTableColumns, sql } from "@torus-ts/db";
 import { db } from "@torus-ts/db/client";
 import {
@@ -9,12 +9,10 @@ import {
   daoVoteSchema,
   governanceNotificationSchema,
   moduleData,
-  subnetDataSchema,
 } from "@torus-ts/db/schema";
 
 export type NewVote = typeof daoVoteSchema.$inferInsert;
 export type Module = typeof moduleData.$inferInsert;
-export type Subnet = typeof subnetDataSchema.$inferInsert;
 export type ModuleWeight = typeof computedModuleWeightsSchema.$inferInsert;
 export type SubnetWeight = typeof computedSubnetWeights.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
@@ -44,82 +42,6 @@ export async function insertSubnetWeight(weights: SubnetWeight[]) {
         atBlock: w.atBlock,
       })),
     )
-    .execute();
-}
-
-export async function upsertSubnetData(subnets: Subnet[]) {
-  await db
-    .insert(subnetDataSchema)
-    .values(
-      subnets.map((s) => ({
-        netuid: s.netuid,
-        name: s.name,
-        tempo: s.tempo,
-        minAllowedWeights: s.minAllowedWeights,
-        maxAllowedWeights: s.maxAllowedWeights,
-        maxAllowedUids: s.maxAllowedUids,
-        maxWeightAge: s.maxWeightAge,
-        trustRatio: s.trustRatio,
-        founderShare: s.founderShare,
-        incentiveRatio: s.incentiveRatio,
-        founder: s.founder,
-        maximumSetWeightCallsPerEpoch: s.maximumSetWeightCallsPerEpoch,
-        bondsMa: s.bondsMa,
-        immunityPeriod: s.immunityPeriod,
-        subnetMetadata: s.subnetMetadata,
-        proposalCost: s.proposalCost,
-        proposalExpiration: s.proposalExpiration,
-        voteMode: s.voteMode,
-        proposalRewardTreasuryAllocation: s.proposalRewardTreasuryAllocation,
-        maxProposalRewardTreasuryAllocation:
-          s.maxProposalRewardTreasuryAllocation,
-        proposalRewardInterval: s.proposalRewardInterval,
-        minBurn: s.minBurn,
-        maxBurn: s.maxBurn,
-        adjustmentAlpha: s.adjustmentAlpha,
-        targetRegistrationsInterval: s.targetRegistrationsInterval,
-        targetRegistrationsPerInterval: s.targetRegistrationsPerInterval,
-        maxRegistrationsPerInterval: s.maxRegistrationsPerInterval,
-        minValidatorStake: s.minValidatorStake,
-        maxAllowedValidators: s.maxAllowedValidators,
-        atBlock: s.atBlock,
-        subnetEmission: s.subnetEmission,
-      })),
-    )
-    .onConflictDoUpdate({
-      target: [subnetDataSchema.netuid],
-      set: buildConflictUpdateColumns(subnetDataSchema, [
-        "atBlock",
-        "name",
-        "tempo",
-        "minAllowedWeights",
-        "maxAllowedWeights",
-        "maxAllowedUids",
-        "maxWeightAge",
-        "trustRatio",
-        "founderShare",
-        "incentiveRatio",
-        "founder",
-        "maximumSetWeightCallsPerEpoch",
-        "bondsMa",
-        "immunityPeriod",
-        "subnetMetadata",
-        "proposalCost",
-        "proposalExpiration",
-        "voteMode",
-        "proposalRewardTreasuryAllocation",
-        "maxProposalRewardTreasuryAllocation",
-        "proposalRewardInterval",
-        "minBurn",
-        "maxBurn",
-        "adjustmentAlpha",
-        "targetRegistrationsInterval",
-        "targetRegistrationsPerInterval",
-        "maxRegistrationsPerInterval",
-        "minValidatorStake",
-        "maxAllowedValidators",
-      ]),
-    })
     .execute();
 }
 

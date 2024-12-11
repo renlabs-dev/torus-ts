@@ -1,15 +1,14 @@
 import "@polkadot/api-augment";
 
-import { WsProvider } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import express from "express";
 
-import { ApiPromise, queryLastBlock } from "@torus-ts/subspace/queries";
+import { queryLastBlock } from "@torus-ts/subspace";
 
 import { log } from "./common";
 import { moduleFetcherWorker } from "./workers/module-fetcher";
 import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
 import { processDaoApplicationsWorker } from "./workers/process-dao-applications";
-import { subnetFetcherWorker } from "./workers/subnet-fetcher";
 import { weightAggregatorWorker } from "./workers/weight-aggregator";
 
 async function setup(): Promise<ApiPromise> {
@@ -38,13 +37,6 @@ async function main() {
     },
     "dao-notifier": async () => {
       await notifyNewApplicationsWorker({
-        lastBlock,
-        api,
-        lastBlockNumber,
-      });
-    },
-    "subnet-fetcher": async () => {
-      await subnetFetcherWorker({
         lastBlock,
         api,
         lastBlockNumber,

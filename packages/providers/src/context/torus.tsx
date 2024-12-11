@@ -2,6 +2,7 @@
 
 import type { SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
+import type { InjectedExtension } from "@polkadot/extension-inject/types";
 import type { Balance, DispatchError } from "@polkadot/types/interfaces";
 import type {
   QueryObserverResult,
@@ -11,22 +12,20 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { toast } from "react-toastify";
 
-import type { SS58Address } from "@torus-ts/subspace/address";
 import type {
-  BaseDao,
-  BaseProposal,
-  DaoState,
-  InjectedAccountWithMeta,
-  InjectedExtension,
+  CustomMetadataState,
+  DaoApplications,
   LastBlock,
-  ProposalState,
-  StakeOutData,
-} from "@torus-ts/subspace/old";
+  Proposal,
+  SS58Address,
+  StakeData,
+} from "@torus-ts/subspace";
 import type {
   AddCustomProposal,
   AddDaoApplication,
   addTransferDaoTreasuryProposal,
   Bridge,
+  InjectedAccountWithMeta,
   RegisterModule,
   RemoveVote,
   Stake,
@@ -36,15 +35,17 @@ import type {
   UpdateDelegatingVotingPower,
   Vote,
 } from "@torus-ts/ui/types";
+import { checkSS58 } from "@torus-ts/subspace";
 import { WalletDropdown } from "@torus-ts/ui/components";
 import { toNano2 } from "@torus-ts/utils/subspace";
 
+import type { BaseDao, BaseProposal } from "../hooks";
 import {
   useAllStakeOut,
-  useBalance,
   useCustomMetadata,
   useDaos,
   useDaoTreasury,
+  useFreeBalance,
   useLastBlock,
   useNotDelegatingVoting,
   useProposals,
@@ -53,6 +54,10 @@ import {
   useUserTotalStaked,
 } from "../hooks";
 
+export type WithMetadataState<T> = T & { customData?: CustomMetadataState };
+export type DaoState = WithMetadataState<DaoApplications>;
+
+export type ProposalState = WithMetadataState<Proposal>;
 interface torusApiState {
   web3Accounts: (() => Promise<InjectedAccountWithMeta[]>) | null;
   web3Enable: ((appName: string) => Promise<InjectedExtension[]>) | null;
@@ -121,7 +126,7 @@ interface TorusContextType {
   rewardAllocation: bigint | null | undefined;
   isRewardAllocationLoading: boolean;
 
-  stakeOut: StakeOutData | undefined;
+  stakeOut: StakeData | undefined;
   isStakeOutLoading: boolean;
 
   // TODO: rename to `userStaked` or something, as it's not adding up the stakes
@@ -537,9 +542,13 @@ export function TorusProvider({
 
   // Balance
 
-  const { data: balance, isLoading: isBalanceLoading } = useBalance(
+  const userAddress = selectedAccount?.address
+    ? checkSS58(selectedAccount.address)
+    : null;
+
+  const { data: balance, isLoading: isBalanceLoading } = useFreeBalance(
     lastBlock?.apiAtBlock,
-    selectedAccount?.address,
+    userAddress,
   );
 
   // Dao Treasury

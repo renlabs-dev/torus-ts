@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { Copy } from "lucide-react";
 
-import { useBalance } from "@torus-ts/providers/hooks";
+import { useFreeBalance } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Card, Separator, Skeleton } from "@torus-ts/ui";
@@ -11,7 +11,7 @@ import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 export const SidebarInfo = () => {
   const { rewardAllocation, daoTreasury, api } = useTorus();
-  const { data: daosTreasuries } = useBalance(api, daoTreasury);
+  const { data: daosTreasuries } = useFreeBalance(api, daoTreasury);
 
   function handleCopyClick(value: string): void {
     navigator.clipboard
@@ -27,7 +27,7 @@ export const SidebarInfo = () => {
   return (
     <Card className="hidden flex-col gap-6 border-muted bg-background px-7 py-5 md:flex">
       <div>
-        {daosTreasuries && (
+        {daosTreasuries !== undefined && (
           <p className="flex items-end gap-1 text-base">
             {formatToken(daosTreasuries)}
             <span className="mb-0.5 text-xs">TOR</span>
@@ -58,7 +58,7 @@ export const SidebarInfo = () => {
       </div>
       <div className="flex flex-col">
         {!rewardAllocation && <Skeleton className="flex w-1/2 py-3" />}
-        {rewardAllocation && (
+        {rewardAllocation !== undefined && (
           <p className="flex items-end gap-1 text-base">
             {formatToken(Number(rewardAllocation))}
             <span className="mb-0.5 text-xs">TOR</span>

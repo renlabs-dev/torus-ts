@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
-import type { DaoApplicationStatus } from "@torus-ts/subspace/old";
+import type { DaoApplicationStatus } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/ui/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
