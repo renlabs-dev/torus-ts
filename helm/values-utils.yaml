@@ -11,3 +11,14 @@ staticSecret:
         overwrite: true
       refreshAfter: 30s
       vaultAuthRef: "torus-{{ .Values.environmentName }}-web-apps-torus-{{ .Values.environmentName }}-web-apps-default"
+    renlabs-ghcr-secret:
+      type: kv-v2
+      mount: renlabs_common
+      path: read_only_docker_creds
+      destination:
+        name: renlabs-ghcr-secret
+        type: "kubernetes.io/dockerconfigjson"
+        create: true
+        overwrite: true
+      refreshAfter: 30s
+      vaultAuthRef: "torus-{{ .Values.environmentName }}-web-apps-torus-{{ .Values.environmentName }}-web-apps-default"
