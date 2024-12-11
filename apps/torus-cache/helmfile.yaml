@@ -5,7 +5,7 @@ environments:
       - values.yaml
       - namespace: torus-dev-web-apps
       - environmentName: dev
-      - wssApiEndpoint: wss://testnet.api.communeai.net
+      - wssApiEndpoint: wss://testnet.api.communeai.net # TODO: change this to the Torus API when launched
       - releaseName: dev-torus-cache
       - ingressHost: dev.cache.torus.network
   prod:
@@ -14,7 +14,7 @@ environments:
       - values.yaml
       - namespace: torus-prod-web-apps
       - environmentName: prod
-      - wssApiEndpoint: wss://api.communeai.net
+      - wssApiEndpoint: wss://api.communeai.net # TODO: change this to the Torus API when launched
       - releaseName: torus-cache
       - ingressHost: cache.torus.network
 ---

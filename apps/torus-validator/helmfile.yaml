@@ -5,8 +5,8 @@ environments:
       - values.yaml
       - namespace: torus-dev-web-apps
       - environmentName: dev
-      - wssApiEndpoint: wss://testnet.api.communeai.net
-      - cacheUrl: https://dev.cache.torus.network
+      - wssApiEndpoint: wss://testnet.api.communeai.net # TODO: change this to the Torus API when launched
+      - cacheUrl: https://dev.cache.communeai.net # TODO: change this to the Torus cache URL
       - releaseName: dev-torus-validator
       - ingressHost: dev.validator.torus.network
   prod:
@@ -15,8 +15,8 @@ environments:
       - values.yaml
       - namespace: torus-prod-web-apps
       - environmentName: prod
-      - wssApiEndpoint: wss://api.communeai.net
-      - cacheUrl: https://cache.torus.network
+      - wssApiEndpoint: wss://api.communeai.net # TODO: change this to the Torus API when launched
+      - cacheUrl: https://cache.communeai.net # TODO: change this to the Torus cache URL
       - releaseName: torus-validator
       - ingressHost: validator.torus.network
 ---
