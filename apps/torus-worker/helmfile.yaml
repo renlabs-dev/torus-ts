@@ -57,14 +57,14 @@ releases:
               memory: 280Mi
               cpu: 0.25
 
-  - name: "{{ .Values.releasePrefix }}-subnet-fetcher"
+  - name: "{{ .Values.releasePrefix }}-dao-notifier"
     namespace: "{{ .Values.namespace }}"
     chart: renlabs/application
     values:
       - ../../helm/values.yaml.gotmpl
       - deployment:
-          containerName: subnet-fetcher
-          args: ["subnet-fetcher"]
+          containerName: dao-notifier
+          args: ["dao-notifier"]
           resources:
             limits:
               memory: 256Mi
