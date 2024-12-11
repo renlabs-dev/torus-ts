@@ -23,7 +23,7 @@ deployment:
     enabled: false
 
   env:
-    torus_VALIDATOR_MNEMONIC:
+    COMMUNITY_VALIDATOR_MNEMONIC:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
