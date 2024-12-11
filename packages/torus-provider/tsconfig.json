@@ -1,0 +1,3 @@
+{
+  "extends": "@torus-ts/tsconfig/internal-package.json"
+}

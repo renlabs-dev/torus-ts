@@ -939,6 +939,27 @@ importers:
         specifier: 'catalog:'
         version: 4.19.2
 
+  packages/torus-provider:
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      eslint:
+        specifier: 'catalog:'
+        version: 9.16.0(jiti@1.21.6)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.4.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+
   packages/ui:
     dependencies:
       '@heroicons/react':
