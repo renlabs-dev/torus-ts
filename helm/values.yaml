@@ -1,0 +1,91 @@
+deployment:
+  reloadOnChange: true
+
+  imagePullSecrets:
+    - name: renlabs-ghcr-secret
+
+  env:
+    NEXT_PUBLIC_WS_PROVIDER_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_ws_url
+    NEXT_PUBLIC_CACHE_PROVIDER_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_cache_provider_url
+    PINATA_JWT:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: pinata_jwt
+
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+    httpGet:
+      path: /
+      port: 8000
+
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+    initialDelaySeconds: 10
+    httpGet:
+      path: /
+      port: 8000
+
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+    initialDelaySeconds: 10
+    httpGet:
+      path: /
+      port: 8000
+
+  # resources:
+  #   limits:
+  #     memory: 256Mi
+  #     cpu: 0.5
+  #   requests:
+  #     memory: 128Mi
+  #     cpu: 0.1
+
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+    runAsNonRoot: false
+
+  # command: []
+
+  # args: []
+
+  ports:
+    - containerPort: 8000
+      name: http
+      protocol: TCP
+
+service:
+  ports:
+    - port: 8000
+      name: http
+      protocol: TCP
+      targetPort: 8000
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+
+configMap:
+  enabled: true
+  files:
+    config:
+      next_public_ws_url: "{{ .Values.wssApiEndpoint }}"
+      next_public_cache_provider_url: "{{ .Values.cacheUrl }}"

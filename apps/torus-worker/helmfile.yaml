@@ -1,0 +1,89 @@
+environments:
+  dev:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - releasePrefix: dev-torus-worker
+      - environmentName: dev
+      - wssApiEndpoint: wss://testnet.api.communeai.net # TODO: change this to the Torus API when launched
+      - namespace: torus-dev-web-apps
+  prod:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - releasePrefix: torus-worker
+      - environmentName: prod
+      - wssApiEndpoint: wss://api.communeai.net # TODO: change this to the Torus API when launched
+      - namespace: torus-prod-web-apps
+---
+helmDefaults:
+  wait: true
+  createNamespace: false
+
+repositories:
+  - name: renlabs
+    url: https://charts.renlabs.dev/
+
+releases:
+  - name: "{{ .Values.releasePrefix }}-dao"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - deployment:
+          containerName: dao
+          args: ["dao"]
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 1
+            requests:
+              memory: 200Mi
+              cpu: 0.1
+
+  - name: "{{ .Values.releasePrefix }}-module-fetcher"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - deployment:
+          containerName: module-fetcher
+          args: ["module-fetcher"]
+          resources:
+            limits:
+              memory: 500Mi
+              cpu: 1
+            requests:
+              memory: 280Mi
+              cpu: 0.25
+
+  - name: "{{ .Values.releasePrefix }}-dao-notifier"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - deployment:
+          containerName: dao-notifier
+          args: ["dao-notifier"]
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 0.3
+            requests:
+              memory: 180Mi
+              cpu: 0.02
+
+  - name: "{{ .Values.releasePrefix }}-weight-aggregator"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - deployment:
+          containerName: weight-aggregator
+          args: ["weight-aggregator"]
+          resources:
+            limits:
+              memory: 350Mi
+              cpu: 0.3
+            requests:
+              memory: 200Mi

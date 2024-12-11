@@ -1,161 +1,197 @@
-# kind: pipeline
-# type: docker
-# name: torus-page
+kind: pipeline
+type: docker
+name: torus-page
 
-# steps:
-#   - name: build
-#     image: plugins/docker
-#     settings:
-#       registry: ghcr.io
-#       username: ${DRONE_COMMIT_AUTHOR}
-#       password:
-#         from_secret: DOCKER_TOKEN
-#       repo: ghcr.io/renlabs-dev/torus-page
-#       tags:
-#         - latest
-#         - ${DRONE_BRANCH}
-#         - ${DRONE_COMMIT_SHA:0:7}
-#       dockerfile: docker/Dockerfile
-#       build_args: APP_NAME=torus-page
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-page
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-page
 
-#   - name: deploy
-#     image: digitalocean/doctl:latest
-#     environment:
-#       DO_CTL_TOKEN:
-#         from_secret: DO_CTL_TOKEN
-#     commands:
-#       - apk add jq
-#       - export PATH=$PATH:/app
-#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-page" || echo "dev-torus-page" )
-#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+  - name: deploy
+    image: ghcr.io/renlabs-dev/devops-ci:latest
+    environment:
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+      APP_NAME: torus-page
+    commands:
+      # Download helm chart and authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle.sh
+      - helm repo add renlabs https://charts.renlabs.dev/
+      - helm repo update
+      # Set auxiliary environment variables
+      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Install shared resources
+      - >-
+        helm template torus-"$env_name"-aux
+        -f helm/values-utils.yaml -n torus-"$env_name"-web-apps
+        --set environmentName="$env_name"
+        renlabs/utils | kubectl apply -f -
+      # Install application charts
+      - cd apps/"$APP_NAME"
+      - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
-# trigger:
-#   branch:
-#     - drone
-#     - main
-#     - dev
-#   event:
-#     - push
-#   paths:
-#     exclude:
-#       - apps/torus-governance/**
-#       - apps/torus-validator/**
-#       - apps/torusx-page/**
-#       - apps/torus-worker/**
-#       - apps/sample-app/**
-#       - apps/torus-wallet/**
-#       - apps/torus-cache/**
-# ---
-# kind: pipeline
-# type: docker
-# name: torus-validator
+trigger:
+  branch:
+    - drone
+    - main
+    - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-governance/**
+      - apps/torus-validator/**
+      - apps/torusx-page/**
+      - apps/torus-worker/**
+      - apps/sample-app/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
+---
+kind: pipeline
+type: docker
+name: torus-validator
 
-# steps:
-#   - name: build
-#     image: plugins/docker
-#     settings:
-#       registry: ghcr.io
-#       username: ${DRONE_COMMIT_AUTHOR}
-#       password:
-#         from_secret: DOCKER_TOKEN
-#       repo: ghcr.io/renlabs-dev/torus-validator
-#       tags:
-#         - latest
-#         - ${DRONE_BRANCH}
-#         - ${DRONE_COMMIT_SHA:0:7}
-#       dockerfile: docker/Dockerfile
-#       build_args: APP_NAME=torus-validator
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-validator
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-validator
 
-#   - name: deploy
-#     image: digitalocean/doctl:latest
-#     environment:
-#       DO_CTL_TOKEN:
-#         from_secret: DO_CTL_TOKEN
-#     commands:
-#       - apk add jq
-#       - export PATH=$PATH:/app
-#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-validator" || echo "dev-torus-validator" )
-#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+  - name: deploy
+    image: ghcr.io/renlabs-dev/devops-ci:latest
+    environment:
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+      APP_NAME: torus-validator
+    commands:
+      # Download helm chart and authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle.sh
+      - helm repo add renlabs https://charts.renlabs.dev/
+      - helm repo update
+      # Set auxiliary environment variables
+      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Install shared resources
+      - >-
+        helm template torus-"$env_name"-aux
+        -f helm/values-utils.yaml -n torus-"$env_name"-web-apps
+        --set environmentName="$env_name"
+        renlabs/utils | kubectl apply -f -
+      # Install application charts
+      - cd apps/"$APP_NAME"
+      - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
-# trigger:
-#   branch:
-#     - drone
-#     - main
-#     - dev
-#   event:
-#     - push
-#   paths:
-#     exclude:
-#       - apps/torus-worker/**
-#       - apps/torus-governance/**
-#       - apps/torus-page/**
-#       - apps/torusx-page/**
-#       - apps/sample-app/**
-#       - apps/torus-wallet/**
-#       - apps/torus-cache/**
-# ---
-# kind: pipeline
-# type: docker
-# name: torus-worker
+trigger:
+  branch:
+    - drone
+    - main
+    - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-worker/**
+      - apps/torus-governance/**
+      - apps/torus-page/**
+      - apps/torusx-page/**
+      - apps/sample-app/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
+---
+kind: pipeline
+type: docker
+name: torus-worker
 
-# steps:
-#   - name: build
-#     image: plugins/docker
-#     settings:
-#       registry: ghcr.io
-#       username: ${DRONE_COMMIT_AUTHOR}
-#       password:
-#         from_secret: DOCKER_TOKEN
-#       repo: ghcr.io/renlabs-dev/torus-worker
-#       tags:
-#         - latest
-#         - ${DRONE_BRANCH}
-#         - ${DRONE_COMMIT_SHA:0:7}
-#       dockerfile: docker/Dockerfile
-#       build_args: APP_NAME=torus-worker
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-worker
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-worker
 
-#   - name: deploy
-#     image: digitalocean/doctl:latest
-#     environment:
-#       DO_CTL_TOKEN:
-#         from_secret: DO_CTL_TOKEN
-#     commands:
-#       - apk add jq
-#       - export PATH=$PATH:/app
-#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-worker" || echo "dev-torus-worker" )
-#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+  - name: deploy
+    image: ghcr.io/renlabs-dev/devops-ci:latest
+    environment:
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+      APP_NAME: torus-worker
+    commands:
+      # Download helm chart and authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle.sh
+      - helm repo add renlabs https://charts.renlabs.dev/
+      - helm repo update
+      # Set auxiliary environment variables
+      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Install shared resources
+      - >-
+        helm template torus-"$env_name"-aux
+        -f helm/values-utils.yaml -n torus-"$env_name"-web-apps
+        --set environmentName="$env_name"
+        renlabs/utils | kubectl apply -f -
+      # Install application charts
+      - cd apps/"$APP_NAME"
+      - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
-# trigger:
-#   branch:
-#     - drone
-#     - main
-#     - dev
-#   event:
-#     - push
-#   paths:
-#     exclude:
-#       - apps/torus-validator/**
-#       - apps/torus-governance/**
-#       - apps/torus-page/**
-#       - apps/torusx-page/**
-#       - apps/sample-app/**
-#       - apps/torus-wallet/**
-#       - apps/torus-cache/**
+trigger:
+  branch:
+    - drone
+    - main
+    - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-validator/**
+      - apps/torus-governance/**
+      - apps/torus-page/**
+      - apps/torusx-page/**
+      - apps/sample-app/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
@@ -178,20 +214,32 @@ steps:
       build_args: APP_NAME=torus-governance
 
   - name: deploy
-    image: digitalocean/doctl:latest
+    image: ghcr.io/renlabs-dev/devops-ci:latest
     environment:
-      DO_CTL_TOKEN:
-        from_secret: DO_CTL_TOKEN
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+      APP_NAME: torus-governance
     commands:
-      - apk add jq
-      - export PATH=$PATH:/app
+      # Download helm chart and authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle.sh
+      - helm repo add renlabs https://charts.renlabs.dev/
+      - helm repo update
+      # Set auxiliary environment variables
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-governance" || echo "dev-torus-governance" )
-      - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-      - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-      - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-      - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-      - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Install shared resources
+      - >-
+        helm template torus-"$env_name"-aux
+        -f helm/values-utils.yaml -n torus-"$env_name"-web-apps
+        --set environmentName="$env_name"
+        renlabs/utils | kubectl apply -f -
+      # Install application charts
+      - cd apps/"$APP_NAME"
+      - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
 trigger:
   branch:
@@ -209,59 +257,71 @@ trigger:
       - apps/sample-app/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
-# ---
-# # kind: pipeline
-# type: docker
-# name: torus-wallet
+---
+kind: pipeline
+type: docker
+name: torus-wallet
 
-# steps:
-#   - name: build
-#     image: plugins/docker
-#     settings:
-#       registry: ghcr.io
-#       username: ${DRONE_COMMIT_AUTHOR}
-#       password:
-#         from_secret: DOCKER_TOKEN
-#       repo: ghcr.io/renlabs-dev/torus-wallet
-#       tags:
-#         - latest
-#         - ${DRONE_BRANCH}
-#         - ${DRONE_COMMIT_SHA:0:7}
-#       dockerfile: docker/Dockerfile
-#       build_args: APP_NAME=torus-wallet
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-wallet
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-wallet
 
-#   - name: deploy
-#     image: digitalocean/doctl:latest
-#     environment:
-#       DO_CTL_TOKEN:
-#         from_secret: DO_CTL_TOKEN
-#     commands:
-#       - apk add jq
-#       - export PATH=$PATH:/app
-#       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-#       - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-wallet" || echo "dev-torus-wallet" )
-#       - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-#       - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-#       - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-#       - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-#       - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+  - name: deploy
+    image: ghcr.io/renlabs-dev/devops-ci:latest
+    environment:
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+      APP_NAME: torus-wallet
+    commands:
+      # Download helm chart and authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle.sh
+      - helm repo add renlabs https://charts.renlabs.dev/
+      - helm repo update
+      # Set auxiliary environment variables
+      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Install shared resources
+      - >-
+        helm template torus-"$env_name"-aux
+        -f helm/values-utils.yaml -n torus-"$env_name"-web-apps
+        --set environmentName="$env_name"
+        renlabs/utils | kubectl apply -f -
+      # Install application charts
+      - cd apps/"$APP_NAME"
+      - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
-# trigger:
-#   branch:
-#     - drone
-#     - main
-#     - dev
-#   event:
-#     - push
-#   paths:
-#     exclude:
-#       - apps/torus-page/**
-#       - apps/torus-validator/**
-#       - apps/torusx-page/**
-#       - apps/torus-worker/**
-#       - apps/sample-app/**
-#       - apps/torus-governance/**
-#       - apps/torus-cache/**
+trigger:
+  branch:
+    - drone
+    - main
+    - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torusx-page/**
+      - apps/torus-worker/**
+      - apps/sample-app/**
+      - apps/torus-governance/**
+      - apps/torus-cache/**
 ---
 kind: pipeline
 type: docker
@@ -284,20 +344,32 @@ steps:
       build_args: APP_NAME=torus-cache
 
   - name: deploy
-    image: digitalocean/doctl:latest
+    image: ghcr.io/renlabs-dev/devops-ci:latest
     environment:
-      DO_CTL_TOKEN:
-        from_secret: DO_CTL_TOKEN
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+      APP_NAME: torus-cache
     commands:
-      - apk add jq
-      - export PATH=$PATH:/app
+      # Download helm chart and authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle.sh
+      - helm repo add renlabs https://charts.renlabs.dev/
+      - helm repo update
+      # Set auxiliary environment variables
       - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
-      - app_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "torus-cache" || echo "dev-torus-cache" )
-      - app_id=$(doctl apps list -t $DO_CTL_TOKEN -o json | jq --arg name "$app_name" '.[] | select(.spec.name == $name) | .id' | tr -d '"')
-      - doctl apps spec get $app_id -t $DO_CTL_TOKEN > spec.yaml
-      - sed -i "s/\(tag:*\).*/\1 \"$COMMIT_SHORT_SHA\"/" spec.yaml
-      - doctl apps spec validate spec.yaml -t $DO_CTL_TOKEN --schema-only > /dev/null
-      - doctl apps update $app_id -t $DO_CTL_TOKEN --wait --spec spec.yaml
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Install shared resources
+      - >-
+        helm template torus-"$env_name"-aux
+        -f helm/values-utils.yaml -n torus-"$env_name"-web-apps
+        --set environmentName="$env_name"
+        renlabs/utils | kubectl apply -f -
+      # Install application charts
+      - cd apps/"$APP_NAME"
+      - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
 trigger:
   branch:
