@@ -1,9 +1,10 @@
-import type { SS58Address } from "@torus-ts/subspace/address";
+import type { SS58Address } from "@torus-ts/subspace";
 import {
+  checkSS58,
   queryLastBlock,
   queryRegisteredModulesInfo,
   queryWhitelist,
-} from "@torus-ts/subspace/queries";
+} from "@torus-ts/subspace";
 
 import type { WorkerProps } from "../common";
 import {
@@ -43,7 +44,7 @@ export async function moduleFetcherWorker(props: WorkerProps) {
         SubspaceModuleToDatabase(
           module,
           lastBlock.blockNumber,
-          isWhitelisted(module.key),
+          isWhitelisted(checkSS58(module.key)),
         ),
       );
       log(

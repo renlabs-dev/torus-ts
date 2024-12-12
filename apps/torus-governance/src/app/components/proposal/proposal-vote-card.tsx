@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { TicketX } from "lucide-react";
 import { match } from "rustie";
 
-import type { ProposalStatus } from "@torus-ts/subspace/old";
+import type { ProposalStatus } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/ui/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";

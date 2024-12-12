@@ -4,8 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-import type { SS58Address } from "@torus-ts/subspace/address";
-import type { ProposalStatus } from "@torus-ts/subspace/old";
+import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/providers/use-torus";
 
 import type { VoteStatus } from "./vote-label";

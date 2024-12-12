@@ -6,7 +6,6 @@ import { CornerRightUp } from "lucide-react";
 import { useTorus } from "@torus-ts/providers/use-torus";
 
 import { SidebarLinks } from "../sidebar-links";
-import { IntroSection } from "./intro";
 import { WalletSections } from "./wallet-sections";
 
 export function Wallet() {
@@ -23,7 +22,7 @@ export function Wallet() {
     transferStake,
   } = useTorus();
 
-  const [showWallets, setShowWallets] = useState(false);
+  // const [showWallets, setShowWallets] = useState(false);
   const [userStakeWeight, setUserStakeWeight] = useState<bigint | null>(null);
 
   function calculateUserStakeWeight() {
@@ -48,7 +47,7 @@ export function Wallet() {
     <main className="relative mx-auto flex h-screen min-w-full flex-col items-center gap-3 text-white">
       {/* {selectedAccount && !showWallets ? ( */}
       <>
-        {/* {!selectedAccount && (
+        {selectedAccount == null && (
           <>
             <span className="absolute right-5 top-2.5 h-1.5 w-1.5 rounded-full bg-muted" />
             <span className="absolute right-5 top-2.5 h-1.5 w-1.5 animate-ping rounded-full bg-muted-foreground animate-duration-[1500ms]" />
@@ -61,22 +60,24 @@ export function Wallet() {
               </div>
             </div>
           </>
-        )} */}
-        <div className="mt-[20vh] flex w-full gap-6">
-          <div className="flex w-1/5 flex-col gap-4">
-            <SidebarLinks />
-            <WalletSections.Balance />
+        )}
+        {selectedAccount != null && (
+          <div className="mt-[20vh] flex w-full gap-6">
+            <div className="flex w-1/5 flex-col gap-4">
+              <SidebarLinks />
+              <WalletSections.Balance />
+            </div>
+            <WalletSections.Actions
+              addStake={addStake}
+              balance={balance}
+              removeStake={removeStake}
+              selectedAccount={selectedAccount}
+              transfer={transfer}
+              transferStake={transferStake}
+              userStakeWeight={userStakeWeight}
+            />
           </div>
-          <WalletSections.Actions
-            addStake={addStake}
-            balance={balance}
-            removeStake={removeStake}
-            selectedAccount={selectedAccount}
-            transfer={transfer}
-            transferStake={transferStake}
-            userStakeWeight={userStakeWeight}
-          />
-        </div>
+        )}
       </>
       {/* ) : (
         <IntroSection

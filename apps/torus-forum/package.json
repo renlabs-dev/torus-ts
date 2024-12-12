@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "// FIXME typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "build": "next build",
     "dev": "next dev --port 3009",
     "lint": "eslint",

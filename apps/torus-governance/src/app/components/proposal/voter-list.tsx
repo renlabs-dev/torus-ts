@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useState } from "react";
 
-import type { ProposalStatus } from "@torus-ts/subspace/old";
+import type { ProposalStatus } from "@torus-ts/subspace";
 import { useProcessVotesAndStakes } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";

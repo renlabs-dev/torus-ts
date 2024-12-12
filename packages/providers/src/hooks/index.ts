@@ -11,25 +11,27 @@ import type {
   Proposal,
   StakeData,
   VoteWithStake,
-} from "@torus-ts/subspace/old";
+} from "@torus-ts/subspace";
 import type { ListItem } from "@torus-ts/utils/typing";
-import { queryBridgedBalance, queryBridgedBalances } from "@torus-ts/subspace";
-import { fetchCustomMetadata } from "@torus-ts/subspace/old";
 import {
+  checkSS58,
+  fetchCustomMetadata,
   getModuleBurn,
   getSubnetList,
   processVotesAndStakes,
-  queryBalance,
-  queryDaosEntries,
+  queryBridgedBalance,
+  queryBridgedBalances,
+  queryCachedStakeOut,
+  queryDaoApplications,
   queryDaoTreasuryAddress,
+  queryFreeBalance,
+  queryKeyStakedBy,
   queryLastBlock,
   queryNotDelegatingVotingPower,
   queryProposals,
   queryRewardAllocation,
-  queryStakeOut,
   queryUnrewardedProposals,
-  queryUserTotalStaked,
-} from "@torus-ts/subspace/queries";
+} from "@torus-ts/subspace";
 
 import type { Nullish } from "../types";
 
@@ -37,7 +39,7 @@ import "../utils";
 
 import SuperJSON from "superjson";
 
-import type { SS58Address } from "@torus-ts/subspace/address";
+import type { SS58Address } from "@torus-ts/subspace";
 
 // == Constants ==
 
@@ -86,14 +88,14 @@ export function useLastBlock(
 
 // == System ==
 
-export function useBalance(
+export function useFreeBalance(
   api: Api | Nullish,
-  address: SS58Address | string | Nullish,
+  address: SS58Address | Nullish,
 ) {
   return useQuery({
-    queryKey: ["balance", address],
+    queryKey: ["free_balance", address],
     enabled: api != null && address != null,
-    queryFn: () => queryBalance(api!, address!),
+    queryFn: () => queryFreeBalance(api!, address!),
     staleTime: LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -117,7 +119,7 @@ export function useDaos(api: Api | Nullish) {
   return useQuery({
     queryKey: ["daos"],
     enabled: api != null,
-    queryFn: () => queryDaosEntries(api!),
+    queryFn: () => queryDaoApplications(api!),
     staleTime: PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -174,7 +176,7 @@ export function useAllStakeOut(
 ): UseQueryResult<StakeData, Error> {
   return useQuery({
     queryKey: ["stake_out"],
-    queryFn: () => queryStakeOut(torusCacheUrl),
+    queryFn: () => queryCachedStakeOut(torusCacheUrl),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
     // throwOnError: false, // TODO
@@ -214,8 +216,8 @@ export function useUserTotalStaked(
 ) {
   return useQuery({
     queryKey: ["user_total_staked", address],
-    enabled: api != null,
-    queryFn: () => queryUserTotalStaked(api!, address!),
+    enabled: api != null && address != null,
+    queryFn: () => queryKeyStakedBy(api!, checkSS58(address!)),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -266,12 +268,12 @@ export function useBridgedBalance(
 
 // == Custom metadata ==
 
-interface BaseProposal {
+export interface BaseProposal {
   id: number;
   metadata: string;
 }
 
-interface BaseDao {
+export interface BaseDao {
   id: number;
   data: string;
 }

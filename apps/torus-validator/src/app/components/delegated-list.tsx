@@ -6,7 +6,6 @@ import { ChevronsUp, X } from "lucide-react";
 
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { formatToken, smallAddress } from "@torus-ts/subspace/old";
 import {
   Button,
   Card,
@@ -21,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@torus-ts/ui";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
@@ -395,8 +395,8 @@ export function DelegatedList() {
                           ? delegatedModules.length
                           : delegatedSubnets.length
                         : index === 1
-                          ? `${totalPercentage}%`
-                          : userStakeWeight}
+                          ? `${Number(totalPercentage)}%`
+                          : Number(userStakeWeight)}
                     </b>
                     <span className="text-white">
                       {index === 0

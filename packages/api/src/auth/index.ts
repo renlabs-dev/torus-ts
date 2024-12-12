@@ -1,7 +1,7 @@
 import * as jwt from "jsonwebtoken";
 import { z } from "zod";
 
-import { SS58_SCHEMA } from "@torus-ts/subspace/address";
+import { SS58_SCHEMA } from "@torus-ts/subspace";
 
 export const SESSION_DATA_SCHEMA = z.object({
   userKey: SS58_SCHEMA,

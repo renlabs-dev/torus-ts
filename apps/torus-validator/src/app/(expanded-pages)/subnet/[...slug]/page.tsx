@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Globe } from "lucide-react";
 
-import { formatToken, smallAddress } from "@torus-ts/subspace/old";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 import type { Subnet } from "~/utils/types";
 import { api } from "~/trpc/server";

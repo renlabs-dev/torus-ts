@@ -1,15 +1,11 @@
 import { Copy } from "lucide-react";
 
-import type { SS58Address } from "@torus-ts/subspace/old";
-import type { Blocks } from "@torus-ts/subspace/types";
+import type { Blocks, SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/providers/use-toast";
-import {
-  getCreationTime,
-  getExpirationTime,
-  smallAddress,
-} from "@torus-ts/subspace/old";
 import { Card, CardHeader } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
+import { getCreationTime, getExpirationTime } from "@torus-ts/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 interface DetailsCardProps {
   author: SS58Address;

@@ -1,9 +1,6 @@
-import type {
-  NetworkSubnetConfig,
-  SubspaceModule,
-} from "@torus-ts/subspace/old";
+import type { SubspaceModule } from "@torus-ts/subspace";
 
-import type { Module, Subnet } from "./index.js";
+import type { Module } from "./index.js";
 
 export function SubspaceModuleToDatabase(
   module: SubspaceModule,
@@ -26,50 +23,5 @@ export function SubspaceModuleToDatabase(
     totalStakers: module.totalStakers,
     moduleId: module.uid,
     isWhitelisted: whitelisted,
-  };
-}
-
-export function SubnetToDatabase(
-  subnet: NetworkSubnetConfig,
-  atBlock: number,
-): Subnet {
-  return {
-    netuid: subnet.netuid,
-    name: subnet.subnetNames,
-    immunityPeriod: subnet.immunityPeriod,
-    minAllowedWeights: subnet.minAllowedWeights,
-    maxAllowedWeights: subnet.maxAllowedWeights,
-    tempo: subnet.tempo,
-    maxAllowedUids: subnet.maxAllowedUids,
-    founder: subnet.founder,
-    founderShare: subnet.founderShare,
-    incentiveRatio: subnet.incentiveRatio,
-    trustRatio: subnet.trustRatio,
-    maxWeightAge: subnet.maxWeightAge,
-    bondsMa: subnet.bondsMovingAverage ?? null,
-    maximumSetWeightCallsPerEpoch: subnet.maximumSetWeightCallsPerEpoch ?? null,
-    minValidatorStake: subnet.minValidatorStake,
-    maxAllowedValidators: subnet.maxAllowedValidators ?? null,
-    subnetMetadata: subnet.subnetMetadata,
-    minBurn: subnet.moduleBurnConfig.minBurn,
-    maxBurn: subnet.moduleBurnConfig.maxBurn,
-    adjustmentAlpha: subnet.moduleBurnConfig.adjustmentAlpha,
-    targetRegistrationsInterval:
-      subnet.moduleBurnConfig.targetRegistrationsInterval,
-    maxRegistrationsPerInterval:
-      subnet.moduleBurnConfig.maxRegistrationsPerInterval,
-    proposalCost: subnet.subnetGovernanceConfig.proposalCost,
-    proposalExpiration: subnet.subnetGovernanceConfig.proposalExpiration,
-    maxProposalRewardTreasuryAllocation:
-      subnet.subnetGovernanceConfig.maxProposalRewardTreasuryAllocation,
-    proposalRewardTreasuryAllocation:
-      subnet.subnetGovernanceConfig.proposalRewardTreasuryAllocation,
-    proposalRewardInterval:
-      subnet.subnetGovernanceConfig.proposalRewardInterval,
-    targetRegistrationsPerInterval:
-      subnet.moduleBurnConfig.targetRegistrationsPerInterval,
-    subnetEmission: subnet.subnetEmission,
-    atBlock: atBlock,
-    voteMode: subnet.subnetGovernanceConfig.voteMode,
   };
 }

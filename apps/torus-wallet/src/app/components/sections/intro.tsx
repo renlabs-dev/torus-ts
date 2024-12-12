@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import Image from "next/image";
-import { ChevronsLeft, CornerRightUp } from "lucide-react";
+import { ChevronsLeft } from "lucide-react";
 
 import type { InjectedAccountWithMeta } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
