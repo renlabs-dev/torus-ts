@@ -1,3 +1,17 @@
+// == Accounts ==
+
+export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
+
+export interface InjectedAccountWithMeta {
+  address: string;
+  meta: {
+    genesisHash?: string | null;
+    name?: string;
+    source: string;
+  };
+  type?: KeypairType;
+}
+
 // == Transactions ==
 
 export interface TransactionResult {
@@ -6,7 +20,7 @@ export interface TransactionResult {
   status: "SUCCESS" | "ERROR" | "PENDING" | "STARTING" | null;
 }
 
-// -- Balance --
+// == Balance ==
 
 // TODO: amount field should be `bigint`
 
@@ -34,7 +48,7 @@ export interface TransferStake {
   callback?: (status: TransactionResult) => void;
 }
 
-// -- Governance --
+// == Governance ==
 
 export interface Vote {
   proposalId: number;

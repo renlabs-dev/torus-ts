@@ -6,7 +6,7 @@ import type {
   InjectedAccountWithMeta,
   Stake,
   TransactionResult,
-} from "@torus-ts/ui/types";
+} from "@torus-ts/torus-provider/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button, Input, TransactionStatus } from "@torus-ts/ui";
 import { fromNano } from "@torus-ts/utils/subspace";

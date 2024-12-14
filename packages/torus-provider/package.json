@@ -4,24 +4,37 @@
   "version": "0.1.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.tsx",
+    "./types": "./src/_types/index.ts"
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "tsc",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
+    "clean": "rm -rf .turbo node_modules",
+    "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@torus-ts/utils": "workspace:*",
+    "@torus-ts/subspace": "workspace:*",
+    "@polkadot/api": "catalog:",
+    "@polkadot/types": "catalog:",
+    "@polkadot/extension-inject": "catalog:",
+    "react-toastify": "^10.0.5",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18"
+  },
   "devDependencies": {
+    "@torus-ts/ui": "workspace:*",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react18",
+    "@types/react-dom": "catalog:react18"
   },
   "prettier": "@torus-ts/prettier-config"
 }

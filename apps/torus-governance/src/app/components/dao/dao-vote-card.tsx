@@ -6,7 +6,7 @@ import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
 import type { DaoApplicationStatus } from "@torus-ts/subspace";
-import type { TransactionResult } from "@torus-ts/ui/types";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import {

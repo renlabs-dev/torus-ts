@@ -3,7 +3,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
-import type { TransactionResult } from "@torus-ts/ui/types";
+import type {
+  TransactionResult,
+  Transfer,
+} from "@torus-ts/torus-provider/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { isSS58 } from "@torus-ts/subspace";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
