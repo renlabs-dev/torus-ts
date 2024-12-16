@@ -3,7 +3,7 @@ default: check
 # == Chain metadata ==
 
 download-metadata name:
-	scripts/get_metadata.sh {{ name }} >> ./data/metadata/{{ name }}.json
+	scripts/get_metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
 
 copy-specs:
 	cp ../subspace/specs/* ./data/chain-specs/
