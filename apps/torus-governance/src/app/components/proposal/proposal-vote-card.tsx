@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { TicketX } from "lucide-react";
 import { match } from "rustie";
 
 import type { ProposalStatus } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   ToggleGroup,
@@ -16,6 +15,7 @@ import {
 } from "@torus-ts/ui";
 
 import type { VoteStatus } from "../vote-label";
+import { useGovernance } from "~/context/governance-provider";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { VotePowerSettings } from "./vote-power-settings";
 
@@ -70,13 +70,19 @@ const AlreadyVotedCardContent = (props: {
 const VoteCardFunctionsContent = (props: {
   vote: VoteStatus;
   votingStatus: TransactionResult;
-  isConnected: boolean;
+  isAccountConnected: boolean;
   isPowerUser: boolean;
   handleVote: () => void;
   setVote: (vote: VoteStatus) => void;
 }): JSX.Element => {
-  const { handleVote, setVote, vote, votingStatus, isPowerUser, isConnected } =
-    props;
+  const {
+    handleVote,
+    setVote,
+    vote,
+    votingStatus,
+    isPowerUser,
+    isAccountConnected,
+  } = props;
 
   function handleVotePreference(value: VoteStatus | "") {
     if (value === "" || value === "UNVOTED") return setVote("UNVOTED");
@@ -86,9 +92,9 @@ const VoteCardFunctionsContent = (props: {
   return (
     <div className="flex w-full flex-col items-end gap-4">
       <div
-        className={`relative z-20 flex w-full flex-col items-end gap-2 ${!isConnected && "blur-md"}`}
+        className={`relative z-20 flex w-full flex-col items-end gap-2 ${!isAccountConnected && "blur-md"}`}
       >
-        {isConnected && <VotePowerSettings isPowerUser={isPowerUser} />}
+        {isAccountConnected && <VotePowerSettings isPowerUser={isPowerUser} />}
         <ToggleGroup
           type="single"
           value={vote}
@@ -132,7 +138,7 @@ const VoteCardFunctionsContent = (props: {
           />
         )}
       </div>
-      {!isConnected && (
+      {!isAccountConnected && (
         <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
           <span>Connect your wallet to vote</span>
         </div>
@@ -148,12 +154,11 @@ export function ProposalVoteCard(props: {
 }): JSX.Element {
   const { proposalId, voted = "UNVOTED", proposalStatus } = props;
   const {
-    isConnected,
+    isAccountConnected,
     voteProposal,
     removeVoteProposal,
-    selectedAccount,
-    notDelegatingVoting,
-  } = useTorus();
+    isAccountPowerUser,
+  } = useGovernance();
 
   const [vote, setVote] = useState<VoteStatus>("UNVOTED");
   const [votingStatus, setVotingStatus] = useState<TransactionResult>({
@@ -211,14 +216,6 @@ export function ProposalVoteCard(props: {
     }
   }
 
-  const isPowerUser = useMemo(() => {
-    if (selectedAccount?.address && notDelegatingVoting) {
-      const isUserPower = notDelegatingVoting.includes(selectedAccount.address);
-      return isUserPower;
-    }
-    return false;
-  }, [selectedAccount, notDelegatingVoting]);
-
   if (voted !== "UNVOTED") {
     return (
       <CardBarebones>
@@ -236,11 +233,11 @@ export function ProposalVoteCard(props: {
       return (
         <CardBarebones>
           <VoteCardFunctionsContent
-            isConnected={isConnected}
+            isAccountConnected={isAccountConnected}
             handleVote={handleVote}
             vote={vote}
             setVote={setVote}
-            isPowerUser={isPowerUser}
+            isPowerUser={isAccountPowerUser}
             votingStatus={votingStatus}
           />
         </CardBarebones>

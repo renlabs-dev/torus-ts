@@ -3,9 +3,9 @@
 import React, { useRef, useState } from "react";
 
 import type { Stake, TransactionResult } from "@torus-ts/torus-provider/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
-import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress } from "@torus-ts/utils/subspace";
+import { useTorus } from "@torus-ts/torus-provider";
+import { TransactionStatus } from "@torus-ts/ui";
+import { fromNano } from "@torus-ts/utils/subspace";
 
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";

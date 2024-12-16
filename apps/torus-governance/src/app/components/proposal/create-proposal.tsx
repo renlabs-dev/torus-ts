@@ -7,7 +7,6 @@ import { z } from "zod";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   Input,
@@ -19,6 +18,9 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
+import { formatToken } from "@torus-ts/utils/subspace";
+
+import { useGovernance } from "~/context/governance-provider";
 
 const proposalSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -27,7 +29,8 @@ const proposalSchema = z.object({
 
 export function CreateProposal(): JSX.Element {
   const router = useRouter();
-  const { isConnected, addCustomProposal, balance } = useTorus();
+  const { isAccountConnected, addCustomProposal, accountFreeBalance } =
+    useGovernance();
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -64,21 +67,21 @@ export function CreateProposal(): JSX.Element {
         return;
       }
 
-      if (!balance) {
+      if (!accountFreeBalance.data) {
         toast.error("Balance is still loading");
         return;
       }
 
       const proposalCost = 10000;
 
-      if (Number(balance) > proposalCost) {
+      if (Number(accountFreeBalance.data) > proposalCost) {
         void addCustomProposal({
           IpfsHash: `ipfs://${ipfs.IpfsHash}`,
           callback: handleCallback,
         });
       } else {
         toast.error(
-          `Insufficient balance to create proposal. Required: ${proposalCost} but got ${balance}`,
+          `Insufficient balance to create proposal. Required: ${proposalCost} but got ${formatToken(accountFreeBalance.data)}`,
         );
         setTransactionStatus({
           status: "ERROR",
@@ -168,7 +171,12 @@ export function CreateProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="lg" type="submit" variant="outline" disabled={!isConnected}>
+      <Button
+        size="lg"
+        type="submit"
+        variant="outline"
+        disabled={!isAccountConnected}
+      >
         {uploading ? "Uploading..." : "Submit Proposal"}
       </Button>
       {transactionStatus.status && (

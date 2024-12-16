@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
 
-import type { ApiPromise } from "@polkadot/api";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
 
@@ -19,6 +18,7 @@ import {
   getModuleBurn,
   getSubnetList,
   processVotesAndStakes,
+  queryAccountsNotDelegatingVotingPower,
   queryBridgedBalance,
   queryBridgedBalances,
   queryCachedStakeOut,
@@ -27,7 +27,6 @@ import {
   queryFreeBalance,
   queryKeyStakedBy,
   queryLastBlock,
-  queryNotDelegatingVotingPower,
   queryProposals,
   queryRewardAllocation,
   queryUnrewardedProposals,
@@ -37,6 +36,7 @@ import type { Nullish } from "../types";
 
 import "../utils";
 
+import type { ApiPromise } from "@polkadot/api";
 import SuperJSON from "superjson";
 
 import type { SS58Address } from "@torus-ts/subspace";
@@ -51,8 +51,10 @@ import type { SS58Address } from "@torus-ts/subspace";
  * Time to consider last block query un-fresh. Half block time is the expected
  * time for a new block at a random point in time, so:
  * block_time / 2  ==  8 seconds / 2  ==  4 seconds
+ *
+ * The comment logic from above makes total sense but the user gets heavly impacted by the 4 seconds stale time, thus changing it to block time for some tests.
  */
-export const LAST_BLOCK_STALE_TIME = (1000 * 8) / 2;
+export const LAST_BLOCK_STALE_TIME = 1000 * 8;
 
 /**
  * Time to consider proposals query state un-fresh. They don't change a lot,
@@ -75,12 +77,12 @@ export const STAKE_STALE_TIME = 1000 * 60 * 5; // 5 minutes (arbitrary)
 // == Chain ==
 
 export function useLastBlock(
-  api: ApiPromise | Nullish,
+  api: Api | ApiPromise | Nullish,
 ): UseQueryResult<LastBlock, Error> {
   return useQuery({
     queryKey: ["last_block"],
     enabled: api != null,
-    queryFn: () => queryLastBlock(api!),
+    queryFn: () => queryLastBlock(api! as ApiPromise),
     staleTime: LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -125,7 +127,7 @@ export function useDaos(api: Api | Nullish) {
   });
 }
 
-export function useDaoTreasury(
+export function useDaoTreasuryAddress(
   api: Api | Nullish,
 ): UseQueryResult<SS58Address, Error> {
   return useQuery({
@@ -137,13 +139,13 @@ export function useDaoTreasury(
   });
 }
 
-export function useNotDelegatingVoting(
+export function useAccountsNotDelegatingVoting(
   api: Api | Nullish,
 ): UseQueryResult<SS58Address[], Error> {
   return useQuery({
     queryKey: ["not_delegating_voting_power"],
     enabled: api != null,
-    queryFn: () => queryNotDelegatingVotingPower(api!),
+    queryFn: () => queryAccountsNotDelegatingVotingPower(api!),
     staleTime: LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -171,7 +173,7 @@ export function useRewardAllocation(api: Api | Nullish) {
 
 // == Subspace Module ==
 
-export function useAllStakeOut(
+export function useCachedStakeOut(
   torusCacheUrl: string,
 ): UseQueryResult<StakeData, Error> {
   return useQuery({

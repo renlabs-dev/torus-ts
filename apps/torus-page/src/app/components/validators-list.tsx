@@ -2,7 +2,7 @@
 
 import { ChevronsLeft } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button, ScrollArea } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 

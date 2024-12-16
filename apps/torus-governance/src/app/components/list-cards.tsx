@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
-import { useTorus } from "@torus-ts/providers/use-torus";
 
 import type { VoteStatus } from "./vote-label";
+import { useGovernance } from "~/context/governance-provider";
 import {
   calcProposalFavorablePercent,
   handleCustomDaos,
@@ -57,18 +57,20 @@ type ViewModes = "proposals" | "daos-applications" | null;
 
 const ListCardsContent = () => {
   const {
-    proposalsWithMeta,
-    isProposalsLoading,
-    daosWithMeta,
-    isDaosLoading,
-    selectedAccount,
     isInitialized,
     lastBlock,
-  } = useTorus();
+
+    selectedAccount,
+
+    proposals,
+    proposalsWithMeta,
+    daos,
+    daosWithMeta,
+  } = useGovernance();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
-  const currentBlock = lastBlock?.blockNumber;
+  const currentBlock = lastBlock.data?.blockNumber;
 
   const [isOverflowing, setIsOverflowing] = useState(false);
 
@@ -81,15 +83,15 @@ const ListCardsContent = () => {
 
   const isLoadingDaos = useMemo(() => {
     if (!isInitialized) return true;
-    if (!daosWithMeta || isDaosLoading) return true;
+    if (!daosWithMeta || daos.isPending) return true;
     return false;
-  }, [isInitialized, daosWithMeta, isDaosLoading]);
+  }, [isInitialized, daosWithMeta, daos.isPending]);
 
   const isLoadingProposals = useMemo(() => {
     if (isInitialized === false) return true;
-    if (!proposalsWithMeta || isProposalsLoading) return true;
+    if (!proposalsWithMeta || proposals.isPending) return true;
     return false;
-  }, [isInitialized, proposalsWithMeta, isProposalsLoading]);
+  }, [isInitialized, proposalsWithMeta, proposals.isPending]);
 
   const handleIsLoading = (viewMode: ViewModes): boolean => {
     switch (viewMode) {

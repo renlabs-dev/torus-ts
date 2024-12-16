@@ -1,17 +1,3 @@
-// == Accounts ==
-
-export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
-
-export interface InjectedAccountWithMeta {
-  address: string;
-  meta: {
-    genesisHash?: string | null;
-    name?: string;
-    source: string;
-  };
-  type?: KeypairType;
-}
-
 // == Transactions ==
 
 export interface TransactionResult {
@@ -19,8 +5,6 @@ export interface TransactionResult {
   message: string | null;
   status: "SUCCESS" | "ERROR" | "PENDING" | "STARTING" | null;
 }
-
-// == Balance ==
 
 // TODO: amount field should be `bigint`
 

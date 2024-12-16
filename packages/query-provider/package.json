@@ -5,7 +5,6 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./use-torus": "./src/context/torus.tsx",
     "./use-toast": "./src/context/toast.tsx",
     "./context": "./src/index.tsx",
     "./utils": "./src/utils/index.ts",

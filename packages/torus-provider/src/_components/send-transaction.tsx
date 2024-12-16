@@ -1,11 +1,11 @@
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
+import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { toast } from "react-toastify";
 
-import type { InjectedAccountWithMeta, TransactionResult } from "@torus-ts/ui";
-
-import type { TorusApiState } from "..";
+import type { TransactionResult } from "../_types";
+import type { TorusApiState } from "../torus-provider";
 
 interface SendTransactionProps {
   api: ApiPromise | null;

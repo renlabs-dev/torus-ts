@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo } from "react";
 import { Lock, Unlock } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 

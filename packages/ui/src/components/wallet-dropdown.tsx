@@ -57,7 +57,7 @@ interface WalletFunctionsProps {
   children: ReactNode;
   handleLogout: () => void;
   selectedAccount: InjectedAccountWithMeta | null;
-  stakeOut: StakeOutData | null;
+  stakeOut: StakeOutData | undefined;
 }
 
 const WalletFunctions = (props: WalletFunctionsProps) => {
@@ -143,12 +143,12 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
 
 interface WalletDropdownProps {
   accounts: InjectedAccountWithMeta[] | undefined;
-  balance: bigint | null;
+  balance: bigint | undefined;
   handleGetWallets: () => Promise<void>;
   handleLogout: () => void;
   handleSelectWallet: (accountAddress: InjectedAccountWithMeta) => void;
   selectedAccount: InjectedAccountWithMeta | null;
-  stakeOut: StakeOutData | null;
+  stakeOut: StakeOutData | undefined;
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {

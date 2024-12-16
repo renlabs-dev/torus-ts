@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.tsx",
+    ".": "./src/torus-provider.tsx",
     "./types": "./src/_types/index.ts"
   },
   "license": "MIT",
@@ -25,7 +25,6 @@
     "react-dom": "catalog:react18"
   },
   "devDependencies": {
-    "@torus-ts/ui": "workspace:*",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",

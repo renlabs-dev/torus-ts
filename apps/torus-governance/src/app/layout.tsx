@@ -4,8 +4,11 @@ import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Providers } from "@torus-ts/providers/context";
+import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components";
 
+import { GovernanceProvider } from "~/context/governance-provider";
+import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const APP_NAME = "Torus Governance";
@@ -30,9 +33,16 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <Layout font={firaMono} appName={APP_NAME}>
-      <Providers>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
-      </Providers>
+      <TorusProvider
+        wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
+        torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
+      >
+        <Providers>
+          <GovernanceProvider>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </GovernanceProvider>
+        </Providers>
+      </TorusProvider>
     </Layout>
   );
 }

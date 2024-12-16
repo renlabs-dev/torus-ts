@@ -7,7 +7,7 @@ import type {
   Stake,
   TransactionResult,
 } from "@torus-ts/torus-provider/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Input, TransactionStatus } from "@torus-ts/ui";
 import { fromNano } from "@torus-ts/utils/subspace";
 

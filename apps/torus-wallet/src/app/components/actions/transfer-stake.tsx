@@ -6,9 +6,8 @@ import type {
   TransactionResult,
   TransferStake,
 } from "@torus-ts/torus-provider/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
-import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { splitAddress } from "@torus-ts/utils";
+import { useTorus } from "@torus-ts/torus-provider";
+import { TransactionStatus } from "@torus-ts/ui";
 import { fromNano } from "@torus-ts/utils/subspace";
 
 import { ValidatorsList } from "../validators-list";

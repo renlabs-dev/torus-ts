@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
-import { Button, Card, CardContent, CardHeader } from "@torus-ts/ui";
+import { useTorus } from "@torus-ts/torus-provider";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 interface ValidatorsListProps {
@@ -91,7 +90,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
             key={item.address}
             variant="outline"
             onClick={() => props.onSelectValidator({ address: item.address })}
-            className="lg:flex-row lg:justify-between flex h-fit w-full flex-col items-center font-semibold"
+            className="flex h-fit w-full flex-col items-center font-semibold lg:flex-row lg:justify-between"
           >
             <span className="text-pretty">
               {item.name && `${item.name.toLocaleUpperCase()} / `}

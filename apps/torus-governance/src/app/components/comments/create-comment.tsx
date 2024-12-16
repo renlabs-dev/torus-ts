@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
+import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
 const MAX_CHARACTERS = 300;
@@ -21,15 +21,13 @@ export function CreateComment({
   id: number;
   ModeType: "PROPOSAL" | "DAO";
 }) {
-  const { selectedAccount, stakeOut } = useTorus();
+  const { selectedAccount, accountStakedBalance } = useGovernance();
   const { data: cadreUsers } = api.dao.byCadre.useQuery();
 
   const [content, setContent] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [remainingChars, setRemainingChars] = useState(MAX_CHARACTERS);
-
-  let userStakeWeight: bigint | null = null;
 
   const utils = api.useUtils();
   const CreateComment = api.proposalComment.createComment.useMutation({
@@ -54,8 +52,8 @@ export function CreateComment({
 
     if (ModeType === "PROPOSAL") {
       if (
-        !userStakeWeight ||
-        Number(formatToken(userStakeWeight)) < MIN_STAKE_REQUIRED
+        !accountStakedBalance ||
+        Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
       ) {
         setError(
           `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
@@ -89,18 +87,13 @@ export function CreateComment({
     }
   };
 
-  if (stakeOut != null && selectedAccount != null) {
-    const userStakeEntry = stakeOut.perAddr[selectedAccount.address];
-    userStakeWeight = userStakeEntry ?? 0n;
-  }
-
   const isSubmitDisabled = () => {
     if (CreateComment.isPending || !selectedAccount?.address) return true;
 
     if (ModeType === "PROPOSAL") {
       return (
-        !userStakeWeight ||
-        Number(formatToken(userStakeWeight)) < MIN_STAKE_REQUIRED
+        !accountStakedBalance ||
+        Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
       );
     }
     {
