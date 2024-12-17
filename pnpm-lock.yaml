@@ -1211,9 +1211,6 @@ importers:
 
   tooling/prettier:
     dependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.3.1
-        version: 4.4.0(prettier@3.4.2)
       prettier:
         specifier: 'catalog:'
         version: 3.4.2
@@ -6543,6 +6540,7 @@ snapshots:
       '@babel/helper-validator-identifier': 7.25.9
       js-tokens: 4.0.0
       picocolors: 1.1.1
+    optional: true
 
   '@babel/generator@7.26.3':
     dependencies:
@@ -6551,14 +6549,18 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
       jsesc: 3.1.0
+    optional: true
 
-  '@babel/helper-string-parser@7.25.9': {}
+  '@babel/helper-string-parser@7.25.9':
+    optional: true
 
-  '@babel/helper-validator-identifier@7.25.9': {}
+  '@babel/helper-validator-identifier@7.25.9':
+    optional: true
 
   '@babel/parser@7.26.3':
     dependencies:
       '@babel/types': 7.26.3
+    optional: true
 
   '@babel/runtime-corejs3@7.26.0':
     dependencies:
@@ -6574,6 +6576,7 @@ snapshots:
       '@babel/code-frame': 7.26.2
       '@babel/parser': 7.26.3
       '@babel/types': 7.26.3
+    optional: true
 
   '@babel/traverse@7.26.4':
     dependencies:
@@ -6586,11 +6589,13 @@ snapshots:
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@babel/types@7.26.3':
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
+    optional: true
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -6930,6 +6935,7 @@ snapshots:
       semver: 7.6.3
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
@@ -9919,7 +9925,8 @@ snapshots:
       once: 1.4.0
       path-is-absolute: 1.0.1
 
-  globals@11.12.0: {}
+  globals@11.12.0:
+    optional: true
 
   globals@14.0.0: {}
 
@@ -10438,7 +10445,8 @@ snapshots:
 
   jsbn@1.1.0: {}
 
-  jsesc@3.1.0: {}
+  jsesc@3.1.0:
+    optional: true
 
   json-buffer@3.0.1: {}
 
