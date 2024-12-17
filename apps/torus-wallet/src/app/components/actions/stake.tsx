@@ -4,16 +4,16 @@ import React, { useMemo, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
+import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function StakeAction() {
-  const { addStake, balance } = useTorus();
+  const { addStake, accountFreeBalance } = useWallet();
   const [amount, setAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [inputError, setInputError] = useState<{
@@ -36,7 +36,7 @@ export function StakeAction() {
     "wallet",
   );
 
-  const freeBalance = fromNano(balance?.toString() ?? "0");
+  const freeBalance = fromNano(accountFreeBalance.data?.toString() ?? "0");
 
   const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRecipient(e.target.value);

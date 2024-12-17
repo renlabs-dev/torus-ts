@@ -225,6 +225,7 @@ export function GovernanceProvider({
         balance={accountFreeBalance.data}
         stakeOut={stakeOut.data}
         accounts={accounts}
+        isInitialized={isInitialized}
         selectedAccount={selectedAccount}
         handleLogout={handleLogout}
         handleGetWallets={handleGetWallets}

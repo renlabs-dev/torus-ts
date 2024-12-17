@@ -10,10 +10,8 @@ import type {
   StakeData,
 } from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-import type { Bridge, Stake } from "@torus-ts/torus-provider/types";
+import type { Stake, TransferStake } from "@torus-ts/torus-provider/types";
 import {
-  useBridgedBalance,
-  useBridgedBalances,
   useCachedStakeOut,
   useFreeBalance,
   useKeyStakedBy,
@@ -22,10 +20,11 @@ import {
 import { useTorus } from "@torus-ts/torus-provider";
 import { WalletDropdown } from "@torus-ts/ui";
 
-interface PageContextType {
+interface WalletContextType {
   isInitialized: boolean;
   lastBlock: UseQueryResult<LastBlock, Error>;
 
+  accounts: InjectedAccountWithMeta[] | undefined;
   isAccountConnected: boolean;
 
   selectedAccount: InjectedAccountWithMeta | null;
@@ -39,23 +38,21 @@ interface PageContextType {
     Error
   >;
 
-  bridge: (bridge: Bridge) => Promise<void>;
+  estimateFee: (
+    recipientAddress: string,
+    amount: string,
+  ) => Promise<Balance | null>;
+
+  addStake: (stake: Stake) => Promise<void>;
+  transferStake: (transfer: TransferStake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
 
   stakeOut: UseQueryResult<StakeData, Error>;
-
-  accountBridgedBalance: UseQueryResult<bigint, Error>;
-  bridgedBalances: UseQueryResult<[Map<SS58Address, bigint>, Error[]], Error>;
-
-  accounts: InjectedAccountWithMeta[] | undefined;
-  handleLogout: () => void;
-  handleGetWallets: () => Promise<void>;
-  handleSelectWallet: (account: InjectedAccountWithMeta) => void;
 }
 
-const PageContext = createContext<PageContextType | null>(null);
+const WalletContext = createContext<WalletContextType | null>(null);
 
-export function PageProvider({
+export function WalletProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -67,7 +64,10 @@ export function PageProvider({
     selectedAccount,
     isAccountConnected,
 
-    bridge,
+    estimateFee,
+
+    addStake,
+    transferStake,
     removeStake,
 
     accounts,
@@ -96,22 +96,15 @@ export function PageProvider({
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
     stakeOut.data?.perAddr[selectedAccount?.address!];
 
-  // == Bridge ==
-  const accountBridgedBalance = useBridgedBalance(
-    api,
-    selectedAccount?.address as SS58Address,
-  );
-
-  const bridgedBalances = useBridgedBalances(api);
-
   return (
-    <PageContext.Provider
+    <WalletContext.Provider
       value={{
         isInitialized,
         lastBlock,
 
         stakeOut,
 
+        accounts,
         selectedAccount,
 
         accountStakedBy,
@@ -119,16 +112,11 @@ export function PageProvider({
         accountFreeBalance,
         accountStakedBalance,
 
-        accountBridgedBalance,
-        bridgedBalances,
+        estimateFee,
 
-        bridge,
+        addStake,
+        transferStake,
         removeStake,
-
-        accounts,
-        handleLogout,
-        handleGetWallets,
-        handleSelectWallet,
       }}
     >
       <WalletDropdown
@@ -142,14 +130,14 @@ export function PageProvider({
         handleSelectWallet={handleSelectWallet}
       />
       {children}
-    </PageContext.Provider>
+    </WalletContext.Provider>
   );
 }
 
-export const usePage = (): PageContextType => {
-  const context = useContext(PageContext);
+export const useWallet = (): WalletContextType => {
+  const context = useContext(WalletContext);
   if (context === null) {
-    throw new Error("usePage must be used within a PageProvider");
+    throw new Error("useWallet must be used within a WalletProvider");
   }
   return context;
 };

@@ -5,7 +5,6 @@ import type {
   InjectedAccountWithMeta,
   InjectedExtension,
 } from "@polkadot/extension-inject/types";
-import type { Balance } from "@polkadot/types/interfaces";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
@@ -15,6 +14,7 @@ import type {
   DaoApplications,
   Proposal,
 } from "@torus-ts/subspace";
+import { sb_balance } from "@torus-ts/subspace";
 import { toNano2 } from "@torus-ts/utils/subspace";
 
 import type {
@@ -63,7 +63,7 @@ interface TorusContextType {
   estimateFee: (
     recipientAddress: string,
     amount: string,
-  ) => Promise<Balance | null>;
+  ) => Promise<bigint | null>;
   handleWalletModal: (state?: boolean) => void;
   openWalletModal: boolean;
 
@@ -461,10 +461,7 @@ export function TorusProvider({
     });
   }
 
-  async function estimateFee(
-    recipientAddress: string,
-    amount: string,
-  ): Promise<Balance | null> {
+  async function estimateFee(recipientAddress: string, amount: string) {
     try {
       // Check if the API is ready and has the transfer function
       if (!api?.isReady) {
@@ -487,7 +484,7 @@ export function TorusProvider({
       // Estimate the fee
       const info = await transaction.paymentInfo(selectedAccount.address);
 
-      return info.partialFee;
+      return sb_balance.parse(info.partialFee);
     } catch (error) {
       console.error("Error estimating fee:", error);
       return null;

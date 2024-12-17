@@ -4,7 +4,7 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "// build": "// next build",
+    "build": "next build",
     "dev": "next dev --port 3008",
     "lint": "eslint",
     "start": "next start",

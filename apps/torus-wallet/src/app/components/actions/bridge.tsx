@@ -5,15 +5,15 @@ import { BN } from "@polkadot/util";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
-import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { splitAddress } from "@torus-ts/utils";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
+import { useWallet } from "~/context/wallet-provider";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function BridgeAction() {
-  const { estimateFee, balance } = useTorus();
+  const { estimateFee, accountFreeBalance } = useWallet();
 
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function BridgeAction() {
         setEstimatedFee(feeStr);
 
         const newMaxAmount = calculateMaxAmount(
-          fromNano(balance?.toString() ?? "0"),
+          fromNano(accountFreeBalance.data?.toString() ?? "0"),
           feeStr,
         );
         setMaxAmount(newMaxAmount);

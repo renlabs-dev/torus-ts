@@ -3,15 +3,15 @@
 import React, { useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress } from "@torus-ts/utils/subspace";
 
+import { useWallet } from "~/context/wallet-provider";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function UnstakeAction() {
-  const { userTotalStaked } = useTorus();
+  const { accountStakedBy } = useWallet();
 
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -38,7 +38,7 @@ export function UnstakeAction() {
 
   const [stakedAmount, setStakedAmount] = useState<string | null>(null);
 
-  const stakedValidators = userTotalStaked ?? [];
+  const stakedValidators = accountStakedBy.data ?? [];
 
   const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;

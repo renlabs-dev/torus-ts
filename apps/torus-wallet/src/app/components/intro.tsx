@@ -3,11 +3,12 @@
 import React from "react";
 import { CornerRightUp } from "lucide-react";
 
-import { useTorus } from "@torus-ts/torus-provider";
 import { Loading } from "@torus-ts/ui";
 
+import { useWallet } from "~/context/wallet-provider";
+
 export function IntroSection() {
-  const { selectedAccount, isInitialized, accounts } = useTorus();
+  const { selectedAccount, isInitialized, accounts } = useWallet();
 
   if (!isInitialized || !accounts)
     return (

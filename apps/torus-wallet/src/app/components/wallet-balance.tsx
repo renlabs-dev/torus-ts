@@ -1,43 +1,37 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { Lock, Unlock } from "lucide-react";
 
-import { useTorus } from "@torus-ts/torus-provider";
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
+import { useWallet } from "~/context/wallet-provider";
+
 export function WalletBalance() {
-  const { balance, selectedAccount, stakeOut } = useTorus();
-
-  const totalStakedBalance = useMemo(() => {
-    if (!stakeOut || !selectedAccount) return null;
-
-    const totalStaked = stakeOut.perAddr[selectedAccount.address] ?? 0n;
-    return totalStaked;
-  }, [selectedAccount, stakeOut]);
+  const { accountFreeBalance, accountStakedBalance, stakeOut } = useWallet();
 
   const balancesList = [
     {
-      amount: balance,
+      amount: accountFreeBalance.data,
       label: "Free Balance",
       icon: <Lock size={16} />,
     },
     {
-      amount: totalStakedBalance,
+      amount: accountStakedBalance,
       label: "Staked Balance",
       icon: <Unlock size={16} />,
     },
   ];
 
   useEffect(() => {
-    console.log("balance", balance);
-    console.log("totalStakedBalance", totalStakedBalance);
+    console.log("balance", accountFreeBalance.data);
+    console.log("totalStakedBalance", accountStakedBalance);
     console.log("stakeout", stakeOut);
-  }, [balance, totalStakedBalance, stakeOut]);
+  }, [stakeOut, accountFreeBalance.data, accountStakedBalance]);
 
   return (
-    <div className="min-fit lg:flex-col flex flex-col gap-4 xs:flex-row">
+    <div className="min-fit flex flex-col gap-4 xs:flex-row lg:flex-col">
       {balancesList.map((balance) => (
         <Card
           key={balance.label}
