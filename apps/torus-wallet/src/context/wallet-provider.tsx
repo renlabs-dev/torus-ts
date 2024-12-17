@@ -20,6 +20,8 @@ import {
 import { useTorus } from "@torus-ts/torus-provider";
 import { WalletDropdown } from "@torus-ts/ui";
 
+import { env } from "~/env";
+
 interface WalletContextType {
   isInitialized: boolean;
   lastBlock: UseQueryResult<LastBlock, Error>;
@@ -87,10 +89,7 @@ export function WalletProvider({
 
   // == Subspace ==
 
-  const stakeOut = useCachedStakeOut(
-    // eslint-disable-next-line no-restricted-properties
-    String(process.env.NEXT_PUBLIC_CACHE_PROVIDER_URL),
-  );
+  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_CACHE_PROVIDER_URL);
 
   const accountStakedBalance =
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain

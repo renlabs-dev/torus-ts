@@ -11,8 +11,10 @@ import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
 import { processDaoApplicationsWorker } from "./workers/process-dao-applications";
 import { weightAggregatorWorker } from "./workers/weight-aggregator";
 
+import { env } from "./env";
+
 async function setup(): Promise<ApiPromise> {
-  const wsEndpoint = process.env.NEXT_PUBLIC_WS_PROVIDER_URL;
+  const wsEndpoint = env.NEXT_PUBLIC_WS_PROVIDER_URL;
 
   log("Connecting to ", wsEndpoint);
 
