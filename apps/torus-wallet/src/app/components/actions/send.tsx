@@ -6,22 +6,14 @@ import { BN } from "@polkadot/util";
 import type { TransactionResult } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { isSS58 } from "@torus-ts/subspace";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  Skeleton,
-  TransactionStatus,
-} from "@torus-ts/ui";
-import { splitAddress } from "@torus-ts/utils";
+import { Card, Input, Label, Skeleton, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { AmountButtons } from "../amount-buttons";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function SendAction() {
-  const { estimateFee, transfer, balance } = useTorus();
+  const { estimateFee, balance } = useTorus();
 
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
@@ -123,16 +115,16 @@ export function SendAction() {
     setInputError({ recipient: null, value: null });
   };
 
-  const handleMaxClick = () => {
-    if (!maxAmount) return;
-    setAmount(maxAmount);
-  };
+  // const handleMaxClick = () => {
+  //   if (!maxAmount) return;
+  //   setAmount(maxAmount);
+  // };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const handleCallback = (callbackReturn: TransactionResult) => {
-      setTransactionStatus(callbackReturn);
-    };
+    // const handleCallback = (callbackReturn: TransactionResult) => {
+    //   setTransactionStatus(callbackReturn);
+    // };
 
     setTransactionStatus({
       status: "STARTING",

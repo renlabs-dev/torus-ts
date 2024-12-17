@@ -13,7 +13,7 @@ import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function BridgeAction() {
-  const { estimateFee, transfer, balance } = useTorus();
+  const { estimateFee, balance } = useTorus();
 
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
@@ -122,9 +122,9 @@ export function BridgeAction() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const handleCallback = (callbackReturn: TransactionResult) => {
-      setTransactionStatus(callbackReturn);
-    };
+    // const handleCallback = (callbackReturn: TransactionResult) => {
+    //   setTransactionStatus(callbackReturn);
+    // };
 
     setTransactionStatus({
       status: "STARTING",

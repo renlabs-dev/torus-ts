@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
 import type { TransactionResult } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { splitAddress } from "@torus-ts/utils";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { AmountButtons } from "../amount-buttons";
@@ -88,9 +87,9 @@ export function StakeAction() {
     return maxAmountBN.isNeg() ? "0" : fromNano(maxAmountBN.toString());
   }, [freeBalance]);
 
-  const handleMaxClick = () => {
-    setAmount(maxAmount.toString());
-  };
+  // const handleMaxClick = () => {
+  //   setAmount(maxAmount.toString());
+  // };
 
   const formRef = useRef<HTMLFormElement>(null);
   const reviewData = [
@@ -101,26 +100,26 @@ export function StakeAction() {
     { label: "Amount", content: `${amount ? amount : 0} TOR` },
   ];
 
-  function MaxAmountLabel() {
-    if (freeBalance && recipient) {
-      return (
-        <span>
-          Maximum transferable amount:{" "}
-          <Button
-            variant="link"
-            type="button"
-            onClick={handleMaxClick}
-            className="m-0 h-5 p-0 text-sm text-primary"
-          >
-            {Number(freeBalance) - 0.000_001} TOR
-          </Button>
-        </span>
-      );
-    }
-    return (
-      <span className="flex gap-2">Maximum transferable amount: 0 TOR</span>
-    );
-  }
+  // function MaxAmountLabel() {
+  //   if (freeBalance && recipient) {
+  //     return (
+  //       <span>
+  //         Maximum transferable amount:{" "}
+  //         <Button
+  //           variant="link"
+  //           type="button"
+  //           onClick={handleMaxClick}
+  //           className="m-0 h-5 p-0 text-sm text-primary"
+  //         >
+  //           {Number(freeBalance) - 0.000_001} TOR
+  //         </Button>
+  //       </span>
+  //     );
+  //   }
+  //   return (
+  //     <span className="flex gap-2">Maximum transferable amount: 0 TOR</span>
+  //   );
+  // }
 
   return (
     <div className="l flex w-full flex-col gap-4 md:flex-row">

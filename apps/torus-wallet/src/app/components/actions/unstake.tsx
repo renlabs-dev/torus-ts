@@ -5,14 +5,13 @@ import React, { useRef, useState } from "react";
 import type { TransactionResult } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { splitAddress } from "@torus-ts/utils";
 import { fromNano, smallAddress } from "@torus-ts/utils/subspace";
 
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function UnstakeAction() {
-  const { userTotalStaked, removeStake } = useTorus();
+  const { userTotalStaked } = useTorus();
 
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -24,6 +23,7 @@ export function UnstakeAction() {
     value: null,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -71,9 +71,9 @@ export function UnstakeAction() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const handleCallback = (callbackReturn: TransactionResult) => {
-      setTransactionStatus(callbackReturn);
-    };
+    // const handleCallback = (callbackReturn: TransactionResult) => {
+    //   setTransactionStatus(callbackReturn);
+    // };
 
     // const isValidInput = amount && recipient && !inputError.value;
 
