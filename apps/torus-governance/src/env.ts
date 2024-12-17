@@ -27,8 +27,14 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_AUTH_ORIGIN: z.string().default(AUTH_ORIGIN_DEFAULT), // Origin URI used in the statement signed by the user to authenticate
-    NEXT_PUBLIC_WS_PROVIDER_URL: z.string().url(WS_PROVIDER_URL_DEFAULT),
-    NEXT_PUBLIC_CACHE_PROVIDER_URL: z.string().url(CACHE_PROVIDER_URL_DEFAULT),
+    NEXT_PUBLIC_WS_PROVIDER_URL: z
+      .string()
+      .url()
+      .default(WS_PROVIDER_URL_DEFAULT),
+    NEXT_PUBLIC_CACHE_PROVIDER_URL: z
+      .string()
+      .url()
+      .default(CACHE_PROVIDER_URL_DEFAULT),
   },
   /**
    * Destructure all variables from `process.env` to make sure they aren't tree-shaken away.
