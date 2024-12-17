@@ -1,7 +1,7 @@
 export const links = {
   about: "/about",
 
-  docs: "https://torusai.org/docs/getting-started/intro",
+  docs: "https://docs.torus.network/",
   cadre: "/cadre",
 
   blog: "https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5",
@@ -10,11 +10,11 @@ export const links = {
   telegram: "https://t.me/torusnetwork",
   x: "https://twitter.com/torus_network",
 
-  explorer: "https://explorer.torus.netowrk",
-  governance: "https://governance.torus.netowrk/",
-  validator: "https://validator.torus.netowrk/",
-  landing_page: "https://torus.netowrk/",
-  wallet: "https://wallet.torus.netowrk/",
+  explorer: "https://explorer.torus.network/",
+  governance: "https://governance.torus.network/",
+  validator: "https://validator.torus.network/",
+  landing_page: "https://torus.network/",
+  wallet: "https://wallet.torus.network/",
 };
 
 export const navApps: { title: string; href: string; description: string }[] = [

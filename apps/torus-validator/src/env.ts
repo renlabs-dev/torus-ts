@@ -1,7 +1,7 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-const AUTH_ORIGIN_DEFAULT = "validator.torusai.org";
+const AUTH_ORIGIN_DEFAULT = "validator.torus.network";
 
 export const env = createEnv({
   shared: {

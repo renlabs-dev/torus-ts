@@ -1,7 +1,7 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-const AUTH_ORIGIN_DEFAULT = "governance.torusai.org";
+const AUTH_ORIGIN_DEFAULT = "governance.torus.network";
 const WS_PROVIDER_URL_DEFAULT = "wss://api.communeai.net";
 const CACHE_PROVIDER_URL_DEFAULT = "https://cache.torus.network";
 
