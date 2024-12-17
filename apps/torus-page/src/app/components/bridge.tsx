@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,14 +15,8 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/ui";
-import type { Brand } from "@torus-ts/utils";
-import {
-  useBridgedBalance,
-  useBridgedBalances,
-} from "@torus-ts/providers/hooks";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/torus-provider";
 import {
   Accordion,
   AccordionContent,
@@ -60,6 +54,7 @@ import {
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
+import { usePage } from "~/context/page-provider";
 import { UnstakeAction } from "./unstake";
 
 const formSchema = z.object({
@@ -70,33 +65,28 @@ const formSchema = z.object({
 
 export function Bridge() {
   const {
-    api,
     accounts,
-    balance,
+    selectedAccount,
+    accountFreeBalance,
+    accountStakedBalance,
+    accountBridgedBalance,
+
     handleGetWallets,
     handleSelectWallet,
-    selectedAccount,
-    stakeOut,
+
     bridge,
     removeStake,
-  } = useTorus();
+
+    bridgedBalances,
+  } = usePage();
 
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  type SS58Address = Brand<"SS58Address", string>;
-
-  const { data: bridgedBalance } = useBridgedBalance(
-    api,
-    selectedAccount?.address as SS58Address,
-  );
-
-  const { data: bridgedBalances } = useBridgedBalances(api);
-
   let bridgedBalancesSum = 0n;
 
-  if (bridgedBalances?.[0]) {
-    const balancesMap = bridgedBalances[0];
+  if (bridgedBalances.data) {
+    const balancesMap = bridgedBalances.data[0];
     for (const balance of balancesMap.values()) {
       bridgedBalancesSum += balance;
     }
@@ -174,14 +164,6 @@ export function Bridge() {
 
     handleSelectWallet(accountExists);
   };
-
-  const userStakeWeight = useMemo(() => {
-    if (stakeOut != null && selectedAccount != null) {
-      const userStakeEntry = stakeOut.perAddr[selectedAccount.address];
-      return userStakeEntry ?? 0n;
-    }
-    return 0n;
-  }, [stakeOut, selectedAccount]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setTransactionStatus({
@@ -305,13 +287,17 @@ export function Bridge() {
                 <LockOpen className="h-3 w-3" />{" "}
                 <p className="text-sm">Balance</p>
               </div>
-              <p className="text-xs">{formatToken(balance ?? 0n)} COMAI</p>
+              <p className="text-xs">
+                {formatToken(accountFreeBalance.data ?? 0n)} COMAI
+              </p>
             </Card>
             <Card className="flex w-full flex-col items-center gap-2 p-3">
               <div className="flex flex-row items-center gap-1">
                 <Lock className="h-3 w-3" /> <p className="text-sm">Staked</p>
               </div>
-              <p className="text-xs">{formatToken(userStakeWeight)} COMAI</p>
+              <p className="text-xs">
+                {formatToken(accountStakedBalance ?? 0n)} COMAI
+              </p>
             </Card>
             <Card className="flex w-full flex-col items-center gap-2 p-3">
               <div className="flex flex-row items-center gap-1">
@@ -319,7 +305,7 @@ export function Bridge() {
                 <p className="text-sm">Bridged</p>
               </div>
               <p className="text-xs">
-                {formatToken(bridgedBalance ? bridgedBalance : 0)} TOR
+                {formatToken(accountBridgedBalance.data ?? 0n)} TOR
               </p>
             </Card>
           </div>
@@ -331,10 +317,10 @@ export function Bridge() {
               <AccordionContent>
                 <UnstakeAction
                   removeStake={removeStake}
-                  balance={balance}
+                  balance={accountFreeBalance.data}
                   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   selectedAccount={selectedAccount!}
-                  userStakeWeight={userStakeWeight}
+                  userStakeWeight={accountStakedBalance}
                 />
               </AccordionContent>
             </AccordionItem>

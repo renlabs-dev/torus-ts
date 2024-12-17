@@ -3,7 +3,11 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-import { cn } from "@torus-ts/ui/components";
+import { Providers } from "@torus-ts/providers/context";
+import { cn, Footer } from "@torus-ts/ui/components";
+
+import { PageProvider } from "~/context/page-provider";
+import { Header } from "./components/header";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -31,11 +35,13 @@ export default function RootLayout({
           `relative overscroll-none bg-background bg-cover text-white`,
         )}
       >
-        {/* <Providers>
-          <Header /> */}
-        {children}
-        {/* <Footer />
-        </Providers> */}
+        <Providers>
+          <PageProvider>
+            <Header />
+            {children}
+            <Footer />
+          </PageProvider>
+        </Providers>
       </body>
     </html>
   );

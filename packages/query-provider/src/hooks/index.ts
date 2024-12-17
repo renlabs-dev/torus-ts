@@ -13,7 +13,6 @@ import type {
 } from "@torus-ts/subspace";
 import type { ListItem } from "@torus-ts/utils/typing";
 import {
-  checkSS58,
   fetchCustomMetadata,
   getModuleBurn,
   getSubnetList,
@@ -212,14 +211,14 @@ export function useProcessVotesAndStakes(
   });
 }
 
-export function useUserTotalStaked(
+export function useKeyStakedBy(
   api: Api | Nullish,
   address: SS58Address | string | Nullish,
 ) {
   return useQuery({
     queryKey: ["user_total_staked", address],
     enabled: api != null && address != null,
-    queryFn: () => queryKeyStakedBy(api!, checkSS58(address!)),
+    queryFn: () => queryKeyStakedBy(api!, address! as SS58Address),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
