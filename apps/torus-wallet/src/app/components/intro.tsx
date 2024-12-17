@@ -3,7 +3,7 @@
 import React from "react";
 import { CornerRightUp } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Loading } from "@torus-ts/ui";
 
 export function IntroSection() {

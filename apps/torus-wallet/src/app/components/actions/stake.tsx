@@ -3,8 +3,8 @@
 import React, { useMemo, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
-import type { TransactionResult } from "@torus-ts/ui/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 

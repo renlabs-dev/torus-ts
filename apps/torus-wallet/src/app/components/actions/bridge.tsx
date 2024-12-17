@@ -3,12 +3,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
-import type {
-  TransactionResult,
-  Transfer,
-} from "@torus-ts/torus-provider/types";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { isSS58 } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Button, Input, TransactionStatus } from "@torus-ts/ui";
+import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import { splitAddress } from "@torus-ts/utils";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
 import { WalletTransactionReview } from "../wallet-review";

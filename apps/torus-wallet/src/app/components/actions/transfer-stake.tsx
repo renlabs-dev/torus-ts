@@ -2,12 +2,10 @@
 
 import React, { useRef, useState } from "react";
 
-import type {
-  TransactionResult,
-  TransferStake,
-} from "@torus-ts/torus-provider/types";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useTorus } from "@torus-ts/torus-provider";
-import { TransactionStatus } from "@torus-ts/ui";
+import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import { splitAddress } from "@torus-ts/utils";
 import { fromNano } from "@torus-ts/utils/subspace";
 
 import { ValidatorsList } from "../validators-list";

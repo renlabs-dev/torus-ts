@@ -3,9 +3,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
-import type { TransactionResult } from "@torus-ts/ui/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Card, Input, Label, Skeleton, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
