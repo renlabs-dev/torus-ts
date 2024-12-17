@@ -1,6 +1,6 @@
 "use client";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 
 import SubnetCard from "~/app/components/subnet-card";
 import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";

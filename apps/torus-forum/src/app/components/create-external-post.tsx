@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Checkbox } from "@torus-ts/ui";
 
 import type { Category } from "./filters";
@@ -34,7 +34,7 @@ export const CreateExternalPost: React.FC<CreatePostProps> = (props) => {
     },
   });
 
-  const { isConnected, selectedAccount } = useTorus();
+  const { isAccountConnected, selectedAccount } = useTorus();
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
@@ -168,7 +168,11 @@ export const CreateExternalPost: React.FC<CreatePostProps> = (props) => {
           <button
             className="flex w-full justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:bg-transparent"
             disabled={
-              !isConnected || isPending || !title || !href || !selectedAccount
+              !isAccountConnected ||
+              isPending ||
+              !title ||
+              !href ||
+              !selectedAccount
             }
             type="submit"
           >

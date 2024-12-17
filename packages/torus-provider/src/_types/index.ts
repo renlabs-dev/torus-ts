@@ -6,8 +6,6 @@ export interface TransactionResult {
   status: "SUCCESS" | "ERROR" | "PENDING" | "STARTING" | null;
 }
 
-// -- Balance --
-
 // TODO: amount field should be `bigint`
 
 export interface Stake {
@@ -34,7 +32,7 @@ export interface TransferStake {
   callback?: (status: TransactionResult) => void;
 }
 
-// -- Governance --
+// == Governance ==
 
 export interface Vote {
   proposalId: number;

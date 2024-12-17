@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/ui/types";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   Input,
@@ -20,6 +19,9 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
+import { formatToken } from "@torus-ts/utils/subspace";
+
+import { useGovernance } from "~/context/governance-provider";
 
 const transferDaoTreasuryProposalSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -28,7 +30,11 @@ const transferDaoTreasuryProposalSchema = z.object({
 
 export function CreateTransferDaoTreasuryProposal(): JSX.Element {
   const router = useRouter();
-  const { isConnected, addTransferDaoTreasuryProposal, balance } = useTorus();
+  const {
+    isAccountConnected,
+    accountFreeBalance,
+    addTransferDaoTreasuryProposal,
+  } = useGovernance();
 
   const [dest, setDest] = useState("");
   const [value, setValue] = useState("");
@@ -68,14 +74,14 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
         return;
       }
 
-      if (!balance) {
-        toast.error("Balance is still loading");
+      if (!accountFreeBalance.data) {
+        toast.error("balance is still loading");
         return;
       }
 
       const daoApplicationCost = 1000;
 
-      if (Number(balance) > daoApplicationCost) {
+      if (Number(accountFreeBalance.data) > daoApplicationCost) {
         void addTransferDaoTreasuryProposal({
           dest,
           value,
@@ -84,7 +90,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
         });
       } else {
         toast.error(
-          `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${balance}`,
+          `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
         );
         setTransactionStatus({
           status: "ERROR",
@@ -190,7 +196,12 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="lg" type="submit" variant="outline" disabled={!isConnected}>
+      <Button
+        size="lg"
+        type="submit"
+        variant="outline"
+        disabled={!isAccountConnected}
+      >
         {uploading ? "Uploading..." : "Submit transfer dao treasury proposal"}
       </Button>
       {transactionStatus.status && (

@@ -33,7 +33,17 @@ import {
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
-import type { InjectedAccountWithMeta } from "../types";
+export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
+
+export interface InjectedAccountWithMeta {
+  address: string;
+  meta: {
+    genesisHash?: string | null;
+    name?: string;
+    source: string;
+  };
+  type?: KeypairType;
+}
 
 export interface StakeOutData {
   total: bigint;
@@ -179,9 +189,8 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
-    // keep this hidden for know so we dont have to refactor the component structure to not have this on the LP but have the provider context
-    <div className="max-w-screen-xl md:block fixed top-0 z-[70] mx-auto hidden w-full justify-end">
-      <div className="md:flex mx-auto animate-fade-down justify-end px-6 py-3.5">
+    <div className="fixed top-0 z-[70] mx-auto w-full max-w-screen-xl justify-end">
+      <div className="mx-auto hidden animate-fade-down justify-end px-6 py-3.5 md:flex">
         <DropdownMenu onOpenChange={handleGetAccounts}>
           <DropdownMenuTrigger asChild disabled={!isInitialized}>
             <WalletCards

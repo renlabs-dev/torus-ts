@@ -5,7 +5,7 @@ import { useLayoutEffect, useState } from "react";
 import type { ProposalStatus } from "@torus-ts/subspace";
 import { useProcessVotesAndStakes } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, CardHeader } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";

@@ -1,7 +1,7 @@
 import { if_let, match } from "rustie";
 
-import type { ProposalState } from "@torus-ts/providers/use-torus";
 import type { CustomMetadataState, ProposalStatus } from "@torus-ts/subspace";
+import type { ProposalState } from "@torus-ts/torus-provider";
 import { bigintDivision_WRONG } from "@torus-ts/utils";
 import { formatToken } from "@torus-ts/utils/subspace";
 

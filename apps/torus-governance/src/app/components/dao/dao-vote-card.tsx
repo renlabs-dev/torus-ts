@@ -6,9 +6,8 @@ import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
 import type { DaoApplicationStatus } from "@torus-ts/subspace";
-import type { TransactionResult } from "@torus-ts/ui/types";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   ToggleGroup,
@@ -16,6 +15,7 @@ import {
   TransactionStatus,
 } from "@torus-ts/ui";
 
+import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 
@@ -71,13 +71,19 @@ const AlreadyVotedCardContent = (props: {
 const VoteCardFunctionsContent = (props: {
   vote: DaoVote["daoVoteType"] | "UNVOTED";
   votingStatus: TransactionResult["status"];
-  isConnected: boolean;
+  isAccountConnected: boolean;
   isCadreUser: boolean;
   handleVote: () => void;
   setVote: (vote: DaoVote["daoVoteType"] | "UNVOTED") => void;
 }): JSX.Element => {
-  const { handleVote, setVote, vote, votingStatus, isCadreUser, isConnected } =
-    props;
+  const {
+    handleVote,
+    setVote,
+    vote,
+    votingStatus,
+    isCadreUser,
+    isAccountConnected,
+  } = props;
 
   function handleVotePreference(value: DaoVote["daoVoteType"] | "") {
     if (value === "") return setVote("UNVOTED");
@@ -87,7 +93,7 @@ const VoteCardFunctionsContent = (props: {
   return (
     <div className="flex w-full flex-col items-end gap-4">
       <div
-        className={`relative z-20 flex w-full flex-col items-start gap-2 ${(!isConnected || !isCadreUser) && "blur-md"}`}
+        className={`relative z-20 flex w-full flex-col items-start gap-2 ${(!isAccountConnected || !isCadreUser) && "blur-md"}`}
       >
         <ToggleGroup
           type="single"
@@ -127,12 +133,12 @@ const VoteCardFunctionsContent = (props: {
           <TransactionStatus status={votingStatus} message={votingStatus} />
         )}
       </div>
-      {!isConnected && (
+      {!isAccountConnected && (
         <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
           <span>Connect your wallet to vote</span>
         </div>
       )}
-      {isConnected && !isCadreUser && (
+      {isAccountConnected && !isCadreUser && (
         <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
           <span>
             You must be a Cadre Member to be able to vote on DAO Applications.
@@ -149,7 +155,7 @@ export function DaoVoteCard(props: {
   daoId: number;
 }) {
   const { daoId, daoStatus } = props;
-  const { isConnected, selectedAccount } = useTorus();
+  const { isAccountConnected, selectedAccount } = useGovernance();
 
   const [vote, setVote] = useState<DaoVote["daoVoteType"] | "UNVOTED">(
     "UNVOTED",
@@ -270,7 +276,7 @@ export function DaoVoteCard(props: {
       return (
         <CardBarebones>
           <VoteCardFunctionsContent
-            isConnected={isConnected}
+            isAccountConnected={isAccountConnected}
             handleVote={handleVote}
             votingStatus={votingStatus}
             vote={vote}
@@ -285,7 +291,7 @@ export function DaoVoteCard(props: {
           <CardBarebones>
             <GovernanceStatusNotOpen status="ACCEPTED" governanceModel="DAO" />
           </CardBarebones>
-          {isConnected && isCadreUser && (
+          {isAccountConnected && isCadreUser && (
             <Button
               className="mt-6 flex w-full items-center justify-between text-nowrap border border-red-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-red-500 transition duration-200 hover:border-red-400 hover:bg-red-500/15 active:bg-red-500/50"
               onClick={handleRemoveFromWhitelist}
@@ -300,7 +306,7 @@ export function DaoVoteCard(props: {
               <Delete className="h-5 w-5" />
             </Button>
           )}
-          {/* TODO: Review logic to connect an account and handle the case when isConnected is false*/}
+          {/* TODO: Review logic to connect an account and handle the case when isAccountConnected is false*/}
         </div>
       );
     case "Removed":

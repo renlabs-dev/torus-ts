@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ChevronsUp } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 
 import { api } from "~/trpc/react";
-import { ChevronsUp } from "lucide-react";
 
 interface VotePostProps {
   postId: string;
@@ -124,8 +124,9 @@ export const VotePostButton = (post: VotePostProps) => {
           className={`flex w-full items-center justify-center gap-2 px-3 py-2 ${localUserHadVote === "UPVOTE" ? "bg-green-500/20" : ""} ${className} pr-3`}
         >
           <ChevronsUp
-            className={`${localUserHadVote === "UPVOTE" ? "fill-green-500" : "fill-white"
-              }`}
+            className={`${
+              localUserHadVote === "UPVOTE" ? "fill-green-500" : "fill-white"
+            }`}
             height={16}
           />
           <span className="text-green-500">{localUpvotes}</span>
@@ -136,8 +137,9 @@ export const VotePostButton = (post: VotePostProps) => {
           className={`flex w-full items-center justify-center gap-2 px-3 py-2 ${localUserHadVote === "DOWNVOTE" ? "bg-red-500/20" : ""} ${className}`}
         >
           <ChevronsUp
-            className={`rotate-180 ${localUserHadVote === "DOWNVOTE" ? "fill-red-500" : "fill-white"
-              }`}
+            className={`rotate-180 ${
+              localUserHadVote === "DOWNVOTE" ? "fill-red-500" : "fill-white"
+            }`}
             height={16}
           />
           <span className="text-red-500">{localDownvotes}</span>

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button, Card, CardContent, CardHeader } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+
+import { useWallet } from "~/context/wallet-provider";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";
@@ -21,7 +22,7 @@ interface Validator {
 }
 
 export function ValidatorsList(props: ValidatorsListProps) {
-  const { userTotalStaked } = useTorus();
+  const { accountStakedBy } = useWallet();
 
   const validatorsList = [
     {
@@ -52,8 +53,8 @@ export function ValidatorsList(props: ValidatorsListProps) {
   ];
 
   function getValidatorsList(): Validator[] {
-    if (props.listType === "staked" && userTotalStaked) {
-      return userTotalStaked.map((item) => ({
+    if (props.listType === "staked" && accountStakedBy.data) {
+      return accountStakedBy.data.map((item) => ({
         name: ``,
         description: `Staked amount: ${formatToken(Number(item.stake))}`,
         address: item.address,
@@ -91,7 +92,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
             key={item.address}
             variant="outline"
             onClick={() => props.onSelectValidator({ address: item.address })}
-            className="lg:flex-row lg:justify-between flex h-fit w-full flex-col items-center font-semibold"
+            className="flex h-fit w-full flex-col items-center font-semibold lg:flex-row lg:justify-between"
           >
             <span className="text-pretty">
               {item.name && `${item.name.toLocaleUpperCase()} / `}

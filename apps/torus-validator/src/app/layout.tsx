@@ -5,9 +5,11 @@ import Link from "next/link";
 import { Info } from "lucide-react";
 
 import { Providers } from "@torus-ts/providers/context";
+import { TorusProvider } from "@torus-ts/torus-provider";
 // import { links } from "@torus-ts/ui/data";
 import { Footer, Header } from "@torus-ts/ui";
 
+import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cairo } from "~/utils/fonts";
 import { DelegatedList } from "./components/delegated-list";
@@ -29,42 +31,34 @@ export default function RootLayout({
       <body
         className={`bg-[#111713] bg-[url('/bg-pattern.svg')] ${cairo.className} animate-fade-in`}
       >
-        {/* TODO: A WALLET QUE TAVA AQUI FOI DE BASE */}
         <Providers>
-          <div className="flex w-full animate-fade-down border-b border-white/20 py-2.5">
-            <div className="mx-auto flex max-w-screen-md items-center gap-1 px-2">
-              <Info className="h-10 w-10 text-green-500 md:h-6 md:w-6" />
-              <p className="text-gray-400">
-                To assign weights to modules, you need to stake on our
-                validator. Click{" "}
-                <Link
-                  href="/tutorial"
-                  className="font-semibold text-green-500 hover:underline"
-                >
-                  here
-                </Link>{" "}
-                to get started.
-              </p>
+          <TorusProvider
+            wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
+            torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
+          >
+            <div className="flex w-full animate-fade-down border-b border-white/20 py-2.5">
+              <div className="mx-auto flex max-w-screen-md items-center gap-1 px-2">
+                <Info className="h-10 w-10 text-green-500 md:h-6 md:w-6" />
+                <p className="text-gray-400">
+                  To assign weights to modules, you need to stake on our
+                  validator. Click{" "}
+                  <Link
+                    href="/tutorial"
+                    className="font-semibold text-green-500 hover:underline"
+                  >
+                    here
+                  </Link>{" "}
+                  to get started.
+                </p>
+              </div>
             </div>
-          </div>
-          <Header
-          // FIXME
-          // font={oxanium.className}
-          // logoSrc="/logo.svg"
-          // navigationLinks={[
-          //   { name: "Governance", href: links.governance, external: true },
-          //   { name: "Docs", href: links.docs, external: false },
-          //   { name: "Blog", href: links.blog, external: true },
-          //   { name: "Join Community", href: links.discord, external: true },
-          // ]}
-          // title="torus AI"
-          // wallet={<WalletButton />}
-          />
-          <TRPCReactProvider>
-            <DelegatedList />
-            {children}
-          </TRPCReactProvider>
-          <Footer />
+            <Header appName="Torus Allocator" />
+            <TRPCReactProvider>
+              <DelegatedList />
+              {children}
+            </TRPCReactProvider>
+            <Footer />
+          </TorusProvider>
         </Providers>
       </body>
     </html>

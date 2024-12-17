@@ -1,6 +1,6 @@
 "use client";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 
 import { ModuleCard } from "~/app/components/module-card";
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";

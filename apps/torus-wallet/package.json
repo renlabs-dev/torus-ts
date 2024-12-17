@@ -25,6 +25,7 @@
     "@tailwindcss/typography": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/tailwind-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@torus-ts/utils": "workspace:*",

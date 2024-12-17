@@ -13,7 +13,6 @@
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
     "prettier": "catalog:",
     "prettier-plugin-tailwindcss": "^0.6.6"
   },

@@ -2,20 +2,17 @@
 
 import React, { useRef, useState } from "react";
 
-import type {
-  TransactionResult,
-  // TransferStake
-} from "@torus-ts/ui/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { splitAddress } from "@torus-ts/utils";
 import { fromNano } from "@torus-ts/utils/subspace";
 
+import { useWallet } from "~/context/wallet-provider";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function TransferStakeAction() {
-  const { userTotalStaked, transferStake } = useTorus();
+  const { accountStakedBy, transferStake } = useWallet();
 
   const [amount, setAmount] = useState<string>("");
   const [fromValidator, setFromValidator] = useState<string>("");
@@ -44,7 +41,7 @@ export function TransferStakeAction() {
 
   const [maxAmount, setMaxAmount] = useState<string | null>(null);
 
-  const stakedValidators = userTotalStaked ?? [];
+  const stakedValidators = accountStakedBy.data ?? [];
 
   const handleFromValidatorChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -155,8 +152,8 @@ export function TransferStakeAction() {
   ];
 
   return (
-    <div className="l md:flex-row flex w-full flex-col gap-4">
-      <Card className="md:w-3/5 w-full animate-fade p-6">
+    <div className="l flex w-full flex-col gap-4 md:flex-row">
+      <Card className="w-full animate-fade p-6 md:w-3/5">
         {(currentView === "validators" ||
           currentView === "stakedValidators") && (
           <ValidatorsList

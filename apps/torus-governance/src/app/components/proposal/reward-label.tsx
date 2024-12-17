@@ -1,8 +1,9 @@
 import { match } from "rustie";
 
 import type { ProposalStatus } from "@torus-ts/subspace";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import { Badge } from "@torus-ts/ui";
+
+import { useGovernance } from "~/context/governance-provider";
 
 interface RewardLabelProps {
   result: ProposalStatus;
@@ -12,9 +13,9 @@ interface RewardLabelProps {
 
 export function RewardLabel(props: RewardLabelProps): JSX.Element {
   const { result, proposalId, className = "" } = props;
-  const { unrewardedProposals } = useTorus();
+  const { unrewardedProposals } = useGovernance();
 
-  const isUnrewarded = unrewardedProposals?.includes(proposalId);
+  const isUnrewarded = unrewardedProposals.data?.includes(proposalId);
 
   const getRewardStatus = () => {
     return match(result)({

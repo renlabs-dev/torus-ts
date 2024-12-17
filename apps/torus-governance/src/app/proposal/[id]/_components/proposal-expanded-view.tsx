@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { LoaderCircle } from "lucide-react";
 
 import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
-import { useTorus } from "@torus-ts/providers/use-torus";
 
 import type { VoteStatus } from "../../../components/vote-label";
 import { CreateComment } from "~/app/components/comments/create-comment";
@@ -16,6 +15,7 @@ import { ProposalVoteCard } from "~/app/components/proposal/proposal-vote-card";
 import { RewardLabel } from "~/app/components/proposal/reward-label";
 import { VoterList } from "~/app/components/proposal/voter-list";
 import { VoteData } from "~/app/components/vote-data";
+import { useGovernance } from "~/context/governance-provider";
 import { handleCustomProposal } from "../../../../utils";
 import { StatusLabel } from "../../../components/status-label";
 
@@ -51,8 +51,8 @@ const handleUserVotes = ({
 
 export function ProposalExpandedView(props: CustomContent): JSX.Element {
   const { paramId } = props;
-  const { selectedAccount, proposalsWithMeta, isProposalsLoading, lastBlock } =
-    useTorus();
+  const { selectedAccount, proposalsWithMeta, lastBlock, proposals } =
+    useGovernance();
 
   const content = useMemo(() => {
     const proposal = proposalsWithMeta?.find(
@@ -82,7 +82,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
     };
   }, [proposalsWithMeta, paramId, selectedAccount]);
 
-  if (isProposalsLoading || !proposalsWithMeta)
+  if (proposals.isLoading || !proposalsWithMeta)
     return (
       <div className="flex h-full w-full items-center justify-center lg:h-auto">
         <h1 className="text-2xl text-white">Loading...</h1>
@@ -112,7 +112,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
               id={content.id}
               creationBlock={content.creationBlock}
               expirationBlock={content.expirationBlock}
-              lastBlockNumber={lastBlock?.blockNumber ?? 0}
+              lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
             />
             {isProposalOpen && (
               <>
@@ -154,7 +154,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
             id={content.id}
             creationBlock={content.creationBlock}
             expirationBlock={content.expirationBlock}
-            lastBlockNumber={lastBlock?.blockNumber ?? 0}
+            lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
           />
           {isProposalOpen && <VoterList proposalStatus={content.status} />}
         </div>

@@ -2,21 +2,18 @@
 
 import React, { useState } from "react";
 
-import type {
-  InjectedAccountWithMeta,
-  Stake,
-  TransactionResult,
-} from "@torus-ts/ui/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
+import type { Stake, TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Input, TransactionStatus } from "@torus-ts/ui";
 import { fromNano } from "@torus-ts/utils/subspace";
 
+import { usePage } from "~/context/page-provider";
 import { ValidatorsList } from "./validators-list";
 
 export interface GenericActionProps {
   balance: bigint | undefined;
   selectedAccount: InjectedAccountWithMeta;
-  userStakeWeight: bigint | null;
+  userStakeWeight: bigint | undefined;
 }
 
 export function UnstakeAction(
@@ -47,9 +44,9 @@ export function UnstakeAction(
   );
 
   const [stakedAmount, setStakedAmount] = useState<string | null>(null);
-  const { userTotalStaked } = useTorus();
+  const { accountStakedBy } = usePage();
 
-  const stakedValidators = userTotalStaked ?? [];
+  const stakedValidators = accountStakedBy.data ?? [];
 
   const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;

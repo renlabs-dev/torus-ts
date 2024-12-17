@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronsUp, X } from "lucide-react";
 
+import { useKeyStakedBy } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
   Card,
@@ -62,10 +63,12 @@ export function DelegatedList() {
     activeTab === "modules"
       ? getModuleTotalPercentage()
       : getSubnetTotalPercentage();
-  const { selectedAccount, userTotalStaked } = useTorus();
+  const { selectedAccount, api: torusApi } = useTorus();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const accountStakedBy = useKeyStakedBy(torusApi, selectedAccount?.address);
 
   function handleAutoCompletePercentage() {
     const items = activeTab === "modules" ? delegatedModules : delegatedSubnets;
@@ -121,7 +124,10 @@ export function DelegatedList() {
     return formatToken(Number(data));
   }
 
-  const userStakeWeight = userWeightPower(userTotalStaked, validatorAddress);
+  const userStakeWeight = userWeightPower(
+    accountStakedBy.data,
+    validatorAddress,
+  );
 
   useEffect(() => {
     if (moduleError) {

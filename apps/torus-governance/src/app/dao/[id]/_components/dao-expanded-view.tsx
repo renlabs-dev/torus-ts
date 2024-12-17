@@ -2,8 +2,6 @@
 
 import { LoaderCircle } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
-
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
 import { CreateCadreCandidates } from "~/app/components/dao/create-cadre-candidates";
@@ -11,6 +9,7 @@ import { DaoStatusLabel } from "~/app/components/dao/dao-status-label";
 import { DaoVoteCard } from "~/app/components/dao/dao-vote-card";
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
+import { useGovernance } from "~/context/governance-provider";
 import { handleCustomDaos } from "../../../../utils";
 
 interface CustomContent {
@@ -20,7 +19,7 @@ interface CustomContent {
 export function DaoExpandedView(props: CustomContent): JSX.Element {
   const { paramId } = props;
 
-  const { daosWithMeta, isDaosLoading, lastBlock } = useTorus();
+  const { daosWithMeta, daos, lastBlock } = useGovernance();
 
   function handleDaosContent() {
     const dao = daosWithMeta?.find((d) => d.id === paramId);
@@ -41,7 +40,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
 
   const content = handleDaosContent();
 
-  if (isDaosLoading || !content)
+  if (daos.isLoading || !content)
     return (
       <div className="flex w-full items-center justify-center lg:h-[calc(100svh-203px)]">
         <h1 className="text-2xl text-white">Loading...</h1>
@@ -64,7 +63,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
               author={content.author}
               id={content.id}
               creationBlock={content.creationBlock}
-              lastBlockNumber={lastBlock?.blockNumber ?? 0}
+              lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
             />
             <DaoVoteCard daoId={content.id} daoStatus={content.status} />
             {/* <VoteData proposalStatus={content.status} /> */}
@@ -91,7 +90,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
             author={content.author}
             id={content.id}
             creationBlock={content.creationBlock}
-            lastBlockNumber={lastBlock?.blockNumber ?? 0}
+            lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
           />
           <CreateCadreCandidates />
           {/* <VoteData proposalStatus={content.status} /> */}

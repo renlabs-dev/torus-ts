@@ -3,10 +3,8 @@ import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/ui/types";
-import { useModuleBurn, useSubnetList } from "@torus-ts/providers/hooks";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   Input,
@@ -26,6 +24,8 @@ import {
 } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
+import { useGovernance } from "~/context/governance-provider";
+
 const moduleSchema = z.object({
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Body is required"),
@@ -33,11 +33,13 @@ const moduleSchema = z.object({
 
 export function RegisterModule(): JSX.Element {
   const router = useRouter();
-  const { isConnected, registerModule, balance, api } = useTorus();
-  const { data: subnetList, isLoading: isSubnetListLoading } =
-    useSubnetList(api);
-
-  const { data: moduleBurn } = useModuleBurn(api);
+  const {
+    isAccountConnected,
+    registerModule,
+    accountFreeBalance,
+    subnetList,
+    moduleBurn,
+  } = useGovernance();
 
   const [subnetName, setSubnetName] = useState("");
   const [address, setAddress] = useState("");
@@ -63,14 +65,14 @@ export function RegisterModule(): JSX.Element {
   }
 
   function getModuleBurn(subnetId: string) {
-    if (!moduleBurn) {
+    if (!moduleBurn.data) {
       return 0;
     }
     if (Number(subnetId) === 0) {
       return 0;
     }
 
-    return formatToken(Number(moduleBurn[subnetId]));
+    return formatToken(Number(moduleBurn.data[subnetId]));
   }
 
   async function uploadFile(fileToUpload: File): Promise<void> {
@@ -90,14 +92,14 @@ export function RegisterModule(): JSX.Element {
         return;
       }
 
-      if (!balance) {
+      if (!accountFreeBalance.data) {
         toast.error("Balance is still loading");
         return;
       }
 
       const moduleCost = 2000;
 
-      if (Number(balance) > moduleCost) {
+      if (Number(accountFreeBalance.data) > moduleCost) {
         void registerModule({
           subnetName,
           address,
@@ -108,7 +110,7 @@ export function RegisterModule(): JSX.Element {
         });
       } else {
         toast.error(
-          `Insufficient balance to create module. Required: ${moduleCost} but got ${balance}`,
+          `Insufficient balance to create module. Required: ${moduleCost} but got ${formatToken(accountFreeBalance.data)}`,
         );
         setTransactionStatus({
           status: "ERROR",
@@ -183,12 +185,12 @@ export function RegisterModule(): JSX.Element {
               <SelectValue placeholder="Subnet Name (eg. General)" />
             </SelectTrigger>
             <SelectContent>
-              {isSubnetListLoading ? (
+              {subnetList.isLoading ? (
                 <SelectItem value="loading" disabled>
                   Loading...
                 </SelectItem>
-              ) : subnetList ? (
-                Object.entries(subnetList).map(([key, value]) => (
+              ) : subnetList.data ? (
+                Object.entries(subnetList.data).map(([key, value]) => (
                   <SelectItem key={key} value={value}>
                     {key} | {value} | {getModuleBurn(key)} COMAI (Current Burn)
                   </SelectItem>
@@ -239,7 +241,12 @@ export function RegisterModule(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="lg" type="submit" variant="outline" disabled={!isConnected}>
+      <Button
+        size="lg"
+        type="submit"
+        variant="outline"
+        disabled={!isAccountConnected}
+      >
         {uploading ? "Uploading..." : "Submit Module"}
       </Button>
 

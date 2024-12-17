@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChartPie, Database, Grid2X2, Grid2x2Plus } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
   Card,

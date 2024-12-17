@@ -2,9 +2,7 @@
 
 import { Copy, Ellipsis } from "lucide-react";
 
-import { useFreeBalance } from "@torus-ts/providers/hooks";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   Popover,
@@ -14,9 +12,11 @@ import {
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
+import { useGovernance } from "~/context/governance-provider";
+
 export const PopoverInfo = () => {
-  const { rewardAllocation, daoTreasury, api } = useTorus();
-  const { data: daosTreasuries } = useFreeBalance(api, daoTreasury);
+  const { rewardAllocation, daoTreasuryBalance, daoTreasuryAddress } =
+    useGovernance();
 
   function handleCopyClick(value: string): void {
     navigator.clipboard
@@ -38,24 +38,28 @@ export const PopoverInfo = () => {
       </PopoverTrigger>
       <PopoverContent className="mr-5 flex w-fit flex-col gap-6 border-muted bg-background px-4 py-4">
         <div>
-          {daosTreasuries !== undefined && (
+          {daoTreasuryBalance.data !== undefined && (
             <p className="flex items-end gap-1 text-base">
-              {formatToken(daosTreasuries)}
+              {formatToken(daoTreasuryBalance.data)}
               <span className="mb-0.5 text-xs">TOR</span>
             </p>
           )}
-          {!daosTreasuries && <Skeleton className="flex w-1/2 py-3" />}
+          {!daoTreasuryBalance.data && <Skeleton className="flex w-1/2 py-3" />}
 
           <span className="text-sx text-muted-foreground">
             DAO treasury funds
           </span>
         </div>
         <div>
-          {!daoTreasury && <Skeleton className="flex w-1/2 py-3" />}
-          {daoTreasury && (
+          {!daoTreasuryBalance.data && <Skeleton className="flex w-1/2 py-3" />}
+          {daoTreasuryBalance.data && (
             <span className="flex gap-3">
-              {smallAddress(daoTreasury)}
-              <button onClick={() => handleCopyClick(daoTreasury)}>
+              {smallAddress(daoTreasuryAddress.data as string)}
+              <button
+                onClick={() =>
+                  handleCopyClick(formatToken(daoTreasuryBalance.data))
+                }
+              >
                 <Copy
                   size={16}
                   className="text-muted-foreground hover:text-white"
@@ -68,10 +72,10 @@ export const PopoverInfo = () => {
           </span>
         </div>
         <div className="flex flex-col">
-          {!rewardAllocation && <Skeleton className="flex w-1/2 py-3" />}
-          {rewardAllocation !== undefined && (
+          {!rewardAllocation.data && <Skeleton className="flex w-1/2 py-3" />}
+          {rewardAllocation.data !== undefined && (
             <p className="flex items-end gap-1 text-base">
-              {formatToken(Number(rewardAllocation))}
+              {formatToken(rewardAllocation.data)}
               <span className="mb-0.5 text-xs">TOR</span>
             </p>
           )}

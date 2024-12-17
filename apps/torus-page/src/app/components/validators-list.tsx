@@ -2,9 +2,10 @@
 
 import { ChevronsLeft } from "lucide-react";
 
-import { useTorus } from "@torus-ts/providers/use-torus";
 import { Button, ScrollArea } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+
+import { usePage } from "~/context/page-provider";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";
@@ -21,7 +22,7 @@ interface Validator {
 }
 
 export function ValidatorsList(props: ValidatorsListProps) {
-  const { userTotalStaked } = useTorus();
+  const { accountStakedBy } = usePage();
 
   const validatorsList = [
     {
@@ -52,8 +53,8 @@ export function ValidatorsList(props: ValidatorsListProps) {
   ];
 
   function getValidatorsList(): Validator[] {
-    if (props.listType === "staked" && userTotalStaked) {
-      return userTotalStaked.map((item) => ({
+    if (props.listType === "staked" && accountStakedBy.data) {
+      return accountStakedBy.data.map((item) => ({
         name: `Staked amount: ${formatToken(Number(item.stake))}`,
         description: `Staked amount: ${formatToken(Number(item.stake))}`,
         address: item.address,

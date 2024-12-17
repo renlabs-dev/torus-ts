@@ -3,8 +3,13 @@ import {
   ExclamationCircleIcon,
 } from "@heroicons/react/24/solid";
 
-import type { TransactionResult } from "../types/transactions";
 import { cn, Loading } from "..";
+
+export interface TransactionResult {
+  finalized: boolean;
+  message: string | null;
+  status: "SUCCESS" | "ERROR" | "PENDING" | "STARTING" | null;
+}
 
 interface TransactionStatusProps {
   status: TransactionResult["status"];

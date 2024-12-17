@@ -1,88 +1,69 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 "use client";
 
-import type { SubmittableResult } from "@polkadot/api";
-import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { InjectedExtension } from "@polkadot/extension-inject/types";
-import type { Balance, DispatchError } from "@polkadot/types/interfaces";
 import type {
-  QueryObserverResult,
-  RefetchOptions,
-} from "@tanstack/react-query";
+  InjectedAccountWithMeta,
+  InjectedExtension,
+} from "@polkadot/extension-inject/types";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { toast } from "react-toastify";
 
 import type {
+  Api,
   CustomMetadataState,
   DaoApplications,
-  LastBlock,
   Proposal,
-  SS58Address,
-  StakeData,
 } from "@torus-ts/subspace";
+import { sb_balance } from "@torus-ts/subspace";
+import { toNano2 } from "@torus-ts/utils/subspace";
+
 import type {
   AddCustomProposal,
   AddDaoApplication,
   addTransferDaoTreasuryProposal,
   Bridge,
-  InjectedAccountWithMeta,
   RegisterModule,
   RemoveVote,
   Stake,
-  TransactionResult,
   Transfer,
   TransferStake,
   UpdateDelegatingVotingPower,
   Vote,
-} from "@torus-ts/ui/types";
-import { checkSS58 } from "@torus-ts/subspace";
-import { WalletDropdown } from "@torus-ts/ui/components";
-import { toNano2 } from "@torus-ts/utils/subspace";
+} from "./_types";
+import { sendTransaction } from "./_components/send-transaction";
 
-import type { BaseDao, BaseProposal } from "../hooks";
-import {
-  useAllStakeOut,
-  useCustomMetadata,
-  useDaos,
-  useDaoTreasury,
-  useFreeBalance,
-  useLastBlock,
-  useNotDelegatingVoting,
-  useProposals,
-  useRewardAllocation,
-  useUnrewardedProposals,
-  useUserTotalStaked,
-} from "../hooks";
+export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
 export type WithMetadataState<T> = T & { customData?: CustomMetadataState };
 export type DaoState = WithMetadataState<DaoApplications>;
 
 export type ProposalState = WithMetadataState<Proposal>;
-interface torusApiState {
+
+export interface TorusApiState {
   web3Accounts: (() => Promise<InjectedAccountWithMeta[]>) | null;
   web3Enable: ((appName: string) => Promise<InjectedExtension[]>) | null;
   web3FromAddress: ((address: string) => Promise<InjectedExtension>) | null;
 }
 
 interface TorusContextType {
-  api: ApiPromise | null;
+  api: Api | null;
   torusCacheUrl: string;
 
-  isConnected: boolean;
-  setIsConnected: (arg: boolean) => void;
+  setIsAccountConnected: (arg: boolean) => void;
   isInitialized: boolean;
 
   handleSelectWallet: (account: InjectedAccountWithMeta) => void;
   handleGetWallets: () => Promise<void>;
   handleLogout: () => void;
 
+  isAccountConnected: boolean;
   accounts: InjectedAccountWithMeta[] | undefined;
   selectedAccount: InjectedAccountWithMeta | null;
   setSelectedAccount: (arg: InjectedAccountWithMeta | null) => void;
   estimateFee: (
     recipientAddress: string,
     amount: string,
-  ) => Promise<Balance | null>;
+  ) => Promise<bigint | null>;
   handleWalletModal: (state?: boolean) => void;
   openWalletModal: boolean;
 
@@ -91,6 +72,7 @@ interface TorusContextType {
   removeStake: (stake: Stake) => Promise<void>;
   transfer: (transfer: Transfer) => Promise<void>;
   transferStake: (transfer: TransferStake) => Promise<void>;
+
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
@@ -100,44 +82,9 @@ interface TorusContextType {
   addTransferDaoTreasuryProposal: (
     proposal: addTransferDaoTreasuryProposal,
   ) => Promise<void>;
-
   updateDelegatingVotingPower: (
     updateDelegating: UpdateDelegatingVotingPower,
   ) => Promise<void>;
-
-  lastBlock: LastBlock | undefined;
-  isLastBlockLoading: boolean;
-
-  balance: bigint | undefined;
-  isBalanceLoading: boolean;
-
-  daoTreasury: SS58Address | undefined;
-  isDaoTreasuryLoading: boolean;
-
-  notDelegatingVoting: string[] | undefined;
-  isNotDelegatingVotingLoading: boolean;
-  refetchNotDelegatingVoting: (
-    options?: RefetchOptions,
-  ) => Promise<QueryObserverResult<SS58Address[], Error>>;
-
-  unrewardedProposals: number[] | undefined;
-  isUnrewardedProposalsLoading: boolean;
-
-  rewardAllocation: bigint | null | undefined;
-  isRewardAllocationLoading: boolean;
-
-  stakeOut: StakeData | undefined;
-  isStakeOutLoading: boolean;
-
-  // TODO: rename to `userStaked` or something, as it's not adding up the stakes
-  userTotalStaked: { address: string; stake: bigint }[] | undefined;
-  isUserTotalStakedLoading: boolean;
-
-  proposalsWithMeta: ProposalState[] | undefined;
-  isProposalsLoading: boolean;
-
-  daosWithMeta: DaoState[] | undefined;
-  isDaosLoading: boolean;
 
   signHex: (msgHex: `0x${string}`) => Promise<{
     signature: `0x${string}`;
@@ -159,13 +106,13 @@ export function TorusProvider({
   torusCacheUrl,
 }: TorusProviderProps): JSX.Element {
   const [api, setApi] = useState<ApiPromise | null>(null);
-  const [torusApi, setTorusApi] = useState<torusApiState>({
+  const [torusApi, setTorusApi] = useState<TorusApiState>({
     web3Enable: null,
     web3Accounts: null,
     web3FromAddress: null,
   });
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isAccountConnected, setIsAccountConnected] = useState(false);
   const [openWalletModal, setOpenWalletModal] = useState(false);
   const [accounts, setAccounts] = useState<
     InjectedAccountWithMeta[] | undefined
@@ -196,7 +143,6 @@ export function TorusProvider({
     return () => {
       void api?.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wsEndpoint]);
 
   async function getWallets(): Promise<InjectedAccountWithMeta[] | undefined> {
@@ -230,14 +176,14 @@ export function TorusProvider({
     setSelectedAccount(account);
     localStorage.removeItem("authorization");
     localStorage.setItem("favoriteWalletAddress", account.address);
-    setIsConnected(true);
+    setIsAccountConnected(true);
   };
 
   const handleLogout = () => {
     localStorage.removeItem("authorization");
     localStorage.removeItem("favoriteWalletAddress");
     setSelectedAccount(null);
-    setIsConnected(false);
+    setIsAccountConnected(false);
   };
 
   useEffect(() => {
@@ -254,375 +200,16 @@ export function TorusProvider({
         );
         if (accountExist) {
           setSelectedAccount(accountExist);
-          setIsConnected(true);
+          setIsAccountConnected(true);
         }
       };
       fetchWallets().catch(console.error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitialized]);
 
   const handleWalletModal = (state?: boolean): void => {
     setOpenWalletModal(state ?? !openWalletModal);
   };
-
-  // == Transaction Handler ==
-
-  async function sendTransaction(
-    transactionType: string,
-    transaction: SubmittableExtrinsic<"promise">,
-    callback?: (result: TransactionResult) => void,
-  ): Promise<void> {
-    if (!api || !selectedAccount || !torusApi.web3FromAddress) return;
-    try {
-      const injector = await torusApi.web3FromAddress(selectedAccount.address);
-      await transaction.signAndSend(
-        selectedAccount.address,
-        { signer: injector.signer },
-        (result: SubmittableResult) => {
-          if (result.status.isInBlock) {
-            callback?.({
-              finalized: false,
-              status: "PENDING",
-              message: `${transactionType} in progress`,
-            });
-          }
-          if (result.status.isFinalized) {
-            const success = result.findRecord("system", "ExtrinsicSuccess");
-            const failed = result.findRecord("system", "ExtrinsicFailed");
-
-            if (success) {
-              toast.success(`${transactionType} successful`);
-              callback?.({
-                finalized: true,
-                status: "SUCCESS",
-                message: `${transactionType} successful`,
-              });
-              setTimeout(() => {
-                callback?.({
-                  status: null,
-                  message: null,
-                  finalized: false,
-                });
-              }, 6000);
-            } else if (failed) {
-              const [dispatchError] = failed.event.data as unknown as [
-                DispatchError,
-              ];
-              let msg = `${transactionType} failed: ${dispatchError.toString()}`;
-
-              if (dispatchError.isModule) {
-                const mod = dispatchError.asModule;
-                const error = api.registry.findMetaError(mod);
-
-                if (error.section && error.name) {
-                  msg = `${transactionType} failed: ${error.name}`;
-                }
-              }
-
-              toast.error(msg);
-              callback?.({ finalized: true, status: "ERROR", message: msg });
-            }
-          }
-        },
-      );
-    } catch (err) {
-      toast.error(err as string);
-    }
-  }
-
-  // == Transactions ==
-
-  async function addStake({
-    validator,
-    amount,
-    callback,
-  }: Stake): Promise<void> {
-    if (!api?.tx.subspaceModule?.addStake) return;
-
-    const transaction = api.tx.subspaceModule.addStake(
-      validator,
-      toNano2(amount),
-    );
-    await sendTransaction("Staking", transaction, callback);
-  }
-
-  async function removeStake({
-    validator,
-    amount,
-    callback,
-  }: Stake): Promise<void> {
-    if (!api?.tx.subspaceModule?.removeStake) return;
-
-    const transaction = api.tx.subspaceModule.removeStake(
-      validator,
-      toNano2(amount),
-    );
-    await sendTransaction("Unstaking", transaction, callback);
-  }
-
-  async function transfer({ to, amount, callback }: Transfer): Promise<void> {
-    if (!api?.tx.balances.transferAllowDeath) return;
-    const transaction = api.tx.balances.transferAllowDeath(to, toNano2(amount));
-    await sendTransaction("Transfer", transaction, callback);
-  }
-
-  async function bridge({ amount, callback }: Bridge): Promise<void> {
-    if (!api?.tx.subspaceModule?.bridge) return;
-    const transaction = api.tx.subspaceModule.bridge(toNano2(amount));
-    await sendTransaction("Bridge", transaction, callback);
-  }
-
-  async function transferStake({
-    fromValidator,
-    toValidator,
-    amount,
-    callback,
-  }: TransferStake): Promise<void> {
-    if (!api?.tx.subspaceModule?.transferStake) return;
-
-    const transaction = api.tx.subspaceModule.transferStake(
-      fromValidator,
-      toValidator,
-      toNano2(amount),
-    );
-    await sendTransaction("Transfer Stake", transaction, callback);
-  }
-
-  // == Subspace ==
-
-  async function registerModule({
-    subnetName,
-    address,
-    name,
-    moduleId,
-    metadata,
-    callback,
-  }: RegisterModule): Promise<void> {
-    if (!api?.tx.subspaceModule?.register) return;
-
-    console.log(api.tx.subspaceModule);
-
-    const transaction = api.tx.subspaceModule.register(
-      subnetName,
-      name,
-      address,
-      moduleId,
-      metadata,
-    );
-    await sendTransaction("Register Module", transaction, callback);
-  }
-
-  // == Governance ==
-
-  async function voteProposal({
-    proposalId,
-    vote,
-    callback,
-  }: Vote): Promise<void> {
-    if (!api?.tx.governanceModule?.voteProposal) return;
-
-    const transaction = api.tx.governanceModule.voteProposal(proposalId, vote);
-    await sendTransaction("Vote", transaction, callback);
-  }
-
-  async function removeVoteProposal({
-    proposalId,
-    callback,
-  }: RemoveVote): Promise<void> {
-    if (!api?.tx.governanceModule?.removeVoteProposal) return;
-
-    const transaction = api.tx.governanceModule.removeVoteProposal(proposalId);
-    await sendTransaction("Remove Vote Proposal", transaction, callback);
-  }
-
-  async function addCustomProposal({
-    IpfsHash,
-    callback,
-  }: AddCustomProposal): Promise<void> {
-    if (!api?.tx.governanceModule?.addGlobalCustomProposal) return;
-
-    const transaction =
-      api.tx.governanceModule.addGlobalCustomProposal(IpfsHash);
-    await sendTransaction("Create Custom Proposal", transaction, callback);
-  }
-
-  async function addDaoApplication({
-    IpfsHash,
-    applicationKey,
-    callback,
-  }: AddDaoApplication): Promise<void> {
-    if (!api?.tx.governanceModule?.addDaoApplication) return;
-
-    const transaction = api.tx.governanceModule.addDaoApplication(
-      applicationKey,
-      IpfsHash,
-    );
-    await sendTransaction("Create S2 Application", transaction, callback);
-  }
-
-  async function addTransferDaoTreasuryProposal({
-    IpfsHash,
-    value,
-    dest,
-    callback,
-  }: addTransferDaoTreasuryProposal): Promise<void> {
-    if (!api?.tx.governanceModule?.addTransferDaoTreasuryProposal) return;
-
-    const transaction = api.tx.governanceModule.addTransferDaoTreasuryProposal(
-      IpfsHash,
-      toNano2(value),
-      dest,
-    );
-    await sendTransaction(
-      "Create Transfer Dao Treasury Proposal",
-      transaction,
-      callback,
-    );
-  }
-
-  async function estimateFee(
-    recipientAddress: string,
-    amount: string,
-  ): Promise<Balance | null> {
-    try {
-      // Check if the API is ready and has the transfer function
-      if (!api?.isReady) {
-        console.error("API is not ready");
-        return null;
-      }
-
-      // Check if all required parameters are provided
-      if (!amount || !selectedAccount) {
-        console.error("Missing required parameters");
-        return null;
-      }
-
-      // Create the transaction
-      const transaction = api.tx.balances.transferKeepAlive(
-        recipientAddress,
-        amount,
-      );
-
-      // Estimate the fee
-      const info = await transaction.paymentInfo(selectedAccount.address);
-
-      return info.partialFee;
-    } catch (error) {
-      console.error("Error estimating fee:", error);
-      return null;
-    }
-  }
-
-  async function updateDelegatingVotingPower({
-    isDelegating,
-    callback,
-  }: UpdateDelegatingVotingPower): Promise<void> {
-    if (
-      !api?.tx.governanceModule?.enableVotePowerDelegation ||
-      !api.tx.governanceModule.disableVotePowerDelegation
-    )
-      return;
-
-    const transaction = isDelegating
-      ? api.tx.governanceModule.enableVotePowerDelegation()
-      : api.tx.governanceModule.disableVotePowerDelegation();
-
-    await sendTransaction(
-      "Update Delegating Voting Power",
-      transaction,
-      callback,
-    );
-  }
-
-  // Hooks
-
-  // Last block with API
-  const { data: lastBlock, isLoading: isLastBlockLoading } = useLastBlock(api);
-
-  // Balance
-
-  const userAddress = selectedAccount?.address
-    ? checkSS58(selectedAccount.address)
-    : null;
-
-  const { data: balance, isLoading: isBalanceLoading } = useFreeBalance(
-    lastBlock?.apiAtBlock,
-    userAddress,
-  );
-
-  // Dao Treasury
-  const { data: daoTreasury, isLoading: isDaoTreasuryLoading } = useDaoTreasury(
-    lastBlock?.apiAtBlock,
-  );
-
-  // Not Delegating Voting Power Set
-  const {
-    data: notDelegatingVoting,
-    isLoading: isNotDelegatingVotingLoading,
-    refetch: refetchNotDelegatingVoting,
-  } = useNotDelegatingVoting(lastBlock?.apiAtBlock);
-
-  // Unrewarded Proposals
-  const { data: unrewardedProposals, isLoading: isUnrewardedProposalsLoading } =
-    useUnrewardedProposals(lastBlock?.apiAtBlock);
-
-  // Reward Allocation
-  const { data: rewardAllocation, isLoading: isRewardAllocationLoading } =
-    useRewardAllocation(lastBlock?.apiAtBlock);
-
-  // Stake Out
-  const { data: stakeOut, isLoading: isStakeOutLoading } =
-    useAllStakeOut(torusCacheUrl);
-
-  // User Total Staked
-  const { data: userTotalStaked, isLoading: isUserTotalStakedLoading } =
-    useUserTotalStaked(lastBlock?.apiAtBlock, selectedAccount?.address);
-
-  // Proposals
-  const { data: proposalQuery, isLoading: isProposalsLoading } = useProposals(
-    lastBlock?.apiAtBlock,
-  );
-
-  // Custom Metadata for Proposals
-  const customProposalMetadataQueryMap = useCustomMetadata<BaseProposal>(
-    "proposal",
-    lastBlock,
-    proposalQuery,
-  );
-
-  const proposalsWithMeta = proposalQuery?.map((proposal) => {
-    const id = proposal.id;
-    const metadataQuery = customProposalMetadataQueryMap.get(id);
-    const data = metadataQuery?.data;
-    if (data == null) {
-      return proposal;
-    }
-    const [, customData] = data;
-    return { ...proposal, customData };
-  });
-
-  // Daos
-
-  const { data: daosQuery, isLoading: isDaosLoading } = useDaos(
-    lastBlock?.apiAtBlock,
-  );
-  const customDaoMetadataQueryMap = useCustomMetadata<BaseDao>(
-    "dao",
-    lastBlock,
-    daosQuery,
-  );
-
-  const daosWithMeta = daosQuery?.map((dao) => {
-    const id = dao.id;
-    const metadataQuery = customDaoMetadataQueryMap.get(id);
-    const data = metadataQuery?.data;
-    if (data == null) {
-      return dao;
-    }
-    const [, customData] = data;
-    return { ...dao, customData };
-  });
 
   /**
    * Sings a message in hex format
@@ -650,13 +237,290 @@ export function TorusProvider({
       address: selectedAccount.address,
     };
   }
+
+  // == Transactions ==
+
+  async function addStake({
+    validator,
+    amount,
+    callback,
+  }: Stake): Promise<void> {
+    if (!api?.tx.subspaceModule?.addStake) return;
+
+    const transaction = api.tx.subspaceModule.addStake(
+      validator,
+      toNano2(amount),
+    );
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Staking",
+    });
+  }
+
+  async function removeStake({
+    validator,
+    amount,
+    callback,
+  }: Stake): Promise<void> {
+    if (!api?.tx.subspaceModule?.removeStake) return;
+
+    const transaction = api.tx.subspaceModule.removeStake(
+      validator,
+      toNano2(amount),
+    );
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Unstaking",
+    });
+  }
+
+  async function transfer({ to, amount, callback }: Transfer): Promise<void> {
+    if (!api?.tx.balances.transferAllowDeath) return;
+    const transaction = api.tx.balances.transferAllowDeath(to, toNano2(amount));
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Transfer",
+    });
+  }
+
+  async function bridge({ amount, callback }: Bridge): Promise<void> {
+    if (!api?.tx.subspaceModule?.bridge) return;
+    const transaction = api.tx.subspaceModule.bridge(toNano2(amount));
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Bridge",
+    });
+  }
+
+  async function transferStake({
+    fromValidator,
+    toValidator,
+    amount,
+    callback,
+  }: TransferStake): Promise<void> {
+    if (!api?.tx.subspaceModule?.transferStake) return;
+
+    const transaction = api.tx.subspaceModule.transferStake(
+      fromValidator,
+      toValidator,
+      toNano2(amount),
+    );
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Transfer Stake",
+    });
+  }
+
+  // == Subspace ==
+
+  async function registerModule({
+    subnetName,
+    address,
+    name,
+    moduleId,
+    metadata,
+    callback,
+  }: RegisterModule): Promise<void> {
+    if (!api?.tx.subspaceModule?.register) return;
+
+    console.log(api.tx.subspaceModule);
+
+    const transaction = api.tx.subspaceModule.register(
+      subnetName,
+      name,
+      address,
+      moduleId,
+      metadata,
+    );
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Register Module",
+    });
+  }
+
+  // == Governance ==
+
+  async function voteProposal({
+    proposalId,
+    vote,
+    callback,
+  }: Vote): Promise<void> {
+    if (!api?.tx.governanceModule?.voteProposal) return;
+
+    const transaction = api.tx.governanceModule.voteProposal(proposalId, vote);
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Vote Proposal",
+    });
+  }
+
+  async function removeVoteProposal({
+    proposalId,
+    callback,
+  }: RemoveVote): Promise<void> {
+    if (!api?.tx.governanceModule?.removeVoteProposal) return;
+
+    const transaction = api.tx.governanceModule.removeVoteProposal(proposalId);
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Remove Vote",
+    });
+  }
+
+  async function addCustomProposal({
+    IpfsHash,
+    callback,
+  }: AddCustomProposal): Promise<void> {
+    if (!api?.tx.governanceModule?.addGlobalCustomProposal) return;
+
+    const transaction =
+      api.tx.governanceModule.addGlobalCustomProposal(IpfsHash);
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Create Custom Proposal",
+    });
+  }
+
+  async function addDaoApplication({
+    IpfsHash,
+    applicationKey,
+    callback,
+  }: AddDaoApplication): Promise<void> {
+    if (!api?.tx.governanceModule?.addDaoApplication) return;
+
+    const transaction = api.tx.governanceModule.addDaoApplication(
+      applicationKey,
+      IpfsHash,
+    );
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Create Dao Application",
+    });
+  }
+
+  async function addTransferDaoTreasuryProposal({
+    IpfsHash,
+    value,
+    dest,
+    callback,
+  }: addTransferDaoTreasuryProposal): Promise<void> {
+    if (!api?.tx.governanceModule?.addTransferDaoTreasuryProposal) return;
+
+    const transaction = api.tx.governanceModule.addTransferDaoTreasuryProposal(
+      IpfsHash,
+      toNano2(value),
+      dest,
+    );
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Transfer Dao Treasury Proposal",
+    });
+  }
+
+  async function estimateFee(recipientAddress: string, amount: string) {
+    try {
+      // Check if the API is ready and has the transfer function
+      if (!api?.isReady) {
+        console.error("API is not ready");
+        return null;
+      }
+
+      // Check if all required parameters are provided
+      if (!amount || !selectedAccount) {
+        console.error("Missing required parameters");
+        return null;
+      }
+
+      // Create the transaction
+      const transaction = api.tx.balances.transferKeepAlive(
+        recipientAddress,
+        amount,
+      );
+
+      // Estimate the fee
+      const info = await transaction.paymentInfo(selectedAccount.address);
+
+      return sb_balance.parse(info.partialFee);
+    } catch (error) {
+      console.error("Error estimating fee:", error);
+      return null;
+    }
+  }
+
+  async function updateDelegatingVotingPower({
+    isDelegating,
+    callback,
+  }: UpdateDelegatingVotingPower): Promise<void> {
+    if (
+      !api?.tx.governanceModule?.enableVotePowerDelegation ||
+      !api.tx.governanceModule.disableVotePowerDelegation
+    )
+      return;
+
+    const transaction = isDelegating
+      ? api.tx.governanceModule.enableVotePowerDelegation()
+      : api.tx.governanceModule.disableVotePowerDelegation();
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Update Delegating Voting Power",
+    });
+  }
   return (
     <TorusContext.Provider
       value={{
         api,
         torusCacheUrl,
-        isConnected,
-        setIsConnected,
+        isAccountConnected,
+        setIsAccountConnected,
         isInitialized,
         estimateFee,
         accounts,
@@ -668,9 +532,6 @@ export function TorusProvider({
         handleSelectWallet,
         handleWalletModal,
         openWalletModal,
-
-        balance,
-        isBalanceLoading,
 
         bridge,
 
@@ -689,49 +550,10 @@ export function TorusProvider({
 
         updateDelegatingVotingPower,
 
-        lastBlock,
-        isLastBlockLoading,
-
-        daoTreasury,
-        isDaoTreasuryLoading,
-
-        notDelegatingVoting,
-        isNotDelegatingVotingLoading,
-        refetchNotDelegatingVoting,
-
-        unrewardedProposals,
-        isUnrewardedProposalsLoading,
-
-        rewardAllocation,
-        isRewardAllocationLoading,
-
-        stakeOut,
-        isStakeOutLoading,
-
-        userTotalStaked,
-        isUserTotalStakedLoading,
-
-        proposalsWithMeta,
-        isProposalsLoading,
-
-        daosWithMeta,
-        isDaosLoading,
-
         signHex,
       }}
     >
       {children}
-
-      <WalletDropdown
-        accounts={accounts}
-        balance={balance}
-        selectedAccount={selectedAccount}
-        handleGetWallets={handleGetWallets}
-        handleLogout={handleLogout}
-        isInitialized={isInitialized}
-        handleSelectWallet={handleSelectWallet}
-        stakeOut={stakeOut}
-      />
     </TorusContext.Provider>
   );
 }

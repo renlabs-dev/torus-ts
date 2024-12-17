@@ -125,7 +125,7 @@ export async function processVotesAndStakes(
 ): Promise<VoteWithStake[]> {
   // Get addresses not delegating voting power and get stake information
   const [notDelegatingAddresses, stakeFrom, stakeOut] = await Promise.all([
-    queryNotDelegatingVotingPower(api),
+    queryAccountsNotDelegatingVotingPower(api),
     queryCachedStakeFrom(torusCacheUrl),
     queryCachedStakeOut(torusCacheUrl),
   ]);
@@ -234,7 +234,7 @@ export async function queryDaoTreasuryAddress(
   return sb_address.parse(addr);
 }
 
-export async function queryNotDelegatingVotingPower(
+export async function queryAccountsNotDelegatingVotingPower(
   api: Api,
 ): Promise<SS58Address[]> {
   const value = await api.query.governanceModule.notDelegatingVotingPower();

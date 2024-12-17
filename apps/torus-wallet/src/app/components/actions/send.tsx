@@ -3,17 +3,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
-import type { TransactionResult } from "@torus-ts/ui/types";
-import { useTorus } from "@torus-ts/providers/use-torus";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
 import { Card, Input, Label, Skeleton, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
+import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function SendAction() {
-  const { estimateFee, balance } = useTorus();
+  const { estimateFee, accountFreeBalance } = useWallet();
 
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function SendAction() {
         setEstimatedFee(feeStr);
 
         const newMaxAmount = calculateMaxAmount(
-          fromNano(balance?.toString() ?? "0"),
+          fromNano(accountFreeBalance.data?.toString() ?? "0"),
           feeStr,
         );
         setMaxAmount(newMaxAmount);

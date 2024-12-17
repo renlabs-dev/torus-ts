@@ -5,9 +5,8 @@ import MarkdownPreview from "@uiw/react-markdown-preview";
 import { Info } from "lucide-react";
 import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/ui/types";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   Input,
@@ -20,6 +19,9 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
+import { formatToken } from "@torus-ts/utils/subspace";
+
+import { useGovernance } from "~/context/governance-provider";
 
 const daoSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -30,7 +32,8 @@ const daoSchema = z.object({
 
 export function CreateDao(): JSX.Element {
   const router = useRouter();
-  const { isConnected, addDaoApplication, balance } = useTorus();
+  const { isAccountConnected, addDaoApplication, accountFreeBalance } =
+    useGovernance();
 
   const [applicationKey, setApplicationKey] = useState("");
 
@@ -70,14 +73,14 @@ export function CreateDao(): JSX.Element {
         return;
       }
 
-      if (!balance) {
+      if (!accountFreeBalance.data) {
         toast.error("Balance is still loading");
         return;
       }
 
       const daoApplicationCost = 1000;
 
-      if (Number(balance) > daoApplicationCost) {
+      if (Number(accountFreeBalance.data) > daoApplicationCost) {
         void addDaoApplication({
           applicationKey,
           IpfsHash: `ipfs://${ipfs.IpfsHash}`,
@@ -85,7 +88,7 @@ export function CreateDao(): JSX.Element {
         });
       } else {
         toast.error(
-          `Insufficient balance to create S2 Application. Required: ${daoApplicationCost} but got ${balance}`,
+          `Insufficient balance to create S2 Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
         );
         setTransactionStatus({
           status: "ERROR",
@@ -193,7 +196,12 @@ export function CreateDao(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button size="lg" type="submit" variant="outline" disabled={!isConnected}>
+      <Button
+        size="lg"
+        type="submit"
+        variant="outline"
+        disabled={!isAccountConnected}
+      >
         {uploading ? "Uploading..." : "Submit S2 Application"}
       </Button>
       {transactionStatus.status && (

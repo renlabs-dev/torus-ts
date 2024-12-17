@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/providers/use-toast";
-import { useTorus } from "@torus-ts/providers/use-torus";
 import {
   Button,
   Input,
@@ -16,6 +15,7 @@ import {
 } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
+import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
 const MAX_CONTENT_CHARACTERS = 500;
@@ -28,17 +28,10 @@ export function CreateCadreCandidates() {
   const [error, setError] = useState<string | null>(null);
   const [remainingChars, setRemainingChars] = useState(MAX_CONTENT_CHARACTERS);
 
-  const { selectedAccount, stakeOut } = useTorus();
+  const { selectedAccount, accountStakedBalance } = useGovernance();
 
   const { data: cadreUsers } = api.dao.byCadre.useQuery();
   const { data: cadreCandidates } = api.dao.byCadreCandidates.useQuery();
-
-  let userStakeWeight: bigint | null = null;
-
-  if (stakeOut != null && selectedAccount != null) {
-    const userStakeEntry = stakeOut.perAddr[selectedAccount.address];
-    userStakeWeight = userStakeEntry ?? 0n;
-  }
 
   const createCadreCandidateMutation = api.dao.addCadreCandidates.useMutation({
     onSuccess: () => {
@@ -77,8 +70,8 @@ export function CreateCadreCandidates() {
     }
 
     if (
-      !userStakeWeight ||
-      Number(formatToken(userStakeWeight)) < MIN_STAKE_REQUIRED
+      !accountStakedBalance ||
+      Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
     ) {
       setError(
         `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to apply.`,
