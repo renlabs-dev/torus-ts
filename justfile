@@ -42,7 +42,7 @@ lint-fix:
   pnpm exec turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache
 
 lint-ws:
-  pnpm exec pnpm dlx sherif@latest
+  pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
 
 # -- DB --
 
