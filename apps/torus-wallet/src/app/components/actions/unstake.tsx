@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
-import type { Stake, TransactionResult } from "@torus-ts/ui/types";
+import type { TransactionResult } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { TransactionStatus } from "@torus-ts/ui";
-import { fromNano } from "@torus-ts/utils/subspace";
+import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import { splitAddress } from "@torus-ts/utils";
+import { fromNano, smallAddress } from "@torus-ts/utils/subspace";
 
-import type { GenericActionProps } from "../wallet-actions";
-import { ValidatorsList } from "../../validators-list";
+import { ValidatorsList } from "../validators-list";
+import { WalletTransactionReview } from "../wallet-review";
 
-export function UnstakeAction(
-  props: {
-    removeStake: (stake: Stake) => Promise<void>;
-  } & GenericActionProps,
-) {
+export function UnstakeAction() {
+  const { userTotalStaked, removeStake } = useTorus();
+
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [inputError, setInputError] = useState<{
@@ -38,7 +37,6 @@ export function UnstakeAction(
   );
 
   const [stakedAmount, setStakedAmount] = useState<string | null>(null);
-  const { userTotalStaked } = useTorus();
 
   const stakedValidators = userTotalStaked ?? [];
 
@@ -77,20 +75,21 @@ export function UnstakeAction(
       setTransactionStatus(callbackReturn);
     };
 
-    const isValidInput = amount && recipient && !inputError.value;
+    // const isValidInput = amount && recipient && !inputError.value;
 
-    if (!isValidInput) return;
+    // if (!isValidInput) return;
 
-    void props.removeStake({
-      validator: recipient,
-      amount,
-      callback: handleCallback,
-    });
+    // void removeStake({
+    //   validator: recipient,
+    //   amount,
+    //   callback: handleCallback,
+    // });
   };
 
   const handleSelectValidator = (validator: { address: string }) => {
     setRecipient(validator.address);
     setCurrentView("wallet");
+    setAmount("");
     const validatorData = stakedValidators.find(
       (v: { address: string; stake: bigint }) =>
         v.address === validator.address,
@@ -108,25 +107,34 @@ export function UnstakeAction(
     }
   };
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const reviewData = [
+    {
+      label: "To",
+      content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
+    },
+    { label: "Amount", content: `${amount ? amount : 0} TOR` },
+  ];
   return (
-    <>
-      {currentView === "stakedValidators" ? (
-        <ValidatorsList
-          listType="staked"
-          onSelectValidator={handleSelectValidator}
-          onBack={() => setCurrentView("wallet")}
-          userAddress={props.selectedAccount.address}
-        />
-      ) : (
-        <div className="mt-4 w-full">
+    <div className="l flex w-full flex-col gap-4 md:flex-row">
+      <Card className="w-full animate-fade p-6 md:w-3/5">
+        {currentView === "stakedValidators" ? (
+          <ValidatorsList
+            listType="staked"
+            onSelectValidator={handleSelectValidator}
+            onBack={() => setCurrentView("wallet")}
+          />
+        ) : (
           <form
             onSubmit={handleSubmit}
-            className="flex w-full animate-fade-down flex-col gap-4 pt-4"
+            ref={formRef}
+            className="flex w-full flex-col gap-4"
           >
-            <div className="w-full">
-              <span className="text-base">Validator Address</span>
-              <div className="flex flex-row gap-3">
-                <input
+            <div className="flex w-full flex-col gap-2">
+              <Label htmlFor="unstake-recipient">Validator Address</Label>
+              <div className="flex flex-row gap-2">
+                <Input
+                  id="unstake-recipient"
                   type="text"
                   value={recipient}
                   required
@@ -134,40 +142,42 @@ export function UnstakeAction(
                   placeholder="The full address of the validator"
                   className="w-full border border-white/20 bg-[#898989]/5 p-2"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setCurrentView("stakedValidators")}
-                  className="flex w-fit items-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15"
+                  className="flex w-fit items-center px-6 py-2.5"
                 >
                   Staked Validators
-                </button>
+                </Button>
               </div>
               {inputError.recipient && (
-                <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
-                  {inputError.recipient}
-                </p>
+                <span className="text-red-400">{inputError.recipient}</span>
               )}
             </div>
-            <div className="w-full">
-              <p className="text-base">Value</p>
-              <div className="flex w-full gap-1">
-                <input
+            <div className="flex w-full flex-col gap-2">
+              <Label htmlFor="unstake-amount">Value</Label>
+              <div className="flex w-full gap-2">
+                <Input
+                  id="unstake-amount"
                   type="number"
                   value={amount}
+                  min={0}
                   required
                   onChange={handleAmountChange}
                   placeholder="The amount of COMAI to unstake"
-                  className="w-full border border-white/20 bg-[#898989]/5 p-2 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:text-gray-600/50 disabled:placeholder:text-gray-600/50"
+                  className="w-full p-2 disabled:cursor-not-allowed"
                   disabled={!recipient}
                 />
                 {stakedAmount && (
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={handleMaxClick}
-                    className="ml-2 whitespace-nowrap border border-blue-500 bg-blue-600/5 px-4 py-2 font-semibold text-blue-500 transition duration-200 hover:border-blue-400 hover:bg-blue-500/15"
+                    className="px-4 py-2"
                   >
                     Max
-                  </button>
+                  </Button>
                 )}
               </div>
               {inputError.value && (
@@ -176,32 +186,29 @@ export function UnstakeAction(
                 </p>
               )}
             </div>
-            <div className="mt-4 border-t border-white/20 pt-4">
-              <button
-                type="submit"
-                disabled={
-                  transactionStatus.status === "PENDING" ||
-                  !amount ||
-                  !recipient ||
-                  (stakedAmount &&
-                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                    amount > stakedAmount) ||
-                  !!inputError.value
-                }
-                className="flex w-full justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:bg-transparent"
-              >
-                Start Transaction
-              </button>
-            </div>
+
+            {transactionStatus.status && (
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
+              />
+            )}
           </form>
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
-            />
-          )}
-        </div>
-      )}
-    </>
+        )}
+      </Card>
+      <WalletTransactionReview
+        disabled={
+          transactionStatus.status === "PENDING" ||
+          !amount ||
+          !recipient ||
+          (stakedAmount &&
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            amount > stakedAmount) ||
+          !!inputError.value
+        }
+        formRef={formRef}
+        reviewContent={reviewData}
+      />
+    </div>
   );
 }

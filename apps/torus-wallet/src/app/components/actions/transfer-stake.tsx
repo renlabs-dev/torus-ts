@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
-import type { TransactionResult, TransferStake } from "@torus-ts/ui/types";
+import type {
+  TransactionResult,
+  // TransferStake
+} from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { TransactionStatus } from "@torus-ts/ui";
+import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import { splitAddress } from "@torus-ts/utils";
 import { fromNano } from "@torus-ts/utils/subspace";
 
-import type { GenericActionProps } from "../wallet-actions";
-import { ValidatorsList } from "../../validators-list";
+import { ValidatorsList } from "../validators-list";
+import { WalletTransactionReview } from "../wallet-review";
 
-export function TransferStakeAction(
-  props: {
-    transferStake: (transfer: TransferStake) => Promise<void>;
-  } & GenericActionProps,
-) {
+export function TransferStakeAction() {
+  const { userTotalStaked, transferStake } = useTorus();
+
   const [amount, setAmount] = useState<string>("");
   const [fromValidator, setFromValidator] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
@@ -41,7 +43,6 @@ export function TransferStakeAction(
   >("wallet");
 
   const [maxAmount, setMaxAmount] = useState<string | null>(null);
-  const { userTotalStaked } = useTorus();
 
   const stakedValidators = userTotalStaked ?? [];
 
@@ -99,7 +100,7 @@ export function TransferStakeAction(
 
     if (!isValidInput) return;
 
-    void props.transferStake({
+    void transferStake({
       fromValidator,
       toValidator: recipient,
       amount,
@@ -110,6 +111,8 @@ export function TransferStakeAction(
   const handleSelectFromValidator = (validator: { address: string }) => {
     setFromValidator(validator.address);
     setCurrentView("wallet");
+    setAmount("");
+
     const validatorData = stakedValidators.find(
       (v: { address: string; stake: bigint }) =>
         v.address === validator.address,
@@ -133,43 +136,64 @@ export function TransferStakeAction(
     }
   };
 
+  function getSplittedAddress(address: string) {
+    return splitAddress(address).map((addressPart) => {
+      return (
+        <span key={addressPart} className="pl-1 first:pl-0">
+          {addressPart}
+        </span>
+      );
+    });
+  }
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const reviewData = [
+    { label: "Action", content: "Unstaking TOR" },
+    { label: "From", content: getSplittedAddress(fromValidator) },
+    { label: "To", content: getSplittedAddress(recipient) },
+    { label: "Amount", content: `${amount} TOR` },
+  ];
+
   return (
-    <>
-      {(currentView === "validators" || currentView === "stakedValidators") && (
-        <ValidatorsList
-          listType={currentView === "validators" ? "all" : "staked"}
-          onSelectValidator={
-            currentView === "stakedValidators"
-              ? handleSelectFromValidator
-              : handleSelectToValidator
-          }
-          onBack={() => setCurrentView("wallet")}
-          userAddress={props.selectedAccount.address}
-        />
-      )}
-      {currentView === "wallet" && (
-        <div className="mt-4 w-full">
+    <div className="l md:flex-row flex w-full flex-col gap-4">
+      <Card className="md:w-3/5 w-full animate-fade p-6">
+        {(currentView === "validators" ||
+          currentView === "stakedValidators") && (
+          <ValidatorsList
+            listType={currentView === "validators" ? "all" : "staked"}
+            onSelectValidator={
+              currentView === "stakedValidators"
+                ? handleSelectFromValidator
+                : handleSelectToValidator
+            }
+            onBack={() => setCurrentView("wallet")}
+          />
+        )}
+        {currentView === "wallet" && (
           <form
             onSubmit={handleSubmit}
-            className="flex w-full animate-fade-down flex-col gap-4 pt-4"
+            ref={formRef}
+            className="flex w-full flex-col gap-4"
           >
             <div className="w-full">
-              <p className="text-base">From Validator</p>
-              <div className="flex flex-row gap-3">
-                <input
+              <Label htmlFor="transfer-from">From Validator</Label>
+              <div className="flex flex-row gap-2">
+                <Input
+                  id="transfer-from"
                   type="text"
                   value={fromValidator}
                   onChange={handleFromValidatorChange}
                   placeholder="The full address of the validator"
-                  className="w-full border border-white/20 bg-[#898989]/5 p-2"
+                  className="w-full p-2"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setCurrentView("stakedValidators")}
-                  className="flex w-fit items-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15"
+                  className="flex w-fit items-center px-6 py-2.5"
                 >
                   Staked Validators
-                </button>
+                </Button>
               </div>
               {inputError.fromValidator && (
                 <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
@@ -179,23 +203,27 @@ export function TransferStakeAction(
             </div>
 
             <div className="w-full">
-              <span className="text-base">To Validator</span>
-              <div className="flex flex-row gap-3">
-                <input
+              <Label htmlFor="transfer-to" className="text-base">
+                To Validator
+              </Label>
+              <div className="flex flex-row gap-2">
+                <Input
+                  id="transfer-to"
                   type="text"
                   value={recipient}
                   required
                   onChange={handleRecipientChange}
                   placeholder="The full address of the validator"
-                  className="w-full border border-white/20 bg-[#898989]/5 p-2"
+                  className="w-full p-2"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setCurrentView("validators")}
-                  className="flex w-fit items-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15"
+                  className="flex w-fit items-center px-6 py-2.5"
                 >
                   Validators
-                </button>
+                </Button>
               </div>
               {inputError.recipient && (
                 <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
@@ -205,25 +233,29 @@ export function TransferStakeAction(
             </div>
 
             <div className="w-full">
-              <p className="text-base">Value</p>
-              <div className="flex w-full gap-1">
-                <input
+              <Label htmlFor="transfer-amount" className="text-base">
+                Value
+              </Label>
+              <div className="flex w-full gap-2">
+                <Input
+                  id="transfer-amount"
                   type="number"
                   value={amount}
                   required
                   onChange={handleAmountChange}
                   placeholder="The amount of COMAI to transfer"
-                  className="w-full border border-white/20 bg-[#898989]/5 p-2 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:text-gray-600/50 disabled:placeholder:text-gray-600/50"
+                  className="w-full p-2 disabled:cursor-not-allowed"
                   disabled={!fromValidator}
                 />
                 {maxAmount && (
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={handleMaxClick}
-                    className="ml-2 whitespace-nowrap border border-blue-500 bg-blue-600/5 px-4 py-2 font-semibold text-blue-500 transition duration-200 hover:border-blue-400 hover:bg-blue-500/15"
+                    className="px-4 py-2"
                   >
                     Max
-                  </button>
+                  </Button>
                 )}
               </div>
               {inputError.value && (
@@ -232,30 +264,26 @@ export function TransferStakeAction(
                 </p>
               )}
             </div>
-            <div className="mt-4 border-t border-white/20 pt-4">
-              <button
-                type="submit"
-                disabled={
-                  transactionStatus.status === "PENDING" ||
-                  !amount ||
-                  !recipient ||
-                  !fromValidator ||
-                  !!inputError.value
-                }
-                className="flex w-full justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:bg-transparent"
-              >
-                Start Transaction
-              </button>
-            </div>
+            {transactionStatus.status && (
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
+              />
+            )}
           </form>
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
-            />
-          )}
-        </div>
-      )}
-    </>
+        )}
+      </Card>
+      <WalletTransactionReview
+        disabled={
+          transactionStatus.status === "PENDING" ||
+          !amount ||
+          !recipient ||
+          !fromValidator ||
+          !!inputError.value
+        }
+        formRef={formRef}
+        reviewContent={reviewData}
+      />
+    </div>
   );
 }

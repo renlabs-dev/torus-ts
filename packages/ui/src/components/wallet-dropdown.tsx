@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Copy,
   CreditCard,
-  LoaderCircle,
   Lock,
   LockOpen,
   LogOut,
@@ -135,6 +134,7 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
 interface WalletDropdownProps {
   accounts: InjectedAccountWithMeta[] | undefined;
   balance: bigint | undefined;
+  isInitialized: boolean;
   handleGetWallets: () => Promise<void>;
   handleLogout: () => void;
   handleSelectWallet: (accountAddress: InjectedAccountWithMeta) => void;
@@ -146,6 +146,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   const {
     accounts,
     balance,
+    isInitialized,
     handleGetWallets,
     handleLogout,
     handleSelectWallet,
@@ -179,12 +180,14 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
 
   return (
     // keep this hidden for know so we dont have to refactor the component structure to not have this on the LP but have the provider context
-    <div className="top-0 z-[70] mx-auto hidden w-full max-w-screen-xl justify-end">
-      <div className="mx-auto hidden animate-fade-down justify-end px-6 py-3.5 md:flex">
+    <div className="max-w-screen-xl md:block fixed top-0 z-[70] mx-auto hidden w-full justify-end">
+      <div className="md:flex mx-auto animate-fade-down justify-end px-6 py-3.5">
         <DropdownMenu onOpenChange={handleGetAccounts}>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild disabled={!isInitialized}>
             <WalletCards
-              className={cn("!h-6 !w-6 hover:text-muted-foreground")}
+              className={cn(
+                `!h-6 !w-6 ${!isInitialized ? "animate-pulse" : "hover:text-muted-foreground"}`,
+              )}
             />
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -294,16 +297,6 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                       value={selectedAccount?.address ?? ""}
                       onValueChange={handleWalletSelection}
                     >
-                      {!accounts && (
-                        <span
-                          className={cn(
-                            "flex items-center gap-1.5 px-1.5 py-2",
-                          )}
-                        >
-                          <LoaderCircle className={cn("rotate animate-spin")} />
-                          Loading wallets...
-                        </span>
-                      )}
                       {accounts?.map((account) => (
                         <DropdownMenuRadioItem
                           key={account.address}
@@ -327,13 +320,12 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                           </div>
                         </DropdownMenuRadioItem>
                       ))}
+                      {accounts?.length === 0 && <NoWalletExtensionDisplay />}
                     </DropdownMenuRadioGroup>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
             )}
-
-            {accounts && accounts.length === 0 && <NoWalletExtensionDisplay />}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

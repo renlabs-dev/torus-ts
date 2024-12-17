@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   robots: "all",
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "Most advanced decentralized AI Protocol.",
+  description:
+    "Simple, secure, and easy-to-use wallet for the torus ecosystem.",
 };
 
 export const firaMono = FiraMono({

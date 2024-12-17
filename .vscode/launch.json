@@ -1,6 +1,7 @@
 {
   "version": "0.2.0",
   "configurations": [
+
     {
       "name": "debug torus-worker",
       "type": "node-terminal",
@@ -15,6 +16,14 @@
       "request": "launch",
       "command": "pnpm run dev",
       "cwd": "${workspaceFolder}/packages/subspace",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "debug torus-wallet",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run dev",
+      "cwd": "${workspaceFolder}/apps/torus-wallet",
       "skipFiles": ["<node_internals>/**"]
     }
   ]

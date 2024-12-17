@@ -650,7 +650,6 @@ export function TorusProvider({
       address: selectedAccount.address,
     };
   }
-
   return (
     <TorusContext.Provider
       value={{
@@ -729,6 +728,7 @@ export function TorusProvider({
         selectedAccount={selectedAccount}
         handleGetWallets={handleGetWallets}
         handleLogout={handleLogout}
+        isInitialized={isInitialized}
         handleSelectWallet={handleSelectWallet}
         stakeOut={stakeOut}
       />

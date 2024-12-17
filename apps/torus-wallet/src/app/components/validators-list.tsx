@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronsLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 import { useTorus } from "@torus-ts/providers/use-torus";
+import { Button, Card, CardContent, CardHeader } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";
   onSelectValidator: (validator: { address: string; stake?: string }) => void;
   onBack: () => void;
-  userAddress: string;
 }
 
 interface Validator {
@@ -66,58 +66,50 @@ export function ValidatorsList(props: ValidatorsListProps) {
   const currentList = getValidatorsList();
 
   return (
-    <div className="mt-4 w-full animate-fade-down border-t border-white/20 pt-2">
-      <div className="mb-4 border-b border-white/20">
-        <h3 className="text-lg font-semibold text-gray-300">
+    <Card className="w-full animate-fade p-4">
+      <CardHeader className="flex flex-col gap-2 px-0 pt-0">
+        <h3 className="text-lg font-semibold text-primary">
           Select a Validator
         </h3>
-        <p className="pb-2 text-gray-300">
+        <p className="pb-2 text-muted-foreground">
           Once you select a validator, it will automatically fill the field with
           their address. View all validators list{" "}
           <Link
             href="https://www.comstats.org/"
             target="_blank"
             rel="noreferrer"
-            className="text-green-500 hover:underline"
+            className="text-primary hover:underline"
           >
             here
           </Link>
           .
         </p>
-      </div>
-      <div className="flex animate-fade-down flex-col gap-y-4 animate-delay-200">
+      </CardHeader>
+      <CardContent className="flex max-h-[250px] flex-col gap-2 overflow-y-auto px-0">
         {currentList.map((item) => (
-          <button
+          <Button
             key={item.address}
+            variant="outline"
             onClick={() => props.onSelectValidator({ address: item.address })}
-            className="flex w-full items-center justify-center text-nowrap border border-green-500 bg-green-600/5 px-3 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50"
+            className="lg:flex-row lg:justify-between flex h-fit w-full flex-col items-center font-semibold"
           >
-            <div className="flex w-full flex-col items-start gap-1">
-              <div className="flex w-full flex-row items-start justify-between md:flex-row">
-                <span className="flex gap-1">
-                  {item.name !== "" && (
-                    <p className="text-white">
-                      {item.name.toLocaleUpperCase()} /
-                    </p>
-                  )}
-                  <p>{item.description}</p>
-                </span>
-                <span className="text-gray-300">
-                  {smallAddress(item.address)}
-                </span>
-              </div>
-            </div>
-          </button>
+            <span className="text-pretty">
+              {item.name && `${item.name.toLocaleUpperCase()} / `}
+              {item.description}
+            </span>
+            <span className="text-muted-foreground">
+              {smallAddress(item.address, 6)}
+            </span>
+          </Button>
         ))}
-        <div className="animate-fade-down border-t border-white/20 pt-4 animate-delay-300">
-          <button
-            onClick={props.onBack}
-            className="flex w-full items-center justify-center text-nowrap border border-amber-500 bg-amber-600/5 px-4 py-2.5 font-semibold text-amber-500 transition duration-200 hover:border-amber-400 hover:bg-amber-500/15 active:bg-amber-500/50"
-          >
-            <ChevronsLeft className="h-6 w-6" /> Back to Field Options
-          </button>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+      <Button
+        onClick={props.onBack}
+        variant="secondary"
+        className="mt-4 flex w-full items-center justify-center text-nowrap px-4 py-2.5 font-semibold"
+      >
+        <ChevronLeft className="h-6 w-6" /> Back to Field Options
+      </Button>
+    </Card>
   );
 }

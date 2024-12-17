@@ -1,26 +1,25 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BN } from "@polkadot/util";
 
-import type { TransactionResult, Transfer } from "@torus-ts/ui/types";
+import type { TransactionResult } from "@torus-ts/ui/types";
 import { useTorus } from "@torus-ts/providers/use-torus";
-import { Button, Input, TransactionStatus } from "@torus-ts/ui";
+import { isSS58 } from "@torus-ts/subspace";
+import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import { splitAddress } from "@torus-ts/utils";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
-import type { GenericActionProps } from "../wallet-actions";
+import { WalletTransactionReview } from "../wallet-review";
 
-export function SendAction(
-  props: {
-    transfer: (transfer: Transfer) => Promise<void>;
-  } & GenericActionProps,
-) {
+export function BridgeAction() {
+  const { estimateFee, transfer, balance } = useTorus();
+
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
   const [maxAmount, setMaxAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
-  const { estimateFee } = useTorus();
 
   const [inputError, setInputError] = useState<{
     recipient: string | null;
@@ -41,7 +40,7 @@ export function SendAction(
   const calculateMaxAmount = useCallback((balance: string, fee: string) => {
     const balanceBN = new BN(toNano(balance));
     const feeBN = new BN(toNano(fee));
-    const adjustedFeeBN = feeBN.muln(110).divn(100); // Increase fee by 10%
+    const adjustedFeeBN = feeBN.muln(1.1); // Increase fee by 10%
     const maxAmountBN = balanceBN.sub(adjustedFeeBN);
     return maxAmountBN.isNeg() ? "0" : fromNano(maxAmountBN.toString());
   }, []);
@@ -53,6 +52,14 @@ export function SendAction(
       return;
     }
 
+    if (!isSS58(recipient)) {
+      setInputError((prev) => ({
+        ...prev,
+        recipient: "Invalid recipient address",
+      }));
+      return;
+    }
+
     setIsEstimating(true);
     try {
       const fee = await estimateFee(recipient, "0");
@@ -61,7 +68,7 @@ export function SendAction(
         setEstimatedFee(feeStr);
 
         const newMaxAmount = calculateMaxAmount(
-          fromNano(props.balance?.toString() ?? "0"),
+          fromNano(balance?.toString() ?? "0"),
           feeStr,
         );
         setMaxAmount(newMaxAmount);
@@ -125,11 +132,12 @@ export function SendAction(
       message: "Starting transaction...",
     });
 
-    const isValidInput = amount && recipient && !inputError.value;
+    console.log("submitting transaction");
+    // const isValidInput = amount && recipient && !inputError.value;
 
-    if (!isValidInput) return;
+    // if (!isValidInput) return;
 
-    void props.transfer({ to: recipient, amount, callback: handleCallback });
+    // void transfer({ to: recipient, amount, callback: handleCallback });
   };
 
   useEffect(() => {
@@ -150,21 +158,47 @@ export function SendAction(
     }
   }, [amount, maxAmount]);
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const roundedEstimatedFee = (Number(estimatedFee) * 1.1).toFixed(9);
+
+  function getSplittedAddress(address: string) {
+    return splitAddress(address).map((addressPart) => {
+      return (
+        <span key={addressPart} className="pl-1 first:pl-0">
+          {addressPart}
+        </span>
+      );
+    });
+  }
+
+  const reviewData = [
+    { label: "Action", content: "Sending TOR" },
+    {
+      label: "To",
+      content: getSplittedAddress(recipient),
+    },
+    { label: "Amount", content: `${amount} TOR` },
+    { label: "Transaction fee", content: `${roundedEstimatedFee} TOR` },
+  ];
+
   return (
-    <>
+    <Card className="h-fit w-full animate-fade p-4">
       <form
         onSubmit={handleSubmit}
-        className="flex w-full animate-fade-down flex-col gap-4"
+        ref={formRef}
+        className="flex w-full flex-col gap-4"
       >
         <div className="flex flex-col gap-2">
-          <span className="text-base">To</span>
+          <Label htmlFor="send-recipient" className="">
+            To
+          </Label>
           <Input
+            id="send-recipient"
             type="text"
             value={recipient}
             required
             onChange={handleRecipientChange}
             placeholder="Address"
-            className="w-full border p-2"
           />
         </div>
         {inputError.recipient && (
@@ -173,23 +207,27 @@ export function SendAction(
           </p>
         )}
         <div className="flex flex-col gap-2">
-          <p className="text-base">Amount</p>
-          <div className="flex w-full items-center gap-1">
+          <Label htmlFor="send-amount" className="text-base">
+            Amount
+          </Label>
+          <div className="flex w-full items-center gap-2">
             <Input
+              id="send-amount"
               type="number"
               value={amount}
               max={maxAmount}
               required
               onChange={handleAmountChange}
               placeholder="0.1"
-              className="w-full p-2 disabled:cursor-not-allowed"
+              className="disabled:cursor-not-allowed"
               disabled={!recipient || isEstimating}
             />
 
             <Button
               type="button"
+              variant="outline"
               onClick={handleMaxClick}
-              className="ml-2 whitespace-nowrap border border-blue-500 bg-blue-600/5 px-4 py-2 font-semibold text-blue-500 transition duration-200 hover:border-blue-400 hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:border-gray-600/50 disabled:hover:bg-transparent"
+              className="whitespace-nowrap px-4 py-2 disabled:cursor-not-allowed"
               disabled={!recipient || isEstimating}
             >
               Max
@@ -207,21 +245,23 @@ export function SendAction(
         )}
         {estimatedFee && (
           <p className="mt-2 text-sm text-gray-400">
-            Estimated fee: {(Number(estimatedFee) * 1.1).toFixed(9)} COMAI
+            Estimated fee: {roundedEstimatedFee} TOR
           </p>
         )}
         {maxAmount && (
-          <Button
-            onClick={() => setAmount(maxAmount)}
-            type="button"
-            className="mt-2 text-sm text-gray-400"
-          >
+          <span className="text-sm text-muted-foreground">
             Maximum transferable amount:{" "}
-            <span className="text-green-500">{maxAmount} COMAI</span>
-          </Button>
+            <Button
+              variant="link"
+              type="button"
+              onClick={() => setAmount(maxAmount)}
+              className="p-0 text-primary"
+            >
+              {maxAmount} COMAI
+            </Button>
+          </span>
         )}
-        <Button
-          type="submit"
+        <WalletTransactionReview
           disabled={
             transactionStatus.status === "PENDING" ||
             !amount ||
@@ -229,17 +269,17 @@ export function SendAction(
             isEstimating ||
             !!inputError.value
           }
-          className="flex w-full justify-center text-nowrap border border-green-500 bg-green-600/5 px-6 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:border-gray-600/50 disabled:bg-transparent disabled:text-gray-600/50 disabled:hover:bg-transparent"
-        >
-          Start Transaction
-        </Button>
-      </form>
-      {transactionStatus.status && (
-        <TransactionStatus
-          status={transactionStatus.status}
-          message={transactionStatus.message}
+          formRef={formRef}
+          reviewContent={reviewData}
         />
-      )}
-    </>
+
+        {transactionStatus.status && (
+          <TransactionStatus
+            status={transactionStatus.status}
+            message={transactionStatus.message}
+          />
+        )}
+      </form>
+    </Card>
   );
 }

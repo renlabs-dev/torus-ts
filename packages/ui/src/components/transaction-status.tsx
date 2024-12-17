@@ -27,9 +27,7 @@ export function TransactionStatus({
     : { color: "", Icon: null };
 
   return (
-    <div
-      className={cn("flex items-center gap-1 pt-2 text-left text-sm", color)}
-    >
+    <div className={cn("flex items-center gap-1 text-left text-sm", color)}>
       {status && status !== "SUCCESS" && status !== "ERROR" && (
         <Loading className={color} />
       )}
