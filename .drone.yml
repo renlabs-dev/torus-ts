@@ -2,6 +2,9 @@ kind: pipeline
 type: docker
 name: torus-page
 
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
 steps:
   - name: build
     image: plugins/docker
@@ -66,6 +69,9 @@ trigger:
 kind: pipeline
 type: docker
 name: torus-validator
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
   - name: build
@@ -132,6 +138,9 @@ kind: pipeline
 type: docker
 name: torus-worker
 
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
 steps:
   - name: build
     image: plugins/docker
@@ -196,6 +205,9 @@ trigger:
 kind: pipeline
 type: docker
 name: torus-governance
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
   - name: build
@@ -262,6 +274,9 @@ kind: pipeline
 type: docker
 name: torus-wallet
 
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
 steps:
   - name: build
     image: plugins/docker
@@ -326,6 +341,9 @@ trigger:
 kind: pipeline
 type: docker
 name: torus-cache
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
   - name: build
