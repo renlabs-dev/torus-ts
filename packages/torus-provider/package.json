@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@polkadot/extension-dapp": "catalog:",
     "@torus-ts/utils": "workspace:*",
     "@torus-ts/subspace": "workspace:*",
     "@polkadot/api": "catalog:",

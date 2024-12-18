@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
 
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Checkbox } from "@torus-ts/ui";
 

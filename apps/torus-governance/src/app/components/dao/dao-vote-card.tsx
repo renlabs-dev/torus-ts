@@ -7,7 +7,7 @@ import { Delete, TicketX } from "lucide-react";
 import type { AppRouter } from "@torus-ts/api";
 import type { DaoApplicationStatus } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
   ToggleGroup,

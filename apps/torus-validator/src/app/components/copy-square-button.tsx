@@ -2,7 +2,7 @@
 
 import { Copy } from "lucide-react";
 
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 
 interface CopySquareButtonProps {

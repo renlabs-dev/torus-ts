@@ -6,7 +6,7 @@ import { Info } from "lucide-react";
 import { z } from "zod";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
   Input,

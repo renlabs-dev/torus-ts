@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "catalog:",
+    "@torus-ts/toast-provider": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "lucide-react": "^0.454.0",

@@ -3,8 +3,9 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-import { QueryProvider } from "@torus-ts/query-provider/context";
+import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
+import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { Layout } from "@torus-ts/ui/components";
 
 import { WalletProvider } from "~/context/wallet-provider";
@@ -33,14 +34,16 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <Layout font={firaMono} appName={APP_NAME}>
-      <QueryProvider>
+      <ToastProvider>
         <TorusProvider
           wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
           torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
         >
-          <WalletProvider>{children}</WalletProvider>
+          <ReactQueryProvider>
+            <WalletProvider>{children}</WalletProvider>
+          </ReactQueryProvider>
         </TorusProvider>
-      </QueryProvider>
+      </ToastProvider>
     </Layout>
   );
 }

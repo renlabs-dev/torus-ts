@@ -5,11 +5,8 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./use-toast": "./src/context/toast.tsx",
-    "./context": "./src/index.tsx",
-    "./utils": "./src/utils/index.ts",
-    "./types": "./src/types/index.ts",
-    "./hooks": "./src/hooks/index.ts"
+    ".": "./src/query-provider.tsx",
+    "./hooks": "./src/hooks.ts"
   },
   "scripts": {
     "lint": "eslint",
@@ -21,23 +18,11 @@
     "@tanstack/react-query": "catalog:"
   },
   "dependencies": {
-    "@polkadot/api": "catalog:",
-    "@polkadot/api-augment": "catalog:",
-    "@polkadot/extension-dapp": "catalog:",
-    "@polkadot/extension-inject": "catalog:",
-    "@polkadot/types": "catalog:",
-    "@polkadot/util-crypto": "catalog:",
     "@torus-ts/subspace": "workspace:*",
-    "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
-    "multiformats": "catalog:",
     "next": "catalog:",
     "react": "catalog:react18",
-    "react-dom": "catalog:react18",
-    "react-toastify": "^10.0.5",
-    "rustie": "catalog:",
-    "tsafe": "catalog:",
-    "zod": "catalog:"
+    "react-dom": "catalog:react18"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",

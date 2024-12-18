@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { Copy } from "lucide-react";
 
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import { Card, Separator, Skeleton } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 

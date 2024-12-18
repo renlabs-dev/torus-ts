@@ -18,6 +18,7 @@
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
+    "@torus-ts/toast-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "@trpc/client": "catalog:",

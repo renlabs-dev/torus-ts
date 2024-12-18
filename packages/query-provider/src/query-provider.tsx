@@ -5,9 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const createQueryClient = (): QueryClient =>
   new QueryClient({
     defaultOptions: {
-      queries: {
-        // throwOnError: true, // TODO
-      },
+      queries: {},
     },
   });
 

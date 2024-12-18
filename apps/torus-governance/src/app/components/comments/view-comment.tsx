@@ -16,7 +16,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,

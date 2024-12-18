@@ -15,6 +15,7 @@
     "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
+    "@torus-ts/toast-provider": "workspace:*",
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
