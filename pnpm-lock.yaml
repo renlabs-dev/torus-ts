@@ -223,6 +223,9 @@ importers:
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../../packages/subspace
+      '@torus-ts/toast-provider':
+        specifier: workspace:*
+        version: link:../../packages/toast-provider
       '@torus-ts/torus-provider':
         specifier: workspace:*
         version: link:../../packages/torus-provider
@@ -323,6 +326,9 @@ importers:
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../../packages/subspace
+      '@torus-ts/toast-provider':
+        specifier: workspace:*
+        version: link:../../packages/toast-provider
       '@torus-ts/torus-provider':
         specifier: workspace:*
         version: link:../../packages/torus-provider
@@ -420,6 +426,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
+      '@torus-ts/toast-provider':
+        specifier: workspace:*
+        version: link:../../packages/toast-provider
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -529,6 +538,9 @@ importers:
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../../packages/subspace
+      '@torus-ts/toast-provider':
+        specifier: workspace:*
+        version: link:../../packages/toast-provider
       '@torus-ts/torus-provider':
         specifier: workspace:*
         version: link:../../packages/torus-provider
@@ -614,6 +626,9 @@ importers:
       '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
+      '@torus-ts/toast-provider':
+        specifier: workspace:*
+        version: link:../../packages/toast-provider
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -837,39 +852,15 @@ importers:
 
   packages/query-provider:
     dependencies:
-      '@polkadot/api':
-        specifier: 'catalog:'
-        version: 14.3.1
-      '@polkadot/api-augment':
-        specifier: 'catalog:'
-        version: 14.3.1
-      '@polkadot/extension-dapp':
-        specifier: 'catalog:'
-        version: 0.52.3(@polkadot/api@14.3.1)(@polkadot/util-crypto@13.2.3(@polkadot/util@13.2.3))(@polkadot/util@13.2.3)
-      '@polkadot/extension-inject':
-        specifier: 'catalog:'
-        version: 0.52.3(@polkadot/api@14.3.1)(@polkadot/util@13.2.3)
-      '@polkadot/types':
-        specifier: 'catalog:'
-        version: 14.3.1
-      '@polkadot/util-crypto':
-        specifier: 'catalog:'
-        version: 13.2.3(@polkadot/util@13.2.3)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.62.8(react@18.2.0)
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../subspace
-      '@torus-ts/ui':
-        specifier: workspace:*
-        version: link:../ui
       '@torus-ts/utils':
         specifier: workspace:*
         version: link:../utils
-      multiformats:
-        specifier: 'catalog:'
-        version: 13.3.1
       next:
         specifier: 'catalog:'
         version: 15.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -879,18 +870,6 @@ importers:
       react-dom:
         specifier: catalog:react18
         version: 18.2.0(react@18.2.0)
-      react-toastify:
-        specifier: ^10.0.5
-        version: 10.0.6(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      rustie:
-        specifier: 'catalog:'
-        version: 0.4.0
-      tsafe:
-        specifier: 'catalog:'
-        version: 1.8.5
-      zod:
-        specifier: 'catalog:'
-        version: 3.24.1
     devDependencies:
       '@torus-ts/eslint-config':
         specifier: workspace:*
@@ -957,11 +936,39 @@ importers:
         specifier: 'catalog:'
         version: 4.19.2
 
+  packages/toast-provider:
+    dependencies:
+      react-toastify:
+        specifier: 11.0.1
+        version: 11.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      eslint:
+        specifier: 'catalog:'
+        version: 9.17.0(jiti@1.21.7)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.4.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+
   packages/torus-provider:
     dependencies:
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1
+      '@polkadot/extension-dapp':
+        specifier: 'catalog:'
+        version: 0.52.3(@polkadot/api@14.3.1)(@polkadot/util-crypto@13.2.3(@polkadot/util@13.2.3))(@polkadot/util@13.2.3)
       '@polkadot/extension-inject':
         specifier: 'catalog:'
         version: 0.52.3(@polkadot/api@14.3.1)(@polkadot/util@13.2.3)
@@ -4647,8 +4654,8 @@ packages:
     resolution: {integrity: sha512-iPAjerrse27/ygGLxw+EBR9agv9Y6uLeYVJMu+QNCoouJ1/1ri0mGrcWpfCqFZuzzx3WjtwxG098X+n4OuRkPg==}
     engines: {node: '>= 0.4'}
 
-  is-shared-array-buffer@1.0.3:
-    resolution: {integrity: sha512-nA2hv5XIhLR3uVzDDfCIknerhx8XUKnstuOERPNNIinXG7v9u+ohXF67vxm4TPTEPU6lm61ZkwP3c9PCB97rhg==}
+  is-shared-array-buffer@1.0.4:
+    resolution: {integrity: sha512-ISWac8drv4ZGfwKl5slpHG9OwPNty4jOWPRIhBpxOoD+hqITiwuipOQ2bNthAzwA3B4fIjO4Nln74N0S9byq8A==}
     engines: {node: '>= 0.4'}
 
   is-stream@2.0.1:
@@ -4663,8 +4670,8 @@ packages:
     resolution: {integrity: sha512-9gGx6GTtCQM73BgmHQXfDmLtfjjTUDSyoxTCbp5WtoixAhfgsDirWIcVQ/IHpvI5Vgd5i/J5F7B9cN/WlVbC/w==}
     engines: {node: '>= 0.4'}
 
-  is-typed-array@1.1.14:
-    resolution: {integrity: sha512-lQUsHzcTb7rH57dajbOuZEuMDXjs9f04ZloER4QOpjpKcaw4f98BRUrs8aiO9Z4G7i7B0Xhgarg6SCgYcYi8Nw==}
+  is-typed-array@1.1.15:
+    resolution: {integrity: sha512-p3EcsicXjit7SaskXHs1hA91QxgTw46Fv6EFKKGS5DRFLD8yKnohjF3hxoju94b/OcMZoQukzpPpBE9uLVKzgQ==}
     engines: {node: '>= 0.4'}
 
   is-unicode-supported@0.1.0:
@@ -5574,6 +5581,12 @@ packages:
       react: '>=18'
       react-dom: '>=18'
 
+  react-toastify@11.0.1:
+    resolution: {integrity: sha512-ZALj1xpjOVlPPDKvdksGLemF9mM6FRltsykvv+JQpW9mildnBiy6nGz0685vo4+W8WitParsUfGk9qACArkZPA==}
+    peerDependencies:
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
+
   react-transition-group@4.4.5:
     resolution: {integrity: sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==}
     peerDependencies:
@@ -6190,8 +6203,8 @@ packages:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
 
-  typed-array-buffer@1.0.2:
-    resolution: {integrity: sha512-gEymJYKZtKXzzBzM4jqa9w6Q1Jjm7x2d+sh19AdsD4wqnMPDYyvwpsIc2Q/835kHuo3BEQ7CjelGhfTsoBb2MQ==}
+  typed-array-buffer@1.0.3:
+    resolution: {integrity: sha512-nAYYwfY3qnzX30IkA6AQZjVbtK6duGontcQm1WSG1MD94YLqK0515GNApXkoxKOWMusVssAHWLh9SeaoefYFGw==}
     engines: {node: '>= 0.4'}
 
   typed-array-byte-length@1.0.3:
@@ -6373,8 +6386,8 @@ packages:
     resolution: {integrity: sha512-K4jVyjnBdgvc86Y6BkaLZEN933SwYOuBFkdmBu9ZfkcAbdVbpITnDmjvZ/aQjRXQrv5EPkTnD1s39GiiqbngCw==}
     engines: {node: '>= 0.4'}
 
-  which-typed-array@1.1.16:
-    resolution: {integrity: sha512-g+N+GAWiRj66DngFwHvISJd+ITsyphZvD1vChfVg6cEdnzy53GzB3oy0fUNlvhz7H7+MiqhYr26qxQShCpKTTQ==}
+  which-typed-array@1.1.17:
+    resolution: {integrity: sha512-i2prb5irfKvNFV84NNLOZaNiMx20sm/AG2u59hU+JsjraeD5xs9LgQa+VzU95e2Tn0YMc/4drYPgPV3QvRAPPA==}
     engines: {node: '>= 0.4'}
 
   which@2.0.2:
@@ -9226,9 +9239,9 @@ snapshots:
       is-data-view: 1.0.2
       is-negative-zero: 2.0.3
       is-regex: 1.2.1
-      is-shared-array-buffer: 1.0.3
+      is-shared-array-buffer: 1.0.4
       is-string: 1.1.1
-      is-typed-array: 1.1.14
+      is-typed-array: 1.1.15
       is-weakref: 1.1.0
       math-intrinsics: 1.0.0
       object-inspect: 1.13.3
@@ -9240,12 +9253,12 @@ snapshots:
       string.prototype.trim: 1.2.10
       string.prototype.trimend: 1.0.9
       string.prototype.trimstart: 1.0.8
-      typed-array-buffer: 1.0.2
+      typed-array-buffer: 1.0.3
       typed-array-byte-length: 1.0.3
       typed-array-byte-offset: 1.0.3
       typed-array-length: 1.0.7
       unbox-primitive: 1.1.0
-      which-typed-array: 1.1.16
+      which-typed-array: 1.1.17
 
   es-define-property@1.0.1: {}
 
@@ -10181,7 +10194,7 @@ snapshots:
     dependencies:
       call-bound: 1.0.3
       get-intrinsic: 1.2.6
-      is-typed-array: 1.1.14
+      is-typed-array: 1.1.15
 
   is-date-object@1.1.0:
     dependencies:
@@ -10242,9 +10255,9 @@ snapshots:
 
   is-set@2.0.3: {}
 
-  is-shared-array-buffer@1.0.3:
+  is-shared-array-buffer@1.0.4:
     dependencies:
-      call-bind: 1.0.8
+      call-bound: 1.0.3
 
   is-stream@2.0.1: {}
 
@@ -10259,9 +10272,9 @@ snapshots:
       has-symbols: 1.1.0
       safe-regex-test: 1.1.0
 
-  is-typed-array@1.1.14:
+  is-typed-array@1.1.15:
     dependencies:
-      which-typed-array: 1.1.16
+      which-typed-array: 1.1.17
 
   is-unicode-supported@0.1.0: {}
 
@@ -11365,6 +11378,12 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
+  react-toastify@11.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      clsx: 2.1.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+
   react-transition-group@4.4.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       '@babel/runtime': 7.26.0
@@ -12203,11 +12222,11 @@ snapshots:
       media-typer: 0.3.0
       mime-types: 2.1.35
 
-  typed-array-buffer@1.0.2:
+  typed-array-buffer@1.0.3:
     dependencies:
-      call-bind: 1.0.8
+      call-bound: 1.0.3
       es-errors: 1.3.0
-      is-typed-array: 1.1.14
+      is-typed-array: 1.1.15
 
   typed-array-byte-length@1.0.3:
     dependencies:
@@ -12215,7 +12234,7 @@ snapshots:
       for-each: 0.3.3
       gopd: 1.2.0
       has-proto: 1.2.0
-      is-typed-array: 1.1.14
+      is-typed-array: 1.1.15
 
   typed-array-byte-offset@1.0.3:
     dependencies:
@@ -12224,7 +12243,7 @@ snapshots:
       for-each: 0.3.3
       gopd: 1.2.0
       has-proto: 1.2.0
-      is-typed-array: 1.1.14
+      is-typed-array: 1.1.15
       reflect.getprototypeof: 1.0.8
 
   typed-array-length@1.0.7:
@@ -12232,7 +12251,7 @@ snapshots:
       call-bind: 1.0.8
       for-each: 0.3.3
       gopd: 1.2.0
-      is-typed-array: 1.1.14
+      is-typed-array: 1.1.15
       possible-typed-array-names: 1.0.0
       reflect.getprototypeof: 1.0.8
 
@@ -12425,7 +12444,7 @@ snapshots:
       isarray: 2.0.5
       which-boxed-primitive: 1.1.1
       which-collection: 1.0.2
-      which-typed-array: 1.1.16
+      which-typed-array: 1.1.17
 
   which-collection@1.0.2:
     dependencies:
@@ -12434,10 +12453,11 @@ snapshots:
       is-weakmap: 2.0.2
       is-weakset: 2.0.4
 
-  which-typed-array@1.1.16:
+  which-typed-array@1.1.17:
     dependencies:
       available-typed-arrays: 1.0.7
       call-bind: 1.0.8
+      call-bound: 1.0.3
       for-each: 0.3.3
       gopd: 1.2.0
       has-tostringtag: 1.0.2

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { z } from "zod";
 
 import type { AppRouter } from "@torus-ts/api";
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 
 import { api } from "~/trpc/react";
 import { X } from "lucide-react";

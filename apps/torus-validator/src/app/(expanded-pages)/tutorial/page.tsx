@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Grid2X2, Scale, SquareStack, Wallet, Zap } from "lucide-react";
 
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";

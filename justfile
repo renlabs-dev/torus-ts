@@ -44,6 +44,9 @@ lint-fix:
 lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
 
+create-package:
+  pnpm turbo gen init
+
 # -- DB --
 
 db-push:

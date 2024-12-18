@@ -17,6 +17,7 @@
     "@t3-oss/env-nextjs": "catalog:",
     "@torus-ts/ui": "workspace:*",
     "@types/three": "^0.165.0",
+    "@torus-ts/toast-provider": "workspace:*",
     "lucide-react": "^0.454.0",
     "next": "catalog:",
     "parse-numeric-range": "^1.3.0",

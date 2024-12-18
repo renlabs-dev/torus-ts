@@ -3,8 +3,9 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-import { QueryProvider } from "@torus-ts/query-provider/context";
+import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
+import { ReactQueryProvider } from "@torus-ts/query-provider";
 // import { Footer } from "@torus-ts/ui/components";
 
 import { PageProvider } from "~/context/page-provider";
@@ -38,18 +39,20 @@ export default function RootLayout({
           `relative overscroll-none bg-background bg-cover text-white`,
         )}
       >
-        <QueryProvider>
+        <ToastProvider>
           <TorusProvider
             wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
             torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
           >
-            <PageProvider>
-              {/* <Header /> */}
-              {children}
-              {/* <Footer /> */}
-            </PageProvider>
+            <ReactQueryProvider>
+              <PageProvider>
+                {/* <Header /> */}
+                {children}
+                {/* <Footer /> */}
+              </PageProvider>
+            </ReactQueryProvider>
           </TorusProvider>
-        </QueryProvider>
+        </ToastProvider>
       </body>
     </html>
   );

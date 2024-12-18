@@ -11,7 +11,7 @@ import type {
   StakeData,
   VoteWithStake,
 } from "@torus-ts/subspace";
-import type { ListItem } from "@torus-ts/utils/typing";
+import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 import {
   fetchCustomMetadata,
   getModuleBurn,
@@ -30,10 +30,6 @@ import {
   queryRewardAllocation,
   queryUnrewardedProposals,
 } from "@torus-ts/subspace";
-
-import type { Nullish } from "../types";
-
-import "../utils";
 
 import type { ApiPromise } from "@polkadot/api";
 import SuperJSON from "superjson";

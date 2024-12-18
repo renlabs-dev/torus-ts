@@ -6,7 +6,7 @@ import { match } from "rustie";
 
 import type { ProposalStatus } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { toast } from "@torus-ts/query-provider/use-toast";
+import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
   ToggleGroup,
