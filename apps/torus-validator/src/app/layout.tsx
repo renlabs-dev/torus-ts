@@ -4,15 +4,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Info } from "lucide-react";
 
-import { Providers } from "@torus-ts/providers/context";
+import { QueryProvider } from "@torus-ts/query-provider/context";
 import { TorusProvider } from "@torus-ts/torus-provider";
-// import { links } from "@torus-ts/ui/data";
-import { Footer, Header } from "@torus-ts/ui";
+import { Footer } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cairo } from "~/utils/fonts";
 import { DelegatedList } from "./components/delegated-list";
+import { AllocatorHeader } from "./components/allocator-header";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={`bg-[#111713] bg-[url('/bg-pattern.svg')] ${cairo.className} animate-fade-in`}
       >
-        <Providers>
+        <QueryProvider>
           <TorusProvider
             wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
             torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
@@ -52,14 +52,14 @@ export default function RootLayout({
                 </p>
               </div>
             </div>
-            <Header appName="Torus Allocator" />
+            <AllocatorHeader />
             <TRPCReactProvider>
               <DelegatedList />
               {children}
             </TRPCReactProvider>
             <Footer />
           </TorusProvider>
-        </Providers>
+        </QueryProvider>
       </body>
     </html>
   );

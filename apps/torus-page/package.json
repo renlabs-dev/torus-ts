@@ -34,7 +34,7 @@
     "@next/eslint-plugin-next": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
-    "@torus-ts/providers": "workspace:*",
+    "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/tailwind-config": "workspace:*",

@@ -1,4 +1,4 @@
-import { cn, Footer, Header } from ".";
+import { cn } from ".";
 
 interface NextFont {
   className: string;
@@ -13,7 +13,6 @@ interface LayoutProps {
   children: React.ReactNode;
   font: NextFont;
   className?: string;
-  shouldDisplayHeader?: boolean;
   appName?: string;
 }
 
@@ -21,23 +20,17 @@ export function Layout({
   children,
   font,
   className,
-  shouldDisplayHeader = true,
-  appName,
 }: LayoutProps): JSX.Element {
   return (
     <html lang="en">
       <body
         className={cn(
           font.className,
-          `relative overscroll-none bg-background text-white`,
+          `overscroll-none bg-background text-white`,
           className,
         )}
       >
-        <div className={cn("mx-auto max-w-screen-xl")}>
-          {shouldDisplayHeader && <Header appName={appName} />}
-          {children}
-          <Footer />
-        </div>
+        <div className={cn("mx-auto max-w-screen-xl")}>{children}</div>
       </body>
     </html>
   );

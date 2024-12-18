@@ -5,11 +5,23 @@ import { useState } from "react";
 import { z } from "zod";
 
 import type { AppRouter } from "@torus-ts/api";
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 
 import { api } from "~/trpc/react";
 import { X } from "lucide-react";
-import { Button, Card, CardContent, CardHeader, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Textarea } from "@torus-ts/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from "@torus-ts/ui";
 
 type ProposalComment = inferProcedureOutput<
   AppRouter["proposalComment"]["byReport"]
@@ -26,7 +38,6 @@ interface ReportCommentProps {
 }
 
 export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
-
   const [formData, setFormData] = useState<ReportFormData>({
     reason: "SPAM",
     content: "",
@@ -43,10 +54,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
       },
     });
 
-  const handleInputChange = (
-    type: "reason" | "content",
-    value: string
-  ) => {
+  const handleInputChange = (type: "reason" | "content", value: string) => {
     if (type === "reason") {
       setFormData((prev) => ({
         ...prev,
@@ -77,7 +85,6 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
     e.preventDefault();
     if (!commentId) return console.error("No comment id found");
 
-
     if (validateForm()) {
       reportCommentMutation.mutate({
         commentId,
@@ -89,7 +96,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
     }
   };
 
-  if (!commentId) return null
+  if (!commentId) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -97,11 +104,9 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
         className="absolute inset-0 bg-card/30 backdrop-blur-sm"
         onClick={() => setCommentId(null)}
       />
-      <Card className="relative w-full max-w-screen-md text-left text-white h-fit animate-fade-in-down">
+      <Card className="relative h-fit w-full max-w-screen-md animate-fade-in-down text-left text-white">
         <CardHeader className="flex flex-row items-center justify-between gap-3 px-6 pt-6">
-          <h3 className="pl-2 text-xl font-bold leading-6">
-            Report Comment
-          </h3>
+          <h3 className="pl-2 text-xl font-bold leading-6">Report Comment</h3>
           <Button
             className="p-2 transition duration-200"
             onClick={() => setCommentId(null)}
@@ -114,8 +119,11 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
         <CardContent className="px-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block mb-2 text-sm font-bold">Reason</label>
-              <Select value={formData.reason} onValueChange={(value) => handleInputChange("reason", value)}>
+              <label className="mb-2 block text-sm font-bold">Reason</label>
+              <Select
+                value={formData.reason}
+                onValueChange={(value) => handleInputChange("reason", value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a reason" />
                 </SelectTrigger>
@@ -125,7 +133,9 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
                     <SelectItem value="VIOLENCE">Violence</SelectItem>
                     <SelectItem value="HARASSMENT">Harassment</SelectItem>
                     <SelectItem value="HATE_SPEECH">Hate speech</SelectItem>
-                    <SelectItem value="SEXUAL_CONTENT">Sexual content</SelectItem>
+                    <SelectItem value="SEXUAL_CONTENT">
+                      Sexual content
+                    </SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -134,14 +144,16 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
               )}
             </div>
             <div>
-              <label className="block mb-2 text-sm font-bold">
+              <label className="mb-2 block text-sm font-bold">
                 Description
               </label>
               <Textarea
                 name="content"
                 value={formData.content}
-                onChange={(value) => handleInputChange("content", value.target.value)}
-                className="w-full p-2 border border-muted bg-card"
+                onChange={(value) =>
+                  handleInputChange("content", value.target.value)
+                }
+                className="w-full border border-muted bg-card p-2"
                 placeholder="Please provide a detailed description of the issue."
                 rows={4}
               />
@@ -150,7 +162,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
                 <p className="mt-1 text-xs text-red-500">{errors.content}</p>
               )}
             </div>
-            <div className="flex justify-end w-full gap-2">
+            <div className="flex w-full justify-end gap-2">
               <Button
                 type="button"
                 variant="destructive"
@@ -171,8 +183,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
             </div>
           </form>
         </CardContent>
-
       </Card>
     </div>
-  )
+  );
 }

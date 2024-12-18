@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Info } from "lucide-react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,

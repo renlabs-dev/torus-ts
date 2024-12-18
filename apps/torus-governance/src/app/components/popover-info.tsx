@@ -2,7 +2,7 @@
 
 import { Copy, Ellipsis } from "lucide-react";
 
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 import {
   Button,
   Popover,

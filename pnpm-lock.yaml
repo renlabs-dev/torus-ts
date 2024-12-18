@@ -217,7 +217,7 @@ importers:
       '@torus-ts/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@torus-ts/providers':
+      '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
       '@torus-ts/subspace':
@@ -317,7 +317,7 @@ importers:
       '@torus-ts/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@torus-ts/providers':
+      '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
       '@torus-ts/subspace':
@@ -472,7 +472,7 @@ importers:
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@torus-ts/providers':
+      '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
       '@torus-ts/subspace':
@@ -523,7 +523,7 @@ importers:
       '@torus-ts/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@torus-ts/providers':
+      '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
       '@torus-ts/subspace':
@@ -611,7 +611,7 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
-      '@torus-ts/providers':
+      '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
       '@torus-ts/ui':

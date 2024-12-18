@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 import { Button } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 

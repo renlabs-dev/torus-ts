@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronsUp, X } from "lucide-react";
 
-import { useKeyStakedBy } from "@torus-ts/providers/hooks";
-import { toast } from "@torus-ts/providers/use-toast";
+import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
+import { toast } from "@torus-ts/query-provider/use-toast";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,

@@ -1,5 +1,5 @@
 {
-  "name": "@torus-ts/providers",
+  "name": "@torus-ts/query-provider",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { ReactQueryProvider } from "./context/react-query";
 import { ToastProvider } from "./context/toast";
 
-function Providers({ children }: { children: ReactNode }): JSX.Element {
+function QueryProvider({ children }: { children: ReactNode }): JSX.Element {
   return (
     <ReactQueryProvider>
       <ToastProvider>{children}</ToastProvider>
@@ -11,4 +11,4 @@ function Providers({ children }: { children: ReactNode }): JSX.Element {
   );
 }
 
-export { Providers };
+export { QueryProvider };

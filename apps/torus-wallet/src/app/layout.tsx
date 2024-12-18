@@ -3,7 +3,7 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-import { Providers } from "@torus-ts/providers/context";
+import { QueryProvider } from "@torus-ts/query-provider/context";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components";
 
@@ -33,14 +33,14 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <Layout font={firaMono} appName={APP_NAME}>
-      <Providers>
+      <QueryProvider>
         <TorusProvider
           wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
           torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
         >
           <WalletProvider>{children}</WalletProvider>
         </TorusProvider>
-      </Providers>
+      </QueryProvider>
     </Layout>
   );
 }

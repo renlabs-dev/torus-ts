@@ -4,7 +4,7 @@ import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 import {
   Button,
   Input,

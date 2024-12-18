@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { z } from "zod";
 
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 
 import { api } from "~/trpc/react";
 import { TriangleAlert, X } from "lucide-react";

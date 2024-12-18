@@ -3,7 +3,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createContext, useContext, useMemo } from "react";
 
-import type { BaseDao, BaseProposal } from "@torus-ts/providers/hooks";
+import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import type {
   DaoApplications,
   LastBlock,
@@ -37,9 +37,9 @@ import {
   useRewardAllocation,
   useSubnetList,
   useUnrewardedProposals,
-} from "@torus-ts/providers/hooks";
+} from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { WalletDropdown } from "@torus-ts/ui";
+import { Header, WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
 
@@ -220,15 +220,20 @@ export function GovernanceProvider({
         registerModule,
       }}
     >
-      <WalletDropdown
-        balance={accountFreeBalance.data}
-        stakeOut={stakeOut.data}
-        accounts={accounts}
-        isInitialized={isInitialized}
-        selectedAccount={selectedAccount}
-        handleLogout={handleLogout}
-        handleGetWallets={handleGetWallets}
-        handleSelectWallet={handleSelectWallet}
+      <Header
+        appName="Governance Portal"
+        wallet={
+          <WalletDropdown
+            balance={accountFreeBalance.data}
+            stakeOut={stakeOut.data}
+            accounts={accounts}
+            isInitialized={isInitialized}
+            selectedAccount={selectedAccount}
+            handleLogout={handleLogout}
+            handleGetWallets={handleGetWallets}
+            handleSelectWallet={handleSelectWallet}
+          />
+        }
       />
       {children}
     </GovernanceContext.Provider>

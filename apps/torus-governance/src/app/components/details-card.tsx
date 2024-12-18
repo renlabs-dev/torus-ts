@@ -1,7 +1,7 @@
 import { Copy } from "lucide-react";
 
 import type { Blocks, SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 import { Card, CardHeader } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 import { getCreationTime, getExpirationTime } from "@torus-ts/utils";

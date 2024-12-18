@@ -5,7 +5,7 @@ import { useState } from "react";
 import { z } from "zod";
 
 import type { AppRouter } from "@torus-ts/api";
-import { toast } from "@torus-ts/providers/use-toast";
+import { toast } from "@torus-ts/query-provider/use-toast";
 
 import { api } from "~/trpc/react";
 import { TriangleAlert, X } from "lucide-react";
@@ -124,7 +124,7 @@ export function ReportComment({ commentId }: ReportCommentProps) {
                   name="reason"
                   value={formData.reason}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 bg-black/40  p-2"
+                  className="w-full border border-gray-300 bg-black/40 p-2"
                 >
                   <option value="SPAM">Spam</option>
                   <option value="VIOLENCE">Violence</option>

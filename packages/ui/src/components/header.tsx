@@ -3,16 +3,23 @@ import Link from "next/link";
 import { cn } from ".";
 import { Icons } from "./icons";
 
-export function Header(props: { appName?: string }): JSX.Element {
-  const { appName } = props;
+interface HeaderProps {
+  appName: string;
+  wallet?: React.ReactNode;
+}
+
+export function Header(props: HeaderProps): JSX.Element {
   return (
     <header
-      className={cn("absolute z-[75] flex animate-fade-down px-4 py-2 md:px-6")}
+      className={cn(
+        "fixed z-[75] flex w-full max-w-screen-xl animate-fade-down justify-between px-4 py-2",
+      )}
     >
-      <Link className="flex h-fit w-fit gap-4 p-1.5" href="/">
+      <Link className="flex gap-3 p-1.5" href="/">
         <Icons.logo className="h-6 w-6" />
-        {appName}
+        {props.appName}
       </Link>
+      {props.wallet}
     </header>
   );
 }

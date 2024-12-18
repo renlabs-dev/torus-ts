@@ -3,8 +3,8 @@
 import { useLayoutEffect, useState } from "react";
 
 import type { ProposalStatus } from "@torus-ts/subspace";
-import { useProcessVotesAndStakes } from "@torus-ts/providers/hooks";
-import { toast } from "@torus-ts/providers/use-toast";
+import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
+import { toast } from "@torus-ts/query-provider/use-toast";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, CardHeader } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";

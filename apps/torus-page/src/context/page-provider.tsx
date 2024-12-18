@@ -18,7 +18,7 @@ import {
   useFreeBalance,
   useKeyStakedBy,
   useLastBlock,
-} from "@torus-ts/providers/hooks";
+} from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 // import { WalletDropdown } from "@torus-ts/ui";
 
