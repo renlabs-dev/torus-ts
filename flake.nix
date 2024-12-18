@@ -10,6 +10,9 @@
       {
         devShell = pkgs.mkShell {
           buildInputs = [
+            # Git
+            pkgs.git-lfs
+            # Node.js
             pkgs.nodejs_20
             pkgs.pnpm
             # Run scripts locally
