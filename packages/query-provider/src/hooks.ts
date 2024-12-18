@@ -25,6 +25,7 @@ import {
   queryDaoTreasuryAddress,
   queryFreeBalance,
   queryKeyStakedBy,
+  queryKeyStakingTo,
   queryLastBlock,
   queryProposals,
   queryRewardAllocation,
@@ -202,6 +203,19 @@ export function useProcessVotesAndStakes(
     enabled: api != null,
     queryFn: () =>
       processVotesAndStakes(api!, torusCacheUrl, votesFor, votesAgainst),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useKeyStakingTo(
+  api: Api | Nullish,
+  address: SS58Address | string | Nullish,
+) {
+  return useQuery({
+    queryKey: ["user_total_staked", address],
+    enabled: api != null && address != null,
+    queryFn: () => queryKeyStakingTo(api!, address! as SS58Address),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
