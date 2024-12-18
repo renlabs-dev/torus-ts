@@ -20,7 +20,7 @@ import {
   useLastBlock,
 } from "@torus-ts/providers/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { WalletDropdown } from "@torus-ts/ui";
+// import { WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
 
@@ -130,7 +130,7 @@ export function PageProvider({
         handleSelectWallet,
       }}
     >
-      <WalletDropdown
+      {/* <WalletDropdown
         balance={accountFreeBalance.data}
         stakeOut={stakeOut.data}
         accounts={accounts}
@@ -139,7 +139,7 @@ export function PageProvider({
         handleLogout={handleLogout}
         handleGetWallets={handleGetWallets}
         handleSelectWallet={handleSelectWallet}
-      />
+      /> */}
       {children}
     </PageContext.Provider>
   );

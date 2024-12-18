@@ -17,6 +17,9 @@
     "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:"
+  },
   "dependencies": {
     "@polkadot/api": "catalog:",
     "@polkadot/api-augment": "catalog:",
@@ -24,7 +27,6 @@
     "@polkadot/extension-inject": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/util-crypto": "catalog:",
-    "@tanstack/react-query": "catalog:",
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
