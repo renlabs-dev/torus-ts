@@ -426,9 +426,21 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.62.8(react@18.2.0)
+      '@torus-ts/query-provider':
+        specifier: workspace:*
+        version: link:../../packages/query-provider
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../../packages/subspace
       '@torus-ts/toast-provider':
         specifier: workspace:*
         version: link:../../packages/toast-provider
+      '@torus-ts/torus-provider':
+        specifier: workspace:*
+        version: link:../../packages/torus-provider
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -481,18 +493,9 @@ importers:
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@torus-ts/query-provider':
-        specifier: workspace:*
-        version: link:../../packages/query-provider
-      '@torus-ts/subspace':
-        specifier: workspace:*
-        version: link:../../packages/subspace
       '@torus-ts/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@torus-ts/torus-provider':
-        specifier: workspace:*
-        version: link:../../packages/torus-provider
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
@@ -623,12 +626,21 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.62.8(react@18.2.0)
       '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../../packages/subspace
       '@torus-ts/toast-provider':
         specifier: workspace:*
         version: link:../../packages/toast-provider
+      '@torus-ts/torus-provider':
+        specifier: workspace:*
+        version: link:../../packages/torus-provider
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -657,15 +669,9 @@ importers:
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@torus-ts/subspace':
-        specifier: workspace:*
-        version: link:../../packages/subspace
       '@torus-ts/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@torus-ts/torus-provider':
-        specifier: workspace:*
-        version: link:../../packages/torus-provider
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
