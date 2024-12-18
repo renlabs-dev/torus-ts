@@ -6,12 +6,11 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
-// import { Footer } from "@torus-ts/ui/components";
 
 import { PageProvider } from "~/context/page-provider";
 import { env } from "~/env";
-import { cn } from "@torus-ts/ui";
-// import { Header } from "./components/header";
+import { cn, Footer } from "@torus-ts/ui";
+import { Header } from "./components/header";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -46,9 +45,9 @@ export default function RootLayout({
           >
             <ReactQueryProvider>
               <PageProvider>
-                {/* <Header /> */}
+                <Header />
                 {children}
-                {/* <Footer /> */}
+                <Footer />
               </PageProvider>
             </ReactQueryProvider>
           </TorusProvider>

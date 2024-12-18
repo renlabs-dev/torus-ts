@@ -44,9 +44,9 @@ export function UnstakeAction(
   );
 
   const [stakedAmount, setStakedAmount] = useState<string | null>(null);
-  const { accountStakedBy } = usePage();
+  const { accountStakingTo } = usePage();
 
-  const stakedValidators = accountStakedBy.data ?? [];
+  const stakedValidators = accountStakingTo.data ?? [];
 
   const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;

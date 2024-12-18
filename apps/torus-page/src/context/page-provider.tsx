@@ -3,12 +3,6 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
-import type {
-  Balance,
-  LastBlock,
-  SS58Address,
-  StakeData,
-} from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import type { Bridge, Stake } from "@torus-ts/torus-provider/types";
 import {
@@ -16,13 +10,19 @@ import {
   useBridgedBalances,
   useCachedStakeOut,
   useFreeBalance,
-  useKeyStakedBy,
+  useKeyStakingTo,
   useLastBlock,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 // import { WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
+import type {
+  Balance,
+  LastBlock,
+  SS58Address,
+  StakeData,
+} from "@torus-ts/subspace";
 
 interface PageContextType {
   isInitialized: boolean;
@@ -33,7 +33,7 @@ interface PageContextType {
   selectedAccount: InjectedAccountWithMeta | null;
   accountFreeBalance: UseQueryResult<bigint, Error>;
   accountStakedBalance: bigint | undefined;
-  accountStakedBy: UseQueryResult<
+  accountStakingTo: UseQueryResult<
     {
       address: SS58Address;
       stake: Balance;
@@ -85,7 +85,7 @@ export function PageProvider({
     selectedAccount?.address as SS58Address,
   );
 
-  const accountStakedBy = useKeyStakedBy(api, selectedAccount?.address);
+  const accountStakingTo = useKeyStakingTo(api, selectedAccount?.address);
 
   // == Subspace ==
 
@@ -113,7 +113,7 @@ export function PageProvider({
 
         selectedAccount,
 
-        accountStakedBy,
+        accountStakingTo,
         isAccountConnected,
         accountFreeBalance,
         accountStakedBalance,
@@ -130,16 +130,6 @@ export function PageProvider({
         handleSelectWallet,
       }}
     >
-      {/* <WalletDropdown
-        balance={accountFreeBalance.data}
-        stakeOut={stakeOut.data}
-        accounts={accounts}
-        isInitialized={isInitialized}
-        selectedAccount={selectedAccount}
-        handleLogout={handleLogout}
-        handleGetWallets={handleGetWallets}
-        handleSelectWallet={handleSelectWallet}
-      /> */}
       {children}
     </PageContext.Provider>
   );

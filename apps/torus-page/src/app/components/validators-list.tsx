@@ -22,7 +22,7 @@ interface Validator {
 }
 
 export function ValidatorsList(props: ValidatorsListProps) {
-  const { accountStakedBy } = usePage();
+  const { accountStakingTo } = usePage();
 
   const validatorsList = [
     {
@@ -53,8 +53,8 @@ export function ValidatorsList(props: ValidatorsListProps) {
   ];
 
   function getValidatorsList(): Validator[] {
-    if (props.listType === "staked" && accountStakedBy.data) {
-      return accountStakedBy.data.map((item) => ({
+    if (props.listType === "staked" && accountStakingTo.data) {
+      return accountStakingTo.data.map((item) => ({
         name: `Staked amount: ${formatToken(Number(item.stake))}`,
         description: `Staked amount: ${formatToken(Number(item.stake))}`,
         address: item.address,

@@ -208,6 +208,19 @@ export function useProcessVotesAndStakes(
   });
 }
 
+export function useKeyStakingTo(
+  api: Api | Nullish,
+  address: SS58Address | string | Nullish,
+) {
+  return useQuery({
+    queryKey: ["user_total_staked", address],
+    enabled: api != null && address != null,
+    queryFn: () => queryKeyStakingTo(api!, address! as SS58Address),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useKeyStakedBy(
   api: Api | Nullish,
   address: SS58Address | string | Nullish,
