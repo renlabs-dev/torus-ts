@@ -988,8 +988,8 @@ importers:
         specifier: catalog:react18
         version: 18.2.0(react@18.2.0)
       react-toastify:
-        specifier: ^10.0.5
-        version: 10.0.6(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        specifier: 11.0.1
+        version: 11.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
     devDependencies:
       '@torus-ts/eslint-config':
         specifier: workspace:*
@@ -5574,12 +5574,6 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
-
-  react-toastify@10.0.6:
-    resolution: {integrity: sha512-yYjp+omCDf9lhZcrZHKbSq7YMuK0zcYkDFTzfRFgTXkTFHZ1ToxwAonzA4JI5CxA91JpjFLmwEsZEgfYfOqI1A==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
 
   react-toastify@11.0.1:
     resolution: {integrity: sha512-ZALj1xpjOVlPPDKvdksGLemF9mM6FRltsykvv+JQpW9mildnBiy6nGz0685vo4+W8WitParsUfGk9qACArkZPA==}
@@ -11371,12 +11365,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.2.79
-
-  react-toastify@10.0.6(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
-    dependencies:
-      clsx: 2.1.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
 
   react-toastify@11.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
