@@ -6,26 +6,26 @@ function FooterContent() {
   return (
     <div className="flex justify-between space-x-4">
       <div className="h-fit w-fit rounded-full bg-accent p-1.5">
-        <Icons.logo className="m-1 h-4 w-4" />
+        <Icons.logo className="m-1 h-5 w-5" />
       </div>
       <div className="space-y-1">
-        <h4 className="text-sm font-semibold">Torus</h4>
+        <h4 className="text-sm font-semibold">Torus Network</h4>
         <p className="text-sm">
-          Made by the community, powered by{" "}
-          <a href={links.x} className="hover:underline">
+          Self assembled, powered by{" "}
+          <a href={links.x} className="font- underline">
             Ren Labs
           </a>
           .
         </p>
-        {/* <div className="flex space-x-6 pt-3 md:space-x-3">
-          {socialList.map((social) => {
+        <div className="flex space-x-6 pt-3 md:space-x-3">
+          {_socialList.map((social) => {
             return (
               <a key={social.name} href={social.href}>
                 {social.icon}
               </a>
             );
           })}
-        </div> */}
+        </div>
       </div>
     </div>
   );
@@ -38,7 +38,7 @@ export function Footer() {
         <HoverCardTrigger className="text-sm hover:cursor-pointer hover:underline">
           @torus
         </HoverCardTrigger>
-        <HoverCardContent className="w-72">
+        <HoverCardContent className="mr-2 w-72">
           <FooterContent />
         </HoverCardContent>
       </HoverCard>

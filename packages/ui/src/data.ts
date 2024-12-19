@@ -55,19 +55,19 @@ export const navApps: { title: string; href: string; description: string }[] = [
 export const navStart: { title: string; href: string; description: string }[] =
   [
     {
-      title: "View More",
+      title: "More",
       href: "/about",
-      description: "Learn more about Torus.",
+      description: "Learn more about the Torus Network Protocol.",
     },
     {
-      title: "Join Community",
-      href: "/join",
-      description: "Be a part of the Torus community.",
+      title: "Join",
+      href: "https://discord.gg/torus",
+      description: "Be a part of the self-assembling organism.",
     },
     {
-      title: "Whitepaper",
-      href: "/paper",
-      description: "Learn the protocol fundamental structure and principles.",
+      title: "Bridge Info",
+      href: "/bridge",
+      description: "Learn more about the Torus Bridge.",
     },
   ];
 
