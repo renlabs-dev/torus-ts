@@ -52,7 +52,7 @@
     "input-otp": "^1.2.4",
     "lucide-react": "^0.454.0",
     "react-hook-form": "^7.53.2",
-    "react": "catalog:react18",
+    "react": "catalog:react19",
     "recharts": "^2.13.0-alpha.4",
     "tailwind-merge": "^2.5.2",
     "zod": "^3.23.8"
@@ -61,7 +61,7 @@
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@types/react": "catalog:react18",
+    "@types/react": "catalog:react19",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

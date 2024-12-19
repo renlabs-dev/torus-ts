@@ -27,11 +27,11 @@
     "@trpc/server": "catalog:",
     "lucide-react": "^0.454.0",
     "next": "catalog:",
-    "react": "catalog:react18",
-    "react-dom": "catalog:react18",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
     "superjson": "2.2.1",
     "zod": "catalog:",
-    "zustand": "^4.5.4"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "catalog:",
@@ -39,8 +39,8 @@
     "@torus-ts/tailwind-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@types/react": "catalog:react18",
-    "@types/react-dom": "catalog:react18",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
     "dotenv-cli": "^7.4.2",
     "jiti": "catalog:",
     "postcss": "catalog:",

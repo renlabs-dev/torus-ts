@@ -20,8 +20,8 @@
     "@torus-ts/ui": "workspace:*",
     "lucide-react": "^0.454.0",
     "next": "catalog:",
-    "react": "catalog:react18",
-    "react-dom": "catalog:react18",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -32,8 +32,8 @@
     "@torus-ts/tsconfig": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "@types/node": "catalog:",
-    "@types/react": "catalog:react18",
-    "@types/react-dom": "catalog:react18",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
     "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
