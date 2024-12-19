@@ -10,6 +10,8 @@ export const links = {
   telegram: "https://t.me/torusnetwork",
   x: "https://twitter.com/torus_network",
 
+  ren_labs: "https://renlabs.dev/",
+
   explorer: "https://explorer.torus.network/",
   governance: "https://governance.torus.network/",
   validator: "https://validator.torus.network/",
