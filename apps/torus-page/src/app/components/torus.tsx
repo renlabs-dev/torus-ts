@@ -5,6 +5,7 @@ import type { Mesh } from "three";
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { OrbitControls } from "@react-three/drei";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -102,7 +103,7 @@ const Torus: FC = () => {
 
   return (
     <mesh ref={torusRef} scale={[1.8, 1.8, 1.8]} rotation={[Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[0.53, 0.49, 256, 256]} />
+      <torusGeometry args={[0.53, 0.49, 500, 500]} />
       <primitive object={shaderMaterial} attach="material" />
     </mesh>
   );
@@ -112,6 +113,12 @@ export const TorusObject: FC = () => (
   <Canvas camera={{ fov: 80, near: 0.1, far: 1000, position: [0, 0, 3] }}>
     <Suspense fallback={null}>
       <Torus />
+      <OrbitControls
+        minDistance={2}
+        maxDistance={5}
+        enablePan={false}
+        enableRotate={false}
+      />
     </Suspense>
   </Canvas>
 );

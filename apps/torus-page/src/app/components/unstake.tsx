@@ -133,7 +133,7 @@ export function UnstakeAction(
         <div className="w-full">
           <form
             onSubmit={handleSubmit}
-            className="flex w-full animate-fade-down flex-col gap-4 pt-4"
+            className={"flex w-full animate-fade-down flex-col gap-4 pt-4"}
           >
             <div className="w-full">
               <div className="flex flex-row gap-3">

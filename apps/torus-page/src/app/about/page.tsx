@@ -2,7 +2,7 @@ import { sections } from "~/utils/sections-mock";
 
 export default function Page(): JSX.Element {
   return (
-    <main className="flex w-full animate-fade-up flex-col pt-24 md:pt-40">
+    <main className="flex w-full animate-fade-up flex-col pt-24 md:pt-52">
       {sections.map((section) => (
         <section
           id={section.sectionName}
@@ -13,9 +13,6 @@ export default function Page(): JSX.Element {
             <p className="text-3xl font-semibold tracking-tight text-white">
               {section.title}
             </p>
-            <h2 className="text-base font-medium text-gray-400">
-              {section.subtitle}
-            </h2>
           </span>
           {section.features.map((feature) => (
             <div

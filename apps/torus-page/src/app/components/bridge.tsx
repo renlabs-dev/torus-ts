@@ -189,13 +189,13 @@ export function Bridge() {
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpenAndUpdateURL}>
-      <AlertDialogTrigger className="mt-6 flex w-fit flex-col items-center gap-2 overflow-hidden rounded-md border border-border bg-card p-3 px-4">
+      <AlertDialogTrigger className="mt-6 flex w-fit animate-fade flex-col items-center gap-2 overflow-hidden rounded-md border border-border bg-card p-3 px-4 animate-delay-[1500ms]">
         <span>
           <span className="underline">Click here</span> to Bridge your assets to
           Torus.
         </span>
         <span className="text-sm">
-          (Bridge Closes: 1/1/25, 1:00 PM UTC) / Total Bridged:{" "}
+          (Bridge Closes: 1/3/25, 1:11 PM UTC) / Total Bridged:{" "}
           {formatToken(bridgedBalancesSum)} TOR
         </span>
       </AlertDialogTrigger>
@@ -310,7 +310,13 @@ export function Bridge() {
             </Card>
           </div>
         )}
-        <Card className="mb-2 px-4">
+
+        <Card
+          className={cn(
+            "mb-2 px-4",
+            accountStakedBalance && accountStakedBalance > 0n ? "" : "hidden",
+          )}
+        >
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1" className="border-b-0">
               <AccordionTrigger>Want to unstake your balance?</AccordionTrigger>
