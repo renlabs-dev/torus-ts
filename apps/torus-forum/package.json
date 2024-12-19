@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "build": "next build",
-    "dev": "next dev --port 3009",
-    "lint": "eslint",
-    "start": "next start"
+    "// typecheck": "tsc --noEmit",
+    "// build": " //next build",
+    "// dev": "next dev --port 3009",
+    "// lint": "eslint",
+    "// start": "next start"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "catalog:",
