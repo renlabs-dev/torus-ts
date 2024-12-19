@@ -5,10 +5,9 @@ import {
   check,
   index,
   integer,
-  numeric,
   pgEnum,
+  pgMaterializedView,
   pgTableCreator,
-  pgView,
   real,
   serial,
   text,
@@ -71,9 +70,7 @@ export const moduleData = createTable(
       mode: "date",
     }).default(sql`null`),
   },
-  (t) => ({
-    unq: unique().on(t.netuid, t.moduleKey),
-  }),
+  (t) => [unique().on(t.netuid, t.moduleKey)],
 );
 
 /**
@@ -96,86 +93,7 @@ export const userModuleData = createTable(
       .notNull(),
     weight: integer("weight").default(0).notNull(),
   },
-  (t) => ({
-    unq: unique().on(t.userKey, t.moduleId),
-  }),
-);
-
-/**
- * Subnets registered on the torus chain.
- */
-export const subnetDataSchema = createTable("subnet_data", {
-  id: serial("id").primaryKey(),
-  netuid: integer("netuid").notNull().unique(),
-  name: text("name").notNull(),
-  atBlock: integer("at_block").notNull(),
-  tempo: integer("tempo").notNull(),
-  minAllowedWeights: integer("min_allowed_weights").notNull(),
-  maxAllowedWeights: integer("max_allowed_weights").notNull(),
-  maxAllowedUids: integer("max_allowed_uids").notNull(),
-  maxWeightAge: numeric("max_weight_age", {
-    precision: 20,
-    scale: 0,
-  }).notNull(),
-  trustRatio: integer("trust_ratio").notNull(),
-  founderShare: integer("founder_share").notNull(),
-  incentiveRatio: integer("incentive_ratio").notNull(),
-  founder: ss58Address("founder").notNull(),
-  maximumSetWeightCallsPerEpoch: integer("maximum_set_weight_calls_per_epoch"),
-  subnetEmission: bigint("subnet_emission", { mode: "bigint" }).notNull(),
-  bondsMa: integer("bonds_ma"),
-  immunityPeriod: integer("immunity_period").notNull(),
-  subnetMetadata: text("subnet_metadata"),
-  // GovernanceConfiguration fields
-  proposalCost: bigint("proposal_cost", { mode: "bigint" }).notNull(),
-  proposalExpiration: integer("proposal_expiration").notNull(),
-  voteMode: text("vote_mode").notNull(),
-  proposalRewardTreasuryAllocation: real(
-    "proposal_reward_treasury_allocation",
-  ).notNull(),
-  maxProposalRewardTreasuryAllocation: bigint(
-    "max_proposal_reward_treasury_allocation",
-    { mode: "bigint" },
-  ).notNull(),
-  proposalRewardInterval: integer("proposal_reward_interval").notNull(),
-  // BurnConfiguration fields
-  minBurn: bigint("min_burn", { mode: "bigint" }).notNull(),
-  maxBurn: bigint("max_burn", { mode: "bigint" }).notNull(),
-  adjustmentAlpha: numeric("adjustment_alpha", {
-    precision: 20,
-    scale: 0,
-  }).notNull(),
-  targetRegistrationsInterval: integer(
-    "target_registrations_interval",
-  ).notNull(),
-  targetRegistrationsPerInterval: integer(
-    "target_registrations_per_interval",
-  ).notNull(),
-  maxRegistrationsPerInterval: integer(
-    "max_registrations_per_interval",
-  ).notNull(),
-  // Additional fields
-  minValidatorStake: bigint("min_validator_stake", { mode: "bigint" }),
-  maxAllowedValidators: integer("max_allowed_validators"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  deletedAt: timestamp("deleted_at").default(sql`null`),
-});
-
-export const userSubnetDataSchema = createTable(
-  "user_subnet_data",
-  {
-    id: serial("id").primaryKey(),
-    userKey: ss58Address("user_key").notNull(),
-    netuid: integer("netuid")
-      .references(() => subnetDataSchema.netuid)
-      .notNull(),
-    weight: integer("weight").default(0).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    deletedAt: timestamp("deleted_at").default(sql`null`),
-  },
-  (t) => ({
-    unq: unique().on(t.userKey, t.netuid),
-  }),
+  (t) => [unique().on(t.userKey, t.moduleId)],
 );
 
 /**
@@ -221,11 +139,7 @@ export const proposalCommentSchema = createTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     deletedAt: timestamp("deleted_at").default(sql`null`),
   },
-  (t) => ({
-    proposalIdIndex: index("proposal_comment_proposal_id_index").on(
-      t.proposalId,
-    ),
-  }),
+  (t) => [index("proposal_comment_proposal_id_index").on(t.proposalId)],
 );
 
 /**
@@ -247,16 +161,11 @@ export const commentInteractionSchema = createTable(
     voteType: varchar("vote_type", { length: 4 }).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => ({
-    unq: unique().on(t.commentId, t.userKey),
-    commentIdIndex: index("comment_interaction_comment_id_index").on(
-      t.commentId,
-    ),
-    commentVoteIndex: index("comment_interaction_comment_vote_index").on(
-      t.commentId,
-      t.voteType,
-    ),
-  }),
+  (t) => [
+    unique().on(t.commentId, t.userKey),
+    index("comment_interaction_comment_id_index").on(t.commentId),
+    index("comment_interaction_comment_vote_index").on(t.commentId, t.voteType),
+  ],
 );
 
 /**
@@ -264,7 +173,9 @@ export const commentInteractionSchema = createTable(
  * This view computes the number of upvotes and downvotes for each comment at write time.
  * so that we can query the data more efficiently.
  */
-export const proposalCommentDigestView = pgView("comment_digest").as((qb) =>
+export const proposalCommentDigestView = pgMaterializedView(
+  "comment_digest",
+).as((qb) =>
   qb
     .select({
       id: proposalCommentSchema.id,
@@ -275,7 +186,7 @@ export const proposalCommentDigestView = pgView("comment_digest").as((qb) =>
       content: proposalCommentSchema.content,
       createdAt: proposalCommentSchema.createdAt,
       upvotes:
-        sql<number>`SUM(CASE WHEN ${commentInteractionSchema.voteType} = "UP" THEN 1 ELSE 0 END)`
+        sql<number>`SUM(CASE WHEN ${commentInteractionSchema.voteType} = 'UP' THEN 1 ELSE 0 END)`
           .mapWith(Number)
           .as("upvotes"),
       downvotes:
@@ -379,9 +290,7 @@ export const daoVoteSchema = createTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     deletedAt: timestamp("deleted_at").default(sql`null`),
   },
-  (t) => ({
-    unq: unique().on(t.id, t.userKey, t.daoId),
-  }),
+  (t) => [unique().on(t.id, t.userKey, t.daoId)],
 );
 
 /**
@@ -423,23 +332,6 @@ export const computedModuleWeightsSchema = createTable(
   },
 );
 
-export const computedSubnetWeights = createTable("computed_subnet_weights", {
-  id: serial("id").primaryKey(),
-
-  atBlock: integer("at_block").notNull(),
-
-  netuid: integer("netuid")
-    .notNull()
-    .references(() => subnetDataSchema.netuid),
-
-  // Aggregated weights measured in nanos
-  stakeWeight: bigint("stake_weight", { mode: "bigint" }).notNull(),
-  // Normalized aggregated weights (100% sum)
-  percWeight: real("perc_weight").notNull(),
-
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 // ----- FORUM SCHEMAS -------
 
 export const forumVoteType = pgEnum("forum_vote_type_enum", [
@@ -479,14 +371,14 @@ export const forumPostSchema = createTable(
       .$onUpdate(() => new Date()),
     deletedAt: timestamp("deleted_at").default(sql`null`),
   },
-  (t) => ({
-    contentOrHrefCheck: check(
+  (t) => [
+    check(
       "content_or_href_check",
       sql`(content IS NOT NULL AND href IS NULL) OR (content IS NULL AND href IS NOT NULL)`,
     ),
-    categoryIdIndex: index("forum_post_category_id_index").on(t.categoryId),
-    userKeyIndex: index("forum_post_user_key_index").on(t.userKey),
-  }),
+    index("forum_post_category_id_index").on(t.categoryId),
+    index("forum_post_user_key_index").on(t.userKey),
+  ],
 );
 
 export const forumPostViewCountSchema = createTable("forum_post_view_count", {
@@ -513,9 +405,7 @@ export const forumCommentSchema = createTable(
       .$onUpdate(() => new Date()),
     deletedAt: timestamp("deleted_at").default(sql`null`),
   },
-  (t) => ({
-    postIdIndex: index("forum_comment_post_id_index").on(t.postId),
-  }),
+  (t) => [index("forum_comment_post_id_index").on(t.postId)],
 );
 
 export const forumPostVotesSchema = createTable(
@@ -533,15 +423,12 @@ export const forumPostVotesSchema = createTable(
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (t) => ({
-    unq: unique().on(t.postId, t.userKey),
-    postIdIndex: index("forum_post_votes_post_id_index").on(t.postId),
-    postVoteIndex: index("forum_post_votes_post_vote_index").on(
-      t.postId,
-      t.voteType,
-    ),
-    userKeyIndex: index("forum_post_votes_user_key_index").on(t.userKey),
-  }),
+  (t) => [
+    unique().on(t.postId, t.userKey),
+    index("forum_post_votes_post_id_index").on(t.postId),
+    index("forum_post_votes_post_vote_index").on(t.postId, t.voteType),
+    index("forum_post_votes_user_key_index").on(t.userKey),
+  ],
 );
 
 export const forumCommentVotesSchema = createTable(
@@ -559,14 +446,12 @@ export const forumCommentVotesSchema = createTable(
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (t) => ({
-    uniqueVote: unique().on(t.commentId, t.userKey),
-    commentIdIndex: index("forum_comment_votes_comment_id_index").on(
-      t.commentId,
-    ),
-    voteTypeIndex: index("forum_comment_votes_vote_type_index").on(t.voteType),
-    userKeyIndex: index("forum_comment_votes_user_key_index").on(t.userKey),
-  }),
+  (t) => [
+    unique().on(t.commentId, t.userKey),
+    index("forum_comment_votes_comment_id_index").on(t.commentId),
+    index("forum_comment_votes_vote_type_index").on(t.voteType),
+    index("forum_comment_votes_user_key_index").on(t.userKey),
+  ],
 );
 
 export const reportedTypeEnum = pgEnum("reportedType", ["POST", "COMMENT"]);
@@ -581,7 +466,9 @@ export const forumReportSchema = createTable("forum_report", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const forumCommentDigestView = pgView("forum_comment_digest").as((qb) =>
+export const forumCommentDigestView = pgMaterializedView(
+  "forum_comment_digest",
+).as((qb) =>
   qb
     .select({
       id: forumCommentSchema.id,
@@ -615,21 +502,22 @@ export const forumCommentDigestView = pgView("forum_comment_digest").as((qb) =>
     .where(sql`${forumCommentSchema.deletedAt} IS NULL`),
 );
 
-export const forumPostDigestView = pgView("forum_post_digest").as((qb) =>
-  qb
-    .select({
-      id: forumPostSchema.id,
-      userKey: forumPostSchema.userKey,
-      title: forumPostSchema.title,
-      content: forumPostSchema.content,
-      createdAt: forumPostSchema.createdAt,
-      updatedAt: forumPostSchema.updatedAt,
-      isAnonymous: forumPostSchema.isAnonymous,
-      isPinned: forumPostSchema.isPinned,
-      href: forumPostSchema.href,
-      categoryId: forumPostSchema.categoryId,
-      categoryName: forumCategoriesSchema.name,
-      upvotes: sql<number>`
+export const forumPostDigestView = pgMaterializedView("forum_post_digest").as(
+  (qb) =>
+    qb
+      .select({
+        id: forumPostSchema.id,
+        userKey: forumPostSchema.userKey,
+        title: forumPostSchema.title,
+        content: forumPostSchema.content,
+        createdAt: forumPostSchema.createdAt,
+        updatedAt: forumPostSchema.updatedAt,
+        isAnonymous: forumPostSchema.isAnonymous,
+        isPinned: forumPostSchema.isPinned,
+        href: forumPostSchema.href,
+        categoryId: forumPostSchema.categoryId,
+        categoryName: forumCategoriesSchema.name,
+        upvotes: sql<number>`
         COALESCE(
           (SELECT COUNT(*) FROM ${forumPostVotesSchema}
            WHERE ${forumPostVotesSchema.postId} = ${forumPostSchema.id}
@@ -637,9 +525,9 @@ export const forumPostDigestView = pgView("forum_post_digest").as((qb) =>
           0
         )
       `
-        .mapWith(Number)
-        .as("upvotes"),
-      downvotes: sql<number>`
+          .mapWith(Number)
+          .as("upvotes"),
+        downvotes: sql<number>`
         COALESCE(
           (SELECT COUNT(*) FROM ${forumPostVotesSchema}
            WHERE ${forumPostVotesSchema.postId} = ${forumPostSchema.id}
@@ -647,9 +535,9 @@ export const forumPostDigestView = pgView("forum_post_digest").as((qb) =>
           0
         )
       `
-        .mapWith(Number)
-        .as("downvotes"),
-      commentCount: sql<number>`
+          .mapWith(Number)
+          .as("downvotes"),
+        commentCount: sql<number>`
         COALESCE(
           (SELECT COUNT(*) FROM ${forumCommentSchema}
            WHERE ${forumCommentSchema.postId} = ${forumPostSchema.id}
@@ -657,13 +545,13 @@ export const forumPostDigestView = pgView("forum_post_digest").as((qb) =>
           0
         )
       `
-        .mapWith(Number)
-        .as("commentCount"),
-    })
-    .from(forumPostSchema)
-    .leftJoin(
-      forumCategoriesSchema,
-      eq(forumPostSchema.categoryId, forumCategoriesSchema.id),
-    )
-    .where(sql`${forumPostSchema.deletedAt} IS NULL`),
+          .mapWith(Number)
+          .as("commentCount"),
+      })
+      .from(forumPostSchema)
+      .leftJoin(
+        forumCategoriesSchema,
+        eq(forumPostSchema.categoryId, forumCategoriesSchema.id),
+      )
+      .where(sql`${forumPostSchema.deletedAt} IS NULL`),
 );
