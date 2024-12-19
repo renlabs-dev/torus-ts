@@ -1,5 +1,4 @@
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 import {
   cadreCandidatesSchema,
@@ -7,14 +6,13 @@ import {
   cadreVoteSchema,
   commentInteractionSchema,
   commentReportSchema,
-  daoVoteSchema,
-  moduleReport,
-  proposalCommentSchema,
-  userModuleData,
+  agentReport,
+  governanceComment,
+  userAgentAllocation,
 } from "./schema";
 
 export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
-  proposalCommentSchema,
+  governanceComment,
 ).omit({
   id: true,
   createdAt: true,
@@ -37,24 +35,21 @@ export const COMMENT_REPORT_INSERT_SCHEMA = createInsertSchema(
   userKey: true,
 });
 
-export const MODULE_REPORT_INSERT_SCHEMA = createInsertSchema(
-  moduleReport,
-).omit({
-  id: true,
-  userKey: true,
-  createdAt: true,
-});
+export const MODULE_REPORT_INSERT_SCHEMA = createInsertSchema(agentReport).omit(
+  {
+    id: true,
+    userKey: true,
+    createdAt: true,
+  },
+);
 
 export const USER_MODULE_DATA_INSERT_SCHEMA = createInsertSchema(
-  userModuleData,
-  {
-    weight: z.number().positive(),
-  },
+  userAgentAllocation,
 ).omit({
   id: true,
 });
 
-export const DAO_VOTE_INSERT_SCHEMA = createInsertSchema(daoVoteSchema).omit({
+export const DAO_VOTE_INSERT_SCHEMA = createInsertSchema(cadreVoteSchema).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
