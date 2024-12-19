@@ -1,6 +1,6 @@
 import { asc, eq, sql } from "drizzle-orm";
 import {
-  bigint,
+  bigint as drizzleBigint,
   boolean,
   check,
   index,
@@ -20,14 +20,16 @@ import {
 export const createTable = pgTableCreator((name) => `${name}`);
 
 export const ss58Address = (name: string) => varchar(name, { length: 256 });
+export const bigint = (name: string) => drizzleBigint(name, { mode: "bigint" });
 
 /**
- * Modules registered on the torus chain.
+ * Modules registered on the Torus chain.
  *
  * lastSeenBlock = max(atBlock)
  * atBlock == lastSeenBlock         --> registered
  * atBlock <  lastSeenBlock         --> deregistered
  */
+
 export const moduleData = createTable(
   "module_data",
   {
@@ -47,14 +49,14 @@ export const moduleData = createTable(
     addressUri: text("address_uri"),
     metadataUri: text("metadata_uri"),
 
-    emission: bigint("emission", { mode: "bigint" }),
-    incentive: bigint("incentive", { mode: "bigint" }),
-    dividend: bigint("dividend", { mode: "bigint" }),
+    emission: bigint("emission"),
+    incentive: bigint("incentive"),
+    dividend: bigint("dividend"),
     delegationFee: integer("delegation_fee"),
 
-    totalStaked: bigint("total_staked", { mode: "bigint" }),
+    totalStaked: bigint("total_staked"),
     totalStakers: integer("total_stakers"),
-    totalRewards: bigint("total_rewards", { mode: "bigint" }),
+    totalRewards: bigint("total_rewards"),
 
     isWhitelisted: boolean("is_whitelisted").default(false),
 
@@ -72,6 +74,34 @@ export const moduleData = createTable(
   },
   (t) => [unique().on(t.netuid, t.moduleKey)],
 );
+
+export const agentData = createTable("agent_data", {
+  atBlock: integer("at_block").notNull(),
+
+  key: ss58Address("key").primaryKey(),
+  name: text("name"),
+  addressUri: text("address_uri"),
+  metadataUri: text("metadata_uri"),
+  weightFactor: integer("weight_factor"), // percentage
+
+  isWhitelisted: boolean("is_whitelisted"),
+  registrationBlock: integer("registration_block"),
+
+  totalStaked: bigint("total_staked"),
+  totalStakers: integer("total_stakers"),
+
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull()
+    .$onUpdateFn(() => new Date()),
+  deletedAt: timestamp("deleted_at", {
+    withTimezone: true,
+    mode: "date",
+  }).default(sql`null`),
+});
 
 /**
  * Data for the relation a user have with a specific module.
@@ -94,6 +124,22 @@ export const userModuleData = createTable(
     weight: integer("weight").default(0).notNull(),
   },
   (t) => [unique().on(t.userKey, t.moduleId)],
+);
+
+/**
+ * Data for the relation a user have with an specific Agent.
+ * The user can set a weight (vote) for an Agent, and favorite it.
+ */
+export const userDataForAgent = createTable(
+  "user_data_for_agent",
+  {
+    id: serial("id").primaryKey(),
+    userKey: ss58Address("user_key").notNull(),
+    agentKey: ss58Address("agent_key")
+      .notNull()
+      .references(() => agentData.key),
+  },
+  (t) => [unique().on(t.userKey, t.agentKey)],
 );
 
 /**
@@ -309,7 +355,6 @@ export const governanceNotificationSchema = createTable(
 /**
  * This MUST store only info for modules on subnet 2.
  */
-// TODO: append SCHEMA to name
 
 export const computedModuleWeightsSchema = createTable(
   "computed_module_weights",
@@ -324,7 +369,7 @@ export const computedModuleWeightsSchema = createTable(
       .references(() => moduleData.id),
 
     // Aggregated weights measured in nanos
-    stakeWeight: bigint("stake_weight", { mode: "bigint" }).notNull(),
+    stakeWeight: bigint("stake_weight").notNull(),
     // Normalized aggregated weights (100% sum)
     percWeight: real("perc_weight").notNull(),
 

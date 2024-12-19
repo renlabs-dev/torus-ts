@@ -24,7 +24,6 @@ export interface WorkerProps {
 
 // -- Constants -- //
 
-export const SUBNETS_NETUID = 0;
 export const CONSENSUS_NETUID = 2;
 
 export const BLOCK_TIME = 8000;

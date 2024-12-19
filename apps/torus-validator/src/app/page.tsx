@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChartPie, Database, Grid2X2, Grid2x2Plus } from "lucide-react";
+import { Grid2X2, Grid2x2Plus } from "lucide-react";
 
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -15,15 +15,12 @@ import {
   Label,
   Separator,
 } from "@torus-ts/ui";
-import { fromNano } from "@torus-ts/utils/subspace";
 
 import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
-import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
 import { api } from "~/trpc/react";
 import { separateTopNModules } from "./components/charts/_common";
 // import { CombinedAreaChart } from "./components/charts/combined-area-chart";
 import { ModuleBarChart } from "./components/charts/module-bar-chart";
-import { SubnetPieChart } from "./components/charts/subnet-pie-chart";
 import { DelegatedScroll } from "./components/delegated-scroll";
 import { StatsCard } from "./components/stats-card";
 
@@ -65,26 +62,6 @@ export default function Page() {
   const delegatedModulesData = delegatedModules.map((module) => ({
     name: module.name,
     percentage: module.percentage,
-  }));
-
-  // Subnets Logic
-  const { delegatedSubnets } = useDelegateSubnetStore();
-
-  const { data: subnets } = api.subnet.all.useQuery();
-
-  const { data: computedWeightedSubnets } =
-    api.subnet.allComputedSubnetWeightsLastBlock.useQuery();
-
-  const subnetData = computedWeightedSubnets?.map((s) => ({
-    stakeWeight: parseInt(fromNano(s.stakeWeight)),
-    subnetName: s.subnetName,
-    percWeight: s.percWeight,
-    percFormat: `${(s.percWeight * 100).toFixed(1)} %`,
-  }));
-
-  const delegatedSubnetsData = delegatedSubnets.map((subnet) => ({
-    name: subnet.name,
-    percentage: subnet.percentage,
   }));
 
   return (
@@ -137,30 +114,10 @@ export default function Page() {
             />
           </div>
           <div className="mb-4 hidden border-l border-white/20 md:block" />
-          <div className="flex w-full animate-fade-down flex-col gap-4 pb-4 animate-delay-500 md:flex-row">
-            <StatsCard
-              Icon={Database}
-              text="Total Subnets"
-              value={`${subnets?.length ? subnets.length : 0}`}
-              color="cyan"
-            />
-            <StatsCard
-              Icon={ChartPie}
-              text="Your Subnets"
-              value={`${delegatedSubnets.length}`}
-              color="cyan"
-            />
-          </div>
         </div>
         <div className="gird-cols-1 grid w-full animate-fade-down gap-3 pb-3 animate-delay-[650ms] md:grid-cols-3">
-          {/* TODO: spinners */}
           {moduleStakeData && moduleStakeData.length > 0 ? (
             <ModuleBarChart chartData={moduleStakeData} />
-          ) : (
-            <Card className="h-full w-full animate-pulse" />
-          )}
-          {subnetData && subnetData.length > 0 ? (
-            <SubnetPieChart chartData={subnetData} />
           ) : (
             <Card className="h-full w-full animate-pulse" />
           )}
@@ -180,25 +137,6 @@ export default function Page() {
                     {delegatedModulesData.length
                       ? "Connect your wallet to view your modules."
                       : "You have not selected any modules."}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-            <Card className="min-h-full w-full">
-              <CardHeader className="flex flex-col items-end justify-between md:flex-row">
-                <CardTitle>Your Selected Subnets</CardTitle>
-                <Link href="/subnets" className="hover:text-cyan-500">
-                  Edit Your Subnet List
-                </Link>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {selectedAccount && delegatedSubnetsData.length ? (
-                  <DelegatedScroll data={delegatedSubnetsData} />
-                ) : (
-                  <p className="h-28">
-                    {delegatedSubnetsData.length
-                      ? "Connect your wallet to view your subnets."
-                      : "You have not selected any subnets."}
                   </p>
                 )}
               </CardContent>
