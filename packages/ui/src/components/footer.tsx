@@ -12,7 +12,7 @@ function FooterContent() {
         <h4 className="text-sm font-semibold">Torus Network</h4>
         <p className="text-sm">
           Self assembled, powered by{" "}
-          <a href={links.x} className="underline">
+          <a href={links.ren_labs} className="underline" target="_blank">
             Ren Labs
           </a>
           .
