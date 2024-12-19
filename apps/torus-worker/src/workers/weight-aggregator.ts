@@ -11,27 +11,16 @@ import type {
 } from "@torus-ts/subspace";
 import { and, eq, sql } from "@torus-ts/db";
 import { db } from "@torus-ts/db/client";
-import {
-  moduleData,
-  subnetDataSchema,
-  userModuleData,
-  userSubnetDataSchema,
-} from "@torus-ts/db/schema";
+import { moduleData, userModuleData } from "@torus-ts/db/schema";
 import {
   queryChain,
   queryLastBlock,
   STAKE_FROM_SCHEMA,
 } from "@torus-ts/subspace";
 
-import type { ModuleWeight, SubnetWeight } from "../db";
-import {
-  BLOCK_TIME,
-  CONSENSUS_NETUID,
-  log,
-  sleep,
-  SUBNETS_NETUID,
-} from "../common";
-import { insertModuleWeight, insertSubnetWeight } from "../db";
+import type { ModuleWeight } from "../db";
+import { BLOCK_TIME, CONSENSUS_NETUID, log, sleep } from "../common";
+import { insertModuleWeight } from "../db";
 import { env } from "../env";
 import {
   calcFinalWeights,
@@ -117,20 +106,9 @@ export async function weightAggregatorTask(
     throw new Error(
       `Community validator ${communityValidatorAddress} not found in stake data`,
     );
-  }
-
-  if (aggregator == "module") {
+  } else if (aggregator == "module") {
     log(`Committing module weights...`);
     await postModuleAggregation(
-      stakeOnCommunityValidator,
-      api,
-      keypair,
-      lastBlock,
-    );
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  } else if (aggregator == "subnet") {
-    log(`Committing subnet weights...`);
-    await postSubnetAggregation(
       stakeOnCommunityValidator,
       api,
       keypair,
@@ -236,44 +214,6 @@ async function postModuleAggregation(
   await doVote(api, keypair, CONSENSUS_NETUID, normalizedWeights);
 }
 
-async function postSubnetAggregation(
-  stakeOnCommunityValidator: Map<SS58Address, bigint>,
-  api: ApiPromise,
-  keypair: KeyringPair,
-  lastBlock: number,
-) {
-  const subnetWeightMap = await getUserSubnetWeightMap();
-
-  const { stakeWeights, normalizedWeights, percWeights } = getNormalizedWeights(
-    stakeOnCommunityValidator,
-    subnetWeightMap,
-  );
-
-  const dbSubnetWeights: SubnetWeight[] = Array.from(stakeWeights)
-    .map(([netuid, stakeWeight]): SubnetWeight | null => {
-      const subnetPercWeight = percWeights.get(netuid);
-      if (subnetPercWeight === undefined) {
-        console.error(`Subnet id ${netuid} not found in normalizedPercWeights`);
-        return null;
-      }
-      return {
-        netuid: netuid,
-        percWeight: subnetPercWeight,
-        stakeWeight: stakeWeight,
-        atBlock: lastBlock,
-      };
-    })
-    .filter((subnet) => subnet !== null);
-
-  if (dbSubnetWeights.length > 0) {
-    await insertSubnetWeight(dbSubnetWeights);
-  } else {
-    console.warn(`No weights to insert`);
-  }
-
-  await doVote(api, keypair, SUBNETS_NETUID, normalizedWeights);
-}
-
 async function setChainWeights(
   api: ApiPromise,
   keypair: KeyringPair,
@@ -351,39 +291,6 @@ async function getUserWeightMap(): Promise<Map<string, Map<number, bigint>>> {
       weightMap.set(entry.userKey, new Map());
     }
     weightMap.get(entry.userKey)?.set(entry.moduleId, BigInt(entry.weight));
-  });
-  return weightMap;
-}
-
-async function getUserSubnetWeightMap(): Promise<
-  Map<string, Map<number, bigint>>
-> {
-  const result = await db
-    .select({
-      userKey: userSubnetDataSchema.userKey,
-      weight: userSubnetDataSchema.weight,
-      netuid: subnetDataSchema.netuid,
-    })
-    .from(subnetDataSchema)
-    // filter subnets updated on the last seen block
-    .where(
-      and(
-        eq(
-          subnetDataSchema.atBlock,
-          sql`(SELECT at_block FROM subnet_data ORDER BY at_block DESC LIMIT 1)`,
-        ),
-      ),
-    )
-    .innerJoin(
-      userSubnetDataSchema,
-      eq(subnetDataSchema.netuid, userSubnetDataSchema.netuid),
-    );
-  const weightMap = new Map<string, Map<number, bigint>>();
-  result.forEach((entry) => {
-    if (!weightMap.has(entry.userKey)) {
-      weightMap.set(entry.userKey, new Map());
-    }
-    weightMap.get(entry.userKey)?.set(entry.netuid, BigInt(entry.weight));
   });
   return weightMap;
 }

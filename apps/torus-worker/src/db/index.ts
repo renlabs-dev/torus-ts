@@ -5,7 +5,6 @@ import { db } from "@torus-ts/db/client";
 import {
   cadreSchema,
   computedModuleWeightsSchema,
-  computedSubnetWeights,
   daoVoteSchema,
   governanceNotificationSchema,
   moduleData,
@@ -14,7 +13,6 @@ import {
 export type NewVote = typeof daoVoteSchema.$inferInsert;
 export type Module = typeof moduleData.$inferInsert;
 export type ModuleWeight = typeof computedModuleWeightsSchema.$inferInsert;
-export type SubnetWeight = typeof computedSubnetWeights.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 
 export async function insertModuleWeight(weights: ModuleWeight[]) {
@@ -23,20 +21,6 @@ export async function insertModuleWeight(weights: ModuleWeight[]) {
     .values(
       weights.map((w) => ({
         moduleId: w.moduleId,
-        stakeWeight: w.stakeWeight,
-        percWeight: w.percWeight,
-        atBlock: w.atBlock,
-      })),
-    )
-    .execute();
-}
-
-export async function insertSubnetWeight(weights: SubnetWeight[]) {
-  await db
-    .insert(computedSubnetWeights)
-    .values(
-      weights.map((w) => ({
-        netuid: w.netuid,
         stakeWeight: w.stakeWeight,
         percWeight: w.percWeight,
         atBlock: w.atBlock,

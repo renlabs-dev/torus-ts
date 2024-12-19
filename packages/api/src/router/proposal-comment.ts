@@ -68,7 +68,10 @@ export const proposalCommentRouter = {
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const userKey = ctx.sessionData!.userKey;
-      await ctx.db.insert(proposalCommentSchema).values({ ...input, userKey });
+      await ctx.db.insert(proposalCommentSchema).values({
+        ...input,
+        userKey,
+      });
     }),
   createCommentReport: authenticatedProcedure
     .input(COMMENT_REPORT_INSERT_SCHEMA)
