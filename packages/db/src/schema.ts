@@ -30,7 +30,6 @@ export const timestampzNow = (name: string) =>
   timestampz(name).defaultNow().notNull();
 
 export const ss58Address = (name: string) => varchar(name, { length: 256 });
-export const bigint = (name: string) => drizzleBigint(name, { mode: "bigint" });
 
 // ==== Agents ====
 
@@ -46,7 +45,7 @@ export const bigint = (name: string) => drizzleBigint(name, { mode: "bigint" });
 export const agentSchema = createTable(
   "agent",
   {
-    id: serial("id").primaryKey(),
+    id_: serial("id").primaryKey(),
 
     // Insertion timestamp
     atBlock: integer("at_block").notNull(),
@@ -75,12 +74,13 @@ export const agentSchema = createTable(
 
 /**
  * Data for the relation a user have with an specific Agent.
- * The user can set a weight (vote) for an Agent.
+ * The user can set a allocation (vote) for an Agent.
  */
 export const userAgentAllocationSchema = createTable(
   "user_agent_allocation",
   {
-    id: serial("id").primaryKey(),
+    id_: serial("id").primaryKey(),
+
     userKey: ss58Address("user_key").notNull(),
     agentKey: ss58Address("agent_key")
       .notNull()
@@ -96,25 +96,28 @@ export const userAgentAllocationSchema = createTable(
 );
 
 /**
- * Aggregates the weights of each user for each agent.
+ * Aggregates the allocations of each user for each agent.
  */
-export const computedAgentWeightSchema = createTable("computed_agent_weight", {
-  id: serial("id").primaryKey(),
-  atBlock: integer("at_block").notNull(),
+export const computedAgentAllocationSchema = createTable(
+  "computed_agent_allocation",
+  {
+    id_: serial("id").primaryKey(),
+    atBlock: integer("at_block").notNull(),
 
-  agentId: integer("agent_id")
-    .notNull()
-    .references(() => agentSchema.id),
+    agentKey: ss58Address("agent_key")
+      .notNull()
+      .references(() => agentSchema.key),
 
-  // Aggregated weights measured in nanos
-  stakeWeight: bigint("stake_weight").notNull(),
-  // Normalized aggregated weights (100% sum)
-  percWeight: real("perc_weight").notNull(),
+    // Aggregated allocations measured in nanos
+    stakeAllocation: bigint("stake_allocation").notNull(),
+    // Normalized aggregated Allocations (100% sum)
+    percAllocation: real("perc_allocation").notNull(),
 
-  createdAt: timestampzNow("created_at"),
-  updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-  deletedAt: timestampz("deleted_at").default(sql`null`),
-});
+    createdAt: timestampzNow("created_at"),
+    updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
+    deletedAt: timestampz("deleted_at").default(sql`null`),
+  },
+);
 
 // ---- Reports ----
 
@@ -130,7 +133,7 @@ export const reportReason = pgEnum("report_reason", [
 ]);
 
 export const agentReportSchema = createTable("agent_report", {
-  id: serial("id").primaryKey(),
+  id_: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key"),
   agentKey: ss58Address("agent_key")
@@ -155,6 +158,9 @@ export const governanceItemType = pgEnum("governance_item_type", [
   "AGENT_APPLICATION",
 ]);
 
+export const governanceItemTypeValues =
+  extract_pgenum_values(governanceItemType);
+
 export const commentSchema = createTable(
   "comment",
   {
@@ -162,15 +168,18 @@ export const commentSchema = createTable(
 
     itemType: governanceItemType("item_type").notNull(),
     itemId: integer("item_id").notNull(),
-
     userKey: ss58Address("user_key").notNull(),
+
     userName: text("user_name"),
     content: text("content").notNull(),
 
     createdAt: timestampzNow("created_at"),
     deletedAt: timestampz("deleted_at").default(sql`null`),
   },
-  (t) => [unique().on(t.itemType, t.itemId), index().on(t.itemType, t.itemId)],
+  (t) => [
+    unique().on(t.itemType, t.itemId, t.userKey),
+    index().on(t.itemType, t.itemId),
+  ],
 );
 
 /**
@@ -183,7 +192,7 @@ const voteTypeValues = extract_pgenum_values(voteType);
 export const commentInteractionSchema = createTable(
   "comment_interaction",
   {
-    id: serial("id").primaryKey(),
+    id_: serial("id").primaryKey(),
 
     userKey: ss58Address("user_key").notNull(),
     commentId: integer("comment_id")
@@ -247,7 +256,7 @@ export const proposalCommentDigestView = pgMaterializedView(
  * A report made by a user about a comment.
  */
 export const commentReportSchema = createTable("comment_report", {
-  id: serial("id").primaryKey(),
+  id_: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key"),
   commentId: integer("comment_id")
@@ -266,7 +275,7 @@ export const commentReportSchema = createTable("comment_report", {
  * A groups of users that can vote on Applications.
  */
 export const cadreSchema = createTable("cadre", {
-  id: serial("id").primaryKey(),
+  id_: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key").notNull().unique(),
   discordId: varchar("discord_id", { length: 64 }),
@@ -279,8 +288,8 @@ export const cadreSchema = createTable("cadre", {
 /**
  * Users can apply to join the Cadre.
  */
-export const cadreCandidatesSchema = createTable("cadre_candidates", {
-  id: serial("id").primaryKey(),
+export const cadreCandidateSchema = createTable("cadre_candidate", {
+  id_: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key").notNull().unique(),
   discordId: varchar("discord_id", { length: 64 }),
@@ -300,13 +309,13 @@ export const cadreVoteTypeEnum = pgEnum("cadre_vote_type", [
  * This table stores votes on Cadre Candidates.
  */
 export const cadreVoteSchema = createTable("cadre_vote", {
-  id: serial("id").primaryKey(),
+  id_: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key")
     .references(() => cadreSchema.userKey)
     .notNull(),
   applicantKey: ss58Address("applicant_key")
-    .references(() => cadreCandidatesSchema.userKey)
+    .references(() => cadreCandidateSchema.userKey)
     .notNull(),
   vote: cadreVoteTypeEnum("vote").notNull(),
 
@@ -330,7 +339,7 @@ export const applicationVoteType = pgEnum("agent_application_vote_type", [
 export const agentApplicationVoteSchema = createTable(
   "agent_application_vote",
   {
-    id: serial("id").primaryKey(),
+    id_: serial("id").primaryKey(),
 
     applicationId: integer("application_id").notNull(),
     userKey: ss58Address("user_key")
@@ -343,7 +352,7 @@ export const agentApplicationVoteSchema = createTable(
     updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
     deletedAt: timestampz("deleted_at").default(sql`null`),
   },
-  (t) => [unique().on(t.id, t.applicationId, t.userKey)],
+  (t) => [unique().on(t.applicationId, t.userKey)],
 );
 
 /**
@@ -352,7 +361,7 @@ export const agentApplicationVoteSchema = createTable(
 export const governanceNotificationSchema = createTable(
   "governance_notification",
   {
-    id: serial("id").primaryKey(),
+    id_: serial("id").primaryKey(),
     itemType: governanceItemType("item_type").notNull(),
     itemId: integer("item_id").notNull(),
     notifiedAt: timestampz("notified_at").defaultNow(),
