@@ -6,13 +6,13 @@ import {
   cadreVoteSchema,
   commentInteractionSchema,
   commentReportSchema,
-  agentReport,
-  governanceComment,
-  userAgentAllocation,
+  agentReportSchema,
+  governanceCommentSchema,
+  userAgentAllocationSchema,
 } from "./schema";
 
 export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
-  governanceComment,
+  governanceCommentSchema,
 ).omit({
   id: true,
   createdAt: true,
@@ -35,16 +35,16 @@ export const COMMENT_REPORT_INSERT_SCHEMA = createInsertSchema(
   userKey: true,
 });
 
-export const MODULE_REPORT_INSERT_SCHEMA = createInsertSchema(agentReport).omit(
-  {
-    id: true,
-    userKey: true,
-    createdAt: true,
-  },
-);
+export const MODULE_REPORT_INSERT_SCHEMA = createInsertSchema(
+  agentReportSchema,
+).omit({
+  id: true,
+  userKey: true,
+  createdAt: true,
+});
 
 export const USER_MODULE_DATA_INSERT_SCHEMA = createInsertSchema(
-  userAgentAllocation,
+  userAgentAllocationSchema,
 ).omit({
   id: true,
 });

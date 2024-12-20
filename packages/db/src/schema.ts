@@ -17,7 +17,7 @@ import {
 
 export const createTable = pgTableCreator((name) => `${name}`);
 
-import { extract_pgenum_values } from "./util";
+import { extract_pgenum_values } from "./utils";
 
 // ==== Util ====
 
@@ -43,7 +43,7 @@ export const bigint = (name: string) => drizzleBigint(name, { mode: "bigint" });
  * atBlock == lastSeenBlock --> registered
  * atBlock <  lastSeenBlock --> deregistered
  */
-export const agent = createTable(
+export const agentSchema = createTable(
   "agent",
   {
     id: serial("id").primaryKey(),
@@ -77,14 +77,14 @@ export const agent = createTable(
  * Data for the relation a user have with an specific Agent.
  * The user can set a weight (vote) for an Agent.
  */
-export const userAgentAllocation = createTable(
+export const userAgentAllocationSchema = createTable(
   "user_agent_allocation",
   {
     id: serial("id").primaryKey(),
     userKey: ss58Address("user_key").notNull(),
     agentKey: ss58Address("agent_key")
       .notNull()
-      .references(() => agent.key),
+      .references(() => agentSchema.key),
 
     allocation: integer("allocation").default(0).notNull(),
 
@@ -106,7 +106,7 @@ export const computedAgentWeightsSchema = createTable(
 
     agentId: integer("agent_id")
       .notNull()
-      .references(() => agent.id),
+      .references(() => agentSchema.id),
 
     // Aggregated weights measured in nanos
     stakeWeight: bigint("stake_weight").notNull(),
@@ -132,12 +132,12 @@ export const reportReason = pgEnum("report_reason", [
   "SEXUAL_CONTENT",
 ]);
 
-export const agentReport = createTable("agent_report", {
+export const agentReportSchema = createTable("agent_report", {
   id: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key"),
   agentKey: ss58Address("agent_key")
-    .references(() => agent.key)
+    .references(() => agentSchema.key)
     .notNull(),
 
   reason: reportReason("reason").notNull(),
@@ -158,7 +158,7 @@ export const governanceItemType = pgEnum("governance_item_type", [
   "AGENT_APPLICATION",
 ]);
 
-export const governanceComment = createTable(
+export const governanceCommentSchema = createTable(
   "governance_comment",
   {
     id: serial("id").primaryKey(),
@@ -190,7 +190,7 @@ export const commentInteractionSchema = createTable(
 
     userKey: ss58Address("user_key").notNull(),
     commentId: integer("comment_id")
-      .references(() => governanceComment.id)
+      .references(() => governanceCommentSchema.id)
       .notNull(),
 
     voteType: voteType("vote_type").notNull(),
@@ -213,13 +213,13 @@ export const proposalCommentDigestView = pgMaterializedView(
 ).as((qb) => {
   return qb
     .select({
-      id: governanceComment.id,
-      itemType: governanceComment.itemType,
-      itemId: governanceComment.itemId,
-      userKey: governanceComment.userKey,
-      userName: governanceComment.userName,
-      content: governanceComment.content,
-      createdAt: governanceComment.createdAt,
+      id: governanceCommentSchema.id,
+      itemType: governanceCommentSchema.itemType,
+      itemId: governanceCommentSchema.itemId,
+      userKey: governanceCommentSchema.userKey,
+      userName: governanceCommentSchema.userName,
+      content: governanceCommentSchema.content,
+      createdAt: governanceCommentSchema.createdAt,
       upvotes:
         sql<number>`SUM(CASE WHEN ${commentInteractionSchema.voteType} = ${voteTypeValues.UP} THEN 1 ELSE 0 END)`
           .mapWith(Number)
@@ -229,21 +229,21 @@ export const proposalCommentDigestView = pgMaterializedView(
           .mapWith(Number)
           .as("downvotes"),
     })
-    .from(governanceComment)
-    .where(sql`${governanceComment.deletedAt} IS NULL`)
+    .from(governanceCommentSchema)
+    .where(sql`${governanceCommentSchema.deletedAt} IS NULL`)
     .leftJoin(
       commentInteractionSchema,
-      eq(governanceComment.id, commentInteractionSchema.commentId),
+      eq(governanceCommentSchema.id, commentInteractionSchema.commentId),
     )
     .groupBy(
-      governanceComment.id,
-      governanceComment.itemType,
-      governanceComment.itemId,
-      governanceComment.userKey,
-      governanceComment.content,
-      governanceComment.createdAt,
+      governanceCommentSchema.id,
+      governanceCommentSchema.itemType,
+      governanceCommentSchema.itemId,
+      governanceCommentSchema.userKey,
+      governanceCommentSchema.content,
+      governanceCommentSchema.createdAt,
     )
-    .orderBy(asc(governanceComment.createdAt));
+    .orderBy(asc(governanceCommentSchema.createdAt));
 });
 
 /**
@@ -254,7 +254,7 @@ export const commentReportSchema = createTable("comment_report", {
 
   userKey: ss58Address("user_key"),
   commentId: integer("comment_id")
-    .references(() => governanceComment.id)
+    .references(() => governanceCommentSchema.id)
     .notNull(),
 
   reason: reportReason("reason").notNull(),
