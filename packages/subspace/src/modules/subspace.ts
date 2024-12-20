@@ -62,10 +62,11 @@ export async function queryKeyStakedBy(
   const stakes = q.map(([key, value]) => {
     const [, stakeFromAddress] = key.args;
     const stake = sb_balance.parse(value);
-
+    const address = sb_address.parse(stakeFromAddress)
+    
     return {
-      address: sb_address.parse(stakeFromAddress),
-      stake,
+      address,
+      stake
     };
   });
 

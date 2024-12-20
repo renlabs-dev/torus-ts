@@ -40,15 +40,15 @@ export function fromNano(
 /**
  * Converts a standard unit value to nano
  * @param standardValue - The value in standard units (as a number or string)
- * @returns The value in nano units as a BN
+ * @returns The value in nano units as a bigint
  */
-export function toNano(standardValue: number | string): BN {
+export function toNano(standardValue: number | string): bigint {
   const [integerPart, fractionalPart = ""] = standardValue
     .toString()
     .split(".");
   const paddedFractionalPart = fractionalPart.padEnd(9, "0");
   const nanoValue = `${integerPart}${paddedFractionalPart}`;
-  return new BN(nanoValue);
+  return BigInt(nanoValue);
 }
 
 export function formatToken(nano: number | bigint, decimalPlaces = 2): string {

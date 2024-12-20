@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { BN } from "@polkadot/util";
+import React, { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
-import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { splitAddress } from "@torus-ts/utils";
-import { fromNano, toNano } from "@torus-ts/utils/subspace";
+import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import { fromNano, smallAddress, toNano2 } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
+import { AmountButtons } from "../amount-buttons";
+import { FeeLabel } from "../fee-label";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function BridgeAction() {
@@ -19,6 +19,10 @@ export function BridgeAction() {
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
   const [maxAmount, setMaxAmount] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [sender, setSender] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [exchangedValue, setExchangedValue] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
 
   const [inputError, setInputError] = useState<{
@@ -37,15 +41,26 @@ export function BridgeAction() {
     },
   );
 
-  const calculateMaxAmount = useCallback((balance: string, fee: string) => {
-    const balanceBN = new BN(toNano(balance));
-    const feeBN = new BN(toNano(fee));
-    const adjustedFeeBN = feeBN.muln(1.1); // Increase fee by 10%
-    const maxAmountBN = balanceBN.sub(adjustedFeeBN);
-    return maxAmountBN.isNeg() ? "0" : fromNano(maxAmountBN.toString());
-  }, []);
+  const handleUpdateMaxAmount = (fee: bigint | undefined) => {
+    if (!fee) return;
+    const balance = accountFreeBalance.data ?? 0n;
+    const newMaxAmount = balance - fee;
+    const newMaxAmountStr = newMaxAmount > 0n ? fromNano(newMaxAmount) : "0";
+    setMaxAmount(newMaxAmountStr);
 
-  const estimateFeeAndUpdateMax = async () => {
+    const amountNano = toNano2(amount || "0");
+
+    if (amountNano > newMaxAmount) {
+      setInputError((prev) => ({
+        ...prev,
+        value: "Amount exceeds maximum transferable amount",
+      }));
+    } else {
+      setInputError((prev) => ({ ...prev, value: null }));
+    }
+  };
+
+  const handleEstimateFee = async (): Promise<bigint | undefined> => {
     if (!recipient) {
       setEstimatedFee(null);
       setMaxAmount("");
@@ -63,24 +78,10 @@ export function BridgeAction() {
     setIsEstimating(true);
     try {
       const fee = await estimateFee(recipient, "0");
-      if (fee) {
-        const feeStr = fromNano(fee.toString());
-        setEstimatedFee(feeStr);
-
-        const newMaxAmount = calculateMaxAmount(
-          fromNano(accountFreeBalance.data?.toString() ?? "0"),
-          feeStr,
-        );
-        setMaxAmount(newMaxAmount);
-
-        if (amount && Number(amount) > Number(newMaxAmount)) {
-          setInputError((prev) => ({
-            ...prev,
-            value: "Amount exceeds maximum transferable amount",
-          }));
-        } else {
-          setInputError((prev) => ({ ...prev, value: null }));
-        }
+      if (fee != null) {
+        const adjustedFee = (fee * 11n) / 10n;
+        setEstimatedFee(fromNano(adjustedFee));
+        return adjustedFee;
       } else {
         setEstimatedFee(null);
         setMaxAmount("");
@@ -89,9 +90,9 @@ export function BridgeAction() {
       console.error("Error estimating fee:", error);
       setEstimatedFee(null);
       setMaxAmount("");
+    } finally {
+      setIsEstimating(false);
     }
-
-    setIsEstimating(false);
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +108,7 @@ export function BridgeAction() {
     setAmount(newAmount);
   };
 
-  const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSenderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRecipient(e.target.value);
     setAmount("");
     setEstimatedFee(null);
@@ -115,9 +116,9 @@ export function BridgeAction() {
     setInputError({ recipient: null, value: null });
   };
 
-  const handleMaxClick = () => {
-    if (!maxAmount) return;
-    setAmount(maxAmount);
+  const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRecipient(e.target.value);
+    setInputError({ recipient: null, value: null });
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -141,9 +142,13 @@ export function BridgeAction() {
   };
 
   useEffect(() => {
-    void estimateFeeAndUpdateMax();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipient]);
+    async function fetchFeeAndMax() {
+      const fee = await handleEstimateFee();
+      handleUpdateMaxAmount(fee);
+    }
+
+    void fetchFeeAndMax();
+  }, [recipient]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (amount) {
@@ -161,125 +166,123 @@ export function BridgeAction() {
   const formRef = useRef<HTMLFormElement>(null);
   const roundedEstimatedFee = (Number(estimatedFee) * 1.1).toFixed(9);
 
-  function getSplittedAddress(address: string) {
-    return splitAddress(address).map((addressPart) => {
-      return (
-        <span key={addressPart} className="pl-1 first:pl-0">
-          {addressPart}
-        </span>
-      );
-    });
-  }
-
   const reviewData = [
-    { label: "Action", content: "Sending TOR" },
+    {
+      label: "From",
+      content: `${sender ? smallAddress(recipient, 6) : "Sender Address"}`,
+    },
     {
       label: "To",
-      content: getSplittedAddress(recipient),
+      content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
     },
-    { label: "Amount", content: `${amount} TOR` },
-    { label: "Transaction fee", content: `${roundedEstimatedFee} TOR` },
+    { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    {
+      label: "Fee",
+      content: `${roundedEstimatedFee} TOR`,
+    },
+    {
+      label: "Receiving",
+      content: `${exchangedValue} TOR`,
+    },
   ];
 
   return (
-    <Card className="h-fit w-full animate-fade p-4">
-      <form
-        onSubmit={handleSubmit}
-        ref={formRef}
-        className="flex w-full flex-col gap-4"
-      >
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="send-recipient" className="">
-            To
-          </Label>
-          <Input
-            id="send-recipient"
-            type="text"
-            value={recipient}
-            required
-            onChange={handleRecipientChange}
-            placeholder="Address"
-          />
-        </div>
-        {inputError.recipient && (
-          <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
-            {inputError.recipient}
-          </p>
-        )}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="send-amount" className="text-base">
-            Amount
-          </Label>
-          <div className="flex w-full items-center gap-2">
+    <div className="l flex w-full flex-col gap-4 md:flex-row">
+      <Card className="w-full animate-fade p-6 md:w-3/5">
+        <form
+          onSubmit={handleSubmit}
+          ref={formRef}
+          className="flex w-full flex-col gap-6"
+        >
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="send-recipient" className="">
+              From
+            </Label>
             <Input
-              id="send-amount"
-              type="number"
-              value={amount}
-              max={maxAmount}
+              id="send-recipient"
+              type="text"
+              value={sender}
               required
-              onChange={handleAmountChange}
-              placeholder="0.1"
-              className="disabled:cursor-not-allowed"
-              disabled={!recipient || isEstimating}
+              onChange={handleSenderChange}
+              placeholder="ETH Address"
             />
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleMaxClick}
-              className="whitespace-nowrap px-4 py-2 disabled:cursor-not-allowed"
-              disabled={!recipient || isEstimating}
-            >
-              Max
-            </Button>
           </div>
-        </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="send-recipient" className="">
+              To
+            </Label>
+            <Input
+              id="send-recipient"
+              type="text"
+              value={recipient}
+              required
+              onChange={handleRecipientChange}
+              placeholder="TOR Address"
+            />
+          </div>
+          {inputError.recipient && (
+            <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
+              {inputError.recipient}
+            </p>
+          )}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="send-amount" className="text-base">
+              Amount
+            </Label>
+            <div className="flex w-full flex-col gap-2">
+              <Input
+                id="send-amount"
+                type="number"
+                value={amount}
+                max={maxAmount}
+                required
+                onChange={handleAmountChange}
+                placeholder="0.1"
+                className="disabled:cursor-not-allowed"
+                disabled={!recipient || isEstimating}
+              />
+              <AmountButtons
+                setAmount={setAmount}
+                availableFunds={maxAmount}
+                disabled={!recipient || isEstimating}
+              />
+            </div>
+          </div>
 
-        {inputError.value && (
-          <p className="mb-1 mt-2 flex text-left text-base text-red-400">
-            {inputError.value}
-          </p>
-        )}
-        {isEstimating && (
-          <p className="mt-2 text-sm text-gray-400">Estimating fee...</p>
-        )}
-        {estimatedFee && (
-          <p className="mt-2 text-sm text-gray-400">
-            Estimated fee: {roundedEstimatedFee} TOR
-          </p>
-        )}
-        {maxAmount && (
-          <span className="text-sm text-muted-foreground">
-            Maximum transferable amount:{" "}
-            <Button
-              variant="link"
-              type="button"
-              onClick={() => setAmount(maxAmount)}
-              className="p-0 text-primary"
-            >
-              {maxAmount} COMAI
-            </Button>
-          </span>
-        )}
-        <WalletTransactionReview
-          disabled={
-            transactionStatus.status === "PENDING" ||
-            !amount ||
-            !recipient ||
-            isEstimating ||
-            !!inputError.value
-          }
-          formRef={formRef}
-          reviewContent={reviewData}
-        />
+          {inputError.value && (
+            <p className="mb-1 mt-2 flex text-left text-base text-red-400">
+              {inputError.value}
+            </p>
+          )}
 
-        {transactionStatus.status && (
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
-          />
-        )}
-      </form>
-    </Card>
+          <div className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
+            <FeeLabel
+              estimatedFee={estimatedFee}
+              isEstimating={isEstimating}
+              roundedEstimatedFee={roundedEstimatedFee}
+            />
+          </div>
+
+          {transactionStatus.status && (
+            <TransactionStatus
+              status={transactionStatus.status}
+              message={transactionStatus.message}
+            />
+          )}
+        </form>
+      </Card>
+      <WalletTransactionReview
+        disabled={
+          transactionStatus.status === "PENDING" ||
+          !amount ||
+          !recipient ||
+          isEstimating ||
+          !!inputError.value
+        }
+        triggerTitle="Bridge Assets"
+        formRef={formRef}
+        reviewContent={reviewData}
+      />
+    </div>
   );
 }

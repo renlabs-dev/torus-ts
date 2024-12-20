@@ -12,7 +12,6 @@ interface WalletTransactionReviewProps {
   disabled?: boolean;
   formRef: React.RefObject<HTMLFormElement>;
   reviewContent: { label: string; content: string | React.ReactNode }[];
-  transactionActionLabel?: string;
   triggerTitle?: string;
   title?: string;
 }
@@ -27,10 +26,10 @@ export function WalletTransactionReview(props: WalletTransactionReviewProps) {
   } = props;
 
   return (
-    <Card className="flex w-full animate-fade flex-col justify-around p-6 md:w-2/5">
+    <Card className="flex w-full animate-fade flex-col justify-between p-6 md:w-2/5">
       <CardHeader className="px-0 pt-0">{title}</CardHeader>
-      <CardContent className="px-0">
-        <div className="flex flex-col gap-4 py-4">
+      <CardContent className="p-0">
+        <div className="flex flex-col gap-2">
           {reviewContent.map((content) => {
             return (
               <span className="flex w-full justify-between" key={content.label}>
@@ -41,7 +40,7 @@ export function WalletTransactionReview(props: WalletTransactionReviewProps) {
           })}
         </div>
       </CardContent>
-      <CardFooter className="px-0 pb-0">
+      <CardFooter className="px-0 pb-0 pt-6">
         <Button
           className="flex w-full place-self-end"
           disabled={disabled}

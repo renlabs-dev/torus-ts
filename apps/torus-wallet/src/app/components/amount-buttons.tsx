@@ -20,7 +20,7 @@ export function AmountButtons(props: AmountButtonsProps) {
     const parsedFunds = Number(availableFunds);
     if (isNaN(parsedFunds)) return;
 
-    setAmount((parsedFunds * divisor).toString());
+    setAmount((parsedFunds * divisor).toFixed(9));
   };
 
   return (
