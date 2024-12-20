@@ -10,11 +10,15 @@ import type {
   StakeData,
 } from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-import type { Stake, TransferStake } from "@torus-ts/torus-provider/types";
+import type {
+  Stake,
+  Transfer,
+  TransferStake,
+} from "@torus-ts/torus-provider/types";
 import {
   useCachedStakeOut,
   useFreeBalance,
-  useKeyStakedBy,
+  useKeyStakingTo,
   useLastBlock,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -43,9 +47,10 @@ interface WalletContextType {
   estimateFee: (
     recipientAddress: string,
     amount: string,
-  ) => Promise<Balance | null>;
+  ) => Promise<bigint | null>;
 
   addStake: (stake: Stake) => Promise<void>;
+  transfer: (transfer: Transfer) => Promise<void>;
   transferStake: (transfer: TransferStake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
 
@@ -67,7 +72,7 @@ export function WalletProvider({
     isAccountConnected,
 
     estimateFee,
-
+    transfer,
     addStake,
     transferStake,
     removeStake,
@@ -77,6 +82,7 @@ export function WalletProvider({
     handleGetWallets,
     handleSelectWallet,
   } = useTorus();
+
   const lastBlock = useLastBlock(api);
 
   // == Account ==
@@ -85,12 +91,12 @@ export function WalletProvider({
     selectedAccount?.address as SS58Address,
   );
 
-  const accountStakedBy = useKeyStakedBy(api, selectedAccount?.address);
+  const accountStakedBy = useKeyStakingTo(api, selectedAccount?.address);
 
   // == Subspace ==
-
   const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_CACHE_PROVIDER_URL);
 
+  // == Validators ==
   const accountStakedBalance =
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
     stakeOut.data?.perAddr[selectedAccount?.address!];
@@ -114,6 +120,7 @@ export function WalletProvider({
         estimateFee,
 
         addStake,
+        transfer,
         transferStake,
         removeStake,
       }}

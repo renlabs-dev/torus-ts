@@ -30,6 +30,9 @@ export const timestampzNow = (name: string) =>
   timestampz(name).defaultNow().notNull();
 
 export const ss58Address = (name: string) => varchar(name, { length: 256 });
+export const bigint = (name: string) => drizzleBigint(name, { mode: "bigint" });
+
+// ==== Agents ====
 
 // ==== Agents ====
 

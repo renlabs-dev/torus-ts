@@ -15,7 +15,7 @@ import type {
   Proposal,
 } from "@torus-ts/subspace";
 import { sb_balance } from "@torus-ts/subspace";
-import { toNano2 } from "@torus-ts/utils/subspace";
+import { toNano, toNano2 } from "@torus-ts/utils/subspace";
 
 import type {
   AddCustomProposal,
@@ -249,7 +249,7 @@ export function TorusProvider({
 
     const transaction = api.tx.subspaceModule.addStake(
       validator,
-      toNano2(amount),
+      toNano(amount),
     );
     await sendTransaction({
       api,
@@ -270,7 +270,7 @@ export function TorusProvider({
 
     const transaction = api.tx.subspaceModule.removeStake(
       validator,
-      toNano2(amount),
+      toNano(amount),
     );
     await sendTransaction({
       api,
@@ -284,7 +284,7 @@ export function TorusProvider({
 
   async function transfer({ to, amount, callback }: Transfer): Promise<void> {
     if (!api?.tx.balances.transferAllowDeath) return;
-    const transaction = api.tx.balances.transferAllowDeath(to, toNano2(amount));
+    const transaction = api.tx.balances.transferAllowDeath(to, toNano(amount));
     await sendTransaction({
       api,
       torusApi,
@@ -319,7 +319,7 @@ export function TorusProvider({
     const transaction = api.tx.subspaceModule.transferStake(
       fromValidator,
       toValidator,
-      toNano2(amount),
+      toNano(amount),
     );
     await sendTransaction({
       api,
