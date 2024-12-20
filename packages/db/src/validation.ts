@@ -1,18 +1,30 @@
 import { createInsertSchema } from "drizzle-zod";
 
 import {
-  cadreCandidatesSchema,
+  cadreCandidateSchema,
   cadreSchema,
   cadreVoteSchema,
   commentInteractionSchema,
   commentReportSchema,
   agentReportSchema,
-  governanceCommentSchema,
+  commentSchema,
   userAgentAllocationSchema,
 } from "./schema";
 
+export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
+  agentReportSchema,
+).omit({
+  id: true,
+  userKey: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+
+// OLD
+
 export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
-  governanceCommentSchema,
+  commentSchema,
 ).omit({
   id: true,
   createdAt: true,
@@ -65,7 +77,7 @@ export const CADRE_INSERT_SCHEMA = createInsertSchema(cadreSchema).omit({
 });
 
 export const CADRE_CANDIDATES_INSERT_SCHEMA = createInsertSchema(
-  cadreCandidatesSchema,
+  cadreCandidateSchema,
 ).omit({
   id: true,
   createdAt: true,

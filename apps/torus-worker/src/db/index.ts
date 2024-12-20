@@ -75,7 +75,7 @@ export async function upsertModuleData(modules: Module[]) {
 }
 
 export interface VotesByProposal {
-  daoId: number;
+  appId: number;
   acceptVotes: number;
   refuseVotes: number;
   removeVotes: number;

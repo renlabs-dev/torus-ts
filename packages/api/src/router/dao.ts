@@ -6,7 +6,7 @@ import { and, eq, isNull } from "@torus-ts/db";
 import "@torus-ts/db/schema";
 
 import {
-  cadreCandidatesSchema,
+  cadreCandidateSchema,
   cadreVoteSchema,
   daoVoteSchema,
 } from "@torus-ts/db/schema";
@@ -84,7 +84,7 @@ export const daoRouter = {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const userKey = ctx.sessionData!.userKey;
       await ctx.db
-        .insert(cadreCandidatesSchema)
+        .insert(cadreCandidateSchema)
         .values({ ...input, userKey: userKey })
         .execute();
     }),
