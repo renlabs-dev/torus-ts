@@ -10,15 +10,15 @@ import { z } from "zod";
 import { commentInteractionSchema, commentSchema } from "@torus-ts/db/schema";
 import { COMMENT_INTERACTION_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
-export const cadreVoteeRouter = {
+export const commentInteractionRouter = {
   // GET
   byUserId: publicProcedure
     .input(z.object({ proposalId: z.number(), userKey: z.string() }))
     .query(async ({ ctx, input }) => {
-      const votes = await ctx.db
+      const reactions = await ctx.db
         .select({
           commentId: commentInteractionSchema.commentId,
-          voteType: commentInteractionSchema.voteType,
+          reactionType: commentInteractionSchema.reactionType,
         })
         .from(commentInteractionSchema)
         .innerJoin(
@@ -30,11 +30,14 @@ export const cadreVoteeRouter = {
         );
 
       return Object.fromEntries(
-        votes.map((vote) => [vote.commentId, vote.voteType]),
+        reactions.map((reaction) => [
+          reaction.commentId,
+          reaction.reactionType,
+        ]),
       );
     }),
   // POST
-  vote: authenticatedProcedure
+  reaction: authenticatedProcedure
     .input(COMMENT_INTERACTION_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -48,11 +51,11 @@ export const cadreVoteeRouter = {
             commentInteractionSchema.userKey,
           ],
           set: {
-            voteType: input.voteType,
+            reactionType: input.reactionType,
           },
         });
     }),
-  deleteVote: authenticatedProcedure
+  deleteReaction: authenticatedProcedure
     .input(z.object({ commentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const userKey = ctx.sessionData?.userKey;

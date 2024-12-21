@@ -84,10 +84,10 @@ export const agentSchema = createTable(
 
 /**
  * Data for the relation a user have with an specific Agent.
- * The user can set a allocation (vote) for an Agent.
+ * The user can set a weight allocation (vote) for an Agent.
  */
-export const userAgentAllocationSchema = createTable(
-  "user_agent_allocation",
+export const userAgentWeightSchema = createTable(
+  "user_agent_weight",
   {
     id: serial("id").primaryKey(),
 
@@ -96,7 +96,7 @@ export const userAgentAllocationSchema = createTable(
       .notNull()
       .references(() => agentSchema.key),
 
-    weightAllocation: integer("weight_allocation").default(0).notNull(),
+    weight: integer("weight").default(0).notNull(),
 
     ...timeFields(),
   },
@@ -104,26 +104,23 @@ export const userAgentAllocationSchema = createTable(
 );
 
 /**
- * Aggregates the allocations of each user for each agent.
+ * Aggregates the weight allocations of each user for each agent.
  */
-export const computedAgentAllocationSchema = createTable(
-  "computed_agent_allocation",
-  {
-    id: serial("id").primaryKey(),
-    atBlock: integer("at_block").notNull(),
+export const computedAgentWeightSchema = createTable("computed_agent_weight", {
+  id: serial("id").primaryKey(),
+  atBlock: integer("at_block").notNull(),
 
-    agentKey: ss58Address("agent_key")
-      .notNull()
-      .references(() => agentSchema.key),
+  agentKey: ss58Address("agent_key")
+    .notNull()
+    .references(() => agentSchema.key),
 
-    // Aggregated weight allocations measured in Rens
-    computedWeight: bigint("computed_weight").notNull(),
-    // Normalized aggregated allocations (100% sum)
-    percComputedWeight: real("perc_computed_weight").notNull(),
+  // Aggregated weight allocations measured in Rens
+  computedWeight: bigint("computed_weight").notNull(),
+  // Normalized aggregated allocations (100% sum)
+  percComputedWeight: real("perc_computed_weight").notNull(),
 
-    ...timeFields(),
-  },
-);
+  ...timeFields(),
+});
 
 // ---- Reports ----
 

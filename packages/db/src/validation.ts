@@ -51,6 +51,24 @@ export const COMMENT_INTERACTION_INSERT_SCHEMA = createInsertSchema(
   deletedAt: true,
 });
 
+export const COMMENT_REPORT_INSERT_SCHEMA = createInsertSchema(
+  commentReportSchema,
+).omit({
+  id: true,
+  userKey: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+
+export const COMMENT_INSERT_SCHEMA = createInsertSchema(commentSchema).omit({
+  id: true,
+  userKey: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+
 // OLD
 
 export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
@@ -59,14 +77,6 @@ export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
   id: true,
   createdAt: true,
   deletedAt: true,
-  userKey: true,
-});
-
-export const COMMENT_REPORT_INSERT_SCHEMA = createInsertSchema(
-  commentReportSchema,
-).omit({
-  id: true,
-  createdAt: true,
   userKey: true,
 });
 

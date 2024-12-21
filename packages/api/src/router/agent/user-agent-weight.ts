@@ -3,11 +3,11 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import "@torus-ts/db/schema";
 import { publicProcedure } from "../../trpc";
 import { z } from "zod";
-import { agentSchema, userAgentAllocationSchema } from "@torus-ts/db/schema";
+import { agentSchema, userAgentWeightSchema } from "@torus-ts/db/schema";
 
 import { eq } from "@torus-ts/db";
 
-export const computedAgentWeightRouter = {
+export const userAgentWeightRouter = {
   // GET
   byUserKey: publicProcedure
     .input(z.object({ userKey: z.string() }))
@@ -18,10 +18,10 @@ export const computedAgentWeightRouter = {
         .select()
         .from(agentSchema)
         .innerJoin(
-          userAgentAllocationSchema,
-          eq(userAgentAllocationSchema.id, userAgentAllocationSchema.userKey),
+          userAgentWeightSchema,
+          eq(userAgentWeightSchema.id, userAgentWeightSchema.userKey),
         )
-        .where(eq(userAgentAllocationSchema.userKey, input.userKey))
+        .where(eq(userAgentWeightSchema.userKey, input.userKey))
         .execute();
     }),
 } satisfies TRPCRouterRecord;

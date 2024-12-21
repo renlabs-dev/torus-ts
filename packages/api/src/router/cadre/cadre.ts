@@ -4,7 +4,7 @@ import "@torus-ts/db/schema";
 
 import { publicProcedure } from "../../trpc";
 
-export const cadreVoteeRouter = {
+export const cadreRouter = {
   all: publicProcedure.query(({ ctx }) => {
     return ctx.db.query.cadreSchema.findMany();
   }),
