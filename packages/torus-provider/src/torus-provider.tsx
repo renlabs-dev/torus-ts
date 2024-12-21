@@ -244,6 +244,7 @@ export function TorusProvider({
     validator,
     amount,
     callback,
+    refetchHandler,
   }: Stake): Promise<void> {
     if (!api?.tx.subspaceModule?.addStake) return;
 
@@ -258,6 +259,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Staking",
+      refetchHandler,
     });
   }
 
@@ -265,6 +267,7 @@ export function TorusProvider({
     validator,
     amount,
     callback,
+    refetchHandler,
   }: Stake): Promise<void> {
     if (!api?.tx.subspaceModule?.removeStake) return;
 
@@ -279,10 +282,16 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Unstaking",
+      refetchHandler,
     });
   }
 
-  async function transfer({ to, amount, callback }: Transfer): Promise<void> {
+  async function transfer({
+    to,
+    amount,
+    callback,
+    refetchHandler,
+  }: Transfer): Promise<void> {
     if (!api?.tx.balances.transferAllowDeath) return;
     const transaction = api.tx.balances.transferAllowDeath(to, toNano(amount));
     await sendTransaction({
@@ -292,10 +301,15 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Transfer",
+      refetchHandler,
     });
   }
 
-  async function bridge({ amount, callback }: Bridge): Promise<void> {
+  async function bridge({
+    amount,
+    callback,
+    refetchHandler,
+  }: Bridge): Promise<void> {
     if (!api?.tx.subspaceModule?.bridge) return;
     const transaction = api.tx.subspaceModule.bridge(toNano2(amount));
     await sendTransaction({
@@ -305,6 +319,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Bridge",
+      refetchHandler,
     });
   }
 
@@ -313,6 +328,7 @@ export function TorusProvider({
     toValidator,
     amount,
     callback,
+    refetchHandler,
   }: TransferStake): Promise<void> {
     if (!api?.tx.subspaceModule?.transferStake) return;
 
@@ -328,6 +344,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Transfer Stake",
+      refetchHandler,
     });
   }
 

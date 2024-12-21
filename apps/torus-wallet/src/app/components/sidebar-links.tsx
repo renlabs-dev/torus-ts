@@ -73,20 +73,34 @@ export const Sidebar = () => {
 
       <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">
         <Card className="flex flex-col gap-1.5 p-5">
-          {navSidebarOptions.map((view) => (
-            <Link href={`?view=${view.href}`} key={view.href} prefetch>
-              <Button
-                variant="ghost"
-                className={`w-full justify-between gap-4 border-none px-3 text-base ${viewMode === view.href ? "bg-accent" : ""}`}
-              >
-                {view.title}
-                <Check
-                  size={16}
-                  className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
-                />
-              </Button>
-            </Link>
-          ))}
+          {navSidebarOptions.map((view) => {
+            if (view.href === "bridge") {
+              return (
+                <Button
+                  variant="ghost"
+                  disabled
+                  className={`w-full justify-between gap-4 border-none px-3 text-base`}
+                >
+                  {view.title} (Coming Soon)
+                </Button>
+              );
+            }
+
+            return (
+              <Link href={`?view=${view.href}`} key={view.href} prefetch>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-between gap-4 border-none px-3 text-base ${viewMode === view.href ? "bg-accent" : ""}`}
+                >
+                  {view.title}
+                  <Check
+                    size={16}
+                    className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
+                  />
+                </Button>
+              </Link>
+            );
+          })}
         </Card>
       </div>
     </>

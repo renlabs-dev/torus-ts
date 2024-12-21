@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useCallback } from "react";
 import { Lock, Unlock } from "lucide-react";
 
 import { Card, Skeleton } from "@torus-ts/ui";
@@ -14,25 +14,42 @@ export function WalletBalance() {
     accountStakedBalance,
     isAccountConnected,
     isInitialized,
+    stakeOut,
   } = useWallet();
 
-  const userStakeWeight = useMemo(() => {
-    if (!isInitialized || !isAccountConnected) return null;
+  const userStakeWeight = useCallback(() => {
+    if (!isInitialized || !isAccountConnected || stakeOut.isRefetching)
+      return null;
 
     if (accountStakedBalance != null) {
       return accountStakedBalance;
     }
     return 0n;
-  }, [accountStakedBalance, isAccountConnected, isInitialized]);
+  }, [accountStakedBalance, isAccountConnected, isInitialized, stakeOut]);
+
+  const userAccountFreeBalance = useCallback(() => {
+    if (
+      !isInitialized ||
+      !isAccountConnected ||
+      accountFreeBalance.isRefetching
+    )
+      return null;
+
+    if (accountFreeBalance.data != null) {
+      return accountFreeBalance.data;
+    }
+
+    return 0n;
+  }, [accountFreeBalance, isAccountConnected, isInitialized]);
 
   const balancesList = [
     {
-      amount: accountFreeBalance.data,
+      amount: userAccountFreeBalance(),
       label: "Free Balance",
       icon: <Lock size={16} />,
     },
     {
-      amount: userStakeWeight,
+      amount: userStakeWeight(),
       label: "Staked Balance",
       icon: <Unlock size={16} />,
     },

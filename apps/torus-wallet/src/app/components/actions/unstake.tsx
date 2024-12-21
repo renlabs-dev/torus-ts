@@ -12,7 +12,8 @@ import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function UnstakeAction() {
-  const { accountStakedBy, removeStake } = useWallet();
+  const { accountStakedBy, removeStake, stakeOut, accountFreeBalance } =
+    useWallet();
 
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -48,7 +49,6 @@ export function UnstakeAction() {
     const validator = stakedValidators.find(
       (v: { address: string; stake: bigint }) => v.address === address,
     );
-    console.log(validator?.stake);
     if (validator) {
       setStakedAmount(fromNano(validator.stake));
     } else {
@@ -75,6 +75,20 @@ export function UnstakeAction() {
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setRecipient("");
+
+      setInputError({ recipient: null, value: null });
+    }
+  };
+
+  const refetchHandler = async () => {
+    await Promise.all([
+      stakeOut.refetch(),
+      accountStakedBy.refetch(),
+      accountFreeBalance.refetch(),
+    ]);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -93,6 +107,7 @@ export function UnstakeAction() {
       validator: recipient,
       amount,
       callback: handleCallback,
+      refetchHandler,
     });
   };
 
