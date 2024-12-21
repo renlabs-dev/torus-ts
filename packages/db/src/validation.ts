@@ -21,6 +21,36 @@ export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
   deletedAt: true,
 });
 
+export const CADRE_CANDIDATE_INSERT_SCHEMA = createInsertSchema(
+  cadreCandidateSchema,
+).omit({
+  id: true,
+  userKey: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+
+export const CADRE_VOTE_INSERT_SCHEMA = createInsertSchema(
+  cadreVoteSchema,
+).omit({
+  id: true,
+  userKey: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+});
+
+export const COMMENT_INTERACTION_INSERT_SCHEMA = createInsertSchema(
+  commentInteractionSchema,
+).omit({
+  id: true,
+  userKey: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+});
+
 // OLD
 
 export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
@@ -29,13 +59,6 @@ export const PROPOSAL_COMMENT_INSERT_SCHEMA = createInsertSchema(
   id: true,
   createdAt: true,
   deletedAt: true,
-  userKey: true,
-});
-export const COMMENT_INTERACTION_INSERT_SCHEMA = createInsertSchema(
-  commentInteractionSchema,
-).omit({
-  id: true,
-  createdAt: true,
   userKey: true,
 });
 
@@ -74,23 +97,4 @@ export const CADRE_INSERT_SCHEMA = createInsertSchema(cadreSchema).omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-});
-
-export const CADRE_CANDIDATES_INSERT_SCHEMA = createInsertSchema(
-  cadreCandidateSchema,
-).omit({
-  id: true,
-  createdAt: true,
-  deletedAt: true,
-  userKey: true,
-});
-
-export const CADRE_VOTE_INSERT_SCHEMA = createInsertSchema(
-  cadreVoteSchema,
-).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
-  userKey: true,
 });

@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import { formatToken, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
@@ -50,7 +50,7 @@ export function UnstakeAction() {
       (v: { address: string; stake: bigint }) => v.address === address,
     );
     if (validator) {
-      setStakedAmount(fromNano(validator.stake));
+      setStakedAmount(formatToken(validator.stake));
     } else {
       setStakedAmount(null);
     }
@@ -120,7 +120,7 @@ export function UnstakeAction() {
         v.address === validator.address,
     );
     if (validatorData) {
-      setStakedAmount(fromNano(validatorData.stake));
+      setStakedAmount(formatToken(validatorData.stake));
     } else {
       setStakedAmount(null);
     }

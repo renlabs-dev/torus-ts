@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import { formatToken, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
@@ -55,7 +55,7 @@ export function TransferStakeAction() {
       (v: { address: string; stake: bigint }) => v.address === address,
     );
     if (validator) {
-      const stakedAmount = fromNano(validator.stake);
+      const stakedAmount = formatToken(validator.stake);
       setMaxAmount(stakedAmount);
     } else {
       setMaxAmount(null);
@@ -133,7 +133,7 @@ export function TransferStakeAction() {
         v.address === validator.address,
     );
     if (validatorData) {
-      const stakedAmount = fromNano(validatorData.stake);
+      const stakedAmount = formatToken(validatorData.stake);
       setMaxAmount(stakedAmount);
     } else {
       setMaxAmount(null);

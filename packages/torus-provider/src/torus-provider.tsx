@@ -15,7 +15,7 @@ import type {
   Proposal,
 } from "@torus-ts/subspace";
 import { sb_balance } from "@torus-ts/subspace";
-import { toNano, toNano2 } from "@torus-ts/utils/subspace";
+import { toNano } from "@torus-ts/utils/subspace";
 
 import type {
   AddCustomProposal,
@@ -311,7 +311,7 @@ export function TorusProvider({
     refetchHandler,
   }: Bridge): Promise<void> {
     if (!api?.tx.subspaceModule?.bridge) return;
-    const transaction = api.tx.subspaceModule.bridge(toNano2(amount));
+    const transaction = api.tx.subspaceModule.bridge(toNano(amount));
     await sendTransaction({
       api,
       torusApi,
@@ -465,7 +465,7 @@ export function TorusProvider({
 
     const transaction = api.tx.governanceModule.addTransferDaoTreasuryProposal(
       IpfsHash,
-      toNano2(value),
+      toNano(value),
       dest,
     );
     await sendTransaction({

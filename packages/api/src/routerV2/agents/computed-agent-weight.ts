@@ -18,10 +18,10 @@ export const computedAgentWeightRouter = {
       .from(computedAgentAllocationSchema);
     return await ctx.db
       .select({
-        agentId: computedAgentAllocationSchema.agentId,
+        agentKey: computedAgentAllocationSchema.agentKey,
         agentName: agentSchema.name,
-        stakeAllocation: computedAgentAllocationSchema.stakeAllocation,
-        percAllocation: computedAgentAllocationSchema.percAllocation,
+        computedWeight: computedAgentAllocationSchema.computedWeight,
+        percComputedWeight: computedAgentAllocationSchema.percComputedWeight,
       })
       .from(computedAgentAllocationSchema)
       .where(
@@ -30,7 +30,7 @@ export const computedAgentWeightRouter = {
       )
       .innerJoin(
         agentSchema,
-        eq(computedAgentAllocationSchema.agentId, agentSchema.id),
+        eq(computedAgentAllocationSchema.agentKey, agentSchema.id),
       );
   }),
 } satisfies TRPCRouterRecord;

@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
 import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import { formatToken, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
@@ -57,7 +57,7 @@ export function SendAction() {
       const fee = await estimateFee(recipient, "0");
       if (fee != null) {
         const adjustedFee = (fee * 11n) / 10n;
-        setEstimatedFee(fromNano(adjustedFee));
+        setEstimatedFee(formatToken(adjustedFee));
         return adjustedFee;
       } else {
         setEstimatedFee(null);
@@ -77,7 +77,7 @@ export function SendAction() {
     const afterFeesBalance = (accountFreeBalance.data ?? 0n) - fee;
     const maxAmount = afterFeesBalance > 0 ? afterFeesBalance : 0n;
 
-    setMaxAmount(fromNano(maxAmount));
+    setMaxAmount(formatToken(maxAmount));
 
     const amountNano = toNano(amount || "0");
     if (amountNano > maxAmount) {

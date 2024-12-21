@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
 import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano2 } from "@torus-ts/utils/subspace";
+import { formatToken, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
@@ -45,10 +45,10 @@ export function BridgeAction() {
     if (!fee) return;
     const balance = accountFreeBalance.data ?? 0n;
     const newMaxAmount = balance - fee;
-    const newMaxAmountStr = newMaxAmount > 0n ? fromNano(newMaxAmount) : "0";
+    const newMaxAmountStr = newMaxAmount > 0n ? formatToken(newMaxAmount) : "0";
     setMaxAmount(newMaxAmountStr);
 
-    const amountNano = toNano2(amount || "0");
+    const amountNano = toNano(amount || "0");
 
     if (amountNano > newMaxAmount) {
       setInputError((prev) => ({
@@ -80,7 +80,7 @@ export function BridgeAction() {
       const fee = await estimateFee(recipient, "0");
       if (fee != null) {
         const adjustedFee = (fee * 11n) / 10n;
-        setEstimatedFee(fromNano(adjustedFee));
+        setEstimatedFee(formatToken(adjustedFee));
         return adjustedFee;
       } else {
         setEstimatedFee(null);

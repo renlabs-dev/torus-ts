@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import type { Stake, TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Input, TransactionStatus } from "@torus-ts/ui";
-import { fromNano } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 import { usePage } from "~/context/page-provider";
 import { ValidatorsList } from "./validators-list";
@@ -57,7 +57,7 @@ export function UnstakeAction(
       (v: { address: string; stake: bigint }) => v.address === address,
     );
     if (validator) {
-      setStakedAmount(fromNano(validator.stake));
+      setStakedAmount(formatToken(validator.stake));
     } else {
       setStakedAmount(null);
     }
@@ -108,7 +108,7 @@ export function UnstakeAction(
         v.address === validator.address,
     );
     if (validatorData) {
-      setStakedAmount(fromNano(validatorData.stake));
+      setStakedAmount(formatToken(validatorData.stake));
     } else {
       setStakedAmount(null);
     }

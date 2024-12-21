@@ -1,4 +1,4 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { asc, eq, sql, count, isNull } from "drizzle-orm";
 import {
   bigint as drizzleBigint,
   boolean,
@@ -13,6 +13,7 @@ import {
   unique,
   varchar,
   real,
+  check,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `${name}`);
@@ -31,7 +32,11 @@ export const timestampzNow = (name: string) =>
 
 export const ss58Address = (name: string) => varchar(name, { length: 256 });
 
-// ==== Agents ====
+export const timeFields = () => ({
+  createdAt: timestampzNow("created_at"),
+  updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
+  deletedAt: timestampz("deleted_at").default(sql`null`),
+});
 
 // ==== Agents ====
 
@@ -45,7 +50,7 @@ export const ss58Address = (name: string) => varchar(name, { length: 256 });
 export const agentSchema = createTable(
   "agent",
   {
-    id_: serial("id").primaryKey(),
+    id: serial("id").primaryKey(),
 
     // Insertion timestamp
     atBlock: integer("at_block").notNull(),
@@ -55,7 +60,7 @@ export const agentSchema = createTable(
     name: text("name"),
     apiUrl: text("api_url"),
     metadataUri: text("metadata_uri"),
-    weightFactor: integer("weight_factor"), // percentage
+    weightFactor: integer("weight_factor"),
 
     isWhitelisted: boolean("is_whitelisted"),
     registrationBlock: integer("registration_block"),
@@ -63,11 +68,16 @@ export const agentSchema = createTable(
     totalStaked: bigint("total_staked"),
     totalStakers: integer("total_stakers"),
 
-    createdAt: timestampzNow("created_at"),
-    updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-    deletedAt: timestampz("deleted_at").default(sql`null`),
+    ...timeFields(),
   },
-  (t) => [unique().on(t.key), index("key_index").on(t.key)],
+  (t) => [
+    unique().on(t.key),
+    index("key_index").on(t.key),
+    check(
+      "percent_check",
+      sql`${t.weightFactor} >= 0 and ${t.weightFactor} <= 100`,
+    ),
+  ],
 );
 
 // ==== Agent Allocator ====
@@ -79,18 +89,16 @@ export const agentSchema = createTable(
 export const userAgentAllocationSchema = createTable(
   "user_agent_allocation",
   {
-    id_: serial("id").primaryKey(),
+    id: serial("id").primaryKey(),
 
     userKey: ss58Address("user_key").notNull(),
     agentKey: ss58Address("agent_key")
       .notNull()
       .references(() => agentSchema.key),
 
-    allocation: integer("allocation").default(0).notNull(),
+    weightAllocation: integer("weight_allocation").default(0).notNull(),
 
-    createdAt: timestampzNow("created_at"),
-    updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-    deletedAt: timestampz("deleted_at").default(sql`null`),
+    ...timeFields(),
   },
   (t) => [unique().on(t.userKey, t.agentKey)],
 );
@@ -101,21 +109,19 @@ export const userAgentAllocationSchema = createTable(
 export const computedAgentAllocationSchema = createTable(
   "computed_agent_allocation",
   {
-    id_: serial("id").primaryKey(),
+    id: serial("id").primaryKey(),
     atBlock: integer("at_block").notNull(),
 
     agentKey: ss58Address("agent_key")
       .notNull()
       .references(() => agentSchema.key),
 
-    // Aggregated allocations measured in nanos
-    stakeAllocation: bigint("stake_allocation").notNull(),
-    // Normalized aggregated Allocations (100% sum)
-    percAllocation: real("perc_allocation").notNull(),
+    // Aggregated weight allocations measured in Rens
+    computedWeight: bigint("computed_weight").notNull(),
+    // Normalized aggregated allocations (100% sum)
+    percComputedWeight: real("perc_computed_weight").notNull(),
 
-    createdAt: timestampzNow("created_at"),
-    updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-    deletedAt: timestampz("deleted_at").default(sql`null`),
+    ...timeFields(),
   },
 );
 
@@ -133,9 +139,9 @@ export const reportReason = pgEnum("report_reason", [
 ]);
 
 export const agentReportSchema = createTable("agent_report", {
-  id_: serial("id").primaryKey(),
+  id: serial("id").primaryKey(),
 
-  userKey: ss58Address("user_key"),
+  userKey: ss58Address("user_key").notNull(),
   agentKey: ss58Address("agent_key")
     .references(() => agentSchema.key)
     .notNull(),
@@ -143,9 +149,7 @@ export const agentReportSchema = createTable("agent_report", {
   reason: reportReason("reason").notNull(),
   content: text("content"),
 
-  createdAt: timestampzNow("created_at"),
-  updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-  deletedAt: timestampz("deleted_at").default(sql`null`),
+  ...timeFields(),
 });
 
 // ==== Governance ====
@@ -173,8 +177,7 @@ export const commentSchema = createTable(
     userName: text("user_name"),
     content: text("content").notNull(),
 
-    createdAt: timestampzNow("created_at"),
-    deletedAt: timestampz("deleted_at").default(sql`null`),
+    ...timeFields(),
   },
   (t) => [
     unique().on(t.itemType, t.itemId, t.userKey),
@@ -185,23 +188,23 @@ export const commentSchema = createTable(
 /**
  * A vote made by a user on a comment.
  */
-export const voteType = pgEnum("governance_item_type", ["UP", "DOWN"]);
+export const reactionType = pgEnum("reaction_type", ["LIKE", "DISLIKE"]);
 
-const voteTypeValues = extract_pgenum_values(voteType);
+export const reactionTypeValues = extract_pgenum_values(reactionType);
 
 export const commentInteractionSchema = createTable(
   "comment_interaction",
   {
-    id_: serial("id").primaryKey(),
+    id: serial("id").primaryKey(),
 
     userKey: ss58Address("user_key").notNull(),
     commentId: integer("comment_id")
       .references(() => commentSchema.id)
       .notNull(),
 
-    voteType: voteType("vote_type").notNull(),
+    reactionType: reactionType("reaction_type").notNull(),
 
-    createdAt: timestampzNow("created_at"),
+    ...timeFields(),
   },
   (t) => [
     unique().on(t.userKey, t.commentId),
@@ -214,51 +217,49 @@ export const commentInteractionSchema = createTable(
  * This view computes the number of upvotes and downvotes for each comment at
  * write time so that we can query the data more efficiently.
  */
-export const proposalCommentDigestView = pgMaterializedView(
-  "comment_digest",
-).as((qb) => {
-  return qb
-    .select({
-      id: commentSchema.id,
-      itemType: commentSchema.itemType,
-      itemId: commentSchema.itemId,
-      userKey: commentSchema.userKey,
-      userName: commentSchema.userName,
-      content: commentSchema.content,
-      createdAt: commentSchema.createdAt,
-      upvotes:
-        sql<number>`SUM(CASE WHEN ${commentInteractionSchema.voteType} = ${voteTypeValues.UP} THEN 1 ELSE 0 END)`
-          .mapWith(Number)
-          .as("upvotes"),
-      downvotes:
-        sql<number>`SUM(CASE WHEN ${commentInteractionSchema.voteType} = ${voteTypeValues.DOWN} THEN 1 ELSE 0 END)`
-          .mapWith(Number)
-          .as("downvotes"),
-    })
-    .from(commentSchema)
-    .where(sql`${commentSchema.deletedAt} IS NULL`)
-    .leftJoin(
-      commentInteractionSchema,
-      eq(commentSchema.id, commentInteractionSchema.commentId),
-    )
-    .groupBy(
-      commentSchema.id,
-      commentSchema.itemType,
-      commentSchema.itemId,
-      commentSchema.userKey,
-      commentSchema.content,
-      commentSchema.createdAt,
-    )
-    .orderBy(asc(commentSchema.createdAt));
-});
+export const commentDigestView = pgMaterializedView("comment_digest").as(
+  (qb) => {
+    return qb
+      .select({
+        id: commentSchema.id,
+        itemType: commentSchema.itemType,
+        itemId: commentSchema.itemId,
+        userKey: commentSchema.userKey,
+        userName: commentSchema.userName,
+        content: commentSchema.content,
+        createdAt: commentSchema.createdAt,
+        likes: count(
+          eq(commentInteractionSchema.reactionType, reactionTypeValues.LIKE),
+        ).as("upvotes"),
+        dislikes: count(
+          eq(commentInteractionSchema.reactionType, reactionTypeValues.DISLIKE),
+        ).as("downvotes"),
+      })
+      .from(commentSchema)
+      .where(isNull(commentSchema.deletedAt))
+      .leftJoin(
+        commentInteractionSchema,
+        eq(commentSchema.id, commentInteractionSchema.commentId),
+      )
+      .groupBy(
+        commentSchema.id,
+        commentSchema.itemType,
+        commentSchema.itemId,
+        commentSchema.userKey,
+        commentSchema.content,
+        commentSchema.createdAt,
+      )
+      .orderBy(asc(commentSchema.createdAt));
+  },
+);
 
 /**
  * A report made by a user about a comment.
  */
 export const commentReportSchema = createTable("comment_report", {
-  id_: serial("id").primaryKey(),
+  id: serial("id").primaryKey(),
 
-  userKey: ss58Address("user_key"),
+  userKey: ss58Address("user_key").notNull(),
   commentId: integer("comment_id")
     .references(() => commentSchema.id)
     .notNull(),
@@ -266,38 +267,36 @@ export const commentReportSchema = createTable("comment_report", {
   reason: reportReason("reason").notNull(),
   content: text("content"),
 
-  createdAt: timestampzNow("created_at"),
+  ...timeFields(),
 });
 
 // ---- Cadre ----
 
+const DISCORD_ID_LENGTH = 18;
 /**
  * A groups of users that can vote on Applications.
  */
 export const cadreSchema = createTable("cadre", {
-  id_: serial("id").primaryKey(),
+  id: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key").notNull().unique(),
-  discordId: varchar("discord_id", { length: 64 }),
+  discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
 
-  createdAt: timestampzNow("created_at"),
-  updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-  deletedAt: timestampz("deleted_at").default(sql`null`),
+  ...timeFields(),
 });
 
 /**
  * Users can apply to join the Cadre.
  */
 export const cadreCandidateSchema = createTable("cadre_candidate", {
-  id_: serial("id").primaryKey(),
+  id: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key").notNull().unique(),
-  discordId: varchar("discord_id", { length: 64 }),
+  discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
 
   content: text("content").notNull(),
 
-  createdAt: timestampzNow("created_at"),
-  deletedAt: timestampz("deleted_at").default(sql`null`),
+  ...timeFields(),
 });
 
 export const cadreVoteTypeEnum = pgEnum("cadre_vote_type", [
@@ -309,7 +308,7 @@ export const cadreVoteTypeEnum = pgEnum("cadre_vote_type", [
  * This table stores votes on Cadre Candidates.
  */
 export const cadreVoteSchema = createTable("cadre_vote", {
-  id_: serial("id").primaryKey(),
+  id: serial("id").primaryKey(),
 
   userKey: ss58Address("user_key")
     .references(() => cadreSchema.userKey)
@@ -319,13 +318,10 @@ export const cadreVoteSchema = createTable("cadre_vote", {
     .notNull(),
   vote: cadreVoteTypeEnum("vote").notNull(),
 
-  createdAt: timestampzNow("created_at"),
-  updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-  deletedAt: timestampz("deleted_at").default(sql`null`),
+  ...timeFields(),
 });
 
 /**
- * this doesn't make sense wtf
  */
 export const applicationVoteType = pgEnum("agent_application_vote_type", [
   "ACCEPT",
@@ -339,8 +335,9 @@ export const applicationVoteType = pgEnum("agent_application_vote_type", [
 export const agentApplicationVoteSchema = createTable(
   "agent_application_vote",
   {
-    id_: serial("id").primaryKey(),
+    id: serial("id").primaryKey(),
 
+    // We have no guarantees that the applicationId is valid.
     applicationId: integer("application_id").notNull(),
     userKey: ss58Address("user_key")
       .references(() => cadreSchema.userKey)
@@ -348,9 +345,7 @@ export const agentApplicationVoteSchema = createTable(
 
     vote: applicationVoteType("vote").notNull(),
 
-    createdAt: timestampzNow("created_at"),
-    updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
-    deletedAt: timestampz("deleted_at").default(sql`null`),
+    ...timeFields(),
   },
   (t) => [unique().on(t.applicationId, t.userKey)],
 );
@@ -361,9 +356,10 @@ export const agentApplicationVoteSchema = createTable(
 export const governanceNotificationSchema = createTable(
   "governance_notification",
   {
-    id_: serial("id").primaryKey(),
+    id: serial("id").primaryKey(),
     itemType: governanceItemType("item_type").notNull(),
     itemId: integer("item_id").notNull(),
     notifiedAt: timestampz("notified_at").defaultNow(),
+    ...timeFields(),
   },
 );
