@@ -81,8 +81,8 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
           </div>
 
           {/* Comments Section */}
-          <ViewComment modeType="AGENT_APPLICATION" id={content.id} />
-          <CreateComment id={content.id} ModeType="AGENT_APPLICATION" />
+          <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
+          <CreateComment id={content.id} itemType="AGENT_APPLICATION" />
 
           {/* Desktop Voter List */}
           <div className="hidden lg:block">

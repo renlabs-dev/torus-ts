@@ -86,15 +86,15 @@ interface CommentsHeaderProps {
   isLoading: boolean;
   comments: Comments;
   handleCommentSorter: (value: SorterTypes) => void;
-  modeType: "PROPOSAL" | "AGENT_APPLICATION";
+  itemType: "PROPOSAL" | "AGENT_APPLICATION";
 }
 
 const CommentsHeader = (props: CommentsHeaderProps) => {
-  const { sortBy, isLoading, comments, handleCommentSorter, modeType } = props;
+  const { sortBy, isLoading, comments, handleCommentSorter, itemType } = props;
   return (
     <div className="mb-4 flex w-full flex-row items-center justify-between gap-1 pb-2">
       <h2 className="w-full text-start text-lg font-semibold">
-        {modeType === "PROPOSAL" ? "Proposal Discussion" : "DAO Cadre Comments"}
+        {itemType === "PROPOSAL" ? "Proposal Discussion" : "DAO Cadre Comments"}
       </h2>
       <ToggleGroup
         type="single"
@@ -124,10 +124,10 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
 
 export function ViewComment({
   id,
-  modeType,
+  itemType,
 }: {
   id: number;
-  modeType: "PROPOSAL" | "AGENT_APPLICATION";
+  itemType: "PROPOSAL" | "AGENT_APPLICATION";
 }) {
   const { selectedAccount } = useTorus();
   const [isAtBottom, setIsAtBottom] = useState(false);
@@ -142,7 +142,7 @@ export function ViewComment({
     isLoading,
     refetch,
   } = api.comment.byId.useQuery(
-    { type: modeType, proposalId: id },
+    { type: itemType, proposalId: id },
     { enabled: typeof id === "number" },
   );
 
@@ -286,7 +286,7 @@ export function ViewComment({
           isLoading={isLoading}
           comments={comments ?? []}
           handleCommentSorter={handleCommentSorter}
-          modeType={modeType}
+          itemType={itemType}
         />
 
         {!sortedComments.length && (

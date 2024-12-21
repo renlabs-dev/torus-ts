@@ -1,5 +1,5 @@
 import type { SQL, Table } from "@torus-ts/db";
-import type { GovernanceModeType } from "@torus-ts/subspace";
+import type { GovernanceitemType } from "@torus-ts/subspace";
 import { getTableColumns, sql } from "@torus-ts/db";
 import { db } from "@torus-ts/db/client";
 import {
@@ -102,7 +102,7 @@ export async function computeTotalVotesPerDao(): Promise<VotesByProposal[]> {
 }
 
 export async function getProposalIdsByType(
-  type: GovernanceModeType,
+  type: GovernanceitemType,
 ): Promise<number[]> {
   const result = await db
     .select({

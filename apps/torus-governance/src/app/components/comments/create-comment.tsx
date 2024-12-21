@@ -16,10 +16,10 @@ const MIN_STAKE_REQUIRED = 5000;
 
 export function CreateComment({
   id,
-  ModeType,
+  itemType,
 }: {
   id: number;
-  ModeType: "PROPOSAL" | "AGENT_APPLICATION";
+  itemType: "PROPOSAL" | "AGENT_APPLICATION";
 }) {
   const { selectedAccount, accountStakedBalance } = useGovernance();
   const { data: cadreUsers } = api.cadre.all.useQuery();
@@ -50,7 +50,7 @@ export function CreateComment({
       return;
     }
 
-    if (ModeType === "PROPOSAL") {
+    if (itemType === "PROPOSAL") {
       if (
         !accountStakedBalance ||
         Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
@@ -73,7 +73,7 @@ export function CreateComment({
       await CreateComment.mutateAsync({
         content,
         itemId: id,
-        itemType: ModeType,
+        itemType: itemType,
         userName: name || undefined,
       });
       toast.success("Comment submitted successfully!");
@@ -90,7 +90,7 @@ export function CreateComment({
   const isSubmitDisabled = () => {
     if (CreateComment.isPending || !selectedAccount?.address) return true;
 
-    if (ModeType === "PROPOSAL") {
+    if (itemType === "PROPOSAL") {
       return (
         !accountStakedBalance ||
         Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
@@ -154,7 +154,7 @@ export function CreateComment({
           <p className="mt-2 text-sm text-yellow-500">
             {!selectedAccount?.address
               ? "Please connect your wallet to submit a comment."
-              : ModeType === "PROPOSAL"
+              : itemType === "PROPOSAL"
                 ? `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`
                 : "Only Cadre members can submit comments in DAO Applications."}
           </p>
