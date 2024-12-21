@@ -165,6 +165,10 @@ export function Bridge() {
     handleSelectWallet(accountExists);
   };
 
+  const refetchHandler = async () => {
+    await accountFreeBalance.refetch();
+  };
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setTransactionStatus({
       status: "STARTING",
@@ -172,7 +176,11 @@ export function Bridge() {
       message: "Starting transaction",
     });
     try {
-      await bridge({ amount: data.amount, callback: handleCallback });
+      await bridge({
+        amount: data.amount,
+        callback: handleCallback,
+        refetchHandler,
+      });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {

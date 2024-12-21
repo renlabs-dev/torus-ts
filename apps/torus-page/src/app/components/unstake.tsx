@@ -44,7 +44,7 @@ export function UnstakeAction(
   );
 
   const [stakedAmount, setStakedAmount] = useState<string | null>(null);
-  const { accountStakingTo } = usePage();
+  const { accountStakingTo, accountFreeBalance } = usePage();
 
   const stakedValidators = accountStakingTo.data ?? [];
 
@@ -93,10 +93,15 @@ export function UnstakeAction(
 
     if (!isValidInput) return;
 
+    const refetchHandler = async () => {
+      await accountFreeBalance.refetch();
+    };
+
     void props.removeStake({
       validator: recipient,
       amount,
       callback: handleCallback,
+      refetchHandler,
     });
   };
 
