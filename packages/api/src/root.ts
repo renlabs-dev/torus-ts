@@ -16,7 +16,7 @@ import { createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   // Auth
   auth: authRouter,
-  // Agents
+  // Agent
   agent: agentRouter,
   agentReport: agentReportRouter,
   userAgentWeight: userAgentWeightRouter,

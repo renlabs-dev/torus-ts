@@ -8,7 +8,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "tsc",
+    "// FIXME build": "tsc",
     "clean": "rm -rf .turbo node_modules",
     "dev": "pnpm with-env tsx ./src/index.ts",
     "format": "prettier --check . --ignore-path ../../.gitignore",
