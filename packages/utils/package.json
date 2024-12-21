@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@polkadot/util": "catalog:",
+    "bignumber.js": "^9.1.2",
     "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
