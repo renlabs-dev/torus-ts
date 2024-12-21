@@ -12,7 +12,8 @@ import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function StakeAction() {
-  const { addStake, accountFreeBalance } = useWallet();
+  const { addStake, accountFreeBalance, stakeOut, accountStakedBy } =
+    useWallet();
   const [amount, setAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [inputError, setInputError] = useState<{
@@ -60,6 +61,19 @@ export function StakeAction() {
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setRecipient("");
+      setInputError({ recipient: null, value: null });
+    }
+  };
+
+  const refetchHandler = async () => {
+    await Promise.all([
+      stakeOut.refetch(),
+      accountStakedBy.refetch(),
+      accountFreeBalance.refetch(),
+    ]);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -78,6 +92,7 @@ export function StakeAction() {
       validator: recipient,
       amount,
       callback: handleCallback,
+      refetchHandler,
     });
   };
 

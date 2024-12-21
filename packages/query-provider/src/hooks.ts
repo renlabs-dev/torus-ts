@@ -234,19 +234,6 @@ export function useKeyStakedBy(
   });
 }
 
-export function useKeyStakingTo(
-  api: Api | Nullish,
-  address: SS58Address | string | Nullish,
-) {
-  return useQuery({
-    queryKey: ["user_total_staked", address],
-    enabled: api != null && address != null,
-    queryFn: () => queryKeyStakingTo(api!, address! as SS58Address),
-    staleTime: STAKE_STALE_TIME,
-    refetchOnWindowFocus: false,
-  });
-}
-
 export function useSubnetList(api: Api | Nullish) {
   return useQuery({
     queryKey: ["subnet_list"],

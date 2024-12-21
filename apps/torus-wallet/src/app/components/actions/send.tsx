@@ -120,6 +120,15 @@ export function SendAction() {
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setRecipient("");
+      setInputError({ recipient: null, value: null });
+    }
+  };
+
+  const refetchHandler = async () => {
+    await accountFreeBalance.refetch();
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -134,7 +143,12 @@ export function SendAction() {
       message: "Starting transaction...",
     });
 
-    void transfer({ to: recipient, amount, callback: handleCallback });
+    void transfer({
+      to: recipient,
+      amount,
+      callback: handleCallback,
+      refetchHandler,
+    });
   };
 
   useEffect(() => {
@@ -186,7 +200,6 @@ export function SendAction() {
               </span>
             )}
           </div>
-
           <div className="flex flex-col gap-2">
             <Label htmlFor="send-amount" className="text-base">
               Amount

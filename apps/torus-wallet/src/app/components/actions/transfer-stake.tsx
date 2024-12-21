@@ -87,6 +87,17 @@ export function TransferStakeAction() {
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setRecipient("");
+      setFromValidator("");
+
+      setInputError({ recipient: null, value: null, fromValidator: null });
+    }
+  };
+
+  const refetchHandler = async () => {
+    await accountStakedBy.refetch();
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -108,6 +119,7 @@ export function TransferStakeAction() {
       toValidator: recipient,
       amount,
       callback: handleCallback,
+      refetchHandler,
     });
   };
 
