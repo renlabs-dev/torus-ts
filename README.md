@@ -12,12 +12,10 @@ Monorepo for the Torus Network TypesSript Ecosystem. It's managed with
 apps
   |─ torus-cache
   |   └─ Blockchain data caching service
-  |─ torus-forum
-  |   └─ Community Forum
   |─ torus-governance
   |   └─ Governancel Portal
   |─ torus-page
-  |   └─ Main / Landing Page 
+  |   └─ Main / Landing Page
   |─ torus-validator
   |   └─ Community Validator Portal
   |─ torus-wallet
@@ -79,12 +77,12 @@ DEV: https://dev.communex.ai/ , https://dev-communex-page-8aoym.ondigitalocean.a
 
 ### commune-governance (Drone CI for docker image)
 
-PROD: https://governance.communeai.org/ , https://commune-governance-q32fh.ondigitalocean.app/ 
+PROD: https://governance.communeai.org/ , https://commune-governance-q32fh.ondigitalocean.app/
 DEV: https://dev.governance.communeai.org/ , https://dev-commune-governance-4goke.ondigitalocean.app/
 
 ### community validator (Drone CI for docker image)
 
-PROD: https://validator.communeai.net/ , https://community-validator-engn6.ondigitalocean.app/ 
+PROD: https://validator.communeai.net/ , https://community-validator-engn6.ondigitalocean.app/
 DEV: https://dev.validator.communeai.net/ , https://dev-community-validator-cqpy5.ondigitalocean.app/
 
 ### commune page (Drone CI for docker image)

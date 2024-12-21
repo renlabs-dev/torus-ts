@@ -12,6 +12,13 @@ import { COMMENT_INTERACTION_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 export const commentInteractionRouter = {
   // GET
+  byId: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.commentInteractionSchema.findFirst({
+        where: eq(commentInteractionSchema.id, input.id),
+      });
+    }),
   byUserId: publicProcedure
     .input(z.object({ proposalId: z.number(), userKey: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -56,7 +63,7 @@ export const commentInteractionRouter = {
         });
     }),
   deleteReaction: authenticatedProcedure
-    .input(z.object({ commentId: z.string() }))
+    .input(z.object({ commentId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const userKey = ctx.sessionData?.userKey;
       await ctx.db

@@ -4,9 +4,9 @@ import { LoaderCircle } from "lucide-react";
 
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
-import { CreateCadreCandidates } from "~/app/components/dao/create-cadre-candidates";
-import { DaoStatusLabel } from "~/app/components/dao/dao-status-label";
-import { DaoVoteCard } from "~/app/components/dao/dao-vote-card";
+import { CreateCadreCandidates } from "~/app/components/agent-application/create-cadre-candidates";
+import { DaoStatusLabel } from "~/app/components/agent-application/agent-application-status-label";
+import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application/agent-application-vote-card";
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { useGovernance } from "~/context/governance-provider";
@@ -65,18 +65,24 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
               creationBlock={content.creationBlock}
               lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
             />
-            <DaoVoteCard daoId={content.id} daoStatus={content.status} />
+            <AgentApplicationVoteTypeCard
+              applicationId={content.id}
+              applicationStatus={content.status}
+            />
             {/* <VoteData proposalStatus={content.status} /> */}
           </div>
 
           {/* Desktop Proposal Vote Card */}
           <div className="hidden md:block">
-            <DaoVoteCard daoId={content.id} daoStatus={content.status} />
+            <AgentApplicationVoteTypeCard
+              applicationId={content.id}
+              applicationStatus={content.status}
+            />
           </div>
 
           {/* Comments Section */}
-          <ViewComment modeType="DAO" id={content.id} />
-          <CreateComment id={content.id} ModeType="DAO" />
+          <ViewComment modeType="AGENT_APPLICATION" id={content.id} />
+          <CreateComment id={content.id} ModeType="AGENT_APPLICATION" />
 
           {/* Desktop Voter List */}
           <div className="hidden lg:block">

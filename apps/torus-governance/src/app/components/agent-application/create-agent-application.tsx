@@ -222,7 +222,7 @@ export function CreateDao(): JSX.Element {
           >
             article
           </Link>{" "}
-          to avoid being denied by the Module Curation DAO.
+          to avoid being denied by the Agent Curation.
         </Label>
       </div>
     </form>

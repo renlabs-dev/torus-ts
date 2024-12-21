@@ -19,9 +19,15 @@ import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 
-type DaoVote = inferProcedureOutput<AppRouter["dao"]["byId"]>[0];
+export type AgentApplicationVoteType = NonNullable<
+  inferProcedureOutput<AppRouter["agentApplicationVote"]["byId"]>
+>;
 
-const voteOptions: DaoVote["daoVoteType"][] = ["ACCEPT", "REFUSE"];
+const voteOptions: AgentApplicationVoteType["vote"][] = [
+  "ACCEPT",
+  "REFUSE",
+  "REMOVE",
+];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
@@ -35,14 +41,14 @@ const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
 };
 
 const AlreadyVotedCardContent = (props: {
-  voted: Omit<DaoVote["daoVoteType"], "REMOVE">;
+  voted: Omit<AgentApplicationVoteType["vote"], "REMOVE">;
   votingStatus: TransactionResult["status"];
   handleRemoveVote: () => void;
 }): JSX.Element => {
   const { voted, votingStatus, handleRemoveVote } = props;
 
   const getVotedText = (
-    voted: Omit<DaoVote["daoVoteType"], "REMOVE">,
+    voted: Omit<AgentApplicationVoteType["vote"], "REMOVE">,
   ): JSX.Element => {
     if (voted === "ACCEPT") {
       return <span className="text-green-400">You already voted in favor</span>;
@@ -69,12 +75,12 @@ const AlreadyVotedCardContent = (props: {
 };
 
 const VoteCardFunctionsContent = (props: {
-  vote: DaoVote["daoVoteType"] | "UNVOTED";
+  vote: AgentApplicationVoteType["vote"] | "UNVOTED";
   votingStatus: TransactionResult["status"];
   isAccountConnected: boolean;
   isCadreUser: boolean;
   handleVote: () => void;
-  setVote: (vote: DaoVote["daoVoteType"] | "UNVOTED") => void;
+  setVote: (vote: AgentApplicationVoteType["vote"] | "UNVOTED") => void;
 }): JSX.Element => {
   const {
     handleVote,
@@ -85,7 +91,7 @@ const VoteCardFunctionsContent = (props: {
     isAccountConnected,
   } = props;
 
-  function handleVotePreference(value: DaoVote["daoVoteType"] | "") {
+  function handleVotePreference(value: AgentApplicationVoteType["vote"] | "") {
     if (value === "") return setVote("UNVOTED");
     return setVote(value);
   }
@@ -99,7 +105,9 @@ const VoteCardFunctionsContent = (props: {
           type="single"
           value={vote}
           onValueChange={(voteType) =>
-            handleVotePreference(voteType as DaoVote["daoVoteType"] | "")
+            handleVotePreference(
+              voteType as AgentApplicationVoteType["vote"] | "",
+            )
           }
           disabled={votingStatus === "PENDING" || !isCadreUser}
           className="flex w-full gap-2"
@@ -141,7 +149,7 @@ const VoteCardFunctionsContent = (props: {
       {isAccountConnected && !isCadreUser && (
         <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
           <span>
-            You must be a Cadre Member to be able to vote on DAO Applications.
+            You must be a Cadre Member to be able to vote on Agent Applications.
             Consider applying to become a Cadre Member.
           </span>
         </div>
@@ -150,22 +158,24 @@ const VoteCardFunctionsContent = (props: {
   );
 };
 
-export function DaoVoteCard(props: {
-  daoStatus: DaoApplicationStatus;
-  daoId: number;
+export function AgentApplicationVoteTypeCard(props: {
+  applicationStatus: DaoApplicationStatus;
+  applicationId: number;
 }) {
-  const { daoId, daoStatus } = props;
+  const { applicationId, applicationStatus } = props;
   const { isAccountConnected, selectedAccount } = useGovernance();
 
-  const [vote, setVote] = useState<DaoVote["daoVoteType"] | "UNVOTED">(
-    "UNVOTED",
-  );
+  const [vote, setVote] = useState<
+    AgentApplicationVoteType["vote"] | "UNVOTED"
+  >("UNVOTED");
   const [votingStatus, setVotingStatus] =
     useState<TransactionResult["status"]>(null);
 
   const utils = api.useUtils();
-  const { data: votes } = api.dao.byId.useQuery({ id: daoId });
-  const { data: cadreUsers } = api.dao.byCadre.useQuery();
+  const { data: votes } = api.agentApplicationVote.byIdActive.useQuery({
+    id: applicationId,
+  });
+  const { data: cadreUsers } = api.cadre.all.useQuery();
 
   const userVote = votes?.find(
     (vote) => vote.userKey === selectedAccount?.address,
@@ -176,10 +186,10 @@ export function DaoVoteCard(props: {
     [cadreUsers, selectedAccount],
   );
 
-  const createVoteMutation = api.dao.createVote.useMutation({
+  const createVoteMutation = api.agentApplicationVote.create.useMutation({
     onSuccess: async () => {
       toast.success("Vote submitted successfully!");
-      await utils.dao.byId.invalidate({ id: daoId });
+      await utils.agentApplicationVote.byId.invalidate({ id: applicationId });
       setVotingStatus("SUCCESS");
     },
     onError: (error) => {
@@ -188,10 +198,10 @@ export function DaoVoteCard(props: {
     },
   });
 
-  const deleteVoteMutation = api.dao.deleteVote.useMutation({
+  const deleteVoteMutation = api.agentApplicationVote.delete.useMutation({
     onSuccess: async () => {
       toast.success("Vote removed successfully!");
-      await utils.dao.byId.invalidate({ id: daoId });
+      await utils.agentApplicationVote.byId.invalidate({ id: applicationId });
       setVotingStatus("SUCCESS");
     },
     onError: (error) => {
@@ -216,18 +226,18 @@ export function DaoVoteCard(props: {
     return true;
   };
 
-  const submitVote = (daoVoteType: DaoVote["daoVoteType"]): void => {
+  const submitVote = (vote: AgentApplicationVoteType["vote"]): void => {
     if (!ensureConnected() || !ensureIsCadreUser()) return;
 
     setVotingStatus("PENDING");
     const proceedWithVote = () => {
-      createVoteMutation.mutate({ daoId, daoVoteType });
+      createVoteMutation.mutate({ applicationId, vote });
     };
 
     if (userVote) {
       // Remove existing vote before submitting a new one
       deleteVoteMutation.mutate(
-        { daoId },
+        { applicationId },
         {
           onSuccess: proceedWithVote,
         },
@@ -253,25 +263,25 @@ export function DaoVoteCard(props: {
     if (!ensureConnected()) return;
     setVotingStatus("PENDING");
 
-    deleteVoteMutation.mutate({ daoId });
+    deleteVoteMutation.mutate({ applicationId });
   };
 
   if (
-    (userVote && daoStatus === "Pending") ||
-    (daoStatus === "Accepted" && userVote?.daoVoteType === "REMOVE")
+    (userVote && applicationStatus === "Pending") ||
+    (applicationStatus === "Accepted" && userVote?.vote === "REMOVE")
   ) {
     return (
       <CardBarebones>
         <AlreadyVotedCardContent
           handleRemoveVote={handleRemoveVote}
-          voted={userVote.daoVoteType}
+          voted={userVote.vote}
           votingStatus={votingStatus}
         />
       </CardBarebones>
     );
   }
 
-  switch (daoStatus) {
+  switch (applicationStatus) {
     case "Pending":
       return (
         <CardBarebones>
@@ -289,7 +299,10 @@ export function DaoVoteCard(props: {
       return (
         <div>
           <CardBarebones>
-            <GovernanceStatusNotOpen status="ACCEPTED" governanceModel="DAO" />
+            <GovernanceStatusNotOpen
+              status="ACCEPTED"
+              governanceModel="Agent application"
+            />
           </CardBarebones>
           {isAccountConnected && isCadreUser && (
             <Button
@@ -312,13 +325,19 @@ export function DaoVoteCard(props: {
     case "Removed":
       return (
         <CardBarebones>
-          <GovernanceStatusNotOpen status="REMOVED" governanceModel="DAO" />
+          <GovernanceStatusNotOpen
+            status="REMOVED"
+            governanceModel="Agent application"
+          />
         </CardBarebones>
       );
     case "Refused":
       return (
         <CardBarebones>
-          <GovernanceStatusNotOpen status="REFUSED" governanceModel="DAO" />
+          <GovernanceStatusNotOpen
+            status="REFUSED"
+            governanceModel="Agent application"
+          />
         </CardBarebones>
       );
   }

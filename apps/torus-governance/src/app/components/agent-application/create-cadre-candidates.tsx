@@ -30,10 +30,10 @@ export function CreateCadreCandidates() {
 
   const { selectedAccount, accountStakedBalance } = useGovernance();
 
-  const { data: cadreUsers } = api.dao.byCadre.useQuery();
-  const { data: cadreCandidates } = api.dao.byCadreCandidates.useQuery();
+  const { data: cadreUsers } = api.cadre.all.useQuery();
+  const { data: cadreCandidates } = api.cadreCandate.all.useQuery();
 
-  const createCadreCandidateMutation = api.dao.addCadreCandidates.useMutation({
+  const createCadreCandidateMutation = api.cadreCandate.create.useMutation({
     onSuccess: () => {
       router.refresh();
       setDiscordId("");

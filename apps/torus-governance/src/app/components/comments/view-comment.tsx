@@ -31,11 +31,13 @@ import { smallAddress } from "@torus-ts/utils/subspace";
 
 import { api } from "~/trpc/react";
 import { ReportComment } from "./report-comment";
+import type { AppRouter } from "@torus-ts/api";
+import type { inferProcedureOutput } from "@trpc/server";
 
-export enum VoteType {
-  UP = "UP",
-  DOWN = "DOWN",
-}
+//  "LIKE" | "DISLIKE"
+export type CommentInteractionReactionType = NonNullable<
+  inferProcedureOutput<AppRouter["commentInteraction"]["byId"]>
+>["reactionType"];
 
 type SorterTypes = "newest" | "oldest" | "mostUpvotes";
 
@@ -75,27 +77,20 @@ const LoadingComments = () => {
   );
 };
 
+export type Comments = NonNullable<
+  inferProcedureOutput<AppRouter["comment"]["byId"]>
+>;
+
 interface CommentsHeaderProps {
   sortBy: SorterTypes;
   isLoading: boolean;
-  proposalComments: {
-    userKey: string;
-    id: string;
-    createdAt: Date;
-    content: string;
-    proposalId: number;
-    governanceModel: "PROPOSAL" | "DAO" | "FORUM" | null;
-    userName: string | null;
-    upvotes: number;
-    downvotes: number;
-  }[];
+  comments: Comments;
   handleCommentSorter: (value: SorterTypes) => void;
-  modeType: "PROPOSAL" | "DAO";
+  modeType: "PROPOSAL" | "AGENT_APPLICATION";
 }
 
 const CommentsHeader = (props: CommentsHeaderProps) => {
-  const { sortBy, isLoading, proposalComments, handleCommentSorter, modeType } =
-    props;
+  const { sortBy, isLoading, comments, handleCommentSorter, modeType } = props;
   return (
     <div className="mb-4 flex w-full flex-row items-center justify-between gap-1 pb-2">
       <h2 className="w-full text-start text-lg font-semibold">
@@ -104,7 +99,7 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
       <ToggleGroup
         type="single"
         value={sortBy}
-        disabled={isLoading || proposalComments.length === 0}
+        disabled={isLoading || comments.length === 0}
         onValueChange={(value: SorterTypes) => handleCommentSorter(value)}
         className="flex gap-2"
       >
@@ -132,34 +127,34 @@ export function ViewComment({
   modeType,
 }: {
   id: number;
-  modeType: "PROPOSAL" | "DAO";
+  modeType: "PROPOSAL" | "AGENT_APPLICATION";
 }) {
   const { selectedAccount } = useTorus();
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(
     null,
   );
-  const [commentId, setCommentId] = useState<string | null>(null);
+  const [commentId, setCommentId] = useState<number | null>(null);
 
   const {
-    data: proposalComments,
+    data: comments,
     error,
     isLoading,
     refetch,
-  } = api.proposalComment.byId.useQuery(
+  } = api.comment.byId.useQuery(
     { type: modeType, proposalId: id },
     { enabled: typeof id === "number" },
   );
 
-  const [localVotes, setLocalVotes] = useState<Record<string, VoteType | null>>(
-    {},
-  );
+  const [localReactions, setLocalReactions] = useState<
+    Record<string, CommentInteractionReactionType>
+  >({});
 
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
 
   const sortedComments = useMemo(() => {
-    if (!proposalComments) return [];
-    return [...proposalComments].sort((a, b) => {
+    if (!comments) return [];
+    return [...comments].sort((a, b) => {
       if (sortBy === "newest") {
         return (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -169,13 +164,13 @@ export function ViewComment({
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
       } else {
-        return b.upvotes - a.upvotes;
+        return b.likes - a.likes;
       }
     });
-  }, [proposalComments, sortBy]);
+  }, [comments, sortBy]);
 
   const { data: userVotes, refetch: refetchUserVotes } =
-    api.proposalComment.byUserId.useQuery(
+    api.commentInteraction.byUserId.useQuery(
       { proposalId: id, userKey: selectedAccount?.address ?? "" },
       { enabled: !!selectedAccount?.address && typeof id === "number" },
     );
@@ -188,63 +183,65 @@ export function ViewComment({
     fetchUserVotes().catch(console.error);
   }, [refetchUserVotes, selectedAccount?.address]);
 
-  const castVoteMutation = api.proposalComment.castVote.useMutation({
+  const castVoteMutation = api.commentInteraction.reaction.useMutation({
     onSuccess: async () => {
       await Promise.all([refetchUserVotes(), refetch()]);
     },
   });
 
-  const deleteVoteMutation = api.proposalComment.deleteVote.useMutation({
+  const deleteVoteMutation = api.commentInteraction.deleteReaction.useMutation({
     onSuccess: async () => {
       await Promise.all([refetchUserVotes(), refetch()]);
     },
   });
 
   const localUserVotes = useMemo(() => {
-    return { ...userVotes, ...localVotes };
-  }, [userVotes, localVotes]);
+    return { ...userVotes, ...localReactions };
+  }, [userVotes, localReactions]);
 
   const handleVote = useCallback(
-    async (commentId: string, voteType: VoteType) => {
+    async (commentId: number, reactionType: CommentInteractionReactionType) => {
       if (!selectedAccount?.address) {
         toast.error("Please connect your wallet to vote");
         return;
       }
 
       try {
-        const commentExists = proposalComments?.some((c) => c.id === commentId);
+        const commentExists = comments?.some((c) => c.id === commentId);
         if (!commentExists) {
           toast.error("Comment not found");
           return;
         }
 
         const currentVote = userVotes?.[commentId];
-        const isRemovingVote = currentVote === voteType;
+        const isRemovingVote = currentVote === reactionType;
 
-        setLocalVotes((prevVotes) => ({
+        setLocalReactions((prevVotes) => ({
           ...prevVotes,
-          [commentId]: isRemovingVote ? null : voteType,
+          [commentId]: isRemovingVote ? null : reactionType,
         }));
 
         if (isRemovingVote) {
           await deleteVoteMutation.mutateAsync({ commentId });
         } else {
-          await castVoteMutation.mutateAsync({ commentId, voteType });
+          await castVoteMutation.mutateAsync({ commentId, reactionType });
         }
       } catch (err) {
         console.error("Error voting:", err);
         toast.error(
           "There was an error processing your vote. Please try again.",
         );
-        setLocalVotes((prevVotes) => ({
+        setLocalReactions((prevVotes) => ({
           ...prevVotes,
-          [commentId]: (userVotes?.[commentId] as VoteType | null) ?? null,
+          [commentId]:
+            (userVotes?.[commentId] as CommentInteractionReactionType | null) ??
+            null,
         }));
       }
     },
     [
       selectedAccount?.address,
-      proposalComments,
+      comments,
       userVotes,
       castVoteMutation,
       deleteVoteMutation,
@@ -287,7 +284,7 @@ export function ViewComment({
         <CommentsHeader
           sortBy={sortBy}
           isLoading={isLoading}
-          proposalComments={proposalComments ?? []}
+          comments={comments ?? []}
           handleCommentSorter={handleCommentSorter}
           modeType={modeType}
         />
@@ -325,21 +322,28 @@ export function ViewComment({
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
-                      onClick={() => handleVote(comment.id, VoteType.UP)}
+                      onClick={() =>
+                        handleVote(comment.id, localReactions.LIKE ?? "LIKE")
+                      }
                       // disabled={isVoting || !selectedAccount?.address}
-                      className={`flex items-center px-1 ${currentVote === VoteType.UP ? "text-green-500" : "hover:text-green-500"} `}
+                      className={`flex items-center px-1 ${currentVote === "LIKE" ? "text-green-500" : "hover:text-green-500"}`}
                     >
                       <ChevronsUp className="h-5 w-5" />
-                      <span>{comment.upvotes}</span>
+                      <span>{comment.likes}</span>
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleVote(comment.id, VoteType.DOWN)}
+                      onClick={() =>
+                        handleVote(
+                          comment.id,
+                          localReactions.DISLIKE ?? "DISLIKE",
+                        )
+                      }
                       // disabled={isVoting || !selectedAccount?.address}
-                      className={`flex items-center px-1 ${currentVote === VoteType.DOWN ? "text-red-500" : "hover:text-red-500"}`}
+                      className={`flex items-center px-1 ${currentVote === "DISLIKE" ? "text-red-500" : "hover:text-red-500"}`}
                     >
                       <ChevronsDown className="h-5 w-5" />
-                      <span>{comment.downvotes}</span>
+                      <span>{comment.dislikes}</span>
                     </Button>
                   </div>
                 </CardHeader>

@@ -19,7 +19,7 @@ import {
 
 // Adjust the import path as needed
 
-import { CreateDao } from "./dao/create-dao";
+import { CreateDao } from "./agent-application/create-agent-application";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterModule } from "./proposal/register-module";

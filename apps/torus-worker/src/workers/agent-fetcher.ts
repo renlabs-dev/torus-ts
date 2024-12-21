@@ -14,10 +14,10 @@ import {
   log,
   sleep,
 } from "../common";
-import { upsertModuleData } from "../db";
-import { SubspaceModuleToDatabase } from "../db/type-transformations.js";
+import { upsertAgentData } from "../db";
+import { SubspaceAgentToDatabase } from "../db/type-transformations.js";
 
-export async function moduleFetcherWorker(props: WorkerProps) {
+export async function agentFetcherWorker(props: WorkerProps) {
   while (true) {
     try {
       const currentTime = new Date();
@@ -35,26 +35,24 @@ export async function moduleFetcherWorker(props: WorkerProps) {
       const whitelist = new Set(await queryWhitelist(lastBlock.apiAtBlock));
       const isWhitelisted = (addr: SS58Address) => whitelist.has(addr);
 
-      const modules = await queryRegisteredModulesInfo(
+      const agents = await queryRegisteredModulesInfo(
         lastBlock.apiAtBlock,
         CONSENSUS_NETUID,
         props.lastBlock.blockNumber,
       );
-      const modulesData = modules.map((module) =>
-        SubspaceModuleToDatabase(
-          module,
+      const agentsData = agents.map((agent) =>
+        SubspaceAgentToDatabase(
+          agent,
           lastBlock.blockNumber,
-          isWhitelisted(checkSS58(module.key)),
+          isWhitelisted(checkSS58(agent.key)),
         ),
       );
-      log(
-        `Block ${lastBlock.blockNumber}: upserting  ${modules.length} modules`,
-      );
+      log(`Block ${lastBlock.blockNumber}: upserting  ${agents.length} agents`);
 
-      await upsertModuleData(modulesData);
+      await upsertAgentData(agentsData);
 
       log(
-        `Block ${lastBlock.blockNumber}: module data upserted in ${(new Date().getTime() - currentTime.getTime()) / 1000} seconds`,
+        `Block ${lastBlock.blockNumber}: agent data upserted in ${(new Date().getTime() - currentTime.getTime()) / 1000} seconds`,
       );
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);

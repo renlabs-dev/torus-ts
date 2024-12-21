@@ -3,72 +3,62 @@ import type { GovernanceModeType } from "@torus-ts/subspace";
 import { getTableColumns, sql } from "@torus-ts/db";
 import { db } from "@torus-ts/db/client";
 import {
+  agentApplicationVoteSchema,
+  agentSchema,
   cadreSchema,
-  computedModuleWeightsSchema,
-  daoVoteSchema,
+  cadreVoteSchema,
+  computedAgentWeightSchema,
   governanceNotificationSchema,
-  moduleData,
 } from "@torus-ts/db/schema";
 
-export type NewVote = typeof daoVoteSchema.$inferInsert;
-export type Module = typeof moduleData.$inferInsert;
-export type ModuleWeight = typeof computedModuleWeightsSchema.$inferInsert;
+export type NewVote = typeof cadreVoteSchema.$inferInsert;
+export type Agent = typeof agentSchema.$inferInsert;
+export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 
-export async function insertModuleWeight(weights: ModuleWeight[]) {
+export async function insertAgentWeight(weights: AgentWeight[]) {
   await db
-    .insert(computedModuleWeightsSchema)
+    .insert(computedAgentWeightSchema)
     .values(
       weights.map((w) => ({
-        moduleId: w.moduleId,
-        stakeWeight: w.stakeWeight,
-        percWeight: w.percWeight,
         atBlock: w.atBlock,
+        agentKey: w.agentKey,
+        computedWeight: w.computedWeight,
+        percComputedWeight: w.percComputedWeight,
       })),
     )
     .execute();
 }
 
-export async function upsertModuleData(modules: Module[]) {
+export async function upsertAgentData(agents: Agent[]) {
   await db
-    .insert(moduleData)
+    .insert(agentSchema)
     .values(
-      modules.map((m) => ({
-        netuid: m.netuid,
-        moduleId: m.moduleId,
-        moduleKey: m.moduleKey,
-        name: m.name,
-        atBlock: m.atBlock,
-        registrationBlock: m.registrationBlock,
-        addressUri: m.addressUri,
-        metadataUri: m.metadataUri,
-        emission: m.emission,
-        incentive: m.incentive,
-        dividend: m.dividend,
-        delegationFee: m.delegationFee,
-        totalStaked: m.totalStaked,
-        totalStakers: m.totalStakers,
-        totalRewards: m.totalRewards,
-        isWhitelisted: m.isWhitelisted,
+      agents.map((a) => ({
+        key: a.key,
+        name: a.name,
+        atBlock: a.atBlock,
+        registrationBlock: a.registrationBlock,
+        apiUrl: a.apiUrl,
+        metadataUri: a.metadataUri,
+        weightFactor: a.weightFactor,
+        isWhitelisted: a.isWhitelisted,
+        totalStaked: a.totalStaked,
+        totalStakers: a.totalStakers,
       })),
     )
     .onConflictDoUpdate({
-      target: [moduleData.netuid, moduleData.moduleKey],
-      set: buildConflictUpdateColumns(moduleData, [
+      target: [agentSchema.key],
+      set: buildConflictUpdateColumns(agentSchema, [
         "atBlock",
-        "addressUri",
+        "name",
+        "apiUrl",
         "metadataUri",
         "registrationBlock",
-        "name",
-        "emission",
-        "incentive",
-        "dividend",
-        "delegationFee",
+        "weightFactor",
+        "isWhitelisted",
         "totalStaked",
         "totalStakers",
-        "totalRewards",
-        "isWhitelisted",
-        "moduleId",
       ]),
     })
     .execute();
@@ -82,7 +72,7 @@ export interface VotesByProposal {
 }
 
 export async function vote(new_vote: NewVote) {
-  await db.insert(daoVoteSchema).values(new_vote);
+  await db.insert(cadreVoteSchema).values(new_vote);
 }
 
 export async function addSeenProposal(proposal: NewNotification) {
@@ -92,20 +82,23 @@ export async function addSeenProposal(proposal: NewNotification) {
 export async function computeTotalVotesPerDao(): Promise<VotesByProposal[]> {
   const result = await db
     .select({
-      daoId: daoVoteSchema.daoId,
-      acceptVotes:
-        sql`count(case when ${daoVoteSchema.daoVoteType} = ${daoVoteSchema.daoVoteType.enumValues[0]} then 1 end)`.as<number>(),
-      refuseVotes:
-        sql`count(case when ${daoVoteSchema.daoVoteType} = ${daoVoteSchema.daoVoteType.enumValues[1]} then 1 end)`.as<number>(),
-      removeVotes:
-        sql`count(case when ${daoVoteSchema.daoVoteType} = ${daoVoteSchema.daoVoteType.enumValues[2]} then 1 end)`.as<number>(),
+      appId: agentApplicationVoteSchema.applicationId,
+      acceptVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[0]} then 1 end)`,
+      refuseVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[1]} then 1 end)`,
+      removeVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[2]} then 1 end)`,
     })
-    .from(daoVoteSchema)
-    .where(sql`${daoVoteSchema.deletedAt} is null`)
-    .groupBy(daoVoteSchema.daoId)
+    .from(agentApplicationVoteSchema)
+    .where(sql`${agentApplicationVoteSchema.deletedAt} is null`)
+    .groupBy(agentApplicationVoteSchema.applicationId)
     .execute();
 
-  return result;
+  return result.map((row) => ({
+    appId: row.appId,
+    acceptVotes: row.acceptVotes,
+    refuseVotes: row.refuseVotes,
+    removeVotes: row.removeVotes,
+    daoId: row.appId,
+  }));
 }
 
 export async function getProposalIdsByType(
@@ -113,14 +106,14 @@ export async function getProposalIdsByType(
 ): Promise<number[]> {
   const result = await db
     .select({
-      proposalId: governanceNotificationSchema.proposalId,
+      itemId: governanceNotificationSchema.itemId,
     })
     .from(governanceNotificationSchema)
     .where(sql`governance_model = ${type}`);
 
-  const proposalIds = result.map((row) => row.proposalId);
+  const itemIds = result.map((row) => row.itemId);
 
-  return proposalIds;
+  return itemIds;
 }
 
 export async function countCadreKeys(): Promise<number> {

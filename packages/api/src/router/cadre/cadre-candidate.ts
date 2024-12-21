@@ -4,9 +4,14 @@ import "@torus-ts/db/schema";
 
 import { cadreCandidateSchema } from "@torus-ts/db/schema";
 import { CADRE_CANDIDATE_INSERT_SCHEMA } from "@torus-ts/db/validation";
-import { authenticatedProcedure } from "../../trpc";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 export const cadreCandidateRouter = {
+  // GET
+  all: publicProcedure.query(({ ctx }) => {
+    return ctx.db.query.cadreCandidateSchema.findMany();
+  }),
+  // POST
   create: authenticatedProcedure
     .input(CADRE_CANDIDATE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {

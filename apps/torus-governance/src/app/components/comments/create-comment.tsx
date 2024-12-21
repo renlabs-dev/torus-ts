@@ -19,10 +19,10 @@ export function CreateComment({
   ModeType,
 }: {
   id: number;
-  ModeType: "PROPOSAL" | "DAO";
+  ModeType: "PROPOSAL" | "AGENT_APPLICATION";
 }) {
   const { selectedAccount, accountStakedBalance } = useGovernance();
-  const { data: cadreUsers } = api.dao.byCadre.useQuery();
+  const { data: cadreUsers } = api.cadre.all.useQuery();
 
   const [content, setContent] = useState<string>("");
   const [name, setName] = useState<string>("");
@@ -30,7 +30,7 @@ export function CreateComment({
   const [remainingChars, setRemainingChars] = useState(MAX_CHARACTERS);
 
   const utils = api.useUtils();
-  const CreateComment = api.proposalComment.createComment.useMutation({
+  const CreateComment = api.comment.create.useMutation({
     onSuccess: () => {
       setContent("");
       setRemainingChars(MAX_CHARACTERS);
@@ -72,12 +72,12 @@ export function CreateComment({
     try {
       await CreateComment.mutateAsync({
         content,
-        proposalId: id,
-        governanceModel: ModeType,
+        itemId: id,
+        itemType: ModeType,
         userName: name || undefined,
       });
       toast.success("Comment submitted successfully!");
-      await utils.proposalComment.byId.invalidate({ proposalId: id });
+      await utils.comment.byId.invalidate({ proposalId: id });
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0]?.message ?? "Invalid input");

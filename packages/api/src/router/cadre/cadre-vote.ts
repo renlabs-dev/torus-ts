@@ -2,11 +2,22 @@ import type { TRPCRouterRecord } from "@trpc/server";
 
 import "@torus-ts/db/schema";
 
-import { authenticatedProcedure } from "../../trpc";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { CADRE_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { cadreVoteSchema } from "@torus-ts/db/schema";
+import { z } from "zod";
+import { eq } from "@torus-ts/db";
 
 export const cadreVoteRouter = {
+  // GET
+  byId: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.cadreVoteSchema.findFirst({
+        where: eq(cadreVoteSchema.id, input.id),
+      });
+    }),
+  // POST
   create: authenticatedProcedure
     .input(CADRE_VOTE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {

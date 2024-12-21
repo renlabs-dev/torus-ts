@@ -7,6 +7,7 @@ import {
   commentReportSchema,
   agentReportSchema,
   commentSchema,
+  agentApplicationVoteSchema,
 } from "./schema";
 
 export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
@@ -60,6 +61,16 @@ export const COMMENT_REPORT_INSERT_SCHEMA = createInsertSchema(
 });
 
 export const COMMENT_INSERT_SCHEMA = createInsertSchema(commentSchema).omit({
+  id: true,
+  userKey: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+
+export const AGENT_APPLICATION_VOTE_INSERT_SCHEMA = createInsertSchema(
+  agentApplicationVoteSchema,
+).omit({
   id: true,
   userKey: true,
   updatedAt: true,
