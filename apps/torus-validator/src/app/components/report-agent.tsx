@@ -21,11 +21,11 @@ const reportSchema = z.object({
 
 type ReportFormData = z.infer<typeof reportSchema>;
 
-interface ReportModuleProps {
-  moduleId: number;
+interface ReportAgentProps {
+  agentKey: string;
 }
 
-export function ReportModule({ moduleId }: ReportModuleProps) {
+export function ReportAgent({ agentKey }: ReportAgentProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState<ReportFormData>({
     reason: "SPAM",
@@ -33,7 +33,7 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
   });
   const [errors, setErrors] = useState<Partial<ReportFormData>>({});
 
-  const reportModuleMutation = api.module.createModuleReport.useMutation({
+  const reportAgentMutation = api.agentReport.create.useMutation({
     onSuccess: () => {
       setModalOpen(false);
       setFormData({ reason: "SPAM", content: "" });
@@ -72,13 +72,13 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      reportModuleMutation.mutate({
-        moduleId,
+      reportAgentMutation.mutate({
+        agentKey,
         reason: formData.reason,
         content: formData.content,
       });
 
-      toast.success("Module reported successfully.");
+      toast.success("Agent reported successfully.");
     }
   };
 
@@ -89,7 +89,7 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
         type="button"
         className="flex items-center gap-1 border border-red-500 p-1 px-2 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
       >
-        <TriangleAlert className="mt-0.5 h-4 w-4" /> Report Module
+        <TriangleAlert className="mt-0.5 h-4 w-4" /> Report Agent
       </button>
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -100,7 +100,7 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
           <div className="z-60 w-[90%] max-w-screen-md animate-fade-in-down overflow-hidden border border-white/20 bg-[#898989]/5 text-left text-white backdrop-blur-md">
             <div className="flex items-center justify-between gap-3 border-b border-gray-500 bg-cover bg-center bg-no-repeat p-1">
               <h3 className="pl-2 text-xl font-bold leading-6" id="modal-title">
-                Report Module
+                Report Agent
               </h3>
               <button
                 className="p-2 transition duration-200"
@@ -148,9 +148,9 @@ export function ReportModule({ moduleId }: ReportModuleProps) {
                 <button
                   type="submit"
                   className="border border-red-500 bg-red-500/10 px-4 py-2 text-white transition duration-200 hover:bg-red-500/20"
-                  disabled={reportModuleMutation.isPending}
+                  disabled={reportAgentMutation.isPending}
                 >
-                  {reportModuleMutation.isPending ? "Submitting..." : "Submit"}
+                  {reportAgentMutation.isPending ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </form>

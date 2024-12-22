@@ -22,7 +22,7 @@ import type {
   AddDaoApplication,
   addTransferDaoTreasuryProposal,
   Bridge,
-  RegisterModule,
+  RegisterAgent,
   RemoveVote,
   Stake,
   Transfer,
@@ -76,7 +76,7 @@ interface TorusContextType {
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
-  registerModule: (registerModule: RegisterModule) => Promise<void>;
+  RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   addDaoApplication: (application: AddDaoApplication) => Promise<void>;
   addTransferDaoTreasuryProposal: (
@@ -350,14 +350,14 @@ export function TorusProvider({
 
   // == Subspace ==
 
-  async function registerModule({
+  async function RegisterAgent({
     subnetName,
     address,
     name,
     moduleId,
     metadata,
     callback,
-  }: RegisterModule): Promise<void> {
+  }: RegisterAgent): Promise<void> {
     if (!api?.tx.subspaceModule?.register) return;
 
     console.log(api.tx.subspaceModule);
@@ -557,7 +557,7 @@ export function TorusProvider({
         transfer,
         transferStake,
 
-        registerModule,
+        RegisterAgent,
 
         voteProposal,
         removeVoteProposal,

@@ -14,34 +14,34 @@ const separateTopAndOther = <T>(
   return [...top, other];
 };
 
-interface ModuleStakeItem {
-  moduleName: string | null;
-  stakeWeight: bigint;
-  percWeight: number;
+interface AgentStakeItem {
+  agentName: string | null;
+  computedWeight: bigint;
+  percComputedWeight: number;
 }
 
 const reduceModuleItems =
   (label: string) =>
-  (xs: ModuleStakeItem[]): ModuleStakeItem =>
+  (xs: AgentStakeItem[]): AgentStakeItem =>
     xs.reduce(
       (acc, x) => ({
-        moduleName: acc.moduleName,
-        stakeWeight: acc.stakeWeight + x.stakeWeight,
-        percWeight: acc.percWeight + x.percWeight,
+        agentName: acc.agentName,
+        computedWeight: acc.computedWeight + x.computedWeight,
+        percComputedWeight: acc.percComputedWeight + x.percComputedWeight,
       }),
       {
-        moduleName: label,
-        stakeWeight: 0n,
-        percWeight: 0,
+        agentName: label,
+        computedWeight: 0n,
+        percComputedWeight: 0,
       },
     );
 
-const nonZeroModuleItem = (x: ModuleStakeItem) => x.stakeWeight > 0n;
+const nonZeroModuleItem = (x: AgentStakeItem) => x.computedWeight > 0n;
 
-export const separateTopNModules = (n: number) => (xs: ModuleStakeItem[]) =>
+export const separateTopNAgents = (n: number) => (xs: AgentStakeItem[]) =>
   separateTopAndOther(
     n,
-    (a, b) => Number(-(a.stakeWeight - b.stakeWeight)),
+    (a, b) => Number(-(a.computedWeight - b.computedWeight)),
     reduceModuleItems("Other"),
     xs,
   ).filter(nonZeroModuleItem);

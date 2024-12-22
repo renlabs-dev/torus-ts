@@ -21,19 +21,19 @@ import {
 
 export const description = "A bar chart with a custom label";
 
-interface ModuleData {
-  moduleName: string;
-  stakeWeight: string;
-  percWeight: number;
+interface AgentData {
+  agentName: string;
+  computedWeight: string;
+  percComputedWeight: number;
   percFormat: string;
 }
 
-interface ModuleBarChartProps {
-  chartData: ModuleData[];
+interface AgentBarChartProps {
+  chartData: AgentData[];
 }
 
 const chartConfig = {
-  percWeight: {
+  percComputedWeight: {
     label: "Stake",
     color: "hsl(var(--chart-1))",
   },
@@ -42,16 +42,16 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ModuleBarChart({ chartData }: ModuleBarChartProps) {
+export function AgentBarChart({ chartData }: AgentBarChartProps) {
   const maxPercWeight = Math.max(
-    ...chartData.map((module) => module.percWeight),
+    ...chartData.map((module) => module.percComputedWeight),
   );
   const xAxisDomain = [0, maxPercWeight * 1.2];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Current Module Allocation</CardTitle>
+        <CardTitle>Current Agent Allocation</CardTitle>
         <CardDescription>
           Showing aggregated module allocation from user inputs.
         </CardDescription>
@@ -78,15 +78,15 @@ export function ModuleBarChart({ chartData }: ModuleBarChartProps) {
               hide
             />
             <XAxis
-              dataKey="percWeight"
+              dataKey="percComputedWeight"
               type="number"
               domain={xAxisDomain}
               hide
             />
             <Bar
-              dataKey="percWeight"
+              dataKey="percComputedWeight"
               layout="vertical"
-              fill="var(--color-percWeight)"
+              fill="var(--color-percComputedWeight)"
               radius={4}
             >
               <LabelList

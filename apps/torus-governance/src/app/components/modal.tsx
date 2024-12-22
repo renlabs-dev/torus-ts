@@ -22,7 +22,7 @@ import {
 import { CreateDao } from "./agent-application/create-agent-application";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
-import { RegisterModule } from "./proposal/register-module";
+import { RegisterAgent } from "./proposal/register-agent";
 
 export function CreateModal() {
   const [selectedView, setSelectedView] = useState("proposal");
@@ -65,7 +65,7 @@ export function CreateModal() {
         ) : selectedView === "create-transfer-dao-treasury" ? (
           <CreateTransferDaoTreasuryProposal />
         ) : (
-          <RegisterModule />
+          <RegisterAgent />
         )}
       </DialogContent>
     </Dialog>

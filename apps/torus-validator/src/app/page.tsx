@@ -16,52 +16,42 @@ import {
   Separator,
 } from "@torus-ts/ui";
 
-import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { api } from "~/trpc/react";
-import { separateTopNModules } from "./components/charts/_common";
-// import { CombinedAreaChart } from "./components/charts/combined-area-chart";
-import { ModuleBarChart } from "./components/charts/module-bar-chart";
+import { separateTopNAgents } from "./components/charts/_common";
+import { AgentBarChart } from "./components/charts/agent-bar-chart";
 import { DelegatedScroll } from "./components/delegated-scroll";
 import { StatsCard } from "./components/stats-card";
 
 const TOP_MODULES_NUM = 7;
 
-function _repeatUntil<T>(total: number, xs: T[]) {
-  const result: T[] = [];
-  for (let i = 0; i < total; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    result.push(xs[i % xs.length]!);
-  }
-  return result;
-}
-
 export default function Page() {
   const pathname = usePathname();
   const { selectedAccount } = useTorus();
 
-  // Modules Logic
-  const { delegatedModules } = useDelegateModuleStore();
+  // Agents Logic
+  const { delegatedAgents } = useDelegateAgentStore();
 
-  const { data: modules } = api.module.all.useQuery();
-  const { data: computedWeightedModules } =
-    api.module.allComputedModuleWeightsLastBlock.useQuery();
+  const { data: agents } = api.agent.all.useQuery();
+  const { data: computedWeightedAgents } =
+    api.computedAgentWeight.all.useQuery();
 
-  const moduleStakeData = computedWeightedModules
-    ? separateTopNModules(TOP_MODULES_NUM)(computedWeightedModules)
-        // .sort((a, b) => Number(b.stakeWeight - a.stakeWeight))
-        .map((module) => {
+  const agentStakeData = computedWeightedAgents
+    ? separateTopNAgents(TOP_MODULES_NUM)(computedWeightedAgents)
+        // .sort((a, b) => Number(b.computedWeight - a.computedWeight))
+        .map((agent) => {
           return {
-            moduleName: module.moduleName ?? "",
-            stakeWeight: String(module.stakeWeight),
-            percWeight: module.percWeight,
-            percFormat: `${(module.percWeight * 100).toFixed(1)} %`,
+            agentName: agent.agentName ?? "",
+            computedWeight: String(agent.computedWeight),
+            percComputedWeight: agent.percComputedWeight,
+            percFormat: `${(agent.percComputedWeight * 100).toFixed(1)} %`,
           };
         })
     : null;
 
-  const delegatedModulesData = delegatedModules.map((module) => ({
-    name: module.name,
-    percentage: module.percentage,
+  const delegatedAgentsData = delegatedAgents.map((agent) => ({
+    name: agent.name,
+    percentage: agent.percentage,
   }));
 
   return (
@@ -72,7 +62,7 @@ export default function Page() {
             Welcome to the Community Validator
           </h3>
           <h1 className="animate-fade-down text-2xl font-semibold animate-delay-500 md:text-4xl">
-            Interact with modules, validators and subnets created by the{" "}
+            Interact with agents, validators and subnets created by the{" "}
             <span
               className={`${pathname === "/subnets" || pathname === "/weighted-subnets" ? "text-cyan-500" : "text-green-500"}`}
             >
@@ -84,7 +74,7 @@ export default function Page() {
         <div className="mb-4 flex w-full flex-col border-b border-white/20 text-center md:flex-row md:gap-3">
           <div className="flex w-full animate-fade-down flex-col gap-4 pb-4 animate-delay-300 md:flex-row">
             <Button size="lg" className="w-full" asChild>
-              <Link href="/modules">Go to Modules view</Link>
+              <Link href="/agents">Go to Agents view</Link>
             </Button>
           </div>
           <div className="mb-4 hidden border-l border-white/20 md:block" />
@@ -102,41 +92,41 @@ export default function Page() {
           <div className="flex w-full animate-fade-down flex-col gap-4 pb-4 animate-delay-500 md:flex-row">
             <StatsCard
               Icon={Grid2X2}
-              text="Total Modules"
-              value={`${modules?.length ? modules.length : 0}`}
+              text="Total Agents"
+              value={`${agents?.length ? agents.length : 0}`}
               color="green"
             />
             <StatsCard
               Icon={Grid2x2Plus}
-              text="Your Modules"
-              value={`${delegatedModules.length}`}
+              text="Your Agents"
+              value={`${delegatedAgents.length}`}
               color="green"
             />
           </div>
           <div className="mb-4 hidden border-l border-white/20 md:block" />
         </div>
         <div className="gird-cols-1 grid w-full animate-fade-down gap-3 pb-3 animate-delay-[650ms] md:grid-cols-3">
-          {moduleStakeData && moduleStakeData.length > 0 ? (
-            <ModuleBarChart chartData={moduleStakeData} />
+          {agentStakeData && agentStakeData.length > 0 ? (
+            <AgentBarChart chartData={agentStakeData} />
           ) : (
             <Card className="h-full w-full animate-pulse" />
           )}
           <div className="p flex h-fit w-full animate-fade-down flex-col gap-3 animate-delay-700">
             <Card className="min-h-full w-full">
               <CardHeader className="flex flex-col items-end justify-between md:flex-row">
-                <CardTitle>Your Selected Modules</CardTitle>
-                <Link href="/modules" className="hover:text-green-500">
-                  Edit Your Module List
+                <CardTitle>Your Selected Agents</CardTitle>
+                <Link href="/agents" className="hover:text-green-500">
+                  Edit Your Agent List
                 </Link>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                {selectedAccount && delegatedModulesData.length ? (
-                  <DelegatedScroll data={delegatedModulesData} />
+                {selectedAccount && delegatedAgentsData.length ? (
+                  <DelegatedScroll data={delegatedAgentsData} />
                 ) : (
                   <p className="h-28">
-                    {delegatedModulesData.length
-                      ? "Connect your wallet to view your modules."
-                      : "You have not selected any modules."}
+                    {delegatedAgentsData.length
+                      ? "Connect your wallet to view your agents."
+                      : "You have not selected any agents."}
                   </p>
                 )}
               </CardContent>

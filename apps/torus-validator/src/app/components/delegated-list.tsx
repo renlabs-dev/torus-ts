@@ -23,21 +23,21 @@ import {
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
-import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { api } from "~/trpc/react";
 
 export function DelegatedList() {
   const {
-    delegatedModules,
-    updatePercentage: updateModulePercentage,
-    removeModule,
-    getTotalPercentage: getModuleTotalPercentage,
-    setDelegatedModulesFromDB,
-    updateOriginalModules,
-    hasUnsavedChanges: hasUnsavedModuleChanges,
-  } = useDelegateModuleStore();
+    delegatedAgents,
+    updatePercentage: updatePercentage,
+    removeAgent,
+    getTotalPercentage,
+    setDelegatedAgentsFromDB,
+    updateOriginalAgents,
+    hasUnsavedChanges,
+  } = useDelegateAgentStore();
 
-  const totalPercentage = getModuleTotalPercentage();
+  const totalPercentage = getTotalPercentage();
 
   const { selectedAccount, api: torusApi } = useTorus();
   const router = useRouter();
@@ -47,8 +47,7 @@ export function DelegatedList() {
   const accountStakedBy = useKeyStakedBy(torusApi, selectedAccount?.address);
 
   function handleAutoCompletePercentage() {
-    const items = delegatedModules;
-    const updateFn = updateModulePercentage;
+    const items = delegatedAgents;
 
     const remainingPercentage = 100 - totalPercentage;
     const itemsToUpdate = items.length;
@@ -61,15 +60,15 @@ export function DelegatedList() {
     items.forEach((item, index) => {
       const newPercentage =
         item.percentage + percentagePerItem + (index < extraPercentage ? 1 : 0);
-      updateFn(item.id, newPercentage);
+      updatePercentage(item.id, newPercentage);
     });
   }
 
   const {
-    data: userModuleData,
-    error: moduleError,
+    data: userAgentWeight,
+    error: agentError,
     refetch: refetchModules,
-  } = api.module.byUserModuleData.useQuery(
+  } = api.userAgentWeight.byUserKey.useQuery(
     { userKey: selectedAccount?.address ?? "" },
     { enabled: !!selectedAccount?.address },
   );
@@ -96,45 +95,44 @@ export function DelegatedList() {
   );
 
   useEffect(() => {
-    if (moduleError) {
-      console.error("Error fetching user module data:", moduleError);
+    if (agentError) {
+      console.error("Error fetching user agent data:", agentError);
     }
-    if (userModuleData) {
-      const formattedModules = userModuleData.map((module) => ({
-        id: module.module_data.id,
-        address: module.module_data.moduleKey,
-        title: module.module_data.name ?? "",
-        name: module.module_data.name ?? "",
-        percentage: module.user_module_data.weight,
+    if (userAgentWeight) {
+      const formattedModules = userAgentWeight.map((agent) => ({
+        id: agent.user_agent_weight.id,
+        address: agent.user_agent_weight.agentKey,
+        title: agent.agent.name ?? "",
+        name: agent.agent.name ?? "",
+        percentage: agent.user_agent_weight.weight,
       }));
-      setDelegatedModulesFromDB(formattedModules);
+      setDelegatedAgentsFromDB(formattedModules);
     }
-  }, [userModuleData, moduleError, setDelegatedModulesFromDB]);
+  }, [userAgentWeight, agentError, setDelegatedAgentsFromDB]);
 
   const handlePercentageChange = (id: number, percentage: number) => {
     if (percentage >= 0 && percentage <= 100) {
-      updateModulePercentage(id, percentage);
+      updatePercentage(id, percentage);
     }
   };
 
-  const createManyUserModuleData =
-    api.module.createManyUserModuleData.useMutation({
-      onSuccess: () => {
-        router.refresh();
-        setIsSubmitting(false);
-      },
-      onError: (error) => {
-        console.error("Error submitting data:", error);
-        setIsSubmitting(false);
-      },
-    });
-
-  const deleteUserModuleData = api.module.deleteUserModuleData.useMutation({
+  const createManyUserAgentData = api.userAgentWeight.createMany.useMutation({
     onSuccess: () => {
-      console.log("User module data deleted successfully");
+      router.refresh();
+      setIsSubmitting(false);
     },
     onError: (error) => {
-      console.error("Error deleting user module data:", error);
+      console.error("Error submitting data:", error);
+      setIsSubmitting(false);
+    },
+  });
+
+  const deleteUserAgentData = api.userAgentWeight.delete.useMutation({
+    onSuccess: () => {
+      console.log("User agent data deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Error deleting user agent data:", error);
     },
   });
 
@@ -148,43 +146,42 @@ export function DelegatedList() {
     }
     if (Number(userStakeWeight) <= 50) {
       toast.error(
-        "You must have at least 50 COMAI staked to delegate modules or subnets",
+        "You must have at least 50 COMAI staked to delegate agents or subnets",
       );
       return;
     }
     setIsSubmitting(true);
     try {
-      // Delete existing user module data
-      await deleteUserModuleData.mutateAsync({
+      // Delete existing user agent data
+      await deleteUserAgentData.mutateAsync({
         userKey: selectedAccount.address,
       });
 
-      // Prepare data for createManyUserModuleData
-      const modulesData = delegatedModules.map((module) => ({
-        userKey: Number(selectedAccount.address),
-        moduleId: module.id,
-        weight: module.percentage,
+      // Prepare data for createManyUserAgentData
+      const agentsData = delegatedAgents.map((agent) => ({
+        agentKey: agent.address,
+        weight: agent.percentage,
       }));
 
-      // Submit new user module data in a single call
-      await createManyUserModuleData.mutateAsync(modulesData);
+      // Submit new user agent data in a single call
+      await createManyUserAgentData.mutateAsync(agentsData);
 
-      updateOriginalModules();
+      updateOriginalAgents();
 
       // Fetch updated data from the database
-      const { data: updatedModuleData } = api.module.byUserModuleData.useQuery(
+      const { data: updatedAgentData } = api.userAgentWeight.byUserKey.useQuery(
         { userKey: selectedAccount.address },
         { enabled: !!selectedAccount.address },
       );
       await refetchModules();
-      const formattedModules = updatedModuleData?.map((module) => ({
-        id: module.module_data.id,
-        address: module.module_data.moduleKey,
-        title: module.module_data.name ?? "",
-        name: module.module_data.name ?? "",
-        percentage: module.user_module_data.weight,
+      const formattedModules = updatedAgentData?.map((agent) => ({
+        id: agent.user_agent_weight.id,
+        address: agent.user_agent_weight.agentKey,
+        title: agent.agent.name ?? "",
+        name: agent.agent.name ?? "",
+        percentage: agent.user_agent_weight.weight,
       }));
-      setDelegatedModulesFromDB(formattedModules ?? []);
+      setDelegatedAgentsFromDB(formattedModules ?? []);
 
       setIsSubmitting(false);
     } catch (error) {
@@ -199,10 +196,10 @@ export function DelegatedList() {
     }
     setIsSubmitting(true);
     try {
-      await deleteUserModuleData.mutateAsync({
+      await deleteUserAgentData.mutateAsync({
         userKey: selectedAccount.address,
       });
-      setDelegatedModulesFromDB([]);
+      setDelegatedAgentsFromDB([]);
 
       await refetchModules();
 
@@ -213,10 +210,10 @@ export function DelegatedList() {
     }
   };
 
-  const hasItemsToClear = delegatedModules.length > 0;
+  const hasItemsToClear = delegatedAgents.length > 0;
 
   const hasZeroPercentage = () => {
-    const items = delegatedModules;
+    const items = delegatedAgents;
     return items.some((item) => item.percentage === 0);
   };
 
@@ -236,7 +233,7 @@ export function DelegatedList() {
     if (isSubmitting) {
       return { disabled: true, message: "Submitting..." };
     }
-    if (hasUnsavedModuleChanges()) {
+    if (hasUnsavedChanges()) {
       return { disabled: false, message: "You have unsaved changes" };
     }
     return { disabled: false, message: "All changes saved!" };
@@ -249,7 +246,7 @@ export function DelegatedList() {
         <div className="fixed bottom-0 right-0 z-50 mt-8 hidden w-full flex-col-reverse text-sm md:bottom-4 md:mr-4 md:flex md:w-fit">
           <Card className="mb-2 flex animate-fade-up flex-col rounded-3xl border border-white/20 bg-[#898989]/5 font-semibold text-white backdrop-blur-lg">
             <div className="flex items-center justify-center px-7">
-              {["modules", "subnets", "stake"].map((type, index) => (
+              {["agents", "subnets", "stake"].map((type, index) => (
                 <div key={type} className="flex items-center">
                   <Label
                     className={cn(
@@ -263,7 +260,7 @@ export function DelegatedList() {
                   >
                     <b>
                       {index === 0
-                        ? delegatedModules.length
+                        ? delegatedAgents.length
                         : index === 1
                           ? `${Number(totalPercentage)}%`
                           : Number(userStakeWeight)}
@@ -311,22 +308,22 @@ export function DelegatedList() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {delegatedModules.length ? (
-                    delegatedModules.map((module) => (
-                      <TableRow key={module.id}>
+                  {delegatedAgents.length ? (
+                    delegatedAgents.map((agent) => (
+                      <TableRow key={agent.id}>
                         <TableCell className="font-medium">
-                          {module.name}
+                          {agent.name}
                         </TableCell>
                         <TableCell className="text-gray-400">
-                          {smallAddress(module.address, 4)}
+                          {smallAddress(agent.address, 4)}
                         </TableCell>
                         <TableCell className="flex items-center gap-1">
                           <Input
                             type="number"
-                            value={module.percentage}
+                            value={agent.percentage}
                             onChange={(e) =>
                               handlePercentageChange(
-                                module.id,
+                                agent.id,
                                 Number(e.target.value),
                               )
                             }
@@ -342,7 +339,7 @@ export function DelegatedList() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => removeModule(module.id)}
+                            onClick={() => removeAgent(agent.id)}
                           >
                             <X className="h-5 w-5" />
                           </Button>
@@ -352,7 +349,7 @@ export function DelegatedList() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center">
-                        Select a module to allocate through the modules page.
+                        Select a agent to allocate through the agents page.
                       </TableCell>
                     </TableRow>
                   )}
@@ -363,7 +360,7 @@ export function DelegatedList() {
                 <Button
                   onClick={handleAutoCompletePercentage}
                   disabled={
-                    totalPercentage === 100 || delegatedModules.length === 0
+                    totalPercentage === 100 || delegatedAgents.length === 0
                   }
                   variant="outline"
                   className="w-full rounded-full"

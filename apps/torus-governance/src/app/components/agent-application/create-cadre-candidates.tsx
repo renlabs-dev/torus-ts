@@ -122,8 +122,8 @@ export function CreateCadreCandidates() {
       <PopoverContent className="mr-4 mt-2 hidden w-full max-w-96 md:block xl:mr-0">
         <div className="mt-1 flex w-full border-b border-white/20 pb-3">
           <p className="text-sm">
-            The S2 DAO Cadre votes on S2 Applications (Modules/Validators).
-            Interested in joining? Apply below.
+            The S2 DAO Cadre votes on Agent Applications. Interested in joining?
+            Apply below.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">

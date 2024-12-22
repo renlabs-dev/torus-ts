@@ -5,21 +5,20 @@ import { ChartPie } from "lucide-react";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 
-import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 interface DelegateModuleWeightProps {
   id: number;
   name: string;
-  moduleKey: string;
+  agentKey: string;
 }
 
 export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
-  const { delegatedModules, addModule, removeModule } =
-    useDelegateModuleStore();
+  const { delegatedAgents, addAgent, removeAgent } = useDelegateAgentStore();
 
   const { selectedAccount } = useTorus();
 
-  const isModuleDelegated = delegatedModules.some((m) => m.id === props.id);
+  const isModuleDelegated = delegatedAgents.some((m) => m.id === props.id);
 
   const handleDelegateClick = () => {
     if (!selectedAccount?.address) {
@@ -27,12 +26,12 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
       return;
     }
     if (isModuleDelegated) {
-      removeModule(props.id);
+      removeAgent(props.id);
     } else {
-      addModule({
+      addAgent({
         id: props.id,
         name: props.name,
-        address: props.moduleKey,
+        address: props.agentKey,
       });
     }
   };

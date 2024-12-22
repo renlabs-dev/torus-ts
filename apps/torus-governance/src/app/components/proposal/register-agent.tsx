@@ -31,11 +31,11 @@ const moduleSchema = z.object({
   body: z.string().min(1, "Body is required"),
 });
 
-export function RegisterModule(): JSX.Element {
+export function RegisterAgent(): JSX.Element {
   const router = useRouter();
   const {
     isAccountConnected,
-    registerModule,
+    RegisterAgent,
     accountFreeBalance,
     subnetList,
     moduleBurn,
@@ -100,7 +100,7 @@ export function RegisterModule(): JSX.Element {
       const moduleCost = 2000;
 
       if (Number(accountFreeBalance.data) > moduleCost) {
-        void registerModule({
+        void RegisterAgent({
           subnetName,
           address,
           name,

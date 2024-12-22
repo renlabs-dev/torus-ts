@@ -49,7 +49,7 @@ export interface RemoveVote {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface RegisterModule {
+export interface RegisterAgent {
   subnetName: string;
   address: string;
   name: string;
