@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import type { Stake, TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Input, TransactionStatus } from "@torus-ts/ui";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken, fromNano, toNano } from "@torus-ts/utils/subspace";
 
 import { usePage } from "~/context/page-provider";
 import { ValidatorsList } from "./validators-list";
+import { AmountButtons } from "./amount-buttons";
 
 export interface GenericActionProps {
   balance: bigint | undefined;
@@ -21,6 +22,9 @@ export function UnstakeAction(
     removeStake: (stake: Stake) => Promise<void>;
   } & GenericActionProps,
 ) {
+  const { accountStakingTo, accountFreeBalance, stakeOut, selectedAccount } =
+    usePage();
+
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [inputError, setInputError] = useState<{
@@ -42,9 +46,7 @@ export function UnstakeAction(
   const [currentView, setCurrentView] = useState<"wallet" | "stakedValidators">(
     "wallet",
   );
-
   const [stakedAmount, setStakedAmount] = useState<string | null>(null);
-  const { accountStakingTo, accountFreeBalance } = usePage();
 
   const stakedValidators = accountStakingTo.data ?? [];
 
@@ -64,16 +66,28 @@ export function UnstakeAction(
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value;
-    if (stakedAmount && Number(newAmount) > Number(stakedAmount)) {
+    const newAmount = e.target.value.replace(/[^0-9.]/g, "");
+    const amountNano = toNano(newAmount || "0");
+    const maxAmount = toNano(stakedAmount ?? "0");
+
+    if (amountNano > maxAmount) {
       setInputError((prev) => ({
         ...prev,
-        value: "Amount exceeds staked amount for this validator",
+        value: "Amount exceeds maximum transferable amount",
       }));
     } else {
       setInputError((prev) => ({ ...prev, value: null }));
     }
+
     setAmount(newAmount);
+  };
+
+  const refetchHandler = async () => {
+    await Promise.all([
+      accountFreeBalance.refetch(),
+      accountStakingTo.refetch(),
+      stakeOut.refetch(),
+    ]);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -93,10 +107,6 @@ export function UnstakeAction(
 
     if (!isValidInput) return;
 
-    const refetchHandler = async () => {
-      await accountFreeBalance.refetch();
-    };
-
     void props.removeStake({
       validator: recipient,
       amount,
@@ -113,17 +123,17 @@ export function UnstakeAction(
         v.address === validator.address,
     );
     if (validatorData) {
-      setStakedAmount(formatToken(validatorData.stake));
+      setStakedAmount(fromNano(validatorData.stake));
     } else {
       setStakedAmount(null);
     }
   };
 
-  const handleMaxClick = () => {
-    if (stakedAmount) {
-      setAmount(stakedAmount);
-    }
-  };
+  useEffect(() => {
+    setRecipient("");
+    setAmount("");
+    setInputError({ recipient: null, value: null });
+  }, [selectedAccount?.address]);
 
   return (
     <>
@@ -138,7 +148,9 @@ export function UnstakeAction(
         <div className="w-full">
           <form
             onSubmit={handleSubmit}
-            className={"flex w-full animate-fade-down flex-col gap-4 pt-4"}
+            className={
+              "flex w-full animate-fade-down flex-col gap-4 px-0.5 pt-4"
+            }
           >
             <div className="w-full">
               <div className="flex flex-row gap-3">
@@ -173,15 +185,11 @@ export function UnstakeAction(
                   placeholder="The amount of COMAI to unstake"
                   disabled={!recipient}
                 />
-                {stakedAmount && (
-                  <Button
-                    type="button"
-                    onClick={handleMaxClick}
-                    variant="outline"
-                  >
-                    Max
-                  </Button>
-                )}
+                <AmountButtons
+                  setAmount={setAmount}
+                  availableFunds={stakedAmount ?? "0"}
+                  disabled={!recipient || !stakedAmount}
+                />
               </div>
               {inputError.value && (
                 <p className="mb-1 mt-2 flex text-left text-base text-red-400">
@@ -205,13 +213,13 @@ export function UnstakeAction(
             >
               Start Transaction
             </Button>
+            {transactionStatus.status && (
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
+              />
+            )}
           </form>
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
-            />
-          )}
         </div>
       )}
     </>
