@@ -11,10 +11,12 @@ import { PageProvider } from "~/context/page-provider";
 import { env } from "~/env";
 import { cn, Footer } from "@torus-ts/ui";
 import { Header } from "./components/header";
+import { Suspense } from "react";
+import { Bridge } from "./components/bridge";
 
 export const metadata: Metadata = {
   robots: "all",
-  title: "torus",
+  title: "Torus",
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description: "The thermodynamic god's favorite child.",
 };
@@ -46,6 +48,11 @@ export default function RootLayout({
             <ReactQueryProvider>
               <PageProvider>
                 <Header />
+                <div className="fixed inset-0 z-50 flex items-end justify-center">
+                  <Suspense fallback="...loading">
+                    <Bridge />
+                  </Suspense>
+                </div>
                 {children}
                 <Footer />
               </PageProvider>

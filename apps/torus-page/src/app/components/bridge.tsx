@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowRightLeft,
+  Cable,
   CreditCard,
   Info,
   LoaderCircle,
@@ -197,15 +197,20 @@ export function Bridge() {
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpenAndUpdateURL}>
-      <AlertDialogTrigger className="mt-6 flex w-fit animate-fade flex-col items-center gap-2 overflow-hidden rounded-md border border-border bg-card p-3 px-4 animate-delay-[1500ms]">
-        <span>
-          <span className="underline">Click here</span> to Bridge your assets to
-          Torus.
-        </span>
-        <span className="text-sm">
-          (Bridge Closes: 1/3/25, 1:11 PM UTC) / Total Bridged:{" "}
-          {formatToken(bridgedBalancesSum)} TOR
-        </span>
+      <AlertDialogTrigger className="mb-12 flex w-fit animate-fade flex-row items-center gap-3 overflow-hidden rounded-md border border-border bg-card p-3 px-4 transition duration-300 animate-delay-[1500ms] hover:bg-accent/30">
+        <div className="flex select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/30 to-muted/50 p-4 no-underline outline-none focus:shadow-md">
+          <Cable className="h-6 w-6 animate-pulse" />
+        </div>
+        <div className="flex flex-col items-start gap-1">
+          <span>
+            <span className="underline">Click here</span> to Bridge your assets
+            to Torus.
+          </span>
+          <span className="text-sm">
+            Bridge Closes: 1/3/25, 1:11 PM UTC / Total Bridged:{" "}
+            {formatToken(bridgedBalancesSum)} COMAI
+          </span>
+        </div>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -217,16 +222,10 @@ export function Bridge() {
               </HoverCardTrigger>
               <HoverCardContent className="w-80">
                 <p className="text-sm">
-                  Bridge your COMAI assets to the Torus Network. This will allow
-                  you to use your COMAI assets on the Torus Network,{" "}
-                  <Link
-                    href="/bridge"
-                    target="_blank"
-                    className="text-primary underline"
-                  >
-                    Learn more
-                  </Link>
-                  .
+                  This bridge will migrate your COMAI tokens to the Torus
+                  Network, while burning the COMAI on the Commune Mainnet. After
+                  the bridge closes at the end of 2024, you won't be able to
+                  bridge back anymore.
                 </p>
               </HoverCardContent>
             </HoverCard>
