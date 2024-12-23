@@ -95,9 +95,9 @@ export function HoverHeader() {
           whileTap={{ y: 1 }}
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
-          className="hover:background-acent/30 z-50 rounded-md p-3 transition duration-300"
+          className="hover:background-acent/30 relative z-50 rounded-md p-3 transition duration-300"
         >
-          <Icons.logo className="h-8 w-8" />
+          <Icons.logo className="relative z-10 h-10 w-10" />
         </motion.button>
 
         <AnimatePresence>
@@ -107,18 +107,18 @@ export function HoverHeader() {
               animate="visible"
               exit="hidden"
               key="rect"
-              className="absolute top-0 mt-1.5"
-              width="60"
-              height="60"
-              viewBox="0 0 60 60"
+              className="absolute top-0 mt-1"
+              width="72"
+              height="72"
+              viewBox="0 0 72 72"
             >
               <motion.rect
-                width="58"
-                height="58"
+                width="69"
+                height="69"
                 x="1"
                 y="1"
                 rx="10"
-                fill="black"
+                fill="#09090B"
                 stroke="#27272a"
                 strokeWidth="2"
                 variants={draw}
@@ -158,7 +158,7 @@ export function HoverHeader() {
                   strokeWidth="3"
                   strokeLinecap="round"
                   variants={draw}
-                  custom={1}
+                  custom={0}
                 />
                 {/* Bottom line */}
                 <motion.line
@@ -170,7 +170,7 @@ export function HoverHeader() {
                   strokeWidth="3"
                   strokeLinecap="round"
                   variants={draw}
-                  custom={0.5}
+                  custom={1}
                 />
               </motion.svg>
               {/* Buttons */}
@@ -187,7 +187,7 @@ export function HoverHeader() {
                 </motion.div>
                 <motion.div
                   variants={buttonVariants}
-                  custom={6}
+                  custom={8}
                   className="absolute mt-14 w-full max-w-[41.5rem]"
                   style={{ zIndex: isExpanded ? 1 : "auto" }}
                 >
@@ -201,15 +201,13 @@ export function HoverHeader() {
                   >
                     <Card className="mx-5 cursor-pointer overflow-hidden p-6 md:mx-0">
                       <ScrollArea
-                        className={cn(
-                          isExpanded ? "h-[calc(76vh-10rem)]" : "h-fit",
-                        )}
+                        className={cn(isExpanded ? "h-[calc(52vh)]" : "h-fit")}
                       >
                         <motion.div layout>
-                          Torus is an open-ended agentic experiment to encode
-                          biology's patterns of autonomy, self-organization and
-                          perpetual novelty into a stake-anchored cryptoeconomic
-                          protocol.
+                          Torus is an open-ended experiment to encode biology's
+                          patterns of autonomy, adaptive inference and
+                          self-organization into a stake-anchored agentic
+                          protocol, perpetually producing novelty.
                         </motion.div>
                         <motion.div
                           variants={textVariants}
@@ -261,7 +259,7 @@ export function HoverHeader() {
                     </Card>
                   </motion.div>
                 </motion.div>
-                <motion.div variants={buttonVariants} custom={10}>
+                <motion.div variants={buttonVariants} custom={5}>
                   <Button variant="outline" size="lg">
                     Blog
                   </Button>
