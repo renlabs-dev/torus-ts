@@ -1,4 +1,7 @@
 {
+  // Git
+  "git.autofetch": true,
+
   // Liveshare
   "liveshare.allowGuestDebugControl": true,
   "liveshare.allowGuestTaskControl": true,
