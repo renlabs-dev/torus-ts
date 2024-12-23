@@ -43,7 +43,9 @@ const buttonVariants = {
 
 export function HoverHeader() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,12 +88,44 @@ export function HoverHeader() {
         )}
       >
         <motion.button
-          onClick={() => setIsVisible(!isVisible)}
+          onClick={() => {
+            setIsVisible(!isVisible);
+            setIsHovered(true);
+          }}
           whileTap={{ y: 1 }}
-          className="hover:background-acent/30 rounded-md border-2 bg-background p-3 transition duration-300"
+          onHoverStart={() => setIsHovered(true)}
+          onHoverEnd={() => setIsHovered(false)}
+          className="hover:background-acent/30 z-50 rounded-md p-3 transition duration-300"
         >
           <Icons.logo className="h-8 w-8" />
         </motion.button>
+
+        <AnimatePresence>
+          {(isHovered || isVisible) && (
+            <motion.svg
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              key="rect"
+              className="absolute top-0 mt-1.5"
+              width="60"
+              height="60"
+              viewBox="0 0 60 60"
+            >
+              <motion.rect
+                width="58"
+                height="58"
+                x="1"
+                y="1"
+                rx="10"
+                fill="black"
+                stroke="#27272a"
+                strokeWidth="2"
+                variants={draw}
+              />
+            </motion.svg>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence initial={false}>
           {isVisible && (
@@ -165,7 +199,7 @@ export function HoverHeader() {
                     transition={{ duration: 0.5 }}
                     onClick={() => setIsExpanded(!isExpanded)}
                   >
-                    <Card className="cursor-pointer overflow-hidden p-6">
+                    <Card className="mx-5 cursor-pointer overflow-hidden p-6 md:mx-0">
                       <ScrollArea
                         className={cn(
                           isExpanded ? "h-[calc(76vh-10rem)]" : "h-fit",
