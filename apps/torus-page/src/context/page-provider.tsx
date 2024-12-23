@@ -11,22 +11,15 @@ import {
   useCachedStakeOut,
   useFreeBalance,
   useKeyStakingTo,
-  useLastBlock,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 // import { WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
-import type {
-  Balance,
-  LastBlock,
-  SS58Address,
-  StakeData,
-} from "@torus-ts/subspace";
+import type { Balance, SS58Address, StakeData } from "@torus-ts/subspace";
 
 interface PageContextType {
   isInitialized: boolean;
-  lastBlock: UseQueryResult<LastBlock, Error>;
 
   isAccountConnected: boolean;
 
@@ -42,6 +35,7 @@ interface PageContextType {
   >;
 
   bridge: (bridge: Bridge) => Promise<void>;
+
   removeStake: (stake: Stake) => Promise<void>;
 
   stakeOut: UseQueryResult<StakeData, Error>;
@@ -64,24 +58,21 @@ export function PageProvider({
 }): JSX.Element {
   // == API Context ==
   const {
-    api,
-    isInitialized,
-    selectedAccount,
-    isAccountConnected,
-
-    bridge,
-    removeStake,
-
     accounts,
-    handleLogout,
+    api,
+    bridge,
     handleGetWallets,
+    handleLogout,
     handleSelectWallet,
+    isAccountConnected,
+    isInitialized,
+    removeStake,
+    selectedAccount,
   } = useTorus();
-  const lastBlock = useLastBlock(api);
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(
-    lastBlock.data?.apiAtBlock,
+    api,
     selectedAccount?.address as SS58Address,
   );
 
@@ -106,28 +97,21 @@ export function PageProvider({
   return (
     <PageContext.Provider
       value={{
-        isInitialized,
-        lastBlock,
-
-        stakeOut,
-
-        selectedAccount,
-
-        accountStakingTo,
-        isAccountConnected,
-        accountFreeBalance,
-        accountStakedBalance,
-
         accountBridgedBalance,
-        bridgedBalances,
-
-        bridge,
-        removeStake,
-
+        accountFreeBalance,
         accounts,
-        handleLogout,
+        accountStakedBalance,
+        accountStakingTo,
+        bridge,
+        bridgedBalances,
         handleGetWallets,
+        handleLogout,
         handleSelectWallet,
+        isAccountConnected,
+        isInitialized,
+        removeStake,
+        selectedAccount,
+        stakeOut,
       }}
     >
       {children}

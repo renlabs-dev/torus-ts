@@ -269,7 +269,7 @@ export function useBridgedBalance(
   address: SS58Address | null,
 ) {
   return useQuery({
-    queryKey: ["bridged_balance"],
+    queryKey: ["bridged_balance", address],
     enabled: api != null && address != null,
     queryFn: () => queryBridgedBalance(api!, address!),
     staleTime: STAKE_STALE_TIME,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -52,10 +52,17 @@ import {
   ScrollArea,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+import {
+  formatToken,
+  fromNano,
+  smallAddress,
+  toNano,
+} from "@torus-ts/utils/subspace";
 
 import { usePage } from "~/context/page-provider";
 import { UnstakeAction } from "./unstake";
+import { AmountButtons } from "./amount-buttons";
+import { FeeLabel } from "./fee-label";
 
 const formSchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
@@ -65,54 +72,37 @@ const formSchema = z.object({
 
 export function Bridge() {
   const {
-    accounts,
-    selectedAccount,
-    accountFreeBalance,
-    accountStakedBalance,
     accountBridgedBalance,
-
+    accountFreeBalance,
+    accounts,
+    accountStakedBalance,
+    bridge,
+    bridgedBalances,
     handleGetWallets,
     handleSelectWallet,
-
-    bridge,
     removeStake,
-
-    bridgedBalances,
+    selectedAccount,
   } = usePage();
+
+  const [amount, setAmount] = useState<string>("");
+  const [maxAmount, setMaxAmount] = useState<string>("");
+  const [valueInputError, setValueInputError] = useState<string | null>(null);
+  const estimatedFee = "0.0000001000";
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  const viewMode = searchParams.get("bridge");
 
-  let bridgedBalancesSum = 0n;
+  const alreadyBridgedBalance = useMemo(() => {
+    if (!bridgedBalances.data) return null;
 
-  if (bridgedBalances.data) {
+    let bridgedBalancesSum = 0n;
     const balancesMap = bridgedBalances.data[0];
     for (const balance of balancesMap.values()) {
       bridgedBalancesSum += balance;
     }
-  }
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const bridgeParam = searchParams.get("bridge");
-    if (bridgeParam === "open" && !isOpen) {
-      setIsOpen(true);
-    } else if (bridgeParam !== "open" && isOpen) {
-      setIsOpen(false);
-    }
-  }, [searchParams, isOpen]);
-
-  const setIsOpenAndUpdateURL = (open: boolean) => {
-    setIsOpen(open);
-    const newSearchParams = new URLSearchParams(searchParams);
-    if (open) {
-      newSearchParams.set("bridge", "open");
-    } else {
-      newSearchParams.delete("bridge");
-    }
-    router.push(`?${newSearchParams.toString()}`, { scroll: false });
-  };
+    return bridgedBalancesSum;
+  }, [bridgedBalances.data]);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -125,12 +115,9 @@ export function Bridge() {
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
 
-    if (
-      callbackReturn.status === "SUCCESS" ||
-      callbackReturn.status === "ERROR"
-    ) {
+    if (callbackReturn.status === "SUCCESS") {
       form.reset();
-      setIsOpen(false);
+      setValueInputError(null);
     }
   };
 
@@ -165,8 +152,44 @@ export function Bridge() {
     handleSelectWallet(accountExists);
   };
 
+  const handleUpdateMaxAmount = (fee: bigint | undefined) => {
+    if (!fee) return;
+    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - fee;
+    const maxAmount = afterFeesBalance > 0 ? afterFeesBalance : 0n;
+
+    setMaxAmount(fromNano(maxAmount));
+
+    const amountNano = toNano(amount || "0");
+    if (amountNano > maxAmount) {
+      setValueInputError("Amount exceeds maximum transferable amount");
+    } else {
+      setValueInputError(null);
+    }
+  };
+
+  const handleAmountChange = (value: string) => {
+    const newAmount = value.replace(/[^0-9.]/g, "");
+
+    const amountNano = toNano(newAmount || "0");
+    const estimatedFeeNano = toNano(estimatedFee);
+    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - estimatedFeeNano;
+    const maxAmountNano = afterFeesBalance > 0n ? afterFeesBalance : 0n;
+
+    if (amountNano > maxAmountNano) {
+      setValueInputError("Amount exceeds maximum transferable amount");
+    } else {
+      setValueInputError(null);
+    }
+
+    setAmount(newAmount);
+  };
+
   const refetchHandler = async () => {
-    await accountFreeBalance.refetch();
+    await Promise.all([
+      accountFreeBalance.refetch(),
+      accountBridgedBalance.refetch(),
+      bridgedBalances.refetch(),
+    ]);
   };
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -190,13 +213,28 @@ export function Bridge() {
         finalized: true,
         message: "Insufficient balance",
       });
-      // Close the modal on error
-      setIsOpen(false);
     }
   };
 
+  useEffect(() => {
+    if (!accountFreeBalance.data) return;
+    handleUpdateMaxAmount(toNano(estimatedFee));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountFreeBalance.data]);
+
+  useEffect(() => {
+    const amountValue = form.getValues("amount");
+    handleAmountChange(amountValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch("amount")]);
+
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpenAndUpdateURL}>
+    <AlertDialog
+      onOpenChange={(isOpen: boolean) =>
+        router.push(isOpen ? `/?bridge=open` : "/?bridge=closed")
+      }
+      open={viewMode === "open"}
+    >
       <AlertDialogTrigger className="mb-12 flex w-fit animate-fade flex-row items-center gap-3 overflow-hidden rounded-md border border-border bg-card p-3 px-4 transition duration-300 animate-delay-[1500ms] hover:bg-accent/30">
         <div className="flex select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/30 to-muted/50 p-4 no-underline outline-none focus:shadow-md">
           <Cable className="h-6 w-6 animate-pulse" />
@@ -208,7 +246,9 @@ export function Bridge() {
           </span>
           <span className="text-sm">
             Bridge Closes: 1/3/25, 1:11 PM UTC / Total Bridged:{" "}
-            {formatToken(bridgedBalancesSum)} COMAI
+            {alreadyBridgedBalance
+              ? `${formatToken(alreadyBridgedBalance)} COMAI `
+              : "Loading..."}
           </span>
         </div>
       </AlertDialogTrigger>
@@ -267,6 +307,7 @@ export function Bridge() {
                   <DropdownMenuRadioItem
                     key={account.address}
                     value={account.address}
+                    disabled={account.address === selectedAccount?.address}
                   >
                     <div className={cn("flex flex-col items-center gap-2")}>
                       <span
@@ -347,13 +388,34 @@ export function Bridge() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Amount to Bridge</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="0.00" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Enter the amount of COMAI you want to bridge.
-                  </FormDescription>
+                  <div className="flex gap-1">
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        {...field}
+                        disabled={!(toNano(maxAmount) > 0n)}
+                      />
+                    </FormControl>
+                    <AmountButtons
+                      setAmount={(amount) => form.setValue("amount", amount)}
+                      availableFunds={maxAmount}
+                      disabled={!selectedAccount || !(toNano(maxAmount) > 0n)}
+                    />
+                  </div>
+                  {valueInputError && (
+                    <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
+                      {valueInputError}
+                    </span>
+                  )}
                   <FormMessage />
+                  <FormDescription className="flex flex-col gap-2">
+                    Enter the amount of COMAI you want to bridge.
+                    <FeeLabel
+                      isEstimating={false}
+                      estimatedFee={estimatedFee}
+                    />
+                  </FormDescription>
                 </FormItem>
               )}
             />
