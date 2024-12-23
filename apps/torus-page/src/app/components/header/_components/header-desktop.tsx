@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { Icons } from "node_modules/@torus-ts/ui/src/components/icons";
+import { Icons } from "@torus-ts/ui";
 
 import {
   cn,
