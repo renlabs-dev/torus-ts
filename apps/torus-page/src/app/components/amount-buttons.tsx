@@ -19,7 +19,6 @@ export function AmountButtons(props: AmountButtonsProps) {
 
   const handleAmountButtonClick = (divisor: bigint) => {
     const parsedFunds = toNano(availableFunds);
-    console.log(parsedFunds, "parsedFunds");
     setAmount(fromNano(parsedFunds / divisor));
   };
 
