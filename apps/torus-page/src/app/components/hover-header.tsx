@@ -5,6 +5,7 @@ import { Button, Card, cn, Icons, ScrollArea } from "@torus-ts/ui";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowBigDown } from "lucide-react";
+import Link from "next/link";
 
 const draw = {
   hidden: { pathLength: 0, opacity: 0 },
@@ -182,8 +183,8 @@ export function HoverHeader() {
                 exit="hidden"
               >
                 <motion.div variants={buttonVariants} custom={5}>
-                  <Button variant="outline" size="lg">
-                    Join
+                  <Button variant="outline" size="lg" asChild>
+                    <Link href="/">Join</Link>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -200,10 +201,13 @@ export function HoverHeader() {
                     transition={{ duration: 0.5 }}
                     onClick={() => setIsExpanded(!isExpanded)}
                   >
-                    <Card className="mx-5 cursor-pointer overflow-hidden px-6 pb-4 pt-6 md:mx-0">
+                    <Card className="mx-5 cursor-pointer overflow-hidden pb-4 pl-6 pr-4 pt-6 md:mx-0">
                       <ScrollArea
                         className={cn(
-                          isExpanded ? "h-[calc(40vh)] pr-2" : "h-fit",
+                          isExpanded
+                            ? "h-[calc(65vh)] md:h-[calc(50vh)]"
+                            : "h-fit",
+                          "pr-2",
                         )}
                       >
                         <motion.div layout>
@@ -228,7 +232,7 @@ export function HoverHeader() {
                         >
                           {isExpanded && (
                             <>
-                              <p className="mt-4">
+                              <p className="mt-3">
                                 Torus is a self-assembling & self-evolving p2p
                                 monetary organism composed of an emergent
                                 multi-graph of recursively delegated onchain &
@@ -236,7 +240,7 @@ export function HoverHeader() {
                                 among agents, with arbitrarily complex and
                                 granular emergent specialization.
                               </p>
-                              <p className="mt-4">
+                              <p className="mt-3">
                                 The graph forms an agency-centric multi-scale
                                 competency architecture with full autonomy at
                                 every level and open market selection at every
@@ -244,12 +248,12 @@ export function HoverHeader() {
                                 able to maintain high-level coherence at
                                 increasing organism complexity.
                               </p>
-                              <p className="mt-4">
+                              <p className="mt-3">
                                 Stake is the organisms container for monetary
                                 energy, transmutable towards its emergent
                                 agency.
                               </p>
-                              <p className="mt-4">
+                              <p className="mt-3">
                                 The abstractions of control space, permissions,
                                 recursive programmatic delegation and agents,
                                 expressed in an emergent multi-graph, enable
@@ -257,7 +261,7 @@ export function HoverHeader() {
                                 self-regulation capacity to retain system
                                 coherence admits adversarial presence.
                               </p>
-                              <p className="mt-4">
+                              <p className="mt-3">
                                 Torus exhibits a continuous emergent process
                                 with increasingly complex multi-scale symbiotic
                                 relationships, capable of autonomous
