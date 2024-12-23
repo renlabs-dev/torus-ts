@@ -2,7 +2,6 @@
 
 import "@polkadot/api/augment";
 
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import {
   formatTorusToken,
   fromRen,
@@ -18,7 +17,6 @@ import {
 
 // const NODE_URL = "wss://testnet-commune-api-node-1.communeai.net";
 // const NODE_URL = "wss://api.communeai.net";
-const NODE_URL = "wss://api.communeai.net";
 
 // const wsProvider = new WsProvider(NODE_URL);
 // const api = await ApiPromise.create({ provider: wsProvider });

@@ -257,9 +257,8 @@ export function BridgeAction() {
 
           <div className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
             <FeeLabel
-              estimatedFee={estimatedFee}
+              estimatedFee={roundedEstimatedFee}
               isEstimating={isEstimating}
-              roundedEstimatedFee={roundedEstimatedFee}
             />
           </div>
 
