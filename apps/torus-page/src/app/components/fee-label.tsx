@@ -17,14 +17,14 @@ export function FeeLabel(props: FeeLabelProps) {
     return (
       <span className="flex items-center gap-2 text-sm text-muted-foreground">
         <Coins size={16} />
-        Estimated fee: {estimatedFee} TOR
+        Estimated fee: {estimatedFee} COMAI
       </span>
     );
   }
   return (
     <span className="flex items-center gap-2 text-sm text-muted-foreground">
       <Coins size={16} />
-      Estimated fee: 0 TOR
+      Estimated fee: 0 COMAI
     </span>
   );
 }
