@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { formatToken, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
@@ -106,7 +106,7 @@ export function StakeAction() {
     const adjustedErrorMargin = 1_000n; // 0.000001 TOR as error margin
 
     const maxAmount = balance - adjustedErrorMargin;
-    return maxAmount > 0 ? formatToken(maxAmount) : "0";
+    return maxAmount > 0 ? fromNano(maxAmount) : "0";
   }, [accountFreeBalance.data]);
 
   const formRef = useRef<HTMLFormElement>(null);
