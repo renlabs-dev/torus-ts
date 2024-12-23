@@ -448,7 +448,7 @@ export function Bridge() {
           </Form>
         </AlertDialogContent>
       </AlertDialog>
-      <span className="flex justify-center text-sm text-zinc-600">
+      <span className="flex justify-center text-sm text-zinc-400">
         V0 mainnet launch on january 3rd.
       </span>
     </div>

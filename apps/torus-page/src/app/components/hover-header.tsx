@@ -4,6 +4,7 @@ import { Button, Card, cn, Icons, ScrollArea } from "@torus-ts/ui";
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ArrowBigDown } from "lucide-react";
 
 const draw = {
   hidden: { pathLength: 0, opacity: 0 },
@@ -188,7 +189,7 @@ export function HoverHeader() {
                 <motion.div
                   variants={buttonVariants}
                   custom={8}
-                  className="absolute mt-14 w-full max-w-[41.5rem]"
+                  className="absolute mt-14 w-full max-w-[43rem]"
                   style={{ zIndex: isExpanded ? 1 : "auto" }}
                 >
                   <motion.div
@@ -199,9 +200,11 @@ export function HoverHeader() {
                     transition={{ duration: 0.5 }}
                     onClick={() => setIsExpanded(!isExpanded)}
                   >
-                    <Card className="mx-5 cursor-pointer overflow-hidden p-6 md:mx-0">
+                    <Card className="mx-5 cursor-pointer overflow-hidden px-6 pb-4 pt-6 md:mx-0">
                       <ScrollArea
-                        className={cn(isExpanded ? "h-[calc(52vh)]" : "h-fit")}
+                        className={cn(
+                          isExpanded ? "h-[calc(40vh)] pr-2" : "h-fit",
+                        )}
                       >
                         <motion.div layout>
                           Torus is an open-ended experiment to encode biology's
@@ -209,6 +212,14 @@ export function HoverHeader() {
                           self-organization into a stake-anchored agentic
                           protocol, perpetually producing novelty.
                         </motion.div>
+                        {!isExpanded && (
+                          <motion.div
+                            layout
+                            className="mt-2 flex justify-center"
+                          >
+                            <ArrowBigDown className="h-6 w-6 animate-pulse text-zinc-500" />
+                          </motion.div>
+                        )}
                         <motion.div
                           variants={textVariants}
                           initial="collapsed"
