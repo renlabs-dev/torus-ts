@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { formatToken, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
@@ -12,8 +12,13 @@ import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function UnstakeAction() {
-  const { accountStakedBy, removeStake, stakeOut, accountFreeBalance } =
-    useWallet();
+  const {
+    accountFreeBalance,
+    accountStakedBy,
+    removeStake,
+    selectedAccount,
+    stakeOut,
+  } = useWallet();
 
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -50,7 +55,7 @@ export function UnstakeAction() {
       (v: { address: string; stake: bigint }) => v.address === address,
     );
     if (validator) {
-      setStakedAmount(formatToken(validator.stake));
+      setStakedAmount(fromNano(validator.stake));
     } else {
       setStakedAmount(null);
     }
@@ -120,7 +125,7 @@ export function UnstakeAction() {
         v.address === validator.address,
     );
     if (validatorData) {
-      setStakedAmount(formatToken(validatorData.stake));
+      setStakedAmount(fromNano(validatorData.stake));
     } else {
       setStakedAmount(null);
     }
@@ -134,6 +139,13 @@ export function UnstakeAction() {
     },
     { label: "Amount", content: `${amount ? amount : 0} TOR` },
   ];
+
+  useEffect(() => {
+    setRecipient("");
+    setAmount("");
+    setInputError({ recipient: null, value: null });
+  }, [selectedAccount?.address]);
+
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
       {currentView === "stakedValidators" ? (

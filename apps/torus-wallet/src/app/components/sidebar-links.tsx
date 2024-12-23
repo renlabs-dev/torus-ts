@@ -77,6 +77,7 @@ export const Sidebar = () => {
             if (view.href === "bridge") {
               return (
                 <Button
+                  key={view.href}
                   variant="ghost"
                   disabled
                   className={`w-full justify-between gap-4 border-none px-3 text-base`}
