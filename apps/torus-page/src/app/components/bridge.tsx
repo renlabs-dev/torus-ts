@@ -149,12 +149,7 @@ export function Bridge() {
       return;
     }
 
-    form.reset();
-    setMaxAmount("");
-    setValueInputError(null);
-
     handleSelectWallet(accountExists);
-    void refetchHandler();
   };
 
   const handleUpdateMaxAmount = (fee: bigint | undefined) => {
@@ -222,10 +217,10 @@ export function Bridge() {
   };
 
   useEffect(() => {
-    if (!selectedAccount || !accountFreeBalance.data) return;
+    if (!accountFreeBalance.data) return;
     handleUpdateMaxAmount(toNano(estimatedFee));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accountFreeBalance.data, selectedAccount?.address]);
+  }, [accountFreeBalance.data]);
 
   useEffect(() => {
     const amountValue = form.getValues("amount");
@@ -312,6 +307,7 @@ export function Bridge() {
                   <DropdownMenuRadioItem
                     key={account.address}
                     value={account.address}
+                    disabled={account.address === selectedAccount?.address}
                   >
                     <div className={cn("flex flex-col items-center gap-2")}>
                       <span
