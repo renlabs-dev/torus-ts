@@ -48,7 +48,7 @@ export default function RootLayout({
             <ReactQueryProvider>
               <PageProvider>
                 <HoverHeader />
-                <div className="fixed inset-0 z-40 flex items-end justify-center">
+                <div className="fixed inset-0 z-40 hidden items-end justify-center md:flex">
                   <Suspense fallback="...loading">
                     <Bridge />
                   </Suspense>
