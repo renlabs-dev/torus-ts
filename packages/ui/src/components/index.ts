@@ -198,3 +198,4 @@ export {
   FormMessage,
   FormField,
 } from "./form";
+export { Icons } from "./icons";

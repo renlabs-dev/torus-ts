@@ -11,9 +11,9 @@ function FooterContent() {
       <div className="space-y-1">
         <h4 className="text-sm font-semibold">Torus Network</h4>
         <p className="text-sm">
-          Self assembled, powered by{" "}
+          Protocol core development by{" "}
           <a href={links.ren_labs} className="underline" target="_blank">
-            Ren Labs
+            RENLABS
           </a>
           .
         </p>
@@ -38,7 +38,7 @@ export function Footer() {
         <HoverCardTrigger className="text-sm hover:cursor-pointer hover:underline">
           @torus
         </HoverCardTrigger>
-        <HoverCardContent className="mr-2 w-72">
+        <HoverCardContent className="mr-2 w-[18.5rem]">
           <FooterContent />
         </HoverCardContent>
       </HoverCard>

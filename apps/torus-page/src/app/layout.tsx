@@ -10,9 +10,9 @@ import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { PageProvider } from "~/context/page-provider";
 import { env } from "~/env";
 import { cn, Footer } from "@torus-ts/ui";
-import { Header } from "./components/header";
 import { Suspense } from "react";
 import { Bridge } from "./components/bridge";
+import { HoverHeader } from "./components/hover-header";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -47,8 +47,8 @@ export default function RootLayout({
           >
             <ReactQueryProvider>
               <PageProvider>
-                <Header />
-                <div className="fixed inset-0 z-50 flex items-end justify-center">
+                <HoverHeader />
+                <div className="fixed inset-0 z-40 flex items-end justify-center">
                   <Suspense fallback="...loading">
                     <Bridge />
                   </Suspense>

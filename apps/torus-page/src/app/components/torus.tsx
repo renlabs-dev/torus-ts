@@ -5,7 +5,6 @@ import type { Mesh } from "three";
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { OrbitControls } from "@react-three/drei";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -57,7 +56,7 @@ const fragmentShader = `
     float pattern = max(flowU, flowV);
 
     vec3 color = vec3(0.6, 0.6, 0.6);
-    float pulse = sin(time * 0.1) * 0.25 + 0.75;
+    float pulse = sin(time * 0.1) * 0.25 + 0.65;
 
     vec3 finalColor = color;
     float finalOpacity = pattern * intensity * pulse;
@@ -113,12 +112,6 @@ export const TorusObject: FC = () => (
   <Canvas camera={{ fov: 80, near: 0.1, far: 1000, position: [0, 0, 3] }}>
     <Suspense fallback={null}>
       <Torus />
-      <OrbitControls
-        minDistance={2}
-        maxDistance={5}
-        enablePan={false}
-        enableRotate={false}
-      />
     </Suspense>
   </Canvas>
 );
