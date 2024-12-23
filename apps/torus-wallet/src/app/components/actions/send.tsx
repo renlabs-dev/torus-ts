@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
 import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { formatToken, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
@@ -57,7 +57,7 @@ export function SendAction() {
       const fee = await estimateFee(recipient, "0");
       if (fee != null) {
         const adjustedFee = (fee * 11n) / 10n;
-        setEstimatedFee(formatToken(adjustedFee));
+        setEstimatedFee(fromNano(adjustedFee));
         return adjustedFee;
       } else {
         setEstimatedFee(null);
@@ -77,7 +77,7 @@ export function SendAction() {
     const afterFeesBalance = (accountFreeBalance.data ?? 0n) - fee;
     const maxAmount = afterFeesBalance > 0 ? afterFeesBalance : 0n;
 
-    setMaxAmount(formatToken(maxAmount));
+    setMaxAmount(fromNano(maxAmount));
 
     const amountNano = toNano(amount || "0");
     if (amountNano > maxAmount) {
@@ -151,15 +151,6 @@ export function SendAction() {
     });
   };
 
-  useEffect(() => {
-    async function fetchFeeAndMax() {
-      const fee = await handleEstimateFee();
-      handleUpdateMaxAmount(fee);
-    }
-
-    void fetchFeeAndMax();
-  }, [recipient]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const formRef = useRef<HTMLFormElement>(null);
 
   const reviewData = [
@@ -173,6 +164,15 @@ export function SendAction() {
       content: `${amount ? estimatedFee : 0} TOR`,
     },
   ];
+
+  useEffect(() => {
+    async function fetchFeeAndMax() {
+      const fee = await handleEstimateFee();
+      handleUpdateMaxAmount(fee);
+    }
+
+    void fetchFeeAndMax();
+  }, [recipient]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="l flex w-full flex-col gap-4 md:flex-row">
@@ -231,11 +231,7 @@ export function SendAction() {
             )}
           </div>
 
-          <FeeLabel
-            estimatedFee={estimatedFee}
-            isEstimating={isEstimating}
-            roundedEstimatedFee={estimatedFee ?? "0"}
-          />
+          <FeeLabel estimatedFee={estimatedFee} isEstimating={isEstimating} />
 
           {transactionStatus.status && (
             <TransactionStatus
