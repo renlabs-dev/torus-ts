@@ -262,11 +262,21 @@ export function Bridge() {
                   <Info className="h-5 w-5" />
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
-                  <p className="text-sm">
+                  <p className="mb-2 text-sm">
                     This bridge will migrate your COMAI tokens to the Torus
                     Network, while burning the COMAI on the Commune Mainnet.
                     After the bridge closes at the end of 2024, you won't be
                     able to bridge back anymore.
+                  </p>
+                  <p className="text-sm">
+                    If you want a different approach, you can use the CLI
+                    through the{" "}
+                    <span className="rounded-md bg-accent p-0.5">bridge</span>{" "}
+                    and{" "}
+                    <span className="rounded-md bg-accent p-0.5">
+                      bridge_withdraw
+                    </span>{" "}
+                    methods.
                   </p>
                 </HoverCardContent>
               </HoverCard>

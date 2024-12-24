@@ -247,7 +247,9 @@ export function HoverHeader() {
               >
                 <motion.div variants={buttonVariants} custom={5}>
                   <Button variant="outline" size="lg" asChild>
-                    <Link href="/">Join</Link>
+                    <Link href="https://discord.gg/torus" target="_blank">
+                      Join
+                    </Link>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -340,7 +342,12 @@ export function HoverHeader() {
                 </motion.div>
                 <motion.div variants={buttonVariants} custom={5}>
                   <Button variant="outline" size="lg">
-                    Blog
+                    <Link
+                      href="https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg"
+                      target="_blank"
+                    >
+                      Blog
+                    </Link>
                   </Button>
                 </motion.div>
               </motion.div>
