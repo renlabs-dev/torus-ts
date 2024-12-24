@@ -303,7 +303,8 @@ export function HoverHeader() {
                               <p className="mt-3">
                                 Stake is the organisms container for monetary
                                 energy, transmutable towards its emergent
-                                agency.
+                                agency. Forming a circular value flow between
+                                incentives and stake in their outcome.
                               </p>
                               <p className="mt-3">
                                 The abstractions of control space, permissions,
