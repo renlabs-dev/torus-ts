@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { DaoApplications, GovernanceitemType } from "@torus-ts/subspace";
+import type { DaoApplications, GovernanceItemType } from "@torus-ts/subspace";
 import { processDaoMetadata } from "@torus-ts/subspace";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
@@ -25,7 +25,7 @@ export async function notifyNewApplicationsWorker(props: WorkerProps) {
   const pending_apps = Object.values(
     await getApplications(props.api, ["Pending"]),
   );
-  const p_type: GovernanceitemType = "DAO";
+  const p_type: GovernanceItemType = "AGENT_APPLICATION";
   const proposals = await getProposalIdsByType(p_type);
   const proposalsSet: Set<number> = new Set<number>(proposals);
   const unseen_proposals = pending_apps.filter(
@@ -40,7 +40,7 @@ export async function notifyNewApplicationsWorker(props: WorkerProps) {
 
 async function pushNotification(
   proposal: DaoApplications,
-  pType: GovernanceitemType,
+  pType: GovernanceItemType,
 ) {
   const r = parseIpfsUri(proposal.data);
   const cid = flattenResult(r);

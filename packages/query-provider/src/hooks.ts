@@ -39,16 +39,19 @@ import type { SS58Address } from "@torus-ts/subspace";
 
 // == Constants ==
 
+// -- Subspace refresh times --
+
+// TODO: these values should be passed as parameters in the functions passed by the apps (env).
+
 /**
- * == Subspace refresh times ==
- *
- * TODO: these values should be passed as parameters in the functions passed by the apps (env).
- *
  * Time to consider last block query un-fresh. Half block time is the expected
  * time for a new block at a random point in time, so:
+ *
  * block_time / 2  ==  8 seconds / 2  ==  4 seconds
  *
- * The comment logic from above makes total sense but the user gets heavly impacted by the 4 seconds stale time, thus changing it to block time for some tests.
+ * The comment logic from above makes total sense but the user gets heavily
+ * impacted by the 4 seconds stale time, thus changing it to block time for some
+ * tests.
  */
 export const LAST_BLOCK_STALE_TIME = 1000 * 8;
 
@@ -56,17 +59,14 @@ export const LAST_BLOCK_STALE_TIME = 1000 * 8;
  * Time to consider proposals query state un-fresh. They don't change a lot,
  * only when a new proposal is created and people should be able to see new
  * proposals fast enough.
- *
- * 1 minute (arbitrary).
  */
-export const PROPOSALS_STALE_TIME = 1000 * 60;
+export const PROPOSALS_STALE_TIME = 1000 * 60; // 1 minute (arbitrary)
 
 /**
  * Time to consider stake query state un-fresh. They also don't change a lot,
  * only when people move their stake / delegation. That changes the way votes
  * are computed, but only very marginally for a given typical stake change, with
  * a small chance of a relevant difference in displayed state.
- * 5 minutes (arbitrary).
  */
 export const STAKE_STALE_TIME = 1000 * 60 * 5; // 5 minutes (arbitrary)
 

@@ -7,52 +7,31 @@ import type { Balance } from "../types";
 import type { Api } from "./_common";
 import { SS58_SCHEMA } from "../address";
 import { sb_address, sb_balance, sb_bigint } from "../types";
-import { handleDoubleMapEntries, handleMapEntries } from "./_common";
+import { handleDoubleMapEntries } from "./_common";
 
-export async function queryBridgedBalance(
-  api: Api,
-  key: SS58Address,
-): Promise<Balance> {
-  const q = await api.query.subspaceModule.bridged(key);
-  const balance = sb_balance.parse(q);
-  return balance;
-}
+export * from "./bridge";
 
-export async function queryBridgedBalances(
-  api: Api,
-): Promise<[Map<SS58Address, Balance>, Error[]]> {
-  const q = await api.query.subspaceModule.bridged.entries();
-  return handleMapEntries(q, sb_address, sb_balance);
-}
-
-export async function queryFreeBalance(
-  api: Api,
-  address: SS58Address,
-): Promise<Balance> {
+export async function queryFreeBalance(api: Api, address: SS58Address) {
   const q = await api.query.system.account(address);
   const balance = sb_balance.parse(q.data.free);
   return balance;
 }
 
-export async function queryKeyStakingTo(
-  api: Api,
-  address: SS58Address,
-): Promise<{ address: SS58Address; stake: Balance }[]> {
+/** TODO: return Map */
+export async function queryKeyStakingTo(api: Api, address: SS58Address) {
   const q = await api.query.subspaceModule.stakeTo.entries(address);
 
   const stakes = q.map(([key, value]) => {
     const [, stakeToAddress] = key.args;
     const stake = sb_balance.parse(value);
-
-    return {
-      address: sb_address.parse(stakeToAddress),
-      stake,
-    };
+    const address = sb_address.parse(stakeToAddress);
+    return { address, stake };
   });
 
-  return stakes.filter((stake) => stake.stake !== 0n);
+  return stakes.filter(({ stake }) => stake !== 0n);
 }
 
+/** TODO: return Map */
 export async function queryKeyStakedBy(
   api: Api,
   address: SS58Address,
@@ -70,7 +49,7 @@ export async function queryKeyStakedBy(
     };
   });
 
-  return stakes.filter((stake) => stake.stake !== 0n);
+  return stakes.filter(({ stake }) => stake !== 0n);
 }
 
 export async function queryStakeIn(api: Api): Promise<{
