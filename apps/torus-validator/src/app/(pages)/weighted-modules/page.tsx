@@ -2,12 +2,12 @@
 
 import { useTorus } from "@torus-ts/torus-provider";
 
-import { ModuleCard } from "~/app/components/module-card";
-import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
+import { AgentCard } from "~/app/components/agent-card";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 export default function Page() {
   const { selectedAccount } = useTorus();
-  const { delegatedModules } = useDelegateModuleStore();
+  const { delegatedAgents } = useDelegateAgentStore();
 
   if (!selectedAccount?.address)
     return (
@@ -16,7 +16,7 @@ export default function Page() {
       </span>
     );
 
-  const weightedModules = delegatedModules.filter(
+  const weightedModules = delegatedAgents.filter(
     (module) => module.percentage > 0,
   );
 
@@ -25,12 +25,12 @@ export default function Page() {
       {weightedModules.length ? (
         <div className="mb-16 grid h-full w-full animate-fade-up grid-cols-1 gap-4 backdrop-blur-md animate-delay-700 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {weightedModules.map((module) => (
-            <ModuleCard
+            <AgentCard
               id={module.id}
               key={module.id}
               name={module.name}
               percentage={module.percentage}
-              moduleKey={module.address}
+              agentKey={module.address}
             />
           ))}
         </div>

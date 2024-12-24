@@ -4,7 +4,7 @@ import { TorusObject } from "./components/torus";
 
 export default function Page(): JSX.Element {
   return (
-    <main>
+    <main className="-z-40">
       <div
         className="absolute top-0 h-full w-full animate-fade animate-delay-700"
         style={{ overflow: "hidden" }}
@@ -21,7 +21,7 @@ export default function Page(): JSX.Element {
           width={1000}
           height={1000}
           src="/asci-text.svg"
-          className="pointer-events-none -z-50 hidden animate-fade select-none px-6 animate-delay-[1000ms] md:block xl:w-[68vh] 2xl:w-[85vh]"
+          className="pointer-events-none hidden animate-fade select-none px-6 animate-delay-[1000ms] md:block lg:w-[85vh]"
         />
       </div>
     </main>

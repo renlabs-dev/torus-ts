@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { CaretSortIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
-import { Icons } from "node_modules/@torus-ts/ui/src/components/icons";
+import { Icons } from "@torus-ts/ui";
 
 import {
   Button,
@@ -158,7 +158,7 @@ export function HeaderMobile({ items, apps, start }: HeaderMobileProps) {
             })}
           </div>
           <p className="text-start">
-            Made by the community, powered by{" "}
+            Made by evolution, powered by{" "}
             <Link href="/" className="underline">
               Ren Labs
             </Link>

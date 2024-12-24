@@ -24,7 +24,6 @@ export interface WorkerProps {
 
 // -- Constants -- //
 
-export const SUBNETS_NETUID = 0;
 export const CONSENSUS_NETUID = 2;
 
 export const BLOCK_TIME = 8000;
@@ -92,15 +91,16 @@ export async function getVotesOnPending(
   const votes = await computeTotalVotesPerDao();
   const votes_on_pending = votes.filter(
     (vote) =>
-      dao_hash_map[vote.daoId] &&
-      (dao_hash_map[vote.daoId]?.status == "Pending" ||
-        dao_hash_map[vote.daoId]?.status == "Accepted") &&
-      (dao_hash_map[vote.daoId]?.blockNumber ?? last_block_number) +
+      dao_hash_map[vote.appId] &&
+      (dao_hash_map[vote.appId]?.status == "Pending" ||
+        dao_hash_map[vote.appId]?.status == "Accepted") &&
+      (dao_hash_map[vote.appId]?.blockNumber ?? last_block_number) +
         DAO_EXPIRATION_TIME <=
         last_block_number,
   );
   return votes_on_pending;
 }
+
 export async function getCadreThreshold() {
   const keys = await countCadreKeys();
   return Math.floor(keys / 2) + 1;
@@ -113,7 +113,7 @@ export async function processVotesOnProposal(
   api: ApiPromise,
 ) {
   const mnemonic = process.env.SUBSPACE_MNEMONIC; // TODO: is this the `COMMUNITY_VALIDATOR_MNEMONIC` ?
-  const { daoId, acceptVotes, refuseVotes, removeVotes } = vote_info;
+  const { appId: daoId, acceptVotes, refuseVotes, removeVotes } = vote_info;
   console.log(`Accept: ${acceptVotes} ${daoId} Threshold: ${vote_threshold}`);
   console.log(`Refuse: ${refuseVotes} ${daoId} Threshold: ${vote_threshold}`);
   console.log(`Remove: ${removeVotes} ${daoId} Threshold: ${vote_threshold}`);

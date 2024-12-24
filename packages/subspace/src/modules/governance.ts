@@ -29,7 +29,7 @@ import {
 import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
 
-export type GovernanceModeType = "PROPOSAL" | "DAO";
+export type GovernanceitemType = "PROPOSAL" | "DAO";
 
 // == Proposals ==
 

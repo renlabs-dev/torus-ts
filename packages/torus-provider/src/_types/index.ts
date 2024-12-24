@@ -12,17 +12,20 @@ export interface Stake {
   validator: string;
   amount: string;
   callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
 }
 
 export interface Transfer {
   to: string;
   amount: string;
   callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
 }
 
 export interface Bridge {
   amount: string;
   callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
 }
 
 export interface TransferStake {
@@ -30,6 +33,7 @@ export interface TransferStake {
   toValidator: string;
   amount: string;
   callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
 }
 
 // == Governance ==
@@ -45,7 +49,7 @@ export interface RemoveVote {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface RegisterModule {
+export interface RegisterAgent {
   subnetName: string;
   address: string;
   name: string;

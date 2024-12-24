@@ -6,16 +6,17 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
-// import { Footer } from "@torus-ts/ui/components";
 
 import { PageProvider } from "~/context/page-provider";
 import { env } from "~/env";
-import { cn } from "@torus-ts/ui";
-// import { Header } from "./components/header";
+import { cn, Footer } from "@torus-ts/ui";
+import { Suspense } from "react";
+import { Bridge } from "./components/bridge";
+import { HoverHeader } from "./components/hover-header";
 
 export const metadata: Metadata = {
   robots: "all",
-  title: "torus",
+  title: "Torus",
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description: "The thermodynamic god's favorite child.",
 };
@@ -46,9 +47,14 @@ export default function RootLayout({
           >
             <ReactQueryProvider>
               <PageProvider>
-                {/* <Header /> */}
+                <HoverHeader />
+                <div className="fixed inset-0 z-40 hidden items-end justify-center md:flex">
+                  <Suspense fallback="...loading">
+                    <Bridge />
+                  </Suspense>
+                </div>
                 {children}
-                {/* <Footer /> */}
+                <Footer />
               </PageProvider>
             </ReactQueryProvider>
           </TorusProvider>

@@ -29,8 +29,8 @@ FROM base AS builder
 ARG APP_NAME
 
 # TODO: fix hardcoded vars on Dockerfile
-ENV NEXT_PUBLIC_WS_PROVIDER_URL="wss://api.communeai.net"
-ENV NEXT_PUBLIC_CACHE_PROVIDER_URL="https://torus-cache-q627g.ondigitalocean.app"
+ENV NEXT_PUBLIC_WS_PROVIDER_URL="wss://testnet.api.communeai.net"
+ENV NEXT_PUBLIC_CACHE_PROVIDER_URL="https://dev.cache.torus.network"
 
 WORKDIR /app
 

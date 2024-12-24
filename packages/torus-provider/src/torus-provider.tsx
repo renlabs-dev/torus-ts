@@ -15,14 +15,14 @@ import type {
   Proposal,
 } from "@torus-ts/subspace";
 import { sb_balance } from "@torus-ts/subspace";
-import { toNano2 } from "@torus-ts/utils/subspace";
+import { toNano } from "@torus-ts/utils/subspace";
 
 import type {
   AddCustomProposal,
   AddDaoApplication,
   addTransferDaoTreasuryProposal,
   Bridge,
-  RegisterModule,
+  RegisterAgent,
   RemoveVote,
   Stake,
   Transfer,
@@ -76,7 +76,7 @@ interface TorusContextType {
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
-  registerModule: (registerModule: RegisterModule) => Promise<void>;
+  RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   addDaoApplication: (application: AddDaoApplication) => Promise<void>;
   addTransferDaoTreasuryProposal: (
@@ -244,12 +244,13 @@ export function TorusProvider({
     validator,
     amount,
     callback,
+    refetchHandler,
   }: Stake): Promise<void> {
     if (!api?.tx.subspaceModule?.addStake) return;
 
     const transaction = api.tx.subspaceModule.addStake(
       validator,
-      toNano2(amount),
+      toNano(amount),
     );
     await sendTransaction({
       api,
@@ -258,6 +259,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Staking",
+      refetchHandler,
     });
   }
 
@@ -265,12 +267,13 @@ export function TorusProvider({
     validator,
     amount,
     callback,
+    refetchHandler,
   }: Stake): Promise<void> {
     if (!api?.tx.subspaceModule?.removeStake) return;
 
     const transaction = api.tx.subspaceModule.removeStake(
       validator,
-      toNano2(amount),
+      toNano(amount),
     );
     await sendTransaction({
       api,
@@ -279,12 +282,18 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Unstaking",
+      refetchHandler,
     });
   }
 
-  async function transfer({ to, amount, callback }: Transfer): Promise<void> {
+  async function transfer({
+    to,
+    amount,
+    callback,
+    refetchHandler,
+  }: Transfer): Promise<void> {
     if (!api?.tx.balances.transferAllowDeath) return;
-    const transaction = api.tx.balances.transferAllowDeath(to, toNano2(amount));
+    const transaction = api.tx.balances.transferAllowDeath(to, toNano(amount));
     await sendTransaction({
       api,
       torusApi,
@@ -292,12 +301,17 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Transfer",
+      refetchHandler,
     });
   }
 
-  async function bridge({ amount, callback }: Bridge): Promise<void> {
+  async function bridge({
+    amount,
+    callback,
+    refetchHandler,
+  }: Bridge): Promise<void> {
     if (!api?.tx.subspaceModule?.bridge) return;
-    const transaction = api.tx.subspaceModule.bridge(toNano2(amount));
+    const transaction = api.tx.subspaceModule.bridge(toNano(amount));
     await sendTransaction({
       api,
       torusApi,
@@ -305,6 +319,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Bridge",
+      refetchHandler,
     });
   }
 
@@ -313,13 +328,14 @@ export function TorusProvider({
     toValidator,
     amount,
     callback,
+    refetchHandler,
   }: TransferStake): Promise<void> {
     if (!api?.tx.subspaceModule?.transferStake) return;
 
     const transaction = api.tx.subspaceModule.transferStake(
       fromValidator,
       toValidator,
-      toNano2(amount),
+      toNano(amount),
     );
     await sendTransaction({
       api,
@@ -328,19 +344,20 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Transfer Stake",
+      refetchHandler,
     });
   }
 
   // == Subspace ==
 
-  async function registerModule({
+  async function RegisterAgent({
     subnetName,
     address,
     name,
     moduleId,
     metadata,
     callback,
-  }: RegisterModule): Promise<void> {
+  }: RegisterAgent): Promise<void> {
     if (!api?.tx.subspaceModule?.register) return;
 
     console.log(api.tx.subspaceModule);
@@ -448,7 +465,7 @@ export function TorusProvider({
 
     const transaction = api.tx.governanceModule.addTransferDaoTreasuryProposal(
       IpfsHash,
-      toNano2(value),
+      toNano(value),
       dest,
     );
     await sendTransaction({
@@ -540,7 +557,7 @@ export function TorusProvider({
         transfer,
         transferStake,
 
-        registerModule,
+        RegisterAgent,
 
         voteProposal,
         removeVoteProposal,

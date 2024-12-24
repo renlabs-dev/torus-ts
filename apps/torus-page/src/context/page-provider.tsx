@@ -3,12 +3,6 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
-import type {
-  Balance,
-  LastBlock,
-  SS58Address,
-  StakeData,
-} from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import type { Bridge, Stake } from "@torus-ts/torus-provider/types";
 import {
@@ -16,24 +10,23 @@ import {
   useBridgedBalances,
   useCachedStakeOut,
   useFreeBalance,
-  useKeyStakedBy,
-  useLastBlock,
+  useKeyStakingTo,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 // import { WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
+import type { Balance, SS58Address, StakeData } from "@torus-ts/subspace";
 
 interface PageContextType {
   isInitialized: boolean;
-  lastBlock: UseQueryResult<LastBlock, Error>;
 
   isAccountConnected: boolean;
 
   selectedAccount: InjectedAccountWithMeta | null;
   accountFreeBalance: UseQueryResult<bigint, Error>;
   accountStakedBalance: bigint | undefined;
-  accountStakedBy: UseQueryResult<
+  accountStakingTo: UseQueryResult<
     {
       address: SS58Address;
       stake: Balance;
@@ -42,6 +35,7 @@ interface PageContextType {
   >;
 
   bridge: (bridge: Bridge) => Promise<void>;
+
   removeStake: (stake: Stake) => Promise<void>;
 
   stakeOut: UseQueryResult<StakeData, Error>;
@@ -64,28 +58,25 @@ export function PageProvider({
 }): JSX.Element {
   // == API Context ==
   const {
-    api,
-    isInitialized,
-    selectedAccount,
-    isAccountConnected,
-
-    bridge,
-    removeStake,
-
     accounts,
-    handleLogout,
+    api,
+    bridge,
     handleGetWallets,
+    handleLogout,
     handleSelectWallet,
+    isAccountConnected,
+    isInitialized,
+    removeStake,
+    selectedAccount,
   } = useTorus();
-  const lastBlock = useLastBlock(api);
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(
-    lastBlock.data?.apiAtBlock,
+    api,
     selectedAccount?.address as SS58Address,
   );
 
-  const accountStakedBy = useKeyStakedBy(api, selectedAccount?.address);
+  const accountStakingTo = useKeyStakingTo(api, selectedAccount?.address);
 
   // == Subspace ==
 
@@ -106,40 +97,23 @@ export function PageProvider({
   return (
     <PageContext.Provider
       value={{
-        isInitialized,
-        lastBlock,
-
-        stakeOut,
-
-        selectedAccount,
-
-        accountStakedBy,
-        isAccountConnected,
-        accountFreeBalance,
-        accountStakedBalance,
-
         accountBridgedBalance,
-        bridgedBalances,
-
-        bridge,
-        removeStake,
-
+        accountFreeBalance,
         accounts,
-        handleLogout,
+        accountStakedBalance,
+        accountStakingTo,
+        bridge,
+        bridgedBalances,
         handleGetWallets,
+        handleLogout,
         handleSelectWallet,
+        isAccountConnected,
+        isInitialized,
+        removeStake,
+        selectedAccount,
+        stakeOut,
       }}
     >
-      {/* <WalletDropdown
-        balance={accountFreeBalance.data}
-        stakeOut={stakeOut.data}
-        accounts={accounts}
-        isInitialized={isInitialized}
-        selectedAccount={selectedAccount}
-        handleLogout={handleLogout}
-        handleGetWallets={handleGetWallets}
-        handleSelectWallet={handleSelectWallet}
-      /> */}
       {children}
     </PageContext.Provider>
   );

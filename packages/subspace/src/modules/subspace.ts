@@ -62,9 +62,10 @@ export async function queryKeyStakedBy(
   const stakes = q.map(([key, value]) => {
     const [, stakeFromAddress] = key.args;
     const stake = sb_balance.parse(value);
+    const address = sb_address.parse(stakeFromAddress);
 
     return {
-      address: sb_address.parse(stakeFromAddress),
+      address,
       stake,
     };
   });
@@ -139,6 +140,22 @@ export async function queryStakeOut(api: Api): Promise<{
 }
 
 // == Modules == TODO: Refactor
+
+export const SUBSPACE_AGENT_SCHEMA = z.object({
+  key: SS58_SCHEMA,
+  name: z.string().optional(),
+  apiUrl: z.string().optional(),
+  registrationBlock: z.coerce.number().optional(),
+  metadataUri: z.string().optional(),
+  atBlock: z.coerce.number().optional(),
+
+  weightFactor: z.coerce.number().optional(),
+
+  totalStaked: z.coerce.bigint(),
+  totalStakers: z.coerce.number(),
+});
+
+export type SubspaceAgent = z.infer<typeof SUBSPACE_AGENT_SCHEMA>;
 
 export const SUBSPACE_MODULE_SCHEMA = z.object({
   netuid: z.coerce.number(),
@@ -251,6 +268,7 @@ export const STAKE_FROM_SCHEMA = z.object({
     }),
 });
 
+// TODO: Refactor for Agents
 export async function queryRegisteredModulesInfo(
   api: Api,
   netuid: number,

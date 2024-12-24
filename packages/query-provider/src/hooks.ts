@@ -25,6 +25,7 @@ import {
   queryDaoTreasuryAddress,
   queryFreeBalance,
   queryKeyStakedBy,
+  queryKeyStakingTo,
   queryLastBlock,
   queryProposals,
   queryRewardAllocation,
@@ -207,6 +208,19 @@ export function useProcessVotesAndStakes(
   });
 }
 
+export function useKeyStakingTo(
+  api: Api | Nullish,
+  address: SS58Address | string | Nullish,
+) {
+  return useQuery({
+    queryKey: ["user_total_staked", address],
+    enabled: api != null && address != null,
+    queryFn: () => queryKeyStakingTo(api!, address! as SS58Address),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useKeyStakedBy(
   api: Api | Nullish,
   address: SS58Address | string | Nullish,
@@ -255,7 +269,7 @@ export function useBridgedBalance(
   address: SS58Address | null,
 ) {
   return useQuery({
-    queryKey: ["bridged_balance"],
+    queryKey: ["bridged_balance", address],
     enabled: api != null && address != null,
     queryFn: () => queryBridgedBalance(api!, address!),
     staleTime: STAKE_STALE_TIME,

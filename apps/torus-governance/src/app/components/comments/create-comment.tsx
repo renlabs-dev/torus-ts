@@ -16,13 +16,13 @@ const MIN_STAKE_REQUIRED = 5000;
 
 export function CreateComment({
   id,
-  ModeType,
+  itemType,
 }: {
   id: number;
-  ModeType: "PROPOSAL" | "DAO";
+  itemType: "PROPOSAL" | "AGENT_APPLICATION";
 }) {
   const { selectedAccount, accountStakedBalance } = useGovernance();
-  const { data: cadreUsers } = api.dao.byCadre.useQuery();
+  const { data: cadreUsers } = api.cadre.all.useQuery();
 
   const [content, setContent] = useState<string>("");
   const [name, setName] = useState<string>("");
@@ -30,7 +30,7 @@ export function CreateComment({
   const [remainingChars, setRemainingChars] = useState(MAX_CHARACTERS);
 
   const utils = api.useUtils();
-  const CreateComment = api.proposalComment.createComment.useMutation({
+  const CreateComment = api.comment.create.useMutation({
     onSuccess: () => {
       setContent("");
       setRemainingChars(MAX_CHARACTERS);
@@ -50,7 +50,7 @@ export function CreateComment({
       return;
     }
 
-    if (ModeType === "PROPOSAL") {
+    if (itemType === "PROPOSAL") {
       if (
         !accountStakedBalance ||
         Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
@@ -72,12 +72,12 @@ export function CreateComment({
     try {
       await CreateComment.mutateAsync({
         content,
-        proposalId: id,
-        governanceModel: ModeType,
+        itemId: id,
+        itemType: itemType,
         userName: name || undefined,
       });
       toast.success("Comment submitted successfully!");
-      await utils.proposalComment.byId.invalidate({ proposalId: id });
+      await utils.comment.byId.invalidate({ proposalId: id });
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0]?.message ?? "Invalid input");
@@ -90,7 +90,7 @@ export function CreateComment({
   const isSubmitDisabled = () => {
     if (CreateComment.isPending || !selectedAccount?.address) return true;
 
-    if (ModeType === "PROPOSAL") {
+    if (itemType === "PROPOSAL") {
       return (
         !accountStakedBalance ||
         Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
@@ -154,7 +154,7 @@ export function CreateComment({
           <p className="mt-2 text-sm text-yellow-500">
             {!selectedAccount?.address
               ? "Please connect your wallet to submit a comment."
-              : ModeType === "PROPOSAL"
+              : itemType === "PROPOSAL"
                 ? `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`
                 : "Only Cadre members can submit comments in DAO Applications."}
           </p>

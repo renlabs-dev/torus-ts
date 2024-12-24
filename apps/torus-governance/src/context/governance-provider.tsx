@@ -20,7 +20,7 @@ import type {
   AddCustomProposal,
   AddDaoApplication,
   addTransferDaoTreasuryProposal,
-  RegisterModule,
+  RegisterAgent,
   RemoveVote,
   Vote,
 } from "@torus-ts/torus-provider/types";
@@ -75,7 +75,7 @@ interface GovernanceContextType {
   subnetList: UseQueryResult<Record<string, string>, Error>;
 
   moduleBurn: UseQueryResult<Record<string, string>, Error>;
-  registerModule: (registerModule: RegisterModule) => Promise<void>;
+  RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -92,7 +92,7 @@ export function GovernanceProvider({
     selectedAccount,
     isAccountConnected,
     voteProposal,
-    registerModule,
+    RegisterAgent,
     addDaoApplication,
     addCustomProposal,
     removeVoteProposal,
@@ -217,7 +217,7 @@ export function GovernanceProvider({
         subnetList,
 
         moduleBurn,
-        registerModule,
+        RegisterAgent,
       }}
     >
       <Header

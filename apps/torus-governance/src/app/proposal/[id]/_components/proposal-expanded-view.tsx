@@ -138,8 +138,8 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
           )}
 
           {/* Comments Section */}
-          <ViewComment modeType="PROPOSAL" id={content.id} />
-          <CreateComment id={content.id} ModeType="PROPOSAL" />
+          <ViewComment itemType="PROPOSAL" id={content.id} />
+          <CreateComment id={content.id} itemType="PROPOSAL" />
 
           {/* Desktop Voter List */}
           <div className="hidden lg:block">

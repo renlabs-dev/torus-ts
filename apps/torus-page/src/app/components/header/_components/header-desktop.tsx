@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { Icons } from "node_modules/@torus-ts/ui/src/components/icons";
+import { Icons } from "@torus-ts/ui";
 
 import {
   cn,
@@ -49,8 +49,8 @@ export function HeaderDesktop({
                     <Icons.logo className="h-8 w-8" />
                     <div className="mb-2 mt-4 text-lg font-medium">Torus</div>
                     <p className="text-sm leading-tight text-muted-foreground">
-                      Protocol and Market System for Incentive-driven
-                      Coordination of Decentralized AI.
+                      Self-assembling P2P organism. Multi-graph of delegated
+                      permissions & incentives between agents.
                     </p>
                   </Link>
                 </NavigationMenuLink>

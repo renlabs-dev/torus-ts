@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useRef, useState } from "react";
-import { BN } from "@polkadot/util";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
@@ -13,7 +12,8 @@ import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function StakeAction() {
-  const { addStake, accountFreeBalance } = useWallet();
+  const { addStake, accountFreeBalance, stakeOut, accountStakedBy } =
+    useWallet();
   const [amount, setAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [inputError, setInputError] = useState<{
@@ -36,8 +36,6 @@ export function StakeAction() {
     "wallet",
   );
 
-  const freeBalance = fromNano(accountFreeBalance.data?.toString() ?? "0");
-
   const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRecipient(e.target.value);
     setAmount("");
@@ -45,33 +43,56 @@ export function StakeAction() {
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value;
-    if (Number(newAmount) > Number(freeBalance)) {
+    const newAmount = e.target.value.replace(/[^0-9.]/g, "");
+    const amountNano = toNano(newAmount || "0");
+    const maxAmountNano = toNano(maxAmount || "0");
+
+    if (amountNano > maxAmountNano) {
       setInputError((prev) => ({
         ...prev,
-        value: "Amount exceeds your free balance",
+        value: "Amount exceeds maximum transferable amount",
       }));
     } else {
       setInputError((prev) => ({ ...prev, value: null }));
     }
+
     setAmount(newAmount);
+  };
+
+  const handleCallback = (callbackReturn: TransactionResult) => {
+    setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setRecipient("");
+      setInputError({ recipient: null, value: null });
+    }
+  };
+
+  const refetchHandler = async () => {
+    await Promise.all([
+      stakeOut.refetch(),
+      accountStakedBy.refetch(),
+      accountFreeBalance.refetch(),
+    ]);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const handleCallback = (callbackReturn: TransactionResult) => {
-      setTransactionStatus(callbackReturn);
-    };
-
     const isValidInput = amount && recipient && !inputError.value;
-
     if (!isValidInput) return;
+
+    setTransactionStatus({
+      status: "STARTING",
+      finalized: false,
+      message: "Starting transaction",
+    });
 
     void addStake({
       validator: recipient,
       amount,
       callback: handleCallback,
+      refetchHandler,
     });
   };
 
@@ -81,15 +102,12 @@ export function StakeAction() {
   };
 
   const maxAmount = useMemo(() => {
-    const balanceBn = new BN(toNano(freeBalance));
-    const adjustedErrorMargin = new BN(toNano(0.000_001));
-    const maxAmountBN = balanceBn.sub(adjustedErrorMargin);
-    return maxAmountBN.isNeg() ? "0" : fromNano(maxAmountBN.toString());
-  }, [freeBalance]);
+    const balance = accountFreeBalance.data ?? 0n;
+    const adjustedErrorMargin = 1_000n; // 0.000001 TOR as error margin
 
-  // const handleMaxClick = () => {
-  //   setAmount(maxAmount.toString());
-  // };
+    const maxAmount = balance - adjustedErrorMargin;
+    return maxAmount > 0 ? fromNano(maxAmount) : "0";
+  }, [accountFreeBalance.data]);
 
   const formRef = useRef<HTMLFormElement>(null);
   const reviewData = [
@@ -100,29 +118,8 @@ export function StakeAction() {
     { label: "Amount", content: `${amount ? amount : 0} TOR` },
   ];
 
-  // function MaxAmountLabel() {
-  //   if (freeBalance && recipient) {
-  //     return (
-  //       <span>
-  //         Maximum transferable amount:{" "}
-  //         <Button
-  //           variant="link"
-  //           type="button"
-  //           onClick={handleMaxClick}
-  //           className="m-0 h-5 p-0 text-sm text-primary"
-  //         >
-  //           {Number(freeBalance) - 0.000_001} TOR
-  //         </Button>
-  //       </span>
-  //     );
-  //   }
-  //   return (
-  //     <span className="flex gap-2">Maximum transferable amount: 0 TOR</span>
-  //   );
-  // }
-
   return (
-    <div className="l flex w-full flex-col gap-4 md:flex-row">
+    <div className="flex w-full flex-col gap-4 md:flex-row">
       {currentView === "validators" ? (
         <ValidatorsList
           listType="all"
@@ -147,7 +144,7 @@ export function StakeAction() {
                   value={recipient}
                   required
                   onChange={handleRecipientChange}
-                  placeholder="The full address of the validator"
+                  placeholder="Full validator address"
                 />
                 <Button
                   type="button"
@@ -159,9 +156,9 @@ export function StakeAction() {
                 </Button>
               </div>
               {inputError.recipient && (
-                <p className="-mt-2 mb-1 flex text-left text-base text-red-400">
+                <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
                   {inputError.recipient}
-                </p>
+                </span>
               )}
             </div>
 
@@ -176,7 +173,7 @@ export function StakeAction() {
                   value={amount}
                   required
                   onChange={handleAmountChange}
-                  placeholder="The amount of COMAI to stake"
+                  placeholder="Amount of TOR"
                   className="disabled:cursor-not-allowed"
                   disabled={!recipient}
                 />
@@ -189,15 +186,11 @@ export function StakeAction() {
               </div>
 
               {inputError.value && (
-                <p className="mb-1 mt-2 flex text-left text-base text-red-400">
+                <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
                   {inputError.value}
-                </p>
+                </span>
               )}
             </div>
-
-            {/* <div className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
-              <MaxAmountLabel />
-            </div> */}
 
             {transactionStatus.status && (
               <TransactionStatus

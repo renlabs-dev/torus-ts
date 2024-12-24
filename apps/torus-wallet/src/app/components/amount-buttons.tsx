@@ -1,10 +1,11 @@
 import { Button } from "@torus-ts/ui";
+import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
 const buttonAmounts = [
-  { label: "1/4", value: 1 / 4 },
-  { label: "1/3", value: 1 / 3 },
-  { label: "1/2", value: 1 / 2 },
-  { label: "All", value: 1 },
+  { label: "1/4", value: 4n },
+  { label: "1/3", value: 3n },
+  { label: "1/2", value: 2n },
+  { label: "All", value: 1n },
 ];
 
 interface AmountButtonsProps {
@@ -16,11 +17,10 @@ interface AmountButtonsProps {
 export function AmountButtons(props: AmountButtonsProps) {
   const { availableFunds, setAmount, disabled } = props;
 
-  const handleAmountButtonClick = (divisor: number) => {
-    const parsedFunds = Number(availableFunds);
-    if (isNaN(parsedFunds)) return;
+  const handleAmountButtonClick = (divisor: bigint) => {
+    const parsedFunds = toNano(availableFunds);
 
-    setAmount((parsedFunds * divisor).toString());
+    setAmount(fromNano(parsedFunds / divisor));
   };
 
   return (

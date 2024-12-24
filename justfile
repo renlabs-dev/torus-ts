@@ -3,6 +3,7 @@ default: check
 # == Chain metadata ==
 
 download-metadata name:
+	mkdir -p ./data/metadata
 	scripts/get_metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
 
 copy-specs:

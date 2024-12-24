@@ -11,33 +11,23 @@ import type {
 } from "@torus-ts/subspace";
 import { and, eq, sql } from "@torus-ts/db";
 import { db } from "@torus-ts/db/client";
-import {
-  moduleData,
-  subnetDataSchema,
-  userModuleData,
-  userSubnetDataSchema,
-} from "@torus-ts/db/schema";
+import { agentSchema, userAgentWeightSchema } from "@torus-ts/db/schema";
 import {
   queryChain,
   queryLastBlock,
   STAKE_FROM_SCHEMA,
 } from "@torus-ts/subspace";
 
-import type { ModuleWeight, SubnetWeight } from "../db";
-import {
-  BLOCK_TIME,
-  CONSENSUS_NETUID,
-  log,
-  sleep,
-  SUBNETS_NETUID,
-} from "../common";
-import { insertModuleWeight, insertSubnetWeight } from "../db";
+import { BLOCK_TIME, CONSENSUS_NETUID, log, sleep } from "../common";
+
 import { env } from "../env";
 import {
   calcFinalWeights,
   normalizeWeightsForVote,
   normalizeWeightsToPercent,
 } from "../weights";
+import type { AgentWeight } from "../db";
+import { insertAgentWeight } from "../db";
 
 type AggregatorKind = "module" | "subnet";
 
@@ -117,20 +107,9 @@ export async function weightAggregatorTask(
     throw new Error(
       `Community validator ${communityValidatorAddress} not found in stake data`,
     );
-  }
-
-  if (aggregator == "module") {
+  } else if (aggregator == "module") {
     log(`Committing module weights...`);
-    await postModuleAggregation(
-      stakeOnCommunityValidator,
-      api,
-      keypair,
-      lastBlock,
-    );
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  } else if (aggregator == "subnet") {
-    log(`Committing subnet weights...`);
-    await postSubnetAggregation(
+    await postAgentAggregation(
       stakeOnCommunityValidator,
       api,
       keypair,
@@ -191,21 +170,21 @@ async function doVote(
   }
 }
 
-async function postModuleAggregation(
+async function postAgentAggregation(
   stakeOnCommunityValidator: Map<SS58Address, bigint>,
   api: ApiPromise,
   keypair: KeyringPair,
   lastBlock: number,
 ) {
-  const uidMap = await getModuleUids();
+  const uidMap = await getAgentIds();
   const moduleWeightMap = await getUserWeightMap();
   const { stakeWeights, normalizedWeights, percWeights } = getNormalizedWeights(
     stakeOnCommunityValidator,
     moduleWeightMap,
   );
 
-  const dbModuleWeights: ModuleWeight[] = Array.from(stakeWeights)
-    .map(([moduleId, stakeWeight]): ModuleWeight | null => {
+  const dbModuleWeights: AgentWeight[] = Array.from(stakeWeights)
+    .map(([moduleId, stakeWeight]): AgentWeight | null => {
       const moduleActualId = uidMap.get(moduleId);
       if (moduleActualId === undefined) {
         console.error(`Module id ${moduleId} not found in uid map`);
@@ -228,52 +207,13 @@ async function postModuleAggregation(
     .filter((module) => module !== null);
 
   if (dbModuleWeights.length > 0) {
-    await insertModuleWeight(dbModuleWeights);
+    await insertAgentWeight(dbModuleWeights);
   } else {
     console.warn(`No weights to insert`);
   }
 
   await doVote(api, keypair, CONSENSUS_NETUID, normalizedWeights);
 }
-
-async function postSubnetAggregation(
-  stakeOnCommunityValidator: Map<SS58Address, bigint>,
-  api: ApiPromise,
-  keypair: KeyringPair,
-  lastBlock: number,
-) {
-  const subnetWeightMap = await getUserSubnetWeightMap();
-
-  const { stakeWeights, normalizedWeights, percWeights } = getNormalizedWeights(
-    stakeOnCommunityValidator,
-    subnetWeightMap,
-  );
-
-  const dbSubnetWeights: SubnetWeight[] = Array.from(stakeWeights)
-    .map(([netuid, stakeWeight]): SubnetWeight | null => {
-      const subnetPercWeight = percWeights.get(netuid);
-      if (subnetPercWeight === undefined) {
-        console.error(`Subnet id ${netuid} not found in normalizedPercWeights`);
-        return null;
-      }
-      return {
-        netuid: netuid,
-        percWeight: subnetPercWeight,
-        stakeWeight: stakeWeight,
-        atBlock: lastBlock,
-      };
-    })
-    .filter((subnet) => subnet !== null);
-
-  if (dbSubnetWeights.length > 0) {
-    await insertSubnetWeight(dbSubnetWeights);
-  } else {
-    console.warn(`No weights to insert`);
-  }
-
-  await doVote(api, keypair, SUBNETS_NETUID, normalizedWeights);
-}
-
 async function setChainWeights(
   api: ApiPromise,
   keypair: KeyringPair,
@@ -296,94 +236,60 @@ async function setChainWeights(
 /**
  * Queries the module data table to build a mapping of module UIDS to ids.
  */
-async function getModuleUids(): Promise<Map<number, number>> {
+async function getAgentIds(): Promise<Map<string, number>> {
   const result = await db
     .select({
-      moduleId: moduleData.moduleId,
-      uid: moduleData.id,
+      id: agentSchema.id,
+      key: agentSchema.key,
     })
-    .from(moduleData)
-    .where(
-      eq(
-        moduleData.atBlock,
-        sql`(SELECT at_block FROM module_data ORDER BY at_block DESC LIMIT 1)`,
-      ),
-    )
+    .from(agentSchema)
+    .where(eq(agentSchema.atBlock, sql`(SELECT MAX(at_block) FROM agent)`))
     .execute();
 
-  // TODO: by module table id
-  const uidMap = new Map<number, number>();
+  const idMap = new Map<string, number>();
   result.forEach((row) => {
-    uidMap.set(row.moduleId, row.uid);
+    if (row.key) {
+      idMap.set(row.key, row.id);
+    }
   });
-  return uidMap;
+  return idMap;
 }
-
 /**
  * Queries the user-module data table to build a mapping of user keys to
  * module keys to weights.
  *
  * @returns user key -> module id -> weight (0–100)
  */
-async function getUserWeightMap(): Promise<Map<string, Map<number, bigint>>> {
+async function getUserWeightMap(): Promise<Map<string, Map<string, bigint>>> {
   const result = await db
     .select({
-      userKey: userModuleData.userKey,
-      weight: userModuleData.weight,
-      moduleKey: moduleData.moduleKey,
-      moduleId: moduleData.moduleId,
+      userKey: userAgentWeightSchema.userKey,
+      weight: userAgentWeightSchema.weight,
+      agentKey: agentSchema.key,
+      agentId: agentSchema.id,
     })
-    .from(moduleData)
-    // filter modules updated on the last seen block
+    .from(agentSchema)
+    // filter agents updated on the last seen block
     .where(
       and(
-        eq(
-          moduleData.atBlock,
-          sql`(SELECT at_block FROM module_data ORDER BY at_block DESC LIMIT 1)`,
-        ),
-        eq(moduleData.isWhitelisted, true),
-      ),
-    )
-    .innerJoin(userModuleData, eq(moduleData.id, userModuleData.moduleId));
-  const weightMap = new Map<string, Map<number, bigint>>();
-  result.forEach((entry) => {
-    if (!weightMap.has(entry.userKey)) {
-      weightMap.set(entry.userKey, new Map());
-    }
-    weightMap.get(entry.userKey)?.set(entry.moduleId, BigInt(entry.weight));
-  });
-  return weightMap;
-}
-
-async function getUserSubnetWeightMap(): Promise<
-  Map<string, Map<number, bigint>>
-> {
-  const result = await db
-    .select({
-      userKey: userSubnetDataSchema.userKey,
-      weight: userSubnetDataSchema.weight,
-      netuid: subnetDataSchema.netuid,
-    })
-    .from(subnetDataSchema)
-    // filter subnets updated on the last seen block
-    .where(
-      and(
-        eq(
-          subnetDataSchema.atBlock,
-          sql`(SELECT at_block FROM subnet_data ORDER BY at_block DESC LIMIT 1)`,
-        ),
+        eq(agentSchema.atBlock, sql`(SELECT MAX(at_block) FROM agent)`),
+        eq(agentSchema.isWhitelisted, true),
       ),
     )
     .innerJoin(
-      userSubnetDataSchema,
-      eq(subnetDataSchema.netuid, userSubnetDataSchema.netuid),
-    );
-  const weightMap = new Map<string, Map<number, bigint>>();
+      userAgentWeightSchema,
+      eq(agentSchema.key, userAgentWeightSchema.agentKey),
+    )
+    .execute();
+
+  const weightMap = new Map<string, Map<string, bigint>>();
   result.forEach((entry) => {
     if (!weightMap.has(entry.userKey)) {
       weightMap.set(entry.userKey, new Map());
     }
-    weightMap.get(entry.userKey)?.set(entry.netuid, BigInt(entry.weight));
+    if (entry.agentKey) {
+      weightMap.get(entry.userKey)?.set(entry.agentKey, BigInt(entry.weight));
+    }
   });
   return weightMap;
 }

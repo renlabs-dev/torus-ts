@@ -12,6 +12,7 @@ interface ValidatorsListProps {
   listType: "all" | "staked";
   onSelectValidator: (validator: { address: string; stake?: string }) => void;
   onBack: () => void;
+  excludeAddress?: string[];
 }
 
 interface Validator {
@@ -54,20 +55,29 @@ export function ValidatorsList(props: ValidatorsListProps) {
 
   function getValidatorsList(): Validator[] {
     if (props.listType === "staked" && accountStakedBy.data) {
-      return accountStakedBy.data.map((item) => ({
+      const accountStakeList = accountStakedBy.data.filter(
+        (validatorAddress) =>
+          !props.excludeAddress?.includes(validatorAddress.address),
+      );
+
+      return accountStakeList.map((item) => ({
         name: ``,
         description: `Staked amount: ${formatToken(Number(item.stake))}`,
         address: item.address,
         stake: item.stake,
       }));
     }
-    return validatorsList;
+
+    return validatorsList.filter(
+      (validatorAddress) =>
+        !props.excludeAddress?.includes(validatorAddress.address),
+    );
   }
 
   const currentList = getValidatorsList();
 
   return (
-    <Card className="w-full animate-fade p-4">
+    <Card className="flex w-full animate-fade flex-col justify-between p-6">
       <CardHeader className="flex flex-col gap-2 px-0 pt-0">
         <h3 className="text-lg font-semibold text-primary">
           Select a Validator
@@ -86,7 +96,10 @@ export function ValidatorsList(props: ValidatorsListProps) {
           .
         </p>
       </CardHeader>
-      <CardContent className="flex max-h-[250px] flex-col gap-2 overflow-y-auto px-0">
+      <CardContent className="flex max-h-[200px] w-full flex-col gap-2 overflow-y-auto pb-0 pl-0 pr-1">
+        {currentList.length === 0 && (
+          <p>You haven't staked to any validators yet.</p>
+        )}
         {currentList.map((item) => (
           <Button
             key={item.address}
@@ -99,7 +112,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
               {item.description}
             </span>
             <span className="text-muted-foreground">
-              {smallAddress(item.address, 6)}
+              {smallAddress(item.address, 10)}
             </span>
           </Button>
         ))}
@@ -107,7 +120,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
       <Button
         onClick={props.onBack}
         variant="secondary"
-        className="mt-4 flex w-full items-center justify-center text-nowrap px-4 py-2.5 font-semibold"
+        className="mt-6 flex w-full items-center justify-center text-nowrap px-4 py-2.5 font-semibold"
       >
         <ChevronLeft className="h-6 w-6" /> Back to Field Options
       </Button>

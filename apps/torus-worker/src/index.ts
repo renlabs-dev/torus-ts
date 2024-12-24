@@ -6,7 +6,7 @@ import express from "express";
 import { queryLastBlock } from "@torus-ts/subspace";
 
 import { log } from "./common";
-import { moduleFetcherWorker } from "./workers/module-fetcher";
+import { agentFetcherWorker } from "./workers/agent-fetcher";
 import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
 import { processDaoApplicationsWorker } from "./workers/process-dao-applications";
 import { weightAggregatorWorker } from "./workers/weight-aggregator";
@@ -45,7 +45,7 @@ async function main() {
       });
     },
     "module-fetcher": async () => {
-      await moduleFetcherWorker({
+      await agentFetcherWorker({
         lastBlock,
         api,
         lastBlockNumber,

@@ -14,6 +14,7 @@ interface SendTransactionProps {
   transactionType: string;
   transaction: SubmittableExtrinsic<"promise">;
   callback?: (result: TransactionResult) => void;
+  refetchHandler?: () => Promise<void>;
 }
 
 export async function sendTransaction({
@@ -23,6 +24,7 @@ export async function sendTransaction({
   transactionType,
   transaction,
   callback,
+  refetchHandler,
 }: SendTransactionProps): Promise<void> {
   if (!api || !selectedAccount || !torusApi.web3FromAddress) return;
   try {
@@ -49,6 +51,9 @@ export async function sendTransaction({
               status: "SUCCESS",
               message: `${transactionType} successful`,
             });
+            if (refetchHandler) {
+              void refetchHandler();
+            }
             setTimeout(() => {
               callback?.({
                 status: null,

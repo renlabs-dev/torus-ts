@@ -1,17 +1,24 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress } from "@torus-ts/utils/subspace";
+import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
+import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function UnstakeAction() {
-  const { accountStakedBy } = useWallet();
+  const {
+    accountFreeBalance,
+    accountStakedBy,
+    removeStake,
+    selectedAccount,
+    stakeOut,
+  } = useWallet();
 
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -23,7 +30,6 @@ export function UnstakeAction() {
     value: null,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -56,34 +62,58 @@ export function UnstakeAction() {
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value;
-    if (stakedAmount && Number(newAmount) > Number(stakedAmount)) {
+    const newAmount = e.target.value.replace(/[^0-9.]/g, "");
+    const amountNano = toNano(newAmount || "0");
+    const maxAmount = toNano(stakedAmount ?? "0");
+
+    if (amountNano > maxAmount) {
       setInputError((prev) => ({
         ...prev,
-        value: "Amount exceeds staked amount for this validator",
+        value: "Amount exceeds maximum transferable amount",
       }));
     } else {
       setInputError((prev) => ({ ...prev, value: null }));
     }
+
     setAmount(newAmount);
+  };
+
+  const handleCallback = (callbackReturn: TransactionResult) => {
+    setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setRecipient("");
+
+      setInputError({ recipient: null, value: null });
+    }
+  };
+
+  const refetchHandler = async () => {
+    await Promise.all([
+      stakeOut.refetch(),
+      accountStakedBy.refetch(),
+      accountFreeBalance.refetch(),
+    ]);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // const handleCallback = (callbackReturn: TransactionResult) => {
-    //   setTransactionStatus(callbackReturn);
-    // };
+    const isValidInput = amount && recipient && !inputError.value;
+    if (!isValidInput) return;
 
-    // const isValidInput = amount && recipient && !inputError.value;
+    setTransactionStatus({
+      status: "STARTING",
+      finalized: false,
+      message: "Starting transaction...",
+    });
 
-    // if (!isValidInput) return;
-
-    // void removeStake({
-    //   validator: recipient,
-    //   amount,
-    //   callback: handleCallback,
-    // });
+    void removeStake({
+      validator: recipient,
+      amount,
+      callback: handleCallback,
+      refetchHandler,
+    });
   };
 
   const handleSelectValidator = (validator: { address: string }) => {
@@ -101,12 +131,6 @@ export function UnstakeAction() {
     }
   };
 
-  const handleMaxClick = () => {
-    if (stakedAmount) {
-      setAmount(stakedAmount);
-    }
-  };
-
   const formRef = useRef<HTMLFormElement>(null);
   const reviewData = [
     {
@@ -115,20 +139,27 @@ export function UnstakeAction() {
     },
     { label: "Amount", content: `${amount ? amount : 0} TOR` },
   ];
+
+  useEffect(() => {
+    setRecipient("");
+    setAmount("");
+    setInputError({ recipient: null, value: null });
+  }, [selectedAccount?.address]);
+
   return (
-    <div className="l flex w-full flex-col gap-4 md:flex-row">
-      <Card className="w-full animate-fade p-6 md:w-3/5">
-        {currentView === "stakedValidators" ? (
-          <ValidatorsList
-            listType="staked"
-            onSelectValidator={handleSelectValidator}
-            onBack={() => setCurrentView("wallet")}
-          />
-        ) : (
+    <div className="flex w-full flex-col gap-4 md:flex-row">
+      {currentView === "stakedValidators" ? (
+        <ValidatorsList
+          listType="staked"
+          onSelectValidator={handleSelectValidator}
+          onBack={() => setCurrentView("wallet")}
+        />
+      ) : (
+        <Card className="w-full animate-fade p-6 md:w-3/5">
           <form
             onSubmit={handleSubmit}
             ref={formRef}
-            className="flex w-full flex-col gap-4"
+            className="flex w-full flex-col gap-6"
           >
             <div className="flex w-full flex-col gap-2">
               <Label htmlFor="unstake-recipient">Validator Address</Label>
@@ -139,7 +170,7 @@ export function UnstakeAction() {
                   value={recipient}
                   required
                   onChange={handleRecipientChange}
-                  placeholder="The full address of the validator"
+                  placeholder="Full validator address"
                   className="w-full border border-white/20 bg-[#898989]/5 p-2"
                 />
                 <Button
@@ -152,33 +183,32 @@ export function UnstakeAction() {
                 </Button>
               </div>
               {inputError.recipient && (
-                <span className="text-red-400">{inputError.recipient}</span>
+                <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
+                  {inputError.recipient}
+                </span>
               )}
             </div>
             <div className="flex w-full flex-col gap-2">
               <Label htmlFor="unstake-amount">Value</Label>
-              <div className="flex w-full gap-2">
+              <div className="flex w-full flex-col gap-2">
                 <Input
                   id="unstake-amount"
                   type="number"
                   value={amount}
                   min={0}
+                  step={0.000000001}
                   required
                   onChange={handleAmountChange}
-                  placeholder="The amount of COMAI to unstake"
+                  placeholder="Amount of TOR"
                   className="w-full p-2 disabled:cursor-not-allowed"
                   disabled={!recipient}
                 />
-                {stakedAmount && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleMaxClick}
-                    className="px-4 py-2"
-                  >
-                    Max
-                  </Button>
-                )}
+
+                <AmountButtons
+                  setAmount={setAmount}
+                  availableFunds={stakedAmount ?? "0"}
+                  disabled={!recipient || !stakedAmount}
+                />
               </div>
               {inputError.value && (
                 <p className="mb-1 mt-2 flex text-left text-base text-red-400">
@@ -194,21 +224,23 @@ export function UnstakeAction() {
               />
             )}
           </form>
-        )}
-      </Card>
-      <WalletTransactionReview
-        disabled={
-          transactionStatus.status === "PENDING" ||
-          !amount ||
-          !recipient ||
-          (stakedAmount &&
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            amount > stakedAmount) ||
-          !!inputError.value
-        }
-        formRef={formRef}
-        reviewContent={reviewData}
-      />
+        </Card>
+      )}
+      {currentView !== "stakedValidators" && (
+        <WalletTransactionReview
+          disabled={
+            transactionStatus.status === "PENDING" ||
+            !amount ||
+            !recipient ||
+            (stakedAmount &&
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+              amount > stakedAmount) ||
+            !!inputError.value
+          }
+          formRef={formRef}
+          reviewContent={reviewData}
+        />
+      )}
     </div>
   );
 }

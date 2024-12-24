@@ -1,90 +1,43 @@
 export const sections = [
   {
-    sectionName: "modular",
-    title: "Modular",
-    subtitle: "Composable architecture",
-    iconSrc: "/reusability-icon.svg",
+    sectionName: "high-level",
+    title: "High-level mental model",
     features: [
       {
         description:
-          "Torus follows a modular, reusable and minimal architecture philosophy, able to quickly add, adapt and compose parts of the system on the fly.",
+          "The Torus is an self-assembling agentic p2p organism composed of an emergent multi-graph of delegated permissions and incentives between agents, anchored to the root agent stake. Forming an ant-fragile multi-scale competency architecture with arbitrarily granular specialisation, aligning itself towards stake.",
       },
       {
         description:
-          "Torus assumes to be continually innovated and build upon through the DAO, making a scalable and robust architecture a foundational requirement.",
-      },
-    ],
-  },
-  {
-    sectionName: "parallel",
-    title: "Parallel",
-    subtitle: "Horizontal scaling",
-    iconSrc: "/scalability-icon.svg",
-    features: [
-      {
-        description:
-          "Subnets and other economic applications run and scale in parallel, allowing to host highly specialized and complimentary mechanisms",
-      },
-    ],
-  },
-  {
-    sectionName: "offchain",
-    title: "Offchain",
-    subtitle: "Any mechanism on any compute",
-    iconSrc: "/tokenomics-icon.svg",
-    features: [
-      {
-        description:
-          "The blockchain is only responsible for the economic information. all mechanisms and applications build on Torus run offchain without constraints.",
+          "Every part of the Torus has local autonomy and except the root agent (fully on-chain) is unconstrained in its substrate, design and function.",
       },
       {
         description:
-          "This allows subnets and applications to be arbitrarily complex and computationally expensive, without facing blockchain limitations.",
-      },
-    ],
-  },
-  {
-    sectionName: "decentralized",
-    title: "Decentralized",
-    subtitle: `No foundation, only DAO`,
-    iconSrc: "/validators-icon.svg",
-    features: [
-      {
-        description: `All changes to Torus are decided collectively by the DAO. No central authority has full control over the Protocol.`,
+          "Stake is the root agent, genome and monetary energy container of the Torus, token emission flows are the organisms metabolism. The organisational complexity (Torus graph) emerges from it, coerced to continuously align back to it. Its agents all the way down.",
       },
       {
-        description: `DAO participation is incentivized to motivate holders to take part in deciding their destiny.`,
-      },
-    ],
-  },
-  {
-    sectionName: "bottom-up",
-    title: "Bottom up",
-    subtitle: `No central team`,
-    iconSrc: "/validators-icon.svg",
-    features: [
-      {
-        description: `There was never any bureaucracy or rigid hierarchy, Torus was birthed out of cypherpunk ideals.`,
+        description:
+          "Continuous alignment towards the stake root emerges naturally in the delegation tree hierarchies through selective pressure at every edge. Each agent's success and survival depends on being selected by the level above, creating a chain of interdependent selection processes. ",
       },
       {
-        description: `Anyone can become a core contributor and grow to wield big impact. Ideas efficiently rise from the bottom up to implementation.`,
-      },
-    ],
-  },
-  {
-    sectionName: "tokenomics",
-    title: "Tokenomics",
-    subtitle: `No Premine`,
-    iconSrc: "/tokenomics-icon.svg",
-    features: [
-      {
-        description: `Torus is continuously optimizing the allocation of emissions to create positive sum competitions.`,
+        description:
+          "This creates constant pressure of bottom-up alignment of adaptive trajectories within the local domain spaces/context of every agent towards the basis of selection of the stake root, higher order organism competency and goals.",
       },
       {
-        description: `The current standard framework is a 50/50 reward split between miners and validators. miners compete to optimize or solve what validators define. validators evaluate the performance of miners.`,
+        description:
+          "Stake is permissionless, while everything else is permissioned by stake. Stake aims to increase its contained monetary energy, in order to direct it towards the emergent agency of the organism, while ensuring alignment towards its emergent beliefs and goals.",
       },
       {
-        description: `Rewards are distributed every 100 blocks, with a block time of 8 seconds.`,
+        description:
+          "The Torus is an organisational medium of its community and memeplex, expressive for its emergent agency, allowing it to accumulate and coordinate its agentic and monetary energy in unison. ",
+      },
+      {
+        description:
+          "Every action represents need/opportunity for reaction, creating a stigmergic autocatalytic flow of agency driving the system forward on aligned trajectory.",
+      },
+      {
+        description:
+          "The Torus exhibits a continuous emergent process with increasingly complex multi-scale symbiotic relationships, capable of autonomous teleodynamic order and negentropic adaptation. ",
       },
     ],
   },

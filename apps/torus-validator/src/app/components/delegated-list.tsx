@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ChevronsUp, X } from "lucide-react";
 
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
@@ -23,46 +23,22 @@ import {
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
-import { useDelegateModuleStore } from "~/stores/delegateModuleStore";
-import { useDelegateSubnetStore } from "~/stores/delegateSubnetStore";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { api } from "~/trpc/react";
 
 export function DelegatedList() {
-  const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState("modules"); // Default value
-
-  useEffect(() => {
-    const currentRoute =
-      pathname === "/subnets" || pathname === "/weighted-subnets"
-        ? "subnets"
-        : "modules";
-    setActiveTab(currentRoute);
-  }, [pathname]);
-
   const {
-    delegatedModules,
-    updatePercentage: updateModulePercentage,
-    removeModule,
-    getTotalPercentage: getModuleTotalPercentage,
-    setDelegatedModulesFromDB,
-    updateOriginalModules,
-    hasUnsavedChanges: hasUnsavedModuleChanges,
-  } = useDelegateModuleStore();
+    delegatedAgents,
+    updatePercentage: updatePercentage,
+    removeAgent,
+    getTotalPercentage,
+    setDelegatedAgentsFromDB,
+    updateOriginalAgents,
+    hasUnsavedChanges,
+  } = useDelegateAgentStore();
 
-  const {
-    delegatedSubnets,
-    updatePercentage: updateSubnetPercentage,
-    removeSubnet,
-    getTotalPercentage: getSubnetTotalPercentage,
-    setDelegatedSubnetsFromDB,
-    updateOriginalSubnets,
-    hasUnsavedChanges: hasUnsavedSubnetChanges,
-  } = useDelegateSubnetStore();
+  const totalPercentage = getTotalPercentage();
 
-  const totalPercentage =
-    activeTab === "modules"
-      ? getModuleTotalPercentage()
-      : getSubnetTotalPercentage();
   const { selectedAccount, api: torusApi } = useTorus();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,9 +47,7 @@ export function DelegatedList() {
   const accountStakedBy = useKeyStakedBy(torusApi, selectedAccount?.address);
 
   function handleAutoCompletePercentage() {
-    const items = activeTab === "modules" ? delegatedModules : delegatedSubnets;
-    const updateFn =
-      activeTab === "modules" ? updateModulePercentage : updateSubnetPercentage;
+    const items = delegatedAgents;
 
     const remainingPercentage = 100 - totalPercentage;
     const itemsToUpdate = items.length;
@@ -86,24 +60,15 @@ export function DelegatedList() {
     items.forEach((item, index) => {
       const newPercentage =
         item.percentage + percentagePerItem + (index < extraPercentage ? 1 : 0);
-      updateFn(item.id, newPercentage);
+      updatePercentage(item.id, newPercentage);
     });
   }
 
   const {
-    data: userModuleData,
-    error: moduleError,
+    data: userAgentWeight,
+    error: agentError,
     refetch: refetchModules,
-  } = api.module.byUserModuleData.useQuery(
-    { userKey: selectedAccount?.address ?? "" },
-    { enabled: !!selectedAccount?.address },
-  );
-
-  const {
-    data: userSubnetData,
-    error: subnetError,
-    refetch: refetchSubnets,
-  } = api.subnet.byUserSubnetData.useQuery(
+  } = api.userAgentWeight.byUserKey.useQuery(
     { userKey: selectedAccount?.address ?? "" },
     { enabled: !!selectedAccount?.address },
   );
@@ -130,85 +95,44 @@ export function DelegatedList() {
   );
 
   useEffect(() => {
-    if (moduleError) {
-      console.error("Error fetching user module data:", moduleError);
+    if (agentError) {
+      console.error("Error fetching user agent data:", agentError);
     }
-    if (userModuleData) {
-      const formattedModules = userModuleData.map((module) => ({
-        id: module.module_data.id,
-        address: module.module_data.moduleKey,
-        title: module.module_data.name ?? "",
-        name: module.module_data.name ?? "",
-        percentage: module.user_module_data.weight,
+    if (userAgentWeight) {
+      const formattedModules = userAgentWeight.map((agent) => ({
+        id: agent.user_agent_weight.id,
+        address: agent.user_agent_weight.agentKey,
+        title: agent.agent.name ?? "",
+        name: agent.agent.name ?? "",
+        percentage: agent.user_agent_weight.weight,
       }));
-      setDelegatedModulesFromDB(formattedModules);
+      setDelegatedAgentsFromDB(formattedModules);
     }
-  }, [userModuleData, moduleError, setDelegatedModulesFromDB]);
-
-  useEffect(() => {
-    if (subnetError) {
-      console.error("Error fetching user subnet data:", subnetError);
-    }
-    if (userSubnetData) {
-      const formattedSubnets = userSubnetData.map((subnet) => ({
-        id: subnet.subnet_data.netuid,
-        name: subnet.subnet_data.name,
-        percentage: subnet.user_subnet_data.weight,
-        founderAddress: subnet.subnet_data.founder,
-      }));
-      setDelegatedSubnetsFromDB(formattedSubnets);
-    }
-  }, [userSubnetData, subnetError, setDelegatedSubnetsFromDB]);
+  }, [userAgentWeight, agentError, setDelegatedAgentsFromDB]);
 
   const handlePercentageChange = (id: number, percentage: number) => {
     if (percentage >= 0 && percentage <= 100) {
-      if (activeTab === "modules") {
-        updateModulePercentage(id, percentage);
-      } else {
-        updateSubnetPercentage(id, percentage);
-      }
+      updatePercentage(id, percentage);
     }
   };
 
-  const createManyUserModuleData =
-    api.module.createManyUserModuleData.useMutation({
-      onSuccess: () => {
-        router.refresh();
-        setIsSubmitting(false);
-      },
-      onError: (error) => {
-        console.error("Error submitting data:", error);
-        setIsSubmitting(false);
-      },
-    });
-
-  const deleteUserModuleData = api.module.deleteUserModuleData.useMutation({
+  const createManyUserAgentData = api.userAgentWeight.createMany.useMutation({
     onSuccess: () => {
-      console.log("User module data deleted successfully");
+      router.refresh();
+      setIsSubmitting(false);
     },
     onError: (error) => {
-      console.error("Error deleting user module data:", error);
+      console.error("Error submitting data:", error);
+      setIsSubmitting(false);
     },
   });
 
-  const createManyUserSubnetData =
-    api.subnet.createManyUserSubnetData.useMutation({
-      onSuccess: () => {
-        router.refresh();
-        setIsSubmitting(false);
-      },
-      onError: (error) => {
-        console.error("Error submitting data:", error);
-        setIsSubmitting(false);
-      },
-    });
-
-  const deleteUserSubnetData = api.subnet.deleteUserSubnetData.useMutation({
+  const deleteUserAgentData = api.userAgentWeight.delete.useMutation({
     onSuccess: () => {
-      console.log("User subnet data deleted successfully");
+      console.log("User agent data deleted successfully");
     },
     onError: (error) => {
-      console.error("Error deleting user subnet data:", error);
+      console.error("Error deleting user agent data:", error);
     },
   });
 
@@ -222,79 +146,43 @@ export function DelegatedList() {
     }
     if (Number(userStakeWeight) <= 50) {
       toast.error(
-        "You must have at least 50 COMAI staked to delegate modules or subnets",
+        "You must have at least 50 COMAI staked to delegate agents or subnets",
       );
       return;
     }
     setIsSubmitting(true);
     try {
-      if (activeTab === "modules") {
-        // Delete existing user module data
-        await deleteUserModuleData.mutateAsync({
-          userKey: selectedAccount.address,
-        });
+      // Delete existing user agent data
+      await deleteUserAgentData.mutateAsync({
+        userKey: selectedAccount.address,
+      });
 
-        // Prepare data for createManyUserModuleData
-        const modulesData = delegatedModules.map((module) => ({
-          moduleId: module.id,
-          weight: module.percentage,
-          userKey: selectedAccount.address,
-        }));
+      // Prepare data for createManyUserAgentData
+      const agentsData = delegatedAgents.map((agent) => ({
+        agentKey: agent.address,
+        weight: agent.percentage,
+      }));
 
-        // Submit new user module data in a single call
-        await createManyUserModuleData.mutateAsync(modulesData);
+      // Submit new user agent data in a single call
+      await createManyUserAgentData.mutateAsync(agentsData);
 
-        updateOriginalModules();
-      } else {
-        // Delete existing user subnet data
-        void deleteUserSubnetData.mutateAsync({
-          userKey: selectedAccount.address,
-        });
-        // Prepare data for createUserSubnetData
-        const subnetsData = delegatedSubnets.map((subnet) => ({
-          netuid: subnet.id,
-          weight: subnet.percentage,
-          userKey: selectedAccount.address,
-        }));
+      updateOriginalAgents();
 
-        // Submit new user subnet data in a single call
-        await createManyUserSubnetData.mutateAsync(subnetsData);
-
-        updateOriginalSubnets();
-      }
       // Fetch updated data from the database
-      if (activeTab === "modules") {
-        const { data: updatedModuleData } =
-          api.module.byUserModuleData.useQuery(
-            { userKey: selectedAccount.address },
-            { enabled: !!selectedAccount.address },
-          );
-        await refetchModules();
-        const formattedModules = updatedModuleData?.map((module) => ({
-          id: module.module_data.id,
-          address: module.module_data.moduleKey,
-          title: module.module_data.name ?? "",
-          name: module.module_data.name ?? "",
-          percentage: module.user_module_data.weight,
-        }));
-        setDelegatedModulesFromDB(formattedModules ?? []);
-      } else {
-        const { data: updatedSubnetData } =
-          api.subnet.byUserSubnetData.useQuery(
-            { userKey: selectedAccount.address },
-            { enabled: !!selectedAccount.address },
-          );
-        await refetchSubnets();
-        if (updatedSubnetData) {
-          const formattedSubnets = updatedSubnetData.map((subnet) => ({
-            id: subnet.subnet_data.netuid,
-            name: subnet.subnet_data.name,
-            percentage: subnet.user_subnet_data.weight,
-            founderAddress: subnet.subnet_data.founder,
-          }));
-          setDelegatedSubnetsFromDB(formattedSubnets);
-        }
-      }
+      const { data: updatedAgentData } = api.userAgentWeight.byUserKey.useQuery(
+        { userKey: selectedAccount.address },
+        { enabled: !!selectedAccount.address },
+      );
+      await refetchModules();
+      const formattedModules = updatedAgentData?.map((agent) => ({
+        id: agent.user_agent_weight.id,
+        address: agent.user_agent_weight.agentKey,
+        title: agent.agent.name ?? "",
+        name: agent.agent.name ?? "",
+        percentage: agent.user_agent_weight.weight,
+      }));
+      setDelegatedAgentsFromDB(formattedModules ?? []);
+
       setIsSubmitting(false);
     } catch (error) {
       console.error("Error submitting data:", error);
@@ -302,37 +190,19 @@ export function DelegatedList() {
     }
   };
 
-  function handleModuleClick() {
-    setActiveTab("modules");
-    router.push("/modules");
-  }
-  function handleSubnetClick() {
-    setActiveTab("subnets");
-    router.push("/subnets");
-  }
-
   const handleRemoveAllWeight = async () => {
     if (!selectedAccount?.address) {
       return;
     }
     setIsSubmitting(true);
     try {
-      if (activeTab === "modules") {
-        await deleteUserModuleData.mutateAsync({
-          userKey: selectedAccount.address,
-        });
-        setDelegatedModulesFromDB([]);
-      } else {
-        await deleteUserSubnetData.mutateAsync({
-          userKey: selectedAccount.address,
-        });
-        setDelegatedSubnetsFromDB([]);
-      }
-      if (activeTab === "modules") {
-        await refetchModules();
-      } else {
-        await refetchSubnets();
-      }
+      await deleteUserAgentData.mutateAsync({
+        userKey: selectedAccount.address,
+      });
+      setDelegatedAgentsFromDB([]);
+
+      await refetchModules();
+
       setIsSubmitting(false);
     } catch (error) {
       console.error("Error removing weight:", error);
@@ -340,13 +210,10 @@ export function DelegatedList() {
     }
   };
 
-  const hasItemsToClear =
-    activeTab === "modules"
-      ? delegatedModules.length > 0
-      : delegatedSubnets.length > 0;
+  const hasItemsToClear = delegatedAgents.length > 0;
 
   const hasZeroPercentage = () => {
-    const items = activeTab === "modules" ? delegatedModules : delegatedSubnets;
+    const items = delegatedAgents;
     return items.some((item) => item.percentage === 0);
   };
 
@@ -366,10 +233,7 @@ export function DelegatedList() {
     if (isSubmitting) {
       return { disabled: true, message: "Submitting..." };
     }
-    if (
-      (activeTab === "modules" && hasUnsavedModuleChanges()) ||
-      (activeTab === "subnets" && hasUnsavedSubnetChanges())
-    ) {
+    if (hasUnsavedChanges()) {
       return { disabled: false, message: "You have unsaved changes" };
     }
     return { disabled: false, message: "All changes saved!" };
@@ -377,19 +241,18 @@ export function DelegatedList() {
   const submitStatus = getSubmitStatus();
 
   return (
-    <div className={`${pathname === "/" ? "hidden" : "block"}`}>
+    <div>
       {selectedAccount?.address && (
         <div className="fixed bottom-0 right-0 z-50 mt-8 hidden w-full flex-col-reverse text-sm md:bottom-4 md:mr-4 md:flex md:w-fit">
           <Card className="mb-2 flex animate-fade-up flex-col rounded-3xl border border-white/20 bg-[#898989]/5 font-semibold text-white backdrop-blur-lg">
             <div className="flex items-center justify-center px-7">
-              {["modules", "subnets", "stake"].map((type, index) => (
+              {["agents", "subnets", "stake"].map((type, index) => (
                 <div key={type} className="flex items-center">
                   <Label
                     className={cn(
                       "flex items-center gap-1 text-sm font-semibold",
                       {
-                        "text-cyan-500": activeTab === "subnets",
-                        "text-green-500": activeTab !== "subnets",
+                        "text-cyan-500": "subnets",
                         "text-amber-500":
                           index === 1 && totalPercentage !== 100,
                       },
@@ -397,18 +260,14 @@ export function DelegatedList() {
                   >
                     <b>
                       {index === 0
-                        ? activeTab === "modules"
-                          ? delegatedModules.length
-                          : delegatedSubnets.length
+                        ? delegatedAgents.length
                         : index === 1
                           ? `${Number(totalPercentage)}%`
                           : Number(userStakeWeight)}
                     </b>
                     <span className="text-white">
                       {index === 0
-                        ? activeTab === "modules"
-                          ? "Modules"
-                          : "Subnets"
+                        ? "Modules"
                         : index === 1
                           ? "Allocated"
                           : "COMAI"}
@@ -422,28 +281,10 @@ export function DelegatedList() {
             </div>
             <Separator />
             <div className="flex w-full gap-2 p-3">
-              {["modules", "subnets"].map((tab) => (
-                <Button
-                  key={tab}
-                  variant="ghost"
-                  onClick={
-                    tab === "modules" ? handleModuleClick : handleSubnetClick
-                  }
-                  className={cn(
-                    "rounded-full border",
-                    activeTab === tab ? "border-white" : "border-white/20",
-                  )}
-                >
-                  {tab.toUpperCase()}
-                </Button>
-              ))}
               <Button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                  "w-full gap-1 rounded-full",
-                  activeTab === "subnets"
-                    ? "border-cyan-500 bg-cyan-600/15 text-cyan-500 hover:border-cyan-400 hover:bg-cyan-500/15 active:bg-cyan-500/50"
-                    : "border-green-500 bg-green-600/15 text-green-500 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50",
+                  "w-full gap-1 rounded-full border-green-500 bg-green-600/15 text-green-500 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50",
                 )}
               >
                 {isOpen ? "COLLAPSE " : "EXPAND "}
@@ -460,79 +301,29 @@ export function DelegatedList() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>
-                      {activeTab === "modules" ? "Module" : "Subnet"}
-                    </TableHead>
-                    <TableHead>
-                      {activeTab === "modules" ? "Address" : "Founder"}
-                    </TableHead>
+                    <TableHead>Module</TableHead>
+                    <TableHead>Address</TableHead>
                     <TableHead>Percentage</TableHead>
                     <TableHead>Clear</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {activeTab === "modules" ? (
-                    delegatedModules.length ? (
-                      delegatedModules.map((module) => (
-                        <TableRow key={module.id}>
-                          <TableCell className="font-medium">
-                            {module.name}
-                          </TableCell>
-                          <TableCell className="text-gray-400">
-                            {smallAddress(module.address, 4)}
-                          </TableCell>
-                          <TableCell className="flex items-center gap-1">
-                            <Input
-                              type="number"
-                              value={module.percentage}
-                              onChange={(e) =>
-                                handlePercentageChange(
-                                  module.id,
-                                  Number(e.target.value),
-                                )
-                              }
-                              min="0"
-                              max="100"
-                              className="w-16"
-                            />
-                            <Label className="relative right-5 text-gray-400">
-                              %
-                            </Label>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              onClick={() => removeModule(module.id)}
-                            >
-                              <X className="h-5 w-5" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center">
-                          Select a module to allocate through the modules page.
-                        </TableCell>
-                      </TableRow>
-                    )
-                  ) : delegatedSubnets.length ? (
-                    delegatedSubnets.map((subnet) => (
-                      <TableRow key={subnet.id}>
+                  {delegatedAgents.length ? (
+                    delegatedAgents.map((agent) => (
+                      <TableRow key={agent.id}>
                         <TableCell className="font-medium">
-                          {subnet.name}
+                          {agent.name}
                         </TableCell>
                         <TableCell className="text-gray-400">
-                          {smallAddress(subnet.founderAddress, 4)}
+                          {smallAddress(agent.address, 4)}
                         </TableCell>
                         <TableCell className="flex items-center gap-1">
                           <Input
                             type="number"
-                            value={subnet.percentage}
+                            value={agent.percentage}
                             onChange={(e) =>
                               handlePercentageChange(
-                                subnet.id,
+                                agent.id,
                                 Number(e.target.value),
                               )
                             }
@@ -548,7 +339,7 @@ export function DelegatedList() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => removeSubnet(subnet.id)}
+                            onClick={() => removeAgent(agent.id)}
                           >
                             <X className="h-5 w-5" />
                           </Button>
@@ -557,8 +348,8 @@ export function DelegatedList() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-wrap text-center">
-                        Select a subnet to allocate through the subnets page.
+                      <TableCell colSpan={4} className="text-center">
+                        Select a agent to allocate through the agents page.
                       </TableCell>
                     </TableRow>
                   )}
@@ -569,9 +360,7 @@ export function DelegatedList() {
                 <Button
                   onClick={handleAutoCompletePercentage}
                   disabled={
-                    totalPercentage === 100 || activeTab === "modules"
-                      ? delegatedModules.length === 0
-                      : delegatedSubnets.length === 0
+                    totalPercentage === 100 || delegatedAgents.length === 0
                   }
                   variant="outline"
                   className="w-full rounded-full"
@@ -585,39 +374,28 @@ export function DelegatedList() {
                   variant="outline"
                   className="w-full rounded-full"
                 >
-                  {isSubmitting
-                    ? "Removing..."
-                    : `Remove ${activeTab === "modules" ? "Modules" : "Subnets"}`}
+                  {isSubmitting ? "Removing..." : `Remove Modules`}
                 </Button>
               </div>
               <Separator className="my-4" />
               <Button
                 onClick={handleSubmit}
                 className={cn(
-                  "w-full rounded-full",
-                  activeTab === "subnets"
-                    ? "border-cyan-500 bg-cyan-600/15 text-cyan-500 hover:border-cyan-400 hover:bg-cyan-500/15 active:bg-cyan-500/50"
-                    : "border-green-500 bg-green-600/15 text-green-500 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50",
+                  "w-full rounded-full border-green-500 bg-green-600/15 text-green-500 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50",
                 )}
                 disabled={submitStatus.disabled}
                 title={submitStatus.disabled ? submitStatus.message : ""}
               >
-                {isSubmitting
-                  ? "Submitting..."
-                  : activeTab === "modules"
-                    ? "Submit Modules"
-                    : "Submit Subnets"}
+                {isSubmitting ? "Submitting..." : "Submit Modules"}
               </Button>
               <Label
                 className={cn("pt-2 text-center text-sm", {
                   "text-pink-500":
                     submitStatus.message === "You have unsaved changes",
                   "text-cyan-500":
-                    submitStatus.message === "All changes saved!" &&
-                    activeTab === "subnets",
+                    submitStatus.message === "All changes saved!",
                   "text-green-500":
-                    submitStatus.message === "All changes saved!" &&
-                    activeTab !== "subnets",
+                    submitStatus.message === "All changes saved!",
                   "text-amber-500": ![
                     "You have unsaved changes",
                     "All changes saved!",

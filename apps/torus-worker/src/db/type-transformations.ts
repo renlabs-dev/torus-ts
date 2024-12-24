@@ -1,27 +1,22 @@
-import type { SubspaceModule } from "@torus-ts/subspace";
+import type { SubspaceAgent } from "@torus-ts/subspace";
 
-import type { Module } from "./index.js";
+import type { Agent } from "./index.js";
 
-export function SubspaceModuleToDatabase(
-  module: SubspaceModule,
+export function SubspaceAgentToDatabase(
+  agent: SubspaceAgent,
   atBlock: number,
   whitelisted: boolean,
-): Module {
+): Agent {
   return {
-    netuid: module.netuid,
-    moduleKey: module.key,
+    key: agent.key,
+    name: agent.name ?? null,
     atBlock: atBlock,
-    name: module.name ?? null,
-    registrationBlock: module.registrationBlock ?? null,
-    addressUri: module.address ?? null,
-    metadataUri: module.metadata ?? null,
-    emission: module.emission ?? null,
-    incentive: module.incentive ?? null,
-    dividend: module.dividends ?? null,
-    delegationFee: module.delegationFee ?? null,
-    totalStaked: module.totalStaked,
-    totalStakers: module.totalStakers,
-    moduleId: module.uid,
+    registrationBlock: agent.registrationBlock ?? null,
+    apiUrl: agent.apiUrl ?? null,
+    metadataUri: agent.metadataUri ?? null,
+    weightFactor: agent.weightFactor ?? null,
     isWhitelisted: whitelisted,
+    totalStaked: agent.totalStaked,
+    totalStakers: agent.totalStakers,
   };
 }

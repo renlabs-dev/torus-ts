@@ -23,18 +23,18 @@ import {
   Textarea,
 } from "@torus-ts/ui";
 
-type ProposalComment = inferProcedureOutput<
-  AppRouter["proposalComment"]["byReport"]
->[0];
+export type commentReportReason = NonNullable<
+  inferProcedureOutput<AppRouter["commentReport"]["byId"]>
+>["reason"];
 
 interface ReportFormData {
-  reason: ProposalComment["reason"];
+  reason: commentReportReason;
   content: string;
 }
 
 interface ReportCommentProps {
-  commentId: string | null;
-  setCommentId: (id: string | null) => void;
+  commentId: number | null;
+  setCommentId: (id: number | null) => void;
 }
 
 export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
@@ -45,20 +45,19 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
 
   const [errors, setErrors] = useState<Partial<ReportFormData>>({});
 
-  const reportCommentMutation =
-    api.proposalComment.createCommentReport.useMutation({
-      onSuccess: () => {
-        setCommentId(null);
-        setFormData({ reason: formData.reason, content: "" });
-        setErrors({});
-      },
-    });
+  const reportCommentMutation = api.commentReport.create.useMutation({
+    onSuccess: () => {
+      setCommentId(null);
+      setFormData({ reason: formData.reason, content: "" });
+      setErrors({});
+    },
+  });
 
   const handleInputChange = (type: "reason" | "content", value: string) => {
     if (type === "reason") {
       setFormData((prev) => ({
         ...prev,
-        reason: value as ProposalComment["reason"],
+        reason: value as commentReportReason,
       }));
     } else {
       setFormData((prev) => ({ ...prev, [type]: value }));

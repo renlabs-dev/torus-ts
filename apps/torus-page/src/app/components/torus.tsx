@@ -56,7 +56,7 @@ const fragmentShader = `
     float pattern = max(flowU, flowV);
 
     vec3 color = vec3(0.6, 0.6, 0.6);
-    float pulse = sin(time * 0.1) * 0.25 + 0.75;
+    float pulse = sin(time * 0.1) * 0.15 + 0.75;
 
     vec3 finalColor = color;
     float finalOpacity = pattern * intensity * pulse;
@@ -102,7 +102,7 @@ const Torus: FC = () => {
 
   return (
     <mesh ref={torusRef} scale={[1.8, 1.8, 1.8]} rotation={[Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[0.53, 0.49, 256, 256]} />
+      <torusGeometry args={[0.53, 0.49, 100, 100]} />
       <primitive object={shaderMaterial} attach="material" />
     </mesh>
   );

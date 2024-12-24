@@ -1,6 +1,23 @@
-// == Address ==
+import { BigNumber } from "bignumber.js";
 
-import { BN } from "@polkadot/util";
+export const DECIMALS = 9;
+
+export const DECIMALS_BIG = BigInt(DECIMALS);
+export const DECIMALS_MULTIPLIER = 10n ** DECIMALS_BIG;
+
+// ---- Arbitrary precision decimals ----
+
+export const TorBigNumberCfg = BigNumber.clone({
+  DECIMAL_PLACES: DECIMALS,
+  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // better for financial
+});
+
+export const TorBigNumber = (value: BigNumber.Value) =>
+  new TorBigNumberCfg(value);
+
+export const DECIMALS_BN_MULTIPLIER = TorBigNumber(10).pow(DECIMALS);
+
+// ==== Address ====
 
 /**
  * Returns a shortened version of the given address.
@@ -13,42 +30,45 @@ export function smallAddress(address: string, size?: number): string {
   return `${address.slice(0, size ?? 8)}…${address.slice(size ? size * -1 : -8)}`;
 }
 
-// == Amounts ==
+// ==== Amounts ====
 
-const DECIMALS_MULTIPLIER = new BN("1000000000");
+// ---- old ----
 
 /**
- * Converts a nano value to its standard unit representation
- * @param nanoValue - The value in nano units (as a number, string, or BN)
- * @param decimals - Number of decimal places to round to (default: 6)
+ * Converts a value in Nanos to its standard unit representation.
+ * @param nanoValue - The value in nano units.
+ * @param roundingDecimals - Number of decimal places to round to.
  * @returns The value in standard units as a string
  */
 export function fromNano(
-  nanoValue: number | string | bigint | BN,
-  decimals = 9,
+  nanoValue: number | string | bigint,
+  roundingDecimals = DECIMALS,
 ): string {
-  const bnValue = new BN(nanoValue.toString());
-  const integerPart = bnValue.div(DECIMALS_MULTIPLIER);
-  const fractionalPart = bnValue.mod(DECIMALS_MULTIPLIER);
+  const mod = (n: bigint, d: bigint) => ((n % d) + d) % d;
 
-  const fractionalStr = fractionalPart.toString().padStart(9, "0");
-  const roundedFractionalStr = fractionalStr.slice(0, decimals);
+  const val = BigInt(nanoValue);
 
-  return `${integerPart.toString()}.${roundedFractionalStr}`;
+  const intPart = val / DECIMALS_MULTIPLIER;
+  const fracPart = mod(val, DECIMALS_MULTIPLIER);
+
+  const fractionalStr = fracPart.toString().padStart(roundingDecimals, "0");
+  const roundedFractionalStr = fractionalStr.slice(0, roundingDecimals);
+
+  return `${intPart}.${roundedFractionalStr}`;
 }
 
 /**
- * Converts a standard unit value to nano
+ * Converts a standard unit value to Nanos.
  * @param standardValue - The value in standard units (as a number or string)
- * @returns The value in nano units as a BN
+ * @returns The value in nano units as a bigint
  */
-export function toNano(standardValue: number | string): BN {
+export function toNano(standardValue: number | string): bigint {
   const [integerPart, fractionalPart = ""] = standardValue
     .toString()
     .split(".");
   const paddedFractionalPart = fractionalPart.padEnd(9, "0");
   const nanoValue = `${integerPart}${paddedFractionalPart}`;
-  return new BN(nanoValue);
+  return BigInt(nanoValue);
 }
 
 export function formatToken(nano: number | bigint, decimalPlaces = 2): string {
@@ -64,10 +84,33 @@ export function formatToken(nano: number | bigint, decimalPlaces = 2): string {
   return `${formattedIntegerPart}.${roundedFractionalPart}`;
 }
 
+// ---- new ----
+
 /**
- * TODO: rename to `toNano`
- * TODO: `number` input
+ * Converts Rens to its standard unit (TORUS) representation.
  */
-export function toNano2(amount: string | number): bigint {
-  return BigInt(amount) * 10n ** 9n;
+export function fromRen(value: bigint): BigNumber {
+  const val = TorBigNumber(value.toString());
+  return val.div(DECIMALS_BN_MULTIPLIER);
+}
+
+/**
+ * Converts standard unit (TORUS) reprsentation value to Rens.
+ */
+export function toRen(amount: BigNumber): bigint {
+  return BigInt(amount.times(DECIMALS_BN_MULTIPLIER).toString());
+}
+
+/**
+ * Parse a string representing a TORUS token amount.
+ */
+export function parseTorusTokens(txt: string): BigNumber {
+  return TorBigNumber(txt);
+}
+
+/**
+ * Convert TORUS token amount into string with given amount of decimal places.
+ */
+export function formatTorusToken(value: BigNumber, decimalPlaces = 2) {
+  return value.toFixed(decimalPlaces);
 }

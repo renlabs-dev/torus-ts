@@ -3,19 +3,17 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
-import type {
-  Balance,
-  LastBlock,
-  SS58Address,
-  StakeData,
-} from "@torus-ts/subspace";
+import type { Balance, SS58Address, StakeData } from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-import type { Stake, TransferStake } from "@torus-ts/torus-provider/types";
+import type {
+  Stake,
+  Transfer,
+  TransferStake,
+} from "@torus-ts/torus-provider/types";
 import {
   useCachedStakeOut,
   useFreeBalance,
-  useKeyStakedBy,
-  useLastBlock,
+  useKeyStakingTo,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { WalletDropdown } from "@torus-ts/ui";
@@ -24,7 +22,6 @@ import { env } from "~/env";
 
 interface WalletContextType {
   isInitialized: boolean;
-  lastBlock: UseQueryResult<LastBlock, Error>;
 
   accounts: InjectedAccountWithMeta[] | undefined;
   isAccountConnected: boolean;
@@ -43,9 +40,10 @@ interface WalletContextType {
   estimateFee: (
     recipientAddress: string,
     amount: string,
-  ) => Promise<Balance | null>;
+  ) => Promise<bigint | null>;
 
   addStake: (stake: Stake) => Promise<void>;
+  transfer: (transfer: Transfer) => Promise<void>;
   transferStake: (transfer: TransferStake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
 
@@ -67,7 +65,7 @@ export function WalletProvider({
     isAccountConnected,
 
     estimateFee,
-
+    transfer,
     addStake,
     transferStake,
     removeStake,
@@ -77,19 +75,17 @@ export function WalletProvider({
     handleGetWallets,
     handleSelectWallet,
   } = useTorus();
-  const lastBlock = useLastBlock(api);
+
+  // == Subspace ==
+  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_CACHE_PROVIDER_URL);
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(
-    lastBlock.data?.apiAtBlock,
+    api,
     selectedAccount?.address as SS58Address,
   );
 
-  const accountStakedBy = useKeyStakedBy(api, selectedAccount?.address);
-
-  // == Subspace ==
-
-  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_CACHE_PROVIDER_URL);
+  const accountStakedBy = useKeyStakingTo(api, selectedAccount?.address);
 
   const accountStakedBalance =
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -99,7 +95,6 @@ export function WalletProvider({
     <WalletContext.Provider
       value={{
         isInitialized,
-        lastBlock,
 
         stakeOut,
 
@@ -114,6 +109,7 @@ export function WalletProvider({
         estimateFee,
 
         addStake,
+        transfer,
         transferStake,
         removeStake,
       }}
