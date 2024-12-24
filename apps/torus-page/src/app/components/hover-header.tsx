@@ -73,9 +73,20 @@ export function HoverHeader() {
     };
   }, []);
 
+  const glowVariants = {
+    pulse: (scale: number) => ({
+      scale: [scale, scale * 1.2, scale],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    }),
+  };
+
   const calculateGlowSize = (cursorX: number, cursorY: number): number => {
     const logoRect = contentRef.current?.getBoundingClientRect();
-    if (!logoRect) return 1;
+    if (!logoRect) return 0.8; // Changed from 1 to 0.8
 
     const logoCenterX = logoRect.left + logoRect.width / 2;
     const logoCenterY = logoRect.top + logoRect.height / 2;
@@ -91,7 +102,7 @@ export function HoverHeader() {
     );
 
     // Inverse the scale so it's larger when closer
-    const scale = 0.2 + (maxDistance - distance) / maxDistance;
+    const scale = 0.15 + (maxDistance - distance) / maxDistance; // Changed from 0.2 to 0.15
 
     return scale;
   };
@@ -147,10 +158,10 @@ export function HoverHeader() {
         >
           <Icons.logo className="relative z-10 h-10 w-10" />
           <motion.div
-            className="absolute inset-0 rounded-md bg-primary/10 blur-md"
-            style={{
-              scale: calculateGlowSize(cursorPosition.x, cursorPosition.y),
-            }}
+            className="absolute inset-0 rounded-2xl bg-primary/15 blur-md"
+            animate="pulse"
+            variants={glowVariants}
+            custom={calculateGlowSize(cursorPosition.x, cursorPosition.y) / 1.2}
           />
         </motion.button>
 
