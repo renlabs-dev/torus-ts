@@ -189,7 +189,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
-    <div className="fixed top-0 z-[70] mx-auto w-full max-w-screen-xl justify-end">
+    <div className="fixed top-0 mx-auto w-full max-w-screen-xl justify-end">
       <div className="mx-auto hidden animate-fade-down justify-end py-3.5 pr-10 md:flex">
         <DropdownMenu onOpenChange={handleGetAccounts}>
           <DropdownMenuTrigger asChild disabled={!isInitialized}>

@@ -6,6 +6,7 @@ import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { Button } from "@torus-ts/ui";
 
 interface DelegateModuleWeightProps {
   id: number;
@@ -37,18 +38,13 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
   };
 
   return (
-    <button
+    <Button
       onClick={handleDelegateClick}
-      className={`flex w-fit items-center gap-2 border border-white/20 bg-[#898989]/5 p-2 text-white backdrop-blur-md transition duration-200 ${
-        isModuleDelegated
-          ? "hover:border-red-500 hover:bg-red-500/20"
-          : "hover:border-green-500 hover:bg-green-500/10"
-      }`}
+      variant="outline"
+      className={`flex w-fit items-center gap-2 text-white`}
     >
-      <ChartPie
-        className={`h-6 w-6 ${isModuleDelegated ? "text-red-500" : "text-green-500"}`}
-      />
-      {isModuleDelegated ? "Remove" : "Allocate"}
-    </button>
+      <ChartPie className={`h-6 w-6`} />
+      {isModuleDelegated ? "Remove" : "Select"}
+    </Button>
   );
 }

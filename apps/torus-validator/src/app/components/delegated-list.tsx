@@ -1,19 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronsUp, X } from "lucide-react";
+import { ChevronsUp, PieChart, X } from "lucide-react";
 
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
+  buttonVariants,
   Card,
   cn,
   Input,
   Label,
   Separator,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
   Table,
   TableBody,
   TableCell,
@@ -42,7 +51,6 @@ export function DelegatedList() {
   const { selectedAccount, api: torusApi } = useTorus();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
 
   const accountStakedBy = useKeyStakedBy(torusApi, selectedAccount?.address);
 
@@ -73,7 +81,10 @@ export function DelegatedList() {
     { enabled: !!selectedAccount?.address },
   );
 
+  // ORIGINAL VALUE
   const validatorAddress = "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2";
+  //DEV VALIDATOR
+  // const validatorAddress = "5D5FbRRUvQxdQnJLgNW6BdgZ86CRGreKRahzhxmdSj2REBnt";
 
   function userWeightPower(
     userStakes: { address: string; stake: bigint }[] | undefined,
@@ -144,12 +155,13 @@ export function DelegatedList() {
       );
       return;
     }
-    if (Number(userStakeWeight) <= 50) {
-      toast.error(
-        "You must have at least 50 COMAI staked to delegate agents or subnets",
-      );
-      return;
-    }
+    // TODO: UNCOMMENT THIS CODE
+    // if (Number(userStakeWeight) <= 50) {
+    //   toast.error(
+    //     "You must have at least 50 COMAI staked to delegate agents or subnets",
+    //   );
+    //   return;
+    // }
     setIsSubmitting(true);
     try {
       // Delete existing user agent data
@@ -240,102 +252,89 @@ export function DelegatedList() {
   }
   const submitStatus = getSubmitStatus();
 
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      const contentHeight = contentRef.current.scrollHeight;
+      const maxAllowedHeight = window.innerHeight - 270;
+      setIsOverflowing(contentHeight > maxAllowedHeight);
+      console.log("Is overflowing:", contentHeight > maxAllowedHeight);
+    }
+  }, [delegatedAgents, isOpen]);
+
   return (
-    <div>
-      {selectedAccount?.address && (
-        <div className="fixed bottom-0 right-0 z-50 mt-8 hidden w-full flex-col-reverse text-sm md:bottom-4 md:mr-4 md:flex md:w-fit">
-          <Card className="mb-2 flex animate-fade-up flex-col rounded-3xl border border-white/20 bg-[#898989]/5 font-semibold text-white backdrop-blur-lg">
-            <div className="flex items-center justify-center px-7">
-              {["agents", "subnets", "stake"].map((type, index) => (
-                <div key={type} className="flex items-center">
-                  <Label
-                    className={cn(
-                      "flex items-center gap-1 text-sm font-semibold",
-                      {
-                        "text-cyan-500": "subnets",
-                        "text-amber-500":
-                          index === 1 && totalPercentage !== 100,
-                      },
-                    )}
-                  >
-                    <b>
-                      {index === 0
-                        ? delegatedAgents.length
-                        : index === 1
-                          ? `${Number(totalPercentage)}%`
-                          : Number(userStakeWeight)}
-                    </b>
-                    <span className="text-white">
-                      {index === 0
-                        ? "Modules"
-                        : index === 1
-                          ? "Allocated"
-                          : "COMAI"}
-                    </span>
-                  </Label>
-                  {index < 2 && (
-                    <Separator className="mx-4 h-8" orientation="vertical" />
-                  )}
-                </div>
-              ))}
-            </div>
-            <Separator />
-            <div className="flex w-full gap-2 p-3">
-              <Button
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                  "w-full gap-1 rounded-full border-green-500 bg-green-600/15 text-green-500 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50",
-                )}
-              >
-                {isOpen ? "COLLAPSE " : "EXPAND "}
-                <ChevronsUp
-                  className={`h-5 w-5 transform transition-transform ${
-                    isOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </Button>
-            </div>
-          </Card>
-          {isOpen && (
-            <Card className="mb-2 flex animate-fade-up flex-col rounded-3xl border border-white/20 bg-[#898989]/5 p-4 font-semibold text-white backdrop-blur-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Module</TableHead>
-                    <TableHead>Address</TableHead>
-                    <TableHead>Percentage</TableHead>
-                    <TableHead>Clear</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {delegatedAgents.length ? (
-                    delegatedAgents.map((agent) => (
-                      <TableRow key={agent.id}>
-                        <TableCell className="font-medium">
-                          {agent.name}
-                        </TableCell>
-                        <TableCell className="text-gray-400">
+    <Sheet
+      onOpenChange={(state) => {
+        setIsOpen(state);
+      }}
+    >
+      <SheetTrigger
+        className={`fixed bottom-4 right-4 z-[60] ${buttonVariants({ variant: "outline" })}`}
+      >
+        <PieChart />
+        Allocation Menu
+      </SheetTrigger>
+
+      <SheetContent on className="z-[70] flex w-full flex-col sm:max-w-md">
+        <div className="flex h-full flex-col justify-between gap-8">
+          <div className="flex h-full flex-col gap-8">
+            <SheetHeader>
+              <SheetTitle>Allocation Menu</SheetTitle>
+            </SheetHeader>
+
+            <div
+              ref={contentRef}
+              className="max-h-[calc(100vh-270px)] overflow-y-auto"
+            >
+              <div className="flex flex-col gap-2">
+                {delegatedAgents.length ? (
+                  [
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                    ...delegatedAgents,
+                  ].map((agent) => (
+                    <div
+                      key={agent.id}
+                      className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"}`}
+                    >
+                      <span className="font-medium">{agent.name}</span>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">
                           {smallAddress(agent.address, 4)}
-                        </TableCell>
-                        <TableCell className="flex items-center gap-1">
-                          <Input
-                            type="number"
-                            value={agent.percentage}
-                            onChange={(e) =>
-                              handlePercentageChange(
-                                agent.id,
-                                Number(e.target.value),
-                              )
-                            }
-                            min="0"
-                            max="100"
-                            className="w-16"
-                          />
-                          <Label className="relative right-5 text-gray-400">
-                            %
+                        </span>
+
+                        <div className="flex items-center gap-1">
+                          <Label
+                            className="relative flex h-[36px] items-center gap-1 rounded-md border px-2"
+                            htmlFor={`percentage:${agent.id}`}
+                          >
+                            <Input
+                              id={`percentage:${agent.id}`}
+                              type="number"
+                              value={agent.percentage}
+                              onChange={(e) =>
+                                handlePercentageChange(
+                                  agent.id,
+                                  Number(e.target.value),
+                                )
+                              }
+                              min="0"
+                              max="100"
+                              className="w-fit border-none px-0 py-0 [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            />
+
+                            <span className="text-muted-foreground">%</span>
                           </Label>
-                        </TableCell>
-                        <TableCell>
                           <Button
                             size="icon"
                             variant="outline"
@@ -343,71 +342,141 @@ export function DelegatedList() {
                           >
                             <X className="h-5 w-5" />
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center">
-                        Select a agent to allocate through the agents page.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              <Separator />
-              <div className="flex flex-row gap-3 pt-4">
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center">
+                      Select a agent to allocate through the agents page.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <SheetFooter className="flex min-h-fit gap-4 sm:flex-col">
+            <Label
+              className={cn("pt-2 text-center text-sm", {
+                "text-pink-500":
+                  submitStatus.message === "You have unsaved changes",
+                "text-cyan-500": submitStatus.message === "All changes saved!",
+                "text-green-500": submitStatus.message === "All changes saved!",
+                "text-amber-500": ![
+                  "You have unsaved changes",
+                  "All changes saved!",
+                ].includes(submitStatus.message),
+              })}
+            >
+              {submitStatus.message}
+            </Label>
+            <div className="mt-auto flex w-full flex-col gap-2">
+              <div className="flex flex-row gap-2">
                 <Button
                   onClick={handleAutoCompletePercentage}
+                  className="w-1/2"
                   disabled={
                     totalPercentage === 100 || delegatedAgents.length === 0
                   }
                   variant="outline"
-                  className="w-full rounded-full"
                 >
                   Auto-Complete to 100%
                 </Button>
 
                 <Button
                   onClick={handleRemoveAllWeight}
+                  className="w-1/2"
                   disabled={isSubmitting || !hasItemsToClear}
                   variant="outline"
-                  className="w-full rounded-full"
                 >
-                  {isSubmitting ? "Removing..." : `Remove Modules`}
+                  {isSubmitting ? "Removing..." : `Remove Agents`}
                 </Button>
               </div>
-              <Separator className="my-4" />
               <Button
                 onClick={handleSubmit}
-                className={cn(
-                  "w-full rounded-full border-green-500 bg-green-600/15 text-green-500 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50",
-                )}
+                variant="outline"
+                className="w-full"
                 disabled={submitStatus.disabled}
                 title={submitStatus.disabled ? submitStatus.message : ""}
               >
-                {isSubmitting ? "Submitting..." : "Submit Modules"}
+                {isSubmitting ? "Submitting..." : "Submit Agents"}
               </Button>
-              <Label
-                className={cn("pt-2 text-center text-sm", {
-                  "text-pink-500":
-                    submitStatus.message === "You have unsaved changes",
-                  "text-cyan-500":
-                    submitStatus.message === "All changes saved!",
-                  "text-green-500":
-                    submitStatus.message === "All changes saved!",
-                  "text-amber-500": ![
-                    "You have unsaved changes",
-                    "All changes saved!",
-                  ].includes(submitStatus.message),
-                })}
-              >
-                {submitStatus.message}
-              </Label>
-            </Card>
-          )}
+            </div>
+          </SheetFooter>
         </div>
-      )}
-    </div>
+      </SheetContent>
+    </Sheet>
   );
+}
+
+{
+  /* <Table className="">
+<TableHeader>
+  <TableRow>
+    <TableHead>Module</TableHead>
+    <TableHead>Address</TableHead>
+    <TableHead>Percentage</TableHead>
+    <TableHead>Clear</TableHead>
+  </TableRow>
+</TableHeader>
+<TableBody>
+  {delegatedAgents.length ? (
+    [
+      ...delegatedAgents,
+      ...delegatedAgents,
+      ...delegatedAgents,
+      ...delegatedAgents,
+      ...delegatedAgents,
+      ...delegatedAgents,
+      ...delegatedAgents,
+      ...delegatedAgents,
+      ...delegatedAgents,
+    ].map((agent) => (
+      <TableRow key={agent.id}>
+        <TableCell className="font-medium">
+          {agent.name}
+        </TableCell>
+        <TableCell className="text-gray-400">
+          {smallAddress(agent.address, 4)}
+        </TableCell>
+        <TableCell className="flex items-center gap-1">
+          <Input
+            type="number"
+            value={agent.percentage}
+            onChange={(e) =>
+              handlePercentageChange(
+                agent.id,
+                Number(e.target.value),
+              )
+            }
+            min="0"
+            max="100"
+            className="w-16"
+          />
+          <Label className="relative right-5 text-gray-400">
+            %
+          </Label>
+        </TableCell>
+        <TableCell>
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => removeAgent(agent.id)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </TableCell>
+      </TableRow>
+    ))
+  ) : (
+    <TableRow>
+      <TableCell colSpan={4} className="text-center">
+        Select a agent to allocate through the agents page.
+      </TableCell>
+    </TableRow>
+  )}
+</TableBody>
+</Table> */
 }

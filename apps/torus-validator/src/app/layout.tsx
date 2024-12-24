@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   robots: "all",
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "Making decentralized AI for everyone",
+  description: "Most advanced decentralized AI Protocol.",
 };
 
 export const firaMono = FiraMono({
@@ -43,7 +43,7 @@ export default function RootLayout({
             <AllocatorHeader />
             <DelegatedList />
             {children}
-            <Footer />
+            {/* <Footer className="bottom-4 right-4" /> */}
           </ToastProvider>
         </TRPCReactProvider>
       </TorusProvider>
