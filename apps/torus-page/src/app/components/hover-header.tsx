@@ -341,14 +341,14 @@ export function HoverHeader() {
                   </motion.div>
                 </motion.div>
                 <motion.div variants={buttonVariants} custom={5}>
-                  <Link
-                    href="https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg"
-                    target="_blank"
-                  >
-                    <Button variant="outline" size="lg">
+                  <Button variant="outline" size="lg" asChild>
+                    <Link
+                      href="https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg"
+                      target="_blank"
+                    >
                       Blog
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </motion.div>
               </motion.div>
             </>
