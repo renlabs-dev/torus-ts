@@ -50,6 +50,52 @@ export function HoverHeader() {
 
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+
+  const calculateDistance = (
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+  ): number => {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      setCursorPosition({ x: event.clientX, y: event.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  const calculateGlowSize = (cursorX: number, cursorY: number): number => {
+    const logoRect = contentRef.current?.getBoundingClientRect();
+    if (!logoRect) return 1;
+
+    const logoCenterX = logoRect.left + logoRect.width / 2;
+    const logoCenterY = logoRect.top + logoRect.height / 2;
+
+    const distance = calculateDistance(
+      cursorX,
+      cursorY,
+      logoCenterX,
+      logoCenterY,
+    );
+    const maxDistance = Math.sqrt(
+      Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
+    );
+
+    // Inverse the scale so it's larger when closer
+    const scale = 0.2 + (maxDistance - distance) / maxDistance;
+
+    return scale;
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -100,6 +146,12 @@ export function HoverHeader() {
           className="hover:background-acent/30 relative z-50 rounded-md p-3 transition duration-300"
         >
           <Icons.logo className="relative z-10 h-10 w-10" />
+          <motion.div
+            className="absolute inset-0 rounded-md bg-primary/10 blur-md"
+            style={{
+              scale: calculateGlowSize(cursorPosition.x, cursorPosition.y),
+            }}
+          />
         </motion.button>
 
         <AnimatePresence>
