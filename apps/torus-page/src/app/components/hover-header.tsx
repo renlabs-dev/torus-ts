@@ -264,7 +264,7 @@ export function HoverHeader() {
                       >
                         <motion.div layout>
                           Torus is an open-ended experiment to encode biology's
-                          patterns of autonomy, adaptive inference and
+                          principles of autonomy, adaptive inference and
                           self-organization into a stake-anchored agentic
                           protocol, perpetually producing novelty.
                         </motion.div>
