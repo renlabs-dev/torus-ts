@@ -63,7 +63,6 @@ export async function sendTransaction({
             finalized: false,
             status: "SUCCESS",
             message: `Your transaction has been included into the block`,
-            hash: result.status.asInBlock.toHex(),
           });
 
           toast.loading(
@@ -120,7 +119,7 @@ export async function sendTransaction({
             }
 
             toast.update(toastId, {
-              render: renderFinalizedWithError(transactionType, msg, hash),
+              render: renderFinalizedWithError(msg, hash),
               type: "error",
               isLoading: false,
               autoClose: false,
