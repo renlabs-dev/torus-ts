@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { eq } from "@torus-ts/db";
+import { and, eq, isNull } from "@torus-ts/db";
 
 import "@torus-ts/db/schema";
 import { commentReportSchema } from "@torus-ts/db/schema";
@@ -14,7 +14,10 @@ export const commentReportRouter = {
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => {
       return ctx.db.query.commentReportSchema.findFirst({
-        where: eq(commentReportSchema.id, input.id),
+        where: and(
+          eq(commentReportSchema.id, input.id),
+          isNull(commentReportSchema.deletedAt),
+        ),
       });
     }),
   // POST

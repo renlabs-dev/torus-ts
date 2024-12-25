@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 
 import "@torus-ts/db/schema";
 
-import { eq, sql } from "@torus-ts/db";
+import { and, eq, isNull, sql } from "@torus-ts/db";
 
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { z } from "zod";
@@ -16,7 +16,10 @@ export const commentInteractionRouter = {
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => {
       return ctx.db.query.commentInteractionSchema.findFirst({
-        where: eq(commentInteractionSchema.id, input.id),
+        where: and(
+          eq(commentInteractionSchema.id, input.id),
+          isNull(commentInteractionSchema.deletedAt),
+        ),
       });
     }),
   byUserId: publicProcedure
@@ -33,7 +36,10 @@ export const commentInteractionRouter = {
           eq(commentSchema.id, commentInteractionSchema.commentId),
         )
         .where(
-          sql`${commentInteractionSchema.userKey} = ${input.userKey} AND ${commentSchema.itemId} = ${input.proposalId}`,
+          and(
+            sql`${commentInteractionSchema.userKey} = ${input.userKey} AND ${commentSchema.itemId} = ${input.proposalId}`,
+            isNull(commentInteractionSchema.deletedAt),
+          ),
         );
 
       return Object.fromEntries(

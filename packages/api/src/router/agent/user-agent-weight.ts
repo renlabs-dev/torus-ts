@@ -5,7 +5,7 @@ import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { z } from "zod";
 import { agentSchema, userAgentWeightSchema } from "@torus-ts/db/schema";
 
-import { eq } from "@torus-ts/db";
+import { eq, isNull, and } from "@torus-ts/db";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 export const userAgentWeightRouter = {
@@ -22,7 +22,12 @@ export const userAgentWeightRouter = {
           userAgentWeightSchema,
           eq(userAgentWeightSchema.id, userAgentWeightSchema.userKey),
         )
-        .where(eq(userAgentWeightSchema.userKey, input.userKey))
+        .where(
+          and(
+            eq(userAgentWeightSchema.userKey, input.userKey),
+            isNull(userAgentWeightSchema.deletedAt),
+          ),
+        )
         .execute();
     }),
   // POST
