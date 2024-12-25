@@ -8,11 +8,15 @@ import { and, eq, isNull } from "@torus-ts/db";
 import { AGENT_APPLICATION_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 export const agentApplicationVoteRouter = {
+  // GET
   byId: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => {
       return ctx.db.query.agentApplicationVoteSchema.findFirst({
-        where: eq(agentApplicationVoteSchema.id, input.id),
+        where: and(
+          eq(agentApplicationVoteSchema.id, input.id),
+          isNull(agentApplicationVoteSchema.deletedAt),
+        ),
       });
     }),
   byIdActive: publicProcedure
@@ -25,6 +29,7 @@ export const agentApplicationVoteRouter = {
         ),
       });
     }),
+  // POST
   create: authenticatedProcedure
     .input(AGENT_APPLICATION_VOTE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {

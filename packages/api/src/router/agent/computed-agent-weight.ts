@@ -1,6 +1,6 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
-import { eq, max } from "@torus-ts/db";
+import { eq, max, and, isNull } from "@torus-ts/db";
 
 import "@torus-ts/db/schema";
 
@@ -22,12 +22,17 @@ export const computedAgentWeightRouter = {
       })
       .from(computedAgentWeightSchema)
       .where(
-        // sql`computed_module_weights.at_block = (SELECT MAX(computed_module_weights.at_block) FROM computed_module_weights)`,
-        eq(computedAgentWeightSchema.atBlock, lastBlock),
+        and(
+          eq(computedAgentWeightSchema.atBlock, lastBlock),
+          isNull(computedAgentWeightSchema.deletedAt),
+        ),
       )
       .innerJoin(
         agentSchema,
-        eq(computedAgentWeightSchema.agentKey, agentSchema.id),
+        and(
+          eq(computedAgentWeightSchema.agentKey, agentSchema.id),
+          isNull(agentSchema.deletedAt),
+        ),
       );
   }),
 } satisfies TRPCRouterRecord;
