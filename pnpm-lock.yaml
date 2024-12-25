@@ -44,7 +44,7 @@ catalogs:
       version: 0.5.15
     '@tanstack/react-query':
       specifier: ^5.51.23
-      version: 5.62.9
+      version: 5.62.10
     '@trpc/client':
       specifier: ^11.0.0-rc.477
       version: 11.0.0-rc.666
@@ -210,7 +210,7 @@ importers:
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.62.9(react@18.2.0)
+        version: 5.62.10(react@18.2.0)
       '@torus-ts/api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -237,7 +237,7 @@ importers:
         version: 11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2)
       '@trpc/react-query':
         specifier: 'catalog:'
-        version: 11.0.0-rc.666(@tanstack/react-query@5.62.9(react@18.2.0))(@trpc/client@11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2))(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
+        version: 11.0.0-rc.666(@tanstack/react-query@5.62.10(react@18.2.0))(@trpc/client@11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2))(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.0.0-rc.666(typescript@5.7.2)
@@ -322,7 +322,7 @@ importers:
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.62.9(react@18.2.0)
+        version: 5.62.10(react@18.2.0)
       '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
@@ -428,7 +428,7 @@ importers:
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.62.9(react@18.2.0)
+        version: 5.62.10(react@18.2.0)
       '@torus-ts/api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -455,7 +455,7 @@ importers:
         version: 11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2)
       '@trpc/react-query':
         specifier: 'catalog:'
-        version: 11.0.0-rc.666(@tanstack/react-query@5.62.9(react@18.2.0))(@trpc/client@11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2))(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
+        version: 11.0.0-rc.666(@tanstack/react-query@5.62.10(react@18.2.0))(@trpc/client@11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2))(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.0.0-rc.666(typescript@5.7.2)
@@ -525,7 +525,7 @@ importers:
         version: 0.10.1(typescript@5.7.2)(zod@3.24.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.62.9(react@18.2.0)
+        version: 5.62.10(react@18.2.0)
       '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
@@ -714,10 +714,10 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: ^0.38.2
-        version: 0.38.2(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0)
+        version: 0.38.3(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0)
       drizzle-zod:
         specifier: ^0.6.0
-        version: 0.6.0(drizzle-orm@0.38.2(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0))(zod@3.24.1)
+        version: 0.6.1(drizzle-orm@0.38.3(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0))(zod@3.24.1)
       postgres:
         specifier: ^3.4.4
         version: 3.4.5
@@ -757,7 +757,7 @@ importers:
     dependencies:
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.62.9(react@18.2.0)
+        version: 5.62.10(react@18.2.0)
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../subspace
@@ -1093,7 +1093,7 @@ importers:
         version: 6.10.2(eslint@9.17.0(jiti@1.21.7))
       eslint-plugin-react:
         specifier: ^7.35.0
-        version: 7.37.2(eslint@9.17.0(jiti@1.21.7))
+        version: 7.37.3(eslint@9.17.0(jiti@1.21.7))
       eslint-plugin-react-hooks:
         specifier: rc
         version: 5.1.0-rc.1(eslint@9.17.0(jiti@1.21.7))
@@ -2822,8 +2822,8 @@ packages:
   '@tanstack/query-core@5.62.9':
     resolution: {integrity: sha512-lwePd8hNYhyQ4nM/iRQ+Wz2cDtspGeZZHFZmCzHJ7mfKXt+9S301fULiY2IR2byJYY6Z03T427E5PoVfMexHjw==}
 
-  '@tanstack/react-query@5.62.9':
-    resolution: {integrity: sha512-jFUH9pOsOyN2ugGIR8tjz2+bRC0PEp25LvpNvYIgiEegP5Xbfi9phuNOMnjFugyg3GM0WI/HfUEE7eM2vmcbxg==}
+  '@tanstack/react-query@5.62.10':
+    resolution: {integrity: sha512-1e1WpHM5oGf27nWM/NWLY62/X9pbMBWa6ErWYmeuK0OqB9/g9UzA59ogiWbxCmS2wtAFQRhOdHhfSofrkhPl2g==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -3731,8 +3731,8 @@ packages:
     resolution: {integrity: sha512-HmA/NeewvHywhJ2ENXD3KvOuM/+K2dGLJfxVfIHsGwaqKICJnS+Ke2L6UcSrSrtMJLJaT0Im1Qv4TFXfaZShyw==}
     hasBin: true
 
-  drizzle-orm@0.38.2:
-    resolution: {integrity: sha512-eCE3yPRAskLo1WpM9OHpFaM70tBEDsWhwR/0M3CKyztAXKR9Qs3asZlcJOEliIcUSg8GuwrlY0dmYDgmm6y5GQ==}
+  drizzle-orm@0.38.3:
+    resolution: {integrity: sha512-w41Y+PquMpSff/QDRGdItG0/aWca+/J3Sda9PPGkTxBtjWQvgU1jxlFBXdjog5tYvTu58uvi3PwR1NuCx0KeZg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -3823,8 +3823,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.6.0:
-    resolution: {integrity: sha512-7K1k7Y/5Jw9D4cTlrHL3mRTLg3oaglbi4VvBIYmSAtMvYkgqvusPtra7cnntMCe1r1cBcwxhlEkfiNdU23lp2g==}
+  drizzle-zod@0.6.1:
+    resolution: {integrity: sha512-huEbUgnsuR8tupnmLiyB2F1I2H9dswI3GfM36IbIqx9i0YUeYjRsDpJVyFVeziUvI1ogT9JHRL2Q03cC4QmvxA==}
     peerDependencies:
       drizzle-orm: '>=0.36.0'
       zod: '>=3.0.0'
@@ -3984,8 +3984,8 @@ packages:
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
 
-  eslint-plugin-react@7.37.2:
-    resolution: {integrity: sha512-EsTAnj9fLVr/GZleBLFbj/sSuXeWmp1eXIN60ceYnZveqEaUCyW4X+Vh4WTdUhCkW4xutXYqTXCUSyqD4rB75w==}
+  eslint-plugin-react@7.37.3:
+    resolution: {integrity: sha512-DomWuTQPFYZwF/7c9W2fkKkStqZmBd3uugfqBYLdkZ3Hii23WzZuOLUskGxB8qkSKqftxEeGL1TB2kMhrce0jA==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
@@ -8109,7 +8109,7 @@ snapshots:
 
   '@tanstack/query-core@5.62.9': {}
 
-  '@tanstack/react-query@5.62.9(react@18.2.0)':
+  '@tanstack/react-query@5.62.10(react@18.2.0)':
     dependencies:
       '@tanstack/query-core': 5.62.9
       react: 18.2.0
@@ -8137,9 +8137,9 @@ snapshots:
       '@trpc/server': 11.0.0-rc.666(typescript@5.7.2)
       typescript: 5.7.2
 
-  '@trpc/react-query@11.0.0-rc.666(@tanstack/react-query@5.62.9(react@18.2.0))(@trpc/client@11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2))(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)':
+  '@trpc/react-query@11.0.0-rc.666(@tanstack/react-query@5.62.10(react@18.2.0))(@trpc/client@11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2))(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)':
     dependencies:
-      '@tanstack/react-query': 5.62.9(react@18.2.0)
+      '@tanstack/react-query': 5.62.10(react@18.2.0)
       '@trpc/client': 11.0.0-rc.666(@trpc/server@11.0.0-rc.666(typescript@5.7.2))(typescript@5.7.2)
       '@trpc/server': 11.0.0-rc.666(typescript@5.7.2)
       react: 18.2.0
@@ -9112,15 +9112,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.2(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0):
+  drizzle-orm@0.38.3(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0):
     optionalDependencies:
       '@types/react': 18.2.79
       postgres: 3.4.5
       react: 18.2.0
 
-  drizzle-zod@0.6.0(drizzle-orm@0.38.2(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0))(zod@3.24.1):
+  drizzle-zod@0.6.1(drizzle-orm@0.38.3(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0))(zod@3.24.1):
     dependencies:
-      drizzle-orm: 0.38.2(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0)
+      drizzle-orm: 0.38.3(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0)
       zod: 3.24.1
 
   dunder-proto@1.0.1:
@@ -9415,7 +9415,7 @@ snapshots:
     dependencies:
       eslint: 9.17.0(jiti@1.21.7)
 
-  eslint-plugin-react@7.37.2(eslint@9.17.0(jiti@1.21.7)):
+  eslint-plugin-react@7.37.3(eslint@9.17.0(jiti@1.21.7)):
     dependencies:
       array-includes: 3.1.8
       array.prototype.findlast: 1.2.5
