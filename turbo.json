@@ -29,8 +29,7 @@
       "cache": false
     },
     "push": {
-      "cache": false,
-      "interactive": true
+      "cache": false
     }
   },
   "globalEnv": [
