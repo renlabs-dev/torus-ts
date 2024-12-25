@@ -64,6 +64,7 @@ import { usePage } from "~/context/page-provider";
 import { UnstakeAction } from "./unstake";
 import { AmountButtons } from "./amount-buttons";
 import { FeeLabel } from "./fee-label";
+import Link from "next/link";
 
 const formSchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
@@ -270,14 +271,21 @@ export function Bridge() {
                     able to bridge back anymore.
                   </p>
                   <p className="text-sm">
-                    If you want a different approach, you can use the CLI
+                    If you want a different approach, you can use the{" "}
+                    <Link
+                      target="_blank"
+                      href="https://github.com/renlabs-dev/communex"
+                      className="underline"
+                    >
+                      CLI
+                    </Link>{" "}
                     through the{" "}
                     <span className="rounded-md bg-accent p-0.5">bridge</span>{" "}
                     and{" "}
                     <span className="rounded-md bg-accent p-0.5">
                       bridge_withdraw
                     </span>{" "}
-                    methods.
+                    methods (Remember to update your CLI to the latest version).
                   </p>
                 </HoverCardContent>
               </HoverCard>
