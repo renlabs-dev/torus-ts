@@ -1,4 +1,5 @@
 import "react-toastify/dist/ReactToastify.css";
+import "./globals.css";
 
 import { ToastContainer } from "react-toastify";
 
@@ -14,12 +15,17 @@ function ToastProvider({
         closeOnClick
         draggable
         hideProgressBar={false}
-        newestOnTop={false}
+        newestOnTop={true}
         pauseOnFocusLoss
         pauseOnHover
-        position="top-right"
+        position="bottom-right"
         rtl={false}
         theme="dark"
+        toastStyle={{
+          background: "#000",
+          color: "#fff",
+          border: "1px solid #27272a",
+        }}
       />
       {children}
     </>

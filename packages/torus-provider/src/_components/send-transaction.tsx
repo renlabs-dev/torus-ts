@@ -6,6 +6,11 @@ import { toast } from "react-toastify";
 
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
+import {
+  renderSuccessfulyFinalized,
+  renderFinalizedWithError,
+  renderWaitingForValidation,
+} from "./toast-content-handler";
 
 interface SendTransactionProps {
   api: ApiPromise | null;
@@ -27,40 +32,78 @@ export async function sendTransaction({
   refetchHandler,
 }: SendTransactionProps): Promise<void> {
   if (!api || !selectedAccount || !torusApi.web3FromAddress) return;
+
+  const toastId = `${selectedAccount.address}:${transactionType}`;
+
   try {
     const injector = await torusApi.web3FromAddress(selectedAccount.address);
+
     await transaction.signAndSend(
       selectedAccount.address,
       { signer: injector.signer },
       (result: SubmittableResult) => {
-        if (result.status.isInBlock) {
+        if (result.status.isReady) {
           callback?.({
             finalized: false,
             status: "PENDING",
-            message: `${transactionType} in progress`,
+            message: `Your transaction is ready to be sent`,
           });
         }
+
+        if (result.status.isBroadcast) {
+          callback?.({
+            finalized: false,
+            status: "PENDING",
+            message: `Your transaction is being broadcasted`,
+          });
+        }
+
+        if (result.status.isInBlock) {
+          callback?.({
+            finalized: false,
+            status: "SUCCESS",
+            message: `Your transaction has been included into the block`,
+            hash: result.status.asInBlock.toHex(),
+          });
+
+          toast.loading(
+            renderWaitingForValidation(result.status.asInBlock.toHex()),
+            {
+              toastId,
+              type: "default",
+              autoClose: false,
+              closeOnClick: false,
+            },
+          );
+
+          setTimeout(() => {
+            callback?.({
+              status: null,
+              message: null,
+              finalized: false,
+            });
+          }, 6000);
+        }
+
         if (result.status.isFinalized) {
           const success = result.findRecord("system", "ExtrinsicSuccess");
           const failed = result.findRecord("system", "ExtrinsicFailed");
+          const hash = result.status.asFinalized.toHex();
+
+          if (refetchHandler) {
+            void refetchHandler();
+          }
 
           if (success) {
-            toast.success(`${transactionType} successful`);
-            callback?.({
-              finalized: true,
-              status: "SUCCESS",
-              message: `${transactionType} successful`,
+            toast.update(toastId, {
+              render: renderSuccessfulyFinalized(transactionType, hash),
+              type: "success",
+              isLoading: false,
+              autoClose: 10000,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
             });
-            if (refetchHandler) {
-              void refetchHandler();
-            }
-            setTimeout(() => {
-              callback?.({
-                status: null,
-                message: null,
-                finalized: false,
-              });
-            }, 6000);
           } else if (failed) {
             const [dispatchError] = failed.event.data as unknown as [
               DispatchError,
@@ -76,8 +119,15 @@ export async function sendTransaction({
               }
             }
 
-            toast.error(msg);
-            callback?.({ finalized: true, status: "ERROR", message: msg });
+            toast.update(toastId, {
+              render: renderFinalizedWithError(transactionType, msg, hash),
+              type: "error",
+              isLoading: false,
+              autoClose: false,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
+            });
           }
         }
       },
