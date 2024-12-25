@@ -49,6 +49,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
   Input,
+  NoWalletExtensionDisplay,
   ScrollArea,
   TransactionStatus,
 } from "@torus-ts/ui";
@@ -316,6 +317,7 @@ export function Bridge() {
                       Loading wallets...
                     </span>
                   )}
+
                   {accounts?.map((account) => (
                     <DropdownMenuRadioItem
                       key={account.address}
@@ -336,6 +338,8 @@ export function Bridge() {
                       </div>
                     </DropdownMenuRadioItem>
                   ))}
+
+                  {accounts?.length === 0 && <NoWalletExtensionDisplay />}
                 </DropdownMenuRadioGroup>
               </ScrollArea>
             </DropdownMenuContent>

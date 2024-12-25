@@ -261,6 +261,7 @@ export function useBridgedBalances(api: Api | Nullish) {
     queryFn: () => queryBridgedBalances(api!),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 20,
   });
 }
 
