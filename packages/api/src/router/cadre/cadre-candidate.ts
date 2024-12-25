@@ -5,11 +5,14 @@ import "@torus-ts/db/schema";
 import { cadreCandidateSchema } from "@torus-ts/db/schema";
 import { CADRE_CANDIDATE_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
+import { isNull } from "@torus-ts/db";
 
 export const cadreCandidateRouter = {
   // GET
   all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.cadreCandidateSchema.findMany();
+    return ctx.db.query.cadreCandidateSchema.findMany({
+      where: isNull(cadreCandidateSchema.deletedAt),
+    });
   }),
   // POST
   create: authenticatedProcedure

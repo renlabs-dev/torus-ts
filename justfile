@@ -72,3 +72,14 @@ clean-all:
       -name 'dist' -o \
       -name '.cache' \
     \) -prune -exec rm -rf '{}' +
+
+# -- @EdSDR Things --
+
+i:
+  pnpm install
+
+b:
+  pnpm exec ./scripts/dev-helper with-env turbo run build --ui=tui
+
+c: 
+  pnpm exec turbo run format lint typecheck

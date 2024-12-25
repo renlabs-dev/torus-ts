@@ -6,7 +6,7 @@ import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { CADRE_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { cadreVoteSchema } from "@torus-ts/db/schema";
 import { z } from "zod";
-import { eq } from "@torus-ts/db";
+import { and, eq, isNull } from "@torus-ts/db";
 
 export const cadreVoteRouter = {
   // GET
@@ -14,7 +14,10 @@ export const cadreVoteRouter = {
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => {
       return ctx.db.query.cadreVoteSchema.findFirst({
-        where: eq(cadreVoteSchema.id, input.id),
+        where: and(
+          eq(cadreVoteSchema.id, input.id),
+          isNull(cadreVoteSchema.deletedAt),
+        ),
       });
     }),
   // POST

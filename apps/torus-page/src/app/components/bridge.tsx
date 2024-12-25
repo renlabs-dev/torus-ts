@@ -64,6 +64,7 @@ import { usePage } from "~/context/page-provider";
 import { UnstakeAction } from "./unstake";
 import { AmountButtons } from "./amount-buttons";
 import { FeeLabel } from "./fee-label";
+import Link from "next/link";
 
 const formSchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
@@ -260,24 +261,40 @@ export function Bridge() {
               <span>Bridge your assets</span>
               <HoverCard>
                 <HoverCardTrigger asChild>
-                  <Info className="h-5 w-5" />
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    More Info / CLI Guide
+                    <Info className="h-5 w-5 animate-pulse" />
+                  </span>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
+                  <p className="mb-2 text-sm text-muted-foreground">
+                    Information
+                  </p>
                   <p className="mb-2 text-sm">
                     This bridge will migrate your COMAI tokens to the Torus
                     Network, while burning the COMAI on the Commune Mainnet.
                     After the bridge closes at the end of 2024, you won't be
                     able to bridge back anymore.
                   </p>
+                  <p className="mb-2 text-sm text-muted-foreground">
+                    CLI Guide
+                  </p>
                   <p className="text-sm">
-                    If you want a different approach, you can use the CLI
+                    If you want a different approach, you can use the{" "}
+                    <Link
+                      target="_blank"
+                      href="https://github.com/renlabs-dev/communex"
+                      className="underline"
+                    >
+                      CLI
+                    </Link>{" "}
                     through the{" "}
                     <span className="rounded-md bg-accent p-0.5">bridge</span>{" "}
                     and{" "}
                     <span className="rounded-md bg-accent p-0.5">
                       bridge_withdraw
                     </span>{" "}
-                    methods.
+                    methods (Remember to update your CLI to the latest version).
                   </p>
                 </HoverCardContent>
               </HoverCard>
