@@ -8,13 +8,7 @@ import { formatToken } from "@torus-ts/utils/subspace";
 export interface ProposalCardFields {
   title: string | null;
   body: string | null;
-  netuid: number | "GLOBAL";
   invalid?: boolean;
-}
-
-export interface DAOCardFields {
-  title: string | null;
-  body: string | null;
 }
 
 export const PARAM_FIELD_DISPLAY_NAMES = {
@@ -80,13 +74,11 @@ const paramsToMarkdown = (params: Record<string, unknown>): string => {
 function handleCustomProposalData(
   proposalId: number,
   dataState: CustomMetadataState | null,
-  netuid: number | "GLOBAL",
 ): ProposalCardFields {
   if (dataState == null) {
     return {
       title: null,
       body: null,
-      netuid,
     };
   }
   return match(dataState)({
@@ -94,7 +86,6 @@ function handleCustomProposalData(
       return {
         title: `ID: ${proposalId} | This proposal has no custom metadata`,
         body: null,
-        netuid,
         invalid: true,
       };
     },
@@ -102,7 +93,6 @@ function handleCustomProposalData(
       return {
         title: data.title ?? null,
         body: data.body ?? null,
-        netuid,
       };
     },
   });
@@ -111,15 +101,11 @@ function handleCustomProposalData(
 function handleProposalParams(
   proposalId: number,
   params: Record<string, unknown>,
-  netuid: number | "GLOBAL",
 ): ProposalCardFields {
-  const title = `Parameters proposal #${proposalId} for ${
-    netuid == "GLOBAL" ? "global network" : `subnet ${netuid}`
-  }`;
+  const title = `Parameters proposal #${proposalId}`;
   return {
     title,
     body: paramsToMarkdown(params),
-    netuid,
   };
 }
 
@@ -128,21 +114,13 @@ export const handleCustomProposal = (
 ): ProposalCardFields =>
   match(proposal.data)({
     GlobalCustom(): ProposalCardFields {
-      return handleCustomProposalData(
-        proposal.id,
-        proposal.customData ?? null,
-        "GLOBAL",
-      );
+      return handleCustomProposalData(proposal.id, proposal.customData ?? null);
     },
     GlobalParams(params): ProposalCardFields {
-      return handleProposalParams(proposal.id, params, "GLOBAL");
+      return handleProposalParams(proposal.id, params);
     },
     TransferDaoTreasury(): ProposalCardFields {
-      return handleCustomProposalData(
-        proposal.id,
-        proposal.customData ?? null,
-        "GLOBAL",
-      );
+      return handleCustomProposalData(proposal.id, proposal.customData ?? null);
     },
   });
 
@@ -212,38 +190,17 @@ export function handleProposalQuorumPercent(
   );
 }
 
-// == DAO Applications ==
+// == Agent Applications ==
 
-export function handleDaoApplications(
-  daoId: number | null,
-  dataState: CustomMetadataState | null,
-): DAOCardFields {
-  if (dataState == null) {
-    return {
-      title: null,
-      body: null,
-    };
-  }
-  return match(dataState)({
-    Err(): DAOCardFields {
-      return {
-        title: `ID: ${daoId} | This DAO has no custom metadata`,
-        body: null,
-      };
-    },
-    Ok(data): DAOCardFields {
-      return {
-        title: data.title ?? null,
-        body: data.body ?? null,
-      };
-    },
-  });
+export interface AgentApplicationCardFields {
+  title: string | null;
+  body: string | null;
 }
 
-export function handleCustomDaos(
-  daoId: number | null,
+export function handleCustomAgentApplications(
+  agentId: number | null,
   dataState: CustomMetadataState | null,
-): DAOCardFields {
+): AgentApplicationCardFields {
   if (dataState == null) {
     return {
       title: null,
@@ -251,13 +208,13 @@ export function handleCustomDaos(
     };
   }
   return match(dataState)({
-    Err(): DAOCardFields {
+    Err(): AgentApplicationCardFields {
       return {
-        title: `ID: ${daoId} | This DAO has no custom metadata`,
+        title: `ID: ${agentId} | This Agent Application has no custom metadata`,
         body: null,
       };
     },
-    Ok(data): DAOCardFields {
+    Ok(data): AgentApplicationCardFields {
       return {
         title: data.title ?? null,
         body: data.body ?? null,

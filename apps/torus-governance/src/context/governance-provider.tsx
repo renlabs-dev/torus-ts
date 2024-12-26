@@ -17,7 +17,7 @@ import type {
 } from "@torus-ts/torus-provider";
 import type {
   AddCustomProposal,
-  AddDaoApplication,
+  AddAgentApplication,
   addTransferDaoTreasuryProposal,
   RegisterAgent,
   RemoveVote,
@@ -27,7 +27,7 @@ import {
   useAccountsNotDelegatingVoting,
   useCachedStakeOut,
   useCustomMetadata,
-  useDaos,
+  useAgentApplications,
   useDaoTreasuryAddress,
   useFreeBalance,
   useLastBlock,
@@ -52,11 +52,11 @@ interface GovernanceContextType {
 
   stakeOut: UseQueryResult<StakeData, Error>;
 
-  apps: UseQueryResult<ApplicationState[], Error>;
-  appsWithMeta: ApplicationState[] | undefined;
+  agentApplications: UseQueryResult<ApplicationState[], Error>;
+  agentApplicationsWithMeta: ApplicationState[] | undefined;
   daoTreasuryAddress: UseQueryResult<SS58Address, Error>;
   daoTreasuryBalance: UseQueryResult<bigint, Error>;
-  addDaoApplication: (application: AddDaoApplication) => Promise<void>;
+  AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addTransferDaoTreasuryProposal: (
     proposal: addTransferDaoTreasuryProposal,
   ) => Promise<void>;
@@ -87,7 +87,7 @@ export function GovernanceProvider({
     isAccountConnected,
     voteProposal,
     RegisterAgent,
-    addDaoApplication,
+    AddAgentApplication,
     addCustomProposal,
     removeVoteProposal,
     addTransferDaoTreasuryProposal,
@@ -150,14 +150,14 @@ export function GovernanceProvider({
     lastBlock.data?.apiAtBlock,
   );
 
-  // == DAOs ==
-  const apps = useDaos(lastBlock.data?.apiAtBlock);
+  // == Agent Applications ==
+  const agentApplications = useAgentApplications(lastBlock.data?.apiAtBlock);
   const appMetadataQueryMap = useCustomMetadata<BaseDao>(
     "application",
     lastBlock.data,
-    apps.data,
+    agentApplications.data,
   );
-  const appsWithMeta = apps.data?.map((app) => {
+  const agentApplicationsWithMeta = agentApplications.data?.map((app) => {
     const id = app.id;
     const metadataQuery = appMetadataQueryMap.get(id);
     const data = metadataQuery?.data;
@@ -168,14 +168,13 @@ export function GovernanceProvider({
     return { ...app, customData };
   });
 
+  // == Treasury ==
   const daoTreasuryAddress = useDaoTreasuryAddress(lastBlock.data?.apiAtBlock);
 
   const daoTreasuryBalance = useFreeBalance(
     lastBlock.data?.apiAtBlock,
     daoTreasuryAddress.data,
   );
-
-  // == Modules ==
 
   return (
     <GovernanceContext.Provider
@@ -191,11 +190,11 @@ export function GovernanceProvider({
         accountFreeBalance,
         accountStakedBalance,
 
-        apps: apps,
-        appsWithMeta: appsWithMeta,
+        agentApplications,
+        agentApplicationsWithMeta,
         daoTreasuryAddress,
         daoTreasuryBalance,
-        addDaoApplication,
+        AddAgentApplication,
         addTransferDaoTreasuryProposal,
 
         proposals,

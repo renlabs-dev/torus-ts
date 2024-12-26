@@ -32,7 +32,7 @@ const daoSchema = z.object({
 
 export function CreateDao(): JSX.Element {
   const router = useRouter();
-  const { isAccountConnected, addDaoApplication, accountFreeBalance } =
+  const { isAccountConnected, AddAgentApplication, accountFreeBalance } =
     useGovernance();
 
   const [applicationKey, setApplicationKey] = useState("");
@@ -81,7 +81,7 @@ export function CreateDao(): JSX.Element {
       const daoApplicationCost = 1000;
 
       if (Number(accountFreeBalance.data) > daoApplicationCost) {
-        void addDaoApplication({
+        void AddAgentApplication({
           applicationKey,
           IpfsHash: `ipfs://${ipfs.IpfsHash}`,
           callback: handleCallback,

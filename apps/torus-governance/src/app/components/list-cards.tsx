@@ -10,7 +10,7 @@ import type { VoteStatus } from "./vote-label";
 import { useGovernance } from "~/context/governance-provider";
 import {
   calcProposalFavorablePercent,
-  handleCustomDaos,
+  handleCustomAgentApplications,
   handleCustomProposal,
 } from "~/utils";
 import { CardSkeleton } from "./card-skeleton";
@@ -53,7 +53,7 @@ const NoContentFound = () => {
   );
 };
 
-type ViewModes = "proposals" | "daos-applications" | null;
+type ViewModes = "proposals" | "agent-applications" | null;
 
 const ListCardsContent = () => {
   const {
@@ -64,8 +64,8 @@ const ListCardsContent = () => {
 
     proposals,
     proposalsWithMeta,
-    apps: daos,
-    appsWithMeta: daosWithMeta,
+    agentApplications,
+    agentApplicationsWithMeta,
   } = useGovernance();
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -76,16 +76,16 @@ const ListCardsContent = () => {
 
   const viewMode = useMemo((): ViewModes => {
     const currentView = searchParams.get("view");
-    if (currentView !== "proposals" && currentView !== "daos-applications")
+    if (currentView !== "proposals" && currentView !== "agent-applications")
       return null;
     return currentView as ViewModes;
   }, [searchParams]);
 
-  const isLoadingDaos = useMemo(() => {
+  const isLoadingagentApplications = useMemo(() => {
     if (!isInitialized) return true;
-    if (!daosWithMeta || daos.isPending) return true;
+    if (!agentApplicationsWithMeta || agentApplications.isPending) return true;
     return false;
-  }, [isInitialized, daosWithMeta, daos.isPending]);
+  }, [isInitialized, agentApplicationsWithMeta, agentApplications.isPending]);
 
   const isLoadingProposals = useMemo(() => {
     if (isInitialized === false) return true;
@@ -95,8 +95,8 @@ const ListCardsContent = () => {
 
   const handleIsLoading = (viewMode: ViewModes): boolean => {
     switch (viewMode) {
-      case "daos-applications":
-        return isLoadingDaos;
+      case "agent-applications":
+        return isLoadingagentApplications;
       case "proposals":
         return isLoadingProposals;
       default:
@@ -144,12 +144,12 @@ const ListCardsContent = () => {
       .filter((element): element is JSX.Element => element !== null);
   }, [currentBlock, proposalsWithMeta, searchParams, selectedAccount?.address]);
 
-  const renderDaos = useMemo((): JSX.Element[] => {
-    if (!daosWithMeta) return [];
+  const renderagentApplications = useMemo((): JSX.Element[] => {
+    if (!agentApplicationsWithMeta) return [];
 
-    return daosWithMeta
+    return agentApplicationsWithMeta
       .map((app) => {
-        const { title, body } = handleCustomDaos(
+        const { title, body } = handleCustomAgentApplications(
           app.id,
           app.customData ?? null,
         );
@@ -171,24 +171,24 @@ const ListCardsContent = () => {
             <CardViewData
               title={title}
               author={app.payerKey}
-              // daoStatus={app.status}
+              // agentApplicationstatus={app.status}
             />
           </Link>
         );
       })
       .filter((element): element is JSX.Element => element !== null);
-  }, [daosWithMeta, searchParams]);
+  }, [agentApplicationsWithMeta, searchParams]);
 
   const content = useMemo(() => {
     switch (viewMode) {
       case "proposals":
         return renderProposals;
-      case "daos-applications":
-        return renderDaos;
+      case "agent-applications":
+        return renderagentApplications;
       default:
         return null;
     }
-  }, [viewMode, renderProposals, renderDaos]);
+  }, [viewMode, renderProposals, renderagentApplications]);
 
   useEffect(() => {
     if (contentRef.current) {

@@ -18,7 +18,7 @@ import { toNano } from "@torus-ts/utils/subspace";
 
 import type {
   AddCustomProposal,
-  AddDaoApplication,
+  AddAgentApplication,
   addTransferDaoTreasuryProposal,
   Bridge,
   RegisterAgent,
@@ -77,7 +77,7 @@ interface TorusContextType {
 
   RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
-  addDaoApplication: (application: AddDaoApplication) => Promise<void>;
+  AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addTransferDaoTreasuryProposal: (
     proposal: addTransferDaoTreasuryProposal,
   ) => Promise<void>;
@@ -439,14 +439,14 @@ export function TorusProvider({
     });
   }
 
-  async function addDaoApplication({
+  async function AddAgentApplication({
     IpfsHash,
     applicationKey,
     callback,
-  }: AddDaoApplication): Promise<void> {
-    if (!api?.tx.governanceModule?.addDaoApplication) return;
+  }: AddAgentApplication): Promise<void> {
+    if (!api?.tx.governanceModule?.AddAgentApplication) return;
 
-    const transaction = api.tx.governanceModule.addDaoApplication(
+    const transaction = api.tx.governanceModule.AddAgentApplication(
       applicationKey,
       IpfsHash,
     );
@@ -570,7 +570,7 @@ export function TorusProvider({
         voteProposal,
         removeVoteProposal,
         addCustomProposal,
-        addDaoApplication,
+        AddAgentApplication,
         addTransferDaoTreasuryProposal,
 
         updateDelegatingVotingPower,
