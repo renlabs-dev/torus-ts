@@ -9,7 +9,14 @@ import { ReactQueryProvider } from "@torus-ts/query-provider";
 
 import { PageProvider } from "~/context/page-provider";
 import { env } from "~/env";
-import { cn, Footer } from "@torus-ts/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  cn,
+  Footer,
+} from "@torus-ts/ui";
 import { Suspense } from "react";
 import { Bridge } from "./components/bridge";
 import { HoverHeader } from "./components/hover-header";
@@ -52,6 +59,17 @@ export default function RootLayout({
                   <Suspense fallback="...loading">
                     <Bridge />
                   </Suspense>
+                </div>
+                <div className="fixed inset-0 mx-6 mb-6 flex items-end justify-center md:hidden">
+                  <Card>
+                    <CardHeader>Bridge your assets to Torus.</CardHeader>
+                    <CardContent>
+                      <CardDescription>
+                        Enter this page on a desktop browser to use the bridge.
+                        (Bridge Closes: 12/31/24, 11:11 PM UTC)
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
                 </div>
                 {children}
                 <Footer />

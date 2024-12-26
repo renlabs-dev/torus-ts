@@ -4,6 +4,7 @@ import type { FC } from "react";
 import type { Mesh } from "three";
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
+import { Bounds } from "@react-three/drei";
 import * as THREE from "three";
 
 const vertexShader = `
@@ -109,9 +110,11 @@ const Torus: FC = () => {
 };
 
 export const TorusObject: FC = () => (
-  <Canvas camera={{ fov: 80, near: 0.1, far: 1000, position: [0, 0, 3] }}>
+  <Canvas dpr={[2, 4]}>
     <Suspense fallback={null}>
-      <Torus />
+      <Bounds fit clip observe margin={1}>
+        <Torus />
+      </Bounds>
     </Suspense>
   </Canvas>
 );

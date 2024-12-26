@@ -12,9 +12,6 @@ export default function Page(): JSX.Element {
         <TorusObject />
       </div>
       <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center">
-        {/* <h1 className="block animate-fade-up text-7xl font-semibold tracking-wide shadow-sm animate-delay-[1000ms] md:hidden">
-          Torus
-        </h1> */}
         <Image
           priority
           alt="Torus"
