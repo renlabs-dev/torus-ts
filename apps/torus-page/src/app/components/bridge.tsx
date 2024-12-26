@@ -32,7 +32,6 @@ import {
   AlertDialogTrigger,
   Button,
   Card,
-  cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
@@ -320,17 +319,15 @@ export function Bridge() {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className={cn("border border-muted")}>
-              <ScrollArea className={cn("overflow-y-auto")}>
+            <DropdownMenuContent className="border border-muted">
+              <ScrollArea className="overflow-y-auto">
                 <DropdownMenuRadioGroup
                   value={selectedAccount?.address ?? ""}
                   onValueChange={handleWalletSelection}
                 >
                   {!accounts && (
-                    <span
-                      className={cn("flex items-center gap-1.5 px-1.5 py-2")}
-                    >
-                      <LoaderCircle className={cn("rotate animate-spin")} />
+                    <span className="flex items-center gap-1.5 px-1.5 py-2">
+                      <LoaderCircle className="rotate animate-spin" />
                       Loading wallets...
                     </span>
                   )}
@@ -341,14 +338,10 @@ export function Bridge() {
                       value={account.address}
                       disabled={account.address === selectedAccount?.address}
                     >
-                      <div className={cn("flex flex-col items-center gap-2")}>
-                        <span
-                          className={cn(
-                            "flex flex-col items-start justify-start gap-1",
-                          )}
-                        >
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="flex flex-col items-start justify-start gap-1">
                           <span>{account.meta.name}</span>
-                          <span className={cn("text-xs text-muted-foreground")}>
+                          <span className="text-xs text-muted-foreground">
                             {smallAddress(account.address)}
                           </span>
                         </span>
@@ -394,10 +387,9 @@ export function Bridge() {
           )}
 
           <Card
-            className={cn(
-              "mb-2 px-4",
-              accountStakedBalance && accountStakedBalance > 0n ? "" : "hidden",
-            )}
+            className={`mb-2 px-4 ${
+              accountStakedBalance && accountStakedBalance > 0n ? "" : "hidden"
+            }`}
           >
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1" className="border-b-0">
@@ -453,7 +445,7 @@ export function Bridge() {
               />
               <AlertDialogFooter>
                 <div className="flex w-full items-center justify-between">
-                  <div className="mb-1">
+                  <div className="mb-1 mr-2.5">
                     {transactionStatus.status && (
                       <TransactionStatus
                         status={transactionStatus.status}
@@ -467,8 +459,10 @@ export function Bridge() {
                       />
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <div className="flex items-center gap-2">
+                    <AlertDialogCancel className="mt-0">
+                      Cancel
+                    </AlertDialogCancel>
                     <Button type="submit" disabled={!selectedAccount}>
                       Bridge Assets
                     </Button>

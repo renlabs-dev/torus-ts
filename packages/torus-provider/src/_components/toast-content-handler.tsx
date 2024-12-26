@@ -27,7 +27,7 @@ export const renderWaitingForValidation = (
   wsEndpoint: string,
 ) => (
   <div style={divStyle}>
-    <p>Processing transaction block.</p>
+    <p>Validating transaction in block.</p>
     <a
       style={linkStyle}
       target="_blank"
@@ -44,7 +44,7 @@ export const renderSuccessfulyFinalized = (
   wsEndpoint: string,
 ) => (
   <div style={divStyle}>
-    <p>{transactionType} was finalized successfully.</p>
+    <p>{transactionType} completed successfully</p>
     <a
       style={linkStyle}
       target="_blank"

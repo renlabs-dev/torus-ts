@@ -48,7 +48,7 @@ export async function sendTransaction({
           callback?.({
             finalized: false,
             status: "PENDING",
-            message: `Your transaction is ready to be sent`,
+            message: `Transaction prepared and ready to send`,
           });
         }
 
@@ -56,7 +56,7 @@ export async function sendTransaction({
           callback?.({
             finalized: false,
             status: "PENDING",
-            message: `Your transaction is being broadcasted`,
+            message: `Broadcasting your transaction to the network...`,
           });
         }
 
@@ -64,7 +64,7 @@ export async function sendTransaction({
           callback?.({
             finalized: false,
             status: "SUCCESS",
-            message: `Your transaction has been included into the block`,
+            message: `Transaction included in the blockchain!`,
           });
 
           toast.loading(
