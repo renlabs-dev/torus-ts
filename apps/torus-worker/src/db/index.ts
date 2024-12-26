@@ -97,7 +97,7 @@ export async function computeTotalVotesPerDao(): Promise<VotesByProposal[]> {
     acceptVotes: row.acceptVotes,
     refuseVotes: row.refuseVotes,
     removeVotes: row.removeVotes,
-    daoId: row.appId,
+    agentId: row.appId,
   }));
 }
 

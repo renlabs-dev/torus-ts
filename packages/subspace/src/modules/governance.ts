@@ -194,7 +194,7 @@ export const AGENT_APPLICATION_SCHEMA = sb_struct({
 
 export type AgentApplication = z.infer<typeof AGENT_APPLICATION_SCHEMA>;
 
-export async function queryDaoApplications(
+export async function queryAgentApplications(
   api: Api,
 ): Promise<AgentApplication[]> {
   const query = await api.query.governance.agentApplications.entries();

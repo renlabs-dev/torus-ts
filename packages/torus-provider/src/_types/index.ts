@@ -69,7 +69,7 @@ export interface addTransferDaoTreasuryProposal {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface AddDaoApplication {
+export interface AddAgentApplication {
   IpfsHash: string;
   applicationKey: string;
   callback?: (status: TransactionResult) => void;

@@ -17,7 +17,7 @@ import {
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
   queryCachedStakeOut,
-  queryDaoApplications,
+  queryAgentApplications,
   queryDaoTreasuryAddress,
   queryFreeBalance,
   queryKeyStakedBy,
@@ -109,11 +109,11 @@ export function useProposals(
   });
 }
 
-export function useDaos(api: Api | Nullish) {
+export function useAgentApplications(api: Api | Nullish) {
   return useQuery({
     queryKey: ["daos"],
     enabled: api != null,
-    queryFn: () => queryDaoApplications(api!),
+    queryFn: () => queryAgentApplications(api!),
     staleTime: PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });

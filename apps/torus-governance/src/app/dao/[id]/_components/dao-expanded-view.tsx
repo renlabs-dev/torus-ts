@@ -9,7 +9,7 @@ import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { useGovernance } from "~/context/governance-provider";
-import { handleCustomDaos } from "../../../../utils";
+import { handleCustomAgentApplications } from "../../../../utils";
 
 interface CustomContent {
   paramId: number;
@@ -18,13 +18,17 @@ interface CustomContent {
 export function DaoExpandedView(props: CustomContent): JSX.Element {
   const { paramId } = props;
 
-  const { appsWithMeta, apps: daos, lastBlock } = useGovernance();
+  const { agentApplicationsWithMeta, agentApplications, lastBlock } =
+    useGovernance();
 
-  function handleDaosContent() {
-    const app = appsWithMeta?.find((d) => d.id === paramId);
+  function handleAgentApplicationsContent() {
+    const app = agentApplicationsWithMeta?.find((d) => d.id === paramId);
     if (!app) return null;
 
-    const { body, title } = handleCustomDaos(app.id, app.customData ?? null);
+    const { body, title } = handleCustomAgentApplications(
+      app.id,
+      app.customData ?? null,
+    );
 
     const daoContent = {
       body,
@@ -37,9 +41,9 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
     return daoContent;
   }
 
-  const content = handleDaosContent();
+  const content = handleAgentApplicationsContent();
 
-  if (daos.isLoading || !content)
+  if (agentApplications.isLoading || !content)
     return (
       <div className="flex w-full items-center justify-center lg:h-[calc(100svh-203px)]">
         <h1 className="text-2xl text-white">Loading...</h1>
@@ -50,7 +54,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
   return (
     <div className="flex w-full flex-col gap-8">
       {/* <div className="flex w-full flex-row items-center gap-2">
-        <DaoStatusLabel status={content.status} />
+        <agentApplicationstatusLabel status={content.status} />
       </div> */}
       <div className="flex w-full justify-between gap-10">
         <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
