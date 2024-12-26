@@ -259,6 +259,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Staking",
       refetchHandler,
+      wsEndpoint,
     });
   }
 
@@ -282,6 +283,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Unstaking",
       refetchHandler,
+      wsEndpoint,
     });
   }
 
@@ -301,6 +303,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Transfer",
       refetchHandler,
+      wsEndpoint,
     });
   }
 
@@ -319,6 +322,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Bridge",
       refetchHandler,
+      wsEndpoint,
     });
   }
 
@@ -344,6 +348,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Transfer Stake",
       refetchHandler,
+      wsEndpoint,
     });
   }
 
@@ -375,6 +380,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Register Module",
+      wsEndpoint,
     });
   }
 
@@ -395,6 +401,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Vote Proposal",
+      wsEndpoint,
     });
   }
 
@@ -412,6 +419,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Remove Vote",
+      wsEndpoint,
     });
   }
 
@@ -430,6 +438,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Create Custom Proposal",
+      wsEndpoint,
     });
   }
 
@@ -451,6 +460,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Create Dao Application",
+      wsEndpoint,
     });
   }
 
@@ -474,6 +484,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Transfer Dao Treasury Proposal",
+      wsEndpoint,
     });
   }
 
@@ -528,6 +539,7 @@ export function TorusProvider({
       callback,
       transaction,
       transactionType: "Update Delegating Voting Power",
+      wsEndpoint,
     });
   }
   return (

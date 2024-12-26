@@ -20,6 +20,7 @@ interface SendTransactionProps {
   transaction: SubmittableExtrinsic<"promise">;
   callback?: (result: TransactionResult) => void;
   refetchHandler?: () => Promise<void>;
+  wsEndpoint: string;
 }
 
 export async function sendTransaction({
@@ -30,6 +31,7 @@ export async function sendTransaction({
   transaction,
   callback,
   refetchHandler,
+  wsEndpoint,
 }: SendTransactionProps): Promise<void> {
   if (!api || !selectedAccount || !torusApi.web3FromAddress) return;
 
@@ -66,7 +68,10 @@ export async function sendTransaction({
           });
 
           toast.loading(
-            renderWaitingForValidation(result.status.asInBlock.toHex()),
+            renderWaitingForValidation(
+              result.status.asInBlock.toHex(),
+              wsEndpoint,
+            ),
             {
               toastId,
               type: "default",
@@ -95,7 +100,11 @@ export async function sendTransaction({
 
           if (success) {
             toast.update(toastId, {
-              render: renderSuccessfulyFinalized(transactionType, hash),
+              render: renderSuccessfulyFinalized(
+                transactionType,
+                hash,
+                wsEndpoint,
+              ),
               type: "success",
               isLoading: false,
               autoClose: 10000,
@@ -119,7 +128,7 @@ export async function sendTransaction({
             }
 
             toast.update(toastId, {
-              render: renderFinalizedWithError(msg, hash),
+              render: renderFinalizedWithError(msg, hash, wsEndpoint),
               type: "error",
               isLoading: false,
               autoClose: false,

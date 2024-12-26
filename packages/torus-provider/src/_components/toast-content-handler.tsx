@@ -14,18 +14,24 @@ const linkStyle: CSSProperties = {
   cursor: "pointer",
 };
 
-const POLKADOT_JS_EXPLORER_URL = {
-  dev: "https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Ftestnet.api.communeai.net#/explorer/query",
-  prod: "https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fapi.communeai.net#/explorer/query",
-};
+const getExplorerLink = ({
+  wsEndpoint,
+  hash,
+}: {
+  wsEndpoint: string;
+  hash: string;
+}) => `https://polkadot.js.org/apps/?rpc=${wsEndpoint}#/explorer/query/${hash}`;
 
-export const renderWaitingForValidation = (hash: string) => (
+export const renderWaitingForValidation = (
+  hash: string,
+  wsEndpoint: string,
+) => (
   <div style={divStyle}>
     <p>Processing transaction block.</p>
     <a
       style={linkStyle}
       target="_blank"
-      href={`${POLKADOT_JS_EXPLORER_URL.dev}/${hash}`}
+      href={getExplorerLink({ wsEndpoint, hash })}
     >
       View on block explorer
     </a>
@@ -35,26 +41,31 @@ export const renderWaitingForValidation = (hash: string) => (
 export const renderSuccessfulyFinalized = (
   transactionType: string,
   hash: string,
+  wsEndpoint: string,
 ) => (
   <div style={divStyle}>
     <p>{transactionType} was finalized successfully.</p>
     <a
       style={linkStyle}
       target="_blank"
-      href={`https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Ftestnet.api.communeai.net#/explorer/query/${hash}`}
+      href={getExplorerLink({ wsEndpoint, hash })}
     >
       View on block explorer
     </a>
   </div>
 );
 
-export const renderFinalizedWithError = (msg: string, hash: string) => (
+export const renderFinalizedWithError = (
+  msg: string,
+  hash: string,
+  wsEndpoint: string,
+) => (
   <div style={divStyle}>
     <p>{msg}</p>
     <a
       style={linkStyle}
       target="_blank"
-      href={`https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Ftestnet.api.communeai.net#/explorer/query/${hash}`}
+      href={getExplorerLink({ wsEndpoint, hash })}
     >
       View on block explorer
     </a>
