@@ -21,10 +21,10 @@ export function TransactionStatus({
   message,
 }: TransactionStatusProps): JSX.Element {
   const statusConfig = {
-    SUCCESS: { color: "text-green-300", Icon: CheckCircleIcon },
+    SUCCESS: { color: "text-cyan-300", Icon: CheckCircleIcon },
     ERROR: { color: "text-red-300", Icon: ExclamationCircleIcon },
-    PENDING: { color: "text-yellow-300", Icon: null },
-    STARTING: { color: "text-blue-300", Icon: null },
+    PENDING: { color: "text-white", Icon: null },
+    STARTING: { color: "text-white", Icon: null },
   };
 
   const { color, Icon } = status

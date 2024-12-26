@@ -1,0 +1,12 @@
+:root {
+  --toastify-color-success: #86efac;
+
+  .Toastify__toast--default {
+    align-items: start;
+    height: fit-content;
+  }
+  .Toastify__toast-icon {
+    margin-top: 2px;
+    margin-bottom: auto;
+  }
+}
