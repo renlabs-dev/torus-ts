@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
-import type { DaoApplicationStatus } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
 import {
@@ -159,7 +158,7 @@ const VoteCardFunctionsContent = (props: {
 };
 
 export function AgentApplicationVoteTypeCard(props: {
-  applicationStatus: DaoApplicationStatus;
+  applicationStatus: "Pending" | "Accepted" | "Refused" | "Removed";
   applicationId: number;
 }) {
   const { applicationId, applicationStatus } = props;

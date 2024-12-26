@@ -1,8 +1,7 @@
-import type { DaoApplicationStatus } from "@torus-ts/subspace";
 import { Badge } from "@torus-ts/ui";
 
 interface StatusLabelProps {
-  status: DaoApplicationStatus;
+  status: "Pending" | "Accepted" | "Refused" | "Removed";
 }
 
 export const DaoStatusLabel = (props: StatusLabelProps): JSX.Element => {

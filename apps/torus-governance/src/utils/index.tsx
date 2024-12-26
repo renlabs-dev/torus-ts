@@ -134,18 +134,8 @@ export const handleCustomProposal = (
         "GLOBAL",
       );
     },
-    SubnetCustom({ subnetId }): ProposalCardFields {
-      return handleCustomProposalData(
-        proposal.id,
-        proposal.customData ?? null,
-        subnetId,
-      );
-    },
     GlobalParams(params): ProposalCardFields {
       return handleProposalParams(proposal.id, params, "GLOBAL");
-    },
-    SubnetParams({ subnetId, params }): ProposalCardFields {
-      return handleProposalParams(proposal.id, params, subnetId);
     },
     TransferDaoTreasury(): ProposalCardFields {
       return handleCustomProposalData(

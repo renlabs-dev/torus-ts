@@ -5,14 +5,13 @@ import { createContext, useContext, useMemo } from "react";
 
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import type {
-  DaoApplications,
   LastBlock,
   Proposal,
   SS58Address,
   StakeData,
 } from "@torus-ts/subspace";
 import type {
-  DaoState,
+  ApplicationState,
   InjectedAccountWithMeta,
   ProposalState,
 } from "@torus-ts/torus-provider";
@@ -32,10 +31,8 @@ import {
   useDaoTreasuryAddress,
   useFreeBalance,
   useLastBlock,
-  useModuleBurn,
   useProposals,
   useRewardAllocation,
-  useSubnetList,
   useUnrewardedProposals,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -55,8 +52,8 @@ interface GovernanceContextType {
 
   stakeOut: UseQueryResult<StakeData, Error>;
 
-  daos: UseQueryResult<DaoApplications[], Error>;
-  daosWithMeta: DaoState[] | undefined;
+  apps: UseQueryResult<ApplicationState[], Error>;
+  appsWithMeta: ApplicationState[] | undefined;
   daoTreasuryAddress: UseQueryResult<SS58Address, Error>;
   daoTreasuryBalance: UseQueryResult<bigint, Error>;
   addDaoApplication: (application: AddDaoApplication) => Promise<void>;
@@ -72,10 +69,7 @@ interface GovernanceContextType {
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
 
-  subnetList: UseQueryResult<Record<string, string>, Error>;
-
-  moduleBurn: UseQueryResult<Record<string, string>, Error>;
-  RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
+  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -157,21 +151,21 @@ export function GovernanceProvider({
   );
 
   // == DAOs ==
-  const daos = useDaos(lastBlock.data?.apiAtBlock);
-  const customDaoMetadataQueryMap = useCustomMetadata<BaseDao>(
-    "dao",
+  const apps = useDaos(lastBlock.data?.apiAtBlock);
+  const appMetadataQueryMap = useCustomMetadata<BaseDao>(
+    "application",
     lastBlock.data,
-    daos.data,
+    apps.data,
   );
-  const daosWithMeta = daos.data?.map((dao) => {
-    const id = dao.id;
-    const metadataQuery = customDaoMetadataQueryMap.get(id);
+  const appsWithMeta = apps.data?.map((app) => {
+    const id = app.id;
+    const metadataQuery = appMetadataQueryMap.get(id);
     const data = metadataQuery?.data;
     if (data == null) {
-      return dao;
+      return app;
     }
     const [, customData] = data;
-    return { ...dao, customData };
+    return { ...app, customData };
   });
 
   const daoTreasuryAddress = useDaoTreasuryAddress(lastBlock.data?.apiAtBlock);
@@ -182,8 +176,6 @@ export function GovernanceProvider({
   );
 
   // == Modules ==
-  const subnetList = useSubnetList(lastBlock.data?.apiAtBlock);
-  const moduleBurn = useModuleBurn(lastBlock.data?.apiAtBlock);
 
   return (
     <GovernanceContext.Provider
@@ -199,8 +191,8 @@ export function GovernanceProvider({
         accountFreeBalance,
         accountStakedBalance,
 
-        daos,
-        daosWithMeta,
+        apps: apps,
+        appsWithMeta: appsWithMeta,
         daoTreasuryAddress,
         daoTreasuryBalance,
         addDaoApplication,
@@ -214,10 +206,7 @@ export function GovernanceProvider({
         addCustomProposal,
         removeVoteProposal,
 
-        subnetList,
-
-        moduleBurn,
-        RegisterAgent,
+        registerAgent: RegisterAgent,
       }}
     >
       <Header

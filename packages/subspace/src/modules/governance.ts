@@ -1,6 +1,5 @@
 import { Keyring } from "@polkadot/api";
 import { encodeAddress } from "@polkadot/util-crypto";
-import { assert } from "tsafe";
 import { z } from "zod";
 
 import "@polkadot/api/augment";
@@ -9,13 +8,11 @@ import type { ApiPromise } from "@polkadot/api";
 
 import type { SS58Address } from "../address";
 import type { Api } from "./_common";
-import { checkSS58 } from "../address";
 import { queryCachedStakeFrom, queryCachedStakeOut } from "../cached-queries";
 import {
   sb_address,
   sb_amount,
   sb_array,
-  sb_basic_enum,
   sb_bigint,
   sb_blocks,
   sb_enum,
@@ -29,18 +26,16 @@ import {
 import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
 
+const ADDRESS_FORMAT = 42;
+
 export type GovernanceItemType = "PROPOSAL" | "AGENT_APPLICATION";
 
 // == Proposals ==
 
+/** Based on `PalletGovernanceProposalProposalData` */
 export const PROPOSAL_DATA_SCHEMA = sb_enum({
-  GlobalCustom: sb_null,
   GlobalParams: sb_to_primitive.pipe(z.record(z.unknown())),
-  SubnetCustom: sb_struct({ subnetId: sb_id }),
-  SubnetParams: sb_struct({
-    subnetId: sb_id,
-    params: sb_to_primitive.pipe(z.record(z.unknown())),
-  }),
+  GlobalCustom: sb_null,
   TransferDaoTreasury: sb_struct({
     account: sb_address,
     amount: sb_bigint,
@@ -49,6 +44,7 @@ export const PROPOSAL_DATA_SCHEMA = sb_enum({
 
 export type ProposalData = z.infer<typeof PROPOSAL_DATA_SCHEMA>;
 
+/** Based on `PalletGovernanceProposalProposalStatus` */
 export const PROPOSAL_STATUS_SCHEMA = sb_enum({
   Open: sb_struct({
     votesFor: sb_array(sb_address),
@@ -71,6 +67,7 @@ export const PROPOSAL_STATUS_SCHEMA = sb_enum({
 
 export type ProposalStatus = z.infer<typeof PROPOSAL_STATUS_SCHEMA>;
 
+/** Based on `PalletGovernanceProposal` */
 export const PROPOSAL_SCHEMA = sb_struct({
   id: sb_id,
   proposer: sb_address,
@@ -85,7 +82,7 @@ export const PROPOSAL_SCHEMA = sb_struct({
 export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;
 
 export async function queryProposals(api: Api): Promise<Proposal[]> {
-  const query = await api.query.governanceModule.proposals.entries();
+  const query = await api.query.governance.proposals.entries();
   const [proposals, errs] = handleMapValues(query, sb_some(PROPOSAL_SCHEMA));
   for (const err of errs) {
     // TODO: refactor out
@@ -97,16 +94,15 @@ export async function queryProposals(api: Api): Promise<Proposal[]> {
 // TODO: Refactor
 export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
   const unrewardedProposals =
-    await api.query.governanceModule.unrewardedProposals.entries();
+    await api.query.governance.unrewardedProposals.entries();
 
   return unrewardedProposals
-    .map(([key]) => {
+    .map(([key]) =>
       // The key is a StorageKey, which contains the proposal ID
       // We need to extract the proposal ID from this key and convert it to a number
-      const proposalId = key.args[0].toString();
-      return proposalId ? parseInt(proposalId, 10) : NaN;
-    })
-    .filter((id): id is number => !isNaN(id));
+      sb_id.parse(key.args[0]),
+    )
+    .filter((id) => !isNaN(id));
 }
 
 // -- Votes --
@@ -114,7 +110,7 @@ export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
 export interface VoteWithStake {
   address: SS58Address;
   stake: bigint;
-  vote: "In Favor" | "Against";
+  vote: "IN_FAVOR" | "AGAINST";
 }
 
 export async function processVotesAndStakes(
@@ -167,7 +163,7 @@ export async function processVotesAndStakes(
     processedVotes.push({
       address,
       stake: totalStakeMap.get(address) ?? 0n,
-      vote: "In Favor" as const,
+      vote: "IN_FAVOR" as const,
     });
   });
 
@@ -175,7 +171,7 @@ export async function processVotesAndStakes(
     processedVotes.push({
       address,
       stake: totalStakeMap.get(address) ?? 0n,
-      vote: "Against" as const,
+      vote: "AGAINST" as const,
     });
   });
 
@@ -186,35 +182,27 @@ export async function processVotesAndStakes(
 
 // == Applications ==
 
-export const DAO_APPLICATION_STATUS_SCHEMA = sb_basic_enum([
-  "Accepted",
-  "Refused",
-  "Pending",
-  "Removed",
-]);
-
-export type DaoApplicationStatus = z.infer<
-  typeof DAO_APPLICATION_STATUS_SCHEMA
->;
-
-export const DAO_APPLICATIONS_SCHEMA = sb_struct({
+/** Based on `PalletGovernanceApplicationAgentApplication` */
+export const AGENT_APPLICATION_SCHEMA = sb_struct({
   id: sb_id,
-  userId: sb_address,
-  payingFor: sb_address,
+  payerKey: sb_address,
+  agentKey: sb_address,
   data: sb_string,
-  blockNumber: sb_blocks,
-  status: DAO_APPLICATION_STATUS_SCHEMA,
-  applicationCost: sb_amount,
+  cost: sb_amount,
+  expiresAt: sb_blocks,
 });
 
-export type DaoApplications = z.infer<typeof DAO_APPLICATIONS_SCHEMA>;
+export type AgentApplication = z.infer<typeof AGENT_APPLICATION_SCHEMA>;
 
 export async function queryDaoApplications(
   api: Api,
-): Promise<DaoApplications[]> {
-  const query = await api.query.governanceModule.curatorApplications.entries();
+): Promise<AgentApplication[]> {
+  const query = await api.query.governance.agentApplications.entries();
 
-  const [daos, errs] = handleMapValues(query, sb_some(DAO_APPLICATIONS_SCHEMA));
+  const [daos, errs] = handleMapValues(
+    query,
+    sb_some(AGENT_APPLICATION_SCHEMA),
+  );
   for (const err of errs) {
     // TODO: refactor out
     console.error(err);
@@ -230,23 +218,25 @@ export type DaoTreasuryAddress = z.infer<typeof sb_address>;
 export async function queryDaoTreasuryAddress(
   api: Api,
 ): Promise<DaoTreasuryAddress> {
-  const addr = await api.query.governanceModule.daoTreasuryAddress();
+  const addr = await api.query.governance.daoTreasuryAddress();
   return sb_address.parse(addr);
 }
 
 export async function queryAccountsNotDelegatingVotingPower(
   api: Api,
 ): Promise<SS58Address[]> {
-  const value = await api.query.governanceModule.notDelegatingVotingPower();
+  const value = await api.query.governance.notDelegatingVotingPower();
   return sb_array(sb_address).parse(value);
 }
 
 // == Governance Configuration ==
 
-const GOVERNANCE_CONFIGURATION_SCHEMA = sb_struct({
+/** Based on `PalletGovernanceConfigGovernanceConfiguration` */
+export const GOVERNANCE_CONFIGURATION_SCHEMA = sb_struct({
   proposalCost: sb_bigint,
   proposalExpiration: sb_bigint,
-  voteMode: sb_basic_enum(["Vote", "Authority"]),
+  agentApplicationCost: sb_bigint,
+  agentApplicationExpiration: sb_bigint,
   proposalRewardTreasuryAllocation: sb_bigint,
   maxProposalRewardTreasuryAllocation: sb_bigint,
   proposalRewardInterval: sb_bigint,
@@ -257,7 +247,7 @@ type GovernanceConfiguration = z.infer<typeof GOVERNANCE_CONFIGURATION_SCHEMA>;
 export async function queryGlobalGovernanceConfig(
   api: Api,
 ): Promise<GovernanceConfiguration> {
-  const config = await api.query.governanceModule.globalGovernanceConfig();
+  const config = await api.query.governance.globalGovernanceConfig();
   const parsed_config = GOVERNANCE_CONFIGURATION_SCHEMA.parse(config);
   return parsed_config;
 }
@@ -300,9 +290,9 @@ export async function pushToWhitelist(
     throw new Error("No sudo mnemonic provided");
   }
   const sudoKeypair = keyring.addFromUri(mnemonic);
-  const accountId = encodeAddress(moduleKey, 42);
+  const accountId = encodeAddress(moduleKey, ADDRESS_FORMAT);
 
-  const tx = api.tx.governanceModule.addToWhitelist(accountId);
+  const tx = api.tx.governance.addToWhitelist(accountId);
 
   const extrinsic = await tx
     .signAndSend(sudoKeypair)
@@ -317,14 +307,11 @@ export async function pushToWhitelist(
 }
 
 export async function queryWhitelist(api: Api): Promise<SS58Address[]> {
-  const whitelist = [];
+  const whitelist: SS58Address[] = [];
 
-  const entries = await api.query.governanceModule.legitWhitelist.entries();
+  const entries = await api.query.governance.whitelist.entries();
   for (const [keys, _value] of entries) {
-    assert(keys.args[0]);
-    const key = keys.args[0].toPrimitive();
-    assert(typeof key === "string");
-    const address = checkSS58(key);
+    const address = sb_address.parse(keys.args[0]);
     whitelist.push(address);
   }
 
@@ -340,8 +327,8 @@ export async function removeFromWhitelist(
     throw new Error("No sudo mnemonic provided");
   }
 
-  const accountId = encodeAddress(moduleKey, 42);
-  const tx = api.tx.governanceModule.removeFromWhitelist(accountId);
+  const accountId = encodeAddress(moduleKey, ADDRESS_FORMAT);
+  const tx = api.tx.governance.removeFromWhitelist(accountId);
 
   const keyring = new Keyring({ type: "sr25519" });
   const sudoKeypair = keyring.addFromUri(mnemonic);
@@ -357,7 +344,7 @@ export async function removeFromWhitelist(
     });
 }
 
-export async function refuseDaoApplication(
+export async function denyApplication(
   api: ApiPromise,
   proposalId: number,
   mnemonic: string | undefined,
@@ -366,7 +353,7 @@ export async function refuseDaoApplication(
     throw new Error("No sudo mnemonic provided");
   }
 
-  const tx = api.tx.governanceModule.refuseDaoApplication(proposalId);
+  const tx = api.tx.governance.denyApplication(proposalId);
 
   const keyring = new Keyring({ type: "sr25519" });
   const sudoKeypair = keyring.addFromUri(mnemonic);

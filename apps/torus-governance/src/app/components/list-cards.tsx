@@ -64,8 +64,8 @@ const ListCardsContent = () => {
 
     proposals,
     proposalsWithMeta,
-    daos,
-    daosWithMeta,
+    apps: daos,
+    appsWithMeta: daosWithMeta,
   } = useGovernance();
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -148,10 +148,10 @@ const ListCardsContent = () => {
     if (!daosWithMeta) return [];
 
     return daosWithMeta
-      .map((dao) => {
+      .map((app) => {
         const { title, body } = handleCustomDaos(
-          dao.id,
-          dao.customData ?? null,
+          app.id,
+          app.customData ?? null,
         );
 
         if (!body) return null;
@@ -162,16 +162,16 @@ const ListCardsContent = () => {
           search &&
           !title?.toLocaleLowerCase().includes(search) &&
           !body.toLocaleLowerCase().includes(search) &&
-          !dao.userId.toLocaleLowerCase().includes(search)
+          !app.payerKey.toLocaleLowerCase().includes(search)
         )
           return null;
 
         return (
-          <Link href={`/dao/${dao.id}`} key={dao.id} prefetch>
+          <Link href={`/dao/${app.id}`} key={app.id} prefetch>
             <CardViewData
               title={title}
-              author={dao.userId}
-              daoStatus={dao.status}
+              author={app.payerKey}
+              // daoStatus={app.status}
             />
           </Link>
         );

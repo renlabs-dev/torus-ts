@@ -5,39 +5,31 @@ import { z } from "zod";
 import type { Result } from "@torus-ts/utils";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 
-export interface CustomDataError {
-  message: string;
-}
-
-export const DAO_METADATA_SCHEMA = z.object({
-  title: z.string(),
-  body: z.string(),
-  discord_id: z.string().optional(),
-});
-export type CustomMetadataState = Result<CustomMetadata, CustomDataError>;
-export type CustomDaoMetadata = z.infer<typeof DAO_METADATA_SCHEMA>;
-
 const CUSTOM_METADATA_SCHEMA = z.object({
   title: z.string().optional(),
   body: z.string().optional(),
 });
-
 export type CustomMetadata = z.infer<typeof CUSTOM_METADATA_SCHEMA>;
-export function appendErrorInfo(
-  err_msg: string,
-  info: string,
-  sep = " ",
-): { Err: CustomDataError } {
-  const message = err_msg + sep + info;
-  return { Err: { message } };
+
+export const APPLICATION_METADATA_SCHEMA = z.object({
+  title: z.string(),
+  body: z.string(),
+  discord_id: z.string().optional(),
+});
+export type ApplicationMetadata = z.infer<typeof APPLICATION_METADATA_SCHEMA>;
+
+export interface CustomDataError {
+  message: string;
 }
 
-export async function processMetadata(
-  zodSchema: ZodSchema,
+export type CustomMetadataState = Result<CustomMetadata, CustomDataError>;
+
+export async function processMetadata<T extends CustomMetadata>(
+  zodSchema: ZodSchema<T>,
   url: string,
   entryId: number,
   kind?: string,
-) {
+): Promise<Result<T, CustomDataError>> {
   const response = await fetch(url);
   const obj: unknown = await response.json();
 
@@ -46,28 +38,35 @@ export async function processMetadata(
     const message = `Invalid metadata for ${kind} ${entryId} at ${url}`;
     return { Err: { message } };
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return { Ok: validated.data };
 }
 
-export async function processProposalMetadata(url: string, entryId: number) {
+export async function processProposalMetadata(
+  url: string,
+  entryId: number,
+): Promise<Result<CustomMetadata, CustomDataError>> {
   return await processMetadata(
     CUSTOM_METADATA_SCHEMA,
     url,
     entryId,
-    "proposal",
+    "PROPOSAL",
   );
 }
 
-export async function processDaoMetadata(
+export async function processApplicationMetadata(
   url: string,
   entryId: number,
-): Promise<Result<CustomDaoMetadata, CustomDataError>> {
-  return await processMetadata(CUSTOM_METADATA_SCHEMA, url, entryId, "dao");
+): Promise<Result<ApplicationMetadata, CustomDataError>> {
+  return await processMetadata(
+    APPLICATION_METADATA_SCHEMA,
+    url,
+    entryId,
+    "AGENT_APPLICATION",
+  );
 }
 
 export async function fetchCustomMetadata(
-  kind: "proposal" | "dao",
+  kind: "proposal" | "application",
   entryId: number,
   metadataField: string,
 ): Promise<Result<CustomMetadata, CustomDataError>> {
@@ -79,7 +78,7 @@ export async function fetchCustomMetadata(
       const metadata =
         kind == "proposal"
           ? await processProposalMetadata(url, entryId)
-          : await processDaoMetadata(url, entryId);
+          : await processApplicationMetadata(url, entryId);
       return metadata;
     },
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -87,4 +86,13 @@ export async function fetchCustomMetadata(
       return appendErrorInfo(message, `for ${kind} ${entryId}`);
     },
   });
+}
+
+export function appendErrorInfo(
+  err_msg: string,
+  info: string,
+  sep = " ",
+): { Err: CustomDataError } {
+  const message = err_msg + sep + info;
+  return { Err: { message } };
 }

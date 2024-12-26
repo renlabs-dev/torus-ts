@@ -5,9 +5,9 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/types/lookup';
 
-import type { BTreeMap, BTreeSet, Bytes, Compact, Enum, Null, Option, Result, Struct, Text, U8aFixed, Vec, bool, i128, i64, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { BTreeMap, BTreeSet, Bytes, Compact, Enum, Null, Option, Result, Struct, Text, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, Call, H256, MultiAddress, Percent } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, Call, H160, H256, MultiAddress, Percent, Permill } from '@polkadot/types/interfaces/runtime';
 import type { Event } from '@polkadot/types/interfaces/system';
 
 declare module '@polkadot/types/lookup' {
@@ -22,20 +22,20 @@ declare module '@polkadot/types/lookup' {
 
   /** @name PalletBalancesAccountData (5) */
   interface PalletBalancesAccountData extends Struct {
-    readonly free: u64;
-    readonly reserved: u64;
-    readonly frozen: u64;
+    readonly free: u128;
+    readonly reserved: u128;
+    readonly frozen: u128;
     readonly flags: u128;
   }
 
-  /** @name FrameSupportDispatchPerDispatchClassWeight (10) */
+  /** @name FrameSupportDispatchPerDispatchClassWeight (9) */
   interface FrameSupportDispatchPerDispatchClassWeight extends Struct {
     readonly normal: SpWeightsWeightV2Weight;
     readonly operational: SpWeightsWeightV2Weight;
     readonly mandatory: SpWeightsWeightV2Weight;
   }
 
-  /** @name SpWeightsWeightV2Weight (11) */
+  /** @name SpWeightsWeightV2Weight (10) */
   interface SpWeightsWeightV2Weight extends Struct {
     readonly refTime: Compact<u64>;
     readonly proofSize: Compact<u64>;
@@ -92,12 +92,25 @@ declare module '@polkadot/types/lookup' {
       readonly sender: AccountId32;
       readonly hash_: H256;
     } & Struct;
+    readonly isTaskStarted: boolean;
+    readonly asTaskStarted: {
+      readonly task: TorusRuntimeRuntimeTask;
+    } & Struct;
+    readonly isTaskCompleted: boolean;
+    readonly asTaskCompleted: {
+      readonly task: TorusRuntimeRuntimeTask;
+    } & Struct;
+    readonly isTaskFailed: boolean;
+    readonly asTaskFailed: {
+      readonly task: TorusRuntimeRuntimeTask;
+      readonly err: SpRuntimeDispatchError;
+    } & Struct;
     readonly isUpgradeAuthorized: boolean;
     readonly asUpgradeAuthorized: {
       readonly codeHash: H256;
       readonly checkVersion: bool;
     } & Struct;
-    readonly type: 'ExtrinsicSuccess' | 'ExtrinsicFailed' | 'CodeUpdated' | 'NewAccount' | 'KilledAccount' | 'Remarked' | 'UpgradeAuthorized';
+    readonly type: 'ExtrinsicSuccess' | 'ExtrinsicFailed' | 'CodeUpdated' | 'NewAccount' | 'KilledAccount' | 'Remarked' | 'TaskStarted' | 'TaskCompleted' | 'TaskFailed' | 'UpgradeAuthorized';
   }
 
   /** @name FrameSupportDispatchDispatchInfo (23) */
@@ -181,7 +194,10 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'LimitReached' | 'NoLayer';
   }
 
-  /** @name PalletGrandpaEvent (31) */
+  /** @name TorusRuntimeRuntimeTask (31) */
+  type TorusRuntimeRuntimeTask = Null;
+
+  /** @name PalletGrandpaEvent (32) */
   interface PalletGrandpaEvent extends Enum {
     readonly isNewAuthorities: boolean;
     readonly asNewAuthorities: {
@@ -192,83 +208,83 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'NewAuthorities' | 'Paused' | 'Resumed';
   }
 
-  /** @name SpConsensusGrandpaAppPublic (34) */
+  /** @name SpConsensusGrandpaAppPublic (35) */
   interface SpConsensusGrandpaAppPublic extends U8aFixed {}
 
-  /** @name PalletBalancesEvent (35) */
+  /** @name PalletBalancesEvent (36) */
   interface PalletBalancesEvent extends Enum {
     readonly isEndowed: boolean;
     readonly asEndowed: {
       readonly account: AccountId32;
-      readonly freeBalance: u64;
+      readonly freeBalance: u128;
     } & Struct;
     readonly isDustLost: boolean;
     readonly asDustLost: {
       readonly account: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isTransfer: boolean;
     readonly asTransfer: {
       readonly from: AccountId32;
       readonly to: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isBalanceSet: boolean;
     readonly asBalanceSet: {
       readonly who: AccountId32;
-      readonly free: u64;
+      readonly free: u128;
     } & Struct;
     readonly isReserved: boolean;
     readonly asReserved: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isUnreserved: boolean;
     readonly asUnreserved: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isReserveRepatriated: boolean;
     readonly asReserveRepatriated: {
       readonly from: AccountId32;
       readonly to: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
       readonly destinationStatus: FrameSupportTokensMiscBalanceStatus;
     } & Struct;
     readonly isDeposit: boolean;
     readonly asDeposit: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isWithdraw: boolean;
     readonly asWithdraw: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isSlashed: boolean;
     readonly asSlashed: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isMinted: boolean;
     readonly asMinted: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isBurned: boolean;
     readonly asBurned: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isSuspended: boolean;
     readonly asSuspended: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isRestored: boolean;
     readonly asRestored: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isUpgraded: boolean;
     readonly asUpgraded: {
@@ -276,59 +292,59 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isIssued: boolean;
     readonly asIssued: {
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isRescinded: boolean;
     readonly asRescinded: {
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isLocked: boolean;
     readonly asLocked: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isUnlocked: boolean;
     readonly asUnlocked: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isFrozen: boolean;
     readonly asFrozen: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isThawed: boolean;
     readonly asThawed: {
       readonly who: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isTotalIssuanceForced: boolean;
     readonly asTotalIssuanceForced: {
-      readonly old: u64;
-      readonly new_: u64;
+      readonly old: u128;
+      readonly new_: u128;
     } & Struct;
     readonly type: 'Endowed' | 'DustLost' | 'Transfer' | 'BalanceSet' | 'Reserved' | 'Unreserved' | 'ReserveRepatriated' | 'Deposit' | 'Withdraw' | 'Slashed' | 'Minted' | 'Burned' | 'Suspended' | 'Restored' | 'Upgraded' | 'Issued' | 'Rescinded' | 'Locked' | 'Unlocked' | 'Frozen' | 'Thawed' | 'TotalIssuanceForced';
   }
 
-  /** @name FrameSupportTokensMiscBalanceStatus (36) */
+  /** @name FrameSupportTokensMiscBalanceStatus (37) */
   interface FrameSupportTokensMiscBalanceStatus extends Enum {
     readonly isFree: boolean;
     readonly isReserved: boolean;
     readonly type: 'Free' | 'Reserved';
   }
 
-  /** @name PalletTransactionPaymentEvent (37) */
+  /** @name PalletTransactionPaymentEvent (38) */
   interface PalletTransactionPaymentEvent extends Enum {
     readonly isTransactionFeePaid: boolean;
     readonly asTransactionFeePaid: {
       readonly who: AccountId32;
-      readonly actualFee: u64;
-      readonly tip: u64;
+      readonly actualFee: u128;
+      readonly tip: u128;
     } & Struct;
     readonly type: 'TransactionFeePaid';
   }
 
-  /** @name PalletSudoEvent (38) */
+  /** @name PalletSudoEvent (39) */
   interface PalletSudoEvent extends Enum {
     readonly isSudid: boolean;
     readonly asSudid: {
@@ -347,7 +363,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Sudid' | 'KeyChanged' | 'KeyRemoved' | 'SudoAsDone';
   }
 
-  /** @name PalletMultisigEvent (42) */
+  /** @name PalletMultisigEvent (43) */
   interface PalletMultisigEvent extends Enum {
     readonly isNewMultisig: boolean;
     readonly asNewMultisig: {
@@ -380,100 +396,133 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'NewMultisig' | 'MultisigApproval' | 'MultisigExecuted' | 'MultisigCancelled';
   }
 
-  /** @name PalletMultisigTimepoint (43) */
+  /** @name PalletMultisigTimepoint (44) */
   interface PalletMultisigTimepoint extends Struct {
     readonly height: u64;
     readonly index: u32;
   }
 
-  /** @name PalletUtilityEvent (44) */
-  interface PalletUtilityEvent extends Enum {
-    readonly isBatchInterrupted: boolean;
-    readonly asBatchInterrupted: {
-      readonly index: u32;
-      readonly error: SpRuntimeDispatchError;
+  /** @name PalletEthereumEvent (45) */
+  interface PalletEthereumEvent extends Enum {
+    readonly isExecuted: boolean;
+    readonly asExecuted: {
+      readonly from: H160;
+      readonly to: H160;
+      readonly transactionHash: H256;
+      readonly exitReason: EvmCoreErrorExitReason;
+      readonly extraData: Bytes;
     } & Struct;
-    readonly isBatchCompleted: boolean;
-    readonly isBatchCompletedWithErrors: boolean;
-    readonly isItemCompleted: boolean;
-    readonly isItemFailed: boolean;
-    readonly asItemFailed: {
-      readonly error: SpRuntimeDispatchError;
+    readonly type: 'Executed';
+  }
+
+  /** @name EvmCoreErrorExitReason (48) */
+  interface EvmCoreErrorExitReason extends Enum {
+    readonly isSucceed: boolean;
+    readonly asSucceed: EvmCoreErrorExitSucceed;
+    readonly isError: boolean;
+    readonly asError: EvmCoreErrorExitError;
+    readonly isRevert: boolean;
+    readonly asRevert: EvmCoreErrorExitRevert;
+    readonly isFatal: boolean;
+    readonly asFatal: EvmCoreErrorExitFatal;
+    readonly type: 'Succeed' | 'Error' | 'Revert' | 'Fatal';
+  }
+
+  /** @name EvmCoreErrorExitSucceed (49) */
+  interface EvmCoreErrorExitSucceed extends Enum {
+    readonly isStopped: boolean;
+    readonly isReturned: boolean;
+    readonly isSuicided: boolean;
+    readonly type: 'Stopped' | 'Returned' | 'Suicided';
+  }
+
+  /** @name EvmCoreErrorExitError (50) */
+  interface EvmCoreErrorExitError extends Enum {
+    readonly isStackUnderflow: boolean;
+    readonly isStackOverflow: boolean;
+    readonly isInvalidJump: boolean;
+    readonly isInvalidRange: boolean;
+    readonly isDesignatedInvalid: boolean;
+    readonly isCallTooDeep: boolean;
+    readonly isCreateCollision: boolean;
+    readonly isCreateContractLimit: boolean;
+    readonly isOutOfOffset: boolean;
+    readonly isOutOfGas: boolean;
+    readonly isOutOfFund: boolean;
+    readonly isPcUnderflow: boolean;
+    readonly isCreateEmpty: boolean;
+    readonly isOther: boolean;
+    readonly asOther: Text;
+    readonly isMaxNonce: boolean;
+    readonly isInvalidCode: boolean;
+    readonly asInvalidCode: u8;
+    readonly type: 'StackUnderflow' | 'StackOverflow' | 'InvalidJump' | 'InvalidRange' | 'DesignatedInvalid' | 'CallTooDeep' | 'CreateCollision' | 'CreateContractLimit' | 'OutOfOffset' | 'OutOfGas' | 'OutOfFund' | 'PcUnderflow' | 'CreateEmpty' | 'Other' | 'MaxNonce' | 'InvalidCode';
+  }
+
+  /** @name EvmCoreErrorExitRevert (54) */
+  interface EvmCoreErrorExitRevert extends Enum {
+    readonly isReverted: boolean;
+    readonly type: 'Reverted';
+  }
+
+  /** @name EvmCoreErrorExitFatal (55) */
+  interface EvmCoreErrorExitFatal extends Enum {
+    readonly isNotSupported: boolean;
+    readonly isUnhandledInterrupt: boolean;
+    readonly isCallErrorAsFatal: boolean;
+    readonly asCallErrorAsFatal: EvmCoreErrorExitError;
+    readonly isOther: boolean;
+    readonly asOther: Text;
+    readonly type: 'NotSupported' | 'UnhandledInterrupt' | 'CallErrorAsFatal' | 'Other';
+  }
+
+  /** @name PalletEvmEvent (56) */
+  interface PalletEvmEvent extends Enum {
+    readonly isLog: boolean;
+    readonly asLog: {
+      readonly log: EthereumLog;
     } & Struct;
-    readonly isDispatchedAs: boolean;
-    readonly asDispatchedAs: {
-      readonly result: Result<Null, SpRuntimeDispatchError>;
+    readonly isCreated: boolean;
+    readonly asCreated: {
+      readonly address: H160;
     } & Struct;
-    readonly type: 'BatchInterrupted' | 'BatchCompleted' | 'BatchCompletedWithErrors' | 'ItemCompleted' | 'ItemFailed' | 'DispatchedAs';
+    readonly isCreatedFailed: boolean;
+    readonly asCreatedFailed: {
+      readonly address: H160;
+    } & Struct;
+    readonly isExecuted: boolean;
+    readonly asExecuted: {
+      readonly address: H160;
+    } & Struct;
+    readonly isExecutedFailed: boolean;
+    readonly asExecutedFailed: {
+      readonly address: H160;
+    } & Struct;
+    readonly type: 'Log' | 'Created' | 'CreatedFailed' | 'Executed' | 'ExecutedFailed';
   }
 
-  /** @name PalletSubspaceEvent (45) */
-  interface PalletSubspaceEvent extends Enum {
-    readonly isNetworkAdded: boolean;
-    readonly asNetworkAdded: ITuple<[u16, Bytes]>;
-    readonly isNetworkRemoved: boolean;
-    readonly asNetworkRemoved: u16;
-    readonly isStakeAdded: boolean;
-    readonly asStakeAdded: ITuple<[AccountId32, AccountId32, u64]>;
-    readonly isStakeRemoved: boolean;
-    readonly asStakeRemoved: ITuple<[AccountId32, AccountId32, u64]>;
-    readonly isWeightsSet: boolean;
-    readonly asWeightsSet: ITuple<[u16, u16]>;
-    readonly isModuleRegistered: boolean;
-    readonly asModuleRegistered: ITuple<[u16, u16, AccountId32]>;
-    readonly isModuleDeregistered: boolean;
-    readonly asModuleDeregistered: ITuple<[u16, u16, AccountId32]>;
-    readonly isModuleUpdated: boolean;
-    readonly asModuleUpdated: ITuple<[u16, AccountId32]>;
-    readonly isGlobalParamsUpdated: boolean;
-    readonly asGlobalParamsUpdated: PalletSubspaceParamsGlobalGlobalParams;
-    readonly isSubnetParamsUpdated: boolean;
-    readonly asSubnetParamsUpdated: u16;
-    readonly isBridgeWithdrawn: boolean;
-    readonly asBridgeWithdrawn: ITuple<[AccountId32, u64]>;
-    readonly isBridged: boolean;
-    readonly asBridged: ITuple<[AccountId32, u64]>;
-    readonly type: 'NetworkAdded' | 'NetworkRemoved' | 'StakeAdded' | 'StakeRemoved' | 'WeightsSet' | 'ModuleRegistered' | 'ModuleDeregistered' | 'ModuleUpdated' | 'GlobalParamsUpdated' | 'SubnetParamsUpdated' | 'BridgeWithdrawn' | 'Bridged';
+  /** @name EthereumLog (57) */
+  interface EthereumLog extends Struct {
+    readonly address: H160;
+    readonly topics: Vec<H256>;
+    readonly data: Bytes;
   }
 
-  /** @name PalletSubspaceParamsGlobalGlobalParams (47) */
-  interface PalletSubspaceParamsGlobalGlobalParams extends Struct {
-    readonly maxNameLength: u16;
-    readonly minNameLength: u16;
-    readonly maxAllowedSubnets: u16;
-    readonly maxAllowedModules: u16;
-    readonly maxRegistrationsPerBlock: u16;
-    readonly maxAllowedWeights: u16;
-    readonly floorStakeDelegationFee: Percent;
-    readonly floorValidatorWeightFee: Percent;
-    readonly floorFounderShare: u8;
-    readonly minWeightStake: u64;
-    readonly curator: AccountId32;
-    readonly generalSubnetApplicationCost: u64;
-    readonly subnetImmunityPeriod: u64;
-    readonly governanceConfig: PalletGovernanceApiGovernanceConfiguration;
-    readonly kappa: u16;
-    readonly rho: u16;
+  /** @name PalletBaseFeeEvent (59) */
+  interface PalletBaseFeeEvent extends Enum {
+    readonly isNewBaseFeePerGas: boolean;
+    readonly asNewBaseFeePerGas: {
+      readonly fee: U256;
+    } & Struct;
+    readonly isBaseFeeOverflow: boolean;
+    readonly isNewElasticity: boolean;
+    readonly asNewElasticity: {
+      readonly elasticity: Permill;
+    } & Struct;
+    readonly type: 'NewBaseFeePerGas' | 'BaseFeeOverflow' | 'NewElasticity';
   }
 
-  /** @name PalletGovernanceApiGovernanceConfiguration (49) */
-  interface PalletGovernanceApiGovernanceConfiguration extends Struct {
-    readonly proposalCost: u64;
-    readonly proposalExpiration: u32;
-    readonly voteMode: PalletGovernanceApiVoteMode;
-    readonly proposalRewardTreasuryAllocation: Percent;
-    readonly maxProposalRewardTreasuryAllocation: u64;
-    readonly proposalRewardInterval: u64;
-  }
-
-  /** @name PalletGovernanceApiVoteMode (50) */
-  interface PalletGovernanceApiVoteMode extends Enum {
-    readonly isAuthority: boolean;
-    readonly isVote: boolean;
-    readonly type: 'Authority' | 'Vote';
-  }
-
-  /** @name PalletGovernanceEvent (51) */
+  /** @name PalletGovernanceEvent (63) */
   interface PalletGovernanceEvent extends Enum {
     readonly isProposalCreated: boolean;
     readonly asProposalCreated: u64;
@@ -487,67 +536,37 @@ declare module '@polkadot/types/lookup' {
     readonly asProposalVoted: ITuple<[u64, AccountId32, bool]>;
     readonly isProposalVoteUnregistered: boolean;
     readonly asProposalVoteUnregistered: ITuple<[u64, AccountId32]>;
-    readonly isWhitelistModuleAdded: boolean;
-    readonly asWhitelistModuleAdded: AccountId32;
-    readonly isWhitelistModuleRemoved: boolean;
-    readonly asWhitelistModuleRemoved: AccountId32;
+    readonly isWhitelistAdded: boolean;
+    readonly asWhitelistAdded: AccountId32;
+    readonly isWhitelistRemoved: boolean;
+    readonly asWhitelistRemoved: AccountId32;
     readonly isApplicationCreated: boolean;
-    readonly asApplicationCreated: u64;
-    readonly type: 'ProposalCreated' | 'ProposalAccepted' | 'ProposalRefused' | 'ProposalExpired' | 'ProposalVoted' | 'ProposalVoteUnregistered' | 'WhitelistModuleAdded' | 'WhitelistModuleRemoved' | 'ApplicationCreated';
+    readonly asApplicationCreated: u32;
+    readonly isApplicationAccepted: boolean;
+    readonly asApplicationAccepted: u32;
+    readonly isApplicationDenied: boolean;
+    readonly asApplicationDenied: u32;
+    readonly isApplicationExpired: boolean;
+    readonly asApplicationExpired: u32;
+    readonly type: 'ProposalCreated' | 'ProposalAccepted' | 'ProposalRefused' | 'ProposalExpired' | 'ProposalVoted' | 'ProposalVoteUnregistered' | 'WhitelistAdded' | 'WhitelistRemoved' | 'ApplicationCreated' | 'ApplicationAccepted' | 'ApplicationDenied' | 'ApplicationExpired';
   }
 
-  /** @name PalletSubnetEmissionEvent (52) */
-  interface PalletSubnetEmissionEvent extends Enum {
-    readonly isEpochFinalized: boolean;
-    readonly asEpochFinalized: u16;
-    readonly isDecryptionNodeCanceled: boolean;
-    readonly asDecryptionNodeCanceled: {
-      readonly subnetId: u16;
-      readonly nodeId: AccountId32;
-    } & Struct;
-    readonly isDecryptionNodeRotated: boolean;
-    readonly asDecryptionNodeRotated: {
-      readonly subnetId: u16;
-      readonly previousNodeId: AccountId32;
-      readonly newNodeId: AccountId32;
-    } & Struct;
-    readonly isDecryptionNodeCallbackScheduled: boolean;
-    readonly asDecryptionNodeCallbackScheduled: {
-      readonly subnetId: u16;
-      readonly nodeId: AccountId32;
-      readonly banBlock: u64;
-    } & Struct;
-    readonly isDecryptionNodeBanned: boolean;
-    readonly asDecryptionNodeBanned: {
-      readonly subnetId: u16;
-      readonly nodeId: AccountId32;
-    } & Struct;
-    readonly type: 'EpochFinalized' | 'DecryptionNodeCanceled' | 'DecryptionNodeRotated' | 'DecryptionNodeCallbackScheduled' | 'DecryptionNodeBanned';
+  /** @name PalletTorus0Event (64) */
+  interface PalletTorus0Event extends Enum {
+    readonly isStakeAdded: boolean;
+    readonly asStakeAdded: ITuple<[AccountId32, AccountId32, u128]>;
+    readonly isStakeRemoved: boolean;
+    readonly asStakeRemoved: ITuple<[AccountId32, AccountId32, u128]>;
+    readonly isAgentRegistered: boolean;
+    readonly asAgentRegistered: AccountId32;
+    readonly isAgentUnregistered: boolean;
+    readonly asAgentUnregistered: AccountId32;
+    readonly isAgentUpdated: boolean;
+    readonly asAgentUpdated: AccountId32;
+    readonly type: 'StakeAdded' | 'StakeRemoved' | 'AgentRegistered' | 'AgentUnregistered' | 'AgentUpdated';
   }
 
-  /** @name PalletOffworkerEvent (53) */
-  interface PalletOffworkerEvent extends Enum {
-    readonly isDecryptedWeightsSent: boolean;
-    readonly asDecryptedWeightsSent: {
-      readonly subnetId: u16;
-      readonly blockNumber: u64;
-      readonly worker: AccountId32;
-    } & Struct;
-    readonly isKeepAliveSent: boolean;
-    readonly asKeepAliveSent: {
-      readonly blockNumber: u64;
-      readonly worker: AccountId32;
-    } & Struct;
-    readonly isAuthoritiesAdded: boolean;
-    readonly isDecryptionNodeCallbackSuccess: boolean;
-    readonly asDecryptionNodeCallbackSuccess: {
-      readonly subnetId: u16;
-      readonly nodeId: AccountId32;
-    } & Struct;
-    readonly type: 'DecryptedWeightsSent' | 'KeepAliveSent' | 'AuthoritiesAdded' | 'DecryptionNodeCallbackSuccess';
-  }
-
-  /** @name FrameSystemPhase (54) */
+  /** @name FrameSystemPhase (65) */
   interface FrameSystemPhase extends Enum {
     readonly isApplyExtrinsic: boolean;
     readonly asApplyExtrinsic: u32;
@@ -556,19 +575,19 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'ApplyExtrinsic' | 'Finalization' | 'Initialization';
   }
 
-  /** @name FrameSystemLastRuntimeUpgradeInfo (58) */
+  /** @name FrameSystemLastRuntimeUpgradeInfo (68) */
   interface FrameSystemLastRuntimeUpgradeInfo extends Struct {
     readonly specVersion: Compact<u32>;
     readonly specName: Text;
   }
 
-  /** @name FrameSystemCodeUpgradeAuthorization (61) */
+  /** @name FrameSystemCodeUpgradeAuthorization (70) */
   interface FrameSystemCodeUpgradeAuthorization extends Struct {
     readonly codeHash: H256;
     readonly checkVersion: bool;
   }
 
-  /** @name FrameSystemCall (62) */
+  /** @name FrameSystemCall (71) */
   interface FrameSystemCall extends Enum {
     readonly isRemark: boolean;
     readonly asRemark: {
@@ -603,6 +622,10 @@ declare module '@polkadot/types/lookup' {
     readonly asRemarkWithEvent: {
       readonly remark: Bytes;
     } & Struct;
+    readonly isDoTask: boolean;
+    readonly asDoTask: {
+      readonly task: TorusRuntimeRuntimeTask;
+    } & Struct;
     readonly isAuthorizeUpgrade: boolean;
     readonly asAuthorizeUpgrade: {
       readonly codeHash: H256;
@@ -615,24 +638,24 @@ declare module '@polkadot/types/lookup' {
     readonly asApplyAuthorizedUpgrade: {
       readonly code: Bytes;
     } & Struct;
-    readonly type: 'Remark' | 'SetHeapPages' | 'SetCode' | 'SetCodeWithoutChecks' | 'SetStorage' | 'KillStorage' | 'KillPrefix' | 'RemarkWithEvent' | 'AuthorizeUpgrade' | 'AuthorizeUpgradeWithoutChecks' | 'ApplyAuthorizedUpgrade';
+    readonly type: 'Remark' | 'SetHeapPages' | 'SetCode' | 'SetCodeWithoutChecks' | 'SetStorage' | 'KillStorage' | 'KillPrefix' | 'RemarkWithEvent' | 'DoTask' | 'AuthorizeUpgrade' | 'AuthorizeUpgradeWithoutChecks' | 'ApplyAuthorizedUpgrade';
   }
 
-  /** @name FrameSystemLimitsBlockWeights (66) */
+  /** @name FrameSystemLimitsBlockWeights (75) */
   interface FrameSystemLimitsBlockWeights extends Struct {
     readonly baseBlock: SpWeightsWeightV2Weight;
     readonly maxBlock: SpWeightsWeightV2Weight;
     readonly perClass: FrameSupportDispatchPerDispatchClassWeightsPerClass;
   }
 
-  /** @name FrameSupportDispatchPerDispatchClassWeightsPerClass (67) */
+  /** @name FrameSupportDispatchPerDispatchClassWeightsPerClass (76) */
   interface FrameSupportDispatchPerDispatchClassWeightsPerClass extends Struct {
     readonly normal: FrameSystemLimitsWeightsPerClass;
     readonly operational: FrameSystemLimitsWeightsPerClass;
     readonly mandatory: FrameSystemLimitsWeightsPerClass;
   }
 
-  /** @name FrameSystemLimitsWeightsPerClass (68) */
+  /** @name FrameSystemLimitsWeightsPerClass (77) */
   interface FrameSystemLimitsWeightsPerClass extends Struct {
     readonly baseExtrinsic: SpWeightsWeightV2Weight;
     readonly maxExtrinsic: Option<SpWeightsWeightV2Weight>;
@@ -640,25 +663,25 @@ declare module '@polkadot/types/lookup' {
     readonly reserved: Option<SpWeightsWeightV2Weight>;
   }
 
-  /** @name FrameSystemLimitsBlockLength (70) */
+  /** @name FrameSystemLimitsBlockLength (79) */
   interface FrameSystemLimitsBlockLength extends Struct {
     readonly max: FrameSupportDispatchPerDispatchClassU32;
   }
 
-  /** @name FrameSupportDispatchPerDispatchClassU32 (71) */
+  /** @name FrameSupportDispatchPerDispatchClassU32 (80) */
   interface FrameSupportDispatchPerDispatchClassU32 extends Struct {
     readonly normal: u32;
     readonly operational: u32;
     readonly mandatory: u32;
   }
 
-  /** @name SpWeightsRuntimeDbWeight (72) */
+  /** @name SpWeightsRuntimeDbWeight (81) */
   interface SpWeightsRuntimeDbWeight extends Struct {
     readonly read: u64;
     readonly write: u64;
   }
 
-  /** @name SpVersionRuntimeVersion (73) */
+  /** @name SpVersionRuntimeVersion (82) */
   interface SpVersionRuntimeVersion extends Struct {
     readonly specName: Text;
     readonly implName: Text;
@@ -670,7 +693,7 @@ declare module '@polkadot/types/lookup' {
     readonly stateVersion: u8;
   }
 
-  /** @name FrameSystemError (78) */
+  /** @name FrameSystemError (88) */
   interface FrameSystemError extends Enum {
     readonly isInvalidSpecName: boolean;
     readonly isSpecVersionNeedsToIncrease: boolean;
@@ -679,12 +702,14 @@ declare module '@polkadot/types/lookup' {
     readonly isNonZeroRefCount: boolean;
     readonly isCallFiltered: boolean;
     readonly isMultiBlockMigrationsOngoing: boolean;
+    readonly isInvalidTask: boolean;
+    readonly isFailedTask: boolean;
     readonly isNothingAuthorized: boolean;
     readonly isUnauthorized: boolean;
-    readonly type: 'InvalidSpecName' | 'SpecVersionNeedsToIncrease' | 'FailedToExtractRuntimeVersion' | 'NonDefaultComposite' | 'NonZeroRefCount' | 'CallFiltered' | 'MultiBlockMigrationsOngoing' | 'NothingAuthorized' | 'Unauthorized';
+    readonly type: 'InvalidSpecName' | 'SpecVersionNeedsToIncrease' | 'FailedToExtractRuntimeVersion' | 'NonDefaultComposite' | 'NonZeroRefCount' | 'CallFiltered' | 'MultiBlockMigrationsOngoing' | 'InvalidTask' | 'FailedTask' | 'NothingAuthorized' | 'Unauthorized';
   }
 
-  /** @name PalletTimestampCall (79) */
+  /** @name PalletTimestampCall (89) */
   interface PalletTimestampCall extends Enum {
     readonly isSet: boolean;
     readonly asSet: {
@@ -693,10 +718,10 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Set';
   }
 
-  /** @name SpConsensusAuraSr25519AppSr25519Public (81) */
+  /** @name SpConsensusAuraSr25519AppSr25519Public (91) */
   interface SpConsensusAuraSr25519AppSr25519Public extends U8aFixed {}
 
-  /** @name PalletGrandpaStoredState (84) */
+  /** @name PalletGrandpaStoredState (94) */
   interface PalletGrandpaStoredState extends Enum {
     readonly isLive: boolean;
     readonly isPendingPause: boolean;
@@ -713,7 +738,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Live' | 'PendingPause' | 'Paused' | 'PendingResume';
   }
 
-  /** @name PalletGrandpaStoredPendingChange (85) */
+  /** @name PalletGrandpaStoredPendingChange (95) */
   interface PalletGrandpaStoredPendingChange extends Struct {
     readonly scheduledAt: u64;
     readonly delay: u64;
@@ -721,7 +746,7 @@ declare module '@polkadot/types/lookup' {
     readonly forced: Option<u64>;
   }
 
-  /** @name PalletGrandpaCall (89) */
+  /** @name PalletGrandpaCall (99) */
   interface PalletGrandpaCall extends Enum {
     readonly isReportEquivocation: boolean;
     readonly asReportEquivocation: {
@@ -741,13 +766,13 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'ReportEquivocation' | 'ReportEquivocationUnsigned' | 'NoteStalled';
   }
 
-  /** @name SpConsensusGrandpaEquivocationProof (90) */
+  /** @name SpConsensusGrandpaEquivocationProof (100) */
   interface SpConsensusGrandpaEquivocationProof extends Struct {
     readonly setId: u64;
     readonly equivocation: SpConsensusGrandpaEquivocation;
   }
 
-  /** @name SpConsensusGrandpaEquivocation (91) */
+  /** @name SpConsensusGrandpaEquivocation (101) */
   interface SpConsensusGrandpaEquivocation extends Enum {
     readonly isPrevote: boolean;
     readonly asPrevote: FinalityGrandpaEquivocationPrevote;
@@ -756,7 +781,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Prevote' | 'Precommit';
   }
 
-  /** @name FinalityGrandpaEquivocationPrevote (92) */
+  /** @name FinalityGrandpaEquivocationPrevote (102) */
   interface FinalityGrandpaEquivocationPrevote extends Struct {
     readonly roundNumber: u64;
     readonly identity: SpConsensusGrandpaAppPublic;
@@ -764,16 +789,16 @@ declare module '@polkadot/types/lookup' {
     readonly second: ITuple<[FinalityGrandpaPrevote, SpConsensusGrandpaAppSignature]>;
   }
 
-  /** @name FinalityGrandpaPrevote (93) */
+  /** @name FinalityGrandpaPrevote (103) */
   interface FinalityGrandpaPrevote extends Struct {
     readonly targetHash: H256;
     readonly targetNumber: u64;
   }
 
-  /** @name SpConsensusGrandpaAppSignature (94) */
+  /** @name SpConsensusGrandpaAppSignature (104) */
   interface SpConsensusGrandpaAppSignature extends U8aFixed {}
 
-  /** @name FinalityGrandpaEquivocationPrecommit (97) */
+  /** @name FinalityGrandpaEquivocationPrecommit (107) */
   interface FinalityGrandpaEquivocationPrecommit extends Struct {
     readonly roundNumber: u64;
     readonly identity: SpConsensusGrandpaAppPublic;
@@ -781,16 +806,16 @@ declare module '@polkadot/types/lookup' {
     readonly second: ITuple<[FinalityGrandpaPrecommit, SpConsensusGrandpaAppSignature]>;
   }
 
-  /** @name FinalityGrandpaPrecommit (98) */
+  /** @name FinalityGrandpaPrecommit (108) */
   interface FinalityGrandpaPrecommit extends Struct {
     readonly targetHash: H256;
     readonly targetNumber: u64;
   }
 
-  /** @name SpCoreVoid (100) */
+  /** @name SpCoreVoid (110) */
   type SpCoreVoid = Null;
 
-  /** @name PalletGrandpaError (101) */
+  /** @name PalletGrandpaError (111) */
   interface PalletGrandpaError extends Enum {
     readonly isPauseFailed: boolean;
     readonly isResumeFailed: boolean;
@@ -802,14 +827,14 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'PauseFailed' | 'ResumeFailed' | 'ChangePending' | 'TooSoon' | 'InvalidKeyOwnershipProof' | 'InvalidEquivocationProof' | 'DuplicateOffenceReport';
   }
 
-  /** @name PalletBalancesBalanceLock (103) */
+  /** @name PalletBalancesBalanceLock (113) */
   interface PalletBalancesBalanceLock extends Struct {
     readonly id: U8aFixed;
-    readonly amount: u64;
+    readonly amount: u128;
     readonly reasons: PalletBalancesReasons;
   }
 
-  /** @name PalletBalancesReasons (104) */
+  /** @name PalletBalancesReasons (114) */
   interface PalletBalancesReasons extends Enum {
     readonly isFee: boolean;
     readonly isMisc: boolean;
@@ -817,35 +842,38 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Fee' | 'Misc' | 'All';
   }
 
-  /** @name PalletBalancesReserveData (107) */
+  /** @name PalletBalancesReserveData (117) */
   interface PalletBalancesReserveData extends Struct {
-    readonly id: U8aFixed;
-    readonly amount: u64;
+    readonly id: Null;
+    readonly amount: u128;
   }
 
-  /** @name FrameSupportTokensMiscIdAmount (110) */
+  /** @name TorusRuntimeRuntimeHoldReason (121) */
+  type TorusRuntimeRuntimeHoldReason = Null;
+
+  /** @name FrameSupportTokensMiscIdAmount (124) */
   interface FrameSupportTokensMiscIdAmount extends Struct {
     readonly id: Null;
-    readonly amount: u64;
+    readonly amount: u128;
   }
 
-  /** @name PalletBalancesCall (113) */
+  /** @name PalletBalancesCall (126) */
   interface PalletBalancesCall extends Enum {
     readonly isTransferAllowDeath: boolean;
     readonly asTransferAllowDeath: {
       readonly dest: MultiAddress;
-      readonly value: Compact<u64>;
+      readonly value: Compact<u128>;
     } & Struct;
     readonly isForceTransfer: boolean;
     readonly asForceTransfer: {
       readonly source: MultiAddress;
       readonly dest: MultiAddress;
-      readonly value: Compact<u64>;
+      readonly value: Compact<u128>;
     } & Struct;
     readonly isTransferKeepAlive: boolean;
     readonly asTransferKeepAlive: {
       readonly dest: MultiAddress;
-      readonly value: Compact<u64>;
+      readonly value: Compact<u128>;
     } & Struct;
     readonly isTransferAll: boolean;
     readonly asTransferAll: {
@@ -855,7 +883,7 @@ declare module '@polkadot/types/lookup' {
     readonly isForceUnreserve: boolean;
     readonly asForceUnreserve: {
       readonly who: MultiAddress;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
     readonly isUpgradeAccounts: boolean;
     readonly asUpgradeAccounts: {
@@ -864,29 +892,29 @@ declare module '@polkadot/types/lookup' {
     readonly isForceSetBalance: boolean;
     readonly asForceSetBalance: {
       readonly who: MultiAddress;
-      readonly newFree: Compact<u64>;
+      readonly newFree: Compact<u128>;
     } & Struct;
     readonly isForceAdjustTotalIssuance: boolean;
     readonly asForceAdjustTotalIssuance: {
       readonly direction: PalletBalancesAdjustmentDirection;
-      readonly delta: Compact<u64>;
+      readonly delta: Compact<u128>;
     } & Struct;
     readonly isBurn: boolean;
     readonly asBurn: {
-      readonly value: Compact<u64>;
+      readonly value: Compact<u128>;
       readonly keepAlive: bool;
     } & Struct;
     readonly type: 'TransferAllowDeath' | 'ForceTransfer' | 'TransferKeepAlive' | 'TransferAll' | 'ForceUnreserve' | 'UpgradeAccounts' | 'ForceSetBalance' | 'ForceAdjustTotalIssuance' | 'Burn';
   }
 
-  /** @name PalletBalancesAdjustmentDirection (118) */
+  /** @name PalletBalancesAdjustmentDirection (131) */
   interface PalletBalancesAdjustmentDirection extends Enum {
     readonly isIncrease: boolean;
     readonly isDecrease: boolean;
     readonly type: 'Increase' | 'Decrease';
   }
 
-  /** @name PalletBalancesError (119) */
+  /** @name PalletBalancesError (132) */
   interface PalletBalancesError extends Enum {
     readonly isVestingBalance: boolean;
     readonly isLiquidityRestrictions: boolean;
@@ -903,14 +931,14 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'VestingBalance' | 'LiquidityRestrictions' | 'InsufficientBalance' | 'ExistentialDeposit' | 'Expendability' | 'ExistingVestingSchedule' | 'DeadAccount' | 'TooManyReserves' | 'TooManyHolds' | 'TooManyFreezes' | 'IssuanceDeactivated' | 'DeltaZero';
   }
 
-  /** @name PalletTransactionPaymentReleases (121) */
+  /** @name PalletTransactionPaymentReleases (134) */
   interface PalletTransactionPaymentReleases extends Enum {
     readonly isV1Ancient: boolean;
     readonly isV2: boolean;
     readonly type: 'V1Ancient' | 'V2';
   }
 
-  /** @name PalletSudoCall (122) */
+  /** @name PalletSudoCall (135) */
   interface PalletSudoCall extends Enum {
     readonly isSudo: boolean;
     readonly asSudo: {
@@ -934,7 +962,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Sudo' | 'SudoUncheckedWeight' | 'SetKey' | 'SudoAs' | 'RemoveKey';
   }
 
-  /** @name PalletMultisigCall (124) */
+  /** @name PalletMultisigCall (137) */
   interface PalletMultisigCall extends Enum {
     readonly isAsMultiThreshold1: boolean;
     readonly asAsMultiThreshold1: {
@@ -967,247 +995,197 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'AsMultiThreshold1' | 'AsMulti' | 'ApproveAsMulti' | 'CancelAsMulti';
   }
 
-  /** @name PalletUtilityCall (126) */
-  interface PalletUtilityCall extends Enum {
-    readonly isBatch: boolean;
-    readonly asBatch: {
-      readonly calls: Vec<Call>;
+  /** @name PalletEthereumCall (139) */
+  interface PalletEthereumCall extends Enum {
+    readonly isTransact: boolean;
+    readonly asTransact: {
+      readonly transaction: EthereumTransactionTransactionV2;
     } & Struct;
-    readonly isAsDerivative: boolean;
-    readonly asAsDerivative: {
-      readonly index: u16;
-      readonly call: Call;
-    } & Struct;
-    readonly isBatchAll: boolean;
-    readonly asBatchAll: {
-      readonly calls: Vec<Call>;
-    } & Struct;
-    readonly isDispatchAs: boolean;
-    readonly asDispatchAs: {
-      readonly asOrigin: NodeSubspaceRuntimeOriginCaller;
-      readonly call: Call;
-    } & Struct;
-    readonly isForceBatch: boolean;
-    readonly asForceBatch: {
-      readonly calls: Vec<Call>;
-    } & Struct;
-    readonly isWithWeight: boolean;
-    readonly asWithWeight: {
-      readonly call: Call;
-      readonly weight: SpWeightsWeightV2Weight;
-    } & Struct;
-    readonly type: 'Batch' | 'AsDerivative' | 'BatchAll' | 'DispatchAs' | 'ForceBatch' | 'WithWeight';
+    readonly type: 'Transact';
   }
 
-  /** @name NodeSubspaceRuntimeOriginCaller (128) */
-  interface NodeSubspaceRuntimeOriginCaller extends Enum {
-    readonly isSystem: boolean;
-    readonly asSystem: FrameSupportDispatchRawOrigin;
-    readonly isVoid: boolean;
-    readonly type: 'System' | 'Void';
+  /** @name EthereumTransactionTransactionV2 (140) */
+  interface EthereumTransactionTransactionV2 extends Enum {
+    readonly isLegacy: boolean;
+    readonly asLegacy: EthereumTransactionLegacyTransaction;
+    readonly isEip2930: boolean;
+    readonly asEip2930: EthereumTransactionEip2930Transaction;
+    readonly isEip1559: boolean;
+    readonly asEip1559: EthereumTransactionEip1559Transaction;
+    readonly type: 'Legacy' | 'Eip2930' | 'Eip1559';
   }
 
-  /** @name FrameSupportDispatchRawOrigin (129) */
-  interface FrameSupportDispatchRawOrigin extends Enum {
-    readonly isRoot: boolean;
-    readonly isSigned: boolean;
-    readonly asSigned: AccountId32;
-    readonly isNone: boolean;
-    readonly type: 'Root' | 'Signed' | 'None';
+  /** @name EthereumTransactionLegacyTransaction (141) */
+  interface EthereumTransactionLegacyTransaction extends Struct {
+    readonly nonce: U256;
+    readonly gasPrice: U256;
+    readonly gasLimit: U256;
+    readonly action: EthereumTransactionTransactionAction;
+    readonly value: U256;
+    readonly input: Bytes;
+    readonly signature: EthereumTransactionTransactionSignature;
   }
 
-  /** @name PalletSubspaceCall (130) */
-  interface PalletSubspaceCall extends Enum {
-    readonly isAddStake: boolean;
-    readonly asAddStake: {
-      readonly moduleKey: AccountId32;
-      readonly amount: u64;
-    } & Struct;
-    readonly isRemoveStake: boolean;
-    readonly asRemoveStake: {
-      readonly moduleKey: AccountId32;
-      readonly amount: u64;
-    } & Struct;
-    readonly isAddStakeMultiple: boolean;
-    readonly asAddStakeMultiple: {
-      readonly moduleKeys: Vec<AccountId32>;
-      readonly amounts: Vec<u64>;
-    } & Struct;
-    readonly isRemoveStakeMultiple: boolean;
-    readonly asRemoveStakeMultiple: {
-      readonly moduleKeys: Vec<AccountId32>;
-      readonly amounts: Vec<u64>;
-    } & Struct;
-    readonly isTransferStake: boolean;
-    readonly asTransferStake: {
-      readonly moduleKey: AccountId32;
-      readonly newModuleKey: AccountId32;
-      readonly amount: u64;
-    } & Struct;
-    readonly isTransferMultiple: boolean;
-    readonly asTransferMultiple: {
-      readonly destinations: Vec<AccountId32>;
-      readonly amounts: Vec<u64>;
-    } & Struct;
-    readonly isRegister: boolean;
-    readonly asRegister: {
-      readonly networkName: Bytes;
-      readonly name: Bytes;
-      readonly address: Bytes;
-      readonly moduleKey: AccountId32;
-      readonly metadata: Option<Bytes>;
-    } & Struct;
-    readonly isDeregister: boolean;
-    readonly asDeregister: {
-      readonly netuid: u16;
-    } & Struct;
-    readonly isUpdateModule: boolean;
-    readonly asUpdateModule: {
-      readonly netuid: u16;
-      readonly name: Bytes;
-      readonly address: Bytes;
-      readonly stakeDelegationFee: Option<Percent>;
-      readonly validatorWeightFee: Option<Percent>;
-      readonly metadata: Option<Bytes>;
-    } & Struct;
-    readonly isUpdateSubnet: boolean;
-    readonly asUpdateSubnet: {
-      readonly netuid: u16;
-      readonly founder: AccountId32;
-      readonly founderShare: u16;
-      readonly name: Bytes;
-      readonly metadata: Option<Bytes>;
-      readonly immunityPeriod: u16;
-      readonly incentiveRatio: u16;
-      readonly maxAllowedUids: u16;
-      readonly maxAllowedWeights: u16;
-      readonly minAllowedWeights: u16;
-      readonly maxWeightAge: u64;
-      readonly tempo: u16;
-      readonly maximumSetWeightCallsPerEpoch: Option<u16>;
-      readonly voteMode: PalletGovernanceApiVoteMode;
-      readonly bondsMa: u64;
-      readonly moduleBurnConfig: PalletSubspaceParamsBurnGeneralBurnConfiguration;
-      readonly minValidatorStake: u64;
-      readonly maxAllowedValidators: Option<u16>;
-      readonly useWeightsEncryption: bool;
-      readonly copierMargin: SubstrateFixedFixedI128;
-      readonly maxEncryptionPeriod: Option<u64>;
-    } & Struct;
-    readonly isRegisterSubnet: boolean;
-    readonly asRegisterSubnet: {
-      readonly name: Bytes;
-      readonly metadata: Option<Bytes>;
-    } & Struct;
-    readonly isBridge: boolean;
-    readonly asBridge: {
-      readonly amount: u64;
-    } & Struct;
-    readonly isBridgeWithdraw: boolean;
-    readonly asBridgeWithdraw: {
-      readonly amount: u64;
-    } & Struct;
-    readonly type: 'AddStake' | 'RemoveStake' | 'AddStakeMultiple' | 'RemoveStakeMultiple' | 'TransferStake' | 'TransferMultiple' | 'Register' | 'Deregister' | 'UpdateModule' | 'UpdateSubnet' | 'RegisterSubnet' | 'Bridge' | 'BridgeWithdraw';
+  /** @name EthereumTransactionTransactionAction (142) */
+  interface EthereumTransactionTransactionAction extends Enum {
+    readonly isCall: boolean;
+    readonly asCall: H160;
+    readonly isCreate: boolean;
+    readonly type: 'Call' | 'Create';
   }
 
-  /** @name PalletSubspaceParamsBurnGeneralBurnConfiguration (138) */
-  interface PalletSubspaceParamsBurnGeneralBurnConfiguration extends Struct {
-    readonly minBurn: u64;
-    readonly maxBurn: u64;
-    readonly adjustmentAlpha: u64;
-    readonly targetRegistrationsInterval: u16;
-    readonly targetRegistrationsPerInterval: u16;
-    readonly maxRegistrationsPerInterval: u16;
+  /** @name EthereumTransactionTransactionSignature (143) */
+  interface EthereumTransactionTransactionSignature extends Struct {
+    readonly v: u64;
+    readonly r: H256;
+    readonly s: H256;
   }
 
-  /** @name SubstrateFixedFixedI128 (139) */
-  interface SubstrateFixedFixedI128 extends Struct {
-    readonly bits: i128;
+  /** @name EthereumTransactionEip2930Transaction (145) */
+  interface EthereumTransactionEip2930Transaction extends Struct {
+    readonly chainId: u64;
+    readonly nonce: U256;
+    readonly gasPrice: U256;
+    readonly gasLimit: U256;
+    readonly action: EthereumTransactionTransactionAction;
+    readonly value: U256;
+    readonly input: Bytes;
+    readonly accessList: Vec<EthereumTransactionAccessListItem>;
+    readonly oddYParity: bool;
+    readonly r: H256;
+    readonly s: H256;
   }
 
-  /** @name TypenumUIntUInt (145) */
-  interface TypenumUIntUInt extends Struct {
-    readonly msb: TypenumUIntUTerm;
-    readonly lsb: TypenumBitB0;
+  /** @name EthereumTransactionAccessListItem (147) */
+  interface EthereumTransactionAccessListItem extends Struct {
+    readonly address: H160;
+    readonly storageKeys: Vec<H256>;
   }
 
-  /** @name TypenumUIntUTerm (146) */
-  interface TypenumUIntUTerm extends Struct {
-    readonly msb: TypenumUintUTerm;
-    readonly lsb: TypenumBitB1;
+  /** @name EthereumTransactionEip1559Transaction (148) */
+  interface EthereumTransactionEip1559Transaction extends Struct {
+    readonly chainId: u64;
+    readonly nonce: U256;
+    readonly maxPriorityFeePerGas: U256;
+    readonly maxFeePerGas: U256;
+    readonly gasLimit: U256;
+    readonly action: EthereumTransactionTransactionAction;
+    readonly value: U256;
+    readonly input: Bytes;
+    readonly accessList: Vec<EthereumTransactionAccessListItem>;
+    readonly oddYParity: bool;
+    readonly r: H256;
+    readonly s: H256;
   }
 
-  /** @name TypenumUintUTerm (147) */
-  type TypenumUintUTerm = Null;
+  /** @name PalletEvmCall (149) */
+  interface PalletEvmCall extends Enum {
+    readonly isWithdraw: boolean;
+    readonly asWithdraw: {
+      readonly address: H160;
+      readonly value: u128;
+    } & Struct;
+    readonly isCall: boolean;
+    readonly asCall: {
+      readonly source: H160;
+      readonly target: H160;
+      readonly input: Bytes;
+      readonly value: U256;
+      readonly gasLimit: u64;
+      readonly maxFeePerGas: U256;
+      readonly maxPriorityFeePerGas: Option<U256>;
+      readonly nonce: Option<U256>;
+      readonly accessList: Vec<ITuple<[H160, Vec<H256>]>>;
+    } & Struct;
+    readonly isCreate: boolean;
+    readonly asCreate: {
+      readonly source: H160;
+      readonly init: Bytes;
+      readonly value: U256;
+      readonly gasLimit: u64;
+      readonly maxFeePerGas: U256;
+      readonly maxPriorityFeePerGas: Option<U256>;
+      readonly nonce: Option<U256>;
+      readonly accessList: Vec<ITuple<[H160, Vec<H256>]>>;
+    } & Struct;
+    readonly isCreate2: boolean;
+    readonly asCreate2: {
+      readonly source: H160;
+      readonly init: Bytes;
+      readonly salt: H256;
+      readonly value: U256;
+      readonly gasLimit: u64;
+      readonly maxFeePerGas: U256;
+      readonly maxPriorityFeePerGas: Option<U256>;
+      readonly nonce: Option<U256>;
+      readonly accessList: Vec<ITuple<[H160, Vec<H256>]>>;
+    } & Struct;
+    readonly type: 'Withdraw' | 'Call' | 'Create' | 'Create2';
+  }
 
-  /** @name TypenumBitB1 (148) */
-  type TypenumBitB1 = Null;
+  /** @name PalletBaseFeeCall (153) */
+  interface PalletBaseFeeCall extends Enum {
+    readonly isSetBaseFeePerGas: boolean;
+    readonly asSetBaseFeePerGas: {
+      readonly fee: U256;
+    } & Struct;
+    readonly isSetElasticity: boolean;
+    readonly asSetElasticity: {
+      readonly elasticity: Permill;
+    } & Struct;
+    readonly type: 'SetBaseFeePerGas' | 'SetElasticity';
+  }
 
-  /** @name TypenumBitB0 (149) */
-  type TypenumBitB0 = Null;
-
-  /** @name PalletGovernanceCall (151) */
+  /** @name PalletGovernanceCall (154) */
   interface PalletGovernanceCall extends Enum {
+    readonly isAddCurator: boolean;
+    readonly asAddCurator: {
+      readonly key: AccountId32;
+    } & Struct;
+    readonly isRemoveCurator: boolean;
+    readonly asRemoveCurator: {
+      readonly key: AccountId32;
+    } & Struct;
+    readonly isAddToWhitelist: boolean;
+    readonly asAddToWhitelist: {
+      readonly key: AccountId32;
+    } & Struct;
+    readonly isRemoveFromWhitelist: boolean;
+    readonly asRemoveFromWhitelist: {
+      readonly key: AccountId32;
+    } & Struct;
+    readonly isAcceptApplication: boolean;
+    readonly asAcceptApplication: {
+      readonly applicationId: u32;
+    } & Struct;
+    readonly isDenyApplication: boolean;
+    readonly asDenyApplication: {
+      readonly applicationId: u32;
+    } & Struct;
+    readonly isPenalizeAgent: boolean;
+    readonly asPenalizeAgent: {
+      readonly agentKey: AccountId32;
+      readonly percentage: u8;
+    } & Struct;
+    readonly isSubmitApplication: boolean;
+    readonly asSubmitApplication: {
+      readonly agentKey: AccountId32;
+      readonly metadata: Bytes;
+    } & Struct;
     readonly isAddGlobalParamsProposal: boolean;
     readonly asAddGlobalParamsProposal: {
-      readonly data: Bytes;
-      readonly maxNameLength: u16;
-      readonly minNameLength: u16;
-      readonly maxAllowedSubnets: u16;
-      readonly maxAllowedModules: u16;
-      readonly maxRegistrationsPerBlock: u16;
-      readonly maxAllowedWeights: u16;
-      readonly floorStakeDelegationFee: Percent;
-      readonly floorValidatorWeightFee: Percent;
-      readonly floorFounderShare: u8;
-      readonly minWeightStake: u64;
-      readonly curator: AccountId32;
-      readonly proposalCost: u64;
-      readonly proposalExpiration: u32;
-      readonly generalSubnetApplicationCost: u64;
-      readonly kappa: u16;
-      readonly rho: u16;
-      readonly subnetImmunityPeriod: u64;
-    } & Struct;
-    readonly isAddSubnetParamsProposal: boolean;
-    readonly asAddSubnetParamsProposal: {
-      readonly netuid: u16;
-      readonly data: Bytes;
-      readonly founder: AccountId32;
-      readonly founderShare: u16;
-      readonly name: Bytes;
-      readonly metadata: Option<Bytes>;
-      readonly immunityPeriod: u16;
-      readonly incentiveRatio: u16;
-      readonly maxAllowedUids: u16;
-      readonly maxAllowedWeights: u16;
-      readonly minAllowedWeights: u16;
-      readonly maxWeightAge: u64;
-      readonly tempo: u16;
-      readonly maximumSetWeightCallsPerEpoch: Option<u16>;
-      readonly voteMode: PalletGovernanceApiVoteMode;
-      readonly bondsMa: u64;
-      readonly moduleBurnConfig: PalletSubspaceParamsBurnGeneralBurnConfiguration;
-      readonly minValidatorStake: u64;
-      readonly maxAllowedValidators: Option<u16>;
-      readonly useWeightsEncryption: bool;
-      readonly copierMargin: SubstrateFixedFixedI128;
-      readonly maxEncryptionPeriod: Option<u64>;
+      readonly data: PalletGovernanceProposalGlobalParamsData;
+      readonly metadata: Bytes;
     } & Struct;
     readonly isAddGlobalCustomProposal: boolean;
     readonly asAddGlobalCustomProposal: {
-      readonly data: Bytes;
+      readonly metadata: Bytes;
     } & Struct;
-    readonly isAddSubnetCustomProposal: boolean;
-    readonly asAddSubnetCustomProposal: {
-      readonly netuid: u16;
+    readonly isAddDaoTreasuryTransferProposal: boolean;
+    readonly asAddDaoTreasuryTransferProposal: {
+      readonly value: u128;
+      readonly destinationKey: AccountId32;
       readonly data: Bytes;
-    } & Struct;
-    readonly isAddTransferDaoTreasuryProposal: boolean;
-    readonly asAddTransferDaoTreasuryProposal: {
-      readonly data: Bytes;
-      readonly value: u64;
-      readonly dest: AccountId32;
     } & Struct;
     readonly isVoteProposal: boolean;
     readonly asVoteProposal: {
@@ -1218,127 +1196,93 @@ declare module '@polkadot/types/lookup' {
     readonly asRemoveVoteProposal: {
       readonly proposalId: u64;
     } & Struct;
-    readonly isEnableVotePowerDelegation: boolean;
-    readonly isDisableVotePowerDelegation: boolean;
-    readonly isAddDaoApplication: boolean;
-    readonly asAddDaoApplication: {
-      readonly applicationKey: AccountId32;
-      readonly data: Bytes;
-    } & Struct;
-    readonly isRefuseDaoApplication: boolean;
-    readonly asRefuseDaoApplication: {
-      readonly id: u64;
-    } & Struct;
-    readonly isAddToWhitelist: boolean;
-    readonly asAddToWhitelist: {
-      readonly moduleKey: AccountId32;
-    } & Struct;
-    readonly isRemoveFromWhitelist: boolean;
-    readonly asRemoveFromWhitelist: {
-      readonly moduleKey: AccountId32;
-    } & Struct;
-    readonly type: 'AddGlobalParamsProposal' | 'AddSubnetParamsProposal' | 'AddGlobalCustomProposal' | 'AddSubnetCustomProposal' | 'AddTransferDaoTreasuryProposal' | 'VoteProposal' | 'RemoveVoteProposal' | 'EnableVotePowerDelegation' | 'DisableVotePowerDelegation' | 'AddDaoApplication' | 'RefuseDaoApplication' | 'AddToWhitelist' | 'RemoveFromWhitelist';
+    readonly isEnableVoteDelegation: boolean;
+    readonly isDisableVoteDelegation: boolean;
+    readonly type: 'AddCurator' | 'RemoveCurator' | 'AddToWhitelist' | 'RemoveFromWhitelist' | 'AcceptApplication' | 'DenyApplication' | 'PenalizeAgent' | 'SubmitApplication' | 'AddGlobalParamsProposal' | 'AddGlobalCustomProposal' | 'AddDaoTreasuryTransferProposal' | 'VoteProposal' | 'RemoveVoteProposal' | 'EnableVoteDelegation' | 'DisableVoteDelegation';
   }
 
-  /** @name PalletSubnetEmissionCall (152) */
-  interface PalletSubnetEmissionCall extends Enum {
-    readonly isSetWeights: boolean;
-    readonly asSetWeights: {
-      readonly netuid: u16;
-      readonly uids: Vec<u16>;
-      readonly weights: Vec<u16>;
+  /** @name PalletGovernanceProposalGlobalParamsData (155) */
+  interface PalletGovernanceProposalGlobalParamsData extends Struct {
+    readonly minNameLength: u16;
+    readonly maxNameLength: u16;
+    readonly maxAllowedAgents: u16;
+    readonly maxAllowedWeights: u16;
+    readonly minWeightStake: u128;
+    readonly minWeightControlFee: u8;
+    readonly minStakingFee: u8;
+  }
+
+  /** @name PalletTorus0Call (156) */
+  interface PalletTorus0Call extends Enum {
+    readonly isAddStake: boolean;
+    readonly asAddStake: {
+      readonly agentKey: AccountId32;
+      readonly amount: u128;
     } & Struct;
-    readonly isSetWeightsEncrypted: boolean;
-    readonly asSetWeightsEncrypted: {
-      readonly netuid: u16;
-      readonly encryptedWeights: Bytes;
-      readonly decryptedWeightsHash: Bytes;
+    readonly isRemoveStake: boolean;
+    readonly asRemoveStake: {
+      readonly agentKey: AccountId32;
+      readonly amount: u128;
     } & Struct;
-    readonly isDelegateWeightControl: boolean;
-    readonly asDelegateWeightControl: {
-      readonly netuid: u16;
+    readonly isTransferStake: boolean;
+    readonly asTransferStake: {
+      readonly agentKey: AccountId32;
+      readonly newAgentKey: AccountId32;
+      readonly amount: u128;
+    } & Struct;
+    readonly isTransferBalance: boolean;
+    readonly asTransferBalance: {
+      readonly destination: AccountId32;
+      readonly amount: u128;
+    } & Struct;
+    readonly isRegisterAgent: boolean;
+    readonly asRegisterAgent: {
+      readonly agentKey: AccountId32;
+      readonly name: Bytes;
+      readonly url: Bytes;
+      readonly metadata: Bytes;
+    } & Struct;
+    readonly isUnregisterAgent: boolean;
+    readonly isUpdateAgent: boolean;
+    readonly asUpdateAgent: {
+      readonly name: Bytes;
+      readonly address: Bytes;
+      readonly metadata: Option<Bytes>;
+      readonly stakingFee: Option<Percent>;
+      readonly weightControlFee: Option<Percent>;
+    } & Struct;
+    readonly type: 'AddStake' | 'RemoveStake' | 'TransferStake' | 'TransferBalance' | 'RegisterAgent' | 'UnregisterAgent' | 'UpdateAgent';
+  }
+
+  /** @name PalletEmission0Call (160) */
+  interface PalletEmission0Call extends Enum {
+    readonly isSetWeightsExtrinsic: boolean;
+    readonly asSetWeightsExtrinsic: {
+      readonly weights: Vec<ITuple<[AccountId32, u16]>>;
+    } & Struct;
+    readonly isDelegateWeightControlExtrinsic: boolean;
+    readonly asDelegateWeightControlExtrinsic: {
       readonly target: AccountId32;
     } & Struct;
-    readonly isRemoveWeightControl: boolean;
-    readonly asRemoveWeightControl: {
-      readonly netuid: u16;
-    } & Struct;
-    readonly type: 'SetWeights' | 'SetWeightsEncrypted' | 'DelegateWeightControl' | 'RemoveWeightControl';
+    readonly isRegainWeightControlExtrinsic: boolean;
+    readonly type: 'SetWeightsExtrinsic' | 'DelegateWeightControlExtrinsic' | 'RegainWeightControlExtrinsic';
   }
 
-  /** @name PalletOffworkerCall (154) */
-  interface PalletOffworkerCall extends Enum {
-    readonly isSendDecryptedWeights: boolean;
-    readonly asSendDecryptedWeights: {
-      readonly payload: PalletOffworkerDecryptedWeightsPayload;
-      readonly signature: SpRuntimeMultiSignature;
-    } & Struct;
-    readonly isSendPing: boolean;
-    readonly asSendPing: {
-      readonly payload: PalletOffworkerKeepAlivePayload;
-      readonly signature: SpRuntimeMultiSignature;
-    } & Struct;
-    readonly isAddAuthorities: boolean;
-    readonly asAddAuthorities: {
-      readonly newAuthorities: Vec<ITuple<[AccountId32, ITuple<[Bytes, Bytes]>]>>;
-    } & Struct;
-    readonly type: 'SendDecryptedWeights' | 'SendPing' | 'AddAuthorities';
-  }
-
-  /** @name PalletOffworkerDecryptedWeightsPayload (155) */
-  interface PalletOffworkerDecryptedWeightsPayload extends Struct {
-    readonly subnetId: u16;
-    readonly decryptedWeights: Vec<ITuple<[u64, Vec<ITuple<[u16, Vec<ITuple<[u16, u16]>>, Bytes]>>]>>;
-    readonly delta: SubstrateFixedFixedI128;
-    readonly blockNumber: u64;
-    readonly public: SpRuntimeMultiSigner;
-    readonly forcedSendByRotation: bool;
-  }
-
-  /** @name SpRuntimeMultiSigner (156) */
-  interface SpRuntimeMultiSigner extends Enum {
-    readonly isEd25519: boolean;
-    readonly asEd25519: U8aFixed;
-    readonly isSr25519: boolean;
-    readonly asSr25519: U8aFixed;
-    readonly isEcdsa: boolean;
-    readonly asEcdsa: U8aFixed;
-    readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
-  }
-
-  /** @name SpRuntimeMultiSignature (164) */
-  interface SpRuntimeMultiSignature extends Enum {
-    readonly isEd25519: boolean;
-    readonly asEd25519: U8aFixed;
-    readonly isSr25519: boolean;
-    readonly asSr25519: U8aFixed;
-    readonly isEcdsa: boolean;
-    readonly asEcdsa: U8aFixed;
-    readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
-  }
-
-  /** @name PalletOffworkerKeepAlivePayload (166) */
-  interface PalletOffworkerKeepAlivePayload extends Struct {
-    readonly publicKey: ITuple<[Bytes, Bytes]>;
-    readonly blockNumber: u64;
-    readonly public: SpRuntimeMultiSigner;
-  }
-
-  /** @name PalletSudoError (169) */
+  /** @name PalletSudoError (163) */
   interface PalletSudoError extends Enum {
     readonly isRequireSudo: boolean;
     readonly type: 'RequireSudo';
   }
 
-  /** @name PalletMultisigMultisig (171) */
+  /** @name PalletMultisigMultisig (165) */
   interface PalletMultisigMultisig extends Struct {
     readonly when: PalletMultisigTimepoint;
-    readonly deposit: u64;
+    readonly deposit: u128;
     readonly depositor: AccountId32;
     readonly approvals: Vec<AccountId32>;
   }
 
-  /** @name PalletMultisigError (173) */
+  /** @name PalletMultisigError (167) */
   interface PalletMultisigError extends Enum {
     readonly isMinimumThreshold: boolean;
     readonly isAlreadyApproved: boolean;
@@ -1357,133 +1301,100 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'MinimumThreshold' | 'AlreadyApproved' | 'NoApprovalsNeeded' | 'TooFewSignatories' | 'TooManySignatories' | 'SignatoriesOutOfOrder' | 'SenderInSignatories' | 'NotFound' | 'NotOwner' | 'NoTimepoint' | 'WrongTimepoint' | 'UnexpectedTimepoint' | 'MaxWeightTooLow' | 'AlreadyStored';
   }
 
-  /** @name PalletUtilityError (174) */
-  interface PalletUtilityError extends Enum {
-    readonly isTooManyCalls: boolean;
-    readonly type: 'TooManyCalls';
+  /** @name FpRpcTransactionStatus (170) */
+  interface FpRpcTransactionStatus extends Struct {
+    readonly transactionHash: H256;
+    readonly transactionIndex: u32;
+    readonly from: H160;
+    readonly to: Option<H160>;
+    readonly contractAddress: Option<H160>;
+    readonly logs: Vec<EthereumLog>;
+    readonly logsBloom: EthbloomBloom;
   }
 
-  /** @name PalletSubspaceMinimumFees (179) */
-  interface PalletSubspaceMinimumFees extends Struct {
-    readonly stakeDelegationFee: Percent;
-    readonly validatorWeightFee: Percent;
+  /** @name EthbloomBloom (173) */
+  interface EthbloomBloom extends U8aFixed {}
+
+  /** @name EthereumReceiptReceiptV3 (175) */
+  interface EthereumReceiptReceiptV3 extends Enum {
+    readonly isLegacy: boolean;
+    readonly asLegacy: EthereumReceiptEip658ReceiptData;
+    readonly isEip2930: boolean;
+    readonly asEip2930: EthereumReceiptEip658ReceiptData;
+    readonly isEip1559: boolean;
+    readonly asEip1559: EthereumReceiptEip658ReceiptData;
+    readonly type: 'Legacy' | 'Eip2930' | 'Eip1559';
   }
 
-  /** @name PalletSubspaceValidatorFees (180) */
-  interface PalletSubspaceValidatorFees extends Struct {
-    readonly stakeDelegationFee: Percent;
-    readonly validatorWeightFee: Percent;
+  /** @name EthereumReceiptEip658ReceiptData (176) */
+  interface EthereumReceiptEip658ReceiptData extends Struct {
+    readonly statusCode: u8;
+    readonly usedGas: U256;
+    readonly logsBloom: EthbloomBloom;
+    readonly logs: Vec<EthereumLog>;
   }
 
-  /** @name FrameSupportPalletId (181) */
-  interface FrameSupportPalletId extends U8aFixed {}
-
-  /** @name PalletSubspaceError (182) */
-  interface PalletSubspaceError extends Enum {
-    readonly isNetworkDoesNotExist: boolean;
-    readonly isModuleDoesNotExist: boolean;
-    readonly isNetworkIsImmuned: boolean;
-    readonly isNotEnoughBalanceToRegisterSubnet: boolean;
-    readonly isNotEnoughStakeToWithdraw: boolean;
-    readonly isNotEnoughBalanceToStake: boolean;
-    readonly isWeightVecNotEqualSize: boolean;
-    readonly isDuplicateUids: boolean;
-    readonly isInvalidUid: boolean;
-    readonly isInvalidUidsLength: boolean;
-    readonly isTooManyRegistrationsPerBlock: boolean;
-    readonly isTooManyRegistrationsPerInterval: boolean;
-    readonly isTooManySubnetRegistrationsPerInterval: boolean;
-    readonly isAlreadyRegistered: boolean;
-    readonly isCouldNotConvertToBalance: boolean;
-    readonly isInvalidTempo: boolean;
-    readonly isSettingWeightsTooFast: boolean;
-    readonly isInvalidMaxAllowedUids: boolean;
-    readonly isNetuidDoesNotExist: boolean;
-    readonly isSubnetNameAlreadyExists: boolean;
-    readonly isSubnetNameTooShort: boolean;
-    readonly isSubnetNameTooLong: boolean;
-    readonly isInvalidSubnetName: boolean;
-    readonly isBalanceNotAdded: boolean;
-    readonly isStakeNotRemoved: boolean;
-    readonly isKeyAlreadyRegistered: boolean;
-    readonly isEmptyKeys: boolean;
-    readonly isTooManyKeys: boolean;
-    readonly isInvalidShares: boolean;
-    readonly isNotFounder: boolean;
-    readonly isNotEnoughStakeToSetWeights: boolean;
-    readonly isNotEnoughStakeToStartNetwork: boolean;
-    readonly isNotEnoughStakePerWeight: boolean;
-    readonly isNoSelfWeight: boolean;
-    readonly isDifferentLengths: boolean;
-    readonly isNotEnoughBalanceToRegister: boolean;
-    readonly isStakeNotAdded: boolean;
-    readonly isBalanceNotRemoved: boolean;
-    readonly isBalanceCouldNotBeRemoved: boolean;
-    readonly isNotEnoughStakeToRegister: boolean;
-    readonly isStillRegistered: boolean;
-    readonly isMaxAllowedModules: boolean;
-    readonly isNotEnoughBalanceToTransfer: boolean;
-    readonly isNotVoteMode: boolean;
-    readonly isInvalidTrustRatio: boolean;
-    readonly isInvalidMinAllowedWeights: boolean;
-    readonly isInvalidMaxAllowedWeights: boolean;
-    readonly isInvalidMinDelegationFee: boolean;
-    readonly isInvalidModuleMetadata: boolean;
-    readonly isModuleMetadataTooLong: boolean;
-    readonly isInvalidSubnetMetadata: boolean;
-    readonly isSubnetMetadataTooLong: boolean;
-    readonly isInvalidMaxNameLength: boolean;
-    readonly isInvalidMinNameLenght: boolean;
-    readonly isInvalidMaxAllowedSubnets: boolean;
-    readonly isInvalidMaxAllowedModules: boolean;
-    readonly isInvalidMaxRegistrationsPerBlock: boolean;
-    readonly isInvalidMinBurn: boolean;
-    readonly isInvalidMaxBurn: boolean;
-    readonly isModuleNameTooLong: boolean;
-    readonly isModuleNameTooShort: boolean;
-    readonly isInvalidModuleName: boolean;
-    readonly isModuleAddressTooLong: boolean;
-    readonly isInvalidModuleAddress: boolean;
-    readonly isModuleNameAlreadyExists: boolean;
-    readonly isInvalidFounderShare: boolean;
-    readonly isInvalidIncentiveRatio: boolean;
-    readonly isInvalidGeneralSubnetApplicationCost: boolean;
-    readonly isInvalidProposalExpiration: boolean;
-    readonly isInvalidMaxWeightAge: boolean;
-    readonly isMaxSetWeightsPerEpochReached: boolean;
-    readonly isArithmeticError: boolean;
-    readonly isInvalidTargetRegistrationsPerInterval: boolean;
-    readonly isInvalidMaxRegistrationsPerInterval: boolean;
-    readonly isInvalidAdjustmentAlpha: boolean;
-    readonly isInvalidTargetRegistrationsInterval: boolean;
-    readonly isInvalidMinImmunityStake: boolean;
-    readonly isExtrinsicPanicked: boolean;
-    readonly isStepPanicked: boolean;
-    readonly isStakeTooSmall: boolean;
-    readonly isDelegatingControl: boolean;
-    readonly isNotDelegatingControl: boolean;
-    readonly isRootnetSubnetNotFound: boolean;
-    readonly isInvalidMinValidatorStake: boolean;
-    readonly isInvalidMaxAllowedValidators: boolean;
-    readonly isInvalidMaxEncryptionPeriod: boolean;
-    readonly isSubnetEncrypted: boolean;
-    readonly isSubnetNotEncrypted: boolean;
-    readonly isUidNotWhitelisted: boolean;
-    readonly isInvalidCopierMargin: boolean;
-    readonly isInvalidFloorFounderShare: boolean;
-    readonly isInvalidSubnetImmunityPeriod: boolean;
-    readonly isInvalidKappa: boolean;
-    readonly isInvalidRho: boolean;
-    readonly isInvalidMaximumSetWeightCallsPerEpoch: boolean;
-    readonly isInvalidModuleParams: boolean;
-    readonly isInvalidMinFees: boolean;
-    readonly isCannotDecreaseFee: boolean;
-    readonly isNotEnoughBalance: boolean;
-    readonly isNotEnoughBridgedTokens: boolean;
-    readonly type: 'NetworkDoesNotExist' | 'ModuleDoesNotExist' | 'NetworkIsImmuned' | 'NotEnoughBalanceToRegisterSubnet' | 'NotEnoughStakeToWithdraw' | 'NotEnoughBalanceToStake' | 'WeightVecNotEqualSize' | 'DuplicateUids' | 'InvalidUid' | 'InvalidUidsLength' | 'TooManyRegistrationsPerBlock' | 'TooManyRegistrationsPerInterval' | 'TooManySubnetRegistrationsPerInterval' | 'AlreadyRegistered' | 'CouldNotConvertToBalance' | 'InvalidTempo' | 'SettingWeightsTooFast' | 'InvalidMaxAllowedUids' | 'NetuidDoesNotExist' | 'SubnetNameAlreadyExists' | 'SubnetNameTooShort' | 'SubnetNameTooLong' | 'InvalidSubnetName' | 'BalanceNotAdded' | 'StakeNotRemoved' | 'KeyAlreadyRegistered' | 'EmptyKeys' | 'TooManyKeys' | 'InvalidShares' | 'NotFounder' | 'NotEnoughStakeToSetWeights' | 'NotEnoughStakeToStartNetwork' | 'NotEnoughStakePerWeight' | 'NoSelfWeight' | 'DifferentLengths' | 'NotEnoughBalanceToRegister' | 'StakeNotAdded' | 'BalanceNotRemoved' | 'BalanceCouldNotBeRemoved' | 'NotEnoughStakeToRegister' | 'StillRegistered' | 'MaxAllowedModules' | 'NotEnoughBalanceToTransfer' | 'NotVoteMode' | 'InvalidTrustRatio' | 'InvalidMinAllowedWeights' | 'InvalidMaxAllowedWeights' | 'InvalidMinDelegationFee' | 'InvalidModuleMetadata' | 'ModuleMetadataTooLong' | 'InvalidSubnetMetadata' | 'SubnetMetadataTooLong' | 'InvalidMaxNameLength' | 'InvalidMinNameLenght' | 'InvalidMaxAllowedSubnets' | 'InvalidMaxAllowedModules' | 'InvalidMaxRegistrationsPerBlock' | 'InvalidMinBurn' | 'InvalidMaxBurn' | 'ModuleNameTooLong' | 'ModuleNameTooShort' | 'InvalidModuleName' | 'ModuleAddressTooLong' | 'InvalidModuleAddress' | 'ModuleNameAlreadyExists' | 'InvalidFounderShare' | 'InvalidIncentiveRatio' | 'InvalidGeneralSubnetApplicationCost' | 'InvalidProposalExpiration' | 'InvalidMaxWeightAge' | 'MaxSetWeightsPerEpochReached' | 'ArithmeticError' | 'InvalidTargetRegistrationsPerInterval' | 'InvalidMaxRegistrationsPerInterval' | 'InvalidAdjustmentAlpha' | 'InvalidTargetRegistrationsInterval' | 'InvalidMinImmunityStake' | 'ExtrinsicPanicked' | 'StepPanicked' | 'StakeTooSmall' | 'DelegatingControl' | 'NotDelegatingControl' | 'RootnetSubnetNotFound' | 'InvalidMinValidatorStake' | 'InvalidMaxAllowedValidators' | 'InvalidMaxEncryptionPeriod' | 'SubnetEncrypted' | 'SubnetNotEncrypted' | 'UidNotWhitelisted' | 'InvalidCopierMargin' | 'InvalidFloorFounderShare' | 'InvalidSubnetImmunityPeriod' | 'InvalidKappa' | 'InvalidRho' | 'InvalidMaximumSetWeightCallsPerEpoch' | 'InvalidModuleParams' | 'InvalidMinFees' | 'CannotDecreaseFee' | 'NotEnoughBalance' | 'NotEnoughBridgedTokens';
+  /** @name EthereumBlock (177) */
+  interface EthereumBlock extends Struct {
+    readonly header: EthereumHeader;
+    readonly transactions: Vec<EthereumTransactionTransactionV2>;
+    readonly ommers: Vec<EthereumHeader>;
   }
 
-  /** @name PalletGovernanceProposal (183) */
+  /** @name EthereumHeader (178) */
+  interface EthereumHeader extends Struct {
+    readonly parentHash: H256;
+    readonly ommersHash: H256;
+    readonly beneficiary: H160;
+    readonly stateRoot: H256;
+    readonly transactionsRoot: H256;
+    readonly receiptsRoot: H256;
+    readonly logsBloom: EthbloomBloom;
+    readonly difficulty: U256;
+    readonly number: U256;
+    readonly gasLimit: U256;
+    readonly gasUsed: U256;
+    readonly timestamp: u64;
+    readonly extraData: Bytes;
+    readonly mixHash: H256;
+    readonly nonce: EthereumTypesHashH64;
+  }
+
+  /** @name EthereumTypesHashH64 (179) */
+  interface EthereumTypesHashH64 extends U8aFixed {}
+
+  /** @name PalletEthereumError (184) */
+  interface PalletEthereumError extends Enum {
+    readonly isInvalidSignature: boolean;
+    readonly isPreLogExists: boolean;
+    readonly type: 'InvalidSignature' | 'PreLogExists';
+  }
+
+  /** @name PalletEvmCodeMetadata (185) */
+  interface PalletEvmCodeMetadata extends Struct {
+    readonly size_: u64;
+    readonly hash_: H256;
+  }
+
+  /** @name PalletEvmError (187) */
+  interface PalletEvmError extends Enum {
+    readonly isBalanceLow: boolean;
+    readonly isFeeOverflow: boolean;
+    readonly isPaymentOverflow: boolean;
+    readonly isWithdrawFailed: boolean;
+    readonly isGasPriceTooLow: boolean;
+    readonly isInvalidNonce: boolean;
+    readonly isGasLimitTooLow: boolean;
+    readonly isGasLimitTooHigh: boolean;
+    readonly isInvalidChainId: boolean;
+    readonly isInvalidSignature: boolean;
+    readonly isReentrancy: boolean;
+    readonly isTransactionMustComeFromEOA: boolean;
+    readonly isUndefined: boolean;
+    readonly type: 'BalanceLow' | 'FeeOverflow' | 'PaymentOverflow' | 'WithdrawFailed' | 'GasPriceTooLow' | 'InvalidNonce' | 'GasLimitTooLow' | 'GasLimitTooHigh' | 'InvalidChainId' | 'InvalidSignature' | 'Reentrancy' | 'TransactionMustComeFromEOA' | 'Undefined';
+  }
+
+  /** @name PalletGovernanceProposal (188) */
   interface PalletGovernanceProposal extends Struct {
     readonly id: u64;
     readonly proposer: AccountId32;
@@ -1491,110 +1402,80 @@ declare module '@polkadot/types/lookup' {
     readonly data: PalletGovernanceProposalProposalData;
     readonly status: PalletGovernanceProposalProposalStatus;
     readonly metadata: Bytes;
-    readonly proposalCost: u64;
+    readonly proposalCost: u128;
     readonly creationBlock: u64;
   }
 
-  /** @name PalletGovernanceProposalProposalData (184) */
+  /** @name PalletGovernanceProposalProposalData (189) */
   interface PalletGovernanceProposalProposalData extends Enum {
-    readonly isGlobalCustom: boolean;
     readonly isGlobalParams: boolean;
-    readonly asGlobalParams: PalletSubspaceParamsGlobalGlobalParams;
-    readonly isSubnetCustom: boolean;
-    readonly asSubnetCustom: {
-      readonly subnetId: u16;
-    } & Struct;
-    readonly isSubnetParams: boolean;
-    readonly asSubnetParams: {
-      readonly subnetId: u16;
-      readonly params: PalletSubspaceParamsSubnetSubnetParams;
-    } & Struct;
+    readonly asGlobalParams: PalletGovernanceProposalGlobalParamsData;
+    readonly isGlobalCustom: boolean;
     readonly isTransferDaoTreasury: boolean;
     readonly asTransferDaoTreasury: {
       readonly account: AccountId32;
-      readonly amount: u64;
+      readonly amount: u128;
     } & Struct;
-    readonly type: 'GlobalCustom' | 'GlobalParams' | 'SubnetCustom' | 'SubnetParams' | 'TransferDaoTreasury';
+    readonly type: 'GlobalParams' | 'GlobalCustom' | 'TransferDaoTreasury';
   }
 
-  /** @name PalletSubspaceParamsSubnetSubnetParams (185) */
-  interface PalletSubspaceParamsSubnetSubnetParams extends Struct {
-    readonly founder: AccountId32;
-    readonly founderShare: u16;
-    readonly immunityPeriod: u16;
-    readonly incentiveRatio: u16;
-    readonly maxAllowedUids: u16;
-    readonly maxAllowedWeights: u16;
-    readonly minAllowedWeights: u16;
-    readonly maxWeightAge: u64;
-    readonly name: Bytes;
-    readonly metadata: Option<Bytes>;
-    readonly tempo: u16;
-    readonly maximumSetWeightCallsPerEpoch: Option<u16>;
-    readonly bondsMa: u64;
-    readonly moduleBurnConfig: PalletSubspaceParamsBurnGeneralBurnConfiguration;
-    readonly minValidatorStake: u64;
-    readonly maxAllowedValidators: Option<u16>;
-    readonly governanceConfig: PalletGovernanceApiGovernanceConfiguration;
-    readonly useWeightsEncryption: bool;
-    readonly copierMargin: SubstrateFixedFixedI128;
-    readonly maxEncryptionPeriod: Option<u64>;
-  }
-
-  /** @name PalletGovernanceProposalProposalStatus (186) */
+  /** @name PalletGovernanceProposalProposalStatus (190) */
   interface PalletGovernanceProposalProposalStatus extends Enum {
     readonly isOpen: boolean;
     readonly asOpen: {
       readonly votesFor: BTreeSet<AccountId32>;
       readonly votesAgainst: BTreeSet<AccountId32>;
-      readonly stakeFor: u64;
-      readonly stakeAgainst: u64;
+      readonly stakeFor: u128;
+      readonly stakeAgainst: u128;
     } & Struct;
     readonly isAccepted: boolean;
     readonly asAccepted: {
       readonly block: u64;
-      readonly stakeFor: u64;
-      readonly stakeAgainst: u64;
+      readonly stakeFor: u128;
+      readonly stakeAgainst: u128;
     } & Struct;
     readonly isRefused: boolean;
     readonly asRefused: {
       readonly block: u64;
-      readonly stakeFor: u64;
-      readonly stakeAgainst: u64;
+      readonly stakeFor: u128;
+      readonly stakeAgainst: u128;
     } & Struct;
     readonly isExpired: boolean;
     readonly type: 'Open' | 'Accepted' | 'Refused' | 'Expired';
   }
 
-  /** @name PalletGovernanceProposalUnrewardedProposal (189) */
+  /** @name PalletGovernanceProposalUnrewardedProposal (194) */
   interface PalletGovernanceProposalUnrewardedProposal extends Struct {
-    readonly subnetId: Option<u16>;
     readonly block: u64;
-    readonly votesFor: BTreeMap<AccountId32, u64>;
-    readonly votesAgainst: BTreeMap<AccountId32, u64>;
+    readonly votesFor: BTreeMap<AccountId32, u128>;
+    readonly votesAgainst: BTreeMap<AccountId32, u128>;
   }
 
-  /** @name PalletGovernanceDaoCuratorApplication (194) */
-  interface PalletGovernanceDaoCuratorApplication extends Struct {
-    readonly id: u64;
-    readonly userId: AccountId32;
-    readonly payingFor: AccountId32;
+  /** @name PalletGovernanceConfigGovernanceConfiguration (199) */
+  interface PalletGovernanceConfigGovernanceConfiguration extends Struct {
+    readonly proposalCost: u128;
+    readonly proposalExpiration: u64;
+    readonly agentApplicationCost: u128;
+    readonly agentApplicationExpiration: u64;
+    readonly proposalRewardTreasuryAllocation: Percent;
+    readonly maxProposalRewardTreasuryAllocation: u128;
+    readonly proposalRewardInterval: u64;
+  }
+
+  /** @name PalletGovernanceApplicationAgentApplication (200) */
+  interface PalletGovernanceApplicationAgentApplication extends Struct {
+    readonly id: u32;
+    readonly payerKey: AccountId32;
+    readonly agentKey: AccountId32;
     readonly data: Bytes;
-    readonly status: PalletGovernanceDaoApplicationStatus;
-    readonly applicationCost: u64;
-    readonly blockNumber: u64;
+    readonly cost: u128;
+    readonly expiresAt: u64;
   }
 
-  /** @name PalletGovernanceDaoApplicationStatus (195) */
-  interface PalletGovernanceDaoApplicationStatus extends Enum {
-    readonly isPending: boolean;
-    readonly isAccepted: boolean;
-    readonly isRefused: boolean;
-    readonly isRemoved: boolean;
-    readonly type: 'Pending' | 'Accepted' | 'Refused' | 'Removed';
-  }
+  /** @name FrameSupportPalletId (201) */
+  interface FrameSupportPalletId extends U8aFixed {}
 
-  /** @name PalletGovernanceError (196) */
+  /** @name PalletGovernanceError (202) */
   interface PalletGovernanceError extends Enum {
     readonly isProposalIsFinished: boolean;
     readonly isInvalidProposalFinalizationParameters: boolean;
@@ -1610,12 +1491,10 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidProposalData: boolean;
     readonly isInvalidCurrencyConversionValue: boolean;
     readonly isInsufficientDaoTreasuryFunds: boolean;
-    readonly isNotVoteMode: boolean;
     readonly isAlreadyVoted: boolean;
     readonly isNotVoted: boolean;
     readonly isInsufficientStake: boolean;
     readonly isVoterIsDelegatingVotingPower: boolean;
-    readonly isVoteModeIsNotAuthority: boolean;
     readonly isInternalError: boolean;
     readonly isApplicationTooSmall: boolean;
     readonly isInvalidApplicationSize: boolean;
@@ -1628,101 +1507,141 @@ declare module '@polkadot/types/lookup' {
     readonly isAlreadyWhitelisted: boolean;
     readonly isNotWhitelisted: boolean;
     readonly isCouldNotConvertToBalance: boolean;
-    readonly type: 'ProposalIsFinished' | 'InvalidProposalFinalizationParameters' | 'InvalidProposalVotingParameters' | 'InvalidProposalCost' | 'InvalidProposalExpiration' | 'NotEnoughBalanceToPropose' | 'ProposalDataTooSmall' | 'ProposalDataTooLarge' | 'ModuleDelegatingForMaxStakers' | 'ProposalNotFound' | 'ProposalClosed' | 'InvalidProposalData' | 'InvalidCurrencyConversionValue' | 'InsufficientDaoTreasuryFunds' | 'NotVoteMode' | 'AlreadyVoted' | 'NotVoted' | 'InsufficientStake' | 'VoterIsDelegatingVotingPower' | 'VoteModeIsNotAuthority' | 'InternalError' | 'ApplicationTooSmall' | 'InvalidApplicationSize' | 'ApplicationNotPending' | 'ApplicationKeyAlreadyUsed' | 'InvalidApplication' | 'NotEnoughBalanceToApply' | 'NotCurator' | 'ApplicationNotFound' | 'AlreadyWhitelisted' | 'NotWhitelisted' | 'CouldNotConvertToBalance';
+    readonly isInvalidApplicationDataLength: boolean;
+    readonly isInvalidAgentPenaltyPercentage: boolean;
+    readonly isAlreadyCurator: boolean;
+    readonly isAgentNotFound: boolean;
+    readonly isInvalidPenaltyPercentage: boolean;
+    readonly isInvalidMinNameLength: boolean;
+    readonly isInvalidMaxNameLength: boolean;
+    readonly isInvalidMaxAllowedAgents: boolean;
+    readonly isInvalidMaxAllowedWeights: boolean;
+    readonly isInvalidMinWeightControlFee: boolean;
+    readonly type: 'ProposalIsFinished' | 'InvalidProposalFinalizationParameters' | 'InvalidProposalVotingParameters' | 'InvalidProposalCost' | 'InvalidProposalExpiration' | 'NotEnoughBalanceToPropose' | 'ProposalDataTooSmall' | 'ProposalDataTooLarge' | 'ModuleDelegatingForMaxStakers' | 'ProposalNotFound' | 'ProposalClosed' | 'InvalidProposalData' | 'InvalidCurrencyConversionValue' | 'InsufficientDaoTreasuryFunds' | 'AlreadyVoted' | 'NotVoted' | 'InsufficientStake' | 'VoterIsDelegatingVotingPower' | 'InternalError' | 'ApplicationTooSmall' | 'InvalidApplicationSize' | 'ApplicationNotPending' | 'ApplicationKeyAlreadyUsed' | 'InvalidApplication' | 'NotEnoughBalanceToApply' | 'NotCurator' | 'ApplicationNotFound' | 'AlreadyWhitelisted' | 'NotWhitelisted' | 'CouldNotConvertToBalance' | 'InvalidApplicationDataLength' | 'InvalidAgentPenaltyPercentage' | 'AlreadyCurator' | 'AgentNotFound' | 'InvalidPenaltyPercentage' | 'InvalidMinNameLength' | 'InvalidMaxNameLength' | 'InvalidMaxAllowedAgents' | 'InvalidMaxAllowedWeights' | 'InvalidMinWeightControlFee';
   }
 
-  /** @name PalletSubnetEmissionEncryptionMechanism (197) */
-  interface PalletSubnetEmissionEncryptionMechanism extends Struct {
-    readonly encrypted: Bytes;
-    readonly decryptedHashes: Bytes;
+  /** @name PalletTorus0Agent (203) */
+  interface PalletTorus0Agent extends Struct {
+    readonly key: AccountId32;
+    readonly name: Bytes;
+    readonly url: Bytes;
+    readonly metadata: Bytes;
+    readonly weightFactor: Percent;
   }
 
-  /** @name PalletSubnetEmissionSubnetDecryptionInfo (198) */
-  interface PalletSubnetEmissionSubnetDecryptionInfo extends Struct {
-    readonly nodeId: AccountId32;
-    readonly nodePublicKey: ITuple<[Bytes, Bytes]>;
-    readonly validityBlock: Option<u64>;
-    readonly lastKeepAlive: u64;
-    readonly rotatingFrom: Option<AccountId32>;
+  /** @name PalletTorus0FeeValidatorFeeConstraints (205) */
+  interface PalletTorus0FeeValidatorFeeConstraints extends Struct {
+    readonly minStakingFee: Percent;
+    readonly minWeightControlFee: Percent;
   }
 
-  /** @name NodeSubspaceRuntimeRuntime (199) */
-  type NodeSubspaceRuntimeRuntime = Null;
-
-  /** @name PalletSubnetEmissionApiSubnetConsensus (200) */
-  interface PalletSubnetEmissionApiSubnetConsensus extends Enum {
-    readonly isYuma: boolean;
-    readonly isLinear: boolean;
-    readonly isTreasury: boolean;
-    readonly isRoot: boolean;
-    readonly type: 'Yuma' | 'Linear' | 'Treasury' | 'Root';
+  /** @name PalletTorus0FeeValidatorFee (206) */
+  interface PalletTorus0FeeValidatorFee extends Struct {
+    readonly stakingFee: Percent;
+    readonly weightControlFee: Percent;
   }
 
-  /** @name PalletSubnetEmissionSubnetConsensusUtilParamsConsensusParams (202) */
-  interface PalletSubnetEmissionSubnetConsensusUtilParamsConsensusParams extends Struct {
-    readonly subnetId: u16;
-    readonly tokenEmission: u64;
-    readonly modules: BTreeMap<AccountId32, PalletSubnetEmissionSubnetConsensusUtilParamsModuleParams>;
-    readonly kappa: SubstrateFixedFixedI64;
-    readonly founderKey: AccountId32;
-    readonly founderEmission: u64;
-    readonly currentBlock: u64;
-    readonly activityCutoff: u64;
-    readonly useWeightsEncryption: bool;
-    readonly maxAllowedValidators: Option<u16>;
-    readonly bondsMovingAverage: u64;
-    readonly alphaValues: ITuple<[SubstrateFixedFixedI64, SubstrateFixedFixedI64]>;
-    readonly minValStake: SubstrateFixedFixedI128;
+  /** @name PalletTorus0BurnBurnConfiguration (207) */
+  interface PalletTorus0BurnBurnConfiguration extends Struct {
+    readonly minBurn: u128;
+    readonly maxBurn: u128;
+    readonly adjustmentAlpha: u64;
+    readonly targetRegistrationsInterval: u64;
+    readonly targetRegistrationsPerInterval: u16;
+    readonly maxRegistrationsPerInterval: u16;
   }
 
-  /** @name PalletSubnetEmissionSubnetConsensusUtilParamsModuleParams (205) */
-  interface PalletSubnetEmissionSubnetConsensusUtilParamsModuleParams extends Struct {
-    readonly uid: u16;
-    readonly lastUpdate: u64;
-    readonly blockAtRegistration: u64;
-    readonly validatorPermit: bool;
-    readonly stakeNormalized: SubstrateFixedFixedI64;
-    readonly stakeOriginal: SubstrateFixedFixedI128;
-    readonly delegatedTo: Option<ITuple<[AccountId32, Percent]>>;
-    readonly bonds: Vec<ITuple<[u16, u16]>>;
-    readonly weightEncrypted: Bytes;
-    readonly weightHash: Bytes;
+  /** @name PalletTorus0Error (208) */
+  interface PalletTorus0Error extends Enum {
+    readonly isAgentDoesNotExist: boolean;
+    readonly isNotEnoughStakeToWithdraw: boolean;
+    readonly isNotEnoughBalanceToStake: boolean;
+    readonly isTooManyAgentRegistrationsThisBlock: boolean;
+    readonly isTooManyAgentRegistrationsThisInterval: boolean;
+    readonly isAgentAlreadyRegistered: boolean;
+    readonly isCouldNotConvertToBalance: boolean;
+    readonly isBalanceNotAdded: boolean;
+    readonly isStakeNotRemoved: boolean;
+    readonly isInvalidShares: boolean;
+    readonly isNotEnoughBalanceToRegisterAgent: boolean;
+    readonly isStakeNotAdded: boolean;
+    readonly isBalanceNotRemoved: boolean;
+    readonly isBalanceCouldNotBeRemoved: boolean;
+    readonly isNotEnoughStakeToRegister: boolean;
+    readonly isStillRegistered: boolean;
+    readonly isMaxAllowedAgents: boolean;
+    readonly isNotEnoughBalanceToTransfer: boolean;
+    readonly isInvalidAgentMetadata: boolean;
+    readonly isAgentMetadataTooLong: boolean;
+    readonly isAgentMetadataTooShort: boolean;
+    readonly isInvalidMinBurn: boolean;
+    readonly isInvalidMaxBurn: boolean;
+    readonly isAgentNameTooLong: boolean;
+    readonly isAgentNameTooShort: boolean;
+    readonly isInvalidAgentName: boolean;
+    readonly isAgentUrlTooLong: boolean;
+    readonly isAgentUrlTooShort: boolean;
+    readonly isInvalidAgentUrl: boolean;
+    readonly isAgentNameAlreadyExists: boolean;
+    readonly isArithmeticError: boolean;
+    readonly isExtrinsicPanicked: boolean;
+    readonly isStepPanicked: boolean;
+    readonly isStakeTooSmall: boolean;
+    readonly isAgentKeyNotWhitelisted: boolean;
+    readonly isInvalidAmount: boolean;
+    readonly isInvalidStakingFee: boolean;
+    readonly isInvalidWeightControlFee: boolean;
+    readonly type: 'AgentDoesNotExist' | 'NotEnoughStakeToWithdraw' | 'NotEnoughBalanceToStake' | 'TooManyAgentRegistrationsThisBlock' | 'TooManyAgentRegistrationsThisInterval' | 'AgentAlreadyRegistered' | 'CouldNotConvertToBalance' | 'BalanceNotAdded' | 'StakeNotRemoved' | 'InvalidShares' | 'NotEnoughBalanceToRegisterAgent' | 'StakeNotAdded' | 'BalanceNotRemoved' | 'BalanceCouldNotBeRemoved' | 'NotEnoughStakeToRegister' | 'StillRegistered' | 'MaxAllowedAgents' | 'NotEnoughBalanceToTransfer' | 'InvalidAgentMetadata' | 'AgentMetadataTooLong' | 'AgentMetadataTooShort' | 'InvalidMinBurn' | 'InvalidMaxBurn' | 'AgentNameTooLong' | 'AgentNameTooShort' | 'InvalidAgentName' | 'AgentUrlTooLong' | 'AgentUrlTooShort' | 'InvalidAgentUrl' | 'AgentNameAlreadyExists' | 'ArithmeticError' | 'ExtrinsicPanicked' | 'StepPanicked' | 'StakeTooSmall' | 'AgentKeyNotWhitelisted' | 'InvalidAmount' | 'InvalidStakingFee' | 'InvalidWeightControlFee';
   }
 
-  /** @name SubstrateFixedFixedI64 (206) */
-  interface SubstrateFixedFixedI64 extends Struct {
-    readonly bits: i64;
+  /** @name PalletEmission0ConsensusMember (209) */
+  interface PalletEmission0ConsensusMember extends Struct {
+    readonly weights: Vec<ITuple<[AccountId32, u16]>>;
+    readonly weightsLastUpdatedAt: u64;
+    readonly pruningScore: u16;
   }
 
-  /** @name PalletOffworkerError (216) */
-  interface PalletOffworkerError extends Enum {
-    readonly isInvalidDecryptionKey: boolean;
-    readonly isInvalidSubnetId: boolean;
-    readonly isTooManyAuthorities: boolean;
-    readonly isEmptyDecryptedWeights: boolean;
-    readonly isDecryptedWeightsLengthMismatch: boolean;
-    readonly type: 'InvalidDecryptionKey' | 'InvalidSubnetId' | 'TooManyAuthorities' | 'EmptyDecryptedWeights' | 'DecryptedWeightsLengthMismatch';
+  /** @name PalletEmission0Error (212) */
+  interface PalletEmission0Error extends Enum {
+    readonly isWeightSetTooLarge: boolean;
+    readonly isAgentDoesNotExist: boolean;
+    readonly isCannotSetWeightsForSelf: boolean;
+    readonly type: 'WeightSetTooLarge' | 'AgentDoesNotExist' | 'CannotSetWeightsForSelf';
   }
 
-  /** @name FrameSystemExtensionsCheckNonZeroSender (219) */
+  /** @name SpRuntimeMultiSignature (214) */
+  interface SpRuntimeMultiSignature extends Enum {
+    readonly isEd25519: boolean;
+    readonly asEd25519: U8aFixed;
+    readonly isSr25519: boolean;
+    readonly asSr25519: U8aFixed;
+    readonly isEcdsa: boolean;
+    readonly asEcdsa: U8aFixed;
+    readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
+  }
+
+  /** @name FrameSystemExtensionsCheckNonZeroSender (217) */
   type FrameSystemExtensionsCheckNonZeroSender = Null;
 
-  /** @name FrameSystemExtensionsCheckSpecVersion (220) */
+  /** @name FrameSystemExtensionsCheckSpecVersion (218) */
   type FrameSystemExtensionsCheckSpecVersion = Null;
 
-  /** @name FrameSystemExtensionsCheckTxVersion (221) */
+  /** @name FrameSystemExtensionsCheckTxVersion (219) */
   type FrameSystemExtensionsCheckTxVersion = Null;
 
-  /** @name FrameSystemExtensionsCheckGenesis (222) */
+  /** @name FrameSystemExtensionsCheckGenesis (220) */
   type FrameSystemExtensionsCheckGenesis = Null;
 
-  /** @name FrameSystemExtensionsCheckNonce (225) */
+  /** @name FrameSystemExtensionsCheckNonce (223) */
   interface FrameSystemExtensionsCheckNonce extends Compact<u32> {}
 
-  /** @name FrameSystemExtensionsCheckWeight (226) */
+  /** @name FrameSystemExtensionsCheckWeight (224) */
   type FrameSystemExtensionsCheckWeight = Null;
 
-  /** @name PalletTransactionPaymentChargeTransactionPayment (227) */
-  interface PalletTransactionPaymentChargeTransactionPayment extends Compact<u64> {}
+  /** @name PalletTransactionPaymentChargeTransactionPayment (225) */
+  interface PalletTransactionPaymentChargeTransactionPayment extends Compact<u128> {}
+
+  /** @name TorusRuntimeRuntime (227) */
+  type TorusRuntimeRuntime = Null;
 
 } // declare module

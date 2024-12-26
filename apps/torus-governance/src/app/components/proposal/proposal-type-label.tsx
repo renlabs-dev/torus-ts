@@ -20,7 +20,6 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
         </Badge>
       );
     },
-    // TODO: REMOVE GlobalParams on Torus V0 release
     GlobalParams() {
       return (
         <Badge
@@ -28,28 +27,6 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
           className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/10"
         >
           Global Params
-        </Badge>
-      );
-    },
-    // TODO: REMOVE SubnetCustom on Torus V0 release
-    SubnetCustom() {
-      return (
-        <Badge
-          variant="solid"
-          className="bg-sky-500/10 text-sky-500 hover:bg-cyan-500/10"
-        >
-          Subnet Custom
-        </Badge>
-      );
-    },
-    // TODO: REMOVE SubnetParams on Torus V0 release
-    SubnetParams() {
-      return (
-        <Badge
-          variant="solid"
-          className="bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10"
-        >
-          Subnet Params
         </Badge>
       );
     },

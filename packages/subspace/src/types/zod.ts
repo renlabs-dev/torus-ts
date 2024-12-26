@@ -205,6 +205,16 @@ export const sb_number = ToBigInt_schema.transform((val, ctx): number => {
 
 export const sb_number_int = sb_number.pipe(z.number().int());
 
+export const sb_percent = sb_bigint.transform((val, ctx) => {
+  if (val < 0 || val > 100) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Percent must be between 0 and 100`,
+    });
+  }
+  return val;
+});
+
 // == String ==
 
 export const Bytes_schema = z.custom<Bytes>(

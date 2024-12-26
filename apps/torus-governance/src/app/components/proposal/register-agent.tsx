@@ -9,11 +9,6 @@ import {
   Button,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Separator,
   Tabs,
   TabsContent,
@@ -33,15 +28,9 @@ const moduleSchema = z.object({
 
 export function RegisterAgent(): JSX.Element {
   const router = useRouter();
-  const {
-    isAccountConnected,
-    RegisterAgent,
-    accountFreeBalance,
-    subnetList,
-    moduleBurn,
-  } = useGovernance();
+  const { isAccountConnected, registerAgent, accountFreeBalance } =
+    useGovernance();
 
-  const [subnetName, setSubnetName] = useState("");
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [moduleId, setModuleId] = useState("");
@@ -62,17 +51,6 @@ export function RegisterAgent(): JSX.Element {
 
   function handleCallback(callbackReturn: TransactionResult): void {
     setTransactionStatus(callbackReturn);
-  }
-
-  function getModuleBurn(subnetId: string) {
-    if (!moduleBurn.data) {
-      return 0;
-    }
-    if (Number(subnetId) === 0) {
-      return 0;
-    }
-
-    return formatToken(Number(moduleBurn.data[subnetId]));
   }
 
   async function uploadFile(fileToUpload: File): Promise<void> {
@@ -100,8 +78,7 @@ export function RegisterAgent(): JSX.Element {
       const moduleCost = 2000;
 
       if (Number(accountFreeBalance.data) > moduleCost) {
-        void RegisterAgent({
-          subnetName,
+        void registerAgent({
           address,
           name,
           moduleId,
@@ -180,28 +157,6 @@ export function RegisterAgent(): JSX.Element {
             type="text"
             value={moduleId}
           />
-          <Select onValueChange={setSubnetName} value={subnetName}>
-            <SelectTrigger className="text-white">
-              <SelectValue placeholder="Subnet Name (eg. General)" />
-            </SelectTrigger>
-            <SelectContent>
-              {subnetList.isLoading ? (
-                <SelectItem value="loading" disabled>
-                  Loading...
-                </SelectItem>
-              ) : subnetList.data ? (
-                Object.entries(subnetList.data).map(([key, value]) => (
-                  <SelectItem key={key} value={value}>
-                    {key} | {value} | {getModuleBurn(key)} COMAI (Current Burn)
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="error" disabled>
-                  Error loading subnets
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
           <Input
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Address (eg. 0.0.0.0:8000)"

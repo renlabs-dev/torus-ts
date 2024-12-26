@@ -50,7 +50,6 @@ export interface RemoveVote {
 }
 
 export interface RegisterAgent {
-  subnetName: string;
   address: string;
   name: string;
   moduleId: string;

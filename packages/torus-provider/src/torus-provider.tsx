@@ -9,9 +9,9 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import type {
   Api,
-  CustomMetadataState,
-  DaoApplications,
+  AgentApplication,
   Proposal,
+  CustomMetadataState,
 } from "@torus-ts/subspace";
 import { sb_balance } from "@torus-ts/subspace";
 import { toNano } from "@torus-ts/utils/subspace";
@@ -34,8 +34,8 @@ import { sendTransaction } from "./_components/send-transaction";
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
 export type WithMetadataState<T> = T & { customData?: CustomMetadataState };
-export type DaoState = WithMetadataState<DaoApplications>;
 
+export type ApplicationState = WithMetadataState<AgentApplication>;
 export type ProposalState = WithMetadataState<Proposal>;
 
 export interface TorusApiState {
@@ -355,7 +355,6 @@ export function TorusProvider({
   // == Subspace ==
 
   async function RegisterAgent({
-    subnetName,
     address,
     name,
     moduleId,
@@ -364,10 +363,8 @@ export function TorusProvider({
   }: RegisterAgent): Promise<void> {
     if (!api?.tx.subspaceModule?.register) return;
 
-    console.log(api.tx.subspaceModule);
-
+    // FIXME
     const transaction = api.tx.subspaceModule.register(
-      subnetName,
       name,
       address,
       moduleId,

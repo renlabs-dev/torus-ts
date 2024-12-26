@@ -6,7 +6,7 @@
 import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
-import type { u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { Codec } from '@polkadot/types-codec/types';
 import type { FrameSupportPalletId, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight } from '@polkadot/types/lookup';
 
@@ -38,7 +38,7 @@ declare module '@polkadot/api-base/types/consts' {
        * 
        * Bottom line: Do yourself a favour and make it at least one!
        **/
-      existentialDeposit: u64 & AugmentedConst<ApiType>;
+      existentialDeposit: u128 & AugmentedConst<ApiType>;
       /**
        * The maximum number of individual freeze locks that can exist on an account at any time.
        **/
@@ -61,10 +61,31 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       [key: string]: Codec;
     };
-    governanceModule: {
+    emission0: {
       /**
-       * This pallet's ID, used for generating the treasury account ID.
+       * Emissions per block in NANOs. Not taking into account halving and recycling.
        **/
+      blockEmission: u128 & AugmentedConst<ApiType>;
+      defaultMaxAllowedWeights: u16 & AugmentedConst<ApiType>;
+      defaultMinAllowedWeights: u16 & AugmentedConst<ApiType>;
+      /**
+       * Tokens emitted in an interval before halving the emissions in NANOs.
+       **/
+      halvingInterval: u128 & AugmentedConst<ApiType>;
+      /**
+       * Max token supply in NANOs.
+       **/
+      maxSupply: u128 & AugmentedConst<ApiType>;
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec;
+    };
+    governance: {
+      applicationExpiration: u64 & AugmentedConst<ApiType>;
+      maxApplicationDataLength: u32 & AugmentedConst<ApiType>;
+      maxPenaltyPercentage: u8 & AugmentedConst<ApiType>;
+      minApplicationDataLength: u32 & AugmentedConst<ApiType>;
       palletId: FrameSupportPalletId & AugmentedConst<ApiType>;
       /**
        * Generic const
@@ -103,69 +124,17 @@ declare module '@polkadot/api-base/types/consts' {
        * `4 + sizeof((BlockNumber, Balance, AccountId))` bytes and whose key size is
        * `32 + sizeof(AccountId)` bytes.
        **/
-      depositBase: u64 & AugmentedConst<ApiType>;
+      depositBase: u128 & AugmentedConst<ApiType>;
       /**
        * The amount of currency needed per unit threshold when creating a multisig execution.
        * 
        * This is held for adding 32 bytes more into a pre-existing storage value.
        **/
-      depositFactor: u64 & AugmentedConst<ApiType>;
+      depositFactor: u128 & AugmentedConst<ApiType>;
       /**
        * The maximum amount of signatories allowed in the multisig.
        **/
       maxSignatories: u32 & AugmentedConst<ApiType>;
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec;
-    };
-    offworker: {
-      unsignedPriority: u64 & AugmentedConst<ApiType>;
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec;
-    };
-    subnetEmissionModule: {
-      decimals: u8 & AugmentedConst<ApiType>;
-      decryptionNodeRotationInterval: u64 & AugmentedConst<ApiType>;
-      /**
-       * The extra buffer period in blocks that runtime will wait before banning a decryption
-       * node. So the final count is `MaxEncryptionPeriod + EncryptionPeriodBuffer`
-       **/
-      encryptionPeriodBuffer: u64 & AugmentedConst<ApiType>;
-      halvingInterval: u64 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of authorities.
-       **/
-      maxAuthorities: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum token supply.
-       **/
-      maxSupply: u64 & AugmentedConst<ApiType>;
-      /**
-       * The number of consecutive missed pings after which a decryption node is considered
-       * inactive
-       **/
-      missedPingsForInactivity: u8 & AugmentedConst<ApiType>;
-      /**
-       * The duration (in blocks) for which an offchain worker is banned after being cancelled
-       **/
-      offchainWorkerBanDuration: u64 & AugmentedConst<ApiType>;
-      /**
-       * The interval (in blocks) at which the decryption node should send a keep-alive
-       **/
-      pingInterval: u64 & AugmentedConst<ApiType>;
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec;
-    };
-    subspaceModule: {
-      /**
-       * This pallet's ID, used for generating the treasury account ID.
-       **/
-      palletId: FrameSupportPalletId & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/
@@ -220,6 +189,39 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       [key: string]: Codec;
     };
+    torus0: {
+      defaultAdjustmentAlpha: u64 & AugmentedConst<ApiType>;
+      defaultImmunityPeriod: u16 & AugmentedConst<ApiType>;
+      defaultMaxAllowedAgents: u16 & AugmentedConst<ApiType>;
+      defaultMaxAllowedValidators: u16 & AugmentedConst<ApiType>;
+      defaultMaxBurn: u128 & AugmentedConst<ApiType>;
+      defaultMaxNameLength: u16 & AugmentedConst<ApiType>;
+      defaultMaxRegistrationsPerBlock: u16 & AugmentedConst<ApiType>;
+      defaultMaxRegistrationsPerInterval: u16 & AugmentedConst<ApiType>;
+      defaultMinBurn: u128 & AugmentedConst<ApiType>;
+      defaultMinimumAllowedStake: u128 & AugmentedConst<ApiType>;
+      defaultMinNameLength: u16 & AugmentedConst<ApiType>;
+      defaultMinStakingFee: u8 & AugmentedConst<ApiType>;
+      defaultMinValidatorStake: u128 & AugmentedConst<ApiType>;
+      defaultMinWeightControlFee: u8 & AugmentedConst<ApiType>;
+      defaultRewardInterval: u16 & AugmentedConst<ApiType>;
+      defaultTargetRegistrationsInterval: u64 & AugmentedConst<ApiType>;
+      defaultTargetRegistrationsPerInterval: u16 & AugmentedConst<ApiType>;
+      maxAgentMetadataLengthConstraint: u32 & AugmentedConst<ApiType>;
+      /**
+       * The storage MaxNameLength should be constrained to be no more than the value of this.
+       * This is needed on agent::Agent to set the `name` field BoundedVec max length.
+       **/
+      maxAgentNameLengthConstraint: u32 & AugmentedConst<ApiType>;
+      /**
+       * This is needed on agent::Agent to set the `address` field BoundedVec max length.
+       **/
+      maxAgentUrlLengthConstraint: u32 & AugmentedConst<ApiType>;
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec;
+    };
     transactionPayment: {
       /**
        * A fee multiplier for `Operational` extrinsics to compute "virtual tip" to boost their
@@ -245,16 +247,6 @@ declare module '@polkadot/api-base/types/consts' {
        * transactions.
        **/
       operationalFeeMultiplier: u8 & AugmentedConst<ApiType>;
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec;
-    };
-    utility: {
-      /**
-       * The limit on the number of batched calls.
-       **/
-      batchedCallsLimit: u32 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/

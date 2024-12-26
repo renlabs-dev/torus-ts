@@ -4,16 +4,13 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-import type { Bridge, Stake } from "@torus-ts/torus-provider/types";
+import type { Stake } from "@torus-ts/torus-provider/types";
 import {
-  useBridgedBalance,
-  useBridgedBalances,
   useCachedStakeOut,
   useFreeBalance,
   useKeyStakingTo,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-// import { WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import type { Balance, SS58Address, StakeData } from "@torus-ts/subspace";
@@ -34,14 +31,9 @@ interface PageContextType {
     Error
   >;
 
-  bridge: (bridge: Bridge) => Promise<void>;
-
   removeStake: (stake: Stake) => Promise<void>;
 
   stakeOut: UseQueryResult<StakeData, Error>;
-
-  accountBridgedBalance: UseQueryResult<bigint, Error>;
-  bridgedBalances: UseQueryResult<[Map<SS58Address, bigint>, Error[]], Error>;
 
   accounts: InjectedAccountWithMeta[] | undefined;
   handleLogout: () => void;
@@ -60,7 +52,6 @@ export function PageProvider({
   const {
     accounts,
     api,
-    bridge,
     handleGetWallets,
     handleLogout,
     handleSelectWallet,
@@ -86,24 +77,13 @@ export function PageProvider({
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
     stakeOut.data?.perAddr[selectedAccount?.address!];
 
-  // == Bridge ==
-  const accountBridgedBalance = useBridgedBalance(
-    api,
-    selectedAccount?.address as SS58Address,
-  );
-
-  const bridgedBalances = useBridgedBalances(api);
-
   return (
     <PageContext.Provider
       value={{
-        accountBridgedBalance,
         accountFreeBalance,
         accounts,
         accountStakedBalance,
         accountStakingTo,
-        bridge,
-        bridgedBalances,
         handleGetWallets,
         handleLogout,
         handleSelectWallet,

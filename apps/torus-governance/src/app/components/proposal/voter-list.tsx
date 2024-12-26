@@ -112,7 +112,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
             <div className="flex flex-col items-end">
               <span
                 className={
-                  vote === "In Favor" ? "text-green-500" : "text-red-500"
+                  vote === "IN_FAVOR" ? "text-green-500" : "text-red-500"
                 }
               >
                 {vote}
