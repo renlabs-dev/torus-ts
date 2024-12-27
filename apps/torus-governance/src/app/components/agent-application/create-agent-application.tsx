@@ -23,14 +23,14 @@ import { formatToken } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
 
-const daoSchema = z.object({
+const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
   discordId: z.string().min(16, "Discord ID is required"),
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Body is required"),
 });
 
-export function CreateDao(): JSX.Element {
+export function CreateAgentApplication(): JSX.Element {
   const router = useRouter();
   const { isAccountConnected, AddAgentApplication, accountFreeBalance } =
     useGovernance();
@@ -112,7 +112,7 @@ export function CreateDao(): JSX.Element {
       message: "Starting S2 Application creation...",
     });
 
-    const result = daoSchema.safeParse({
+    const result = agentApplicationSchema.safeParse({
       title,
       body,
       applicationKey,

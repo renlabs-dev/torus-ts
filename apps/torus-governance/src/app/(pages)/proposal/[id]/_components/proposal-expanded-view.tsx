@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react";
 
 import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
 
-import type { VoteStatus } from "../../../components/vote-label";
+import type { VoteStatus } from "../../../../components/vote-label";
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
 import { DetailsCard } from "~/app/components/details-card";
@@ -16,8 +16,8 @@ import { RewardLabel } from "~/app/components/proposal/reward-label";
 import { VoterList } from "~/app/components/proposal/voter-list";
 import { VoteData } from "~/app/components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
-import { handleCustomProposal } from "../../../../utils";
-import { StatusLabel } from "../../../components/status-label";
+import { handleCustomProposal } from "../../../../../utils";
+import { StatusLabel } from "../../../../components/status-label";
 
 interface CustomContent {
   paramId: number;
@@ -60,7 +60,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
     );
     if (!proposal) return null;
 
-    const { body, netuid, title, invalid } = handleCustomProposal(proposal);
+    const { body, title, invalid } = handleCustomProposal(proposal);
 
     const voted = handleUserVotes({
       proposalStatus: proposal.status,
@@ -70,7 +70,6 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
     return {
       body,
       title,
-      netuid,
       invalid,
       id: proposal.id,
       status: proposal.status,
