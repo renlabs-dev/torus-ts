@@ -5,6 +5,7 @@ import { createContext, useContext, useMemo } from "react";
 
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import type {
+  AgentApplication,
   LastBlock,
   Proposal,
   SS58Address,
@@ -133,7 +134,7 @@ export function GovernanceProvider({
     lastBlock.data,
     proposals.data,
   );
-  const proposalsWithMeta = proposals.data?.map((proposal) => {
+  const proposalsWithMeta = proposals.data?.map((proposal: Proposal) => {
     const id = proposal.id;
     const metadataQuery = customProposalMetadataQueryMap.get(id);
     const data = metadataQuery?.data;
@@ -157,16 +158,18 @@ export function GovernanceProvider({
     lastBlock.data,
     agentApplications.data,
   );
-  const agentApplicationsWithMeta = agentApplications.data?.map((app) => {
-    const id = app.id;
-    const metadataQuery = appMetadataQueryMap.get(id);
-    const data = metadataQuery?.data;
-    if (data == null) {
-      return app;
-    }
-    const [, customData] = data;
-    return { ...app, customData };
-  });
+  const agentApplicationsWithMeta = agentApplications.data?.map(
+    (agent: AgentApplication) => {
+      const id = agent.id;
+      const metadataQuery = appMetadataQueryMap.get(id);
+      const data = metadataQuery?.data;
+      if (data == null) {
+        return agent;
+      }
+      const [, customData] = data;
+      return { ...agent, customData };
+    },
+  );
 
   // == Treasury ==
   const daoTreasuryAddress = useDaoTreasuryAddress(lastBlock.data?.apiAtBlock);
