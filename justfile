@@ -4,7 +4,7 @@ default: check
 
 dump-metadata name:
 	mkdir -p ./data/metadata
-	scripts/get_metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
+	scripts/get-metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
 
 gen-types name:
 	(cd packages/subspace && just gen-types {{ name }})
