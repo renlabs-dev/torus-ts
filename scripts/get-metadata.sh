@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
 
-# node_url="http://localhost:9933"
-# node_url="https://api.communeai.net"
-
 show_usage() {
   echo "Usage: $0 <mainnet|testnet|local|URL>" 1>&2
 }
 
 case "$1" in
 mainnet)
-  node_url="https://api.communeai.net"
+  node_url="https://api.torus.network"
   ;;
 testnet)
-  node_url="https://testnet-commune-api-node-1.communeai.net"
+  node_url="https://api-0.nodes.testnet.torus.network"
   ;;
 local)
   node_url="http://localhost:9951"
