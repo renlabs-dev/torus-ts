@@ -27,21 +27,22 @@ export const SidebarInfo = () => {
   return (
     <Card className="hidden flex-col gap-6 border-muted bg-background px-7 py-5 md:flex">
       <div>
-        {daoTreasuryBalance.data !== undefined && (
+        {daoTreasuryBalance.data === undefined ? (
+          <Skeleton className="flex w-1/3 py-3" />
+        ) : (
           <p className="flex items-end gap-1 text-base">
             {formatToken(daoTreasuryBalance.data)}
             <span className="mb-0.5 text-xs">TOR</span>
           </p>
         )}
-        {!daoTreasuryBalance.data && <Skeleton className="flex w-1/2 py-3" />}
-
         <span className="text-sm text-muted-foreground">
           DAO treasury funds
         </span>
       </div>
       <div>
-        {!daoTreasuryAddress.data && <Skeleton className="flex w-1/2 py-3" />}
-        {daoTreasuryAddress.data && (
+        {daoTreasuryAddress.data === undefined ? (
+          <Skeleton className="flex w-3/4 py-3" />
+        ) : (
           <span className="flex gap-3">
             {smallAddress(daoTreasuryAddress.data)}
             <button onClick={() => handleCopyClick(daoTreasuryAddress.data)}>
@@ -57,8 +58,9 @@ export const SidebarInfo = () => {
         </span>
       </div>
       <div className="flex flex-col">
-        {!rewardAllocation.data && <Skeleton className="flex w-1/2 py-3" />}
-        {rewardAllocation.data !== undefined && (
+        {rewardAllocation.data === undefined ? (
+          <Skeleton className="flex w-1/3 py-3" />
+        ) : (
           <p className="flex items-end gap-1 text-base">
             {formatToken(rewardAllocation.data)}
             <span className="mb-0.5 text-xs">TOR</span>

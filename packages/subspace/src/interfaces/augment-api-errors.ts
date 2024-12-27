@@ -3,13 +3,14 @@
 
 // import type lookup before we augment - in some environments
 // this is required to allow for ambient/previous definitions
-import '@polkadot/api-base/types/errors';
+import "@polkadot/api-base/types/errors";
 
-import type { ApiTypes, AugmentedError } from '@polkadot/api-base/types';
+import type { ApiTypes, AugmentedError } from "@polkadot/api-base/types";
 
-export type __AugmentedError<ApiType extends ApiTypes> = AugmentedError<ApiType>;
+export type __AugmentedError<ApiType extends ApiTypes> =
+  AugmentedError<ApiType>;
 
-declare module '@polkadot/api-base/types/errors' {
+declare module "@polkadot/api-base/types/errors" {
   interface AugmentedErrors<ApiType extends ApiTypes> {
     balances: {
       /**
@@ -453,7 +454,7 @@ declare module '@polkadot/api-base/types/errors' {
       FailedTask: AugmentedError<ApiType>;
       /**
        * Failed to extract the runtime version from the new runtime.
-       * 
+       *
        * Either calling `Core_version` or decoding `RuntimeVersion` failed.
        **/
       FailedToExtractRuntimeVersion: AugmentedError<ApiType>;
@@ -605,7 +606,7 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * Insufficient balance to register.
        **/
-      NotEnoughBalanceToRegisterAgent: AugmentedError<ApiType>;
+      NotEnoughBalanceToregisterAgent: AugmentedError<ApiType>;
       /**
        * Insufficient balance in the cold key account to stake the requested amount.
        **/

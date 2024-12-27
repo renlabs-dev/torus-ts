@@ -20,7 +20,7 @@ import type {
   AddCustomProposal,
   AddAgentApplication,
   addDaoTreasuryTransferProposal,
-  RegisterAgent,
+  registerAgent,
   RemoveVote,
   Vote,
 } from "@torus-ts/torus-provider/types";
@@ -70,7 +70,7 @@ interface GovernanceContextType {
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
 
-  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
+  registerAgent: (registerAgent: registerAgent) => Promise<void>;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -87,7 +87,7 @@ export function GovernanceProvider({
     selectedAccount,
     isAccountConnected,
     voteProposal,
-    RegisterAgent,
+    registerAgent,
     AddAgentApplication,
     addCustomProposal,
     removeVoteProposal,
@@ -174,10 +174,7 @@ export function GovernanceProvider({
   // == Treasury ==
   const daoTreasuryAddress = useDaoTreasuryAddress(lastBlock.data?.apiAtBlock);
 
-  const daoTreasuryBalance = useFreeBalance(
-    lastBlock.data?.apiAtBlock,
-    daoTreasuryAddress.data,
-  );
+  const daoTreasuryBalance = useFreeBalance(api, daoTreasuryAddress.data);
 
   return (
     <GovernanceContext.Provider
@@ -208,7 +205,7 @@ export function GovernanceProvider({
         addCustomProposal,
         removeVoteProposal,
 
-        registerAgent: RegisterAgent,
+        registerAgent: registerAgent,
       }}
     >
       <Header

@@ -20,7 +20,7 @@ import type {
   AddCustomProposal,
   AddAgentApplication,
   addDaoTreasuryTransferProposal,
-  RegisterAgent,
+  registerAgent,
   RemoveVote,
   Stake,
   Transfer,
@@ -73,7 +73,7 @@ interface TorusContextType {
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
-  RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
+  registerAgent: (registerAgent: registerAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addDaoTreasuryTransferProposal: (
@@ -243,12 +243,9 @@ export function TorusProvider({
     callback,
     refetchHandler,
   }: Stake): Promise<void> {
-    if (!api?.tx.subspaceModule?.addStake) return;
+    if (!api?.tx.torus0?.addStake) return;
 
-    const transaction = api.tx.subspaceModule.addStake(
-      validator,
-      toNano(amount),
-    );
+    const transaction = api.tx.torus0.addStake(validator, toNano(amount));
     await sendTransaction({
       api,
       torusApi,
@@ -267,12 +264,9 @@ export function TorusProvider({
     callback,
     refetchHandler,
   }: Stake): Promise<void> {
-    if (!api?.tx.subspaceModule?.removeStake) return;
+    if (!api?.tx.torus0?.removeStake) return;
 
-    const transaction = api.tx.subspaceModule.removeStake(
-      validator,
-      toNano(amount),
-    );
+    const transaction = api.tx.torus0.removeStake(validator, toNano(amount));
     await sendTransaction({
       api,
       torusApi,
@@ -312,9 +306,9 @@ export function TorusProvider({
     callback,
     refetchHandler,
   }: TransferStake): Promise<void> {
-    if (!api?.tx.subspaceModule?.transferStake) return;
+    if (!api?.tx.torus0?.transferStake) return;
 
-    const transaction = api.tx.subspaceModule.transferStake(
+    const transaction = api.tx.torus0.transferStake(
       fromValidator,
       toValidator,
       toNano(amount),
@@ -333,17 +327,16 @@ export function TorusProvider({
 
   // == Subspace ==
 
-  async function RegisterAgent({
+  async function registerAgent({
     address,
     name,
     moduleId,
     metadata,
     callback,
-  }: RegisterAgent): Promise<void> {
-    if (!api?.tx.subspaceModule?.register) return;
+  }: registerAgent): Promise<void> {
+    if (!api?.tx.governance?.submitApplication) return;
 
-    // FIXME
-    const transaction = api.tx.subspaceModule.register(
+    const transaction = api.tx.governance.submitApplication(
       name,
       address,
       moduleId,
@@ -422,9 +415,9 @@ export function TorusProvider({
     applicationKey,
     callback,
   }: AddAgentApplication): Promise<void> {
-    if (!api?.tx.governance?.AddAgentApplication) return;
+    if (!api?.tx.governance?.SubmitApplication) return;
 
-    const transaction = api.tx.governance.AddAgentApplication(
+    const transaction = api.tx.governance.SubmitApplication(
       applicationKey,
       IpfsHash,
     );
@@ -542,7 +535,7 @@ export function TorusProvider({
         transfer,
         transferStake,
 
-        RegisterAgent,
+        registerAgent,
 
         voteProposal,
         removeVoteProposal,

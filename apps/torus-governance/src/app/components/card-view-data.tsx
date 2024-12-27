@@ -44,7 +44,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
 
   return (
     <>
-      <Card className="p-4 hover:bg-accent/70 lg:p-6">
+      <Card className="p-4 transition duration-300 hover:bg-accent/40 lg:p-6">
         <CardHeader className="flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0 xl:flex-row">
           <div className="flex w-fit flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-5">
             <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">

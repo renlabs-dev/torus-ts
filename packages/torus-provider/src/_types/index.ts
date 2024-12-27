@@ -43,7 +43,7 @@ export interface RemoveVote {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface RegisterAgent {
+export interface registerAgent {
   address: string;
   name: string;
   moduleId: string;
