@@ -23,18 +23,18 @@ deployment:
     enabled: false
 
   env:
-    COMMUNITY_VALIDATOR_MNEMONIC:
+    TORUS_ALLOCATOR_MNEMONIC:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: torus_validator_mnemonic
+          key: torus_allocator_mnemonic
     POSTGRES_URL:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: torus_validator_db_url
-    DAO_NOTIFIER_DISCORD_WEBHOOK_URL:
+          key: torus_allocator_db_url
+    CURATOR_DISCORD_WEBHOOK_URL:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: dao_notifier_discord_webhook_url
+          key: curator_discord_webhook_url
