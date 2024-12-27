@@ -167,7 +167,7 @@ const ListCardsContent = () => {
           return null;
 
         return (
-          <Link href={`/dao/${app.id}`} key={app.id} prefetch>
+          <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
             <CardViewData
               title={title}
               author={app.payerKey}

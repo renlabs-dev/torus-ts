@@ -35,7 +35,7 @@ export const SidebarInfo = () => {
         )}
         {!daoTreasuryBalance.data && <Skeleton className="flex w-1/2 py-3" />}
 
-        <span className="text-sx text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           DAO treasury funds
         </span>
       </div>

@@ -9,13 +9,15 @@ import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { useGovernance } from "~/context/governance-provider";
-import { handleCustomAgentApplications } from "../../../../utils";
+import { handleCustomAgentApplications } from "../../../../../utils";
 
 interface CustomContent {
   paramId: number;
 }
 
-export function DaoExpandedView(props: CustomContent): JSX.Element {
+export function AgentApplicationExpandedView(
+  props: CustomContent,
+): JSX.Element {
   const { paramId } = props;
 
   const { agentApplicationsWithMeta, agentApplications, lastBlock } =
@@ -30,7 +32,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
       app.customData ?? null,
     );
 
-    const daoContent = {
+    const agentApplicationContent = {
       body,
       title,
       author: app.payerKey,
@@ -38,7 +40,7 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
       // creationBlock: app.blockNumber,
       status: "Pending" as const,
     };
-    return daoContent;
+    return agentApplicationContent;
   }
 
   const content = handleAgentApplicationsContent();

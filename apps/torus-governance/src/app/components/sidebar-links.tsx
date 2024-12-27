@@ -18,7 +18,7 @@ import {
 
 const navSidebarOptions = [
   { title: "Proposals", href: "proposals" },
-  { title: "DAO Applications", href: "daos-applications" },
+  { title: "Agent Applications", href: "agent-applications" },
   //TODO: Uncomment when the other pages get done
   // { title: "Community Concepts", href: "community-concepts" },
   // { title: "DAO Members Dashboard", href: "dao-members-dashboard" },
