@@ -6,9 +6,9 @@
 import '@polkadot/api-base/types/events';
 
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Result, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256, Permill } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, H160, H256 } from '@polkadot/types/interfaces/runtime';
 import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
@@ -111,10 +111,15 @@ declare module '@polkadot/api-base/types/events' {
        **/
       [key: string]: AugmentedEvent<ApiType>;
     };
-    baseFee: {
-      BaseFeeOverflow: AugmentedEvent<ApiType, []>;
-      NewBaseFeePerGas: AugmentedEvent<ApiType, [fee: U256], { fee: U256 }>;
-      NewElasticity: AugmentedEvent<ApiType, [elasticity: Permill], { elasticity: Permill }>;
+    emission0: {
+      /**
+       * An agent gave weight control to the second agent.
+       **/
+      DelegatedWeightControl: AugmentedEvent<ApiType, [AccountId32, AccountId32]>;
+      /**
+       * An agent set weights in the network.
+       **/
+      WeightsSet: AugmentedEvent<ApiType, [AccountId32]>;
       /**
        * Generic event
        **/

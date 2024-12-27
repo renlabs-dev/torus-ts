@@ -67,13 +67,25 @@ declare module '@polkadot/api-base/types/errors' {
     };
     emission0: {
       /**
+       * Tried regaining weight control without delegating it.
+       **/
+      AgentIsNotDelegating: AugmentedError<ApiType>;
+      /**
        * Tried setting weights for an agent that does not exist.
        **/
-      AgentDoesNotExist: AugmentedError<ApiType>;
+      AgentIsNotRegistered: AugmentedError<ApiType>;
+      /**
+       * Tried delegating weight control to itself.
+       **/
+      CannotDelegateWeightControlToSelf: AugmentedError<ApiType>;
       /**
        * Tried setting weights for itself.
        **/
       CannotSetWeightsForSelf: AugmentedError<ApiType>;
+      /**
+       * Agent does not have enough stake to set weights.
+       **/
+      NotEnoughStakeToSetWeights: AugmentedError<ApiType>;
       /**
        * Agent tried setting more than 2 ^ 32 weights.
        **/
