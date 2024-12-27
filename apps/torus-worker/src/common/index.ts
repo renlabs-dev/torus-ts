@@ -112,7 +112,7 @@ export async function processVotesOnProposal(
   dao_hash_map: Record<number, DaoApplications>,
   api: ApiPromise,
 ) {
-  const mnemonic = process.env.SUBSPACE_MNEMONIC; // TODO: is this the `COMMUNITY_VALIDATOR_MNEMONIC` ?
+  const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
   const { appId: agentId, acceptVotes, refuseVotes, removeVotes } = vote_info;
   console.log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
   console.log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);

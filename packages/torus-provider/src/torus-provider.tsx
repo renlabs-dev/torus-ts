@@ -19,8 +19,7 @@ import { toNano } from "@torus-ts/utils/subspace";
 import type {
   AddCustomProposal,
   AddAgentApplication,
-  addTransferDaoTreasuryProposal,
-  Bridge,
+  addDaoTreasuryTransferProposal,
   RegisterAgent,
   RemoveVote,
   Stake,
@@ -66,7 +65,6 @@ interface TorusContextType {
   handleWalletModal: (state?: boolean) => void;
   openWalletModal: boolean;
 
-  bridge: (bridge: Bridge) => Promise<void>;
   addStake: (stake: Stake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
   transfer: (transfer: Transfer) => Promise<void>;
@@ -78,8 +76,8 @@ interface TorusContextType {
   RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
-  addTransferDaoTreasuryProposal: (
-    proposal: addTransferDaoTreasuryProposal,
+  addDaoTreasuryTransferProposal: (
+    proposal: addDaoTreasuryTransferProposal,
   ) => Promise<void>;
   updateDelegatingVotingPower: (
     updateDelegating: UpdateDelegatingVotingPower,
@@ -307,25 +305,6 @@ export function TorusProvider({
     });
   }
 
-  async function bridge({
-    amount,
-    callback,
-    refetchHandler,
-  }: Bridge): Promise<void> {
-    if (!api?.tx.subspaceModule?.bridge) return;
-    const transaction = api.tx.subspaceModule.bridge(toNano(amount));
-    await sendTransaction({
-      api,
-      torusApi,
-      selectedAccount,
-      callback,
-      transaction,
-      transactionType: "Bridge",
-      refetchHandler,
-      wsEndpoint,
-    });
-  }
-
   async function transferStake({
     fromValidator,
     toValidator,
@@ -388,9 +367,9 @@ export function TorusProvider({
     vote,
     callback,
   }: Vote): Promise<void> {
-    if (!api?.tx.governanceModule?.voteProposal) return;
+    if (!api?.tx.governance?.voteProposal) return;
 
-    const transaction = api.tx.governanceModule.voteProposal(proposalId, vote);
+    const transaction = api.tx.governance.voteProposal(proposalId, vote);
     await sendTransaction({
       api,
       torusApi,
@@ -406,9 +385,9 @@ export function TorusProvider({
     proposalId,
     callback,
   }: RemoveVote): Promise<void> {
-    if (!api?.tx.governanceModule?.removeVoteProposal) return;
+    if (!api?.tx.governance?.removeVoteProposal) return;
 
-    const transaction = api.tx.governanceModule.removeVoteProposal(proposalId);
+    const transaction = api.tx.governance.removeVoteProposal(proposalId);
     await sendTransaction({
       api,
       torusApi,
@@ -424,10 +403,9 @@ export function TorusProvider({
     IpfsHash,
     callback,
   }: AddCustomProposal): Promise<void> {
-    if (!api?.tx.governanceModule?.addGlobalCustomProposal) return;
+    if (!api?.tx.governance?.addGlobalCustomProposal) return;
 
-    const transaction =
-      api.tx.governanceModule.addGlobalCustomProposal(IpfsHash);
+    const transaction = api.tx.governance.addGlobalCustomProposal(IpfsHash);
     await sendTransaction({
       api,
       torusApi,
@@ -444,9 +422,9 @@ export function TorusProvider({
     applicationKey,
     callback,
   }: AddAgentApplication): Promise<void> {
-    if (!api?.tx.governanceModule?.AddAgentApplication) return;
+    if (!api?.tx.governance?.AddAgentApplication) return;
 
-    const transaction = api.tx.governanceModule.AddAgentApplication(
+    const transaction = api.tx.governance.AddAgentApplication(
       applicationKey,
       IpfsHash,
     );
@@ -461,15 +439,15 @@ export function TorusProvider({
     });
   }
 
-  async function addTransferDaoTreasuryProposal({
+  async function addDaoTreasuryTransferProposal({
     IpfsHash,
     value,
     dest,
     callback,
-  }: addTransferDaoTreasuryProposal): Promise<void> {
-    if (!api?.tx.governanceModule?.addTransferDaoTreasuryProposal) return;
+  }: addDaoTreasuryTransferProposal): Promise<void> {
+    if (!api?.tx.governance?.addDaoTreasuryTransferProposal) return;
 
-    const transaction = api.tx.governanceModule.addTransferDaoTreasuryProposal(
+    const transaction = api.tx.governance.addDaoTreasuryTransferProposal(
       IpfsHash,
       toNano(value),
       dest,
@@ -485,6 +463,7 @@ export function TorusProvider({
     });
   }
 
+  // TODO: make `estimateFee` generic
   async function estimateFee(recipientAddress: string, amount: string) {
     try {
       // Check if the API is ready and has the transfer function
@@ -500,7 +479,7 @@ export function TorusProvider({
       }
 
       // Create the transaction
-      const transaction = api.tx.balances.transferKeepAlive(
+      const transaction = api.tx.balances.transferAllowDeath(
         recipientAddress,
         amount,
       );
@@ -520,14 +499,14 @@ export function TorusProvider({
     callback,
   }: UpdateDelegatingVotingPower): Promise<void> {
     if (
-      !api?.tx.governanceModule?.enableVotePowerDelegation ||
-      !api.tx.governanceModule.disableVotePowerDelegation
+      !api?.tx.governance?.enableVoteDelegation ||
+      !api.tx.governance.disableVoteDelegation
     )
       return;
 
     const transaction = isDelegating
-      ? api.tx.governanceModule.enableVotePowerDelegation()
-      : api.tx.governanceModule.disableVotePowerDelegation();
+      ? api.tx.governance.enableVoteDelegation()
+      : api.tx.governance.disableVoteDelegation();
 
     await sendTransaction({
       api,
@@ -558,8 +537,6 @@ export function TorusProvider({
         handleWalletModal,
         openWalletModal,
 
-        bridge,
-
         addStake,
         removeStake,
         transfer,
@@ -571,7 +548,7 @@ export function TorusProvider({
         removeVoteProposal,
         addCustomProposal,
         AddAgentApplication,
-        addTransferDaoTreasuryProposal,
+        addDaoTreasuryTransferProposal,
 
         updateDelegatingVotingPower,
 

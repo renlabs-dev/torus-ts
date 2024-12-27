@@ -2,7 +2,7 @@
 
 import "@polkadot/api/augment";
 
-import { queryFreeBalance, queryKeyStakingTo } from "./modules/subspace";
+import { queryFreeBalance } from "./modules/subspace";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { checkSS58 } from "./address";
 
@@ -25,13 +25,15 @@ console.log(
   ),
 );
 
-console.log("Staking To:");
-console.log(
-  await queryKeyStakingTo(
-    api,
-    checkSS58("5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL"),
-  ),
-);
+// console.log("Staking To:");
+// console.log(
+//   await queryKeyStakingTo(
+//     api,
+//     checkSS58("5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL"),
+//   ),
+// );
+
+console.log(api.tx.torus0);
 
 debugger;
 

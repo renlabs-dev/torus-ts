@@ -1,8 +1,11 @@
 # Creating Items in the Database with Drizzle Schema, Requesting through tRPC, and Frontend Integration
 
-This documentation covers how to create items in the database using the Drizzle schema, request them through tRPC, and create GET and POST methods for frontend interaction.
+This documentation covers how to create items in the database using the Drizzle
+schema, request them through tRPC, and create GET and POST methods for frontend
+interaction.
 
-If you get any TypeScript errors, make sure to delete the `node_modules` and cash related folders and run `pnpm i` again.
+If you get any TypeScript errors, make sure to delete the `node_modules` and
+cache related folders and run `pnpm i` again.
 
 ## Schema Definition
 

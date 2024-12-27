@@ -34,7 +34,7 @@ type AggregatorKind = "module" | "subnet";
 export async function weightAggregatorWorker(api: ApiPromise) {
   await cryptoWaitReady();
   const keyring = new Keyring({ type: "sr25519" });
-  const keypair = keyring.addFromUri(env.COMMUNITY_VALIDATOR_MNEMONIC);
+  const keypair = keyring.addFromUri(env.TORUS_ALLOCATOR_MNEMONIC);
 
   let knownLastBlock: LastBlock | null = null;
   let loopCounter = 0;

@@ -33,7 +33,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
   const {
     isAccountConnected,
     accountFreeBalance,
-    addTransferDaoTreasuryProposal,
+    addDaoTreasuryTransferProposal,
   } = useGovernance();
 
   const [dest, setDest] = useState("");
@@ -82,7 +82,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
       const daoApplicationCost = 1000;
 
       if (Number(accountFreeBalance.data) > daoApplicationCost) {
-        void addTransferDaoTreasuryProposal({
+        void addDaoTreasuryTransferProposal({
           dest,
           value,
           IpfsHash: `ipfs://${ipfs.IpfsHash}`,

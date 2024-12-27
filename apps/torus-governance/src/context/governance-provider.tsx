@@ -19,7 +19,7 @@ import type {
 import type {
   AddCustomProposal,
   AddAgentApplication,
-  addTransferDaoTreasuryProposal,
+  addDaoTreasuryTransferProposal,
   RegisterAgent,
   RemoveVote,
   Vote,
@@ -58,8 +58,8 @@ interface GovernanceContextType {
   daoTreasuryAddress: UseQueryResult<SS58Address, Error>;
   daoTreasuryBalance: UseQueryResult<bigint, Error>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
-  addTransferDaoTreasuryProposal: (
-    proposal: addTransferDaoTreasuryProposal,
+  addDaoTreasuryTransferProposal: (
+    proposal: addDaoTreasuryTransferProposal,
   ) => Promise<void>;
 
   proposals: UseQueryResult<Proposal[], Error>;
@@ -91,7 +91,7 @@ export function GovernanceProvider({
     AddAgentApplication,
     addCustomProposal,
     removeVoteProposal,
-    addTransferDaoTreasuryProposal,
+    addDaoTreasuryTransferProposal,
 
     accounts,
     handleLogout,
@@ -198,7 +198,7 @@ export function GovernanceProvider({
         daoTreasuryAddress,
         daoTreasuryBalance,
         AddAgentApplication,
-        addTransferDaoTreasuryProposal,
+        addDaoTreasuryTransferProposal,
 
         proposals,
         proposalsWithMeta,

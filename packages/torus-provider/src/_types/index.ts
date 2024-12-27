@@ -22,12 +22,6 @@ export interface Transfer {
   refetchHandler: () => Promise<void>;
 }
 
-export interface Bridge {
-  amount: string;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
-}
-
 export interface TransferStake {
   fromValidator: string;
   toValidator: string;
@@ -62,7 +56,7 @@ export interface AddCustomProposal {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface addTransferDaoTreasuryProposal {
+export interface addDaoTreasuryTransferProposal {
   IpfsHash: string;
   value: string;
   dest: string;
