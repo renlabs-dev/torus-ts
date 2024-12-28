@@ -10,7 +10,7 @@ import type {
   SubspaceStorageName,
 } from "@torus-ts/subspace";
 import { and, eq, sql } from "@torus-ts/db";
-import { db } from "@torus-ts/db/client";
+import { createDb } from "@torus-ts/db/client";
 import { agentSchema, userAgentWeightSchema } from "@torus-ts/db/schema";
 import {
   queryChain,
@@ -30,6 +30,8 @@ import type { AgentWeight } from "../db";
 import { insertAgentWeight } from "../db";
 
 type AggregatorKind = "module" | "subnet";
+
+const db = createDb();
 
 export async function weightAggregatorWorker(api: ApiPromise) {
   await cryptoWaitReady();
@@ -261,6 +263,7 @@ async function getAgentIds(): Promise<Map<string, number>> {
  * @returns user key -> module id -> weight (0–100)
  */
 async function getUserWeightMap(): Promise<Map<string, Map<string, bigint>>> {
+  // TODO: move to ../../db
   const result = await db
     .select({
       userKey: userAgentWeightSchema.userKey,

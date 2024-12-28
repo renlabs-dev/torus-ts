@@ -1,7 +1,7 @@
 import type { SQL, Table } from "@torus-ts/db";
 import type { GovernanceitemType } from "@torus-ts/subspace";
 import { getTableColumns, sql } from "@torus-ts/db";
-import { db } from "@torus-ts/db/client";
+import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
   agentSchema,
@@ -10,6 +10,8 @@ import {
   computedAgentWeightSchema,
   governanceNotificationSchema,
 } from "@torus-ts/db/schema";
+
+const db = createDb();
 
 export type NewVote = typeof cadreVoteSchema.$inferInsert;
 export type Agent = typeof agentSchema.$inferInsert;

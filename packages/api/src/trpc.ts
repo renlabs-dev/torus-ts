@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { assert } from "tsafe";
 import { ZodError } from "zod";
 
-import { db } from "@torus-ts/db/client";
+import { createDb } from "@torus-ts/db/client";
 
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
@@ -34,6 +34,8 @@ export const createTRPCContext = (opts: {
   jwtSecret: string;
   authOrigin: string;
 }) => {
+  const db = createDb();
+
   const { jwtSecret } = opts;
 
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
