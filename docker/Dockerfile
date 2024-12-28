@@ -27,6 +27,9 @@ RUN turbo prune ${APP_NAME} --docker
 FROM base AS builder
 ARG APP_NAME
 
+ENV NEXT_PUBLIC_TORUS_RPC_URL="wss://api-0.nodes.testnet.torus.network"
+ENV NEXT_PUBLIC_TORUS_CACHE_URL="https://cache.testnet.torus.network"
+
 WORKDIR /app
 
 COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
@@ -41,10 +44,9 @@ RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
 
 # ======== runner layer ======== #
 FROM base AS runner
+ARG APP_NAME
 
 LABEL org.opencontainers.image.source https://github.com/renlabs-dev/torus-ts
-
-ARG APP_NAME
 
 ENV PORT=8000
 
