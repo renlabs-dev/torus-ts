@@ -18,7 +18,7 @@ import { CardViewData } from "./card-view-data";
 
 const ListCardsLoadingSkeleton = () => {
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4">
       <div className="animate-fade-up animate-delay-200">
         <CardSkeleton />
       </div>
@@ -207,7 +207,7 @@ const ListCardsContent = () => {
       className={`max-h-[calc(100vh-280px)] overflow-y-auto md:max-h-[calc(100vh-210px)]`}
     >
       <div
-        className={`flex flex-col-reverse gap-6 ${isOverflowing ? "pr-1 md:pr-2" : ""}`}
+        className={`flex flex-col-reverse gap-4 ${isOverflowing ? "pr-1 md:pr-2" : ""}`}
       >
         {content ?? <NoContentFound />}
       </div>

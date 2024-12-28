@@ -31,9 +31,9 @@ export function RegisterAgent(): JSX.Element {
   const { isAccountConnected, registerAgent, accountFreeBalance } =
     useGovernance();
 
-  const [address, setAddress] = useState("");
+  const [agentKey, setAgentKey] = useState("");
   const [name, setName] = useState("");
-  const [moduleId, setModuleId] = useState("");
+  const [url, setUrl] = useState("");
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -79,9 +79,9 @@ export function RegisterAgent(): JSX.Element {
 
       if (Number(accountFreeBalance.data) > moduleCost) {
         void registerAgent({
-          address,
+          agentKey,
           name,
-          moduleId,
+          url,
           metadata: `ipfs://${ipfs.IpfsHash}`,
           callback: handleCallback,
         });
@@ -146,34 +146,34 @@ export function RegisterAgent(): JSX.Element {
         </TabsList>
         <TabsContent value="edit" className="flex flex-col gap-3">
           <Input
+            onChange={(e) => setAgentKey(e.target.value)}
+            placeholder="Address (eg. 12sPm....n88b)"
+            type="text"
+            value={agentKey}
+          />
+          <Input
             onChange={(e) => setName(e.target.value)}
-            placeholder="Module Name (eg. ren-labs)"
+            placeholder="Agent Name (eg. agent-one)"
             type="text"
             value={name}
           />
           <Input
-            onChange={(e) => setModuleId(e.target.value)}
-            placeholder="Module ID (SS58 Address)"
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="URL (eg. https://agent-one.com)"
             type="text"
-            value={moduleId}
-          />
-          <Input
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="Address (eg. 0.0.0.0:8000)"
-            type="text"
-            value={address}
+            value={url}
           />
           <Separator />
           <Input
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Your Module title here..."
+            placeholder="Your Agent title here..."
             type="text"
             required
             value={title}
           />
           <Textarea
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Your module body here... (Markdown supported / HTML tags are not supported)"
+            placeholder="Your Agent body here... (Markdown supported / HTML tags are not supported)"
             rows={5}
             required
             value={body}

@@ -44,9 +44,9 @@ export interface RemoveVote {
 }
 
 export interface registerAgent {
-  address: string;
+  agentKey: string;
   name: string;
-  moduleId: string;
+  url: string;
   metadata: string;
   callback?: (status: TransactionResult) => void;
 }
@@ -57,9 +57,10 @@ export interface AddCustomProposal {
 }
 
 export interface addDaoTreasuryTransferProposal {
-  IpfsHash: string;
   value: string;
-  dest: string;
+  destinationKey: string;
+  data: string; // IpfsHash
+
   callback?: (status: TransactionResult) => void;
 }
 

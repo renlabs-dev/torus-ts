@@ -328,18 +328,18 @@ export function TorusProvider({
   // == Subspace ==
 
   async function registerAgent({
-    address,
+    agentKey,
     name,
-    moduleId,
+    url,
     metadata,
     callback,
   }: registerAgent): Promise<void> {
     if (!api?.tx.torus0?.registerAgent) return;
 
     const transaction = api.tx.torus0.registerAgent(
+      agentKey,
       name,
-      address,
-      moduleId,
+      url,
       metadata,
     );
     await sendTransaction({
@@ -433,17 +433,17 @@ export function TorusProvider({
   }
 
   async function addDaoTreasuryTransferProposal({
-    IpfsHash,
     value,
-    dest,
+    destinationKey,
+    data,
     callback,
   }: addDaoTreasuryTransferProposal): Promise<void> {
     if (!api?.tx.governance?.addDaoTreasuryTransferProposal) return;
 
     const transaction = api.tx.governance.addDaoTreasuryTransferProposal(
-      IpfsHash,
       toNano(value),
-      dest,
+      destinationKey,
+      data,
     );
     await sendTransaction({
       api,
