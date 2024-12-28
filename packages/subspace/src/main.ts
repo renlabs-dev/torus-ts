@@ -33,7 +33,7 @@ console.log(
 //   ),
 // );
 
-console.log(api.tx.governance.addDaoTreasuryTransferProposal);
+console.log(api.tx.balances.transferKeepAlive);
 
 debugger;
 

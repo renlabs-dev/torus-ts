@@ -1,6 +1,6 @@
 import { BigNumber } from "bignumber.js";
 
-export const DECIMALS = 9;
+export const DECIMALS = 18;
 
 export const DECIMALS_BIG = BigInt(DECIMALS);
 export const DECIMALS_MULTIPLIER = 10n ** DECIMALS_BIG;
@@ -66,7 +66,7 @@ export function toNano(standardValue: number | string): bigint {
   const [integerPart, fractionalPart = ""] = standardValue
     .toString()
     .split(".");
-  const paddedFractionalPart = fractionalPart.padEnd(9, "0");
+  const paddedFractionalPart = fractionalPart.padEnd(DECIMALS, "0");
   const nanoValue = `${integerPart}${paddedFractionalPart}`;
   return BigInt(nanoValue);
 }
@@ -95,7 +95,7 @@ export function fromRen(value: bigint): BigNumber {
 }
 
 /**
- * Converts standard unit (TORUS) reprsentation value to Rens.
+ * Converts standard unit (TORUS) representation value to Rens.
  */
 export function toRen(amount: BigNumber): bigint {
   return BigInt(amount.times(DECIMALS_BN_MULTIPLIER).toString());
