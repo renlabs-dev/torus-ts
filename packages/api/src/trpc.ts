@@ -16,6 +16,13 @@ import { createDb } from "@torus-ts/db/client";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
 
+let globalDb: ReturnType<typeof createDb> | null = null;
+
+function cacheCreateDb() {
+  globalDb = globalDb ?? createDb();
+  return globalDb;
+}
+
 /**
  * 1. CONTEXT
  *
@@ -34,7 +41,7 @@ export const createTRPCContext = (opts: {
   jwtSecret: string;
   authOrigin: string;
 }) => {
-  const db = createDb();
+  const db = cacheCreateDb();
 
   const { jwtSecret } = opts;
 
