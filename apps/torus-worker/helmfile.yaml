@@ -5,7 +5,7 @@ environments:
       - values.yaml
       - releasePrefix: dev-torus-worker
       - environmentName: dev
-      - wssApiEndpoint: wss://testnet.api.communeai.net # TODO: change this to the Torus API when launched
+      - wssApiEndpoint: wss://api-0.nodes.testnet.torus.network
       - namespace: torus-dev-web-apps
   prod:
     values:
@@ -13,7 +13,7 @@ environments:
       - values.yaml
       - releasePrefix: torus-worker
       - environmentName: prod
-      - wssApiEndpoint: wss://api.communeai.net # TODO: change this to the Torus API when launched
+      - wssApiEndpoint: wss://api.torus.network
       - namespace: torus-prod-web-apps
 ---
 helmDefaults:
