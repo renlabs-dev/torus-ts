@@ -30,9 +30,9 @@ const voteOptions: AgentApplicationVoteType["vote"][] = [
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
-    <div className="hidden animate-fade-down animate-delay-500 md:block">
+    <div className="hidden animate-fade-down animate-delay-200 md:block">
       <div className="pb-6 pl-0">
-        <h3>Cast your vote</h3>
+        <h3 className="text-lg">Cast your vote</h3>
       </div>
       {props.children}
     </div>

@@ -334,9 +334,9 @@ export function TorusProvider({
     metadata,
     callback,
   }: registerAgent): Promise<void> {
-    if (!api?.tx.governance?.submitApplication) return;
+    if (!api?.tx.torus0?.registerAgent) return;
 
-    const transaction = api.tx.governance.submitApplication(
+    const transaction = api.tx.torus0.registerAgent(
       name,
       address,
       moduleId,
@@ -348,7 +348,7 @@ export function TorusProvider({
       selectedAccount,
       callback,
       transaction,
-      transactionType: "Register Module",
+      transactionType: "Register Agent",
       wsEndpoint,
     });
   }
@@ -415,9 +415,9 @@ export function TorusProvider({
     applicationKey,
     callback,
   }: AddAgentApplication): Promise<void> {
-    if (!api?.tx.governance?.SubmitApplication) return;
+    if (!api?.tx.governance?.submitApplication) return;
 
-    const transaction = api.tx.governance.SubmitApplication(
+    const transaction = api.tx.governance.submitApplication(
       applicationKey,
       IpfsHash,
     );

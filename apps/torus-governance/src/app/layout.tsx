@@ -33,16 +33,18 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <Layout font={firaMono} appName={APP_NAME}>
-      <TorusProvider
-        wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
-        torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
-      >
-        <TRPCReactProvider>
-          <ToastProvider>
-            <GovernanceProvider>{children}</GovernanceProvider>
-          </ToastProvider>
-        </TRPCReactProvider>
-      </TorusProvider>
+      <div className="mx-auto flex h-full w-full max-w-screen-xl justify-center">
+        <TorusProvider
+          wsEndpoint={env.NEXT_PUBLIC_WS_PROVIDER_URL}
+          torusCacheUrl={env.NEXT_PUBLIC_CACHE_PROVIDER_URL}
+        >
+          <TRPCReactProvider>
+            <ToastProvider>
+              <GovernanceProvider>{children}</GovernanceProvider>
+            </ToastProvider>
+          </TRPCReactProvider>
+        </TorusProvider>
+      </div>
     </Layout>
   );
 }

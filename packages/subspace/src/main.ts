@@ -33,7 +33,7 @@ console.log(
 //   ),
 // );
 
-console.log(api.tx.governance);
+console.log(api.tx.torus0);
 
 debugger;
 

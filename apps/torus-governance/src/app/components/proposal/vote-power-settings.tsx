@@ -50,7 +50,7 @@ export function VotePowerSettings(props: {
 
   return (
     <Popover>
-      <PopoverTrigger className="relative flex items-center gap-2 text-muted-foreground hover:text-white hover:underline">
+      <PopoverTrigger className="relative mt-2 flex items-center gap-2 text-muted-foreground hover:text-white hover:underline">
         <Info size={16} />
         <h3>Vote power settings</h3>
         {!isPowerUser && (
@@ -60,7 +60,7 @@ export function VotePowerSettings(props: {
           </>
         )}
       </PopoverTrigger>
-      <PopoverContent className="mr-6 flex max-w-72 flex-col gap-4 border-muted text-muted-foreground">
+      <PopoverContent className="mb-4 flex max-w-72 flex-col gap-4 border-muted text-muted-foreground">
         <span className="whitespace-break-spaces text-sm text-muted-foreground">
           {tooltipText}
         </span>

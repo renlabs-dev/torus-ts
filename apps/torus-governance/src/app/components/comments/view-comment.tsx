@@ -58,7 +58,7 @@ const commentSorters: { icon: JSX.Element; sortBy: SorterTypes }[] = [
 
 const LoadingComments = () => {
   return (
-    <Card className="relative flex w-full flex-col gap-2 p-2 pb-4">
+    <Card className="relative flex w-full animate-fade-down flex-col gap-2 p-2 pb-4 animate-delay-700">
       <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
         <span className="flex items-center gap-2">
           <Skeleton className="h-5 w-24" />
@@ -92,7 +92,7 @@ interface CommentsHeaderProps {
 const CommentsHeader = (props: CommentsHeaderProps) => {
   const { sortBy, isLoading, comments, handleCommentSorter, itemType } = props;
   return (
-    <div className="mb-4 flex w-full flex-row items-center justify-between gap-1 pb-2">
+    <div className="flex w-full flex-row items-center justify-between gap-1 pb-2">
       <h2 className="w-full text-start text-lg font-semibold">
         {itemType === "PROPOSAL" ? "Proposal Discussion" : "DAO Cadre Comments"}
       </h2>
@@ -280,7 +280,7 @@ export function ViewComment({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200">
+      <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-700">
         <CommentsHeader
           sortBy={sortBy}
           isLoading={isLoading}

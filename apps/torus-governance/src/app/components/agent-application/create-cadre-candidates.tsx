@@ -113,16 +113,16 @@ export function CreateCadreCandidates() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          className={`flex w-full items-center justify-between text-nowrap border border-green-500 bg-green-600/5 py-2.5 pl-4 pr-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 active:bg-green-500/50`}
+          variant="secondary"
+          className="animate-fade-down animate-delay-[1400ms]"
         >
-          Apply to be a S2 DAO Member
+          Apply to be a DAO Cadre Member
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="mr-4 mt-2 hidden w-full max-w-96 md:block xl:mr-0">
+      <PopoverContent className="mt-2 hidden w-[25em] md:block xl:mr-0">
         <div className="mt-1 flex w-full border-b border-white/20 pb-3">
           <p className="text-sm">
-            The S2 DAO Cadre votes on Agent Applications. Interested in joining?
+            The DAO Cadre votes on Agent Applications. Interested in joining?
             Apply below.
           </p>
         </div>
