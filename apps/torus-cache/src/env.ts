@@ -8,9 +8,10 @@ export const env = createEnv({
       .default("development"),
   },
   clientPrefix: "NEXT_PUBLIC_",
-  client: {
-    NEXT_PUBLIC_PORT: z.string().default("3000"),
-    NEXT_PUBLIC_WS_PROVIDER_URL: z.string().url(),
+  server: {
+    TORUS_RPC_URL: z.string().url(),
+    PORT: z.string().default("3000"),
   },
+  client: {},
   runtimeEnv: process.env,
 });

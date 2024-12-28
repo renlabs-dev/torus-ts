@@ -32,7 +32,7 @@ const handler = async (req: Request) => {
         session: null,
         headers: req.headers,
         jwtSecret: env.JWT_SECRET,
-        authOrigin: env.AUTH_ORIGIN,
+        authOrigin: env.NEXT_PUBLIC_AUTH_ORIGIN,
       }),
     onError({ error, path }) {
       console.error(`>>> tRPC Error on '${path}'`, error);

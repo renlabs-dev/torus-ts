@@ -77,7 +77,7 @@ export function WalletProvider({
   } = useTorus();
 
   // == Subspace ==
-  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_CACHE_PROVIDER_URL);
+  const stakeOut = useCachedStakeOut(env.TORUS_CACHE_URL);
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(

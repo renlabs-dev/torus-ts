@@ -7,8 +7,8 @@ import { env } from "./env";
 import routes from "./routes";
 import { log } from "./utils";
 
-const port = env.NEXT_PUBLIC_PORT;
-const wsEndpoint = env.NEXT_PUBLIC_WS_PROVIDER_URL;
+const port = env.PORT;
+const wsEndpoint = env.TORUS_RPC_URL;
 
 async function setup(): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint);

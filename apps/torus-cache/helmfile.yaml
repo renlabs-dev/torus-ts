@@ -7,7 +7,7 @@ environments:
       - environmentName: dev
       - wssApiEndpoint: wss://api-0.nodes.testnet.torus.network
       - releaseName: dev-torus-cache
-      - ingressHost: dev.cache.torus.network
+      - ingressHost: cache.testnet.torus.network
   prod:
     values:
       - ../../helm/values.yaml

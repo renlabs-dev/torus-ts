@@ -25,7 +25,7 @@ export function AllocatorHeader() {
     selectedAccount?.address as SS58Address,
   );
 
-  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_CACHE_PROVIDER_URL);
+  const stakeOut = useCachedStakeOut(env.TORUS_CACHE_URL);
 
   return (
     <Header
