@@ -14,7 +14,7 @@ import { weightAggregatorWorker } from "./workers/weight-aggregator";
 import { env } from "./env";
 
 async function setup(): Promise<ApiPromise> {
-  const wsEndpoint = env.TORUS_RPC_URL;
+  const wsEndpoint = env.NEXT_PUBLIC_TORUS_RPC_URL;
 
   log("Connecting to ", wsEndpoint);
 

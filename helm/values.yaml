@@ -5,12 +5,12 @@ deployment:
     - name: renlabs-ghcr-secret
 
   env:
-    TORUS_RPC_URL:
+    NEXT_PUBLIC_TORUS_RPC_URL:
       valueFrom:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: next_public_ws_url
-    TORUS_CACHE_URL:
+    NEXT_PUBLIC_TORUS_CACHE_URL:
       valueFrom:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'

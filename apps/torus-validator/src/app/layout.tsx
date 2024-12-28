@@ -35,8 +35,8 @@ export default function RootLayout({
   return (
     <Layout font={firaMono} appName={APP_NAME}>
       <TorusProvider
-        wsEndpoint={env.TORUS_RPC_URL}
-        torusCacheUrl={env.TORUS_CACHE_URL}
+        wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
+        torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
       >
         <TRPCReactProvider>
           <ToastProvider>

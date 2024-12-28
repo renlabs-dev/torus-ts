@@ -36,8 +36,8 @@ export default function RootLayout({
     <Layout font={firaMono} appName={APP_NAME}>
       <ToastProvider>
         <TorusProvider
-          wsEndpoint={env.TORUS_RPC_URL}
-          torusCacheUrl={env.TORUS_CACHE_URL}
+          wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
+          torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
         >
           <ReactQueryProvider>
             <WalletProvider>{children}</WalletProvider>

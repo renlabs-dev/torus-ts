@@ -14,8 +14,6 @@ export const env = createEnv({
    * This way you can ensure the app isn't built with invalid env vars.
    */
   server: {
-    TORUS_RPC_URL: z.string().url(),
-    TORUS_CACHE_URL: z.string().url(),
     JWT_SECRET: z.string().min(8),
     POSTGRES_URL: z.string().url(),
   },
@@ -26,6 +24,8 @@ export const env = createEnv({
   client: {
     /** Origin URI used in the statement signed by the user to authenticate */
     NEXT_PUBLIC_AUTH_ORIGIN: z.string().default(AUTH_ORIGIN_DEFAULT), // Origin URI used in the statement signed by the user to authenticate
+    NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
+    NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
   },
   /**
    * Destructure all variables from `process.env` to make sure they aren't tree-shaken away.
@@ -33,6 +33,8 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_AUTH_ORIGIN: process.env.NEXT_PUBLIC_AUTH_ORIGIN,
+    NEXT_PUBLIC_TORUS_RPC_URL: process.env.NEXT_PUBLIC_TORUS_RPC_URL,
+    NEXT_PUBLIC_TORUS_CACHE_URL: process.env.NEXT_PUBLIC_TORUS_CACHE_URL,
   },
   skipValidation:
     !!process.env.CI || process.env.npm_lifecycle_event === "lint",

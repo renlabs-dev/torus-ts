@@ -48,6 +48,7 @@ ARG APP_NAME
 
 LABEL org.opencontainers.image.source https://github.com/renlabs-dev/torus-ts
 
+ENV TORUS_RPC_URL="wss://api-0.nodes.testnet.torus.network"
 ENV PORT=8000
 
 WORKDIR /app

@@ -33,7 +33,7 @@ services:
   #     args:
   #       - APP_NAME=torus-cache
   #   environment:
-  #     - TORUS_RPC_URL=${TORUS_RPC_URL}
+  #     - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
   #     - PORT=8000
   #   ports:
   #     - 3011:8000
@@ -45,7 +45,7 @@ services:
   #     args:
   #       - APP_NAME=torus-worker
   #   environment:
-  #     - TORUS_RPC_URL=${TORUS_RPC_URL}
+  #     - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
   #     - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
   #     - PORT=8000
   #   ports:
@@ -58,8 +58,8 @@ services:
       args:
         APP_NAME: torus-governance
     environment:
-      - TORUS_RPC_URL=ws://subspace:9951
-      - TORUS_CACHE_URL=http://FIXME
+      - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
+      - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
       - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
@@ -82,8 +82,8 @@ services:
       args:
         APP_NAME: torus-validator
     environment:
-      - TORUS_RPC_URL=ws://subspace:9951
-      - TORUS_CACHE_URL=http://FIXME
+      - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
+      - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
       - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
@@ -97,8 +97,8 @@ services:
       args:
         APP_NAME: torus-validator
     environment:
-      - TORUS_RPC_URL=ws://subspace:9951
-      - TORUS_CACHE_URL=http://FIXME
+      - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
+      - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
       - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
     ports:

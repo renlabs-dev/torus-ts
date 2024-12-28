@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   TORUS_ALLOCATOR_MNEMONIC: z.string().min(1),
-  TORUS_RPC_URL: z.string().url(),
+  NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
 });
 
 const result = envSchema.safeParse(process.env);
