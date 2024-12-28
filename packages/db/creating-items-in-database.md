@@ -73,7 +73,7 @@ export const appRouter = createTRPCRouter({
 
 ### Main Page Component
 
-We create the main page component in `apps/commune-validator/src/app/page.tsx`.
+We create the main page component in `apps/torus-validator/src/app/page.tsx`.
 
 ```typescript
 export default function Page(): JSX.Element {
@@ -103,7 +103,7 @@ async function CrudShowcase() {
 
 ### Create Weight Component
 
-Lastly, we create a form component for adding new items in `apps/commune-validator/src/app/components/create-module-test.tsx`.
+Lastly, we create a form component for adding new items in `apps/torus-validator/src/app/components/create-module-test.tsx`.
 
 ```typescript
 export function CreateWeight() {

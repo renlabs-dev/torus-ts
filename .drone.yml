@@ -60,9 +60,8 @@ trigger:
     exclude:
       - apps/torus-governance/**
       - apps/torus-validator/**
-      - apps/torusx-page/**
+      - apps/torus-page/**
       - apps/torus-worker/**
-      - apps/sample-app/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
 ---
@@ -129,8 +128,7 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-governance/**
       - apps/torus-page/**
-      - apps/torusx-page/**
-      - apps/sample-app/**
+      - apps/torus-page/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
 ---
@@ -197,8 +195,7 @@ trigger:
       - apps/torus-validator/**
       - apps/torus-governance/**
       - apps/torus-page/**
-      - apps/torusx-page/**
-      - apps/sample-app/**
+      - apps/torus-page/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
 ---
@@ -264,9 +261,8 @@ trigger:
     exclude:
       - apps/torus-page/**
       - apps/torus-validator/**
-      - apps/torusx-page/**
+      - apps/torus-page/**
       - apps/torus-worker/**
-      - apps/sample-app/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
 ---
@@ -332,9 +328,8 @@ trigger:
     exclude:
       - apps/torus-page/**
       - apps/torus-validator/**
-      - apps/torusx-page/**
+      - apps/torus-page/**
       - apps/torus-worker/**
-      - apps/sample-app/**
       - apps/torus-governance/**
       - apps/torus-cache/**
 ---
@@ -400,8 +395,7 @@ trigger:
     exclude:
       - apps/torus-page/**
       - apps/torus-validator/**
-      - apps/torusx-page/**
+      - apps/torus-page/**
       - apps/torus-worker/**
-      - apps/sample-app/**
       - apps/torus-governance/**
       - apps/torus-wallet/**

@@ -60,7 +60,7 @@ async function pushNotification(
   const notification = {
     discord_uid: `${resolved_metadata.discord_id}`,
     app_id: `${proposal.id}`,
-    application_url: `https://governance.communeai.org/dao/${proposal.id}`,
+    application_url: `https://governance.torus.network/dao/${proposal.id}`,
   };
   const seen_proposal: NewNotification = {
     governanceModel: pType,

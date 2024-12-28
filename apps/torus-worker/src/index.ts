@@ -30,6 +30,7 @@ async function main() {
   const lastBlock = await queryLastBlock(api);
 
   const workerTypes: Record<string, () => Promise<void>> = {
+    // TODO: rename "dao" worker arg
     dao: async () => {
       await processDaoApplicationsWorker({
         lastBlock,
@@ -37,6 +38,7 @@ async function main() {
         lastBlockNumber,
       });
     },
+    // TODO: rename "dao-notifier" worker arg
     "dao-notifier": async () => {
       await notifyNewApplicationsWorker({
         lastBlock,
@@ -44,6 +46,7 @@ async function main() {
         lastBlockNumber,
       });
     },
+    // TODO: rename "module-fetcher" worker arg to "agent-fetcher"
     "module-fetcher": async () => {
       await agentFetcherWorker({
         lastBlock,
