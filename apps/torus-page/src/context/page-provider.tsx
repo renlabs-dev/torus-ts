@@ -35,6 +35,7 @@ interface PageContextType {
   >;
 
   bridge: (bridge: Bridge) => Promise<void>;
+  bridgeWithdraw: (bridge: Bridge) => Promise<void>;
 
   removeStake: (stake: Stake) => Promise<void>;
 
@@ -61,6 +62,7 @@ export function PageProvider({
     accounts,
     api,
     bridge,
+    bridgeWithdraw,
     handleGetWallets,
     handleLogout,
     handleSelectWallet,
@@ -103,6 +105,7 @@ export function PageProvider({
         accountStakedBalance,
         accountStakingTo,
         bridge,
+        bridgeWithdraw,
         bridgedBalances,
         handleGetWallets,
         handleLogout,
