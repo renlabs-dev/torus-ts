@@ -49,7 +49,6 @@ import {
   Input,
   NoWalletExtensionDisplay,
   ScrollArea,
-  Separator,
   Tabs,
   TabsContent,
   TabsList,
