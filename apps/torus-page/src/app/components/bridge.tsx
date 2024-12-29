@@ -556,9 +556,7 @@ export function Bridge() {
                             availableFunds={fromNano(
                               accountBridgedBalance.data ?? 0n,
                             )}
-                            disabled={
-                              !selectedAccount || !(toNano(maxAmount) > 0n)
-                            }
+                            disabled={!selectedAccount}
                           />
                         </div>
                         {valueInputError && (
