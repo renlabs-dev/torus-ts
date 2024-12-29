@@ -1,5 +1,6 @@
 /* eslint-disable no-debugger */
 
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import "@polkadot/api/augment";
 
 import {
@@ -16,14 +17,14 @@ import {
 // $ pnpm exec tsx src/main.ts
 
 // const NODE_URL = "wss://testnet-commune-api-node-1.communeai.net";
-// const NODE_URL = "wss://api.communeai.net";
+const NODE_URL = "wss://api.communeai.net";
 
-// const wsProvider = new WsProvider(NODE_URL);
-// const api = await ApiPromise.create({ provider: wsProvider });
-// if (!api.isConnected) {
-//   throw new Error("API not connected");
-// }
-// console.log("API connected");
+const wsProvider = new WsProvider(NODE_URL);
+const api = await ApiPromise.create({ provider: wsProvider });
+if (!api.isConnected) {
+  throw new Error("API not connected");
+}
+console.log("API connected");
 
 const tokens = fromRen(1_000_000_000_000_000_000n);
 const x = tokens.div(3);

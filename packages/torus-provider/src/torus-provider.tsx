@@ -67,6 +67,8 @@ interface TorusContextType {
   openWalletModal: boolean;
 
   bridge: (bridge: Bridge) => Promise<void>;
+  bridgeWithdraw: (bridgeWithdraw: Bridge) => Promise<void>;
+
   addStake: (stake: Stake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
   transfer: (transfer: Transfer) => Promise<void>;
@@ -326,6 +328,30 @@ export function TorusProvider({
     });
   }
 
+  async function bridgeWithdraw({
+    amount,
+    callback,
+    refetchHandler,
+  }: Bridge): Promise<void> {
+    console.log("i want to die");
+
+    if (!api?.tx.subspaceModule?.bridgeWithdraw) {
+      console.error("Bridge Withdraw not available");
+      return;
+    }
+    const transaction = api.tx.subspaceModule.bridgeWithdraw(toNano(amount));
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "bridge Withdraw",
+      refetchHandler,
+      wsEndpoint,
+    });
+  }
+
   async function transferStake({
     fromValidator,
     toValidator,
@@ -562,6 +588,7 @@ export function TorusProvider({
         openWalletModal,
 
         bridge,
+        bridgeWithdraw,
 
         addStake,
         removeStake,

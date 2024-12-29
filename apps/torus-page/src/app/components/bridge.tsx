@@ -42,7 +42,6 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
   HoverCard,
   HoverCardContent,
@@ -50,6 +49,11 @@ import {
   Input,
   NoWalletExtensionDisplay,
   ScrollArea,
+  Separator,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   TransactionStatus,
 } from "@torus-ts/ui";
 import {
@@ -78,6 +82,7 @@ export function Bridge() {
     accounts,
     accountStakedBalance,
     bridge,
+    bridgeWithdraw,
     bridgedBalances,
     handleGetWallets,
     handleSelectWallet,
@@ -89,6 +94,8 @@ export function Bridge() {
   const [maxAmount, setMaxAmount] = useState<string>("");
   const [valueInputError, setValueInputError] = useState<string | null>(null);
   const estimatedFee = "0.0000001000";
+
+  const [activeTab, setActiveTab] = useState("bridge");
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -153,10 +160,33 @@ export function Bridge() {
     handleSelectWallet(accountExists);
   };
 
+  const handleAmountChange = (value: string) => {
+    const newAmount = value.replace(/[^0-9.]/g, "");
+
+    const amountNano = toNano(newAmount || "0");
+    const estimatedFeeNano = toNano(estimatedFee);
+    const balance =
+      activeTab === "bridge"
+        ? (accountFreeBalance.data ?? 0n) - estimatedFeeNano
+        : (accountBridgedBalance.data ?? 0n);
+    const maxAmountNano = balance > 0n ? balance : 0n;
+
+    if (amountNano > maxAmountNano) {
+      setValueInputError("Amount exceeds maximum transferable amount");
+    } else {
+      setValueInputError(null);
+    }
+
+    setAmount(newAmount);
+  };
+
   const handleUpdateMaxAmount = (fee: bigint | undefined) => {
     if (!fee) return;
-    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - fee;
-    const maxAmount = afterFeesBalance > 0 ? afterFeesBalance : 0n;
+    const balance =
+      activeTab === "bridge"
+        ? (accountFreeBalance.data ?? 0n) - fee
+        : (accountBridgedBalance.data ?? 0n);
+    const maxAmount = balance > 0 ? balance : 0n;
 
     setMaxAmount(fromNano(maxAmount));
 
@@ -166,23 +196,6 @@ export function Bridge() {
     } else {
       setValueInputError(null);
     }
-  };
-
-  const handleAmountChange = (value: string) => {
-    const newAmount = value.replace(/[^0-9.]/g, "");
-
-    const amountNano = toNano(newAmount || "0");
-    const estimatedFeeNano = toNano(estimatedFee);
-    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - estimatedFeeNano;
-    const maxAmountNano = afterFeesBalance > 0n ? afterFeesBalance : 0n;
-
-    if (amountNano > maxAmountNano) {
-      setValueInputError("Amount exceeds maximum transferable amount");
-    } else {
-      setValueInputError(null);
-    }
-
-    setAmount(newAmount);
   };
 
   const refetchHandler = async () => {
@@ -200,11 +213,19 @@ export function Bridge() {
       message: "Starting transaction",
     });
     try {
-      await bridge({
-        amount: data.amount,
-        callback: handleCallback,
-        refetchHandler,
-      });
+      if (activeTab === "bridge") {
+        await bridge({
+          amount: data.amount,
+          callback: handleCallback,
+          refetchHandler,
+        });
+      } else {
+        await bridgeWithdraw({
+          amount: data.amount,
+          callback: handleCallback,
+          refetchHandler,
+        });
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
@@ -408,69 +429,181 @@ export function Bridge() {
               </AccordionItem>
             </Accordion>
           </Card>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount to Bridge</FormLabel>
-                    <div className="flex gap-1">
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          {...field}
-                          disabled={!(toNano(maxAmount) > 0n)}
-                        />
-                      </FormControl>
-                      <AmountButtons
-                        setAmount={(amount) => form.setValue("amount", amount)}
-                        availableFunds={maxAmount}
-                        disabled={!selectedAccount || !(toNano(maxAmount) > 0n)}
-                      />
-                    </div>
-                    {valueInputError && (
-                      <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                        {valueInputError}
-                      </span>
+          <Tabs
+            defaultValue="bridge"
+            className="w-full rounded-md border border-border p-4"
+            onValueChange={setActiveTab}
+          >
+            <TabsList className="mb-4 grid w-full grid-cols-2">
+              <TabsTrigger value="bridge">Bridge</TabsTrigger>
+              <TabsTrigger value="bridge-withdraw">Bridge Withdraw</TabsTrigger>
+            </TabsList>
+            <TabsContent value="bridge">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="z-50 space-y-8"
+                >
+                  <FormField
+                    control={form.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex gap-1">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="0.00"
+                              {...field}
+                              disabled={!(toNano(maxAmount) > 0n)}
+                            />
+                          </FormControl>
+                          <AmountButtons
+                            setAmount={(amount) =>
+                              form.setValue("amount", amount)
+                            }
+                            availableFunds={maxAmount}
+                            disabled={
+                              !selectedAccount || !(toNano(maxAmount) > 0n)
+                            }
+                          />
+                        </div>
+                        {valueInputError && (
+                          <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
+                            {valueInputError}
+                          </span>
+                        )}
+                        <FormMessage />
+                        <FormDescription className="flex flex-col gap-2">
+                          Enter the amount of COMAI you want to bridge.
+                        </FormDescription>
+                        <AlertDialogFooter>
+                          <div className="mt-6 flex w-full items-center justify-between">
+                            <div className="mb-1 mr-2.5">
+                              {transactionStatus.status && (
+                                <TransactionStatus
+                                  status={transactionStatus.status}
+                                  message={transactionStatus.message}
+                                />
+                              )}
+                              {!transactionStatus.status && (
+                                <FeeLabel
+                                  isEstimating={false}
+                                  estimatedFee={estimatedFee}
+                                />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <AlertDialogCancel className="mt-0">
+                                Cancel
+                              </AlertDialogCancel>
+                              <Button type="submit" disabled={!selectedAccount}>
+                                Bridge Assets
+                              </Button>
+                            </div>
+                          </div>
+                        </AlertDialogFooter>
+                      </FormItem>
                     )}
-                    <FormMessage />
-                    <FormDescription className="flex flex-col gap-2">
-                      Enter the amount of COMAI you want to bridge.
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-              <AlertDialogFooter>
-                <div className="flex w-full items-center justify-between">
-                  <div className="mb-1 mr-2.5">
-                    {transactionStatus.status && (
-                      <TransactionStatus
-                        status={transactionStatus.status}
-                        message={transactionStatus.message}
-                      />
+                  />
+                </form>
+              </Form>
+            </TabsContent>
+            <TabsContent value="bridge-withdraw">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(async (data) => {
+                    setTransactionStatus({
+                      status: "STARTING",
+                      finalized: false,
+                      message: "Starting transaction",
+                    });
+                    try {
+                      await bridgeWithdraw({
+                        amount: data.amount,
+                        callback: handleCallback,
+                        refetchHandler,
+                      });
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    } catch (error) {
+                      toast.error(`Error withdrawing bridged assets`);
+                      setTransactionStatus({
+                        status: "ERROR",
+                        finalized: true,
+                        message: "Insufficient bridged balance",
+                      });
+                    }
+                  })}
+                  className="z-50 space-y-8"
+                >
+                  <FormField
+                    control={form.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex gap-1">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="0.00"
+                              {...field}
+                              disabled={!(toNano(maxAmount) > 0n)}
+                            />
+                          </FormControl>
+                          <AmountButtons
+                            setAmount={(amount) =>
+                              form.setValue("amount", amount)
+                            }
+                            availableFunds={fromNano(
+                              accountBridgedBalance.data ?? 0n,
+                            )}
+                            disabled={
+                              !selectedAccount || !(toNano(maxAmount) > 0n)
+                            }
+                          />
+                        </div>
+                        {valueInputError && (
+                          <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
+                            {valueInputError}
+                          </span>
+                        )}
+                        <FormMessage />
+                        <FormDescription className="flex flex-col gap-2">
+                          Enter the amount of bridged TOR you want to withdraw.
+                        </FormDescription>
+                        <AlertDialogFooter>
+                          <div className="mt-6 flex w-full items-center justify-between">
+                            <div className="mb-1 mr-2.5">
+                              {transactionStatus.status && (
+                                <TransactionStatus
+                                  status={transactionStatus.status}
+                                  message={transactionStatus.message}
+                                />
+                              )}
+                              {!transactionStatus.status && (
+                                <FeeLabel
+                                  isEstimating={false}
+                                  estimatedFee={estimatedFee}
+                                />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <AlertDialogCancel className="mt-0">
+                                Cancel
+                              </AlertDialogCancel>
+                              <Button type="submit" disabled={!selectedAccount}>
+                                Withdraw Assets
+                              </Button>
+                            </div>
+                          </div>
+                        </AlertDialogFooter>
+                      </FormItem>
                     )}
-                    {!transactionStatus.status && (
-                      <FeeLabel
-                        isEstimating={false}
-                        estimatedFee={estimatedFee}
-                      />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <AlertDialogCancel className="mt-0">
-                      Cancel
-                    </AlertDialogCancel>
-                    <Button type="submit" disabled={!selectedAccount}>
-                      Bridge Assets
-                    </Button>
-                  </div>
-                </div>
-              </AlertDialogFooter>
-            </form>
-          </Form>
+                  />
+                </form>
+              </Form>
+            </TabsContent>
+          </Tabs>
         </AlertDialogContent>
       </AlertDialog>
       <span className="flex justify-center text-sm text-zinc-400">
