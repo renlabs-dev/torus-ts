@@ -51,8 +51,8 @@ import {
   ScrollArea,
   Tabs,
   TabsContent,
-  TabsList,
   TabsTrigger,
+  TabsList,
   TransactionStatus,
 } from "@torus-ts/ui";
 import {
