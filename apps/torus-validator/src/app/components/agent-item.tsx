@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Anvil, ArrowRight, Crown, Percent } from "lucide-react";
+import { Anvil, ArrowRight, Crown } from "lucide-react";
 
-import { Button, Label } from "@torus-ts/ui";
+import { Button, CopyButton, Label } from "@torus-ts/ui";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { DelegateModuleWeight } from "./delegate-module-weight";
+import { copyToClipboard } from "@torus-ts/ui/utils";
+import { toast } from "@torus-ts/toast-provider";
 
 interface AgentCardProps {
   id: number;
@@ -39,13 +41,15 @@ export function AgentItem(props: AgentCardProps) {
           </Label>
         )}
 
-        <Button
+        <CopyButton
           variant="link"
-          className={`flex items-center gap-1.5 px-0 ${isAgentDelegated ? "text-green-500/80" : "text-foreground-muted"}`}
+          copy={props.agentKey}
+          notify={() => toast.success("Copied to clipboard")}
+          className={`flex items-center gap-1.5 px-0 ${isAgentDelegated ? "text-green-500/80" : "text-foreground-muted"} hover:text-muted-foreground hover:no-underline`}
         >
           <Crown className="h-6 w-6" />
-          <span>{smallAddress(String(props.agentKey))}</span>
-        </Button>
+          <span>{smallAddress(props.agentKey)}</span>
+        </CopyButton>
 
         <div className="flex items-center gap-2">
           <DelegateModuleWeight

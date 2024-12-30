@@ -19,7 +19,7 @@ import {
 const navSidebarOptions = [
   // { title: "Dashboard", href: "dashboard" },
   { title: "Agents", href: "agents" },
-  { title: "Ideas", href: "ideas" },
+  { title: "Open Collective", href: "open-collective" },
 ] as const;
 
 export const Sidebar = () => {

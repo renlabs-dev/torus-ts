@@ -1,44 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { Button, cn } from "..";
+import { copyToClipboard } from "../utils";
 
-import { cn } from "..";
-
-interface CodeComponentProps {
-  code: string;
+import type { VariantProps } from "class-variance-authority";
+import type { buttonVariants } from "..";
+type ButtonVariantProps = VariantProps<typeof buttonVariants>;
+interface CopyButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  copy: string;
+  children: React.ReactNode | string;
+  className?: string;
+  variant?: ButtonVariantProps["variant"];
+  notify?: () => void;
+  asChild?: boolean;
 }
 
-export function CopyButton(props: CodeComponentProps): JSX.Element {
-  const { code } = props;
-  const [copied, setCopied] = useState(false);
+export function CopyButton(props: CopyButtonProps): JSX.Element {
+  const {
+    children,
+    className,
+    variant,
+    copy,
+    asChild = false,
+    notify,
+    ...rest
+  } = props;
 
-  async function copyTextToClipboard(text: string): Promise<void> {
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 1000);
-    await navigator.clipboard.writeText(text);
-
-    return;
-  }
+  const handleClick = async (copy: string) => {
+    await copyToClipboard(copy);
+    if (notify) return notify();
+  };
 
   return (
-    <button
-      className={cn(
-        `flex w-fit items-center text-nowrap border border-white/20 px-3 py-2.5 font-semibold text-green-500 transition duration-200 hover:border-green-400 hover:bg-green-500/15 ${copied && "cursor-not-allowed border-green-500 text-green-500 hover:!border-green-500 hover:!text-green-500"}`,
-      )}
-      onClick={() => void copyTextToClipboard(code)}
-      type="button"
+    <Button
+      variant={variant}
+      className={cn(className)}
+      asChild={asChild}
+      onClick={() => handleClick(copy)}
+      {...rest}
     >
-      <span className={cn(`flex items-center ${copied ? "text-green-" : ""}`)}>
-        <img
-          alt=""
-          className="ml-0.5"
-          height={30}
-          src="docs-icon.svg"
-          width={30}
-        />
-      </span>
-    </button>
+      {children}
+    </Button>
   );
 }

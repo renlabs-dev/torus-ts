@@ -257,28 +257,28 @@ export function DelegatedList() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (contentRef.current) {
-      const contentHeight = contentRef.current.scrollHeight;
-      const maxAllowedHeight = window.innerHeight - 270;
-      setIsOverflowing(contentHeight > maxAllowedHeight);
-      console.log("Is overflowing:", contentHeight > maxAllowedHeight);
-    }
+    const timeoutId = setTimeout(() => {
+      if (contentRef.current && isOpen) {
+        const contentHeight = contentRef.current.scrollHeight;
+        const maxAllowedHeight = window.innerHeight - 270;
+        setIsOverflowing(contentHeight > maxAllowedHeight);
+      }
+    }, 1); // Small delay to ensure content have been rendered before checking height
+
+    return () => clearTimeout(timeoutId);
   }, [delegatedAgents, isOpen]);
 
   return (
-    <Sheet
-      onOpenChange={(state) => {
-        setIsOpen(state);
-      }}
-    >
+    <Sheet>
       <SheetTrigger
-        className={`fixed bottom-4 right-4 z-[60] ${buttonVariants({ variant: "outline" })}`}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`fixed bottom-4 right-4 z-[50] ${buttonVariants({ variant: "outline" })}`}
       >
         <PieChart />
         Allocation Menu
       </SheetTrigger>
 
-      <SheetContent on className="z-[70] flex w-full flex-col sm:max-w-md">
+      <SheetContent className={`fixed z-[50] flex w-full flex-col sm:max-w-md`}>
         <div className="flex h-full flex-col justify-between gap-8">
           <div className="flex h-full flex-col gap-8">
             <SheetHeader>
@@ -291,17 +291,7 @@ export function DelegatedList() {
             >
               <div className="flex flex-col gap-2">
                 {delegatedAgents.length ? (
-                  [
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                    ...delegatedAgents,
-                  ].map((agent) => (
+                  [...delegatedAgents].map((agent) => (
                     <div
                       key={agent.id}
                       className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"}`}
@@ -357,7 +347,7 @@ export function DelegatedList() {
             </div>
           </div>
 
-          <SheetFooter className="flex min-h-fit gap-4 sm:flex-col">
+          <SheetFooter className="flex min-h-fit gap-4 sm:flex-col sm:space-x-0">
             <Label
               className={cn("pt-2 text-center text-sm", {
                 "text-pink-500":
