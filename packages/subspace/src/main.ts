@@ -8,7 +8,7 @@ import { checkSS58 } from "./address";
 
 // $ pnpm exec tsx src/main.ts
 
-const NODE_URL = "wss://api-0.nodes.testnet.torus.network";
+const NODE_URL = "wss://api.testnet.torus.network";
 
 const wsProvider = new WsProvider(NODE_URL);
 const api = await ApiPromise.create({ provider: wsProvider });

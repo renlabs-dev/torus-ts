@@ -9,7 +9,7 @@ mainnet)
   node_url="https://api.torus.network"
   ;;
 testnet)
-  node_url="https://api-0.nodes.testnet.torus.network"
+  node_url="https://api.testnet.torus.network"
   ;;
 local)
   node_url="http://localhost:9951"

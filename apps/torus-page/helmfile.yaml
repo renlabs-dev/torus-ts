@@ -5,7 +5,7 @@ environments:
       - values.yaml
       - namespace: torus-dev-web-apps
       - environmentName: dev
-      - wssApiEndpoint: wss://api-0.nodes.testnet.torus.network
+      - wssApiEndpoint: wss://api.testnet.torus.network
       - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-torus-page
       - ingressHost: testnet.torus.network
