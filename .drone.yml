@@ -1,5 +1,38 @@
 kind: pipeline
 type: docker
+name: clean-stale-releases
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: clean
+    image: ghcr.io/renlabs-dev/devops-ci:latest
+    environment:
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+    commands:
+      # Authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle_sa.sh
+      # Set auxiliary environment variables
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Run script
+      - /apps/clean_stale_releases.sh torus-"$env_name"-web-apps
+
+trigger:
+  branch:
+    - drone
+    - main
+    - dev
+  event:
+    - push
+---
+kind: pipeline
+type: docker
 name: torus-page
 
 environment:
@@ -48,6 +81,9 @@ steps:
       # Install application charts
       - cd apps/"$APP_NAME"
       - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
+
+depends_on:
+  - clean-stale-releases
 
 trigger:
   branch:
@@ -116,6 +152,9 @@ steps:
       - cd apps/"$APP_NAME"
       - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
+depends_on:
+  - clean-stale-releases
+
 trigger:
   branch:
     - drone
@@ -182,6 +221,9 @@ steps:
       # Install application charts
       - cd apps/"$APP_NAME"
       - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
+
+depends_on:
+  - clean-stale-releases
 
 trigger:
   branch:
@@ -250,6 +292,9 @@ steps:
       - cd apps/"$APP_NAME"
       - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
+depends_on:
+  - clean-stale-releases
+
 trigger:
   branch:
     - drone
@@ -317,6 +362,9 @@ steps:
       - cd apps/"$APP_NAME"
       - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
 
+depends_on:
+  - clean-stale-releases
+
 trigger:
   branch:
     - drone
@@ -383,6 +431,9 @@ steps:
       # Install application charts
       - cd apps/"$APP_NAME"
       - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
+
+depends_on:
+  - clean-stale-releases
 
 trigger:
   branch:
