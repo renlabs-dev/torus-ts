@@ -33,7 +33,7 @@ steps:
       APP_NAME: torus-page
     commands:
       # Download helm chart and authenticate to Kubernetes
-      - /apps/k8s_auth_w_approle.sh
+      - /apps/k8s_auth_w_approle_sa.sh
       - helm repo add renlabs https://charts.renlabs.dev/
       - helm repo update
       # Set auxiliary environment variables
@@ -100,7 +100,7 @@ steps:
       APP_NAME: torus-validator
     commands:
       # Download helm chart and authenticate to Kubernetes
-      - /apps/k8s_auth_w_approle.sh
+      - /apps/k8s_auth_w_approle_sa.sh
       - helm repo add renlabs https://charts.renlabs.dev/
       - helm repo update
       # Set auxiliary environment variables
@@ -167,7 +167,7 @@ steps:
       APP_NAME: torus-worker
     commands:
       # Download helm chart and authenticate to Kubernetes
-      - /apps/k8s_auth_w_approle.sh
+      - /apps/k8s_auth_w_approle_sa.sh
       - helm repo add renlabs https://charts.renlabs.dev/
       - helm repo update
       # Set auxiliary environment variables
@@ -234,7 +234,7 @@ steps:
       APP_NAME: torus-governance
     commands:
       # Download helm chart and authenticate to Kubernetes
-      - /apps/k8s_auth_w_approle.sh
+      - /apps/k8s_auth_w_approle_sa.sh
       - helm repo add renlabs https://charts.renlabs.dev/
       - helm repo update
       # Set auxiliary environment variables
@@ -301,7 +301,7 @@ steps:
       APP_NAME: torus-wallet
     commands:
       # Download helm chart and authenticate to Kubernetes
-      - /apps/k8s_auth_w_approle.sh
+      - /apps/k8s_auth_w_approle_sa.sh
       - helm repo add renlabs https://charts.renlabs.dev/
       - helm repo update
       # Set auxiliary environment variables
@@ -368,7 +368,7 @@ steps:
       APP_NAME: torus-cache
     commands:
       # Download helm chart and authenticate to Kubernetes
-      - /apps/k8s_auth_w_approle.sh
+      - /apps/k8s_auth_w_approle_sa.sh
       - helm repo add renlabs https://charts.renlabs.dev/
       - helm repo update
       # Set auxiliary environment variables
