@@ -16,7 +16,6 @@ import {
   useKeyStakingTo,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
 
@@ -71,9 +70,6 @@ export function WalletProvider({
     removeStake,
 
     accounts,
-    handleLogout,
-    handleGetWallets,
-    handleSelectWallet,
   } = useTorus();
 
   // == Subspace ==
@@ -114,16 +110,6 @@ export function WalletProvider({
         removeStake,
       }}
     >
-      <WalletDropdown
-        balance={accountFreeBalance.data}
-        stakeOut={stakeOut.data}
-        accounts={accounts}
-        isInitialized={isInitialized}
-        selectedAccount={selectedAccount}
-        handleLogout={handleLogout}
-        handleGetWallets={handleGetWallets}
-        handleSelectWallet={handleSelectWallet}
-      />
       {children}
     </WalletContext.Provider>
   );

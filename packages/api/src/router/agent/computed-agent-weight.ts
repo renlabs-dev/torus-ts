@@ -1,9 +1,6 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-
 import { eq, max, and, isNull } from "@torus-ts/db";
-
 import "@torus-ts/db/schema";
-
 import { publicProcedure } from "../../trpc";
 import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
 
@@ -30,7 +27,7 @@ export const computedAgentWeightRouter = {
       .innerJoin(
         agentSchema,
         and(
-          eq(computedAgentWeightSchema.agentKey, agentSchema.id),
+          eq(computedAgentWeightSchema.agentKey, agentSchema.key),
           isNull(agentSchema.deletedAt),
         ),
       );

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { MoveDown } from "lucide-react";
 
@@ -6,14 +8,13 @@ import { MarkdownView } from "@torus-ts/ui/markdown-view";
 import { removeEmojisLmao } from "@torus-ts/utils";
 
 interface ExpandedViewContentProps {
-  title: string | null;
-  body: string | null;
+  content: string | null;
 }
 
 export const ExpandedViewContent = (
   props: ExpandedViewContentProps,
 ): JSX.Element => {
-  const { body, title } = props;
+  const { content } = props;
   const contentRef = useRef<HTMLDivElement>(null);
   const [expandedText, setExpandedText] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -35,20 +36,19 @@ export const ExpandedViewContent = (
       const maxAllowedHeight = 250;
       setIsOverflowing(contentHeight > maxAllowedHeight);
     }
-  }, [body]);
+  }, [content]);
 
   return (
     <div
       className={`flex h-fit w-full animate-fade-down flex-col animate-delay-100`}
     >
-      <h2 className="break-words pb-5 text-2xl font-bold text-white">
-        {title ?? "Title not found"}
-      </h2>
       <div
         ref={contentRef}
         className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-12" : "max-h-[250px] pb-0"} duration-1000`}
       >
-        <MarkdownView source={removeEmojisLmao(body ?? "Content not found.")} />
+        <MarkdownView
+          source={removeEmojisLmao(content ?? "Content not found.")}
+        />
 
         {isOverflowing && (
           <div

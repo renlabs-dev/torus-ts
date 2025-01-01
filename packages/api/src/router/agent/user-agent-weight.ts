@@ -20,7 +20,7 @@ export const userAgentWeightRouter = {
         .from(agentSchema)
         .innerJoin(
           userAgentWeightSchema,
-          eq(userAgentWeightSchema.id, userAgentWeightSchema.userKey),
+          eq(agentSchema.key, userAgentWeightSchema.agentKey),
         )
         .where(
           and(

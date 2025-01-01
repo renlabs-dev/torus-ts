@@ -30,7 +30,7 @@ export function Layout({
           className,
         )}
       >
-        <div className={cn("mx-auto")}>{children}</div>
+        <div className={cn("mx-auto max-w-screen-xl px-4")}>{children}</div>
       </body>
     </html>
   );

@@ -2,11 +2,12 @@
   --toastify-color-success: #86efac;
 
   .Toastify__toast--default {
-    align-items: start;
+    align-items: center;
     height: fit-content;
   }
+
   .Toastify__toast-icon {
-    margin-top: 2px;
-    margin-bottom: auto;
+margin-top: auto;
+margin-bottom: auto;
   }
 }

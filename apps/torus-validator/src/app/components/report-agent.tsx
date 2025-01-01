@@ -6,7 +6,24 @@ import { z } from "zod";
 import { toast } from "@torus-ts/toast-provider";
 
 import { api } from "~/trpc/react";
-import { TriangleAlert, X } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+  DialogTrigger,
+  Label,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from "@torus-ts/ui";
 
 const reportSchema = z.object({
   reason: z.enum([
@@ -83,80 +100,82 @@ export function ReportAgent({ agentKey }: ReportAgentProps) {
   };
 
   return (
-    <>
-      <button
+    <Dialog>
+      <Button
         onClick={toggleModalMenu}
         type="button"
-        className="flex items-center gap-1 border border-red-500 p-1 px-2 text-red-500 opacity-30 transition duration-200 hover:bg-red-500/10 hover:opacity-100"
+        variant="outline"
+        asChild
+        className="flex h-4 w-4 items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65 transition duration-200 hover:text-red-500 hover:opacity-100"
       >
-        <TriangleAlert className="mt-0.5 h-4 w-4" /> Report Agent
-      </button>
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={toggleModalMenu}
-          />
-          <div className="z-60 w-[90%] max-w-screen-md animate-fade-in-down overflow-hidden border border-white/20 bg-[#898989]/5 text-left text-white backdrop-blur-md">
-            <div className="flex items-center justify-between gap-3 border-b border-gray-500 bg-cover bg-center bg-no-repeat p-1">
-              <h3 className="pl-2 text-xl font-bold leading-6" id="modal-title">
-                Report Agent
-              </h3>
-              <button
-                className="p-2 transition duration-200"
-                onClick={toggleModalMenu}
-                type="button"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="mb-4">
-                <label className="mb-2 block text-sm font-bold">Reason</label>
-                <select
-                  name="reason"
-                  value={formData.reason}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 bg-black/40 p-2"
-                >
-                  <option value="SPAM">Spam</option>
-                  <option value="VIOLENCE">Violence</option>
-                  <option value="HARASSMENT">Harassment</option>
-                  <option value="HATE_SPEECH">Hate Speech</option>
-                  <option value="SEXUAL_CONTENT">Sexual Content</option>
-                </select>
-                {errors.reason && (
-                  <p className="mt-1 text-xs text-red-500">{errors.reason}</p>
-                )}
-              </div>
-              <div className="mb-4">
-                <label className="mb-2 block text-sm font-bold">
-                  Description
-                </label>
-                <textarea
-                  name="content"
-                  value={formData.content}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 bg-black/40 p-2"
-                  rows={4}
-                ></textarea>
-                {errors.content && (
-                  <p className="mt-1 text-xs text-red-500">{errors.content}</p>
-                )}
-              </div>
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="border border-red-500 bg-red-500/10 px-4 py-2 text-white transition duration-200 hover:bg-red-500/20"
-                  disabled={reportAgentMutation.isPending}
-                >
-                  {reportAgentMutation.isPending ? "Submitting..." : "Submit"}
-                </button>
-              </div>
-            </form>
+        <DialogTrigger>
+          <TriangleAlert className="h-4 w-3" />
+        </DialogTrigger>
+      </Button>
+
+      <DialogContent className="flex w-full flex-col items-start justify-center sm:w-full">
+        <DialogTitle>Report Agent</DialogTitle>
+
+        <form
+          onSubmit={handleSubmit}
+          className="flex w-full flex-col gap-4 pt-4"
+        >
+          <div>
+            <Label className="mb-2 block text-sm font-bold" htmlFor="reason">
+              Reason
+            </Label>
+            <Select
+              name="reason"
+              value={formData.reason}
+              onValueChange={(value) =>
+                handleInputChange({
+                  target: { name: "reason", value },
+                } as React.ChangeEvent<HTMLSelectElement>)
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a reason" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="SPAM">Spam</SelectItem>
+                  <SelectItem value="VIOLENCE">Violence</SelectItem>
+                  <SelectItem value="HARASSMENT">Harassment</SelectItem>
+                  <SelectItem value="HATE_SPEECH">Hate Speech</SelectItem>
+                  <SelectItem value="SEXUAL_CONTENT">Sexual Content</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            {errors.reason && (
+              <p className="mt-1 text-xs text-red-500">{errors.reason}</p>
+            )}
           </div>
-        </div>
-      )}
-    </>
+          <div>
+            <label className="mb-2 block text-sm font-bold">Description</label>
+            <Textarea
+              name="content"
+              value={formData.content}
+              onChange={handleInputChange}
+              rows={4}
+            />
+            {errors.content && (
+              <p className="mt-1 text-xs text-red-500">{errors.content}</p>
+            )}
+          </div>
+          <DialogFooter className="flex gap-2 sm:space-x-0">
+            <Button asChild variant="destructive">
+              <DialogClose>Cancel</DialogClose>
+            </Button>
+            <Button
+              type="submit"
+              variant="default"
+              disabled={reportAgentMutation.isPending}
+            >
+              {reportAgentMutation.isPending ? "Submitting..." : "Submit"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

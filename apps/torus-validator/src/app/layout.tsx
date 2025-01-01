@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Footer, Layout } from "@torus-ts/ui";
+import { Layout } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   robots: "all",
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "Making decentralized AI for everyone",
+  description: "Most advanced decentralized AI Protocol.",
 };
 
 export const firaMono = FiraMono({
@@ -43,7 +43,6 @@ export default function RootLayout({
             <AllocatorHeader />
             <DelegatedList />
             {children}
-            <Footer />
           </ToastProvider>
         </TRPCReactProvider>
       </TorusProvider>
