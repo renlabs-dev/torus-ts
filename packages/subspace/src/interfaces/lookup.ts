@@ -1082,6 +1082,7 @@ export default {
       submit_application: {
         agentKey: 'AccountId32',
         metadata: 'Bytes',
+        removing: 'bool',
       },
       add_global_params_proposal: {
         data: 'PalletGovernanceProposalGlobalParamsData',
@@ -1116,10 +1117,11 @@ export default {
     maxAllowedWeights: 'u16',
     minWeightStake: 'u128',
     minWeightControlFee: 'u8',
-    minStakingFee: 'u8'
+    minStakingFee: 'u8',
+    dividendsParticipationWeight: 'Percent'
   },
   /**
-   * Lookup154: pallet_torus0::pallet::Call<T>
+   * Lookup155: pallet_torus0::pallet::Call<T>
    **/
   PalletTorus0Call: {
     _enum: {
@@ -1361,34 +1363,49 @@ export default {
     agentKey: 'AccountId32',
     data: 'Bytes',
     cost: 'u128',
-    expiresAt: 'u64'
+    expiresAt: 'u64',
+    action: 'PalletGovernanceApplicationApplicationAction',
+    status: 'PalletGovernanceApplicationApplicationStatus'
   },
   /**
-   * Lookup199: frame_support::PalletId
+   * Lookup199: pallet_governance::application::ApplicationAction
+   **/
+  PalletGovernanceApplicationApplicationAction: {
+    _enum: ['Add', 'Remove']
+  },
+  /**
+   * Lookup200: pallet_governance::application::ApplicationStatus
+   **/
+  PalletGovernanceApplicationApplicationStatus: {
+    _enum: {
+      Open: 'Null',
+      Resolved: {
+        accepted: 'bool',
+      },
+      Expired: 'Null'
+    }
+  },
+  /**
+   * Lookup201: frame_support::PalletId
    **/
   FrameSupportPalletId: '[u8;8]',
   /**
-   * Lookup200: pallet_governance::pallet::Error<T>
+   * Lookup202: pallet_governance::pallet::Error<T>
    **/
   PalletGovernanceError: {
     _enum: ['ProposalIsFinished', 'InvalidProposalFinalizationParameters', 'InvalidProposalVotingParameters', 'InvalidProposalCost', 'InvalidProposalExpiration', 'NotEnoughBalanceToPropose', 'ProposalDataTooSmall', 'ProposalDataTooLarge', 'ModuleDelegatingForMaxStakers', 'ProposalNotFound', 'ProposalClosed', 'InvalidProposalData', 'InvalidCurrencyConversionValue', 'InsufficientDaoTreasuryFunds', 'AlreadyVoted', 'NotVoted', 'InsufficientStake', 'VoterIsDelegatingVotingPower', 'InternalError', 'ApplicationTooSmall', 'InvalidApplicationSize', 'ApplicationNotPending', 'ApplicationKeyAlreadyUsed', 'InvalidApplication', 'NotEnoughBalanceToApply', 'NotCurator', 'ApplicationNotFound', 'AlreadyWhitelisted', 'NotWhitelisted', 'CouldNotConvertToBalance', 'InvalidApplicationDataLength', 'InvalidAgentPenaltyPercentage', 'AlreadyCurator', 'AgentNotFound', 'InvalidPenaltyPercentage', 'InvalidMinNameLength', 'InvalidMaxNameLength', 'InvalidMaxAllowedAgents', 'InvalidMaxAllowedWeights', 'InvalidMinWeightControlFee']
   },
   /**
-   * Lookup201: pallet_torus0::agent::Agent<T>
+   * Lookup203: pallet_torus0::agent::Agent<T>
    **/
   PalletTorus0Agent: {
     key: 'AccountId32',
     name: 'Bytes',
     url: 'Bytes',
     metadata: 'Bytes',
-    weightFactor: 'Percent'
-  },
-  /**
-   * Lookup203: pallet_torus0::fee::ValidatorFeeConstraints<T>
-   **/
-  PalletTorus0FeeValidatorFeeConstraints: {
-    minStakingFee: 'Percent',
-    minWeightControlFee: 'Percent'
+    weightPenaltyFactor: 'Percent',
+    registrationBlock: 'u64',
+    fees: 'PalletTorus0FeeValidatorFee'
   },
   /**
    * Lookup204: pallet_torus0::fee::ValidatorFee<T>
@@ -1398,7 +1415,14 @@ export default {
     weightControlFee: 'Percent'
   },
   /**
-   * Lookup205: pallet_torus0::burn::BurnConfiguration<T>
+   * Lookup206: pallet_torus0::fee::ValidatorFeeConstraints<T>
+   **/
+  PalletTorus0FeeValidatorFeeConstraints: {
+    minStakingFee: 'Percent',
+    minWeightControlFee: 'Percent'
+  },
+  /**
+   * Lookup207: pallet_torus0::burn::BurnConfiguration<T>
    **/
   PalletTorus0BurnBurnConfiguration: {
     minBurn: 'u128',
@@ -1409,27 +1433,27 @@ export default {
     maxRegistrationsPerInterval: 'u16'
   },
   /**
-   * Lookup206: pallet_torus0::pallet::Error<T>
+   * Lookup208: pallet_torus0::pallet::Error<T>
    **/
   PalletTorus0Error: {
     _enum: ['AgentDoesNotExist', 'NotEnoughStakeToWithdraw', 'NotEnoughBalanceToStake', 'TooManyAgentRegistrationsThisBlock', 'TooManyAgentRegistrationsThisInterval', 'AgentAlreadyRegistered', 'CouldNotConvertToBalance', 'BalanceNotAdded', 'StakeNotRemoved', 'InvalidShares', 'NotEnoughBalanceToRegisterAgent', 'StakeNotAdded', 'BalanceNotRemoved', 'BalanceCouldNotBeRemoved', 'NotEnoughStakeToRegister', 'StillRegistered', 'MaxAllowedAgents', 'NotEnoughBalanceToTransfer', 'InvalidAgentMetadata', 'AgentMetadataTooLong', 'AgentMetadataTooShort', 'InvalidMinBurn', 'InvalidMaxBurn', 'AgentNameTooLong', 'AgentNameTooShort', 'InvalidAgentName', 'AgentUrlTooLong', 'AgentUrlTooShort', 'InvalidAgentUrl', 'AgentNameAlreadyExists', 'ArithmeticError', 'ExtrinsicPanicked', 'StepPanicked', 'StakeTooSmall', 'AgentKeyNotWhitelisted', 'InvalidAmount', 'InvalidStakingFee', 'InvalidWeightControlFee']
   },
   /**
-   * Lookup207: pallet_emission0::ConsensusMember<T>
+   * Lookup209: pallet_emission0::ConsensusMember<T>
    **/
   PalletEmission0ConsensusMember: {
     weights: 'Vec<(AccountId32,u16)>',
-    weightsLastUpdatedAt: 'u64',
-    pruningScore: 'u16'
+    lastIncentives: 'u16',
+    lastDividends: 'u16'
   },
   /**
-   * Lookup210: pallet_emission0::pallet::Error<T>
+   * Lookup212: pallet_emission0::pallet::Error<T>
    **/
   PalletEmission0Error: {
     _enum: ['WeightSetTooLarge', 'AgentIsNotRegistered', 'CannotSetWeightsForSelf', 'CannotDelegateWeightControlToSelf', 'AgentIsNotDelegating', 'NotEnoughStakeToSetWeights']
   },
   /**
-   * Lookup212: sp_runtime::MultiSignature
+   * Lookup214: sp_runtime::MultiSignature
    **/
   SpRuntimeMultiSignature: {
     _enum: {
@@ -1439,35 +1463,47 @@ export default {
     }
   },
   /**
-   * Lookup215: frame_system::extensions::check_non_zero_sender::CheckNonZeroSender<T>
+   * Lookup217: frame_system::extensions::check_non_zero_sender::CheckNonZeroSender<T>
    **/
   FrameSystemExtensionsCheckNonZeroSender: 'Null',
   /**
-   * Lookup216: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
+   * Lookup218: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
    **/
   FrameSystemExtensionsCheckSpecVersion: 'Null',
   /**
-   * Lookup217: frame_system::extensions::check_tx_version::CheckTxVersion<T>
+   * Lookup219: frame_system::extensions::check_tx_version::CheckTxVersion<T>
    **/
   FrameSystemExtensionsCheckTxVersion: 'Null',
   /**
-   * Lookup218: frame_system::extensions::check_genesis::CheckGenesis<T>
+   * Lookup220: frame_system::extensions::check_genesis::CheckGenesis<T>
    **/
   FrameSystemExtensionsCheckGenesis: 'Null',
   /**
-   * Lookup221: frame_system::extensions::check_nonce::CheckNonce<T>
+   * Lookup223: frame_system::extensions::check_nonce::CheckNonce<T>
    **/
   FrameSystemExtensionsCheckNonce: 'Compact<u32>',
   /**
-   * Lookup222: frame_system::extensions::check_weight::CheckWeight<T>
+   * Lookup224: frame_system::extensions::check_weight::CheckWeight<T>
    **/
   FrameSystemExtensionsCheckWeight: 'Null',
   /**
-   * Lookup223: pallet_transaction_payment::ChargeTransactionPayment<T>
+   * Lookup225: pallet_transaction_payment::ChargeTransactionPayment<T>
    **/
   PalletTransactionPaymentChargeTransactionPayment: 'Compact<u128>',
   /**
-   * Lookup225: torus_runtime::Runtime
+   * Lookup226: frame_metadata_hash_extension::CheckMetadataHash<T>
+   **/
+  FrameMetadataHashExtensionCheckMetadataHash: {
+    mode: 'FrameMetadataHashExtensionMode'
+  },
+  /**
+   * Lookup227: frame_metadata_hash_extension::Mode
+   **/
+  FrameMetadataHashExtensionMode: {
+    _enum: ['Disabled', 'Enabled']
+  },
+  /**
+   * Lookup230: torus_runtime::Runtime
    **/
   TorusRuntimeRuntime: 'Null'
 };

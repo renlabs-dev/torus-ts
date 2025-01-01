@@ -153,7 +153,7 @@ declare module '@polkadot/api-base/types/submittable' {
       addCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       addDaoTreasuryTransferProposal: AugmentedSubmittable<(value: u128 | AnyNumber | Uint8Array, destinationKey: AccountId32 | string | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, AccountId32, Bytes]>;
       addGlobalCustomProposal: AugmentedSubmittable<(metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; maxAllowedWeights?: any; minWeightStake?: any; minWeightControlFee?: any; minStakingFee?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
+      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; maxAllowedWeights?: any; minWeightStake?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
       addToWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       denyApplication: AugmentedSubmittable<(applicationId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
       disableVoteDelegation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
@@ -162,7 +162,7 @@ declare module '@polkadot/api-base/types/submittable' {
       removeCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removeFromWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removeVoteProposal: AugmentedSubmittable<(proposalId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
-      submitApplication: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes]>;
+      submitApplication: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, metadata: Bytes | string | Uint8Array, removing: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes, bool]>;
       voteProposal: AugmentedSubmittable<(proposalId: u64 | AnyNumber | Uint8Array, agree: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, bool]>;
       /**
        * Generic tx

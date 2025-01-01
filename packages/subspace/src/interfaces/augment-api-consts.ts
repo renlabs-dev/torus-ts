@@ -8,6 +8,7 @@ import '@polkadot/api-base/types/consts';
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { Codec } from '@polkadot/types-codec/types';
+import type { Percent } from '@polkadot/types/interfaces/runtime';
 import type { FrameSupportPalletId, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
@@ -66,6 +67,7 @@ declare module '@polkadot/api-base/types/consts' {
        * Emissions per block in NANOs. Not taking into account halving and recycling.
        **/
       blockEmission: u128 & AugmentedConst<ApiType>;
+      defaultEmissionRecyclingPercentage: Percent & AugmentedConst<ApiType>;
       defaultMaxAllowedWeights: u16 & AugmentedConst<ApiType>;
       defaultMinAllowedWeights: u16 & AugmentedConst<ApiType>;
       /**
@@ -83,6 +85,7 @@ declare module '@polkadot/api-base/types/consts' {
     };
     governance: {
       applicationExpiration: u64 & AugmentedConst<ApiType>;
+      defaultTreasuryEmissionFee: Percent & AugmentedConst<ApiType>;
       maxApplicationDataLength: u32 & AugmentedConst<ApiType>;
       maxPenaltyPercentage: u8 & AugmentedConst<ApiType>;
       minApplicationDataLength: u32 & AugmentedConst<ApiType>;
@@ -191,6 +194,7 @@ declare module '@polkadot/api-base/types/consts' {
     };
     torus0: {
       defaultAdjustmentAlpha: u64 & AugmentedConst<ApiType>;
+      defaultDividendsParticipationWeight: Percent & AugmentedConst<ApiType>;
       defaultImmunityPeriod: u16 & AugmentedConst<ApiType>;
       defaultMaxAllowedAgents: u16 & AugmentedConst<ApiType>;
       defaultMaxAllowedValidators: u16 & AugmentedConst<ApiType>;
@@ -198,8 +202,8 @@ declare module '@polkadot/api-base/types/consts' {
       defaultMaxNameLength: u16 & AugmentedConst<ApiType>;
       defaultMaxRegistrationsPerBlock: u16 & AugmentedConst<ApiType>;
       defaultMaxRegistrationsPerInterval: u16 & AugmentedConst<ApiType>;
+      defaultMinAllowedStake: u128 & AugmentedConst<ApiType>;
       defaultMinBurn: u128 & AugmentedConst<ApiType>;
-      defaultMinimumAllowedStake: u128 & AugmentedConst<ApiType>;
       defaultMinNameLength: u16 & AugmentedConst<ApiType>;
       defaultMinStakingFee: u8 & AugmentedConst<ApiType>;
       defaultMinValidatorStake: u128 & AugmentedConst<ApiType>;

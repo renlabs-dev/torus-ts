@@ -8,8 +8,8 @@ import '@polkadot/api-base/types/storage';
 import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/api-base/types';
 import type { BTreeSet, Bytes, Null, Option, Struct, U256, U8aFixed, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256 } from '@polkadot/types/interfaces/runtime';
-import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletEmission0ConsensusMember, PalletEvmCodeMetadata, PalletGovernanceApplicationAgentApplication, PalletGovernanceConfigGovernanceConfiguration, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletTorus0Agent, PalletTorus0BurnBurnConfiguration, PalletTorus0FeeValidatorFee, PalletTorus0FeeValidatorFeeConstraints, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, TorusRuntimeRuntimeHoldReason } from '@polkadot/types/lookup';
+import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
+import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletEmission0ConsensusMember, PalletEvmCodeMetadata, PalletGovernanceApplicationAgentApplication, PalletGovernanceConfigGovernanceConfiguration, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletTorus0Agent, PalletTorus0BurnBurnConfiguration, PalletTorus0FeeValidatorFeeConstraints, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, TorusRuntimeRuntimeHoldReason } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -100,6 +100,7 @@ declare module '@polkadot/api-base/types/storage' {
     };
     emission0: {
       consensusMembers: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<PalletEmission0ConsensusMember>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      emissionRecyclingPercentage: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
       maxAllowedWeights: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       minAllowedWeights: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       minStakePerWeight: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
@@ -151,6 +152,7 @@ declare module '@polkadot/api-base/types/storage' {
       globalGovernanceConfig: AugmentedQuery<ApiType, () => Observable<PalletGovernanceConfigGovernanceConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
       notDelegatingVotingPower: AugmentedQuery<ApiType, () => Observable<BTreeSet<AccountId32>>, []> & QueryableStorageEntry<ApiType, []>;
       proposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
+      treasuryEmissionFee: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
       unrewardedProposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposalUnrewardedProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
       whitelist: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
@@ -337,7 +339,7 @@ declare module '@polkadot/api-base/types/storage' {
       agents: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<PalletTorus0Agent>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       burn: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
       burnConfig: AugmentedQuery<ApiType, () => Observable<PalletTorus0BurnBurnConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
-      fee: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<PalletTorus0FeeValidatorFee>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      dividendsParticipationWeight: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
       feeConstraints: AugmentedQuery<ApiType, () => Observable<PalletTorus0FeeValidatorFeeConstraints>, []> & QueryableStorageEntry<ApiType, []>;
       immunityPeriod: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       incentiveRatio: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
