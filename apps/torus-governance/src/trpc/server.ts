@@ -17,7 +17,7 @@ const createContext = cache(async () => {
     session: null,
     headers: heads,
     jwtSecret: env.JWT_SECRET,
-    authOrigin: env.AUTH_ORIGIN,
+    authOrigin: env.NEXT_PUBLIC_AUTH_ORIGIN,
   });
 });
 

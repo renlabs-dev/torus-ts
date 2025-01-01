@@ -15,7 +15,7 @@
             # Node.js
             pkgs.nodejs_20
             pkgs.pnpm
-            # Run scripts locally
+            # Run project-specific commands
             pkgs.just
             # Run Github actions locally
             pkgs.act

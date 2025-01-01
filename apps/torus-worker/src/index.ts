@@ -14,7 +14,7 @@ import { weightAggregatorWorker } from "./workers/weight-aggregator";
 import { env } from "./env";
 
 async function setup(): Promise<ApiPromise> {
-  const wsEndpoint = env.NEXT_PUBLIC_WS_PROVIDER_URL;
+  const wsEndpoint = env.NEXT_PUBLIC_TORUS_RPC_URL;
 
   log("Connecting to ", wsEndpoint);
 
@@ -30,6 +30,7 @@ async function main() {
   const lastBlock = await queryLastBlock(api);
 
   const workerTypes: Record<string, () => Promise<void>> = {
+    // TODO: rename "dao" worker arg
     dao: async () => {
       await processDaoApplicationsWorker({
         lastBlock,
@@ -37,6 +38,7 @@ async function main() {
         lastBlockNumber,
       });
     },
+    // TODO: rename "dao-notifier" worker arg
     "dao-notifier": async () => {
       await notifyNewApplicationsWorker({
         lastBlock,
@@ -44,6 +46,7 @@ async function main() {
         lastBlockNumber,
       });
     },
+    // TODO: rename "module-fetcher" worker arg to "agent-fetcher"
     "module-fetcher": async () => {
       await agentFetcherWorker({
         lastBlock,

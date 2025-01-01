@@ -17,15 +17,13 @@ import {
   SelectValue,
 } from "@torus-ts/ui";
 
-// Adjust the import path as needed
-
-import { CreateDao } from "./agent-application/create-agent-application";
+import { CreateAgentApplication } from "./agent-application/create-agent-application";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
 
 export function CreateModal() {
-  const [selectedView, setSelectedView] = useState("proposal");
+  const [selectedView, setSelectedView] = useState("create-proposal");
 
   return (
     <Dialog>
@@ -49,19 +47,21 @@ export function CreateModal() {
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
           <SelectContent className="border-muted">
-            <SelectItem value="proposal">Create new Proposal</SelectItem>
-            <SelectItem value="dao">Create new S2 Application</SelectItem>
+            <SelectItem value="create-proposal">Create new Proposal</SelectItem>
             <SelectItem value="create-transfer-dao-treasury">
               Create Transfer Dao Treasury Proposal
             </SelectItem>
             <SelectSeparator />
-            <SelectItem value="register-module">Register a Module</SelectItem>
+            <SelectItem value="create-agent-application">
+              Create Agent Application
+            </SelectItem>
+            <SelectItem value="register-agent">Register a Agent</SelectItem>
           </SelectContent>
         </Select>
-        {selectedView === "proposal" ? (
+        {selectedView === "create-proposal" ? (
           <CreateProposal />
-        ) : selectedView === "dao" ? (
-          <CreateDao />
+        ) : selectedView === "create-agent-application" ? (
+          <CreateAgentApplication />
         ) : selectedView === "create-transfer-dao-treasury" ? (
           <CreateTransferDaoTreasuryProposal />
         ) : (

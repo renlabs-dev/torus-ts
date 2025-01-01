@@ -7,7 +7,7 @@ import type {
 } from "@torus-ts/subspace";
 import {
   pushToWhitelist,
-  queryDaoApplications,
+  queryAgentApplications,
   queryLastBlock,
   refuseDaoApplication,
   removeFromWhitelist,
@@ -70,7 +70,7 @@ export async function getApplications(
   api: ApiPromise,
   applicationTypes: DaoApplicationStatus[],
 ) {
-  const dao_entries = await queryDaoApplications(api);
+  const dao_entries = await queryAgentApplications(api);
   const pending_daos = dao_entries.filter((app) =>
     applicationTypes.includes(app.status),
   );
@@ -112,34 +112,34 @@ export async function processVotesOnProposal(
   dao_hash_map: Record<number, DaoApplications>,
   api: ApiPromise,
 ) {
-  const mnemonic = process.env.SUBSPACE_MNEMONIC; // TODO: is this the `COMMUNITY_VALIDATOR_MNEMONIC` ?
-  const { appId: daoId, acceptVotes, refuseVotes, removeVotes } = vote_info;
-  console.log(`Accept: ${acceptVotes} ${daoId} Threshold: ${vote_threshold}`);
-  console.log(`Refuse: ${refuseVotes} ${daoId} Threshold: ${vote_threshold}`);
-  console.log(`Remove: ${removeVotes} ${daoId} Threshold: ${vote_threshold}`);
+  const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
+  const { appId: agentId, acceptVotes, refuseVotes, removeVotes } = vote_info;
+  console.log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
+  console.log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);
+  console.log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
   if (acceptVotes >= vote_threshold) {
     // sanity check
-    if (daoId in dao_hash_map) {
-      log(`Accepting proposal ${daoId}`);
+    if (agentId in dao_hash_map) {
+      log(`Accepting proposal ${agentId}`);
       await pushToWhitelist(
         api,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        dao_hash_map[daoId]!.userId,
+        dao_hash_map[agentId]!.userId,
         mnemonic,
       );
     }
   } else if (refuseVotes >= vote_threshold) {
-    log(`Refusing proposal ${daoId}`);
-    await refuseDaoApplication(api, daoId, mnemonic);
+    log(`Refusing proposal ${agentId}`);
+    await refuseDaoApplication(api, agentId, mnemonic);
 
     // refuse
   } else if (
     removeVotes >= vote_threshold &&
-    dao_hash_map[daoId] !== undefined &&
-    dao_hash_map[daoId].status === "Accepted"
+    dao_hash_map[agentId] !== undefined &&
+    dao_hash_map[agentId].status === "Accepted"
   ) {
-    log(`Removing proposal ${daoId}`);
-    await removeFromWhitelist(api, dao_hash_map[daoId].userId, mnemonic);
+    log(`Removing proposal ${agentId}`);
+    await removeFromWhitelist(api, dao_hash_map[agentId].userId, mnemonic);
   }
 }
 

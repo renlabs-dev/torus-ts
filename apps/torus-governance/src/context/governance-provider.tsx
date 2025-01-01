@@ -5,22 +5,22 @@ import { createContext, useContext, useMemo } from "react";
 
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import type {
-  DaoApplications,
+  AgentApplication,
   LastBlock,
   Proposal,
   SS58Address,
   StakeData,
 } from "@torus-ts/subspace";
 import type {
-  DaoState,
+  ApplicationState,
   InjectedAccountWithMeta,
   ProposalState,
 } from "@torus-ts/torus-provider";
 import type {
   AddCustomProposal,
-  AddDaoApplication,
-  addTransferDaoTreasuryProposal,
-  RegisterAgent,
+  AddAgentApplication,
+  addDaoTreasuryTransferProposal,
+  registerAgent,
   RemoveVote,
   Vote,
 } from "@torus-ts/torus-provider/types";
@@ -28,14 +28,12 @@ import {
   useAccountsNotDelegatingVoting,
   useCachedStakeOut,
   useCustomMetadata,
-  useDaos,
+  useAgentApplications,
   useDaoTreasuryAddress,
   useFreeBalance,
   useLastBlock,
-  useModuleBurn,
   useProposals,
   useRewardAllocation,
-  useSubnetList,
   useUnrewardedProposals,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -55,13 +53,13 @@ interface GovernanceContextType {
 
   stakeOut: UseQueryResult<StakeData, Error>;
 
-  daos: UseQueryResult<DaoApplications[], Error>;
-  daosWithMeta: DaoState[] | undefined;
+  agentApplications: UseQueryResult<ApplicationState[], Error>;
+  agentApplicationsWithMeta: ApplicationState[] | undefined;
   daoTreasuryAddress: UseQueryResult<SS58Address, Error>;
   daoTreasuryBalance: UseQueryResult<bigint, Error>;
-  addDaoApplication: (application: AddDaoApplication) => Promise<void>;
-  addTransferDaoTreasuryProposal: (
-    proposal: addTransferDaoTreasuryProposal,
+  AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
+  addDaoTreasuryTransferProposal: (
+    proposal: addDaoTreasuryTransferProposal,
   ) => Promise<void>;
 
   proposals: UseQueryResult<Proposal[], Error>;
@@ -72,10 +70,7 @@ interface GovernanceContextType {
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
 
-  subnetList: UseQueryResult<Record<string, string>, Error>;
-
-  moduleBurn: UseQueryResult<Record<string, string>, Error>;
-  RegisterAgent: (RegisterAgent: RegisterAgent) => Promise<void>;
+  registerAgent: (registerAgent: registerAgent) => Promise<void>;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -92,11 +87,11 @@ export function GovernanceProvider({
     selectedAccount,
     isAccountConnected,
     voteProposal,
-    RegisterAgent,
-    addDaoApplication,
+    registerAgent,
+    AddAgentApplication,
     addCustomProposal,
     removeVoteProposal,
-    addTransferDaoTreasuryProposal,
+    addDaoTreasuryTransferProposal,
 
     accounts,
     handleLogout,
@@ -126,7 +121,7 @@ export function GovernanceProvider({
   }, [selectedAccount, accountsNotDelegatingVoting]);
 
   // == Subspace ==
-  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_CACHE_PROVIDER_URL);
+  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_TORUS_CACHE_URL);
 
   const accountStakedBalance =
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -139,7 +134,7 @@ export function GovernanceProvider({
     lastBlock.data,
     proposals.data,
   );
-  const proposalsWithMeta = proposals.data?.map((proposal) => {
+  const proposalsWithMeta = proposals.data?.map((proposal: Proposal) => {
     const id = proposal.id;
     const metadataQuery = customProposalMetadataQueryMap.get(id);
     const data = metadataQuery?.data;
@@ -156,34 +151,30 @@ export function GovernanceProvider({
     lastBlock.data?.apiAtBlock,
   );
 
-  // == DAOs ==
-  const daos = useDaos(lastBlock.data?.apiAtBlock);
-  const customDaoMetadataQueryMap = useCustomMetadata<BaseDao>(
-    "dao",
+  // == Agent Applications ==
+  const agentApplications = useAgentApplications(lastBlock.data?.apiAtBlock);
+  const appMetadataQueryMap = useCustomMetadata<BaseDao>(
+    "application",
     lastBlock.data,
-    daos.data,
+    agentApplications.data,
   );
-  const daosWithMeta = daos.data?.map((dao) => {
-    const id = dao.id;
-    const metadataQuery = customDaoMetadataQueryMap.get(id);
-    const data = metadataQuery?.data;
-    if (data == null) {
-      return dao;
-    }
-    const [, customData] = data;
-    return { ...dao, customData };
-  });
+  const agentApplicationsWithMeta = agentApplications.data?.map(
+    (agent: AgentApplication) => {
+      const id = agent.id;
+      const metadataQuery = appMetadataQueryMap.get(id);
+      const data = metadataQuery?.data;
+      if (data == null) {
+        return agent;
+      }
+      const [, customData] = data;
+      return { ...agent, customData };
+    },
+  );
 
+  // == Treasury ==
   const daoTreasuryAddress = useDaoTreasuryAddress(lastBlock.data?.apiAtBlock);
 
-  const daoTreasuryBalance = useFreeBalance(
-    lastBlock.data?.apiAtBlock,
-    daoTreasuryAddress.data,
-  );
-
-  // == Modules ==
-  const subnetList = useSubnetList(lastBlock.data?.apiAtBlock);
-  const moduleBurn = useModuleBurn(lastBlock.data?.apiAtBlock);
+  const daoTreasuryBalance = useFreeBalance(api, daoTreasuryAddress.data);
 
   return (
     <GovernanceContext.Provider
@@ -199,12 +190,12 @@ export function GovernanceProvider({
         accountFreeBalance,
         accountStakedBalance,
 
-        daos,
-        daosWithMeta,
+        agentApplications,
+        agentApplicationsWithMeta,
         daoTreasuryAddress,
         daoTreasuryBalance,
-        addDaoApplication,
-        addTransferDaoTreasuryProposal,
+        AddAgentApplication,
+        addDaoTreasuryTransferProposal,
 
         proposals,
         proposalsWithMeta,
@@ -214,10 +205,7 @@ export function GovernanceProvider({
         addCustomProposal,
         removeVoteProposal,
 
-        subnetList,
-
-        moduleBurn,
-        RegisterAgent,
+        registerAgent: registerAgent,
       }}
     >
       <Header

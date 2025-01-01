@@ -17,7 +17,7 @@ const THUMBNAIL_URL = "https://i.imgur.com/6hJKhMu.gif";
 
 export const env = parseEnvOrExit(
   z.object({
-    DAO_NOTIFIER_DISCORD_WEBHOOK_URL: z.string().min(1),
+    CURATOR_DISCORD_WEBHOOK_URL: z.string().min(1),
   }),
 )(process.env);
 
@@ -60,7 +60,7 @@ async function pushNotification(
   const notification = {
     discord_uid: `${resolved_metadata.discord_id}`,
     app_id: `${proposal.id}`,
-    application_url: `https://governance.communeai.org/dao/${proposal.id}`,
+    application_url: `https://governance.torus.network/dao/${proposal.id}`,
   };
   const seen_proposal: NewNotification = {
     governanceModel: pType,
@@ -73,10 +73,7 @@ async function pushNotification(
     notification.application_url,
   );
 
-  await sendDiscordWebhook(
-    env.DAO_NOTIFIER_DISCORD_WEBHOOK_URL,
-    discordMessage,
-  );
+  await sendDiscordWebhook(env.CURATOR_DISCORD_WEBHOOK_URL, discordMessage);
 
   await addSeenProposal(seen_proposal);
 }

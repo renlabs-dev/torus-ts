@@ -68,29 +68,15 @@ pnpm db:push
 
 <!-- TODO: Docker README section -->
 
-## Commune URLs
+## Torus apps URLs
 
-### communex-page (Static SPA site built by Digital Ocean)
+### torus-page
 
-PROD: https://communex.ai/ , https://communex-page-xw7rh.ondigitalocean.app/
-DEV: https://dev.communex.ai/ , https://dev-communex-page-8aoym.ondigitalocean.app/
+### torus-governance
 
-### commune-governance (Drone CI for docker image)
+### torus-allocator
 
-PROD: https://governance.communeai.org/ , https://commune-governance-q32fh.ondigitalocean.app/
-DEV: https://dev.governance.communeai.org/ , https://dev-commune-governance-4goke.ondigitalocean.app/
-
-### community validator (Drone CI for docker image)
-
-PROD: https://validator.communeai.net/ , https://community-validator-engn6.ondigitalocean.app/
-DEV: https://dev.validator.communeai.net/ , https://dev-community-validator-cqpy5.ondigitalocean.app/
-
-### commune page (Drone CI for docker image)
-
-PROD: https://communeai.org/ , https://commune-page-xsrfo.ondigitalocean.app/
-DEV: https://dev.communeai.org/ , https://dev-commune-page-33rl9.ondigitalocean.app/
-
-### comrads-worker (Drone CI for docker image)
+### torus-worker
 
 ## References
 

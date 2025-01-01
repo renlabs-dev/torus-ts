@@ -5,42 +5,47 @@ import { LoaderCircle } from "lucide-react";
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
 import { CreateCadreCandidates } from "~/app/components/agent-application/create-cadre-candidates";
-import { DaoStatusLabel } from "~/app/components/agent-application/agent-application-status-label";
 import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application/agent-application-vote-card";
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { useGovernance } from "~/context/governance-provider";
-import { handleCustomDaos } from "../../../../utils";
+import { handleCustomAgentApplications } from "../../../../../utils";
 
 interface CustomContent {
   paramId: number;
 }
 
-export function DaoExpandedView(props: CustomContent): JSX.Element {
+export function AgentApplicationExpandedView(
+  props: CustomContent,
+): JSX.Element {
   const { paramId } = props;
 
-  const { daosWithMeta, daos, lastBlock } = useGovernance();
+  const { agentApplicationsWithMeta, agentApplications, lastBlock } =
+    useGovernance();
 
-  function handleDaosContent() {
-    const dao = daosWithMeta?.find((d) => d.id === paramId);
-    if (!dao) return null;
+  function handleAgentApplicationsContent() {
+    const app = agentApplicationsWithMeta?.find((d) => d.id === paramId);
+    if (!app) return null;
 
-    const { body, title } = handleCustomDaos(dao.id, dao.customData ?? null);
+    const { body, title } = handleCustomAgentApplications(
+      app.id,
+      app.customData ?? null,
+    );
 
-    const daoContent = {
+    const agentApplicationContent = {
       body,
       title,
-      status: dao.status,
-      author: dao.userId,
-      id: dao.id,
-      creationBlock: dao.blockNumber,
+      author: app.payerKey,
+      id: app.id,
+      // creationBlock: app.blockNumber,
+      status: "Pending" as const,
     };
-    return daoContent;
+    return agentApplicationContent;
   }
 
-  const content = handleDaosContent();
+  const content = handleAgentApplicationsContent();
 
-  if (daos.isLoading || !content)
+  if (agentApplications.isLoading || !content)
     return (
       <div className="flex w-full items-center justify-center lg:h-[calc(100svh-203px)]">
         <h1 className="text-2xl text-white">Loading...</h1>
@@ -50,9 +55,9 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <div className="flex w-full flex-row items-center gap-2">
-        <DaoStatusLabel status={content.status} />
-      </div>
+      {/* <div className="flex w-full flex-row items-center gap-2">
+        <agentApplicationstatusLabel status={content.status} />
+      </div> */}
       <div className="flex w-full justify-between gap-10">
         <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
@@ -62,7 +67,8 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
             <DetailsCard
               author={content.author}
               id={content.id}
-              creationBlock={content.creationBlock}
+              // creationBlock={content.creationBlock}
+              creationBlock={0} // TODO
               lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
             />
             <AgentApplicationVoteTypeCard
@@ -95,7 +101,8 @@ export function DaoExpandedView(props: CustomContent): JSX.Element {
           <DetailsCard
             author={content.author}
             id={content.id}
-            creationBlock={content.creationBlock}
+            // creationBlock={content.creationBlock}
+            creationBlock={0} // TODO
             lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
           />
           <CreateCadreCandidates />

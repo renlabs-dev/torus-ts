@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  COMMUNITY_VALIDATOR_MNEMONIC: z.string().min(1),
-  NEXT_PUBLIC_WS_PROVIDER_URL: z.string().url(),
+  TORUS_ALLOCATOR_MNEMONIC: z.string().min(1),
+  NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
 });
 
 const result = envSchema.safeParse(process.env);

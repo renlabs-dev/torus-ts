@@ -28,16 +28,25 @@ const transferDaoTreasuryProposalSchema = z.object({
   body: z.string().min(1, "Body is required"),
 });
 
+// w: AugmentedSubmittable<
+//   (
+//     value: u128 | AnyNumber | Uint8Array,
+//     destinationKey: AccountId32 | string | Uint8Array,
+//     data: Bytes | string | Uint8Array,
+//   ) => SubmittableExtrinsic<ApiType>,
+//   [u128, AccountId32, Bytes]
+// >;
+
 export function CreateTransferDaoTreasuryProposal(): JSX.Element {
   const router = useRouter();
   const {
     isAccountConnected,
     accountFreeBalance,
-    addTransferDaoTreasuryProposal,
+    addDaoTreasuryTransferProposal,
   } = useGovernance();
 
-  const [dest, setDest] = useState("");
   const [value, setValue] = useState("");
+  const [destinationKey, setDestinationKey] = useState("");
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -82,10 +91,10 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
       const daoApplicationCost = 1000;
 
       if (Number(accountFreeBalance.data) > daoApplicationCost) {
-        void addTransferDaoTreasuryProposal({
-          dest,
+        void addDaoTreasuryTransferProposal({
           value,
-          IpfsHash: `ipfs://${ipfs.IpfsHash}`,
+          destinationKey,
+          data: `ipfs://${ipfs.IpfsHash}`,
           callback: handleCallback,
         });
       } else {
@@ -150,11 +159,11 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
         </TabsList>
         <TabsContent value="edit" className="flex flex-col gap-3">
           <Input
-            onChange={(e) => setDest(e.target.value)}
+            onChange={(e) => setDestinationKey(e.target.value)}
             placeholder="Destination"
             type="text"
             required
-            value={dest}
+            value={destinationKey}
           />
           <Input
             onChange={(e) => setValue(e.target.value)}

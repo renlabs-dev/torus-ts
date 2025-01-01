@@ -9,11 +9,6 @@ import {
   Button,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Separator,
   Tabs,
   TabsContent,
@@ -33,18 +28,12 @@ const moduleSchema = z.object({
 
 export function RegisterAgent(): JSX.Element {
   const router = useRouter();
-  const {
-    isAccountConnected,
-    RegisterAgent,
-    accountFreeBalance,
-    subnetList,
-    moduleBurn,
-  } = useGovernance();
+  const { isAccountConnected, registerAgent, accountFreeBalance } =
+    useGovernance();
 
-  const [subnetName, setSubnetName] = useState("");
-  const [address, setAddress] = useState("");
+  const [agentKey, setAgentKey] = useState("");
   const [name, setName] = useState("");
-  const [moduleId, setModuleId] = useState("");
+  const [url, setUrl] = useState("");
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -62,17 +51,6 @@ export function RegisterAgent(): JSX.Element {
 
   function handleCallback(callbackReturn: TransactionResult): void {
     setTransactionStatus(callbackReturn);
-  }
-
-  function getModuleBurn(subnetId: string) {
-    if (!moduleBurn.data) {
-      return 0;
-    }
-    if (Number(subnetId) === 0) {
-      return 0;
-    }
-
-    return formatToken(Number(moduleBurn.data[subnetId]));
   }
 
   async function uploadFile(fileToUpload: File): Promise<void> {
@@ -100,11 +78,10 @@ export function RegisterAgent(): JSX.Element {
       const moduleCost = 2000;
 
       if (Number(accountFreeBalance.data) > moduleCost) {
-        void RegisterAgent({
-          subnetName,
-          address,
+        void registerAgent({
+          agentKey,
           name,
-          moduleId,
+          url,
           metadata: `ipfs://${ipfs.IpfsHash}`,
           callback: handleCallback,
         });
@@ -169,56 +146,34 @@ export function RegisterAgent(): JSX.Element {
         </TabsList>
         <TabsContent value="edit" className="flex flex-col gap-3">
           <Input
+            onChange={(e) => setAgentKey(e.target.value)}
+            placeholder="Address (eg. 12sPm....n88b)"
+            type="text"
+            value={agentKey}
+          />
+          <Input
             onChange={(e) => setName(e.target.value)}
-            placeholder="Module Name (eg. ren-labs)"
+            placeholder="Agent Name (eg. agent-one)"
             type="text"
             value={name}
           />
           <Input
-            onChange={(e) => setModuleId(e.target.value)}
-            placeholder="Module ID (SS58 Address)"
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="URL (eg. https://agent-one.com)"
             type="text"
-            value={moduleId}
-          />
-          <Select onValueChange={setSubnetName} value={subnetName}>
-            <SelectTrigger className="text-white">
-              <SelectValue placeholder="Subnet Name (eg. General)" />
-            </SelectTrigger>
-            <SelectContent>
-              {subnetList.isLoading ? (
-                <SelectItem value="loading" disabled>
-                  Loading...
-                </SelectItem>
-              ) : subnetList.data ? (
-                Object.entries(subnetList.data).map(([key, value]) => (
-                  <SelectItem key={key} value={value}>
-                    {key} | {value} | {getModuleBurn(key)} COMAI (Current Burn)
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="error" disabled>
-                  Error loading subnets
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-          <Input
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="Address (eg. 0.0.0.0:8000)"
-            type="text"
-            value={address}
+            value={url}
           />
           <Separator />
           <Input
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Your Module title here..."
+            placeholder="Your Agent title here..."
             type="text"
             required
             value={title}
           />
           <Textarea
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Your module body here... (Markdown supported / HTML tags are not supported)"
+            placeholder="Your Agent body here... (Markdown supported / HTML tags are not supported)"
             rows={5}
             required
             value={body}

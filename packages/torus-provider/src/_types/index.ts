@@ -22,12 +22,6 @@ export interface Transfer {
   refetchHandler: () => Promise<void>;
 }
 
-export interface Bridge {
-  amount: string;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
-}
-
 export interface TransferStake {
   fromValidator: string;
   toValidator: string;
@@ -49,11 +43,10 @@ export interface RemoveVote {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface RegisterAgent {
-  subnetName: string;
-  address: string;
+export interface registerAgent {
+  agentKey: string;
   name: string;
-  moduleId: string;
+  url: string;
   metadata: string;
   callback?: (status: TransactionResult) => void;
 }
@@ -63,14 +56,15 @@ export interface AddCustomProposal {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface addTransferDaoTreasuryProposal {
-  IpfsHash: string;
+export interface addDaoTreasuryTransferProposal {
   value: string;
-  dest: string;
+  destinationKey: string;
+  data: string; // IpfsHash
+
   callback?: (status: TransactionResult) => void;
 }
 
-export interface AddDaoApplication {
+export interface AddAgentApplication {
   IpfsHash: string;
   applicationKey: string;
   callback?: (status: TransactionResult) => void;

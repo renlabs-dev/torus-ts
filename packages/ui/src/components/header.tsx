@@ -15,7 +15,7 @@ export function Header(props: HeaderProps): JSX.Element {
         "fixed z-[75] flex w-full max-w-screen-xl animate-fade-down justify-between px-4 py-2",
       )}
     >
-      <Link className="flex gap-3 p-1.5" href="/">
+      <Link className="z-[80] flex gap-3 p-1.5 hover:cursor-pointer" href="/">
         <Icons.logo className="h-6 w-6" />
         {props.appName}
       </Link>

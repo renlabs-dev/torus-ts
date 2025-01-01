@@ -1,8 +1,11 @@
 # Creating Items in the Database with Drizzle Schema, Requesting through tRPC, and Frontend Integration
 
-This documentation covers how to create items in the database using the Drizzle schema, request them through tRPC, and create GET and POST methods for frontend interaction.
+This documentation covers how to create items in the database using the Drizzle
+schema, request them through tRPC, and create GET and POST methods for frontend
+interaction.
 
-If you get any TypeScript errors, make sure to delete the `node_modules` and cash related folders and run `pnpm i` again.
+If you get any TypeScript errors, make sure to delete the `node_modules` and
+cache related folders and run `pnpm i` again.
 
 ## Schema Definition
 
@@ -70,7 +73,7 @@ export const appRouter = createTRPCRouter({
 
 ### Main Page Component
 
-We create the main page component in `apps/commune-validator/src/app/page.tsx`.
+We create the main page component in `apps/torus-validator/src/app/page.tsx`.
 
 ```typescript
 export default function Page(): JSX.Element {
@@ -100,7 +103,7 @@ async function CrudShowcase() {
 
 ### Create Weight Component
 
-Lastly, we create a form component for adding new items in `apps/commune-validator/src/app/components/create-module-test.tsx`.
+Lastly, we create a form component for adding new items in `apps/torus-validator/src/app/components/create-module-test.tsx`.
 
 ```typescript
 export function CreateWeight() {

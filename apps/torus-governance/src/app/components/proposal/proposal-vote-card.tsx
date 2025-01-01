@@ -24,9 +24,7 @@ const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
     <div className="hidden animate-fade-down animate-delay-500 md:block">
-      <div className="pb-6 pl-0">
-        <h3>Cast your vote</h3>
-      </div>
+      <h3 className="mb-4 text-lg">Cast your vote</h3>
       {props.children}
     </div>
   );
@@ -92,9 +90,8 @@ const VoteCardFunctionsContent = (props: {
   return (
     <div className="flex w-full flex-col items-end gap-4">
       <div
-        className={`relative z-20 flex w-full flex-col items-end gap-2 ${!isAccountConnected && "blur-md"}`}
+        className={`z-20 flex w-full flex-col items-start gap-2 ${!isAccountConnected && "blur-md"}`}
       >
-        {isAccountConnected && <VotePowerSettings isPowerUser={isPowerUser} />}
         <ToggleGroup
           type="single"
           value={vote}
@@ -130,6 +127,8 @@ const VoteCardFunctionsContent = (props: {
         >
           {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
         </Button>
+
+        {isAccountConnected && <VotePowerSettings isPowerUser={isPowerUser} />}
 
         {votingStatus.status && (
           <TransactionStatus

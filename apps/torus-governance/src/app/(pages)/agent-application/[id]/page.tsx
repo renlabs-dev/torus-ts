@@ -7,9 +7,9 @@ import {
   BreadcrumbSeparator,
 } from "@torus-ts/ui";
 
-import { DaoExpandedView } from "./_components/dao-expanded-view";
+import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
 
-export default async function DaoView({
+export default async function AgentApplicationView({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -25,21 +25,21 @@ export default async function DaoView({
       <Breadcrumb className="pb-8 pt-12">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/?view=daos-applications">
-              DAO Applications List
+            <BreadcrumbLink href="/?view=agent-applications">
+              Agent Applications List
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage className="text-muted-foreground">
-              DAO Application #{id}
+              Agent Application #{id}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
       <div className="mb-6 flex h-full w-full flex-col justify-between divide-gray-500 text-white md:mb-12 lg:flex-row">
-        <DaoExpandedView paramId={Number(id)} />
+        <AgentApplicationExpandedView paramId={Number(id)} />
       </div>
     </div>
   );

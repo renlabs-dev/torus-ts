@@ -18,7 +18,7 @@ import {
 
 const navSidebarOptions = [
   { title: "Proposals", href: "proposals" },
-  { title: "DAO Applications", href: "daos-applications" },
+  { title: "Agent Applications", href: "agent-applications" },
   //TODO: Uncomment when the other pages get done
   // { title: "Community Concepts", href: "community-concepts" },
   // { title: "DAO Members Dashboard", href: "dao-members-dashboard" },
@@ -74,7 +74,7 @@ export const Sidebar = () => {
         </SelectContent>
       </Select>
 
-      <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 md:flex">
+      <div className="hidden max-h-fit w-full min-w-fit animate-fade-up flex-col gap-6 animate-delay-200 md:flex">
         <Card className="flex flex-col gap-1.5 p-5">
           {navSidebarOptions.map((view) => (
             <Link href={`?view=${view.href}`} key={view.href} prefetch>

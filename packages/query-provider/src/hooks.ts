@@ -14,14 +14,10 @@ import type {
 import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 import {
   fetchCustomMetadata,
-  getModuleBurn,
-  getSubnetList,
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
-  queryBridgedBalance,
-  queryBridgedBalances,
   queryCachedStakeOut,
-  queryDaoApplications,
+  queryAgentApplications,
   queryDaoTreasuryAddress,
   queryFreeBalance,
   queryKeyStakedBy,
@@ -113,11 +109,11 @@ export function useProposals(
   });
 }
 
-export function useDaos(api: Api | Nullish) {
+export function useAgentApplications(api: Api | Nullish) {
   return useQuery({
     queryKey: ["daos"],
     enabled: api != null,
-    queryFn: () => queryDaoApplications(api!),
+    queryFn: () => queryAgentApplications(api!),
     staleTime: PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -234,52 +230,6 @@ export function useKeyStakedBy(
   });
 }
 
-export function useSubnetList(api: Api | Nullish) {
-  return useQuery({
-    queryKey: ["subnet_list"],
-    enabled: api != null,
-    queryFn: () => getSubnetList(api!),
-    staleTime: STAKE_STALE_TIME,
-    refetchOnWindowFocus: false,
-  });
-}
-
-export function useModuleBurn(api: Api | Nullish) {
-  return useQuery({
-    queryKey: ["module_burn"],
-    enabled: api != null,
-    queryFn: () => getModuleBurn(api!),
-    staleTime: STAKE_STALE_TIME,
-    refetchOnWindowFocus: false,
-  });
-}
-
-export function useBridgedBalances(api: Api | Nullish) {
-  return useQuery({
-    queryKey: ["bridged_balances"],
-    enabled: api != null,
-    queryFn: () => queryBridgedBalances(api!),
-    staleTime: STAKE_STALE_TIME,
-    refetchOnWindowFocus: false,
-    refetchInterval: 1000 * 20,
-  });
-}
-
-export function useBridgedBalance(
-  api: Api | Nullish,
-  address: SS58Address | null,
-) {
-  return useQuery({
-    queryKey: ["bridged_balance", address],
-    enabled: api != null && address != null,
-    queryFn: () => queryBridgedBalance(api!, address!),
-    staleTime: STAKE_STALE_TIME,
-    refetchOnWindowFocus: false,
-  });
-}
-
-// == Custom metadata ==
-
 export interface BaseProposal {
   id: number;
   metadata: string;
@@ -291,7 +241,7 @@ export interface BaseDao {
 }
 
 export function useCustomMetadata<T extends BaseProposal | BaseDao>(
-  kind: "proposal" | "dao",
+  kind: "proposal" | "application",
   lastBlock: LastBlock | Nullish,
   items: T[] | undefined,
 ) {

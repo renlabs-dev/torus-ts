@@ -4,6 +4,6 @@
 
 - search for `TODO: rename`
 
-- join `trcp/react.ts` files
+- join `trpc/react.ts` files
 
 - force error handling on Tanstack Query

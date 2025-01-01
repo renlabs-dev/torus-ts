@@ -3,13 +3,14 @@
 
 // import type lookup before we augment - in some environments
 // this is required to allow for ambient/previous definitions
-import '@polkadot/api-base/types/errors';
+import "@polkadot/api-base/types/errors";
 
-import type { ApiTypes, AugmentedError } from '@polkadot/api-base/types';
+import type { ApiTypes, AugmentedError } from "@polkadot/api-base/types";
 
-export type __AugmentedError<ApiType extends ApiTypes> = AugmentedError<ApiType>;
+export type __AugmentedError<ApiType extends ApiTypes> =
+  AugmentedError<ApiType>;
 
-declare module '@polkadot/api-base/types/errors' {
+declare module "@polkadot/api-base/types/errors" {
   interface AugmentedErrors<ApiType extends ApiTypes> {
     balances: {
       /**
@@ -65,7 +66,117 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    governanceModule: {
+    emission0: {
+      /**
+       * Tried regaining weight control without delegating it.
+       **/
+      AgentIsNotDelegating: AugmentedError<ApiType>;
+      /**
+       * Tried setting weights for an agent that does not exist.
+       **/
+      AgentIsNotRegistered: AugmentedError<ApiType>;
+      /**
+       * Tried delegating weight control to itself.
+       **/
+      CannotDelegateWeightControlToSelf: AugmentedError<ApiType>;
+      /**
+       * Tried setting weights for itself.
+       **/
+      CannotSetWeightsForSelf: AugmentedError<ApiType>;
+      /**
+       * Agent does not have enough stake to set weights.
+       **/
+      NotEnoughStakeToSetWeights: AugmentedError<ApiType>;
+      /**
+       * Agent tried setting more than 2 ^ 32 weights.
+       **/
+      WeightSetTooLarge: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    ethereum: {
+      /**
+       * Signature is invalid.
+       **/
+      InvalidSignature: AugmentedError<ApiType>;
+      /**
+       * Pre-log is present, therefore transact is not allowed.
+       **/
+      PreLogExists: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    evm: {
+      /**
+       * Not enough balance to perform action
+       **/
+      BalanceLow: AugmentedError<ApiType>;
+      /**
+       * Calculating total fee overflowed
+       **/
+      FeeOverflow: AugmentedError<ApiType>;
+      /**
+       * Gas limit is too high.
+       **/
+      GasLimitTooHigh: AugmentedError<ApiType>;
+      /**
+       * Gas limit is too low.
+       **/
+      GasLimitTooLow: AugmentedError<ApiType>;
+      /**
+       * Gas price is too low.
+       **/
+      GasPriceTooLow: AugmentedError<ApiType>;
+      /**
+       * The chain id is invalid.
+       **/
+      InvalidChainId: AugmentedError<ApiType>;
+      /**
+       * Nonce is invalid
+       **/
+      InvalidNonce: AugmentedError<ApiType>;
+      /**
+       * the signature is invalid.
+       **/
+      InvalidSignature: AugmentedError<ApiType>;
+      /**
+       * Calculating total payment overflowed
+       **/
+      PaymentOverflow: AugmentedError<ApiType>;
+      /**
+       * EVM reentrancy
+       **/
+      Reentrancy: AugmentedError<ApiType>;
+      /**
+       * EIP-3607,
+       **/
+      TransactionMustComeFromEOA: AugmentedError<ApiType>;
+      /**
+       * Undefined error.
+       **/
+      Undefined: AugmentedError<ApiType>;
+      /**
+       * Withdraw fee failed
+       **/
+      WithdrawFailed: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    governance: {
+      /**
+       * Agent not found
+       **/
+      AgentNotFound: AugmentedError<ApiType>;
+      /**
+       * The key is already a curator.
+       **/
+      AlreadyCurator: AugmentedError<ApiType>;
       /**
        * Key has already voted on given Proposal.
        **/
@@ -107,9 +218,17 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InternalError: AugmentedError<ApiType>;
       /**
+       * The penalty percentage provided does not meet the maximum requirement
+       **/
+      InvalidAgentPenaltyPercentage: AugmentedError<ApiType>;
+      /**
        * The application data is invalid or malformed.
        **/
       InvalidApplication: AugmentedError<ApiType>;
+      /**
+       * The application data provided does not meet the length requirement
+       **/
+      InvalidApplicationDataLength: AugmentedError<ApiType>;
       /**
        * The application data is too large, exceeding the maximum allowed size.
        **/
@@ -118,6 +237,30 @@ declare module '@polkadot/api-base/types/errors' {
        * Invalid value given when transforming a u64 into T::Currency.
        **/
       InvalidCurrencyConversionValue: AugmentedError<ApiType>;
+      /**
+       * Invalid maximum allowed agents in proposal
+       **/
+      InvalidMaxAllowedAgents: AugmentedError<ApiType>;
+      /**
+       * Invalid maximum allowed weights in proposal
+       **/
+      InvalidMaxAllowedWeights: AugmentedError<ApiType>;
+      /**
+       * Invalid maximum name length in proposal
+       **/
+      InvalidMaxNameLength: AugmentedError<ApiType>;
+      /**
+       * Invalid minimum name length in proposal
+       **/
+      InvalidMinNameLength: AugmentedError<ApiType>;
+      /**
+       * Invalid minimum weight control fee in proposal
+       **/
+      InvalidMinWeightControlFee: AugmentedError<ApiType>;
+      /**
+       * Invalid agent penalty percentage
+       **/
+      InvalidPenaltyPercentage: AugmentedError<ApiType>;
       /**
        * Negative proposal cost when setting global or subnet governance configuration.
        **/
@@ -159,10 +302,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotVoted: AugmentedError<ApiType>;
       /**
-       * Subnet is on Authority Mode.
-       **/
-      NotVoteMode: AugmentedError<ApiType>;
-      /**
        * The account is not whitelisted and cannot be removed from the whitelist.
        **/
       NotWhitelisted: AugmentedError<ApiType>;
@@ -186,10 +325,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Proposal with given id doesn't exist.
        **/
       ProposalNotFound: AugmentedError<ApiType>;
-      /**
-       * The network vote mode must be authority for changes to be imposed.
-       **/
-      VoteModeIsNotAuthority: AugmentedError<ApiType>;
       /**
        * The voter is delegating its voting power to their staked modules. Disable voting power
        * delegation.
@@ -298,444 +433,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    offworker: {
-      /**
-       * Send more decrypted weights than expected epoch count
-       **/
-      DecryptedWeightsLengthMismatch: AugmentedError<ApiType>;
-      /**
-       * Attempted to send empty decrypted weights
-       **/
-      EmptyDecryptedWeights: AugmentedError<ApiType>;
-      /**
-       * Decryption key is invalid for a given subnet
-       **/
-      InvalidDecryptionKey: AugmentedError<ApiType>;
-      /**
-       * Subnet ID is invalid
-       **/
-      InvalidSubnetId: AugmentedError<ApiType>;
-      /**
-       * Attempted to add more authorities than the maximum allowed
-       **/
-      TooManyAuthorities: AugmentedError<ApiType>;
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>;
-    };
-    subspaceModule: {
-      /**
-       * The module is already registered in the active set.
-       **/
-      AlreadyRegistered: AugmentedError<ApiType>;
-      /**
-       * An arithmetic error occurred during calculation.
-       **/
-      ArithmeticError: AugmentedError<ApiType>;
-      /**
-       * Balance could not be removed from the account.
-       **/
-      BalanceCouldNotBeRemoved: AugmentedError<ApiType>;
-      /**
-       * Failed to add balance to the account.
-       **/
-      BalanceNotAdded: AugmentedError<ApiType>;
-      /**
-       * Failed to remove balance from the account.
-       **/
-      BalanceNotRemoved: AugmentedError<ApiType>;
-      /**
-       * Cannot decrease fees below their current values.
-       * Fees can only be increased to prevent economic attacks.
-       **/
-      CannotDecreaseFee: AugmentedError<ApiType>;
-      /**
-       * Failed to convert between u64 and T::Balance.
-       **/
-      CouldNotConvertToBalance: AugmentedError<ApiType>;
-      /**
-       * The validator is delegating weights to another validator
-       **/
-      DelegatingControl: AugmentedError<ApiType>;
-      /**
-       * Vectors have different lengths.
-       **/
-      DifferentLengths: AugmentedError<ApiType>;
-      /**
-       * Duplicate UIDs detected in the weight matrix.
-       **/
-      DuplicateUids: AugmentedError<ApiType>;
-      /**
-       * No keys provided (empty key set).
-       **/
-      EmptyKeys: AugmentedError<ApiType>;
-      /**
-       * The extrinsic panicked during execution.
-       **/
-      ExtrinsicPanicked: AugmentedError<ApiType>;
-      /**
-       * The adjustment alpha value is invalid.
-       **/
-      InvalidAdjustmentAlpha: AugmentedError<ApiType>;
-      /**
-       * The copier margin must be between 0 and 1
-       **/
-      InvalidCopierMargin: AugmentedError<ApiType>;
-      /**
-       * Floor Founder Share must be between 0 and 100
-       **/
-      InvalidFloorFounderShare: AugmentedError<ApiType>;
-      /**
-       * The founder share is invalid.
-       **/
-      InvalidFounderShare: AugmentedError<ApiType>;
-      /**
-       * The general subnet application cost is invalid.
-       **/
-      InvalidGeneralSubnetApplicationCost: AugmentedError<ApiType>;
-      /**
-       * The incentive ratio is invalid.
-       **/
-      InvalidIncentiveRatio: AugmentedError<ApiType>;
-      /**
-       * Kappa has to be more than 0
-       **/
-      InvalidKappa: AugmentedError<ApiType>;
-      /**
-       * The maximum allowed modules value is invalid.
-       **/
-      InvalidMaxAllowedModules: AugmentedError<ApiType>;
-      /**
-       * The maximum allowed subnets value is invalid.
-       **/
-      InvalidMaxAllowedSubnets: AugmentedError<ApiType>;
-      /**
-       * Attempted to set max allowed UIDs to a value less than the current number of registered
-       * UIDs.
-       **/
-      InvalidMaxAllowedUids: AugmentedError<ApiType>;
-      /**
-       * The maximum allowed validators value is invalid, minimum is 10.
-       **/
-      InvalidMaxAllowedValidators: AugmentedError<ApiType>;
-      /**
-       * The maximum allowed weights value is invalid.
-       **/
-      InvalidMaxAllowedWeights: AugmentedError<ApiType>;
-      /**
-       * The maximum burn value is invalid.
-       **/
-      InvalidMaxBurn: AugmentedError<ApiType>;
-      /**
-       * The encryption period is too short or long, minimum is 360 blocks max is 20_880 blocks
-       **/
-      InvalidMaxEncryptionPeriod: AugmentedError<ApiType>;
-      /**
-       * The maximum allowed set weight calls per epoch must be more than 0
-       **/
-      InvalidMaximumSetWeightCallsPerEpoch: AugmentedError<ApiType>;
-      /**
-       * The maximum name length is invalid.
-       **/
-      InvalidMaxNameLength: AugmentedError<ApiType>;
-      /**
-       * The maximum registrations per block value is invalid.
-       **/
-      InvalidMaxRegistrationsPerBlock: AugmentedError<ApiType>;
-      /**
-       * The maximum registrations per interval is invalid.
-       **/
-      InvalidMaxRegistrationsPerInterval: AugmentedError<ApiType>;
-      /**
-       * The maximum weight age is invalid.
-       **/
-      InvalidMaxWeightAge: AugmentedError<ApiType>;
-      /**
-       * The minimum allowed weights value is invalid.
-       **/
-      InvalidMinAllowedWeights: AugmentedError<ApiType>;
-      /**
-       * The minimum burn value is invalid, likely too small.
-       **/
-      InvalidMinBurn: AugmentedError<ApiType>;
-      /**
-       * The minimum delegation fee is invalid.
-       **/
-      InvalidMinDelegationFee: AugmentedError<ApiType>;
-      /**
-       * The provided minimum fees are invalid. This can happen when:
-       * - Stake delegation fee is below the system minimum
-       * - Validator weight fee is below the system minimum
-       * - Either fee exceeds 100%
-       **/
-      InvalidMinFees: AugmentedError<ApiType>;
-      /**
-       * The minimum immunity stake is invalid.
-       **/
-      InvalidMinImmunityStake: AugmentedError<ApiType>;
-      /**
-       * The minimum name length is invalid.
-       **/
-      InvalidMinNameLenght: AugmentedError<ApiType>;
-      /**
-       * MinValidatorStake must be lower than 250k
-       **/
-      InvalidMinValidatorStake: AugmentedError<ApiType>;
-      /**
-       * The module address is invalid.
-       **/
-      InvalidModuleAddress: AugmentedError<ApiType>;
-      /**
-       * The module metadata is invalid.
-       **/
-      InvalidModuleMetadata: AugmentedError<ApiType>;
-      /**
-       * The module name is invalid. It must be a UTF-8 encoded string.
-       **/
-      InvalidModuleName: AugmentedError<ApiType>;
-      /**
-       * Some module parameter is invalid
-       **/
-      InvalidModuleParams: AugmentedError<ApiType>;
-      /**
-       * The proposal expiration is invalid.
-       **/
-      InvalidProposalExpiration: AugmentedError<ApiType>;
-      /**
-       * Rho must be more than 0
-       **/
-      InvalidRho: AugmentedError<ApiType>;
-      /**
-       * Invalid shares distribution.
-       **/
-      InvalidShares: AugmentedError<ApiType>;
-      /**
-       * Subnet Immunity Period has to be more than 0
-       **/
-      InvalidSubnetImmunityPeriod: AugmentedError<ApiType>;
-      /**
-       * The module metadata is invalid.
-       **/
-      InvalidSubnetMetadata: AugmentedError<ApiType>;
-      /**
-       * The subnet name contains invalid characters.
-       **/
-      InvalidSubnetName: AugmentedError<ApiType>;
-      /**
-       * The target registrations interval is invalid.
-       **/
-      InvalidTargetRegistrationsInterval: AugmentedError<ApiType>;
-      /**
-       * The target registrations per interval is invalid.
-       **/
-      InvalidTargetRegistrationsPerInterval: AugmentedError<ApiType>;
-      /**
-       * The specified tempo (epoch) is not valid.
-       **/
-      InvalidTempo: AugmentedError<ApiType>;
-      /**
-       * The trust ratio is invalid.
-       **/
-      InvalidTrustRatio: AugmentedError<ApiType>;
-      /**
-       * At least one UID in the weight matrix does not exist in the metagraph.
-       **/
-      InvalidUid: AugmentedError<ApiType>;
-      /**
-       * The number of UIDs in the weight matrix is different from the allowed amount.
-       **/
-      InvalidUidsLength: AugmentedError<ApiType>;
-      /**
-       * The key is already registered.
-       **/
-      KeyAlreadyRegistered: AugmentedError<ApiType>;
-      /**
-       * Attempted to set max allowed modules to a value less than the current number of
-       * registered modules.
-       **/
-      MaxAllowedModules: AugmentedError<ApiType>;
-      /**
-       * The maximum number of set weights per epoch has been reached.
-       **/
-      MaxSetWeightsPerEpochReached: AugmentedError<ApiType>;
-      /**
-       * The module address is too long.
-       **/
-      ModuleAddressTooLong: AugmentedError<ApiType>;
-      /**
-       * The specified module does not exist.
-       **/
-      ModuleDoesNotExist: AugmentedError<ApiType>;
-      /**
-       * The module metadata is too long.
-       **/
-      ModuleMetadataTooLong: AugmentedError<ApiType>;
-      /**
-       * A module with this name already exists in the subnet.
-       **/
-      ModuleNameAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * The module name is too long.
-       **/
-      ModuleNameTooLong: AugmentedError<ApiType>;
-      /**
-       * The module name is too short.
-       **/
-      ModuleNameTooShort: AugmentedError<ApiType>;
-      /**
-       * The specified netuid does not exist.
-       **/
-      NetuidDoesNotExist: AugmentedError<ApiType>;
-      /**
-       * The specified network does not exist.
-       **/
-      NetworkDoesNotExist: AugmentedError<ApiType>;
-      /**
-       * The network is immune to changes.
-       **/
-      NetworkIsImmuned: AugmentedError<ApiType>;
-      /**
-       * No self-weight provided.
-       **/
-      NoSelfWeight: AugmentedError<ApiType>;
-      /**
-       * The validator is not delegating weights to another validator
-       **/
-      NotDelegatingControl: AugmentedError<ApiType>;
-      /**
-       * General error for not having enough balance
-       **/
-      NotEnoughBalance: AugmentedError<ApiType>;
-      /**
-       * Insufficient balance to register.
-       **/
-      NotEnoughBalanceToRegister: AugmentedError<ApiType>;
-      /**
-       * Insufficient balance to register a subnet.
-       **/
-      NotEnoughBalanceToRegisterSubnet: AugmentedError<ApiType>;
-      /**
-       * Insufficient balance in the cold key account to stake the requested amount.
-       **/
-      NotEnoughBalanceToStake: AugmentedError<ApiType>;
-      /**
-       * Insufficient balance to transfer.
-       **/
-      NotEnoughBalanceToTransfer: AugmentedError<ApiType>;
-      /**
-       * Not having enough tokens to bridge back
-       **/
-      NotEnoughBridgedTokens: AugmentedError<ApiType>;
-      /**
-       * Insufficient stake per weight.
-       **/
-      NotEnoughStakePerWeight: AugmentedError<ApiType>;
-      /**
-       * Insufficient stake to register.
-       **/
-      NotEnoughStakeToRegister: AugmentedError<ApiType>;
-      /**
-       * Insufficient stake to set weights.
-       **/
-      NotEnoughStakeToSetWeights: AugmentedError<ApiType>;
-      /**
-       * Insufficient stake to start a network.
-       **/
-      NotEnoughStakeToStartNetwork: AugmentedError<ApiType>;
-      /**
-       * Insufficient stake to withdraw the requested amount.
-       **/
-      NotEnoughStakeToWithdraw: AugmentedError<ApiType>;
-      /**
-       * The caller is not the founder of the subnet.
-       **/
-      NotFounder: AugmentedError<ApiType>;
-      /**
-       * The system is not in vote mode.
-       **/
-      NotVoteMode: AugmentedError<ApiType>;
-      /**
-       * There is no subnet that is running with the Rootnet consensus
-       **/
-      RootnetSubnetNotFound: AugmentedError<ApiType>;
-      /**
-       * Attempted to set weights twice within net_epoch/2 blocks.
-       **/
-      SettingWeightsTooFast: AugmentedError<ApiType>;
-      /**
-       * Failed to add stake to the account.
-       **/
-      StakeNotAdded: AugmentedError<ApiType>;
-      /**
-       * Failed to remove stake from the account.
-       **/
-      StakeNotRemoved: AugmentedError<ApiType>;
-      /**
-       * The stake amount to add or remove is too small. Minimum is 0.5 unit.
-       **/
-      StakeTooSmall: AugmentedError<ApiType>;
-      /**
-       * A step in the process panicked.
-       **/
-      StepPanicked: AugmentedError<ApiType>;
-      /**
-       * The entity is still registered and cannot be modified.
-       **/
-      StillRegistered: AugmentedError<ApiType>;
-      /**
-       * Subnet is using encrypted weight calls
-       **/
-      SubnetEncrypted: AugmentedError<ApiType>;
-      /**
-       * The module metadata is too long.
-       **/
-      SubnetMetadataTooLong: AugmentedError<ApiType>;
-      /**
-       * A subnet with the given name already exists.
-       **/
-      SubnetNameAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * The subnet name is too long.
-       **/
-      SubnetNameTooLong: AugmentedError<ApiType>;
-      /**
-       * The subnet name is too short.
-       **/
-      SubnetNameTooShort: AugmentedError<ApiType>;
-      /**
-       * Subnet is not using encrypted weight calls
-       **/
-      SubnetNotEncrypted: AugmentedError<ApiType>;
-      /**
-       * Too many keys provided.
-       **/
-      TooManyKeys: AugmentedError<ApiType>;
-      /**
-       * The number of registrations in this block exceeds the allowed limit.
-       **/
-      TooManyRegistrationsPerBlock: AugmentedError<ApiType>;
-      /**
-       * The number of registrations in this interval exceeds the allowed limit.
-       **/
-      TooManyRegistrationsPerInterval: AugmentedError<ApiType>;
-      /**
-       * The number of subnet registrations in this interval exceeds the allowed limit.
-       **/
-      TooManySubnetRegistrationsPerInterval: AugmentedError<ApiType>;
-      /**
-       * Uid is not present in LegitWhitelist, it needs to be whitelisted by DAO
-       **/
-      UidNotWhitelisted: AugmentedError<ApiType>;
-      /**
-       * The weight vectors for keys and values have different sizes.
-       **/
-      WeightVecNotEqualSize: AugmentedError<ApiType>;
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>;
-    };
     sudo: {
       /**
        * Sender must be the Sudo account.
@@ -752,8 +449,12 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CallFiltered: AugmentedError<ApiType>;
       /**
+       * The specified [`Task`] failed during execution.
+       **/
+      FailedTask: AugmentedError<ApiType>;
+      /**
        * Failed to extract the runtime version from the new runtime.
-       * 
+       *
        * Either calling `Core_version` or decoding `RuntimeVersion` failed.
        **/
       FailedToExtractRuntimeVersion: AugmentedError<ApiType>;
@@ -762,6 +463,10 @@ declare module '@polkadot/api-base/types/errors' {
        * and the new runtime.
        **/
       InvalidSpecName: AugmentedError<ApiType>;
+      /**
+       * The specified [`Task`] is not valid.
+       **/
+      InvalidTask: AugmentedError<ApiType>;
       /**
        * A multi-block migration is ongoing and prevents the current code from being replaced.
        **/
@@ -792,11 +497,160 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    utility: {
+    torus0: {
       /**
-       * Too many calls batched.
+       * The agent is already registered in the active set.
        **/
-      TooManyCalls: AugmentedError<ApiType>;
+      AgentAlreadyRegistered: AugmentedError<ApiType>;
+      /**
+       * The specified agent does not exist.
+       **/
+      AgentDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Key is not present in Whitelist, it needs to be whitelisted by a Curator
+       **/
+      AgentKeyNotWhitelisted: AugmentedError<ApiType>;
+      /**
+       * The agent metadata is too long.
+       **/
+      AgentMetadataTooLong: AugmentedError<ApiType>;
+      /**
+       * The agent metadata is too long.
+       **/
+      AgentMetadataTooShort: AugmentedError<ApiType>;
+      /**
+       * A agent with this name already exists in the subnet.
+       **/
+      AgentNameAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * The agent name is too long.
+       **/
+      AgentNameTooLong: AugmentedError<ApiType>;
+      /**
+       * The agent name is too short.
+       **/
+      AgentNameTooShort: AugmentedError<ApiType>;
+      /**
+       * The agent url is too long.
+       **/
+      AgentUrlTooLong: AugmentedError<ApiType>;
+      /**
+       * The agent url is too short.
+       **/
+      AgentUrlTooShort: AugmentedError<ApiType>;
+      /**
+       * An arithmetic error occurred during calculation.
+       **/
+      ArithmeticError: AugmentedError<ApiType>;
+      /**
+       * Balance could not be removed from the account.
+       **/
+      BalanceCouldNotBeRemoved: AugmentedError<ApiType>;
+      /**
+       * Failed to add balance to the account.
+       **/
+      BalanceNotAdded: AugmentedError<ApiType>;
+      /**
+       * Failed to remove balance from the account.
+       **/
+      BalanceNotRemoved: AugmentedError<ApiType>;
+      /**
+       * Failed to convert between u128 and T::Balance.
+       **/
+      CouldNotConvertToBalance: AugmentedError<ApiType>;
+      /**
+       * The extrinsic panicked during execution.
+       **/
+      ExtrinsicPanicked: AugmentedError<ApiType>;
+      /**
+       * The agent metadata is invalid.
+       **/
+      InvalidAgentMetadata: AugmentedError<ApiType>;
+      /**
+       * The agent name is invalid. It must be a UTF-8 encoded string.
+       **/
+      InvalidAgentName: AugmentedError<ApiType>;
+      /**
+       * The agent ur; is invalid.
+       **/
+      InvalidAgentUrl: AugmentedError<ApiType>;
+      /**
+       * The amount given is 0
+       **/
+      InvalidAmount: AugmentedError<ApiType>;
+      /**
+       * The maximum burn value is invalid.
+       **/
+      InvalidMaxBurn: AugmentedError<ApiType>;
+      /**
+       * The minimum burn value is invalid, likely too small.
+       **/
+      InvalidMinBurn: AugmentedError<ApiType>;
+      /**
+       * Invalid shares distribution.
+       **/
+      InvalidShares: AugmentedError<ApiType>;
+      /**
+       * The staking fee given is lower than the minimum fee
+       **/
+      InvalidStakingFee: AugmentedError<ApiType>;
+      /**
+       * The weight control fee given is lower than the minimum fee
+       **/
+      InvalidWeightControlFee: AugmentedError<ApiType>;
+      /**
+       * Attempted to set max allowed agents to a value less than the current number of
+       * registered agents.
+       **/
+      MaxAllowedAgents: AugmentedError<ApiType>;
+      /**
+       * Insufficient balance to register.
+       **/
+      NotEnoughBalanceToregisterAgent: AugmentedError<ApiType>;
+      /**
+       * Insufficient balance in the cold key account to stake the requested amount.
+       **/
+      NotEnoughBalanceToStake: AugmentedError<ApiType>;
+      /**
+       * Insufficient balance to transfer.
+       **/
+      NotEnoughBalanceToTransfer: AugmentedError<ApiType>;
+      /**
+       * Insufficient stake to register.
+       **/
+      NotEnoughStakeToRegister: AugmentedError<ApiType>;
+      /**
+       * Insufficient stake to withdraw the requested amount.
+       **/
+      NotEnoughStakeToWithdraw: AugmentedError<ApiType>;
+      /**
+       * Failed to add stake to the account.
+       **/
+      StakeNotAdded: AugmentedError<ApiType>;
+      /**
+       * Failed to remove stake from the account.
+       **/
+      StakeNotRemoved: AugmentedError<ApiType>;
+      /**
+       * The stake amount to add or remove is too small. Minimum is 0.5 unit.
+       **/
+      StakeTooSmall: AugmentedError<ApiType>;
+      /**
+       * A step in the process panicked.
+       **/
+      StepPanicked: AugmentedError<ApiType>;
+      /**
+       * The entity is still registered and cannot be modified.
+       **/
+      StillRegistered: AugmentedError<ApiType>;
+      /**
+       * The number of agent registrations in this block exceeds the allowed limit.
+       **/
+      TooManyAgentRegistrationsThisBlock: AugmentedError<ApiType>;
+      /**
+       * The number of agent registrations in this interval exceeds the allowed limit.
+       **/
+      TooManyAgentRegistrationsThisInterval: AugmentedError<ApiType>;
       /**
        * Generic error
        **/

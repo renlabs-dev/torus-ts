@@ -76,7 +76,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
 
   if (!voters || voters.length === 0) {
     return (
-      <Card className="animate-fade-down border-muted p-4 animate-delay-500 md:p-6">
+      <Card className="animate-fade-down border-muted p-4 animate-delay-[1400ms] md:p-6">
         <CardHeader className="pl-0 pt-0">
           <h3>Voters List</h3>
         </CardHeader>
@@ -112,7 +112,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
             <div className="flex flex-col items-end">
               <span
                 className={
-                  vote === "In Favor" ? "text-green-500" : "text-red-500"
+                  vote === "IN_FAVOR" ? "text-green-500" : "text-red-500"
                 }
               >
                 {vote}

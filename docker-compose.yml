@@ -1,5 +1,4 @@
 services:
-
   subspace:
     image: subspace:local-main
     command: bash -c "/subspace/extra/insert-authority-keys.sh; /subspace/extra/run-node.sh"
@@ -34,7 +33,7 @@ services:
   #     args:
   #       - APP_NAME=torus-cache
   #   environment:
-  #     - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
+  #     - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
   #     - PORT=8000
   #   ports:
   #     - 3011:8000
@@ -46,7 +45,7 @@ services:
   #     args:
   #       - APP_NAME=torus-worker
   #   environment:
-  #     - NEXT_PUBLIC_WS_PROVIDER_URL=${NEXT_PUBLIC_WS_PROVIDER_URL}
+  #     - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
   #     - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
   #     - PORT=8000
   #   ports:
@@ -59,8 +58,8 @@ services:
       args:
         APP_NAME: torus-governance
     environment:
-      - NEXT_PUBLIC_WS_PROVIDER_URL=ws://subspace:9951
-      - NEXT_PUBLIC_CACHE_PROVIDER_URL=http://FIXME
+      - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
+      - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
       - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
@@ -83,8 +82,8 @@ services:
       args:
         APP_NAME: torus-validator
     environment:
-      - NEXT_PUBLIC_WS_PROVIDER_URL=ws://subspace:9951
-      - NEXT_PUBLIC_CACHE_PROVIDER_URL=http://FIXME
+      - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
+      - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
       - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
@@ -98,8 +97,8 @@ services:
       args:
         APP_NAME: torus-validator
     environment:
-      - NEXT_PUBLIC_WS_PROVIDER_URL=ws://subspace:9951
-      - NEXT_PUBLIC_CACHE_PROVIDER_URL=http://FIXME
+      - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
+      - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
       - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
     ports:

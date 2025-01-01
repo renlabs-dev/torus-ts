@@ -3,7 +3,6 @@
 import { Clock, Crown } from "lucide-react";
 
 import type {
-  DaoApplicationStatus,
   ProposalData,
   ProposalStatus,
   SS58Address,
@@ -13,7 +12,6 @@ import { getExpirationTime } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
 import type { VoteStatus } from "./vote-label";
-import { DaoStatusLabel } from "./agent-application/agent-application-status-label";
 import { ProposalTypeLabel } from "./proposal/proposal-type-label";
 import { StatusLabel } from "./status-label";
 import { VoteLabel } from "./vote-label";
@@ -21,7 +19,6 @@ import { VotePercentageBar } from "./vote-percentage-bar";
 
 export interface ProposalCardProps {
   author: SS58Address;
-  daoStatus?: DaoApplicationStatus;
   expirationBlock?: number;
   currentBlock?: number;
   proposalStatus?: ProposalStatus;
@@ -38,7 +35,6 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
     author,
     proposalType,
     proposalStatus,
-    daoStatus,
     favorablePercent,
     expirationBlock,
     currentBlock,
@@ -48,7 +44,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
 
   return (
     <>
-      <Card className="p-4 hover:bg-accent/70 lg:p-6">
+      <Card className="p-4 transition duration-300 hover:bg-accent/40 lg:p-6">
         <CardHeader className="flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0 xl:flex-row">
           <div className="flex w-fit flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-5">
             <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">
@@ -72,7 +68,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
             {proposalType && <ProposalTypeLabel proposalType={proposalType} />}
 
             {proposalStatus && <StatusLabel status={proposalStatus} />}
-            {daoStatus && <DaoStatusLabel status={daoStatus} />}
+            {/* {daoStatus && <DaoStatusLabel status={daoStatus} />} */}
           </div>
         </CardHeader>
 
