@@ -1,6 +1,6 @@
 import type { SQL, Table } from "@torus-ts/db";
-import type { GovernanceitemType } from "@torus-ts/subspace";
-import { getTableColumns, sql } from "@torus-ts/db";
+import type { GovernanceItemType } from "@torus-ts/subspace";
+import { and, getTableColumns, isNull, sql } from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
@@ -9,7 +9,12 @@ import {
   cadreVoteSchema,
   computedAgentWeightSchema,
   governanceNotificationSchema,
+  userAgentWeightSchema,
 } from "@torus-ts/db/schema";
+
+import type { Agent as TorusAgent } from "@torus-ts/subspace";
+
+import { eq } from "@torus-ts/db";
 
 const db = createDb();
 
@@ -66,11 +71,11 @@ export async function upsertAgentData(agents: Agent[]) {
     .execute();
 }
 
-export interface VotesByProposal {
+export interface VotesByApplication {
   appId: number;
   acceptVotes: number;
   refuseVotes: number;
-  removeVotes: number;
+  // removeVotes: number;
 }
 
 export async function vote(new_vote: NewVote) {
@@ -81,16 +86,16 @@ export async function addSeenProposal(proposal: NewNotification) {
   await db.insert(governanceNotificationSchema).values(proposal);
 }
 
-export async function computeTotalVotesPerDao(): Promise<VotesByProposal[]> {
+export async function queryTotalVotesPerApp(): Promise<VotesByApplication[]> {
   const result = await db
     .select({
       appId: agentApplicationVoteSchema.applicationId,
       acceptVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[0]} then 1 end)`,
       refuseVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[1]} then 1 end)`,
-      removeVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[2]} then 1 end)`,
+      // removeVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[2]} then 1 end)`,
     })
     .from(agentApplicationVoteSchema)
-    .where(sql`${agentApplicationVoteSchema.deletedAt} is null`)
+    .where(isNull(agentApplicationVoteSchema.deletedAt))
     .groupBy(agentApplicationVoteSchema.applicationId)
     .execute();
 
@@ -98,20 +103,20 @@ export async function computeTotalVotesPerDao(): Promise<VotesByProposal[]> {
     appId: row.appId,
     acceptVotes: row.acceptVotes,
     refuseVotes: row.refuseVotes,
-    removeVotes: row.removeVotes,
+    // removeVotes: row.removeVotes,
     agentId: row.appId,
   }));
 }
 
-export async function getProposalIdsByType(
-  type: GovernanceitemType,
+export async function getGovItemIdsByType(
+  type: GovernanceItemType,
 ): Promise<number[]> {
   const result = await db
     .select({
       itemId: governanceNotificationSchema.itemId,
     })
     .from(governanceNotificationSchema)
-    .where(sql`governance_model = ${type}`);
+    .where(eq(governanceNotificationSchema.itemType, type));
 
   const itemIds = result.map((row) => row.itemId);
 
@@ -148,4 +153,69 @@ function buildConflictUpdateColumns<
     },
     {} as Record<Q, SQL>,
   );
+}
+
+export function SubspaceAgentToDatabase(
+  agent: TorusAgent,
+  atBlock: number,
+  whitelisted: boolean,
+): Agent {
+  return {
+    // Insertion timestamp
+    atBlock: atBlock,
+
+    // Actual identifier
+    key: agent.key,
+    name: agent.name,
+    apiUrl: agent.url,
+    metadataUri: agent.metadata,
+    weightFactor: agent.weight_factor,
+
+    isWhitelisted: whitelisted,
+    registrationBlock: atBlock,
+
+    totalStaked: 0n,
+    totalStakers: 0,
+  };
+}
+
+/**
+ * Queries the user-module data table to build a mapping of user keys to
+ * module keys to weights.
+ *
+ * @returns user key -> module id -> weight (0–100)
+ */
+export async function getUserWeightMap(): Promise<
+  Map<string, Map<string, bigint>>
+> {
+  const result = await db
+    .select({
+      userKey: userAgentWeightSchema.userKey,
+      weight: userAgentWeightSchema.weight,
+      agentKey: agentSchema.key,
+    })
+    .from(agentSchema)
+    // filter agents updated on the last seen block
+    .where(
+      and(
+        eq(agentSchema.atBlock, sql`(SELECT MAX(at_block) FROM agent)`),
+        eq(agentSchema.isWhitelisted, true),
+      ),
+    )
+    .innerJoin(
+      userAgentWeightSchema,
+      eq(agentSchema.key, userAgentWeightSchema.agentKey),
+    )
+    .execute();
+
+  const weightMap = new Map<string, Map<string, bigint>>();
+  result.forEach((entry) => {
+    if (!weightMap.has(entry.userKey)) {
+      weightMap.set(entry.userKey, new Map());
+    }
+    if (entry.agentKey) {
+      weightMap.get(entry.userKey)?.set(entry.agentKey, BigInt(entry.weight));
+    }
+  });
+  return weightMap;
 }

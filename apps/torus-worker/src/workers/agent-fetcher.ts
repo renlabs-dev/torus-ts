@@ -1,21 +1,14 @@
 import type { SS58Address } from "@torus-ts/subspace";
 import {
   checkSS58,
+  queryAgents,
   queryLastBlock,
-  queryRegisteredModulesInfo,
   queryWhitelist,
 } from "@torus-ts/subspace";
 
 import type { WorkerProps } from "../common";
-import {
-  BLOCK_TIME,
-  CONSENSUS_NETUID,
-  isNewBlock,
-  log,
-  sleep,
-} from "../common";
-import { upsertAgentData } from "../db";
-import { SubspaceAgentToDatabase } from "../db/type-transformations.js";
+import { BLOCK_TIME, isNewBlock, log, sleep } from "../common";
+import { upsertAgentData, SubspaceAgentToDatabase } from "../db";
 
 export async function agentFetcherWorker(props: WorkerProps) {
   while (true) {
@@ -30,24 +23,24 @@ export async function agentFetcherWorker(props: WorkerProps) {
       }
       props.lastBlock = lastBlock;
 
+      const api = lastBlock.apiAtBlock;
+      const blockNumber = lastBlock.blockNumber;
+
       log(`Block ${lastBlock.blockNumber}: processing`);
 
-      const whitelist = new Set(await queryWhitelist(lastBlock.apiAtBlock));
+      const whitelist = new Set(await queryWhitelist(api));
       const isWhitelisted = (addr: SS58Address) => whitelist.has(addr);
 
-      const agents = await queryRegisteredModulesInfo(
-        lastBlock.apiAtBlock,
-        CONSENSUS_NETUID,
-        props.lastBlock.blockNumber,
-      );
+      const agentsMap = await queryAgents(api);
+      const agents = [...agentsMap.values()];
       const agentsData = agents.map((agent) =>
         SubspaceAgentToDatabase(
           agent,
-          lastBlock.blockNumber,
+          blockNumber,
           isWhitelisted(checkSS58(agent.key)),
         ),
       );
-      log(`Block ${lastBlock.blockNumber}: upserting  ${agents.length} agents`);
+      log(`Block ${lastBlock.blockNumber}: upserting ${agents.length} agents`);
 
       await upsertAgentData(agentsData);
 

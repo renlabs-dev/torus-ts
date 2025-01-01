@@ -15,6 +15,7 @@ import {
   sb_array,
   sb_bigint,
   sb_blocks,
+  sb_bool,
   sb_enum,
   sb_id,
   sb_null,
@@ -182,6 +183,15 @@ export async function processVotesAndStakes(
 
 // == Applications ==
 
+/** Based on `PalletGovernanceApplicationApplicationStatus` */
+export const AGENT_APPLICATION_STATUS_SCHEMA = sb_enum({
+  Open: sb_null,
+  Resolved: sb_struct({ accepted: sb_bool }),
+  Expired: sb_null,
+});
+
+export type ApplicationStatus = z.infer<typeof AGENT_APPLICATION_STATUS_SCHEMA>;
+
 /** Based on `PalletGovernanceApplicationAgentApplication` */
 export const AGENT_APPLICATION_SCHEMA = sb_struct({
   id: sb_id,
@@ -190,6 +200,7 @@ export const AGENT_APPLICATION_SCHEMA = sb_struct({
   data: sb_string,
   cost: sb_amount,
   expiresAt: sb_blocks,
+  status: AGENT_APPLICATION_STATUS_SCHEMA,
 });
 
 export type AgentApplication = z.infer<typeof AGENT_APPLICATION_SCHEMA>;
@@ -344,6 +355,23 @@ export async function removeFromWhitelist(
     });
 }
 
+export async function acceptApplication(
+  api: ApiPromise,
+  proposalId: number,
+  mnemonic: string | undefined,
+) {
+  if (!mnemonic) {
+    throw new Error("No sudo mnemonic provided");
+  }
+
+  const tx = api.tx.governance.acceptApplication(proposalId);
+
+  const keyring = new Keyring({ type: "sr25519" });
+  const sudoKeypair = keyring.addFromUri(mnemonic);
+  const extrinsic = await tx.signAndSend(sudoKeypair);
+  return extrinsic;
+}
+
 export async function denyApplication(
   api: ApiPromise,
   proposalId: number,
@@ -357,16 +385,6 @@ export async function denyApplication(
 
   const keyring = new Keyring({ type: "sr25519" });
   const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx
-    .signAndSend(sudoKeypair)
-    .catch((err) => {
-      console.error(err);
-      return false;
-    })
-    .then(() => {
-      console.log(`Extrinsic: ${extrinsic}`);
-      return true;
-    });
-
-  return true;
+  const extrinsic = await tx.signAndSend(sudoKeypair);
+  return extrinsic;
 }

@@ -1,3 +1,5 @@
+import type { KeyringPair } from "@polkadot/keyring/types";
+
 import type { SS58Address } from "../address";
 import type { Balance } from "../types";
 import type { Api } from "./_common";
@@ -10,7 +12,9 @@ import {
   sb_string,
   sb_struct,
 } from "../types";
-import { handleDoubleMapEntries } from "./_common";
+import { handleDoubleMapEntries, handleMapEntries } from "./_common";
+import type { z } from "zod";
+import type { ApiPromise } from "@polkadot/api";
 
 // ==== Balances ====
 
@@ -64,6 +68,22 @@ export async function queryKeyStakedBy(
   });
 
   return stakes.filter(({ stake }) => stake !== 0n);
+}
+
+/** TODO: refactor: return Map */
+export async function queryKeyStakedTo(
+  api: Api,
+  address: SS58Address,
+): Promise<Map<SS58Address, bigint>> {
+  const q = await api.query.torus0.stakingTo.entries(address);
+  const result = new Map<SS58Address, bigint>();
+  q.forEach(([keys, value]) => {
+    const [, stakeToAddressRaw] = keys.args;
+    const address = sb_address.parse(stakeToAddressRaw);
+    const stake = sb_balance.parse(value);
+    result.set(address, stake);
+  });
+  return result;
 }
 
 export async function queryStakeIn(api: Api): Promise<{
@@ -149,3 +169,27 @@ export const AGENT_SCHEMA = sb_struct({
   metadata: sb_string,
   weight_factor: sb_percent,
 });
+
+export type Agent = z.infer<typeof AGENT_SCHEMA>;
+
+export async function queryAgents(api: Api): Promise<Map<SS58Address, Agent>> {
+  const q = await api.query.torus0.agents.entries();
+  const [agents, errs] = handleMapEntries(q, sb_address, AGENT_SCHEMA);
+  for (const err of errs) {
+    throw new Error("Error in queryAgents", err);
+  }
+  return agents;
+}
+
+// == Weights ==
+
+export async function setChainWeights(
+  api: ApiPromise,
+  keypair: KeyringPair,
+  weights: [SS58Address, number][],
+) {
+  const tx = await api.tx.emission0
+    .setWeightsExtrinsic(weights)
+    .signAndSend(keypair);
+  return tx;
+}

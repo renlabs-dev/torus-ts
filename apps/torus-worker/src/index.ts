@@ -8,7 +8,7 @@ import { queryLastBlock } from "@torus-ts/subspace";
 import { log } from "./common";
 import { agentFetcherWorker } from "./workers/agent-fetcher";
 import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
-import { processDaoApplicationsWorker } from "./workers/process-dao-applications";
+import { processApplicationsWorker } from "./workers/process-dao-applications";
 import { weightAggregatorWorker } from "./workers/weight-aggregator";
 
 import { env } from "./env";
@@ -32,7 +32,7 @@ async function main() {
   const workerTypes: Record<string, () => Promise<void>> = {
     // TODO: rename "dao" worker arg
     dao: async () => {
-      await processDaoApplicationsWorker({
+      await processApplicationsWorker({
         lastBlock,
         api,
         lastBlockNumber,

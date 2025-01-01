@@ -7,7 +7,7 @@ import { bigintDivision } from "@torus-ts/utils";
 type UserKey = string;
 
 /**
- * Calculates the final weights for the community validator, resulting in
+ * Calculates the final weights for the Torus Allocator, resulting in
  * unbound integers.
  *
  * @param user_stakes        user -> amount staked

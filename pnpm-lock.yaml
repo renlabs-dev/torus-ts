@@ -566,6 +566,9 @@ importers:
       express:
         specifier: ^4.19.2
         version: 4.21.2
+      rustie:
+        specifier: 'catalog:'
+        version: 0.4.0
     devDependencies:
       '@polkadot/api-augment':
         specifier: 'catalog:'
@@ -679,6 +682,9 @@ importers:
       postgres:
         specifier: ^3.4.4
         version: 3.4.5
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
       zod:
         specifier: 'catalog:'
         version: 3.24.1
