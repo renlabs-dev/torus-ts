@@ -25,7 +25,8 @@ import {
 } from "@torus-ts/ui";
 
 // TODO: VERIFY VALIDATOR ADDRESS BEFORE PUSHING TO MAIN
-const VALIDATOR_ADDRESS = "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2";
+export const VALIDATOR_ADDRESS =
+  "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2";
 
 export function DelegatedList() {
   const {
@@ -82,7 +83,6 @@ export function DelegatedList() {
     if (!accountStakedBy.data) {
       return BigInt(0);
     }
-    console.log(accountStakedBy.data);
     const data = accountStakedBy.data
       .filter((stake) => VALIDATOR_ADDRESS.includes(stake.address))
       .reduce((sum, stake) => sum + stake.stake, 0n);
@@ -144,7 +144,6 @@ export function DelegatedList() {
       });
 
       // Prepare data for createManyUserAgentData
-      console.log(delegatedAgents, "delegatedAgents");
       const agentsData = delegatedAgents.map((agent) => ({
         agentKey: agent.address,
         weight: agent.percentage,
@@ -242,7 +241,6 @@ export function DelegatedList() {
   }, [userAgentWeight, agentError, setDelegatedAgentsFromDB]);
 
   useEffect(() => {
-    console.log(delegatedAgents);
     const timeoutId = setTimeout(() => {
       if (contentRef.current && isOpen) {
         const contentHeight = contentRef.current.scrollHeight;

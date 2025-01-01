@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Footer, Layout } from "@torus-ts/ui";
+import { Layout } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -43,7 +43,6 @@ export default function RootLayout({
             <AllocatorHeader />
             <DelegatedList />
             {children}
-            {/* <Footer className="bottom-4 right-4" /> */}
           </ToastProvider>
         </TRPCReactProvider>
       </TorusProvider>

@@ -102,6 +102,8 @@ export function AgentContentList() {
     });
 
     const filteredAgents = filterAgentsBySearch(delegatedAgentsList, search);
+    if (filteredAgents.length === 0) return <p>No weighted agents found.</p>;
+
     return renderAgentItems(filteredAgents);
   };
 
