@@ -10,9 +10,10 @@ import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import { DelegatedList } from "./components/delegated-list";
 import { AllocatorHeader } from "./components/allocator-header";
+import { TutorialDialog } from "./components/tutorial-dialog";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-const APP_NAME = "Torus Allocator";
+const APP_NAME = "Allocator";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -41,6 +42,7 @@ export default function RootLayout({
         <TRPCReactProvider>
           <ToastProvider>
             <AllocatorHeader />
+            <TutorialDialog />
             <DelegatedList />
             {children}
           </ToastProvider>
