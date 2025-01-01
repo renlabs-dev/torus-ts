@@ -29,7 +29,7 @@ export function AllocatorHeader() {
 
   return (
     <Header
-      appName="Torus Allocator"
+      appName="Allocator"
       wallet={
         <WalletDropdown
           balance={accountFreeBalance.data}

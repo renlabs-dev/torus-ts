@@ -33,7 +33,7 @@ console.log(
 //   ),
 // );
 
-console.log(api.tx.balances.transferKeepAlive);
+console.log(api.tx.governance.addGlobalParamsProposal);
 
 debugger;
 
