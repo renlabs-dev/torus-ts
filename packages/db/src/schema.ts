@@ -19,6 +19,7 @@ import {
 export const createTable = pgTableCreator((name) => `${name}`);
 
 import { extract_pgenum_values } from "./utils";
+import { assert, Equals } from "tsafe";
 
 // ==== Util ====
 
@@ -161,6 +162,13 @@ export const governanceItemType = pgEnum("governance_item_type", [
 
 export const governanceItemTypeValues =
   extract_pgenum_values(governanceItemType);
+
+assert<
+  Equals<
+    keyof typeof governanceItemTypeValues,
+    "PROPOSAL" | "AGENT_APPLICATION"
+  >
+>();
 
 export const commentSchema = createTable(
   "comment",

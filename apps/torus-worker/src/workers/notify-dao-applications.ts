@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import type { DaoApplications, GovernanceItemType } from "@torus-ts/subspace";
-import { processDaoMetadata } from "@torus-ts/subspace";
+import type { AgentApplication, GovernanceItemType } from "@torus-ts/subspace";
+import { processApplicationMetadata } from "@torus-ts/subspace";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
 
@@ -10,8 +10,9 @@ import type { NewNotification } from "../db";
 import type { Embed, WebhookPayload } from "../discord";
 import { getApplications, sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
-import { addSeenProposal, getProposalIdsByType } from "../db";
+import * as db from "../db";
 import { sendDiscordWebhook } from "../discord";
+import { match } from "rustie";
 
 const THUMBNAIL_URL = "https://i.imgur.com/6hJKhMu.gif";
 
@@ -22,25 +23,36 @@ export const env = parseEnvOrExit(
 )(process.env);
 
 export async function notifyNewApplicationsWorker(props: WorkerProps) {
-  const pending_apps = Object.values(
-    await getApplications(props.api, ["Pending"]),
-  );
-  const p_type: GovernanceItemType = "AGENT_APPLICATION";
-  const proposals = await getProposalIdsByType(p_type);
-  const proposalsSet: Set<number> = new Set<number>(proposals);
-  const unseen_proposals = pending_apps.filter(
-    (application) => !proposalsSet.has(application.id),
+  const open_applications = Object.values(
+    await getApplications(props.api, (app) =>
+      match(app.status)({
+        Open: () => true,
+        Resolved: ({ accepted: _ }) => false,
+        Expired: () => false,
+      }),
+    ),
   );
 
-  for (const unseen_proposal of unseen_proposals) {
-    await pushNotification(unseen_proposal, p_type);
+  const item_type: GovernanceItemType = "AGENT_APPLICATION";
+  const know_applications = await db.getGovItemIdsByType(item_type);
+  const know_applications_set: Set<number> = new Set<number>(know_applications);
+
+  const is_known_proposal = (app_id: number) =>
+    know_applications_set.has(app_id);
+
+  const unseen_applications = open_applications.filter(
+    (application) => !is_known_proposal(application.id),
+  );
+
+  for (const unseen_proposal of unseen_applications) {
+    await pushNotification(unseen_proposal, item_type);
     await sleep(1_000);
   }
 }
 
 async function pushNotification(
-  proposal: DaoApplications,
-  pType: GovernanceItemType,
+  proposal: AgentApplication,
+  item_type: GovernanceItemType,
 ) {
   const r = parseIpfsUri(proposal.data);
   const cid = flattenResult(r);
@@ -50,7 +62,7 @@ async function pushNotification(
   }
 
   const url = buildIpfsGatewayUrl(cid);
-  const metadata = await processDaoMetadata(url, proposal.id);
+  const metadata = await processApplicationMetadata(url, proposal.id);
   const resolved_metadata = flattenResult(metadata);
   if (resolved_metadata === null) {
     console.warn(`Failed to get metadata on proposal ${proposal.id}`);
@@ -63,8 +75,8 @@ async function pushNotification(
     application_url: `https://governance.torus.network/dao/${proposal.id}`,
   };
   const seen_proposal: NewNotification = {
-    governanceModel: pType,
-    proposalId: proposal.id,
+    itemType: item_type,
+    itemId: proposal.id,
   };
 
   const discordMessage = buildDiscordMessage(
@@ -75,7 +87,7 @@ async function pushNotification(
 
   await sendDiscordWebhook(env.CURATOR_DISCORD_WEBHOOK_URL, discordMessage);
 
-  await addSeenProposal(seen_proposal);
+  await db.addSeenProposal(seen_proposal);
 }
 
 function buildDiscordMessage(

@@ -8,20 +8,21 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "// FIXME build": "tsc",
-    "// FIXME clean": "rm -rf .turbo node_modules",
-    "// FIXME dev": "pnpm with-env tsx ./src/index.ts",
-    "// FIXME format": "prettier --check . --ignore-path ../../.gitignore",
-    "// FIXME lint": "eslint",
-    "// FIXME start": "node ./dist/index.js",
-    "// FIXME start:local": "pnpm with-env pnpm start",
-    "// FIXME typecheck": "tsc --noEmit",
-    "// FIXME with-env": "dotenv -e ../../.env --"
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules",
+    "dev": "pnpm with-env tsx ./src/index.ts",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "start": "node ./dist/index.js",
+    "start:local": "pnpm with-env pnpm start",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
     "@polkadot/api": "catalog:",
     "@torus-ts/subspace": "workspace:*",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "rustie": "catalog:"
   },
   "devDependencies": {
     "@polkadot/api-augment": "catalog:",

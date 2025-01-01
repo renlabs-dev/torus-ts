@@ -1,6 +1,9 @@
+// TODO: split `zod.ts` into multiple files
+
 import type { AnyJson, Codec } from "@polkadot/types/types";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import {
+  bool,
   BTreeSet,
   Bytes,
   Enum,
@@ -172,12 +175,13 @@ export const sb_some = <T extends ZodTypeAny>(
       }),
   );
 
-// == Numbers ==
+// == Boolean ==
 
-// export const UInt_schema = z.custom<UInt>(
-//   (val) => val instanceof UInt,
-//   "not a substrate UInt",
-// );
+export const bool_schema = z.custom<bool>((val) => val instanceof bool);
+
+export const sb_bool = bool_schema.transform((val) => val.toPrimitive());
+
+// == Numbers ==
 
 export interface ToBigInt {
   toBigInt(): bigint;
@@ -219,7 +223,7 @@ export const sb_number = ToBigInt_schema.transform((val, ctx): number => {
 
 export const sb_number_int = sb_number.pipe(z.number().int());
 
-export const sb_percent = sb_bigint.transform((val, ctx) => {
+export const sb_percent = sb_number_int.transform((val, ctx) => {
   if (val < 0 || val > 100) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

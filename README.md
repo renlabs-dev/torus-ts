@@ -16,8 +16,8 @@ apps
   |   └─ Governancel Portal
   |─ torus-page
   |   └─ Main / Landing Page
-  |─ torus-validator
-  |   └─ Community Validator Portal
+  |─ torus-allocator
+  |   └─ Torus Allocator
   |─ torus-wallet
   |   └─ Wallet App
   └─ torus-worker
