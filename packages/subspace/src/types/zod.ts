@@ -1,5 +1,5 @@
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import type { ZodRawShape, ZodType, ZodTypeAny } from "zod";
+import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import {
   BTreeSet,
   Bytes,
@@ -136,6 +136,20 @@ export const sb_option = <T extends ZodTypeAny>(
       return some;
     }
     throw new Error("Invalid Option");
+  });
+
+export const sb_option_default = <
+  T extends ZodType<unknown, ZodTypeDef, unknown>,
+>(
+  inner: T,
+  defaultValue: z.output<T>,
+): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+  sb_option<T>(inner).transform((val, _ctx) => {
+    const r = match(val)({
+      Some: (value) => value,
+      None: () => defaultValue,
+    });
+    return r;
   });
 
 export const sb_some = <T extends ZodTypeAny>(

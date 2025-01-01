@@ -5,6 +5,7 @@ import {
   sb_address,
   sb_balance,
   sb_bigint,
+  sb_option_default,
   sb_percent,
   sb_string,
   sb_struct,
@@ -22,7 +23,9 @@ export async function queryFreeBalance(
   return balance;
 }
 
-/** TODO: return Map */
+const sb_balance_option_zero = sb_option_default(sb_balance, 0n);
+
+/** TODO: refactor: return Map */
 export async function queryKeyStakingTo(
   api: Api,
   address: SS58Address,
@@ -31,15 +34,17 @@ export async function queryKeyStakingTo(
 
   const stakes = q.map(([key, value]) => {
     const [, stakeToAddress] = key.args;
-    const stake = sb_balance.parse(value);
+
     const address = sb_address.parse(stakeToAddress);
+    const stake = sb_balance_option_zero.parse(value);
+
     return { address, stake };
   });
 
   return stakes.filter(({ stake }) => stake !== 0n);
 }
 
-/** TODO: return Map */
+/** TODO: refactor: return Map */
 export async function queryKeyStakedBy(
   api: Api,
   address: SS58Address,
@@ -48,8 +53,9 @@ export async function queryKeyStakedBy(
 
   const stakes = q.map(([key, value]) => {
     const [, stakeFromAddress] = key.args;
-    const stake = sb_balance.parse(value);
+
     const address = sb_address.parse(stakeFromAddress);
+    const stake = sb_balance_option_zero.parse(value);
 
     return {
       address,
@@ -73,11 +79,12 @@ export async function queryStakeIn(api: Api): Promise<{
     q,
     sb_address,
     sb_address,
-    sb_bigint,
+    sb_option_default(sb_bigint, 0n),
   );
 
   for (const err of errs) {
-    console.error(err);
+    // TODO: refactor out
+    console.error("ERROR:", err);
   }
 
   for (const [toAddr, fromAddrsMap] of values) {
@@ -106,11 +113,12 @@ export async function queryStakeOut(api: Api): Promise<{
     q,
     sb_address,
     sb_address,
-    sb_bigint,
+    sb_option_default(sb_bigint, 0n),
   );
 
   for (const err of errs) {
-    console.error(err);
+    // TODO: refactor out
+    console.error("ERROR:", err);
   }
 
   for (const [fromAddr, toAddrsMap] of values) {
