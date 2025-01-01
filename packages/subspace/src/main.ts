@@ -4,7 +4,6 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import "@polkadot/api/augment";
 
 import { queryFreeBalance } from "./modules/subspace";
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import { checkSS58 } from "./address";
 
 // $ pnpm exec tsx src/main.ts
