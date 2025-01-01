@@ -131,6 +131,22 @@ export function CreateProposal(): JSX.Element {
     void uploadFile(fileToUpload);
   }
 
+  const getButtonSubmitLabel = ({
+    uploading,
+    isAccountConnected,
+  }: {
+    uploading: boolean;
+    isAccountConnected: boolean;
+  }) => {
+    if (!isAccountConnected) {
+      return "Connect a wallet to submit";
+    }
+    if (uploading) {
+      return "Uploading...";
+    }
+    return "Submit Proposal";
+  };
+
   return (
     <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -177,7 +193,7 @@ export function CreateProposal(): JSX.Element {
         variant="outline"
         disabled={!isAccountConnected}
       >
-        {uploading ? "Uploading..." : "Submit Proposal"}
+        {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>
       {transactionStatus.status && (
         <TransactionStatus

@@ -150,6 +150,22 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
     void uploadFile(fileToUpload);
   }
 
+  const getButtonSubmitLabel = ({
+    uploading,
+    isAccountConnected,
+  }: {
+    uploading: boolean;
+    isAccountConnected: boolean;
+  }) => {
+    if (!isAccountConnected) {
+      return "Connect a wallet to submit";
+    }
+    if (uploading) {
+      return "Uploading...";
+    }
+    return "Submit transfer dao treasury proposal";
+  };
+
   return (
     <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -209,9 +225,9 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
         size="lg"
         type="submit"
         variant="outline"
-        disabled={!isAccountConnected}
+        disabled={!isAccountConnected || uploading}
       >
-        {uploading ? "Uploading..." : "Submit transfer dao treasury proposal"}
+        {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>
       {transactionStatus.status && (
         <TransactionStatus

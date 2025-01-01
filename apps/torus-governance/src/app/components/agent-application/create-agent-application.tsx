@@ -141,6 +141,22 @@ export function CreateAgentApplication(): JSX.Element {
     void uploadFile(fileToUpload);
   }
 
+  const getButtonSubmitLabel = ({
+    uploading,
+    isAccountConnected,
+  }: {
+    uploading: boolean;
+    isAccountConnected: boolean;
+  }) => {
+    if (!isAccountConnected) {
+      return "Connect a wallet to submit";
+    }
+    if (uploading) {
+      return "Uploading...";
+    }
+    return "Submit S2 Application";
+  };
+
   return (
     <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -202,7 +218,7 @@ export function CreateAgentApplication(): JSX.Element {
         variant="outline"
         disabled={!isAccountConnected}
       >
-        {uploading ? "Uploading..." : "Submit S2 Application"}
+        {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>
       {transactionStatus.status && (
         <TransactionStatus
