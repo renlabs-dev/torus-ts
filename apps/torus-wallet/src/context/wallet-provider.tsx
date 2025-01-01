@@ -114,7 +114,7 @@ export function WalletProvider({
         removeStake,
       }}
     >
-      <WalletDropdown
+      {/* <WalletDropdown
         balance={accountFreeBalance.data}
         stakeOut={stakeOut.data}
         accounts={accounts}
@@ -123,7 +123,7 @@ export function WalletProvider({
         handleLogout={handleLogout}
         handleGetWallets={handleGetWallets}
         handleSelectWallet={handleSelectWallet}
-      />
+      /> */}
       {children}
     </WalletContext.Provider>
   );

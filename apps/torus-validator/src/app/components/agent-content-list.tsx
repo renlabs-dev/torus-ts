@@ -1,23 +1,26 @@
 "use client";
 
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { api } from "~/trpc/react";
-import { AllOrWeighted } from "./all-or-weighted";
 import { AgentItem } from "./agent-item";
-import { useSearchParams } from "next/navigation";
+import { AgentsTabView } from "./agents-tab-view";
+import { api } from "~/trpc/react";
 import { FilterContent } from "./filter-content";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { useSearchParams } from "next/navigation";
 
-// interface AgentCardProps {
-//   id: number;
-//   name: string;
-//   agentKey: string; // SS58.1
-//   percentage?: number | null;
-//   isDelegated?: boolean;
-// }
-
+interface Agent {
+  id: number;
+  name?: string | null;
+  key: string | null;
+  isDelegated: boolean;
+  percentage: number;
+  globalWeightPerc?: number;
+  // globalWeightStaked: number;
+}
 export function AgentContentList() {
-  // const isAgentDelegated = delegatedAgents.some((m) => m.id === props.id);
   const searchParams = useSearchParams();
+
+  const { data: computedWeightedAgents } =
+    api.computedAgentWeight.all.useQuery();
 
   const { delegatedAgents } = useDelegateAgentStore();
   const { data: agents, isLoading: isLoadingAgents } = api.agent.all.useQuery();
@@ -26,21 +29,41 @@ export function AgentContentList() {
   if (view !== "agents") return null;
 
   const viewType = searchParams.get("view-type");
+  const search = searchParams.get("search");
 
-  const renderAllAgentsView = () => {
-    if (isLoadingAgents) return <p>Loading... </p>;
-    if (!agents) return <p>No agents found.</p>;
+  const filterAgentsBySearch = (agents: Agent[], searchTerm: string | null) => {
+    if (!searchTerm) return agents;
 
-    const allAgentsList = agents.map((agent) => {
+    const search = searchTerm.toLowerCase();
+    return agents.filter(
+      (agent) =>
+        (agent.name?.toLowerCase() ?? "").includes(search) ||
+        (agent.key?.toLowerCase() ?? "").includes(search),
+    );
+  };
+
+  const prepareAgentsList = (searchTerm: string | null = null) => {
+    if (isLoadingAgents || !agents) return [];
+
+    const agentsList = agents.map((agent) => {
       const delegated = delegatedAgents.find((d) => d.address === agent.key);
+      const globalWeight = computedWeightedAgents?.find(
+        (d) => d.agentKey === agent.key,
+      );
+
       return {
         ...agent,
         isDelegated: !!delegated,
         percentage: delegated?.percentage ?? 0,
+        globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
       };
     });
 
-    const allAgents = allAgentsList.map((agent) => (
+    return filterAgentsBySearch(agentsList, searchTerm);
+  };
+
+  const renderAgentItems = (agentsList: Agent[]) => {
+    return agentsList.map((agent: Agent) => (
       <AgentItem
         id={agent.id}
         key={agent.id}
@@ -48,44 +71,67 @@ export function AgentContentList() {
         isDelegated={agent.isDelegated}
         percentage={agent.percentage}
         agentKey={agent.key ?? ""}
+        globalWeightPerc={agent.globalWeightPerc}
       />
     ));
-
-    return allAgents;
   };
 
-  const renderWeighted = () => {
+  const renderAllAgentsView = () => {
     if (isLoadingAgents) return <p>Loading... </p>;
-    if (delegatedAgents.length === 0) return <p>No agents found.</p>;
+    const allAgentsList = prepareAgentsList(search);
+    if (allAgentsList.length === 0) return <p>No agents found.</p>;
 
-    const delegatedAgenstList = delegatedAgents.map((agent) => {
+    return renderAgentItems(allAgentsList);
+  };
+
+  const renderWeightedAgentsView = () => {
+    if (isLoadingAgents) return <p>Loading... </p>;
+    if (delegatedAgents.length === 0) return <p>No weighted agents found.</p>;
+
+    const delegatedAgentsList = delegatedAgents.map((agent) => {
+      const globalWeight = computedWeightedAgents?.find(
+        (d) => d.agentKey === agent.address,
+      );
       return {
         ...agent,
+        key: agent.address,
         isDelegated: true,
         percentage: agent.percentage,
+        globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
       };
     });
 
-    const allDelegatedAgents = delegatedAgenstList.map((agent) => (
-      <AgentItem
-        id={agent.id}
-        key={agent.id}
-        name={agent.name}
-        isDelegated={agent.isDelegated}
-        percentage={agent.percentage}
-        agentKey={agent.address}
-      />
-    ));
+    const filteredAgents = filterAgentsBySearch(delegatedAgentsList, search);
+    return renderAgentItems(filteredAgents);
+  };
 
-    return allDelegatedAgents;
+  const renderPopularAgentsView = () => {
+    if (isLoadingAgents) return <p>Loading... </p>;
+
+    const allAgentsList = prepareAgentsList(search);
+    if (allAgentsList.length === 0) return <p>No popular agents found.</p>;
+
+    const sortedAgentsList = [...allAgentsList].sort(
+      (a, b) => (b.globalWeightPerc ?? 0) - (a.globalWeightPerc ?? 0),
+    );
+
+    return renderAgentItems(sortedAgentsList);
+  };
+
+  const contentMap: Record<string, () => JSX.Element | JSX.Element[]> = {
+    all: renderAllAgentsView,
+    weighted: renderWeightedAgentsView,
+    popular: renderPopularAgentsView,
   };
 
   const content =
-    viewType !== "weighted" ? renderAllAgentsView() : renderWeighted();
+    viewType && contentMap[viewType]
+      ? contentMap[viewType]()
+      : renderAllAgentsView();
 
   return (
     <div className="flex w-full flex-col">
-      <div className="mb-6 flex w-full flex-col items-center justify-between md:flex-row">
+      <div className="mb-6 flex w-full flex-col items-center justify-between gap-4 md:flex-row">
         <FilterContent
           disabled={
             isLoadingAgents ||
@@ -94,7 +140,7 @@ export function AgentContentList() {
               : delegatedAgents.length === 0)
           }
         />
-        <AllOrWeighted />
+        <AgentsTabView />
       </div>
       {content}
     </div>

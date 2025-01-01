@@ -4,7 +4,7 @@ import { Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchIcon } from "lucide-react";
 
-import { Input } from "@torus-ts/ui";
+import { Input, Label } from "@torus-ts/ui";
 
 interface FilterProps {
   disabled: boolean;
@@ -40,15 +40,19 @@ export const Filter = (props: FilterProps) => {
   };
 
   return (
-    <div className="flex w-full items-center justify-center rounded-md border pl-3 md:w-1/2 xl:w-1/3">
+    <Label
+      htmlFor="search-bar"
+      className="flex w-full items-center justify-center rounded-md border pl-3 lg:w-1/2 xl:w-1/3"
+    >
       <SearchIcon size={16} />
       <Input
+        id="search-bar"
         disabled={disabled}
         onChange={handleSearchChange}
         placeholder="Search"
         className="border-none focus-visible:ring-0"
       />
-    </div>
+    </Label>
   );
 };
 

@@ -1,131 +1,62 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronsUp, PieChart, X } from "lucide-react";
-
-import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
+import { api } from "~/trpc/react";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+import { PieChart, X } from "lucide-react";
 import { toast } from "@torus-ts/toast-provider";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
+import { useRouter } from "next/navigation";
 import { useTorus } from "@torus-ts/torus-provider";
+import type { SS58Address } from "@torus-ts/subspace";
 import {
   Button,
   buttonVariants,
-  Card,
   cn,
   Input,
   Label,
-  Separator,
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@torus-ts/ui";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { api } from "~/trpc/react";
+// TODO: VERIFY VALIDATOR ADDRESS BEFORE PUSHING TO MAIN
+const VALIDATOR_ADDRESS = "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2";
 
 export function DelegatedList() {
   const {
     delegatedAgents,
-    updatePercentage: updatePercentage,
-    removeAgent,
     getTotalPercentage,
+    hasUnsavedChanges,
+    removeAgent,
     setDelegatedAgentsFromDB,
     updateOriginalAgents,
-    hasUnsavedChanges,
+    updatePercentage,
   } = useDelegateAgentStore();
 
-  const totalPercentage = getTotalPercentage();
-
   const { selectedAccount, api: torusApi } = useTorus();
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const accountStakedBy = useKeyStakedBy(torusApi, selectedAccount?.address);
-
-  function handleAutoCompletePercentage() {
-    const items = delegatedAgents;
-
-    const remainingPercentage = 100 - totalPercentage;
-    const itemsToUpdate = items.length;
-
-    if (itemsToUpdate === 0) return;
-
-    const percentagePerItem = Math.floor(remainingPercentage / itemsToUpdate);
-    const extraPercentage = remainingPercentage % itemsToUpdate;
-
-    items.forEach((item, index) => {
-      const newPercentage =
-        item.percentage + percentagePerItem + (index < extraPercentage ? 1 : 0);
-      updatePercentage(item.id, newPercentage);
-    });
-  }
 
   const {
     data: userAgentWeight,
     error: agentError,
-    refetch: refetchModules,
+    refetch: refetchUserAgentWeight,
   } = api.userAgentWeight.byUserKey.useQuery(
     { userKey: selectedAccount?.address ?? "" },
     { enabled: !!selectedAccount?.address },
   );
 
-  // ORIGINAL VALUE
-  const validatorAddress = "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2";
-  //DEV VALIDATOR
-  // const validatorAddress = "5D5FbRRUvQxdQnJLgNW6BdgZ86CRGreKRahzhxmdSj2REBnt";
+  const contentRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const totalPercentage = getTotalPercentage();
 
-  function userWeightPower(
-    userStakes: { address: string; stake: bigint }[] | undefined,
-    validatorAddress: string,
-  ) {
-    if (!userStakes) {
-      return BigInt(0);
-    }
-    const data = userStakes
-      .filter((stake) => validatorAddress.includes(stake.address))
-      .reduce((sum, stake) => sum + stake.stake, 0n);
-
-    return formatToken(Number(data));
-  }
-
-  const userStakeWeight = userWeightPower(
-    accountStakedBy.data,
-    validatorAddress,
-  );
-
-  useEffect(() => {
-    if (agentError) {
-      console.error("Error fetching user agent data:", agentError);
-    }
-    if (userAgentWeight) {
-      const formattedModules = userAgentWeight.map((agent) => ({
-        id: agent.user_agent_weight.id,
-        address: agent.user_agent_weight.agentKey,
-        title: agent.agent.name ?? "",
-        name: agent.agent.name ?? "",
-        percentage: agent.user_agent_weight.weight,
-      }));
-      setDelegatedAgentsFromDB(formattedModules);
-    }
-  }, [userAgentWeight, agentError, setDelegatedAgentsFromDB]);
-
-  const handlePercentageChange = (id: number, percentage: number) => {
-    if (percentage >= 0 && percentage <= 100) {
-      updatePercentage(id, percentage);
-    }
-  };
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createManyUserAgentData = api.userAgentWeight.createMany.useMutation({
     onSuccess: () => {
@@ -147,21 +78,64 @@ export function DelegatedList() {
     },
   });
 
+  const userStakeWeight = useMemo(() => {
+    if (!accountStakedBy.data) {
+      return BigInt(0);
+    }
+    console.log(accountStakedBy.data);
+    const data = accountStakedBy.data
+      .filter((stake) => VALIDATOR_ADDRESS.includes(stake.address))
+      .reduce((sum, stake) => sum + stake.stake, 0n);
+
+    return formatToken(Number(data));
+  }, [accountStakedBy.data]);
+
+  function handleAutoCompletePercentage() {
+    const items = delegatedAgents;
+
+    const remainingPercentage = 100 - totalPercentage;
+    const itemsToUpdate = items.length;
+
+    if (itemsToUpdate === 0) return;
+
+    const percentagePerItem = Math.floor(remainingPercentage / itemsToUpdate);
+    const extraPercentage = remainingPercentage % itemsToUpdate;
+
+    items.forEach((item, index) => {
+      const newPercentage =
+        item.percentage + percentagePerItem + (index < extraPercentage ? 1 : 0);
+      updatePercentage(item.address, newPercentage);
+    });
+  }
+
+  const handlePercentageChange = (
+    agentKey: string | SS58Address,
+    percentage: string,
+  ) => {
+    const sanitizedPercentage = Number(percentage.replace(/[^\d.]/g, ""));
+
+    if (
+      !isNaN(sanitizedPercentage) &&
+      sanitizedPercentage >= 0 &&
+      sanitizedPercentage <= 100
+    ) {
+      updatePercentage(agentKey, sanitizedPercentage);
+    }
+  };
+
   const handleSubmit = async () => {
-    console.log(totalPercentage !== 100);
     if (!selectedAccount?.address || totalPercentage !== 100) {
       toast.error(
         "Please connect your wallet and ensure total percentage is 100%",
       );
       return;
     }
-    // TODO: UNCOMMENT THIS CODE
-    // if (Number(userStakeWeight) <= 50) {
-    //   toast.error(
-    //     "You must have at least 50 COMAI staked to delegate agents or subnets",
-    //   );
-    //   return;
-    // }
+    if (Number(userStakeWeight) <= 50) {
+      toast.error(
+        "You must have at least 50 COMAI staked to delegate agents or subnets",
+      );
+      return;
+    }
     setIsSubmitting(true);
     try {
       // Delete existing user agent data
@@ -170,6 +144,7 @@ export function DelegatedList() {
       });
 
       // Prepare data for createManyUserAgentData
+      console.log(delegatedAgents, "delegatedAgents");
       const agentsData = delegatedAgents.map((agent) => ({
         agentKey: agent.address,
         weight: agent.percentage,
@@ -180,19 +155,16 @@ export function DelegatedList() {
 
       updateOriginalAgents();
 
-      // Fetch updated data from the database
-      const { data: updatedAgentData } = api.userAgentWeight.byUserKey.useQuery(
-        { userKey: selectedAccount.address },
-        { enabled: !!selectedAccount.address },
-      );
-      await refetchModules();
-      const formattedModules = updatedAgentData?.map((agent) => ({
+      const { data: refetchedData } = await refetchUserAgentWeight();
+
+      const formattedModules = refetchedData?.map((agent) => ({
         id: agent.user_agent_weight.id,
         address: agent.user_agent_weight.agentKey,
         title: agent.agent.name ?? "",
         name: agent.agent.name ?? "",
         percentage: agent.user_agent_weight.weight,
       }));
+
       setDelegatedAgentsFromDB(formattedModules ?? []);
 
       setIsSubmitting(false);
@@ -213,7 +185,7 @@ export function DelegatedList() {
       });
       setDelegatedAgentsFromDB([]);
 
-      await refetchModules();
+      await refetchUserAgentWeight();
 
       setIsSubmitting(false);
     } catch (error) {
@@ -252,11 +224,25 @@ export function DelegatedList() {
   }
   const submitStatus = getSubmitStatus();
 
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    if (agentError) {
+      console.error("Error fetching user agent data:", agentError);
+    }
+
+    if (userAgentWeight) {
+      const formattedModules = userAgentWeight.map((agent) => ({
+        id: agent.user_agent_weight.id,
+        address: agent.user_agent_weight.agentKey,
+        title: agent.agent.name ?? "",
+        name: agent.agent.name ?? "",
+        percentage: agent.user_agent_weight.weight,
+      }));
+      setDelegatedAgentsFromDB(formattedModules);
+    }
+  }, [userAgentWeight, agentError, setDelegatedAgentsFromDB]);
 
   useEffect(() => {
+    console.log(delegatedAgents);
     const timeoutId = setTimeout(() => {
       if (contentRef.current && isOpen) {
         const contentHeight = contentRef.current.scrollHeight;
@@ -272,7 +258,7 @@ export function DelegatedList() {
     <Sheet>
       <SheetTrigger
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-4 right-4 z-[50] ${buttonVariants({ variant: "outline" })}`}
+        className={`fixed bottom-4 right-4 z-[50] ${buttonVariants({ variant: "outline" })} marker:flex`}
       >
         <PieChart />
         Allocation Menu
@@ -291,7 +277,7 @@ export function DelegatedList() {
             >
               <div className="flex flex-col gap-2">
                 {delegatedAgents.length ? (
-                  [...delegatedAgents].map((agent) => (
+                  delegatedAgents.map((agent) => (
                     <div
                       key={agent.id}
                       className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"}`}
@@ -300,7 +286,7 @@ export function DelegatedList() {
 
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400">
-                          {smallAddress(agent.address, 4)}
+                          {smallAddress(agent.address, 6)}
                         </span>
 
                         <div className="flex items-center gap-1">
@@ -310,17 +296,16 @@ export function DelegatedList() {
                           >
                             <Input
                               id={`percentage:${agent.id}`}
-                              type="number"
+                              type="text"
                               value={agent.percentage}
                               onChange={(e) =>
                                 handlePercentageChange(
-                                  agent.id,
-                                  Number(e.target.value),
+                                  agent.address,
+                                  e.target.value,
                                 )
                               }
-                              min="0"
-                              max="100"
-                              className="w-fit border-none px-0 py-0 [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                              maxLength={3}
+                              className="w-7 border-none px-0 py-0 focus-visible:ring-0"
                             />
 
                             <span className="text-muted-foreground">%</span>
@@ -328,7 +313,7 @@ export function DelegatedList() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => removeAgent(agent.id)}
+                            onClick={() => removeAgent(agent.address)}
                           >
                             <X className="h-5 w-5" />
                           </Button>
@@ -337,11 +322,7 @@ export function DelegatedList() {
                     </div>
                   ))
                 ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center">
-                      Select a agent to allocate through the agents page.
-                    </TableCell>
-                  </TableRow>
+                  <p>Select a agent to allocate through the agents page.</p>
                 )}
               </div>
             </div>
@@ -372,7 +353,7 @@ export function DelegatedList() {
                   }
                   variant="outline"
                 >
-                  Auto-Complete to 100%
+                  Complete 100%
                 </Button>
 
                 <Button
@@ -399,74 +380,4 @@ export function DelegatedList() {
       </SheetContent>
     </Sheet>
   );
-}
-
-{
-  /* <Table className="">
-<TableHeader>
-  <TableRow>
-    <TableHead>Module</TableHead>
-    <TableHead>Address</TableHead>
-    <TableHead>Percentage</TableHead>
-    <TableHead>Clear</TableHead>
-  </TableRow>
-</TableHeader>
-<TableBody>
-  {delegatedAgents.length ? (
-    [
-      ...delegatedAgents,
-      ...delegatedAgents,
-      ...delegatedAgents,
-      ...delegatedAgents,
-      ...delegatedAgents,
-      ...delegatedAgents,
-      ...delegatedAgents,
-      ...delegatedAgents,
-      ...delegatedAgents,
-    ].map((agent) => (
-      <TableRow key={agent.id}>
-        <TableCell className="font-medium">
-          {agent.name}
-        </TableCell>
-        <TableCell className="text-gray-400">
-          {smallAddress(agent.address, 4)}
-        </TableCell>
-        <TableCell className="flex items-center gap-1">
-          <Input
-            type="number"
-            value={agent.percentage}
-            onChange={(e) =>
-              handlePercentageChange(
-                agent.id,
-                Number(e.target.value),
-              )
-            }
-            min="0"
-            max="100"
-            className="w-16"
-          />
-          <Label className="relative right-5 text-gray-400">
-            %
-          </Label>
-        </TableCell>
-        <TableCell>
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => removeAgent(agent.id)}
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </TableCell>
-      </TableRow>
-    ))
-  ) : (
-    <TableRow>
-      <TableCell colSpan={4} className="text-center">
-        Select a agent to allocate through the agents page.
-      </TableCell>
-    </TableRow>
-  )}
-</TableBody>
-</Table> */
 }

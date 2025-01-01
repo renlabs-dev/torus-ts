@@ -6,7 +6,7 @@ import { z } from "zod";
 import { toast } from "@torus-ts/toast-provider";
 
 import { api } from "~/trpc/react";
-import { TriangleAlert, X } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import {
   Button,
   Dialog,
@@ -20,7 +20,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
   Textarea,
@@ -107,15 +106,14 @@ export function ReportAgent({ agentKey }: ReportAgentProps) {
         type="button"
         variant="outline"
         asChild
-        className="flex items-center gap-1.5 border-red-500 p-1 px-2 text-red-500 opacity-65 transition duration-200 hover:opacity-100"
+        className="flex h-4 w-4 items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65 transition duration-200 hover:text-red-500 hover:opacity-100"
       >
         <DialogTrigger>
-          <TriangleAlert className="h-4 w-4" />
-          Report Agent
+          <TriangleAlert className="h-4 w-3" />
         </DialogTrigger>
       </Button>
 
-      <DialogContent className="flex w-full flex-col items-start justify-center">
+      <DialogContent className="flex w-full flex-col items-start justify-center sm:w-full">
         <DialogTitle>Report Agent</DialogTitle>
 
         <form
@@ -164,7 +162,7 @@ export function ReportAgent({ agentKey }: ReportAgentProps) {
               <p className="mt-1 text-xs text-red-500">{errors.content}</p>
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex gap-2 sm:space-x-0">
             <Button asChild variant="destructive">
               <DialogClose>Cancel</DialogClose>
             </Button>

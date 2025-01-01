@@ -1,11 +1,10 @@
 "use client";
 
 import { Suspense, useCallback } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui";
-
-export const AllOrWeighted = () => {
+export const AgentsTabViewContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -23,7 +22,7 @@ export const AllOrWeighted = () => {
     "view-type",
   );
 
-  const handleSearchChange = (tab: "all" | "weighted") => {
+  const handleSearchChange = (tab: "all" | "weighted" | "popular") => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (tab === "all") {
@@ -37,8 +36,12 @@ export const AllOrWeighted = () => {
   };
 
   return (
-    <Tabs defaultValue="all" value={viewType ?? "all"} className="w-[200px]">
-      <TabsList className="grid w-full grid-cols-2">
+    <Tabs
+      defaultValue="all"
+      value={viewType ?? "all"}
+      className="w-full min-w-fit md:w-fit"
+    >
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger onClick={() => handleSearchChange("all")} value="all">
           All
         </TabsTrigger>
@@ -48,15 +51,21 @@ export const AllOrWeighted = () => {
         >
           Weighted
         </TabsTrigger>
+        <TabsTrigger
+          onClick={() => handleSearchChange("popular")}
+          value="popular"
+        >
+          Popular
+        </TabsTrigger>
       </TabsList>
     </Tabs>
   );
 };
 
-export const AllOrWeightedTabs = () => {
+export const AgentsTabView = () => {
   return (
     <Suspense>
-      <AllOrWeighted />
+      <AgentsTabViewContent />
     </Suspense>
   );
 };

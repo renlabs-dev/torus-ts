@@ -1,17 +1,16 @@
 "use client";
 
-import { ChartPie } from "lucide-react";
-
-import { toast } from "@torus-ts/toast-provider";
-import { useTorus } from "@torus-ts/torus-provider";
-
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { Button } from "@torus-ts/ui";
+import { ChartPie } from "lucide-react";
+import { toast } from "@torus-ts/toast-provider";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { useTorus } from "@torus-ts/torus-provider";
 
 interface DelegateModuleWeightProps {
   id: number;
   name: string;
   agentKey: string;
+  className?: string;
 }
 
 export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
@@ -19,7 +18,9 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
 
   const { selectedAccount } = useTorus();
 
-  const isModuleDelegated = delegatedAgents.some((m) => m.id === props.id);
+  const isModuleDelegated = delegatedAgents.some(
+    (m) => m.address === props.agentKey,
+  );
 
   const handleDelegateClick = () => {
     if (!selectedAccount?.address) {
@@ -27,7 +28,7 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
       return;
     }
     if (isModuleDelegated) {
-      removeAgent(props.id);
+      removeAgent(props.agentKey);
     } else {
       addAgent({
         id: props.id,
@@ -41,7 +42,7 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
     <Button
       onClick={handleDelegateClick}
       variant="outline"
-      className={`flex w-fit items-center gap-2 text-white`}
+      className={`flex w-fit items-center gap-2 text-white ${props.className}`}
     >
       <ChartPie className={`h-6 w-6`} />
       {isModuleDelegated ? "Remove" : "Select"}

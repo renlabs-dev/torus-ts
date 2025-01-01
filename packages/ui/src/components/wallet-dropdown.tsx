@@ -189,104 +189,29 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
-    <div className="fixed top-0 z-[70] mx-auto w-full max-w-screen-xl justify-end">
-      <div className="mx-auto hidden animate-fade-down justify-end py-3.5 md:flex">
-        <DropdownMenu onOpenChange={handleGetAccounts}>
-          <DropdownMenuTrigger asChild disabled={!isInitialized}>
-            <WalletCards
-              className={cn(
-                `!h-6 !w-6 ${!isInitialized ? "animate-pulse" : "hover:text-muted-foreground"}`,
-              )}
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className={cn("mt-0.5 w-64 border border-muted")}
-          >
-            {selectedAccount && (
-              <WalletFunctions
-                balance={balance}
-                handleLogout={handleLogout}
-                selectedAccount={selectedAccount}
-                stakeOut={stakeOut}
-              >
-                <Accordion
-                  type="single"
-                  collapsible
-                  className={cn("m-0 w-full")}
-                >
-                  <AccordionItem
-                    value="switch-wallet"
-                    className={cn("border-none")}
-                    onClick={handleGetWallets}
-                  >
-                    <AccordionTrigger
-                      className={cn(
-                        "rounded-md px-2 py-1.5 hover:bg-accent hover:text-accent-foreground hover:no-underline",
-                      )}
-                    >
-                      <span className={cn("flex items-center gap-2")}>
-                        <CreditCard size={17} />
-                        Switch Wallet
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className={cn("pb-0")}>
-                      <DropdownMenuSeparator />
-                      <ScrollArea className={cn("max-h-48 overflow-y-auto")}>
-                        <DropdownMenuRadioGroup
-                          value={selectedAccount.address}
-                          onValueChange={handleWalletSelection}
-                        >
-                          {accounts?.map((account) => (
-                            <DropdownMenuRadioItem
-                              key={account.address}
-                              value={account.address}
-                              disabled={
-                                selectedAccount.address === account.address
-                              }
-                              className={cn(
-                                `${selectedAccount.address === account.address && "bg-active"} rounded-md`,
-                              )}
-                            >
-                              <div
-                                className={cn(
-                                  "flex flex-col items-center gap-2",
-                                )}
-                              >
-                                <span
-                                  className={cn(
-                                    "flex flex-col items-start justify-start gap-1",
-                                  )}
-                                >
-                                  <span>{account.meta.name}</span>
-                                  <span
-                                    className={cn(
-                                      "text-xs text-muted-foreground",
-                                    )}
-                                  >
-                                    {smallAddress(account.address)}
-                                  </span>
-                                </span>
-                              </div>
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </DropdownMenuRadioGroup>
-                      </ScrollArea>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </WalletFunctions>
+    <div className="flex w-fit animate-fade-down justify-end py-1">
+      <DropdownMenu onOpenChange={handleGetAccounts}>
+        <DropdownMenuTrigger disabled={!isInitialized}>
+          <WalletCards
+            className={cn(
+              `!h-6 !w-6 ${!isInitialized ? "animate-pulse" : "hover:text-muted-foreground"}`,
             )}
-
-            {!selectedAccount?.address && (
-              <Accordion
-                type="single"
-                collapsible
-                defaultValue="select-wallet"
-                className={cn("m-0 w-full")}
-              >
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className={cn("mt-0.5 w-64 border border-muted")}
+        >
+          {selectedAccount && (
+            <WalletFunctions
+              balance={balance}
+              handleLogout={handleLogout}
+              selectedAccount={selectedAccount}
+              stakeOut={stakeOut}
+            >
+              <Accordion type="single" collapsible className={cn("m-0 w-full")}>
                 <AccordionItem
-                  value="select-wallet"
+                  value="switch-wallet"
                   className={cn("border-none")}
                   onClick={handleGetWallets}
                 >
@@ -297,47 +222,112 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                   >
                     <span className={cn("flex items-center gap-2")}>
                       <CreditCard size={17} />
-                      Select Wallet
+                      Switch Wallet
                     </span>
                   </AccordionTrigger>
                   <AccordionContent className={cn("pb-0")}>
                     <DropdownMenuSeparator />
-                    <DropdownMenuRadioGroup
-                      value={selectedAccount?.address ?? ""}
-                      onValueChange={handleWalletSelection}
-                    >
-                      {accounts?.map((account) => (
-                        <DropdownMenuRadioItem
-                          key={account.address}
-                          value={account.address}
-                        >
-                          <div
-                            className={cn("flex flex-col items-center gap-2")}
+                    <ScrollArea className={cn("max-h-48 overflow-y-auto")}>
+                      <DropdownMenuRadioGroup
+                        value={selectedAccount.address}
+                        onValueChange={handleWalletSelection}
+                      >
+                        {accounts?.map((account) => (
+                          <DropdownMenuRadioItem
+                            key={account.address}
+                            value={account.address}
+                            disabled={
+                              selectedAccount.address === account.address
+                            }
+                            className={cn(
+                              `${selectedAccount.address === account.address && "bg-active"} rounded-md`,
+                            )}
                           >
-                            <span
-                              className={cn(
-                                "flex flex-col items-start justify-start gap-1",
-                              )}
+                            <div
+                              className={cn("flex flex-col items-center gap-2")}
                             >
-                              <span>{account.meta.name}</span>
                               <span
-                                className={cn("text-xs text-muted-foreground")}
+                                className={cn(
+                                  "flex flex-col items-start justify-start gap-1",
+                                )}
                               >
-                                {smallAddress(account.address)}
+                                <span>{account.meta.name}</span>
+                                <span
+                                  className={cn(
+                                    "text-xs text-muted-foreground",
+                                  )}
+                                >
+                                  {smallAddress(account.address)}
+                                </span>
                               </span>
-                            </span>
-                          </div>
-                        </DropdownMenuRadioItem>
-                      ))}
-                      {accounts?.length === 0 && <NoWalletExtensionDisplay />}
-                    </DropdownMenuRadioGroup>
+                            </div>
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </ScrollArea>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+            </WalletFunctions>
+          )}
+
+          {!selectedAccount?.address && (
+            <Accordion
+              type="single"
+              collapsible
+              defaultValue="select-wallet"
+              className={cn("m-0 w-full")}
+            >
+              <AccordionItem
+                value="select-wallet"
+                className={cn("border-none")}
+                onClick={handleGetWallets}
+              >
+                <AccordionTrigger
+                  className={cn(
+                    "rounded-md px-2 py-1.5 hover:bg-accent hover:text-accent-foreground hover:no-underline",
+                  )}
+                >
+                  <span className={cn("flex items-center gap-2")}>
+                    <CreditCard size={17} />
+                    Select Wallet
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className={cn("pb-0")}>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={selectedAccount?.address ?? ""}
+                    onValueChange={handleWalletSelection}
+                  >
+                    {accounts?.map((account) => (
+                      <DropdownMenuRadioItem
+                        key={account.address}
+                        value={account.address}
+                      >
+                        <div className={cn("flex flex-col items-center gap-2")}>
+                          <span
+                            className={cn(
+                              "flex flex-col items-start justify-start gap-1",
+                            )}
+                          >
+                            <span>{account.meta.name}</span>
+                            <span
+                              className={cn("text-xs text-muted-foreground")}
+                            >
+                              {smallAddress(account.address)}
+                            </span>
+                          </span>
+                        </div>
+                      </DropdownMenuRadioItem>
+                    ))}
+                    {accounts?.length === 0 && <NoWalletExtensionDisplay />}
+                  </DropdownMenuRadioGroup>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

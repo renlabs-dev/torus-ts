@@ -10,6 +10,7 @@ import { Layout } from "@torus-ts/ui/components";
 
 import { WalletProvider } from "~/context/wallet-provider";
 import { env } from "~/env";
+import { WalletHeader } from "./components/wallet-header";
 
 const APP_NAME = "Torus Wallet";
 
@@ -34,18 +35,19 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <Layout font={firaMono} appName={APP_NAME}>
-      <div className="mx-auto flex h-full w-full max-w-screen-xl justify-center">
-        <ToastProvider>
-          <TorusProvider
-            wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
-            torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
-          >
-            <ReactQueryProvider>
-              <WalletProvider>{children}</WalletProvider>
-            </ReactQueryProvider>
-          </TorusProvider>
-        </ToastProvider>
-      </div>
+      <ToastProvider>
+        <TorusProvider
+          wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
+          torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
+        >
+          <ReactQueryProvider>
+            <WalletProvider>
+              <WalletHeader />
+              {children}
+            </WalletProvider>
+          </ReactQueryProvider>
+        </TorusProvider>
+      </ToastProvider>
     </Layout>
   );
 }

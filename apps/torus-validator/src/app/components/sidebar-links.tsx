@@ -1,9 +1,9 @@
 "use client";
 
 import React, { Suspense, useCallback, useEffect } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 import {
   Button,
@@ -17,9 +17,8 @@ import {
 } from "@torus-ts/ui";
 
 const navSidebarOptions = [
-  // { title: "Dashboard", href: "dashboard" },
   { title: "Agents", href: "agents" },
-  { title: "Open Collective", href: "open-collective" },
+  { title: "Ideas", href: "ideas" },
 ] as const;
 
 export const Sidebar = () => {
@@ -42,7 +41,8 @@ export const Sidebar = () => {
   useEffect(() => {
     if (
       !viewMode ||
-      !navSidebarOptions.find((view) => view.href === viewMode)
+      // !navSidebarOptions.find((view) => view.href === viewMode)
+      viewMode !== "agents"
     ) {
       router.push(`/?${createQueryString("view", defaultView)}`, {
         scroll: false,
@@ -64,8 +64,12 @@ export const Sidebar = () => {
         <SelectContent>
           <SelectGroup>
             {navSidebarOptions.map((view) => (
-              <SelectItem value={view.href} key={view.href}>
-                {view.title}
+              <SelectItem
+                value={view.href}
+                key={view.href}
+                disabled={view.href === "ideas"}
+              >
+                {view.title} {view.href === "ideas" && "(Coming Soon)"}
               </SelectItem>
             ))}
           </SelectGroup>
@@ -74,20 +78,35 @@ export const Sidebar = () => {
 
       <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 md:flex">
         <Card className="flex flex-col gap-1.5 p-5">
-          {navSidebarOptions.map((view) => (
-            <Link href={`?view=${view.href}`} key={view.href} prefetch>
-              <Button
-                variant="ghost"
-                className={`w-full justify-between gap-4 border-none px-3 text-base ${viewMode === view.href ? "bg-accent" : ""}`}
-              >
-                {view.title}
-                <Check
-                  size={16}
-                  className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
-                />
-              </Button>
-            </Link>
-          ))}
+          {navSidebarOptions.map((view) => {
+            if (view.href === "ideas") {
+              return (
+                <Button
+                  key={view.href}
+                  variant="ghost"
+                  disabled
+                  className={`w-full justify-between gap-4 border-none px-3 text-base`}
+                >
+                  {view.title} (Coming Soon)
+                </Button>
+              );
+            }
+
+            return (
+              <Link href={`?view=${view.href}`} key={view.href} prefetch>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-between gap-4 border-none px-3 text-base ${viewMode === view.href ? "bg-accent" : ""}`}
+                >
+                  {view.title}
+                  <Check
+                    size={16}
+                    className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
+                  />
+                </Button>
+              </Link>
+            );
+          })}
         </Card>
       </div>
     </>

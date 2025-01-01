@@ -1,3 +1,4 @@
+import type { SS58Address } from "@torus-ts/subspace";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -11,11 +12,11 @@ interface DelegatedAgent {
 interface DelegateState {
   delegatedAgents: DelegatedAgent[];
   originalAgents: DelegatedAgent[];
-  addAgent: (module: Omit<DelegatedAgent, "percentage">) => void;
-  removeAgent: (id: number) => void;
-  updatePercentage: (id: number, percentage: number) => void;
+  addAgent: (agent: Omit<DelegatedAgent, "percentage">) => void;
+  removeAgent: (agentKey: string | SS58Address) => void;
+  updatePercentage: (agentKey: string | SS58Address, percentage: number) => void;
   getTotalPercentage: () => number;
-  setDelegatedAgentsFromDB: (modules: DelegatedAgent[]) => void;
+  setDelegatedAgentsFromDB: (agents: DelegatedAgent[]) => void;
   hasUnsavedChanges: () => boolean;
   updateOriginalAgents: () => void;
 }
@@ -25,28 +26,29 @@ export const useDelegateAgentStore = create<DelegateState>()(
     (set, get) => ({
       delegatedAgents: [],
       originalAgents: [],
-      addAgent: (module) =>
+      addAgent: (agent) =>
         set((state) => ({
           delegatedAgents: [
             ...state.delegatedAgents,
-            { ...module, percentage: 1 },
+            { ...agent, percentage: 1 },
           ],
         })),
-      removeAgent: (id) =>
+      removeAgent: (agentKey) =>
         set((state) => ({
-          delegatedAgents: state.delegatedAgents.filter((m) => m.id !== id),
+          delegatedAgents: state.delegatedAgents.filter((agent) => agent.address !== agentKey),
         })),
-      updatePercentage: (id, percentage) =>
-        set((state) => ({
-          delegatedAgents: state.delegatedAgents.map((m) =>
-            m.id === id ? { ...m, percentage } : m,
-          ),
-        })),
+       
+        updatePercentage: (agentKey, percentage) =>
+          set((state) => ({
+            delegatedAgents: state.delegatedAgents.map((agent) =>
+              agent.address === agentKey ? { ...agent, percentage } : agent
+            ),
+          })),
       getTotalPercentage: () => {
-        return get().delegatedAgents.reduce((sum, m) => sum + m.percentage, 0);
+        return get().delegatedAgents.reduce((sum, agent) => sum + agent.percentage, 0);
       },
-      setDelegatedAgentsFromDB: (modules) =>
-        set(() => ({ delegatedAgents: modules, originalAgents: modules })),
+      setDelegatedAgentsFromDB: (agents) =>
+        set(() => ({ delegatedAgents: agents, originalAgents: agents })),
       updateOriginalAgents: () =>
         set((state) => ({ originalAgents: [...state.delegatedAgents] })),
       hasUnsavedChanges: () => {
@@ -54,11 +56,11 @@ export const useDelegateAgentStore = create<DelegateState>()(
         if (state.delegatedAgents.length !== state.originalAgents.length) {
           return true;
         }
-        return state.delegatedAgents.some((module, index) => {
+        return state.delegatedAgents.some((agent, index) => {
           const originalAgent = state.originalAgents[index];
           return (
-            module.id !== originalAgent?.id ||
-            module.percentage !== originalAgent.percentage
+            agent.address !== originalAgent?.address ||
+            agent.percentage !== originalAgent.percentage
           );
         });
       },
