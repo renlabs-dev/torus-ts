@@ -103,7 +103,7 @@ export function StakeAction() {
 
   const maxAmount = useMemo(() => {
     const balance = accountFreeBalance.data ?? 0n;
-    const adjustedErrorMargin = 1_000n; // 0.000001 TOR as error margin
+    const adjustedErrorMargin = 1_000n * 1_000_000_000n; // 0.000001 TOR as error margin
 
     const maxAmount = balance - adjustedErrorMargin;
     return maxAmount > 0 ? fromNano(maxAmount) : "0";
