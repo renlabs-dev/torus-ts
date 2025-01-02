@@ -1,17 +1,18 @@
-import { IToken } from '@hyperlane-xyz/sdk';
-import { ChevronIcon } from '@hyperlane-xyz/widgets';
-import { useField, useFormikContext } from 'formik';
-import { useEffect, useState } from 'react';
-import { TokenIcon } from '../../components/icons/TokenIcon';
-import { TransferFormValues } from '../transfer/types';
-import { TokenListModal } from './TokenListModal';
-import { getIndexForToken, getTokenByIndex, useWarpCore } from './hooks';
+import type { IToken } from "@hyperlane-xyz/sdk";
+import { ChevronIcon } from "@hyperlane-xyz/widgets";
+import { useField, useFormikContext } from "formik";
+import { useEffect, useState } from "react";
 
-type Props = {
+import type { TransferFormValues } from "../transfer/types";
+import { TokenListModal } from "./TokenListModal";
+import { getIndexForToken, getTokenByIndex, useWarpCore } from "./hooks";
+import { TokenIcon } from "~/app/components/icons/TokenIcon";
+
+interface Props {
   name: string;
   disabled?: boolean;
   setIsNft: (value: boolean) => void;
-};
+}
 
 export function TokenSelectField({ name, disabled, setIsNft }: Props) {
   const { values } = useFormikContext<TransferFormValues>();
@@ -40,13 +41,13 @@ export function TokenSelectField({ name, disabled, setIsNft }: Props) {
       newFieldValue = undefined;
       newIsAutomatic = false;
     }
-    helpers.setValue(newFieldValue);
+    void helpers.setValue(newFieldValue);
     setIsAutomaticSelection(newIsAutomatic);
   }, [warpCore, origin, destination, helpers]);
 
   const onSelectToken = (newToken: IToken) => {
     // Set the token address value in formik state
-    helpers.setValue(getIndexForToken(warpCore, newToken));
+    void helpers.setValue(getIndexForToken(warpCore, newToken));
     // Update nft state in parent
     setIsNft(newToken.isNft());
   };
@@ -93,8 +94,9 @@ function TokenButton({
     >
       <div className="flex items-center">
         {token && <TokenIcon token={token} size={20} />}
-        <span className={`ml-2 ${!token?.symbol && 'text-slate-400'}`}>
-          {token?.symbol || (isAutomatic ? 'No routes available' : 'Select Token')}
+        <span className={`ml-2 ${!token?.symbol && "text-slate-400"}`}>
+          {token?.symbol ??
+            (isAutomatic ? "No routes available" : "Select Token")}
         </span>
       </div>
       {!isAutomatic && <ChevronIcon width={12} height={8} direction="s" />}
@@ -103,7 +105,7 @@ function TokenButton({
 }
 
 const styles = {
-  base: 'mt-1.5 w-full px-2.5 py-2.5 flex items-center justify-between text-sm rounded-lg border border-primary-300 outline-none transition-colors duration-500',
-  enabled: 'hover:bg-gray-100 active:scale-95 focus:border-primary-500',
-  disabled: 'bg-gray-100 cursor-default',
+  base: "mt-1.5 w-full px-2.5 py-2.5 flex items-center justify-between text-sm rounded-lg border border-primary-300 outline-none transition-colors duration-500",
+  enabled: "hover:bg-gray-100 active:scale-95 focus:border-primary-500",
+  disabled: "bg-gray-100 cursor-default",
 };

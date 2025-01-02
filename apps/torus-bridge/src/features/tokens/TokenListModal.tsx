@@ -1,14 +1,15 @@
-import { IToken } from '@hyperlane-xyz/sdk';
-import { Modal, SearchIcon } from '@hyperlane-xyz/widgets';
-import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { TokenIcon } from '../../components/icons/TokenIcon';
-import { TextInput } from '../../components/input/TextField';
-import { config } from '../../consts/config';
-import InfoIcon from '../../images/icons/info-circle.svg';
-import { useMultiProvider } from '../chains/hooks';
-import { getChainDisplayName } from '../chains/utils';
-import { useWarpCore } from './hooks';
+import type { ChainName, IToken } from "@hyperlane-xyz/sdk";
+import { Modal, SearchIcon } from "@hyperlane-xyz/widgets";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { config } from "../../consts/config";
+import InfoIcon from "../../images/icons/info-circle.svg";
+import { useMultiProvider } from "../chains/hooks";
+import { getChainDisplayName } from "../chains/utils";
+import { useWarpCore } from "./hooks";
+import { TextInput } from "~/app/components/input/TextField";
+import { TokenIcon } from "~/app/components/icons/TokenIcon";
 
 export function TokenListModal({
   isOpen,
@@ -23,11 +24,11 @@ export function TokenListModal({
   origin: ChainName;
   destination: ChainName;
 }) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   const onClose = () => {
     close();
-    setSearch('');
+    setSearch("");
   };
 
   const onSelectAndClose = (token: IToken) => {
@@ -52,7 +53,13 @@ export function TokenListModal({
   );
 }
 
-function SearchBar({ search, setSearch }: { search: string; setSearch: (s: string) => void }) {
+function SearchBar({
+  search,
+  setSearch,
+}: {
+  search: string;
+  setSearch: (s: string) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     inputRef.current?.focus();
@@ -71,7 +78,7 @@ function SearchBar({ search, setSearch }: { search: string; setSearch: (s: strin
         onChange={setSearch}
         placeholder="Token name, symbol, or address"
         name="token-search"
-        className="mb-4 mt-3 w-full pl-10 all:border-gray-200 all:py-3 all:focus:border-gray-400"
+        className="all:border-gray-200 all:py-3 all:focus:border-gray-400 mb-4 mt-3 w-full pl-10"
         autoComplete="off"
       />
     </div>
@@ -94,7 +101,9 @@ export function TokenList({
 
   const tokens = useMemo(() => {
     const q = searchQuery?.trim().toLowerCase();
-    const multiChainTokens = warpCore.tokens.filter((t) => t.isMultiChainToken());
+    const multiChainTokens = warpCore.tokens.filter((t) =>
+      t.isMultiChainToken(),
+    );
     const tokensWithRoute = warpCore.getTokensForRoute(origin, destination);
     return (
       multiChainTokens
@@ -127,7 +136,7 @@ export function TokenList({
         tokens.map((t, i) => (
           <button
             className={`-mx-2 mb-2 flex items-center rounded px-2 py-2 ${
-              t.disabled ? 'opacity-50' : 'hover:bg-gray-200'
+              t.disabled ? "opacity-50" : "hover:bg-gray-200"
             } duration-250 transition-all`}
             key={i}
             type="button"
@@ -138,12 +147,16 @@ export function TokenList({
               <TokenIcon token={t.token} size={30} />
             </div>
             <div className="ml-2 shrink-0 text-left">
-              <div className="w-14 truncate text-sm">{t.token.symbol || 'Unknown'}</div>
-              <div className="w-14 truncate text-xs text-gray-500">{t.token.name || 'Unknown'}</div>
+              <div className="w-14 truncate text-sm">
+                {t.token.symbol || "Unknown"}
+              </div>
+              <div className="w-14 truncate text-xs text-gray-500">
+                {t.token.name || "Unknown"}
+              </div>
             </div>
             <div className="ml-2 min-w-0 shrink text-left">
               <div className="w-full truncate text-xs">
-                {t.token.addressOrDenom || 'Native chain token'}
+                {t.token.addressOrDenom || "Native chain token"}
               </div>
               <div className="mt-0.5 flex space-x-1 text-xs">
                 <span>{`Decimals: ${t.token.decimals}`}</span>
@@ -168,7 +181,9 @@ export function TokenList({
       ) : (
         <div className="my-8 text-center text-gray-500">
           <div>No tokens found</div>
-          <div className="mt-2 text-sm">Try a different destination chain or search query</div>
+          <div className="mt-2 text-sm">
+            Try a different destination chain or search query
+          </div>
         </div>
       )}
     </div>

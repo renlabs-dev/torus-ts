@@ -1,9 +1,9 @@
-import { IRegistry } from '@hyperlane-xyz/registry';
-import { IToken } from '@hyperlane-xyz/sdk';
-import { isHttpsUrl, isRelativeUrl } from '@hyperlane-xyz/utils';
-import { Circle } from '@hyperlane-xyz/widgets';
-import { useState } from 'react';
-import { useStore } from '../../features/store';
+import type { IRegistry } from "@hyperlane-xyz/registry";
+import type { IToken } from "@hyperlane-xyz/sdk";
+import { isHttpsUrl, isRelativeUrl } from "@hyperlane-xyz/utils";
+import { Circle } from "@hyperlane-xyz/widgets";
+import { useState } from "react";
+import { useStore } from "~/features/store";
 
 interface Props {
   token?: IToken | null;
@@ -11,8 +11,8 @@ interface Props {
 }
 
 export function TokenIcon({ token, size = 32 }: Props) {
-  const title = token?.symbol || '';
-  const character = title ? title.charAt(0).toUpperCase() : '';
+  const title = token?.symbol || "";
+  const character = title ? title.charAt(0).toUpperCase() : "";
   const fontSize = Math.floor(size / 2);
 
   const [fallbackToText, setFallbackToText] = useState(false);

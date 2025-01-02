@@ -1,9 +1,15 @@
-import { ProtocolType } from '@hyperlane-xyz/utils';
-import { useAccountForChain, useConnectFns, useTimeout } from '@hyperlane-xyz/widgets';
-import { useFormikContext } from 'formik';
-import { useCallback } from 'react';
-import { useChainProtocol, useMultiProvider } from '../../features/chains/hooks';
-import { SolidButton } from './SolidButton';
+import { ProtocolType } from "@hyperlane-xyz/utils";
+import {
+  useAccountForChain,
+  useConnectFns,
+  useTimeout,
+} from "@hyperlane-xyz/widgets";
+import { useFormikContext } from "formik";
+import { useCallback } from "react";
+
+import { SolidButton } from "./SolidButton";
+import type { ChainName } from "@hyperlane-xyz/sdk";
+import { useChainProtocol, useMultiProvider } from "~/features/chains/hooks";
 
 interface Props {
   chainName: ChainName;
@@ -11,7 +17,11 @@ interface Props {
   classes?: string;
 }
 
-export function ConnectAwareSubmitButton<FormValues = any>({ chainName, text, classes }: Props) {
+export function ConnectAwareSubmitButton<FormValues = any>({
+  chainName,
+  text,
+  classes,
+}: Props) {
   const protocol = useChainProtocol(chainName) || ProtocolType.Ethereum;
   const connectFns = useConnectFns();
   const connectFn = connectFns[protocol];
@@ -20,14 +30,20 @@ export function ConnectAwareSubmitButton<FormValues = any>({ chainName, text, cl
   const account = useAccountForChain(multiProvider, chainName);
   const isAccountReady = account?.isReady;
 
-  const { errors, setErrors, touched, setTouched } = useFormikContext<FormValues>();
+  const { errors, setErrors, touched, setTouched } =
+    useFormikContext<FormValues>();
 
-  const hasError = Object.keys(touched).length > 0 && Object.keys(errors).length > 0;
-  const firstError = `${Object.values(errors)[0]}` || 'Unknown error';
+  const hasError =
+    Object.keys(touched).length > 0 && Object.keys(errors).length > 0;
+  const firstError = `${Object.values(errors)[0]}` || "Unknown error";
 
-  const color = hasError ? 'red' : 'accent';
-  const content = hasError ? firstError : isAccountReady ? text : 'Connect wallet';
-  const type = isAccountReady ? 'submit' : 'button';
+  const color = hasError ? "red" : "accent";
+  const content = hasError
+    ? firstError
+    : isAccountReady
+      ? text
+      : "Connect wallet";
+  const type = isAccountReady ? "submit" : "button";
   const onClick = isAccountReady ? undefined : connectFn;
 
   // Automatically clear error state after a timeout

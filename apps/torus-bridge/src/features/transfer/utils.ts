@@ -37,6 +37,7 @@ export function getTransferStatusLabel(
         "Transfer confirmed, the funds will arrive when the message is delivered.";
   else if (status === TransferStatus.Delivered)
     statusDescription = "Delivery complete, transfer successful!";
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   else if (status === TransferStatus.Failed)
     statusDescription = "Transfer failed, please try again.";
 
@@ -60,24 +61,28 @@ export const STATUSES_WITH_ICON = [
 export function getIconByTransferStatus(status: TransferStatus) {
   switch (status) {
     case TransferStatus.Delivered:
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return DeliveredIcon;
     case TransferStatus.ConfirmedTransfer:
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return ConfirmedIcon;
     case TransferStatus.Failed:
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return ErrorCircleIcon;
     default:
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return ErrorCircleIcon;
   }
 }
 
-import {
+import type {
   ChainMap,
+  ChainName,
   CoreAddresses,
-  MultiProtocolCore,
   MultiProtocolProvider,
-  ProviderType,
   TypedTransactionReceipt,
 } from "@hyperlane-xyz/sdk";
+import { MultiProtocolCore, ProviderType } from "@hyperlane-xyz/sdk";
 import { logger } from "../../utils/logger";
 
 export function tryGetMsgIdFromTransferReceipt(
@@ -94,7 +99,7 @@ export function tryGetMsgIdFromTransferReceipt(
       // SDK expects. In this case they're compatible.
       receipt = {
         type: ProviderType.EthersV5,
-        receipt: receipt.receipt as any,
+        receipt: receipt.receipt as never,
       };
     }
 

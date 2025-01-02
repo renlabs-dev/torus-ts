@@ -1,8 +1,5 @@
-import {
-  TypedTransactionReceipt,
-  WarpCore,
-  WarpTxCategory,
-} from "@hyperlane-xyz/sdk";
+import type { TypedTransactionReceipt, WarpCore } from "@hyperlane-xyz/sdk";
+import { WarpTxCategory } from "@hyperlane-xyz/sdk";
 import { toTitleCase, toWei } from "@hyperlane-xyz/utils";
 import {
   getAccountAddressForChain,
@@ -12,14 +9,17 @@ import {
 } from "@hyperlane-xyz/widgets";
 import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
-import { toastTxSuccess } from "../../components/toast/TxSuccessToast";
+
 import { logger } from "../../utils/logger";
 import { useMultiProvider } from "../chains/hooks";
 import { getChainDisplayName } from "../chains/utils";
-import { AppState, useStore } from "../store";
+import type { AppState } from "../store";
+import { useStore } from "../store";
 import { getTokenByIndex, useWarpCore } from "../tokens/hooks";
-import { TransferContext, TransferFormValues, TransferStatus } from "./types";
+import type { TransferContext, TransferFormValues } from "./types";
+import { TransferStatus } from "./types";
 import { tryGetMsgIdFromTransferReceipt } from "./utils";
+import { toastTxSuccess } from "~/app/components/toast/TxSuccessToast";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
@@ -104,11 +104,13 @@ async function executeTransfer({
   let transferStatus: TransferStatus = TransferStatus.Preparing;
   updateTransferStatus(transferIndex, transferStatus);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { origin, destination, tokenIndex, amount, recipient } = values;
   const multiProvider = warpCore.multiProvider;
 
   try {
     const originToken = getTokenByIndex(warpCore, tokenIndex);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const connection = originToken?.getConnectionForChain(destination);
     if (!originToken || !connection)
       throw new Error("No token route found between chains");
@@ -122,6 +124,7 @@ async function executeTransfer({
     const activeChain = activeChains.chains[originProtocol];
     const sender = getAccountAddressForChain(
       multiProvider,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       origin,
       activeAccounts.accounts,
     );
@@ -130,6 +133,7 @@ async function executeTransfer({
     const isCollateralSufficient =
       await warpCore.isDestinationCollateralSufficient({
         originTokenAmount,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         destination,
       });
     if (!isCollateralSufficient) {
@@ -140,11 +144,14 @@ async function executeTransfer({
     addTransfer({
       timestamp: new Date().getTime(),
       status: TransferStatus.Preparing,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       origin,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       destination,
       originTokenAddressOrDenom: originToken.addressOrDenom,
       destTokenAddressOrDenom: connection.token.addressOrDenom,
       sender,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       recipient,
       amount,
     });
@@ -156,8 +163,10 @@ async function executeTransfer({
 
     const txs = await warpCore.getTransferRemoteTxs({
       originTokenAmount,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       destination,
       sender,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       recipient,
     });
 
@@ -170,6 +179,7 @@ async function executeTransfer({
       );
       const { hash, confirm } = await sendTransaction({
         tx,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         chainName: origin,
         activeChainName: activeChain.chainName,
       });
@@ -185,7 +195,8 @@ async function executeTransfer({
     }
 
     const msgId = txReceipt
-      ? tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt)
+      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt)
       : undefined;
 
     updateTransferStatus(
@@ -196,15 +207,19 @@ async function executeTransfer({
         msgId,
       },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error(`Error at stage ${transferStatus}`, error);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const errorDetails = error.message || error.toString();
     updateTransferStatus(transferIndex, TransferStatus.Failed);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     if (errorDetails.includes(CHAIN_MISMATCH_ERROR)) {
       // Wagmi switchNetwork call helps prevent this but isn't foolproof
       toast.error("Wallet must be connected to origin chain");
     } else if (
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       errorDetails.includes(TRANSFER_TIMEOUT_ERROR1) ||
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       errorDetails.includes(TRANSFER_TIMEOUT_ERROR2)
     ) {
       toast.error(
@@ -212,7 +227,7 @@ async function executeTransfer({
       );
     } else {
       toast.error(
-        errorMessages[transferStatus] || "Unable to transfer tokens.",
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
       );
     }
   }

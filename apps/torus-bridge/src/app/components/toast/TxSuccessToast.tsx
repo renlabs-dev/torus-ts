@@ -1,5 +1,6 @@
-import { toast } from 'react-toastify';
-import { useMultiProvider } from '../../features/chains/hooks';
+import type { ChainName } from "@hyperlane-xyz/sdk";
+import { toast } from "react-toastify";
+import { useMultiProvider } from "~/features/chains/hooks";
 
 export function toastTxSuccess(msg: string, txHash: string, chain: ChainName) {
   toast.success(<TxSuccessToast msg={msg} txHash={txHash} chain={chain} />, {
@@ -21,9 +22,14 @@ export function TxSuccessToast({
 
   return (
     <div>
-      {msg + ' '}
+      {msg + " "}
       {url && (
-        <a className="underline" href={url} target="_blank" rel="noopener noreferrer">
+        <a
+          className="underline"
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Open in Explorer
         </a>
       )}
