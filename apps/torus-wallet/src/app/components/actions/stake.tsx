@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
@@ -12,8 +12,13 @@ import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function StakeAction() {
-  const { addStake, accountFreeBalance, stakeOut, accountStakedBy } =
-    useWallet();
+  const {
+    addStake,
+    accountFreeBalance,
+    stakeOut,
+    accountStakedBy,
+    selectedAccount,
+  } = useWallet();
   const [amount, setAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [inputError, setInputError] = useState<{
@@ -117,6 +122,12 @@ export function StakeAction() {
     },
     { label: "Amount", content: `${amount ? amount : 0} TOR` },
   ];
+
+  useEffect(() => {
+    setRecipient("");
+    setAmount("");
+    setInputError({ recipient: null, value: null });
+  }, [selectedAccount?.address]);
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">

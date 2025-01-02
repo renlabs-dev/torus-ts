@@ -13,7 +13,8 @@ import { FeeLabel } from "../fee-label";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function SendAction() {
-  const { estimateFee, accountFreeBalance, transfer } = useWallet();
+  const { estimateFee, accountFreeBalance, transfer, selectedAccount } =
+    useWallet();
 
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
@@ -173,6 +174,12 @@ export function SendAction() {
 
     void fetchFeeAndMax();
   }, [recipient]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    setRecipient("");
+    setAmount("");
+    setInputError({ recipient: null, value: null });
+  }, [selectedAccount?.address]);
 
   return (
     <div className="l flex w-full flex-col gap-4 md:flex-row">
