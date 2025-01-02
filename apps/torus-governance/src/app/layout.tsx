@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono} appName={APP_NAME}>
+    <Layout font={firaMono}>
       <TorusProvider
         wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
         torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
