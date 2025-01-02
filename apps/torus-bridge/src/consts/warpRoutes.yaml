@@ -1,0 +1,21 @@
+# A list of Warp Route token configs
+# These configs will be merged with the warp routes in the configured registry
+# The input here is typically the output of the Hyperlane CLI warp deploy command
+---
+tokens:
+  - addressOrDenom: '0x2a84b39fD6825BACCaE3644cEF7d0E23713e27E6'
+    chainName: holesky
+    connections:
+      - token: ethereum|torusalphanet|0x7E39adE4c434b4a28e6b514A3AaBDf3e610752c2
+    decimals: 18
+    name: torusalphanet
+    standard: EvmHypSynthetic
+    symbol: TOR
+  - addressOrDenom: '0x7E39adE4c434b4a28e6b514A3AaBDf3e610752c2'
+    chainName: torusalphanet
+    connections:
+      - token: ethereum|holesky|0x2a84b39fD6825BACCaE3644cEF7d0E23713e27E6
+    decimals: 18
+    name: torusalphanet
+    standard: EvmHypNative
+    symbol: TOR

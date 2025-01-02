@@ -1,0 +1,23 @@
+# A map of chain names to ChainMetadata
+# Chains can be defined here, in chains.json, or in chains.ts
+# Chains already in the SDK need not be included here unless you want to override some fields
+# Schema here: https://github.com/hyperlane-xyz/hyperlane-monorepo/blob/main/typescript/sdk/src/metadata/chainMetadataTypes.ts
+---
+# Example using local anvil chain:
+torusalphanet:
+  blocks:
+    confirmations: 1
+    estimateBlockTime: 13
+    reorgPeriod: finalized
+  chainId: 21000
+  displayName: TorusAlphanet
+  domainId: 21000
+  isTestnet: true
+  name: torusalphanet
+  nativeToken:
+    decimals: 18
+    name: torusalphanet
+    symbol: TOR
+  protocol: ethereum
+  rpcUrls:
+    - http: https://api-0.nodes.testnet.torus.network/
