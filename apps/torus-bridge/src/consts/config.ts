@@ -1,14 +1,18 @@
-import { ChainMap } from '@hyperlane-xyz/sdk';
-import { ADDRESS_BLACKLIST } from './blacklist';
+import type { ChainMap } from "@hyperlane-xyz/sdk";
+import { ADDRESS_BLACKLIST } from "./blacklist";
 
-const isDevMode = process?.env?.NODE_ENV === 'development';
-const version = process?.env?.NEXT_PUBLIC_VERSION || '0.0.0';
+const isDevMode = process?.env?.NODE_ENV === "development";
+const version = process?.env?.NEXT_PUBLIC_VERSION || "0.0.0";
 const registryUrl = process?.env?.NEXT_PUBLIC_REGISTRY_URL || undefined;
 const registryBranch = process?.env?.NEXT_PUBLIC_REGISTRY_BRANCH || undefined;
-const registryProxyUrl = process?.env?.NEXT_PUBLIC_GITHUB_PROXY || 'https://proxy.hyperlane.xyz';
-const walletConnectProjectId = process?.env?.NEXT_PUBLIC_WALLET_CONNECT_ID || '';
-const transferBlacklist = process?.env?.NEXT_PUBLIC_TRANSFER_BLACKLIST || '';
-const chainWalletWhitelists = JSON.parse(process?.env?.NEXT_PUBLIC_CHAIN_WALLET_WHITELISTS || '{}');
+const registryProxyUrl =
+  process?.env?.NEXT_PUBLIC_GITHUB_PROXY || "https://proxy.hyperlane.xyz";
+const walletConnectProjectId =
+  process?.env?.NEXT_PUBLIC_WALLET_CONNECT_ID || "";
+const transferBlacklist = process?.env?.NEXT_PUBLIC_TRANSFER_BLACKLIST || "";
+const chainWalletWhitelists = JSON.parse(
+  process?.env?.NEXT_PUBLIC_CHAIN_WALLET_WHITELISTS || "{}",
+);
 
 interface Config {
   addressBlacklist: string[]; // A list of addresses that are blacklisted and cannot be used in the app

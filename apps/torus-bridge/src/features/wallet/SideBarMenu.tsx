@@ -1,3 +1,5 @@
+"use client";
+
 import { AccountList, ChainLogo, SpinnerIcon } from "@hyperlane-xyz/widgets";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";

@@ -1,28 +1,27 @@
-import { MultiProtocolWalletModal } from '@hyperlane-xyz/widgets';
-import Head from 'next/head';
-import { PropsWithChildren } from 'react';
-import { APP_NAME, BACKGROUND_COLOR, BACKGROUND_IMAGE } from '../../consts/app';
-import { useStore } from '../../features/store';
-import { SideBarMenu } from '../../features/wallet/SideBarMenu';
-import { Header } from '../nav/Header';
+import { MultiProtocolWalletModal } from "@hyperlane-xyz/widgets";
+
+import type { PropsWithChildren } from "react";
+
+import { Header } from "../nav/Header";
+import { useStore } from "~/features/store";
+import { BACKGROUND_COLOR, BACKGROUND_IMAGE } from "~/consts/app";
+import { SideBarMenu } from "~/features/wallet/SideBarMenu";
 
 export function AppLayout({ children }: PropsWithChildren) {
-  const { showEnvSelectModal, setShowEnvSelectModal, isSideBarOpen, setIsSideBarOpen } = useStore(
-    (s) => ({
-      showEnvSelectModal: s.showEnvSelectModal,
-      setShowEnvSelectModal: s.setShowEnvSelectModal,
-      isSideBarOpen: s.isSideBarOpen,
-      setIsSideBarOpen: s.setIsSideBarOpen,
-    }),
-  );
+  const {
+    showEnvSelectModal,
+    setShowEnvSelectModal,
+    isSideBarOpen,
+    setIsSideBarOpen,
+  } = useStore((s) => ({
+    showEnvSelectModal: s.showEnvSelectModal,
+    setShowEnvSelectModal: s.setShowEnvSelectModal,
+    isSideBarOpen: s.isSideBarOpen,
+    setIsSideBarOpen: s.setIsSideBarOpen,
+  }));
 
   return (
     <>
-      <Head>
-        {/* https://nextjs.org/docs/messages/no-document-viewport-meta */}
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{APP_NAME}</title>
-      </Head>
       <div
         style={styles.container}
         id="app-content"
@@ -30,7 +29,9 @@ export function AppLayout({ children }: PropsWithChildren) {
       >
         <Header />
         <div className="mx-auto flex max-w-screen-xl grow items-center sm:px-4">
-          <main className="my-4 flex w-full flex-1 items-center justify-center">{children}</main>
+          <main className="my-4 flex w-full flex-1 items-center justify-center">
+            {children}
+          </main>
         </div>
       </div>
 
@@ -51,8 +52,8 @@ const styles = {
   container: {
     backgroundColor: BACKGROUND_COLOR,
     backgroundImage: BACKGROUND_IMAGE,
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center',
+    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "center",
   },
 };

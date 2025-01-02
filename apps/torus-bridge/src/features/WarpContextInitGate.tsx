@@ -1,3 +1,5 @@
+"use client";
+
 import { SpinnerIcon, useTimeout } from "@hyperlane-xyz/widgets";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
