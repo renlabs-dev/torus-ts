@@ -18,6 +18,7 @@ import { VoteData } from "~/app/components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomProposal } from "../../../../../utils";
 import { StatusLabel } from "../../../../components/status-label";
+import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
 
 interface CustomContent {
   paramId: number;
@@ -30,7 +31,7 @@ const handleUserVotes = ({
   proposalStatus: ProposalStatus;
   selectedAccountAddress: SS58Address;
 }): VoteStatus => {
-  if (!Object.prototype.hasOwnProperty.call(proposalStatus, "open"))
+  if (!Object.prototype.hasOwnProperty.call(proposalStatus, "Open"))
     return "UNVOTED";
 
   if (
@@ -51,8 +52,14 @@ const handleUserVotes = ({
 
 export function ProposalExpandedView(props: CustomContent): JSX.Element {
   const { paramId } = props;
-  const { selectedAccount, proposalsWithMeta, lastBlock, proposals } =
-    useGovernance();
+  const {
+    api,
+    lastBlock,
+    proposals,
+    proposalsWithMeta,
+    selectedAccount,
+    torusCacheUrl,
+  } = useGovernance();
 
   const content = useMemo(() => {
     const proposal = proposalsWithMeta?.find(
@@ -67,7 +74,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
       selectedAccountAddress: selectedAccount?.address as SS58Address,
     });
 
-    return {
+    const proposalContent = {
       body,
       title,
       invalid,
@@ -79,7 +86,23 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
       creationBlock: proposal.creationBlock,
       voted,
     };
+    console.log(proposal.status);
+
+    return proposalContent;
   }, [proposalsWithMeta, paramId, selectedAccount]);
+
+  const votesFor =
+    content && "Open" in content.status ? content.status.Open.votesFor : [];
+
+  const votesAgainst =
+    content && "Open" in content.status ? content.status.Open.votesAgainst : [];
+
+  const {
+    data: votersList,
+    isLoading: votersListLoading,
+    isError: votersListError,
+    refetch: votersListRefetch,
+  } = useProcessVotesAndStakes(api, torusCacheUrl, votesFor, votesAgainst);
 
   if (proposals.isLoading || !proposalsWithMeta)
     return (
@@ -92,6 +115,27 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
   if (!content) return <div>No content found.</div>;
 
   const isProposalOpen = "Open" in content.status;
+
+  const votersListProps = {
+    isError: votersListError,
+    isLoading: votersListLoading,
+    voters: votersList,
+  };
+
+  const proposalVoteCardProps = {
+    proposalId: content.id,
+    proposalStatus: content.status,
+    voted: content.voted,
+    votersListRefetch,
+  };
+
+  const detailsCardProps = {
+    author: content.author,
+    id: content.id,
+    creationBlock: content.creationBlock,
+    expirationBlock: content.expirationBlock,
+    lastBlockNumber: lastBlock.data?.blockNumber ?? 0,
+  };
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -106,20 +150,10 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
 
           {/* Mobile Details Section */}
           <div className="flex w-full flex-col gap-6 transition-all md:hidden">
-            <DetailsCard
-              author={content.author}
-              id={content.id}
-              creationBlock={content.creationBlock}
-              expirationBlock={content.expirationBlock}
-              lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
-            />
+            <DetailsCard {...detailsCardProps} />
             {isProposalOpen && (
               <>
-                <ProposalVoteCard
-                  proposalId={content.id}
-                  proposalStatus={content.status}
-                  voted={content.voted}
-                />
+                <ProposalVoteCard {...proposalVoteCardProps} />
                 <VoteData proposalStatus={content.status} />
               </>
             )}
@@ -128,11 +162,7 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
           {/* Desktop Proposal Vote Card */}
           {isProposalOpen && (
             <div className="hidden md:block">
-              <ProposalVoteCard
-                proposalId={content.id}
-                proposalStatus={content.status}
-                voted={content.voted}
-              />
+              <ProposalVoteCard {...proposalVoteCardProps} />
             </div>
           )}
 
@@ -140,22 +170,13 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
           <ViewComment itemType="PROPOSAL" id={content.id} />
           <CreateComment id={content.id} itemType="PROPOSAL" />
 
-          {/* Desktop Voter List */}
-          <div className="hidden lg:block">
-            {isProposalOpen && <VoterList proposalStatus={content.status} />}
-          </div>
+          {isProposalOpen && <VoterList {...votersListProps} />}
         </div>
 
         {/* Right Column */}
         <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
-          <DetailsCard
-            author={content.author}
-            id={content.id}
-            creationBlock={content.creationBlock}
-            expirationBlock={content.expirationBlock}
-            lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
-          />
-          {isProposalOpen && <VoterList proposalStatus={content.status} />}
+          <DetailsCard {...detailsCardProps} />
+          <VoteData proposalStatus={content.status} />
         </div>
       </div>
     </div>

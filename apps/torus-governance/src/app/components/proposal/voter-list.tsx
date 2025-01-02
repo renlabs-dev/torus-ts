@@ -2,34 +2,24 @@
 
 import { useLayoutEffect, useState } from "react";
 
-import type { ProposalStatus } from "@torus-ts/subspace";
-import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
+import type { VoteWithStake } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
-import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, CardHeader } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
 interface VoterListProps {
-  proposalStatus: ProposalStatus;
+  voters: VoteWithStake[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
 }
 
-export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
-  const { api, torusCacheUrl } = useTorus();
+export function VoterList(props: VoterListProps): JSX.Element {
+  const { isError, isLoading, voters } = props;
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(
     null,
   );
-
-  const votesFor = "Open" in proposalStatus ? proposalStatus.Open.votesFor : [];
-  const votesAgainst =
-    "Open" in proposalStatus ? proposalStatus.Open.votesAgainst : [];
-
-  const {
-    data: voters,
-    isLoading,
-    isError,
-  } = useProcessVotesAndStakes(api, torusCacheUrl, votesFor, votesAgainst);
 
   useLayoutEffect(() => {
     if (!containerNode) {
@@ -93,7 +83,7 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex h-full min-h-max animate-fade-down flex-col items-start justify-between gap-4 text-white animate-delay-700">
       <span className="text-lg">
         <h3>Voters List</h3>
       </span>
@@ -115,13 +105,13 @@ export function VoterList({ proposalStatus }: VoterListProps): JSX.Element {
                   vote === "IN_FAVOR" ? "text-green-500" : "text-red-500"
                 }
               >
-                {vote}
+                {vote === "IN_FAVOR" ? "In Favor" : "Against"}
               </span>
             </div>
           </Button>
         ))}
         <span
-          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "h-4 animate-fade" : "h-24 animate-fade"} bg-gradient-to-b from-[#04061C1A] to-[#04061C] transition-all duration-100`}
+          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "h-4 animate-fade" : "h-24 animate-fade"} bg-gradient-to-b from-transparent to-background transition-all duration-100`}
         />
       </div>
     </div>

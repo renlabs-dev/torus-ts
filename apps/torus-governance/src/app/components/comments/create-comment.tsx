@@ -12,7 +12,7 @@ import { api } from "~/trpc/react";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
-const MIN_STAKE_REQUIRED = 5000;
+const MIN_STAKE_REQUIRED = 2000;
 
 export function CreateComment({
   id,

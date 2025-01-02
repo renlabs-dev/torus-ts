@@ -40,8 +40,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
     currentBlock,
   } = props;
 
-  const isProposalOpen = proposalStatus && "open" in proposalStatus;
-
+  const isProposalOpen = proposalStatus && "Open" in proposalStatus;
   return (
     <>
       <Card className="p-4 transition duration-300 hover:bg-accent/40 lg:p-6">

@@ -84,6 +84,7 @@ export function CreateAgentApplication(): JSX.Element {
         void AddAgentApplication({
           applicationKey,
           IpfsHash: `ipfs://${ipfs.IpfsHash}`,
+          removing: false,
           callback: handleCallback,
         });
       } else {

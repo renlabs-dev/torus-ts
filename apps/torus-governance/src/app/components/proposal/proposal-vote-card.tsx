@@ -4,9 +4,8 @@ import { useState } from "react";
 import { TicketX } from "lucide-react";
 import { match } from "rustie";
 
-import type { ProposalStatus } from "@torus-ts/subspace";
+import type { ProposalStatus, VoteWithStake } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
   ToggleGroup,
@@ -18,6 +17,10 @@ import type { VoteStatus } from "../vote-label";
 import { useGovernance } from "~/context/governance-provider";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { VotePowerSettings } from "./vote-power-settings";
+import type {
+  QueryObserverResult,
+  RefetchOptions,
+} from "@tanstack/react-query";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
@@ -128,7 +131,7 @@ const VoteCardFunctionsContent = (props: {
           {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
         </Button>
 
-        {isAccountConnected && <VotePowerSettings isPowerUser={isPowerUser} />}
+        {isAccountConnected && <VotePowerSettings />}
 
         {votingStatus.status && (
           <TransactionStatus
@@ -146,17 +149,28 @@ const VoteCardFunctionsContent = (props: {
   );
 };
 
-export function ProposalVoteCard(props: {
+interface ProposalVoteCardProps {
   proposalStatus: ProposalStatus;
   proposalId: number;
   voted: VoteStatus;
-}): JSX.Element {
-  const { proposalId, voted = "UNVOTED", proposalStatus } = props;
+  votersListRefetch: (
+    options?: RefetchOptions,
+  ) => Promise<QueryObserverResult<VoteWithStake[], Error>>;
+}
+
+export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
+  const {
+    proposalId,
+    voted = "UNVOTED",
+    proposalStatus,
+    votersListRefetch,
+  } = props;
   const {
     isAccountConnected,
-    voteProposal,
-    removeVoteProposal,
     isAccountPowerUser,
+    proposals,
+    removeVoteProposal,
+    voteProposal,
   } = useGovernance();
 
   const [vote, setVote] = useState<VoteStatus>("UNVOTED");
@@ -166,15 +180,12 @@ export function ProposalVoteCard(props: {
     message: null,
   });
 
+  const refetchHandler = async () => {
+    await Promise.all([proposals.refetch(), votersListRefetch()]);
+  };
+
   function handleCallback(callbackReturn: TransactionResult): void {
     setVotingStatus(callbackReturn);
-    console.log(callbackReturn);
-    if (callbackReturn.finalized && callbackReturn.status === "SUCCESS") {
-      toast.success("This page will reload in 5 seconds");
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
-    }
   }
 
   function handleVote(): void {
@@ -184,6 +195,7 @@ export function ProposalVoteCard(props: {
         proposalId,
         vote: voteBoolean,
         callback: handleCallback,
+        refetchHandler,
       });
     } catch {
       setVotingStatus({
@@ -204,6 +216,7 @@ export function ProposalVoteCard(props: {
       void removeVoteProposal({
         proposalId,
         callback: handleCallback,
+        refetchHandler,
       });
     } catch (error) {
       console.error(error);

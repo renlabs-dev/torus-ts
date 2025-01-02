@@ -6,6 +6,7 @@ import { createContext, useContext, useMemo } from "react";
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import type {
   AgentApplication,
+  Api,
   LastBlock,
   Proposal,
   SS58Address,
@@ -40,37 +41,36 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { Header, WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
+import { toast } from "@torus-ts/toast-provider";
 
 interface GovernanceContextType {
-  isInitialized: boolean;
-  lastBlock: UseQueryResult<LastBlock, Error>;
-
-  isAccountConnected: boolean;
-  isAccountPowerUser: boolean;
-  selectedAccount: InjectedAccountWithMeta | null;
   accountFreeBalance: UseQueryResult<bigint, Error>;
+  accountsNotDelegatingVoting: UseQueryResult<SS58Address[], Error>;
   accountStakedBalance: bigint | undefined;
-
-  stakeOut: UseQueryResult<StakeData, Error>;
-
-  agentApplications: UseQueryResult<ApplicationState[], Error>;
-  agentApplicationsWithMeta: ApplicationState[] | undefined;
-  daoTreasuryAddress: UseQueryResult<SS58Address, Error>;
-  daoTreasuryBalance: UseQueryResult<bigint, Error>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
+  addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   addDaoTreasuryTransferProposal: (
     proposal: addDaoTreasuryTransferProposal,
   ) => Promise<void>;
-
+  agentApplications: UseQueryResult<ApplicationState[], Error>;
+  agentApplicationsWithMeta: ApplicationState[] | undefined;
+  api: Api | null;
+  daoTreasuryAddress: UseQueryResult<SS58Address, Error>;
+  daoTreasuryBalance: UseQueryResult<bigint, Error>;
+  isAccountConnected: boolean;
+  isAccountPowerUser: boolean;
+  isInitialized: boolean;
+  lastBlock: UseQueryResult<LastBlock, Error>;
   proposals: UseQueryResult<Proposal[], Error>;
   proposalsWithMeta: ProposalState[] | undefined;
+  registerAgent: (registerAgent: registerAgent) => Promise<void>;
+  removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   rewardAllocation: UseQueryResult<bigint, Error>;
+  selectedAccount: InjectedAccountWithMeta | null;
+  stakeOut: UseQueryResult<StakeData, Error>;
+  torusCacheUrl: string;
   unrewardedProposals: UseQueryResult<number[], Error>;
   voteProposal: (vote: Vote) => Promise<void>;
-  removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
-  addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
-
-  registerAgent: (registerAgent: registerAgent) => Promise<void>;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -82,21 +82,21 @@ export function GovernanceProvider({
 }): JSX.Element {
   // == API Context ==
   const {
-    api,
-    isInitialized,
-    selectedAccount,
-    isAccountConnected,
-    voteProposal,
-    registerAgent,
+    accounts,
     AddAgentApplication,
     addCustomProposal,
-    removeVoteProposal,
     addDaoTreasuryTransferProposal,
-
-    accounts,
-    handleLogout,
+    api,
     handleGetWallets,
+    handleLogout,
     handleSelectWallet,
+    isAccountConnected,
+    isInitialized,
+    registerAgent,
+    removeVoteProposal,
+    selectedAccount,
+    torusCacheUrl,
+    voteProposal,
   } = useTorus();
   const lastBlock = useLastBlock(api);
 
@@ -128,7 +128,7 @@ export function GovernanceProvider({
     stakeOut.data?.perAddr[selectedAccount?.address!];
 
   // == Proposals ==
-  const proposals = useProposals(lastBlock.data?.apiAtBlock);
+  const proposals = useProposals(api);
   const customProposalMetadataQueryMap = useCustomMetadata<BaseProposal>(
     "proposal",
     lastBlock.data,
@@ -158,6 +158,7 @@ export function GovernanceProvider({
     lastBlock.data,
     agentApplications.data,
   );
+
   const agentApplicationsWithMeta = agentApplications.data?.map(
     (agent: AgentApplication) => {
       const id = agent.id;
@@ -183,13 +184,14 @@ export function GovernanceProvider({
         lastBlock,
 
         stakeOut,
-
+        api,
+        torusCacheUrl,
         selectedAccount,
         isAccountPowerUser,
         isAccountConnected,
         accountFreeBalance,
         accountStakedBalance,
-
+        accountsNotDelegatingVoting,
         agentApplications,
         agentApplicationsWithMeta,
         daoTreasuryAddress,
@@ -220,6 +222,7 @@ export function GovernanceProvider({
             handleLogout={handleLogout}
             handleGetWallets={handleGetWallets}
             handleSelectWallet={handleSelectWallet}
+            notifyCopy={() => toast.success("Copied to clipboard")}
           />
         }
       />
