@@ -1,11 +1,12 @@
-import { ChainMetadata, isRpcHealthy } from '@hyperlane-xyz/sdk';
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { FormWarningBanner } from '../../components/banner/FormWarningBanner';
-import { logger } from '../../utils/logger';
-import { ChainSelectListModal } from './ChainSelectModal';
-import { useMultiProvider } from './hooks';
-import { getChainDisplayName } from './utils';
+import type { ChainMetadata, ChainName } from "@hyperlane-xyz/sdk";
+import { isRpcHealthy } from "@hyperlane-xyz/sdk";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { logger } from "../../utils/logger";
+import { ChainSelectListModal } from "./ChainSelectModal";
+import { useMultiProvider } from "./hooks";
+import { getChainDisplayName } from "./utils";
+import { FormWarningBanner } from "~/app/components/banner/FormWarningBanner";
 
 export function ChainConnectionWarning({
   origin,
@@ -19,7 +20,7 @@ export function ChainConnectionWarning({
   const destinationMetadata = multiProvider.getChainMetadata(destination);
 
   const { data } = useQuery({
-    queryKey: ['ChainConnectionWarning', originMetadata, destinationMetadata],
+    queryKey: ["ChainConnectionWarning", originMetadata, destinationMetadata],
     queryFn: async () => {
       const isOriginHealthy = await checkRpcHealth(originMetadata);
       const isDestinationHealthy = await checkRpcHealth(destinationMetadata);
@@ -49,7 +50,11 @@ export function ChainConnectionWarning({
 
   return (
     <>
-      <FormWarningBanner isVisible={!!unhealthyChain} cta="Edit" onClick={onClickEdit}>
+      <FormWarningBanner
+        isVisible={!!unhealthyChain}
+        cta="Edit"
+        onClick={onClickEdit}
+      >
         {`Connection to ${displayName} is unstable. Consider adding a more reliable RPC URL.`}
       </FormWarningBanner>
       <ChainSelectListModal
@@ -69,7 +74,7 @@ async function checkRpcHealth(chainMetadata: ChainMetadata) {
     const isHealthy = await isRpcHealthy(chainMetadata, 0);
     return isHealthy;
   } catch (error) {
-    logger.warn('Error checking RPC health', error);
+    logger.warn("Error checking RPC health", error);
     return false;
   }
 }

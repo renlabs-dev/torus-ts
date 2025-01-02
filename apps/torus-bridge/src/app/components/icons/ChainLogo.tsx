@@ -1,8 +1,8 @@
-import { ChainLogo as ChainLogoInner } from '@hyperlane-xyz/widgets';
-import Image from 'next/image';
-import { useMemo } from 'react';
-import { useChainMetadata } from '../../features/chains/hooks';
-import { useStore } from '../../features/store';
+import { ChainLogo as ChainLogoInner } from "@hyperlane-xyz/widgets";
+import Image from "next/image";
+import { useMemo } from "react";
+import { useChainMetadata } from "~/features/chains/hooks";
+import { useStore } from "~/features/store";
 
 export function ChainLogo({
   chainName,
@@ -16,7 +16,7 @@ export function ChainLogo({
   const registry = useStore((s) => s.registry);
   const chainMetadata = useChainMetadata(chainName);
   const { name, Icon } = useMemo(() => {
-    const name = chainMetadata?.name || '';
+    const name = chainMetadata?.name ?? "";
     const logoUri = chainMetadata?.logoURI;
     const Icon = logoUri
       ? (props: { width: number; height: number; title?: string }) => (

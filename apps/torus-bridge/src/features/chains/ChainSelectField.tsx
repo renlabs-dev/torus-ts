@@ -1,31 +1,40 @@
-import { ChainSearchMenuProps, ChevronIcon } from '@hyperlane-xyz/widgets';
-import { useField, useFormikContext } from 'formik';
-import { useState } from 'react';
-import { ChainLogo } from '../../components/icons/ChainLogo';
-import { TransferFormValues } from '../transfer/types';
-import { ChainSelectListModal } from './ChainSelectModal';
-import { useChainDisplayName } from './hooks';
+import type { ChainSearchMenuProps } from "@hyperlane-xyz/widgets";
+import { ChevronIcon } from "@hyperlane-xyz/widgets";
+import { useField, useFormikContext } from "formik";
+import { useState } from "react";
 
-type Props = {
+import type { TransferFormValues } from "../transfer/types";
+import { ChainSelectListModal } from "./ChainSelectModal";
+import { useChainDisplayName } from "./hooks";
+import type { ChainName } from "@hyperlane-xyz/sdk";
+import { ChainLogo } from "~/app/components/icons/ChainLogo";
+
+interface Props {
   name: string;
   label: string;
   onChange?: (id: ChainName) => void;
   disabled?: boolean;
-  customListItemField: ChainSearchMenuProps['customListItemField'];
-};
+  customListItemField: ChainSearchMenuProps["customListItemField"];
+}
 
-export function ChainSelectField({ name, label, onChange, disabled, customListItemField }: Props) {
+export function ChainSelectField({
+  name,
+  label,
+  onChange,
+  disabled,
+  customListItemField,
+}: Props) {
   const [field, , helpers] = useField<ChainName>(name);
   const { setFieldValue } = useFormikContext<TransferFormValues>();
 
   const displayName = useChainDisplayName(field.value, true);
 
   const handleChange = (chainName: ChainName) => {
-    helpers.setValue(chainName);
+    void helpers.setValue(chainName);
     // Reset other fields on chain change
-    setFieldValue('recipient', '');
-    setFieldValue('amount', '');
-    setFieldValue('tokenIndex', undefined);
+    void setFieldValue("recipient", "");
+    void setFieldValue("amount", "");
+    void setFieldValue("tokenIndex", undefined);
     if (onChange) onChange(chainName);
   };
 
@@ -67,7 +76,7 @@ export function ChainSelectField({ name, label, onChange, disabled, customListIt
 }
 
 const styles = {
-  base: 'px-2 py-1.5 w-full flex items-center justify-between text-sm bg-white rounded-lg border border-primary-300 outline-none transition-colors duration-500',
-  enabled: 'hover:bg-gray-100 active:scale-95 focus:border-primary-500',
-  disabled: 'bg-gray-150 cursor-default',
+  base: "px-2 py-1.5 w-full flex items-center justify-between text-sm bg-white rounded-lg border border-primary-300 outline-none transition-colors duration-500",
+  enabled: "hover:bg-gray-100 active:scale-95 focus:border-primary-500",
+  disabled: "bg-gray-150 cursor-default",
 };

@@ -1,4 +1,4 @@
-import { ProtocolType } from '@hyperlane-xyz/utils';
+import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
   CopyButton,
   MessageStatus,
@@ -10,27 +10,28 @@ import {
   useTimeout,
   useWalletDetails,
   WideChevronIcon,
-} from '@hyperlane-xyz/widgets';
-import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChainLogo } from '../../components/icons/ChainLogo';
-import { TokenIcon } from '../../components/icons/TokenIcon';
-import LinkIcon from '../../images/icons/external-link-icon.svg';
-import { Color } from '../../styles/Color';
-import { formatTimestamp } from '../../utils/date';
-import { getHypExplorerLink } from '../../utils/links';
-import { logger } from '../../utils/logger';
+} from "@hyperlane-xyz/widgets";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useMultiProvider } from '../chains/hooks';
-import { getChainDisplayName, hasPermissionlessChain } from '../chains/utils';
-import { tryFindToken, useWarpCore } from '../tokens/hooks';
-import { TransferContext, TransferStatus } from './types';
+import LinkIcon from "../../images/icons/external-link-icon.svg";
+import { formatTimestamp } from "../../utils/date";
+import { getHypExplorerLink } from "../../utils/links";
+import { logger } from "../../utils/logger";
+
+import { useMultiProvider } from "../chains/hooks";
+import { getChainDisplayName, hasPermissionlessChain } from "../chains/utils";
+import { tryFindToken, useWarpCore } from "../tokens/hooks";
+import type { TransferContext } from "./types";
+import { TransferStatus } from "./types";
 import {
   getIconByTransferStatus,
   getTransferStatusLabel,
   isTransferFailed,
   isTransferSent,
-} from './utils';
+} from "./utils";
+import { ChainLogo } from "~/app/components/icons/ChainLogo";
+import { TokenIcon } from "~/app/components/icons/TokenIcon";
 
 export function TransfersDetailsModal({
   isOpen,
@@ -41,9 +42,9 @@ export function TransfersDetailsModal({
   onClose: () => void;
   transfer: TransferContext;
 }) {
-  const [fromUrl, setFromUrl] = useState<string>('');
-  const [toUrl, setToUrl] = useState<string>('');
-  const [originTxUrl, setOriginTxUrl] = useState<string>('');
+  const [fromUrl, setFromUrl] = useState<string>("");
+  const [toUrl, setToUrl] = useState<string>("");
+  const [originTxUrl, setOriginTxUrl] = useState<string>("");
 
   const {
     status,
@@ -62,13 +63,19 @@ export function TransfersDetailsModal({
   const warpCore = useWarpCore();
 
   const isChainKnown = multiProvider.hasChain(origin);
-  const account = useAccountForChain(multiProvider, isChainKnown ? origin : undefined);
-  const walletDetails = useWalletDetails()[account?.protocol || ProtocolType.Ethereum];
+  const account = useAccountForChain(
+    multiProvider,
+    isChainKnown ? origin : undefined,
+  );
+  const walletDetails =
+    useWalletDetails()[account?.protocol || ProtocolType.Ethereum];
 
   const getMessageUrls = useCallback(async () => {
     try {
       if (originTxHash) {
-        const originTxUrl = multiProvider.tryGetExplorerTxUrl(origin, { hash: originTxHash });
+        const originTxUrl = multiProvider.tryGetExplorerTxUrl(origin, {
+          hash: originTxHash,
+        });
         if (originTxUrl) setOriginTxUrl(fixDoubleSlash(originTxUrl));
       }
       const [fromUrl, toUrl] = await Promise.all([
@@ -78,21 +85,24 @@ export function TransfersDetailsModal({
       if (fromUrl) setFromUrl(fixDoubleSlash(fromUrl));
       if (toUrl) setToUrl(fixDoubleSlash(toUrl));
     } catch (error) {
-      logger.error('Error fetching URLs:', error);
+      logger.error("Error fetching URLs:", error);
     }
   }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 
   useEffect(() => {
     if (!transfer) return;
     getMessageUrls().catch((err) =>
-      logger.error('Error getting message URLs for details modal', err),
+      logger.error("Error getting message URLs for details modal", err),
     );
   }, [transfer, getMessageUrls]);
 
   const isAccountReady = !!account?.isReady;
-  const connectorName = walletDetails.name || 'wallet';
+  const connectorName = walletDetails.name || "wallet";
   const token = tryFindToken(warpCore, origin, originTokenAddressOrDenom);
-  const isPermissionlessRoute = hasPermissionlessChain(multiProvider, [destination, origin]);
+  const isPermissionlessRoute = hasPermissionlessChain(multiProvider, [
+    destination,
+    origin,
+  ]);
   const isSent = isTransferSent(status);
   const isFailed = isTransferFailed(status);
   const isFinal = isSent || isFailed;
@@ -105,7 +115,10 @@ export function TransfersDetailsModal({
   const showSignWarning = useSignIssueWarning(status);
 
   const date = useMemo(
-    () => (timestamp ? formatTimestamp(timestamp) : formatTimestamp(new Date().getTime())),
+    () =>
+      timestamp
+        ? formatTimestamp(timestamp)
+        : formatTimestamp(new Date().getTime()),
     [timestamp],
   );
 
@@ -133,7 +146,7 @@ export function TransfersDetailsModal({
         </div>
       )}
 
-      <div className="mt-4 flex w-full items-center justify-center rounded-full bg-primary-200 p-3">
+      <div className="bg-primary-200 mt-4 flex w-full items-center justify-center rounded-full p-3">
         <TokenIcon token={token} size={30} />
         <div className="items ml-2 flex items-baseline">
           <span className="text-xl font-medium">{amount}</span>
@@ -162,10 +175,21 @@ export function TransfersDetailsModal({
 
       {isFinal ? (
         <div className="mt-5 flex flex-col space-y-4">
-          <TransferProperty name="Sender Address" value={sender} url={fromUrl} />
-          <TransferProperty name="Recipient Address" value={recipient} url={toUrl} />
+          <TransferProperty
+            name="Sender Address"
+            value={sender}
+            url={fromUrl}
+          />
+          <TransferProperty
+            name="Recipient Address"
+            value={recipient}
+            url={toUrl}
+          />
           {token?.addressOrDenom && (
-            <TransferProperty name="Token Address or Denom" value={token.addressOrDenom} />
+            <TransferProperty
+              name="Token Address or Denom"
+              value={token.addressOrDenom}
+            />
           )}
           {originTxHash && (
             <TransferProperty
@@ -177,9 +201,9 @@ export function TransfersDetailsModal({
           {msgId && <TransferProperty name="Message ID" value={msgId} />}
           {explorerLink && (
             <div className="flex justify-between">
-              <span className="text-xs leading-normal tracking-wider text-gray-350">
+              <span className="text-gray-350 text-xs leading-normal tracking-wider">
                 <a
-                  className="text-xs leading-normal tracking-wider text-gray-350 underline underline-offset-2 hover:opacity-80 active:opacity-70"
+                  className="text-gray-350 text-xs leading-normal tracking-wider underline underline-offset-2 hover:opacity-80 active:opacity-70"
                   href={explorerLink}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -194,14 +218,14 @@ export function TransfersDetailsModal({
         <div className="flex flex-col items-center justify-center py-4">
           <SpinnerIcon width={60} height={60} className="mt-3" />
           <div
-            className={`mt-5 text-center text-sm ${isFailed ? 'text-red-600' : 'text-gray-600'}`}
+            className={`mt-5 text-center text-sm ${isFailed ? "text-red-600" : "text-gray-600"}`}
           >
             {statusDescription}
           </div>
           {showSignWarning && (
             <div className="mt-3 text-center text-sm text-gray-600">
-              If your wallet does not show a transaction request or never confirms, please try the
-              transfer again.
+              If your wallet does not show a transaction request or never
+              confirms, please try the transfer again.
             </div>
           )}
         </div>
@@ -224,7 +248,9 @@ export function Timeline({
     originTxHash: isFailed ? undefined : originTxHash,
     multiProvider: multiProtocolProvider.toMultiProvider(),
   });
-  const messageStatus = isFailed ? MessageStatus.Failing : message?.status || MessageStatus.Pending;
+  const messageStatus = isFailed
+    ? MessageStatus.Failing
+    : (message?.status ?? MessageStatus.Pending);
 
   return (
     <div className="timeline-container mb-2 mt-6 flex w-full flex-col items-center justify-center">
@@ -232,28 +258,45 @@ export function Timeline({
         status={messageStatus}
         stage={stage}
         timings={timings}
-        timestampSent={message?.origin?.timestamp}
+        timestampSent={message?.origin.timestamp}
         hideDescriptions={true}
       />
     </div>
   );
 }
 
-function TransferProperty({ name, value, url }: { name: string; value: string; url?: string }) {
+function TransferProperty({
+  name,
+  value,
+  url,
+}: {
+  name: string;
+  value: string;
+  url?: string;
+}) {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <label className="text-sm leading-normal tracking-wider text-gray-350">{name}</label>
+        <label className="text-gray-350 text-sm leading-normal tracking-wider">
+          {name}
+        </label>
         <div className="flex items-center space-x-2">
           {url && (
             <a href={url} target="_blank" rel="noopener noreferrer">
               <Image src={LinkIcon} width={14} height={14} alt="" />
             </a>
           )}
-          <CopyButton copyValue={value} width={14} height={14} className="opacity-40" />
+          <CopyButton
+            copyValue={value}
+            width={14}
+            height={14}
+            className="opacity-40"
+          />
         </div>
       </div>
-      <div className="mt-1 truncate text-sm leading-normal tracking-wider">{value}</div>
+      <div className="mt-1 truncate text-sm leading-normal tracking-wider">
+        {value}
+      </div>
     </div>
   );
 }
@@ -264,7 +307,7 @@ function WideChevron() {
       width="16"
       height="100%"
       direction="e"
-      color={Color.gray['300']}
+      color="gray-350"
       rounded={true}
     />
   );
@@ -274,7 +317,10 @@ function WideChevron() {
 function useSignIssueWarning(status: TransferStatus) {
   const [showWarning, setShowWarning] = useState(false);
   const warningCallback = useCallback(() => {
-    if (status === TransferStatus.SigningTransfer || status === TransferStatus.ConfirmingTransfer)
+    if (
+      status === TransferStatus.SigningTransfer ||
+      status === TransferStatus.ConfirmingTransfer
+    )
       setShowWarning(true);
   }, [status, setShowWarning]);
   useTimeout(warningCallback, 20_000);
@@ -284,5 +330,5 @@ function useSignIssueWarning(status: TransferStatus) {
 // TODO cosmos fix double slash problem in ChainMetadataManager
 // Occurs when baseUrl has not other path (e.g. for manta explorer)
 function fixDoubleSlash(url: string) {
-  return url.replace(/([^:]\/)\/+/g, '$1');
+  return url.replace(/([^:]\/)\/+/g, "$1");
 }
