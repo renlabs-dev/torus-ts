@@ -1,8 +1,8 @@
 import type { z } from "zod";
 
 export const parseEnvOrExit =
-  <O>(envSchema: z.ZodType<O>) =>
-  (env: unknown) => {
+  <Out>(envSchema: z.ZodType<Out>) =>
+  (env: unknown): Out => {
     const result = envSchema.safeParse(env);
 
     if (!result.success) {

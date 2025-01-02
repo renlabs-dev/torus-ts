@@ -24,11 +24,11 @@ fix: lint-fix format-fix
 build:
   pnpm exec ./scripts/dev-helper with-env turbo run build
 
-dev name:
-  pnpm exec ./scripts/dev-helper dev {{name}}
+dev name *args:
+  pnpm exec ./scripts/dev-helper dev {{name}} {{args}}
 
-dev-watch name:
-  pnpm exec ./scripts/dev-helper dev {{name}}
+dev-watch name *args:
+  pnpm exec ./scripts/dev-helper dev --watch {{name}} {{args}}
 
 typecheck:
   pnpm exec turbo run typecheck
