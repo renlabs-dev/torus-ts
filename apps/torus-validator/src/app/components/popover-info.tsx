@@ -20,23 +20,32 @@ import { VALIDATOR_ADDRESS } from "./delegated-list";
 
 export const PopoverInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
-  const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
-    useKeyStakedBy(torusApi, selectedAccount?.address);
+  const {
+    data: accountStakedBy,
+    isLoading: isLoadingAccountStakedBy,
+    refetch: refetchAccountStakedBy,
+  } = useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
   const { delegatedAgents } = useDelegateAgentStore();
 
   const userWeightPower = useMemo(() => {
-    if (isLoadingAccountStakedBy) return null;
+    if (isLoadingAccountStakedBy || !selectedAccount?.address) return null;
 
+    void refetchAccountStakedBy();
     if (!accountStakedBy) {
       return BigInt(0);
     }
 
-    const data = accountStakedBy
-      .filter((stake) => VALIDATOR_ADDRESS.includes(stake.address))
-      .reduce((sum, stake) => sum + stake.stake, 0n);
+    const data = accountStakedBy.find((stake) =>
+      selectedAccount.address.includes(stake.address),
+    );
 
-    return formatToken(Number(data));
-  }, [accountStakedBy, isLoadingAccountStakedBy]);
+    return formatToken(Number(data?.stake ?? 0n));
+  }, [
+    accountStakedBy,
+    isLoadingAccountStakedBy,
+    selectedAccount,
+    refetchAccountStakedBy,
+  ]);
 
   return (
     <Popover>
