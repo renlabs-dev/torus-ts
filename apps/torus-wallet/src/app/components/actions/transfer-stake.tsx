@@ -12,7 +12,7 @@ import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function TransferStakeAction() {
-  const { accountStakedBy, transferStake } = useWallet();
+  const { accountStakedBy, transferStake, selectedAccount } = useWallet();
 
   const [amount, setAmount] = useState<string>("");
   const [fromValidator, setFromValidator] = useState<string>("");
@@ -166,6 +166,13 @@ export function TransferStakeAction() {
       }));
     }
   }, [fromValidator, recipient]);
+
+  useEffect(() => {
+    setRecipient("");
+    setFromValidator("");
+    setAmount("");
+    setInputError({ recipient: null, value: null, fromValidator: null });
+  }, [selectedAccount?.address]);
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
