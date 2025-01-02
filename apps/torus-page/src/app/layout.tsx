@@ -31,7 +31,7 @@ export default function RootLayout({
       <HoverHeader />
       {children}
       <div className="absolute bottom-0 mb-8 w-full animate-fade-up text-center text-gray-200 animate-delay-700">
-        <h3>Bridge Closed. Total Bridged: 65M $TOR</h3>
+        <h3>Bridge Closed.</h3>
       </div>
       <Footer />
     </Layout>
