@@ -31,6 +31,7 @@ async function main() {
 
   const workerTypes: Record<string, () => Promise<void>> = {
     // TODO: rename "dao" worker arg
+    // TODO: this dont work and dont trow any errors why
     dao: async () => {
       await processApplicationsWorker({
         lastBlock,
@@ -54,6 +55,7 @@ async function main() {
         lastBlockNumber,
       });
     },
+    // TODO: This explodes due to zod errors
     "weight-aggregator": async () => {
       await weightAggregatorWorker(api);
     },
