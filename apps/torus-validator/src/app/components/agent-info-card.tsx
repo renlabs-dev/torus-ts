@@ -13,13 +13,13 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
       label: "Agent Key",
       value: (
         <CopyButton
-          className="h-6 p-0 hover:text-muted-foreground hover:no-underline"
+          className="h-fit p-0 hover:text-muted-foreground"
           variant="link"
           copy={agent.key ?? ""}
           notify={() => toast.success("Copied to clipboard")}
         >
           {smallAddress(agent.key ?? "", 6)}
-          <Copy className="hover:text-yellow-400" />
+          <Copy />
         </CopyButton>
       ),
     },
@@ -33,13 +33,13 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
       label: "API Endpoint",
       value: agent.apiUrl ? (
         <CopyButton
-          className="h-6 p-0 hover:text-muted-foreground"
+          className="h-fit p-0 hover:text-muted-foreground"
           variant="link"
           copy={agent.apiUrl}
           notify={() => toast.success("Copied to clipboard")}
         >
           Copy URL
-          <Copy className="hover:text-yellow-400" />
+          <Copy />
         </CopyButton>
       ) : (
         "N/A"
