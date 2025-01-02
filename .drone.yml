@@ -118,7 +118,7 @@ steps:
   - name: prepare-dockerfile
     image: alpine
     environment:
-      APP_NAME: torus-page
+      APP_NAME: torus-validator
     commands:
       - ./scripts/sed_dockerfile.sh
 
@@ -194,7 +194,7 @@ steps:
   - name: prepare-dockerfile
     image: alpine
     environment:
-      APP_NAME: torus-page
+      APP_NAME: torus-worker
     commands:
       - ./scripts/sed_dockerfile.sh
 
@@ -270,7 +270,7 @@ steps:
   - name: prepare-dockerfile
     image: alpine
     environment:
-      APP_NAME: torus-page
+      APP_NAME: torus-governance
     commands:
       - ./scripts/sed_dockerfile.sh
 
@@ -346,7 +346,7 @@ steps:
   - name: prepare-dockerfile
     image: alpine
     environment:
-      APP_NAME: torus-page
+      APP_NAME: torus-wallet
     commands:
       - ./scripts/sed_dockerfile.sh
 
@@ -422,7 +422,7 @@ steps:
   - name: prepare-dockerfile
     image: alpine
     environment:
-      APP_NAME: torus-page
+      APP_NAME: torus-cache
     commands:
       - ./scripts/sed_dockerfile.sh
 
