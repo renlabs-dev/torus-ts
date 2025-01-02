@@ -23,7 +23,7 @@ export function AgentApplicationExpandedView(
   const { agentApplicationsWithMeta, agentApplications, lastBlock } =
     useGovernance();
 
-  function handleAgentApplicationsContent() {
+  const handleAgentApplicationsContent = () => {
     const app = agentApplicationsWithMeta?.find((d) => d.id === paramId);
     if (!app) return null;
 
@@ -38,10 +38,11 @@ export function AgentApplicationExpandedView(
       author: app.payerKey,
       id: app.id,
       // creationBlock: app.blockNumber,
+      expiresAt: app.expiresAt,
       status: "Pending" as const,
     };
     return agentApplicationContent;
-  }
+  };
 
   const content = handleAgentApplicationsContent();
 
@@ -67,8 +68,7 @@ export function AgentApplicationExpandedView(
             <DetailsCard
               author={content.author}
               id={content.id}
-              // creationBlock={content.creationBlock}
-              creationBlock={0} // TODO
+              expirationBlock={content.expiresAt}
               lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
             />
             <AgentApplicationVoteTypeCard
@@ -101,8 +101,7 @@ export function AgentApplicationExpandedView(
           <DetailsCard
             author={content.author}
             id={content.id}
-            // creationBlock={content.creationBlock}
-            creationBlock={0} // TODO
+            expirationBlock={content.expiresAt}
             lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
           />
           <CreateCadreCandidates />

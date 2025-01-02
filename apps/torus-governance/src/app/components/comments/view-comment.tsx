@@ -146,15 +146,11 @@ export function ViewComment({
     { enabled: typeof id === "number" },
   );
 
-  const [localReactions, setLocalReactions] = useState<
-    Record<string, CommentInteractionReactionType>
-  >({});
-
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
 
   const sortedComments = useMemo(() => {
     if (!comments) return [];
-    return [...comments].sort((a, b) => {
+    return comments.sort((a, b) => {
       if (sortBy === "newest") {
         return (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -187,6 +183,9 @@ export function ViewComment({
     onSuccess: async () => {
       await Promise.all([refetchUserVotes(), refetch()]);
     },
+    onError: (err) => {
+      throw new Error(JSON.stringify(err));
+    },
   });
 
   const deleteVoteMutation = api.commentInteraction.deleteReaction.useMutation({
@@ -194,10 +193,6 @@ export function ViewComment({
       await Promise.all([refetchUserVotes(), refetch()]);
     },
   });
-
-  const localUserVotes = useMemo(() => {
-    return { ...userVotes, ...localReactions };
-  }, [userVotes, localReactions]);
 
   const handleVote = useCallback(
     async (commentId: number, reactionType: CommentInteractionReactionType) => {
@@ -216,11 +211,6 @@ export function ViewComment({
         const currentVote = userVotes?.[commentId];
         const isRemovingVote = currentVote === reactionType;
 
-        setLocalReactions((prevVotes) => ({
-          ...prevVotes,
-          [commentId]: isRemovingVote ? null : reactionType,
-        }));
-
         if (isRemovingVote) {
           await deleteVoteMutation.mutateAsync({ commentId });
         } else {
@@ -231,12 +221,6 @@ export function ViewComment({
         toast.error(
           "There was an error processing your vote. Please try again.",
         );
-        setLocalReactions((prevVotes) => ({
-          ...prevVotes,
-          [commentId]:
-            (userVotes?.[commentId] as CommentInteractionReactionType | null) ??
-            null,
-        }));
       }
     },
     [
@@ -302,7 +286,7 @@ export function ViewComment({
           ref={setContainerNode}
         >
           {sortedComments.map((comment) => {
-            const currentVote = localUserVotes[comment.id];
+            const currentVote = userVotes?.[comment.id];
             return (
               <Card
                 key={comment.id}
@@ -322,9 +306,7 @@ export function ViewComment({
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
-                      onClick={() =>
-                        handleVote(comment.id, localReactions.LIKE ?? "LIKE")
-                      }
+                      onClick={() => handleVote(comment.id, "LIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === "LIKE" ? "text-green-500" : "hover:text-green-500"}`}
                     >
@@ -333,12 +315,7 @@ export function ViewComment({
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() =>
-                        handleVote(
-                          comment.id,
-                          localReactions.DISLIKE ?? "DISLIKE",
-                        )
-                      }
+                      onClick={() => handleVote(comment.id, "DISLIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === "DISLIKE" ? "text-red-500" : "hover:text-red-500"}`}
                     >
@@ -362,7 +339,7 @@ export function ViewComment({
             );
           })}
           <span
-            className={`fixed bottom-0 flex w-full items-end justify-center ${isAtBottom ? "h-0 animate-fade" : "h-8 animate-fade"} bg-gradient-to-b from-[#04061C1A] to-[#04061C] transition-all duration-75 delay-none`}
+            className={`fixed bottom-0 flex w-full items-end justify-center ${isAtBottom ? "h-0 animate-fade" : "h-8 animate-fade"} bg-gradient-to-b from-transparent to-background transition-all duration-75 delay-none`}
           />
         </div>
       </div>

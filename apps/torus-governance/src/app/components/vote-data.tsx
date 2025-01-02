@@ -48,9 +48,9 @@ export const VoteData = (props: VoteDataProps) => {
           </span>
         </div>
       </div>
-      <div className="my-2 w-full rounded-lg bg-accent">
+      <div className="my-2 w-full rounded-lg bg-primary-foreground">
         <div
-          className="rounded-lg bg-muted py-2"
+          className="rounded-lg bg-accent py-2"
           style={{
             width: `${favorablePercent.toFixed(0)}%`,
           }}
@@ -68,9 +68,9 @@ export const VoteData = (props: VoteDataProps) => {
           </span>
         </div>
       </div>
-      <div className="my-2 w-full rounded-lg bg-accent">
+      <div className="my-2 w-full rounded-lg bg-primary-foreground">
         <div
-          className="rounded-lg bg-muted py-2"
+          className="rounded-lg bg-accent py-2"
           style={{
             width: `${againstPercent.toFixed(0)}%`,
           }}

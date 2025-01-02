@@ -2,30 +2,20 @@ import { Copy } from "lucide-react";
 
 import type { Blocks, SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
-import { Card, CardHeader } from "@torus-ts/ui";
-import { copyToClipboard } from "@torus-ts/ui/utils";
+import { Card, CardHeader, CopyButton } from "@torus-ts/ui";
 import { getCreationTime, getExpirationTime } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
 interface DetailsCardProps {
   author: SS58Address;
   id: number;
-  creationBlock: Blocks;
+  creationBlock?: Blocks;
   expirationBlock?: Blocks;
   lastBlockNumber: Blocks;
 }
 
 export const DetailsCard = (props: DetailsCardProps) => {
   const { author, id, creationBlock, expirationBlock, lastBlockNumber } = props;
-
-  const handleCopyClick = async (value: string): Promise<void> => {
-    try {
-      await copyToClipboard(value);
-      toast.success("Author address copied to clipboard");
-    } catch {
-      toast.error("Failed to copy author address");
-    }
-  };
 
   return (
     <Card className="animate-fade-down p-4 animate-delay-[1200ms] lg:p-6">
@@ -40,22 +30,25 @@ export const DetailsCard = (props: DetailsCardProps) => {
 
         <div className="flex justify-between gap-3 text-muted-foreground">
           <span>Author</span>
-          <span className="flex w-fit items-center gap-2 text-white">
-            {smallAddress(author)}
-            <Copy
-              size={16}
-              onClick={() => handleCopyClick(author)}
-              className="hover:cursor-pointer hover:text-muted-foreground"
-            />
-          </span>
+          <CopyButton
+            copy={author}
+            variant="link"
+            notify={() => toast.success("Copied to clipboard")}
+            className="h-fit p-0 hover:text-muted-foreground"
+          >
+            <span>{smallAddress(author)}</span>
+            <Copy size={16} />
+          </CopyButton>
         </div>
+        {creationBlock && (
+          <div className="flex justify-between gap-3 text-muted-foreground">
+            <span>Start date</span>
+            <span className="flex items-end gap-1 text-white">
+              {getCreationTime(lastBlockNumber, creationBlock)}
+            </span>
+          </div>
+        )}
 
-        <div className="flex justify-between gap-3 text-muted-foreground">
-          <span>Start date</span>
-          <span className="flex items-end gap-1 text-white">
-            {getCreationTime(lastBlockNumber, creationBlock)}
-          </span>
-        </div>
         {expirationBlock && (
           <div className="flex justify-between gap-3 text-muted-foreground">
             <span>End Time</span>

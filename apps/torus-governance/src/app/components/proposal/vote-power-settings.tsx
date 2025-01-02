@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Info } from "lucide-react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
@@ -13,12 +12,11 @@ import {
   PopoverTrigger,
   TransactionStatus,
 } from "@torus-ts/ui";
+import { useGovernance } from "~/context/governance-provider";
 
-export function VotePowerSettings(props: {
-  isPowerUser: boolean;
-}): JSX.Element | null {
-  const { isPowerUser } = props;
+export function VotePowerSettings(): JSX.Element | null {
   const { updateDelegatingVotingPower } = useTorus();
+  const { accountsNotDelegatingVoting, isAccountPowerUser } = useGovernance();
 
   const [status, setStatus] = useState<TransactionResult>({
     status: null,
@@ -28,20 +26,15 @@ export function VotePowerSettings(props: {
 
   function handleCallback(callbackReturn: TransactionResult): void {
     setStatus(callbackReturn);
-    console.log(callbackReturn);
-    if (callbackReturn.status === "SUCCESS" && callbackReturn.finalized) {
-      // TODO: WE SHOULD BE ABLE TO CHANGE THE VOTE POWER SETTING STATE BY REFETCHING THE QUERY
-      toast.success("This page will reload in 5 seconds");
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
-    }
   }
 
   function handleVote(): void {
     void updateDelegatingVotingPower({
-      isDelegating: isPowerUser,
+      isDelegating: isAccountPowerUser,
       callback: handleCallback,
+      refetchHandler: async () => {
+        await accountsNotDelegatingVoting.refetch();
+      },
     });
   }
 
@@ -53,7 +46,7 @@ export function VotePowerSettings(props: {
       <PopoverTrigger className="relative mt-2 flex items-center gap-2 text-muted-foreground hover:text-white hover:underline">
         <Info size={16} />
         <h3>Vote power settings</h3>
-        {!isPowerUser && (
+        {!isAccountPowerUser && (
           <>
             <span className="absolute -right-2 top-0.5 h-1.5 w-1.5 rounded-full bg-muted" />
             <span className="absolute -right-2 top-0.5 h-1.5 w-1.5 animate-ping rounded-full bg-muted-foreground animate-duration-[1500ms]" />
@@ -68,7 +61,9 @@ export function VotePowerSettings(props: {
         <span className="text-sm">
           You're currently: <br />
           <span className="text-white">
-            {isPowerUser ? "a Power User." : "delegating your voting power."}
+            {isAccountPowerUser
+              ? "a Power User."
+              : "delegating your voting power."}
           </span>
         </span>
         <Button
@@ -78,7 +73,7 @@ export function VotePowerSettings(props: {
           }}
           variant="outline"
         >
-          {isPowerUser ? "Delegate voting power" : "Become a Power User"}
+          {isAccountPowerUser ? "Delegate voting power" : "Become a Power User"}
         </Button>
 
         {status.status && (
