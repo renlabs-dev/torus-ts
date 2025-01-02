@@ -1,0 +1,50 @@
+{
+  "name": "torus-bridge",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3006",
+    "lint": "eslint",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@t3-oss/env-nextjs": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@torus-ts/query-provider": "workspace:*",
+    "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/toast-provider": "workspace:*",
+    "@torus-ts/torus-provider": "workspace:*",
+    "@torus-ts/ui": "workspace:*",
+    "lucide-react": "^0.454.0",
+    "next": "catalog:",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18",
+    "zod": "catalog:",
+    "@hyperlane-xyz/sdk": "^7.3.0",
+    "@hyperlane-xyz/utils": "^7.3.0",
+    "@hyperlane-xyz/widgets": "^7.3.0",
+    "@hyperlane-xyz/registry": "^6.10.0",
+    "@chakra-ui/react": "^3.2.4",
+    "@cosmos-kit/cosmostation": "^2.14.1",
+    "@cosmos-kit/keplr": "^2.14.2",
+    "@cosmos-kit/leap": "^2.14.2"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "catalog:",
+    "@tailwindcss/typography": "catalog:",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tailwind-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react18",
+    "@types/react-dom": "catalog:react18",
+    "jiti": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}
