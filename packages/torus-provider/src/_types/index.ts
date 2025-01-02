@@ -36,11 +36,13 @@ export interface Vote {
   proposalId: number;
   vote: boolean;
   callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
 }
 
 export interface RemoveVote {
   proposalId: number;
   callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
 }
 
 export interface registerAgent {
@@ -67,10 +69,12 @@ export interface addDaoTreasuryTransferProposal {
 export interface AddAgentApplication {
   IpfsHash: string;
   applicationKey: string;
+  removing: boolean;
   callback?: (status: TransactionResult) => void;
 }
 
 export interface UpdateDelegatingVotingPower {
   isDelegating: boolean;
   callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
 }

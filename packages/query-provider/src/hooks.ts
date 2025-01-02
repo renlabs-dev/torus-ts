@@ -195,7 +195,7 @@ export function useProcessVotesAndStakes(
   votesAgainst: SS58Address[],
 ): UseQueryResult<VoteWithStake[], Error> {
   return useQuery({
-    queryKey: ["process_votes_and_stakes"],
+    queryKey: ["process_votes_and_stakes", votesFor, votesAgainst],
     enabled: api != null,
     queryFn: () =>
       processVotesAndStakes(api!, torusCacheUrl, votesFor, votesAgainst),

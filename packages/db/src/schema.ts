@@ -211,7 +211,7 @@ export const commentInteractionSchema = createTable(
 
 /**
  * A view that aggregates votes on comments.
- * This view computes the number of upvotes and downvotes for each comment at
+ * This view computes the number of likes and dislikes for each comment at
  * write time so that we can query the data more efficiently.
  */
 export const commentDigestView = pgMaterializedView("comment_digest").as(
@@ -227,10 +227,10 @@ export const commentDigestView = pgMaterializedView("comment_digest").as(
         createdAt: commentSchema.createdAt,
         likes: count(
           eq(commentInteractionSchema.reactionType, reactionTypeValues.LIKE),
-        ).as("upvotes"),
+        ).as("likes"),
         dislikes: count(
           eq(commentInteractionSchema.reactionType, reactionTypeValues.DISLIKE),
-        ).as("downvotes"),
+        ).as("dislikes"),
       })
       .from(commentSchema)
       .where(isNull(commentSchema.deletedAt))

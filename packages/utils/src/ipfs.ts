@@ -12,6 +12,13 @@ export interface CustomDataError {
   message: string;
 }
 
+const handleCleanPrefix = (uri: string, prefix: string): string => {
+  while (uri.startsWith(prefix)) {
+    uri = uri.slice(prefix.length);
+  }
+  return uri;
+};
+
 export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
   const validated = URL_SCHEMA.safeParse(uri);
   if (!validated.success) {
@@ -19,7 +26,9 @@ export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
     return { Err: { message } };
   }
   const ipfsPrefix = "ipfs://";
-  const rest = uri.startsWith(ipfsPrefix) ? uri.slice(ipfsPrefix.length) : uri;
+
+  const rest = handleCleanPrefix(uri, ipfsPrefix)
+
   try {
     const cid = CID.parse(rest);
     return { Ok: cid };

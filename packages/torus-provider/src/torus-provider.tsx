@@ -359,6 +359,7 @@ export function TorusProvider({
     proposalId,
     vote,
     callback,
+    refetchHandler,
   }: Vote): Promise<void> {
     if (!api?.tx.governance?.voteProposal) return;
 
@@ -371,12 +372,14 @@ export function TorusProvider({
       transaction,
       transactionType: "Vote Proposal",
       wsEndpoint,
+      refetchHandler,
     });
   }
 
   async function removeVoteProposal({
     proposalId,
     callback,
+    refetchHandler,
   }: RemoveVote): Promise<void> {
     if (!api?.tx.governance?.removeVoteProposal) return;
 
@@ -389,6 +392,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Remove Vote",
       wsEndpoint,
+      refetchHandler,
     });
   }
 
@@ -413,6 +417,7 @@ export function TorusProvider({
   async function AddAgentApplication({
     IpfsHash,
     applicationKey,
+    removing,
     callback,
   }: AddAgentApplication): Promise<void> {
     if (!api?.tx.governance?.submitApplication) return;
@@ -420,6 +425,7 @@ export function TorusProvider({
     const transaction = api.tx.governance.submitApplication(
       applicationKey,
       IpfsHash,
+      removing,
     );
     await sendTransaction({
       api,
