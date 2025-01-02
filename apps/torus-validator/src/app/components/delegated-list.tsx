@@ -40,7 +40,7 @@ export function DelegatedList() {
   } = useDelegateAgentStore();
 
   const { selectedAccount, api: torusApi } = useTorus();
-  const accountStakedBy = useKeyStakedBy(torusApi, selectedAccount?.address);
+  const accountStakedBy = useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
 
   const {
     data: userAgentWeight,
@@ -80,15 +80,15 @@ export function DelegatedList() {
   });
 
   const userStakeWeight = useMemo(() => {
-    if (!accountStakedBy.data) {
+    if (!accountStakedBy.data || !selectedAccount?.address) {
       return BigInt(0);
     }
-    const data = accountStakedBy.data
-      .filter((stake) => VALIDATOR_ADDRESS.includes(stake.address))
-      .reduce((sum, stake) => sum + stake.stake, 0n);
+    const data = accountStakedBy.data.find((stake) =>
+      selectedAccount.address.includes(stake.address),
+    );
 
-    return formatToken(Number(data));
-  }, [accountStakedBy.data]);
+    return formatToken(Number(data?.stake ?? 0n));
+  }, [accountStakedBy.data, selectedAccount?.address]);
 
   function handleAutoCompletePercentage() {
     const items = delegatedAgents;
@@ -130,9 +130,10 @@ export function DelegatedList() {
       );
       return;
     }
-    if (Number(userStakeWeight) <= 50) {
+    console.log(userStakeWeight);
+    if (Number(userStakeWeight) < 50) {
       toast.error(
-        "You must have at least 50 COMAI staked to delegate agents or subnets",
+        "You must have at least 50 TOR staked to delegate agents or subnets",
       );
       return;
     }
