@@ -57,7 +57,7 @@ export const agentSchema = createTable(
     atBlock: integer("at_block").notNull(),
 
     // Actual identifier
-    key: ss58Address("key"),
+    key: ss58Address("key").notNull(),
     name: text("name"),
     apiUrl: text("api_url"),
     metadataUri: text("metadata_uri"),

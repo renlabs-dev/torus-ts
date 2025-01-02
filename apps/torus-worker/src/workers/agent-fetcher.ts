@@ -8,7 +8,7 @@ import {
 
 import type { WorkerProps } from "../common";
 import { BLOCK_TIME, isNewBlock, log, sleep } from "../common";
-import { upsertAgentData, SubspaceAgentToDatabase } from "../db";
+import { SubspaceAgentToDatabase, upsertAgentData } from "../db";
 
 export async function agentFetcherWorker(props: WorkerProps) {
   while (true) {
@@ -50,7 +50,6 @@ export async function agentFetcherWorker(props: WorkerProps) {
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);
-      continue;
     }
   }
 }

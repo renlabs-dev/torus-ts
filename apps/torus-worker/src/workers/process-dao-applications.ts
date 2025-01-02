@@ -1,4 +1,5 @@
 import { match } from "rustie";
+
 import type { WorkerProps } from "../common";
 import {
   BLOCK_TIME,
@@ -48,7 +49,6 @@ export async function processApplicationsWorker(props: WorkerProps) {
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);
-      continue;
     }
   }
 }
