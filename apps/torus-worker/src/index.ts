@@ -1,17 +1,24 @@
 import "@polkadot/api-augment";
 
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import express from "express";
+import { z } from "zod";
+
+import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import { queryLastBlock } from "@torus-ts/subspace";
 
 import { log } from "./common";
+import { parseEnvOrExit } from "./common/env";
 import { agentFetcherWorker } from "./workers/agent-fetcher";
 import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
 import { processApplicationsWorker } from "./workers/process-dao-applications";
 import { weightAggregatorWorker } from "./workers/weight-aggregator";
 
-import { env } from "./env";
+export const env = parseEnvOrExit(
+  z.object({
+    NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
+  }),
+)(process.env);
 
 async function setup(): Promise<ApiPromise> {
   const wsEndpoint = env.NEXT_PUBLIC_TORUS_RPC_URL;
@@ -63,14 +70,14 @@ async function main() {
 
   const workerTypeArg = process.argv[2];
 
-  if (workerTypeArg == undefined) {
+  if (workerTypeArg == null) {
     console.error("ERROR: You must provide the worker type in a CLI argument.");
     process.exit(1);
   }
 
   const workerFn = workerTypes[workerTypeArg];
 
-  if (workerFn == undefined) {
+  if (workerFn == null) {
     const workerTypesTxt = Object.keys(workerTypes).join(", ");
     console.error(`ERROR: Invalid worker type '${workerTypeArg}'.`);
     console.error(`Valid worker types are: ${workerTypesTxt}.`);

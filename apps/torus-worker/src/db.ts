@@ -1,6 +1,5 @@
 import type { SQL, Table } from "@torus-ts/db";
-import type { GovernanceItemType } from "@torus-ts/subspace";
-import { and, getTableColumns, isNull, sql } from "@torus-ts/db";
+import { and, eq, getTableColumns, isNull, sql } from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
@@ -11,10 +10,11 @@ import {
   governanceNotificationSchema,
   userAgentWeightSchema,
 } from "@torus-ts/db/schema";
-
-import type { Agent as TorusAgent } from "@torus-ts/subspace";
-
-import { eq } from "@torus-ts/db";
+import type {
+  Agent as TorusAgent,
+  GovernanceItemType,
+} from "@torus-ts/subspace";
+import { getOrSetDefault } from "@torus-ts/utils/collections";
 
 const db = createDb();
 
@@ -209,13 +209,10 @@ export async function getUserWeightMap(): Promise<
     .execute();
 
   const weightMap = new Map<string, Map<string, bigint>>();
-  result.forEach((entry) => {
-    if (!weightMap.has(entry.userKey)) {
-      weightMap.set(entry.userKey, new Map());
-    }
-    if (entry.agentKey) {
-      weightMap.get(entry.userKey)?.set(entry.agentKey, BigInt(entry.weight));
-    }
-  });
+  for (const entry of result) {
+    const { userKey, agentKey, weight } = entry;
+    const userWeightMap = getOrSetDefault(weightMap, userKey, () => new Map());
+    userWeightMap.set(agentKey, BigInt(weight));
+  }
   return weightMap;
 }

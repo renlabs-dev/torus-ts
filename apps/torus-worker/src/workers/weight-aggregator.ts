@@ -168,7 +168,7 @@ async function postAgentAggregation(
   if (dbModuleWeights.length > 0) {
     await insertAgentWeight(dbModuleWeights);
   } else {
-    console.warn(`No weights to insert`);
+    console.warn("No weights to insert");
   }
 
   await doVote(api, keypair, normalizedWeights);
