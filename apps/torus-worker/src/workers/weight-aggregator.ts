@@ -1,27 +1,35 @@
+import { z } from "zod";
+
 import type { ApiPromise } from "@polkadot/api";
-import type { KeyringPair } from "@polkadot/keyring/types";
 import { Keyring } from "@polkadot/api";
+import type { KeyringPair } from "@polkadot/keyring/types";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 
-import type { LastBlock, SS58Address } from "@torus-ts/subspace";
 import { createDb } from "@torus-ts/db/client";
+import type { LastBlock, SS58Address } from "@torus-ts/subspace";
 import {
   checkSS58,
-  queryLastBlock,
   queryKeyStakedTo,
+  queryLastBlock,
   setChainWeights,
 } from "@torus-ts/subspace";
 
 import { BLOCK_TIME, log, sleep } from "../common";
-
-import { env } from "../env";
+import { parseEnvOrExit } from "../common/env";
+import type { AgentWeight } from "../db";
+import { getUserWeightMap, insertAgentWeight } from "../db";
 import {
   calcFinalWeights,
   normalizeWeightsForVote,
   normalizeWeightsToPercent,
 } from "../weights";
-import type { AgentWeight } from "../db";
-import { getUserWeightMap, insertAgentWeight } from "../db";
+
+export const env = parseEnvOrExit(
+  z.object({
+    NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
+    TORUS_ALLOCATOR_MNEMONIC: z.string().nonempty(),
+  }),
+)(process.env);
 
 export const db = createDb();
 
@@ -54,7 +62,6 @@ export async function weightAggregatorWorker(api: ApiPromise) {
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);
-      continue;
     }
   }
 }
@@ -75,7 +82,7 @@ export async function weightAggregatorTask(
     allocatorAddress,
   );
 
-  log(`Committing module weights...`);
+  log("Committing module weights...");
   await postAgentAggregation(
     stakeOnCommunityValidator,
     api,

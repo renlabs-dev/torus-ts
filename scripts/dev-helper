@@ -15,6 +15,7 @@ usage_exit() {
 cmd_with_env() {
   if [ -f ".env" ]; then
     set -a
+    # shellcheck source=/dev/null
     source .env
     set +a
   fi
@@ -68,6 +69,7 @@ cmd_dev() {
 
   if [ -f ".env" ]; then
     set -a
+    # shellcheck source=/dev/null
     source .env
     set +a
   fi
