@@ -44,5 +44,6 @@ export const commentRouter = {
         ...input,
         userKey,
       });
+      await ctx.db.refreshMaterializedView(commentDigestView);
     }),
 } satisfies TRPCRouterRecord;

@@ -19,6 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
   cn,
+  CopyButton,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -58,10 +59,18 @@ interface WalletFunctionsProps {
   handleLogout: () => void;
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
+  notifyCopy: () => void;
 }
 
 const WalletFunctions = (props: WalletFunctionsProps) => {
-  const { balance, children, handleLogout, selectedAccount, stakeOut } = props;
+  const {
+    balance,
+    children,
+    handleLogout,
+    selectedAccount,
+    stakeOut,
+    notifyCopy,
+  } = props;
 
   const userStakeWeight = useMemo(() => {
     if (stakeOut != null && selectedAccount != null) {
@@ -71,29 +80,23 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
     return 0n;
   }, [stakeOut, selectedAccount]);
 
-  async function copyTextToClipboard(text: string): Promise<void> {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-
   return (
     <>
-      <DropdownMenuLabel className={cn("flex justify-between")}>
+      <DropdownMenuLabel className={cn("flex items-center justify-between")}>
         <div className={cn("flex flex-col gap-1")}>
           <span>{selectedAccount?.meta.name}</span>
           <span className={cn("text-xs text-muted-foreground")}>
             {smallAddress(selectedAccount?.address ?? "")}
           </span>
         </div>
-        <button
-          className={cn("rounded-md py-1")}
-          onClick={() => copyTextToClipboard(selectedAccount?.address ?? "")}
+        <CopyButton
+          copy={selectedAccount?.address ?? ""}
+          className={cn("h-fit p-0 text-muted-foreground hover:text-white")}
+          variant="ghost"
+          notify={notifyCopy}
         >
-          <Copy
-            className={cn("text-muted-foreground hover:text-white")}
-            size={17}
-          />
-        </button>
+          <Copy size={17} />
+        </CopyButton>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuLabel className={cn("flex w-full justify-between")}>
@@ -150,6 +153,7 @@ interface WalletDropdownProps {
   handleSelectWallet: (accountAddress: InjectedAccountWithMeta) => void;
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
+  notifyCopy: () => void;
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {
@@ -162,6 +166,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     handleSelectWallet,
     selectedAccount,
     stakeOut,
+    notifyCopy,
   } = props;
 
   const handleGetAccounts = async () => {
@@ -208,6 +213,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
               handleLogout={handleLogout}
               selectedAccount={selectedAccount}
               stakeOut={stakeOut}
+              notifyCopy={notifyCopy}
             >
               <Accordion type="single" collapsible className={cn("m-0 w-full")}>
                 <AccordionItem

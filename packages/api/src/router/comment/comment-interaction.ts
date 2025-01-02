@@ -7,7 +7,7 @@ import { and, eq, isNull, sql } from "@torus-ts/db";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { z } from "zod";
 
-import { commentInteractionSchema, commentSchema } from "@torus-ts/db/schema";
+import { commentDigestView, commentInteractionSchema, commentSchema } from "@torus-ts/db/schema";
 import { COMMENT_INTERACTION_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 export const commentInteractionRouter = {
@@ -57,7 +57,11 @@ export const commentInteractionRouter = {
       const userKey = ctx.sessionData!.userKey;
       await ctx.db
         .insert(commentInteractionSchema)
-        .values({ ...input, userKey })
+        .values({
+          commentId: input.commentId,
+          userKey,
+          reactionType: input.reactionType,
+        })
         .onConflictDoUpdate({
           target: [
             commentInteractionSchema.commentId,
@@ -65,8 +69,11 @@ export const commentInteractionRouter = {
           ],
           set: {
             reactionType: input.reactionType,
+            updatedAt: new Date(),
           },
         });
+        await ctx.db.refreshMaterializedView(commentDigestView);
+        
     }),
   deleteReaction: authenticatedProcedure
     .input(z.object({ commentId: z.number() }))
@@ -77,5 +84,6 @@ export const commentInteractionRouter = {
         .where(
           sql`${commentInteractionSchema.commentId} = ${input.commentId} AND ${commentInteractionSchema.userKey} = ${userKey}`,
         );
+      await ctx.db.refreshMaterializedView(commentDigestView);
     }),
 } satisfies TRPCRouterRecord;
