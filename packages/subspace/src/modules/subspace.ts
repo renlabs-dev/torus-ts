@@ -174,6 +174,7 @@ export type Agent = z.infer<typeof AGENT_SCHEMA>;
 
 export async function queryAgents(api: Api): Promise<Map<SS58Address, Agent>> {
   const q = await api.query.torus0.agents.entries();
+  // TODO: This is trowing errors
   const [agents, errs] = handleMapEntries(q, sb_address, AGENT_SCHEMA);
   for (const err of errs) {
     throw new Error("Error in queryAgents", err);
