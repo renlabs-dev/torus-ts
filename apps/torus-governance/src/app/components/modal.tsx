@@ -60,12 +60,18 @@ export function CreateModal() {
             <SelectItem value="register-agent">Register an Agent</SelectItem>
           </SelectContent>
         </Select>
-        {selectedView === "create-proposal" ? (
+        {/* {selectedView === "create-proposal" ? (
           <CreateProposal />
         ) : selectedView === "create-agent-application" ? (
           <CreateAgentApplication />
         ) : selectedView === "create-transfer-dao-treasury" ? (
           <CreateTransferDaoTreasuryProposal />
+        ) : (
+          <RegisterAgent />
+        )} */}
+
+        {selectedView === "create-agent-application" ? (
+          <CreateAgentApplication />
         ) : (
           <RegisterAgent />
         )}

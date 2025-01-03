@@ -152,7 +152,7 @@ export function GovernanceProvider({
   );
 
   // == Agent Applications ==
-  const agentApplications = useAgentApplications(lastBlock.data?.apiAtBlock);
+  const agentApplications = useAgentApplications(api);
   const appMetadataQueryMap = useCustomMetadata<BaseDao>(
     "application",
     lastBlock.data,

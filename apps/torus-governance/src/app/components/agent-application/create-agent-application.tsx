@@ -32,8 +32,12 @@ const agentApplicationSchema = z.object({
 
 export function CreateAgentApplication(): JSX.Element {
   const router = useRouter();
-  const { isAccountConnected, AddAgentApplication, accountFreeBalance } =
-    useGovernance();
+  const {
+    isAccountConnected,
+    AddAgentApplication,
+    accountFreeBalance,
+    agentApplications,
+  } = useGovernance();
 
   const [applicationKey, setApplicationKey] = useState("");
 
@@ -55,6 +59,10 @@ export function CreateAgentApplication(): JSX.Element {
   function handleCallback(TransactionReturn: TransactionResult): void {
     setTransactionStatus(TransactionReturn);
   }
+
+  const refetchHandler = async () => {
+    await agentApplications.refetch();
+  };
 
   async function uploadFile(fileToUpload: File): Promise<void> {
     try {
@@ -86,31 +94,32 @@ export function CreateAgentApplication(): JSX.Element {
           IpfsHash: `ipfs://${ipfs.IpfsHash}`,
           removing: false,
           callback: handleCallback,
+          refetchHandler,
         });
       } else {
         toast.error(
-          `Insufficient balance to create S2 Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+          `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
         );
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message: "Insufficient balance to create S2 Application",
+          message: "Insufficient balance to create Agent Application",
         });
       }
       router.refresh();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       setUploading(false);
-      toast.error("Error uploading S2 Application");
+      toast.error("Error uploading Agent Application");
     }
   }
 
-  function HandleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting S2 Application creation...",
+      message: "Starting Agent Application creation...",
     });
 
     const result = agentApplicationSchema.safeParse({
@@ -125,7 +134,7 @@ export function CreateAgentApplication(): JSX.Element {
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
-        message: "Error creating S2 Application",
+        message: "Error creating Agent Application",
       });
       return;
     }
@@ -155,11 +164,11 @@ export function CreateAgentApplication(): JSX.Element {
     if (uploading) {
       return "Uploading...";
     }
-    return "Submit S2 Application";
+    return "Submit Agent Application";
   };
 
   return (
-    <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-3">
           <TabsTrigger value="edit">Edit Content</TabsTrigger>
