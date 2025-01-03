@@ -506,9 +506,7 @@ steps:
         from_secret: DOCKER_TOKEN
       repo: ghcr.io/renlabs-dev/torus-page
       tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
+        - dry-run
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=torus-page
       dry_run: true
@@ -546,9 +544,7 @@ steps:
         from_secret: DOCKER_TOKEN
       repo: ghcr.io/renlabs-dev/torus-validator
       tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
+        - dry-run
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=torus-validator
       dry_run: true
@@ -586,9 +582,7 @@ steps:
         from_secret: DOCKER_TOKEN
       repo: ghcr.io/renlabs-dev/torus-worker
       tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
+        - dry-run
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=torus-worker
       dry_run: true
@@ -626,9 +620,7 @@ steps:
         from_secret: DOCKER_TOKEN
       repo: ghcr.io/renlabs-dev/torus-governance
       tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
+        - dry-run
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=torus-governance
       dry_run: true
@@ -666,9 +658,7 @@ steps:
         from_secret: DOCKER_TOKEN
       repo: ghcr.io/renlabs-dev/torus-wallet
       tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
+        - dry-run
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=torus-wallet
       dry_run: true
@@ -706,9 +696,7 @@ steps:
         from_secret: DOCKER_TOKEN
       repo: ghcr.io/renlabs-dev/torus-cache
       tags:
-        - latest
-        - ${DRONE_BRANCH}
-        - ${DRONE_COMMIT_SHA:0:7}
+        - dry-run
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=torus-cache
       dry_run: true
