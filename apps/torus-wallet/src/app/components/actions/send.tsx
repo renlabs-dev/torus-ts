@@ -172,10 +172,10 @@ export function SendAction() {
       label: "To",
       content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
     },
-    { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount ? estimatedFee : 0} TOR`,
+      content: `${amount ? estimatedFee : 0} TORUS`,
     },
   ];
 
@@ -235,7 +235,7 @@ export function SendAction() {
                 step={0.000000000000000001}
                 required
                 onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="Amount of TOR"
+                placeholder="Amount of TORUS"
                 className="disabled:cursor-not-allowed"
                 disabled={!recipient || isEstimating}
               />

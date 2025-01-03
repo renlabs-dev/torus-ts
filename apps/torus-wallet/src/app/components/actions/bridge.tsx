@@ -220,7 +220,7 @@ export function BridgeAction() {
               value={recipient}
               required
               onChange={handleRecipientChange}
-              placeholder="TOR Address"
+              placeholder="TORUS Address"
             />
           </div>
           {inputError.recipient && (

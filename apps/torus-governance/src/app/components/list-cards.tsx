@@ -45,12 +45,11 @@ function getUserVoteStatus(
   return "UNVOTED";
 }
 
-const NoContentFound = () => {
-  return (
-    <div>
-      <p>Content not found.</p>
-    </div>
-  );
+const NoContentFound: React.FC<{ viewMode: ViewModes }> = ({ viewMode }) => {
+  if (viewMode === "proposals") {
+    return <p>No proposals yet.</p>;
+  }
+  return <p>No agent applications yet.</p>;
 };
 
 type ViewModes = "proposals" | "agent-applications" | null;
@@ -209,7 +208,7 @@ const ListCardsContent = () => {
       <div
         className={`flex flex-col-reverse gap-4 ${isOverflowing ? "pr-1 md:pr-2" : ""}`}
       >
-        {content ?? <NoContentFound />}
+        {content?.length ? content : <NoContentFound viewMode={viewMode} />}
       </div>
     </div>
   );
