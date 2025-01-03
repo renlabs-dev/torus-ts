@@ -10,6 +10,7 @@ import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomAgentApplications } from "../../../../../utils";
+import { DaoStatusLabel } from "~/app/components/agent-application/agent-application-status-label";
 
 interface CustomContent {
   paramId: number;
@@ -41,6 +42,8 @@ export function AgentApplicationExpandedView(
       expiresAt: app.expiresAt,
       status: "Pending" as const,
     };
+
+    console.log(agentApplicationContent.status);
     return agentApplicationContent;
   };
 
@@ -54,23 +57,31 @@ export function AgentApplicationExpandedView(
       </div>
     );
 
+  const proposalVoteCardProps = {
+    proposalId: content.id,
+    proposalStatus: content.status,
+  };
+
+  const detailsCardProps = {
+    author: content.author,
+    id: content.id,
+    expirationBlock: content.expiresAt,
+    lastBlockNumber: lastBlock.data?.blockNumber ?? 0,
+  };
+
   return (
     <div className="flex w-full flex-col gap-8">
-      {/* <div className="flex w-full flex-row items-center gap-2">
-        <agentApplicationstatusLabel status={content.status} />
-      </div> */}
+      <div className="flex w-full flex-row items-center gap-2">
+        <DaoStatusLabel status={content.status} />
+      </div>
       <div className="flex w-full justify-between gap-10">
         <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
 
           {/* Mobile Details Section */}
           <div className="flex w-full flex-col gap-6 transition-all md:hidden">
-            <DetailsCard
-              author={content.author}
-              id={content.id}
-              expirationBlock={content.expiresAt}
-              lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
-            />
+            <DetailsCard {...detailsCardProps} />
+
             <AgentApplicationVoteTypeCard
               applicationId={content.id}
               applicationStatus={content.status}
@@ -98,12 +109,7 @@ export function AgentApplicationExpandedView(
 
         {/* Right Column */}
         <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
-          <DetailsCard
-            author={content.author}
-            id={content.id}
-            expirationBlock={content.expiresAt}
-            lastBlockNumber={lastBlock.data?.blockNumber ?? 0}
-          />
+          <DetailsCard {...detailsCardProps} />
           <CreateCadreCandidates />
           {/* <VoteData proposalStatus={content.status} /> */}
         </div>

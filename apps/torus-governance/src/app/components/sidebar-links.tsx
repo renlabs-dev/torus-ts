@@ -28,7 +28,8 @@ export const Sidebar = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const defaultView = navSidebarOptions[0].href;
+  //TODO: Change this to the proposals view after the rust side of proposals get done
+  const defaultView = navSidebarOptions[1].href;
   const viewMode = searchParams.get("view");
 
   const createQueryString = useCallback(
@@ -44,7 +45,9 @@ export const Sidebar = () => {
   useEffect(() => {
     if (
       !viewMode ||
-      !navSidebarOptions.find((view) => view.href === viewMode)
+      !navSidebarOptions.find((view) => view.href === viewMode) ||
+      //TODO: Remove this after rust side of proposals get done
+      viewMode === "proposals"
     ) {
       router.push(`/?${createQueryString("view", defaultView)}`, {
         scroll: false,
@@ -66,8 +69,15 @@ export const Sidebar = () => {
         <SelectContent>
           <SelectGroup>
             {navSidebarOptions.map((view) => (
-              <SelectItem value={view.href} key={view.href}>
-                {view.title}
+              <SelectItem
+                value={view.href}
+                key={view.href}
+                //TODO: Remove this after rust side of proposals get done
+
+                disabled={view.href === "proposals"}
+              >
+                {/* TODO: Remove this after rust side of proposals get done */}
+                {view.title} {view.href === "proposals" && "(Coming Soon)"}
               </SelectItem>
             ))}
           </SelectGroup>
@@ -76,20 +86,36 @@ export const Sidebar = () => {
 
       <div className="hidden max-h-fit w-full min-w-fit animate-fade-up flex-col gap-6 animate-delay-200 md:flex">
         <Card className="flex flex-col gap-1.5 p-5">
-          {navSidebarOptions.map((view) => (
-            <Link href={`?view=${view.href}`} key={view.href} prefetch>
-              <Button
-                variant="ghost"
-                className={`w-full justify-between gap-4 border-none px-3 text-base ${viewMode === view.href ? "bg-accent" : ""}`}
-              >
-                {view.title}
-                <Check
-                  size={16}
-                  className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
-                />
-              </Button>
-            </Link>
-          ))}
+          {navSidebarOptions.map((view) => {
+            if (view.href === "proposals") {
+              //TODO: Remove this after rust side of proposals get done
+              return (
+                <Button
+                  key={view.href}
+                  variant="ghost"
+                  disabled
+                  className={`w-full justify-between gap-4 border-none px-3 text-base`}
+                >
+                  {view.title} (Coming Soon)
+                </Button>
+              );
+            }
+
+            return (
+              <Link href={`?view=${view.href}`} key={view.href} prefetch>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-between gap-4 border-none px-3 text-base ${viewMode === view.href ? "bg-accent" : ""}`}
+                >
+                  {view.title}
+                  <Check
+                    size={16}
+                    className={`${viewMode === view.href ? "opacity-100" : "opacity-0"} transition`}
+                  />
+                </Button>
+              </Link>
+            );
+          })}
         </Card>
       </div>
     </>
