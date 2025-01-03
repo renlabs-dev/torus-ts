@@ -511,6 +511,7 @@ export function TorusProvider({
     applicationKey,
     removing,
     callback,
+    refetchHandler,
   }: AddAgentApplication): Promise<void> {
     if (!api?.tx.governance?.submitApplication) return;
 
@@ -527,6 +528,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Create Dao Application",
       wsEndpoint,
+      refetchHandler,
     });
   }
 

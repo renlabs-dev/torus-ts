@@ -66,7 +66,7 @@ export function RegisterAgent(): JSX.Element {
       setUploading(false);
 
       if (ipfs.IpfsHash === "undefined" || !ipfs.IpfsHash) {
-        toast.error("Error uploading transfer dao treasury moduleCost");
+        toast.error("Error uploading transfer dao treasury agent cost");
         return;
       }
 
@@ -87,7 +87,7 @@ export function RegisterAgent(): JSX.Element {
         });
       } else {
         toast.error(
-          `Insufficient balance to create module. Required: ${moduleCost} but got ${formatToken(accountFreeBalance.data)}`,
+          `Insufficient balance to create agent. Required: ${moduleCost} but got ${formatToken(accountFreeBalance.data)}`,
         );
         setTransactionStatus({
           status: "ERROR",
@@ -99,7 +99,7 @@ export function RegisterAgent(): JSX.Element {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       setUploading(false);
-      toast.error("Error uploading module");
+      toast.error("Error uploading agent");
     }
   }
 
@@ -108,7 +108,7 @@ export function RegisterAgent(): JSX.Element {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting module creation...",
+      message: "Starting agent creation...",
     });
 
     const result = moduleSchema.safeParse({
@@ -150,7 +150,7 @@ export function RegisterAgent(): JSX.Element {
     if (uploading) {
       return "Uploading...";
     }
-    return "Submit module";
+    return "Submit agent";
   };
 
   return (

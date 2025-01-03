@@ -61,11 +61,10 @@ export interface addDaoTreasuryTransferProposal {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface AddAgentApplication {
+export interface AddAgentApplication extends TransactionHelpers{
   IpfsHash: string;
   applicationKey: string;
   removing: boolean;
-  callback?: (status: TransactionResult) => void;
 }
 
 export interface UpdateDelegatingVotingPower extends TransactionHelpers {

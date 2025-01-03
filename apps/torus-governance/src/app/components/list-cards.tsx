@@ -144,7 +144,7 @@ const ListCardsContent = () => {
       .filter((element): element is JSX.Element => element !== null);
   }, [currentBlock, proposalsWithMeta, searchParams, selectedAccount?.address]);
 
-  const renderagentApplications = useMemo((): JSX.Element[] => {
+  const renderAgentApplications = useMemo((): JSX.Element[] => {
     if (!agentApplicationsWithMeta) return [];
 
     return agentApplicationsWithMeta
@@ -184,11 +184,11 @@ const ListCardsContent = () => {
       case "proposals":
         return renderProposals;
       case "agent-applications":
-        return renderagentApplications;
+        return renderAgentApplications;
       default:
         return null;
     }
-  }, [viewMode, renderProposals, renderagentApplications]);
+  }, [viewMode, renderProposals, renderAgentApplications]);
 
   useEffect(() => {
     if (contentRef.current) {
