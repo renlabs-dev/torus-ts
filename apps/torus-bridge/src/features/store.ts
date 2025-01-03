@@ -75,7 +75,6 @@ export const useStore = create<AppState>()(
         set({ chainMetadataOverrides: filtered, multiProvider });
       },
       multiProvider: new MultiProtocolProvider({}),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       registry: new GithubRegistry({
         uri: config.registryUrl,
         branch: config.registryBranch,
@@ -89,7 +88,6 @@ export const useStore = create<AppState>()(
         warpCore,
       }) => {
         logger.debug("Setting warp context in store");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         set({ registry, chainMetadata, multiProvider, warpCore });
       },
 
@@ -105,9 +103,12 @@ export const useStore = create<AppState>()(
         set((state) => {
           if (i >= state.transfers.length) return state;
           const txs = [...state.transfers];
-          txs[i].status = s;
-          txs[i].msgId ??= options?.msgId;
-          txs[i].originTxHash ??= options?.originTxHash;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          txs[i]!.status = s;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          txs[i]!.msgId ??= options?.msgId;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          txs[i]!.originTxHash ??= options?.originTxHash;
           return {
             transfers: txs,
           };
@@ -160,7 +161,6 @@ export const useStore = create<AppState>()(
             state.chainMetadataOverrides,
           ).then(({ registry, chainMetadata, multiProvider, warpCore }) => {
             state.setWarpContext({
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               registry,
               chainMetadata,
               multiProvider,
@@ -184,7 +184,6 @@ async function initWarpContext(
       new Set(coreConfig.tokens.map((t) => t.chainName)),
     );
     // Pre-load registry content to avoid repeated requests
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     await registry.listRegistryContent();
     const { chainMetadata, chainMetadataWithOverrides } =
       await assembleChainMetadata(
@@ -194,7 +193,6 @@ async function initWarpContext(
       );
     const multiProvider = new MultiProtocolProvider(chainMetadataWithOverrides);
     const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return { registry, chainMetadata, multiProvider, warpCore };
   } catch (error) {
     toast.error(
@@ -202,7 +200,6 @@ async function initWarpContext(
     );
     logger.error("Error initializing warp context", error);
     return {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       registry,
       chainMetadata: {},
       multiProvider: new MultiProtocolProvider({}),
