@@ -18,8 +18,6 @@ import {
 } from "@torus-ts/ui";
 
 import { CreateAgentApplication } from "./agent-application/create-agent-application";
-import { CreateProposal } from "./proposal/create-proposal";
-import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
 
 export function CreateModal() {

@@ -57,6 +57,7 @@ export function AgentApplicationExpandedView(
       </div>
     );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const proposalVoteCardProps = {
     proposalId: content.id,
     proposalStatus: content.status,
