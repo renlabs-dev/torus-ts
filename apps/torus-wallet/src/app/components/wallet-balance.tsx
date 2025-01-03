@@ -66,7 +66,7 @@ export function WalletBalance() {
           {typeof balance.amount === "bigint" && (
             <p className="text-muted-fofreground flex items-end gap-1">
               {formatToken(balance.amount)}
-              <span className="mb-0.5 text-xs">TOR</span>
+              <span className="mb-0.5 text-xs">TORUS</span>
             </p>
           )}
           {typeof balance.amount !== "bigint" && (
