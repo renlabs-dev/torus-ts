@@ -5,9 +5,6 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
-import ArrowRightIcon from "../../images/icons/arrow-right.svg";
-import CollapseIcon from "../../images/icons/collapse-icon.svg";
-import ResetIcon from "../../images/icons/reset-icon.svg";
 import { useMultiProvider } from "../chains/hooks";
 import { getChainDisplayName } from "../chains/utils";
 import { useStore } from "../store";
@@ -15,6 +12,7 @@ import { tryFindToken, useWarpCore } from "../tokens/hooks";
 import { TransfersDetailsModal } from "../transfer/TransfersDetailsModal";
 import type { TransferContext } from "../transfer/types";
 import { getIconByTransferStatus, STATUSES_WITH_ICON } from "../transfer/utils";
+import { ArrowRightIcon } from "lucide-react";
 
 export function SideBarMenu({
   onClickConnectWallet,
@@ -108,6 +106,7 @@ export function SideBarMenu({
                 onClick={resetTransfers}
                 className={`${styles.btn} mx-2 my-5`}
               >
+                <ResetIcon
                 <Image
                   className="mr-4"
                   src={ResetIcon}
@@ -182,14 +181,7 @@ function TransferSummary({
               <span className="text-xxs font-normal tracking-wide text-gray-900">
                 {getChainDisplayName(multiProvider, origin, true)}
               </span>
-              <Image
-                className="mx-1"
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                src={ArrowRightIcon}
-                width={10}
-                height={10}
-                alt=""
-              />
+              <ArrowRightIcon className="h-3 w-3" />
               <span className="text-xxs font-normal tracking-wide text-gray-900">
                 {getChainDisplayName(multiProvider, destination, true)}
               </span>
