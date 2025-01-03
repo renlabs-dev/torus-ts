@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { SidebarLinks } from "./components/sidebar-links";
 import { IdeasContent } from "./components/ideas-content";
 import { AgentContentList } from "./components/agent-content-list";
@@ -15,8 +16,12 @@ export default function Page() {
         <SidebarInfo />
       </div>
       <div className="flex w-full flex-col">
-        <AgentContentList />
-        <IdeasContent />
+        <Suspense fallback={<div>Loading...</div>}>
+          <AgentContentList />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <IdeasContent />
+        </Suspense>
       </div>
     </main>
   );
