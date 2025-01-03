@@ -13,7 +13,7 @@ export interface TransactionHelpers {
   refetchHandler: () => Promise<void>;
 }
 
-export interface Stake extends TransactionHelpers{
+export interface Stake extends TransactionHelpers {
   validator: string;
   amount: string;
 }
@@ -61,7 +61,7 @@ export interface addDaoTreasuryTransferProposal {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface AddAgentApplication extends TransactionHelpers{
+export interface AddAgentApplication extends TransactionHelpers {
   IpfsHash: string;
   applicationKey: string;
   removing: boolean;
