@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import { SidebarLinks } from "./components/sidebar-links";
-import { IdeasContent } from "./components/ideas-content";
 import { AgentContentList } from "./components/agent-content-list";
 import { SidebarInfo } from "./components/sidebar-info";
 import { PopoverInfo } from "./components/popover-info";
+import { IdeasContent } from "./components/ideas-content";
 
 export default function Page() {
   return (
