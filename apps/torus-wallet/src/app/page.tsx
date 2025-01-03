@@ -10,7 +10,7 @@ import { WalletBalance } from "./components/wallet-balance";
 export default function Page(): JSX.Element {
   return (
     <Suspense fallback={<Loading />}>
-      <main className="relative mx-auto flex min-w-full flex-col items-center gap-3 text-white">
+      <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
         <IntroSection />
         <div className="flex w-full flex-col justify-around gap-6 py-10 lg:mt-[20vh] lg:flex-row">
           <div className="flex w-full animate-fade flex-col gap-4 lg:w-4/12">

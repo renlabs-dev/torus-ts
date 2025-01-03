@@ -8,7 +8,7 @@ environments:
       - wssApiEndpoint: wss://api.testnet.torus.network
       - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-torus-governance
-      - ingressHost: governance.testnet.torus.network
+      - ingressHost: dao.testnet.torus.network
   prod:
     values:
       - ../../helm/values.yaml
@@ -18,7 +18,7 @@ environments:
       - wssApiEndpoint: wss://api.torus.network
       - cacheUrl: https://cache.torus.network
       - releaseName: torus-governance
-      - ingressHost: governance.torus.network
+      - ingressHost: dao.torus.network
 ---
 helmDefaults:
   wait: true

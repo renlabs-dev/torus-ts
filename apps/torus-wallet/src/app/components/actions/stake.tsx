@@ -1,15 +1,26 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import {
+  formatToken,
+  fromNano,
+  smallAddress,
+  toNano,
+} from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
+import { isSS58 } from "@torus-ts/subspace";
+import { FeeLabel } from "../fee-label";
+
+const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
+const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
+const FEE_BUFFER_PERCENT = 202n;
 
 export function StakeAction() {
   const {
@@ -18,9 +29,23 @@ export function StakeAction() {
     stakeOut,
     accountStakedBy,
     selectedAccount,
+    addStakeTransaction,
+    estimateFee,
+    getExistencialDeposit,
+    getMinAllowedStake,
   } = useWallet();
+
   const [amount, setAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
+  const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
+  const [isEstimating, setIsEstimating] = useState(false);
+
+  // Chain-driven or fallback min stake
+  const [minAllowedStake, setMinAllowedStake] = useState<bigint>(
+    MIN_ALLOWED_STAKE_SAFEGUARD,
+  );
+
+  const [maxAmount, setMaxAmount] = useState<string>("");
   const [inputError, setInputError] = useState<{
     recipient: string | null;
     value: string | null;
@@ -41,27 +66,15 @@ export function StakeAction() {
     "wallet",
   );
 
+  const existencialDepositValue =
+    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+
   const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRecipient(e.target.value);
     setAmount("");
+    setEstimatedFee(null);
+    setMaxAmount("");
     setInputError({ recipient: null, value: null });
-  };
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value.replace(/[^0-9.]/g, "");
-    const amountNano = toNano(newAmount || "0");
-    const maxAmountNano = toNano(maxAmount || "0");
-
-    if (amountNano > maxAmountNano) {
-      setInputError((prev) => ({
-        ...prev,
-        value: "Amount exceeds maximum transferable amount",
-      }));
-    } else {
-      setInputError((prev) => ({ ...prev, value: null }));
-    }
-
-    setAmount(newAmount);
   };
 
   const handleCallback = (callbackReturn: TransactionResult) => {
@@ -84,8 +97,11 @@ export function StakeAction() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const isValidInput = amount && recipient && !inputError.value;
-    if (!isValidInput) return;
+    if (!amount || !recipient || inputError.value || inputError.recipient)
+      return;
+
+    const stakeAmount = toNano(amount);
+    if (stakeAmount <= 0n) return;
 
     setTransactionStatus({
       status: "STARTING",
@@ -106,28 +122,163 @@ export function StakeAction() {
     setCurrentView("wallet");
   };
 
-  const maxAmount = useMemo(() => {
-    const balance = accountFreeBalance.data ?? 0n;
-    const adjustedErrorMargin = 1_000n * 1_000_000_000n; // 0.000001 TOR as error margin
+  const handleEstimateFee = async (): Promise<bigint | undefined> => {
+    if (!recipient) {
+      setEstimatedFee(null);
+      setMaxAmount("");
+      return;
+    }
 
-    const maxAmount = balance - adjustedErrorMargin;
-    return maxAmount > 0 ? fromNano(maxAmount) : "0";
-  }, [accountFreeBalance.data]);
+    if (!isSS58(recipient)) {
+      setInputError((prev) => ({
+        ...prev,
+        recipient: "Invalid recipient address",
+      }));
+      return;
+    }
 
-  const formRef = useRef<HTMLFormElement>(null);
+    setIsEstimating(true);
+    try {
+      const transaction = addStakeTransaction({
+        validator: recipient,
+        amount: "1", // placeholder amount for estimation
+      });
+      if (!transaction) {
+        setInputError((prev) => ({
+          ...prev,
+          recipient: "Invalid transaction",
+        }));
+        return;
+      }
+      const fee = await estimateFee(transaction);
+
+      if (fee != null) {
+        // Add buffer for safety
+        const adjustedFee = (fee * FEE_BUFFER_PERCENT) / 100n;
+        setEstimatedFee(fromNano(adjustedFee));
+        return adjustedFee;
+      } else {
+        setEstimatedFee(null);
+        setMaxAmount("");
+      }
+    } catch (error) {
+      console.error("Error estimating fee:", error);
+      setEstimatedFee(null);
+      setMaxAmount("");
+    } finally {
+      setIsEstimating(false);
+    }
+  };
+
+  const handleUpdateMaxAmount = (fee: bigint | undefined) => {
+    if (!fee) return;
+
+    const freeBalance = accountFreeBalance.data ?? 0n;
+
+    const maxAmountRaw = freeBalance - fee - existencialDepositValue;
+    const safeMax = maxAmountRaw > 0n ? maxAmountRaw : 0n;
+
+    setMaxAmount(fromNano(safeMax));
+
+    const userAmount = toNano(amount || "0");
+    if (userAmount > safeMax) {
+      setInputError((prev) => ({
+        ...prev,
+        value: "Amount exceeds maximum stakable amount",
+      }));
+    } else {
+      setInputError((prev) => ({ ...prev, value: null }));
+    }
+  };
+
+  const handleAmountChange = (amount: string) => {
+    const newAmountStr = amount.replace(/[^0-9.]/g, "");
+    setAmount(newAmountStr);
+
+    const maxAmountNano = toNano(maxAmount || "0");
+    const userAmount = toNano(newAmountStr || "0");
+
+    const stakeAmount = toNano(newAmountStr);
+    if (stakeAmount <= 0n) return;
+
+    if (stakeAmount < minAllowedStake) {
+      setInputError((prev) => ({
+        ...prev,
+        value: `You must stake at least ${formatToken(minAllowedStake)} TOR`,
+      }));
+      return;
+    }
+
+    const freeBalance = accountFreeBalance.data ?? 0n;
+    const rawFee = estimatedFee ? toNano(estimatedFee) : 0n;
+
+    const newFreeBalance = freeBalance - stakeAmount - rawFee;
+    if (newFreeBalance < existencialDepositValue) {
+      setInputError((prev) => ({
+        ...prev,
+        value: `This amount would go below the existential deposit (${formatToken(
+          existencialDepositValue,
+        )} TOR). Reduce the stake or top up your balance.`,
+      }));
+      return;
+    }
+
+    if (userAmount > maxAmountNano) {
+      setInputError((prev) => ({
+        ...prev,
+        value: "Amount exceeds maximum stakable balance",
+      }));
+    } else {
+      setInputError((prev) => ({
+        ...prev,
+        value: null,
+      }));
+    }
+  };
+
+  useEffect(() => {
+    async function fetchFeeAndMax() {
+      const fee = await handleEstimateFee();
+      handleUpdateMaxAmount(fee);
+    }
+    void fetchFeeAndMax();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recipient]);
+
+  useEffect(() => {
+    setRecipient("");
+    setAmount("");
+    setMaxAmount("");
+    setEstimatedFee(null);
+    setInputError({ recipient: null, value: null });
+  }, [selectedAccount?.address]);
+
+  useEffect(() => {
+    async function fetchMinStakeAllowed() {
+      try {
+        const minStakeFromChain = await getMinAllowedStake();
+        setMinAllowedStake(BigInt(minStakeFromChain.toString()));
+      } catch (err) {
+        console.error("Error fetching min stake from chain:", err);
+        setMinAllowedStake(MIN_ALLOWED_STAKE_SAFEGUARD);
+      }
+    }
+    void fetchMinStakeAllowed();
+  }, [recipient, getMinAllowedStake]);
+
   const reviewData = [
     {
       label: "To",
       content: `${recipient ? smallAddress(recipient, 6) : "Validator Address"}`,
     },
     { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    {
+      label: "Fee",
+      content: `${amount ? estimatedFee : 0} TOR`,
+    },
   ];
 
-  useEffect(() => {
-    setRecipient("");
-    setAmount("");
-    setInputError({ recipient: null, value: null });
-  }, [selectedAccount?.address]);
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -182,26 +333,28 @@ export function StakeAction() {
                   id="stake-amount"
                   type="number"
                   value={amount}
+                  min={fromNano(minAllowedStake)}
+                  step={0.000000000000000001}
                   required
-                  onChange={handleAmountChange}
+                  onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="Amount of TOR"
                   className="disabled:cursor-not-allowed"
-                  disabled={!recipient}
+                  disabled={!recipient || isEstimating}
                 />
-
                 <AmountButtons
-                  setAmount={setAmount}
+                  setAmount={handleAmountChange}
                   availableFunds={maxAmount}
-                  disabled={!recipient}
+                  disabled={!recipient || isEstimating}
                 />
               </div>
-
               {inputError.value && (
                 <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
                   {inputError.value}
                 </span>
               )}
             </div>
+
+            <FeeLabel estimatedFee={estimatedFee} isEstimating={isEstimating} />
 
             {transactionStatus.status && (
               <TransactionStatus
@@ -212,13 +365,16 @@ export function StakeAction() {
           </form>
         </Card>
       )}
+
       {currentView !== "validators" && (
         <WalletTransactionReview
           disabled={
             transactionStatus.status === "PENDING" ||
             !amount ||
             !recipient ||
-            !!inputError.value
+            isEstimating ||
+            !!inputError.value ||
+            !!inputError.recipient
           }
           formRef={formRef}
           reviewContent={reviewData}
