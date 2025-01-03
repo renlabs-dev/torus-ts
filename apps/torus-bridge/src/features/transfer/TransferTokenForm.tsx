@@ -513,9 +513,11 @@ function useFormInitialValues(): TransferFormValues {
   const warpCore = useWarpCore();
   return useMemo(() => {
     const firstToken = warpCore.tokens[0];
-    const connectedToken = firstToken.connections?.[0];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const connectedToken = firstToken!.connections?.[0];
     return {
-      origin: firstToken.chainName,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      origin: firstToken!.chainName,
       destination: connectedToken?.token.chainName ?? "",
       tokenIndex: getIndexForToken(warpCore, firstToken),
       amount: "",
@@ -550,10 +552,10 @@ async function validateForm(
       senderPubKey: await senderPubKey,
     });
     return result;
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error("Error validating form", error);
     let errorMsg = errorToString(error, 40);
-    const fullError = `${errorMsg} ${error.message}`;
+    const fullError = `${errorMsg} ${(error as Error).message}`;
     if (
       insufficientFundsErrMsg.test(fullError) ||
       emptyAccountErrMsg.test(fullError)
