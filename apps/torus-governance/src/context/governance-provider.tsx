@@ -211,7 +211,7 @@ export function GovernanceProvider({
       }}
     >
       <Header
-        appName="Governance Portal"
+        appName="DAO Portal"
         wallet={
           <WalletDropdown
             balance={accountFreeBalance.data}

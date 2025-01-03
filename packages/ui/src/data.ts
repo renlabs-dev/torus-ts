@@ -26,7 +26,7 @@ export const navApps: { title: string; href: string; description: string }[] = [
     description: "Bridge your assets to the Torus network.",
   },
   {
-    title: "Governance Portal",
+    title: "DAO Portal",
     href: "/",
     description:
       "Participate in the governance of the Torus network and earn rewards.",
