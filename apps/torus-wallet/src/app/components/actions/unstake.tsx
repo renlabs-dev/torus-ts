@@ -216,10 +216,10 @@ export function UnstakeAction() {
       label: "To",
       content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
     },
-    { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount ? estimatedFee : 0} TOR`,
+      content: `${amount ? estimatedFee : 0} TORUS`,
     },
   ];
 
@@ -282,7 +282,7 @@ export function UnstakeAction() {
                   step={0.000000000000000001}
                   required
                   onChange={handleAmountChange}
-                  placeholder="Amount of TOR"
+                  placeholder="Amount of TORUS"
                   className="w-full p-2 disabled:cursor-not-allowed"
                   disabled={!recipient}
                 />

@@ -204,7 +204,7 @@ export function StakeAction() {
     if (stakeAmount < minAllowedStake) {
       setInputError((prev) => ({
         ...prev,
-        value: `You must stake at least ${formatToken(minAllowedStake)} TOR`,
+        value: `You must stake at least ${formatToken(minAllowedStake)} TORUS`,
       }));
       return;
     }
@@ -218,7 +218,7 @@ export function StakeAction() {
         ...prev,
         value: `This amount would go below the existential deposit (${formatToken(
           existencialDepositValue,
-        )} TOR). Reduce the stake or top up your balance.`,
+        )} TORUS). Reduce the stake or top up your balance.`,
       }));
       return;
     }
@@ -271,10 +271,10 @@ export function StakeAction() {
       label: "To",
       content: `${recipient ? smallAddress(recipient, 6) : "Validator Address"}`,
     },
-    { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount ? estimatedFee : 0} TOR`,
+      content: `${amount ? estimatedFee : 0} TORUS`,
     },
   ];
 
@@ -337,7 +337,7 @@ export function StakeAction() {
                   step={0.000000000000000001}
                   required
                   onChange={(e) => handleAmountChange(e.target.value)}
-                  placeholder="Amount of TOR"
+                  placeholder="Amount of TORUS"
                   className="disabled:cursor-not-allowed"
                   disabled={!recipient || isEstimating}
                 />

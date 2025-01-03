@@ -155,7 +155,7 @@ export function TransferStakeAction() {
       label: "To",
       content: `${recipient ? smallAddress(recipient, 6) : "To Address"}`,
     },
-    { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
   ];
 
   useEffect(() => {
@@ -265,7 +265,7 @@ export function TransferStakeAction() {
                   step={0.000000001}
                   required
                   onChange={handleAmountChange}
-                  placeholder="Amount of TOR"
+                  placeholder="Amount of TORUS"
                   className="w-full p-2 disabled:cursor-not-allowed"
                   disabled={
                     !fromValidator || !recipient || recipient === fromValidator

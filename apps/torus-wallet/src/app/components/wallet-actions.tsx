@@ -27,7 +27,11 @@ const buttons = [
   { text: "Transfer", component: <TransferStakeAction /> },
 ];
 
-const unstakeRelatedActions = [buttons[2]?.text, buttons[3]?.text];
+const unstakeRelatedActions = [
+  buttons[1]?.text,
+  buttons[2]?.text,
+  buttons[3]?.text,
+];
 
 function WalletOptions() {
   const { accountStakedBy, selectedAccount } = useWallet();
@@ -47,7 +51,7 @@ function WalletOptions() {
             </TabsTrigger>
           </HoverCardTrigger>
           <HoverCardContent className="mb-2.5 w-fit" side="top">
-            <p>You have not staked any tokens yet.</p>
+            <p>Coming Soon</p>
           </HoverCardContent>
         </HoverCard>
       );

@@ -178,14 +178,14 @@ export function BridgeAction() {
       label: "To",
       content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
     },
-    { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${roundedEstimatedFee} TOR`,
+      content: `${roundedEstimatedFee} TORUS`,
     },
     {
       label: "Receiving",
-      content: `${exchangedValue} TOR`,
+      content: `${exchangedValue} TORUS`,
     },
   ];
 
