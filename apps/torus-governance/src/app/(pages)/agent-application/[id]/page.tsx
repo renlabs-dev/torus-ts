@@ -1,13 +1,8 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui";
 
 import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default async function AgentApplicationView({
   params,
@@ -21,24 +16,22 @@ export default async function AgentApplicationView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-screen-xl flex-col px-4 pt-12 md:px-6">
-      <Breadcrumb className="pb-8 pt-12">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/?view=agent-applications">
-              Agent Applications List
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="text-muted-foreground">
-              Agent Application #{id}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
+      <Button
+        asChild
+        variant="link"
+        className="mb-6 flex w-fit items-center gap-1.5 p-0"
+      >
+        <Link
+          href="/?view=proposals"
+          className="flex animate-fade-left items-center text-white transition duration-200"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          Go back to agents list
+        </Link>
+      </Button>
 
-      <div className="mb-6 flex h-full w-full flex-col justify-between divide-gray-500 text-white md:mb-12 lg:flex-row">
+      <div className="flex h-full w-full flex-col justify-between divide-gray-500 text-white lg:flex-row">
         <AgentApplicationExpandedView paramId={Number(id)} />
       </div>
     </div>

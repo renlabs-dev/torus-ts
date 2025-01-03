@@ -12,7 +12,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectSeparator,
+  // SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui";
@@ -23,7 +23,8 @@ import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-da
 import { RegisterAgent } from "./proposal/register-agent";
 
 export function CreateModal() {
-  const [selectedView, setSelectedView] = useState("create-proposal");
+  //TODO: Change this to "create-proposals" after the rust side of proposals get done
+  const [selectedView, setSelectedView] = useState("create-agent-application");
 
   return (
     <Dialog>
@@ -47,15 +48,16 @@ export function CreateModal() {
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
           <SelectContent className="border-muted">
-            <SelectItem value="create-proposal">Create new Proposal</SelectItem>
-            <SelectItem value="create-transfer-dao-treasury">
+            {/* TODO: Uncomment this after rust side of proposals get done */}
+            {/* <SelectItem value="create-proposal">Create new Proposal</SelectItem> */}
+            {/* <SelectItem value="create-transfer-dao-treasury">
               Create Transfer Dao Treasury Proposal
-            </SelectItem>
-            <SelectSeparator />
+            </SelectItem> */}
+            {/* <SelectSeparator /> */}
             <SelectItem value="create-agent-application">
               Create Agent Application
             </SelectItem>
-            <SelectItem value="register-agent">Register a Agent</SelectItem>
+            <SelectItem value="register-agent">Register an Agent</SelectItem>
           </SelectContent>
         </Select>
         {selectedView === "create-proposal" ? (
