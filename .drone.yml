@@ -39,13 +39,6 @@ environment:
   GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
-  - name: prepare-dockerfile
-    image: alpine
-    environment:
-      APP_NAME: torus-page
-    commands:
-      - ./scripts/sed_dockerfile.sh
-
   - name: build
     image: plugins/docker
     settings:
@@ -115,13 +108,6 @@ environment:
   GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
-  - name: prepare-dockerfile
-    image: alpine
-    environment:
-      APP_NAME: torus-validator
-    commands:
-      - ./scripts/sed_dockerfile.sh
-
   - name: build
     image: plugins/docker
     settings:
@@ -191,13 +177,6 @@ environment:
   GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
-  - name: prepare-dockerfile
-    image: alpine
-    environment:
-      APP_NAME: torus-worker
-    commands:
-      - ./scripts/sed_dockerfile.sh
-
   - name: build
     image: plugins/docker
     settings:
@@ -267,13 +246,6 @@ environment:
   GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
-  - name: prepare-dockerfile
-    image: alpine
-    environment:
-      APP_NAME: torus-governance
-    commands:
-      - ./scripts/sed_dockerfile.sh
-
   - name: build
     image: plugins/docker
     settings:
@@ -343,13 +315,6 @@ environment:
   GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
-  - name: prepare-dockerfile
-    image: alpine
-    environment:
-      APP_NAME: torus-wallet
-    commands:
-      - ./scripts/sed_dockerfile.sh
-
   - name: build
     image: plugins/docker
     settings:
@@ -419,13 +384,6 @@ environment:
   GIT_LFS_SKIP_SMUDGE: 1
 
 steps:
-  - name: prepare-dockerfile
-    image: alpine
-    environment:
-      APP_NAME: torus-cache
-    commands:
-      - ./scripts/sed_dockerfile.sh
-
   - name: build
     image: plugins/docker
     settings:
