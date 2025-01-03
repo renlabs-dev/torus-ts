@@ -104,8 +104,8 @@ export function SendAction() {
     }
   };
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value.replace(/[^0-9.]/g, "");
+  const handleAmountChange = (amount: string) => {
+    const newAmount = amount.replace(/[^0-9.]/g, "");
 
     const amountNano = toNano(newAmount || "0");
     const estimatedFeeNano = toNano(estimatedFee ?? "0");
@@ -234,13 +234,13 @@ export function SendAction() {
                 min={0}
                 step={0.000000000000000001}
                 required
-                onChange={handleAmountChange}
+                onChange={(e) => handleAmountChange(e.target.value)}
                 placeholder="Amount of TOR"
                 className="disabled:cursor-not-allowed"
                 disabled={!recipient || isEstimating}
               />
               <AmountButtons
-                setAmount={setAmount}
+                setAmount={handleAmountChange}
                 availableFunds={maxAmount}
                 disabled={!recipient || isEstimating}
               />
