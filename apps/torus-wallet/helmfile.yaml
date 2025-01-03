@@ -19,8 +19,6 @@ environments:
       - cacheUrl: https://cache.torus.network
       - releaseName: torus-wallet
       - ingressHost: wallet.torus.network
-      - ingress:
-          enabled: false
 ---
 helmDefaults:
   wait: true
