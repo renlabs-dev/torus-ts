@@ -104,13 +104,12 @@ async function executeTransfer({
   let transferStatus: TransferStatus = TransferStatus.Preparing;
   updateTransferStatus(transferIndex, transferStatus);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { origin, destination, tokenIndex, amount, recipient } = values;
   const multiProvider = warpCore.multiProvider;
 
   try {
     const originToken = getTokenByIndex(warpCore, tokenIndex);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     const connection = originToken?.getConnectionForChain(destination);
     if (!originToken || !connection)
       throw new Error("No token route found between chains");
@@ -124,7 +123,7 @@ async function executeTransfer({
     const activeChain = activeChains.chains[originProtocol];
     const sender = getAccountAddressForChain(
       multiProvider,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
       origin,
       activeAccounts.accounts,
     );
@@ -133,7 +132,6 @@ async function executeTransfer({
     const isCollateralSufficient =
       await warpCore.isDestinationCollateralSufficient({
         originTokenAmount,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         destination,
       });
     if (!isCollateralSufficient) {
@@ -144,14 +142,11 @@ async function executeTransfer({
     addTransfer({
       timestamp: new Date().getTime(),
       status: TransferStatus.Preparing,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       origin,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       destination,
       originTokenAddressOrDenom: originToken.addressOrDenom,
       destTokenAddressOrDenom: connection.token.addressOrDenom,
       sender,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       recipient,
       amount,
     });
@@ -163,10 +158,8 @@ async function executeTransfer({
 
     const txs = await warpCore.getTransferRemoteTxs({
       originTokenAmount,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       destination,
       sender,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       recipient,
     });
 
@@ -179,7 +172,6 @@ async function executeTransfer({
       );
       const { hash, confirm } = await sendTransaction({
         tx,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         chainName: origin,
         activeChainName: activeChain.chainName,
       });
@@ -195,8 +187,7 @@ async function executeTransfer({
     }
 
     const msgId = txReceipt
-      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt)
+      ? tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt)
       : undefined;
 
     updateTransferStatus(
@@ -207,19 +198,16 @@ async function executeTransfer({
         msgId,
       },
     );
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error(`Error at stage ${transferStatus}`, error);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    const errorDetails = error.message || error.toString();
+    const errorDetails = error instanceof Error ? error.message : String(error);
     updateTransferStatus(transferIndex, TransferStatus.Failed);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
     if (errorDetails.includes(CHAIN_MISMATCH_ERROR)) {
       // Wagmi switchNetwork call helps prevent this but isn't foolproof
       toast.error("Wallet must be connected to origin chain");
     } else if (
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       errorDetails.includes(TRANSFER_TIMEOUT_ERROR1) ||
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       errorDetails.includes(TRANSFER_TIMEOUT_ERROR2)
     ) {
       toast.error(

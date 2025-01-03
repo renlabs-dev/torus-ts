@@ -1,15 +1,14 @@
 import type { ChainName, IToken } from "@hyperlane-xyz/sdk";
 import { Modal, SearchIcon } from "@hyperlane-xyz/widgets";
-import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { config } from "../../consts/config";
-import InfoIcon from "../../images/icons/info-circle.svg";
 import { useMultiProvider } from "../chains/hooks";
 import { getChainDisplayName } from "../chains/utils";
 import { useWarpCore } from "./hooks";
 import { TextInput } from "~/app/components/input/TextField";
 import { TokenIcon } from "~/app/components/icons/TokenIcon";
+import { InfoIcon } from "lucide-react";
 
 export function TokenListModal({
   isOpen,
@@ -100,7 +99,7 @@ export function TokenList({
   const warpCore = useWarpCore();
 
   const tokens = useMemo(() => {
-    const q = searchQuery?.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     const multiChainTokens = warpCore.tokens.filter((t) =>
       t.isMultiChainToken(),
     );
@@ -165,16 +164,13 @@ export function TokenList({
               </div>
             </div>
             {t.disabled && (
-              <Image
-                src={InfoIcon}
-                alt=""
-                className="ml-auto mr-1"
-                data-te-toggle="tooltip"
-                title={`Route not supported for ${getChainDisplayName(
+              <span>
+                <InfoIcon className="h-3 w-3" />{" "}
+                {`Route not supported for ${getChainDisplayName(
                   multiProvider,
                   origin,
                 )} to ${getChainDisplayName(multiProvider, destination)}`}
-              />
+              </span>
             )}
           </button>
         ))

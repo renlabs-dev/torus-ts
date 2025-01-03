@@ -2,7 +2,7 @@ import type { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
 import type { Address } from "@hyperlane-xyz/utils";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 
-export const chains: ChainMap<ChainMetadata & { mailbox?: Address }> = {
+export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
   torusalphanet: {
     protocol: ProtocolType.Ethereum,
     chainId: 21000,
@@ -10,6 +10,7 @@ export const chains: ChainMap<ChainMetadata & { mailbox?: Address }> = {
     name: "torusalphanet",
     displayName: "TorusAlphanet",
     nativeToken: { name: "torusalphanet", symbol: "TOR", decimals: 18 },
+    // eslint-disable-next-line no-restricted-properties
     rpcUrls: [{ http: String(process.env.NEXT_PUBLIC_WS_PROVIDER) }],
     blocks: {
       confirmations: 1,

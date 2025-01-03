@@ -21,7 +21,6 @@ export function useFeeQuotes(
 
   const { accounts } = useAccounts(multiProvider);
   const { address: sender, publicKey: senderPubKey } =
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     getAccountAddressAndPubKey(multiProvider, origin, accounts);
 
   const { isLoading, isError, data } = useQuery({
@@ -29,7 +28,6 @@ export function useFeeQuotes(
 
     queryKey: ["useFeeQuotes", destination, tokenIndex, sender, senderPubKey],
     queryFn: () =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       fetchFeeQuotes(warpCore, destination, tokenIndex, sender, senderPubKey),
     enabled,
     refetchInterval: FEE_QUOTE_REFRESH_INTERVAL,

@@ -51,7 +51,8 @@ function initWagmi(multiProvider: MultiProtocolProvider) {
 
   const wagmiConfig = createConfig({
     // Splice to make annoying wagmi type happy
-    chains: [chains[0], ...chains.splice(1)],
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    chains: [chains[0]!, ...chains.splice(1)],
     connectors,
     client({ chain }) {
       const transport = http(chain.rpcUrls.default.http[0]);
@@ -76,7 +77,8 @@ export function EvmWalletContext({ children }: PropsWithChildren<unknown>) {
     const firstEvmToken = tokens.find(
       (token) => token.protocol === ProtocolType.Ethereum,
     );
-    return multiProvider.tryGetChainMetadata(firstEvmToken?.chainName)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+    return multiProvider.tryGetChainMetadata(firstEvmToken?.chainName!)
       ?.chainId as number;
   }, [multiProvider, warpCore]);
 

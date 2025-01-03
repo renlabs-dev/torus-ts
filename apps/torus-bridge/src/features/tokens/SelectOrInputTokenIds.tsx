@@ -17,6 +17,7 @@ export function SelectOrInputTokenIds({ disabled }: { disabled: boolean }) {
   // );
   const isContractAllowToGetTokenIds = true;
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return isContractAllowToGetTokenIds ? (
     <SelectTokenIdField
       name="amount"

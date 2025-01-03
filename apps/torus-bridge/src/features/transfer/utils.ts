@@ -1,6 +1,3 @@
-import ConfirmedIcon from "../../images/icons/confirmed-icon.svg";
-import DeliveredIcon from "../../images/icons/delivered-icon.svg";
-import ErrorCircleIcon from "../../images/icons/error-circle.svg";
 import {
   FinalTransferStatuses,
   SentTransferStatuses,
@@ -61,17 +58,13 @@ export const STATUSES_WITH_ICON = [
 export function getIconByTransferStatus(status: TransferStatus) {
   switch (status) {
     case TransferStatus.Delivered:
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return DeliveredIcon;
+      return "DeliveredIcon";
     case TransferStatus.ConfirmedTransfer:
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return ConfirmedIcon;
+      return "ConfirmedIcon";
     case TransferStatus.Failed:
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return ErrorCircleIcon;
+      return "ErrorCircleIcon";
     default:
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return ErrorCircleIcon;
+      return "ErrorCircleIcon";
   }
 }
 
@@ -117,7 +110,7 @@ export function tryGetMsgIdFromTransferReceipt(
     const core = new MultiProtocolCore(multiProvider, addressStubs);
     const messages = core.extractMessageIds(origin, receipt);
     if (messages.length) {
-      const msgId = messages[0].messageId;
+      const msgId = messages[0]?.messageId;
       logger.debug("Message id found in logs", msgId);
       return msgId;
     } else {
