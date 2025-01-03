@@ -32,7 +32,7 @@ export function CreateModal() {
           className="hidden w-fit px-4 md:block"
           size="lg"
         >
-          Propose Change
+          Apply
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%]">
@@ -53,7 +53,7 @@ export function CreateModal() {
             </SelectItem> */}
             {/* <SelectSeparator /> */}
             <SelectItem value="create-agent-application">
-              Create Agent Application
+              Create an Agent Application
             </SelectItem>
             <SelectItem value="register-agent">Register an Agent</SelectItem>
           </SelectContent>

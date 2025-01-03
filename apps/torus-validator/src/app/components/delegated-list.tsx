@@ -133,7 +133,7 @@ export function DelegatedList() {
     console.log(userStakeWeight);
     if (Number(userStakeWeight) < 50) {
       toast.error(
-        "You must have at least 50 TOR staked to delegate agents or subnets",
+        "You must have at least 50 TORUS staked to delegate agents or subnets",
       );
       return;
     }

@@ -31,7 +31,7 @@ export const SidebarInfo = () => {
         ) : (
           <p className="flex items-end gap-1 text-base">
             {formatToken(daoTreasuryBalance.data)}
-            <span className="mb-0.5 text-xs">TOR</span>
+            <span className="mb-0.5 text-xs">TORUS</span>
           </p>
         )}
         <span className="text-sm text-muted-foreground">
@@ -62,7 +62,7 @@ export const SidebarInfo = () => {
         ) : (
           <p className="flex items-end gap-1 text-base">
             {formatToken(rewardAllocation.data)}
-            <span className="mb-0.5 text-xs">TOR</span>
+            <span className="mb-0.5 text-xs">TORUS</span>
           </p>
         )}
         <span className="text-sm text-muted-foreground">
