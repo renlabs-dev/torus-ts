@@ -10,6 +10,8 @@ import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
+import { isSS58 } from "@torus-ts/subspace";
+import { FeeLabel } from "../fee-label";
 
 export function UnstakeAction() {
   const {
@@ -17,11 +19,18 @@ export function UnstakeAction() {
     accountStakedBy,
     removeStake,
     selectedAccount,
+    removeStakeTransaction,
     stakeOut,
+    estimateFee,
   } = useWallet();
 
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
+  const [isEstimating, setIsEstimating] = useState(false);
+  const [enoughBalanceToUnstake, setEnoughBalanceToUnstake] =
+    useState<boolean>(false);
+
   const [inputError, setInputError] = useState<{
     recipient: string | null;
     value: string | null;
@@ -56,6 +65,21 @@ export function UnstakeAction() {
     );
     if (validator) {
       setStakedAmount(fromNano(validator.stake));
+    } else {
+      setStakedAmount(null);
+    }
+  };
+
+  const handleSelectValidator = (validator: { address: string }) => {
+    setRecipient(validator.address);
+    setCurrentView("wallet");
+    setAmount("");
+    const validatorData = stakedValidators.find(
+      (v: { address: string; stake: bigint }) =>
+        v.address === validator.address,
+    );
+    if (validatorData) {
+      setStakedAmount(fromNano(validatorData.stake));
     } else {
       setStakedAmount(null);
     }
@@ -116,20 +140,75 @@ export function UnstakeAction() {
     });
   };
 
-  const handleSelectValidator = (validator: { address: string }) => {
-    setRecipient(validator.address);
-    setCurrentView("wallet");
-    setAmount("");
-    const validatorData = stakedValidators.find(
-      (v: { address: string; stake: bigint }) =>
-        v.address === validator.address,
-    );
-    if (validatorData) {
-      setStakedAmount(fromNano(validatorData.stake));
-    } else {
-      setStakedAmount(null);
+  const handleEstimateFee = async (): Promise<bigint | undefined> => {
+    if (!recipient) {
+      setEstimatedFee(null);
+      return;
+    }
+
+    if (!isSS58(recipient)) {
+      setInputError((prev) => ({
+        ...prev,
+        recipient: "Invalid recipient address",
+      }));
+      return;
+    }
+
+    setIsEstimating(true);
+    try {
+      const transaction = removeStakeTransaction({
+        validator: recipient,
+        amount: "0",
+      });
+      if (!transaction) {
+        setInputError((prev) => ({
+          ...prev,
+          recipient: "Invalid transaction",
+        }));
+        return;
+      }
+      const fee = await estimateFee(transaction);
+      if (fee != null) {
+        const adjustedFee = (fee * 100n) / 100n;
+
+        setEstimatedFee(fromNano(adjustedFee));
+        return adjustedFee;
+      } else {
+        setEstimatedFee(null);
+      }
+    } catch (error) {
+      console.error("Error estimating fee:", error);
+      setEstimatedFee(null);
+    } finally {
+      setIsEstimating(false);
     }
   };
+
+  const checkEnoughBalanceToUnstake = (fee: bigint) => {
+    const freeBalance = accountFreeBalance.data ?? 0n;
+    const freeBalanceAfterFees = freeBalance - fee;
+
+    if (freeBalanceAfterFees < 0n) {
+      setInputError((prev) => ({
+        ...prev,
+        value: "Insufficient free balance to pay fees",
+      }));
+      setEnoughBalanceToUnstake(false);
+    } else {
+      setEnoughBalanceToUnstake(true);
+    }
+  };
+
+  useEffect(() => {
+    async function fetchFee() {
+      await handleEstimateFee();
+    }
+    void fetchFee();
+  }, [recipient]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    checkEnoughBalanceToUnstake(toNano(estimatedFee ?? "0"));
+  }, [estimatedFee, accountFreeBalance.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const formRef = useRef<HTMLFormElement>(null);
   const reviewData = [
@@ -138,6 +217,10 @@ export function UnstakeAction() {
       content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
     },
     { label: "Amount", content: `${amount ? amount : 0} TOR` },
+    {
+      label: "Fee",
+      content: `${amount ? estimatedFee : 0} TOR`,
+    },
   ];
 
   useEffect(() => {
@@ -196,7 +279,7 @@ export function UnstakeAction() {
                   type="number"
                   value={amount}
                   min={0}
-                  step={0.000000001}
+                  step={0.000000000000000001}
                   required
                   onChange={handleAmountChange}
                   placeholder="Amount of TOR"
@@ -210,12 +293,14 @@ export function UnstakeAction() {
                   disabled={!recipient || !stakedAmount}
                 />
               </div>
+
               {inputError.value && (
                 <p className="mb-1 mt-2 flex text-left text-base text-red-400">
                   {inputError.value}
                 </p>
               )}
             </div>
+            <FeeLabel estimatedFee={estimatedFee} isEstimating={isEstimating} />
 
             {transactionStatus.status && (
               <TransactionStatus
@@ -235,7 +320,8 @@ export function UnstakeAction() {
             (stakedAmount &&
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
               amount > stakedAmount) ||
-            !!inputError.value
+            !!inputError.value ||
+            !enoughBalanceToUnstake
           }
           formRef={formRef}
           reviewContent={reviewData}
