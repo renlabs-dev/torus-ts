@@ -16,6 +16,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
   while (true) {
     try {
       const lastBlock = await sleepUntilNewBlock(props);
+      props.lastBlock = lastBlock;
       log(`Block ${props.lastBlock.blockNumber}: processing`);
 
       // ASK Jairo
