@@ -1,6 +1,7 @@
-import { ChainMetadata } from '@hyperlane-xyz/sdk';
-import { ChainSearchMenu, ChainSearchMenuProps, Modal } from '@hyperlane-xyz/widgets';
-import { useStore } from '../store';
+import type { ChainMetadata, ChainName } from "@hyperlane-xyz/sdk";
+import type { ChainSearchMenuProps } from "@hyperlane-xyz/widgets";
+import { ChainSearchMenu, Modal } from "@hyperlane-xyz/widgets";
+import { useStore } from "../store";
 
 export function ChainSelectListModal({
   isOpen,
@@ -12,14 +13,15 @@ export function ChainSelectListModal({
   isOpen: boolean;
   close: () => void;
   onSelect: (chain: ChainName) => void;
-  customListItemField?: ChainSearchMenuProps['customListItemField'];
-  showChainDetails?: ChainSearchMenuProps['showChainDetails'];
+  customListItemField?: ChainSearchMenuProps["customListItemField"];
+  showChainDetails?: ChainSearchMenuProps["showChainDetails"];
 }) {
-  const { chainMetadata, chainMetadataOverrides, setChainMetadataOverrides } = useStore((s) => ({
-    chainMetadata: s.chainMetadata,
-    chainMetadataOverrides: s.chainMetadataOverrides,
-    setChainMetadataOverrides: s.setChainMetadataOverrides,
-  }));
+  const { chainMetadata, chainMetadataOverrides, setChainMetadataOverrides } =
+    useStore((s) => ({
+      chainMetadata: s.chainMetadata,
+      chainMetadataOverrides: s.chainMetadataOverrides,
+      setChainMetadataOverrides: s.setChainMetadataOverrides,
+    }));
 
   const onSelectChain = (chain: ChainMetadata) => {
     onSelect(chain.name);
@@ -27,7 +29,11 @@ export function ChainSelectListModal({
   };
 
   return (
-    <Modal isOpen={isOpen} close={close} panelClassname="p-4 sm:p-5 max-w-lg min-h-[40vh]">
+    <Modal
+      isOpen={isOpen}
+      close={close}
+      panelClassname="p-4 sm:p-5 max-w-lg min-h-[40vh]"
+    >
       <ChainSearchMenu
         chainMetadata={chainMetadata}
         onClickChain={onSelectChain}

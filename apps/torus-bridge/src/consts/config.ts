@@ -1,17 +1,18 @@
+/* eslint-disable no-restricted-properties */
 import type { ChainMap } from "@hyperlane-xyz/sdk";
 import { ADDRESS_BLACKLIST } from "./blacklist";
 
-const isDevMode = process?.env?.NODE_ENV === "development";
-const version = process?.env?.NEXT_PUBLIC_VERSION || "0.0.0";
-const registryUrl = process?.env?.NEXT_PUBLIC_REGISTRY_URL || undefined;
-const registryBranch = process?.env?.NEXT_PUBLIC_REGISTRY_BRANCH || undefined;
+const isDevMode = process.env.NODE_ENV === "development";
+const version = process.env.NEXT_PUBLIC_VERSION ?? "0.0.0";
+const registryUrl = process.env.NEXT_PUBLIC_REGISTRY_URL ?? undefined;
+const registryBranch = process.env.NEXT_PUBLIC_REGISTRY_BRANCH ?? undefined;
 const registryProxyUrl =
-  process?.env?.NEXT_PUBLIC_GITHUB_PROXY || "https://proxy.hyperlane.xyz";
-const walletConnectProjectId =
-  process?.env?.NEXT_PUBLIC_WALLET_CONNECT_ID || "";
-const transferBlacklist = process?.env?.NEXT_PUBLIC_TRANSFER_BLACKLIST || "";
+  process.env.NEXT_PUBLIC_GITHUB_PROXY ?? "https://proxy.hyperlane.xyz";
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID ?? "";
+const transferBlacklist = process.env.NEXT_PUBLIC_TRANSFER_BLACKLIST ?? "";
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const chainWalletWhitelists = JSON.parse(
-  process?.env?.NEXT_PUBLIC_CHAIN_WALLET_WHITELISTS || "{}",
+  process.env.NEXT_PUBLIC_CHAIN_WALLET_WHITELISTS ?? "{}",
 );
 
 interface Config {
@@ -30,6 +31,7 @@ interface Config {
 
 export const config: Config = Object.freeze({
   addressBlacklist: ADDRESS_BLACKLIST.map((address) => address.toLowerCase()),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   chainWalletWhitelists,
   enableExplorerLink: false,
   isDevMode,

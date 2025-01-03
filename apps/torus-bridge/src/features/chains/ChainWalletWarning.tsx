@@ -35,7 +35,7 @@ export function ChainWalletWarning({ origin }: { origin: ChainName }) {
       return { isVisible: false, chainDisplayName: "", walletWhitelist: [] };
 
     const chainDisplayName = getChainDisplayName(multiProvider, origin, true);
-    const walletName = wallets[protocol]?.name?.trim()?.toLowerCase();
+    const walletName = wallets[protocol].name?.trim().toLowerCase();
     const connectFn = connectFns[protocol];
     const disconnectFn = disconnectFns[protocol];
     const isVisible = !!walletName && !walletWhitelist.includes(walletName);
@@ -50,6 +50,7 @@ export function ChainWalletWarning({ origin }: { origin: ChainName }) {
   }, [multiProvider, origin, wallets, connectFns, disconnectFns]);
 
   const onClickChange = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!connectFn || !disconnectFn) return;
     disconnectFn()
       .then(() => connectFn())

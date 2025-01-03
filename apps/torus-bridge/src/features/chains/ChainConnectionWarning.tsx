@@ -31,13 +31,15 @@ export function ChainConnectionWarning({
 
   const unhealthyChain =
     data &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     ((!data.isOriginHealthy && originMetadata) ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (!data.isDestinationHealthy && destinationMetadata) ||
       undefined);
 
   const displayName = getChainDisplayName(
     multiProvider,
-    unhealthyChain?.name || originMetadata.name,
+    unhealthyChain?.name ?? originMetadata.name,
     true,
   );
 
@@ -60,6 +62,7 @@ export function ChainConnectionWarning({
       <ChainSelectListModal
         isOpen={isModalOpen}
         close={() => setIsModalOpen(false)}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         onSelect={() => {}}
         showChainDetails={unhealthyChain?.name}
       />

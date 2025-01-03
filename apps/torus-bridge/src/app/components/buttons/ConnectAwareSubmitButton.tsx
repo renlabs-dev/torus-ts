@@ -17,12 +17,12 @@ interface Props {
   classes?: string;
 }
 
-export function ConnectAwareSubmitButton<FormValues = any>({
+export function ConnectAwareSubmitButton<FormValues = unknown>({
   chainName,
   text,
   classes,
 }: Props) {
-  const protocol = useChainProtocol(chainName) || ProtocolType.Ethereum;
+  const protocol = useChainProtocol(chainName) ?? ProtocolType.Ethereum;
   const connectFns = useConnectFns();
   const connectFn = connectFns[protocol];
 
@@ -35,6 +35,7 @@ export function ConnectAwareSubmitButton<FormValues = any>({
 
   const hasError =
     Object.keys(touched).length > 0 && Object.keys(errors).length > 0;
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   const firstError = `${Object.values(errors)[0]}` || "Unknown error";
 
   const color = hasError ? "red" : "accent";
@@ -49,7 +50,7 @@ export function ConnectAwareSubmitButton<FormValues = any>({
   // Automatically clear error state after a timeout
   const clearErrors = useCallback(() => {
     setErrors({});
-    setTouched({});
+    void setTouched({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setErrors, setTouched, errors, touched]);
 

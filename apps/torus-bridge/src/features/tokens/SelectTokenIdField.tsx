@@ -1,23 +1,23 @@
-import { ChevronIcon, Modal, SpinnerIcon } from '@hyperlane-xyz/widgets';
-import { useField } from 'formik';
-import { useState } from 'react';
+import { ChevronIcon, Modal, SpinnerIcon } from "@hyperlane-xyz/widgets";
+import { useField } from "formik";
+import { useState } from "react";
 
-type Props = {
+interface Props {
   name: string;
   tokenIndex?: number;
   disabled?: boolean;
-};
+}
 
 export function SelectTokenIdField({ name, disabled }: Props) {
   const [, , helpers] = useField<number>(name);
   const [tokenId, setTokenId] = useState<string | undefined>(undefined);
   const handleChange = (newTokenId: string) => {
-    helpers.setValue(parseInt(newTokenId));
+    void helpers.setValue(parseInt(newTokenId));
     setTokenId(newTokenId);
   };
 
   const isLoading = false;
-  const tokenIds = [];
+  const tokenIds: string[] | null | undefined = [];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,8 +29,8 @@ export function SelectTokenIdField({ name, disabled }: Props) {
     <div className="flex flex-col items-center">
       <button type="button" className={styles.base} onClick={onClick}>
         <div className="flex items-center">
-          <span className={`ml-2 ${!tokenId && 'text-slate-400'}`}>
-            {tokenId ? tokenId : 'Select Token Id'}
+          <span className={`ml-2 ${!tokenId && "text-slate-400"}`}>
+            {tokenId ? tokenId : "Select Token Id"}
           </span>
         </div>
         <ChevronIcon width={12} height={8} direction="s" />
@@ -101,7 +101,7 @@ export function SelectTokenIdModal({
 }
 
 const styles = {
-  base: 'mt-1.5 w-full px-2.5 py-2 flex items-center justify-between text-sm bg-white rounded border border-gray-400 outline-none transition-colors duration-500',
-  enabled: 'hover:bg-gray-50 active:bg-gray-100 focus:border-primary-500',
-  disabled: 'bg-gray-150 cursor-default',
+  base: "mt-1.5 w-full px-2.5 py-2 flex items-center justify-between text-sm bg-white rounded border border-gray-400 outline-none transition-colors duration-500",
+  enabled: "hover:bg-gray-50 active:bg-gray-100 focus:border-primary-500",
+  disabled: "bg-gray-150 cursor-default",
 };
