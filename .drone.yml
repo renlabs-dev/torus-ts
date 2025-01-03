@@ -486,3 +486,245 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-governance/**
       - apps/torus-wallet/**
+
+# DRY-RUN PIPELINES
+---
+kind: pipeline
+type: docker
+name: check-torus-page
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-page
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-page
+      dry_run: true
+
+trigger:
+  branch:
+    exclude:
+      - drone
+      - main
+      - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-governance/**
+      - apps/torus-validator/**
+      - apps/torus-worker/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
+---
+kind: pipeline
+type: docker
+name: check-torus-validator
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-validator
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-validator
+      dry_run: true
+
+trigger:
+  branch:
+    exclude:
+      - drone
+      - main
+      - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-worker/**
+      - apps/torus-governance/**
+      - apps/torus-page/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
+---
+kind: pipeline
+type: docker
+name: check-torus-worker
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-worker
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-worker
+      dry_run: true
+
+trigger:
+  branch:
+    exclude:
+      - drone
+      - main
+      - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-validator/**
+      - apps/torus-governance/**
+      - apps/torus-page/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
+---
+kind: pipeline
+type: docker
+name: check-torus-governance
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-governance
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-governance
+      dry_run: true
+
+trigger:
+  branch:
+    exclude:
+      - drone
+      - main
+      - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torus-worker/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
+---
+kind: pipeline
+type: docker
+name: check-torus-wallet
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-wallet
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-wallet
+      dry_run: true
+
+trigger:
+  branch:
+    exclude:
+      - drone
+      - main
+      - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torus-worker/**
+      - apps/torus-governance/**
+      - apps/torus-cache/**
+---
+kind: pipeline
+type: docker
+name: check-torus-cache
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-cache
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-cache
+      dry_run: true
+
+trigger:
+  branch:
+    exclude:
+      - drone
+      - main
+      - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torus-worker/**
+      - apps/torus-governance/**
+      - apps/torus-wallet/**
