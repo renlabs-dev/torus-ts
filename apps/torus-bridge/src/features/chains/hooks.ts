@@ -1,5 +1,6 @@
-import { useStore } from '../store';
-import { getChainDisplayName } from './utils';
+import type { ChainName } from "@hyperlane-xyz/sdk";
+import { useStore } from "../store";
+import { getChainDisplayName } from "./utils";
 
 export function useMultiProvider() {
   return useStore((s) => s.multiProvider);

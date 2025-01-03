@@ -11,10 +11,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.2.4",
+    "@chakra-ui/react": "^2.10.4",
     "@cosmos-kit/cosmostation": "^2.14.1",
     "@cosmos-kit/keplr": "^2.14.2",
     "@cosmos-kit/leap": "^2.14.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@hyperlane-xyz/registry": "^6.10.0",
     "@hyperlane-xyz/sdk": "^7.3.0",
     "@hyperlane-xyz/utils": "^7.3.0",
@@ -27,6 +29,7 @@
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "formik": "^2.4.6",
+    "framer-motion": "^11.15.0",
     "lucide-react": "^0.454.0",
     "net": "^1.0.2",
     "next": "catalog:",

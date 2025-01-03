@@ -12,7 +12,7 @@ import { tryFindToken, useWarpCore } from "../tokens/hooks";
 import { TransfersDetailsModal } from "../transfer/TransfersDetailsModal";
 import type { TransferContext } from "../transfer/types";
 import { getIconByTransferStatus, STATUSES_WITH_ICON } from "../transfer/utils";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, ChevronDown, RotateCcw } from "lucide-react";
 
 export function SideBarMenu({
   onClickConnectWallet,
@@ -41,7 +41,7 @@ export function SideBarMenu({
     if (!didMountRef.current) {
       didMountRef.current = true;
     } else if (transferLoading) {
-      setSelectedTransfer(transfers[transfers.length - 1]);
+      setSelectedTransfer(transfers[transfers.length - 1] ?? null);
       setIsModalOpen(true);
     }
   }, [transfers, transferLoading]);
@@ -51,6 +51,7 @@ export function SideBarMenu({
   }, [isOpen]);
 
   const sortedTransfers = useMemo(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     () => [...transfers].sort((a, b) => b.timestamp - a.timestamp) || [],
     [transfers],
   );
@@ -71,7 +72,7 @@ export function SideBarMenu({
             className="absolute left-0 top-0 flex h-full w-9 -translate-x-full items-center justify-center rounded-l-md bg-white bg-opacity-60 transition-all hover:bg-opacity-80"
             onClick={() => onClose()}
           >
-            <Image src={CollapseIcon} width={15} height={24} alt="" />
+            <ChevronDown className="h-3 w-3" />
           </button>
         )}
         <div className="flex h-full w-full flex-col overflow-y-auto">
@@ -106,14 +107,7 @@ export function SideBarMenu({
                 onClick={resetTransfers}
                 className={`${styles.btn} mx-2 my-5`}
               >
-                <ResetIcon
-                <Image
-                  className="mr-4"
-                  src={ResetIcon}
-                  width={17}
-                  height={17}
-                  alt=""
-                />
+                <RotateCcw className="h-3 w-3" />
                 <span className="text-sm font-normal text-gray-900">
                   Reset transaction history
                 </span>

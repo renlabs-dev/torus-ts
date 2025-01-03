@@ -14,7 +14,6 @@ import {
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import LinkIcon from "../../images/icons/external-link-icon.svg";
 import { formatTimestamp } from "../../utils/date";
 import { getHypExplorerLink } from "../../utils/links";
 import { logger } from "../../utils/logger";
@@ -32,6 +31,7 @@ import {
 } from "./utils";
 import { ChainLogo } from "~/app/components/icons/ChainLogo";
 import { TokenIcon } from "~/app/components/icons/TokenIcon";
+import { LinkIcon } from "lucide-react";
 
 export function TransfersDetailsModal({
   isOpen,
@@ -57,7 +57,7 @@ export function TransfersDetailsModal({
     originTxHash,
     msgId,
     timestamp,
-  } = transfer || {};
+  } = transfer;
 
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
@@ -68,7 +68,7 @@ export function TransfersDetailsModal({
     isChainKnown ? origin : undefined,
   );
   const walletDetails =
-    useWalletDetails()[account?.protocol || ProtocolType.Ethereum];
+    useWalletDetails()[account?.protocol ?? ProtocolType.Ethereum];
 
   const getMessageUrls = useCallback(async () => {
     try {
@@ -90,14 +90,13 @@ export function TransfersDetailsModal({
   }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 
   useEffect(() => {
-    if (!transfer) return;
     getMessageUrls().catch((err) =>
       logger.error("Error getting message URLs for details modal", err),
     );
   }, [transfer, getMessageUrls]);
 
   const isAccountReady = !!account?.isReady;
-  const connectorName = walletDetails.name || "wallet";
+  const connectorName = walletDetails.name ?? "wallet";
   const token = tryFindToken(warpCore, origin, originTokenAddressOrDenom);
   const isPermissionlessRoute = hasPermissionlessChain(multiProvider, [
     destination,
@@ -218,6 +217,7 @@ export function TransfersDetailsModal({
         <div className="flex flex-col items-center justify-center py-4">
           <SpinnerIcon width={60} height={60} className="mt-3" />
           <div
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             className={`mt-5 text-center text-sm ${isFailed ? "text-red-600" : "text-gray-600"}`}
           >
             {statusDescription}
@@ -283,7 +283,7 @@ function TransferProperty({
         <div className="flex items-center space-x-2">
           {url && (
             <a href={url} target="_blank" rel="noopener noreferrer">
-              <Image src={LinkIcon} width={14} height={14} alt="" />
+              <LinkIcon className="h-3 w-3" />
             </a>
           )}
           <CopyButton

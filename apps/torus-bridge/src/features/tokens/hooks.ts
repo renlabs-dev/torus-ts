@@ -1,6 +1,6 @@
-import { IToken, Token, WarpCore } from '@hyperlane-xyz/sdk';
-import { isNullish } from '@hyperlane-xyz/utils';
-import { useStore } from '../store';
+import type { ChainName, IToken, Token, WarpCore } from "@hyperlane-xyz/sdk";
+import { isNullish } from "@hyperlane-xyz/utils";
+import { useStore } from "../store";
 
 export function useWarpCore() {
   return useStore((s) => s.warpCore);
@@ -21,11 +21,15 @@ export function useIndexForToken(token?: IToken): number | undefined {
 }
 
 export function getTokenByIndex(warpCore: WarpCore, tokenIndex?: number) {
-  if (isNullish(tokenIndex) || tokenIndex >= warpCore.tokens.length) return undefined;
+  if (isNullish(tokenIndex) || tokenIndex >= warpCore.tokens.length)
+    return undefined;
   return warpCore.tokens[tokenIndex];
 }
 
-export function getIndexForToken(warpCore: WarpCore, token?: IToken): number | undefined {
+export function getIndexForToken(
+  warpCore: WarpCore,
+  token?: IToken,
+): number | undefined {
   if (!token) return undefined;
   const index = warpCore.tokens.indexOf(token as Token);
   if (index >= 0) return index;

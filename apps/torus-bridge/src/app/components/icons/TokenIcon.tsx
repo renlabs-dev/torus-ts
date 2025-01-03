@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function TokenIcon({ token, size = 32 }: Props) {
-  const title = token?.symbol || "";
+  const title = token?.symbol ?? "";
   const character = title ? title.charAt(0).toUpperCase() : "";
   const fontSize = Math.floor(size / 2);
 
@@ -20,12 +20,13 @@ export function TokenIcon({ token, size = 32 }: Props) {
   const imageSrc = getImageSrc(registry, token);
   const bgColorSeed =
     token && (!imageSrc || fallbackToText)
-      ? (Buffer.from(token.addressOrDenom).at(0) || 0) % 5
+      ? (Buffer.from(token.addressOrDenom).at(0) ?? 0) % 5
       : undefined;
 
   return (
     <Circle size={size} bgColorSeed={bgColorSeed} title={title}>
       {imageSrc && !fallbackToText ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={imageSrc}
           width={size}
