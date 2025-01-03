@@ -8,41 +8,36 @@ export interface TransactionResult {
 
 // TODO: amount field should be `bigint`
 
-export interface Stake {
+export interface TransactionHelpers {
+  callback?: (status: TransactionResult) => void;
+  refetchHandler: () => Promise<void>;
+}
+
+export interface Stake extends TransactionHelpers{
   validator: string;
   amount: string;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
 }
 
-export interface Transfer {
+export interface Transfer extends TransactionHelpers {
   to: string;
   amount: string;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
 }
 
-export interface TransferStake {
+export interface TransferStake extends TransactionHelpers {
   fromValidator: string;
   toValidator: string;
   amount: string;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
 }
 
 // == Governance ==
 
-export interface Vote {
+export interface Vote extends TransactionHelpers {
   proposalId: number;
   vote: boolean;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
 }
 
-export interface RemoveVote {
+export interface RemoveVote extends TransactionHelpers {
   proposalId: number;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
 }
 
 export interface registerAgent {
@@ -73,8 +68,6 @@ export interface AddAgentApplication {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface UpdateDelegatingVotingPower {
+export interface UpdateDelegatingVotingPower extends TransactionHelpers {
   isDelegating: boolean;
-  callback?: (status: TransactionResult) => void;
-  refetchHandler: () => Promise<void>;
 }

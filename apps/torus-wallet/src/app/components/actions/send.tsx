@@ -13,8 +13,13 @@ import { FeeLabel } from "../fee-label";
 import { WalletTransactionReview } from "../wallet-review";
 
 export function SendAction() {
-  const { estimateFee, accountFreeBalance, transfer, selectedAccount } =
-    useWallet();
+  const {
+    estimateFee,
+    accountFreeBalance,
+    transfer,
+    selectedAccount,
+    transferTransaction,
+  } = useWallet();
 
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
@@ -55,9 +60,18 @@ export function SendAction() {
 
     setIsEstimating(true);
     try {
-      const fee = await estimateFee(recipient, "0");
+      const transaction = transferTransaction({ to: recipient, amount: "0" });
+      if (!transaction) {
+        setInputError((prev) => ({
+          ...prev,
+          recipient: "Invalid transaction",
+        }));
+        return;
+      }
+      const fee = await estimateFee(transaction);
       if (fee != null) {
-        const adjustedFee = (fee * 11n) / 10n;
+        const adjustedFee = (fee * 1005n) / 1000n;
+
         setEstimatedFee(fromNano(adjustedFee));
         return adjustedFee;
       } else {
@@ -79,7 +93,6 @@ export function SendAction() {
     const maxAmount = afterFeesBalance > 0 ? afterFeesBalance : 0n;
 
     setMaxAmount(fromNano(maxAmount));
-
     const amountNano = toNano(amount || "0");
     if (amountNano > maxAmount) {
       setInputError((prev) => ({
@@ -178,6 +191,7 @@ export function SendAction() {
   useEffect(() => {
     setRecipient("");
     setAmount("");
+    setMaxAmount("");
     setInputError({ recipient: null, value: null });
   }, [selectedAccount?.address]);
 
@@ -218,7 +232,7 @@ export function SendAction() {
                 value={amount}
                 max={maxAmount}
                 min={0}
-                step={0.000000001}
+                step={0.000000000000000001}
                 required
                 onChange={handleAmountChange}
                 placeholder="Amount of TOR"

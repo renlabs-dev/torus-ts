@@ -29,6 +29,8 @@ import type {
   Vote,
 } from "./_types";
 import { sendTransaction } from "./_components/send-transaction";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
+import type { Codec, ISubmittableResult } from "@polkadot/types/types";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
@@ -42,6 +44,10 @@ export interface TorusApiState {
   web3Enable: ((appName: string) => Promise<InjectedExtension[]>) | null;
   web3FromAddress: ((address: string) => Promise<InjectedExtension>) | null;
 }
+
+type TransactionExtrinsicPromise =
+  | SubmittableExtrinsic<"promise", ISubmittableResult>
+  | undefined;
 
 interface TorusContextType {
   api: Api | null;
@@ -59,8 +65,7 @@ interface TorusContextType {
   selectedAccount: InjectedAccountWithMeta | null;
   setSelectedAccount: (arg: InjectedAccountWithMeta | null) => void;
   estimateFee: (
-    recipientAddress: string,
-    amount: string,
+    transaction: SubmittableExtrinsic<"promise", ISubmittableResult>,
   ) => Promise<bigint | null>;
   handleWalletModal: (state?: boolean) => void;
   openWalletModal: boolean;
@@ -87,6 +92,36 @@ interface TorusContextType {
     signature: `0x${string}`;
     address: string;
   }>;
+
+  getExistencialDeposit: () => bigint | undefined;
+  getMinAllowedStake: () => Promise<Codec>;
+
+  // TRANSACTIONS
+  transferTransaction: ({
+    to,
+    amount,
+  }: Omit<Transfer, "callback" | "refetchHandler">) =>
+    | SubmittableExtrinsic<"promise", ISubmittableResult>
+    | undefined;
+
+  addStakeTransaction: ({
+    validator,
+    amount,
+  }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
+
+  removeStakeTransaction: ({
+    validator,
+    amount,
+  }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
+
+  transferStakeTransaction: ({
+    fromValidator,
+    toValidator,
+    amount,
+  }: Omit<
+    TransferStake,
+    "callback" | "refetchHandler"
+  >) => TransactionExtrinsicPromise;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -235,7 +270,30 @@ export function TorusProvider({
     };
   }
 
+  // == Consts ==
+
+  const getExistencialDeposit = () => {
+    if (!api) return;
+    return api.consts.balances.existentialDeposit.toBigInt();
+  };
+
+  const getMinAllowedStake = async () => {
+    if (!api?.query.torus0?.minAllowedStake) {
+      throw new Error("minAllowedStake is not defined");
+    }
+    const minAllowedStake = await api.query.torus0.minAllowedStake();
+    return minAllowedStake;
+  };
+
   // == Transactions ==
+
+  const addStakeTransaction = ({
+    validator,
+    amount,
+  }: Omit<Stake, "callback" | "refetchHandler">) => {
+    if (!api?.tx.torus0?.addStake) return;
+    return api.tx.torus0.addStake(validator, toNano(amount));
+  };
 
   async function addStake({
     validator,
@@ -258,6 +316,14 @@ export function TorusProvider({
     });
   }
 
+  const removeStakeTransaction = ({
+    validator,
+    amount,
+  }: Omit<Stake, "callback" | "refetchHandler">) => {
+    if (!api?.tx.torus0?.removeStake) return;
+    return api.tx.torus0.removeStake(validator, toNano(amount));
+  };
+
   async function removeStake({
     validator,
     amount,
@@ -279,14 +345,26 @@ export function TorusProvider({
     });
   }
 
+  const transferTransaction = ({
+    to,
+    amount,
+  }: Omit<Transfer, "callback" | "refetchHandler">) => {
+    if (!api?.tx.balances.transferAllowDeath) return;
+    return api.tx.balances.transferAllowDeath(to, toNano(amount));
+  };
+
   async function transfer({
     to,
     amount,
     callback,
     refetchHandler,
   }: Transfer): Promise<void> {
-    if (!api?.tx.balances.transferAllowDeath) return;
-    const transaction = api.tx.balances.transferAllowDeath(to, toNano(amount));
+    const transaction = transferTransaction({ to, amount });
+
+    if (!transaction) {
+      console.log("Transaction not available");
+      return;
+    }
     await sendTransaction({
       api,
       torusApi,
@@ -298,6 +376,20 @@ export function TorusProvider({
       wsEndpoint,
     });
   }
+
+  const transferStakeTransaction = ({
+    fromValidator,
+    toValidator,
+    amount,
+  }: Omit<TransferStake, "callback" | "refetchHandler">) => {
+    if (!api?.tx.torus0?.transferStake) return;
+
+    return api.tx.torus0.transferStake(
+      fromValidator,
+      toValidator,
+      toNano(amount),
+    );
+  };
 
   async function transferStake({
     fromValidator,
@@ -462,8 +554,9 @@ export function TorusProvider({
     });
   }
 
-  // TODO: make `estimateFee` generic
-  async function estimateFee(recipientAddress: string, amount: string) {
+  async function estimateFee(
+    transaction: SubmittableExtrinsic<"promise", ISubmittableResult>,
+  ) {
     try {
       // Check if the API is ready and has the transfer function
       if (!api?.isReady) {
@@ -472,16 +565,10 @@ export function TorusProvider({
       }
 
       // Check if all required parameters are provided
-      if (!amount || !selectedAccount) {
+      if (!selectedAccount) {
         console.error("Missing required parameters");
         return null;
       }
-
-      // Create the transaction
-      const transaction = api.tx.balances.transferAllowDeath(
-        recipientAddress,
-        amount,
-      );
 
       // Estimate the fee
       const info = await transaction.paymentInfo(selectedAccount.address);
@@ -520,38 +607,38 @@ export function TorusProvider({
   return (
     <TorusContext.Provider
       value={{
-        api,
-        torusCacheUrl,
-        isAccountConnected,
-        setIsAccountConnected,
-        isInitialized,
-        estimateFee,
         accounts,
-        selectedAccount,
-        setSelectedAccount,
-        handleLogout,
+        AddAgentApplication,
+        addCustomProposal,
+        addDaoTreasuryTransferProposal,
+        addStake,
+        addStakeTransaction,
+        api,
+        estimateFee,
+        getExistencialDeposit,
+        getMinAllowedStake,
         handleGetWallets,
-
+        handleLogout,
         handleSelectWallet,
         handleWalletModal,
+        isAccountConnected,
+        isInitialized,
         openWalletModal,
-
-        addStake,
+        registerAgent,
         removeStake,
+        removeStakeTransaction,
+        removeVoteProposal,
+        selectedAccount,
+        setIsAccountConnected,
+        setSelectedAccount,
+        signHex,
+        torusCacheUrl,
         transfer,
         transferStake,
-
-        registerAgent,
-
-        voteProposal,
-        removeVoteProposal,
-        addCustomProposal,
-        AddAgentApplication,
-        addDaoTreasuryTransferProposal,
-
+        transferStakeTransaction,
+        transferTransaction,
         updateDelegatingVotingPower,
-
-        signHex,
+        voteProposal,
       }}
     >
       {children}

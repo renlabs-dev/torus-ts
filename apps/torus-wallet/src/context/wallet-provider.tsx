@@ -15,10 +15,15 @@ import {
   useFreeBalance,
   useKeyStakingTo,
 } from "@torus-ts/query-provider/hooks";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
+import type { Codec, ISubmittableResult } from "@polkadot/types/types";
 import { useTorus } from "@torus-ts/torus-provider";
 
 import { env } from "~/env";
 
+type TransactionExtrinsicPromise =
+  | SubmittableExtrinsic<"promise", ISubmittableResult>
+  | undefined;
 interface WalletContextType {
   isInitialized: boolean;
 
@@ -37,8 +42,7 @@ interface WalletContextType {
   >;
 
   estimateFee: (
-    recipientAddress: string,
-    amount: string,
+    transaction: SubmittableExtrinsic<"promise", ISubmittableResult>,
   ) => Promise<bigint | null>;
 
   addStake: (stake: Stake) => Promise<void>;
@@ -47,6 +51,36 @@ interface WalletContextType {
   removeStake: (stake: Stake) => Promise<void>;
 
   stakeOut: UseQueryResult<StakeData, Error>;
+
+  getExistencialDeposit: () => bigint | undefined;
+  getMinAllowedStake: () => Promise<Codec>;
+  // TRANSACTIONS
+  transferTransaction: ({
+    to,
+    amount,
+  }: Omit<
+    Transfer,
+    "callback" | "refetchHandler"
+  >) => TransactionExtrinsicPromise;
+
+  addStakeTransaction: ({
+    validator,
+    amount,
+  }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
+
+  removeStakeTransaction: ({
+    validator,
+    amount,
+  }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
+
+  transferStakeTransaction: ({
+    fromValidator,
+    toValidator,
+    amount,
+  }: Omit<
+    TransferStake,
+    "callback" | "refetchHandler"
+  >) => TransactionExtrinsicPromise;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -58,18 +92,22 @@ export function WalletProvider({
 }): JSX.Element {
   // == API Context ==
   const {
-    api,
-    isInitialized,
-    selectedAccount,
-    isAccountConnected,
-
-    estimateFee,
-    transfer,
-    addStake,
-    transferStake,
-    removeStake,
-
     accounts,
+    addStake,
+    addStakeTransaction,
+    api,
+    estimateFee,
+    getExistencialDeposit,
+    isAccountConnected,
+    isInitialized,
+    removeStake,
+    removeStakeTransaction,
+    selectedAccount,
+    transfer,
+    transferStake,
+    transferStakeTransaction,
+    transferTransaction,
+    getMinAllowedStake,
   } = useTorus();
 
   // == Subspace ==
@@ -90,24 +128,25 @@ export function WalletProvider({
   return (
     <WalletContext.Provider
       value={{
-        isInitialized,
-
-        stakeOut,
-
-        accounts,
-        selectedAccount,
-
-        accountStakedBy,
-        isAccountConnected,
         accountFreeBalance,
+        accounts,
         accountStakedBalance,
-
-        estimateFee,
-
+        accountStakedBy,
         addStake,
+        addStakeTransaction,
+        estimateFee,
+        getExistencialDeposit,
+        getMinAllowedStake,
+        isAccountConnected,
+        isInitialized,
+        removeStake,
+        removeStakeTransaction,
+        selectedAccount,
+        stakeOut,
         transfer,
         transferStake,
-        removeStake,
+        transferStakeTransaction,
+        transferTransaction,
       }}
     >
       {children}

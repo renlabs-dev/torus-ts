@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { FilterContent } from "./filter-content";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 interface Agent {
   id: number;
@@ -16,7 +17,8 @@ interface Agent {
   globalWeightPerc?: number;
   // globalWeightStaked: number;
 }
-export function AgentContentList() {
+
+export function AgentContentListContent() {
   const searchParams = useSearchParams();
 
   const { data: computedWeightedAgents } =
@@ -148,3 +150,11 @@ export function AgentContentList() {
     </div>
   );
 }
+
+export const AgentContentList = () => {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <AgentContentListContent />
+    </Suspense>
+  );
+};

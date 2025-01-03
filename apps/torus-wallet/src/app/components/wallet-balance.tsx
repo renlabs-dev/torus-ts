@@ -24,6 +24,7 @@ export function WalletBalance() {
     if (accountStakedBalance != null) {
       return accountStakedBalance;
     }
+
     return 0n;
   }, [accountStakedBalance, isAccountConnected, isInitialized, stakeOut]);
 
