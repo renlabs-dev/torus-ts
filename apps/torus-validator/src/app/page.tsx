@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense } from 'react';
 import { SidebarLinks } from "./components/sidebar-links";
 import { AgentContentList } from "./components/agent-content-list";
 import { SidebarInfo } from "./components/sidebar-info";
