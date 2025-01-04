@@ -6,7 +6,7 @@ dump-metadata name:
 	mkdir -p ./data/metadata
 	scripts/get-metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
 
-gen-types name:
+gen-types name: (dump-metadata name)
 	(cd packages/subspace && just gen-types {{ name }})
 
 copy-specs:
