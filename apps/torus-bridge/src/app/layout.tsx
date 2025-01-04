@@ -13,6 +13,7 @@ import { EvmWalletContext } from "~/features/wallet/context/EvmWalletContext";
 import { CosmosWalletContext } from "~/features/wallet/context/CosmosWalletContext";
 import { AppLayout } from "./components/layout/AppLayout";
 import { ToastProvider } from "@torus-ts/toast-provider";
+import { useIsSsr } from "@hyperlane-xyz/widgets";
 
 const APP_NAME = "Torus Wallet";
 
@@ -43,8 +44,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }): JSX.Element {
+  // Disable app SSR for now as it's not needed and
+  // complicates wallet and graphql integrations
+  const isSsr = useIsSsr();
+  if (isSsr) {
+    return <div></div>;
+  }
+
   return (
-    <Layout font={firaMono} appName={APP_NAME}>
+    <Layout font={firaMono}>
       <ErrorBoundary>
         <ToastProvider>
           <QueryClientProvider client={reactQueryClient}>
