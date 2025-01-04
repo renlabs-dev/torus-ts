@@ -12,17 +12,18 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  // SelectSeparator,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui";
 
 import { CreateAgentApplication } from "./agent-application/create-agent-application";
 import { RegisterAgent } from "./proposal/register-agent";
+import { CreateProposal } from "./proposal/create-proposal";
+import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 
 export function CreateModal() {
-  //TODO: Change this to "create-proposals" after the rust side of proposals get done
-  const [selectedView, setSelectedView] = useState("create-agent-application");
+  const [selectedView, setSelectedView] = useState("create-proposal");
 
   return (
     <Dialog>
@@ -46,30 +47,23 @@ export function CreateModal() {
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
           <SelectContent className="border-muted">
-            {/* TODO: Uncomment this after rust side of proposals get done */}
-            {/* <SelectItem value="create-proposal">Create new Proposal</SelectItem> */}
-            {/* <SelectItem value="create-transfer-dao-treasury">
+            <SelectItem value="create-proposal">Create new Proposal</SelectItem>
+            <SelectItem value="create-transfer-dao-treasury">
               Create Transfer Dao Treasury Proposal
-            </SelectItem> */}
-            {/* <SelectSeparator /> */}
+            </SelectItem>
+            <SelectSeparator />
             <SelectItem value="create-agent-application">
               Create an Agent Application
             </SelectItem>
             <SelectItem value="register-agent">Register an Agent</SelectItem>
           </SelectContent>
         </Select>
-        {/* {selectedView === "create-proposal" ? (
+        {selectedView === "create-proposal" ? (
           <CreateProposal />
         ) : selectedView === "create-agent-application" ? (
           <CreateAgentApplication />
         ) : selectedView === "create-transfer-dao-treasury" ? (
           <CreateTransferDaoTreasuryProposal />
-        ) : (
-          <RegisterAgent />
-        )} */}
-
-        {selectedView === "create-agent-application" ? (
-          <CreateAgentApplication />
         ) : (
           <RegisterAgent />
         )}
