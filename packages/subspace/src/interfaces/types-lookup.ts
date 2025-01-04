@@ -1128,6 +1128,14 @@ declare module '@polkadot/types/lookup' {
     readonly asRemoveCurator: {
       readonly key: AccountId32;
     } & Struct;
+    readonly isAddAllocator: boolean;
+    readonly asAddAllocator: {
+      readonly key: AccountId32;
+    } & Struct;
+    readonly isRemoveAllocator: boolean;
+    readonly asRemoveAllocator: {
+      readonly key: AccountId32;
+    } & Struct;
     readonly isAddToWhitelist: boolean;
     readonly asAddToWhitelist: {
       readonly key: AccountId32;
@@ -1181,7 +1189,13 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isEnableVoteDelegation: boolean;
     readonly isDisableVoteDelegation: boolean;
-    readonly type: 'AddCurator' | 'RemoveCurator' | 'AddToWhitelist' | 'RemoveFromWhitelist' | 'AcceptApplication' | 'DenyApplication' | 'PenalizeAgent' | 'SubmitApplication' | 'AddGlobalParamsProposal' | 'AddGlobalCustomProposal' | 'AddDaoTreasuryTransferProposal' | 'VoteProposal' | 'RemoveVoteProposal' | 'EnableVoteDelegation' | 'DisableVoteDelegation';
+    readonly isAddEmissionProposal: boolean;
+    readonly asAddEmissionProposal: {
+      readonly recyclingPercentage: Percent;
+      readonly treasuryPercentage: Percent;
+      readonly data: Bytes;
+    } & Struct;
+    readonly type: 'AddCurator' | 'RemoveCurator' | 'AddAllocator' | 'RemoveAllocator' | 'AddToWhitelist' | 'RemoveFromWhitelist' | 'AcceptApplication' | 'DenyApplication' | 'PenalizeAgent' | 'SubmitApplication' | 'AddGlobalParamsProposal' | 'AddGlobalCustomProposal' | 'AddDaoTreasuryTransferProposal' | 'VoteProposal' | 'RemoveVoteProposal' | 'EnableVoteDelegation' | 'DisableVoteDelegation' | 'AddEmissionProposal';
   }
 
   /** @name PalletGovernanceProposalGlobalParamsData (153) */
@@ -1190,10 +1204,11 @@ declare module '@polkadot/types/lookup' {
     readonly maxNameLength: u16;
     readonly maxAllowedAgents: u16;
     readonly maxAllowedWeights: u16;
-    readonly minWeightStake: u128;
+    readonly minStakePerWeight: u128;
     readonly minWeightControlFee: u8;
     readonly minStakingFee: u8;
     readonly dividendsParticipationWeight: Percent;
+    readonly proposalCost: u128;
   }
 
   /** @name PalletTorus0Call (155) */
@@ -1214,11 +1229,6 @@ declare module '@polkadot/types/lookup' {
       readonly newAgentKey: AccountId32;
       readonly amount: u128;
     } & Struct;
-    readonly isTransferBalance: boolean;
-    readonly asTransferBalance: {
-      readonly destination: AccountId32;
-      readonly amount: u128;
-    } & Struct;
     readonly isRegisterAgent: boolean;
     readonly asRegisterAgent: {
       readonly agentKey: AccountId32;
@@ -1230,26 +1240,26 @@ declare module '@polkadot/types/lookup' {
     readonly isUpdateAgent: boolean;
     readonly asUpdateAgent: {
       readonly name: Bytes;
-      readonly address: Bytes;
+      readonly url: Bytes;
       readonly metadata: Option<Bytes>;
       readonly stakingFee: Option<Percent>;
       readonly weightControlFee: Option<Percent>;
     } & Struct;
-    readonly type: 'AddStake' | 'RemoveStake' | 'TransferStake' | 'TransferBalance' | 'RegisterAgent' | 'UnregisterAgent' | 'UpdateAgent';
+    readonly type: 'AddStake' | 'RemoveStake' | 'TransferStake' | 'RegisterAgent' | 'UnregisterAgent' | 'UpdateAgent';
   }
 
   /** @name PalletEmission0Call (158) */
   interface PalletEmission0Call extends Enum {
-    readonly isSetWeightsExtrinsic: boolean;
-    readonly asSetWeightsExtrinsic: {
+    readonly isSetWeights: boolean;
+    readonly asSetWeights: {
       readonly weights: Vec<ITuple<[AccountId32, u16]>>;
     } & Struct;
-    readonly isDelegateWeightControlExtrinsic: boolean;
-    readonly asDelegateWeightControlExtrinsic: {
+    readonly isDelegateWeightControl: boolean;
+    readonly asDelegateWeightControl: {
       readonly target: AccountId32;
     } & Struct;
-    readonly isRegainWeightControlExtrinsic: boolean;
-    readonly type: 'SetWeightsExtrinsic' | 'DelegateWeightControlExtrinsic' | 'RegainWeightControlExtrinsic';
+    readonly isRegainWeightControl: boolean;
+    readonly type: 'SetWeights' | 'DelegateWeightControl' | 'RegainWeightControl';
   }
 
   /** @name PalletSudoError (161) */
@@ -1395,12 +1405,17 @@ declare module '@polkadot/types/lookup' {
     readonly isGlobalParams: boolean;
     readonly asGlobalParams: PalletGovernanceProposalGlobalParamsData;
     readonly isGlobalCustom: boolean;
+    readonly isEmission: boolean;
+    readonly asEmission: {
+      readonly recyclingPercentage: Percent;
+      readonly treasuryPercentage: Percent;
+    } & Struct;
     readonly isTransferDaoTreasury: boolean;
     readonly asTransferDaoTreasury: {
       readonly account: AccountId32;
       readonly amount: u128;
     } & Struct;
-    readonly type: 'GlobalParams' | 'GlobalCustom' | 'TransferDaoTreasury';
+    readonly type: 'GlobalParams' | 'GlobalCustom' | 'Emission' | 'TransferDaoTreasury';
   }
 
   /** @name PalletGovernanceProposalProposalStatus (188) */
@@ -1514,6 +1529,8 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidApplicationDataLength: boolean;
     readonly isInvalidAgentPenaltyPercentage: boolean;
     readonly isAlreadyCurator: boolean;
+    readonly isAlreadyAllocator: boolean;
+    readonly isNotAllocator: boolean;
     readonly isAgentNotFound: boolean;
     readonly isInvalidPenaltyPercentage: boolean;
     readonly isInvalidMinNameLength: boolean;
@@ -1521,7 +1538,9 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidMaxAllowedAgents: boolean;
     readonly isInvalidMaxAllowedWeights: boolean;
     readonly isInvalidMinWeightControlFee: boolean;
-    readonly type: 'ProposalIsFinished' | 'InvalidProposalFinalizationParameters' | 'InvalidProposalVotingParameters' | 'InvalidProposalCost' | 'InvalidProposalExpiration' | 'NotEnoughBalanceToPropose' | 'ProposalDataTooSmall' | 'ProposalDataTooLarge' | 'ModuleDelegatingForMaxStakers' | 'ProposalNotFound' | 'ProposalClosed' | 'InvalidProposalData' | 'InvalidCurrencyConversionValue' | 'InsufficientDaoTreasuryFunds' | 'AlreadyVoted' | 'NotVoted' | 'InsufficientStake' | 'VoterIsDelegatingVotingPower' | 'InternalError' | 'ApplicationTooSmall' | 'InvalidApplicationSize' | 'ApplicationNotPending' | 'ApplicationKeyAlreadyUsed' | 'InvalidApplication' | 'NotEnoughBalanceToApply' | 'NotCurator' | 'ApplicationNotFound' | 'AlreadyWhitelisted' | 'NotWhitelisted' | 'CouldNotConvertToBalance' | 'InvalidApplicationDataLength' | 'InvalidAgentPenaltyPercentage' | 'AlreadyCurator' | 'AgentNotFound' | 'InvalidPenaltyPercentage' | 'InvalidMinNameLength' | 'InvalidMaxNameLength' | 'InvalidMaxAllowedAgents' | 'InvalidMaxAllowedWeights' | 'InvalidMinWeightControlFee';
+    readonly isInvalidMinStakingFee: boolean;
+    readonly isInvalidEmissionProposalData: boolean;
+    readonly type: 'ProposalIsFinished' | 'InvalidProposalFinalizationParameters' | 'InvalidProposalVotingParameters' | 'InvalidProposalCost' | 'InvalidProposalExpiration' | 'NotEnoughBalanceToPropose' | 'ProposalDataTooSmall' | 'ProposalDataTooLarge' | 'ModuleDelegatingForMaxStakers' | 'ProposalNotFound' | 'ProposalClosed' | 'InvalidProposalData' | 'InvalidCurrencyConversionValue' | 'InsufficientDaoTreasuryFunds' | 'AlreadyVoted' | 'NotVoted' | 'InsufficientStake' | 'VoterIsDelegatingVotingPower' | 'InternalError' | 'ApplicationTooSmall' | 'InvalidApplicationSize' | 'ApplicationNotPending' | 'ApplicationKeyAlreadyUsed' | 'InvalidApplication' | 'NotEnoughBalanceToApply' | 'NotCurator' | 'ApplicationNotFound' | 'AlreadyWhitelisted' | 'NotWhitelisted' | 'CouldNotConvertToBalance' | 'InvalidApplicationDataLength' | 'InvalidAgentPenaltyPercentage' | 'AlreadyCurator' | 'AlreadyAllocator' | 'NotAllocator' | 'AgentNotFound' | 'InvalidPenaltyPercentage' | 'InvalidMinNameLength' | 'InvalidMaxNameLength' | 'InvalidMaxAllowedAgents' | 'InvalidMaxAllowedWeights' | 'InvalidMinWeightControlFee' | 'InvalidMinStakingFee' | 'InvalidEmissionProposalData';
   }
 
   /** @name PalletTorus0Agent (203) */
@@ -1612,10 +1631,11 @@ declare module '@polkadot/types/lookup' {
     readonly isWeightSetTooLarge: boolean;
     readonly isAgentIsNotRegistered: boolean;
     readonly isCannotSetWeightsForSelf: boolean;
+    readonly isCannotSetWeightsWhileDelegating: boolean;
     readonly isCannotDelegateWeightControlToSelf: boolean;
     readonly isAgentIsNotDelegating: boolean;
     readonly isNotEnoughStakeToSetWeights: boolean;
-    readonly type: 'WeightSetTooLarge' | 'AgentIsNotRegistered' | 'CannotSetWeightsForSelf' | 'CannotDelegateWeightControlToSelf' | 'AgentIsNotDelegating' | 'NotEnoughStakeToSetWeights';
+    readonly type: 'WeightSetTooLarge' | 'AgentIsNotRegistered' | 'CannotSetWeightsForSelf' | 'CannotSetWeightsWhileDelegating' | 'CannotDelegateWeightControlToSelf' | 'AgentIsNotDelegating' | 'NotEnoughStakeToSetWeights';
   }
 
   /** @name SpRuntimeMultiSignature (214) */

@@ -145,8 +145,8 @@ declare module '@polkadot/api-base/types/storage' {
       [key: string]: QueryableStorageEntry<ApiType>;
     };
     governance: {
-      agentApplicationId: AugmentedQuery<ApiType, () => Observable<u32>, []> & QueryableStorageEntry<ApiType, []>;
       agentApplications: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceApplicationAgentApplication>>, [u32]> & QueryableStorageEntry<ApiType, [u32]>;
+      allocators: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       curators: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       daoTreasuryAddress: AugmentedQuery<ApiType, () => Observable<AccountId32>, []> & QueryableStorageEntry<ApiType, []>;
       globalGovernanceConfig: AugmentedQuery<ApiType, () => Observable<PalletGovernanceConfigGovernanceConfiguration>, []> & QueryableStorageEntry<ApiType, []>;

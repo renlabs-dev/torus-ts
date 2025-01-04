@@ -83,6 +83,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CannotSetWeightsForSelf: AugmentedError<ApiType>;
       /**
+       * Tried setting weights while delegating weight control.
+       **/
+      CannotSetWeightsWhileDelegating: AugmentedError<ApiType>;
+      /**
        * Agent does not have enough stake to set weights.
        **/
       NotEnoughStakeToSetWeights: AugmentedError<ApiType>;
@@ -173,6 +177,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AgentNotFound: AugmentedError<ApiType>;
       /**
+       * The key is already an allocator.
+       **/
+      AlreadyAllocator: AugmentedError<ApiType>;
+      /**
        * The key is already a curator.
        **/
       AlreadyCurator: AugmentedError<ApiType>;
@@ -237,6 +245,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidCurrencyConversionValue: AugmentedError<ApiType>;
       /**
+       * Invalid params given to Emission proposal
+       **/
+      InvalidEmissionProposalData: AugmentedError<ApiType>;
+      /**
        * Invalid maximum allowed agents in proposal
        **/
       InvalidMaxAllowedAgents: AugmentedError<ApiType>;
@@ -252,6 +264,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Invalid minimum name length in proposal
        **/
       InvalidMinNameLength: AugmentedError<ApiType>;
+      /**
+       * Invalid minimum staking fee in proposal
+       **/
+      InvalidMinStakingFee: AugmentedError<ApiType>;
       /**
        * Invalid minimum weight control fee in proposal
        **/
@@ -284,6 +300,10 @@ declare module '@polkadot/api-base/types/errors' {
        * The staked module is already delegating for 2 ^ 32 keys.
        **/
       ModuleDelegatingForMaxStakers: AugmentedError<ApiType>;
+      /**
+       * The key is not an allocator.
+       **/
+      NotAllocator: AugmentedError<ApiType>;
       /**
        * The operation can only be performed by the curator.
        **/
