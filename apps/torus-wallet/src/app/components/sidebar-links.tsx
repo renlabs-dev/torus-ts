@@ -18,7 +18,7 @@ import {
 
 const navSidebarOptions = [
   { title: "Wallet", href: "wallet" },
-  { title: "Bridge", href: "bridge" },
+  { title: "Base Bridge", href: "bridge" },
 ] as const;
 
 export const Sidebar = () => {
