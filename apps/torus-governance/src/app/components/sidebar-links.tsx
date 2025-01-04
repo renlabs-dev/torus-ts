@@ -28,8 +28,7 @@ export const Sidebar = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  //TODO: Change this to the proposals view after the rust side of proposals get done
-  const defaultView = navSidebarOptions[1].href;
+  const defaultView = navSidebarOptions[0].href;
   const viewMode = searchParams.get("view");
 
   const createQueryString = useCallback(
@@ -45,9 +44,7 @@ export const Sidebar = () => {
   useEffect(() => {
     if (
       !viewMode ||
-      !navSidebarOptions.find((view) => view.href === viewMode) ||
-      //TODO: Remove this after rust side of proposals get done
-      viewMode === "proposals"
+      !navSidebarOptions.find((view) => view.href === viewMode)
     ) {
       router.push(`/?${createQueryString("view", defaultView)}`, {
         scroll: false,
@@ -69,15 +66,8 @@ export const Sidebar = () => {
         <SelectContent>
           <SelectGroup>
             {navSidebarOptions.map((view) => (
-              <SelectItem
-                value={view.href}
-                key={view.href}
-                //TODO: Remove this after rust side of proposals get done
-
-                disabled={view.href === "proposals"}
-              >
-                {/* TODO: Remove this after rust side of proposals get done */}
-                {view.title} {view.href === "proposals" && "(Coming Soon)"}
+              <SelectItem value={view.href} key={view.href}>
+                {view.title}
               </SelectItem>
             ))}
           </SelectGroup>
@@ -87,20 +77,6 @@ export const Sidebar = () => {
       <div className="hidden max-h-fit w-full min-w-fit animate-fade-up flex-col gap-6 animate-delay-200 md:flex">
         <Card className="flex flex-col gap-1.5 p-5">
           {navSidebarOptions.map((view) => {
-            if (view.href === "proposals") {
-              //TODO: Remove this after rust side of proposals get done
-              return (
-                <Button
-                  key={view.href}
-                  variant="ghost"
-                  disabled
-                  className={`w-full justify-between gap-4 border-none px-3 text-base`}
-                >
-                  {view.title} (Coming Soon)
-                </Button>
-              );
-            }
-
             return (
               <Link href={`?view=${view.href}`} key={view.href} prefetch>
                 <Button

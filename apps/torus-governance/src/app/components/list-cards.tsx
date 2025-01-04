@@ -203,7 +203,7 @@ const ListCardsContent = () => {
   return (
     <div
       ref={contentRef}
-      className={`max-h-[calc(100vh-280px)] overflow-y-auto md:max-h-[calc(100vh-210px)]`}
+      className={`max-h-[calc(100vh-280px)] overflow-y-auto md:max-h-[calc(100vh-220px)]`}
     >
       <div
         className={`flex flex-col-reverse gap-4 ${isOverflowing ? "pr-1 md:pr-2" : ""}`}
