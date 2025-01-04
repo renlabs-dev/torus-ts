@@ -41,7 +41,8 @@ export const Sidebar = () => {
   useEffect(() => {
     if (
       !viewMode ||
-      !navSidebarOptions.find((view) => view.href === viewMode)
+      !navSidebarOptions.find((view) => view.href === viewMode) ||
+      viewMode === "bridge"
     ) {
       router.push(`/?${createQueryString("view", defaultView)}`, {
         scroll: false,
@@ -63,8 +64,12 @@ export const Sidebar = () => {
         <SelectContent>
           <SelectGroup>
             {navSidebarOptions.map((view) => (
-              <SelectItem value={view.href} key={view.href}>
-                {view.title}
+              <SelectItem
+                value={view.href}
+                key={view.href}
+                disabled={view.href === "bridge"}
+              >
+                {view.title} {view.href === "bridge" && "(Coming Soon)"}
               </SelectItem>
             ))}
           </SelectGroup>
