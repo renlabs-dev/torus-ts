@@ -107,9 +107,9 @@ declare module '@polkadot/api-base/types/submittable' {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     emission0: {
-      delegateWeightControlExtrinsic: AugmentedSubmittable<(target: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      regainWeightControlExtrinsic: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      setWeightsExtrinsic: AugmentedSubmittable<(weights: Vec<ITuple<[AccountId32, u16]>> | ([AccountId32 | string | Uint8Array, u16 | AnyNumber | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[AccountId32, u16]>>]>;
+      delegateWeightControl: AugmentedSubmittable<(target: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      regainWeightControl: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      setWeights: AugmentedSubmittable<(weights: Vec<ITuple<[AccountId32, u16]>> | ([AccountId32 | string | Uint8Array, u16 | AnyNumber | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[AccountId32, u16]>>]>;
       /**
        * Generic tx
        **/
@@ -150,15 +150,18 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     governance: {
       acceptApplication: AugmentedSubmittable<(applicationId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
+      addAllocator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       addCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       addDaoTreasuryTransferProposal: AugmentedSubmittable<(value: u128 | AnyNumber | Uint8Array, destinationKey: AccountId32 | string | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, AccountId32, Bytes]>;
+      addEmissionProposal: AugmentedSubmittable<(recyclingPercentage: Percent | AnyNumber | Uint8Array, treasuryPercentage: Percent | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent, Percent, Bytes]>;
       addGlobalCustomProposal: AugmentedSubmittable<(metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; maxAllowedWeights?: any; minWeightStake?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
+      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; maxAllowedWeights?: any; minStakePerWeight?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any; proposalCost?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
       addToWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       denyApplication: AugmentedSubmittable<(applicationId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
       disableVoteDelegation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       enableVoteDelegation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       penalizeAgent: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, percentage: u8 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u8]>;
+      removeAllocator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removeCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removeFromWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removeVoteProposal: AugmentedSubmittable<(proposalId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
@@ -474,10 +477,9 @@ declare module '@polkadot/api-base/types/submittable' {
       addStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
       registerAgent: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, name: Bytes | string | Uint8Array, url: Bytes | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes, Bytes, Bytes]>;
       removeStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
-      transferBalance: AugmentedSubmittable<(destination: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
       transferStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, newAgentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, u128]>;
       unregisterAgent: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      updateAgent: AugmentedSubmittable<(name: Bytes | string | Uint8Array, address: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, stakingFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, weightControlFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Option<Bytes>, Option<Percent>, Option<Percent>]>;
+      updateAgent: AugmentedSubmittable<(name: Bytes | string | Uint8Array, url: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, stakingFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, weightControlFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Option<Bytes>, Option<Percent>, Option<Percent>]>;
       /**
        * Generic tx
        **/

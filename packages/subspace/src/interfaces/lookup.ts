@@ -1063,6 +1063,12 @@ export default {
       remove_curator: {
         key: 'AccountId32',
       },
+      add_allocator: {
+        key: 'AccountId32',
+      },
+      remove_allocator: {
+        key: 'AccountId32',
+      },
       add_to_whitelist: {
         key: 'AccountId32',
       },
@@ -1104,7 +1110,12 @@ export default {
         proposalId: 'u64',
       },
       enable_vote_delegation: 'Null',
-      disable_vote_delegation: 'Null'
+      disable_vote_delegation: 'Null',
+      add_emission_proposal: {
+        recyclingPercentage: 'Percent',
+        treasuryPercentage: 'Percent',
+        data: 'Bytes'
+      }
     }
   },
   /**
@@ -1115,10 +1126,11 @@ export default {
     maxNameLength: 'u16',
     maxAllowedAgents: 'u16',
     maxAllowedWeights: 'u16',
-    minWeightStake: 'u128',
+    minStakePerWeight: 'u128',
     minWeightControlFee: 'u8',
     minStakingFee: 'u8',
-    dividendsParticipationWeight: 'Percent'
+    dividendsParticipationWeight: 'Percent',
+    proposalCost: 'u128'
   },
   /**
    * Lookup155: pallet_torus0::pallet::Call<T>
@@ -1138,10 +1150,6 @@ export default {
         newAgentKey: 'AccountId32',
         amount: 'u128',
       },
-      transfer_balance: {
-        destination: 'AccountId32',
-        amount: 'u128',
-      },
       register_agent: {
         agentKey: 'AccountId32',
         name: 'Bytes',
@@ -1151,7 +1159,7 @@ export default {
       unregister_agent: 'Null',
       update_agent: {
         name: 'Bytes',
-        address: 'Bytes',
+        url: 'Bytes',
         metadata: 'Option<Bytes>',
         stakingFee: 'Option<Percent>',
         weightControlFee: 'Option<Percent>'
@@ -1163,14 +1171,13 @@ export default {
    **/
   PalletEmission0Call: {
     _enum: {
-      set_weights_extrinsic: {
+      set_weights: {
         weights: 'Vec<(AccountId32,u16)>',
       },
-      __Unused1: 'Null',
-      delegate_weight_control_extrinsic: {
+      delegate_weight_control: {
         target: 'AccountId32',
       },
-      regain_weight_control_extrinsic: 'Null'
+      regain_weight_control: 'Null'
     }
   },
   /**
@@ -1304,6 +1311,10 @@ export default {
     _enum: {
       GlobalParams: 'PalletGovernanceProposalGlobalParamsData',
       GlobalCustom: 'Null',
+      Emission: {
+        recyclingPercentage: 'Percent',
+        treasuryPercentage: 'Percent',
+      },
       TransferDaoTreasury: {
         account: 'AccountId32',
         amount: 'u128'
@@ -1393,7 +1404,7 @@ export default {
    * Lookup202: pallet_governance::pallet::Error<T>
    **/
   PalletGovernanceError: {
-    _enum: ['ProposalIsFinished', 'InvalidProposalFinalizationParameters', 'InvalidProposalVotingParameters', 'InvalidProposalCost', 'InvalidProposalExpiration', 'NotEnoughBalanceToPropose', 'ProposalDataTooSmall', 'ProposalDataTooLarge', 'ModuleDelegatingForMaxStakers', 'ProposalNotFound', 'ProposalClosed', 'InvalidProposalData', 'InvalidCurrencyConversionValue', 'InsufficientDaoTreasuryFunds', 'AlreadyVoted', 'NotVoted', 'InsufficientStake', 'VoterIsDelegatingVotingPower', 'InternalError', 'ApplicationTooSmall', 'InvalidApplicationSize', 'ApplicationNotPending', 'ApplicationKeyAlreadyUsed', 'InvalidApplication', 'NotEnoughBalanceToApply', 'NotCurator', 'ApplicationNotFound', 'AlreadyWhitelisted', 'NotWhitelisted', 'CouldNotConvertToBalance', 'InvalidApplicationDataLength', 'InvalidAgentPenaltyPercentage', 'AlreadyCurator', 'AgentNotFound', 'InvalidPenaltyPercentage', 'InvalidMinNameLength', 'InvalidMaxNameLength', 'InvalidMaxAllowedAgents', 'InvalidMaxAllowedWeights', 'InvalidMinWeightControlFee']
+    _enum: ['ProposalIsFinished', 'InvalidProposalFinalizationParameters', 'InvalidProposalVotingParameters', 'InvalidProposalCost', 'InvalidProposalExpiration', 'NotEnoughBalanceToPropose', 'ProposalDataTooSmall', 'ProposalDataTooLarge', 'ModuleDelegatingForMaxStakers', 'ProposalNotFound', 'ProposalClosed', 'InvalidProposalData', 'InvalidCurrencyConversionValue', 'InsufficientDaoTreasuryFunds', 'AlreadyVoted', 'NotVoted', 'InsufficientStake', 'VoterIsDelegatingVotingPower', 'InternalError', 'ApplicationTooSmall', 'InvalidApplicationSize', 'ApplicationNotPending', 'ApplicationKeyAlreadyUsed', 'InvalidApplication', 'NotEnoughBalanceToApply', 'NotCurator', 'ApplicationNotFound', 'AlreadyWhitelisted', 'NotWhitelisted', 'CouldNotConvertToBalance', 'InvalidApplicationDataLength', 'InvalidAgentPenaltyPercentage', 'AlreadyCurator', 'AlreadyAllocator', 'NotAllocator', 'AgentNotFound', 'InvalidPenaltyPercentage', 'InvalidMinNameLength', 'InvalidMaxNameLength', 'InvalidMaxAllowedAgents', 'InvalidMaxAllowedWeights', 'InvalidMinWeightControlFee', 'InvalidMinStakingFee', 'InvalidEmissionProposalData']
   },
   /**
    * Lookup203: pallet_torus0::agent::Agent<T>
@@ -1450,7 +1461,7 @@ export default {
    * Lookup212: pallet_emission0::pallet::Error<T>
    **/
   PalletEmission0Error: {
-    _enum: ['WeightSetTooLarge', 'AgentIsNotRegistered', 'CannotSetWeightsForSelf', 'CannotDelegateWeightControlToSelf', 'AgentIsNotDelegating', 'NotEnoughStakeToSetWeights']
+    _enum: ['WeightSetTooLarge', 'AgentIsNotRegistered', 'CannotSetWeightsForSelf', 'CannotSetWeightsWhileDelegating', 'CannotDelegateWeightControlToSelf', 'AgentIsNotDelegating', 'NotEnoughStakeToSetWeights']
   },
   /**
    * Lookup214: sp_runtime::MultiSignature
