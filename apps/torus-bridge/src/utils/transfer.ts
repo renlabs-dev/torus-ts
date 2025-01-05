@@ -2,7 +2,7 @@ import {
   FinalTransferStatuses,
   SentTransferStatuses,
   TransferStatus,
-} from "../../utils/types";
+} from "./types";
 
 export function getTransferStatusLabel(
   status: TransferStatus,
@@ -76,7 +76,7 @@ import type {
   TypedTransactionReceipt,
 } from "@hyperlane-xyz/sdk";
 import { MultiProtocolCore, ProviderType } from "@hyperlane-xyz/sdk";
-import { logger } from "../../utils/logger";
+import { logger } from "./logger";
 
 export function tryGetMsgIdFromTransferReceipt(
   multiProvider: MultiProtocolProvider,

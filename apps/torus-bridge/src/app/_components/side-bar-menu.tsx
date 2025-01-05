@@ -9,14 +9,11 @@ import type { TransferContext } from "../../utils/types";
 
 import { ArrowRightIcon, ChevronDown, RotateCcw } from "lucide-react";
 
-import { getChainDisplayName } from "~/features/chains/utils";
-import { useStore } from "~/features/store";
-import { useWarpCore, tryFindToken } from "~/features/tokens/hooks";
-import { TransfersDetailsModal } from "~/features/transfer/TransfersDetailsModal";
-import {
-  STATUSES_WITH_ICON,
-  getIconByTransferStatus,
-} from "~/features/transfer/utils";
+import { getChainDisplayName } from "~/utils/chain";
+import { useStore } from "~/utils/store";
+import { useWarpCore, tryFindToken } from "~/hooks/token";
+import { TransfersDetailsModal } from "~/app/_components/transfers-details-modal";
+import { STATUSES_WITH_ICON, getIconByTransferStatus } from "~/utils/transfer";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function SideBarMenu({

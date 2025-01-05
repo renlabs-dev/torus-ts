@@ -24,7 +24,7 @@ import { WagmiProvider, createConfig } from "wagmi";
 
 import { config } from "../consts/config";
 
-import { useWarpCore } from "../features/tokens/hooks";
+import { useWarpCore } from "../hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 function initWagmi(multiProvider: MultiProtocolProvider) {

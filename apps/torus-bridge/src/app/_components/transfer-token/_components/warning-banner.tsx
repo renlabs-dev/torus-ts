@@ -1,7 +1,8 @@
 import { useFormikContext } from "formik";
-import { ChainConnectionWarning } from "~/features/chains/ChainConnectionWarning";
-import { ChainWalletWarning } from "~/features/chains/ChainWalletWarning";
+
 import type { TransferFormValues } from "~/utils/types";
+import { ChainWalletWarning } from "../../chains/chain-wallet-warning";
+import { ChainConnectionWarning } from "../../chains/chain-connection-warning";
 
 export function WarningBanners() {
   const { values } = useFormikContext<TransferFormValues>();

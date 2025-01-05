@@ -1,10 +1,11 @@
 import { useFormikContext } from "formik";
 import { useMemo } from "react";
-import { ChainSelectField } from "~/features/chains/ChainSelectField";
-import { getNumRoutesWithSelectedChain } from "~/features/chains/utils";
-import { useWarpCore } from "~/features/tokens/hooks";
+
+import { getNumRoutesWithSelectedChain } from "~/utils/chain";
+import { useWarpCore } from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { SwapChainsButton } from "../_components/swap-chain-button";
+import { ChainSelectField } from "../../chains/chain-select-field";
 
 export function SelectChainSection({ isReview }: { isReview: boolean }) {
   const warpCore = useWarpCore();

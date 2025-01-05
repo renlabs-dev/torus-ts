@@ -1,5 +1,5 @@
+import { links } from "@torus-ts/ui";
 import { toast } from "react-toastify";
-import { links } from "~/consts/links";
 
 export function toastIgpDetails(igpFee: string, tokenName = "native token") {
   toast.error(<IgpDetailsToast tokenName={tokenName} igpFee={igpFee} />, {
@@ -20,7 +20,7 @@ export function IgpDetailsToast({
       delivery transaction costs. Your {tokenName} balance is insufficient.{" "}
       <a
         className="underline"
-        href={links.gasDocs}
+        href={links.hyperlane_gasDocs}
         target="_blank"
         rel="noopener noreferrer"
       >
