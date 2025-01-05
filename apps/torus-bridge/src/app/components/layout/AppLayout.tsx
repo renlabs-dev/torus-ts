@@ -2,10 +2,10 @@ import { MultiProtocolWalletModal } from "@hyperlane-xyz/widgets";
 
 import type { PropsWithChildren } from "react";
 
-import { Header } from "../nav/Header";
 import { useStore } from "~/features/store";
 import { BACKGROUND_COLOR, BACKGROUND_IMAGE } from "~/consts/app";
 import { SideBarMenu } from "~/features/wallet/SideBarMenu";
+import { Header } from "~/app/_components/header";
 
 export function AppLayout({ children }: PropsWithChildren) {
   const {
