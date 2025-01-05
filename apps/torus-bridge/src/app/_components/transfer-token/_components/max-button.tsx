@@ -4,8 +4,9 @@ import { SpinnerIcon, useAccounts } from "@hyperlane-xyz/widgets";
 import BigNumber from "bignumber.js";
 import { useFormikContext } from "formik";
 import { SolidButton } from "~/app/components/buttons/SolidButton";
-import { useMultiProvider } from "~/features/chains/hooks";
+
 import { useFetchMaxAmount } from "~/features/transfer/maxAmount";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { TransferFormValues } from "~/utils/types";
 
 export function MaxButton({

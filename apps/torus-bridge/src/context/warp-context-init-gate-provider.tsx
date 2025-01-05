@@ -3,7 +3,7 @@
 import { SpinnerIcon, useTimeout } from "@hyperlane-xyz/widgets";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
-import { useReadyMultiProvider } from "~/features/chains/hooks";
+import { useReadyMultiProvider } from "~/hooks/use-ready-multi-provider";
 
 const INIT_TIMEOUT = 10_000; // 10 seconds
 

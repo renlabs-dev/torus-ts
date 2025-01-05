@@ -3,7 +3,7 @@ import { Modal, SearchIcon } from "@hyperlane-xyz/widgets";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { config } from "../../consts/config";
-import { useMultiProvider } from "../chains/hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { getChainDisplayName } from "../chains/utils";
 import { useWarpCore } from "./hooks";
 import { TextInput } from "~/app/_components/text-field";

@@ -1,8 +1,9 @@
 import { ChainLogo as ChainLogoInner } from "@hyperlane-xyz/widgets";
 import Image from "next/image";
 import { useMemo } from "react";
-import { useChainMetadata } from "~/features/chains/hooks";
+
 import { useStore } from "~/features/store";
+import { useChainMetadata } from "~/hooks/chain/use-chain-metadata";
 
 export function ChainLogo({
   chainName,

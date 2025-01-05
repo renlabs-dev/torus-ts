@@ -4,7 +4,7 @@ import { isValidAddress } from "@hyperlane-xyz/utils";
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
 
-import { useMultiProvider } from "../chains/hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { TransferFormValues } from "../../utils/types";
 import { useTokenByIndex } from "./hooks";
 import { useToastError } from "~/app/components/toast/useToastError";

@@ -5,9 +5,10 @@ import { useState } from "react";
 
 import type { TransferFormValues } from "../../utils/types";
 import { ChainSelectListModal } from "./ChainSelectModal";
-import { useChainDisplayName } from "./hooks";
+
 import type { ChainName } from "@hyperlane-xyz/sdk";
 import { ChainLogo } from "~/app/components/icons/ChainLogo";
+import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 
 interface Props {
   name: string;

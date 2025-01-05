@@ -6,9 +6,10 @@ import {
 } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
 import { logger } from "../utils/logger";
-import { useMultiProvider } from "../features/chains/hooks";
+
 import { getTokenByIndex, useWarpCore } from "../features/tokens/hooks";
 import type { TransferFormValues } from "../utils/types";
+import { useMultiProvider } from "./use-multi-provider";
 
 const FEE_QUOTE_REFRESH_INTERVAL = 15_000; // 10s
 

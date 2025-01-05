@@ -1,7 +1,7 @@
 import { useEthereumAccount } from "@hyperlane-xyz/widgets";
 import { isAddress } from "viem";
 import { useReadContract } from "wagmi";
-import { useMultiProvider } from "~/features/chains/hooks";
+import { useMultiProvider } from "../use-multi-provider";
 
 // https://go.chainalysis.com/chainalysis-oracle-docs.html
 const ORACLE_ABI = [

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { logger } from "../../utils/logger";
 import { ChainSelectListModal } from "./ChainSelectModal";
-import { useMultiProvider } from "./hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { getChainDisplayName } from "./utils";
 import { FormWarningBanner } from "~/app/components/banner/FormWarningBanner";
 
