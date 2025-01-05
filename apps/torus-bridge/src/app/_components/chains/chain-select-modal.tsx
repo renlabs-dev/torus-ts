@@ -29,20 +29,22 @@ export function ChainSelectListModal({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      close={close}
-      panelClassname="p-4 sm:p-5 max-w-lg min-h-[40vh]"
-    >
-      <ChainSearchMenu
-        chainMetadata={chainMetadata}
-        onClickChain={onSelectChain}
-        overrideChainMetadata={chainMetadataOverrides}
-        onChangeOverrideMetadata={setChainMetadataOverrides}
-        customListItemField={customListItemField}
-        defaultSortField="custom"
-        showChainDetails={showChainDetails}
-      />
-    </Modal>
+    <div className="absolute z-50">
+      <Modal
+        isOpen={isOpen}
+        close={close}
+        panelClassname="p-4 sm:p-5 max-w-lg min-h-[40vh]"
+      >
+        <ChainSearchMenu
+          chainMetadata={chainMetadata}
+          onClickChain={onSelectChain}
+          overrideChainMetadata={chainMetadataOverrides}
+          onChangeOverrideMetadata={setChainMetadataOverrides}
+          customListItemField={customListItemField}
+          defaultSortField="custom"
+          showChainDetails={showChainDetails}
+        />
+      </Modal>
+    </div>
   );
 }
