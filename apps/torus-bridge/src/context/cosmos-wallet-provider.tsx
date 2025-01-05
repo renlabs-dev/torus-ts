@@ -12,7 +12,7 @@ import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 
 import { config } from "../consts/config";
-import { useMultiProvider } from "../features/chains/hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
   const chainMetadata = useMultiProvider().metadata;

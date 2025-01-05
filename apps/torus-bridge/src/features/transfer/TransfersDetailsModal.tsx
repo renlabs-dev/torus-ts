@@ -18,7 +18,6 @@ import { formatTimestamp } from "../../utils/date";
 import { getHypExplorerLink } from "../../utils/links";
 import { logger } from "../../utils/logger";
 
-import { useMultiProvider } from "../chains/hooks";
 import { getChainDisplayName, hasPermissionlessChain } from "../chains/utils";
 import { tryFindToken, useWarpCore } from "../tokens/hooks";
 import type { TransferContext } from "../../utils/types";
@@ -32,6 +31,7 @@ import {
 import { ChainLogo } from "~/app/components/icons/ChainLogo";
 import { TokenIcon } from "~/app/components/icons/TokenIcon";
 import { LinkIcon } from "lucide-react";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function TransfersDetailsModal({
   isOpen,

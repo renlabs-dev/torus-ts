@@ -4,7 +4,7 @@ import { useAccounts } from "@hyperlane-xyz/widgets";
 import { Formik, Form } from "formik";
 import { useMemo, useState } from "react";
 import { config } from "~/consts/config";
-import { useMultiProvider } from "~/features/chains/hooks";
+
 import { getIndexForToken, useWarpCore } from "~/features/tokens/hooks";
 import type { TransferFormValues } from "~/utils/types";
 import { logger } from "~/utils/logger";
@@ -17,6 +17,7 @@ import { AmountSection } from "../_sections/amount-section";
 import { RecipientSection } from "../_sections/recipient-section";
 import { ReviewSection } from "../_sections/review-section";
 import { ButtonSection } from "../_sections/button-section";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 function useFormInitialValues(): TransferFormValues {
   const warpCore = useWarpCore();

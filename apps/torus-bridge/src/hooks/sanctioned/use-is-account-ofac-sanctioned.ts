@@ -1,7 +1,7 @@
 import { eqAddress } from "@hyperlane-xyz/utils";
 import { useEthereumAccount } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
-import { useMultiProvider } from "~/features/chains/hooks";
+import { useMultiProvider } from "../use-multi-provider";
 
 const OFAC_SANCTIONED_ADDRESSES_ENDPOINT =
   "https://raw.githubusercontent.com/0xB10C/ofac-sanctioned-digital-currency-addresses/lists/sanctioned_addresses_ETH.json";

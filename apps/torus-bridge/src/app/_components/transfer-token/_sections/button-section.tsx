@@ -2,12 +2,12 @@ import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { useFormikContext } from "formik";
 import { ConnectAwareSubmitButton } from "~/app/components/buttons/ConnectAwareSubmitButton";
 import { SolidButton } from "~/app/components/buttons/SolidButton";
-import { useChainDisplayName } from "~/features/chains/hooks";
 
 import { useStore } from "~/features/store";
 import type { TransferFormValues } from "~/utils/types";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
-import { useIsAccountSanctioned } from "~/hooks/use-is-account-sanctioned";
+import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";
+import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 
 export function ButtonSection({
   isReview,

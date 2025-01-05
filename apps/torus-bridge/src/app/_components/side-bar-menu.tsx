@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import type { TransferContext } from "../../utils/types";
 
 import { ArrowRightIcon, ChevronDown, RotateCcw } from "lucide-react";
-import { useMultiProvider } from "~/features/chains/hooks";
+
 import { getChainDisplayName } from "~/features/chains/utils";
 import { useStore } from "~/features/store";
 import { useWarpCore, tryFindToken } from "~/features/tokens/hooks";
@@ -17,6 +17,7 @@ import {
   STATUSES_WITH_ICON,
   getIconByTransferStatus,
 } from "~/features/transfer/utils";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function SideBarMenu({
   onClickConnectWallet,

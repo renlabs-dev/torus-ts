@@ -2,7 +2,7 @@ import type { IToken } from "@hyperlane-xyz/sdk";
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
 
-import { useMultiProvider } from "../chains/hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { useWarpCore } from "./hooks";
 import { useToastError } from "~/app/components/toast/useToastError";
 

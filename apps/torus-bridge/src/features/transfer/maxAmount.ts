@@ -10,8 +10,8 @@ import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { logger } from "../../utils/logger";
-import { useMultiProvider } from "../chains/hooks";
 import { useWarpCore } from "../tokens/hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;
