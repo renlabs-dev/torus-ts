@@ -2,11 +2,13 @@ import type { ChainMetadata, ChainName } from "@hyperlane-xyz/sdk";
 import { isRpcHealthy } from "@hyperlane-xyz/sdk";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { logger } from "../../utils/logger";
-import { ChainSelectListModal } from "./ChainSelectModal";
+
+import { ChainSelectListModal } from "./chain-select-modal";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { getChainDisplayName } from "./utils";
-import { FormWarningBanner } from "~/app/components/banner/FormWarningBanner";
+
+import { FormWarningBanner } from "~/app/_components/banners/form-warning-banner";
+import { getChainDisplayName } from "~/utils/chain";
+import { logger } from "~/utils/logger";
 
 export function ChainConnectionWarning({
   origin,

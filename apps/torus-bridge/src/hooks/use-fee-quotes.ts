@@ -7,7 +7,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { logger } from "../utils/logger";
 
-import { getTokenByIndex, useWarpCore } from "../features/tokens/hooks";
+import { getTokenByIndex, useWarpCore } from "./token";
 import type { TransferFormValues } from "../utils/types";
 import { useMultiProvider } from "./use-multi-provider";
 

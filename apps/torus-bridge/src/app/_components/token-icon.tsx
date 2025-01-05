@@ -3,7 +3,7 @@ import type { IToken } from "@hyperlane-xyz/sdk";
 import { isHttpsUrl, isRelativeUrl } from "@hyperlane-xyz/utils";
 import { Circle } from "@hyperlane-xyz/widgets";
 import { useState } from "react";
-import { useStore } from "~/features/store";
+import { useStore } from "~/utils/store";
 
 interface Props {
   token?: IToken | null;

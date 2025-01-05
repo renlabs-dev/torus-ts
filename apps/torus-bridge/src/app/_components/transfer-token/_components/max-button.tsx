@@ -3,9 +3,9 @@ import { isNullish } from "@hyperlane-xyz/utils";
 import { SpinnerIcon, useAccounts } from "@hyperlane-xyz/widgets";
 import BigNumber from "bignumber.js";
 import { useFormikContext } from "formik";
-import { SolidButton } from "~/app/components/buttons/SolidButton";
+import { SolidButton } from "~/app/_components/buttons/solid-button";
 
-import { useFetchMaxAmount } from "~/features/transfer/maxAmount";
+import { useFetchMaxAmount } from "~/hooks/use-fetch-max-amount";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { TransferFormValues } from "~/utils/types";
 

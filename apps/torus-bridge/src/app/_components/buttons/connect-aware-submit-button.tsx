@@ -7,7 +7,7 @@ import {
 import { useFormikContext } from "formik";
 import { useCallback } from "react";
 
-import { SolidButton } from "./SolidButton";
+import { SolidButton } from "./solid-button";
 import type { ChainName } from "@hyperlane-xyz/sdk";
 import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";
 import { useMultiProvider } from "~/hooks/use-multi-provider";

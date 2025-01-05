@@ -16,14 +16,6 @@ import { ErrorBoundaryProvider } from "~/context/error-boundary-provider";
 import { Layout } from "@torus-ts/ui";
 import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
 
-// export const metadata: Metadata = {
-//   robots: "all",
-//   title: APP_NAME,
-//   icons: [{ rel: "icon", url: "favicon.ico" }],
-//   description:
-//     "Simple, secure, and easy-to-use wallet for the torus ecosystem.",
-// };
-
 export const firaMono = FiraMono({
   subsets: ["latin"],
   display: "swap",

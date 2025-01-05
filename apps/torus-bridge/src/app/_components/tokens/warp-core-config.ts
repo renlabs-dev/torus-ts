@@ -2,9 +2,9 @@ import { warpRouteConfigs } from "@hyperlane-xyz/registry";
 import type { WarpCoreConfig } from "@hyperlane-xyz/sdk";
 import { WarpCoreConfigSchema, validateZodResult } from "@hyperlane-xyz/sdk";
 import { objFilter, objMerge } from "@hyperlane-xyz/utils";
-import { WarpRoutesTs } from "~/consts/warpRoutes";
-import { warpRouteWhitelist } from "~/consts/warpRouteWhitelist";
-import WarpRoutesYaml from "~/consts/warpRoutes.yaml";
+import { WarpRoutesTs } from "~/consts/warp-routes";
+import { warpRouteWhitelist } from "~/consts/warp-route-whitelist";
+import WarpRoutesYaml from "~/consts/warp-route-whitelist.yaml";
 
 export function assembleWarpCoreConfig(): WarpCoreConfig {
   const resultYaml = WarpCoreConfigSchema.safeParse(WarpRoutesYaml);

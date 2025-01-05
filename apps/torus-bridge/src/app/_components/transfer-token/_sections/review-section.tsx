@@ -1,8 +1,8 @@
 import { toWei } from "@hyperlane-xyz/utils";
 import { SpinnerIcon } from "@hyperlane-xyz/widgets";
 import { useFormikContext } from "formik";
-import { useIsApproveRequired } from "~/features/tokens/approval";
-import { useWarpCore, getTokenByIndex } from "~/features/tokens/hooks";
+import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";
+import { useWarpCore, getTokenByIndex } from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { useFeeQuotes } from "~/hooks/use-fee-quotes";
 

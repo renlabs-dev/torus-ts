@@ -1,6 +1,6 @@
 import { ConnectWalletButton as ConnectWalletButtonInner } from "@hyperlane-xyz/widgets";
 
-import { useStore } from "~/features/store";
+import { useStore } from "~/utils/store";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function ConnectWalletButton() {

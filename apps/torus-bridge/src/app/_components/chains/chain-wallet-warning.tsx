@@ -6,12 +6,14 @@ import {
 } from "@hyperlane-xyz/widgets";
 import { useMemo } from "react";
 
-import { config } from "../../consts/config";
-import { logger } from "../../utils/logger";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { getChainDisplayName } from "./utils";
-import { FormWarningBanner } from "~/app/components/banner/FormWarningBanner";
+
+import { FormWarningBanner } from "~/app/_components/banners/form-warning-banner";
 import type { ChainName } from "@hyperlane-xyz/sdk";
+
+import { getChainDisplayName } from "~/utils/chain";
+import { logger } from "~/utils/logger";
+import { config } from "~/consts/config";
 
 export function ChainWalletWarning({ origin }: { origin: ChainName }) {
   const multiProvider = useMultiProvider();

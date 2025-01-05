@@ -12,6 +12,10 @@ export const links = {
 
   ren_labs: "https://renlabs.dev/",
 
+  hyperlane_gasDocs:
+    "https://docs.hyperlane.xyz/docs/reference/hooks/interchain-gas",
+  hyperlane_explorer: "https://explorer.hyperlane.xyz",
+
   explorer: "https://explorer.torus.network/",
   governance: "https://governance.torus.network/",
   validator: "https://validator.torus.network/",

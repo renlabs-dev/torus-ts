@@ -7,11 +7,12 @@ import { toast } from "react-toastify";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { config } from "../consts/config";
-import { logger } from "../utils/logger";
-import { assembleChainMetadata } from "./chains/metadata";
-import { assembleWarpCoreConfig } from "./tokens/warpCoreConfig";
-import type { TransferContext } from "../utils/types";
-import { FinalTransferStatuses, TransferStatus } from "../utils/types";
+import { logger } from "./logger";
+
+import { assembleWarpCoreConfig } from "../app/_components/tokens/warp-core-config";
+import type { TransferContext } from "./types";
+import { FinalTransferStatuses, TransferStatus } from "./types";
+import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
 
 // Increment this when persist state has breaking changes
 const PERSIST_STATE_VERSION = 2;

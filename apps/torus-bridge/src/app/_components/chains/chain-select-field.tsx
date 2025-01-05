@@ -3,12 +3,13 @@ import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { useField, useFormikContext } from "formik";
 import { useState } from "react";
 
-import type { TransferFormValues } from "../../utils/types";
-import { ChainSelectListModal } from "./ChainSelectModal";
+import { ChainSelectListModal } from "./chain-select-modal";
 
 import type { ChainName } from "@hyperlane-xyz/sdk";
-import { ChainLogo } from "~/app/components/icons/ChainLogo";
+
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
+import type { TransferFormValues } from "~/utils/types";
+import { ChainLogo } from "../chain-logo";
 
 interface Props {
   name: string;

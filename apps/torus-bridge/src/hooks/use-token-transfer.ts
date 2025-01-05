@@ -12,14 +12,14 @@ import { toast } from "react-toastify";
 
 import { logger } from "../utils/logger";
 
-import { getChainDisplayName } from "../features/chains/utils";
-import type { AppState } from "../features/store";
-import { useStore } from "../features/store";
-import { getTokenByIndex, useWarpCore } from "../features/tokens/hooks";
+import { getChainDisplayName } from "../utils/chain";
+import type { AppState } from "../utils/store";
+import { useStore } from "../utils/store";
+import { getTokenByIndex, useWarpCore } from "./token";
 import type { TransferContext, TransferFormValues } from "../utils/types";
 import { TransferStatus } from "../utils/types";
-import { tryGetMsgIdFromTransferReceipt } from "../features/transfer/utils";
-import { toastTxSuccess } from "~/app/components/toast/TxSuccessToast";
+import { tryGetMsgIdFromTransferReceipt } from "../utils/transfer";
+import { toastTxSuccess } from "~/app/_components/toast/tx-success-toast";
 import { useMultiProvider } from "./use-multi-provider";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
