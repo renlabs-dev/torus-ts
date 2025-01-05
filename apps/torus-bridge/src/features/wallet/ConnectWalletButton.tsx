@@ -1,6 +1,6 @@
-import { ConnectWalletButton as ConnectWalletButtonInner } from '@hyperlane-xyz/widgets';
-import { useMultiProvider } from '../chains/hooks';
-import { useStore } from '../store';
+import { ConnectWalletButton as ConnectWalletButtonInner } from "@hyperlane-xyz/widgets";
+import { useMultiProvider } from "../chains/hooks";
+import { useStore } from "../store";
 
 export function ConnectWalletButton() {
   const multiProvider = useMultiProvider();
@@ -15,7 +15,7 @@ export function ConnectWalletButton() {
       multiProvider={multiProvider}
       onClickWhenUnconnected={() => setShowEnvSelectModal(true)}
       onClickWhenConnected={() => setIsSideBarOpen(true)}
-      className="rounded-lg bg-white"
+      className="rounded-lg bg-black"
       countClassName="bg-accent-500"
     />
   );

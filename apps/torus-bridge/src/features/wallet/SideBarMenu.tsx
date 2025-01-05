@@ -10,7 +10,7 @@ import { getChainDisplayName } from "../chains/utils";
 import { useStore } from "../store";
 import { tryFindToken, useWarpCore } from "../tokens/hooks";
 import { TransfersDetailsModal } from "../transfer/TransfersDetailsModal";
-import type { TransferContext } from "../transfer/types";
+import type { TransferContext } from "../../utils/types";
 import { getIconByTransferStatus, STATUSES_WITH_ICON } from "../transfer/utils";
 import { ArrowRightIcon, ChevronDown, RotateCcw } from "lucide-react";
 

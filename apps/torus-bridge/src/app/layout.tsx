@@ -15,8 +15,6 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { useIsSsr } from "@hyperlane-xyz/widgets";
 
-const APP_NAME = "Torus Wallet";
-
 // export const metadata: Metadata = {
 //   robots: "all",
 //   title: APP_NAME,
