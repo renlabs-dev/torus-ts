@@ -9,7 +9,8 @@ import { useCallback } from "react";
 
 import { SolidButton } from "./SolidButton";
 import type { ChainName } from "@hyperlane-xyz/sdk";
-import { useChainProtocol, useMultiProvider } from "~/features/chains/hooks";
+import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 interface Props {
   chainName: ChainName;

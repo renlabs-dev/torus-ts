@@ -8,7 +8,7 @@ import { useMemo } from "react";
 
 import { config } from "../../consts/config";
 import { logger } from "../../utils/logger";
-import { useMultiProvider } from "./hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { getChainDisplayName } from "./utils";
 import { FormWarningBanner } from "~/app/components/banner/FormWarningBanner";
 import type { ChainName } from "@hyperlane-xyz/sdk";

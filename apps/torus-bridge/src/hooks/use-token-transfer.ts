@@ -11,7 +11,7 @@ import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 
 import { logger } from "../utils/logger";
-import { useMultiProvider } from "../features/chains/hooks";
+
 import { getChainDisplayName } from "../features/chains/utils";
 import type { AppState } from "../features/store";
 import { useStore } from "../features/store";
@@ -20,6 +20,7 @@ import type { TransferContext, TransferFormValues } from "../utils/types";
 import { TransferStatus } from "../utils/types";
 import { tryGetMsgIdFromTransferReceipt } from "../features/transfer/utils";
 import { toastTxSuccess } from "~/app/components/toast/TxSuccessToast";
+import { useMultiProvider } from "./use-multi-provider";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";

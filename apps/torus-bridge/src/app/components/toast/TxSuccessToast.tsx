@@ -1,6 +1,6 @@
 import type { ChainName } from "@hyperlane-xyz/sdk";
 import { toast } from "react-toastify";
-import { useMultiProvider } from "~/features/chains/hooks";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function toastTxSuccess(msg: string, txHash: string, chain: ChainName) {
   toast.success(<TxSuccessToast msg={msg} txHash={txHash} chain={chain} />, {
