@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ConnectWalletButton } from "./connect-wallet-button";
+import { ConnectWalletButton } from "./buttons/connect-wallet-button";
 
 export function Header() {
   return (

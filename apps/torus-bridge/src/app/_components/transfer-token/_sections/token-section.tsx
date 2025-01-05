@@ -1,4 +1,4 @@
-import { TokenSelectField } from "~/features/tokens/TokenSelectField";
+import { TokenSelectField } from "~/app/_components/tokens/token-select-field";
 
 export function TokenSection({
   setIsNft,

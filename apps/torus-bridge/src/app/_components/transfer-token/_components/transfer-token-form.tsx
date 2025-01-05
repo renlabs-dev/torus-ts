@@ -5,7 +5,7 @@ import { Formik, Form } from "formik";
 import { useMemo, useState } from "react";
 import { config } from "~/consts/config";
 
-import { getIndexForToken, useWarpCore } from "~/features/tokens/hooks";
+import { getIndexForToken, useWarpCore } from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { logger } from "~/utils/logger";
 import { validateForm } from "./validate-form";

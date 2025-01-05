@@ -1,9 +1,9 @@
 import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { useFormikContext } from "formik";
-import { ConnectAwareSubmitButton } from "~/app/components/buttons/ConnectAwareSubmitButton";
-import { SolidButton } from "~/app/components/buttons/SolidButton";
+import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
+import { SolidButton } from "~/app/_components/buttons/solid-button";
 
-import { useStore } from "~/features/store";
+import { useStore } from "~/utils/store";
 import type { TransferFormValues } from "~/utils/types";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";

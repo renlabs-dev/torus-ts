@@ -1,10 +1,10 @@
 import { useFormikContext } from "formik";
 import { TextField } from "~/app/_components/text-field";
-import { useOriginBalance } from "~/features/tokens/balances";
-import { SelectOrInputTokenIds } from "~/features/tokens/SelectOrInputTokenIds";
+import { SelectOrInputTokenIds } from "~/app/_components/tokens/select-or-Input-token-ids";
 import type { TransferFormValues } from "~/utils/types";
 import { MaxButton } from "../_components/max-button";
 import { TokenBalance } from "../_components/token-balance";
+import { useOriginBalance } from "~/hooks/balance/use-origin-balance";
 
 export function AmountSection({
   isNft,

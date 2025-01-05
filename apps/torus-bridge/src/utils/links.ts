@@ -1,8 +1,9 @@
 import type { ChainName, MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { toBase64 } from "@hyperlane-xyz/utils";
 import { config } from "../consts/config";
-import { links } from "../consts/links";
-import { isPermissionlessChain } from "../features/chains/utils";
+
+import { isPermissionlessChain } from "./chain";
+import { links } from "@torus-ts/ui";
 
 export function getHypExplorerLink(
   multiProvider: MultiProtocolProvider,
@@ -10,7 +11,7 @@ export function getHypExplorerLink(
   msgId?: string,
 ) {
   if (!config.enableExplorerLink || !chain || !msgId) return null;
-  const baseLink = `${links.explorer}/message/${msgId}`;
+  const baseLink = `${links.hyperlane_explorer}/message/${msgId}`;
 
   if (!isPermissionlessChain(multiProvider, chain)) return baseLink;
 

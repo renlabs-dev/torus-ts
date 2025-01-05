@@ -1,13 +1,9 @@
 import type { ChainName, IToken } from "@hyperlane-xyz/sdk";
 import type { Address } from "@hyperlane-xyz/utils";
 import { isValidAddress } from "@hyperlane-xyz/utils";
-import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
-
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import type { TransferFormValues } from "../../utils/types";
-import { useTokenByIndex } from "./hooks";
-import { useToastError } from "~/app/components/toast/useToastError";
+import { useToastError } from "~/app/_components/toast/use-toast-error";
 
 export function useBalance(
   chain?: ChainName,
@@ -38,21 +34,4 @@ export function useBalance(
     isError,
     balance: data ?? undefined,
   };
-}
-
-export function useOriginBalance({ origin, tokenIndex }: TransferFormValues) {
-  const multiProvider = useMultiProvider();
-  const address = useAccountAddressForChain(multiProvider, origin);
-  const token = useTokenByIndex(tokenIndex);
-  return useBalance(origin, token, address);
-}
-
-export function useDestinationBalance({
-  destination,
-  tokenIndex,
-  recipient,
-}: TransferFormValues) {
-  const originToken = useTokenByIndex(tokenIndex);
-  const connection = originToken?.getConnectionForChain(destination);
-  return useBalance(destination, connection?.token, recipient);
 }

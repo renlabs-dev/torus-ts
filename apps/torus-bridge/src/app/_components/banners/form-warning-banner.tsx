@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import type { ComponentProps } from "react";
-import { WarningBanner } from "../../components/banner/WarningBanner";
+import { WarningBanner } from "./warning-banner";
 
 export function FormWarningBanner({
   className,

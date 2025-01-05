@@ -1,7 +1,7 @@
 import type { ChainMetadata, ChainName } from "@hyperlane-xyz/sdk";
 import type { ChainSearchMenuProps } from "@hyperlane-xyz/widgets";
 import { ChainSearchMenu, Modal } from "@hyperlane-xyz/widgets";
-import { useStore } from "../store";
+import { useStore } from "~/utils/store";
 
 export function ChainSelectListModal({
   isOpen,
