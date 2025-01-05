@@ -21,8 +21,8 @@ import { logger } from "../../utils/logger";
 import { useMultiProvider } from "../chains/hooks";
 import { getChainDisplayName, hasPermissionlessChain } from "../chains/utils";
 import { tryFindToken, useWarpCore } from "../tokens/hooks";
-import type { TransferContext } from "./types";
-import { TransferStatus } from "./types";
+import type { TransferContext } from "../../utils/types";
+import { TransferStatus } from "../../utils/types";
 import {
   getIconByTransferStatus,
   getTransferStatusLabel,

@@ -10,8 +10,8 @@ import { config } from "../consts/config";
 import { logger } from "../utils/logger";
 import { assembleChainMetadata } from "./chains/metadata";
 import { assembleWarpCoreConfig } from "./tokens/warpCoreConfig";
-import type { TransferContext } from "./transfer/types";
-import { FinalTransferStatuses, TransferStatus } from "./transfer/types";
+import type { TransferContext } from "../utils/types";
+import { FinalTransferStatuses, TransferStatus } from "../utils/types";
 
 // Increment this when persist state has breaking changes
 const PERSIST_STATE_VERSION = 2;

@@ -9,20 +9,6 @@ export function Header() {
       <div className="flex items-start justify-between">
         <Link href="/" className="flex items-center py-2">
           <Image src={"logo.svg"} width={24} height={24} alt="" />
-          <Image
-            src={"logo.svg"}
-            width={130}
-            height={24}
-            alt=""
-            className="ml-2 mt-0.5 hidden sm:block"
-          />
-          <Image
-            src={"logo.svg"}
-            width={210}
-            height={24}
-            alt=""
-            className="ml-2 mt-0.5 pb-px"
-          />
         </Link>
         <div className="flex flex-col items-end gap-2 md:flex-row-reverse md:items-start">
           <ConnectWalletButton />

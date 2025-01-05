@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 
-import type { TransferFormValues } from "../transfer/types";
+import type { TransferFormValues } from "../../utils/types";
 import { SelectTokenIdField } from "./SelectTokenIdField";
 import { TextField } from "~/app/components/input/TextField";
 

@@ -5,7 +5,7 @@ import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
 
 import { useMultiProvider } from "../chains/hooks";
-import type { TransferFormValues } from "../transfer/types";
+import type { TransferFormValues } from "../../utils/types";
 import { useTokenByIndex } from "./hooks";
 import { useToastError } from "~/app/components/toast/useToastError";
 

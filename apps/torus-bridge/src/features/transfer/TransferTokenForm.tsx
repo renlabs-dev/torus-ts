@@ -38,7 +38,7 @@ import {
   useWarpCore,
 } from "../tokens/hooks";
 import { useFetchMaxAmount } from "./maxAmount";
-import type { TransferFormValues } from "./types";
+import type { TransferFormValues } from "../../utils/types";
 import { useRecipientBalanceWatcher } from "./useBalanceWatcher";
 import { useFeeQuotes } from "./useFeeQuotes";
 import { useTokenTransfer } from "./useTokenTransfer";
@@ -46,6 +46,7 @@ import { TextField } from "~/app/components/input/TextField";
 import { ConnectAwareSubmitButton } from "~/app/components/buttons/ConnectAwareSubmitButton";
 import { SolidButton } from "~/app/components/buttons/SolidButton";
 import { ChainConnectionWarning } from "../chains/ChainConnectionWarning";
+import { Card, CardContent } from "@torus-ts/ui";
 
 export function TransferTokenForm() {
   const multiProvider = useMultiProvider();
@@ -72,31 +73,35 @@ export function TransferTokenForm() {
   };
 
   return (
-    <Formik<TransferFormValues>
-      initialValues={initialValues}
-      onSubmit={onSubmitForm}
-      validate={validate}
-      validateOnChange={false}
-      validateOnBlur={false}
-    >
-      {({ isValidating }) => (
-        <Form className="flex w-full flex-col items-stretch">
-          <WarningBanners />
-          <ChainSelectSection isReview={isReview} />
-          <div className="mt-3.5 flex items-end justify-between space-x-4">
-            <TokenSection setIsNft={setIsNft} isReview={isReview} />
-            <AmountSection isNft={isNft} isReview={isReview} />
-          </div>
-          <RecipientSection isReview={isReview} />
-          <ReviewDetails visible={isReview} />
-          <ButtonSection
-            isReview={isReview}
-            isValidating={isValidating}
-            setIsReview={setIsReview}
-          />
-        </Form>
-      )}
-    </Formik>
+    <Card>
+      <CardContent>
+        <Formik<TransferFormValues>
+          initialValues={initialValues}
+          onSubmit={onSubmitForm}
+          validate={validate}
+          validateOnChange={false}
+          validateOnBlur={false}
+        >
+          {({ isValidating }) => (
+            <Form className="flex w-full flex-col items-stretch">
+              <WarningBanners />
+              <ChainSelectSection isReview={isReview} />
+              <div className="mt-3.5 flex items-end justify-between space-x-4">
+                <TokenSection setIsNft={setIsNft} isReview={isReview} />
+                <AmountSection isNft={isNft} isReview={isReview} />
+              </div>
+              <RecipientSection isReview={isReview} />
+              <ReviewDetails visible={isReview} />
+              <ButtonSection
+                isReview={isReview}
+                isValidating={isValidating}
+                setIsReview={setIsReview}
+              />
+            </Form>
+          )}
+        </Formik>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -498,7 +503,6 @@ function ReviewDetails({ visible }: { visible: boolean }) {
 function WarningBanners() {
   const { values } = useFormikContext<TransferFormValues>();
   return (
-    // Max height to prevent double padding if multiple warnings are visible
     <div className="max-h-10">
       <ChainWalletWarning origin={values.origin} />
       <ChainConnectionWarning

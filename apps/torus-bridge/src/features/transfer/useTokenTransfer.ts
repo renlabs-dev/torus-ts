@@ -16,8 +16,8 @@ import { getChainDisplayName } from "../chains/utils";
 import type { AppState } from "../store";
 import { useStore } from "../store";
 import { getTokenByIndex, useWarpCore } from "../tokens/hooks";
-import type { TransferContext, TransferFormValues } from "./types";
-import { TransferStatus } from "./types";
+import type { TransferContext, TransferFormValues } from "../../utils/types";
+import { TransferStatus } from "../../utils/types";
 import { tryGetMsgIdFromTransferReceipt } from "./utils";
 import { toastTxSuccess } from "~/app/components/toast/TxSuccessToast";
 

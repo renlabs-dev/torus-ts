@@ -2,7 +2,7 @@ import {
   FinalTransferStatuses,
   SentTransferStatuses,
   TransferStatus,
-} from "./types";
+} from "../../utils/types";
 
 export function getTransferStatusLabel(
   status: TransferStatus,
