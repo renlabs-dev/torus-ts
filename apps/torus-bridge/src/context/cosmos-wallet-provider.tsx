@@ -10,11 +10,11 @@ import { getCosmosKitChainConfigs } from "@hyperlane-xyz/widgets";
 import "@interchain-ui/react/styles";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
-import { APP_DESCRIPTION, APP_NAME, APP_URL } from "../../../consts/app";
-import { config } from "../../../consts/config";
-import { useMultiProvider } from "../../chains/hooks";
 
-export function CosmosWalletContext({ children }: PropsWithChildren<unknown>) {
+import { config } from "../consts/config";
+import { useMultiProvider } from "../features/chains/hooks";
+
+export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
   const chainMetadata = useMultiProvider().metadata;
   const { chains, assets } = useMemo(() => {
     const multiProvider = new MultiProtocolProvider({
@@ -38,9 +38,9 @@ export function CosmosWalletContext({ children }: PropsWithChildren<unknown>) {
           signClient: {
             projectId: config.walletConnectProjectId,
             metadata: {
-              name: APP_NAME,
-              description: APP_DESCRIPTION,
-              url: APP_URL,
+              name: "Torus Bridge",
+              description: "I dont care",
+              url: "https://bridge.torus.network",
               icons: [],
             },
           },

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { TextField } from "~/app/components/input/TextField";
+import { TextField } from "~/app/_components/text-field";
 import { useOriginBalance } from "~/features/tokens/balances";
 import { SelectOrInputTokenIds } from "~/features/tokens/SelectOrInputTokenIds";
 import type { TransferFormValues } from "~/utils/types";

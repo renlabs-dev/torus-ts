@@ -36,11 +36,6 @@ interface WalletContextType {
     Error
   >;
 
-  estimateFee: (
-    recipientAddress: string,
-    amount: string,
-  ) => Promise<bigint | null>;
-
   addStake: (stake: Stake) => Promise<void>;
   transfer: (transfer: Transfer) => Promise<void>;
   transferStake: (transfer: TransferStake) => Promise<void>;
@@ -63,7 +58,6 @@ export function WalletProvider({
     selectedAccount,
     isAccountConnected,
 
-    estimateFee,
     transfer,
     addStake,
     transferStake,
@@ -101,8 +95,6 @@ export function WalletProvider({
         isAccountConnected,
         accountFreeBalance,
         accountStakedBalance,
-
-        estimateFee,
 
         addStake,
         transfer,

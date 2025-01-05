@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 
 import type { TransferFormValues } from "../../utils/types";
 import { SelectTokenIdField } from "./SelectTokenIdField";
-import { TextField } from "~/app/components/input/TextField";
+import { TextField } from "~/app/_components/text-field";
 
 // import { useContractSupportsTokenByOwner, useIsSenderNftOwner } from './balances';
 

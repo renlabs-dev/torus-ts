@@ -4,7 +4,7 @@ import { useFormikContext } from "formik";
 import { useIsApproveRequired } from "~/features/tokens/approval";
 import { useWarpCore, getTokenByIndex } from "~/features/tokens/hooks";
 import type { TransferFormValues } from "~/utils/types";
-import { useFeeQuotes } from "~/features/transfer/useFeeQuotes";
+import { useFeeQuotes } from "~/hooks/use-fee-quotes";
 
 export function ReviewSection({ visible }: { visible: boolean }) {
   const { values } = useFormikContext<TransferFormValues>();

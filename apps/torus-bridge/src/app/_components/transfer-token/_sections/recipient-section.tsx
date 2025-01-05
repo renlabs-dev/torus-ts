@@ -1,9 +1,9 @@
 import { useFormikContext } from "formik";
 import { useDestinationBalance } from "~/features/tokens/balances";
 import type { TransferFormValues } from "~/utils/types";
-import { useRecipientBalanceWatcher } from "~/features/transfer/useBalanceWatcher";
+import { useRecipientBalanceWatcher } from "~/hooks/use-balance-watcher";
 
-import { TextField } from "~/app/components/input/TextField";
+import { TextField } from "~/app/_components/text-field";
 import { useChainDisplayName, useMultiProvider } from "~/features/chains/hooks";
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { toast } from "@torus-ts/toast-provider";

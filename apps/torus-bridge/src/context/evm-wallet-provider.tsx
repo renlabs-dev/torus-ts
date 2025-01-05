@@ -4,7 +4,7 @@ import { getWagmiChainConfigs } from "@hyperlane-xyz/widgets";
 import {
   RainbowKitProvider,
   connectorsForWallets,
-  lightTheme,
+  darkTheme,
 } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import {
@@ -21,11 +21,11 @@ import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import { createClient, http } from "viem";
 import { WagmiProvider, createConfig } from "wagmi";
-import { APP_NAME } from "../../../consts/app";
-import { config } from "../../../consts/config";
 
-import { useMultiProvider } from "../../chains/hooks";
-import { useWarpCore } from "../../tokens/hooks";
+import { config } from "../consts/config";
+
+import { useMultiProvider } from "../features/chains/hooks";
+import { useWarpCore } from "../features/tokens/hooks";
 
 function initWagmi(multiProvider: MultiProtocolProvider) {
   const chains = getWagmiChainConfigs(multiProvider);
@@ -46,7 +46,7 @@ function initWagmi(multiProvider: MultiProtocolProvider) {
         wallets: [coinbaseWallet, rainbowWallet, trustWallet, argentWallet],
       },
     ],
-    { appName: APP_NAME, projectId: config.walletConnectProjectId },
+    { appName: "Torus Base Bridge", projectId: config.walletConnectProjectId },
   );
 
   const wagmiConfig = createConfig({
@@ -63,7 +63,7 @@ function initWagmi(multiProvider: MultiProtocolProvider) {
   return { wagmiConfig, chains };
 }
 
-export function EvmWalletContext({ children }: PropsWithChildren<unknown>) {
+export function EvmWalletProvider({ children }: PropsWithChildren<unknown>) {
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 
@@ -85,8 +85,8 @@ export function EvmWalletContext({ children }: PropsWithChildren<unknown>) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <RainbowKitProvider
-        theme={lightTheme({
-          accentColor: "#FF007A",
+        theme={darkTheme({
+          accentColor: "#A7AFBE",
           borderRadius: "small",
           fontStack: "system",
         })}
