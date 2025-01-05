@@ -10,15 +10,15 @@ import {
 import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 
-import { logger } from "../../utils/logger";
-import { useMultiProvider } from "../chains/hooks";
-import { getChainDisplayName } from "../chains/utils";
-import type { AppState } from "../store";
-import { useStore } from "../store";
-import { getTokenByIndex, useWarpCore } from "../tokens/hooks";
-import type { TransferContext, TransferFormValues } from "../../utils/types";
-import { TransferStatus } from "../../utils/types";
-import { tryGetMsgIdFromTransferReceipt } from "./utils";
+import { logger } from "../utils/logger";
+import { useMultiProvider } from "../features/chains/hooks";
+import { getChainDisplayName } from "../features/chains/utils";
+import type { AppState } from "../features/store";
+import { useStore } from "../features/store";
+import { getTokenByIndex, useWarpCore } from "../features/tokens/hooks";
+import type { TransferContext, TransferFormValues } from "../utils/types";
+import { TransferStatus } from "../utils/types";
+import { tryGetMsgIdFromTransferReceipt } from "../features/transfer/utils";
 import { toastTxSuccess } from "~/app/components/toast/TxSuccessToast";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";

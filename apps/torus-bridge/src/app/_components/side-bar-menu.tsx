@@ -5,14 +5,18 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
-import { useMultiProvider } from "../chains/hooks";
-import { getChainDisplayName } from "../chains/utils";
-import { useStore } from "../store";
-import { tryFindToken, useWarpCore } from "../tokens/hooks";
-import { TransfersDetailsModal } from "../transfer/TransfersDetailsModal";
 import type { TransferContext } from "../../utils/types";
-import { getIconByTransferStatus, STATUSES_WITH_ICON } from "../transfer/utils";
+
 import { ArrowRightIcon, ChevronDown, RotateCcw } from "lucide-react";
+import { useMultiProvider } from "~/features/chains/hooks";
+import { getChainDisplayName } from "~/features/chains/utils";
+import { useStore } from "~/features/store";
+import { useWarpCore, tryFindToken } from "~/features/tokens/hooks";
+import { TransfersDetailsModal } from "~/features/transfer/TransfersDetailsModal";
+import {
+  STATUSES_WITH_ICON,
+  getIconByTransferStatus,
+} from "~/features/transfer/utils";
 
 export function SideBarMenu({
   onClickConnectWallet,
@@ -186,7 +190,6 @@ function TransferSummary({
       <div className="flex h-5 w-5">
         {STATUSES_WITH_ICON.includes(status) ? (
           <Image
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             src={getIconByTransferStatus(status)}
             width={25}
             height={25}

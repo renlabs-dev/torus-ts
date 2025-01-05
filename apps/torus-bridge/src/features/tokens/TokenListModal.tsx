@@ -6,7 +6,7 @@ import { config } from "../../consts/config";
 import { useMultiProvider } from "../chains/hooks";
 import { getChainDisplayName } from "../chains/utils";
 import { useWarpCore } from "./hooks";
-import { TextInput } from "~/app/components/input/TextField";
+import { TextInput } from "~/app/_components/text-field";
 import { TokenIcon } from "~/app/components/icons/TokenIcon";
 import { InfoIcon } from "lucide-react";
 
