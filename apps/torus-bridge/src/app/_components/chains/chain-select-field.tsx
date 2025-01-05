@@ -10,6 +10,7 @@ import type { ChainName } from "@hyperlane-xyz/sdk";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import type { TransferFormValues } from "~/utils/types";
 import { ChainLogo } from "../chain-logo";
+import { Button } from "@torus-ts/ui";
 
 interface Props {
   name: string;
@@ -48,12 +49,7 @@ export function ChainSelectField({
 
   return (
     <div className="flex-[4]">
-      <button
-        type="button"
-        name={field.name}
-        className={`${styles.base} ${disabled ? styles.disabled : styles.enabled}`}
-        onClick={onClick}
-      >
+      <Button type="button" name={field.name} onClick={onClick}>
         <div className="flex items-center gap-3">
           <div className="max-w-[1.4rem] sm:max-w-fit">
             <ChainLogo chainName={field.value} size={32} />
@@ -66,7 +62,7 @@ export function ChainSelectField({
           </div>
         </div>
         <ChevronIcon width={12} height={8} direction="s" />
-      </button>
+      </Button>
       <ChainSelectListModal
         isOpen={isModalOpen}
         close={() => setIsModalOpen(false)}
@@ -76,9 +72,3 @@ export function ChainSelectField({
     </div>
   );
 }
-
-const styles = {
-  base: "px-2 py-1.5 w-full flex items-center justify-between text-sm bg-white rounded-lg border border-primary-300 outline-none transition-colors duration-500",
-  enabled: "hover:bg-gray-100 active:scale-95 focus:border-primary-500",
-  disabled: "bg-gray-150 cursor-default",
-};
