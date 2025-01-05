@@ -5,15 +5,16 @@ import "../styles/globals.css";
 // import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-import { Layout } from "@torus-ts/ui/components";
-import { ErrorBoundary } from "./components/errors/ErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WarpContextInitGate } from "~/features/WarpContextInitGate";
-import { EvmWalletContext } from "~/features/wallet/context/EvmWalletContext";
-import { CosmosWalletContext } from "~/features/wallet/context/CosmosWalletContext";
-import { AppLayout } from "./components/layout/AppLayout";
-import { ToastProvider } from "@torus-ts/toast-provider";
+
 import { useIsSsr } from "@hyperlane-xyz/widgets";
+import { AppLayout } from "./_components/app-layout";
+import { ToastProvider } from "@torus-ts/toast-provider";
+import { EvmWalletProvider } from "~/context/evm-wallet-provider";
+import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
+import { ErrorBoundaryProvider } from "~/context/error-boundary-provider";
+import { Layout } from "@torus-ts/ui";
+import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
 
 // export const metadata: Metadata = {
 //   robots: "all",
@@ -51,19 +52,19 @@ export default function RootLayout({
 
   return (
     <Layout font={firaMono}>
-      <ErrorBoundary>
+      <ErrorBoundaryProvider>
         <ToastProvider>
           <QueryClientProvider client={reactQueryClient}>
-            <WarpContextInitGate>
-              <EvmWalletContext>
-                <CosmosWalletContext>
+            <WarpContextInitGateProvider>
+              <EvmWalletProvider>
+                <CosmosWalletProvider>
                   <AppLayout>{children}</AppLayout>
-                </CosmosWalletContext>
-              </EvmWalletContext>
-            </WarpContextInitGate>
+                </CosmosWalletProvider>
+              </EvmWalletProvider>
+            </WarpContextInitGateProvider>
           </QueryClientProvider>
         </ToastProvider>
-      </ErrorBoundary>
+      </ErrorBoundaryProvider>
     </Layout>
   );
 }

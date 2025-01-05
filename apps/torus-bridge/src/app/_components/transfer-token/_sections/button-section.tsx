@@ -3,10 +3,11 @@ import { useFormikContext } from "formik";
 import { ConnectAwareSubmitButton } from "~/app/components/buttons/ConnectAwareSubmitButton";
 import { SolidButton } from "~/app/components/buttons/SolidButton";
 import { useChainDisplayName } from "~/features/chains/hooks";
-import { useIsAccountSanctioned } from "~/features/sanctions/hooks/useIsAccountSanctioned";
+
 import { useStore } from "~/features/store";
 import type { TransferFormValues } from "~/utils/types";
-import { useTokenTransfer } from "~/features/transfer/useTokenTransfer";
+import { useTokenTransfer } from "~/hooks/use-token-transfer";
+import { useIsAccountSanctioned } from "~/hooks/use-is-account-sanctioned";
 
 export function ButtonSection({
   isReview,

@@ -3,27 +3,35 @@ import { MultiProtocolWalletModal } from "@hyperlane-xyz/widgets";
 import type { PropsWithChildren } from "react";
 
 import { useStore } from "~/features/store";
-import { BACKGROUND_COLOR, BACKGROUND_IMAGE } from "~/consts/app";
-import { SideBarMenu } from "~/features/wallet/SideBarMenu";
 import { Header } from "~/app/_components/header";
+import { SideBarMenu } from "./side-bar-menu";
 
 export function AppLayout({ children }: PropsWithChildren) {
   const {
-    showEnvSelectModal,
-    setShowEnvSelectModal,
     isSideBarOpen,
+    showEnvSelectModal,
     setIsSideBarOpen,
+    setShowEnvSelectModal,
   } = useStore((s) => ({
-    showEnvSelectModal: s.showEnvSelectModal,
-    setShowEnvSelectModal: s.setShowEnvSelectModal,
     isSideBarOpen: s.isSideBarOpen,
+    showEnvSelectModal: s.showEnvSelectModal,
     setIsSideBarOpen: s.setIsSideBarOpen,
+    setShowEnvSelectModal: s.setShowEnvSelectModal,
   }));
 
   return (
     <>
+      <MultiProtocolWalletModal
+        isOpen={showEnvSelectModal}
+        close={() => setShowEnvSelectModal(false)}
+      />
+      <SideBarMenu
+        onClose={() => setIsSideBarOpen(false)}
+        isOpen={isSideBarOpen}
+        onClickConnectWallet={() => setShowEnvSelectModal(true)}
+      />
+
       <div
-        style={styles.container}
         id="app-content"
         className="min-w-screen relative flex h-full min-h-screen w-full flex-col justify-between"
       >
@@ -34,26 +42,6 @@ export function AppLayout({ children }: PropsWithChildren) {
           </main>
         </div>
       </div>
-
-      <MultiProtocolWalletModal
-        isOpen={showEnvSelectModal}
-        close={() => setShowEnvSelectModal(false)}
-      />
-      <SideBarMenu
-        onClose={() => setIsSideBarOpen(false)}
-        isOpen={isSideBarOpen}
-        onClickConnectWallet={() => setShowEnvSelectModal(true)}
-      />
     </>
   );
 }
-
-const styles = {
-  container: {
-    backgroundColor: BACKGROUND_COLOR,
-    backgroundImage: BACKGROUND_IMAGE,
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
-  },
-};

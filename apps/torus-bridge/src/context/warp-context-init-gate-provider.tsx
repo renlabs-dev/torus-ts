@@ -3,13 +3,14 @@
 import { SpinnerIcon, useTimeout } from "@hyperlane-xyz/widgets";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
-
-import { useReadyMultiProvider } from "./chains/hooks";
+import { useReadyMultiProvider } from "~/features/chains/hooks";
 
 const INIT_TIMEOUT = 10_000; // 10 seconds
 
 // A wrapper app to delay rendering children until the warp context is ready
-export function WarpContextInitGate({ children }: PropsWithChildren<unknown>) {
+export function WarpContextInitGateProvider({
+  children,
+}: PropsWithChildren<unknown>) {
   const isWarpContextReady = !!useReadyMultiProvider();
 
   const [isTimedOut, setIsTimedOut] = useState(false);
