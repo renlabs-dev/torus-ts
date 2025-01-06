@@ -35,7 +35,7 @@ export const ss58Address = (name: string) => varchar(name, { length: 256 });
 
 export const timeFields = () => ({
   createdAt: timestampzNow("created_at"),
-  updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
+  updatedAt: timestampzNow("updated_at"),
   deletedAt: timestampz("deleted_at").default(sql`null`),
 });
 
