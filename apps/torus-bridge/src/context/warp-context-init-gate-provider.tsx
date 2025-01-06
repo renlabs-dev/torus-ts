@@ -5,7 +5,7 @@ import type { PropsWithChildren } from "react";
 import { useState } from "react";
 import { useReadyMultiProvider } from "~/hooks/use-ready-multi-provider";
 
-const INIT_TIMEOUT = 10_000; // 10 seconds
+const INIT_TIMEOUT = 20_000; // 20 seconds
 
 // A wrapper app to delay rendering children until the warp context is ready
 export function WarpContextInitGateProvider({
