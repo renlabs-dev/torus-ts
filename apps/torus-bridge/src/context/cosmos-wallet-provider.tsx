@@ -47,7 +47,7 @@ export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
             metadata: {
               name: "suicide",
               description: "i want",
-              url: "https://www.i-want-to-die.com",
+              url: "http://localhost:3006/",
               icons: [],
             },
           },

@@ -19,20 +19,15 @@ import type { TransferContext } from "../../utils/types";
 
 export function SideBarMenu({
   onClickConnectWallet,
-  isOpen,
-  onClose,
 }: {
   onClickConnectWallet: () => void;
   isOpen: boolean;
   onClose: () => void;
 }) {
   const didMountRef = useRef(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTransfer, setSelectedTransfer] =
     useState<TransferContext | null>(null);
-
-  console.log(isModalOpen, selectedTransfer);
 
   const multiProvider = useMultiProvider();
 
@@ -50,10 +45,6 @@ export function SideBarMenu({
       setIsModalOpen(true);
     }
   }, [transfers, transferLoading]);
-
-  useEffect(() => {
-    setIsMenuOpen(isOpen);
-  }, [isOpen]);
 
   const sortedTransfers = useMemo(
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -102,15 +93,12 @@ export function SideBarMenu({
                   ))}
               </div>
               {sortedTransfers.length > 0 && (
-                <button
-                  onClick={resetTransfers}
-                  className={`${styles.btn} mx-2 my-5`}
-                >
+                <Button onClick={resetTransfers}>
                   <RotateCcw className="h-3 w-3" />
                   <span className="text-sm font-normal text-gray-900">
                     Reset transaction history
                   </span>
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -152,11 +140,7 @@ function TransferSummary({
   const token = tryFindToken(warpCore, origin, originTokenAddressOrDenom);
 
   return (
-    <button
-      key={timestamp}
-      onClick={onClick}
-      className={`${styles.btn} justify-between py-3`}
-    >
+    <Button key={timestamp} onClick={onClick}>
       <div className="flex gap-2.5">
         <div className="flex h-[2.25rem] w-[2.25rem] flex-col items-center justify-center rounded-full bg-gray-100 px-1.5">
           <ChainLogo chainName={origin} size={20} />
@@ -195,10 +179,6 @@ function TransferSummary({
           <SpinnerIcon className="-ml-1 mr-3 h-5 w-5" />
         )}
       </div>
-    </button>
+    </Button>
   );
 }
-
-const styles = {
-  btn: "w-full flex items-center px-1 py-2 text-sm hover:bg-gray-200 active:scale-95 transition-all duration-500 cursor-pointer rounded-sm",
-};

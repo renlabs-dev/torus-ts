@@ -12,7 +12,7 @@ import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-pr
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastProvider } from "@torus-ts/toast-provider";
-import { Layout } from "@torus-ts/ui";
+import { Layout, Loading } from "@torus-ts/ui";
 
 import { AppLayout } from "./_components/app-layout";
 import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
@@ -40,7 +40,13 @@ export default function RootLayout({
   // // complicates wallet and graphql integrations
   const isSsr = useIsSsr();
   if (isSsr) {
-    return <Layout font={firaMono}>We are fucked</Layout>;
+    return (
+      <Layout font={firaMono}>
+        <div className="min-w-screen flex min-h-screen items-center justify-center">
+          <Loading /> Loading Bridge...
+        </div>
+      </Layout>
+    );
   }
 
   return (

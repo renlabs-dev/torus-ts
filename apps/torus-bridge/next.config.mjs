@@ -17,16 +17,12 @@ const config = {
 
   reactStrictMode: true,
 
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback.fs = false;
       config.resolve.fallback.tls = false;
       config.resolve.fallback.net = false;
       config.resolve.fallback.child_process = false;
-    }
-    if (dev && !isServer) {
-      config.devtool = "eval-source-map";
-      setDevTool(config, "eval-source-map");
     }
 
     config.module.rules.push({
@@ -36,14 +32,5 @@ const config = {
     return config;
   },
 };
-
-function setDevTool(config, devtool = "source-map") {
-  Object.defineProperty(config, "devtool", {
-    get() {
-      return devtool;
-    },
-    set() {},
-  });
-}
 
 export default config;

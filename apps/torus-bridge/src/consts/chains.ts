@@ -17,6 +17,6 @@ export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
       reorgPeriod: 1,
       estimateBlockTime: 8,
     },
-    logoURI: "/torus/logo.svg",
+    logoURI: "/logo.svg",
   },
 };
