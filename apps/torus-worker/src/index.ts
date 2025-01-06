@@ -62,7 +62,6 @@ async function main() {
         lastBlockNumber,
       });
     },
-    // TODO: This explodes due to zod errors
     "weight-aggregator": async () => {
       await weightAggregatorWorker(api);
     },
