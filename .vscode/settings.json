@@ -57,6 +57,7 @@
     "datetime",
     "dotenv",
     "heroicons",
+    "hyperlane",
     "ipfs",
     "jiti",
     "keypair",
