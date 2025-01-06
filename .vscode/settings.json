@@ -25,6 +25,9 @@
   "files.associations": {
     "**/tooling/typescript/*.json": "jsonc"
   },
+  "files.exclude": {
+    "pnpm-lock.yaml": true
+  },
 
   // Formatting
   "tsImportSorter.configuration.autoFormat": "off",
@@ -74,6 +77,7 @@
     "polkadot",
     "postcss",
     "prettiercache",
+    "rainbowkit",
     "rootnet",
     "rustie",
     "superjson",
@@ -89,6 +93,7 @@
     "uids",
     "unstake",
     "unstaking",
-    "UNVOTED"
+    "UNVOTED",
+    "wagmi"
   ]
 }
