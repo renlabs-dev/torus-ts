@@ -32,6 +32,8 @@ export function SideBarMenu({
   const [selectedTransfer, setSelectedTransfer] =
     useState<TransferContext | null>(null);
 
+  console.log(onClose, isMenuOpen, isModalOpen, selectedTransfer);
+
   const multiProvider = useMultiProvider();
 
   const { transfers, resetTransfers, transferLoading } = useStore((s) => ({
