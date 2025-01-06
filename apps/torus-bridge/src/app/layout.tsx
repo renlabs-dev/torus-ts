@@ -1,6 +1,7 @@
 "use client";
 
 import "../styles/globals.css";
+import { useIsSsr } from "@hyperlane-xyz/widgets";
 
 // import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
@@ -14,6 +15,7 @@ import { ToastProvider } from "@torus-ts/toast-provider";
 import { Layout } from "@torus-ts/ui";
 
 import { AppLayout } from "./_components/app-layout";
+import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
@@ -36,10 +38,10 @@ export default function RootLayout({
 }): JSX.Element {
   // // Disable app SSR for now as it's not needed and
   // // complicates wallet and graphql integrations
-  // const isSsr = useIsSsr();
-  // if (isSsr) {
-  //   return <Layout font={firaMono}>We are fucked</Layout>;
-  // }
+  const isSsr = useIsSsr();
+  if (isSsr) {
+    return <Layout font={firaMono}>We are fucked</Layout>;
+  }
 
   return (
     <Layout font={firaMono}>
@@ -48,9 +50,11 @@ export default function RootLayout({
           <QueryClientProvider client={reactQueryClient}>
             <WarpContextInitGateProvider>
               <EvmWalletProvider>
-                <CosmosWalletProvider>
-                  <AppLayout>{children}</AppLayout>
-                </CosmosWalletProvider>
+                <SolanaWalletProvider>
+                  <CosmosWalletProvider>
+                    <AppLayout>{children}</AppLayout>
+                  </CosmosWalletProvider>
+                </SolanaWalletProvider>
               </EvmWalletProvider>
             </WarpContextInitGateProvider>
           </QueryClientProvider>

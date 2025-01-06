@@ -1,4 +1,4 @@
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { GasPrice } from "@cosmjs/stargate";
 import { wallets as cosmostationWallets } from "@cosmos-kit/cosmostation";
 import { wallets as keplrWallets } from "@cosmos-kit/keplr";
@@ -8,11 +8,18 @@ import { cosmoshub } from "@hyperlane-xyz/registry";
 import { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { getCosmosKitChainConfigs } from "@hyperlane-xyz/widgets";
 import "@interchain-ui/react/styles";
+
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
-
-import { config } from "../consts/config";
+import { config } from "~/consts/config";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+
+const theme = extendTheme({
+  fonts: {
+    heading: `'Neue Haas Grotesk', 'Helvetica', 'sans-serif'`,
+    body: `'Neue Haas Grotesk', 'Helvetica', 'sans-serif'`,
+  },
+});
 
 export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
   const chainMetadata = useMultiProvider().metadata;
@@ -29,7 +36,7 @@ export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
   // TODO replace Chakra here with a custom modal for ChainProvider
   // Using Chakra + @cosmos-kit/react instead of @cosmos-kit/react-lite adds about 600Kb to the bundle
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <ChainProvider
         chains={chains}
         assetLists={assets}
@@ -38,9 +45,9 @@ export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
           signClient: {
             projectId: config.walletConnectProjectId,
             metadata: {
-              name: "Torus Bridge",
-              description: "I dont care",
-              url: "https://bridge.torus.network",
+              name: "suicide",
+              description: "i want",
+              url: "https://www.i-want-to-die.com",
               icons: [],
             },
           },

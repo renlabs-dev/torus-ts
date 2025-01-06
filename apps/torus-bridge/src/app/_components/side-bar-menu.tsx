@@ -32,7 +32,7 @@ export function SideBarMenu({
   const [selectedTransfer, setSelectedTransfer] =
     useState<TransferContext | null>(null);
 
-  console.log(onClose, isMenuOpen, isModalOpen, selectedTransfer);
+  console.log(isModalOpen, selectedTransfer);
 
   const multiProvider = useMultiProvider();
 
