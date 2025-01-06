@@ -1,5 +1,5 @@
-import { fileURLToPath } from "url";
 import createJiti from "jiti";
+import { fileURLToPath } from "url";
 
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
 createJiti(fileURLToPath(import.meta.url))("./src/env");
@@ -17,12 +17,16 @@ const config = {
 
   reactStrictMode: true,
 
-  webpack: (config, { isServer }) => {
+  webpack: (config, { dev, isServer }) => {
     if (!isServer) {
       config.resolve.fallback.fs = false;
       config.resolve.fallback.tls = false;
       config.resolve.fallback.net = false;
       config.resolve.fallback.child_process = false;
+    }
+    if (dev && !isServer) {
+      config.devtool = "eval-source-map";
+      setDevTool(config, "eval-source-map");
     }
 
     config.module.rules.push({
@@ -32,5 +36,14 @@ const config = {
     return config;
   },
 };
+
+function setDevTool(config, devtool = "source-map") {
+  Object.defineProperty(config, "devtool", {
+    get() {
+      return devtool;
+    },
+    set() {},
+  });
+}
 
 export default config;

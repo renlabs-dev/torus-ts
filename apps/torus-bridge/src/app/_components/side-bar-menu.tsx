@@ -1,20 +1,21 @@
 "use client";
 
-import { AccountList, ChainLogo, SpinnerIcon } from "@hyperlane-xyz/widgets";
-import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+import { ArrowRightIcon, RotateCcw } from "lucide-react";
+import Image from "next/image";
 import { toast } from "react-toastify";
-
-import type { TransferContext } from "../../utils/types";
-
-import { ArrowRightIcon, ChevronDown, RotateCcw } from "lucide-react";
-
+import { TransfersDetailsModal } from "~/app/_components/transfers-details-modal";
+import { tryFindToken, useWarpCore } from "~/hooks/token";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { getChainDisplayName } from "~/utils/chain";
 import { useStore } from "~/utils/store";
-import { useWarpCore, tryFindToken } from "~/hooks/token";
-import { TransfersDetailsModal } from "~/app/_components/transfers-details-modal";
-import { STATUSES_WITH_ICON, getIconByTransferStatus } from "~/utils/transfer";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { getIconByTransferStatus, STATUSES_WITH_ICON } from "~/utils/transfer";
+
+import { AccountList, ChainLogo, SpinnerIcon } from "@hyperlane-xyz/widgets";
+import { Button, Sheet, SheetContent, SheetTrigger } from "@torus-ts/ui";
+
+import type { TransferContext } from "../../utils/types";
 
 export function SideBarMenu({
   onClickConnectWallet,
@@ -64,60 +65,55 @@ export function SideBarMenu({
 
   return (
     <>
-      <div
-        className={`w-88 fixed right-0 top-0 h-full transform bg-white bg-opacity-95 shadow-lg transition-transform duration-100 ease-in ${
-          isMenuOpen ? "z-10 translate-x-0" : "z-0 translate-x-full"
-        }`}
-      >
-        {isMenuOpen && (
-          <button
-            className="absolute left-0 top-0 flex h-full w-9 -translate-x-full items-center justify-center rounded-l-md bg-white bg-opacity-60 transition-all hover:bg-opacity-80"
-            onClick={() => onClose()}
-          >
-            <ChevronDown className="h-3 w-3" />
-          </button>
-        )}
-        <div className="flex h-full w-full flex-col overflow-y-auto">
-          <div className="bg-primary-500 w-full rounded-t-md px-3.5 py-2 text-base font-normal tracking-wider text-white">
-            Connected Wallets
-          </div>
-          <AccountList
-            multiProvider={multiProvider}
-            onClickConnectWallet={onClickConnectWallet}
-            onCopySuccess={onCopySuccess}
-            className="px-3 py-3"
-          />
-          <div className="bg-primary-500 mb-4 w-full px-3.5 py-2 text-base font-normal tracking-wider text-white">
-            Transfer History
-          </div>
-          <div className="flex grow flex-col px-3.5">
-            <div className="flex w-full grow flex-col divide-y">
-              {sortedTransfers.length > 0 &&
-                sortedTransfers.map((t, i) => (
-                  <TransferSummary
-                    key={i}
-                    transfer={t}
-                    onClick={() => {
-                      setSelectedTransfer(t);
-                      setIsModalOpen(true);
-                    }}
-                  />
-                ))}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" className="z-50">
+            Open
+          </Button>
+        </SheetTrigger>
+        <SheetContent>
+          <div className="flex h-full w-full flex-col overflow-y-auto">
+            <div className="bg-primary-500 w-full rounded-t-md px-3.5 py-2 text-base font-normal tracking-wider text-white">
+              Connected Wallets
             </div>
-            {sortedTransfers.length > 0 && (
-              <button
-                onClick={resetTransfers}
-                className={`${styles.btn} mx-2 my-5`}
-              >
-                <RotateCcw className="h-3 w-3" />
-                <span className="text-sm font-normal text-gray-900">
-                  Reset transaction history
-                </span>
-              </button>
-            )}
+            <AccountList
+              multiProvider={multiProvider}
+              onClickConnectWallet={onClickConnectWallet}
+              onCopySuccess={onCopySuccess}
+              className="px-3 py-3"
+            />
+            <div className="bg-primary-500 mb-4 w-full px-3.5 py-2 text-base font-normal tracking-wider text-white">
+              Transfer History
+            </div>
+            <div className="flex grow flex-col px-3.5">
+              <div className="flex w-full grow flex-col divide-y">
+                {sortedTransfers.length > 0 &&
+                  sortedTransfers.map((t, i) => (
+                    <TransferSummary
+                      key={i}
+                      transfer={t}
+                      onClick={() => {
+                        setSelectedTransfer(t);
+                        setIsModalOpen(true);
+                      }}
+                    />
+                  ))}
+              </div>
+              {sortedTransfers.length > 0 && (
+                <button
+                  onClick={resetTransfers}
+                  className={`${styles.btn} mx-2 my-5`}
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  <span className="text-sm font-normal text-gray-900">
+                    Reset transaction history
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+        </SheetContent>
+      </Sheet>
       {selectedTransfer && (
         <TransfersDetailsModal
           isOpen={isModalOpen}
