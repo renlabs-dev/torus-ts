@@ -1,16 +1,18 @@
+import { useCallback } from "react";
+
+import { useFormikContext } from "formik";
+import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
+
+import type { ChainName } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
   useAccountForChain,
   useConnectFns,
   useTimeout,
 } from "@hyperlane-xyz/widgets";
-import { useFormikContext } from "formik";
-import { useCallback } from "react";
 
 import { SolidButton } from "./solid-button";
-import type { ChainName } from "@hyperlane-xyz/sdk";
-import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 interface Props {
   chainName: ChainName;

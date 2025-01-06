@@ -1,3 +1,4 @@
+import { Label } from "@torus-ts/ui";
 import { TokenSelectField } from "~/app/_components/tokens/token-select-field";
 
 export function TokenSection({
@@ -8,13 +9,8 @@ export function TokenSection({
   isReview: boolean;
 }) {
   return (
-    <div className="flex-1">
-      <label
-        htmlFor="tokenIndex"
-        className="block pl-0.5 text-sm text-gray-600"
-      >
-        Token
-      </label>
+    <div className="flex flex-col gap-2">
+      <Label>Token</Label>
       <TokenSelectField
         name="tokenIndex"
         disabled={isReview}

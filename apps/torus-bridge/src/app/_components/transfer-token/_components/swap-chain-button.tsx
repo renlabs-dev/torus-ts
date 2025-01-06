@@ -1,6 +1,7 @@
 import { useFormikContext } from "formik";
-import { IconButton, SwapIcon } from "@hyperlane-xyz/widgets";
 import type { TransferFormValues } from "~/utils/types";
+import { ArrowLeftRight } from "lucide-react";
+import { Button } from "@torus-ts/ui";
 
 export function SwapChainsButton({ disabled }: { disabled?: boolean }) {
   const { values, setFieldValue } = useFormikContext<TransferFormValues>();
@@ -16,15 +17,8 @@ export function SwapChainsButton({ disabled }: { disabled?: boolean }) {
   };
 
   return (
-    <IconButton
-      width={20}
-      height={20}
-      title="Swap chains"
-      className={!disabled ? "hover:rotate-180" : undefined}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      <SwapIcon width={20} height={20} />
-    </IconButton>
+    <Button size="icon" variant="ghost" onClick={onClick} disabled={disabled}>
+      <ArrowLeftRight className="h-4 w-4" />
+    </Button>
   );
 }

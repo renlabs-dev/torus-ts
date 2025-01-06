@@ -21,22 +21,26 @@ export function SelectChainSection({ isReview }: { isReview: boolean }) {
   }, [values.destination, warpCore]);
 
   return (
-    <div className="mt-2 flex items-center justify-between gap-4">
-      <ChainSelectField
-        name="origin"
-        label="From"
-        disabled={isReview}
-        customListItemField={destinationRouteCounts}
-      />
+    <div className="flex items-end gap-2">
+      <div className="w-52">
+        <ChainSelectField
+          name="origin"
+          label="From"
+          disabled={isReview}
+          customListItemField={destinationRouteCounts}
+        />
+      </div>
       <div className="flex flex-1 flex-col items-center">
         <SwapChainsButton disabled={isReview} />
       </div>
-      <ChainSelectField
-        name="destination"
-        label="To"
-        disabled={isReview}
-        customListItemField={originRouteCounts}
-      />
+      <div className="w-52">
+        <ChainSelectField
+          name="destination"
+          label="To"
+          disabled={isReview}
+          customListItemField={originRouteCounts}
+        />
+      </div>
     </div>
   );
 }

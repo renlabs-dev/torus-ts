@@ -11,6 +11,7 @@ import {
   useWarpCore,
 } from "../../../hooks/token";
 import { TokenIcon } from "~/app/_components/token-icon";
+import { Button } from "@torus-ts/ui";
 
 interface Props {
   name: string;
@@ -91,10 +92,11 @@ function TokenButton({
   isAutomatic?: boolean;
 }) {
   return (
-    <button
+    <Button
       type="button"
-      className={`${styles.base} ${disabled ? styles.disabled : styles.enabled}`}
+      variant="outline"
       onClick={onClick}
+      disabled={disabled}
     >
       <div className="flex items-center">
         {token && <TokenIcon token={token} size={20} />}
@@ -104,12 +106,6 @@ function TokenButton({
         </span>
       </div>
       {!isAutomatic && <ChevronIcon width={12} height={8} direction="s" />}
-    </button>
+    </Button>
   );
 }
-
-const styles = {
-  base: "mt-1.5 w-full px-2.5 py-2.5 flex items-center justify-between text-sm rounded-lg border border-primary-300 outline-none transition-colors duration-500",
-  enabled: "hover:bg-gray-100 active:scale-95 focus:border-primary-500",
-  disabled: "bg-gray-100 cursor-default",
-};
