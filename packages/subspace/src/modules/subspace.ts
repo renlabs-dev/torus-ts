@@ -7,10 +7,13 @@ import {
   sb_address,
   sb_balance,
   sb_bigint,
+  sb_number_int,
   sb_option_default,
+  sb_some,
   sb_percent,
   sb_string,
   sb_struct,
+  
 } from "../types";
 import { handleDoubleMapEntries, handleMapEntries } from "./_common";
 import type { z } from "zod";
@@ -86,22 +89,20 @@ export async function queryKeyStakedTo(
   return result;
 }
 
+
 export async function queryStakeIn(api: Api): Promise<{
   total: bigint;
   perAddr: Map<SS58Address, bigint>;
 }> {
   const q = await api.query.torus0.stakedBy.entries();
-
   let total = 0n;
   const perAddr = new Map<SS58Address, bigint>();
-
   const [values, errs] = handleDoubleMapEntries(
     q,
     sb_address,
     sb_address,
     sb_option_default(sb_bigint, 0n),
   );
-
   for (const err of errs) {
     // TODO: refactor out
     console.error("ERROR:", err);
@@ -162,22 +163,33 @@ export async function queryStakeOut(api: Api): Promise<{
 //   handler: (entry: [StorageKey<A>, Codec]) => ReturnType<F>;
 // }
 
+export const FEES_SCHEMA = sb_struct({
+  stakingFee: sb_number_int,
+  weightControlFee: sb_number_int,
+});
+
 export const AGENT_SCHEMA = sb_struct({
   key: sb_address,
   name: sb_string,
   url: sb_string,
   metadata: sb_string,
-  weight_factor: sb_percent,
+  weightPenaltyFactor: sb_percent,
+  registrationBlock: sb_bigint,
+  fees: FEES_SCHEMA,
 });
 
 export type Agent = z.infer<typeof AGENT_SCHEMA>;
 
-export async function queryAgents(api: Api): Promise<Map<SS58Address, Agent>> {
+export async function queryAgents(api: Api) {
   const q = await api.query.torus0.agents.entries();
   // TODO: This is trowing errors
-  const [agents, errs] = handleMapEntries(q, sb_address, AGENT_SCHEMA);
+  const [agents, errs] = handleMapEntries(
+    q, sb_address,
+    sb_some(AGENT_SCHEMA)
+  );
   for (const err of errs) {
-    throw new Error("Error in queryAgents", err);
+    console.error("ERROR:", err);
+    throw new Error("Error in queryAgents");
   }
   return agents;
 }
@@ -190,7 +202,7 @@ export async function setChainWeights(
   weights: [SS58Address, number][],
 ) {
   const tx = await api.tx.emission0
-    .setWeightsExtrinsic(weights)
+    .setWeights(weights)
     .signAndSend(keypair);
   return tx;
 }
