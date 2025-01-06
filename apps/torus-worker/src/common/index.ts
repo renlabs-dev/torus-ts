@@ -95,7 +95,7 @@ export async function getVotesOnPending(
   const votes_on_pending = votes.filter((vote) => {
     const app = applications_map[vote.appId];
     if (app == null) return false;
-    return applicationIsOpen(app) && app.expiresAt <= last_block_number;
+    return applicationIsOpen(app) && app.expiresAt > last_block_number;
   });
   return votes_on_pending;
 }
