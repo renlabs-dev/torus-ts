@@ -1,9 +1,9 @@
 import type { TokenAmount } from "@hyperlane-xyz/sdk";
 import { isNullish } from "@hyperlane-xyz/utils";
 import { SpinnerIcon, useAccounts } from "@hyperlane-xyz/widgets";
+import { Button } from "@torus-ts/ui";
 import BigNumber from "bignumber.js";
 import { useFormikContext } from "formik";
-import { SolidButton } from "~/app/_components/buttons/solid-button";
 
 import { useFetchMaxAmount } from "~/hooks/use-fetch-max-amount";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
@@ -40,12 +40,11 @@ export function MaxButton({
   };
 
   return (
-    <SolidButton
+    <Button
       type="button"
       onClick={onClick}
-      color="primary"
+      variant="outline"
       disabled={disabled}
-      classes="text-xs absolute right-1 top-2.5 bottom-1 px-2 opacity-90 all:rounded"
     >
       {isLoading ? (
         <div className="flex items-center">
@@ -54,6 +53,6 @@ export function MaxButton({
       ) : (
         "Max"
       )}
-    </SolidButton>
+    </Button>
   );
 }

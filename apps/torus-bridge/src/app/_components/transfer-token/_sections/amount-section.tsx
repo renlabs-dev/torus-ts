@@ -19,14 +19,14 @@ export function AmountSection({
 
   return (
     <div className="flex-1">
-      <div className="flex justify-between pr-1">
+      <div className="flex justify-between pb-2 pr-1">
         <Label>Amount</Label>
         <TokenBalance label="My balance" balance={balance} />
       </div>
       {isNft ? (
         <SelectOrInputTokenIds disabled={isReview} />
       ) : (
-        <div className="relative w-full">
+        <div className="flex w-full items-center gap-2">
           <TextField
             name="amount"
             placeholder="0.00"

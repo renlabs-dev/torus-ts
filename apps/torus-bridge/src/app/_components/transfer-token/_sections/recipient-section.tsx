@@ -7,11 +7,11 @@ import { TextField } from "~/app/_components/text-field";
 
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { toast } from "@torus-ts/toast-provider";
-import { SolidButton } from "~/app/_components/buttons/solid-button";
 import { TokenBalance } from "../_components/token-balance";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { useDestinationBalance } from "~/hooks/balance/use-destination-balance";
+import { Button, Label } from "@torus-ts/ui";
 
 export function RecipientSection({ isReview }: { isReview: boolean }) {
   const { values } = useFormikContext<TransferFormValues>();
@@ -20,16 +20,11 @@ export function RecipientSection({ isReview }: { isReview: boolean }) {
 
   return (
     <div className="mt-4">
-      <div className="flex justify-between pr-1">
-        <label
-          htmlFor="recipient"
-          className="block pl-0.5 text-sm text-gray-600"
-        >
-          Recipient address
-        </label>
+      <div className="flex justify-between pb-2 pr-1">
+        <Label>Recipient address</Label>
         <TokenBalance label="Remote balance" balance={balance} />
       </div>
-      <div className="relative w-full">
+      <div className="flex w-full items-center gap-2 pb-6">
         <TextField
           name="recipient"
           placeholder="0x123456..."
@@ -56,14 +51,13 @@ function SelfButton({ disabled }: { disabled?: boolean }) {
       );
   };
   return (
-    <SolidButton
+    <Button
       type="button"
       onClick={onClick}
-      color="primary"
       disabled={disabled}
-      classes="text-xs absolute right-1 top-2.5 bottom-1 px-2 opacity-90 all:rounded"
+      variant="outline"
     >
       Self
-    </SolidButton>
+    </Button>
   );
 }
