@@ -20,14 +20,14 @@ import type { TransferContext } from "../../utils/types";
 export function SideBarMenu({
   onClickConnectWallet,
   isOpen,
-  onClose,
+  onClose: _onClose,
 }: {
   onClickConnectWallet: () => void;
   isOpen: boolean;
   onClose: () => void;
 }) {
   const didMountRef = useRef(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [_isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTransfer, setSelectedTransfer] =
     useState<TransferContext | null>(null);
