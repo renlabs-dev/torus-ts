@@ -9,7 +9,7 @@ import { createDb } from "@torus-ts/db/client";
 import type { LastBlock, SS58Address } from "@torus-ts/subspace";
 import {
   checkSS58,
-  queryKeyStakedTo,
+  queryKeyStakedBy,
   queryLastBlock,
   setChainWeights,
 } from "@torus-ts/subspace";
@@ -76,19 +76,18 @@ export async function weightAggregatorTask(
   lastBlock: number,
 ) {
   const allocatorAddress = checkSS58(keypair.address);
-
-  const stakeOnCommunityValidator = await queryKeyStakedTo(
+  const stakeOnCommunityValidator = await queryKeyStakedBy(
     api,
     allocatorAddress,
   );
-
-  log("Committing module weights...");
+  log("Committing agent weights...");
   await postAgentAggregation(
     stakeOnCommunityValidator,
     api,
     keypair,
     lastBlock,
   );
+  log("Committed agent weights.");
 }
 
 function getNormalizedWeights(
@@ -148,7 +147,6 @@ async function postAgentAggregation(
     stakeOnCommunityValidator,
     moduleWeightMap,
   );
-
   const dbModuleWeights: AgentWeight[] = Array.from(stakeWeights)
     .map(([agentKey, stakeWeight]): AgentWeight | null => {
       const percWeight = percWeights.get(agentKey);
@@ -158,7 +156,7 @@ async function postAgentAggregation(
       }
       return {
         agentKey: agentKey,
-        computedWeight: stakeWeight,
+        computedWeight: stakeWeight.toString(),
         percComputedWeight: percWeight,
         atBlock: lastBlock,
       };
