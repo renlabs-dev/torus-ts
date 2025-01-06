@@ -34,7 +34,9 @@ export function calcFinalWeights<K>(
     for (const [module_key, weight] of user_weights.entries()) {
       if (weight == 0n) continue;
 
-      const stake_weight = (user_stake * weight) / total_user_weight;
+      const stake_weight = total_user_weight !== 0n ? 
+        (user_stake * weight) / total_user_weight 
+        : 0n;
 
       const cur_module_weight = acc_module_weights.get(module_key) ?? 0n;
       acc_module_weights.set(module_key, cur_module_weight + stake_weight);
@@ -68,7 +70,7 @@ export function normalizeWeightsForVote<K>(
 
   const result = new Map<K, number>();
   for (const [module_key, weight] of weights.entries()) {
-    const normalized = (weight * SCALE) / max_weight;
+    const normalized = max_weight != 0n ? (weight * SCALE) / max_weight : 0n;
     result.set(module_key, Number(normalized));
   }
   return result;
@@ -87,7 +89,9 @@ export function normalizeWeightsToPercent<K>(
 
   const result = new Map<K, number>();
   for (const [module_key, weight] of module_weights.entries()) {
-    const normalized = bigintDivision(weight, total_weight);
+    const normalized = total_weight != 0n ? 
+      bigintDivision(weight, total_weight) : 
+      0n;
     result.set(module_key, Number(normalized));
   }
 
