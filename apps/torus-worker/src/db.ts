@@ -169,7 +169,7 @@ export function SubspaceAgentToDatabase(
     name: agent.name,
     apiUrl: agent.url,
     metadataUri: agent.metadata,
-    weightFactor: agent.weight_factor,
+    weightFactor: agent.weightPenaltyFactor,
 
     isWhitelisted: whitelisted,
     registrationBlock: atBlock,
@@ -207,7 +207,6 @@ export async function getUserWeightMap(): Promise<
       eq(agentSchema.key, userAgentWeightSchema.agentKey),
     )
     .execute();
-
   const weightMap = new Map<string, Map<string, bigint>>();
   for (const entry of result) {
     const { userKey, agentKey, weight } = entry;
