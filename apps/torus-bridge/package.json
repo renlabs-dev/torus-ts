@@ -42,6 +42,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@hyperlane-xyz/cli": "^7.3.0",
     "@next/eslint-plugin-next": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
