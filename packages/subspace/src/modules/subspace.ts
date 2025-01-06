@@ -55,22 +55,17 @@ export async function queryKeyStakingTo(
 export async function queryKeyStakedBy(
   api: Api,
   address: SS58Address,
-): Promise<{ address: SS58Address; stake: Balance }[]> {
+): Promise<Map<SS58Address, bigint>> {
   const q = await api.query.torus0.stakedBy.entries(address);
-
-  const stakes = q.map(([key, value]) => {
+  const result = new Map<SS58Address, bigint>();
+  q.forEach(([key, value]) => {
     const [, stakeFromAddress] = key.args;
 
     const address = sb_address.parse(stakeFromAddress);
     const stake = sb_balance_option_zero.parse(value);
-
-    return {
-      address,
-      stake,
-    };
+    result.set(address, stake);
   });
-
-  return stakes.filter(({ stake }) => stake !== 0n);
+  return result;
 }
 
 /** TODO: refactor: return Map */
