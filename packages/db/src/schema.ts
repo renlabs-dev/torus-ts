@@ -14,6 +14,7 @@ import {
   varchar,
   real,
   check,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `${name}`);
@@ -35,7 +36,7 @@ export const ss58Address = (name: string) => varchar(name, { length: 256 });
 
 export const timeFields = () => ({
   createdAt: timestampzNow("created_at"),
-  updatedAt: timestampzNow("updated_at"),
+  updatedAt: timestampzNow("updated_at").$onUpdate(() => new Date()),
   deletedAt: timestampz("deleted_at").default(sql`null`),
 });
 
@@ -116,7 +117,7 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
     .references(() => agentSchema.key),
 
   // Aggregated weight allocations measured in Rens
-  computedWeight: bigint("computed_weight").notNull(),
+  computedWeight: numeric("computed_weight").notNull(),
   // Normalized aggregated allocations (100% sum)
   percComputedWeight: real("perc_computed_weight").notNull(),
 
