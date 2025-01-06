@@ -32,6 +32,8 @@ export function SideBarMenu({
   const [selectedTransfer, setSelectedTransfer] =
     useState<TransferContext | null>(null);
 
+  console.log(onClose, isMenuOpen, isModalOpen, selectedTransfer);
+
   const multiProvider = useMultiProvider();
 
   const { transfers, resetTransfers, transferLoading } = useStore((s) => ({
@@ -68,7 +70,7 @@ export function SideBarMenu({
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" className="z-50">
-            Open
+            Sidebar thing
           </Button>
         </SheetTrigger>
         <SheetContent>

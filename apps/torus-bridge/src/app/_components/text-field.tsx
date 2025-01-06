@@ -1,12 +1,17 @@
 import { Input } from "@torus-ts/ui";
-import clsx from "clsx";
+
 import type { FieldAttributes } from "formik";
 import { Field } from "formik";
 import type { ChangeEvent, InputHTMLAttributes, Ref } from "react";
 import { forwardRef } from "react";
 
-export function TextField({ className, ...props }: FieldAttributes<unknown>) {
-  return <Field className={clsx(className)} {...props} />;
+export function TextField({ ...props }: FieldAttributes<unknown>) {
+  return (
+    <Field
+      {...props}
+      className="w-full rounded-md border border-border bg-black p-[0.3em]"
+    />
+  );
 }
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {

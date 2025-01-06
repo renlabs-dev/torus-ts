@@ -1,13 +1,13 @@
 import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { useFormikContext } from "formik";
 import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
-import { SolidButton } from "~/app/_components/buttons/solid-button";
 
 import { useStore } from "~/utils/store";
 import type { TransferFormValues } from "~/utils/types";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
+import { Button } from "@torus-ts/ui";
 
 export function ButtonSection({
   isReview,
@@ -55,25 +55,13 @@ export function ButtonSection({
 
   return (
     <div className="mt-4 flex items-center justify-between space-x-4">
-      <SolidButton
-        type="button"
-        color="primary"
-        onClick={() => setIsReview(false)}
-        classes="px-6 py-1.5"
-        icon={
-          <ChevronIcon direction="w" width={10} height={6} color="#FFFFFF" />
-        }
-      >
+      <Button type="button" color="primary" onClick={() => setIsReview(false)}>
+        <ChevronIcon direction="w" width={10} height={6} color="#FFFFFF" />
         <span>Edit</span>
-      </SolidButton>
-      <SolidButton
-        type="button"
-        color="accent"
-        onClick={triggerTransactionsHandler}
-        classes="flex-1 px-3 py-1.5"
-      >
+      </Button>
+      <Button type="button" color="accent" onClick={triggerTransactionsHandler}>
         {`Send to ${chainDisplayName}`}
-      </SolidButton>
+      </Button>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import {
   useTimeout,
 } from "@hyperlane-xyz/widgets";
 
-import { SolidButton } from "./solid-button";
+import { Button } from "@torus-ts/ui";
 
 interface Props {
   chainName: ChainName;
@@ -23,7 +23,6 @@ interface Props {
 export function ConnectAwareSubmitButton<FormValues = unknown>({
   chainName,
   text,
-  classes,
 }: Props) {
   const protocol = useChainProtocol(chainName) ?? ProtocolType.Ethereum;
   const connectFns = useConnectFns();
@@ -60,8 +59,8 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   useTimeout(clearErrors, 3500);
 
   return (
-    <SolidButton type={type} color={color} onClick={onClick} classes={classes}>
+    <Button type={type} color={color} onClick={onClick}>
       {content}
-    </SolidButton>
+    </Button>
   );
 }
