@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 
+import { env } from "~/env";
+
 import { Loading } from "@torus-ts/ui";
 
 import { IntroSection } from "./components/intro";
 import { SidebarLinks } from "./components/sidebar-links";
 import WalletActions from "./components/wallet-actions";
 import { WalletBalance } from "./components/wallet-balance";
-import { env } from "~/env";
 
 export default function Page(): JSX.Element {
   console.log(env.NEXT_PUBLIC_TORUS_RPC_URL);

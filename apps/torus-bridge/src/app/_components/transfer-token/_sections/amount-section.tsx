@@ -5,6 +5,7 @@ import type { TransferFormValues } from "~/utils/types";
 import { MaxButton } from "../_components/max-button";
 import { TokenBalance } from "../_components/token-balance";
 import { useOriginBalance } from "~/hooks/balance/use-origin-balance";
+import { Label } from "@torus-ts/ui";
 
 export function AmountSection({
   isNft,
@@ -19,9 +20,7 @@ export function AmountSection({
   return (
     <div className="flex-1">
       <div className="flex justify-between pr-1">
-        <label htmlFor="amount" className="block pl-0.5 text-sm text-gray-600">
-          Amount
-        </label>
+        <Label>Amount</Label>
         <TokenBalance label="My balance" balance={balance} />
       </div>
       {isNft ? (

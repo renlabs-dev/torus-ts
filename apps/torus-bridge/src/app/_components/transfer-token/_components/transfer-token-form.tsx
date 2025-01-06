@@ -9,7 +9,7 @@ import { getIndexForToken, useWarpCore } from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { logger } from "~/utils/logger";
 import { validateForm } from "./validate-form";
-import { WarningBanners } from "./warning-banner";
+// import { WarningBanners } from "./warning-banner";
 
 import { SelectChainSection } from "../_sections/select-chain-section";
 import { TokenSection } from "../_sections/token-section";
@@ -69,8 +69,8 @@ export function TransferTokenForm() {
       validateOnBlur={false}
     >
       {({ isValidating }) => (
-        <Form className="flex w-full flex-col items-stretch">
-          <WarningBanners />
+        <Form className="min-w-screen-xl flex w-full flex-col">
+          {/* <WarningBanners /> */}
           <SelectChainSection isReview={isReview} />
           <div className="mt-3.5 flex items-end justify-between space-x-4">
             <TokenSection setIsNft={setIsNft} isReview={isReview} />
