@@ -11,7 +11,7 @@ export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
     displayName: "TorusAlphanet",
     nativeToken: { name: "torusalphanet", symbol: "TOR", decimals: 18 },
     // eslint-disable-next-line no-restricted-properties
-    rpcUrls: [{ http: String(process.env.NEXT_PUBLIC_WS_PROVIDER) }],
+    rpcUrls: [{ http: String(process.env.NEXT_PUBLIC_TORUS_RPC_URL) }],
     blocks: {
       confirmations: 1,
       reorgPeriod: 1,
