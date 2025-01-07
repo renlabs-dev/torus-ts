@@ -12,7 +12,7 @@ export function Header(props: HeaderProps): JSX.Element {
   return (
     <header
       className={cn(
-        "relative z-[60] flex w-full animate-fade-down items-center justify-between py-2",
+        "relative z-[50] flex w-full animate-fade-down items-center justify-between py-2",
       )}
     >
       <Link className={cn("flex gap-3 py-1.5 hover:cursor-pointer")} href="/">
