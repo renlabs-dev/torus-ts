@@ -13,7 +13,6 @@ import {
   sb_percent,
   sb_string,
   sb_struct,
-  
 } from "../types";
 import { handleDoubleMapEntries, handleMapEntries } from "./_common";
 import type { z } from "zod";
@@ -83,7 +82,6 @@ export async function queryKeyStakedTo(
   });
   return result;
 }
-
 
 export async function queryStakeIn(api: Api): Promise<{
   total: bigint;
@@ -178,10 +176,7 @@ export type Agent = z.infer<typeof AGENT_SCHEMA>;
 export async function queryAgents(api: Api) {
   const q = await api.query.torus0.agents.entries();
   // TODO: This is trowing errors
-  const [agents, errs] = handleMapEntries(
-    q, sb_address,
-    sb_some(AGENT_SCHEMA)
-  );
+  const [agents, errs] = handleMapEntries(q, sb_address, sb_some(AGENT_SCHEMA));
   for (const err of errs) {
     console.error("ERROR:", err);
     throw new Error("Error in queryAgents");
@@ -196,8 +191,6 @@ export async function setChainWeights(
   keypair: KeyringPair,
   weights: [SS58Address, number][],
 ) {
-  const tx = await api.tx.emission0
-    .setWeights(weights)
-    .signAndSend(keypair);
+  const tx = await api.tx.emission0.setWeights(weights).signAndSend(keypair);
   return tx;
 }
