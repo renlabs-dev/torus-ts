@@ -7,31 +7,32 @@ import { TokenStandard } from "@hyperlane-xyz/sdk";
 export const WarpRoutesTs: WarpCoreConfig = {
   tokens: [
     {
-      chainName: "torusalphanet",
+      chainName: "torustestnet",
       standard: TokenStandard.EvmHypNative,
       decimals: 18,
-      symbol: "TOR",
-      name: "TorusAlphanet",
-      addressOrDenom: "0x7E39adE4c434b4a28e6b514A3AaBDf3e610752c2",
+      symbol: "TORUS",
+      name: "TorusTestnet",
+      addressOrDenom: "0x677723050085BFE889726B58a14418a92cBF7f36",
       logoURI: "/api/placeholder/400/300",
       connections: [
         {
           token:
-            "ethereum|torusalphanet|0xA893cc5bB7d89a961231Be8c7a1467476069b7D2",
+            "ethereum|torustestnet|0x677723050085BFE889726B58a14418a92cBF7f36",
         },
       ],
     },
     {
-      chainName: "holesky",
+      chainName: "basesepolia",
       standard: TokenStandard.EvmHypSynthetic,
       decimals: 18,
       symbol: "ETH",
       name: "Ether",
-      addressOrDenom: "0x2a84b39fD6825BACCaE3644cEF7d0E23713e27E6",
+      addressOrDenom: "0x1c87f74D6E39F567cB1aac0e091Dc433a702ABd7",
       logoURI: "/api/placeholder/400/300",
       connections: [
         {
-          token: "ethereum|holesky|0x1921528bDf9891C27009fF6f1730ad9A7e1D298a",
+          token:
+            "ethereum|basesepolia|0x1c87f74D6E39F567cB1aac0e091Dc433a702ABd7",
         },
       ],
     },
