@@ -77,6 +77,7 @@
     "polkadot",
     "postcss",
     "prettiercache",
+    "pubk",
     "rainbowkit",
     "rootnet",
     "rustie",
@@ -95,6 +96,7 @@
     "unstake",
     "unstaking",
     "UNVOTED",
+    "viem",
     "wagmi"
   ]
 }
