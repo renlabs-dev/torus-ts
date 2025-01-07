@@ -7,12 +7,6 @@ import { fetchCustomMetadata } from "@torus-ts/subspace";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
-interface Params {
-  params: {
-    slug: string[];
-  };
-}
-
 interface CustomMetadata {
   Ok?: {
     title?: string;
@@ -20,14 +14,18 @@ interface CustomMetadata {
   };
 }
 
-export default async function AgentPage({ params }: Params) {
-  const { slug } = params;
+export default async function AgentPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<JSX.Element> {
+  const { slug } = await params;
 
-  if (slug.length !== 1 || !slug[0]) {
-    notFound();
+  if (!slug) {
+    return <div>Not Found</div>;
   }
 
-  const agentKey = slug[0];
+  const agentKey = slug;
 
   const mdl = await api.agent.byKeyLastBlock({ key: agentKey });
 

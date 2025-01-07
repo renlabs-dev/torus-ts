@@ -11,12 +11,12 @@ import {
 } from "@torus-ts/ui";
 
 import { formatToken } from "@torus-ts/utils/subspace";
-import { Info } from "lucide-react";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useMemo } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
 import { VALIDATOR_ADDRESS } from "./delegated-list";
+import type { SS58Address } from "@torus-ts/subspace";
 
 export const PopoverInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
@@ -35,11 +35,9 @@ export const PopoverInfo = () => {
       return BigInt(0);
     }
 
-    const data = accountStakedBy.find((stake) =>
-      selectedAccount.address.includes(stake.address),
-    );
+    const stake = accountStakedBy.get(selectedAccount.address as SS58Address);
 
-    return formatToken(Number(data?.stake ?? 0n));
+    return formatToken(stake ?? 0n);
   }, [
     accountStakedBy,
     isLoadingAccountStakedBy,
@@ -61,11 +59,10 @@ export const PopoverInfo = () => {
           ) : (
             <span className="flex items-end gap-1.5">
               {userWeightPower}
-              <span className="mb-0.5 text-xs">TOR</span>
+              <span className="mb-0.5 text-xs">TORUS</span>
             </span>
           )}
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Info size={14} />
             Your Weight Power
           </span>
         </div>

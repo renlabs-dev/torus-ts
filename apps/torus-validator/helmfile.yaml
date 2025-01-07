@@ -7,8 +7,8 @@ environments:
       - environmentName: dev
       - wssApiEndpoint: wss://api.testnet.torus.network
       - cacheUrl: https://cache.testnet.torus.network
-      - releaseName: dev-torus-validator
-      - ingressHost: validator.testnet.torus.network
+      - releaseName: dev-torus-allocator
+      - ingressHost: allocator.testnet.torus.network
   prod:
     values:
       - ../../helm/values.yaml
@@ -17,8 +17,8 @@ environments:
       - environmentName: prod
       - wssApiEndpoint: wss://api.torus.network
       - cacheUrl: https://cache.torus.network
-      - releaseName: torus-validator
-      - ingressHost: validator.torus.network
+      - releaseName: torus-allocator
+      - ingressHost: allocator.torus.network
 ---
 helmDefaults:
   wait: true

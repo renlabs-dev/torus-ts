@@ -17,6 +17,8 @@ export const links = {
   validator: "https://validator.torus.network/",
   landing_page: "https://torus.network/",
   wallet: "https://wallet.torus.network/",
+
+  setup_a_wallet: "https://docs.torus.network/installation/setup-wallet",
 };
 
 export const navApps: { title: string; href: string; description: string }[] = [

@@ -35,19 +35,19 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <Layout font={firaMono}>
-      <TorusProvider
-        wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
-        torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
-      >
-        <TRPCReactProvider>
-          <ToastProvider>
+      <ToastProvider>
+        <TorusProvider
+          wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
+          torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
+        >
+          <TRPCReactProvider>
             <AllocatorHeader />
             <TutorialDialog />
             <DelegatedList />
             {children}
-          </ToastProvider>
-        </TRPCReactProvider>
-      </TorusProvider>
+          </TRPCReactProvider>
+        </TorusProvider>
+      </ToastProvider>
     </Layout>
   );
 }

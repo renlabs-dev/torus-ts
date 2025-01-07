@@ -13,53 +13,61 @@ import {
   CopyButton,
 } from "@torus-ts/ui";
 
-import { BookText, LinkIcon, Scale, Wallet, Zap } from "lucide-react";
+import { BookText, Scale, Wallet, Zap } from "lucide-react";
 import Link from "next/link";
+import { VALIDATOR_ADDRESS } from "./delegated-list";
 
 export const tutorialData = {
   "1": {
     icon: <Wallet className="h-5 w-5" />,
     description: "Creating a wallet",
     steps: [
-      "Install the polkadot.js or SubWallet browser extension",
-      "Create a new wallet within the extension",
-      "Connect your wallet to the Torus Network using the top-right menu",
+      "Install the polkadot.js or SubWallet browser extension.",
+      "Create or import a wallet within the extension.",
+      "Connect your wallet to the Torus Network using the menu in the top-right corner.",
+      <p>
+        You can find a detailed guide in our docs at{" "}
+        <Link href={links.setup_a_wallet} className="text-blue-500 underline">
+          Setup a wallet
+        </Link>
+        .
+      </p>,
     ],
   },
   "2": {
     icon: <Zap className="h-5 w-5" />,
     description: "Staking on the Allocator",
     steps: [
-      <p className="flex items-center gap-1.5">
-        Go to
-        <Link href={links.wallet} className="flex items-center gap-2 underline">
-          wallet.torus.network
-          <LinkIcon size={14} />
+      <p>
+        Go to our{" "}
+        <Link href={links.setup_a_wallet} className="text-blue-500 underline">
+          Wallet App
         </Link>
+        .
       </p>,
-      <p className="text-sm">
-        Add the{" "}
+      <div className="sm:flex sm:items-center sm:gap-1.5">
+        <p>Add the</p>{" "}
         <CopyButton
-          copy={"5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2"}
+          copy={VALIDATOR_ADDRESS}
           variant="link"
-          className="h-5 p-0 text-sm"
+          className="h-5 p-0 text-sm underline"
           notify={() => toast.success("Copied to clipboard")}
         >
-          Validator Address
+          Allocator Address
         </CopyButton>{" "}
-        / Allocator Official Agent
-      </p>,
-      "Stake your desired amount (this determines your allocation power for Agents).",
-      "Note: Your staked balance remains untouched; it only represents your voting power",
+        <p>to your wallet.</p>
+      </div>,
+      "Stake the amount you want. This amount determines your voting power.",
+      "Note: Your staked balance remains untouched - it's only used to calculate voting power.",
     ],
   },
   "3": {
     icon: <Scale className="h-5 w-5" />,
     description: "Assigning weights to Agents",
     steps: [
-      "Select your preferred Agents",
-      "Review your selected modules in 'Allocation Menu'",
-      "Click 'Submit Agents' to confirm your weight assignments",
+      "Select your preferred Agents.",
+      "Review your choices in the 'Allocation Menu'.",
+      "Click 'Submit Agents' to confirm your weight assignments.",
     ],
   },
 };
@@ -73,7 +81,7 @@ export function TutorialDialog() {
           <p className="hidden md:block">Tutorial</p>
         </DialogTrigger>
       </Button>
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent className="max-h-[100vh] overflow-auto sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>Tutorial</DialogTitle>
           <DialogDescription>
