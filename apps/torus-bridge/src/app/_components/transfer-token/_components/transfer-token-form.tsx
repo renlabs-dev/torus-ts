@@ -69,7 +69,7 @@ export function TransferTokenForm() {
       validateOnBlur={false}
     >
       {({ isValidating }) => (
-        <Form className="min-w-screen-xl flex w-full flex-col">
+        <Form className="flex flex-col">
           {/* <WarningBanners /> */}
           <SelectChainSection isReview={isReview} />
           <div className="mt-3.5 flex items-end justify-between space-x-4">

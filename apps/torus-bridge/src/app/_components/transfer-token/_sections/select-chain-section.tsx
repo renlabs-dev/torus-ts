@@ -22,7 +22,7 @@ export function SelectChainSection({ isReview }: { isReview: boolean }) {
 
   return (
     <div className="flex items-end gap-2">
-      <div className="w-52">
+      <div className="w-full">
         <ChainSelectField
           name="origin"
           label="From"
@@ -33,7 +33,7 @@ export function SelectChainSection({ isReview }: { isReview: boolean }) {
       <div className="flex flex-1 flex-col items-center">
         <SwapChainsButton disabled={isReview} />
       </div>
-      <div className="w-52">
+      <div className="w-full">
         <ChainSelectField
           name="destination"
           label="To"
