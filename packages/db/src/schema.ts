@@ -20,7 +20,8 @@ import {
 export const createTable = pgTableCreator((name) => `${name}`);
 
 import { extract_pgenum_values } from "./utils";
-import { assert, Equals } from "tsafe";
+import type { Equals } from "tsafe";
+import { assert } from "tsafe";
 
 // ==== Util ====
 
