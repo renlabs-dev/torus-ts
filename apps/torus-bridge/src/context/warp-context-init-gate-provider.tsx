@@ -1,6 +1,7 @@
 "use client";
 
-import { SpinnerIcon, useTimeout } from "@hyperlane-xyz/widgets";
+import { useTimeout } from "@hyperlane-xyz/widgets";
+import { Loading } from "@torus-ts/ui";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 import { useReadyMultiProvider } from "~/hooks/use-ready-multi-provider";
@@ -24,13 +25,8 @@ export function WarpContextInitGateProvider({
       );
     } else {
       return (
-        <div className="bg-primary-500 flex h-screen items-center justify-center">
-          <SpinnerIcon
-            width={80}
-            height={80}
-            color="#FFFFFF"
-            className="opacity-50"
-          />
+        <div className="min-w-screen flex min-h-screen items-center justify-center">
+          <Loading /> Loading Bridge...
         </div>
       );
     }

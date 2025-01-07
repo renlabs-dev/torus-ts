@@ -14,8 +14,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { Layout, Loading } from "@torus-ts/ui";
 
-import { AppLayout } from "./_components/app-layout";
 import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
+import { TorusProvider } from "@torus-ts/torus-provider";
+import { env } from "~/env";
+import { WalletProvider } from "~/context/wallet-provider";
+import { WalletHeader } from "./_components/shared/wallet-header";
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
@@ -54,15 +57,23 @@ export default function RootLayout({
       <ErrorBoundaryProvider>
         <ToastProvider>
           <QueryClientProvider client={reactQueryClient}>
-            <WarpContextInitGateProvider>
-              <EvmWalletProvider>
-                <SolanaWalletProvider>
-                  <CosmosWalletProvider>
-                    <AppLayout>{children}</AppLayout>
-                  </CosmosWalletProvider>
-                </SolanaWalletProvider>
-              </EvmWalletProvider>
-            </WarpContextInitGateProvider>
+            <TorusProvider
+              wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
+              torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
+            >
+              <WalletProvider>
+                <WarpContextInitGateProvider>
+                  <EvmWalletProvider>
+                    <SolanaWalletProvider>
+                      <CosmosWalletProvider>
+                        <WalletHeader />
+                        {children}
+                      </CosmosWalletProvider>
+                    </SolanaWalletProvider>
+                  </EvmWalletProvider>
+                </WarpContextInitGateProvider>
+              </WalletProvider>
+            </TorusProvider>
           </QueryClientProvider>
         </ToastProvider>
       </ErrorBoundaryProvider>

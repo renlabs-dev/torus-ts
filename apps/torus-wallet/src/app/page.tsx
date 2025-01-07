@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 
-import { env } from "~/env";
-
 import { Loading } from "@torus-ts/ui";
 
 import { IntroSection } from "./components/intro";
@@ -10,9 +8,6 @@ import WalletActions from "./components/wallet-actions";
 import { WalletBalance } from "./components/wallet-balance";
 
 export default function Page(): JSX.Element {
-  console.log(env.NEXT_PUBLIC_TORUS_RPC_URL);
-  console.log(env.NEXT_PUBLIC_TORUS_CACHE_URL);
-
   return (
     <Suspense fallback={<Loading />}>
       <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
