@@ -26,6 +26,17 @@
     "**/tooling/typescript/*.json": "jsonc"
   },
 
+  // Formatting
+  "tsImportSorter.configuration.autoFormat": "off",
+  "tsImportSorter.configuration.groupRules": [
+    "^react(-dom)?$",
+    "^node:",
+    {},
+    "^[@]polkadot",
+    "^[@]torus-ts",
+    "^[.]"
+  ],
+
   // Conventional Commits
   "conventionalCommits.scopes": [
     "cache",
@@ -58,6 +69,7 @@
     "nextjs",
     "oxanium",
     "perc",
+    "pgenum",
     "polkadot",
     "postcss",
     "prettiercache",

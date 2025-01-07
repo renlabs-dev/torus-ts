@@ -38,6 +38,7 @@
     "drizzle-orm": "^0.38.2",
     "drizzle-zod": "^0.6.0",
     "postgres": "^3.4.4",
+    "tsafe": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

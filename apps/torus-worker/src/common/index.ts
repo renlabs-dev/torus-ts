@@ -1,20 +1,19 @@
 import type { ApiPromise } from "@polkadot/api";
+import { match } from "rustie";
 
-import type {
-  DaoApplications,
-  DaoApplicationStatus,
-  LastBlock,
-} from "@torus-ts/subspace";
+import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
 import {
-  pushToWhitelist,
   queryAgentApplications,
   queryLastBlock,
-  refuseDaoApplication,
-  removeFromWhitelist,
+  denyApplication,
+  acceptApplication,
 } from "@torus-ts/subspace";
 
-import type { VotesByProposal } from "../db";
-import { computeTotalVotesPerDao, countCadreKeys } from "../db";
+import type { VotesByApplication } from "../db";
+import {
+  queryTotalVotesPerApp as queryTotalVotesPerApp,
+  countCadreKeys,
+} from "../db";
 
 export interface WorkerProps {
   lastBlockNumber: number;
@@ -24,10 +23,8 @@ export interface WorkerProps {
 
 // -- Constants -- //
 
-export const CONSENSUS_NETUID = 2;
-
 export const BLOCK_TIME = 8000;
-export const DAO_EXPIRATION_TIME = 75600; // 7 days in blocks
+export const APPLICATION_EXPIRATION_TIME = 75600; // 7 days in blocks
 
 // -- Functions -- //
 
@@ -66,38 +63,40 @@ export async function sleepUntilNewBlock(props: WorkerProps) {
 
 // -- DAO Applications -- //
 
+const applicationIsOpen = (app: AgentApplication) =>
+  match(app.status)({
+    Open: () => true,
+    Resolved: ({ accepted }) => accepted,
+    Expired: () => false,
+  });
+
 export async function getApplications(
   api: ApiPromise,
-  applicationTypes: DaoApplicationStatus[],
+  filterFn: (app: AgentApplication) => boolean,
 ) {
-  const dao_entries = await queryAgentApplications(api);
-  const pending_daos = dao_entries.filter((app) =>
-    applicationTypes.includes(app.status),
-  );
-  const dao_hash_map: Record<number, DaoApplications> = pending_daos.reduce(
-    (hashmap, dao) => {
-      hashmap[dao.id] = dao;
-      return hashmap;
-    },
-    {} as Record<number, DaoApplications>,
-  );
-  return dao_hash_map;
+  const application_entries = await queryAgentApplications(api);
+  const pending_daos = application_entries.filter(filterFn);
+  const applications_map: Record<number, AgentApplication> =
+    pending_daos.reduce(
+      (hashmap, dao) => {
+        hashmap[dao.id] = dao;
+        return hashmap;
+      },
+      {} as Record<number, AgentApplication>,
+    );
+  return applications_map;
 }
 
 export async function getVotesOnPending(
-  dao_hash_map: Record<number, DaoApplications>,
+  applications_map: Record<number, AgentApplication>,
   last_block_number: number,
-): Promise<VotesByProposal[]> {
-  const votes = await computeTotalVotesPerDao();
-  const votes_on_pending = votes.filter(
-    (vote) =>
-      dao_hash_map[vote.appId] &&
-      (dao_hash_map[vote.appId]?.status == "Pending" ||
-        dao_hash_map[vote.appId]?.status == "Accepted") &&
-      (dao_hash_map[vote.appId]?.blockNumber ?? last_block_number) +
-        DAO_EXPIRATION_TIME <=
-        last_block_number,
-  );
+): Promise<VotesByApplication[]> {
+  const votes = await queryTotalVotesPerApp();
+  const votes_on_pending = votes.filter((vote) => {
+    const app = applications_map[vote.appId];
+    if (app == null) return false;
+    return applicationIsOpen(app) && app.expiresAt > last_block_number;
+  });
   return votes_on_pending;
 }
 
@@ -107,46 +106,42 @@ export async function getCadreThreshold() {
 }
 
 export async function processVotesOnProposal(
-  vote_info: VotesByProposal,
+  vote_info: VotesByApplication,
   vote_threshold: number,
-  dao_hash_map: Record<number, DaoApplications>,
+  applications_map: Record<number, AgentApplication>,
   api: ApiPromise,
 ) {
   const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
-  const { appId: agentId, acceptVotes, refuseVotes, removeVotes } = vote_info;
-  console.log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
-  console.log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);
-  console.log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
+  const { appId: agentId, acceptVotes, refuseVotes } = vote_info;
+  log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
+  log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);
+  // log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
+
+  const app = applications_map[agentId];
+  if (app == null) throw new Error("application not found");
+
   if (acceptVotes >= vote_threshold) {
-    // sanity check
-    if (agentId in dao_hash_map) {
-      log(`Accepting proposal ${agentId}`);
-      await pushToWhitelist(
-        api,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        dao_hash_map[agentId]!.userId,
-        mnemonic,
-      );
-    }
+    log(`Accepting proposal ${agentId}`);
+    // await pushToWhitelist(api, app.payerKey, mnemonic);
+    await acceptApplication(api, agentId, mnemonic);
   } else if (refuseVotes >= vote_threshold) {
     log(`Refusing proposal ${agentId}`);
-    await refuseDaoApplication(api, agentId, mnemonic);
-
-    // refuse
-  } else if (
-    removeVotes >= vote_threshold &&
-    dao_hash_map[agentId] !== undefined &&
-    dao_hash_map[agentId].status === "Accepted"
-  ) {
-    log(`Removing proposal ${agentId}`);
-    await removeFromWhitelist(api, dao_hash_map[agentId].userId, mnemonic);
+    await denyApplication(api, agentId, mnemonic);
   }
+  // else if (
+  //   removeVotes >= vote_threshold &&
+  //   applications_map[agentId] !== undefined &&
+  //   applications_map[agentId].status === "Accepted"
+  // ) {
+  //   log(`Removing proposal ${agentId}`);
+  //   await removeFromWhitelist(api, applications_map[agentId].userId, mnemonic);
+  // }
 }
 
 export async function processAllVotes(
-  votes_on_pending: VotesByProposal[],
+  votes_on_pending: VotesByApplication[],
   vote_threshold: number,
-  dao_hash_map: Record<number, DaoApplications>,
+  application_map: Record<number, AgentApplication>,
   api: ApiPromise,
 ) {
   await Promise.all(
@@ -154,7 +149,7 @@ export async function processAllVotes(
       processVotesOnProposal(
         vote_info,
         vote_threshold,
-        dao_hash_map,
+        application_map,
         api,
       ).catch((error) =>
         console.log(`Failed to process vote for reason: ${error}`),

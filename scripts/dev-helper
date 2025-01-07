@@ -15,6 +15,7 @@ usage_exit() {
 cmd_with_env() {
   if [ -f ".env" ]; then
     set -a
+    # shellcheck source=/dev/null
     source .env
     set +a
   fi
@@ -27,8 +28,18 @@ cmd_dev() {
   fi
 
   positional_args=()
+  force_positional=0
+
   for arg in "$@"; do
+    if [ $force_positional -eq 1 ]; then
+      positional_args+=("$arg")
+      continue
+    fi
+
     case "$arg" in
+    --)
+      force_positional=1
+      ;;
     --tui)
       use_tui=1
       ;;
@@ -49,12 +60,10 @@ cmd_dev() {
   if [ ${#positional_args[@]} -eq 0 ]; then
     echo "Error: No app name provided." 1>&2
     usage_exit
-  elif [ ${#positional_args[@]} -gt 1 ]; then
-    echo "Error: Extra arguments after app name will be ignored: ${positional_args[*]:1}" 1>&2
-    usage_exit
   fi
 
   app_name="${positional_args[0]}"
+  app_args=("${positional_args[@]:1}")
 
   flags=()
   if [ -n "$use_tui" ]; then
@@ -68,11 +77,12 @@ cmd_dev() {
 
   if [ -f ".env" ]; then
     set -a
+    # shellcheck source=/dev/null
     source .env
     set +a
   fi
 
-  turbo "$turbo_cmd" dev "${flags[@]}" -F "$app_name"
+  turbo "$turbo_cmd" dev "${flags[@]}" -F "$app_name" -- "${app_args[@]}"
 }
 
 if [ -z "$1" ]; then

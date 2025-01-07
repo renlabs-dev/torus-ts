@@ -14,11 +14,13 @@ import {
   varchar,
   real,
   check,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 
 import { extract_pgenum_values } from "./utils";
+import { assert, Equals } from "tsafe";
 
 // ==== Util ====
 
@@ -34,7 +36,7 @@ export const ss58Address = (name: string) => varchar(name, { length: 256 });
 
 export const timeFields = () => ({
   createdAt: timestampzNow("created_at"),
-  updatedAt: timestampzNow("updated_at").$onUpdateFn(() => sql`now()`),
+  updatedAt: timestampzNow("updated_at").$onUpdate(() => new Date()),
   deletedAt: timestampz("deleted_at").default(sql`null`),
 });
 
@@ -56,7 +58,7 @@ export const agentSchema = createTable(
     atBlock: integer("at_block").notNull(),
 
     // Actual identifier
-    key: ss58Address("key"),
+    key: ss58Address("key").notNull(),
     name: text("name"),
     apiUrl: text("api_url"),
     metadataUri: text("metadata_uri"),
@@ -115,7 +117,7 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
     .references(() => agentSchema.key),
 
   // Aggregated weight allocations measured in Rens
-  computedWeight: bigint("computed_weight").notNull(),
+  computedWeight: numeric("computed_weight").notNull(),
   // Normalized aggregated allocations (100% sum)
   percComputedWeight: real("perc_computed_weight").notNull(),
 
@@ -161,6 +163,13 @@ export const governanceItemType = pgEnum("governance_item_type", [
 
 export const governanceItemTypeValues =
   extract_pgenum_values(governanceItemType);
+
+assert<
+  Equals<
+    keyof typeof governanceItemTypeValues,
+    "PROPOSAL" | "AGENT_APPLICATION"
+  >
+>();
 
 export const commentSchema = createTable(
   "comment",

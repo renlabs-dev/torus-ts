@@ -560,19 +560,31 @@ importers:
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@torus-ts/subspace':
         specifier: workspace:*
         version: link:../../packages/subspace
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      axios:
+        specifier: ^1.7.7
+        version: 1.7.9
       express:
         specifier: ^4.19.2
         version: 4.21.2
+      rustie:
+        specifier: 'catalog:'
+        version: 0.4.0
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
     devDependencies:
       '@polkadot/api-augment':
         specifier: 'catalog:'
         version: 14.3.1
-      '@torus-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
@@ -582,18 +594,12 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
-      '@torus-ts/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.21
       '@types/node':
         specifier: 'catalog:'
         version: 20.17.10
-      axios:
-        specifier: ^1.7.7
-        version: 1.7.9
       dotenv-cli:
         specifier: 'catalog:'
         version: 7.4.4
@@ -679,6 +685,9 @@ importers:
       postgres:
         specifier: ^3.4.4
         version: 3.4.5
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
       zod:
         specifier: 'catalog:'
         version: 3.24.1
