@@ -63,6 +63,9 @@ catalogs:
     eslint:
       specifier: ^9.9.0
       version: 9.17.0
+    ethers:
+      specifier: ^5.7.2
+      version: 5.7.2
     jiti:
       specifier: ^1.21.6
       version: 1.21.7
@@ -210,6 +213,9 @@ importers:
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      ethers:
+        specifier: 'catalog:'
+        version: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       formik:
         specifier: ^2.4.6
         version: 2.4.6(react@18.2.0)
