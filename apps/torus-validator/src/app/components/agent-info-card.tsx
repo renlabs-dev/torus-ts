@@ -15,10 +15,10 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
         <CopyButton
           className="h-fit p-0 hover:text-muted-foreground"
           variant="link"
-          copy={agent.key ?? ""}
+          copy={agent.key}
           notify={() => toast.success("Copied to clipboard")}
         >
-          {smallAddress(agent.key ?? "", 6)}
+          {smallAddress(agent.key, 6)}
           <Copy />
         </CopyButton>
       ),
@@ -57,7 +57,7 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
     <Card className="p-6">
       <CardTitle className="mb-6 flex flex-row items-center justify-between text-lg font-semibold">
         General Information
-        <ReportAgent agentKey={agent.key ?? ""} />
+        <ReportAgent agentKey={agent.key} />
       </CardTitle>
       <CardContent className="flex flex-col gap-2 px-0 pb-0">
         {dataGroups.map((field, fieldIndex) => (

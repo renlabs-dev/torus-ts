@@ -256,6 +256,8 @@ export function DelegatedList() {
     return () => clearTimeout(timeoutId);
   }, [delegatedAgents, isOpen]);
 
+  if (!selectedAccount) return null;
+
   return (
     <Sheet>
       <SheetTrigger
