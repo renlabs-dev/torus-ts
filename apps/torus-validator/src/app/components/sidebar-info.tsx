@@ -8,35 +8,25 @@ import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useMemo } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
 import { VALIDATOR_ADDRESS } from "./delegated-list";
+import type { SS58Address } from "@torus-ts/subspace";
 
 export const SidebarInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
-  const {
-    data: accountStakedBy,
-    isLoading: isLoadingAccountStakedBy,
-    refetch: refetchAccountStakedBy,
-  } = useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
+  const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
+    useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
   const { delegatedAgents } = useDelegateAgentStore();
 
   const userWeightPower = useMemo(() => {
     if (isLoadingAccountStakedBy || !selectedAccount?.address) return null;
 
-    void refetchAccountStakedBy();
     if (!accountStakedBy) {
       return BigInt(0);
     }
 
-    const data = accountStakedBy.find((stake) =>
-      selectedAccount.address.includes(stake.address),
-    );
+    const stake = accountStakedBy.get(selectedAccount.address as SS58Address);
 
-    return formatToken(Number(data?.stake ?? 0n));
-  }, [
-    accountStakedBy,
-    isLoadingAccountStakedBy,
-    selectedAccount,
-    refetchAccountStakedBy,
-  ]);
+    return formatToken(stake ?? 0n);
+  }, [accountStakedBy, isLoadingAccountStakedBy, selectedAccount]);
 
   return (
     <Card className="hidden animate-fade-up flex-col gap-6 border-muted bg-background px-7 py-5 animate-delay-[400ms] md:flex">

@@ -17,6 +17,7 @@ import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useMemo } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
 import { VALIDATOR_ADDRESS } from "./delegated-list";
+import type { SS58Address } from "@torus-ts/subspace";
 
 export const PopoverInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
@@ -35,11 +36,9 @@ export const PopoverInfo = () => {
       return BigInt(0);
     }
 
-    const data = accountStakedBy.find((stake) =>
-      selectedAccount.address.includes(stake.address),
-    );
+    const stake = accountStakedBy.get(selectedAccount.address as SS58Address);
 
-    return formatToken(Number(data?.stake ?? 0n));
+    return formatToken(stake ?? 0n);
   }, [
     accountStakedBy,
     isLoadingAccountStakedBy,

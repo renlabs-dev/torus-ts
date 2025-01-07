@@ -26,7 +26,7 @@ import {
 
 // TODO: VERIFY VALIDATOR ADDRESS BEFORE PUSHING TO MAIN
 export const VALIDATOR_ADDRESS =
-  "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2";
+  "5DJBFtDLxZ3cahV2zdUzbe5xJiZRqbJdRCdU3WL6txZNqBBj" as SS58Address;
 
 export function DelegatedList() {
   const {
@@ -83,12 +83,13 @@ export function DelegatedList() {
     if (!accountStakedBy.data || !selectedAccount?.address) {
       return BigInt(0);
     }
-    const data = accountStakedBy.data.find((stake) =>
-      selectedAccount.address.includes(stake.address),
+
+    const stake = accountStakedBy.data.get(
+      selectedAccount.address as SS58Address,
     );
 
-    return formatToken(Number(data?.stake ?? 0n));
-  }, [accountStakedBy.data, selectedAccount?.address]);
+    return formatToken(stake ?? 0n);
+  }, [accountStakedBy, selectedAccount?.address]);
 
   function handleAutoCompletePercentage() {
     const items = delegatedAgents;
@@ -225,6 +226,8 @@ export function DelegatedList() {
   const submitStatus = getSubmitStatus();
 
   useEffect(() => {
+    if (!selectedAccount?.address) return setDelegatedAgentsFromDB([]);
+
     if (agentError) {
       console.error("Error fetching user agent data:", agentError);
     }
@@ -239,7 +242,7 @@ export function DelegatedList() {
       }));
       setDelegatedAgentsFromDB(formattedModules);
     }
-  }, [userAgentWeight, agentError, setDelegatedAgentsFromDB]);
+  }, [userAgentWeight, agentError, setDelegatedAgentsFromDB, selectedAccount]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
