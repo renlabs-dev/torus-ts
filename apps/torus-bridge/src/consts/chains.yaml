@@ -4,20 +4,26 @@
 # Schema here: https://github.com/hyperlane-xyz/hyperlane-monorepo/blob/main/typescript/sdk/src/metadata/chainMetadataTypes.ts
 ---
 # Example using local anvil chain:
-torusalphanet:
+torustestnet:
+  blockExplorers:
+    - apiKey: https://api.blockscout.torus.network/api
+      apiUrl: https://api.blockscout.torus.network/api
+      family: etherscan
+      name: Blockscout
+      url: https://blockscout.torus.network/
   blocks:
     confirmations: 1
     estimateBlockTime: 13
     reorgPeriod: finalized
   chainId: 21000
-  displayName: TorusAlphanet
+  displayName: TorusTestnet
   domainId: 21000
   isTestnet: true
-  name: torusalphanet
+  name: torustestnet
   nativeToken:
     decimals: 18
-    name: torusalphanet
-    symbol: TOR
+    name: torustestnet
+    symbol: TORUS
   protocol: ethereum
   rpcUrls:
-    - http: https://api-0.nodes.testnet.torus.network/
+    - http: https://api.testnet.torus.network
