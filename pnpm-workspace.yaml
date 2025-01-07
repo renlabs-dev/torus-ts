@@ -35,6 +35,8 @@ catalog:
   multiformats: ^13.2.3
   tsx: ^4.19.1
   luxon: ^3.5.0
+  # Hyperlane
+  ethers: ^5.7.2
 
 catalogs:
   react18:
