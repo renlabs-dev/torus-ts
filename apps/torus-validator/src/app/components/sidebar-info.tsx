@@ -1,6 +1,13 @@
 "use client";
 
-import { Card, Skeleton } from "@torus-ts/ui";
+import {
+  Card,
+  Skeleton,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Info } from "lucide-react";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
@@ -36,13 +43,26 @@ export const SidebarInfo = () => {
         ) : (
           <span className="flex items-end gap-1.5">
             {userWeightPower}
-            <span className="mb-0.5 text-xs">TOR</span>
+            <span className="mb-0.5 text-xs">TORUS</span>
           </span>
         )}
-        <span className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Info size={14} />
-          Your Weight Power
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Info size={14} />
+                Your Weight Power
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[200px] space-y-3">
+              <p className="">
+                Your weight power is the amount of stake you have in the
+                Allocator app.
+              </p>
+              <p>Check the tutorial to learn more about how to stake.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       <div>
         {userWeightPower === null ? (
