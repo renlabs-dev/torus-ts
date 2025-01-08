@@ -11,7 +11,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@chakra-ui/react": "^2.10.4",
     "@cosmos-kit/cosmostation": "^2.14.1",
     "@cosmos-kit/keplr": "^2.14.2",
     "@cosmos-kit/leap": "^2.14.2",
