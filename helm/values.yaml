@@ -10,6 +10,11 @@ deployment:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: next_public_ws_url
+    NEXT_PUBLIC_TORUS_RPC_HTTPS_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_rpc_https_url
     NEXT_PUBLIC_TORUS_CACHE_URL:
       valueFrom:
         configMapKeyRef:
@@ -88,4 +93,5 @@ configMap:
   files:
     config:
       next_public_ws_url: "{{ .Values.wssApiEndpoint }}"
+      next_public_rpc_https_url: "{{ .Values.wssApiEndpoint | replace 'wss' 'https' }}/"
       next_public_cache_provider_url: "{{ .Values.cacheUrl }}"
