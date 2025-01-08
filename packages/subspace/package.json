@@ -34,6 +34,7 @@
     "rustie": "catalog:",
     "superjson": "2.2.1",
     "tsafe": "catalog:",
+    "viem": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
