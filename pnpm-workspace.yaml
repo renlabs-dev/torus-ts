@@ -37,6 +37,7 @@ catalog:
   luxon: ^3.5.0
   # Hyperlane
   ethers: ^5.7.2
+  viem: ^2.22.1
 
 catalogs:
   react18:
