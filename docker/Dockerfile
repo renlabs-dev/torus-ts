@@ -27,8 +27,8 @@ RUN turbo prune ${APP_NAME} --docker
 FROM base AS builder
 ARG APP_NAME
 
-ENV NEXT_PUBLIC_TORUS_RPC_URL="wss://api.torus.network"
-ENV NEXT_PUBLIC_TORUS_CACHE_URL="https://cache.torus.network"
+ENV NEXT_PUBLIC_TORUS_RPC_URL="wss://api.testnet.torus.network"
+ENV NEXT_PUBLIC_TORUS_CACHE_URL="https://cache.testnet.torus.network"
 
 WORKDIR /app
 
@@ -48,7 +48,7 @@ ARG APP_NAME
 
 LABEL org.opencontainers.image.source https://github.com/renlabs-dev/torus-ts
 
-ENV TORUS_RPC_URL="wss://api.torus.network"
+ENV TORUS_RPC_URL="wss://api.testnet.torus.network"
 ENV PORT=8000
 
 WORKDIR /app
