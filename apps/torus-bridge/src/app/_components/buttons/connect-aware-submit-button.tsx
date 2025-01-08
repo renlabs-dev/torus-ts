@@ -59,7 +59,7 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   useTimeout(clearErrors, 3500);
 
   return (
-    <Button type={type} color={color} onClick={onClick}>
+    <Button type={type} color={color} onClick={onClick} className="w-full">
       {content}
     </Button>
   );
