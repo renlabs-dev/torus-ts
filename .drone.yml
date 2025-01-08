@@ -99,6 +99,7 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -168,6 +169,7 @@ trigger:
       - apps/torus-page/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -237,6 +239,7 @@ trigger:
       - apps/torus-page/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -306,6 +309,7 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -375,6 +379,7 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-governance/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -444,7 +449,77 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-governance/**
       - apps/torus-wallet/**
+      - apps/torus-bridge/**
+---
+kind: pipeline
+type: docker
+name: torus-bridge
 
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-bridge
+      tags:
+        - latest
+        - ${DRONE_BRANCH}
+        - ${DRONE_COMMIT_SHA:0:7}
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-bridge
+
+  - name: deploy
+    image: ghcr.io/renlabs-dev/devops-ci:latest
+    environment:
+      VAULT_ADDR:
+        from_secret: VAULT_ADDR
+      VAULT_ROLE_ID:
+        from_secret: VAULT_ROLE_ID
+      VAULT_SECRET_ID:
+        from_secret: VAULT_SECRET_ID
+      APP_NAME: torus-bridge
+    commands:
+      # Download helm chart and authenticate to Kubernetes
+      - /apps/k8s_auth_w_approle_sa.sh
+      - helm repo add renlabs https://charts.renlabs.dev/
+      - helm repo update
+      # Set auxiliary environment variables
+      - export COMMIT_SHORT_SHA=${DRONE_COMMIT_SHA:0:7}
+      - env_name=$( [ "$DRONE_BRANCH" = "main" ] && echo "prod" || echo "dev" )
+      # Install shared resources
+      - >-
+        helm template torus-"$env_name"-aux
+        -f helm/values-utils.yaml -n torus-"$env_name"-web-apps
+        --set environmentName="$env_name"
+        renlabs/utils | kubectl apply -f -
+      # Install application charts
+      - cd apps/"$APP_NAME"
+      - helmfile sync -e "$env_name" --set deployment.image.tag="$COMMIT_SHORT_SHA"
+
+depends_on:
+  - clean-stale-releases
+
+trigger:
+  branch:
+    - drone
+    - main
+    - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-governance/**
+      - apps/torus-validator/**
+      - apps/torus-worker/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
+      - apps/torus-page/**
 # DRY-RUN PIPELINES
 ---
 kind: pipeline
@@ -484,6 +559,7 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -522,6 +598,7 @@ trigger:
       - apps/torus-page/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -560,6 +637,7 @@ trigger:
       - apps/torus-page/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -598,6 +676,7 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-wallet/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -636,6 +715,7 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-governance/**
       - apps/torus-cache/**
+      - apps/torus-bridge/**
 ---
 kind: pipeline
 type: docker
@@ -674,3 +754,43 @@ trigger:
       - apps/torus-worker/**
       - apps/torus-governance/**
       - apps/torus-wallet/**
+      - apps/torus-bridge/**
+---
+kind: pipeline
+type: docker
+name: check-torus-bridge
+
+environment:
+  GIT_LFS_SKIP_SMUDGE: 1
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: ${DRONE_COMMIT_AUTHOR}
+      password:
+        from_secret: DOCKER_TOKEN
+      repo: ghcr.io/renlabs-dev/torus-bridge
+      tags:
+        - dry-run
+      dockerfile: docker/Dockerfile
+      build_args: APP_NAME=torus-bridge
+      dry_run: true
+
+trigger:
+  branch:
+    exclude:
+      - drone
+      - main
+      - dev
+  event:
+    - push
+  paths:
+    exclude:
+      - apps/torus-page/**
+      - apps/torus-validator/**
+      - apps/torus-worker/**
+      - apps/torus-governance/**
+      - apps/torus-wallet/**
+      - apps/torus-cache/**
