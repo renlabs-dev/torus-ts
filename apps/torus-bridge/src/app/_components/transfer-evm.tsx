@@ -73,20 +73,23 @@ export function TransferEVM() {
     <Card>
       <CardContent>
         <div className="mt-6 space-y-4">
-          <Select
-            value={mode}
-            onValueChange={(value) => setMode(value as "bridge" | "withdraw")}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select mode" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bridge">Add funds to Torus EVM</SelectItem>
-              <SelectItem value="withdraw">
-                Withdraw funds from Torus EVM
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <div>
+            <Label htmlFor="action">Select Action</Label>
+            <Select
+              value={mode}
+              onValueChange={(value) => setMode(value as "bridge" | "withdraw")}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bridge">Add funds to Torus EVM</SelectItem>
+                <SelectItem value="withdraw">
+                  Withdraw funds from Torus EVM
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <div>
             <Label htmlFor="amount">Amount (TOR)</Label>

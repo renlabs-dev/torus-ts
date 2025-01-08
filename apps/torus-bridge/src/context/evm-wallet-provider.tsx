@@ -4,7 +4,7 @@ import { getWagmiChainConfigs } from "@hyperlane-xyz/widgets";
 import {
   RainbowKitProvider,
   connectorsForWallets,
-  darkTheme,
+  midnightTheme,
 } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import {
@@ -85,7 +85,7 @@ export function EvmWalletProvider({ children }: PropsWithChildren<unknown>) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <RainbowKitProvider
-        theme={darkTheme({
+        theme={midnightTheme({
           accentColor: "#A7AFBE",
           borderRadius: "small",
           fontStack: "system",
