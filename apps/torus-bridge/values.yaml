@@ -1,3 +1,10 @@
 deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-bridge
+
+  env:
+    NEXT_PUBLIC_WALLET_CONNECT_ID:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: wallet_connect_id
