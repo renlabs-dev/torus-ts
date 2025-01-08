@@ -1,3 +1,6 @@
+"use client";
+
+import ConnectButton from "./_components/buttons/connect-button";
 import { IntroSection } from "./_components/shared/intro";
 import { SidebarLinks } from "./_components/shared/sidebar-links";
 import WalletActions from "./_components/shared/wallet-actions";
@@ -11,6 +14,7 @@ export default function HomePage(): JSX.Element {
         <div className="flex w-full animate-fade flex-col gap-4 lg:w-4/12">
           <SidebarLinks />
           <WalletBalance />
+          <ConnectButton />
         </div>
         <WalletActions />
       </div>
