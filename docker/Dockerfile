@@ -29,6 +29,7 @@ ARG APP_NAME
 
 ENV NEXT_PUBLIC_TORUS_RPC_URL="wss://api.testnet.torus.network"
 ENV NEXT_PUBLIC_TORUS_CACHE_URL="https://cache.testnet.torus.network"
+ENV NEXT_PUBLIC_TORUS_RPC_HTTPS_URL="https://api.testnet.torus.network/"
 
 WORKDIR /app
 
