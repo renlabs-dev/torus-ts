@@ -54,12 +54,22 @@ export function ButtonSection({
   }
 
   return (
-    <div className="mt-4 flex items-center justify-between space-x-4">
-      <Button type="button" color="primary" onClick={() => setIsReview(false)}>
+    <div className="mt-4 flex w-full items-center justify-between space-x-4">
+      <Button
+        className="w-full"
+        type="button"
+        color="primary"
+        onClick={() => setIsReview(false)}
+      >
         <ChevronIcon direction="w" width={10} height={6} color="#FFFFFF" />
         <span>Edit</span>
       </Button>
-      <Button type="button" color="accent" onClick={triggerTransactionsHandler}>
+      <Button
+        className="w-full"
+        type="button"
+        color="accent"
+        onClick={triggerTransactionsHandler}
+      >
         {`Send to ${chainDisplayName}`}
       </Button>
     </div>

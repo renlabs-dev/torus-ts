@@ -6,7 +6,6 @@ import { useIsSsr } from "@hyperlane-xyz/widgets";
 // import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
-import { ErrorBoundaryProvider } from "~/context/error-boundary-provider";
 import { EvmWalletProvider } from "~/context/evm-wallet-provider";
 import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
 
@@ -54,29 +53,27 @@ export default function RootLayout({
 
   return (
     <Layout font={firaMono}>
-      <ErrorBoundaryProvider>
-        <ToastProvider>
-          <QueryClientProvider client={reactQueryClient}>
-            <TorusProvider
-              wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
-              torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
-            >
-              <WalletProvider>
-                <WarpContextInitGateProvider>
-                  <EvmWalletProvider>
-                    <SolanaWalletProvider>
-                      <CosmosWalletProvider>
-                        <WalletHeader />
-                        {children}
-                      </CosmosWalletProvider>
-                    </SolanaWalletProvider>
-                  </EvmWalletProvider>
-                </WarpContextInitGateProvider>
-              </WalletProvider>
-            </TorusProvider>
-          </QueryClientProvider>
-        </ToastProvider>
-      </ErrorBoundaryProvider>
+      <ToastProvider>
+        <QueryClientProvider client={reactQueryClient}>
+          <TorusProvider
+            wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
+            torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
+          >
+            <WalletProvider>
+              <WarpContextInitGateProvider>
+                <EvmWalletProvider>
+                  <SolanaWalletProvider>
+                    <CosmosWalletProvider>
+                      <WalletHeader />
+                      {children}
+                    </CosmosWalletProvider>
+                  </SolanaWalletProvider>
+                </EvmWalletProvider>
+              </WarpContextInitGateProvider>
+            </WalletProvider>
+          </TorusProvider>
+        </QueryClientProvider>
+      </ToastProvider>
     </Layout>
   );
 }

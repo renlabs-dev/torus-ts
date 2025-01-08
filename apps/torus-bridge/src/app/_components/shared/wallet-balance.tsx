@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback } from "react";
-import { Lock, Unlock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
@@ -11,22 +11,10 @@ import { useWallet } from "~/context/wallet-provider";
 export function WalletBalance() {
   const {
     accountFreeBalance,
-    accountStakedBalance,
+
     isAccountConnected,
     isInitialized,
-    stakeOut,
   } = useWallet();
-
-  const userStakeWeight = useCallback(() => {
-    if (!isInitialized || !isAccountConnected || stakeOut.isRefetching)
-      return null;
-
-    if (accountStakedBalance != null) {
-      return accountStakedBalance;
-    }
-
-    return 0n;
-  }, [accountStakedBalance, isAccountConnected, isInitialized, stakeOut]);
 
   const userAccountFreeBalance = useCallback(() => {
     if (
@@ -48,11 +36,6 @@ export function WalletBalance() {
       amount: userAccountFreeBalance(),
       label: "Free Balance",
       icon: <Lock size={16} />,
-    },
-    {
-      amount: userStakeWeight(),
-      label: "Staked Balance",
-      icon: <Unlock size={16} />,
     },
   ];
 

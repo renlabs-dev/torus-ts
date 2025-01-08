@@ -1,101 +1,154 @@
-import { useAccount, useWalletClient } from "wagmi";
+"use client";
 
-import type { SS58Address } from "@torus-ts/subspace";
+import { useAccount, useWalletClient } from "wagmi";
+import { useState } from "react";
 import { convertH160ToSS58, withdrawFromTorusEvm } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Button, Card, CardContent } from "@torus-ts/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui";
 import { toNano } from "@torus-ts/utils/subspace";
-
-// export const torusTestnet: Chain = {
-//   id: 21000, // Replace with your chain's ID
-//   name: "TORUS EVM",
-//   nativeCurrency: {
-//     decimals: 18,
-//     name: "eTORUS",
-//     symbol: "eTORUS",
-//   },
-//   rpcUrls: {
-//     default: {
-//       http: ["https://api.testnet.torus.network"], // Replace with your chain's RPC URL
-//     },
-//     public: {
-//       http: ["https://api.testnet.torus.network"], // Same as above or another public RPC
-//     },
-//   },
-//   blockExplorers: {
-//     default: {
-//       name: "Explorer",
-//       url: "https://blockscout.testnet.torus.network/", // Replace with your chain's block explorer URL
-//     },
-//   },
-//   testnet: true, // Set to true if it's a testnet
-// };
-
-// import { createClient, http } from "viem";
-
-// const config = createConfig({
-//   chains: [torusTestnet],
-//   client({ chain }) {
-//     return createClient({
-//       chain,
-//       // transport: http(chain.rpcUrls.default.http[0]),
-//       transport: http(),
-//     });
-//   },
-// });
+import type { SS58Address } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
 
 export function TransferEVM() {
-  const user_input_eth_addr = "0x7A3e007E28F1eFe4F5D3541375a026060Ec2ECe4";
-  const evm_ss58_addr = convertH160ToSS58(user_input_eth_addr);
-  const amount = 10;
-  const amount_rems = toNano(amount);
+  const [mode, setMode] = useState<"bridge" | "withdraw">("bridge");
+  const [amount, setAmount] = useState<string>("");
+  const [userInputEthAddr, setUserInputEthAddr] = useState<string>("");
 
   const { transfer, selectedAccount } = useTorus();
-
-  // const multiProvider = useMultiProvider();
-  // const account = useEthereumAccount(multiProvider);
-
   const { data: walletClient } = useWalletClient();
-  const { chain } = useAccount();
-  if (walletClient == null || chain == null) {
-    return <div>Loading...</div>;
-  }
+  const { chain, address } = useAccount();
 
-  console.log(chain);
+  const evmSS58Addr = userInputEthAddr
+    ? convertH160ToSS58(userInputEthAddr)
+    : "";
+  const amountRems = amount ? toNano(parseFloat(amount)) : BigInt(0);
 
   async function handleBridge() {
+    if (!amount || !evmSS58Addr) return;
     await transfer({
-      amount: `${amount}`,
-      to: evm_ss58_addr,
+      amount: amount,
+      to: evmSS58Addr,
       refetchHandler: () => Promise.resolve(),
     });
   }
 
   async function handleWithdraw() {
-    if (walletClient == null || chain == null || selectedAccount == null) {
-      throw new Error("Wallet client account is undefined");
+    if (
+      !amount ||
+      walletClient == null ||
+      chain == null ||
+      selectedAccount == null
+    ) {
+      throw new Error("Invalid state for withdrawal");
     }
     const txHash = await withdrawFromTorusEvm(
       walletClient,
       chain,
-      // user Torus address
       selectedAccount.address as SS58Address,
-      amount_rems,
+      amountRems,
     );
     console.log("Transaction sent:", txHash);
   }
 
+  const handleSelfClick = () => {
+    if (address) {
+      setUserInputEthAddr(address);
+    } else {
+      toast.warn("No account found. Is your wallet connected?");
+    }
+  };
+
   return (
     <Card>
-      <CardContent className="pt-6">
-        Bridging: {amount} TOR to {user_input_eth_addr} through {evm_ss58_addr}
-        <br></br>
-        <Button onClick={handleBridge}>Bridge</Button>
-      </CardContent>
-      <CardContent className="pt-6">
-        Withdrawing: {amount} TOR to {selectedAccount?.address}
-        <br></br>
-        <Button onClick={handleWithdraw}>Withdraw</Button>
+      <CardContent>
+        <div className="mt-6 space-y-4">
+          <Select
+            value={mode}
+            onValueChange={(value) => setMode(value as "bridge" | "withdraw")}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select mode" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="bridge">Add funds to Torus EVM</SelectItem>
+              <SelectItem value="withdraw">
+                Withdraw funds from Torus EVM
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div>
+            <Label htmlFor="amount">Amount (TOR)</Label>
+            <Input
+              id="amount"
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount"
+            />
+          </div>
+
+          {mode === "bridge" && (
+            <div>
+              <Label htmlFor="eth-address">Ethereum Address</Label>
+              <div className="flex w-full items-center gap-2">
+                <Input
+                  id="eth-address"
+                  type="text"
+                  value={userInputEthAddr}
+                  onChange={(e) => setUserInputEthAddr(e.target.value)}
+                  placeholder="Enter Ethereum address"
+                  className="flex-grow"
+                />
+                <Button
+                  type="button"
+                  onClick={handleSelfClick}
+                  variant="outline"
+                >
+                  Self
+                </Button>
+              </div>
+              {/* {evmSS58Addr && (
+                <div>
+                  <Label>Converted SS58 Address</Label>
+                  <div className="text-sm text-gray-500">{evmSS58Addr}</div>
+                </div>
+              )} */}
+            </div>
+          )}
+
+          {mode === "withdraw" && selectedAccount && (
+            <div>
+              <Label>Withdrawing to</Label>
+              <div className="text-sm text-gray-500">
+                {selectedAccount.address}
+              </div>
+            </div>
+          )}
+
+          <Button
+            onClick={mode === "bridge" ? handleBridge : handleWithdraw}
+            className="w-full"
+            disabled={
+              !amount ||
+              (mode === "bridge" && !userInputEthAddr) ||
+              (mode === "withdraw" && !selectedAccount)
+            }
+          >
+            {mode === "bridge" ? "Bridge" : "Withdraw"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

@@ -15,9 +15,10 @@ import { SelectChainSection } from "../_sections/select-chain-section";
 import { TokenSection } from "../_sections/token-section";
 import { AmountSection } from "../_sections/amount-section";
 import { RecipientSection } from "../_sections/recipient-section";
-import { ReviewSection } from "../_sections/review-section";
 import { ButtonSection } from "../_sections/button-section";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { Card, CardContent, CardFooter, CardHeader } from "@torus-ts/ui";
+import { WalletTransactionReview } from "../../shared/wallet-review";
 
 function useFormInitialValues(): TransferFormValues {
   const warpCore = useWarpCore();
@@ -70,19 +71,30 @@ export function TransferTokenForm() {
     >
       {({ isValidating }) => (
         <Form className="flex flex-col">
-          {/* <WarningBanners /> */}
-          <SelectChainSection isReview={isReview} />
-          <div className="mt-3.5 flex items-end justify-between space-x-4">
-            <TokenSection setIsNft={setIsNft} isReview={isReview} />
-            <AmountSection isNft={isNft} isReview={isReview} />
+          <div className="flex w-full flex-col gap-4 md:flex-row">
+            <Card className="w-full animate-fade p-6 md:w-3/5">
+              {/* <WarningBanners /> */}
+              <SelectChainSection isReview={isReview} />
+              <div className="mt-3.5 flex items-end justify-between space-x-4">
+                <TokenSection setIsNft={setIsNft} isReview={isReview} />
+                <AmountSection isNft={isNft} isReview={isReview} />
+              </div>
+              <RecipientSection isReview={isReview} />
+            </Card>
+            <Card className="flex w-full animate-fade flex-col justify-between p-6 md:w-2/5">
+              <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
+              <CardContent className="p-0">
+                <WalletTransactionReview />
+              </CardContent>
+              <CardFooter className="w-full px-0 pb-0 pt-6">
+                <ButtonSection
+                  isReview={isReview}
+                  isValidating={isValidating}
+                  setIsReview={setIsReview}
+                />
+              </CardFooter>
+            </Card>
           </div>
-          <RecipientSection isReview={isReview} />
-          <ReviewSection visible={isReview} />
-          <ButtonSection
-            isReview={isReview}
-            isValidating={isValidating}
-            setIsReview={setIsReview}
-          />
         </Form>
       )}
     </Formik>
