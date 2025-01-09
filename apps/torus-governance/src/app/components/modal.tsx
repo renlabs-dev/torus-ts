@@ -36,10 +36,10 @@ export function CreateModal() {
           Create Agent Application
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%]">
+      <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%] bg-neutral-900">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Propose Change
+            Agent Application and Registration
           </DialogTitle>
         </DialogHeader>
         <Select value={selectedView} onValueChange={setSelectedView}>
@@ -53,9 +53,9 @@ export function CreateModal() {
             </SelectItem>
             <SelectSeparator />
             <SelectItem value="create-agent-application">
-              Create an Agent Application
+              Step 1: Create agent application
             </SelectItem>
-            <SelectItem value="register-agent">Register an Agent</SelectItem>
+            <SelectItem value="register-agent">Step 2: Register agent after application approval</SelectItem>
           </SelectContent>
         </Select>
         {selectedView === "create-proposal" ? (

@@ -22,6 +22,7 @@ import {
 import { formatToken } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
+import { useTorus } from "@torus-ts/torus-provider";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -167,45 +168,59 @@ export function CreateAgentApplication(): JSX.Element {
     return "Submit Agent Application";
   };
 
+  const { selectedAccount } = useTorus();
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-3">
-          <TabsTrigger value="edit">Edit Content</TabsTrigger>
-          <TabsTrigger value="preview">Preview Content</TabsTrigger>
-        </TabsList>
-        <TabsContent value="edit" className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2" title="Use your wallet's address if you want your agent to use your wallet. This is the majority of cases!">
           <Input
             onChange={(e) => setApplicationKey(e.target.value)}
-            placeholder="Application Key (ss58)"
+            placeholder="Agent's address in SS58 format (eg. 12sPm....n88b)"
             type="text"
             required
             value={applicationKey}
           />
-          <Input
-            onChange={(e) => setDiscordId(e.target.value)}
-            placeholder="Discord ID"
-            type="text"
-            required
-            value={discordId}
-          />
-          <Separator />
+          <Button
+            variant="default"
+            className="flex items-center gap-2"
+            onClick={() => setApplicationKey(selectedAccount?.address || "")}
+          >
+            Paste my wallet address
+          </Button>
+        </div>
+        <Input
+          onChange={(e) => setDiscordId(e.target.value)}
+          placeholder="Agent's discord ID"
+          type="text"
+          required
+          value={discordId}
+        />
+      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mt-3" title="Switch between editing and previewing the markdown content">
+          <TabsTrigger value="edit">Edit Content</TabsTrigger>
+          <TabsTrigger value="preview">Preview Content</TabsTrigger>
+        </TabsList>
+        <TabsContent value="edit" className="flex flex-col gap-1 mt-1">
           <Input
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Application title"
+            title="Title of the application, make sure it's sufficiently descriptive!"
             type="text"
             required
             value={title}
           />
           <Textarea
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Application body... (Markdown supported) / HTML tags are not supported)"
+            placeholder="Application body... (Markdown supported, HTML tags are not supported)"
+            title="Make sure your application contains all the information necessary for the DAO to decide on your application!"
             rows={5}
             required
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="rounded-md bg-muted p-4">
+        <TabsContent value="preview" className="rounded-md bg-muted p-4 mt-0">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -217,7 +232,7 @@ export function CreateAgentApplication(): JSX.Element {
             />
           ) : (
             <Label className="text-sm text-white">
-              Fill the body to preview here :)
+              Enter title and body to preview here :)
             </Label>
           )}
         </TabsContent>
@@ -236,14 +251,14 @@ export function CreateAgentApplication(): JSX.Element {
           message={transactionStatus.message}
         />
       )}
-      <div className="flex items-start gap-2 text-sm text-white">
+      <div className="flex items-start gap-2 text-sm text-yellow-500">
         <Info className="mt-[1px]" size={16} />
-        <Label className="text-sm text-white">
+        <Label className="text-sm">
           Please ensure that your application meets all the criteria defined in
           this{" "}
           <Link
-            className="text-primary hover:underline"
-            href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q"
+            className="underline"
+            href="https://docs.torus.network/concepts/agent-application"
             target="_blank"
           >
             article
