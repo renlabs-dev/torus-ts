@@ -209,6 +209,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ApplicationTooSmall: AugmentedError<ApiType>;
       /**
+       * Tried revoking a removal application.
+       **/
+      CannotRevokeRemoveApplication: AugmentedError<ApiType>;
+      /**
+       * Tried revoking an application that is not resolved.
+       **/
+      CannotRevokeUnresolvedApplication: AugmentedError<ApiType>;
+      /**
        * Failed to convert the given value to a balance.
        **/
       CouldNotConvertToBalance: AugmentedError<ApiType>;
@@ -316,6 +324,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Key doesn't have enough tokens to create a proposal.
        **/
       NotEnoughBalanceToPropose: AugmentedError<ApiType>;
+      /**
+       * The operation can only be performed by the root curator.
+       **/
+      NotRootCurator: AugmentedError<ApiType>;
       /**
        * Key hasn't voted on given Proposal.
        **/
