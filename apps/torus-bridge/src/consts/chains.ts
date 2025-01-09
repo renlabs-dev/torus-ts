@@ -1,4 +1,5 @@
 import type { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
+import { ExplorerFamily } from "@hyperlane-xyz/sdk";
 import type { Address } from "@hyperlane-xyz/utils";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 
@@ -17,6 +18,15 @@ export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
       reorgPeriod: "finalized",
       estimateBlockTime: 8,
     },
+    blockExplorers: [
+      {
+        name: "Blockscout",
+        family: ExplorerFamily.Etherscan,
+        url: "https://blockscout.testnet.torus.network",
+        apiUrl: "https://api.blockscout.testnet.torus.network/api",
+        // apiKey: "https://api.blockscout.testnet.torus.network/api",
+      },
+    ],
     logoURI: "/logo.svg",
   },
 };
