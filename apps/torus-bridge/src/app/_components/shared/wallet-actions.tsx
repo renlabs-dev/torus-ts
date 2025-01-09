@@ -8,13 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
 import { TransferToken } from "../transfer-token";
 import { TransferEVM } from "../transfer-evm";
 
-const buttons = [
-  { text: "Bridge (Torus EVM - Base wTorus)", component: <TransferToken /> },
-  { text: "EVM (Torus - Torus EVM)", component: <TransferEVM /> },
-];
+const tabs = [
+  { text: "Torus ⟷ Torus EVM", component: <TransferEVM /> },
+  { text: "Torus EVM ⟷ Base", component: <TransferToken /> },
+] as const;
 
 function WalletOptions() {
-  const [currentTab, setCurrentTab] = useState(buttons[0]?.text);
+  const [currentTab, setCurrentTab] = useState<string>(tabs[0].text);
 
   const ActionTabs: React.FC<{ text: string }> = (props) => {
     const { text } = props;
@@ -29,19 +29,19 @@ function WalletOptions() {
   return (
     <>
       <Tabs
-        defaultValue={buttons[0]?.text}
+        defaultValue={tabs[0].text}
         value={currentTab}
         className="flex w-full animate-fade flex-col gap-4"
       >
         <TabsList className="grid w-full grid-cols-2">
-          {buttons.map((button) => (
-            <ActionTabs key={button.text} text={button.text} />
+          {tabs.map((tab) => (
+            <ActionTabs key={tab.text} text={tab.text} />
           ))}
         </TabsList>
-        {buttons.map((button) => {
+        {tabs.map((tab) => {
           return (
-            <TabsContent key={button.text} value={button.text}>
-              {button.component}
+            <TabsContent key={tab.text} value={tab.text}>
+              {tab.component}
             </TabsContent>
           );
         })}
