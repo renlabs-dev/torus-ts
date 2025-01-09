@@ -31,7 +31,7 @@ export function WalletHeader() {
 
   return (
     <Header
-      appName="Torus Bridge"
+      appName="Torus Base Bridge"
       wallet={
         <div className="mt-1 flex items-center gap-6">
           <ConnectButton />
