@@ -9,7 +9,7 @@ import { persist } from "zustand/middleware";
 import { config } from "../consts/config";
 import { logger } from "./logger";
 
-import { assembleWarpCoreConfig } from "../app/_components/tokens/warp-core-config";
+import { assembleWarpCoreConfig } from "../app/_components/warp-core-config";
 import type { TransferContext } from "./types";
 import { FinalTransferStatuses, TransferStatus } from "./types";
 import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";

@@ -9,26 +9,24 @@ import { getIndexForToken, useWarpCore } from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { logger } from "~/utils/logger";
 import { validateForm } from "./validate-form";
-// import { WarningBanners } from "./warning-banner";
 
 import { SelectChainSection } from "../_sections/select-chain-section";
-import { TokenSection } from "../_sections/token-section";
 import { AmountSection } from "../_sections/amount-section";
 import { RecipientSection } from "../_sections/recipient-section";
 import { ButtonSection } from "../_sections/button-section";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { Card, CardContent, CardFooter, CardHeader } from "@torus-ts/ui";
 import { WalletTransactionReview } from "../../shared/wallet-review";
+import { TokenSection } from "../_sections/token-section";
 
 function useFormInitialValues(): TransferFormValues {
   const warpCore = useWarpCore();
   return useMemo(() => {
     const firstToken = warpCore.tokens[0];
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const connectedToken = firstToken!.connections?.[0];
+    const connectedToken = firstToken?.connections?.[0];
+
     return {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      origin: firstToken!.chainName,
+      origin: firstToken?.chainName ?? "",
       destination: connectedToken?.token.chainName ?? "",
       tokenIndex: getIndexForToken(warpCore, firstToken),
       amount: "",
@@ -71,7 +69,6 @@ export function TransferTokenForm() {
         <Form className="flex flex-col">
           <div className="flex w-full flex-col gap-4 md:flex-row">
             <Card className="w-full animate-fade p-6 md:w-3/5">
-              {/* <WarningBanners /> */}
               <SelectChainSection isReview={isReview} />
               <div className="mt-3.5 flex items-end justify-between space-x-4">
                 <TokenSection isReview={isReview} />
