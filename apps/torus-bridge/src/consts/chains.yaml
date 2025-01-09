@@ -15,7 +15,7 @@ torustestnet:
     estimateBlockTime: 8
     reorgPeriod: finalized
   chainId: 21001
-  displayName: TorusTestnet
+  displayName: Torus Testnet
   domainId: 21001
   isTestnet: true
   name: torustestnet
