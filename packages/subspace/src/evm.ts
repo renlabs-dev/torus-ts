@@ -69,6 +69,7 @@ export async function withdrawFromTorusEvm(
   if (!walletClient.account) {
     throw new Error("Wallet client account is undefined");
   }
+  console.log("shadowheart");
   const pubk = decodeAddress(destination);
   const pubk_hex = Buffer.from(pubk).toString("hex").padStart(64, "0");
   // console.debug(`pubk_hex = ${pubk_hex}`);

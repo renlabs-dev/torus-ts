@@ -50,7 +50,9 @@ export function TransferEVM() {
       chain == null ||
       selectedAccount == null
     ) {
+      // ED TODO: Fazer botao falando o erro
       throw new Error("Invalid state for withdrawal");
+      // jairo esse cara sempre vai dar throw btw
     }
     const txHash = await withdrawFromTorusEvm(
       walletClient,

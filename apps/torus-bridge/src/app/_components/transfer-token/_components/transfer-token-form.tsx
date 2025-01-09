@@ -46,8 +46,6 @@ export function TransferTokenForm() {
 
   // Flag for if form is in input vs review mode
   const [isReview, setIsReview] = useState(false);
-  // Flag for check current type of token
-  const [isNft, setIsNft] = useState(false);
 
   const validate = (values: TransferFormValues) =>
     validateForm(warpCore, values, accounts);
@@ -76,8 +74,8 @@ export function TransferTokenForm() {
               {/* <WarningBanners /> */}
               <SelectChainSection isReview={isReview} />
               <div className="mt-3.5 flex items-end justify-between space-x-4">
-                <TokenSection setIsNft={setIsNft} isReview={isReview} />
-                <AmountSection isNft={isNft} isReview={isReview} />
+                <TokenSection isReview={isReview} />
+                <AmountSection isReview={isReview} />
               </div>
               <RecipientSection isReview={isReview} />
             </Card>

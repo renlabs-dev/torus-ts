@@ -30,7 +30,7 @@ export function WalletHeader() {
 
   return (
     <Header
-      appName="Torus Wallet"
+      appName="Torus Bridge"
       wallet={
         <WalletDropdown
           balance={accountFreeBalance.data}
