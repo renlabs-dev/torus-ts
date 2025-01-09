@@ -266,6 +266,13 @@ export function CreateAgentApplication(): JSX.Element {
           to avoid being denied by the Agent Curation.
         </Label>
       </div>
+      <div className="flex items-start gap-2 text-sm text-yellow-500">
+        <Info className="mt-[1px]" size={16} />
+        <Label className="text-sm">
+          Note: When you click "Submit Agent Application", the agent application fee (currently X TORUS tokens) will be deducted from your wallet.
+          Even if you provided a different wallet address for your agent, the application fee is paid from your wallet!
+        </Label>
+      </div>
     </form>
   );
 }
