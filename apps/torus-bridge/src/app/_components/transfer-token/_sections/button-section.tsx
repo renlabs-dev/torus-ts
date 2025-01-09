@@ -1,4 +1,3 @@
-import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { useFormikContext } from "formik";
 import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
 
@@ -58,10 +57,9 @@ export function ButtonSection({
       <Button
         className="w-full"
         type="button"
-        color="primary"
+        variant="outline"
         onClick={() => setIsReview(false)}
       >
-        <ChevronIcon direction="w" width={10} height={6} color="#FFFFFF" />
         <span>Edit</span>
       </Button>
       <Button

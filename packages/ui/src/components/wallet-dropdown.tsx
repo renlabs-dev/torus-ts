@@ -207,9 +207,9 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
             />
             {shouldDisplayText && (
               <span className="text-sm">
-                Torus{" "}
-                {selectedAccount?.address &&
-                  `(${smallAddress(selectedAccount.address, 4)})`}
+                {selectedAccount?.address
+                  ? `Torus (${smallAddress(selectedAccount.address, 4)})`
+                  : "Connect Torus Wallet"}
               </span>
             )}
           </button>
