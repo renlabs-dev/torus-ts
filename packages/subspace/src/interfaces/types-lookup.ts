@@ -534,7 +534,9 @@ declare module '@polkadot/types/lookup' {
     readonly asApplicationDenied: u32;
     readonly isApplicationExpired: boolean;
     readonly asApplicationExpired: u32;
-    readonly type: 'ProposalCreated' | 'ProposalAccepted' | 'ProposalRefused' | 'ProposalExpired' | 'ProposalVoted' | 'ProposalVoteUnregistered' | 'WhitelistAdded' | 'WhitelistRemoved' | 'ApplicationCreated' | 'ApplicationAccepted' | 'ApplicationDenied' | 'ApplicationExpired';
+    readonly isApplicationRevoked: boolean;
+    readonly asApplicationRevoked: u32;
+    readonly type: 'ProposalCreated' | 'ProposalAccepted' | 'ProposalRefused' | 'ProposalExpired' | 'ProposalVoted' | 'ProposalVoteUnregistered' | 'WhitelistAdded' | 'WhitelistRemoved' | 'ApplicationCreated' | 'ApplicationAccepted' | 'ApplicationDenied' | 'ApplicationExpired' | 'ApplicationRevoked';
   }
 
   /** @name PalletTorus0Event (60) */
@@ -1195,7 +1197,16 @@ declare module '@polkadot/types/lookup' {
       readonly treasuryPercentage: Percent;
       readonly data: Bytes;
     } & Struct;
-    readonly type: 'AddCurator' | 'RemoveCurator' | 'AddAllocator' | 'RemoveAllocator' | 'AddToWhitelist' | 'RemoveFromWhitelist' | 'AcceptApplication' | 'DenyApplication' | 'PenalizeAgent' | 'SubmitApplication' | 'AddGlobalParamsProposal' | 'AddGlobalCustomProposal' | 'AddDaoTreasuryTransferProposal' | 'VoteProposal' | 'RemoveVoteProposal' | 'EnableVoteDelegation' | 'DisableVoteDelegation' | 'AddEmissionProposal';
+    readonly isSetRootCurator: boolean;
+    readonly asSetRootCurator: {
+      readonly key: AccountId32;
+    } & Struct;
+    readonly isRemoveRootCurator: boolean;
+    readonly isRevokeApplication: boolean;
+    readonly asRevokeApplication: {
+      readonly applicationId: u32;
+    } & Struct;
+    readonly type: 'AddCurator' | 'RemoveCurator' | 'AddAllocator' | 'RemoveAllocator' | 'AddToWhitelist' | 'RemoveFromWhitelist' | 'AcceptApplication' | 'DenyApplication' | 'PenalizeAgent' | 'SubmitApplication' | 'AddGlobalParamsProposal' | 'AddGlobalCustomProposal' | 'AddDaoTreasuryTransferProposal' | 'VoteProposal' | 'RemoveVoteProposal' | 'EnableVoteDelegation' | 'DisableVoteDelegation' | 'AddEmissionProposal' | 'SetRootCurator' | 'RemoveRootCurator' | 'RevokeApplication';
   }
 
   /** @name PalletGovernanceProposalGlobalParamsData (153) */
@@ -1209,6 +1220,12 @@ declare module '@polkadot/types/lookup' {
     readonly minStakingFee: u8;
     readonly dividendsParticipationWeight: Percent;
     readonly proposalCost: u128;
+    readonly proposalExpiration: u64;
+    readonly agentApplicationCost: u128;
+    readonly agentApplicationExpiration: u64;
+    readonly proposalRewardTreasuryAllocation: Percent;
+    readonly maxProposalRewardTreasuryAllocation: u128;
+    readonly proposalRewardInterval: u64;
   }
 
   /** @name PalletTorus0Call (155) */
@@ -1486,9 +1503,15 @@ declare module '@polkadot/types/lookup' {
     readonly isResolved: boolean;
     readonly asResolved: {
       readonly accepted: bool;
+      readonly resolvedBy: AccountId32;
+    } & Struct;
+    readonly isRevoked: boolean;
+    readonly asRevoked: {
+      readonly previouslyAcceptedBy: AccountId32;
+      readonly revokedBy: AccountId32;
     } & Struct;
     readonly isExpired: boolean;
-    readonly type: 'Open' | 'Resolved' | 'Expired';
+    readonly type: 'Open' | 'Resolved' | 'Revoked' | 'Expired';
   }
 
   /** @name FrameSupportPalletId (201) */
@@ -1520,13 +1543,16 @@ declare module '@polkadot/types/lookup' {
     readonly isApplicationNotPending: boolean;
     readonly isApplicationKeyAlreadyUsed: boolean;
     readonly isInvalidApplication: boolean;
+    readonly isInvalidApplicationDataLength: boolean;
+    readonly isApplicationNotFound: boolean;
+    readonly isCannotRevokeRemoveApplication: boolean;
+    readonly isCannotRevokeUnresolvedApplication: boolean;
     readonly isNotEnoughBalanceToApply: boolean;
     readonly isNotCurator: boolean;
-    readonly isApplicationNotFound: boolean;
+    readonly isNotRootCurator: boolean;
     readonly isAlreadyWhitelisted: boolean;
     readonly isNotWhitelisted: boolean;
     readonly isCouldNotConvertToBalance: boolean;
-    readonly isInvalidApplicationDataLength: boolean;
     readonly isInvalidAgentPenaltyPercentage: boolean;
     readonly isAlreadyCurator: boolean;
     readonly isAlreadyAllocator: boolean;
@@ -1540,7 +1566,9 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidMinWeightControlFee: boolean;
     readonly isInvalidMinStakingFee: boolean;
     readonly isInvalidEmissionProposalData: boolean;
-    readonly type: 'ProposalIsFinished' | 'InvalidProposalFinalizationParameters' | 'InvalidProposalVotingParameters' | 'InvalidProposalCost' | 'InvalidProposalExpiration' | 'NotEnoughBalanceToPropose' | 'ProposalDataTooSmall' | 'ProposalDataTooLarge' | 'ModuleDelegatingForMaxStakers' | 'ProposalNotFound' | 'ProposalClosed' | 'InvalidProposalData' | 'InvalidCurrencyConversionValue' | 'InsufficientDaoTreasuryFunds' | 'AlreadyVoted' | 'NotVoted' | 'InsufficientStake' | 'VoterIsDelegatingVotingPower' | 'InternalError' | 'ApplicationTooSmall' | 'InvalidApplicationSize' | 'ApplicationNotPending' | 'ApplicationKeyAlreadyUsed' | 'InvalidApplication' | 'NotEnoughBalanceToApply' | 'NotCurator' | 'ApplicationNotFound' | 'AlreadyWhitelisted' | 'NotWhitelisted' | 'CouldNotConvertToBalance' | 'InvalidApplicationDataLength' | 'InvalidAgentPenaltyPercentage' | 'AlreadyCurator' | 'AlreadyAllocator' | 'NotAllocator' | 'AgentNotFound' | 'InvalidPenaltyPercentage' | 'InvalidMinNameLength' | 'InvalidMaxNameLength' | 'InvalidMaxAllowedAgents' | 'InvalidMaxAllowedWeights' | 'InvalidMinWeightControlFee' | 'InvalidMinStakingFee' | 'InvalidEmissionProposalData';
+    readonly isInvalidProposalRewardInterval: boolean;
+    readonly isInvalidAgentApplicationCost: boolean;
+    readonly type: 'ProposalIsFinished' | 'InvalidProposalFinalizationParameters' | 'InvalidProposalVotingParameters' | 'InvalidProposalCost' | 'InvalidProposalExpiration' | 'NotEnoughBalanceToPropose' | 'ProposalDataTooSmall' | 'ProposalDataTooLarge' | 'ModuleDelegatingForMaxStakers' | 'ProposalNotFound' | 'ProposalClosed' | 'InvalidProposalData' | 'InvalidCurrencyConversionValue' | 'InsufficientDaoTreasuryFunds' | 'AlreadyVoted' | 'NotVoted' | 'InsufficientStake' | 'VoterIsDelegatingVotingPower' | 'InternalError' | 'ApplicationTooSmall' | 'InvalidApplicationSize' | 'ApplicationNotPending' | 'ApplicationKeyAlreadyUsed' | 'InvalidApplication' | 'InvalidApplicationDataLength' | 'ApplicationNotFound' | 'CannotRevokeRemoveApplication' | 'CannotRevokeUnresolvedApplication' | 'NotEnoughBalanceToApply' | 'NotCurator' | 'NotRootCurator' | 'AlreadyWhitelisted' | 'NotWhitelisted' | 'CouldNotConvertToBalance' | 'InvalidAgentPenaltyPercentage' | 'AlreadyCurator' | 'AlreadyAllocator' | 'NotAllocator' | 'AgentNotFound' | 'InvalidPenaltyPercentage' | 'InvalidMinNameLength' | 'InvalidMaxNameLength' | 'InvalidMaxAllowedAgents' | 'InvalidMaxAllowedWeights' | 'InvalidMinWeightControlFee' | 'InvalidMinStakingFee' | 'InvalidEmissionProposalData' | 'InvalidProposalRewardInterval' | 'InvalidAgentApplicationCost';
   }
 
   /** @name PalletTorus0Agent (203) */
