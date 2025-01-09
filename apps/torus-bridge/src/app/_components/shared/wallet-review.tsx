@@ -7,8 +7,9 @@ import { useWarpCore, getTokenByIndex } from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { useFeeQuotes } from "~/hooks/use-fee-quotes";
 import { Loading } from "@torus-ts/ui";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
-export function WalletTransactionReview() {
+export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
   const { values } = useFormikContext<TransferFormValues>();
   const { amount, destination, tokenIndex } = values;
   const warpCore = useWarpCore();
@@ -20,8 +21,8 @@ export function WalletTransactionReview() {
   const amountWei = toWei(amount, originToken?.decimals);
 
   const { isLoading: isApproveLoading, isApproveRequired } =
-    useIsApproveRequired(originToken, amountWei, true);
-  const { isLoading: isQuoteLoading, fees } = useFeeQuotes(values, true);
+    useIsApproveRequired(originToken, amountWei, isReview);
+  const { isLoading: isQuoteLoading, fees } = useFeeQuotes(values, isReview);
 
   const isLoading = isApproveLoading || isQuoteLoading;
   return (
@@ -31,49 +32,66 @@ export function WalletTransactionReview() {
       ) : (
         <>
           {isApproveRequired && (
-            <div>
-              <h4>Transaction 1: Approve Transfer</h4>
+            <div className="mb-2 flex flex-col gap-2 border-b border-border pb-2">
+              <ItemText label="Transaction 1" value="Transfer Remote" />
               <div>
-                <p>{`Router Address: ${originToken?.addressOrDenom}`}</p>
+                {originToken?.addressOrDenom && (
+                  <ItemText
+                    label="Remote Token"
+                    value={smallAddress(originToken.addressOrDenom)}
+                  />
+                )}
                 {originToken?.collateralAddressOrDenom && (
-                  <p>{`Collateral Address: ${originToken.collateralAddressOrDenom}`}</p>
+                  <ItemText
+                    label="Collateral Address"
+                    value={smallAddress(originToken.collateralAddressOrDenom)}
+                  />
                 )}
               </div>
             </div>
           )}
-          <div>
-            <h4>{`Transaction${isApproveRequired ? " 2" : ""}: Transfer Remote`}</h4>
-            <div className="ml-1.5 mt-1.5 space-y-1.5 border-l border-gray-300 pl-2 text-xs">
-              {destinationToken?.addressOrDenom && (
-                <p className="flex">
-                  <span className="min-w-[6.5rem]">Remote Token</span>
-                  <span>{destinationToken.addressOrDenom}</span>
-                </p>
-              )}
+          <div className="flex flex-col gap-2">
+            <ItemText
+              label={`Transaction${isApproveRequired ? " 2" : ""}`}
+              value="Transfer Remote"
+            />
+
+            {destinationToken?.addressOrDenom && (
+              <ItemText
+                label="Remote Token"
+                value={smallAddress(destinationToken.addressOrDenom)}
+              />
+            )}
+            <ItemText
+              label="Amount"
+              value={`${Number(amount) > 0 ? amount : 0} ${originTokenSymbol}`}
+            />
+            {fees?.localQuote && fees.localQuote.amount > 0n && (
+              <ItemText
+                label="Local Gas (est.)"
+                value={`${fees.localQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${fees.localQuote.token.symbol || ""}`}
+              />
+            )}
+            {fees?.interchainQuote && fees.interchainQuote.amount > 0n && (
               <p className="flex">
-                <span className="min-w-[6.5rem]">Amount</span>
-                <span>{`${amount} ${originTokenSymbol}`}</span>
+                <span className="min-w-[6.5rem]">Interchain Gas</span>
+                <span>{`${fees.interchainQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${
+                  fees.interchainQuote.token.symbol || ""
+                }`}</span>
               </p>
-              {fees?.localQuote && fees.localQuote.amount > 0n && (
-                <p className="flex">
-                  <span className="min-w-[6.5rem]">Local Gas (est.)</span>
-                  <span>{`${fees.localQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${
-                    fees.localQuote.token.symbol || ""
-                  }`}</span>
-                </p>
-              )}
-              {fees?.interchainQuote && fees.interchainQuote.amount > 0n && (
-                <p className="flex">
-                  <span className="min-w-[6.5rem]">Interchain Gas</span>
-                  <span>{`${fees.interchainQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${
-                    fees.interchainQuote.token.symbol || ""
-                  }`}</span>
-                </p>
-              )}
-            </div>
+            )}
           </div>
         </>
       )}
     </div>
+  );
+}
+
+function ItemText({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="flex justify-between">
+      <span>{label}</span>
+      <span>{value}</span>
+    </p>
   );
 }
