@@ -95,7 +95,7 @@ export function TransferEVM() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="amount">Amount (TOR)</Label>
+          <Label htmlFor="amount">Amount (TORUS)</Label>
           <Input
             id="amount"
             type="number"
@@ -147,7 +147,7 @@ export function TransferEVM() {
           <div className="flex items-center justify-between">
             <span>Amount:</span>
             <span className="text-zinc-400">
-              {Number(amount) > 0 ? amount : "0"} TOR
+              {Number(amount) > 0 ? amount : "0"} TORUS
             </span>
           </div>
           {mode === "bridge" && (

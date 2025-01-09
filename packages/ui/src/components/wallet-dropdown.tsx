@@ -105,7 +105,7 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
           Balance
         </span>
         <span className={cn("items-center text-xs text-muted-foreground")}>
-          {formatToken(balance ?? 0n)} TOR
+          {formatToken(balance ?? 0n)} TORUS
         </span>
       </DropdownMenuLabel>
       <DropdownMenuLabel
@@ -116,7 +116,7 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
           Staked
         </span>
         <span className={cn("text-xs text-muted-foreground")}>
-          {formatToken(userStakeWeight)} TOR
+          {formatToken(userStakeWeight)} TORUS
         </span>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
