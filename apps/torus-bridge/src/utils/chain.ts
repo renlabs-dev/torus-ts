@@ -1,3 +1,4 @@
+import { isAbacusWorksChain } from "@hyperlane-xyz/registry";
 import type {
   ChainMap,
   ChainName,
@@ -56,4 +57,20 @@ export function getNumRoutesWithSelectedChain(
     header: `Routes ${preposition} ${selectedChainDisplayName}`,
     data,
   };
+}
+
+export function isPermissionlessChain(
+  multiProvider: MultiProtocolProvider,
+  chain: ChainName,
+) {
+  if (!chain) return true;
+  const metadata = multiProvider.tryGetChainMetadata(chain);
+  return !metadata || !isAbacusWorksChain(metadata);
+}
+
+export function hasPermissionlessChain(
+  multiProvider: MultiProtocolProvider,
+  ids: ChainName[],
+) {
+  return !ids.every((c) => !isPermissionlessChain(multiProvider, c));
 }

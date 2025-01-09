@@ -7,6 +7,7 @@ import type {
 } from "@hyperlane-xyz/sdk";
 import { MultiProtocolCore, ProviderType } from "@hyperlane-xyz/sdk";
 import { logger } from "./logger";
+import { SentTransferStatuses, TransferStatus } from "./types";
 
 export function tryGetMsgIdFromTransferReceipt(
   multiProvider: MultiProtocolProvider,
@@ -50,5 +51,31 @@ export function tryGetMsgIdFromTransferReceipt(
   } catch (error) {
     logger.error("Could not get msgId from transfer receipt", error);
     return undefined;
+  }
+}
+
+export function isTransferSent(status: TransferStatus) {
+  return SentTransferStatuses.includes(status);
+}
+
+export function isTransferFailed(status: TransferStatus) {
+  return status === TransferStatus.Failed;
+}
+
+export function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp);
+  return `${date.toLocaleTimeString()} ${date.toLocaleDateString()}`;
+}
+
+export function getIconByTransferStatus(status: TransferStatus) {
+  switch (status) {
+    case TransferStatus.Delivered:
+      return "DeliveredIcon";
+    case TransferStatus.ConfirmedTransfer:
+      return "ConfirmedIcon";
+    case TransferStatus.Failed:
+      return "ErrorCircleIcon";
+    default:
+      return "ErrorCircleIcon";
   }
 }
