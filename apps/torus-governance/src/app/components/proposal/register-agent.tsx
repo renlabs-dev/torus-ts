@@ -9,7 +9,6 @@ import {
   Button,
   Input,
   Label,
-  Separator,
   Tabs,
   TabsContent,
   TabsList,
@@ -170,8 +169,8 @@ export function RegisterAgent(): JSX.Element {
           />
           <Button
             variant="default"
-            className="flex items-center gap-2"
-            onClick={() => setAgentKey(selectedAccount?.address || "")}
+            className="w-fit px-4 md:block bg-neutral-700 text-foreground hover:text-neutral-700 hover:bg-foreground"
+            onClick={() => setAgentKey(selectedAccount?.address ?? "")}
             title="Only use your wallet's address if you also used it in your agent application!"
           >
             Paste my wallet address
@@ -238,7 +237,8 @@ export function RegisterAgent(): JSX.Element {
       <Button
         size="lg"
         type="submit"
-        variant="outline"
+        variant="default"
+        className="flex items-center gap-2"
         disabled={!isAccountConnected}
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}

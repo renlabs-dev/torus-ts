@@ -11,7 +11,6 @@ import {
   Button,
   Input,
   Label,
-  Separator,
   Tabs,
   TabsContent,
   TabsList,
@@ -183,8 +182,8 @@ export function CreateAgentApplication(): JSX.Element {
           />
           <Button
             variant="default"
-            className="flex items-center gap-2"
-            onClick={() => setApplicationKey(selectedAccount?.address || "")}
+            className="w-fit px-4 md:block bg-neutral-700 text-foreground hover:text-neutral-700 hover:bg-foreground"
+            onClick={() => setApplicationKey(selectedAccount?.address ?? "")}
           >
             Paste my wallet address
           </Button>
@@ -237,20 +236,6 @@ export function CreateAgentApplication(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <Button
-        size="lg"
-        type="submit"
-        variant="outline"
-        disabled={!isAccountConnected}
-      >
-        {getButtonSubmitLabel({ uploading, isAccountConnected })}
-      </Button>
-      {transactionStatus.status && (
-        <TransactionStatus
-          status={transactionStatus.status}
-          message={transactionStatus.message}
-        />
-      )}
       <div className="flex items-start gap-2 text-sm text-yellow-500">
         <Info className="mt-[1px]" size={16} />
         <Label className="text-sm">
@@ -273,6 +258,21 @@ export function CreateAgentApplication(): JSX.Element {
           Even if you provided a different wallet address for your agent, the application fee is paid from your wallet!
         </Label>
       </div>
+      <Button
+        size="lg"
+        type="submit"
+        variant="default"
+        className="flex items-center gap-2"
+        disabled={!isAccountConnected}
+      >
+        {getButtonSubmitLabel({ uploading, isAccountConnected })}
+      </Button>
+      {transactionStatus.status && (
+        <TransactionStatus
+          status={transactionStatus.status}
+          message={transactionStatus.message}
+        />
+      )}
     </form>
   );
 }
