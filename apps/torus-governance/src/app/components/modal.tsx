@@ -30,7 +30,7 @@ export function CreateModal() {
       <DialogTrigger asChild>
         <Button
           variant="default"
-          className="hidden w-fit px-4 md:block bg-accent/80 text-foreground hover:text-accent/80 hover:bg-foreground"
+          className="hidden w-fit px-4 md:block bg-neutral-700 text-foreground hover:text-neutral-700 hover:bg-foreground"
           size="lg"
         >
           Create Agent Application

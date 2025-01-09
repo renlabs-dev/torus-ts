@@ -75,7 +75,7 @@ export const Sidebar = () => {
       </Select>
 
       <div className="hidden max-h-fit w-full min-w-fit animate-fade-up flex-col gap-6 animate-delay-200 md:flex">
-        <Card className="flex flex-col gap-1.5 p-5 bg-accent/40">
+        <Card className="flex flex-col gap-1.5 p-5 bg-neutral-900">
           {navSidebarOptions.map((view) => {
             return (
               <Link href={`?view=${view.href}`} key={view.href} prefetch>
