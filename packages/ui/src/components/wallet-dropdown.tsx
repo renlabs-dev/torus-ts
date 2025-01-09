@@ -154,6 +154,7 @@ interface WalletDropdownProps {
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
   notifyCopy: () => void;
+  shouldDisplayText?: boolean;
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {
@@ -167,6 +168,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     selectedAccount,
     stakeOut,
     notifyCopy,
+    shouldDisplayText,
   } = props;
 
   const handleGetAccounts = async () => {
@@ -196,12 +198,21 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   return (
     <div className="flex w-fit animate-fade-down justify-end py-1">
       <DropdownMenu onOpenChange={handleGetAccounts}>
-        <DropdownMenuTrigger disabled={!isInitialized}>
-          <WalletCards
-            className={cn(
-              `!h-6 !w-6 ${!isInitialized ? "animate-pulse" : "hover:text-muted-foreground"}`,
+        <DropdownMenuTrigger disabled={!isInitialized} asChild>
+          <button className="flex items-center gap-2">
+            <WalletCards
+              className={cn(
+                `!h-5 !w-5 ${!isInitialized ? "animate-pulse" : "hover:text-muted-foreground"}`,
+              )}
+            />
+            {shouldDisplayText && (
+              <span className="text-sm">
+                Torus{" "}
+                {selectedAccount?.address &&
+                  `(${smallAddress(selectedAccount.address, 4)})`}
+              </span>
             )}
-          />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
