@@ -16,11 +16,8 @@ export function WalletTransactionReview() {
   const originTokenSymbol = originToken?.symbol ?? "";
   const connection = originToken?.getConnectionForChain(destination);
   const destinationToken = connection?.token;
-  const isNft = originToken?.isNft();
 
-  const amountWei = isNft
-    ? amount.toString()
-    : toWei(amount, originToken?.decimals);
+  const amountWei = toWei(amount, originToken?.decimals);
 
   const { isLoading: isApproveLoading, isApproveRequired } =
     useIsApproveRequired(originToken, amountWei, true);
@@ -56,9 +53,7 @@ export function WalletTransactionReview() {
                 </p>
               )}
               <p className="flex">
-                <span className="min-w-[6.5rem]">
-                  {isNft ? "Token ID" : "Amount"}
-                </span>
+                <span className="min-w-[6.5rem]">Amount</span>
                 <span>{`${amount} ${originTokenSymbol}`}</span>
               </p>
               {fees?.localQuote && fees.localQuote.amount > 0n && (

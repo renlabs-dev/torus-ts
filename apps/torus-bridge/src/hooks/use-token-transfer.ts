@@ -116,9 +116,9 @@ async function executeTransfer({
       throw new Error("No token route found between chains");
 
     const originProtocol = originToken.protocol;
-    const isNft = originToken.isNft();
-    const weiAmountOrId = isNft ? amount : toWei(amount, originToken.decimals);
-    const originTokenAmount = originToken.amount(weiAmountOrId);
+
+    const weiAmount = toWei(amount, originToken.decimals);
+    const originTokenAmount = originToken.amount(weiAmount);
 
     const sendTransaction = transactionFns[originProtocol].sendTransaction;
     const activeChain = activeChains.chains[originProtocol];

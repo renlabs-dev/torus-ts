@@ -16,10 +16,9 @@ import { Button } from "@torus-ts/ui";
 interface Props {
   name: string;
   disabled?: boolean;
-  setIsNft: (value: boolean) => void;
 }
 
-export function TokenSelectField({ name, disabled, setIsNft }: Props) {
+export function TokenSelectField({ name, disabled }: Props) {
   const { values } = useFormikContext<TransferFormValues>();
   const [field, , helpers] = useField<number | undefined>(name);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,8 +52,6 @@ export function TokenSelectField({ name, disabled, setIsNft }: Props) {
   const onSelectToken = (newToken: IToken) => {
     // Set the token address value in formik state
     void helpers.setValue(getIndexForToken(warpCore, newToken));
-    // Update nft state in parent
-    setIsNft(newToken.isNft());
   };
 
   const onClickField = () => {

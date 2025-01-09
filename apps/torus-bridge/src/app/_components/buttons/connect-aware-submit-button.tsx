@@ -40,7 +40,7 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   const firstError = `${Object.values(errors)[0]}` || "Unknown error";
 
-  const color = hasError ? "red" : "accent";
+  const variant = hasError ? "destructive" : "default";
   const content = hasError
     ? firstError
     : isAccountReady
@@ -59,7 +59,7 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   useTimeout(clearErrors, 3500);
 
   return (
-    <Button type={type} color={color} onClick={onClick} className="w-full">
+    <Button type={type} variant={variant} onClick={onClick} className="w-full">
       {content}
     </Button>
   );
