@@ -24,7 +24,7 @@ export function RecipientSection({ isReview }: { isReview: boolean }) {
         <Label>Recipient address</Label>
         <TokenBalance label="Remote balance" balance={balance} />
       </div>
-      <div className="flex w-full items-center gap-2 pb-6">
+      <div className="flex w-full items-center gap-2">
         <TextField
           name="recipient"
           placeholder="0x123456..."
