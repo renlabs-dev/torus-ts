@@ -1234,6 +1234,12 @@ declare module '@polkadot/types/lookup' {
     readonly minStakingFee: u8;
     readonly dividendsParticipationWeight: Percent;
     readonly proposalCost: u128;
+    readonly proposalExpiration: u64;
+    readonly agentApplicationCost: u128;
+    readonly agentApplicationExpiration: u64;
+    readonly proposalRewardTreasuryAllocation: Percent;
+    readonly maxProposalRewardTreasuryAllocation: u128;
+    readonly proposalRewardInterval: u64;
   }
 
   /** @name PalletTorus0Call (157) */

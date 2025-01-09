@@ -233,6 +233,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InternalError: AugmentedError<ApiType>;
       /**
+       * Invalid agent application cost given to global params proposal
+       **/
+      InvalidAgentApplicationCost: AugmentedError<ApiType>;
+      /**
        * The penalty percentage provided does not meet the maximum requirement
        **/
       InvalidAgentPenaltyPercentage: AugmentedError<ApiType>;
@@ -300,6 +304,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Invalid parameters were provided to the finalization process.
        **/
       InvalidProposalFinalizationParameters: AugmentedError<ApiType>;
+      /**
+       * Invalid proposal reward interval given to global params proposal
+       **/
+      InvalidProposalRewardInterval: AugmentedError<ApiType>;
       /**
        * Invalid parameters were provided to the voting process.
        **/

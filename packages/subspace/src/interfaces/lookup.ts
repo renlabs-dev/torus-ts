@@ -1152,7 +1152,13 @@ export default {
     minWeightControlFee: 'u8',
     minStakingFee: 'u8',
     dividendsParticipationWeight: 'Percent',
-    proposalCost: 'u128'
+    proposalCost: 'u128',
+    proposalExpiration: 'u64',
+    agentApplicationCost: 'u128',
+    agentApplicationExpiration: 'u64',
+    proposalRewardTreasuryAllocation: 'Percent',
+    maxProposalRewardTreasuryAllocation: 'u128',
+    proposalRewardInterval: 'u64'
   },
   /**
    * Lookup157: pallet_torus0::pallet::Call<T>
