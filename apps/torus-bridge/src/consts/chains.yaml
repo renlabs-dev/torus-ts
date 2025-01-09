@@ -3,17 +3,16 @@
 # Chains already in the SDK need not be included here unless you want to override some fields
 # Schema here: https://github.com/hyperlane-xyz/hyperlane-monorepo/blob/main/typescript/sdk/src/metadata/chainMetadataTypes.ts
 ---
-# Example using local anvil chain:
 torustestnet:
   blockExplorers:
-    - apiKey: https://api.blockscout.testnet.torus.network/api
-      apiUrl: https://api.blockscout.testnet.torus.network/api
+    - apiUrl: https://api.blockscout.testnet.torus.network/api
       family: etherscan
       name: Blockscout
       url: https://blockscout.testnet.torus.network/
+      # apiKey: https://api.blockscout.testnet.torus.network/api
   blocks:
     confirmations: 1
-    estimateBlockTime: 13
+    estimateBlockTime: 8
     reorgPeriod: finalized
   chainId: 21001
   displayName: TorusTestnet

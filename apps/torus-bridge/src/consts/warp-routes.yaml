@@ -3,18 +3,18 @@
 # The input here is typically the output of the Hyperlane CLI warp deploy command
 ---
 tokens:
-  - addressOrDenom: "0x1c87f74D6E39F567cB1aac0e091Dc433a702ABd7"
+  - addressOrDenom: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9"
     chainName: basesepolia
     connections:
-      - token: ethereum|torustestnet|0x677723050085BFE889726B58a14418a92cBF7f36
+      - token: ethereum|torustestnet|0x10461F4F54229155F5C21554dE1e1a682Ca236E9
     decimals: 18
     name: torustestnet
     standard: EvmHypSynthetic
     symbol: TORUS
-  - addressOrDenom: "0x677723050085BFE889726B58a14418a92cBF7f36"
+  - addressOrDenom: "0x10461F4F54229155F5C21554dE1e1a682Ca236E9"
     chainName: torustestnet
     connections:
-      - token: ethereum|basesepolia|0x1c87f74D6E39F567cB1aac0e091Dc433a702ABd7
+      - token: ethereum|basesepolia|0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9
     decimals: 18
     name: torustestnet
     standard: EvmHypNative

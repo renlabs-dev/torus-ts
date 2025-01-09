@@ -3,7 +3,7 @@
 // If left null, all warp routes in the configured registry will be included
 // If set to a list (including an empty list), only the specified routes will be included
 export const warpRouteWhitelist: string[] | null = [
-  "TORUS/torustestnet-basesepolia",
+  "TORUS/basesepolia-torustestnet",
   // 'ETH/ethereum-viction'
 ];
 

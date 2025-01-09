@@ -7,32 +7,30 @@ import { TokenStandard } from "@hyperlane-xyz/sdk";
 export const WarpRoutesTs: WarpCoreConfig = {
   tokens: [
     {
-      chainName: "torustestnet",
-      standard: TokenStandard.EvmHypNative,
-      decimals: 18,
-      symbol: "TORUS",
-      name: "Torus Testnet",
-      addressOrDenom: "0x677723050085BFE889726B58a14418a92cBF7f36",
-      logoURI: "/TODO",
-      connections: [
-        {
-          token:
-            "ethereum|basesepolia|0x1c87f74D6E39F567cB1aac0e091Dc433a702ABd7",
-        },
-      ],
-    },
-    {
       chainName: "basesepolia",
       standard: TokenStandard.EvmHypSynthetic,
       decimals: 18,
       symbol: "TORUS",
-      name: "Torus Testnet Wrapped",
-      addressOrDenom: "0x1c87f74D6E39F567cB1aac0e091Dc433a702ABd7",
-      logoURI: "/TODO",
+      name: "torustestnet",
+      addressOrDenom: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
       connections: [
         {
           token:
-            "ethereum|torustestnet|0x677723050085BFE889726B58a14418a92cBF7f36",
+            "ethereum|torustestnet|0x10461F4F54229155F5C21554dE1e1a682Ca236E9",
+        },
+      ],
+    },
+    {
+      chainName: "torustestnet",
+      standard: TokenStandard.EvmHypNative,
+      decimals: 18,
+      symbol: "TORUS",
+      name: "torustestnet",
+      addressOrDenom: "0x10461F4F54229155F5C21554dE1e1a682Ca236E9",
+      connections: [
+        {
+          token:
+            "ethereum|basesepolia|0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
         },
       ],
     },
