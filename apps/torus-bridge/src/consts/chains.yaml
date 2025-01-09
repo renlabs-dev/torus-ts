@@ -6,18 +6,18 @@
 # Example using local anvil chain:
 torustestnet:
   blockExplorers:
-    - apiKey: https://api.blockscout.torus.network/api
-      apiUrl: https://api.blockscout.torus.network/api
+    - apiKey: https://api.blockscout.testnet.torus.network/api
+      apiUrl: https://api.blockscout.testnet.torus.network/api
       family: etherscan
       name: Blockscout
-      url: https://blockscout.torus.network/
+      url: https://blockscout.testnet.torus.network/
   blocks:
     confirmations: 1
     estimateBlockTime: 13
     reorgPeriod: finalized
-  chainId: 21000
+  chainId: 21001
   displayName: TorusTestnet
-  domainId: 21000
+  domainId: 21001
   isTestnet: true
   name: torustestnet
   nativeToken:
