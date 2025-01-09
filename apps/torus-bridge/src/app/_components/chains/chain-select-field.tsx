@@ -35,12 +35,6 @@ export function ChainSelectField({ name, label }: Props) {
           </div>
           {displayName}
         </Button>
-        {/* <ChainSelectListModal
-            isOpen={isModalOpen}
-            close={() => setIsModalOpen(false)}
-            onSelect={handleChange}
-            customListItemField={customListItemField}
-          /> */}
       </Dialog>
     </div>
   );

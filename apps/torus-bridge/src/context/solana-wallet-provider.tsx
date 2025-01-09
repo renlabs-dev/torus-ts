@@ -1,4 +1,3 @@
-import { SnapWalletAdapter } from "@drift-labs/snap-wallet-adapter";
 import type { WalletError } from "@solana/wallet-adapter-base";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
@@ -10,10 +9,10 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 import {
   // BackpackWalletAdapter,
   LedgerWalletAdapter,
-  PhantomWalletAdapter,
-  SalmonWalletAdapter,
-  SolflareWalletAdapter,
-  TrustWalletAdapter,
+  // PhantomWalletAdapter,
+  // SalmonWalletAdapter,
+  // SolflareWalletAdapter,
+  // TrustWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
 import type { PropsWithChildren } from "react";
@@ -27,12 +26,12 @@ export function SolanaWalletProvider({ children }: PropsWithChildren<unknown>) {
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
   const wallets = useMemo(
     () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
+      // new PhantomWalletAdapter(),
+      // new SolflareWalletAdapter(),
       // new BackpackWalletAdapter(),
-      new SalmonWalletAdapter(),
-      new SnapWalletAdapter(),
-      new TrustWalletAdapter(),
+      // new SalmonWalletAdapter(),
+      // new SnapWalletAdapter(),
+      // new TrustWalletAdapter(),
       new LedgerWalletAdapter(),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps

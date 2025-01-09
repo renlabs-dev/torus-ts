@@ -6,15 +6,18 @@ import { Lock } from "lucide-react";
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
-import { useWallet } from "~/context/wallet-provider";
+import { useTorus } from "@torus-ts/torus-provider";
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
+import type { SS58Address } from "@torus-ts/subspace";
 
 export function WalletBalance() {
-  const {
-    accountFreeBalance,
+  const { api, isAccountConnected, isInitialized, selectedAccount } =
+    useTorus();
 
-    isAccountConnected,
-    isInitialized,
-  } = useWallet();
+  const accountFreeBalance = useFreeBalance(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
 
   const userAccountFreeBalance = useCallback(() => {
     if (

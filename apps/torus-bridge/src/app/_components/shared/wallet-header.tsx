@@ -9,6 +9,7 @@ import { Header, WalletDropdown } from "@torus-ts/ui";
 import type { SS58Address } from "@torus-ts/subspace";
 import { env } from "~/env";
 import { toast } from "@torus-ts/toast-provider";
+import ConnectButton from "../buttons/connect-button";
 
 export function WalletHeader() {
   const {
@@ -32,17 +33,21 @@ export function WalletHeader() {
     <Header
       appName="Torus Bridge"
       wallet={
-        <WalletDropdown
-          balance={accountFreeBalance.data}
-          stakeOut={stakeOut.data}
-          accounts={accounts}
-          isInitialized={isInitialized}
-          selectedAccount={selectedAccount}
-          handleLogout={handleLogout}
-          handleGetWallets={handleGetWallets}
-          handleSelectWallet={handleSelectWallet}
-          notifyCopy={() => toast.success("Copied to clipboard")}
-        />
+        <div className="mt-1 flex items-center gap-6">
+          <ConnectButton />
+          <WalletDropdown
+            shouldDisplayText={true}
+            balance={accountFreeBalance.data}
+            stakeOut={stakeOut.data}
+            accounts={accounts}
+            isInitialized={isInitialized}
+            selectedAccount={selectedAccount}
+            handleLogout={handleLogout}
+            handleGetWallets={handleGetWallets}
+            handleSelectWallet={handleSelectWallet}
+            notifyCopy={() => toast.success("Copied to clipboard")}
+          />
+        </div>
       }
     />
   );

@@ -9,7 +9,7 @@ export function TextField({ ...props }: FieldAttributes<unknown>) {
   return (
     <Field
       {...props}
-      className="w-full rounded-md border border-border bg-black p-[0.3em]"
+      className="w-full rounded-md border border-border bg-black p-[0.3em] pl-2"
     />
   );
 }

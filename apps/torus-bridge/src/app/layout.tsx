@@ -16,7 +16,6 @@ import { Layout, Loading } from "@torus-ts/ui";
 import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { env } from "~/env";
-import { WalletProvider } from "~/context/wallet-provider";
 import { WalletHeader } from "./_components/shared/wallet-header";
 
 export const firaMono = FiraMono({
@@ -59,18 +58,16 @@ export default function RootLayout({
             wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
             torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
           >
-            <WalletProvider>
-              <WarpContextInitGateProvider>
-                <EvmWalletProvider>
-                  <SolanaWalletProvider>
-                    <CosmosWalletProvider>
-                      <WalletHeader />
-                      {children}
-                    </CosmosWalletProvider>
-                  </SolanaWalletProvider>
-                </EvmWalletProvider>
-              </WarpContextInitGateProvider>
-            </WalletProvider>
+            <WarpContextInitGateProvider>
+              <EvmWalletProvider>
+                <SolanaWalletProvider>
+                  <CosmosWalletProvider>
+                    <WalletHeader />
+                    {children}
+                  </CosmosWalletProvider>
+                </SolanaWalletProvider>
+              </EvmWalletProvider>
+            </WarpContextInitGateProvider>
           </TorusProvider>
         </QueryClientProvider>
       </ToastProvider>

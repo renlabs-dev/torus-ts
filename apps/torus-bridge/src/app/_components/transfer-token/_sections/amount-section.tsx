@@ -27,7 +27,6 @@ export function AmountSection({ isReview }: { isReview: boolean }) {
         />
         <MaxButton disabled={isReview} balance={balance} />
       </div>
-      s
     </div>
   );
 }

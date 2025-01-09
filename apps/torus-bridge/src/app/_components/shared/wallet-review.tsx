@@ -1,12 +1,12 @@
 import React from "react";
 
 import { toWei } from "@hyperlane-xyz/utils";
-import { SpinnerIcon } from "@hyperlane-xyz/widgets";
 import { useFormikContext } from "formik";
 import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";
 import { useWarpCore, getTokenByIndex } from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { useFeeQuotes } from "~/hooks/use-fee-quotes";
+import { Loading } from "@torus-ts/ui";
 
 export function WalletTransactionReview() {
   const { values } = useFormikContext<TransferFormValues>();
@@ -27,9 +27,7 @@ export function WalletTransactionReview() {
   return (
     <div className="break-all text-sm">
       {isLoading ? (
-        <div className="flex items-center justify-center py-6">
-          <SpinnerIcon className="h-5 w-5" />
-        </div>
+        <Loading />
       ) : (
         <>
           {isApproveRequired && (
