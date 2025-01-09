@@ -488,7 +488,8 @@ export default {
       ApplicationCreated: 'u32',
       ApplicationAccepted: 'u32',
       ApplicationDenied: 'u32',
-      ApplicationExpired: 'u32'
+      ApplicationExpired: 'u32',
+      ApplicationRevoked: 'u32'
     }
   },
   /**
@@ -1114,7 +1115,14 @@ export default {
       add_emission_proposal: {
         recyclingPercentage: 'Percent',
         treasuryPercentage: 'Percent',
-        data: 'Bytes'
+        data: 'Bytes',
+      },
+      set_root_curator: {
+        key: 'AccountId32',
+      },
+      remove_root_curator: 'Null',
+      revoke_application: {
+        applicationId: 'u32'
       }
     }
   },
@@ -1130,7 +1138,13 @@ export default {
     minWeightControlFee: 'u8',
     minStakingFee: 'u8',
     dividendsParticipationWeight: 'Percent',
-    proposalCost: 'u128'
+    proposalCost: 'u128',
+    proposalExpiration: 'u64',
+    agentApplicationCost: 'u128',
+    agentApplicationExpiration: 'u64',
+    proposalRewardTreasuryAllocation: 'Percent',
+    maxProposalRewardTreasuryAllocation: 'u128',
+    proposalRewardInterval: 'u64'
   },
   /**
    * Lookup155: pallet_torus0::pallet::Call<T>
@@ -1385,13 +1399,18 @@ export default {
     _enum: ['Add', 'Remove']
   },
   /**
-   * Lookup200: pallet_governance::application::ApplicationStatus
+   * Lookup200: pallet_governance::application::ApplicationStatus<T>
    **/
   PalletGovernanceApplicationApplicationStatus: {
     _enum: {
       Open: 'Null',
       Resolved: {
         accepted: 'bool',
+        resolvedBy: 'AccountId32',
+      },
+      Revoked: {
+        previouslyAcceptedBy: 'AccountId32',
+        revokedBy: 'AccountId32',
       },
       Expired: 'Null'
     }
@@ -1404,7 +1423,7 @@ export default {
    * Lookup202: pallet_governance::pallet::Error<T>
    **/
   PalletGovernanceError: {
-    _enum: ['ProposalIsFinished', 'InvalidProposalFinalizationParameters', 'InvalidProposalVotingParameters', 'InvalidProposalCost', 'InvalidProposalExpiration', 'NotEnoughBalanceToPropose', 'ProposalDataTooSmall', 'ProposalDataTooLarge', 'ModuleDelegatingForMaxStakers', 'ProposalNotFound', 'ProposalClosed', 'InvalidProposalData', 'InvalidCurrencyConversionValue', 'InsufficientDaoTreasuryFunds', 'AlreadyVoted', 'NotVoted', 'InsufficientStake', 'VoterIsDelegatingVotingPower', 'InternalError', 'ApplicationTooSmall', 'InvalidApplicationSize', 'ApplicationNotPending', 'ApplicationKeyAlreadyUsed', 'InvalidApplication', 'NotEnoughBalanceToApply', 'NotCurator', 'ApplicationNotFound', 'AlreadyWhitelisted', 'NotWhitelisted', 'CouldNotConvertToBalance', 'InvalidApplicationDataLength', 'InvalidAgentPenaltyPercentage', 'AlreadyCurator', 'AlreadyAllocator', 'NotAllocator', 'AgentNotFound', 'InvalidPenaltyPercentage', 'InvalidMinNameLength', 'InvalidMaxNameLength', 'InvalidMaxAllowedAgents', 'InvalidMaxAllowedWeights', 'InvalidMinWeightControlFee', 'InvalidMinStakingFee', 'InvalidEmissionProposalData']
+    _enum: ['ProposalIsFinished', 'InvalidProposalFinalizationParameters', 'InvalidProposalVotingParameters', 'InvalidProposalCost', 'InvalidProposalExpiration', 'NotEnoughBalanceToPropose', 'ProposalDataTooSmall', 'ProposalDataTooLarge', 'ModuleDelegatingForMaxStakers', 'ProposalNotFound', 'ProposalClosed', 'InvalidProposalData', 'InvalidCurrencyConversionValue', 'InsufficientDaoTreasuryFunds', 'AlreadyVoted', 'NotVoted', 'InsufficientStake', 'VoterIsDelegatingVotingPower', 'InternalError', 'ApplicationTooSmall', 'InvalidApplicationSize', 'ApplicationNotPending', 'ApplicationKeyAlreadyUsed', 'InvalidApplication', 'InvalidApplicationDataLength', 'ApplicationNotFound', 'CannotRevokeRemoveApplication', 'CannotRevokeUnresolvedApplication', 'NotEnoughBalanceToApply', 'NotCurator', 'NotRootCurator', 'AlreadyWhitelisted', 'NotWhitelisted', 'CouldNotConvertToBalance', 'InvalidAgentPenaltyPercentage', 'AlreadyCurator', 'AlreadyAllocator', 'NotAllocator', 'AgentNotFound', 'InvalidPenaltyPercentage', 'InvalidMinNameLength', 'InvalidMaxNameLength', 'InvalidMaxAllowedAgents', 'InvalidMaxAllowedWeights', 'InvalidMinWeightControlFee', 'InvalidMinStakingFee', 'InvalidEmissionProposalData', 'InvalidProposalRewardInterval', 'InvalidAgentApplicationCost']
   },
   /**
    * Lookup203: pallet_torus0::agent::Agent<T>

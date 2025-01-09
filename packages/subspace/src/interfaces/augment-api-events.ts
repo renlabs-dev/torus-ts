@@ -179,6 +179,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ApplicationExpired: AugmentedEvent<ApiType, [u32]>;
       /**
+       * An application has been revoked.
+       **/
+      ApplicationRevoked: AugmentedEvent<ApiType, [u32]>;
+      /**
        * A proposal has been accepted.
        **/
       ProposalAccepted: AugmentedEvent<ApiType, [u64]>;
