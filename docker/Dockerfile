@@ -30,6 +30,7 @@ ARG APP_NAME
 ENV NEXT_PUBLIC_TORUS_RPC_URL="wss://api.testnet.torus.network"
 ENV NEXT_PUBLIC_TORUS_CACHE_URL="https://cache.testnet.torus.network"
 ENV NEXT_PUBLIC_TORUS_RPC_HTTPS_URL="https://api.testnet.torus.network/"
+ENV NEXT_PUBLIC_WALLET_CONNECT_ID="4bd8b9455b3202ca551d37ff97d97e90"
 
 WORKDIR /app
 
@@ -46,6 +47,8 @@ RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
 # ======== runner layer ======== #
 FROM base AS runner
 ARG APP_NAME
+
+ENV NEXT_PUBLIC_WALLET_CONNECT_ID="4bd8b9455b3202ca551d37ff97d97e90"
 
 LABEL org.opencontainers.image.source https://github.com/renlabs-dev/torus-ts
 
