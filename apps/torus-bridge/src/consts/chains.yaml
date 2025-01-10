@@ -6,10 +6,9 @@
 torustestnet:
   blockExplorers:
     - apiUrl: https://api.blockscout.testnet.torus.network/api
-      family: etherscan
-      name: Blockscout
-      url: https://blockscout.testnet.torus.network/
-      # apiKey: https://api.blockscout.testnet.torus.network/api
+      family: blockscout
+      name: Torus Testnet Blockscout
+      url: https://blockscout.testnet.torus.network
   blocks:
     confirmations: 1
     estimateBlockTime: 8
@@ -26,3 +25,4 @@ torustestnet:
   protocol: ethereum
   rpcUrls:
     - http: https://api.testnet.torus.network
+  logoURI: /logo.svg
