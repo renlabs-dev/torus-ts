@@ -21,7 +21,7 @@ export function AgentApplicationExpandedView(
 ): JSX.Element {
   const { paramId } = props;
 
-  const { agentApplicationsWithMeta, agentApplications, lastBlock } =
+  const { agentApplicationsWithMeta, agentApplications, lastBlock, selectedAccount } =
     useGovernance();
 
   const handleAgentApplicationsContent = () => {
@@ -70,7 +70,6 @@ export function AgentApplicationExpandedView(
     lastBlockNumber: lastBlock.data?.blockNumber ?? 0,
   };
 
-  const { selectedAccount } = useGovernance();
   const { data: cadreUsers } = api.cadre.all.useQuery();
   const userIsCuratorDaoMember = cadreUsers?.some((user) => user.userKey === selectedAccount?.address);
 
