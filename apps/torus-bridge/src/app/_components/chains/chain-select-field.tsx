@@ -1,4 +1,3 @@
-import type { ChainSearchMenuProps } from "@hyperlane-xyz/widgets";
 import { useField } from "formik";
 
 import type { ChainName } from "@hyperlane-xyz/sdk";
@@ -6,14 +5,11 @@ import type { ChainName } from "@hyperlane-xyz/sdk";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 
 import { ChainLogo } from "../chain-logo";
-import { Button, Dialog, Label } from "@torus-ts/ui";
+import { Button, Label } from "@torus-ts/ui";
 
 interface Props {
   name: string;
   label: string;
-  onChange?: (id: ChainName) => void;
-  disabled?: boolean;
-  customListItemField: ChainSearchMenuProps["customListItemField"];
 }
 
 export function ChainSelectField({ name, label }: Props) {
@@ -23,19 +19,18 @@ export function ChainSelectField({ name, label }: Props) {
 
   return (
     <div className="flex w-full flex-col gap-2">
-      <Dialog>
-        <Label>{label}</Label>
-        <Button
-          size="lg"
-          variant="outline"
-          className="flex w-full items-center justify-center gap-3"
-        >
-          <div className="max-w-[1.4rem] sm:max-w-fit">
-            <ChainLogo chainName={field.value} size={26} />
-          </div>
-          {displayName}
-        </Button>
-      </Dialog>
+      <Label>{label}</Label>
+      <Button
+        size="lg"
+        variant="outline"
+        disabled={true}
+        className="flex w-full items-center justify-between p-0 hover:cursor-default hover:bg-background disabled:opacity-100"
+      >
+        <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
+          <ChainLogo chainName={field.value} size={28} />
+        </div>
+        <span className="w-full">{displayName}</span>
+      </Button>
     </div>
   );
 }
