@@ -14,6 +14,9 @@ import { formatToken } from "@torus-ts/utils/subspace";
 
 const TESTNET: boolean = true;
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+const TORUS_NETWORK_NAME: string = TESTNET ? "Torus Testnet" : "Torus";
+
 export function WalletBalance() {
   const { api, isAccountConnected, isInitialized, selectedAccount } =
     useTorus();
@@ -88,19 +91,19 @@ export function WalletBalance() {
   const balancesList = [
     {
       amount: userAccountFreeBalance(),
-      label: "Torus Balance",
+      label: TORUS_NETWORK_NAME,
       icon: <Lock size={16} />,
       address: selectedAccount?.address,
     },
     {
       amount: torusEvmBalance?.value ?? 0n,
-      label: `${torusEvmChain.name} Balance`,
+      label: `${torusEvmChain.name} EMV`,
       icon: <Lock size={16} />,
       address: evmAddress,
     },
     {
       amount: baseBalance,
-      label: `${baseChain.name} Balance`,
+      label: `${baseChain.name}`,
       icon: <Lock size={16} />,
       address: evmAddress,
     },
@@ -113,14 +116,13 @@ export function WalletBalance() {
           key={item.label}
           className="flex w-full flex-col gap-2 border-muted bg-background px-7 py-5"
         >
-          {typeof item.amount === "bigint" && (
+          {item.amount == null && <Skeleton className="flex w-1/2 py-3" />}
+
+          {item.amount != null && (
             <p className="flex items-end gap-1 text-muted-foreground">
               {formatToken(item.amount)}
-              <span className="mb-0.5 text-xs">TORUS</span>
+              <span className="text-sm">TORUS</span>
             </p>
-          )}
-          {typeof item.amount !== "bigint" && (
-            <Skeleton className="flex w-1/2 py-3" />
           )}
 
           <span className="flex items-center gap-2 text-base">
