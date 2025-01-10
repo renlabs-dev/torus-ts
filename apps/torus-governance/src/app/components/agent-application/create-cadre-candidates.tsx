@@ -116,13 +116,13 @@ export function CreateCadreCandidates() {
           variant="secondary"
           className="animate-fade-down animate-delay-[1400ms]"
         >
-          Apply to be a DAO Cadre Member
+          Apply to join the Curator DAO
         </Button>
       </PopoverTrigger>
       <PopoverContent className="mt-2 hidden w-[25em] md:block xl:mr-0">
         <div className="mt-1 flex w-full border-b border-white/20 pb-3">
           <p className="text-sm">
-            The DAO Cadre votes on Agent Applications. Interested in joining?
+            The Curator DAO votes on Agent Applications. Interested in joining?
             Apply below.
           </p>
         </div>
@@ -136,7 +136,7 @@ export function CreateCadreCandidates() {
           />
           <div className="relative">
             <Textarea
-              placeholder="Why do you want to be a Cadre candidate?"
+              placeholder="Why do you want to join the Curator DAO?"
               value={content}
               onChange={handleContentChange}
               className="h-32 w-full resize-none bg-gray-600/10 p-3 text-white"
@@ -149,7 +149,7 @@ export function CreateCadreCandidates() {
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button
             type="submit"
-            className="bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 text-neutral-300"
             disabled={
               createCadreCandidateMutation.isPending ||
               !selectedAccount?.address

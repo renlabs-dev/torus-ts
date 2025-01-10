@@ -64,7 +64,7 @@ export function CreateComment({
       if (
         !cadreUsers?.some((user) => user.userKey === selectedAccount.address)
       ) {
-        setError("Only Cadre members can submit comments in DAO mode.");
+        setError("Only Curator DAO members can submit comments in DAO mode.");
         return;
       }
     }
@@ -156,7 +156,7 @@ export function CreateComment({
               ? "Please connect your wallet to submit a comment."
               : itemType === "PROPOSAL"
                 ? `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`
-                : "Only Cadre members can submit comments in DAO Applications."}
+                : "Only Curator DAO members can submit comments in DAO Applications."}
           </p>
         )}
       </form>

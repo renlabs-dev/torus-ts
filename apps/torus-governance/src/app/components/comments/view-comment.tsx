@@ -94,7 +94,7 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
   return (
     <div className="flex w-full flex-row items-center justify-between gap-1 pb-2">
       <h2 className="w-full text-start text-lg font-semibold">
-        {itemType === "PROPOSAL" ? "Proposal Discussion" : "DAO Cadre Comments"}
+        {itemType === "PROPOSAL" ? "Proposal Discussion" : "Curator DAO Comments"}
       </h2>
       <ToggleGroup
         type="single"
@@ -108,11 +108,10 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
             key={sorter.sortBy}
             variant="outline"
             value={sorter.sortBy}
-            className={`px-3 py-1 text-sm ${
-              sortBy === sorter.sortBy
+            className={`px-3 py-1 text-sm ${sortBy === sorter.sortBy
                 ? "border-white"
                 : "bg-card text-muted-foreground"
-            }`}
+              }`}
           >
             {sorter.icon}
           </ToggleGroupItem>

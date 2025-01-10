@@ -148,8 +148,8 @@ const VoteCardFunctionsContent = (props: {
       {isAccountConnected && !isCadreUser && (
         <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
           <span>
-            You must be a Cadre Member to be able to vote on Agent Applications.
-            Consider applying to become a Cadre Member.
+            You must be a Curator DAO member to be able to vote on agent/module applications.
+            Consider applying to become a Curator DAO member.
           </span>
         </div>
       )}
@@ -219,7 +219,7 @@ export function AgentApplicationVoteTypeCard(props: {
 
   const ensureIsCadreUser = (): boolean => {
     if (!isCadreUser) {
-      toast.error("Only Cadre members can perform this action.");
+      toast.error("Only Curator DAO members can perform this action.");
       return false;
     }
     return true;

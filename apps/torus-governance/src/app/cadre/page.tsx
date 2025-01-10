@@ -15,14 +15,14 @@ export default function CadrePage() {
 
       <CadreSectionContainer>
         <div className="mb-4 w-full border-b border-gray-500 border-white/20 pb-1 text-gray-400">
-          <h2 className="text-start text-lg font-semibold text-gray-300">Cadre Requests</h2>
+          <h2 className="text-start text-lg font-semibold text-gray-300">Curator DAO Join Requests</h2>
         </div>
         <CadreRequestsList />
       </CadreSectionContainer >
 
       <CadreSectionContainer>
         <div className="mb-4 w-full border-b border-gray-500 border-white/20 pb-1 text-gray-400">
-          <h2 className="text-start text-lg font-semibold text-gray-300">Cadre Members Discord Id's</h2>
+          <h2 className="text-start text-lg font-semibold text-gray-300">Curator DAO Members</h2>
         </div>
         <CadreMembersList />
       </CadreSectionContainer>
