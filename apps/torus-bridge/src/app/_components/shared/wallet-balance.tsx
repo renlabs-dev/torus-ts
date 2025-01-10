@@ -2,16 +2,17 @@
 
 import React, { useCallback } from "react";
 
-import { Lock } from "lucide-react";
 import { erc20Abi } from "viem";
 import * as wagmi from "wagmi";
 
+import Image from "next/image";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
 const TESTNET: boolean = true;
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -92,19 +93,40 @@ export function WalletBalance() {
     {
       amount: userAccountFreeBalance(),
       label: TORUS_NETWORK_NAME,
-      icon: <Lock size={16} />,
+      icon: (
+        <Image
+          width={16}
+          height={16}
+          alt="Torus Balance"
+          src="/torus-balance-icon.svg"
+        />
+      ),
       address: selectedAccount?.address,
     },
     {
       amount: torusEvmBalance?.value ?? 0n,
-      label: `${torusEvmChain.name} EMV`,
-      icon: <Lock size={16} />,
+      label: `${torusEvmChain.name} EVM`,
+      icon: (
+        <Image
+          width={16}
+          height={16}
+          alt="Torus EVM Balance"
+          src="/torus-evm-balance-icon.svg"
+        />
+      ),
       address: evmAddress,
     },
     {
       amount: baseBalance,
       label: `${baseChain.name}`,
-      icon: <Lock size={16} />,
+      icon: (
+        <Image
+          width={16}
+          height={16}
+          alt="Base Balance"
+          src="/torus-base-balance-icon.svg"
+        />
+      ),
       address: evmAddress,
     },
   ];
