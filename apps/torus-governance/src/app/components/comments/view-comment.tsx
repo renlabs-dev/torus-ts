@@ -41,18 +41,21 @@ export type CommentInteractionReactionType = NonNullable<
 
 type SorterTypes = "newest" | "oldest" | "mostUpvotes";
 
-const commentSorters: { icon: JSX.Element; sortBy: SorterTypes }[] = [
+const commentSorters: { icon: JSX.Element; sortBy: SorterTypes, description: string }[] = [
   {
     icon: <ClockArrowDown />,
     sortBy: "oldest",
+    description: "oldest",
   },
   {
     icon: <ClockArrowUp />,
     sortBy: "newest",
+    description: "newest",
   },
   {
     icon: <ThumbsUp />,
     sortBy: "mostUpvotes",
+    description: "most upvotes",
   },
 ];
 
@@ -109,9 +112,10 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
             variant="outline"
             value={sorter.sortBy}
             className={`px-3 py-1 text-sm ${sortBy === sorter.sortBy
-                ? "border-white"
-                : "bg-card text-muted-foreground"
+              ? "border-white"
+              : "bg-card text-muted-foreground"
               }`}
+            title={`Sort comments by ${sorter.description}`}
           >
             {sorter.icon}
           </ToggleGroupItem>
@@ -305,6 +309,7 @@ export function ViewComment({
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
+                      title="Upvote"
                       onClick={() => handleVote(comment.id, "LIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === "LIKE" ? "text-green-500" : "hover:text-green-500"}`}
@@ -314,6 +319,7 @@ export function ViewComment({
                     </Button>
                     <Button
                       variant="outline"
+                      title="Downvote"
                       onClick={() => handleVote(comment.id, "DISLIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === "DISLIKE" ? "text-red-500" : "hover:text-red-500"}`}
@@ -327,6 +333,7 @@ export function ViewComment({
                   <p className="text-muted-foreground">{comment.content}</p>
                   <Button
                     variant="outline"
+                    title="Report comment"
                     onClick={() => setCommentId(comment.id)}
                     type="button"
                     className="absolute bottom-2 right-2 h-7 border border-red-500 px-1.5 text-red-500 opacity-30 transition duration-200 hover:text-red-500 hover:opacity-100"
