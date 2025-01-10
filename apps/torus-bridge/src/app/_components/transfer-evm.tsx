@@ -12,17 +12,14 @@ import {
   CardHeader,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   TransactionStatus,
 } from "@torus-ts/ui";
 import { smallAddress, toNano } from "@torus-ts/utils/subspace";
 import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import Image from "next/image";
+import { ArrowLeftRight } from "lucide-react";
 
 export function TransferEVM() {
   const [mode, setMode] = useState<"bridge" | "withdraw">("bridge");
@@ -35,6 +32,10 @@ export function TransferEVM() {
       finalized: false,
     },
   );
+
+  const toggleMode = () => {
+    setMode(mode === "bridge" ? "withdraw" : "bridge");
+  };
 
   const { transfer, selectedAccount } = useTorus();
   const { data: walletClient } = useWalletClient();
@@ -101,7 +102,7 @@ export function TransferEVM() {
       );
       setTransactionStatus({
         status: "SUCCESS",
-        message: `Transaction sent: ${txHash}`,
+        message: `Transaction sent: ${smallAddress(txHash)}`,
         finalized: true,
       });
       setAmount("");
@@ -123,25 +124,24 @@ export function TransferEVM() {
     }
   };
 
+  const fromChain = mode === "bridge" ? "Torus" : "Torus EVM";
+  const toChain = mode === "bridge" ? "Torus EVM" : "Torus";
+
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
       <Card className="flex w-full animate-fade flex-col gap-4 space-y-4 p-6 md:w-3/5">
-        <div className="space-y-2">
-          <Label htmlFor="action">Select Action</Label>
-          <Select
-            value={mode}
-            onValueChange={(value) => setMode(value as "bridge" | "withdraw")}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select mode" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bridge">Add funds to Torus EVM</SelectItem>
-              <SelectItem value="withdraw">
-                Withdraw funds from Torus EVM
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="space-y-4">
+          <div className="flex items-end gap-2">
+            <div className="w-full">
+              <ChainField name="from" label="From" chainName={fromChain} />
+            </div>
+            <div className="flex flex-1 flex-col items-center">
+              <SwapActionButton onClick={toggleMode} />
+            </div>
+            <div className="w-full">
+              <ChainField name="to" label="To" chainName={toChain} />
+            </div>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -239,5 +239,49 @@ export function TransferEVM() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+interface ChainFieldProps {
+  name: string;
+  label: string;
+  chainName: string;
+}
+
+function ChainField({ label, chainName }: ChainFieldProps) {
+  const isTorusEVM = chainName === "Torus EVM";
+  return (
+    <div className="flex w-full flex-col gap-2">
+      <Label>{label}</Label>
+      <Button
+        size="lg"
+        variant="outline"
+        disabled={true}
+        className="flex w-full items-center justify-between p-2 px-0 hover:cursor-default hover:bg-background disabled:opacity-100"
+      >
+        <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
+          <Image
+            src={
+              isTorusEVM
+                ? "/torus-evm-balance-icon.svg"
+                : "/torus-balance-icon.svg"
+            }
+            alt={label}
+            width={28}
+            height={28}
+          />
+        </div>
+        <span className="w-full">{chainName}</span>
+      </Button>
+    </div>
+  );
+}
+
+function SwapActionButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onClick}>
+      <ArrowLeftRight className="h-4 w-4" />
+      <span className="sr-only">Swap chains</span>
+    </Button>
   );
 }
