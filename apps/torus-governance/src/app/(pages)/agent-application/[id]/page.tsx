@@ -16,7 +16,7 @@ export default async function AgentApplicationView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12 bg-neutral-900/70 p-4 rounded-2xl">
+    <div className="mx-auto flex w-full max-w-screen-xl flex-col bg-neutral-900/70 p-4 rounded-2xl max-h-[90vh] overflow-auto">
       <Button
         asChild
         variant="link"
