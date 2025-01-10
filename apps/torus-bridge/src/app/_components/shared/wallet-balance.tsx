@@ -12,21 +12,33 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
-// eslint-disable-next-line @typescript-eslint/no-inferrable-types
-const TESTNET: boolean = true;
+import { getChainValuesOnEnv } from "~/config";
+import { env } from "~/env";
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-const TORUS_NETWORK_NAME: string = TESTNET ? "Torus Testnet" : "Torus";
+const TORUS_NETWORK_NAME: string = {
+  mainnet: "Torus",
+  testnet: "Torus Testnet",
+}[env.NEXT_PUBLIC_CHAIN_ENV];
 
 export function WalletBalance() {
+  const getChainValues = getChainValuesOnEnv(env.NEXT_PUBLIC_CHAIN_ENV);
+
+  const { chainId: torusEvmChainId } = getChainValues("torus");
+  const { chainId: baseChainId } = getChainValues("base");
+
+  // Torus
   const { api, isAccountConnected, isInitialized, selectedAccount } =
     useTorus();
 
+  // EVM
   const { address: evmAddress } = wagmi.useAccount();
+
+  console.log("torusEvmChainId", torusEvmChainId);
+  console.log("baseChainId", baseChainId);
 
   // -- Torus EVM --
 
-  const torusEvmClient = wagmi.useClient({ chainId: TESTNET ? 21001 : 21000 });
+  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
   if (torusEvmClient == null) throw new Error("Torus EVM client not found");
 
   const { chain: torusEvmChain } = torusEvmClient;
@@ -38,7 +50,7 @@ export function WalletBalance() {
 
   // -- Base --
 
-  const baseClient = wagmi.useClient({ chainId: TESTNET ? 84532 : 8453 });
+  const baseClient = wagmi.useClient({ chainId: baseChainId });
   if (baseClient == null) throw new Error("Base client not found");
 
   const { chain: baseChain } = baseClient;
@@ -53,17 +65,6 @@ export function WalletBalance() {
         // watch: true,
       })
     : null;
-
-  // // Asks the user to track token on their wallet(??)
-  // const { watchAssetAsync } = wagmi.useWatchAsset();
-  // watchAssetAsync({
-  //   type: "ERC20",
-  //   options: {
-  //     address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
-  //     symbol: "TORUS",
-  //     decimals: 18,
-  //   },
-  // });
 
   const baseBalance = baseBalanceQuery?.data;
 

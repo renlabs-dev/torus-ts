@@ -2,8 +2,16 @@
 // Warp Route IDs use format `SYMBOL/chainname1-chainname2...` where chains are ordered alphabetically
 // If left null, all warp routes in the configured registry will be included
 // If set to a list (including an empty list), only the specified routes will be included
+
+import { env } from "~/env";
+
+const warpRoute = {
+  mainnet: "TORUS/base-torus",
+  testnet: "TORUS/basesepolia-torustestnet",
+}[env.NEXT_PUBLIC_CHAIN_ENV];
+
 export const warpRouteWhitelist: string[] | null = [
-  "TORUS/basesepolia-torustestnet",
+  warpRoute,
   // 'ETH/ethereum-viction'
 ];
 
