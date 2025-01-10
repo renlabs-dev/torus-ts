@@ -3,21 +3,23 @@ import {
   CopyButton,
   MessageStatus,
   MessageTimeline,
-  Modal,
-  SpinnerIcon,
   useAccountForChain,
   useMessageTimeline,
   useTimeout,
   useWalletDetails,
-  WideChevronIcon,
 } from "@hyperlane-xyz/widgets";
-import Image from "next/image";
+// import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { TokenIcon } from "~/app/_components/token-icon";
-import { LinkIcon } from "lucide-react";
+// import { TokenIcon } from "~/app/_components/token-icon";
+import {
+  Ban,
+  ChevronsRight,
+  CircleCheckBig,
+  LinkIcon,
+  MailCheck,
+} from "lucide-react";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { ChainLogo } from "~/app/_components/chain-logo";
 import { useWarpCore, tryFindToken } from "~/hooks/token";
 import {
   getChainDisplayName,
@@ -29,13 +31,21 @@ import type { TransferContext } from "~/utils/types";
 import { FinalTransferStatuses, TransferStatus } from "~/utils/types";
 import {
   formatTimestamp,
-  getIconByTransferStatus,
   isTransferFailed,
   isTransferSent,
 } from "~/utils/transfer";
 import type { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { config } from "~/consts/config";
-import { links } from "@torus-ts/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  links,
+  Loading,
+} from "@torus-ts/ui";
+import { smallAddress } from "@torus-ts/utils/subspace";
 
 export function TransfersDetailsModal({
   isOpen,
@@ -125,116 +135,91 @@ export function TransfersDetailsModal({
     [timestamp],
   );
 
-  const explorerLink = getHypExplorerLink(multiProvider, origin, msgId);
-
   return (
-    <Modal isOpen={isOpen} close={onClose} panelClassname="p-4 md:p-5 max-w-sm">
-      {isFinal && (
-        <div className="flex justify-between">
-          <h2 className="font-medium text-gray-600">{date}</h2>
-          <div className="flex items-center font-medium">
-            {isSent ? (
-              <h3 className="text-primary-500">Sent</h3>
-            ) : (
-              <h3 className="text-red-500">Failed</h3>
-            )}
-            <Image
-              src={getIconByTransferStatus(status)}
-              width={25}
-              height={25}
-              alt=""
-              className="ml-2"
-            />
+    <AlertDialog open={isOpen}>
+      <AlertDialogContent className="max-w-md">
+        <AlertDialogHeader>
+          {isFinal && (
+            <div className="flex items-start justify-between">
+              <h2 className="font-medium text-gray-600">{date}</h2>
+              <div className="flex items-center gap-1 font-medium">
+                {getIconByTransferStatus(status)}
+                {isSent ? <p>Sent</p> : <p>Failed</p>}
+              </div>
+            </div>
+          )}
+        </AlertDialogHeader>
+
+        <div className="mt-4 flex w-full items-center justify-center">
+          <div className="flex items-baseline">
+            <span className="text-lg font-medium">{amount}</span>
+            <span className="ml-1 text-lg font-medium">{token?.symbol}</span>
           </div>
         </div>
-      )}
 
-      <div className="bg-primary-200 mt-4 flex w-full items-center justify-center rounded-full p-3">
-        <TokenIcon token={token} size={30} />
-        <div className="items ml-2 flex items-baseline">
-          <span className="text-xl font-medium">{amount}</span>
-          <span className="ml-1 text-xl font-medium">{token?.symbol}</span>
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-around">
-        <div className="ml-2 flex flex-col items-center">
-          <ChainLogo chainName={origin} size={64} background={true} />
-          <span className="mt-1 font-medium tracking-wider">
+        <div className="flex items-center justify-around rounded-md border border-border p-2">
+          <span className="font-medium tracking-wider">
             {getChainDisplayName(multiProvider, origin, true)}
           </span>
-        </div>
-        <div className="mb-6 flex sm:space-x-1.5">
-          <WideChevron />
-          <WideChevron />
-        </div>
-        <div className="mr-2 flex flex-col items-center">
-          <ChainLogo chainName={destination} size={64} background={true} />
-          <span className="mt-1 font-medium tracking-wider">
+
+          <ChevronsRight className="h-6 w-6" />
+
+          <span className="font-medium tracking-wider">
             {getChainDisplayName(multiProvider, destination, true)}
           </span>
         </div>
-      </div>
 
-      {isFinal ? (
-        <div className="mt-5 flex flex-col space-y-4">
-          <TransferProperty
-            name="Sender Address"
-            value={sender}
-            url={fromUrl}
-          />
-          <TransferProperty
-            name="Recipient Address"
-            value={recipient}
-            url={toUrl}
-          />
-          {token?.addressOrDenom && (
+        {isFinal ? (
+          <div className="mt-5 flex flex-col space-y-4">
             <TransferProperty
-              name="Token Address or Denom"
-              value={token.addressOrDenom}
+              name="Sender Address"
+              value={sender}
+              url={fromUrl}
             />
-          )}
-          {originTxHash && (
             <TransferProperty
-              name="Origin Transaction Hash"
-              value={originTxHash}
-              url={originTxUrl}
+              name="Recipient Address"
+              value={recipient}
+              url={toUrl}
             />
-          )}
-          {msgId && <TransferProperty name="Message ID" value={msgId} />}
-          {explorerLink && (
-            <div className="flex justify-between">
-              <span className="text-gray-350 text-xs leading-normal tracking-wider">
-                <a
-                  className="text-gray-350 text-xs leading-normal tracking-wider underline underline-offset-2 hover:opacity-80 active:opacity-70"
-                  href={explorerLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View message in Hyperlane Explorer
-                </a>
-              </span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-4">
-          <SpinnerIcon width={60} height={60} className="mt-3" />
-          <div
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            className={`mt-5 text-center text-sm ${isFailed ? "text-red-600" : "text-gray-600"}`}
-          >
-            {statusDescription}
+            {token?.addressOrDenom && (
+              <TransferProperty
+                name="Token Address or Denom"
+                value={token.addressOrDenom}
+              />
+            )}
+            {originTxHash && (
+              <TransferProperty
+                name="Origin Transaction Hash"
+                value={originTxHash}
+                url={originTxUrl}
+              />
+            )}
+            {msgId && <TransferProperty name="Message ID" value={msgId} />}
           </div>
-          {showSignWarning && (
-            <div className="mt-3 text-center text-sm text-gray-600">
-              If your wallet does not show a transaction request or never
-              confirms, please try the transfer again.
+        ) : (
+          <div className="flex flex-col items-center justify-center py-4">
+            <Loading />
+            <div
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              className={`mt-5 text-center text-sm ${isFailed ? "text-red-600" : "text-gray-600"}`}
+            >
+              {statusDescription}
             </div>
-          )}
-        </div>
-      )}
-    </Modal>
+            {showSignWarning && (
+              <div className="mt-3 text-center text-sm text-gray-600">
+                If your wallet does not show a transaction request or never
+                confirms, please try the transfer again.
+              </div>
+            )}
+          </div>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogAction className="mt-4 w-full" onClick={onClose}>
+            Close Details
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -298,22 +283,10 @@ function TransferProperty({
           />
         </div>
       </div>
-      <div className="mt-1 truncate text-sm leading-normal tracking-wider">
-        {value}
+      <div className="mt-1 truncate text-sm leading-normal tracking-wider text-zinc-400">
+        {smallAddress(value, 21)}
       </div>
     </div>
-  );
-}
-
-function WideChevron() {
-  return (
-    <WideChevronIcon
-      width="16"
-      height="100%"
-      direction="e"
-      color="gray-350"
-      rounded={true}
-    />
   );
 }
 
@@ -392,4 +365,17 @@ export function getTransferStatusLabel(
     statusDescription = "Transfer failed, please try again.";
 
   return statusDescription;
+}
+
+export function getIconByTransferStatus(status: TransferStatus) {
+  switch (status) {
+    case TransferStatus.Delivered:
+      return <MailCheck className="h-4 w-4" />;
+    case TransferStatus.ConfirmedTransfer:
+      return <CircleCheckBig className="h-4 w-4" />;
+    case TransferStatus.Failed:
+      return <Ban className="h-4 w-4" />;
+    default:
+      return <Ban className="h-4 w-4" />;
+  }
 }

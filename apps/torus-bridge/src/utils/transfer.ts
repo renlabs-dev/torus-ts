@@ -66,16 +66,3 @@ export function formatTimestamp(timestamp: number): string {
   const date = new Date(timestamp);
   return `${date.toLocaleTimeString()} ${date.toLocaleDateString()}`;
 }
-
-export function getIconByTransferStatus(status: TransferStatus) {
-  switch (status) {
-    case TransferStatus.Delivered:
-      return "DeliveredIcon";
-    case TransferStatus.ConfirmedTransfer:
-      return "ConfirmedIcon";
-    case TransferStatus.Failed:
-      return "ErrorCircleIcon";
-    default:
-      return "ErrorCircleIcon";
-  }
-}
