@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.7) 10%,
+    rgba(0, 0, 0, 0.9) 20%,
+    rgba(0, 0, 0, 0.9) 100%
+  ), url('/greek-statue.png');
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  overflow: hidden; /* Prevents scrolling */
+  background-attachment: fixed; /* Keeps background fixed while scrolling */
+}
+
 /* width */
 ::-webkit-scrollbar {
   width: 4px;
