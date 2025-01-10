@@ -151,7 +151,7 @@ export function RegisterAgent(): JSX.Element {
     if (uploading) {
       return "Uploading...";
     }
-    return "Register Agent";
+    return "Register Agent/Module";
   };
 
   const { selectedAccount } = useTorus();
@@ -162,29 +162,29 @@ export function RegisterAgent(): JSX.Element {
         <div className="flex items-center gap-0">
           <Input
             onChange={(e) => setAgentKey(e.target.value)}
-            placeholder="Agent's address in SS58 format (eg. 12sPm....n88b)"
+            placeholder="Agent/Module address in SS58 format (eg. 12sPm....n88b)"
             type="text"
             value={agentKey}
-            title="Paste the same address that you used in your agent application!"
+            title="Paste the same address that you used in your agent/module application!"
           />
           <Button
             variant="default"
             className="w-fit px-4 md:block bg-neutral-700 text-foreground hover:text-neutral-700 hover:bg-foreground"
             onClick={() => setAgentKey(selectedAccount?.address ?? "")}
-            title="Only use your wallet's address if you also used it in your agent application!"
+            title="Only use your wallet's address if you also used it in your agent/module application!"
           >
             Paste my wallet address
           </Button>
         </div>
         <Input
           onChange={(e) => setName(e.target.value)}
-          placeholder="Agent Name (eg. agent-one)"
+          placeholder="Agent/Module Name (eg. agent-one)"
           type="text"
           value={name}
         />
         <Input
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="Agent URL (eg. https://agent-one.com)"
+          placeholder="Agent/Module URL (eg. https://agent-one.com)"
           type="text"
           value={url}
         />
@@ -197,14 +197,14 @@ export function RegisterAgent(): JSX.Element {
         <TabsContent value="edit" className="flex flex-col gap-1 mt-1">
           <Input
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Agent title..."
+            placeholder="Agent/Module title..."
             type="text"
             required
             value={title}
           />
           <Textarea
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Agent body... (Markdown supported, HTML tags are not supported)"
+            placeholder="Agent/Module body... (Markdown supported, HTML tags are not supported)"
             rows={5}
             required
             value={body}
@@ -230,8 +230,8 @@ export function RegisterAgent(): JSX.Element {
       <div className="flex items-start gap-2 text-sm text-yellow-500">
         <Info className="mt-[1px]" size={16} />
         <Label className="text-sm">
-          Note: When you click "Register Agent", the agent registration fee (currently X TORUS tokens) will be deducted from your wallet.
-          Even if you provided a different wallet address for your agent, the registration fee is paid from your wallet!
+          Note: When you click "Register Agent/Module", the registration fee (currently X TORUS tokens) will be deducted from your wallet.
+          Even if you provided a different wallet address for your agent/module, the registration fee is paid from your wallet!
         </Label>
       </div>
       <Button

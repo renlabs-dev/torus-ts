@@ -32,14 +32,15 @@ export function CreateModal() {
           variant="default"
           className="flex items-center gap-2"
           size="lg"
+          title="Apply to be allowed to register an agent or module on the network"
         >
-          Create Agent Application
+          Apply to register on the network
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%] bg-neutral-900">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Agent Application and Registration
+            Agent/Module Application and Registration
           </DialogTitle>
         </DialogHeader>
         <Select value={selectedView} onValueChange={setSelectedView}>
@@ -53,9 +54,9 @@ export function CreateModal() {
             </SelectItem>
             <SelectSeparator />
             <SelectItem value="create-agent-application">
-              Step 1: Create agent application
+              Step 1: Apply to register an agent/module
             </SelectItem>
-            <SelectItem value="register-agent">Step 2: Register agent after application approval</SelectItem>
+            <SelectItem value="register-agent">Step 2: Register agent/module after application approval</SelectItem>
           </SelectContent>
         </Select>
         {selectedView === "create-proposal" ? (

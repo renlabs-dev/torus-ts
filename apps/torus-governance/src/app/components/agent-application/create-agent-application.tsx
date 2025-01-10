@@ -164,7 +164,7 @@ export function CreateAgentApplication(): JSX.Element {
     if (uploading) {
       return "Uploading...";
     }
-    return "Submit Agent Application";
+    return "Submit Agent/Module Application";
   };
 
   const { selectedAccount } = useTorus();
@@ -172,10 +172,10 @@ export function CreateAgentApplication(): JSX.Element {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2" title="Use your wallet's address if you want your agent to use your wallet. This is the majority of cases!">
+        <div className="flex items-center gap-2" title="Use your wallet's address if you want your agent/module to use your wallet. This is the majority of cases!">
           <Input
             onChange={(e) => setApplicationKey(e.target.value)}
-            placeholder="Agent's address in SS58 format (eg. 12sPm....n88b)"
+            placeholder="Agent/Module address in SS58 format (eg. 12sPm....n88b)"
             type="text"
             required
             value={applicationKey}
@@ -190,7 +190,7 @@ export function CreateAgentApplication(): JSX.Element {
         </div>
         <Input
           onChange={(e) => setDiscordId(e.target.value)}
-          placeholder="Agent's discord ID"
+          placeholder="Agent/Module discord ID"
           type="text"
           required
           value={discordId}
@@ -213,7 +213,7 @@ export function CreateAgentApplication(): JSX.Element {
           <Textarea
             onChange={(e) => setBody(e.target.value)}
             placeholder="Application body... (Markdown supported, HTML tags are not supported)"
-            title="Make sure your application contains all the information necessary for the DAO to decide on your application!"
+            title="Make sure your application contains all the information necessary for the Curator DAO to decide on your application!"
             rows={5}
             required
             value={body}
@@ -248,14 +248,14 @@ export function CreateAgentApplication(): JSX.Element {
           >
             article
           </Link>{" "}
-          to avoid being denied by the Agent Curation.
+          to avoid being denied by the Curator DAO.
         </Label>
       </div>
       <div className="flex items-start gap-2 text-sm text-yellow-500">
         <Info className="mt-[1px]" size={16} />
         <Label className="text-sm">
-          Note: When you click "Submit Agent Application", the agent application fee (currently X TORUS tokens) will be deducted from your wallet.
-          Even if you provided a different wallet address for your agent, the application fee is paid from your wallet!
+          Note: When you click "Submit Agent/Module Application", the application fee (currently X TORUS tokens) will be deducted from your wallet.
+          Even if you provided a different wallet address for your agent/module, the application fee is paid from your wallet!
         </Label>
       </div>
       <Button
