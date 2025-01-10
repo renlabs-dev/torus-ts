@@ -27,7 +27,7 @@ export function Layout({
       <body
         className={cn(
           font.className,
-          `overscroll-none bg-background text-white`,
+          `overscroll-none bg-[#020202] text-white`,
           className,
         )}
       >

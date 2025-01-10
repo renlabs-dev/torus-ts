@@ -65,7 +65,7 @@ export function TransferTokenForm() {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({ isValidating }) => (
+      {({ isValidating, resetForm }) => (
         <Form className="flex flex-col">
           <div className="flex w-full flex-col gap-4 md:flex-row">
             <Card className="flex w-full animate-fade flex-col gap-4 p-6 md:w-3/5">
@@ -83,6 +83,7 @@ export function TransferTokenForm() {
               </CardContent>
               <CardFooter className="w-full px-0 pb-0 pt-6">
                 <ButtonSection
+                  resetForm={resetForm}
                   isReview={isReview}
                   isValidating={isValidating}
                   setIsReview={setIsReview}
