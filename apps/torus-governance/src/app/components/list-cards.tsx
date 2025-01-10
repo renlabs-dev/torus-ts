@@ -49,7 +49,7 @@ const NoContentFound: React.FC<{ viewMode: ViewModes }> = ({ viewMode }) => {
   if (viewMode === "proposals") {
     return <p>No proposals yet.</p>;
   }
-  return <p>No agent applications yet.</p>;
+  return <p>No agent/module applications yet.</p>;
 };
 
 type ViewModes = "proposals" | "agent-applications" | null;
@@ -170,7 +170,7 @@ const ListCardsContent = () => {
             <CardViewData
               title={title}
               author={app.payerKey}
-              // agentApplicationstatus={app.status}
+            // agentApplicationstatus={app.status}
             />
           </Link>
         );

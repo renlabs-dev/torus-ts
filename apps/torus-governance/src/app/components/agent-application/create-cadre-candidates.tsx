@@ -122,7 +122,7 @@ export function CreateCadreCandidates() {
       <PopoverContent className="mt-2 hidden w-[25em] md:block xl:mr-0">
         <div className="mt-1 flex w-full border-b border-white/20 pb-3">
           <p className="text-sm">
-            The Curator DAO votes on Agent Applications. Interested in joining?
+            The Curator DAO votes on agent/module applications. Interested in joining?
             Apply below.
           </p>
         </div>

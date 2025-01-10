@@ -16,18 +16,18 @@ export default async function AgentApplicationView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
+    <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12 bg-neutral-900/70 p-4 rounded-2xl">
       <Button
         asChild
         variant="link"
         className="mb-6 flex w-fit items-center gap-1.5 p-0"
       >
         <Link
-          href="/?view=proposals"
+          href="/?view=agent-applications"
           className="flex animate-fade-left items-center text-white transition duration-200"
         >
           <ArrowLeft className="h-5 w-5" />
-          Go back to agents list
+          Go back to agents/modules list
         </Link>
       </Button>
 
