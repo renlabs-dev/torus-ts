@@ -174,7 +174,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
               <Button
                 type="submit"
                 variant="default"
-                className="px-4 py-2 text-white transition duration-200"
+                className="px-4 py-2 text-neutral-800 transition duration-200"
                 disabled={reportCommentMutation.isPending}
               >
                 {reportCommentMutation.isPending ? "Submitting..." : "Submit"}
