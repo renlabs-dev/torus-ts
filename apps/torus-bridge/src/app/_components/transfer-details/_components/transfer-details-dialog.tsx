@@ -1,53 +1,38 @@
-import { ProtocolType, toBase64 } from "@hyperlane-xyz/utils";
+import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
-  CopyButton,
-  MessageStatus,
-  MessageTimeline,
   useAccountForChain,
-  useMessageTimeline,
   useTimeout,
   useWalletDetails,
 } from "@hyperlane-xyz/widgets";
-// import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-// import { TokenIcon } from "~/app/_components/token-icon";
-import {
-  Ban,
-  ChevronsRight,
-  CircleCheckBig,
-  LinkIcon,
-  MailCheck,
-} from "lucide-react";
+import { ChevronsRight } from "lucide-react";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { useWarpCore, tryFindToken } from "~/hooks/token";
-import {
-  getChainDisplayName,
-  hasPermissionlessChain,
-  isPermissionlessChain,
-} from "~/utils/chain";
+import { getChainDisplayName, hasPermissionlessChain } from "~/utils/chain";
 import { logger } from "~/utils/logger";
 import type { TransferContext } from "~/utils/types";
-import { FinalTransferStatuses, TransferStatus } from "~/utils/types";
+import { TransferStatus } from "~/utils/types";
 import {
   formatTimestamp,
   isTransferFailed,
   isTransferSent,
 } from "~/utils/transfer";
-import type { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
-import { config } from "~/consts/config";
+
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogHeader,
-  links,
   Loading,
 } from "@torus-ts/ui";
-import { smallAddress } from "@torus-ts/utils/subspace";
 
-export function TransfersDetailsModal({
+import { TransferProperty } from "./transfer-property";
+import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
+import { getTransferStatusLabel } from "./get-transfer-status-label";
+
+export function TransfersDetailsDialog({
   isOpen,
   onClose,
   transfer,
@@ -201,7 +186,7 @@ export function TransfersDetailsModal({
             <Loading />
             <div
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-              className={`mt-5 text-center text-sm ${isFailed ? "text-red-600" : "text-gray-600"}`}
+              className={`mt-5 text-center text-sm ${isFailed ? "text-red-600" : "text-white"}`}
             >
               {statusDescription}
             </div>
@@ -223,73 +208,6 @@ export function TransfersDetailsModal({
   );
 }
 
-// TODO consider re-enabling timeline
-export function Timeline({
-  transferStatus,
-  originTxHash,
-}: {
-  transferStatus: TransferStatus;
-  originTxHash?: string;
-}) {
-  const isFailed = transferStatus === TransferStatus.Failed;
-  const multiProtocolProvider = useMultiProvider();
-  const { stage, timings, message } = useMessageTimeline({
-    originTxHash: isFailed ? undefined : originTxHash,
-    multiProvider: multiProtocolProvider.toMultiProvider(),
-  });
-  const messageStatus = isFailed
-    ? MessageStatus.Failing
-    : (message?.status ?? MessageStatus.Pending);
-
-  return (
-    <div className="timeline-container mb-2 mt-6 flex w-full flex-col items-center justify-center">
-      <MessageTimeline
-        status={messageStatus}
-        stage={stage}
-        timings={timings}
-        timestampSent={message?.origin.timestamp}
-        hideDescriptions={true}
-      />
-    </div>
-  );
-}
-
-function TransferProperty({
-  name,
-  value,
-  url,
-}: {
-  name: string;
-  value: string;
-  url?: string;
-}) {
-  return (
-    <div>
-      <div className="flex items-center justify-between">
-        <label className="text-gray-350 text-sm leading-normal tracking-wider">
-          {name}
-        </label>
-        <div className="flex items-center space-x-2">
-          {url && (
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              <LinkIcon className="h-3 w-3" />
-            </a>
-          )}
-          <CopyButton
-            copyValue={value}
-            width={14}
-            height={14}
-            className="opacity-40"
-          />
-        </div>
-      </div>
-      <div className="mt-1 truncate text-sm leading-normal tracking-wider text-zinc-400">
-        {smallAddress(value, 21)}
-      </div>
-    </div>
-  );
-}
-
 // https://github.com/wagmi-dev/wagmi/discussions/2928
 function useSignIssueWarning(status: TransferStatus) {
   const [showWarning, setShowWarning] = useState(false);
@@ -308,74 +226,4 @@ function useSignIssueWarning(status: TransferStatus) {
 // Occurs when baseUrl has not other path (e.g. for manta explorer)
 function fixDoubleSlash(url: string) {
   return url.replace(/([^:]\/)\/+/g, "$1");
-}
-
-export function getHypExplorerLink(
-  multiProvider: MultiProtocolProvider,
-  chain: ChainName,
-  msgId?: string,
-) {
-  if (!config.enableExplorerLink || !chain || !msgId) return null;
-  const baseLink = `${links.explorer}/message/${msgId}`;
-
-  if (!isPermissionlessChain(multiProvider, chain)) return baseLink;
-
-  const chainMetadata = multiProvider.tryGetChainMetadata(chain);
-  if (!chainMetadata) return baseLink;
-
-  const serializedConfig = toBase64([chainMetadata]);
-  if (!serializedConfig) return baseLink;
-
-  const params = new URLSearchParams({ chains: serializedConfig });
-  return `${baseLink}?${params.toString()}`;
-}
-
-export function getTransferStatusLabel(
-  status: TransferStatus,
-  connectorName: string,
-  isPermissionlessRoute: boolean,
-  isAccountReady: boolean,
-) {
-  let statusDescription = "...";
-  if (!isAccountReady && !FinalTransferStatuses.includes(status))
-    statusDescription = "Please connect wallet to continue";
-  else if (status === TransferStatus.Preparing)
-    statusDescription = "Preparing for token transfer...";
-  else if (status === TransferStatus.CreatingTxs)
-    statusDescription = "Creating transactions...";
-  else if (status === TransferStatus.SigningApprove)
-    statusDescription = `Sign approve transaction in ${connectorName} to continue.`;
-  else if (status === TransferStatus.ConfirmingApprove)
-    statusDescription = "Confirming approve transaction...";
-  else if (status === TransferStatus.SigningTransfer)
-    statusDescription = `Sign transfer transaction in ${connectorName} to continue.`;
-  else if (status === TransferStatus.ConfirmingTransfer)
-    statusDescription = "Confirming transfer transaction...";
-  else if (status === TransferStatus.ConfirmedTransfer)
-    if (!isPermissionlessRoute)
-      statusDescription =
-        "Transfer transaction confirmed, delivering message...";
-    else
-      statusDescription =
-        "Transfer confirmed, the funds will arrive when the message is delivered.";
-  else if (status === TransferStatus.Delivered)
-    statusDescription = "Delivery complete, transfer successful!";
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (status === TransferStatus.Failed)
-    statusDescription = "Transfer failed, please try again.";
-
-  return statusDescription;
-}
-
-export function getIconByTransferStatus(status: TransferStatus) {
-  switch (status) {
-    case TransferStatus.Delivered:
-      return <MailCheck className="h-4 w-4" />;
-    case TransferStatus.ConfirmedTransfer:
-      return <CircleCheckBig className="h-4 w-4" />;
-    case TransferStatus.Failed:
-      return <Ban className="h-4 w-4" />;
-    default:
-      return <Ban className="h-4 w-4" />;
-  }
 }
