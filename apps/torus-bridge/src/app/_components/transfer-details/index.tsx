@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 
 import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
-import { TransfersDetailsModal } from "./transfer-details";
+import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
 
-export function SideBarMenu() {
+export function TransferDetails() {
   const didMountRef = useRef(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +30,7 @@ export function SideBarMenu() {
   return (
     <>
       {selectedTransfer && (
-        <TransfersDetailsModal
+        <TransfersDetailsDialog
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
