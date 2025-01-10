@@ -17,15 +17,24 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  TransactionStatus,
 } from "@torus-ts/ui";
 import { smallAddress, toNano } from "@torus-ts/utils/subspace";
 import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 
 export function TransferEVM() {
   const [mode, setMode] = useState<"bridge" | "withdraw">("bridge");
   const [amount, setAmount] = useState<string>("");
   const [userInputEthAddr, setUserInputEthAddr] = useState<string>("");
+  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
+    {
+      status: null,
+      message: null,
+      finalized: false,
+    },
+  );
 
   const { transfer, selectedAccount } = useTorus();
   const { data: walletClient } = useWalletClient();
@@ -36,13 +45,36 @@ export function TransferEVM() {
     : "";
   const amountRems = amount ? toNano(parseFloat(amount)) : BigInt(0);
 
+  const handleCallback = (callbackReturn: TransactionResult) => {
+    setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setUserInputEthAddr("");
+    }
+  };
+
   async function handleBridge() {
     if (!amount || !evmSS58Addr) return;
-    await transfer({
-      amount: amount,
-      to: evmSS58Addr,
-      refetchHandler: () => Promise.resolve(),
+    setTransactionStatus({
+      status: "PENDING",
+      message: "Accept the transaction in your wallet",
+      finalized: false,
     });
+    try {
+      await transfer({
+        amount: amount,
+        to: evmSS58Addr,
+        refetchHandler: () => Promise.resolve(),
+        callback: handleCallback,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setTransactionStatus({
+        status: "ERROR",
+        message: "Something went wrong with your transaction",
+        finalized: true,
+      });
+    }
   }
 
   async function handleWithdraw() {
@@ -52,17 +84,35 @@ export function TransferEVM() {
       chain == null ||
       selectedAccount == null
     ) {
-      // ED TODO: Fazer botao falando o erro
-      throw new Error("Invalid state for withdrawal");
-      // jairo esse cara sempre vai dar throw btw
+      toast.error("Invalid state for withdrawal");
+      return;
     }
-    const txHash = await withdrawFromTorusEvm(
-      walletClient,
-      chain,
-      selectedAccount.address as SS58Address,
-      amountRems,
-    );
-    console.log("Transaction sent:", txHash);
+    setTransactionStatus({
+      status: "PENDING",
+      message: "Accept the transaction in your wallet",
+      finalized: false,
+    });
+    try {
+      const txHash = await withdrawFromTorusEvm(
+        walletClient,
+        chain,
+        selectedAccount.address as SS58Address,
+        amountRems,
+      );
+      console.log("Transaction sent:", txHash);
+      setTransactionStatus({
+        status: "SUCCESS",
+        message: `Transaction sent: ${txHash}`,
+        finalized: true,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setTransactionStatus({
+        status: "ERROR",
+        message: "Something went wrong with your transaction",
+        finalized: true,
+      });
+    }
   }
 
   const handleSelfClick = () => {
@@ -167,11 +217,18 @@ export function TransferEVM() {
             </div>
           )}
         </CardContent>
-        <CardFooter className="w-full px-0 pb-0 pt-6">
+        <CardFooter className="flex w-full flex-col gap-3 px-0 pb-0 pt-6">
+          {transactionStatus.status && (
+            <TransactionStatus
+              status={transactionStatus.status}
+              message={transactionStatus.message}
+            />
+          )}
           <Button
             onClick={mode === "bridge" ? handleBridge : handleWithdraw}
             className="w-full"
             disabled={
+              transactionStatus.status === "PENDING" ||
               !amount ||
               (mode === "bridge" && !userInputEthAddr) ||
               (mode === "withdraw" && !selectedAccount)

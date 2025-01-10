@@ -168,7 +168,7 @@ export function TransfersDetailsDialog({
             />
             {token?.addressOrDenom && (
               <TransferProperty
-                name="Token Address or Denom"
+                name="Token Address"
                 value={token.addressOrDenom}
               />
             )}
