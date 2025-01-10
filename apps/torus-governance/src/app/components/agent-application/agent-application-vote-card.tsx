@@ -17,6 +17,7 @@ import {
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
+import { CreateCadreCandidates } from "./create-cadre-candidates";
 
 export type AgentApplicationVoteType = NonNullable<
   inferProcedureOutput<AppRouter["agentApplicationVote"]["byId"]>
@@ -146,11 +147,12 @@ const VoteCardFunctionsContent = (props: {
         </div>
       )}
       {isAccountConnected && !isCadreUser && (
-        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
+        <div className="absolute inset-0 z-50 flex flex-col gap-0.5 w-full items-center justify-center">
           <span>
-            You must be a Curator DAO member to be able to vote on agent/module applications.
+            You must be a Curator DAO member to be able to vote on agent/module applications and leave comments.
             Consider applying to become a Curator DAO member.
           </span>
+          <CreateCadreCandidates />
         </div>
       )}
     </div>
@@ -300,7 +302,7 @@ export function AgentApplicationVoteTypeCard(props: {
           <CardBarebones>
             <GovernanceStatusNotOpen
               status="ACCEPTED"
-              governanceModel="Agent application"
+              governanceModel="Agent/Module application"
             />
           </CardBarebones>
           {isAccountConnected && isCadreUser && (
@@ -326,7 +328,7 @@ export function AgentApplicationVoteTypeCard(props: {
         <CardBarebones>
           <GovernanceStatusNotOpen
             status="REMOVED"
-            governanceModel="Agent application"
+            governanceModel="Agent/Module application"
           />
         </CardBarebones>
       );
@@ -335,7 +337,7 @@ export function AgentApplicationVoteTypeCard(props: {
         <CardBarebones>
           <GovernanceStatusNotOpen
             status="REFUSED"
-            governanceModel="Agent application"
+            governanceModel="Agent/Module application"
           />
         </CardBarebones>
       );
