@@ -4,13 +4,13 @@ import { LoaderCircle } from "lucide-react";
 
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
-import { CreateCadreCandidates } from "~/app/components/agent-application/create-cadre-candidates";
 import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application/agent-application-vote-card";
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomAgentApplications } from "../../../../../utils";
 import { DaoStatusLabel } from "~/app/components/agent-application/agent-application-status-label";
+import { api } from "~/trpc/react";
 
 interface CustomContent {
   paramId: number;
@@ -70,6 +70,10 @@ export function AgentApplicationExpandedView(
     lastBlockNumber: lastBlock.data?.blockNumber ?? 0,
   };
 
+  const { selectedAccount } = useGovernance();
+  const { data: cadreUsers } = api.cadre.all.useQuery();
+  const userIsCuratorDaoMember = cadreUsers?.some((user) => user.userKey === selectedAccount?.address);
+
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-row items-center gap-2">
@@ -100,7 +104,7 @@ export function AgentApplicationExpandedView(
 
           {/* Comments Section */}
           <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
-          <CreateComment id={content.id} itemType="AGENT_APPLICATION" />
+          {userIsCuratorDaoMember && <CreateComment id={content.id} itemType="AGENT_APPLICATION" />}
 
           {/* Desktop Voter List */}
           <div className="hidden lg:block">
@@ -111,7 +115,6 @@ export function AgentApplicationExpandedView(
         {/* Right Column */}
         <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
           <DetailsCard {...detailsCardProps} />
-          <CreateCadreCandidates />
           {/* <VoteData proposalStatus={content.status} /> */}
         </div>
       </div>
