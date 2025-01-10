@@ -22,7 +22,6 @@ export const createTable = pgTableCreator((name) => `${name}`);
 import { extract_pgenum_values } from "./utils";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
-import { create } from "domain";
 
 // ==== Util ====
 
@@ -131,7 +130,8 @@ export const penalizeAgentVotesSchema = createTable("penalize_agent_votes", {
   id: serial("id").primaryKey(),
   agentKey: ss58Address("agent_key").notNull(),
   cadreKey: ss58Address("cadre_key").notNull().references(() => cadreSchema.userKey),
-  penaultyFactor: integer("penalty_factor").notNull(),
+  penaltyFactor: real("penalty_factor").notNull(),
+  content: text("content").notNull(),
 
   ...timeFields(),
 
@@ -139,7 +139,7 @@ export const penalizeAgentVotesSchema = createTable("penalize_agent_votes", {
   unique().on(t.agentKey, t.cadreKey),
   check(
     "percent_check",
-    sql`${t.penaultyFactor} >= 0 and ${t.penaultyFactor} <= 100`,
+    sql`${t.penaltyFactor} >= 0 and ${t.penaltyFactor} <= 100`,
   ),
 ]);
 
