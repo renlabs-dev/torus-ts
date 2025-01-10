@@ -25,6 +25,7 @@ import {
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogTitle,
   Loading,
 } from "@torus-ts/ui";
 
@@ -124,15 +125,18 @@ export function TransfersDetailsDialog({
     <AlertDialog open={isOpen}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          {isFinal && (
-            <div className="flex items-start justify-between">
-              <h2 className="font-medium text-gray-600">{date}</h2>
+          <div className="flex items-start justify-between">
+            <AlertDialogTitle>
+              <h3 className="text-base font-medium text-gray-600">{date}</h3>
+            </AlertDialogTitle>
+
+            {isFinal && (
               <div className="flex items-center gap-1 font-medium">
                 {getIconByTransferStatus(status)}
                 {isSent ? <p>Sent</p> : <p>Failed</p>}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </AlertDialogHeader>
 
         <div className="mt-4 flex w-full items-center justify-center">

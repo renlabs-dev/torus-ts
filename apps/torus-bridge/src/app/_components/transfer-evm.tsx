@@ -99,12 +99,12 @@ export function TransferEVM() {
         selectedAccount.address as SS58Address,
         amountRems,
       );
-      console.log("Transaction sent:", txHash);
       setTransactionStatus({
         status: "SUCCESS",
         message: `Transaction sent: ${txHash}`,
         finalized: true,
       });
+      setAmount("");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setTransactionStatus({

@@ -12,9 +12,11 @@ export function ButtonSection({
   isReview,
   isValidating,
   setIsReview,
+  resetForm,
 }: {
   isReview: boolean;
   isValidating: boolean;
+  resetForm: () => void;
   setIsReview: (b: boolean) => void;
 }) {
   const { values } = useFormikContext<TransferFormValues>();
@@ -25,7 +27,7 @@ export function ButtonSection({
   const onDoneTransactions = () => {
     setIsReview(false);
     setTransferLoading(false);
-    // resetForm();
+    resetForm();
   };
   const { triggerTransactions } = useTokenTransfer(onDoneTransactions);
 
