@@ -13,7 +13,7 @@ export default function HomePage(): JSX.Element {
     <main className="mx-auto flex min-w-full flex-col items-start gap-3 py-10 text-white lg:mt-[calc(20vh-64px)]">
       <IntroSection />
       <TransferDetails />
-      <div className="flex w-full flex-col gap-3">
+      <div className="mb-4 flex w-full flex-row gap-6">
         <SelectActionDialog />
         <GuideDialog />
       </div>

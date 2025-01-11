@@ -10,6 +10,7 @@ import {
   DialogDescription,
   links,
 } from "@torus-ts/ui";
+import { CircleHelp } from "lucide-react";
 
 import Link from "next/link";
 
@@ -42,9 +43,13 @@ export const tutorialData = [
 export function GuideDialog() {
   return (
     <Dialog>
-      <Button asChild variant="link" className="h-5 w-fit p-0">
-        <DialogTrigger>Feeling lost? Get help here!</DialogTrigger>
-      </Button>
+      <DialogTrigger asChild>
+        <Button variant="link" className="h-5 w-fit p-0">
+          <CircleHelp className="h-4 w-4" />
+          Feeling lost? Get help here!
+        </Button>
+      </DialogTrigger>
+
       <DialogContent className="max-h-[100vh] overflow-auto sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>Feeling Lost?</DialogTitle>
