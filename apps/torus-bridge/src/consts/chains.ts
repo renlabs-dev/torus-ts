@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import type { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
 import { ExplorerFamily } from "@hyperlane-xyz/sdk";
 import type { Address } from "@hyperlane-xyz/utils";
