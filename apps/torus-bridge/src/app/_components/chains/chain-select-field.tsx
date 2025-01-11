@@ -10,12 +10,13 @@ import { Button, Label } from "@torus-ts/ui";
 interface Props {
   name: string;
   label: string;
+  value?: string | null | undefined;
 }
 
-export function ChainSelectField({ name, label }: Props) {
+export function ChainSelectField({ name, label, value }: Props) {
   const [field] = useField<ChainName>(name);
 
-  const displayName = useChainDisplayName(field.value, true);
+  const displayName = useChainDisplayName(value ?? field.value, true);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -27,7 +28,7 @@ export function ChainSelectField({ name, label }: Props) {
         className="flex w-full items-center justify-between p-0 hover:cursor-default hover:bg-background disabled:opacity-100"
       >
         <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
-          <ChainLogo chainName={field.value} size={28} />
+          <ChainLogo chainName={value ?? field.value} size={28} />
         </div>
         <span className="w-full">{displayName}</span>
       </Button>
