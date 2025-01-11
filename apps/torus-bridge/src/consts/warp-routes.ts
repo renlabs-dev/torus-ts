@@ -10,13 +10,12 @@ export const WarpRoutesTs: WarpCoreConfig = {
       chainName: "basesepolia",
       standard: TokenStandard.EvmHypSynthetic,
       decimals: 18,
-      symbol: "TORUS",
-      name: "torustestnet",
-      addressOrDenom: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
+      symbol: "ETH",
+      name: "base",
+      addressOrDenom: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
       connections: [
         {
-          token:
-            "ethereum|torustestnet|0x10461F4F54229155F5C21554dE1e1a682Ca236E9",
+          token: "ethereum|torus|0x9925CdbeA5B91542bbA6e1fc967465b1C1ED7156",
         },
       ],
     },
@@ -26,11 +25,10 @@ export const WarpRoutesTs: WarpCoreConfig = {
       decimals: 18,
       symbol: "TORUS",
       name: "torustestnet",
-      addressOrDenom: "0x10461F4F54229155F5C21554dE1e1a682Ca236E9",
+      addressOrDenom: "0x9925CdbeA5B91542bbA6e1fc967465b1C1ED7156",
       connections: [
         {
-          token:
-            "ethereum|basesepolia|0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
+          token: "ethereum|base|0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
         },
       ],
     },

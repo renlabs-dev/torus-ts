@@ -6,17 +6,17 @@ import type { Address } from "@hyperlane-xyz/utils";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 
 export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
-  torustestnet: {
+  torus: {
     protocol: ProtocolType.Ethereum,
-    chainId: 21001,
-    domainId: 21001,
-    isTestnet: true,
-    name: "torustestnet",
-    displayName: "Torus Testnet",
-    nativeToken: { name: "torustestnet", symbol: "TORUS", decimals: 18 },
+    chainId: 21000,
+    domainId: 21000,
+    isTestnet: false,
+    name: "torus",
+    displayName: "Torus EVM",
+    nativeToken: { name: "torus", symbol: "TORUS", decimals: 18 },
     rpcUrls: [
       {
-        http: "https://api.testnet.torus.network",
+        http: "https://api.torus.network",
       },
     ],
     blocks: {
@@ -26,10 +26,10 @@ export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
     },
     blockExplorers: [
       {
-        name: "Torus Testnet Blockscout",
+        name: "Torus Mainnet Blockscout",
         family: ExplorerFamily.Blockscout,
-        url: "https://blockscout.testnet.torus.network",
-        apiUrl: "https://api.blockscout.testnet.torus.network/api",
+        url: "https://blockscout.torus.network",
+        apiUrl: "https://api.blockscout.torus.network/api",
       },
     ],
     logoURI: "/logo.svg",
