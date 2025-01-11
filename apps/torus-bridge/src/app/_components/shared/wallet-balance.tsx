@@ -2,9 +2,8 @@
 
 import React, { useCallback } from "react";
 
-import { erc20Abi } from "viem";
+// import { erc20Abi } from "viem";
 import * as wagmi from "wagmi";
-// TODO: TORUS TESTNET AND TORUS EVM  BASE SEPOLIA DOESN'T REFETCH
 
 import Image from "next/image";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
@@ -41,31 +40,25 @@ export function WalletBalance() {
 
   const { chain: torusEvmChain } = torusEvmClient;
 
-  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
-    wagmi.useBalance({
-      address: evmAddress,
-      chainId: torusEvmChain.id,
-    });
-
-  console.log(refetchTorusEvmBalance);
+  const { data: torusEvmBalance } = wagmi.useBalance({
+    address: evmAddress,
+    chainId: torusEvmChain.id,
+  });
 
   // -- Base --
 
   const baseClient = wagmi.useClient({ chainId: baseChainId });
   if (baseClient == null) throw new Error("Base client not found");
 
-  const { chain: baseChain } = baseClient;
+  // const { chain: baseChain } = baseClient;
 
-  const { data: baseBalanceQuery, refetch: refetchBaseBalanceQuery } =
-    wagmi.useReadContract({
-      chainId: baseChain.id,
-      address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
-      abi: erc20Abi,
-      functionName: "balanceOf",
-      args: evmAddress ? [evmAddress] : undefined,
-    });
-
-  console.log(refetchBaseBalanceQuery);
+  // const { data: baseBalanceQuery } = wagmi.useReadContract({
+  //   chainId: baseChain.id,
+  //   address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
+  //   abi: erc20Abi,
+  //   functionName: "balanceOf",
+  //   args: evmAddress ? [evmAddress] : undefined,
+  // });
 
   // -- Torus --
 
@@ -118,20 +111,20 @@ export function WalletBalance() {
       ),
       address: evmAddress,
     },
-    {
-      amount: baseBalanceQuery ?? 0,
-      // amount: baseBalance,
-      label: `${baseChain.name}`,
-      icon: (
-        <Image
-          width={16}
-          height={16}
-          alt="Base Balance"
-          src="/torus-base-balance-icon.svg"
-        />
-      ),
-      address: evmAddress,
-    },
+    // {
+    //   amount: baseBalanceQuery ? baseBalanceQuery : null,
+    //   // amount: baseBalance,
+    //   label: `${baseChain.name}`,
+    //   icon: (
+    //     <Image
+    //       width={16}
+    //       height={16}
+    //       alt="Base Balance"
+    //       src="/torus-base-balance-icon.svg"
+    //     />
+    //   ),
+    //   address: evmAddress,
+    // },
   ];
 
   return (

@@ -2,7 +2,11 @@
 
 import { useAccount, useWalletClient, useSwitchChain } from "wagmi";
 import { useCallback, useMemo, useState } from "react";
-import { convertH160ToSS58, withdrawFromTorusEvm } from "@torus-ts/subspace";
+import {
+  convertH160ToSS58,
+  withdrawFromTorusEvm,
+  waitForTransactionReceipt,
+} from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
@@ -26,6 +30,8 @@ import { env } from "~/env";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useRouter, useSearchParams } from "next/navigation";
 import { updateSearchParams } from "~/utils/query-params";
+import { initWagmi } from "~/context/evm-wallet-provider";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 const DEFAULT_MODE = "bridge";
 
@@ -42,6 +48,7 @@ export function TransferEVM() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
+  const multiProvider = useMultiProvider();
 
   const currentMode = useMemo(() => {
     return (
@@ -76,6 +83,11 @@ export function TransferEVM() {
       setUserInputEthAddr("");
     }
   };
+
+  const { wagmiConfig } = useMemo(
+    () => initWagmi(multiProvider),
+    [multiProvider],
+  );
 
   const refetchHandler = async () => {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
@@ -129,8 +141,8 @@ export function TransferEVM() {
       }
     }
     setTransactionStatus({
-      status: "PENDING",
-      message: "Accept the transaction in your wallet",
+      status: "STARTING",
+      message: "Transaction in progress",
       finalized: false,
     });
     try {
@@ -139,11 +151,21 @@ export function TransferEVM() {
         chain,
         selectedAccount.address as SS58Address,
         amountRems,
+        refetchHandler,
       );
+      setTransactionStatus({
+        status: "PENDING",
+        message: `Waiting for confirmations`,
+        finalized: false,
+      });
+      await waitForTransactionReceipt(wagmiConfig, {
+        hash: txHash,
+        confirmations: 2,
+      });
 
       setTransactionStatus({
         status: "SUCCESS",
-        message: `Transaction sent: ${smallAddress(txHash)}`,
+        message: `Transaction sent: ${smallAddress(txHash, 3)}`,
         finalized: true,
       });
       setAmount("");
@@ -156,6 +178,11 @@ export function TransferEVM() {
       });
     } finally {
       await refetchHandler();
+      setTransactionStatus({
+        status: null,
+        message: null,
+        finalized: false,
+      });
     }
   }
 
@@ -178,12 +205,12 @@ export function TransferEVM() {
   const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
   if (torusEvmClient == null) throw new Error("Torus EVM client not found");
 
-  const { chain: torusEvmChain } = torusEvmClient;
+  // const { chain: torusEvmChain } = torusEvmClient;
 
   const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
     wagmi.useBalance({
       address: evmAddress,
-      chainId: torusEvmChain.id,
+      chainId: torusEvmChainId,
     });
 
   const accountFreeBalance = useFreeBalance(

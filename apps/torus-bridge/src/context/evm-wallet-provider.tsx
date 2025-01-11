@@ -27,7 +27,7 @@ import { config } from "../consts/config";
 import { useWarpCore } from "../hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
-function initWagmi(multiProvider: MultiProtocolProvider) {
+export function initWagmi(multiProvider: MultiProtocolProvider) {
   const chains = getWagmiChainConfigs(multiProvider);
 
   const connectors = connectorsForWallets(

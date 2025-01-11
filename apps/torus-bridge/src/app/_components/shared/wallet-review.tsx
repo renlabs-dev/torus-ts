@@ -66,12 +66,12 @@ export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
               label="Amount"
               value={`${Number(amount) > 0 ? amount : 0} ${originTokenSymbol}`}
             />
-            {fees?.localQuote && fees.localQuote.amount > 0n && (
+            {/* {fees?.localQuote && fees.localQuote.amount > 0n && (
               <ItemText
                 label="Local Gas (est.)"
                 value={`${fees.localQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${fees.localQuote.token.symbol || ""}`}
               />
-            )}
+            )} */}
             {fees?.interchainQuote && fees.interchainQuote.amount > 0n && (
               <p className="flex">
                 <span className="min-w-[6.5rem]">Interchain Gas</span>
