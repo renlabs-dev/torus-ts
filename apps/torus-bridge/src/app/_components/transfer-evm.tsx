@@ -245,7 +245,8 @@ export function TransferEVM() {
     } else {
       // withdraw mode
       if (torusEvmBalance?.value) {
-        const maxBalanceString = (Number(torusEvmBalance.value) / 1e18).toFixed(
+        const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
+        const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(
           18,
         );
 
