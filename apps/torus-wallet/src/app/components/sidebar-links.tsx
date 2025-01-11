@@ -85,9 +85,11 @@ export const Sidebar = () => {
                   asChild
                   key={view.href}
                   variant="ghost"
+                  disabled={true}
                   className={`w-full justify-between gap-4 border-none px-3 text-base`}
                 >
-                  <Link href="https://bridge.torus.network">{view.title}</Link>
+                  Base Bridge Comming Soon
+                  {/* <Link href="https://bridge.torus.network">{view.title}</Link> */}
                 </Button>
               );
             }
