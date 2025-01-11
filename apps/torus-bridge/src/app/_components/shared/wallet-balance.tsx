@@ -4,6 +4,7 @@ import React, { useCallback } from "react";
 
 import { erc20Abi } from "viem";
 import * as wagmi from "wagmi";
+// TODO: TORUS TESTNET AND TORUS EVM  BASE SEPOLIA DOESN'T REFETCH
 
 import Image from "next/image";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
@@ -40,10 +41,13 @@ export function WalletBalance() {
 
   const { chain: torusEvmChain } = torusEvmClient;
 
-  const { data: torusEvmBalance } = wagmi.useBalance({
-    address: evmAddress,
-    chainId: torusEvmChain.id,
-  });
+  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
+    wagmi.useBalance({
+      address: evmAddress,
+      chainId: torusEvmChain.id,
+    });
+
+  console.log(refetchTorusEvmBalance);
 
   // -- Base --
 
@@ -52,13 +56,16 @@ export function WalletBalance() {
 
   const { chain: baseChain } = baseClient;
 
-  const baseBalanceQuery = wagmi.useReadContract({
-    chainId: baseChain.id,
-    address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: evmAddress ? [evmAddress] : undefined,
-  });
+  const { data: baseBalanceQuery, refetch: refetchBaseBalanceQuery } =
+    wagmi.useReadContract({
+      chainId: baseChain.id,
+      address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: evmAddress ? [evmAddress] : undefined,
+    });
+
+  console.log(refetchBaseBalanceQuery);
 
   // -- Torus --
 
@@ -68,7 +75,6 @@ export function WalletBalance() {
   );
   if (accountFreeBalance.isError) {
     console.error(accountFreeBalance.error);
-    console.log("shadowheart");
   }
   const userAccountFreeBalance = useCallback(() => {
     if (
@@ -113,7 +119,7 @@ export function WalletBalance() {
       address: evmAddress,
     },
     {
-      amount: baseBalanceQuery.data ?? 0,
+      amount: baseBalanceQuery ?? 0,
       // amount: baseBalance,
       label: `${baseChain.name}`,
       icon: (

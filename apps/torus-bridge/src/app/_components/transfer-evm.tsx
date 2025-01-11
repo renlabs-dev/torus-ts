@@ -77,6 +77,10 @@ export function TransferEVM() {
     }
   };
 
+  const refetchHandler = async () => {
+    await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
+  };
+
   async function handleBridge() {
     if (!amount || !evmSS58Addr) return;
     setTransactionStatus({
@@ -88,7 +92,7 @@ export function TransferEVM() {
       await transfer({
         amount: amount,
         to: evmSS58Addr,
-        refetchHandler: () => Promise.resolve(),
+        refetchHandler,
         callback: handleCallback,
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -136,6 +140,7 @@ export function TransferEVM() {
         selectedAccount.address as SS58Address,
         amountRems,
       );
+
       setTransactionStatus({
         status: "SUCCESS",
         message: `Transaction sent: ${smallAddress(txHash)}`,
@@ -149,6 +154,8 @@ export function TransferEVM() {
         message: "Something went wrong with your transaction",
         finalized: true,
       });
+    } finally {
+      await refetchHandler();
     }
   }
 
@@ -173,10 +180,11 @@ export function TransferEVM() {
 
   const { chain: torusEvmChain } = torusEvmClient;
 
-  const { data: torusEvmBalance } = wagmi.useBalance({
-    address: evmAddress,
-    chainId: torusEvmChain.id,
-  });
+  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
+    wagmi.useBalance({
+      address: evmAddress,
+      chainId: torusEvmChain.id,
+    });
 
   const accountFreeBalance = useFreeBalance(
     api,
