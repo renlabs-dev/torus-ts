@@ -10,7 +10,7 @@ export const evmChainValues = {
   torus: {
     mainnet: {
       name: "torus",
-      displayName: "Torus EVM",
+      displayName: "Torus",
       chainId: 21000,
     },
     testnet: {

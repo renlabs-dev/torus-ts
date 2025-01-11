@@ -7,11 +7,11 @@ import { TokenStandard } from "@hyperlane-xyz/sdk";
 export const WarpRoutesTs: WarpCoreConfig = {
   tokens: [
     {
-      chainName: "basesepolia",
+      chainName: "base",
       standard: TokenStandard.EvmHypSynthetic,
       decimals: 18,
       symbol: "ETH",
-      name: "base",
+      name: "Base",
       addressOrDenom: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
       connections: [
         {
@@ -20,11 +20,11 @@ export const WarpRoutesTs: WarpCoreConfig = {
       ],
     },
     {
-      chainName: "torustestnet",
+      chainName: "torus",
       standard: TokenStandard.EvmHypNative,
       decimals: 18,
       symbol: "TORUS",
-      name: "torustestnet",
+      name: "Torus",
       addressOrDenom: "0x9925CdbeA5B91542bbA6e1fc967465b1C1ED7156",
       connections: [
         {
