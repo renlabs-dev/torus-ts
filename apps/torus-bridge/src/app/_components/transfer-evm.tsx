@@ -235,8 +235,9 @@ export function TransferEVM() {
 
   const handleMaxClick = useCallback(() => {
     if (currentMode === "bridge") {
-      const maxBalance = userAccountFreeBalance();
+      let maxBalance = userAccountFreeBalance();
       if (maxBalance !== null) {
+        maxBalance = maxBalance - 1n * BigInt(1e18);
         const maxBalanceString = (Number(maxBalance) / 1e18).toFixed(18);
 
         setAmount(maxBalanceString.replace(/\.?0+$/, ""));
