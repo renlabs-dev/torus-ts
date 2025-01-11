@@ -138,7 +138,6 @@ const ListCardsContent = () => {
               proposalStatus={proposal.status}
               expirationBlock={proposal.expirationBlock}
               currentBlock={currentBlock}
-              favorablePercent={calcProposalFavorablePercent(proposal.status)}
             />
           </Link>
         );

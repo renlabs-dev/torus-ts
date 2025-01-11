@@ -1,11 +1,19 @@
+import type { ProposalStatus } from "@torus-ts/subspace";
 import { Skeleton } from "@torus-ts/ui";
+import { calcProposalFavorablePercent } from "~/utils";
 
 export const VotePercentageBar = (props: {
-  favorablePercent: number | null | undefined;
+  // favorablePercent: number | null | undefined;
+  proposalStatus: ProposalStatus;
 }) => {
-  const { favorablePercent } = props;
+  const { proposalStatus } = props;
+  if (!("Open" in proposalStatus)) return null;
 
-  if (favorablePercent === undefined) return null;
+  const haveVotes =
+    proposalStatus.Open.stakeFor > 0 || proposalStatus.Open.stakeAgainst > 0;
+  if (!haveVotes) return null;
+
+  const favorablePercent = calcProposalFavorablePercent(proposalStatus);
 
   if (favorablePercent === null) {
     return (

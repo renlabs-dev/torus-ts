@@ -40,7 +40,6 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
     author,
     proposalType,
     proposalStatus,
-    favorablePercent,
     expirationBlock,
     currentBlock,
     agentApplicationStatus,
@@ -89,7 +88,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
           )}
 
           {isProposalOpen && (
-            <VotePercentageBar favorablePercent={favorablePercent} />
+            <VotePercentageBar proposalStatus={proposalStatus} />
           )}
         </CardContent>
       </Card>
