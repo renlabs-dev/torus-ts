@@ -13,12 +13,16 @@ export function SwapChainsButton({ disabled }: { disabled?: boolean }) {
 
   const onClick = () => {
     if (disabled) return;
-    void setFieldValue("origin", destination);
-    void setFieldValue("destination", origin);
-    // Reset other fields on chain change
+
+    const newFrom = destination;
+    const newTo = origin;
+
+    void setFieldValue("origin", newFrom);
+    void setFieldValue("destination", newTo);
     void setFieldValue("tokenIndex", undefined);
     void setFieldValue("recipient", "");
-    handleChainChange(origin, destination);
+
+    handleChainChange(newFrom, newTo);
   };
 
   const handleChainChange = (from: string, to: string) => {

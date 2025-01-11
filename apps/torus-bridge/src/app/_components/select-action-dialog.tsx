@@ -9,11 +9,23 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowBigRightDash, Undo2 } from "lucide-react";
+// import { useTorus } from "@torus-ts/torus-provider";
+// import { useEffect, useState } from "react";
 
 export function SelectActionDialog() {
+  // const [open, setOpen] = useState(true);
+
+  // const { isAccountConnected } = useTorus();
+
+  // useEffect(() => {
+  //   if (!isAccountConnected) {
+  //     setOpen(false);
+  //   }
+  // }, [isAccountConnected]);
+
   return (
     <>
-      <AlertDialog defaultOpen>
+      <AlertDialog>
         <AlertDialogTrigger>
           <span className="mb-4 flex items-center gap-2 text-sm hover:underline lg:mt-[8vh]">
             <Undo2 className="h-4 w-4" />
