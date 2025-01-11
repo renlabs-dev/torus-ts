@@ -468,6 +468,8 @@ steps:
         from_secret: DOCKER_TOKEN
       repo: ghcr.io/renlabs-dev/torus-bridge
       tags:
+        - latest
+        - ${DRONE_BRANCH}
         - ${DRONE_COMMIT_SHA:0:7}
       dockerfile: docker/Dockerfile
       build_args: APP_NAME=torus-bridge
@@ -508,7 +510,6 @@ trigger:
     - drone
     - main
     - dev
-    - feat/torus-eth-bridge
   event:
     - push
   paths:
@@ -783,7 +784,6 @@ trigger:
       - drone
       - main
       - dev
-      - feat/torus-eth-bridge
   event:
     - push
   paths:
