@@ -100,7 +100,7 @@ export function WalletBalance() {
     },
     {
       amount: torusEvmBalance?.value ?? 0n,
-      label: `${torusEvmChain.name} EVM`,
+      label: torusEvmChain.name,
       icon: (
         <Image
           width={16}

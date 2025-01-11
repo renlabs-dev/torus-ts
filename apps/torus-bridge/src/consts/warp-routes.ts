@@ -24,7 +24,7 @@ export const WarpRoutesTs: WarpCoreConfig = {
       standard: TokenStandard.EvmHypNative,
       decimals: 18,
       symbol: "TORUS",
-      name: "Torus",
+      name: "Torus EVM",
       addressOrDenom: "0x9925CdbeA5B91542bbA6e1fc967465b1C1ED7156",
       connections: [
         {
