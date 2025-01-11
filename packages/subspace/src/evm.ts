@@ -1,5 +1,6 @@
 import { assert } from "tsafe";
 import type { Chain, WalletClient } from "viem";
+export { waitForTransactionReceipt } from "@wagmi/core";
 import { encodeFunctionData } from "viem";
 
 import { hexToU8a, stringToU8a } from "@polkadot/util";
@@ -67,6 +68,7 @@ export async function withdrawFromTorusEvm(
   chain: Chain,
   destination: SS58Address,
   value: bigint,
+  refetchHandler: () => Promise<void>,
 ) {
   if (!walletClient.account) {
     throw new Error("Wallet client account is undefined");
@@ -90,6 +92,8 @@ export async function withdrawFromTorusEvm(
     value,
     chain,
   });
+
+  await refetchHandler();
 
   return txHash;
 }

@@ -39,8 +39,8 @@ function WalletOptions() {
       updates.mode = "bridge";
     } else if (value === "base") {
       updates.mode = null;
-      updates.from = "basesepolia";
-      updates.to = "torustestnet";
+      updates.from = "base";
+      updates.to = "torus";
     }
 
     const newQuery = updateSearchParams(searchParams, updates);
