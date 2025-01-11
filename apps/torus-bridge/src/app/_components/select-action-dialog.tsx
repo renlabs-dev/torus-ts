@@ -5,34 +5,38 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  Button,
 } from "@torus-ts/ui";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowBigRightDash } from "lucide-react";
+import { ArrowBigRightDash, Undo2 } from "lucide-react";
 
 export function SelectActionDialog() {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline">Show Dialog</Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Select your desired Action:</AlertDialogTitle>
-        </AlertDialogHeader>
-        {SelectCardList.map((card) => (
-          <SelectCard
-            key={card.href}
-            href={card.href}
-            text={card.text}
-            description={card.description}
-            iconFrom={card.iconFrom}
-            iconTo={card.iconTo}
-          />
-        ))}
-      </AlertDialogContent>
-    </AlertDialog>
+    <>
+      <AlertDialog defaultOpen>
+        <AlertDialogTrigger>
+          <span className="mb-4 flex items-center gap-2 text-sm hover:underline lg:mt-[8vh]">
+            <Undo2 className="h-4 w-4" />
+            Go back to mode selection view
+          </span>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Select your desired Action:</AlertDialogTitle>
+          </AlertDialogHeader>
+          {SelectCardList.map((card) => (
+            <SelectCard
+              key={card.href}
+              href={card.href}
+              text={card.text}
+              description={card.description}
+              iconFrom={card.iconFrom}
+              iconTo={card.iconTo}
+            />
+          ))}
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
