@@ -5,33 +5,27 @@ import { useMemo, useState } from "react";
 import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
-import {
-  Button,
-  ToggleGroup,
-  ToggleGroupItem,
-  TransactionStatus,
-} from "@torus-ts/ui";
+import { Button, Card, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
 
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { CreateCadreCandidates } from "./create-cadre-candidates";
+import type { AgentApplication } from "@torus-ts/subspace";
+import { match } from "rustie";
 
 export type AgentApplicationVoteType = NonNullable<
   inferProcedureOutput<AppRouter["agentApplicationVote"]["byId"]>
 >;
 
-const voteOptions: AgentApplicationVoteType["vote"][] = [
-  "ACCEPT",
-  "REFUSE",
-  "REMOVE",
-];
+type WhitelistVoteType = "ACCEPT" | "REFUSE";
+
+const voteOptions: WhitelistVoteType[] = ["ACCEPT", "REFUSE"];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
-    <div className="hidden animate-fade-down animate-delay-200 md:block">
+    <div className="animate-fade-down animate-delay-200">
       <div className="pb-6 pl-0">
         <h3 className="text-lg">Cast your vote</h3>
       </div>
@@ -41,57 +35,69 @@ const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
 };
 
 const AlreadyVotedCardContent = (props: {
-  voted: Omit<AgentApplicationVoteType["vote"], "REMOVE">;
-  votingStatus: TransactionResult["status"];
+  voted: WhitelistVoteType | "REMOVE";
+  voteLoading: boolean;
   handleRemoveVote: () => void;
 }): JSX.Element => {
-  const { voted, votingStatus, handleRemoveVote } = props;
+  const { voted, handleRemoveVote, voteLoading } = props;
 
-  const getVotedText = (
-    voted: Omit<AgentApplicationVoteType["vote"], "REMOVE">,
-  ): JSX.Element => {
-    if (voted === "ACCEPT") {
-      return <span className="text-green-400">You already voted in favor</span>;
-    }
-    return <span className="text-red-400">You already voted against</span>;
+  const getVotedText = (voted: WhitelistVoteType | "REMOVE"): JSX.Element => {
+    const voteStatusText: Record<WhitelistVoteType | "REMOVE", JSX.Element> = {
+      ACCEPT: (
+        <span className="text-green-400">You already voted in favor.</span>
+      ),
+      REFUSE: <span className="text-red-400">You already voted against.</span>,
+      REMOVE: (
+        <span className="text-red-400">
+          You already voted to remove from whitelist.
+        </span>
+      ),
+    };
+
+    return voteStatusText[voted];
   };
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <Card className="flex flex-col rounded-md p-4">
       {getVotedText(voted)}
       <Button
-        variant="outline"
-        className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
+        variant="link"
+        className="w-fit p-0"
+        // className="flex w-fit items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
         onClick={handleRemoveVote}
         type="button"
       >
-        Remove Vote <TicketX className="h-5 w-5" />
+        {voteLoading ? (
+          "Processing..."
+        ) : (
+          <span className="flex items-center justify-center gap-2">
+            <TicketX className="h-5 w-5" />
+            Remove Vote
+          </span>
+        )}
       </Button>
-      {votingStatus && (
-        <TransactionStatus status={votingStatus} message={votingStatus} />
-      )}
-    </div>
+    </Card>
   );
 };
 
 const VoteCardFunctionsContent = (props: {
-  vote: AgentApplicationVoteType["vote"] | "UNVOTED";
-  votingStatus: TransactionResult["status"];
+  vote: WhitelistVoteType | "UNVOTED";
+  voteLoading: boolean;
   isAccountConnected: boolean;
   isCadreUser: boolean;
   handleVote: () => void;
-  setVote: (vote: AgentApplicationVoteType["vote"] | "UNVOTED") => void;
+  setVote: (vote: WhitelistVoteType | "UNVOTED") => void;
 }): JSX.Element => {
   const {
+    vote,
+    voteLoading,
+    isAccountConnected,
+    isCadreUser,
     handleVote,
     setVote,
-    vote,
-    votingStatus,
-    isCadreUser,
-    isAccountConnected,
   } = props;
 
-  function handleVotePreference(value: AgentApplicationVoteType["vote"] | "") {
+  function handleVotePreference(value: WhitelistVoteType | "") {
     if (value === "") return setVote("UNVOTED");
     return setVote(value);
   }
@@ -99,17 +105,17 @@ const VoteCardFunctionsContent = (props: {
   return (
     <div className="flex w-full flex-col items-end gap-4">
       <div
-        className={`relative z-20 flex w-full flex-col items-start gap-2 ${(!isAccountConnected || !isCadreUser) && "blur-md"}`}
+        className={`relative z-20 flex w-full flex-col items-start gap-2 ${
+          (!isAccountConnected || !isCadreUser) && "blur-md"
+        }`}
       >
         <ToggleGroup
           type="single"
           value={vote}
           onValueChange={(voteType) =>
-            handleVotePreference(
-              voteType as AgentApplicationVoteType["vote"] | "",
-            )
+            handleVotePreference(voteType as WhitelistVoteType | "")
           }
-          disabled={votingStatus === "PENDING" || !isCadreUser}
+          disabled={voteLoading || !isCadreUser}
           className="flex w-full gap-2"
         >
           {voteOptions.map((option) => (
@@ -117,8 +123,10 @@ const VoteCardFunctionsContent = (props: {
               key={option}
               variant="outline"
               value={option}
-              className={`w-full capitalize ${votingStatus === "PENDING" && "cursor-not-allowed"} ${option === vote ? "border-white" : "border-muted bg-card"}`}
-              disabled={votingStatus === "PENDING"}
+              className={`w-full capitalize ${
+                voteLoading && "cursor-not-allowed"
+              } ${option === vote ? "border-white" : "border-muted bg-card"}`}
+              disabled={voteLoading}
             >
               {option.toLocaleLowerCase()}
             </ToggleGroupItem>
@@ -127,19 +135,17 @@ const VoteCardFunctionsContent = (props: {
 
         <Button
           variant="outline"
-          className={`w-full ${vote === "UNVOTED" || votingStatus === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
-          disabled={
-            vote === "UNVOTED" || votingStatus === "PENDING" || !isCadreUser
-          }
+          className={`w-full ${
+            vote === "UNVOTED" || voteLoading
+              ? "cursor-not-allowed text-gray-400"
+              : ""
+          } `}
+          disabled={vote === "UNVOTED" || voteLoading || !isCadreUser}
           onClick={handleVote}
           type="button"
         >
           {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
         </Button>
-
-        {votingStatus && (
-          <TransactionStatus status={votingStatus} message={votingStatus} />
-        )}
       </div>
       {!isAccountConnected && (
         <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
@@ -161,27 +167,21 @@ const VoteCardFunctionsContent = (props: {
 };
 
 export function AgentApplicationVoteTypeCard(props: {
-  applicationStatus: "Pending" | "Accepted" | "Refused" | "Removed";
+  applicationStatus: AgentApplication["status"];
   applicationId: number;
 }) {
   const { applicationId, applicationStatus } = props;
   const { isAccountConnected, selectedAccount } = useGovernance();
 
-  const [vote, setVote] = useState<
-    AgentApplicationVoteType["vote"] | "UNVOTED"
-  >("UNVOTED");
-  const [votingStatus, setVotingStatus] =
-    useState<TransactionResult["status"]>(null);
+  const [vote, setVote] = useState<WhitelistVoteType | "UNVOTED">("UNVOTED");
 
   const utils = api.useUtils();
-  const { data: votes } = api.agentApplicationVote.byIdActive.useQuery({
-    id: applicationId,
+  const { data: votes } = api.agentApplicationVote.byApplicationId.useQuery({
+    applicationId,
   });
   const { data: cadreUsers } = api.cadre.all.useQuery();
 
-  const userVote = votes?.find(
-    (vote) => vote.userKey === selectedAccount?.address,
-  );
+  const userVote = votes?.find((v) => v.userKey === selectedAccount?.address);
 
   const isCadreUser = useMemo(
     () => cadreUsers?.some((user) => user.userKey === selectedAccount?.address),
@@ -191,26 +191,28 @@ export function AgentApplicationVoteTypeCard(props: {
   const createVoteMutation = api.agentApplicationVote.create.useMutation({
     onSuccess: async () => {
       toast.success("Vote submitted successfully!");
-      await utils.agentApplicationVote.byId.invalidate({ id: applicationId });
-      setVotingStatus("SUCCESS");
+      await utils.agentApplicationVote.byApplicationId.invalidate({
+        applicationId,
+      });
     },
     onError: (error) => {
       toast.error(`Error submitting vote: ${error.message}`);
-      setVotingStatus("ERROR");
     },
   });
-
   const deleteVoteMutation = api.agentApplicationVote.delete.useMutation({
     onSuccess: async () => {
       toast.success("Vote removed successfully!");
-      await utils.agentApplicationVote.byId.invalidate({ id: applicationId });
-      setVotingStatus("SUCCESS");
+      await utils.agentApplicationVote.byApplicationId.invalidate({
+        applicationId,
+      });
     },
     onError: (error) => {
       toast.error(`Error removing vote: ${error.message}`);
-      setVotingStatus("ERROR");
     },
   });
+
+  const isMutating =
+    createVoteMutation.isPending || deleteVoteMutation.isPending;
 
   const ensureConnected = (): boolean => {
     if (!selectedAccount?.address) {
@@ -219,7 +221,6 @@ export function AgentApplicationVoteTypeCard(props: {
     }
     return true;
   };
-
   const ensureIsCadreUser = (): boolean => {
     if (!isCadreUser) {
       toast.error("Only Curator DAO members can perform this action.");
@@ -228,29 +229,14 @@ export function AgentApplicationVoteTypeCard(props: {
     return true;
   };
 
-  const submitVote = (vote: AgentApplicationVoteType["vote"]): void => {
+  const handleVoteAction = (voteType: WhitelistVoteType | "REMOVE"): void => {
     if (!ensureConnected() || !ensureIsCadreUser()) return;
 
-    setVotingStatus("PENDING");
-    const proceedWithVote = () => {
-      createVoteMutation.mutate({ applicationId, vote });
-    };
-
-    if (userVote) {
-      // Remove existing vote before submitting a new one
-      deleteVoteMutation.mutate(
-        { applicationId },
-        {
-          onSuccess: proceedWithVote,
-        },
-      );
-    } else {
-      proceedWithVote();
-    }
+    createVoteMutation.mutate({ applicationId, vote: voteType });
   };
 
   const handleRemoveFromWhitelist = () => {
-    submitVote("REMOVE");
+    handleVoteAction("REMOVE");
   };
 
   const handleVote = () => {
@@ -258,89 +244,104 @@ export function AgentApplicationVoteTypeCard(props: {
       toast.error("Please select a valid vote option.");
       return;
     }
-    submitVote(vote);
+    handleVoteAction(vote);
   };
 
   const handleRemoveVote = (): void => {
     if (!ensureConnected()) return;
-    setVotingStatus("PENDING");
 
     deleteVoteMutation.mutate({ applicationId });
   };
 
-  if (
-    (userVote && applicationStatus === "Pending") ||
-    (applicationStatus === "Accepted" && userVote?.vote === "REMOVE")
-  ) {
-    return (
-      <CardBarebones>
-        <AlreadyVotedCardContent
-          handleRemoveVote={handleRemoveVote}
-          voted={userVote.vote}
-          votingStatus={votingStatus}
-        />
-      </CardBarebones>
-    );
-  }
-
-  switch (applicationStatus) {
-    case "Pending":
+  return match(applicationStatus)({
+    Open() {
+      if (userVote) {
+        return (
+          <CardBarebones>
+            <AlreadyVotedCardContent
+              handleRemoveVote={handleRemoveVote}
+              voted={userVote.vote}
+              voteLoading={isMutating}
+            />
+          </CardBarebones>
+        );
+      }
       return (
         <CardBarebones>
           <VoteCardFunctionsContent
             isAccountConnected={isAccountConnected}
             handleVote={handleVote}
-            votingStatus={votingStatus}
+            voteLoading={isMutating}
             vote={vote}
             setVote={setVote}
             isCadreUser={!!isCadreUser}
           />
         </CardBarebones>
       );
-    case "Accepted":
-      return (
-        <div>
+    },
+    Resolved({ accepted }) {
+      if (accepted) {
+        if (userVote && userVote.vote === "REMOVE") {
+          return (
+            <CardBarebones>
+              <AlreadyVotedCardContent
+                handleRemoveVote={handleRemoveVote}
+                voted={userVote.vote}
+                voteLoading={isMutating}
+              />
+            </CardBarebones>
+          );
+        } else {
+          return (
+            <CardBarebones>
+              <GovernanceStatusNotOpen
+                status="ACCEPTED"
+                governanceModel="whitelist application"
+              >
+                {isAccountConnected && isCadreUser && (
+                  <Button
+                    // variant={"outline"}
+                    variant={"link"}
+                    className="w-fit p-0"
+                    // className="mt-2 flex w-fit items-center justify-between text-nowrap border border-red-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-red-500 transition duration-200 hover:border-red-400 hover:bg-red-500/15 active:bg-red-500/50"
+                    onClick={handleRemoveFromWhitelist}
+                    type="button"
+                    disabled={isMutating}
+                  >
+                    {isMutating ? (
+                      "Processing..."
+                    ) : (
+                      <span className="flex items-center justify-center gap-2 text-red-300">
+                        <Delete className="h-5 w-5" />
+                        Vote to remove from whitelist
+                      </span>
+                    )}
+                  </Button>
+                )}
+              </GovernanceStatusNotOpen>
+            </CardBarebones>
+          );
+        }
+      } else {
+        return (
           <CardBarebones>
             <GovernanceStatusNotOpen
-              status="ACCEPTED"
-              governanceModel="Agent/Module application"
+              status="REFUSED"
+              governanceModel="whitelist application"
             />
           </CardBarebones>
-          {isAccountConnected && isCadreUser && (
-            <Button
-              className="mt-6 flex w-full items-center justify-between text-nowrap border border-red-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-red-500 transition duration-200 hover:border-red-400 hover:bg-red-500/15 active:bg-red-500/50"
-              onClick={handleRemoveFromWhitelist}
-              type="button"
-              disabled={
-                createVoteMutation.isPending || deleteVoteMutation.isPending
-              }
-            >
-              {createVoteMutation.isPending || deleteVoteMutation.isPending
-                ? "Processing..."
-                : "Vote to remove from whitelist"}
-              <Delete className="h-5 w-5" />
-            </Button>
-          )}
-          {/* TODO: Review logic to connect an account and handle the case when isAccountConnected is false*/}
-        </div>
-      );
-    case "Removed":
+        );
+      }
+    },
+    Expired() {
       return (
         <CardBarebones>
           <GovernanceStatusNotOpen
-            status="REMOVED"
-            governanceModel="Agent/Module application"
+            status="EXPIRED"
+            governanceModel="whitelist application"
           />
         </CardBarebones>
       );
-    case "Refused":
-      return (
-        <CardBarebones>
-          <GovernanceStatusNotOpen
-            status="REFUSED"
-            governanceModel="Agent/Module application"
-          />
-        </CardBarebones>
-      );
-  }
+    },
+  });
 }

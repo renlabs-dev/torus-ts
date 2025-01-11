@@ -102,13 +102,11 @@ export function GovernanceProvider({
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(
-    lastBlock.data?.apiAtBlock,
+    api,
     selectedAccount?.address as SS58Address,
   );
 
-  const accountsNotDelegatingVoting = useAccountsNotDelegatingVoting(
-    lastBlock.data?.apiAtBlock,
-  );
+  const accountsNotDelegatingVoting = useAccountsNotDelegatingVoting(api);
 
   const isAccountPowerUser = useMemo(() => {
     if (selectedAccount?.address && accountsNotDelegatingVoting.data) {

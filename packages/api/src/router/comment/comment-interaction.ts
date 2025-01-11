@@ -79,7 +79,7 @@ export const commentInteractionRouter = {
       await ctx.db.refreshMaterializedView(commentDigestView);
     }),
   deleteReaction: authenticatedProcedure
-    .input(z.object({ commentId: z.number() }))
+    .input(COMMENT_INTERACTION_INSERT_SCHEMA.pick({ commentId: true}))
     .mutation(async ({ ctx, input }) => {
       const userKey = ctx.sessionData?.userKey;
       await ctx.db

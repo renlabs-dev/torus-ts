@@ -10,6 +10,7 @@ import { cadreVoteRouter } from "./router/cadre/cadre-vote";
 import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
+import { penaltyRouter } from "./router/penalty/penalty";
 
 import { createTRPCRouter } from "./trpc";
 
@@ -23,6 +24,7 @@ export const appRouter = createTRPCRouter({
   computedAgentWeight: computedAgentWeightRouter,
   // Agent Application
   agentApplicationVote: agentApplicationVoteRouter,
+  
   // Cadre
   cadre: cadreRouter,
   cadreVote: cadreVoteRouter,
@@ -31,6 +33,7 @@ export const appRouter = createTRPCRouter({
   comment: commentRouter,
   commentReport: commentReportRouter,
   commentInteraction: commentInteractionRouter,
+  penalty: penaltyRouter,
 });
 
 export type AppRouter = typeof appRouter;

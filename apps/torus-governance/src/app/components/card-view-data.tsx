@@ -3,6 +3,7 @@
 import { Clock, Crown } from "lucide-react";
 
 import type {
+  AgentApplication,
   ProposalData,
   ProposalStatus,
   SS58Address,
@@ -16,12 +17,16 @@ import { ProposalTypeLabel } from "./proposal/proposal-type-label";
 import { StatusLabel } from "./status-label";
 import { VoteLabel } from "./vote-label";
 import { VotePercentageBar } from "./vote-percentage-bar";
+import { AgentStatusLabel } from "./agent-application/agent-status-label";
+import { AgentActivityLabel } from "./agent-application/agent-activity-label";
 
 export interface ProposalCardProps {
   author: SS58Address;
   expirationBlock?: number;
   currentBlock?: number;
   proposalStatus?: ProposalStatus;
+  agentApplicationStatus?: AgentApplication["status"];
+  activeAgent?: boolean;
   favorablePercent?: number | null;
   proposalType?: ProposalData;
   title: string | null;
@@ -38,6 +43,8 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
     favorablePercent,
     expirationBlock,
     currentBlock,
+    agentApplicationStatus,
+    activeAgent,
   } = props;
 
   const isProposalOpen = proposalStatus && "Open" in proposalStatus;
@@ -67,7 +74,10 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
             {proposalType && <ProposalTypeLabel proposalType={proposalType} />}
 
             {proposalStatus && <StatusLabel status={proposalStatus} />}
-            {/* {daoStatus && <DaoStatusLabel status={daoStatus} />} */}
+            {activeAgent && <AgentActivityLabel />}
+            {agentApplicationStatus && (
+              <AgentStatusLabel status={agentApplicationStatus} />
+            )}
           </div>
         </CardHeader>
 

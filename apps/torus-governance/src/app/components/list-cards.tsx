@@ -15,6 +15,7 @@ import {
 } from "~/utils";
 import { CardSkeleton } from "./card-skeleton";
 import { CardViewData } from "./card-view-data";
+import { api } from "~/trpc/react";
 
 const ListCardsLoadingSkeleton = () => {
   return (
@@ -103,6 +104,8 @@ const ListCardsContent = () => {
     }
   };
 
+  const { data: activeAgents } = api.agent.all.useQuery();
+
   const renderProposals = useMemo((): JSX.Element[] => {
     if (!proposalsWithMeta) return [];
 
@@ -161,22 +164,28 @@ const ListCardsContent = () => {
           search &&
           !title?.toLocaleLowerCase().includes(search) &&
           !body.toLocaleLowerCase().includes(search) &&
-          !app.payerKey.toLocaleLowerCase().includes(search)
+          !app.payerKey.toLocaleLowerCase().includes(search) &&
+          !app.agentKey.toLocaleLowerCase().includes(search)
         )
           return null;
+
+        const isActiveAgent = !!activeAgents?.find(
+          (agent) => agent.key === app.agentKey,
+        );
 
         return (
           <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
             <CardViewData
               title={title}
               author={app.payerKey}
-            // agentApplicationstatus={app.status}
+              agentApplicationStatus={app.status}
+              activeAgent={isActiveAgent}
             />
           </Link>
         );
       })
       .filter((element): element is JSX.Element => element !== null);
-  }, [agentApplicationsWithMeta, searchParams]);
+  }, [agentApplicationsWithMeta, searchParams, activeAgents]);
 
   const content = useMemo(() => {
     switch (viewMode) {

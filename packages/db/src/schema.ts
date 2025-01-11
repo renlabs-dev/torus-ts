@@ -130,7 +130,7 @@ export const penalizeAgentVotesSchema = createTable("penalize_agent_votes", {
   id: serial("id").primaryKey(),
   agentKey: ss58Address("agent_key").notNull(),
   cadreKey: ss58Address("cadre_key").notNull().references(() => cadreSchema.userKey),
-  penaltyFactor: real("penalty_factor").notNull(),
+  penaltyFactor: integer("penalty_factor").notNull(),
   content: text("content").notNull(),
 
   ...timeFields(),

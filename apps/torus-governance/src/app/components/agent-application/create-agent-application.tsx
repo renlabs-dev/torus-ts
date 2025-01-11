@@ -172,7 +172,10 @@ export function CreateAgentApplication(): JSX.Element {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2" title="Use your wallet's address if you want your agent/module to use your wallet. This is the majority of cases!">
+        <div
+          className="flex items-center gap-2"
+          title="Use your wallet's address if you want your agent/module to use your wallet. This is the majority of cases!"
+        >
           <Input
             onChange={(e) => setApplicationKey(e.target.value)}
             placeholder="Agent/Module address in SS58 format (eg. 12sPm....n88b)"
@@ -182,7 +185,7 @@ export function CreateAgentApplication(): JSX.Element {
           />
           <Button
             variant="default"
-            className="w-fit px-4 md:block bg-neutral-700 text-foreground hover:text-neutral-700 hover:bg-foreground"
+            className="w-fit bg-neutral-700 px-4 text-foreground hover:bg-foreground hover:text-neutral-700 md:block"
             onClick={() => setApplicationKey(selectedAccount?.address ?? "")}
           >
             Paste my wallet address
@@ -197,11 +200,14 @@ export function CreateAgentApplication(): JSX.Element {
         />
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mt-3" title="Switch between editing and previewing the markdown content">
+        <TabsList
+          className="mt-3"
+          title="Switch between editing and previewing the markdown content"
+        >
           <TabsTrigger value="edit">Edit Content</TabsTrigger>
           <TabsTrigger value="preview">Preview Content</TabsTrigger>
         </TabsList>
-        <TabsContent value="edit" className="flex flex-col gap-1 mt-1">
+        <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
           <Input
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Application title"
@@ -219,7 +225,7 @@ export function CreateAgentApplication(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="rounded-md bg-muted p-4 mt-0">
+        <TabsContent value="preview" className="mt-0 rounded-md bg-muted p-4">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -254,8 +260,10 @@ export function CreateAgentApplication(): JSX.Element {
       <div className="flex items-start gap-2 text-sm text-yellow-500">
         <Info className="mt-[1px]" size={16} />
         <Label className="text-sm">
-          Note: When you click "Submit Agent/Module Application", the application fee (currently X TORUS tokens) will be deducted from your wallet.
-          Even if you provided a different wallet address for your agent/module, the application fee is paid from your wallet!
+          Note: When you click "Submit Agent/Module Application", the
+          application fee (currently X TORUS tokens) will be deducted from your
+          wallet. Even if you provided a different wallet address for your
+          agent/module, the application fee is paid from your wallet!
         </Label>
       </div>
       <Button
