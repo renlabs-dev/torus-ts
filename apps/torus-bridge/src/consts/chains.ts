@@ -12,7 +12,7 @@ export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
     domainId: 21000,
     isTestnet: false,
     name: "torus",
-    displayName: "Torus EVM",
+    displayName: "Torus",
     nativeToken: { name: "torus", symbol: "TORUS", decimals: 18 },
     rpcUrls: [
       {
