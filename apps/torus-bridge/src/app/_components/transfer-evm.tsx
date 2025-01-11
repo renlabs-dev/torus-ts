@@ -1,6 +1,7 @@
 "use client";
 
 import { useAccount, useWalletClient, useSwitchChain } from "wagmi";
+import type { CSSProperties } from "react";
 import { useCallback, useMemo, useState } from "react";
 import {
   convertH160ToSS58,
@@ -142,7 +143,7 @@ export function TransferEVM() {
     }
     setTransactionStatus({
       status: "STARTING",
-      message: "Transaction in progress",
+      message: "Transaction in progress, sign in your wallet",
       finalized: false,
     });
     try {
@@ -154,20 +155,31 @@ export function TransferEVM() {
         refetchHandler,
       );
       setTransactionStatus({
-        status: "PENDING",
-        message: `Waiting for confirmations`,
-        finalized: false,
+        status: "SUCCESS",
+        message: `Transaction included in the blockchain!`,
+        finalized: true,
+      });
+
+      toast.loading(renderWaitingForValidation(txHash), {
+        toastId: txHash,
+        type: "default",
+        autoClose: false,
+        closeOnClick: false,
       });
       await waitForTransactionReceipt(wagmiConfig, {
         hash: txHash,
         confirmations: 2,
       });
-
-      setTransactionStatus({
-        status: "SUCCESS",
-        message: `Transaction sent: ${smallAddress(txHash, 3)}`,
-        finalized: true,
+      toast.update(txHash, {
+        render: renderSuccessfulyFinalized(txHash),
+        type: "success",
+        isLoading: false,
+        autoClose: 10000,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
       });
+
       setAmount("");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
@@ -246,9 +258,7 @@ export function TransferEVM() {
       // withdraw mode
       if (torusEvmBalance?.value) {
         const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
-        const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(
-          18,
-        );
+        const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
 
         setAmount(maxBalanceString.replace(/\.?0+$/, ""));
       }
@@ -418,3 +428,43 @@ function SwapActionButton({ onClick }: { onClick: () => void }) {
     </Button>
   );
 }
+
+const divStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.5rem",
+  color: "hsl(240 5% 64.9%)",
+};
+
+const linkStyle: CSSProperties = {
+  color: "white",
+  textDecoration: "underline",
+  fontSize: "0.875rem",
+  cursor: "pointer",
+};
+
+export const renderWaitingForValidation = (hash: string) => (
+  <div style={divStyle}>
+    <p>Validating transaction in block.</p>
+    <a
+      style={linkStyle}
+      target="_blank"
+      href={`https://blockscout.torus.network/tx/${hash}`}
+    >
+      View on block explorer
+    </a>
+  </div>
+);
+
+export const renderSuccessfulyFinalized = (hash: string) => (
+  <div style={divStyle}>
+    <p>Transfer completed successfully</p>
+    <a
+      style={linkStyle}
+      target="_blank"
+      href={`https://blockscout.torus.network/tx/${hash}`}
+    >
+      View on block explorer
+    </a>
+  </div>
+);
