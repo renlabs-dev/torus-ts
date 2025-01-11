@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount, useWalletClient } from "wagmi";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { convertH160ToSS58, withdrawFromTorusEvm } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -20,9 +20,16 @@ import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import Image from "next/image";
 import { ArrowLeftRight } from "lucide-react";
+import * as wagmi from "wagmi";
+import { getChainValuesOnEnv } from "~/config";
+import { env } from "~/env";
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
+import { useRouter, useSearchParams } from "next/navigation";
+import { updateSearchParams } from "~/utils/query-params";
+
+const DEFAULT_MODE = "bridge";
 
 export function TransferEVM() {
-  const [mode, setMode] = useState<"bridge" | "withdraw">("bridge");
   const [amount, setAmount] = useState<string>("");
   const [userInputEthAddr, setUserInputEthAddr] = useState<string>("");
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -33,11 +40,26 @@ export function TransferEVM() {
     },
   );
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const currentMode = useMemo(() => {
+    return (
+      (searchParams.get("mode") as "bridge" | "withdraw" | null) ?? DEFAULT_MODE
+    );
+  }, [searchParams]);
+
   const toggleMode = () => {
-    setMode(mode === "bridge" ? "withdraw" : "bridge");
+    const newQuery = updateSearchParams(searchParams, {
+      from: null,
+      to: null,
+      mode: currentMode === "bridge" ? "withdraw" : "bridge",
+    });
+    router.push(`/?${newQuery}`);
   };
 
-  const { transfer, selectedAccount } = useTorus();
+  const { transfer, selectedAccount, isInitialized, isAccountConnected, api } =
+    useTorus();
   const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
 
@@ -124,8 +146,63 @@ export function TransferEVM() {
     }
   };
 
-  const fromChain = mode === "bridge" ? "Torus" : "Torus EVM";
-  const toChain = mode === "bridge" ? "Torus EVM" : "Torus";
+  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
+  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
+
+  const getChainValues = getChainValuesOnEnv(env.NEXT_PUBLIC_CHAIN_ENV);
+
+  const { chainId: torusEvmChainId } = getChainValues("torus");
+  const { address: evmAddress } = wagmi.useAccount();
+
+  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
+  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
+
+  const { chain: torusEvmChain } = torusEvmClient;
+
+  const { data: torusEvmBalance } = wagmi.useBalance({
+    address: evmAddress,
+    chainId: torusEvmChain.id,
+  });
+
+  const accountFreeBalance = useFreeBalance(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
+
+  const userAccountFreeBalance = useCallback(() => {
+    if (
+      !isInitialized ||
+      !isAccountConnected ||
+      accountFreeBalance.isRefetching
+    )
+      return null;
+
+    if (accountFreeBalance.data != null) {
+      return accountFreeBalance.data;
+    }
+
+    return 0n;
+  }, [accountFreeBalance, isAccountConnected, isInitialized]);
+
+  const handleMaxClick = useCallback(() => {
+    if (currentMode === "bridge") {
+      const maxBalance = userAccountFreeBalance();
+      if (maxBalance !== null) {
+        const maxBalanceString = (Number(maxBalance) / 1e18).toFixed(18);
+
+        setAmount(maxBalanceString.replace(/\.?0+$/, ""));
+      }
+    } else {
+      // withdraw mode
+      if (torusEvmBalance?.value) {
+        const maxBalanceString = (Number(torusEvmBalance.value) / 1e18).toFixed(
+          18,
+        );
+
+        setAmount(maxBalanceString.replace(/\.?0+$/, ""));
+      }
+    }
+  }, [currentMode, userAccountFreeBalance, torusEvmBalance]);
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -146,16 +223,21 @@ export function TransferEVM() {
 
         <div className="space-y-2">
           <Label htmlFor="amount">Amount (TORUS)</Label>
-          <Input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Enter amount"
-          />
+          <div className="flex w-full items-center gap-2">
+            <Input
+              id="amount"
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount"
+            />
+            <Button type="button" onClick={handleMaxClick} variant="outline">
+              Max
+            </Button>
+          </div>
         </div>
 
-        {mode === "bridge" && (
+        {currentMode === "bridge" && (
           <div className="space-y-2">
             <Label htmlFor="eth-address">Ethereum Address</Label>
             <div className="flex w-full items-center gap-2">
@@ -174,7 +256,7 @@ export function TransferEVM() {
           </div>
         )}
 
-        {mode === "withdraw" && selectedAccount && (
+        {currentMode === "withdraw" && selectedAccount && (
           <div>
             <Label>Withdrawing to:</Label>
             <div className="text-sm text-gray-500">
@@ -189,7 +271,7 @@ export function TransferEVM() {
           <div className="flex items-center justify-between">
             <span>Transaction</span>
             <span className="text-zinc-400">
-              {mode === "bridge"
+              {currentMode === "bridge"
                 ? "Bridge to Torus EVM"
                 : "Withdraw from Torus EVM"}
             </span>
@@ -200,7 +282,7 @@ export function TransferEVM() {
               {Number(amount) > 0 ? amount : "0"} TORUS
             </span>
           </div>
-          {mode === "bridge" && (
+          {currentMode === "bridge" && (
             <div className="flex items-center justify-between">
               <span>To Address:</span>
               <span className="max-w-[200px] truncate text-zinc-400">
@@ -208,7 +290,7 @@ export function TransferEVM() {
               </span>
             </div>
           )}
-          {mode === "withdraw" && selectedAccount && (
+          {currentMode === "withdraw" && selectedAccount && (
             <div className="flex items-center justify-between">
               <span>From Address:</span>
               <span className="max-w-[200px] truncate text-zinc-400">
@@ -225,16 +307,16 @@ export function TransferEVM() {
             />
           )}
           <Button
-            onClick={mode === "bridge" ? handleBridge : handleWithdraw}
+            onClick={currentMode === "bridge" ? handleBridge : handleWithdraw}
             className="w-full"
             disabled={
               transactionStatus.status === "PENDING" ||
               !amount ||
-              (mode === "bridge" && !userInputEthAddr) ||
-              (mode === "withdraw" && !selectedAccount)
+              (currentMode === "bridge" && !userInputEthAddr) ||
+              (currentMode === "withdraw" && !selectedAccount)
             }
           >
-            {mode === "bridge" ? "Bridge" : "Withdraw"}
+            {currentMode === "bridge" ? "Bridge" : "Withdraw"}
           </Button>
         </CardFooter>
       </Card>

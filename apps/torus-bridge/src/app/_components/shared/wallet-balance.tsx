@@ -33,9 +33,6 @@ export function WalletBalance() {
   // EVM
   const { address: evmAddress } = wagmi.useAccount();
 
-  console.log("torusEvmChainId", torusEvmChainId);
-  console.log("baseChainId", baseChainId);
-
   // -- Torus EVM --
 
   const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
@@ -55,18 +52,13 @@ export function WalletBalance() {
 
   const { chain: baseChain } = baseClient;
 
-  const baseBalanceQuery = evmAddress
-    ? wagmi.useReadContract({
-        chainId: baseChain.id,
-        address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
-        abi: erc20Abi,
-        functionName: "balanceOf",
-        args: [evmAddress],
-        // watch: true,
-      })
-    : null;
-
-  const baseBalance = baseBalanceQuery?.data;
+  const baseBalanceQuery = wagmi.useReadContract({
+    chainId: baseChain.id,
+    address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: evmAddress ? [evmAddress] : undefined,
+  });
 
   // -- Torus --
 
@@ -74,7 +66,10 @@ export function WalletBalance() {
     api,
     selectedAccount?.address as SS58Address,
   );
-
+  if (accountFreeBalance.isError) {
+    console.error(accountFreeBalance.error);
+    console.log("shadowheart");
+  }
   const userAccountFreeBalance = useCallback(() => {
     if (
       !isInitialized ||
@@ -118,7 +113,8 @@ export function WalletBalance() {
       address: evmAddress,
     },
     {
-      amount: baseBalance,
+      amount: baseBalanceQuery.data ?? 0,
+      // amount: baseBalance,
       label: `${baseChain.name}`,
       icon: (
         <Image
