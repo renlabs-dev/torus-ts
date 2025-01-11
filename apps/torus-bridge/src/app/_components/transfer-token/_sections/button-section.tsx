@@ -13,13 +13,11 @@ export function ButtonSection({
   isValidating,
   setIsReview,
   resetForm,
-  // refetchHandler,
 }: {
   isReview: boolean;
   isValidating: boolean;
   resetForm: () => void;
   setIsReview: (b: boolean) => void;
-  // refetchHandler: () => Promise<void>;
 }) {
   const { values } = useFormikContext<TransferFormValues>();
   const chainDisplayName = useChainDisplayName(values.destination);

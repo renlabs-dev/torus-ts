@@ -2,10 +2,14 @@
 
 import { useAccounts } from "@hyperlane-xyz/widgets";
 import { Formik, Form } from "formik";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { config } from "~/consts/config";
 
-import { getIndexForToken, useWarpCore } from "~/hooks/token";
+import {
+  getIndexForToken,
+  getIndexForTokenByChainName,
+  useWarpCore,
+} from "~/hooks/token";
 import type { TransferFormValues } from "~/utils/types";
 import { logger } from "~/utils/logger";
 import { validateForm } from "./validate-form";
@@ -18,12 +22,37 @@ import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { Card, CardContent, CardFooter, CardHeader } from "@torus-ts/ui";
 import { WalletTransactionReview } from "../../shared/wallet-review";
 import { TokenSection } from "../_sections/token-section";
+import { useRouter, useSearchParams } from "next/navigation";
+import { updateSearchParams } from "~/utils/query-params";
 
-function useFormInitialValues(): TransferFormValues {
+export function TransferTokenForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+
+  // Flag for if form is in input vs review mode
+  const [isReview, setIsReview] = useState(false);
+
   const warpCore = useWarpCore();
-  return useMemo(() => {
+  const multiProvider = useMultiProvider();
+  const { accounts } = useAccounts(multiProvider, config.addressBlacklist);
+
+  const initialValues = useMemo<TransferFormValues>(() => {
+    if (fromParam && toParam) {
+      return {
+        origin: fromParam,
+        destination: toParam,
+        tokenIndex: getIndexForTokenByChainName(warpCore, fromParam),
+        amount: "",
+        recipient: "",
+      };
+    }
+
     const firstToken = warpCore.tokens[0];
     const connectedToken = firstToken?.connections?.[0];
+
     return {
       origin: firstToken?.chainName ?? "",
       destination: connectedToken?.token.chainName ?? "",
@@ -31,18 +60,7 @@ function useFormInitialValues(): TransferFormValues {
       amount: "",
       recipient: "",
     };
-  }, [warpCore]);
-}
-
-export function TransferTokenForm() {
-  const multiProvider = useMultiProvider();
-  const warpCore = useWarpCore();
-
-  const initialValues = useFormInitialValues();
-  const { accounts } = useAccounts(multiProvider, config.addressBlacklist);
-
-  // Flag for if form is in input vs review mode
-  const [isReview, setIsReview] = useState(false);
+  }, [warpCore, fromParam, toParam]);
 
   const validate = (values: TransferFormValues) =>
     validateForm(warpCore, values, accounts);
@@ -56,10 +74,28 @@ export function TransferTokenForm() {
     setIsReview(true);
   };
 
+  useEffect(() => {
+    if (!fromParam || !toParam) {
+      const query = updateSearchParams(searchParams, {
+        from: initialValues.origin,
+        to: initialValues.destination,
+      });
+      router.push("/?" + query);
+    }
+  }, [
+    fromParam,
+    initialValues.destination,
+    initialValues.origin,
+    router,
+    searchParams,
+    toParam,
+  ]);
+
   return (
     <Formik<TransferFormValues>
       initialValues={initialValues}
       onSubmit={onSubmitForm}
+      enableReinitialize
       validate={validate}
       validateOnChange={false}
       validateOnBlur={false}
@@ -82,7 +118,6 @@ export function TransferTokenForm() {
               </CardContent>
               <CardFooter className="w-full px-0 pb-0 pt-6">
                 <ButtonSection
-                  // refetchHandler={refetchHandler}
                   resetForm={resetForm}
                   isReview={isReview}
                   isValidating={isValidating}
