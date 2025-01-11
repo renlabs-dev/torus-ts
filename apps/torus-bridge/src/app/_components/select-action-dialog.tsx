@@ -101,14 +101,14 @@ const SelectCardList = [
     iconTo: "torus-balance-icon.svg",
   },
   {
-    href: "/?tab=base&from=torustestnet&to=basesepolia",
+    href: "/?tab=base&from=torus&to=base",
     text: "Torus EVM to Base",
     description: "Transfer your balance from Torus EVM to Base",
     iconFrom: "torus-evm-balance-icon.svg",
     iconTo: "torus-base-balance-icon.svg",
   },
   {
-    href: "/?tab=base&from=basesepolia&to=torustestnet",
+    href: "/?tab=base&from=base&to=torus",
     text: "Base to Torus EVM",
     description: "Transfer your balance from Base to Torus EVM",
     iconFrom: "torus-base-balance-icon.svg",
