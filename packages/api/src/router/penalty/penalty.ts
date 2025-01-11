@@ -5,9 +5,7 @@ import "@torus-ts/db/schema";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 import { eq, and } from "@torus-ts/db";
-import {
-  penalizeAgentVotesSchema,
-} from "@torus-ts/db/schema";
+import { penalizeAgentVotesSchema } from "@torus-ts/db/schema";
 import { PENALTY_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 export const penaltyRouter = {
@@ -15,15 +13,10 @@ export const penaltyRouter = {
   byAgentKey: publicProcedure
     .input(PENALTY_INSERT_SCHEMA.pick({ agentKey: true }))
     .query(({ ctx, input }) => {
-      
       return ctx.db
         .select()
         .from(penalizeAgentVotesSchema)
-        .where(
-          and(
-            eq(penalizeAgentVotesSchema.agentKey, input.agentKey),
-          ),
-        )
+        .where(and(eq(penalizeAgentVotesSchema.agentKey, input.agentKey)))
         .execute();
     }),
   // POST
@@ -32,26 +25,27 @@ export const penaltyRouter = {
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const userKey = ctx.sessionData!.userKey;
-      
+
       await ctx.db.insert(penalizeAgentVotesSchema).values({
         ...input,
         cadreKey: userKey,
       });
     }),
- // DELETE
+  // DELETE
   delete: authenticatedProcedure
-  .input(PENALTY_INSERT_SCHEMA.pick({ agentKey: true }))
-  .mutation(async ({ ctx, input }) => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const userKey = ctx.sessionData!.userKey;
-    
-    await ctx.db.delete(penalizeAgentVotesSchema)
-    .where(
-      and(
-        eq(penalizeAgentVotesSchema.cadreKey, userKey),
-        eq(penalizeAgentVotesSchema.agentKey, input.agentKey),
-      )
-    )
-    return { success: true };
-  }),
+    .input(PENALTY_INSERT_SCHEMA.pick({ agentKey: true }))
+    .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const userKey = ctx.sessionData!.userKey;
+
+      await ctx.db
+        .delete(penalizeAgentVotesSchema)
+        .where(
+          and(
+            eq(penalizeAgentVotesSchema.cadreKey, userKey),
+            eq(penalizeAgentVotesSchema.agentKey, input.agentKey),
+          ),
+        );
+      return { success: true };
+    }),
 } satisfies TRPCRouterRecord;

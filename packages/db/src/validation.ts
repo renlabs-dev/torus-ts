@@ -90,7 +90,9 @@ export const USER_AGENT_WEIGHT_INSERT_SCHEMA = createInsertSchema(
   deletedAt: true,
 });
 
-export const PENALTY_INSERT_SCHEMA = createInsertSchema(penalizeAgentVotesSchema).omit({
+export const PENALTY_INSERT_SCHEMA = createInsertSchema(
+  penalizeAgentVotesSchema,
+).omit({
   id: true,
   cadreKey: true,
   updatedAt: true,

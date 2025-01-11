@@ -24,7 +24,7 @@ export const appRouter = createTRPCRouter({
   computedAgentWeight: computedAgentWeightRouter,
   // Agent Application
   agentApplicationVote: agentApplicationVoteRouter,
-  
+
   // Cadre
   cadre: cadreRouter,
   cadreVote: cadreVoteRouter,

@@ -128,8 +128,7 @@ export async function processVotesOnProposal(
   } else if (refuseVotes >= vote_threshold) {
     log(`Refusing proposal ${agentId}`);
     await denyApplication(api, agentId, mnemonic);
-  }
-  else if (
+  } else if (
     removeVotes >= vote_threshold &&
     applications_map[agentId] !== undefined
   ) {
@@ -141,9 +140,14 @@ export async function processVotesOnProposal(
     });
     if (isResolved) {
       log(`Removing proposal ${agentId}`);
-      await removeFromWhitelist(api, applications_map[agentId].agentKey, mnemonic);
+      await removeFromWhitelist(
+        api,
+        applications_map[agentId].agentKey,
+        mnemonic,
+      );
+    }
   }
-}}
+}
 
 export async function processAllVotes(
   votes_on_pending: VotesByApplication[],
