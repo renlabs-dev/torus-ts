@@ -5,33 +5,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  Button,
 } from "@torus-ts/ui";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowBigRightDash, Logs } from "lucide-react";
-// import { useTorus } from "@torus-ts/torus-provider";
-// import { useEffect, useState } from "react";
 
 export function SelectActionDialog() {
-  // const [open, setOpen] = useState(true);
-
-  // const { isAccountConnected } = useTorus();
-
-  // useEffect(() => {
-  //   if (!isAccountConnected) {
-  //     setOpen(false);
-  //   }
-  // }, [isAccountConnected]);
-
   return (
     <>
       <AlertDialog>
-        <AlertDialogTrigger>
-          <span className="mb-4 flex items-center gap-2 text-sm hover:underline lg:mt-[8vh]">
+        <Button
+          asChild
+          variant="link"
+          className="flex h-5 w-fit items-center gap-2 p-0 text-sm"
+        >
+          <AlertDialogTrigger>
             <Logs className="h-4 w-4" />
             Easy transaction selection menu
-          </span>
-        </AlertDialogTrigger>
+          </AlertDialogTrigger>
+        </Button>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Select your desired Action:</AlertDialogTitle>
