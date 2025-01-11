@@ -14,37 +14,25 @@ import {
 import Link from "next/link";
 
 export const tutorialData = [
-  <Button asChild variant="link" className="h-5 p-0">
-    <Link
-      className="text-blue-500"
-      target="_blank"
-      href={"https://www.youtube.com/watch?v=3JDQFYg0u_A"}
-    >
+  <Button asChild variant="link" className="h-5 p-0 text-blue-500">
+    <Link target="_blank" href={"https://www.youtube.com/watch?v=3JDQFYg0u_A"}>
       Install and setup Subwallet
     </Link>
   </Button>,
-  <Button asChild variant="link" className="h-5 p-0">
-    <Link
-      className="text-blue-500"
-      target="_blank"
-      href={"https://www.youtube.com/watch?v=x63AMYG5uGc"}
-    >
+  <Button asChild variant="link" className="h-5 p-0 text-blue-500">
+    <Link target="_blank" href={"https://www.youtube.com/watch?v=x63AMYG5uGc"}>
       Install and setup PolkadotJS
     </Link>
   </Button>,
-  <Button asChild variant="link" className="h-5 p-0">
-    <Link
-      className="text-blue-500"
-      target="_blank"
-      href={"https://www.youtube.com/watch?v=l_AQ5KspoDo"}
-    >
+  <Button asChild variant="link" className="h-5 p-0 text-blue-500">
+    <Link target="_blank" href={"https://www.youtube.com/watch?v=l_AQ5KspoDo"}>
       Torus Bridge tutorial
     </Link>
   </Button>,
   <p>
     More information on our{" "}
-    <Button asChild variant="link" className="h-5 p-0">
-      <Link target="_blank" href={links.docs} className="text-blue-500">
+    <Button asChild variant="link" className="h-5 p-0 text-blue-500">
+      <Link target="_blank" href={links.docs}>
         Docs
       </Link>
     </Button>
