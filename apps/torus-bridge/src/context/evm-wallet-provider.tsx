@@ -34,16 +34,17 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     [
       {
         groupName: "Recommended",
-        wallets: [
-          metaMaskWallet,
-          injectedWallet,
-          walletConnectWallet,
-          ledgerWallet,
-        ],
+        wallets: [metaMaskWallet, walletConnectWallet, ledgerWallet],
       },
       {
         groupName: "More",
-        wallets: [coinbaseWallet, rainbowWallet, trustWallet, argentWallet],
+        wallets: [
+          coinbaseWallet,
+          rainbowWallet,
+          trustWallet,
+          argentWallet,
+          injectedWallet,
+        ],
       },
     ],
     { appName: "Torus Base Bridge", projectId: config.walletConnectProjectId },
@@ -54,6 +55,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     chains: [chains[0]!, ...chains.splice(1)],
     connectors,
+    multiInjectedProviderDiscovery: false,
     client({ chain }) {
       const transport = http(chain.rpcUrls.default.http[0]);
       return createClient({ chain, transport });
