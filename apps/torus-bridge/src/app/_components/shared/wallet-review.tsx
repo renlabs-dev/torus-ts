@@ -68,7 +68,7 @@ export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
             />
             {fees?.localQuote && fees.localQuote.amount > 0n && (
               <ItemText
-                label="Local Gas (est.)"
+                label="Local Gasoline (est.)"
                 value={`${fees.localQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${fees.localQuote.token.symbol || ""}`}
               />
             )}

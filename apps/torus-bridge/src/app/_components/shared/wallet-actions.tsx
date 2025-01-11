@@ -32,25 +32,26 @@ function WalletOptions() {
   const handleTabChange = (value: string) => {
     const updates: Record<string, string | null> = {};
 
+    updates.tab = value;
     if (value === "torus") {
       updates.from = null;
       updates.to = null;
+      updates.mode = "bridge";
     } else if (value === "base") {
       updates.mode = null;
+      updates.from = "basesepolia";
+      updates.to = "torustestnet";
     }
 
-    updates.tab = value;
     const newQuery = updateSearchParams(searchParams, updates);
     router.push("/?" + newQuery);
   };
 
   useEffect(() => {
     if (!currentTab || !tabs.some((view) => view.params === currentTab)) {
-      const newQuery = updateSearchParams(searchParams, {
-        tab: defaultTab.params,
-      });
-      router.push(`/?${newQuery}`, { scroll: false });
+      handleTabChange(defaultTab.params);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, router, searchParams]);
 
   return (

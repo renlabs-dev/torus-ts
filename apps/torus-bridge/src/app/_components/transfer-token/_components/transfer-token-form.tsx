@@ -24,7 +24,7 @@ function useFormInitialValues(): TransferFormValues {
   return useMemo(() => {
     const firstToken = warpCore.tokens[0];
     const connectedToken = firstToken?.connections?.[0];
-
+    console.log(firstToken, connectedToken);
     return {
       origin: firstToken?.chainName ?? "",
       destination: connectedToken?.token.chainName ?? "",
@@ -40,6 +40,7 @@ export function TransferTokenForm() {
   const warpCore = useWarpCore();
 
   const initialValues = useFormInitialValues();
+  console.log(initialValues, "initialValues");
   const { accounts } = useAccounts(multiProvider, config.addressBlacklist);
 
   // Flag for if form is in input vs review mode
