@@ -1,8 +1,8 @@
 import { assert } from "tsafe";
-import type { AbiFunction, Chain, WalletClient } from "viem";
-import { encodeAbiParameters } from "viem";
+import type { Chain, WalletClient } from "viem";
+import { encodeFunctionData } from "viem";
 
-import { hexToU8a, stringToU8a } from "@polkadot/util";
+import { hexToU8a, stringToU8a, u8aToHex } from "@polkadot/util";
 import {
   blake2AsU8a,
   decodeAddress,
@@ -46,19 +46,21 @@ export function convertH160ToSS58(
 const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000800";
 
 // BalanceTransfer ABI
-const balance_transfer_abi: AbiFunction = {
-  inputs: [
-    {
-      internalType: "bytes32",
-      name: "data",
-      type: "bytes32",
-    },
-  ],
-  name: "transfer",
-  outputs: [],
-  stateMutability: "payable",
-  type: "function",
-};
+const CONTRACT_ABI = [
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "data",
+        type: "bytes32",
+      },
+    ],
+    name: "transfer",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+] as const;
 
 export async function withdrawFromTorusEvm(
   walletClient: WalletClient,
@@ -69,21 +71,22 @@ export async function withdrawFromTorusEvm(
   if (!walletClient.account) {
     throw new Error("Wallet client account is undefined");
   }
-  console.log("shadowheart");
-  const pubk = decodeAddress(destination);
-  const pubk_hex = Buffer.from(pubk).toString("hex").padStart(64, "0");
-  // console.debug(`pubk_hex = ${pubk_hex}`);
 
-  // Prepare transaction data
-  const encodedData = encodeAbiParameters(balance_transfer_abi.inputs, [
-    `0x${pubk_hex}`,
-  ]);
+  const pubk = decodeAddress(destination);
+  // Convert Uint8Array to hex string with 0x prefix
+  const pubkHex = `0x${Buffer.from(pubk).toString("hex")}`;
+
+  const data = encodeFunctionData({
+    abi: CONTRACT_ABI,
+    functionName: "transfer",
+    args: [pubkHex as `0x${string}`],
+  });
 
   // Send transaction using walletClient
   const txHash = await walletClient.sendTransaction({
     account: walletClient.account,
     to: CONTRACT_ADDRESS,
-    data: encodedData,
+    data,
     value,
     chain,
   });
