@@ -2,7 +2,7 @@ import { assert } from "tsafe";
 import type { Chain, WalletClient } from "viem";
 import { encodeFunctionData } from "viem";
 
-import { hexToU8a, stringToU8a, u8aToHex } from "@polkadot/util";
+import { hexToU8a, stringToU8a } from "@polkadot/util";
 import {
   blake2AsU8a,
   decodeAddress,
