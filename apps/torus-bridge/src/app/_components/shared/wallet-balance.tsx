@@ -2,7 +2,7 @@
 
 import React, { useCallback } from "react";
 
-// import { erc20Abi } from "viem";
+import { erc20Abi } from "viem";
 import * as wagmi from "wagmi";
 
 import Image from "next/image";
@@ -50,15 +50,16 @@ export function WalletBalance() {
   const baseClient = wagmi.useClient({ chainId: baseChainId });
   if (baseClient == null) throw new Error("Base client not found");
 
-  // const { chain: baseChain } = baseClient;
+  const { chain: baseChain } = baseClient;
 
-  // const { data: baseBalanceQuery } = wagmi.useReadContract({
-  //   chainId: baseChain.id,
-  //   address: "0x0Aa8515D2d85a345C01f79506cF5941C65DdABb9",
-  //   abi: erc20Abi,
-  //   functionName: "balanceOf",
-  //   args: evmAddress ? [evmAddress] : undefined,
-  // });
+  const { data: baseBalance } = wagmi.useReadContract({
+    chainId: baseChain.id,
+    // TODO: hardcoded contract address
+    address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: evmAddress ? [evmAddress] : undefined,
+  });
 
   // -- Torus --
 
@@ -111,20 +112,20 @@ export function WalletBalance() {
       ),
       address: evmAddress,
     },
-    // {
-    //   amount: baseBalanceQuery ? baseBalanceQuery : null,
-    //   // amount: baseBalance,
-    //   label: `${baseChain.name}`,
-    //   icon: (
-    //     <Image
-    //       width={16}
-    //       height={16}
-    //       alt="Base Balance"
-    //       src="/torus-base-balance-icon.svg"
-    //     />
-    //   ),
-    //   address: evmAddress,
-    // },
+    {
+      amount: baseBalance ? baseBalance : null,
+      // amount: baseBalance,
+      label: `${baseChain.name}`,
+      icon: (
+        <Image
+          width={16}
+          height={16}
+          alt="Base Balance"
+          src="/torus-base-balance-icon.svg"
+        />
+      ),
+      address: evmAddress,
+    },
   ];
 
   return (
