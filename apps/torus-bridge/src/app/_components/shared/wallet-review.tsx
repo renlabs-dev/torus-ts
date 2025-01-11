@@ -73,7 +73,7 @@ export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
               />
             )} */}
             {fees?.interchainQuote && fees.interchainQuote.amount > 0n && (
-              <p className="flex">
+              <p className="flex w-full justify-between">
                 <span className="min-w-[6.5rem]">Interchain Gas</span>
                 <span>{`${fees.interchainQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${
                   fees.interchainQuote.token.symbol || ""

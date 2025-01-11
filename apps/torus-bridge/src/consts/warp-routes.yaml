@@ -10,7 +10,7 @@ tokens:
     decimals: 18
     name: Torus
     standard: EvmHypSynthetic
-    symbol: TORUS
+    symbol: BASE
   - addressOrDenom: "0x9925CdbeA5B91542bbA6e1fc967465b1C1ED7156"
     chainName: torus
     connections:
