@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, useWalletClient, useSwitchChain } from "wagmi";
 import { useCallback, useMemo, useState } from "react";
 import { convertH160ToSS58, withdrawFromTorusEvm } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -62,6 +62,7 @@ export function TransferEVM() {
     useTorus();
   const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
+  const { switchChain } = useSwitchChain();
 
   const evmSS58Addr = userInputEthAddr
     ? convertH160ToSS58(userInputEthAddr)
@@ -109,6 +110,19 @@ export function TransferEVM() {
     ) {
       toast.error("Invalid state for withdrawal");
       return;
+    }
+    // Check if user is on the correct chain
+    if (chain.id !== torusEvmChainId) {
+      try {
+        switchChain({ chainId: torusEvmChainId });
+        toast.info(
+          "You were connected to the wrong network, we switched you to Torus. Please try to withdraw again",
+        );
+        return;
+      } catch {
+        toast.error("Failed to switch network");
+        return;
+      }
     }
     setTransactionStatus({
       status: "PENDING",
