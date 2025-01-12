@@ -61,7 +61,7 @@ export function WalletBalance() {
       {balancesList.map((balance) => (
         <Card
           key={balance.label}
-          className="flex w-full flex-col gap-2 border-muted bg-background px-7 py-5"
+          className="flex w-full flex-col gap-2 px-7 py-5"
         >
           {typeof balance.amount === "bigint" && (
             <p className="text-muted-fofreground flex items-end gap-1">
