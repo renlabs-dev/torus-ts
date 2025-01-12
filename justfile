@@ -54,10 +54,13 @@ create-package:
 # -- DB --
 
 db-push:
-  pnpm exec turbo -F @torus-ts/db push
+  pnpm exec scripts/dev-helper with-env turbo -F @torus-ts/db push
+
+db-dump:
+  cd packages/db; pnpm exec drizzle-kit export > drizzle/dump.sql
 
 db-studio:
-  pnpm exec turbo -F @torus-ts/db dev
+  pnpm exec scripts/dev-helper with-env turbo -F @torus-ts/db dev
 
 # -- Cleaning --
 
