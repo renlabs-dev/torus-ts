@@ -21,6 +21,7 @@ import { CreateAgentApplication } from "./agent-application/create-agent-applica
 import { RegisterAgent } from "./proposal/register-agent";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
+import { ClipboardPlus } from "lucide-react";
 
 export function CreateModal() {
   const [selectedView, setSelectedView] = useState("create-proposal");
@@ -29,15 +30,15 @@ export function CreateModal() {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant="default"
+          variant="outline"
           className="flex items-center gap-2"
-          size="lg"
           title="Apply to be allowed to register an agent or module on the network"
         >
+          <ClipboardPlus className="h-4 w-4" />
           Apply to register on the network
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%] bg-neutral-900">
+      <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Agent/Module Application and Registration
@@ -56,7 +57,9 @@ export function CreateModal() {
             <SelectItem value="create-agent-application">
               Step 1: Apply to register an agent/module
             </SelectItem>
-            <SelectItem value="register-agent">Step 2: Register agent/module after application approval</SelectItem>
+            <SelectItem value="register-agent">
+              Step 2: Register agent/module after application approval
+            </SelectItem>
           </SelectContent>
         </Select>
         {selectedView === "create-proposal" ? (

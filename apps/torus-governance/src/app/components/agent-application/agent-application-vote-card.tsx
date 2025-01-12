@@ -147,10 +147,11 @@ const VoteCardFunctionsContent = (props: {
         </div>
       )}
       {isAccountConnected && !isCadreUser && (
-        <div className="absolute inset-0 z-50 flex flex-col gap-0.5 w-full items-center justify-center">
-          <span>
-            You must be a Curator DAO member to be able to vote on agent/module applications and leave comments.
-            Consider applying to become a Curator DAO member.
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
+          <span className="mb-4">
+            You must be a Curator DAO member to be able to vote on agent/module
+            applications and leave comments. Consider applying to become a
+            Curator DAO member.
           </span>
           <CreateCadreCandidates />
         </div>

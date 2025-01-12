@@ -24,7 +24,7 @@ export const SidebarInfo = () => {
   }
 
   return (
-    <Card className="hidden animate-fade-up flex-col gap-6 border-muted bg-neutral-900 px-7 py-5 animate-delay-[400ms] md:flex">
+    <Card className="hidden animate-fade-up flex-col gap-6 px-7 py-5 animate-delay-[400ms] md:flex">
       <div>
         {daoTreasuryBalance.data === undefined ? (
           <Skeleton className="flex w-1/3 py-3" />
