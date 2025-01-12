@@ -38,18 +38,18 @@ services:
   #   ports:
   #     - 3011:8000
 
-  # torus-worker:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile
-  #     args:
-  #       - APP_NAME=torus-worker
-  #   environment:
-  #     - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
-  #     - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
-  #     - PORT=8000
-  #   ports:
-  #     - 3012:8000
+  torus-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - APP_NAME=torus-worker
+    environment:
+      - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
+      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - PORT=8000
+    ports:
+      - 3012:8000
 
   torus-governance:
     build:
