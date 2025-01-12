@@ -84,6 +84,7 @@ declare module '@polkadot/api-base/types/consts' {
       [key: string]: Codec;
     };
     governance: {
+      applicationExpiration: u64 & AugmentedConst<ApiType>;
       defaultAgentApplicationCost: u128 & AugmentedConst<ApiType>;
       defaultAgentApplicationExpiration: u64 & AugmentedConst<ApiType>;
       defaultMaxProposalRewardTreasuryAllocation: u128 & AugmentedConst<ApiType>;
@@ -92,7 +93,6 @@ declare module '@polkadot/api-base/types/consts' {
       defaultProposalRewardInterval: u64 & AugmentedConst<ApiType>;
       defaultProposalRewardTreasuryAllocation: Percent & AugmentedConst<ApiType>;
       defaultTreasuryEmissionFee: Percent & AugmentedConst<ApiType>;
-      emissionProposalMinimumTime: u64 & AugmentedConst<ApiType>;
       maxApplicationDataLength: u32 & AugmentedConst<ApiType>;
       maxPenaltyPercentage: Percent & AugmentedConst<ApiType>;
       minApplicationDataLength: u32 & AugmentedConst<ApiType>;
