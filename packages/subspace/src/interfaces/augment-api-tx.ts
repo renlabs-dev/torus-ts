@@ -155,7 +155,7 @@ declare module '@polkadot/api-base/types/submittable' {
       addDaoTreasuryTransferProposal: AugmentedSubmittable<(value: u128 | AnyNumber | Uint8Array, destinationKey: AccountId32 | string | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, AccountId32, Bytes]>;
       addEmissionProposal: AugmentedSubmittable<(recyclingPercentage: Percent | AnyNumber | Uint8Array, treasuryPercentage: Percent | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent, Percent, Bytes]>;
       addGlobalCustomProposal: AugmentedSubmittable<(metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; maxAllowedWeights?: any; minStakePerWeight?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any; proposalCost?: any; proposalExpiration?: any; agentApplicationCost?: any; agentApplicationExpiration?: any; proposalRewardTreasuryAllocation?: any; maxProposalRewardTreasuryAllocation?: any; proposalRewardInterval?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
+      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; maxAllowedWeights?: any; minStakePerWeight?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any; proposalCost?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
       addToWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       denyApplication: AugmentedSubmittable<(applicationId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
       disableVoteDelegation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
@@ -164,10 +164,7 @@ declare module '@polkadot/api-base/types/submittable' {
       removeAllocator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removeCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removeFromWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      removeRootCurator: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       removeVoteProposal: AugmentedSubmittable<(proposalId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
-      revokeApplication: AugmentedSubmittable<(applicationId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      setRootCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       submitApplication: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, metadata: Bytes | string | Uint8Array, removing: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes, bool]>;
       voteProposal: AugmentedSubmittable<(proposalId: u64 | AnyNumber | Uint8Array, agree: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, bool]>;
       /**
