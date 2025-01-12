@@ -52,7 +52,7 @@ export const PopoverInfo = () => {
           <Ellipsis size={16} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="mr-5 flex w-fit flex-col gap-6 border-muted bg-background px-4 py-4">
+      <PopoverContent className="mr-5 flex w-fit flex-col gap-6 px-4 py-4">
         <div className="flex flex-col gap-1.5">
           {userWeightPower === null ? (
             <Skeleton className="flex w-3/4 py-3" />

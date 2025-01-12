@@ -131,10 +131,7 @@ export function WalletBalance() {
   return (
     <div className="min-fit flex flex-col gap-4 xs:flex-row lg:flex-col">
       {balancesList.map((item) => (
-        <Card
-          key={item.label}
-          className="flex w-full flex-col gap-2 border-muted bg-background px-7 py-5"
-        >
+        <Card key={item.label} className="flex w-full flex-col gap-2 px-7 py-5">
           {item.amount == null && <Skeleton className="flex w-1/2 py-3" />}
 
           {item.amount != null && (
