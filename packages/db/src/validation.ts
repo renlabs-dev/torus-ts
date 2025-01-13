@@ -9,6 +9,7 @@ import {
   commentSchema,
   agentApplicationVoteSchema,
   userAgentWeightSchema,
+  penalizeAgentVotesSchema,
 } from "./schema";
 
 export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
@@ -84,6 +85,16 @@ export const USER_AGENT_WEIGHT_INSERT_SCHEMA = createInsertSchema(
 ).omit({
   id: true,
   userKey: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+
+export const PENALTY_INSERT_SCHEMA = createInsertSchema(
+  penalizeAgentVotesSchema,
+).omit({
+  id: true,
+  cadreKey: true,
   updatedAt: true,
   createdAt: true,
   deletedAt: true,

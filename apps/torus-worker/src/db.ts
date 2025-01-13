@@ -75,7 +75,7 @@ export interface VotesByApplication {
   appId: number;
   acceptVotes: number;
   refuseVotes: number;
-  // removeVotes: number;
+  removeVotes: number;
 }
 
 export async function vote(new_vote: NewVote) {
@@ -92,7 +92,7 @@ export async function queryTotalVotesPerApp(): Promise<VotesByApplication[]> {
       appId: agentApplicationVoteSchema.applicationId,
       acceptVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[0]} then 1 end)`,
       refuseVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[1]} then 1 end)`,
-      // removeVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[2]} then 1 end)`,
+      removeVotes: sql<number>`count(case when ${agentApplicationVoteSchema.vote} = ${agentApplicationVoteSchema.vote.enumValues[2]} then 1 end)`,
     })
     .from(agentApplicationVoteSchema)
     .where(isNull(agentApplicationVoteSchema.deletedAt))
@@ -103,7 +103,7 @@ export async function queryTotalVotesPerApp(): Promise<VotesByApplication[]> {
     appId: row.appId,
     acceptVotes: row.acceptVotes,
     refuseVotes: row.refuseVotes,
-    // removeVotes: row.removeVotes,
+    removeVotes: row.removeVotes,
     agentId: row.appId,
   }));
 }

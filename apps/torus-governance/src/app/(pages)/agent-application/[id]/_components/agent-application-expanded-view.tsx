@@ -1,16 +1,19 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
-
-import { CreateComment } from "~/app/components/comments/create-comment";
-import { ViewComment } from "~/app/components/comments/view-comment";
+import { AgentActivityLabel } from "~/app/components/agent-application/agent-activity-label";
 import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application/agent-application-vote-card";
+import { AgentStatusLabel } from "~/app/components/agent-application/agent-status-label";
+import { api } from "~/trpc/react";
+import { CreateCadreCandidates } from "~/app/components/agent-application/create-cadre-candidates";
+import { CreateComment } from "~/app/components/comments/create-comment";
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
-import { useGovernance } from "~/context/governance-provider";
 import { handleCustomAgentApplications } from "../../../../../utils";
-import { DaoStatusLabel } from "~/app/components/agent-application/agent-application-status-label";
-import { api } from "~/trpc/react";
+import { LoaderCircle } from "lucide-react";
+import { PenaltyManager } from "~/app/components/agent-application/penalty-manager";
+import { useGovernance } from "~/context/governance-provider";
+import { ViewComment } from "~/app/components/comments/view-comment";
+import { VoterList } from "~/app/components/agent-application/voter-list";
 
 interface CustomContent {
   paramId: number;
@@ -21,8 +24,17 @@ export function AgentApplicationExpandedView(
 ): JSX.Element {
   const { paramId } = props;
 
-  const { agentApplicationsWithMeta, agentApplications, lastBlock, selectedAccount } =
+  const { agentApplicationsWithMeta, agentApplications, lastBlock } =
     useGovernance();
+  const {
+    data: votersList,
+    isLoading: votersListLoading,
+    error: votersListError,
+  } = api.agentApplicationVote.byApplicationId.useQuery({
+    applicationId: paramId,
+  });
+
+  const { data: activeAgents } = api.agent.all.useQuery();
 
   const handleAgentApplicationsContent = () => {
     const app = agentApplicationsWithMeta?.find((d) => d.id === paramId);
@@ -34,13 +46,13 @@ export function AgentApplicationExpandedView(
     );
 
     const agentApplicationContent = {
-      body,
-      title,
+      agentKey: app.agentKey,
       author: app.payerKey,
-      id: app.id,
-      // creationBlock: app.blockNumber,
+      body,
       expiresAt: app.expiresAt,
-      status: "Pending" as const,
+      id: app.id,
+      status: app.status,
+      title,
     };
 
     console.log(agentApplicationContent.status);
@@ -48,6 +60,10 @@ export function AgentApplicationExpandedView(
   };
 
   const content = handleAgentApplicationsContent();
+
+  const isAgentRegistered = !!activeAgents?.find(
+    (agent) => agent.key === content?.agentKey,
+  );
 
   if (agentApplications.isLoading || !content)
     return (
@@ -57,28 +73,27 @@ export function AgentApplicationExpandedView(
       </div>
     );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const proposalVoteCardProps = {
-    proposalId: content.id,
-    proposalStatus: content.status,
-  };
-
   const detailsCardProps = {
     author: content.author,
+    agentKey: content.agentKey,
     id: content.id,
     expirationBlock: content.expiresAt,
     lastBlockNumber: lastBlock.data?.blockNumber ?? 0,
   };
 
-  const { data: cadreUsers } = api.cadre.all.useQuery();
-  const userIsCuratorDaoMember = cadreUsers?.some((user) => user.userKey === selectedAccount?.address);
+  const votersListProps = {
+    isError: !!votersListError,
+    isLoading: votersListLoading,
+    voters: votersList,
+  };
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <div className="flex w-full flex-row items-center gap-2">
-        <DaoStatusLabel status={content.status} />
+      <div className="flex w-full animate-fade-down flex-row items-center gap-2">
+        <AgentStatusLabel status={content.status} />
+        {isAgentRegistered && <AgentActivityLabel />}
       </div>
-      <div className="flex w-full justify-between gap-10">
+      <div className="flex w-full animate-fade-down justify-between gap-10">
         <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
 
@@ -90,7 +105,10 @@ export function AgentApplicationExpandedView(
               applicationId={content.id}
               applicationStatus={content.status}
             />
-            {/* <VoteData proposalStatus={content.status} /> */}
+            <PenaltyManager
+              agentKey={content.agentKey}
+              status={content.status}
+            />
           </div>
 
           {/* Desktop Proposal Vote Card */}
@@ -103,18 +121,15 @@ export function AgentApplicationExpandedView(
 
           {/* Comments Section */}
           <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
-          {userIsCuratorDaoMember && <CreateComment id={content.id} itemType="AGENT_APPLICATION" />}
-
-          {/* Desktop Voter List */}
-          <div className="hidden lg:block">
-            {/* <VoterList proposalStatus={content.status} /> */}
-          </div>
+          <CreateComment id={content.id} itemType="AGENT_APPLICATION" />
+          <VoterList {...votersListProps} />
         </div>
 
         {/* Right Column */}
         <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
           <DetailsCard {...detailsCardProps} />
-          {/* <VoteData proposalStatus={content.status} /> */}
+          <CreateCadreCandidates />
+          <PenaltyManager agentKey={content.agentKey} status={content.status} />
         </div>
       </div>
     </div>

@@ -205,9 +205,9 @@ export function TorusProvider({
     const currentWallet = localStorage.getItem("favoriteWalletAddress");
     if (account.address === currentWallet) return;
 
-    setSelectedAccount(account);
     localStorage.removeItem("authorization");
     localStorage.setItem("favoriteWalletAddress", account.address);
+    setSelectedAccount(account);
     setIsAccountConnected(true);
   };
 
@@ -585,6 +585,7 @@ export function TorusProvider({
   async function updateDelegatingVotingPower({
     isDelegating,
     callback,
+    refetchHandler,
   }: UpdateDelegatingVotingPower): Promise<void> {
     if (
       !api?.tx.governance?.enableVoteDelegation ||
@@ -604,6 +605,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Update Delegating Voting Power",
       wsEndpoint,
+      refetchHandler,
     });
   }
   return (

@@ -35,6 +35,13 @@ export function CreateComment({
       setContent("");
       setRemainingChars(MAX_CHARACTERS);
     },
+    onError: (err) => {
+      if (err instanceof z.ZodError) {
+        toast.error(err.errors[0]?.message ?? "Invalid input");
+      } else {
+        toast.error(err.message);
+      }
+    },
   });
 
   useEffect(() => {

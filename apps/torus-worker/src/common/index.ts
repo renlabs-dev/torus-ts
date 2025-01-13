@@ -7,6 +7,7 @@ import {
   queryLastBlock,
   denyApplication,
   acceptApplication,
+  removeFromWhitelist,
 } from "@torus-ts/subspace";
 
 import type { VotesByApplication } from "../db";
@@ -112,10 +113,10 @@ export async function processVotesOnProposal(
   api: ApiPromise,
 ) {
   const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
-  const { appId: agentId, acceptVotes, refuseVotes } = vote_info;
+  const { appId: agentId, acceptVotes, refuseVotes, removeVotes } = vote_info;
   log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
   log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);
-  // log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
+  log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
 
   const app = applications_map[agentId];
   if (app == null) throw new Error("application not found");
@@ -127,15 +128,25 @@ export async function processVotesOnProposal(
   } else if (refuseVotes >= vote_threshold) {
     log(`Refusing proposal ${agentId}`);
     await denyApplication(api, agentId, mnemonic);
+  } else if (
+    removeVotes >= vote_threshold &&
+    applications_map[agentId] !== undefined
+  ) {
+    const status = applications_map[agentId].status;
+    const isResolved = match(status)({
+      Open: () => false,
+      Resolved: ({ accepted }) => accepted,
+      Expired: () => false,
+    });
+    if (isResolved) {
+      log(`Removing proposal ${agentId}`);
+      await removeFromWhitelist(
+        api,
+        applications_map[agentId].agentKey,
+        mnemonic,
+      );
+    }
   }
-  // else if (
-  //   removeVotes >= vote_threshold &&
-  //   applications_map[agentId] !== undefined &&
-  //   applications_map[agentId].status === "Accepted"
-  // ) {
-  //   log(`Removing proposal ${agentId}`);
-  //   await removeFromWhitelist(api, applications_map[agentId].userId, mnemonic);
-  // }
 }
 
 export async function processAllVotes(

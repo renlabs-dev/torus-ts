@@ -60,6 +60,10 @@ export function CreateCadreCandidates() {
     [selectedAccount, cadreCandidates],
   );
 
+  if (isUserCadre) {
+    return null;
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -80,12 +84,7 @@ export function CreateCadreCandidates() {
     }
 
     if (isUserCadreCandidate) {
-      setError("You have already submitted a request to be a S2 DAO member.");
-      return;
-    }
-
-    if (isUserCadre) {
-      setError("You already are a S2 DAO member.");
+      setError("You have already submitted a request to be a Cadre member.");
       return;
     }
 
@@ -122,8 +121,8 @@ export function CreateCadreCandidates() {
       <PopoverContent className="mt-2 hidden w-[25em] md:block xl:mr-0">
         <div className="mt-1 flex w-full border-b border-white/20 pb-3">
           <p className="text-sm">
-            The Curator DAO votes on agent/module applications. Interested in joining?
-            Apply below.
+            The Curator DAO votes on agent/module applications. Interested in
+            joining? Apply below.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
@@ -132,6 +131,7 @@ export function CreateCadreCandidates() {
             placeholder="Discord ID (e.g., 146386789998853569)"
             value={discordId}
             onChange={(e) => setDiscordId(e.target.value)}
+            minLength={17}
             className="w-full bg-gray-600/10 p-3 text-white"
           />
           <div className="relative">
@@ -149,7 +149,7 @@ export function CreateCadreCandidates() {
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button
             type="submit"
-            className="bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 text-neutral-300"
+            variant={"default"}
             disabled={
               createCadreCandidateMutation.isPending ||
               !selectedAccount?.address

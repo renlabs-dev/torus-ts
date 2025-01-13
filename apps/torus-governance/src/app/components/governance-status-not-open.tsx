@@ -4,6 +4,7 @@ type GovernanceStatus = "ACCEPTED" | "REFUSED" | "REMOVED" | "EXPIRED";
 interface GovernanceStatusNotOpenProps {
   governanceModel: string;
   status: GovernanceStatus;
+  children?: React.ReactNode;
 }
 
 const statusText: Record<GovernanceStatus, string> = {
@@ -13,16 +14,24 @@ const statusText: Record<GovernanceStatus, string> = {
   EXPIRED: "have expired",
 };
 
+const statusColor: Record<GovernanceStatus, string> = {
+  ACCEPTED: "text-green-400",
+  REFUSED: "text-red-400",
+  REMOVED: "text-rose-400",
+  EXPIRED: "text-yellow-400",
+};
+
 export function GovernanceStatusNotOpen(
   props: GovernanceStatusNotOpenProps,
 ): JSX.Element {
-  const { governanceModel, status } = props;
+  const { governanceModel, status, children } = props;
 
   return (
-    <Card className="rounded-md px-4 py-2">
-      <span className="font-semibold text-white">
+    <Card className="flex flex-col rounded-md p-4">
+      <span className={`font-semibold ${statusColor[status]}`}>
         This {governanceModel} {statusText[status]}.
       </span>
+      {children}
     </Card>
   );
 }

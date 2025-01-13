@@ -55,10 +55,10 @@ export function CreateModal() {
             </SelectItem>
             <SelectSeparator />
             <SelectItem value="create-agent-application">
-              Step 1: Apply to register an agent/module
+              Step 1: Apply to whitelist an agent/module for registration
             </SelectItem>
             <SelectItem value="register-agent">
-              Step 2: Register agent/module after application approval
+              Step 2: Register a whitelisted agent/module
             </SelectItem>
           </SelectContent>
         </Select>

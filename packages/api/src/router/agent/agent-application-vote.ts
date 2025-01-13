@@ -4,7 +4,7 @@ import "@torus-ts/db/schema";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { z } from "zod";
 import { agentApplicationVoteSchema } from "@torus-ts/db/schema";
-import { and, eq, isNull } from "@torus-ts/db";
+import { and, eq, isNull, sql } from "@torus-ts/db";
 import { AGENT_APPLICATION_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 export const agentApplicationVoteRouter = {
@@ -19,12 +19,12 @@ export const agentApplicationVoteRouter = {
         ),
       });
     }),
-  byIdActive: publicProcedure
-    .input(z.object({ id: z.number() }))
+  byApplicationId: publicProcedure
+    .input(AGENT_APPLICATION_VOTE_INSERT_SCHEMA.pick({ applicationId: true }))
     .query(({ ctx, input }) => {
       return ctx.db.query.agentApplicationVoteSchema.findMany({
         where: and(
-          eq(agentApplicationVoteSchema.id, input.id),
+          eq(agentApplicationVoteSchema.applicationId, input.applicationId),
           isNull(agentApplicationVoteSchema.deletedAt),
         ),
       });
@@ -35,40 +35,48 @@ export const agentApplicationVoteRouter = {
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const userKey = ctx.sessionData!.userKey;
-      await ctx.db
-        .update(agentApplicationVoteSchema)
-        .set({
-          deletedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(agentApplicationVoteSchema.userKey, userKey),
-            eq(agentApplicationVoteSchema.applicationId, input.applicationId),
-            isNull(agentApplicationVoteSchema.deletedAt),
-          ),
-        )
-        .execute();
 
       await ctx.db
         .insert(agentApplicationVoteSchema)
-        .values({ ...input, userKey: userKey })
-        .execute();
+        .values({
+          applicationId: input.applicationId,
+          userKey,
+          vote: input.vote,
+          updatedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [
+            agentApplicationVoteSchema.applicationId,
+            agentApplicationVoteSchema.userKey,
+          ],
+          set: {
+            vote: sql`excluded.vote`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        })
+        .returning({
+          id: agentApplicationVoteSchema.id,
+          vote: agentApplicationVoteSchema.vote,
+          updatedAt: agentApplicationVoteSchema.updatedAt,
+        });
+
+      return { success: true };
     }),
+
   delete: authenticatedProcedure
-    .input(z.object({ applicationId: z.number() }))
+    .input(AGENT_APPLICATION_VOTE_INSERT_SCHEMA.pick({ applicationId: true }))
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const userKey = ctx.sessionData!.userKey;
       await ctx.db
-        .update(agentApplicationVoteSchema)
-        .set({
-          deletedAt: new Date(),
-        })
+        .delete(agentApplicationVoteSchema)
         .where(
           and(
             eq(agentApplicationVoteSchema.userKey, userKey),
             eq(agentApplicationVoteSchema.applicationId, input.applicationId),
           ),
         );
+
+      return { success: true };
     }),
 } satisfies TRPCRouterRecord;
