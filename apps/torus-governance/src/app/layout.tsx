@@ -11,12 +11,13 @@ import { GovernanceProvider } from "~/context/governance-provider";
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
-const APP_NAME = "Torus Governance";
+const APP_NAME = "Torus DAO";
 
 export const metadata: Metadata = {
   robots: "all",
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
+  description: "The thermodynamic god's favorite DAO.",
 };
 
 export const firaMono = FiraMono({
