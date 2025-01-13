@@ -17,8 +17,8 @@ import {
 } from "@torus-ts/ui";
 
 const navSidebarOptions = [
-  { title: "Proposals", href: "proposals" },
   { title: "Agent Applications", href: "agent-applications" },
+  { title: "Proposals", href: "proposals" },
   //TODO: Uncomment when the other pages get done
   // { title: "Community Concepts", href: "community-concepts" },
   // { title: "DAO Members Dashboard", href: "dao-members-dashboard" },

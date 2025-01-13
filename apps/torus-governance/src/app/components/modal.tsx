@@ -24,7 +24,7 @@ import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-da
 import { ClipboardPlus } from "lucide-react";
 
 export function CreateModal() {
-  const [selectedView, setSelectedView] = useState("create-proposal");
+  const [selectedView, setSelectedView] = useState("create-agent-application");
 
   return (
     <Dialog>
@@ -49,16 +49,16 @@ export function CreateModal() {
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
           <SelectContent className="border-muted">
-            <SelectItem value="create-proposal">Create new Proposal</SelectItem>
-            <SelectItem value="create-transfer-dao-treasury">
-              Create Transfer Dao Treasury Proposal
-            </SelectItem>
-            <SelectSeparator />
             <SelectItem value="create-agent-application">
               Step 1: Apply to whitelist an agent/module for registration
             </SelectItem>
             <SelectItem value="register-agent">
               Step 2: Register a whitelisted agent/module
+            </SelectItem>
+            <SelectSeparator />
+            <SelectItem value="create-proposal">Create new Proposal</SelectItem>
+            <SelectItem value="create-transfer-dao-treasury">
+              Create Transfer Dao Treasury Proposal
             </SelectItem>
           </SelectContent>
         </Select>
