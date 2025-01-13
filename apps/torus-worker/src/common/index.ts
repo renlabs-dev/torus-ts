@@ -14,6 +14,7 @@ import type { VotesByApplication } from "../db";
 import {
   queryTotalVotesPerApp as queryTotalVotesPerApp,
   countCadreKeys,
+  pendingPenalizations,
 } from "../db";
 
 export interface WorkerProps {
@@ -104,6 +105,11 @@ export async function getVotesOnPending(
 export async function getCadreThreshold() {
   const keys = await countCadreKeys();
   return Math.floor(keys / 2) + 1;
+}
+
+export async function getPenaltyFactors(cadreThreshold: number) {
+  const penalizations = await pendingPenalizations(cadreThreshold);
+  return pendingPenalizations(1);
 }
 
 export async function processVotesOnProposal(

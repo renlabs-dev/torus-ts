@@ -1,5 +1,5 @@
 import type { SQL, Table } from "@torus-ts/db";
-import { and, eq, getTableColumns, isNull, sql } from "@torus-ts/db";
+import { and, eq, getTableColumns, isNull, sql, gt, lt, avg } from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
@@ -9,6 +9,7 @@ import {
   computedAgentWeightSchema,
   governanceNotificationSchema,
   userAgentWeightSchema,
+  penalizeAgentVotesSchema,
 } from "@torus-ts/db/schema";
 import type {
   Agent as TorusAgent,
@@ -138,6 +139,23 @@ export async function countCadreKeys(): Promise<number> {
 
   return result[0].count;
 }
+
+
+export async function pendingPenalizations(threshold: number) {
+  const result = await db 
+  .select({
+    agentKey: penalizeAgentVotesSchema.agentKey,
+    penaltyFactor: penalizeAgentVotesSchema.penaltyFactor,
+  })
+  .from(penalizeAgentVotesSchema)
+  .where(
+    lt(penalizeAgentVotesSchema.executedAt, penalizeAgentVotesSchema.updatedAt),
+  )
+  .groupBy(penalizeAgentVotesSchema.agentKey)
+  .having(gt(sql`count penalizeAgentVotesSchema.cadreKey`, threshold));
+  return result;
+}
+
 
 // util for upsert https://orm.drizzle.team/learn/guides/upsert#postgresql-and-sqlite
 function buildConflictUpdateColumns<
