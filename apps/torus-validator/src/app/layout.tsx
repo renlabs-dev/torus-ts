@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   robots: "all",
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "Most advanced decentralized AI Protocol.",
+  description: "The thermodynamic god's favorite Allocator.",
 };
 
 export const firaMono = FiraMono({
