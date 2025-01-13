@@ -184,8 +184,8 @@ export function CreateAgentApplication(): JSX.Element {
             value={applicationKey}
           />
           <Button
-            variant="default"
-            className="w-fit bg-neutral-700 px-4 text-foreground hover:bg-foreground hover:text-neutral-700 md:block"
+            variant="outline"
+            type="button"
             onClick={() => setApplicationKey(selectedAccount?.address ?? "")}
           >
             Paste my wallet address
@@ -260,10 +260,9 @@ export function CreateAgentApplication(): JSX.Element {
       <div className="flex items-start gap-2 text-sm text-yellow-500">
         <Info className="mt-[1px]" size={16} />
         <Label className="text-sm">
-          Note: When you click "Submit Agent/Module Application", the
-          application fee (currently X TORUS tokens) will be deducted from your
-          wallet. Even if you provided a different wallet address for your
-          agent/module, the application fee is paid from your wallet!
+          Note: When submitting your application, an application fee (X TORUS
+          tokens) will be deducted from your connected wallet, not from the
+          wallet address specified.
         </Label>
       </div>
       <Button

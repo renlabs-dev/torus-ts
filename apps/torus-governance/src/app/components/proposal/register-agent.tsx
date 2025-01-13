@@ -159,7 +159,7 @@ export function RegisterAgent(): JSX.Element {
   return (
     <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-0">
+        <div className="flex items-center gap-2">
           <Input
             onChange={(e) => setAgentKey(e.target.value)}
             placeholder="Agent/Module address in SS58 format (eg. 12sPm....n88b)"
@@ -168,8 +168,8 @@ export function RegisterAgent(): JSX.Element {
             title="Paste the same address that you used in your agent/module application!"
           />
           <Button
-            variant="default"
-            className="w-fit px-4 md:block bg-neutral-700 text-foreground hover:text-neutral-700 hover:bg-foreground"
+            variant="outline"
+            type="button"
             onClick={() => setAgentKey(selectedAccount?.address ?? "")}
             title="Only use your wallet's address if you also used it in your agent/module application!"
           >
@@ -190,11 +190,14 @@ export function RegisterAgent(): JSX.Element {
         />
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mt-3" title="Switch between editing and previewing the markdown content">
+        <TabsList
+          className="mt-3"
+          title="Switch between editing and previewing the markdown content"
+        >
           <TabsTrigger value="edit">Edit Content</TabsTrigger>
           <TabsTrigger value="preview">Preview Content</TabsTrigger>
         </TabsList>
-        <TabsContent value="edit" className="flex flex-col gap-1 mt-1">
+        <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
           <Input
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Agent/Module title..."
@@ -210,7 +213,7 @@ export function RegisterAgent(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="rounded-md bg-muted p-4 mt-0">
+        <TabsContent value="preview" className="mt-0 rounded-md bg-muted p-4">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
@@ -230,8 +233,10 @@ export function RegisterAgent(): JSX.Element {
       <div className="flex items-start gap-2 text-sm text-yellow-500">
         <Info className="mt-[1px]" size={16} />
         <Label className="text-sm">
-          Note: When you click "Register Agent/Module", the registration fee (currently X TORUS tokens) will be deducted from your wallet.
-          Even if you provided a different wallet address for your agent/module, the registration fee is paid from your wallet!
+          Note: When you click "Register Agent/Module", the registration fee
+          (currently X TORUS tokens) will be deducted from your wallet. Even if
+          you provided a different wallet address for your agent/module, the
+          registration fee is paid from your wallet!
         </Label>
       </div>
       <Button
