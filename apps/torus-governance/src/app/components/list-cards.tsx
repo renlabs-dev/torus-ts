@@ -8,11 +8,7 @@ import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
 
 import type { VoteStatus } from "./vote-label";
 import { useGovernance } from "~/context/governance-provider";
-import {
-  calcProposalFavorablePercent,
-  handleCustomAgentApplications,
-  handleCustomProposal,
-} from "~/utils";
+import { handleCustomAgentApplications, handleCustomProposal } from "~/utils";
 import { CardSkeleton } from "./card-skeleton";
 import { CardViewData } from "./card-view-data";
 import { api } from "~/trpc/react";
@@ -53,7 +49,7 @@ const NoContentFound: React.FC<{ viewMode: ViewModes }> = ({ viewMode }) => {
   return <p>No agent/module applications yet.</p>;
 };
 
-type ViewModes = "proposals" | "agent-applications" | null;
+type ViewModes = "agent-applications" | "proposals" | null;
 
 const ListCardsContent = () => {
   const {
