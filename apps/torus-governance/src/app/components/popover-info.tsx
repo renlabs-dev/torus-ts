@@ -38,28 +38,26 @@ export const PopoverInfo = () => {
       </PopoverTrigger>
       <PopoverContent className="mr-5 flex w-fit flex-col gap-6 border-muted bg-background px-4 py-4">
         <div>
-          {daoTreasuryBalance.data !== undefined && (
+          {daoTreasuryBalance.data === undefined ? (
+            <Skeleton className="flex w-1/3 py-3" />
+          ) : (
             <p className="flex items-end gap-1 text-base">
               {formatToken(daoTreasuryBalance.data)}
-              <span className="mb-0.5 text-xs">TOR</span>
+              <span className="mb-0.5 text-xs">TORUS</span>
             </p>
           )}
-          {!daoTreasuryBalance.data && <Skeleton className="flex w-1/2 py-3" />}
 
           <span className="text-sx text-muted-foreground">
             DAO treasury funds
           </span>
         </div>
         <div>
-          {!daoTreasuryBalance.data && <Skeleton className="flex w-1/2 py-3" />}
-          {daoTreasuryBalance.data && (
+          {daoTreasuryAddress.data === undefined ? (
+            <Skeleton className="flex w-3/4 py-3" />
+          ) : (
             <span className="flex gap-3">
-              {smallAddress(daoTreasuryAddress.data as string)}
-              <button
-                onClick={() =>
-                  handleCopyClick(formatToken(daoTreasuryBalance.data))
-                }
-              >
+              {smallAddress(daoTreasuryAddress.data)}
+              <button onClick={() => handleCopyClick(daoTreasuryAddress.data)}>
                 <Copy
                   size={16}
                   className="text-muted-foreground hover:text-white"
@@ -72,11 +70,12 @@ export const PopoverInfo = () => {
           </span>
         </div>
         <div className="flex flex-col">
-          {!rewardAllocation.data && <Skeleton className="flex w-1/2 py-3" />}
-          {rewardAllocation.data !== undefined && (
+          {rewardAllocation.data === undefined ? (
+            <Skeleton className="flex w-1/3 py-3" />
+          ) : (
             <p className="flex items-end gap-1 text-base">
               {formatToken(rewardAllocation.data)}
-              <span className="mb-0.5 text-xs">TOR</span>
+              <span className="mb-0.5 text-xs">TORUS</span>
             </p>
           )}
           <span className="text-sm text-muted-foreground">

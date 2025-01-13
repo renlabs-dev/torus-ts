@@ -16,7 +16,7 @@ export default function HomePage(): JSX.Element {
         <SidebarInfo />
       </div>
       <div className="flex w-full flex-col gap-6">
-        <div className="flex w-full justify-between">
+        <div className="flex w-full flex-col justify-between gap-3 md:flex-row">
           <FilterContent />
           <CreateModal />
         </div>
