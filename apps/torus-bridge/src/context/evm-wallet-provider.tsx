@@ -15,6 +15,7 @@ import {
   metaMaskWallet,
   rainbowWallet,
   trustWallet,
+  uniswapWallet,
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import type { PropsWithChildren } from "react";
@@ -43,6 +44,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
           rainbowWallet,
           trustWallet,
           argentWallet,
+          uniswapWallet,
           injectedWallet,
         ],
       },
