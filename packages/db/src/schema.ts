@@ -1,4 +1,4 @@
-import { asc, eq, sql, count, isNull, sum } from "drizzle-orm";
+import { asc, eq, sql, isNull, sum } from "drizzle-orm";
 import {
   bigint as drizzleBigint,
   boolean,
@@ -208,9 +208,7 @@ export const commentSchema = createTable(
 
     ...timeFields(),
   },
-  (t) => [
-    index().on(t.itemType, t.itemId, t.userKey),
-  ],
+  (t) => [index().on(t.itemType, t.itemId, t.userKey)],
 );
 
 /**
@@ -259,7 +257,7 @@ export const commentDigestView = pgMaterializedView("comment_digest").as(
         likes: sum(
           sql<number>`CASE WHEN ${commentInteractionSchema.reactionType} = ${reactionTypeValues.LIKE} THEN 1 ELSE 0 END`,
         ).as("likes"),
-        
+
         dislikes: sum(
           sql<number>`CASE WHEN ${commentInteractionSchema.reactionType} = ${reactionTypeValues.DISLIKE} THEN 1 ELSE 0 END`,
         ).as("dislikes"),
