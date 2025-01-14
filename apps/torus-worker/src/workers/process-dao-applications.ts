@@ -9,7 +9,9 @@ import {
   log,
   processAllVotes,
   sleep,
+  getPenaltyFactors,
   sleepUntilNewBlock,
+  processPenalty,
 } from "../common";
 
 export async function processApplicationsWorker(props: WorkerProps) {
@@ -18,13 +20,6 @@ export async function processApplicationsWorker(props: WorkerProps) {
       const lastBlock = await sleepUntilNewBlock(props);
       props.lastBlock = lastBlock;
       log(`Block ${props.lastBlock.blockNumber}: processing`);
-
-      // ASK Jairo
-
-      // const apps_map = await getApplications(props.api, [
-      //   "Pending",
-      //   "Accepted",
-      // ]);
 
       const apps_map = await getApplications(props.api, (app) =>
         match(app.status)({
@@ -39,6 +34,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
         lastBlock.blockNumber,
       );
 
+      
       const vote_threshold = await getCadreThreshold();
 
       await processAllVotes(
@@ -47,6 +43,8 @@ export async function processApplicationsWorker(props: WorkerProps) {
         apps_map,
         props.api,
       );
+      const factors = await getPenaltyFactors(vote_threshold);
+      await processPenalty(factors, props.api);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);

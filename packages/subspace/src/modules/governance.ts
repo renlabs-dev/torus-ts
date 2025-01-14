@@ -355,6 +355,7 @@ export async function removeFromWhitelist(
     });
 }
 
+// TODO: receive key instead of mnemonic
 export async function acceptApplication(
   api: ApiPromise,
   proposalId: number,
@@ -371,6 +372,26 @@ export async function acceptApplication(
   const extrinsic = await tx.signAndSend(sudoKeypair);
   return extrinsic;
 }
+
+
+export async function penalizeAgent(
+  api: ApiPromise,
+  agentKey: string,
+  penaltyFactor: number,
+  mnemonic: string | undefined,
+) {
+  if (!mnemonic) {
+    throw new Error("No sudo mnemonic provided");
+  }
+
+  const tx = api.tx.governance.penalizeAgent(agentKey, penaltyFactor);
+
+  const keyring = new Keyring({ type: "sr25519" });
+  const sudoKeypair = keyring.addFromUri(mnemonic);
+  const extrinsic = await tx.signAndSend(sudoKeypair);
+  return extrinsic;
+}
+
 
 export async function denyApplication(
   api: ApiPromise,

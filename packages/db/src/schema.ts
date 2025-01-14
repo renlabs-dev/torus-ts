@@ -132,7 +132,7 @@ export const penalizeAgentVotesSchema = createTable("penalize_agent_votes", {
   cadreKey: ss58Address("cadre_key").notNull().references(() => cadreSchema.userKey),
   penaltyFactor: integer("penalty_factor").notNull(),
   content: text("content").notNull(),
-  executedAt: timestampz("executed_at").default(sql`null`),
+  executed: boolean("executed").notNull().default(false),
   ...timeFields(),
 
 }, (t) => [
