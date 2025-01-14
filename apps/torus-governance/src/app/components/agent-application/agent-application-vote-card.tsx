@@ -11,7 +11,6 @@ import { Button, Card, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import { CreateCadreCandidates } from "./create-cadre-candidates";
 import type { AgentApplication } from "@torus-ts/subspace";
 import { match } from "rustie";
 
@@ -148,18 +147,17 @@ const VoteCardFunctionsContent = (props: {
         </Button>
       </div>
       {!isAccountConnected && (
-        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+          <span>Are you a Cadre?</span>
           <span>Connect your wallet to vote</span>
         </div>
       )}
       {isAccountConnected && !isCadreUser && (
         <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
           <span className="my-4">
-            You must be a Curator DAO member to be able to vote on agent/module
-            applications and leave comments. Consider applying to become a
-            Curator DAO member.
+            You must be a Curator DAO member to be able to vote on agent
+            applications.
           </span>
-          <CreateCadreCandidates />
         </div>
       )}
     </div>

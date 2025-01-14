@@ -39,9 +39,13 @@ export type CommentInteractionReactionType = NonNullable<
   inferProcedureOutput<AppRouter["commentInteraction"]["byId"]>
 >["reactionType"];
 
-type SorterTypes = "newest" | "oldest" | "mostUpvotes";
+type SorterTypes = "newest" | "oldest" | "mostLikes";
 
-const commentSorters: { icon: JSX.Element; sortBy: SorterTypes, description: string }[] = [
+const commentSorters: {
+  icon: JSX.Element;
+  sortBy: SorterTypes;
+  description: string;
+}[] = [
   {
     icon: <ClockArrowDown />,
     sortBy: "oldest",
@@ -54,8 +58,8 @@ const commentSorters: { icon: JSX.Element; sortBy: SorterTypes, description: str
   },
   {
     icon: <ThumbsUp />,
-    sortBy: "mostUpvotes",
-    description: "most upvotes",
+    sortBy: "mostLikes",
+    description: "most likes",
   },
 ];
 
@@ -97,7 +101,9 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
   return (
     <div className="flex w-full flex-row items-center justify-between gap-1 pb-2">
       <h2 className="w-full text-start text-lg font-semibold">
-        {itemType === "PROPOSAL" ? "Proposal Discussion" : "Curator DAO Comments"}
+        {itemType === "PROPOSAL"
+          ? "Proposal Discussion"
+          : "Curator DAO Comments"}
       </h2>
       <ToggleGroup
         type="single"
@@ -111,10 +117,11 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
             key={sorter.sortBy}
             variant="outline"
             value={sorter.sortBy}
-            className={`px-3 py-1 text-sm ${sortBy === sorter.sortBy
-              ? "border-white"
-              : "bg-card text-muted-foreground"
-              }`}
+            className={`px-3 py-1 text-sm ${
+              sortBy === sorter.sortBy
+                ? "border-white"
+                : "bg-card text-muted-foreground"
+            }`}
             title={`Sort comments by ${sorter.description}`}
           >
             {sorter.icon}
@@ -163,7 +170,7 @@ export function ViewComment({
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
       } else {
-        return b.likes - a.likes;
+        return (Number(b.likes) || 0) - (Number(a.likes) || 0);
       }
     });
   }, [comments, sortBy]);
@@ -290,6 +297,7 @@ export function ViewComment({
         >
           {sortedComments.map((comment) => {
             const currentVote = userVotes?.[comment.id];
+
             return (
               <Card
                 key={comment.id}
@@ -309,7 +317,7 @@ export function ViewComment({
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
-                      title="Upvote"
+                      title="Like"
                       onClick={() => handleVote(comment.id, "LIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === "LIKE" ? "text-green-500" : "hover:text-green-500"}`}
@@ -319,7 +327,7 @@ export function ViewComment({
                     </Button>
                     <Button
                       variant="outline"
-                      title="Downvote"
+                      title="Dislike"
                       onClick={() => handleVote(comment.id, "DISLIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
                       className={`flex items-center px-1 ${currentVote === "DISLIKE" ? "text-red-500" : "hover:text-red-500"}`}

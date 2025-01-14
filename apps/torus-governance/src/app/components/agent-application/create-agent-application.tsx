@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
-import { Info } from "lucide-react";
 import { z } from "zod";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
+  Checkbox,
   Input,
   Label,
   Tabs,
@@ -21,7 +21,6 @@ import {
 import { formatToken } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
-import { useTorus } from "@torus-ts/torus-provider";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -37,6 +36,8 @@ export function CreateAgentApplication(): JSX.Element {
     AddAgentApplication,
     accountFreeBalance,
     agentApplications,
+    selectedAccount,
+    networkConfigs,
   } = useGovernance();
 
   const [applicationKey, setApplicationKey] = useState("");
@@ -44,6 +45,7 @@ export function CreateAgentApplication(): JSX.Element {
   const [discordId, setDiscordId] = useState("");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [criteriaAgreement, setCriteriaAgreement] = useState(false);
 
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
@@ -59,6 +61,20 @@ export function CreateAgentApplication(): JSX.Element {
   function handleCallback(TransactionReturn: TransactionResult): void {
     setTransactionStatus(TransactionReturn);
   }
+
+  const userHasEnoughtBalance = useCallback(() => {
+    if (
+      !selectedAccount ||
+      !networkConfigs.data ||
+      !accountFreeBalance.data ||
+      networkConfigs.isFetching ||
+      accountFreeBalance.isFetching
+    ) {
+      return null;
+    }
+
+    return accountFreeBalance.data > networkConfigs.data.agentApplicationCost;
+  }, [selectedAccount, networkConfigs, accountFreeBalance])();
 
   const refetchHandler = async () => {
     await agentApplications.refetch();
@@ -86,9 +102,14 @@ export function CreateAgentApplication(): JSX.Element {
         return;
       }
 
-      const daoApplicationCost = 1000;
+      if (!networkConfigs.data) {
+        toast.error("Network configs are still loading");
+        return;
+      }
 
-      if (Number(accountFreeBalance.data) > daoApplicationCost) {
+      const daoApplicationCost = networkConfigs.data.agentApplicationCost;
+
+      if (accountFreeBalance.data > daoApplicationCost) {
         void AddAgentApplication({
           applicationKey,
           IpfsHash: `ipfs://${ipfs.IpfsHash}`,
@@ -164,21 +185,20 @@ export function CreateAgentApplication(): JSX.Element {
     if (uploading) {
       return "Uploading...";
     }
-    return "Submit Agent/Module Application";
+    return "Submit Application";
   };
-
-  const { selectedAccount } = useTorus();
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div
-          className="flex items-center gap-2"
-          title="Use your wallet's address if you want your agent/module to use your wallet. This is the majority of cases!"
+          className="flex flex-col items-center gap-2 sm:flex-row"
+          title="Use your wallet's address if you want your agent/module to use your wallet."
         >
           <Input
             onChange={(e) => setApplicationKey(e.target.value)}
-            placeholder="Agent/Module address in SS58 format (eg. 12sPm....n88b)"
+            placeholder="Agent address (SS58 eg. 5D5F...EBnt)"
+            className="placeholder:text-sm"
             type="text"
             required
             value={applicationKey}
@@ -186,14 +206,17 @@ export function CreateAgentApplication(): JSX.Element {
           <Button
             variant="outline"
             type="button"
+            className="w-full sm:w-fit"
             onClick={() => setApplicationKey(selectedAccount?.address ?? "")}
           >
-            Paste my wallet address
+            Paste my address
           </Button>
         </div>
         <Input
           onChange={(e) => setDiscordId(e.target.value)}
-          placeholder="Agent/Module discord ID"
+          placeholder="Discord ID (17-18 digits)"
+          minLength={17}
+          maxLength={18}
           type="text"
           required
           value={discordId}
@@ -211,7 +234,7 @@ export function CreateAgentApplication(): JSX.Element {
           <Input
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Application title"
-            title="Title of the application, make sure it's sufficiently descriptive!"
+            title="Make sure it's sufficiently descriptive!"
             type="text"
             required
             value={title}
@@ -242,35 +265,60 @@ export function CreateAgentApplication(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <div className="flex items-start gap-2 text-sm text-yellow-500">
-        <Info className="mt-[1px]" size={16} />
-        <Label className="text-sm">
-          Please ensure that your application meets all the criteria defined in
-          this{" "}
+
+      <div className="flex items-start gap-2">
+        <span className="text-white">
+          Application fee:
+          <span className="text-muted-foreground">
+            {" "}
+            {formatToken(networkConfigs.data?.agentApplicationCost ?? 0)} TORUS
+          </span>
+        </span>
+      </div>
+
+      <div className="flex items-start gap-2 text-white md:items-center">
+        <Checkbox
+          id="terms"
+          className="mt-1 md:mt-0"
+          required
+          checked={criteriaAgreement}
+          onClick={() => setCriteriaAgreement(!criteriaAgreement)}
+        />
+        <Label htmlFor="terms" className="leading-normal">
+          My application meets all the{" "}
           <Link
-            className="underline"
+            className="text-blue-500 underline"
             href="https://docs.torus.network/concepts/agent-application"
             target="_blank"
           >
-            article
+            requirements
           </Link>{" "}
-          to avoid being denied by the Curator DAO.
+          defined.
         </Label>
       </div>
-      <div className="flex items-start gap-2 text-sm text-yellow-500">
-        <Info className="mt-[1px]" size={16} />
-        <Label className="text-sm">
-          Note: When submitting your application, an application fee (X TORUS
-          tokens) will be deducted from your connected wallet, not from the
-          wallet address specified.
-        </Label>
+
+      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+        <span className="text-sm">
+          Note: The application fee will be deducted from your connected wallet.
+          If your application get accepted the application fee will be refunded.
+        </span>
       </div>
+      {!userHasEnoughtBalance && selectedAccount?.address && (
+        <span className="text-sm text-red-400">
+          You don't have enough balance to submit an application.
+        </span>
+      )}
       <Button
         size="lg"
         type="submit"
         variant="default"
         className="flex items-center gap-2"
-        disabled={!isAccountConnected}
+        disabled={
+          !isAccountConnected ||
+          !criteriaAgreement ||
+          uploading ||
+          !userHasEnoughtBalance
+        }
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>

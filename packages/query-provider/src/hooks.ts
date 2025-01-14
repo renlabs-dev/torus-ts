@@ -26,6 +26,7 @@ import {
   queryProposals,
   queryRewardAllocation,
   queryUnrewardedProposals,
+  queryGlobalGovernanceConfig,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -230,6 +231,19 @@ export function useKeyStakedBy(
   });
 }
 
+export function useGlobalConfig(
+  api: Api | Nullish,
+) 
+  {
+    return useQuery({
+      queryKey: ["network_global_config"],
+      enabled: api != null ,
+      queryFn: () => queryGlobalGovernanceConfig(api!),
+      staleTime: STAKE_STALE_TIME,
+      refetchOnWindowFocus: false,
+    });
+}
+
 export interface BaseProposal {
   id: number;
   metadata: string;
@@ -277,3 +291,5 @@ export function useCustomMetadata<T extends BaseProposal | BaseDao>(
     },
   });
 }
+
+

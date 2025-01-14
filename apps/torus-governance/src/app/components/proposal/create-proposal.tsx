@@ -190,7 +190,7 @@ export function CreateProposal(): JSX.Element {
       <Button
         size="lg"
         type="submit"
-        variant="outline"
+        variant="default"
         disabled={!isAccountConnected}
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
@@ -206,7 +206,7 @@ export function CreateProposal(): JSX.Element {
         <Label className="text-sm text-white">
           Want a different approach?{" "}
           <Link
-            className="text-primary hover:underline"
+            className="text-blue-500 underline"
             href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q"
             target="_blank"
           >

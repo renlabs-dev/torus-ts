@@ -55,7 +55,6 @@ export function AgentApplicationExpandedView(
       title,
     };
 
-    console.log(agentApplicationContent.status);
     return agentApplicationContent;
   };
 
@@ -105,6 +104,7 @@ export function AgentApplicationExpandedView(
               applicationId={content.id}
               applicationStatus={content.status}
             />
+            <CreateCadreCandidates />
             <PenaltyManager
               agentKey={content.agentKey}
               status={content.status}

@@ -155,7 +155,7 @@ export function PenaltyManager({
           Apply Penalty
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="mt-2 hidden w-[25em] md:block xl:mr-0">
+      <PopoverContent className="mt-2 w-[25em] xl:mr-0" align="center">
         <div className="mt-1 flex w-full border-b border-white/20 pb-3">
           <p className="text-sm">
             The Cadre is allowed to apply a penalty to an agent. The penalty

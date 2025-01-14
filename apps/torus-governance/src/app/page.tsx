@@ -7,16 +7,16 @@ import { SidebarLinks } from "./components/sidebar-links";
 
 export default function HomePage(): JSX.Element {
   return (
-    <main className="p flex w-full animate-fade-down flex-col justify-center gap-4 py-12 md:flex-row">
-      <div className="flex w-full flex-col gap-4 md:max-w-[300px]">
+    <main className="flex w-full animate-fade-down flex-col gap-4 py-6 lg:flex-row lg:py-10">
+      <div className="flex w-full flex-col gap-4 lg:w-2/5 lg:max-w-[320px]">
         <div className="flex w-full gap-4">
           <SidebarLinks />
           <PopoverInfo />
         </div>
         <SidebarInfo />
       </div>
-      <div className="flex w-full flex-col gap-6">
-        <div className="flex w-full flex-col justify-between gap-3 md:flex-row">
+      <div className="flex w-full flex-col gap-4">
+        <div className="flex w-full flex-col justify-between gap-3 lg:flex-row">
           <FilterContent />
           <CreateModal />
         </div>

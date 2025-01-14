@@ -44,17 +44,6 @@ export function check_int(value: unknown): bigint {
   }
 }
 
-// TODO: fix wrong `bigintDivision`
-export function bigintDivision_WRONG(
-  a: bigint,
-  b: bigint,
-  precision = 8n,
-): number {
-  if (b === 0n) return NaN;
-  const base = 10n ** precision;
-  return (Number(a) * Number(base)) / Number(b) / Number(base);
-}
-
 export function bigintDivision(a: bigint, b: bigint, precision = 8n): number {
   if (b === 0n) return NaN;
   const base = 10n ** precision;

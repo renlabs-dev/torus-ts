@@ -2,7 +2,7 @@ import { if_let, match } from "rustie";
 
 import type { CustomMetadataState, ProposalStatus } from "@torus-ts/subspace";
 import type { ProposalState } from "@torus-ts/torus-provider";
-import { bigintDivision_WRONG } from "@torus-ts/utils";
+import { bigintDivision } from "@torus-ts/utils";
 import { formatToken } from "@torus-ts/utils/subspace";
 
 export interface ProposalCardFields {
@@ -135,7 +135,7 @@ export function calcProposalFavorablePercent(
     if (totalStake === 0n) {
       return null;
     }
-    const ratio = bigintDivision_WRONG(stakeFor, totalStake);
+    const ratio = bigintDivision(stakeFor, totalStake);
     const percentage = ratio * 100;
     return percentage;
   }
@@ -169,24 +169,6 @@ export function handleProposalStakeVoted(
     ({ stakeFor, stakeAgainst }) =>
       // open, accepted, refused
       formatToken(Number(stakeFor + stakeAgainst)),
-  );
-}
-
-export function handleProposalQuorumPercent(
-  proposalStatus: ProposalStatus,
-  totalStake: bigint,
-): JSX.Element {
-  function quorumPercent(stakeFor: bigint, stakeAgainst: bigint): JSX.Element {
-    const percentage =
-      bigintDivision_WRONG(stakeFor + stakeAgainst, totalStake) * 100;
-    const percentDisplay = `${Number.isNaN(percentage) ? "—" : percentage.toFixed(1)}%`;
-    return <span className="text-yellow-600">{`(${percentDisplay})`}</span>;
-  }
-  return if_let(proposalStatus, "Expired")(
-    () => <span className="text-yellow-600">{` (Matured)`}</span>,
-    ({ stakeFor, stakeAgainst }) =>
-      // open, accepted, refused
-      quorumPercent(stakeFor, stakeAgainst),
   );
 }
 

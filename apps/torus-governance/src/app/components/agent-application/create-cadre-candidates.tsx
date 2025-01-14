@@ -60,7 +60,7 @@ export function CreateCadreCandidates() {
     [selectedAccount, cadreCandidates],
   );
 
-  if (isUserCadre) {
+  if (isUserCadre || !selectedAccount) {
     return null;
   }
 
@@ -68,7 +68,7 @@ export function CreateCadreCandidates() {
     e.preventDefault();
     setError(null);
 
-    if (!selectedAccount?.address) {
+    if (!selectedAccount.address) {
       setError("Please connect your wallet to submit a request.");
       return;
     }
@@ -151,15 +151,14 @@ export function CreateCadreCandidates() {
             type="submit"
             variant={"default"}
             disabled={
-              createCadreCandidateMutation.isPending ||
-              !selectedAccount?.address
+              createCadreCandidateMutation.isPending || !selectedAccount.address
             }
           >
             {createCadreCandidateMutation.isPending
               ? "Submitting..."
               : "Submit"}
           </Button>
-          {!selectedAccount?.address && (
+          {!selectedAccount.address && (
             <p className="text-sm text-yellow-500">
               Please connect your wallet to submit a request.
             </p>

@@ -31,7 +31,7 @@ export const PopoverInfo = () => {
 
   return (
     <Popover>
-      <PopoverTrigger asChild className="md:hidden">
+      <PopoverTrigger asChild className="lg:hidden">
         <Button variant="outline">
           <Ellipsis size={16} />
         </Button>

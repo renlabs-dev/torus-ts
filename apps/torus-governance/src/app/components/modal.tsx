@@ -35,25 +35,25 @@ export function CreateModal() {
           title="Apply to be allowed to register an agent or module on the network"
         >
           <ClipboardPlus className="h-4 w-4" />
-          Apply to register on the network
+          Shape the network
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[100%] max-w-screen-xl gap-6 border-muted md:w-[80%]">
+      <DialogContent className="max-h-svh w-full max-w-[100vw] gap-6 overflow-y-auto border-muted md:w-[80%] md:max-w-screen-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Agent/Module Application and Registration
+            Shape the network
           </DialogTitle>
         </DialogHeader>
         <Select value={selectedView} onValueChange={setSelectedView}>
-          <SelectTrigger className="w-2/4 border-transparent bg-accent p-3 text-white">
+          <SelectTrigger className="w-full border-transparent bg-accent p-3 text-white">
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
-          <SelectContent className="border-muted">
+          <SelectContent className="w-fit border-muted">
             <SelectItem value="create-agent-application">
-              Step 1: Apply to whitelist an agent/module for registration
+              Whitelist an agent
             </SelectItem>
             <SelectItem value="register-agent">
-              Step 2: Register a whitelisted agent/module
+              Register a whitelisted agent
             </SelectItem>
             <SelectSeparator />
             <SelectItem value="create-proposal">Create new Proposal</SelectItem>
