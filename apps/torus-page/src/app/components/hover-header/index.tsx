@@ -170,8 +170,8 @@ export function HoverHeader() {
         <AnimatePresence initial={false}>
           {isVisible && (
             <>
-              <LinesSVG />
               <ButtonsSection />
+              <LinesSVG />
             </>
           )}
         </AnimatePresence>
