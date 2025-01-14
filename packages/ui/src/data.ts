@@ -17,7 +17,7 @@ export const links = {
   hyperlane_explorer: "https://explorer.hyperlane.xyz",
 
   explorer: "https://explorer.torus.network/",
-  governance: "https://governance.torus.network/",
+  governance: "https://dao.torus.network/",
   allocator: "https://validator.torus.network/",
   landing_page: "https://torus.network/",
   wallet: "https://wallet.torus.network/",
@@ -25,62 +25,3 @@ export const links = {
 
   setup_a_wallet: "https://docs.torus.network/installation/setup-wallet",
 };
-
-export const navApps: { title: string; href: string; description: string }[] = [
-  {
-    title: "Bridge",
-    href: "/",
-    description: "Bridge your assets to the Torus network.",
-  },
-  {
-    title: "DAO Portal",
-    href: "/",
-    description:
-      "Participate in the governance of the Torus network and earn rewards.",
-  },
-  {
-    title: "Allocator",
-    href: "/",
-    description:
-      "Allocate resources to modules and subnets curated by the DAO.",
-  },
-  {
-    title: "Documentation",
-    href: "/",
-    description: "Learn how to use the Torus network.",
-  },
-  {
-    title: "Web Wallet",
-    href: "/",
-    description: "Manage your assets with secure and decentralized wallet.",
-  },
-  {
-    title: "Blog",
-    href: "/",
-    description: "Stay updated with the latest news and updates.",
-  },
-];
-
-export const navStart: { title: string; href: string; description: string }[] =
-  [
-    {
-      title: "More",
-      href: "/about",
-      description: "Learn more about the Torus Network Protocol.",
-    },
-    {
-      title: "Join",
-      href: "https://discord.gg/torus",
-      description: "Be a part of the self-assembling organism.",
-    },
-    {
-      title: "Bridge Info",
-      href: "/bridge",
-      description: "Learn more about the Torus Bridge.",
-    },
-  ];
-
-export const navItems: { title: string; href: string }[] = [
-  { title: "Home", href: "/" },
-  // { title: "Documentation", href: "/docs/getting-started/intro" },
-];
