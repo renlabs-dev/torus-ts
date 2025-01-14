@@ -209,14 +209,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ApplicationTooSmall: AugmentedError<ApiType>;
       /**
-       * Tried revoking a removal application.
-       **/
-      CannotRevokeRemoveApplication: AugmentedError<ApiType>;
-      /**
-       * Tried revoking an application that is not resolved.
-       **/
-      CannotRevokeUnresolvedApplication: AugmentedError<ApiType>;
-      /**
        * Failed to convert the given value to a balance.
        **/
       CouldNotConvertToBalance: AugmentedError<ApiType>;
@@ -232,10 +224,6 @@ declare module '@polkadot/api-base/types/errors' {
        * An internal error occurred, probably relating to the size of the bounded sets.
        **/
       InternalError: AugmentedError<ApiType>;
-      /**
-       * Invalid agent application cost given to global params proposal
-       **/
-      InvalidAgentApplicationCost: AugmentedError<ApiType>;
       /**
        * The penalty percentage provided does not meet the maximum requirement
        **/
@@ -305,10 +293,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidProposalFinalizationParameters: AugmentedError<ApiType>;
       /**
-       * Invalid proposal reward interval given to global params proposal
-       **/
-      InvalidProposalRewardInterval: AugmentedError<ApiType>;
-      /**
        * Invalid parameters were provided to the voting process.
        **/
       InvalidProposalVotingParameters: AugmentedError<ApiType>;
@@ -332,10 +316,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Key doesn't have enough tokens to create a proposal.
        **/
       NotEnoughBalanceToPropose: AugmentedError<ApiType>;
-      /**
-       * The operation can only be performed by the root curator.
-       **/
-      NotRootCurator: AugmentedError<ApiType>;
       /**
        * Key hasn't voted on given Proposal.
        **/
