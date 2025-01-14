@@ -18,9 +18,10 @@ export const links = {
 
   explorer: "https://explorer.torus.network/",
   governance: "https://governance.torus.network/",
-  validator: "https://validator.torus.network/",
+  allocator: "https://validator.torus.network/",
   landing_page: "https://torus.network/",
   wallet: "https://wallet.torus.network/",
+  bridge: "https://bridge.torus.network/",
 
   setup_a_wallet: "https://docs.torus.network/installation/setup-wallet",
 };
@@ -38,7 +39,7 @@ export const navApps: { title: string; href: string; description: string }[] = [
       "Participate in the governance of the Torus network and earn rewards.",
   },
   {
-    title: "Consensus Subnet Portal",
+    title: "Allocator",
     href: "/",
     description:
       "Allocate resources to modules and subnets curated by the DAO.",
