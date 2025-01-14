@@ -18,7 +18,7 @@ export const links = {
 
   explorer: "https://explorer.torus.network/",
   governance: "https://dao.torus.network/",
-  allocator: "https://validator.torus.network/",
+  allocator: "https://allocator.torus.network/",
   landing_page: "https://torus.network/",
   wallet: "https://wallet.torus.network/",
   bridge: "https://bridge.torus.network/",
