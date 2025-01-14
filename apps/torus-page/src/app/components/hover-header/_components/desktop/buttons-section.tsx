@@ -42,7 +42,7 @@ export function ButtonsSection() {
 
   const buttonRows = [
     {
-      delay: 18,
+      delay: 14,
       className: "flex w-full max-w-3xl justify-around gap-[4.6em]",
       buttons: [
         {
@@ -58,7 +58,7 @@ export function ButtonsSection() {
       ],
     },
     {
-      delay: 20,
+      delay: 16,
       className:
         "absolute mt-20 flex w-full max-w-[43rem] justify-around gap-36",
       buttons: [
@@ -114,7 +114,7 @@ export function ButtonsSection() {
       <motion.div
         variants={buttonVariants}
         custom={10}
-        className="absolute mt-40 w-full max-w-[43rem]"
+        className="absolute mt-40 w-full max-w-[46.5rem]"
         style={{ zIndex: isExpanded ? 1 : "auto" }}
       >
         <motion.div
@@ -127,10 +127,7 @@ export function ButtonsSection() {
         >
           <Card className="mx-5 cursor-pointer overflow-hidden pb-4 pl-6 pr-4 pt-6 md:mx-0">
             <ScrollArea
-              className={cn(
-                isExpanded ? "h-[calc(65vh)] md:h-[calc(50vh)]" : "h-fit",
-                "pr-2",
-              )}
+              className={cn(isExpanded ? "h-[calc(40vh)]" : "h-fit", "pr-2")}
             >
               <motion.div layout>
                 Torus is an open-ended experiment to encode biology's principles

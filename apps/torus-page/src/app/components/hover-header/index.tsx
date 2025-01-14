@@ -3,8 +3,10 @@
 import { cn, Icons } from "@torus-ts/ui";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LinesSVG } from "./_components/lines-svg";
-import { ButtonsSection } from "./_components/buttons-section";
+import { LinesSVG } from "./_components/desktop/lines-svg";
+import { ButtonsSection } from "./_components/desktop/buttons-section";
+import { ButtonsSectionMobile } from "./_components/mobile/buttons-section-mobile";
+import { LinesSVGMobile } from "./_components/mobile/lines-svg-mobile";
 
 const draw = {
   hidden: { pathLength: 0, opacity: 0 },
@@ -170,8 +172,14 @@ export function HoverHeader() {
         <AnimatePresence initial={false}>
           {isVisible && (
             <>
-              <ButtonsSection />
-              <LinesSVG />
+              <div className="hidden w-full items-center justify-center md:flex">
+                <ButtonsSection />
+                <LinesSVG />
+              </div>
+              <div className="flex w-full items-center justify-center md:hidden">
+                <ButtonsSectionMobile />
+                <LinesSVGMobile />
+              </div>
             </>
           )}
         </AnimatePresence>
