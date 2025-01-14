@@ -1,5 +1,5 @@
 import type { SQL, Table } from "@torus-ts/db";
-import { and, eq, getTableColumns, isNull, sql, gt, lt, avg } from "@torus-ts/db";
+import { and, eq, getTableColumns, isNull, sql, gte, inArray, not } from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
@@ -142,20 +142,41 @@ export async function countCadreKeys(): Promise<number> {
 
 
 export async function pendingPenalizations(threshold: number) {
-  const result = await db 
-  .select({
-    agentKey: penalizeAgentVotesSchema.agentKey,
-    penaltyFactor: penalizeAgentVotesSchema.penaltyFactor,
-  })
-  .from(penalizeAgentVotesSchema)
-  .where(
-    lt(penalizeAgentVotesSchema.executedAt, penalizeAgentVotesSchema.updatedAt),
-  )
-  .groupBy(penalizeAgentVotesSchema.agentKey)
-  .having(gt(sql`count penalizeAgentVotesSchema.cadreKey`, threshold));
+  const subquery = db
+    .select({ agentKey: penalizeAgentVotesSchema.agentKey })
+    .from(penalizeAgentVotesSchema)
+    .where(not(penalizeAgentVotesSchema.executed))
+    .groupBy(penalizeAgentVotesSchema.agentKey)
+    .having(gte(sql`count(*)`, threshold));
+
+  const result = await db
+    .with(subquery.as('subquery'))
+    .select({
+      agentKey: penalizeAgentVotesSchema.agentKey,
+      medianPenaltyFactor: sql`percentile_cont(0.5) within group (order by ${penalizeAgentVotesSchema.penaltyFactor})`.as<number>(),
+    })
+    .from(penalizeAgentVotesSchema)
+    .where(
+      and(
+        not(penalizeAgentVotesSchema.executed),
+        sql`${penalizeAgentVotesSchema.agentKey} in (select "agent_key" from subquery)`
+      )
+    )
+    .groupBy(penalizeAgentVotesSchema.agentKey);
+
   return result;
 }
 
+
+export async function updatePenalizeAgentVotes(agentKeys: string[]) {
+  await db
+    .update(penalizeAgentVotesSchema)
+    .set({
+      executed: true,
+    })
+    .where(inArray(penalizeAgentVotesSchema.agentKey, agentKeys))
+    .execute();
+}
 
 // util for upsert https://orm.drizzle.team/learn/guides/upsert#postgresql-and-sqlite
 function buildConflictUpdateColumns<

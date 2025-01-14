@@ -7,6 +7,7 @@ import {
   queryLastBlock,
   denyApplication,
   acceptApplication,
+  penalizeAgent,
   removeFromWhitelist,
 } from "@torus-ts/subspace";
 
@@ -15,6 +16,7 @@ import {
   queryTotalVotesPerApp as queryTotalVotesPerApp,
   countCadreKeys,
   pendingPenalizations,
+  updatePenalizeAgentVotes,
 } from "../db";
 
 export interface WorkerProps {
@@ -109,7 +111,7 @@ export async function getCadreThreshold() {
 
 export async function getPenaltyFactors(cadreThreshold: number) {
   const penalizations = await pendingPenalizations(cadreThreshold);
-  return pendingPenalizations(1);
+  return penalizations;
 }
 
 export async function processVotesOnProposal(
@@ -173,4 +175,22 @@ export async function processAllVotes(
       ),
     ),
   );
+}
+
+export async function processPenalty(
+  penaltiesToApply: {
+    agentKey: string;
+    medianPenaltyFactor: number;
+}[],
+  api: ApiPromise,
+){
+  const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
+  console.log("Penalties to apply: ", penaltiesToApply);
+  for (const penalty of penaltiesToApply) {
+    const { agentKey, medianPenaltyFactor } = penalty;
+    await penalizeAgent(api, agentKey, medianPenaltyFactor, mnemonic);
+  }
+  const penalizedKeys = penaltiesToApply.map(item => item.agentKey);
+  await updatePenalizeAgentVotes(penalizedKeys);
+  console.log("Penalties applied");
 }
