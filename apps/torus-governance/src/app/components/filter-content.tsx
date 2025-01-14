@@ -35,7 +35,7 @@ export const Filter = () => {
   };
 
   return (
-    <div className="flex w-full items-center justify-center rounded-md border pl-3 md:w-1/2 xl:w-1/3">
+    <div className="flex w-full items-center justify-center rounded-md border pl-3 lg:w-3/5">
       <SearchIcon size={16} />
       <Input
         onChange={handleSearchChange}

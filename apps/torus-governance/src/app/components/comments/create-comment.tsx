@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken, toNano } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
@@ -26,8 +26,8 @@ export function CreateComment({
 
   const [content, setContent] = useState<string>("");
   const [name, setName] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
   const [remainingChars, setRemainingChars] = useState(MAX_CHARACTERS);
+  const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
 
   const utils = api.useUtils();
   const CreateComment = api.comment.create.useMutation({
@@ -44,25 +44,34 @@ export function CreateComment({
     },
   });
 
+  const isUserCadre = useMemo(
+    () => cadreUsers?.some((user) => user.userKey === selectedAccount?.address),
+    [cadreUsers, selectedAccount],
+  );
+
+  useEffect(() => {
+    setUserHasEnoughBalance(
+      accountStakedBalance
+        ? accountStakedBalance > toNano(MIN_STAKE_REQUIRED)
+        : false,
+    );
+  }, [accountStakedBalance, selectedAccount]);
+
   useEffect(() => {
     setRemainingChars(MAX_CHARACTERS - content.length);
   }, [content]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!selectedAccount?.address) {
-      setError("Please connect your wallet to submit a comment.");
+      toast.error("Please connect your wallet to submit a comment.");
       return;
     }
 
     if (itemType === "PROPOSAL") {
-      if (
-        !accountStakedBalance ||
-        Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
-      ) {
-        setError(
+      if (userHasEnoughBalance) {
+        toast.error(
           `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
         );
         return;
@@ -71,7 +80,9 @@ export function CreateComment({
       if (
         !cadreUsers?.some((user) => user.userKey === selectedAccount.address)
       ) {
-        setError("Only Curator DAO members can submit comments in DAO mode.");
+        toast.error(
+          "Only Curator DAO members can submit comments in DAO mode.",
+        );
         return;
       }
     }
@@ -87,9 +98,9 @@ export function CreateComment({
       await utils.comment.byId.invalidate({ proposalId: id });
     } catch (err) {
       if (err instanceof z.ZodError) {
-        setError(err.errors[0]?.message ?? "Invalid input");
+        toast.error(err.errors[0]?.message ?? "Invalid input");
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        toast.error("An unexpected error occurred. Please try again.");
       }
     }
   };
@@ -110,6 +121,17 @@ export function CreateComment({
     }
   };
 
+  const setBlur = () => {
+    if (
+      !selectedAccount ||
+      (itemType === "PROPOSAL" && !userHasEnoughBalance) ||
+      (itemType === "AGENT_APPLICATION" && !isUserCadre)
+    ) {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <div className="hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-1000 md:flex">
       <div className="mb-2 w-full pb-1">
@@ -117,7 +139,7 @@ export function CreateComment({
       </div>
       <form
         onSubmit={handleSubmit}
-        className={`flex w-full flex-col gap-2 ${!selectedAccount && "blur-sm"}`}
+        className={`flex w-full flex-col gap-2 ${setBlur() && "blur-md"}`}
       >
         <div className="relative">
           <textarea
@@ -132,7 +154,6 @@ export function CreateComment({
           </span>
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -156,20 +177,38 @@ export function CreateComment({
             {CreateComment.isPending ? "Posting..." : "Post"}
           </Button>
         </div>
-
-        {isSubmitDisabled() && !error && (
-          <p className="mt-2 text-sm text-yellow-500">
-            {!selectedAccount?.address
-              ? "Please connect your wallet to submit a comment."
-              : itemType === "PROPOSAL"
-                ? `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`
-                : "Only Curator DAO members can submit comments in DAO Applications."}
-          </p>
-        )}
       </form>
-      {!selectedAccount && (
-        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
-          <span>Connect your wallet to comment</span>
+      {!selectedAccount?.address && itemType === "PROPOSAL" && (
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+          <p className="mt-2 text-center text-sm">
+            Please connect your wallet to submit a comment.
+          </p>
+        </div>
+      )}
+
+      {!userHasEnoughBalance &&
+        itemType === "PROPOSAL" &&
+        selectedAccount?.address && (
+          <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+            <p className="mt-2 text-center text-sm">
+              You need to have at least {MIN_STAKE_REQUIRED} TORUS total staked
+              balance to submit a comment.
+            </p>
+          </div>
+        )}
+      {!selectedAccount && itemType === "AGENT_APPLICATION" && (
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+          <p className="mt-2 text-center text-sm">Are you a Curator DAO?</p>
+          <p className="mt-2 text-center text-sm">
+            Connect your wallet to comment.
+          </p>
+        </div>
+      )}
+      {selectedAccount && !isUserCadre && itemType === "AGENT_APPLICATION" && (
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
+          <p className="mt-2 text-center text-sm">
+            You must be a Curator DAO member to comment on agent applications.
+          </p>
         </div>
       )}
     </div>

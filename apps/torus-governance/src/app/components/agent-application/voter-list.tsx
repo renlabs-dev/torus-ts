@@ -62,25 +62,35 @@ export function VoterList(props: VoterListProps): JSX.Element {
 
   if (isError) {
     return (
-      <Card className="animate-fade-down p-4 animate-delay-500 md:p-6">
-        <CardHeader className="pl-0 pt-0">
+      <div className="flex h-full min-h-max animate-fade-down flex-col items-start justify-between gap-4 text-white animate-delay-700">
+        <span className="text-lg">
           <h3>Voters List</h3>
-        </CardHeader>
-        <p className="text-red-400">
-          Error loading voters. Please try again later.
-        </p>
-      </Card>
+        </span>
+        <Card className="flex h-full w-full items-center justify-center p-4">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <span className="text-muted-foreground">
+              Error loading voters. Please try again later.
+            </span>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   if (!voters || voters.length === 0) {
     return (
-      <Card className="animate-fade-down border-muted p-4 animate-delay-[1400ms] md:p-6">
-        <CardHeader className="pl-0 pt-0">
+      <div className="flex h-full min-h-max animate-fade-down flex-col items-start justify-between gap-4 text-white animate-delay-700">
+        <span className="text-lg">
           <h3>Voters List</h3>
-        </CardHeader>
-        <p className="text-muted-foreground">This agent has no voters yet.</p>
-      </Card>
+        </span>
+        <Card className="flex h-full w-full items-center justify-center p-4">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <span className="text-muted-foreground">
+              This agent has no voters yet.
+            </span>
+          </div>
+        </Card>
+      </div>
     );
   }
 
@@ -112,7 +122,7 @@ export function VoterList(props: VoterListProps): JSX.Element {
           <Button
             variant="outline"
             key={address}
-            className="flex w-full animate-fade-down items-center justify-between border-muted px-6 py-8 animate-delay-500 hover:text-muted-foreground"
+            className="flex w-full animate-fade-down items-center justify-between border-muted bg-card px-6 py-8 animate-delay-500 hover:bg-accent hover:text-muted-foreground"
             onClick={() => handleCopyAddress(address)}
           >
             {smallAddress(address)}
@@ -120,7 +130,7 @@ export function VoterList(props: VoterListProps): JSX.Element {
           </Button>
         ))}
         <span
-          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "h-4 animate-fade" : "h-24 animate-fade"} bg-gradient-to-b from-transparent to-background transition-all duration-100`}
+          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "h-0 animate-fade" : "h-8 animate-fade"} bg-gradient-to-b from-transparent to-black transition-all duration-100`}
         />
       </div>
     </div>

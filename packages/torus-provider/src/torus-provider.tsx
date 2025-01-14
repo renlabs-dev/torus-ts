@@ -104,6 +104,16 @@ interface TorusContextType {
     | SubmittableExtrinsic<"promise", ISubmittableResult>
     | undefined;
 
+  registerAgentTransaction: ({
+    agentKey,
+    name,
+    url,
+    metadata,
+  }: Omit<
+    registerAgent,
+    "callback" | "refetchHandler"
+  >) => TransactionExtrinsicPromise;
+
   addStakeTransaction: ({
     validator,
     amount,
@@ -419,6 +429,17 @@ export function TorusProvider({
 
   // == Subspace ==
 
+  const registerAgentTransaction = ({
+    agentKey,
+    name,
+    url,
+    metadata,
+  }: Omit<registerAgent, "callback" | "refetchHandler">) => {
+    if (!api?.tx.torus0?.registerAgent) return;
+
+    return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
+  };
+
   async function registerAgent({
     agentKey,
     name,
@@ -434,6 +455,7 @@ export function TorusProvider({
       url,
       metadata,
     );
+
     await sendTransaction({
       api,
       torusApi,
@@ -629,6 +651,7 @@ export function TorusProvider({
         isInitialized,
         openWalletModal,
         registerAgent,
+        registerAgentTransaction,
         removeStake,
         removeStakeTransaction,
         removeVoteProposal,

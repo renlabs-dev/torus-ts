@@ -86,7 +86,6 @@ export function ProposalExpandedView(props: CustomContent): JSX.Element {
       creationBlock: proposal.creationBlock,
       voted,
     };
-    console.log(proposal.status);
 
     return proposalContent;
   }, [proposalsWithMeta, paramId, selectedAccount]);

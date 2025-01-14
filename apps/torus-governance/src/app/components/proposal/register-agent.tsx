@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
@@ -16,11 +16,10 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken, fromNano } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Info } from "lucide-react";
 
 const moduleSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -29,8 +28,14 @@ const moduleSchema = z.object({
 
 export function RegisterAgent(): JSX.Element {
   const router = useRouter();
-  const { isAccountConnected, registerAgent, accountFreeBalance } =
-    useGovernance();
+  const {
+    isAccountConnected,
+    registerAgent,
+    accountFreeBalance,
+    selectedAccount,
+  } = useGovernance();
+
+  const { registerAgentTransaction, estimateFee } = useTorus();
 
   const [agentKey, setAgentKey] = useState("");
   const [name, setName] = useState("");
@@ -41,6 +46,7 @@ export function RegisterAgent(): JSX.Element {
 
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
+  const [estimatedFee, setEstimatedFee] = useState(0n);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -53,6 +59,51 @@ export function RegisterAgent(): JSX.Element {
   function handleCallback(callbackReturn: TransactionResult): void {
     setTransactionStatus(callbackReturn);
   }
+
+  useEffect(() => {
+    async function fetchFee() {
+      if (!selectedAccount?.address) return;
+      const transaction = registerAgentTransaction({
+        agentKey: selectedAccount.address,
+        name: "Estimating fee",
+        metadata: "Estimating fee",
+        url: "Estimating fee",
+      });
+
+      if (!transaction) {
+        return toast.error("Error estimating fee");
+      }
+
+      const fee = await estimateFee(transaction);
+
+      if (fee == null) {
+        return toast.error("Error estimating fee");
+      }
+
+      const adjustedFee = (fee * 101n) / 100n;
+      setEstimatedFee(adjustedFee);
+    }
+
+    void fetchFee();
+  }, [estimateFee, registerAgentTransaction, selectedAccount?.address]);
+
+  const userHasEnoughtBalance = useCallback(() => {
+    if (
+      !isAccountConnected ||
+      !accountFreeBalance.data ||
+      estimatedFee === 0n ||
+      accountFreeBalance.isFetching
+    ) {
+      return null;
+    }
+
+    return accountFreeBalance.data > estimatedFee;
+  }, [
+    isAccountConnected,
+    accountFreeBalance.data,
+    accountFreeBalance.isFetching,
+    estimatedFee,
+  ])();
 
   async function uploadFile(fileToUpload: File): Promise<void> {
     try {
@@ -154,15 +205,14 @@ export function RegisterAgent(): JSX.Element {
     return "Register Agent/Module";
   };
 
-  const { selectedAccount } = useTorus();
-
   return (
     <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-2 sm:flex-row">
           <Input
             onChange={(e) => setAgentKey(e.target.value)}
-            placeholder="Agent/Module address in SS58 format (eg. 12sPm....n88b)"
+            placeholder="Agent address (SS58 eg. 5D5F...EBnt)"
+            className="placeholder:text-sm"
             type="text"
             value={agentKey}
             title="Paste the same address that you used in your agent/module application!"
@@ -170,21 +220,22 @@ export function RegisterAgent(): JSX.Element {
           <Button
             variant="outline"
             type="button"
+            className="w-full sm:w-fit"
             onClick={() => setAgentKey(selectedAccount?.address ?? "")}
             title="Only use your wallet's address if you also used it in your agent/module application!"
           >
-            Paste my wallet address
+            Paste my address
           </Button>
         </div>
         <Input
           onChange={(e) => setName(e.target.value)}
-          placeholder="Agent/Module Name (eg. agent-one)"
+          placeholder="Agent Name (eg. agent-one)"
           type="text"
           value={name}
         />
         <Input
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="Agent/Module URL (eg. https://agent-one.com)"
+          placeholder="Agent URL (eg. https://agent-one.com)"
           type="text"
           value={url}
         />
@@ -230,21 +281,37 @@ export function RegisterAgent(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
-      <div className="flex items-start gap-2 text-sm text-yellow-500">
-        <Info className="mt-[1px]" size={16} />
-        <Label className="text-sm">
-          Note: When you click "Register Agent/Module", the registration fee
-          (currently X TORUS tokens) will be deducted from your wallet. Even if
-          you provided a different wallet address for your agent/module, the
-          registration fee is paid from your wallet!
-        </Label>
+      <div className="flex items-start gap-2">
+        <span className="text-white">
+          Application fee:{" "}
+          {selectedAccount && (
+            <span className="text-muted-foreground">
+              {estimatedFee ? `${fromNano(estimatedFee)} TORUS` : "Loading..."}
+            </span>
+          )}
+          {!selectedAccount && (
+            <span className="text-muted-foreground">
+              connect your wallet to calculate the fee.
+            </span>
+          )}
+        </span>
       </div>
+      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+        <span className="text-sm">
+          Note: The application fee will be deducted from your connected wallet.
+        </span>
+      </div>
+      {!userHasEnoughtBalance && selectedAccount?.address && (
+        <span className="text-sm text-red-400">
+          You don't have enough balance to submit an application.
+        </span>
+      )}
       <Button
         size="lg"
         type="submit"
         variant="default"
         className="flex items-center gap-2"
-        disabled={!isAccountConnected}
+        disabled={!isAccountConnected || uploading || !userHasEnoughtBalance}
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>

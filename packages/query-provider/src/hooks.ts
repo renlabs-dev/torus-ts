@@ -26,6 +26,7 @@ import {
   queryProposals,
   queryRewardAllocation,
   queryUnrewardedProposals,
+  queryGlobalGovernanceConfig,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -225,6 +226,16 @@ export function useKeyStakedBy(
     queryKey: ["user_total_staked", address],
     enabled: api != null && address != null,
     queryFn: () => queryKeyStakedBy(api!, address! as SS58Address),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useGlobalConfig(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["network_global_config"],
+    enabled: api != null,
+    queryFn: () => queryGlobalGovernanceConfig(api!),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

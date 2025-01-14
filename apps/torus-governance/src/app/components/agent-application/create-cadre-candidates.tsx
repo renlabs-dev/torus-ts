@@ -38,7 +38,9 @@ export function CreateCadreCandidates() {
       router.refresh();
       setDiscordId("");
       setContent("");
-      toast.success("Cadre candidate request submitted successfully!");
+      toast.success(
+        "Curador DAO member candidate request submitted successfully!",
+      );
     },
     onError: (error) => {
       setError(
@@ -60,7 +62,7 @@ export function CreateCadreCandidates() {
     [selectedAccount, cadreCandidates],
   );
 
-  if (isUserCadre) {
+  if (isUserCadre || !selectedAccount) {
     return null;
   }
 
@@ -68,7 +70,7 @@ export function CreateCadreCandidates() {
     e.preventDefault();
     setError(null);
 
-    if (!selectedAccount?.address) {
+    if (!selectedAccount.address) {
       setError("Please connect your wallet to submit a request.");
       return;
     }
@@ -84,7 +86,9 @@ export function CreateCadreCandidates() {
     }
 
     if (isUserCadreCandidate) {
-      setError("You have already submitted a request to be a Cadre member.");
+      setError(
+        "You have already submitted a request to be a Curator DAO member.",
+      );
       return;
     }
 
@@ -119,11 +123,11 @@ export function CreateCadreCandidates() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="mt-2 hidden w-[25em] md:block xl:mr-0">
-        <div className="mt-1 flex w-full border-b border-white/20 pb-3">
+        <div className="mt-1 flex w-full flex-col gap-2 border-b border-white/20 pb-3">
           <p className="text-sm">
-            The Curator DAO votes on agent/module applications. Interested in
-            joining? Apply below.
+            The Curator DAO votes on agent/module applications.
           </p>
+          <p className="text-sm">Interested in joining? Apply below.</p>
         </div>
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
           <Input
@@ -151,15 +155,14 @@ export function CreateCadreCandidates() {
             type="submit"
             variant={"default"}
             disabled={
-              createCadreCandidateMutation.isPending ||
-              !selectedAccount?.address
+              createCadreCandidateMutation.isPending || !selectedAccount.address
             }
           >
             {createCadreCandidateMutation.isPending
               ? "Submitting..."
               : "Submit"}
           </Button>
-          {!selectedAccount?.address && (
+          {!selectedAccount.address && (
             <p className="text-sm text-yellow-500">
               Please connect your wallet to submit a request.
             </p>

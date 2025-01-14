@@ -36,6 +36,7 @@ import {
   useProposals,
   useRewardAllocation,
   useUnrewardedProposals,
+  useGlobalConfig,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Header, WalletDropdown } from "@torus-ts/ui";
@@ -46,6 +47,18 @@ import { toast } from "@torus-ts/toast-provider";
 interface GovernanceContextType {
   accountFreeBalance: UseQueryResult<bigint, Error>;
   accountsNotDelegatingVoting: UseQueryResult<SS58Address[], Error>;
+  networkConfigs: UseQueryResult<
+    {
+      agentApplicationCost: bigint;
+      agentApplicationExpiration: bigint;
+      maxProposalRewardTreasuryAllocation: bigint;
+      proposalCost: bigint;
+      proposalExpiration: bigint;
+      proposalRewardInterval: bigint;
+      proposalRewardTreasuryAllocation: bigint;
+    },
+    Error
+  >;
   accountStakedBalance: bigint | undefined;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
@@ -99,6 +112,10 @@ export function GovernanceProvider({
     voteProposal,
   } = useTorus();
   const lastBlock = useLastBlock(api);
+
+  // == Network ==
+
+  const networkConfigs = useGlobalConfig(api);
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(
@@ -178,34 +195,32 @@ export function GovernanceProvider({
   return (
     <GovernanceContext.Provider
       value={{
-        isInitialized,
-        lastBlock,
-
-        stakeOut,
-        api,
-        torusCacheUrl,
-        selectedAccount,
-        isAccountPowerUser,
-        isAccountConnected,
         accountFreeBalance,
-        accountStakedBalance,
         accountsNotDelegatingVoting,
+        accountStakedBalance,
+        AddAgentApplication,
+        addCustomProposal,
+        addDaoTreasuryTransferProposal,
         agentApplications,
         agentApplicationsWithMeta,
+        api,
         daoTreasuryAddress,
         daoTreasuryBalance,
-        AddAgentApplication,
-        addDaoTreasuryTransferProposal,
-
+        isAccountConnected,
+        isAccountPowerUser,
+        isInitialized,
+        lastBlock,
+        networkConfigs,
         proposals,
         proposalsWithMeta,
+        registerAgent,
+        removeVoteProposal,
         rewardAllocation,
+        selectedAccount,
+        stakeOut,
+        torusCacheUrl,
         unrewardedProposals,
         voteProposal,
-        addCustomProposal,
-        removeVoteProposal,
-
-        registerAgent: registerAgent,
       }}
     >
       <Header

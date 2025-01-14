@@ -224,7 +224,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
       <Button
         size="lg"
         type="submit"
-        variant="outline"
+        variant="default"
         disabled={!isAccountConnected || uploading}
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
