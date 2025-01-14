@@ -122,7 +122,7 @@ export function VoterList(props: VoterListProps): JSX.Element {
           <Button
             variant="outline"
             key={address}
-            className="flex w-full animate-fade-down items-center justify-between border-muted px-6 py-8 animate-delay-500 hover:text-muted-foreground"
+            className="flex w-full animate-fade-down items-center justify-between border-muted bg-card px-6 py-8 animate-delay-500 hover:bg-accent hover:text-muted-foreground"
             onClick={() => handleCopyAddress(address)}
           >
             {smallAddress(address)}
@@ -130,7 +130,7 @@ export function VoterList(props: VoterListProps): JSX.Element {
           </Button>
         ))}
         <span
-          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "h-4 animate-fade" : "h-24 animate-fade"} bg-gradient-to-b from-transparent to-background transition-all duration-100`}
+          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "h-0 animate-fade" : "h-8 animate-fade"} bg-gradient-to-b from-transparent to-black transition-all duration-100`}
         />
       </div>
     </div>
