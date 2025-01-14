@@ -148,7 +148,7 @@ const VoteCardFunctionsContent = (props: {
       </div>
       {!isAccountConnected && (
         <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-          <span>Are you a Cadre?</span>
+          <span>Are you a Curador DAO?</span>
           <span>Connect your wallet to vote</span>
         </div>
       )}

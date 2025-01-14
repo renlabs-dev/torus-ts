@@ -158,9 +158,9 @@ export function PenaltyManager({
       <PopoverContent className="mt-2 w-[25em] xl:mr-0" align="center">
         <div className="mt-1 flex w-full border-b border-white/20 pb-3">
           <p className="text-sm">
-            The Cadre is allowed to apply a penalty to an agent. The penalty
-            factor is a number between 1 and 100. The higher the penalty factor,
-            the more the agent's emissions will be affected.
+            The Curator DAO member is allowed to apply a penalty to an agent.
+            The penalty factor is a number between 1 and 100. The higher the
+            penalty factor, the more the agent's emissions will be affected.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
