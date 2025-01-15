@@ -21,13 +21,13 @@ export default function CadrePage() {
       </Button>
 
       <div>
-        <h2 className="text-start text-xl font-semibold text-gray-300">
+        <h2 className="pb-4 text-start text-xl font-semibold text-gray-300">
           Curator DAO Join Requests
         </h2>
         <CadreRequestsList />
       </div>
 
-      <div className="mb-4 w-full border-b border-gray-500 border-white/20 pb-1 text-gray-400">
+      <div className="w-full pb-4 pt-8 text-gray-500">
         <h2 className="text-start text-lg font-semibold text-gray-300">
           Curator DAO Members Discord Id's
         </h2>
