@@ -21,9 +21,31 @@ import { formatToken, fromNano } from "@torus-ts/utils/subspace";
 import { useGovernance } from "~/context/governance-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 
-const moduleSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  body: z.string().min(1, "Body is required"),
+const z_url = z.string().url();
+
+export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 64;
+
+const AGENT_METADATA_SCHEMA = z.object({
+  title: z.string().nonempty("Agent title is required"),
+  short_description: z
+    .string()
+    .nonempty("Agent short description is required")
+    .max(
+      AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
+      `Short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters"`,
+    ),
+  description: z.string().nonempty("Agent description is required"),
+  icon: z_url.optional(),
+  banner: z_url.optional(),
+  website: z_url.optional(),
+  socials: z
+    .object({
+      twitter: z.string(),
+      discord: z.string(),
+      github: z.string(),
+      telegram: z.string(),
+    })
+    .partial(),
 });
 
 export function RegisterAgent(): JSX.Element {
@@ -105,7 +127,7 @@ export function RegisterAgent(): JSX.Element {
     estimatedFee,
   ])();
 
-  async function uploadFile(fileToUpload: File): Promise<void> {
+  async function doSubmit(fileToUpload: File): Promise<void> {
     try {
       setUploading(true);
       const data = new FormData();
@@ -114,6 +136,7 @@ export function RegisterAgent(): JSX.Element {
         method: "POST",
         body: data,
       });
+      // TODO: validate response with zod, or move to tRPC
       const ipfs = (await res.json()) as { IpfsHash: string };
       setUploading(false);
 
@@ -130,6 +153,7 @@ export function RegisterAgent(): JSX.Element {
       const moduleCost = 2000;
 
       if (Number(accountFreeBalance.data) > moduleCost) {
+        //! TODO EXTRACT FUNCTION, this should be outside
         void registerAgent({
           agentKey,
           name,
@@ -155,15 +179,16 @@ export function RegisterAgent(): JSX.Element {
     }
   }
 
-  function HandleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
+
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
       message: "Starting agent creation...",
     });
 
-    const result = moduleSchema.safeParse({
+    const result = AGENT_METADATA_SCHEMA.safeParse({
       title,
       body,
     });
@@ -178,15 +203,14 @@ export function RegisterAgent(): JSX.Element {
       return;
     }
 
-    const moduleData = JSON.stringify({
-      title,
-      body,
-    });
+    const moduleData = JSON.stringify(result.data);
+
     const blob = new Blob([moduleData], { type: "application/json" });
     const fileToUpload = new File([blob], "proposal.json", {
       type: "application/json",
     });
-    void uploadFile(fileToUpload);
+
+    void doSubmit(fileToUpload);
   }
 
   const getButtonSubmitLabel = ({
@@ -206,7 +230,7 @@ export function RegisterAgent(): JSX.Element {
   };
 
   return (
-    <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div className="flex flex-col items-center gap-2 sm:flex-row">
           <Input
