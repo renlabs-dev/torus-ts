@@ -3,7 +3,6 @@ import { buildZodEnvScript } from "@torus-ts/env-validation";
 
 const NodeEnvSchema = z.enum(["development", "production", "test"])
 
-buildZodEnvScript
 const EnvSchema = z.object({
   NODE_ENV: NodeEnvSchema.default("development"),
   /**
