@@ -51,7 +51,7 @@ export interface BuildEnvProviderOptions {
 
 /**
  * This function builds 
- * - EnvProvider: an environment provider that uses Zod to validate and transform environment variables.
+ * - EnvScript: an script that uses Zod to validate and transform environment variables.
  * - env: a function that returns the value of an environment variable.
  *
  * @param schema Zod schema for the environment variables
