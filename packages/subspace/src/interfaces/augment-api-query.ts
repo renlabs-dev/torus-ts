@@ -8,7 +8,7 @@ import '@polkadot/api-base/types/storage';
 import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/api-base/types';
 import type { BTreeSet, Bytes, Null, Option, Struct, U256, U8aFixed, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256, Percent, Permill } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
 import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletEmission0ConsensusMember, PalletEvmCodeMetadata, PalletGovernanceApplicationAgentApplication, PalletGovernanceConfigGovernanceConfiguration, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletTorus0Agent, PalletTorus0BurnBurnConfiguration, PalletTorus0FeeValidatorFeeConstraints, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, TorusRuntimeRuntimeHoldReason } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
@@ -98,14 +98,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       [key: string]: QueryableStorageEntry<ApiType>;
     };
-    baseFee: {
-      baseFeePerGas: AugmentedQuery<ApiType, () => Observable<U256>, []> & QueryableStorageEntry<ApiType, []>;
-      elasticity: AugmentedQuery<ApiType, () => Observable<Permill>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
     emission0: {
       consensusMembers: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<PalletEmission0ConsensusMember>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       emissionRecyclingPercentage: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
@@ -152,16 +144,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       [key: string]: QueryableStorageEntry<ApiType>;
     };
-    evmChainId: {
-      /**
-       * The EVM chain ID.
-       **/
-      chainId: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
     governance: {
       agentApplications: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceApplicationAgentApplication>>, [u32]> & QueryableStorageEntry<ApiType, [u32]>;
       allocators: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
@@ -170,7 +152,6 @@ declare module '@polkadot/api-base/types/storage' {
       globalGovernanceConfig: AugmentedQuery<ApiType, () => Observable<PalletGovernanceConfigGovernanceConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
       notDelegatingVotingPower: AugmentedQuery<ApiType, () => Observable<BTreeSet<AccountId32>>, []> & QueryableStorageEntry<ApiType, []>;
       proposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
-      rootCurator: AugmentedQuery<ApiType, () => Observable<Option<AccountId32>>, []> & QueryableStorageEntry<ApiType, []>;
       treasuryEmissionFee: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
       unrewardedProposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposalUnrewardedProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
       whitelist: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
