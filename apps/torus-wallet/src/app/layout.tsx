@@ -9,8 +9,8 @@ import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { Container, Footer, Layout } from "@torus-ts/ui/components";
 
 import { WalletProvider } from "~/context/wallet-provider";
-import { env } from "~/env";
 import { WalletHeader } from "./components/wallet-header";
+import { EnvScript, env } from "~/env";
 
 const APP_NAME = "Torus Wallet";
 
@@ -34,11 +34,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono}>
+    <Layout font={firaMono} headScripts={[EnvScript]}>
       <ToastProvider>
         <TorusProvider
-          wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
-          torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
+          wsEndpoint={env('NEXT_PUBLIC_TORUS_RPC_URL')}
+          torusCacheUrl={env('NEXT_PUBLIC_TORUS_CACHE_URL')}
         >
           <ReactQueryProvider>
             <WalletProvider>
