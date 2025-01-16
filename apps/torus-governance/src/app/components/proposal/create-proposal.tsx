@@ -170,7 +170,7 @@ export function CreateProposal(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="rounded-md bg-muted p-3">
+        <TabsContent value="preview" className="rounded-radius bg-muted p-3">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"

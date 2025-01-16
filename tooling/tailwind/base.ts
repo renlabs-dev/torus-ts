@@ -17,6 +17,7 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        radius: "hsl(var(--radius))",
         active: "hsl(var(--active))",
         background: "hsl(var(--background))",
         "background-green": "hsl(var(--background-green))",

@@ -30,7 +30,7 @@ export const VoteData = (props: VoteDataProps) => {
 
   const againstPercent = 100 - favorablePercent;
   return (
-    <Card className="animate-fade-down border-muted p-4 animate-delay-500 md:p-6">
+    <Card className="animate-fade-down border-border p-4 animate-delay-500 md:p-6">
       <CardHeader className="pl-0 pt-0">
         <h3>Voting</h3>
       </CardHeader>
@@ -48,9 +48,9 @@ export const VoteData = (props: VoteDataProps) => {
           </span>
         </div>
       </div>
-      <div className="my-2 w-full rounded-lg bg-primary-foreground">
+      <div className="rounded-radius my-2 w-full bg-primary-foreground">
         <div
-          className="rounded-lg bg-white/60 py-2"
+          className="rounded-radius bg-white/60 py-2"
           style={{
             width: `${favorablePercent.toFixed(0)}%`,
           }}
@@ -68,9 +68,9 @@ export const VoteData = (props: VoteDataProps) => {
           </span>
         </div>
       </div>
-      <div className="my-2 w-full rounded-lg bg-primary-foreground">
+      <div className="rounded-radius my-2 w-full bg-primary-foreground">
         <div
-          className="rounded-lg bg-white/60 py-2"
+          className="rounded-radius bg-white/60 py-2"
           style={{
             width: `${againstPercent.toFixed(0)}%`,
           }}

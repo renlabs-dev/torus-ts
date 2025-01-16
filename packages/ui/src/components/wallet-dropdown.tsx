@@ -234,7 +234,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                 >
                   <AccordionTrigger
                     className={cn(
-                      "rounded-md px-2 py-1.5 hover:bg-accent hover:text-accent-foreground hover:no-underline",
+                      "rounded-radius px-2 py-1.5 hover:bg-accent hover:text-accent-foreground hover:no-underline",
                     )}
                   >
                     <span className={cn("flex items-center gap-2")}>
@@ -257,7 +257,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                               selectedAccount.address === account.address
                             }
                             className={cn(
-                              `${selectedAccount.address === account.address && "bg-active"} rounded-md`,
+                              `${selectedAccount.address === account.address && "bg-active"} rounded-radius`,
                             )}
                           >
                             <div
@@ -302,7 +302,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
               >
                 <AccordionTrigger
                   className={cn(
-                    "rounded-md px-2 py-1.5 hover:bg-accent hover:text-accent-foreground hover:no-underline",
+                    "rounded-radius px-2 py-1.5 hover:bg-accent hover:text-accent-foreground hover:no-underline",
                   )}
                 >
                   <span className={cn("flex items-center gap-2")}>

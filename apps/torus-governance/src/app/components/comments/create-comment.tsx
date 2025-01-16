@@ -146,7 +146,7 @@ export function CreateComment({
             placeholder="Type your message here..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="h-24 w-full resize-none rounded-md border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+            className="rounded-radius h-24 w-full resize-none border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
             maxLength={MAX_CHARACTERS}
           />
           <span className="absolute bottom-3 right-4 text-sm text-muted-foreground">
@@ -160,7 +160,7 @@ export function CreateComment({
             placeholder="Type your name (optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-md border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+            className="rounded-radius w-full border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
             maxLength={MAX_NAME_CHARACTERS}
           />
           <Button

@@ -27,7 +27,7 @@ export function Layout({
       <body
         className={cn(
           font.className,
-          `overflow-auto bg-[#020202] text-white`,
+          `min-h-screen overflow-auto bg-[#020202] text-white`,
           className,
         )}
       >

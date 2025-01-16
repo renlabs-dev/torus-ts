@@ -204,7 +204,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
             required
           />
         </TabsContent>
-        <TabsContent value="preview" className="rounded-md bg-muted p-4">
+        <TabsContent value="preview" className="rounded-radius bg-muted p-4">
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
