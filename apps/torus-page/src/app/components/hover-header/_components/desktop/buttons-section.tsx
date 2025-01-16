@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowBigDown, CircleDotDashed, Diameter } from "lucide-react";
+import { ArrowBigDown } from "lucide-react";
 
 const buttonVariants = {
   hidden: { opacity: 0, y: -15 },
@@ -46,15 +46,13 @@ export function ButtonsSection() {
       className: "flex w-full max-w-3xl justify-around gap-[4.6em]",
       buttons: [
         {
-          text: "DAO",
-          href: links.governance,
-        },
-        { text: "Docs", href: links.docs },
-        { text: "Bridge", href: links.bridge },
-        {
           text: "Wallet",
           href: links.wallet,
         },
+        { text: "Bridge", href: links.bridge },
+
+        { text: "Docs", href: links.docs },
+        { text: "Allocator", href: links.allocator },
       ],
     },
     {
@@ -66,7 +64,10 @@ export function ButtonsSection() {
           text: "Blog",
           href: "https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg",
         },
-        { text: "Allocator", href: links.allocator },
+        {
+          text: "DAO",
+          href: links.governance,
+        },
       ],
     },
   ];
@@ -82,15 +83,23 @@ export function ButtonsSection() {
       <motion.div
         variants={buttonVariants}
         custom={5}
-        className="absolute bottom-[4.8em] flex w-full max-w-[37rem] items-center justify-around"
+        className="absolute bottom-[5.2em] flex w-full max-w-[38.5rem] items-center justify-around"
       >
-        <div className="full flex h-12 w-12 items-center justify-center rounded-full bg-border">
-          <CircleDotDashed className="h-6 w-6" />
-        </div>
+        <Button
+          className="rounded-full bg-accent hover:bg-background disabled:opacity-100"
+          disabled
+          variant="outline"
+        >
+          Starter
+        </Button>
         <CustomButton href="https://discord.gg/torus">Join</CustomButton>
-        <div className="full flex h-12 w-12 items-center justify-center rounded-full bg-border">
-          <Diameter className="h-6 w-6" />
-        </div>
+        <Button
+          className="rounded-full bg-accent hover:bg-background disabled:opacity-100"
+          disabled
+          variant="outline"
+        >
+          Network
+        </Button>
       </motion.div>
 
       {/* First Row of Buttons */}
