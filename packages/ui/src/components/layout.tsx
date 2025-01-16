@@ -13,14 +13,12 @@ interface LayoutProps {
   children: React.ReactNode;
   font: NextFont;
   className?: string;
-  torusPage?: boolean;
 }
 
 export function Layout({
   children,
   font,
   className,
-  torusPage,
 }: LayoutProps): JSX.Element {
   return (
     <html lang="en">
@@ -31,9 +29,7 @@ export function Layout({
           className,
         )}
       >
-        <div className={cn("mx-auto", !torusPage && "max-w-screen-xl px-4")}>
-          {children}
-        </div>
+        <div className={cn("mx-auto")}>{children}</div>
       </body>
     </html>
   );

@@ -5,7 +5,7 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Layout } from "@torus-ts/ui/components";
+import { Container, Layout } from "@torus-ts/ui/components";
 
 import { GovernanceProvider } from "~/context/governance-provider";
 import { env } from "~/env";
@@ -39,7 +39,9 @@ export default function RootLayout({
       >
         <TRPCReactProvider>
           <ToastProvider>
-            <GovernanceProvider>{children}</GovernanceProvider>
+            <GovernanceProvider>
+              <Container>{children} </Container>
+            </GovernanceProvider>
           </ToastProvider>
         </TRPCReactProvider>
       </TorusProvider>
