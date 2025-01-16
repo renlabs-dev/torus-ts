@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 
-const NodeEnvSchema = z.enum(["development", "production", "test"])
+const NodeEnvSchema = z.enum(["development", "production", "test"]);
 
-const EnvSchema = z.object({
+export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
   /**
    * Specify your client-side environment variables schema here.
@@ -12,8 +12,9 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema.default(() => process.env.NODE_ENV),
-})
+};
 
-export const { EnvScript, env } = buildZodEnvScript(EnvSchema, {
-  skipValidation: !!process.env.CI || process.env.npm_lifecycle_event === "lint",
-})
+export const { EnvScript, env } = buildZodEnvScript(envSchema, {
+  skipValidation:
+    !!process.env.CI || process.env.npm_lifecycle_event === "lint",
+});
