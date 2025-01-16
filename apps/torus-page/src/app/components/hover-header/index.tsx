@@ -131,7 +131,7 @@ export function HoverHeader() {
           whileTap={{ y: 1 }}
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
-          className="hover:background-acent/30 relative z-50 rounded-md p-3 transition duration-300"
+          className="hover:background-acent/30 rounded-radius relative z-50 p-3 transition duration-300"
         >
           <Icons.logo className="relative z-10 h-10 w-10" />
           <motion.div

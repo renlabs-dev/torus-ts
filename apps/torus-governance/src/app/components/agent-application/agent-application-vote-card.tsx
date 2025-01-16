@@ -57,7 +57,7 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <Card className="flex flex-col rounded-md p-4">
+    <Card className="rounded-radius flex flex-col p-4">
       {getVotedText(voted)}
       <Button
         variant="link"

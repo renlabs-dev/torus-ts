@@ -264,7 +264,10 @@ export function RegisterAgent(): JSX.Element {
             value={body}
           />
         </TabsContent>
-        <TabsContent value="preview" className="mt-0 rounded-md bg-muted p-4">
+        <TabsContent
+          value="preview"
+          className="rounded-radius mt-0 bg-muted p-4"
+        >
           {body ? (
             <MarkdownPreview
               className="max-h-[40vh] overflow-auto"
