@@ -199,19 +199,15 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     <div className="flex w-fit animate-fade-down justify-end py-1">
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
-          <button className="flex items-center gap-2">
-            <WalletCards
-              className={cn(
-                `!h-5 !w-5 ${!isInitialized ? "animate-pulse" : "hover:text-muted-foreground"}`,
-              )}
-            />
-            {shouldDisplayText && (
-              <span className="text-sm">
-                {selectedAccount?.address
-                  ? `Torus (${smallAddress(selectedAccount.address, 4)})`
-                  : "Connect Torus Wallet"}
-              </span>
-            )}
+          <button className="flex items-center gap-2 bg-background p-2 transition duration-200 hover:bg-background/60">
+            <WalletCards className="!h-5 !w-5" />
+            <span className="text-sm">
+              {selectedAccount?.address
+                ? shouldDisplayText
+                  ? `Torus (${smallAddress(selectedAccount.address, 6)})`
+                  : smallAddress(selectedAccount.address, 6)
+                : `Connect ${shouldDisplayText ? "Torus" : ""} Wallet`}
+            </span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
