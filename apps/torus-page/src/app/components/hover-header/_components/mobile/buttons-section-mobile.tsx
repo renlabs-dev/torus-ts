@@ -37,10 +37,10 @@ export function ButtonsSectionMobile() {
       className: "flex flex-col gap-6",
       buttons: [
         {
-          text: "DAO",
-          href: links.governance,
+          text: "Bridge",
+          href: links.bridge,
         },
-        { text: "Docs", href: links.docs },
+        { text: "Wallet", href: links.wallet },
         {
           text: "Blog",
           href: "https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg",
@@ -52,11 +52,11 @@ export function ButtonsSectionMobile() {
       className: "flex flex-col gap-6",
       buttons: [
         {
-          text: "Bridge",
-          href: links.bridge,
+          text: "DAO",
+          href: links.governance,
         },
-        { text: "Wallet", href: links.wallet },
         { text: "Allocator", href: links.allocator },
+        { text: "Docs", href: links.docs },
       ],
     },
   ];
@@ -86,7 +86,7 @@ export function ButtonsSectionMobile() {
       </motion.div>
 
       {/* First Row of Buttons */}
-      <div className="absolute flex w-full justify-around px-12">
+      <div className="absolute flex w-full justify-around px-8">
         {buttonRows.map((row, index) => (
           <motion.div
             key={index}
