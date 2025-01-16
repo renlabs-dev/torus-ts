@@ -225,9 +225,6 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      next-runtime-env:
-        specifier: ^3.2.2
-        version: 3.2.2(next@15.1.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
       pino-pretty:
         specifier: ^7.0.0
         version: 7.6.1
@@ -407,9 +404,6 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      next-runtime-env:
-        specifier: ^3.2.2
-        version: 3.2.2(next@15.1.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
       react:
         specifier: catalog:react18
         version: 18.2.0
@@ -492,9 +486,6 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      next-runtime-env:
-        specifier: ^3.2.2
-        version: 3.2.2(next@15.1.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
       react:
         specifier: catalog:react18
         version: 18.2.0
@@ -586,9 +577,6 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      next-runtime-env:
-        specifier: ^3.2.2
-        version: 3.2.2(next@15.1.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
       react:
         specifier: catalog:react18
         version: 18.2.0
@@ -644,9 +632,6 @@ importers:
 
   apps/torus-wallet:
     dependencies:
-      '@t3-oss/env-nextjs':
-        specifier: 'catalog:'
-        version: 0.10.1(typescript@5.7.3)(zod@3.24.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.63.0(react@18.2.0)
@@ -27418,11 +27403,6 @@ snapshots:
   next-runtime-env@3.2.2(next@14.2.23(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0):
     dependencies:
       next: 14.2.23(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      react: 18.2.0
-
-  next-runtime-env@3.2.2(next@15.1.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0):
-    dependencies:
-      next: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react: 18.2.0
 
   next-tick@1.1.0: {}
