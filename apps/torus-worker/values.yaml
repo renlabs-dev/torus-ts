@@ -32,7 +32,7 @@ deployment:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: torus_allocator_db_url
+          key: torus_webapps_db_url
     CURATOR_DISCORD_WEBHOOK_URL:
       valueFrom:
         secretKeyRef:
