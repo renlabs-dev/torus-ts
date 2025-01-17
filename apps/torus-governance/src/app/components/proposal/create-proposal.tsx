@@ -29,8 +29,12 @@ const proposalSchema = z.object({
 
 export function CreateProposal(): JSX.Element {
   const router = useRouter();
-  const { isAccountConnected, addCustomProposal, accountFreeBalance } =
-    useGovernance();
+  const {
+    isAccountConnected,
+    addCustomProposal,
+    accountFreeBalance,
+    networkConfigs,
+  } = useGovernance();
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -187,6 +191,16 @@ export function CreateProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
+
+      <div className="flex items-start gap-2">
+        <span className="text-white">
+          Proposal cost:{" "}
+          <span className="text-muted-foreground">
+            {formatToken(networkConfigs.data?.proposalCost ?? 0)} TORUS
+          </span>
+        </span>
+      </div>
+
       <Button
         size="lg"
         type="submit"
@@ -207,7 +221,7 @@ export function CreateProposal(): JSX.Element {
           Want a different approach?{" "}
           <Link
             className="text-blue-500 underline"
-            href="https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5/FUvj1g9rPyVm8Ii_qLNu-IbRQPiCHkfZDLAmlP00M1Q"
+            href="https://docs.torus.network/concepts/torus-dao"
             target="_blank"
           >
             Check how to create a proposal with the CLI tool

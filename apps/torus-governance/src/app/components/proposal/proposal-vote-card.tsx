@@ -26,7 +26,7 @@ const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
-    <div className="hidden animate-fade-down animate-delay-500 md:block">
+    <div className="hidden animate-fade-down animate-delay-700 md:block">
       <h3 className="mb-4 text-lg">Cast your vote</h3>
       {props.children}
     </div>
@@ -92,9 +92,7 @@ const VoteCardFunctionsContent = (props: {
 
   return (
     <div className="flex w-full flex-col items-end gap-4">
-      <div
-        className={`z-20 flex w-full flex-col items-start gap-2 ${!isAccountConnected && "blur-md"}`}
-      >
+      <div className={`z-20 flex w-full flex-col items-start gap-2`}>
         <ToggleGroup
           type="single"
           value={vote}
@@ -141,9 +139,12 @@ const VoteCardFunctionsContent = (props: {
         )}
       </div>
       {!isAccountConnected && (
-        <div className="absolute inset-0 z-50 flex w-full items-center justify-center">
+        <div className="absolute inset-0 z-50 flex w-full items-center justify-center text-lg">
           <span>Connect your wallet to vote</span>
         </div>
+      )}
+      {!isAccountConnected && (
+        <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
       )}
     </div>
   );

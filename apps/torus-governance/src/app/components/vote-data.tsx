@@ -17,7 +17,7 @@ export const VoteData = (props: VoteDataProps) => {
 
   if (favorablePercent === null) {
     return (
-      <Card className="animate-fade-down p-4 animate-delay-500 md:p-6">
+      <Card className="animate-fade-down p-4 animate-delay-[1400ms] md:p-6">
         <CardHeader className="pl-0 pt-0">
           <h3>Voting</h3>
         </CardHeader>
@@ -30,7 +30,7 @@ export const VoteData = (props: VoteDataProps) => {
 
   const againstPercent = 100 - favorablePercent;
   return (
-    <Card className="animate-fade-down border-border p-4 animate-delay-500 md:p-6">
+    <Card className="animate-fade-down border-border p-4 animate-delay-[1400ms] md:p-6">
       <CardHeader className="pl-0 pt-0">
         <h3>Voting</h3>
       </CardHeader>
