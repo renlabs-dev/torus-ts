@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowBigDown } from "lucide-react";
 
 const buttonVariants = {
@@ -27,50 +27,57 @@ const cardVariants = {
 interface ButtonProps {
   href: string;
   children: React.ReactNode;
+  isHidden?: boolean;
 }
 
-const CustomButton: React.FC<ButtonProps> = ({ href, children }) => (
-  <Button variant="outline" size="lg" asChild className="w-28 bg-background">
-    <Link href={href} target="_blank">
-      {children}
-    </Link>
-  </Button>
-);
+function CustomButton({ href, children, isHidden }: ButtonProps) {
+  if (isHidden) {
+    return (
+      <Button className="invisible w-28" size="lg">
+        gambiarra
+      </Button>
+    );
+  }
+  return (
+    <Button
+      variant="outline"
+      size="lg"
+      asChild
+      className={`w-28 animate-fade-down bg-background animate-delay-300`}
+    >
+      <Link href={href} target="_blank">
+        {children}
+      </Link>
+    </Button>
+  );
+}
 
-export function ButtonsSection() {
-  const [isExpanded, setIsExpanded] = useState(false);
+interface ButtonsSectionProps {
+  showStarter: boolean;
+  showNetwork: boolean;
+  onStarterClick: () => void;
+  onNetworkClick: () => void;
+  isExpanded: boolean;
+  setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
-  const buttonRows = [
-    {
-      delay: 14,
-      className: "flex w-full max-w-3xl justify-around gap-[4.6em]",
-      buttons: [
-        {
-          text: "Wallet",
-          href: links.wallet,
-        },
-        { text: "Bridge", href: links.bridge },
+export function ButtonsSection({
+  showStarter,
+  showNetwork,
+  onStarterClick,
+  onNetworkClick,
+  isExpanded,
+  setIsExpanded,
+}: ButtonsSectionProps) {
+  const [cardPosition, setCardPosition] = useState(40);
 
-        { text: "Docs", href: links.docs },
-        { text: "Allocator", href: links.allocator },
-      ],
-    },
-    {
-      delay: 16,
-      className:
-        "absolute mt-20 flex w-full max-w-[43rem] justify-around gap-36",
-      buttons: [
-        {
-          text: "Blog",
-          href: "https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg",
-        },
-        {
-          text: "DAO",
-          href: links.governance,
-        },
-      ],
-    },
-  ];
+  useEffect(() => {
+    if (showStarter || showNetwork) {
+      setCardPosition(150);
+    } else {
+      setCardPosition(20);
+    }
+  }, [showStarter, showNetwork]);
 
   return (
     <motion.div
@@ -79,7 +86,7 @@ export function ButtonsSection() {
       animate="visible"
       exit="hidden"
     >
-      {/* First Button */}
+      {/* First Button Row */}
       <motion.div
         variants={buttonVariants}
         custom={5}
@@ -87,7 +94,7 @@ export function ButtonsSection() {
       >
         <Button
           className="rounded-full bg-accent hover:bg-background disabled:opacity-100"
-          disabled
+          onClick={onStarterClick}
           variant="outline"
         >
           Starter
@@ -95,36 +102,60 @@ export function ButtonsSection() {
         <CustomButton href="https://discord.gg/torus">Join</CustomButton>
         <Button
           className="rounded-full bg-accent hover:bg-background disabled:opacity-100"
-          disabled
+          onClick={onNetworkClick}
           variant="outline"
         >
           Network
         </Button>
       </motion.div>
 
-      {/* First Row of Buttons */}
-      {buttonRows.map((row, index) => (
-        <motion.div
-          key={index}
-          variants={buttonVariants}
-          custom={row.delay}
-          className={row.className}
-          style={{ zIndex: isExpanded ? 1 : "auto" }}
-        >
-          {row.buttons.map((button, buttonIndex) => (
-            <CustomButton key={buttonIndex} href={button.href}>
-              {button.text}
-            </CustomButton>
-          ))}
-        </motion.div>
-      ))}
-
-      {/* Second Row of Buttons */}
+      {/* Second Button Row */}
       <motion.div
         variants={buttonVariants}
-        custom={10}
-        className="absolute mt-40 w-full max-w-[46.5rem]"
+        custom={0}
+        className="flex w-full max-w-3xl justify-around gap-[4.6em]"
         style={{ zIndex: isExpanded ? 1 : "auto" }}
+      >
+        <CustomButton href={links.wallet} isHidden={!showStarter}>
+          Wallet
+        </CustomButton>
+        <CustomButton href={links.bridge} isHidden={!showStarter}>
+          Bridge
+        </CustomButton>
+        <CustomButton href={links.docs} isHidden={!showNetwork}>
+          Docs
+        </CustomButton>
+        <CustomButton href={links.allocator} isHidden={!showNetwork}>
+          Allocator
+        </CustomButton>
+      </motion.div>
+
+      {/* Third Button Row */}
+      <motion.div
+        variants={buttonVariants}
+        custom={2}
+        className="absolute mt-20 flex w-full max-w-[43rem] justify-around gap-36"
+        style={{ zIndex: isExpanded ? 1 : "auto" }}
+      >
+        <CustomButton
+          href="https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg"
+          isHidden={!showStarter}
+        >
+          Blog
+        </CustomButton>
+        <CustomButton href={links.governance} isHidden={!showNetwork}>
+          DAO
+        </CustomButton>
+      </motion.div>
+
+      {/* Fourth Row with Card */}
+      <motion.div
+        variants={buttonVariants}
+        custom={8}
+        className="absolute w-full max-w-[46.5rem]"
+        style={{ zIndex: isExpanded ? 1 : "auto" }}
+        animate={{ top: cardPosition }}
+        transition={{ duration: 0.4, delay: 0.22 }}
       >
         <motion.div
           layout

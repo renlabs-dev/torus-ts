@@ -17,7 +17,13 @@ const draw = {
   }),
 };
 
-export function LinesSVG() {
+export function LinesSVG({
+  showStarter,
+  showNetwork,
+}: {
+  showStarter: boolean;
+  showNetwork: boolean;
+}) {
   return (
     <motion.svg
       initial="hidden"
@@ -29,7 +35,7 @@ export function LinesSVG() {
       width={800}
       preserveAspectRatio="xMidYMid meet"
     >
-      {/* Original set of lines */}
+      {/* Basic set of lines */}
       <motion.path
         d="M500 50 H250 Q240 50 240 60 V140"
         fill="none"
@@ -52,75 +58,95 @@ export function LinesSVG() {
         x1="500"
         y1="50"
         x2="500"
-        y2="450"
+        y2="250"
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
         variants={draw}
         custom={1}
       />
-
-      {/* Left group of lines (evened out) */}
-      <motion.path
-        d="M240 140 H115 Q105 140 105 150 V230"
-        fill="none"
-        stroke="#27272a"
-        strokeWidth="3"
-        strokeLinecap="round"
-        variants={draw}
-        custom={1.5}
-      />
-      <motion.path
-        d="M240 140 H365 Q375 140 375 150 V230"
-        fill="none"
-        stroke="#27272a"
-        strokeWidth="3"
-        strokeLinecap="round"
-        variants={draw}
-        custom={1.5}
-      />
       <motion.line
-        x1="240"
-        y1="140"
-        x2="240"
-        y2="340"
+        key={showStarter || showNetwork ? "extended" : "short"}
+        x1="500"
+        y1="50"
+        x2="500"
+        y2={showStarter || showNetwork ? "450" : "250"}
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
         variants={draw}
-        custom={2}
+        custom={0}
       />
 
-      {/* Right group of lines (evened out) */}
-      <motion.path
-        d="M760 140 H635 Q625 140 625 150 V230"
-        fill="none"
-        stroke="#27272a"
-        strokeWidth="3"
-        strokeLinecap="round"
-        variants={draw}
-        custom={1.5}
-      />
-      <motion.path
-        d="M760 140 H885 Q895 140 895 150 V230"
-        fill="none"
-        stroke="#27272a"
-        strokeWidth="3"
-        strokeLinecap="round"
-        variants={draw}
-        custom={1.5}
-      />
-      <motion.line
-        x1="760"
-        y1="140"
-        x2="760"
-        y2="340"
-        stroke="#27272a"
-        strokeWidth="3"
-        strokeLinecap="round"
-        variants={draw}
-        custom={2}
-      />
+      {/* Left group of lines */}
+      {showStarter && (
+        <>
+          <motion.path
+            d="M240 140 H115 Q105 140 105 150 V230"
+            fill="none"
+            stroke="#27272a"
+            strokeWidth="3"
+            strokeLinecap="round"
+            variants={draw}
+            custom={0}
+          />
+          <motion.path
+            d="M240 140 H365 Q375 140 375 150 V230"
+            fill="none"
+            stroke="#27272a"
+            strokeWidth="3"
+            strokeLinecap="round"
+            variants={draw}
+            custom={0}
+          />
+          <motion.line
+            x1="240"
+            y1="140"
+            x2="240"
+            y2="340"
+            stroke="#27272a"
+            strokeWidth="3"
+            strokeLinecap="round"
+            variants={draw}
+            custom={0}
+          />
+        </>
+      )}
+
+      {/* Right group of lines */}
+      {showNetwork && (
+        <>
+          <motion.path
+            d="M760 140 H635 Q625 140 625 150 V230"
+            fill="none"
+            stroke="#27272a"
+            strokeWidth="3"
+            strokeLinecap="round"
+            variants={draw}
+            custom={0}
+          />
+          <motion.path
+            d="M760 140 H885 Q895 140 895 150 V230"
+            fill="none"
+            stroke="#27272a"
+            strokeWidth="3"
+            strokeLinecap="round"
+            variants={draw}
+            custom={0}
+          />
+          <motion.line
+            x1="760"
+            y1="140"
+            x2="760"
+            y2="340"
+            stroke="#27272a"
+            strokeWidth="3"
+            strokeLinecap="round"
+            variants={draw}
+            custom={0.5}
+          />
+        </>
+      )}
     </motion.svg>
   );
 }
