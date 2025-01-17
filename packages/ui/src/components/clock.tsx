@@ -1,15 +1,9 @@
 "use client";
 
 import { Clock as ClockIcon } from "lucide-react";
-import React, {
-  useState,
-  useEffect,
-  Suspense,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 
-export function Clock() {
+export default function Clock() {
   const [date, setDate] = useState(new Date());
 
   useEffect(() => {
@@ -29,7 +23,6 @@ export function Clock() {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
     hour12: false,
   };
 
@@ -42,7 +35,7 @@ export function Clock() {
   return (
     <span className="flex items-center gap-1.5">
       <ClockIcon className="h-3 w-3 text-white" />
-      <Suspense fallback={<div>Loading...</div>}>{dateTimeString}</Suspense>
+      {dateTimeString}
     </span>
   );
 }
