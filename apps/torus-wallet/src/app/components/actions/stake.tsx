@@ -307,10 +307,12 @@ export function StakeAction() {
                   required
                   onChange={handleRecipientChange}
                   placeholder="Full validator address"
+                  disabled={!selectedAccount?.address || isEstimating}
                 />
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={!selectedAccount?.address || isEstimating}
                   onClick={() => setCurrentView("validators")}
                   className="flex w-fit items-center px-6 py-2.5"
                 >

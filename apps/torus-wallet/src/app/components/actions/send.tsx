@@ -214,6 +214,7 @@ export function SendAction() {
               required
               onChange={handleRecipientChange}
               placeholder="Full recipient address"
+              disabled={!selectedAccount?.address || isEstimating}
             />
             {inputError.recipient && (
               <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">

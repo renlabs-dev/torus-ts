@@ -253,12 +253,14 @@ export function UnstakeAction() {
                   value={recipient}
                   required
                   onChange={handleRecipientChange}
+                  disabled={!selectedAccount?.address}
                   placeholder="Full validator address"
                   className="w-full border border-white/20 bg-[#898989]/5 p-2"
                 />
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={!selectedAccount?.address}
                   onClick={() => setCurrentView("stakedValidators")}
                   className="flex w-fit items-center px-6 py-2.5"
                 >

@@ -11,6 +11,7 @@ import React, {
 
 export function Clock() {
   const [date, setDate] = useState(new Date());
+
   useEffect(() => {
     const timerID = setInterval(() => tick(), 1000);
     return () => clearInterval(timerID);
@@ -21,10 +22,19 @@ export function Clock() {
     setDate(new Date());
   }, []);
 
-  const options = { hour: "2-digit", minute: "2-digit", hour12: false };
-  const timeString = useMemo(
-    () =>
-      date.toLocaleTimeString("en-GB", options as Intl.DateTimeFormatOptions),
+  const options = {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  };
+
+  const dateTimeString = useMemo(
+    () => date.toLocaleString("en-GB", options as Intl.DateTimeFormatOptions),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [date],
   );
@@ -32,7 +42,7 @@ export function Clock() {
   return (
     <span className="flex items-center gap-1.5">
       <ClockIcon className="h-3 w-3 text-white" />
-      <Suspense fallback={<div>Loading...</div>}>{timeString}</Suspense>
+      <Suspense fallback={<div>Loading...</div>}>{dateTimeString}</Suspense>
     </span>
   );
 }

@@ -10,7 +10,7 @@ import { TransferDetails } from "./_components/transfer-details";
 
 export default function HomePage(): JSX.Element {
   return (
-    <main className="mx-auto flex min-w-full flex-col items-start gap-3 py-10 text-white lg:mt-[calc(20vh-64px)]">
+    <main className="mx-auto flex min-w-full flex-col items-start gap-3 text-white lg:mt-[calc(20vh-64px)]">
       <IntroSection />
       <TransferDetails />
       <div className="mb-4 flex w-full flex-row gap-6">
