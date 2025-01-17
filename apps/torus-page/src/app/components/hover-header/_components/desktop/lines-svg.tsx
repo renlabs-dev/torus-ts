@@ -70,12 +70,12 @@ export function LinesSVG({
         x1="500"
         y1="50"
         x2="500"
-        y2={showStarter || showNetwork ? "450" : "250"}
+        y2={showStarter || showNetwork ? "450" : "0"}
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
         variants={draw}
-        custom={0}
+        custom={-1}
       />
 
       {/* Left group of lines */}

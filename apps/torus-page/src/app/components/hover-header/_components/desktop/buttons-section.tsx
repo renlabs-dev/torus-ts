@@ -151,11 +151,11 @@ export function ButtonsSection({
       {/* Fourth Row with Card */}
       <motion.div
         variants={buttonVariants}
-        custom={8}
+        custom={11}
         className="absolute w-full max-w-[46.5rem]"
         style={{ zIndex: isExpanded ? 1 : "auto" }}
         animate={{ top: cardPosition }}
-        transition={{ duration: 0.4, delay: 0.22 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
       >
         <motion.div
           layout
