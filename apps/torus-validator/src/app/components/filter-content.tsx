@@ -42,7 +42,7 @@ export const Filter = (props: FilterProps) => {
   return (
     <Label
       htmlFor="search-bar"
-      className="flex w-full items-center justify-center rounded-md border pl-3 lg:w-1/2 xl:w-1/3"
+      className="rounded-radius flex w-full items-center justify-center border pl-3 lg:w-1/2 xl:w-1/3"
     >
       <SearchIcon size={16} />
       <Input

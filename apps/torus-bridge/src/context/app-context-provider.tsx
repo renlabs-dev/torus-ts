@@ -13,6 +13,7 @@ import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { env } from "~/env";
 import { WalletHeader } from "~/app/_components/shared/wallet-header";
+import { Container, Footer } from "@torus-ts/ui";
 
 export function AppContextProvider({
   children,
@@ -31,7 +32,8 @@ export function AppContextProvider({
               <SolanaWalletProvider>
                 <CosmosWalletProvider>
                   <WalletHeader />
-                  {children}
+                  <Container>{children}</Container>
+                  <Footer />
                 </CosmosWalletProvider>
               </SolanaWalletProvider>
             </EvmWalletProvider>

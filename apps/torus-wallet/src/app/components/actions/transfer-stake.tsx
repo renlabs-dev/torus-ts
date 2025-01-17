@@ -205,12 +205,14 @@ export function TransferStakeAction() {
                   onChange={handleFromValidatorChange}
                   placeholder="Full validator address"
                   className="w-full p-2"
+                  disabled={!selectedAccount?.address}
                 />
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setCurrentView("stakedValidators")}
                   className="flex w-fit items-center px-6 py-2.5"
+                  disabled={!selectedAccount?.address}
                 >
                   Staked Validators
                 </Button>
@@ -234,11 +236,13 @@ export function TransferStakeAction() {
                   required
                   onChange={handleRecipientChange}
                   placeholder="Full validator address"
+                  disabled={!selectedAccount?.address}
                   className="w-full p-2"
                 />
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={!selectedAccount?.address}
                   onClick={() => setCurrentView("validators")}
                   className="flex w-fit items-center px-6 py-2.5"
                 >

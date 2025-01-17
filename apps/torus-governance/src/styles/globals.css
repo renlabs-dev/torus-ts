@@ -25,7 +25,7 @@ body {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background-color: transparent;
+  background-color: hsl(240 3.7% 10);
   border-radius: 2px;
   margin: 1px 0 1px;
 }
@@ -62,6 +62,7 @@ body {
     --border: 240 12% 17%;
     --input: 240 3.7% 12;
     --ring: 240 4.9% 83.9%;
+    --radius: 0.5rem;
     --chart-1: 225 80% 55%;
     --chart-2: 215 90% 65%;
     --chart-3: 220 85% 60%;

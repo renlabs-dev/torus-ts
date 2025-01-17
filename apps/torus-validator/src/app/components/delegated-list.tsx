@@ -295,7 +295,7 @@ export function DelegatedList() {
 
                         <div className="flex items-center gap-1">
                           <Label
-                            className="relative flex h-[36px] items-center gap-1 rounded-md border px-2"
+                            className="rounded-radius relative flex h-[36px] items-center gap-1 border px-2"
                             htmlFor={`percentage:${agent.id}`}
                           >
                             <Input

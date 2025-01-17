@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono} torusPage>
+    <Layout font={firaMono}>
       <HoverHeader />
       {children}
       <Footer />

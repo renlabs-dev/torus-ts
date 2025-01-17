@@ -146,7 +146,7 @@ export function TransfersDetailsDialog({
           </div>
         </div>
 
-        <div className="flex items-center justify-around rounded-md border border-border p-2">
+        <div className="rounded-radius flex items-center justify-around border border-border p-2">
           <span className="font-medium tracking-wider">
             {getChainDisplayName(multiProvider, origin, true)}
           </span>

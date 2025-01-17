@@ -291,8 +291,14 @@ export function TransferEVM() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount"
+              disabled={!selectedAccount?.address}
             />
-            <Button type="button" onClick={handleMaxClick} variant="outline">
+            <Button
+              type="button"
+              onClick={handleMaxClick}
+              variant="outline"
+              disabled={!selectedAccount?.address}
+            >
               Max
             </Button>
           </div>
@@ -308,9 +314,15 @@ export function TransferEVM() {
                 value={userInputEthAddr}
                 onChange={(e) => setUserInputEthAddr(e.target.value)}
                 placeholder="Enter Ethereum address"
+                disabled={!selectedAccount?.address}
                 className="flex-grow"
               />
-              <Button type="button" onClick={handleSelfClick} variant="outline">
+              <Button
+                type="button"
+                onClick={handleSelfClick}
+                variant="outline"
+                disabled={!selectedAccount?.address}
+              >
                 Self
               </Button>
             </div>

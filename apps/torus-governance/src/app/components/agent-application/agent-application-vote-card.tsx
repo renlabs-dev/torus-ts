@@ -57,7 +57,7 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <Card className="flex flex-col rounded-md p-4">
+    <Card className="rounded-radius flex flex-col p-4">
       {getVotedText(voted)}
       <Button
         variant="link"
@@ -103,11 +103,7 @@ const VoteCardFunctionsContent = (props: {
 
   return (
     <div className="flex w-full flex-col items-end gap-4">
-      <div
-        className={`relative z-20 flex w-full flex-col items-start gap-2 ${
-          (!isAccountConnected || !isCadreUser) && "blur-md"
-        }`}
-      >
+      <div className={`relative z-20 flex w-full flex-col items-start gap-2`}>
         <ToggleGroup
           type="single"
           value={vote}
@@ -159,6 +155,9 @@ const VoteCardFunctionsContent = (props: {
             applications.
           </span>
         </div>
+      )}
+      {(!isAccountConnected || !isCadreUser) && (
+        <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
       )}
     </div>
   );

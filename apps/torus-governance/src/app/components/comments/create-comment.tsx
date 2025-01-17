@@ -121,7 +121,7 @@ export function CreateComment({
     }
   };
 
-  const setBlur = () => {
+  const setOverlay = () => {
     if (
       !selectedAccount ||
       (itemType === "PROPOSAL" && !userHasEnoughBalance) ||
@@ -137,80 +137,86 @@ export function CreateComment({
       <div className="mb-2 w-full pb-1">
         <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
       </div>
-      <form
-        onSubmit={handleSubmit}
-        className={`flex w-full flex-col gap-2 ${setBlur() && "blur-md"}`}
-      >
-        <div className="relative">
-          <textarea
-            placeholder="Type your message here..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="h-24 w-full resize-none rounded-md border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
-            maxLength={MAX_CHARACTERS}
-          />
-          <span className="absolute bottom-3 right-4 text-sm text-muted-foreground">
-            {remainingChars} characters left
-          </span>
-        </div>
+      <div className="relative w-full">
+        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
+          <div className="relative">
+            <textarea
+              placeholder="Type your message here..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="rounded-radius h-24 w-full resize-none border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+              maxLength={MAX_CHARACTERS}
+            />
+            <span className="absolute bottom-3 right-4 text-sm text-muted-foreground">
+              {remainingChars} characters left
+            </span>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            placeholder="Type your name (optional)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-md border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
-            maxLength={MAX_NAME_CHARACTERS}
-          />
-          <Button
-            type="submit"
-            variant="outline"
-            className="py-6 transition"
-            disabled={
-              isSubmitDisabled() ||
-              CreateComment.isPending ||
-              !selectedAccount?.address ||
-              content.length === 0
-            }
-          >
-            {CreateComment.isPending ? "Posting..." : "Post"}
-          </Button>
-        </div>
-      </form>
-      {!selectedAccount?.address && itemType === "PROPOSAL" && (
-        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-          <p className="mt-2 text-center text-sm">
-            Please connect your wallet to submit a comment.
-          </p>
-        </div>
-      )}
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Type your name (optional)"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="rounded-radius w-full border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+              maxLength={MAX_NAME_CHARACTERS}
+            />
+            <Button
+              type="submit"
+              variant="outline"
+              className="py-6 transition"
+              disabled={
+                isSubmitDisabled() ||
+                CreateComment.isPending ||
+                !selectedAccount?.address ||
+                content.length === 0
+              }
+            >
+              {CreateComment.isPending ? "Posting..." : "Post"}
+            </Button>
+          </div>
+        </form>
 
-      {!userHasEnoughBalance &&
-        itemType === "PROPOSAL" &&
-        selectedAccount?.address && (
+        {setOverlay() && (
+          <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
+        )}
+        {!selectedAccount?.address && itemType === "PROPOSAL" && (
           <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-            <p className="mt-2 text-center text-sm">
-              You need to have at least {MIN_STAKE_REQUIRED} TORUS total staked
-              balance to submit a comment.
+            <p className="mt-2 text-center text-lg">
+              Please connect your wallet to submit a comment.
             </p>
           </div>
         )}
-      {!selectedAccount && itemType === "AGENT_APPLICATION" && (
-        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-          <p className="mt-2 text-center text-sm">Are you a Curator DAO?</p>
-          <p className="mt-2 text-center text-sm">
-            Connect your wallet to comment.
-          </p>
-        </div>
-      )}
-      {selectedAccount && !isUserCadre && itemType === "AGENT_APPLICATION" && (
-        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
-          <p className="mt-2 text-center text-sm">
-            You must be a Curator DAO member to comment on agent applications.
-          </p>
-        </div>
-      )}
+
+        {!userHasEnoughBalance &&
+          itemType === "PROPOSAL" &&
+          selectedAccount?.address && (
+            <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+              <p className="mt-2 text-center text-lg">
+                You need to have at least {MIN_STAKE_REQUIRED} TORUS total
+                staked balance to submit a comment.
+              </p>
+            </div>
+          )}
+        {!selectedAccount && itemType === "AGENT_APPLICATION" && (
+          <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+            <p className="mt-2 text-center text-sm">Are you a Curator DAO?</p>
+            <p className="mt-2 text-center text-sm">
+              Connect your wallet to comment.
+            </p>
+          </div>
+        )}
+        {selectedAccount &&
+          !isUserCadre &&
+          itemType === "AGENT_APPLICATION" && (
+            <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
+              <p className="mt-2 text-center text-lg">
+                You must be a Curator DAO member to comment on agent
+                applications.
+              </p>
+            </div>
+          )}
+      </div>
     </div>
   );
 }

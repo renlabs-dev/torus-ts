@@ -39,7 +39,7 @@ export default function ConnectButton() {
                   <button
                     onClick={openConnectModal}
                     type="button"
-                    className="flex items-center gap-2 text-sm"
+                    className="flex items-center gap-2 bg-background p-2 text-sm"
                   >
                     <Wallet className="!h-5 !w-5" />
                     Connect Base Wallet
@@ -52,7 +52,7 @@ export default function ConnectButton() {
                   <button
                     onClick={openChainModal}
                     type="button"
-                    className="flex items-center gap-2 text-sm"
+                    className="flex items-center gap-2 bg-background p-2 text-sm"
                   >
                     <Wallet className="!h-5 !w-5" />
                     Wrong network
@@ -64,7 +64,7 @@ export default function ConnectButton() {
                 <button
                   onClick={openAccountModal}
                   type="button"
-                  className="flex items-center gap-2 text-sm"
+                  className="flex items-center gap-2 bg-background p-2 text-sm"
                 >
                   <Wallet className="!h-5 !w-5" />
                   Base ({account.displayName})
