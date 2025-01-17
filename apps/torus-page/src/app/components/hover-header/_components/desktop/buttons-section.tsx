@@ -1,4 +1,3 @@
-// ButtonsSection.tsx
 import { motion } from "framer-motion";
 import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
 import Link from "next/link";
