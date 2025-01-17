@@ -7,9 +7,14 @@ import {
   WalletCards,
 } from "lucide-react";
 import { links } from "../data";
-import { Clock } from "./clock";
 
 import { Icons } from "./icons";
+
+import dynamic from "next/dynamic";
+
+const Clock = dynamic(() => import("./clock"), {
+  loading: () => <p>Loading...</p>,
+});
 
 export function Footer() {
   return (
