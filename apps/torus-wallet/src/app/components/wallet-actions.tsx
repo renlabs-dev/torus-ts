@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 import {
   HoverCard,
@@ -13,8 +12,6 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui";
 
-// TODO: RETURN THE BRIDGE ONCE IT'S DONE
-// import { BridgeAction } from "./actions/bridge";
 import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
@@ -97,17 +94,11 @@ function WalletOptions() {
 }
 
 export function WalletActions() {
-  const searchParams = useSearchParams();
-
-  // const view = searchParams.get("view") as "wallet" | "bridge" | null;
-  const view = searchParams.get("view") as "wallet" | null;
-
   const routeComponents = {
     wallet: <WalletOptions />,
-    // bridge: <BridgeAction />,
   };
 
-  return routeComponents[view ?? "wallet"];
+  return routeComponents.wallet;
 }
 
 export default WalletActions;
