@@ -100,7 +100,7 @@ export function WalletBalance() {
       address: selectedAccount?.address,
     },
     {
-      amount: torusEvmBalance?.value ?? 0n,
+      amount: torusEvmBalance?.value ?? null,
       label: torusEvmChain.name,
       icon: (
         <Image

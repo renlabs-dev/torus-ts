@@ -3,6 +3,7 @@ import {
   BookMarked,
   Globe,
   Scale,
+  Telescope,
   WalletCards,
 } from "lucide-react";
 import { links } from "../data";
@@ -91,12 +92,12 @@ const _socialList = [
 const _appList = [
   {
     icon: <Globe className="h-3 w-3" />,
-    name: "Page",
+    name: "LP",
     href: links.landing_page,
   },
   {
     icon: <Scale className="h-3 w-3" />,
-    name: "Governance",
+    name: "DAO",
     href: links.governance,
   },
   {
@@ -113,5 +114,10 @@ const _appList = [
     icon: <BookMarked className="h-3 w-3" />,
     name: "Docs",
     href: links.docs,
+  },
+  {
+    icon: <Telescope className="h-3 w-3" />,
+    name: "Explorer",
+    href: links.torex_explorer,
   },
 ];
