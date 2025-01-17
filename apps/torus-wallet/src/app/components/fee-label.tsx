@@ -13,6 +13,15 @@ export function FeeLabel(props: FeeLabelProps) {
   if (isEstimating) {
     return <Skeleton className="h-5 w-64" />;
   }
+  if (estimatedFee === null) {
+    return (
+      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Coins size={16} />
+        Connect Wallet to view fee information
+      </span>
+    );
+  }
+
   if (estimatedFee) {
     return (
       <span className="flex items-center gap-2 text-sm text-muted-foreground">

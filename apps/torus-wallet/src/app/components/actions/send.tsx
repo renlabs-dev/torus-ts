@@ -175,7 +175,7 @@ export function SendAction() {
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount ? estimatedFee : 0} TORUS`,
+      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "Connect Wallet"}`,
     },
   ];
 
