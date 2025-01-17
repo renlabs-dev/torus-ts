@@ -28,18 +28,10 @@ const transferDaoTreasuryProposalSchema = z.object({
   body: z.string().min(1, "Body is required"),
 });
 
-// w: AugmentedSubmittable<
-//   (
-//     value: u128 | AnyNumber | Uint8Array,
-//     destinationKey: AccountId32 | string | Uint8Array,
-//     data: Bytes | string | Uint8Array,
-//   ) => SubmittableExtrinsic<ApiType>,
-//   [u128, AccountId32, Bytes]
-// >;
-
 export function CreateTransferDaoTreasuryProposal(): JSX.Element {
   const router = useRouter();
   const {
+    networkConfigs,
     isAccountConnected,
     accountFreeBalance,
     addDaoTreasuryTransferProposal,
@@ -221,6 +213,14 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
           )}
         </TabsContent>
       </Tabs>
+      <div className="flex items-start gap-2">
+        <span className="text-white">
+          Proposal cost:{" "}
+          <span className="text-muted-foreground">
+            {formatToken(networkConfigs.data?.proposalCost ?? 0)} TORUS
+          </span>
+        </span>
+      </div>
       <Button
         size="lg"
         type="submit"

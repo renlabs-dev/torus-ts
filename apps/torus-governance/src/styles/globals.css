@@ -25,7 +25,7 @@ body {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background-color: transparent;
+  background-color: hsl(240 3.7% 10);
   border-radius: 2px;
   margin: 1px 0 1px;
 }
