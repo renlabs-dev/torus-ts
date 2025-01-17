@@ -70,7 +70,7 @@ export function LinesSVG({
         x1="500"
         y1="50"
         x2="500"
-        y2={showStarter || showNetwork ? "450" : "0"}
+        y2={showStarter || showNetwork ? "450" : "15"}
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
