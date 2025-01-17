@@ -27,29 +27,9 @@ export function ValidatorsList(props: ValidatorsListProps) {
 
   const validatorsList = [
     {
-      name: "torusx",
-      description: "Validator of torusx platform.",
-      address: "5DUWKpGBneBbna6PFHZk18Gp9wyvLUFPiWy5maAARjRjayPp",
-    },
-    {
-      name: "Community Validator",
-      description: "Community Validator official validator.",
-      address: "5Hgik8Kf7nq5VBtW41psbpXu1kinXpqRs4AHotPe6u1w6QX2",
-    },
-    {
-      name: "vali::comstats",
-      description: "Validator of Comstats platform.",
-      address: "5H9YPS9FJX6nbFXkm9zVhoySJBX9RRfWF36abisNz5Ps9YaX",
-    },
-    {
-      name: "vali::SolBridge",
-      description: "Validator of SolBridge platform.",
-      address: "5EWrhYAvSLCFi6wYAJY1cFmBuziaqKc6RrBjhuRMLu1QtHzd",
-    },
-    {
-      name: "market-compass::vali",
-      description: "Validator of Market Compass platform.",
-      address: "5HEUfzHf8uRUq1AfX2Wgga9xC2u12wfyF4FTKUMaYvDFH7dw",
+      name: "Torus Allocator",
+      description: "Validator of the Torus Allocator platform.",
+      address: "5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b",
     },
   ];
 
@@ -86,7 +66,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
           Once you select a validator, it will automatically fill the field with
           their address. View all validators list{" "}
           <Link
-            href="https://www.comstats.org/"
+            href="https://torex.rs/agents"
             target="_blank"
             rel="noreferrer"
             className="text-primary hover:underline"
