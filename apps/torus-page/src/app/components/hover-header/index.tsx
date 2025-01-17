@@ -191,8 +191,8 @@ export function HoverHeader() {
                   setIsExpanded={setIsExpanded}
                   showStarter={showStarter}
                   showNetwork={showNetwork}
-                  onStarterClick={() => setShowStarter(true)}
-                  onNetworkClick={() => setShowNetwork(true)}
+                  onStarterClick={() => setShowStarter(!showStarter)}
+                  onNetworkClick={() => setShowNetwork(!showNetwork)}
                 />
                 <LinesSVG showStarter={showStarter} showNetwork={showNetwork} />
               </div>
