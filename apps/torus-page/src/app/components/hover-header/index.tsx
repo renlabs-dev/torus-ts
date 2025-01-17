@@ -1,3 +1,8 @@
+// For anyone viewing this component im sorry
+// this is the biggest gambiarra i wrote in my life
+// the boss asked for it and i had to deliver in no time
+// i hope you understand
+
 "use client";
 
 import { cn, Icons } from "@torus-ts/ui";
@@ -30,6 +35,11 @@ export function HoverHeader() {
   const [isHovered, setIsHovered] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+
+  const [showStarter, setShowStarter] = useState(false);
+  const [showNetwork, setShowNetwork] = useState(false);
+
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const calculateDistance = (
     x1: number,
@@ -112,7 +122,7 @@ export function HoverHeader() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-background/40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsVisible(false)}
           />
         )}
@@ -127,6 +137,9 @@ export function HoverHeader() {
           onClick={() => {
             setIsVisible(!isVisible);
             setIsHovered(true);
+            setShowNetwork(false);
+            setShowStarter(false);
+            setIsExpanded(false);
           }}
           whileTap={{ y: 1 }}
           onHoverStart={() => setIsHovered(true)}
@@ -173,8 +186,15 @@ export function HoverHeader() {
           {isVisible && (
             <>
               <div className="hidden w-full items-center justify-center md:flex">
-                <ButtonsSection />
-                <LinesSVG />
+                <ButtonsSection
+                  isExpanded={isExpanded}
+                  setIsExpanded={setIsExpanded}
+                  showStarter={showStarter}
+                  showNetwork={showNetwork}
+                  onStarterClick={() => setShowStarter(true)}
+                  onNetworkClick={() => setShowNetwork(true)}
+                />
+                <LinesSVG showStarter={showStarter} showNetwork={showNetwork} />
               </div>
               <div className="flex w-full items-center justify-center md:hidden">
                 <ButtonsSectionMobile />
