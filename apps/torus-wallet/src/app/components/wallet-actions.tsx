@@ -22,7 +22,7 @@ const buttons = [
   { text: "Send", component: <SendAction /> },
   { text: "Stake", component: <StakeAction /> },
   { text: "Unstake", component: <UnstakeAction /> },
-  { text: "Transfer", component: <TransferStakeAction /> },
+  { text: "Transfer Stake", component: <TransferStakeAction /> },
 ];
 
 const unstakeRelatedActions = [
