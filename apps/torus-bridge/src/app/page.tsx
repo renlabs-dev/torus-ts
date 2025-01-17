@@ -2,7 +2,6 @@
 
 import { GuideDialog } from "./_components/guide-dialog";
 import { SelectActionDialog } from "./_components/select-action-dialog";
-import { IntroSection } from "./_components/shared/intro";
 import { SidebarLinks } from "./_components/shared/sidebar-links";
 import WalletActions from "./_components/shared/wallet-actions";
 import { WalletBalance } from "./_components/shared/wallet-balance";
@@ -11,7 +10,6 @@ import { TransferDetails } from "./_components/transfer-details";
 export default function HomePage(): JSX.Element {
   return (
     <main className="mx-auto flex min-w-full flex-col items-start gap-3 text-white lg:mt-[calc(20vh-64px)]">
-      <IntroSection />
       <TransferDetails />
       <div className="mb-4 flex w-full flex-row gap-6">
         <SelectActionDialog />

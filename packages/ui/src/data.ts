@@ -16,6 +16,7 @@ export const links = {
     "https://docs.hyperlane.xyz/docs/reference/hooks/interchain-gas",
   hyperlane_explorer: "https://explorer.hyperlane.xyz",
 
+  torex_explorer: "https://torex.rs/",
   explorer: "https://explorer.torus.network/",
   governance: "https://dao.torus.network/",
   allocator: "https://allocator.torus.network/",
