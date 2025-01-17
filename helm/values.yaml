@@ -86,7 +86,7 @@ service:
 
 ingress:
   enabled: true
-  ingressClassName: nginx
+  ingressClassName: nginx-dev
 
 configMap:
   enabled: true
