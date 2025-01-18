@@ -18,6 +18,8 @@ import {
 } from "@torus-ts/ui";
 import { formatToken, fromNano } from "@torus-ts/utils/subspace";
 
+import Dropzone, { DropzoneState } from "shadcn-dropzone";
+
 import { useGovernance } from "~/context/governance-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 
@@ -263,6 +265,39 @@ export function RegisterAgent(): JSX.Element {
           type="text"
           value={url}
         />
+        <div className="border bg-[#080808]">
+          {" "}
+          <Dropzone
+            onDrop={(acceptedFiles: File[]) => {
+              if (acceptedFiles.length > 0) {
+                // void doSubmit(acceptedFiles[0]);
+              }
+            }}
+            multiple={false}
+            disabled={uploading}
+            maxSize={512000}
+            maxFiles={1}
+          >
+            {(dropzone: DropzoneState) => (
+              <>
+                {dropzone.isDragAccept ? (
+                  <div className="text-sm font-medium">
+                    Drop your files here!
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className="flex flex-row items-center gap-0.5 text-sm font-medium">
+                      Upload files
+                    </div>
+                  </div>
+                )}
+                <div className="text-xs font-medium text-gray-400">
+                  {dropzone.acceptedFiles.length} files uploaded so far.
+                </div>
+              </>
+            )}
+          </Dropzone>
+        </div>
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList
