@@ -34,7 +34,6 @@ export async function processApplicationsWorker(props: WorkerProps) {
         lastBlock.blockNumber,
       );
 
-      
       const vote_threshold = await getCadreThreshold();
 
       await processAllVotes(
