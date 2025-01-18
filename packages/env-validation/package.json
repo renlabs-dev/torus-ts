@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "next-runtime-env": "^3.2.2",
-    "next": "^14",
-    "react": "^18"
+    "next": "catalog:",
+    "react": "catalog:react18"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",

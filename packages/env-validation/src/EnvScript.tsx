@@ -91,7 +91,7 @@ export function buildZodEnvScript<S extends Record<string, ZodType<unknown>>>(
   opts?: BuildEnvProviderOptions,
 ): {
   EnvScript: FC<EnvScriptProps>;
-  env: (key: string & keyof S) => z.infer<S[keyof S]>;
+  env: <K extends string & keyof S>(key: K) => z.infer<S[K]>;
 } {
   return {
     EnvScript: (props) => (
@@ -101,6 +101,9 @@ export function buildZodEnvScript<S extends Record<string, ZodType<unknown>>>(
         {...props}
       />
     ),
-    env: <K extends keyof S>(key: K & string) => env(key) as z.infer<S[K]>,
+    env: (key) => {
+      const val = env(key);
+      return opts?.skipValidation ? val : schema[key]!.parse(val);
+    },
   };
 }
