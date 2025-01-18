@@ -2,15 +2,14 @@ import "../styles/globals.css";
 
 import type { Metadata } from "next";
 
-import { ToastProvider } from "@torus-ts/toast-provider";
-import { TorusProvider } from "@torus-ts/torus-provider";
-import { Container, Layout } from "@torus-ts/ui";
+// import { TorusProvider } from "@torus-ts/torus-provider";
+import { Layout } from "@torus-ts/ui";
 
-import { env } from "~/env";
-import { TRPCReactProvider } from "~/trpc/react";
-import { DelegatedList } from "./components/delegated-list";
-import { AllocatorHeader } from "./components/allocator-header";
-import { TutorialDialog } from "./components/tutorial-dialog";
+// import { env } from "~/env";
+// import { TRPCReactProvider } from "~/trpc/react";
+// import { DelegatedList } from "./components/delegated-list";
+// import { AllocatorHeader } from "./components/allocator-header";
+// import { TutorialDialog } from "./components/tutorial-dialog";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import Link from "next/link";
 import { EnvScript } from "~/env";
@@ -30,11 +29,7 @@ export const firaMono = FiraMono({
   weight: "400",
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout() {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <div className="flex min-h-screen w-full items-center justify-center bg-black">
@@ -57,7 +52,6 @@ export default function RootLayout({
           </h3>
         </span>
       </div>
-
       {/* <ToastProvider>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
@@ -70,7 +64,7 @@ export default function RootLayout({
             <Container>{children}</Container>
           </TRPCReactProvider>
         </TorusProvider>
-      </ToastProvider>
+      </ToastProvider> */}
     </Layout>
   );
 }
