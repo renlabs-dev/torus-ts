@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 
-const NodeEnvSchema = z.enum(["development", "production", "test"]);
+const NodeEnvSchema = z.enum(["development", "production", "test"]).default("development");
+if (process?.env) {
+  process.env.NEXT_PUBLIC_NODE_ENV = process.env.NODE_ENV;
+}
 
+// warning: DO NOT expose any sensitive data on the schema default values!
 export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
   /**
@@ -11,10 +15,10 @@ export const envSchema = {
    */
   NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
-  NEXT_PUBLIC_NODE_ENV: NodeEnvSchema.default(() => process.env.NODE_ENV),
+  NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {
   skipValidation:
-    !!process.env.CI || process.env.npm_lifecycle_event === "lint",
+    !!process?.env.CI || process?.env.npm_lifecycle_event === "lint",
 });

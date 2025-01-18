@@ -16,8 +16,8 @@ const createContext = cache(async () => {
   return createTRPCContext({
     session: null,
     headers: heads,
-    jwtSecret: env.JWT_SECRET,
-    authOrigin: env.NEXT_PUBLIC_AUTH_ORIGIN,
+    jwtSecret: env("JWT_SECRET"),
+    authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
   });
 });
 
