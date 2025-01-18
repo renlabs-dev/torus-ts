@@ -209,7 +209,7 @@ export function TransferEVM() {
   const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
   const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
 
-  const getChainValues = getChainValuesOnEnv(env.NEXT_PUBLIC_CHAIN_ENV);
+  const getChainValues = getChainValuesOnEnv(env("NEXT_PUBLIC_CHAIN_ENV"));
 
   const { chainId: torusEvmChainId } = getChainValues("torus");
   const { address: evmAddress } = wagmi.useAccount();
