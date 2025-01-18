@@ -20,7 +20,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${env.PINATA_JWT}`,
+        Authorization: `Bearer ${env("PINATA_JWT")}`,
       },
       body: data,
     });
