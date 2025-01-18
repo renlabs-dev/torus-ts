@@ -1,45 +1,44 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-debugger */
 
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import "@polkadot/api/augment";
 
-import {
-  queryFreeBalance,
-  queryKeyStakedBy,
-  queryKeyStakingTo,
-  queryStakeIn,
-  queryStakeOut,
-} from "./modules/subspace";
+import { CID } from "multiformats";
+import { assert } from "tsafe";
+import { z } from "zod";
+
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
 
 // $ pnpm exec tsx src/main.ts
 
 const NODE_URL = "wss://api.testnet.torus.network";
 
-const wsProvider = new WsProvider(NODE_URL);
-const api = await ApiPromise.create({ provider: wsProvider });
-if (!api.isConnected) {
-  throw new Error("API not connected");
+async function connectToChainRpc(wsEndpoint: string) {
+  const wsProvider = new WsProvider(NODE_URL);
+  const api = await ApiPromise.create({ provider: wsProvider });
+  if (!api.isConnected) {
+    throw new Error("API not connected");
+  }
+  console.log("API connected");
+  return api;
 }
-console.log("API connected");
+
+// const api = connectToChainRpc(NODE_URL);
 
 // ====
 
-// console.log(
-//   "Free Balance:",
-//   await queryFreeBalance(
-//     api,
-//     checkSS58("5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL"),
-//   ),
-// );
+const r1 = IPFS_URI_SCHEMA.safeParse(
+  "ipfs://QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB",
+);
 
-// console.log("Staking To:");
-// console.log(
-//   await queryKeyStakingTo(
-//     api,
-//     checkSS58("5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL"),
-//   ),
-// );
+const r2 = IPFS_URI_SCHEMA.safeParse(
+  "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
+);
+
+console.log(r1, "\n", r1.error?.format());
+
+console.log(r2.data, "\n", r2.error?.format());
 
 debugger;
 

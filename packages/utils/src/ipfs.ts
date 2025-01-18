@@ -13,7 +13,7 @@ export interface CustomDataError {
 const IPFS_URI_REGEX = /^ipfs:\/\/(\w+)$/;
 
 export const CID_SCHEMA = z.string().transform((cid, ctx) => {
-  let cidResult;
+  let cidResult: CID;
   try {
     cidResult = CID.parse(cid);
   } catch (err) {
