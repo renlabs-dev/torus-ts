@@ -410,6 +410,9 @@ importers:
       rustie:
         specifier: 'catalog:'
         version: 0.4.0
+      shadcn-dropzone:
+        specifier: ^0.2.1
+        version: 0.2.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.12)(typescript@5.7.3)))
       superjson:
         specifier: 2.2.1
         version: 2.2.1
@@ -7226,6 +7229,10 @@ packages:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
 
+  attr-accept@2.2.5:
+    resolution: {integrity: sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==}
+    engines: {node: '>=4'}
+
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
@@ -8833,6 +8840,10 @@ packages:
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
+
+  file-selector@2.1.2:
+    resolution: {integrity: sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==}
+    engines: {node: '>= 12'}
 
   file-uri-to-path@1.0.0:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
@@ -11353,6 +11364,12 @@ packages:
     peerDependencies:
       react: ^18.2.0
 
+  react-dropzone@14.3.5:
+    resolution: {integrity: sha512-9nDUaEEpqZLOz5v5SUcFA0CjM4vq8YbqO0WRls+EYT7+DvxUdzDPKNCPLqGfj3YL9MsniCLCD4RFA6M95V6KMQ==}
+    engines: {node: '>= 10.13'}
+    peerDependencies:
+      react: '>= 16.8 || 18.0.0'
+
   react-fast-compare@2.0.4:
     resolution: {integrity: sha512-suNP+J1VU1MWFKcyt7RtjiSWUjvidmQSlqu+eHslq+342xCbGTYmC0mEhPCOHxlW0CywylOC1u2DFAT+bv4dBw==}
 
@@ -11904,6 +11921,12 @@ packages:
     resolution: {integrity: sha512-QMEp5B7cftE7APOjk5Y6xgrbWu+WkLVQwk8JNjZ8nKRciZaByEW6MubieAiToS7+dwvrjGhH8jRXz3MVd0AYqQ==}
     hasBin: true
 
+  shadcn-dropzone@0.2.1:
+    resolution: {integrity: sha512-eEpZMRPqHcGdjn8tMLTeEks39MTBUhOYEuYv4fe3vwWc8kILOZP5Wg26e9maBgSExcJNF6f9pU3gxs4Bmrqt1A==}
+    peerDependencies:
+      react: ^18
+      react-dom: ^18
+
   shallow-clone@3.0.1:
     resolution: {integrity: sha512-/6KqX+GVUdqPuPPd2LxDDxzX6CAbjJehAAOKlNpqqUpAqPM6HeL8f+o3a+JsyGjn2lv0WY8UsTgUJjU9Ok55NA==}
     engines: {node: '>=8'}
@@ -12423,6 +12446,9 @@ packages:
 
   trough@2.2.0:
     resolution: {integrity: sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw==}
+
+  truncate@3.0.0:
+    resolution: {integrity: sha512-C+0Xojw7wZPl6MDq5UjMTuxZvBPK04mtdFet7k+GSZPINcvLZFCXg+15kWIL4wAqDB7CksIsKiRLbQ1wa7rKdw==}
 
   ts-api-utils@2.0.0:
     resolution: {integrity: sha512-xCt/TOAc+EOHS1XPnijD3/yzpH6qg2xppZO1YDqGoVsNXfQfzHpOdNuXwrwOU8u4ITXJyDCTyt8w5g1sZv9ynQ==}
@@ -22977,6 +23003,8 @@ snapshots:
 
   atomic-sleep@1.0.0: {}
 
+  attr-accept@2.2.5: {}
+
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.0.0
@@ -24935,6 +24963,10 @@ snapshots:
   file-entry-cache@8.0.0:
     dependencies:
       flat-cache: 4.0.1
+
+  file-selector@2.1.2:
+    dependencies:
+      tslib: 2.8.1
 
   file-uri-to-path@1.0.0: {}
 
@@ -28150,6 +28182,13 @@ snapshots:
       react: 18.2.0
       scheduler: 0.23.2
 
+  react-dropzone@14.3.5(react@18.2.0):
+    dependencies:
+      attr-accept: 2.2.5
+      file-selector: 2.1.2
+      prop-types: 15.8.1
+      react: 18.2.0
+
   react-fast-compare@2.0.4: {}
 
   react-hook-form@7.54.2(react@18.2.0):
@@ -28937,6 +28976,19 @@ snapshots:
       inherits: 2.0.4
       safe-buffer: 5.2.1
 
+  shadcn-dropzone@0.2.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.12)(typescript@5.7.3))):
+    dependencies:
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-dropzone: 14.3.5(react@18.2.0)
+      tailwind-merge: 2.6.0
+      tailwindcss-animate: 1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.12)(typescript@5.7.3)))
+      truncate: 3.0.0
+    transitivePeerDependencies:
+      - tailwindcss
+
   shallow-clone@3.0.1:
     dependencies:
       kind-of: 6.0.3
@@ -29383,6 +29435,10 @@ snapshots:
 
   tailwind-merge@2.6.0: {}
 
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.12)(typescript@5.7.3))):
+    dependencies:
+      tailwindcss: 3.4.17(ts-node@10.9.2(@types/node@20.17.12)(typescript@5.7.3))
+
   tailwindcss-animate@1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@22.10.5)(typescript@5.7.3))):
     dependencies:
       tailwindcss: 3.4.17(ts-node@10.9.2(@types/node@22.10.5)(typescript@5.7.3))
@@ -29607,6 +29663,8 @@ snapshots:
   troika-worker-utils@0.52.0: {}
 
   trough@2.2.0: {}
+
+  truncate@3.0.0: {}
 
   ts-api-utils@2.0.0(typescript@5.7.3):
     dependencies:
