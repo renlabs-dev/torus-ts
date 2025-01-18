@@ -3,10 +3,9 @@ import { buildZodEnvScript } from "@torus-ts/env-validation";
 
 const AUTH_ORIGIN_DEFAULT = "validator.torus.network";
 
-
 const NodeEnvSchema = z.enum(["development", "production", "test"]).default("development");
-if (process?.env) {
-  process.env.NEXT_PUBLIC_NODE_ENV = process.env.NODE_ENV;
+if (process?.env) { // using Reflect to avoid inlining by Next  https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables#bundling-environment-variables-for-the-browser
+  Reflect.set(process.env, "NEXT_PUBLIC_NODE_ENV", process.env.NODE_ENV);
 }
 
 // warning: DO NOT expose any sensitive data on the schema default values!
