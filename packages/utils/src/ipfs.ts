@@ -29,7 +29,7 @@ export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
       const cid = CID.parse(rest);
       return { Ok: cid };
     }
-  
+
   const cid = CID.parse(uri);
   return { Ok: cid };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

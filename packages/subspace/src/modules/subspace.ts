@@ -31,6 +31,18 @@ export async function queryFreeBalance(
 
 const sb_balance_option_zero = sb_option_default(sb_balance, 0n);
 
+export async function queryTotalStake(api: Api): Promise<Balance> {
+  const q = await api.query.torus0.totalStake();
+  const balance = sb_balance.parse(q);
+  return balance;
+}
+
+export async function queryTotalIssuance(api: Api): Promise<Balance> {
+  const q = await api.query.balances.totalIssuance();
+  const balance = sb_balance.parse(q);
+  return balance;
+}
+
 /** TODO: refactor: return Map */
 export async function queryKeyStakingTo(
   api: Api,

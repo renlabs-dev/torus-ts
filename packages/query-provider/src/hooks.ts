@@ -25,6 +25,8 @@ import {
   queryLastBlock,
   queryProposals,
   queryRewardAllocation,
+  queryTotalStake,
+  queryTotalIssuance,
   queryUnrewardedProposals,
   queryGlobalGovernanceConfig,
 } from "@torus-ts/subspace";
@@ -92,6 +94,18 @@ export function useFreeBalance(
     enabled: api != null && address != null,
     queryFn: () => queryFreeBalance(api!, address!),
     staleTime: LAST_BLOCK_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// == Balances Module ==
+
+export function useTotalIssuance(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["total_issuance"],
+    enabled: api != null,
+    queryFn: () => queryTotalIssuance(api!),
+    staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -164,7 +178,17 @@ export function useRewardAllocation(api: Api | Nullish) {
   });
 }
 
-// == Subspace Module ==
+// == Torus Module ==
+
+export function useTotalStake(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["total_stake"],
+    enabled: api != null,
+    queryFn: () => queryTotalStake(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
 
 export function useCachedStakeOut(
   torusCacheUrl: string,

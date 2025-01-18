@@ -2,15 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@torus-ts/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
 
 import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
@@ -39,21 +31,6 @@ function WalletOptions() {
 
   const ActionTabs: React.FC<{ text: string }> = (props) => {
     const { text } = props;
-
-    if (userHasNotStaked && unstakeRelatedActions.includes(text)) {
-      return (
-        <HoverCard>
-          <HoverCardTrigger className="flex items-center justify-center text-center">
-            <TabsTrigger className="text-center" value={text} disabled>
-              {text}
-            </TabsTrigger>
-          </HoverCardTrigger>
-          <HoverCardContent className="mb-2.5 w-fit" side="top">
-            <p>Coming Soon</p>
-          </HoverCardContent>
-        </HoverCard>
-      );
-    }
 
     return (
       <TabsTrigger onClick={() => setCurrentTab(text)} value={text}>

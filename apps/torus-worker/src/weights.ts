@@ -109,7 +109,6 @@ A: 1000 nano
 B:  500 nano
 C:  500 nano
 
-
 and vote:
 
 A:
@@ -122,13 +121,11 @@ B:
 C:
 100% module3
 
-
 We have:
 
 module1: 1000
 module2:  250
 module3:  750
-
 
 Final weights:
 

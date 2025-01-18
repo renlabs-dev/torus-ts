@@ -17,7 +17,7 @@ export function FeeLabel(props: FeeLabelProps) {
     return (
       <span className="flex items-center gap-2 text-sm text-muted-foreground">
         <Coins size={16} />
-        Connect Wallet to view fee information
+        Fill in tx details to estimate fee
       </span>
     );
   }
