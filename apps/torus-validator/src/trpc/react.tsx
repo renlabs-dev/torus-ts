@@ -47,7 +47,7 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
 
   const authenticateUser = makeAuthenticateUserFn(
     getBaseUrl(),
-    env.NEXT_PUBLIC_AUTH_ORIGIN,
+    env("NEXT_PUBLIC_AUTH_ORIGIN"),
     setStoredAuthorization,
     signHex,
   );
@@ -57,7 +57,7 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
       createAuthLink(authenticateUser, getStoredAuthorization),
       loggerLink({
         enabled: (op) =>
-          env.NODE_ENV === "development" ||
+          env("NEXT_PUBLIC_NODE_ENV") === "development" ||
           (op.direction === "down" && op.result instanceof Error),
       }),
       httpBatchLink({
@@ -88,5 +88,5 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return window.location.origin;
   // eslint-disable-next-line no-restricted-properties
-  return `http://localhost:${process.env.PORT ?? 3000}`;
+  return `http://localhost:${env("PORT") ?? 3000}`;
 };
