@@ -26,6 +26,7 @@
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
     "lucide-react": "^0.454.0",
+    "multiformats": "catalog:",
     "next": "catalog:",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",

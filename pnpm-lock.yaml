@@ -571,6 +571,9 @@ importers:
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.2.0)
+      multiformats:
+        specifier: 'catalog:'
+        version: 13.3.1
       next:
         specifier: 'catalog:'
         version: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -24858,7 +24861,7 @@ snapshots:
 
   extension-port-stream@3.0.0:
     dependencies:
-      readable-stream: 3.6.2
+      readable-stream: 4.7.0
       webextension-polyfill: 0.10.0
 
   external-editor@3.1.0:
