@@ -246,7 +246,7 @@ export function UnstakeAction() {
           >
             <div className="flex w-full flex-col gap-2">
               <Label htmlFor="unstake-recipient">Validator Address</Label>
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-col gap-2 md:flex-row">
                 <Input
                   id="unstake-recipient"
                   type="text"
@@ -255,14 +255,12 @@ export function UnstakeAction() {
                   onChange={handleRecipientChange}
                   disabled={!selectedAccount?.address}
                   placeholder="Full validator address"
-                  className="w-full border border-white/20 bg-[#898989]/5 p-2"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   disabled={!selectedAccount?.address}
                   onClick={() => setCurrentView("stakedValidators")}
-                  className="flex w-fit items-center px-6 py-2.5"
                 >
                   Staked Validators
                 </Button>
