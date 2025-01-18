@@ -1,7 +1,9 @@
 import { CID } from "multiformats/cid";
+import { z } from "zod";
 
 import type { Result } from "./typing";
-import { URL_SCHEMA } from ".";
+
+export const URL_SCHEMA = z.string().trim().url();
 
 export interface CustomDataError {
   message: string;
@@ -23,16 +25,14 @@ export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
   const ipfsPrefix = "ipfs://";
   const validated = URL_SCHEMA.safeParse(uri);
   try {
-
     if (validated.success) {
-      const rest = handleCleanPrefix(uri, ipfsPrefix)
+      const rest = handleCleanPrefix(uri, ipfsPrefix);
       const cid = CID.parse(rest);
       return { Ok: cid };
     }
-  
-  const cid = CID.parse(uri);
-  return { Ok: cid };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+    const cid = CID.parse(uri);
+    return { Ok: cid };
   } catch (e) {
     const message = `Unable to parse IPFS URI '${uri}'`;
     return { Err: { message } };
