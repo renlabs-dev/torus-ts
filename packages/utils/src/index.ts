@@ -28,7 +28,7 @@ export function assertOrThrow(
 export const is_error = (err: unknown): err is Error => err instanceof Error;
 
 export function assert_error(err: unknown): asserts err is Error {
-  return assert(is_error(err));
+  return assert(is_error(err), "Caught error is not of type Error");
 }
 
 // == Numeric ==
