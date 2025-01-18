@@ -136,7 +136,7 @@ export function GovernanceProvider({
   }, [selectedAccount, accountsNotDelegatingVoting]);
 
   // == Subspace ==
-  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_TORUS_CACHE_URL);
+  const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
 
   const accountStakedBalance =
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
