@@ -8,7 +8,7 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container, Footer, Layout } from "@torus-ts/ui/components";
 
 import { GovernanceProvider } from "~/context/governance-provider";
-import { env } from "~/env";
+import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const APP_NAME = "Torus DAO";
@@ -32,10 +32,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono}>
+    <Layout font={firaMono} headScripts={[EnvScript]}>
       <TorusProvider
-        wsEndpoint={env.NEXT_PUBLIC_TORUS_RPC_URL}
-        torusCacheUrl={env.NEXT_PUBLIC_TORUS_CACHE_URL}
+        wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+        torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
       >
         <TRPCReactProvider>
           <ToastProvider>
