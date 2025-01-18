@@ -13,7 +13,6 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
@@ -22,6 +21,7 @@
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "@torus-ts/toast-provider": "workspace:*",
+    "@torus-ts/env-validation": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
