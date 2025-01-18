@@ -149,16 +149,19 @@ export function GovernanceProvider({
     lastBlock.data,
     proposals.data,
   );
-  const proposalsWithMeta = proposals.data?.map((proposal: Proposal) => {
-    const id = proposal.id;
-    const metadataQuery = customProposalMetadataQueryMap.get(id);
-    const data = metadataQuery?.data;
-    if (data == null) {
-      return proposal;
-    }
-    const [, customData] = data;
-    return { ...proposal, customData };
-  });
+  const proposalsWithMeta = proposals.data
+    ?.map((proposal: Proposal) => {
+      const id = proposal.id;
+      const metadataQuery = customProposalMetadataQueryMap.get(id);
+      const data = metadataQuery?.data;
+      if (data == null) {
+        return proposal;
+      }
+      const [, customData] = data;
+      return { ...proposal, customData };
+    })
+    // Filter out proposals created by miskate due to confusion with Agent Applications
+    .filter((proposal) => proposal.id !== 0 && proposal.id !== 1);
 
   const rewardAllocation = useRewardAllocation(lastBlock.data?.apiAtBlock);
 
