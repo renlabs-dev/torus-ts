@@ -1,5 +1,14 @@
 import type { SQL, Table } from "@torus-ts/db";
-import { and, eq, getTableColumns, isNull, sql, gte, inArray, not } from "@torus-ts/db";
+import {
+  and,
+  eq,
+  getTableColumns,
+  isNull,
+  sql,
+  gte,
+  inArray,
+  not,
+} from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
@@ -140,7 +149,6 @@ export async function countCadreKeys(): Promise<number> {
   return result[0].count;
 }
 
-
 export async function pendingPenalizations(threshold: number) {
   const subquery = db
     .select({ agentKey: penalizeAgentVotesSchema.agentKey })
@@ -150,23 +158,23 @@ export async function pendingPenalizations(threshold: number) {
     .having(gte(sql`count(*)`, threshold));
 
   const result = await db
-    .with(subquery.as('subquery'))
+    .with(subquery.as("subquery"))
     .select({
       agentKey: penalizeAgentVotesSchema.agentKey,
-      medianPenaltyFactor: sql`percentile_cont(0.5) within group (order by ${penalizeAgentVotesSchema.penaltyFactor})`.as<number>(),
+      medianPenaltyFactor:
+        sql`percentile_cont(0.5) within group (order by ${penalizeAgentVotesSchema.penaltyFactor})`.as<number>(),
     })
     .from(penalizeAgentVotesSchema)
     .where(
       and(
         not(penalizeAgentVotesSchema.executed),
-        sql`${penalizeAgentVotesSchema.agentKey} in (select "agent_key" from subquery)`
-      )
+        sql`${penalizeAgentVotesSchema.agentKey} in (select "agent_key" from subquery)`,
+      ),
     )
     .groupBy(penalizeAgentVotesSchema.agentKey);
 
   return result;
 }
-
 
 export async function updatePenalizeAgentVotes(agentKeys: string[]) {
   await db

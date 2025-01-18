@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 
 import type { ChainMap } from "@hyperlane-xyz/sdk";
 import { ADDRESS_BLACKLIST } from "./blacklist";

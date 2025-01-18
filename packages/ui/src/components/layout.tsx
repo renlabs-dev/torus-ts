@@ -27,7 +27,11 @@ export function Layout({
 }: LayoutProps): JSX.Element {
   return (
     <html lang="en">
-      <head>{headScripts?.map((Script, index) => <Script key={`head-script-${index}}`} />)}</head>
+      <head>
+        {headScripts?.map((Script, index) => (
+          <Script key={`head-script-${index}}`} />
+        ))}
+      </head>
       <body
         className={cn(
           font.className,
