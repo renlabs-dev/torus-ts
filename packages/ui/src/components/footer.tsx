@@ -97,7 +97,7 @@ const _socialList = [
 const _appList = [
   {
     icon: <Globe className="h-3 w-3" />,
-    name: "LP",
+    name: "Home",
     href: links.landing_page,
   },
   {
