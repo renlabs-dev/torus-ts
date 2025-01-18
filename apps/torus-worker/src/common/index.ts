@@ -181,16 +181,16 @@ export async function processPenalty(
   penaltiesToApply: {
     agentKey: string;
     medianPenaltyFactor: number;
-}[],
+  }[],
   api: ApiPromise,
-){
+) {
   const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
   console.log("Penalties to apply: ", penaltiesToApply);
   for (const penalty of penaltiesToApply) {
     const { agentKey, medianPenaltyFactor } = penalty;
     await penalizeAgent(api, agentKey, medianPenaltyFactor, mnemonic);
   }
-  const penalizedKeys = penaltiesToApply.map(item => item.agentKey);
+  const penalizedKeys = penaltiesToApply.map((item) => item.agentKey);
   await updatePenalizeAgentVotes(penalizedKeys);
   console.log("Penalties applied");
 }

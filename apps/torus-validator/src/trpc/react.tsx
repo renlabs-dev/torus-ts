@@ -87,6 +87,6 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return window.location.origin;
-  // eslint-disable-next-line no-restricted-properties
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return `http://localhost:${env("PORT") ?? 3000}`;
 };

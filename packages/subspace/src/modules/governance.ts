@@ -373,7 +373,6 @@ export async function acceptApplication(
   return extrinsic;
 }
 
-
 export async function penalizeAgent(
   api: ApiPromise,
   agentKey: string,
@@ -391,7 +390,6 @@ export async function penalizeAgent(
   const extrinsic = await tx.signAndSend(sudoKeypair);
   return extrinsic;
 }
-
 
 export async function denyApplication(
   api: ApiPromise,

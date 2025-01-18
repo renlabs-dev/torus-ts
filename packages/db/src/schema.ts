@@ -125,23 +125,27 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
   ...timeFields(),
 });
 
-
-export const penalizeAgentVotesSchema = createTable("penalize_agent_votes", {
-  id: serial("id").primaryKey(),
-  agentKey: ss58Address("agent_key").notNull(),
-  cadreKey: ss58Address("cadre_key").notNull().references(() => cadreSchema.userKey),
-  penaltyFactor: integer("penalty_factor").notNull(),
-  content: text("content").notNull(),
-  executed: boolean("executed").notNull().default(false),
-  ...timeFields(),
-
-}, (t) => [
-  unique().on(t.agentKey, t.cadreKey),
-  check(
-    "percent_check",
-    sql`${t.penaltyFactor} >= 0 and ${t.penaltyFactor} <= 100`,
-  ),
-]);
+export const penalizeAgentVotesSchema = createTable(
+  "penalize_agent_votes",
+  {
+    id: serial("id").primaryKey(),
+    agentKey: ss58Address("agent_key").notNull(),
+    cadreKey: ss58Address("cadre_key")
+      .notNull()
+      .references(() => cadreSchema.userKey),
+    penaltyFactor: integer("penalty_factor").notNull(),
+    content: text("content").notNull(),
+    executed: boolean("executed").notNull().default(false),
+    ...timeFields(),
+  },
+  (t) => [
+    unique().on(t.agentKey, t.cadreKey),
+    check(
+      "percent_check",
+      sql`${t.penaltyFactor} >= 0 and ${t.penaltyFactor} <= 100`,
+    ),
+  ],
+);
 
 // ---- Reports ----
 
