@@ -16,12 +16,14 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { formatToken, fromNano } from "@torus-ts/utils/subspace";
+import { formatToken, fromNano, smallAddress } from "@torus-ts/utils/subspace";
 
-import Dropzone, { DropzoneState } from "shadcn-dropzone";
+import type { DropzoneState } from "shadcn-dropzone";
+import Dropzone from "shadcn-dropzone";
 
 import { useGovernance } from "~/context/governance-provider";
 import { useTorus } from "@torus-ts/torus-provider";
+import { FolderUp } from "lucide-react";
 
 const z_url = z.string().url();
 
@@ -71,6 +73,13 @@ export function RegisterAgent(): JSX.Element {
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [estimatedFee, setEstimatedFee] = useState(0n);
+
+  const [shortDescription, setShortDescription] = useState("");
+  // const [icon, setIcon] = useState<File | null>(null);
+  const [twitter, setTwitter] = useState("");
+  const [github, setGithub] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [discord, setDiscord] = useState("");
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -132,6 +141,43 @@ export function RegisterAgent(): JSX.Element {
   async function doSubmit(fileToUpload: File): Promise<void> {
     try {
       setUploading(true);
+
+      // Upload icon if present
+      // let iconUrl = "";
+      // if (icon) {
+      //   const iconData = new FormData();
+      //   iconData.set("file", icon);
+      //   const iconRes = await fetch("/api/files", {
+      //     method: "POST",
+      //     body: iconData,
+      //   });
+      //   const iconIpfs = (await iconRes.json()) as { IpfsHash: string };
+      //   if (iconIpfs.IpfsHash && iconIpfs.IpfsHash !== "undefined") {
+      //     iconUrl = `ipfs://${iconIpfs.IpfsHash}`;
+      //   }
+      // }
+
+      // const metadata = {
+      //   title,
+      //   short_description: shortDescription,
+      //   description: body,
+      //   // icon: iconUrl,
+      //   website: url,
+      //   socials: {
+      //     twitter,
+      //     github,
+      //     telegram,
+      //     discord,
+      //   },
+      // };
+
+      // const metadataBlob = new Blob([JSON.stringify(metadata)], {
+      //   type: "application/json",
+      // });
+      // const metadataFile = new File([metadataBlob], "metadata.json", {
+      //   type: "application/json",
+      // });
+
       const data = new FormData();
       data.set("file", fileToUpload);
       const res = await fetch("/api/files", {
@@ -143,7 +189,7 @@ export function RegisterAgent(): JSX.Element {
       setUploading(false);
 
       if (ipfs.IpfsHash === "undefined" || !ipfs.IpfsHash) {
-        toast.error("Error uploading transfer dao treasury agent cost");
+        toast.error("Error uploading agent metadata");
         return;
       }
 
@@ -253,50 +299,100 @@ export function RegisterAgent(): JSX.Element {
             Paste my address
           </Button>
         </div>
-        <Input
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Agent Name (eg. agent-one)"
-          type="text"
-          value={name}
-        />
+
         <Input
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Agent URL (eg. https://agent-one.com)"
           type="text"
           value={url}
         />
-        <div className="border bg-[#080808]">
-          {" "}
-          <Dropzone
-            onDrop={(acceptedFiles: File[]) => {
-              if (acceptedFiles.length > 0) {
-                // void doSubmit(acceptedFiles[0]);
-              }
-            }}
-            multiple={false}
-            disabled={uploading}
-            maxSize={512000}
-            maxFiles={1}
-          >
-            {(dropzone: DropzoneState) => (
-              <>
-                {dropzone.isDragAccept ? (
-                  <div className="text-sm font-medium">
-                    Drop your files here!
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1.5">
-                    <div className="flex flex-row items-center gap-0.5 text-sm font-medium">
-                      Upload files
+        <div className="mt-4 flex flex-row gap-2">
+          <div className="flex">
+            <div className="w-fit border bg-[#080808]">
+              <Dropzone
+                onDrop={(acceptedFiles: File[]) => {
+                  if (acceptedFiles.length > 0) {
+                    // void doSubmit(acceptedFiles[0]);
+                  }
+                }}
+                multiple={false}
+                disabled={uploading}
+                maxSize={512000}
+                maxFiles={1}
+              >
+                {(dropzone: DropzoneState) => (
+                  <div className="px-12">
+                    {dropzone.isDragAccept ? (
+                      <div className="text-sm font-medium">
+                        Drop your files here!
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="flex flex-col items-center gap-1 text-sm font-medium">
+                          <span className="flex gap-1 text-nowrap">
+                            <FolderUp className="h-4 w-4" /> Upload Agent Icon
+                          </span>
+                          <span className="text-center text-gray-400">
+                            Square Img (500x500)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="text-center text-xs font-medium text-gray-400">
+                      {dropzone.acceptedFiles.map((file) => (
+                        <span className="text-xs font-medium">
+                          {smallAddress(file.name)}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 )}
-                <div className="text-xs font-medium text-gray-400">
-                  {dropzone.acceptedFiles.length} files uploaded so far.
-                </div>
-              </>
-            )}
-          </Dropzone>
+              </Dropzone>
+            </div>
+          </div>
+          <div className="flex w-full flex-col gap-2">
+            <Input
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Agent Name (eg. agent-one)"
+              type="text"
+              value={name}
+            />
+            <Textarea
+              onChange={(e) => setShortDescription(e.target.value)}
+              placeholder="Agent Short Description (Max 60 characters)"
+              rows={3}
+              value={shortDescription}
+              maxLength={AGENT_SHORT_DESCRIPTION_MAX_LENGTH}
+              className="pb-[1rem]"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Input
+            onChange={(e) => setTwitter(e.target.value)}
+            placeholder={"Agent X (eg. x.com/agent-one)"}
+            type="text"
+            value={twitter}
+          />
+          <Input
+            onChange={(e) => setGithub(e.target.value)}
+            placeholder={"Agent Github (eg. github.com/agent-one)"}
+            type="text"
+            value={github}
+          />
+          <Input
+            onChange={(e) => setTelegram(e.target.value)}
+            placeholder={"Agent Telegram (eg. t.me/agent-one)"}
+            type="text"
+            value={telegram}
+          />
+          <Input
+            onChange={(e) => setDiscord(e.target.value)}
+            placeholder={"Agent Discord (eg. discord.gg/agent-one)"}
+            type="text"
+            value={discord}
+          />
         </div>
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
