@@ -14,7 +14,10 @@ interface DelegateState {
   originalAgents: DelegatedAgent[];
   addAgent: (agent: Omit<DelegatedAgent, "percentage">) => void;
   removeAgent: (agentKey: string | SS58Address) => void;
-  updatePercentage: (agentKey: string | SS58Address, percentage: number) => void;
+  updatePercentage: (
+    agentKey: string | SS58Address,
+    percentage: number,
+  ) => void;
   getTotalPercentage: () => number;
   setDelegatedAgentsFromDB: (agents: DelegatedAgent[]) => void;
   hasUnsavedChanges: () => boolean;
@@ -35,17 +38,21 @@ export const useDelegateAgentStore = create<DelegateState>()(
         })),
       removeAgent: (agentKey) =>
         set((state) => ({
-          delegatedAgents: state.delegatedAgents.filter((agent) => agent.address !== agentKey),
+          delegatedAgents: state.delegatedAgents.filter(
+            (agent) => agent.address !== agentKey,
+          ),
         })),
-
-        updatePercentage: (agentKey, percentage) =>
-          set((state) => ({
-            delegatedAgents: state.delegatedAgents.map((agent) =>
-              agent.address === agentKey ? { ...agent, percentage } : agent
-            ),
-          })),
+      updatePercentage: (agentKey, percentage) =>
+        set((state) => ({
+          delegatedAgents: state.delegatedAgents.map((agent) =>
+            agent.address === agentKey ? { ...agent, percentage } : agent,
+          ),
+        })),
       getTotalPercentage: () => {
-        return get().delegatedAgents.reduce((sum, agent) => sum + agent.percentage, 0);
+        return get().delegatedAgents.reduce(
+          (sum, agent) => sum + agent.percentage,
+          0,
+        );
       },
       setDelegatedAgentsFromDB: (agents) =>
         set(() => ({ delegatedAgents: agents, originalAgents: agents })),

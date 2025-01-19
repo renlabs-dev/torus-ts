@@ -23,15 +23,13 @@ export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
   const ipfsPrefix = "ipfs://";
   const validated = URL_SCHEMA.safeParse(uri);
   try {
-
     if (validated.success) {
-      const rest = handleCleanPrefix(uri, ipfsPrefix)
+      const rest = handleCleanPrefix(uri, ipfsPrefix);
       const cid = CID.parse(rest);
       return { Ok: cid };
     }
-
-  const cid = CID.parse(uri);
-  return { Ok: cid };
+    const cid = CID.parse(uri);
+    return { Ok: cid };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     const message = `Unable to parse IPFS URI '${uri}'`;

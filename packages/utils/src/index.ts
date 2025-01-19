@@ -101,19 +101,17 @@ export function getCreationTime(
   return creationDate.toLocaleString(DateTime.DATETIME_SHORT);
 }
 
-function chunkString (str: string, len: number): string[] {
-  const size = Math.ceil(str.length/len)
-  const r: string[] = Array<string>(size)
-  let offset = 0
-
+function chunkString(str: string, len: number): string[] {
+  const size = Math.ceil(str.length / len);
+  const r: string[] = Array<string>(size);
+  let offset = 0;
   for (let i = 0; i < size; i++) {
-    r[i] = str.substring(offset, offset + len)
-    offset += len
+    r[i] = str.substring(offset, offset + len);
+    offset += len;
   }
-
-  return r
+  return r;
 }
 
 export function splitAddress(address: string, len = 4) {
-  return chunkString(address, len)
+  return chunkString(address, len);
 }
