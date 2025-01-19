@@ -26,7 +26,7 @@ import {
 } from "../types";
 import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
-import { Percent } from "@polkadot/types/interfaces";
+import type { Percent } from "@polkadot/types/interfaces";
 
 const ADDRESS_FORMAT = 42;
 

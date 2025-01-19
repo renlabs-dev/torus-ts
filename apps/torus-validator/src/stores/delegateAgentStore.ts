@@ -42,6 +42,7 @@ export const useDelegateAgentStore = create<DelegateState>()(
             (agent) => agent.address !== agentKey,
           ),
         })),
+
       updatePercentage: (agentKey, percentage) =>
         set((state) => ({
           delegatedAgents: state.delegatedAgents.map((agent) =>

@@ -17,7 +17,7 @@ import {
 import { handleDoubleMapEntries, handleMapEntries } from "./_common";
 import type { z } from "zod";
 import type { ApiPromise } from "@polkadot/api";
-import { Percent } from "@polkadot/types/interfaces";
+import type { Percent } from "@polkadot/types/interfaces";
 
 // ==== Balances ====
 
