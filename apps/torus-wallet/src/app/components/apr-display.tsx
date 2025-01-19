@@ -5,6 +5,8 @@ import { useTorus } from "@torus-ts/torus-provider";
 import {
   useTotalIssuance,
   useTotalStake,
+  useRecyclingPercentage,
+  useTreasuryEmissionFee,
 } from "@torus-ts/query-provider/hooks";
 import { toNano } from "@torus-ts/utils/subspace";
 
@@ -16,67 +18,73 @@ export function APRDisplay() {
   const { api } = useTorus();
   const totalStakeQuery = useTotalStake(api);
   const totalIssuanceQuery = useTotalIssuance(api);
+  const recyclingPercentageQuery = useRecyclingPercentage(api);
+  const treasuryEmissionFeeQuery = useTreasuryEmissionFee(api);
 
   const [apr, setApr] = useState<number | null>(null);
 
   useEffect(() => {
-    console.debug("APR calculation started:", {
-      stakeData: totalStakeQuery.data?.toString(),
-      issuanceData: totalIssuanceQuery.data?.toString(),
-    });
-
-    // Skip if data isn't available
-    if (!totalStakeQuery.data || !totalIssuanceQuery.data) {
+    // Skip if any data isn't available
+    if (
+      !totalStakeQuery.data ||
+      !totalIssuanceQuery.data ||
+      recyclingPercentageQuery.data === undefined ||
+      treasuryEmissionFeeQuery.data === undefined
+    ) {
       console.debug("Missing data, skipping calculation");
       return;
     }
 
     try {
       const totalStakeBigInt = BigInt(totalStakeQuery.data.toString());
-      const totalIssuanceBigInt = BigInt(totalIssuanceQuery.data.toString());
+      const totalFreeBalance = BigInt(totalIssuanceQuery.data.toString());
 
-      console.debug("Initial values:", {
-        totalStake: totalStakeBigInt.toString(),
-        totalIssuance: totalIssuanceBigInt.toString(),
-        HALVING_INTERVAL: HALVING_INTERVAL.toString(),
-      });
+      const totalSupply = totalStakeBigInt + totalFreeBalance;
 
-      const halvingCount = Number(totalIssuanceBigInt / HALVING_INTERVAL);
-      console.debug("Halving count:", halvingCount);
+      // Convert percentage values from their storage format (0-100) to decimals (0-1)
+      const recyclingRate = Number(recyclingPercentageQuery.data) / 100;
+      const treasuryFee = Number(treasuryEmissionFeeQuery.data) / 100;
 
+      // Calculate halving count
+      const halvingCount = Number(totalSupply / HALVING_INTERVAL);
+
+      // Calculate base emission with halving
       let currentEmission = BLOCK_EMISSION >> BigInt(halvingCount);
-      console.debug("Current emission after halving:", {
-        BLOCK_EMISSION: BLOCK_EMISSION.toString(),
-        currentEmission: currentEmission.toString(),
-      });
 
-      const notRecycled = 1.0;
+      // Apply recycling percentage (subtract recycled amount)
+      const notRecycled = 1.0 - recyclingRate;
       currentEmission =
         (currentEmission * BigInt(Math.floor(notRecycled * 100))) / 100n;
-      console.debug(
-        "Current emission after recycling:",
-        currentEmission.toString(),
-      );
 
+      // Calculate daily rewards (50% goes to stakers)
       const dailyRewards = (BLOCKS_IN_DAY * currentEmission) / 2n;
-      console.debug("Daily rewards calculation:", {
-        BLOCKS_IN_DAY: BLOCKS_IN_DAY.toString(),
-        currentEmission: currentEmission.toString(),
-        dailyRewards: dailyRewards.toString(),
-      });
 
+      // Calculate yearly rewards
       const yearlyRewards = dailyRewards * 365n;
-      console.debug("Yearly rewards:", yearlyRewards.toString());
 
-      const aprNumerator = yearlyRewards * 100n;
-      console.debug("APR numerator:", aprNumerator.toString());
+      // Apply treasury fee
+      const rewardsAfterTreasuryFee =
+        (yearlyRewards * BigInt(Math.floor((1 - treasuryFee) * 100))) / 100n;
 
-      const aprValue = Number(aprNumerator / totalStakeBigInt) / 1e18;
-      console.debug("Final APR calculation:", {
-        numerator: aprNumerator.toString(),
-        denominator: totalStakeBigInt.toString(),
-        finalApr: aprValue,
-      });
+      const stakingAmount =
+        totalStakeBigInt === 0n ? totalFreeBalance : totalStakeBigInt;
+
+      const aprNumerator = rewardsAfterTreasuryFee * 100n;
+      const aprValue = Number(aprNumerator / stakingAmount);
+
+      // console.debug("APR Calculation Details:", {
+      //   recyclingRate,
+      //   treasuryFee,
+      //   halvingCount,
+      //   totalIssuance: totalFreeBalance.toString(),
+      //   totalStake: totalStakeBigInt.toString(),
+      //   baseEmission: BLOCK_EMISSION.toString(),
+      //   currentEmission: currentEmission.toString(),
+      //   dailyRewards: dailyRewards.toString(),
+      //   yearlyRewards: yearlyRewards.toString(),
+      //   rewardsAfterTreasuryFee: rewardsAfterTreasuryFee.toString(),
+      //   finalApr: aprValue,
+      // });
 
       setApr(aprValue);
     } catch (error) {
@@ -86,21 +94,32 @@ export function APRDisplay() {
   }, [
     totalStakeQuery.data,
     totalIssuanceQuery.data,
-    totalStakeQuery.isLoading,
-    totalIssuanceQuery.isLoading,
+    recyclingPercentageQuery.data,
+    treasuryEmissionFeeQuery.data,
   ]);
 
-  if (totalStakeQuery.isLoading || totalIssuanceQuery.isLoading) {
+  if (
+    totalStakeQuery.isLoading ||
+    totalIssuanceQuery.isLoading ||
+    recyclingPercentageQuery.isLoading ||
+    treasuryEmissionFeeQuery.isLoading
+  ) {
     return <div className="text-sm text-gray-500">Calculating APR...</div>;
   }
 
-  if (totalStakeQuery.isError || totalIssuanceQuery.isError || apr === null) {
+  if (
+    totalStakeQuery.isError ||
+    totalIssuanceQuery.isError ||
+    recyclingPercentageQuery.isError ||
+    treasuryEmissionFeeQuery.isError ||
+    apr === null
+  ) {
     return <div className="text-sm text-red-500">Unable to calculate APR</div>;
   }
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium">APR:</span>
+      <span className="text-sm font-medium">Current APR: ~</span>
       <span className="text-sm text-green-500">{apr.toFixed(2)}%</span>
     </div>
   );

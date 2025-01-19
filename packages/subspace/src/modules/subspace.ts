@@ -17,6 +17,7 @@ import {
 import { handleDoubleMapEntries, handleMapEntries } from "./_common";
 import type { z } from "zod";
 import type { ApiPromise } from "@polkadot/api";
+import { Percent } from "@polkadot/types/interfaces";
 
 // ==== Balances ====
 
@@ -158,6 +159,14 @@ export async function queryStakeOut(api: Api): Promise<{
     total,
     perAddr,
   };
+}
+
+// ==== Emission ====
+
+export async function queryRecyclingPercentage(api: Api): Promise<Percent> {
+  const recyclingPercentage =
+    await api.query.emission0.emissionRecyclingPercentage();
+  return recyclingPercentage;
 }
 
 // ==== Agents ====

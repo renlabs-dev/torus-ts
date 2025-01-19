@@ -29,6 +29,8 @@ import {
   queryTotalIssuance,
   queryUnrewardedProposals,
   queryGlobalGovernanceConfig,
+  queryTreasuryEmissionFee,
+  queryRecyclingPercentage,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -124,6 +126,18 @@ export function useProposals(
   });
 }
 
+export function useTreasuryEmissionFee(
+  api: Api | Nullish,
+): UseQueryResult<Proposal[], Error> {
+  return useQuery({
+    queryKey: ["treasury_emission_fee"],
+    enabled: api != null,
+    queryFn: () => queryTreasuryEmissionFee(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useAgentApplications(api: Api | Nullish) {
   return useQuery({
     queryKey: ["daos"],
@@ -199,6 +213,18 @@ export function useCachedStakeOut(
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
     // throwOnError: false, // TODO
+  });
+}
+
+// == Emissions Module ==
+
+export function useRecyclingPercentage(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["recycling_percentage"],
+    enabled: api != null,
+    queryFn: () => queryRecyclingPercentage(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
   });
 }
 
