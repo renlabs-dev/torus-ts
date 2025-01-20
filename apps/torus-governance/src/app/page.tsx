@@ -1,5 +1,5 @@
 import { FilterContent } from "./components/filter-content";
-import { ListCards } from "./components/list-cards";
+import { RenderList } from "./components/render-list";
 import { CreateModal } from "./components/modal";
 import { PopoverInfo } from "./components/popover-info";
 import { SidebarInfo } from "./components/sidebar-info";
@@ -20,7 +20,7 @@ export default function HomePage(): JSX.Element {
           <FilterContent />
           <CreateModal />
         </div>
-        <ListCards />
+        <RenderList />
       </div>
     </main>
   );
