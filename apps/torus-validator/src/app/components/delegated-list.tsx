@@ -295,7 +295,7 @@ export function DelegatedList() {
 
                         <div className="flex items-center gap-1">
                           <Label
-                            className="rounded-radius relative flex h-[36px] items-center gap-1 border px-2"
+                            className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
                             htmlFor={`percentage:${agent.id}`}
                           >
                             <Input
@@ -309,7 +309,7 @@ export function DelegatedList() {
                                 )
                               }
                               maxLength={3}
-                              className="w-7 border-none px-0 py-0 focus-visible:ring-0"
+                              className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
                             />
 
                             <span className="text-muted-foreground">%</span>

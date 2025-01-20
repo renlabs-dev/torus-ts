@@ -6,7 +6,6 @@ import { api } from "~/trpc/react";
 import { FilterContent } from "./filter-content";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 
 interface Agent {
   id: number;
@@ -18,7 +17,7 @@ interface Agent {
   // globalWeightStaked: number;
 }
 
-export function AgentContentListContent() {
+export function AgentContentList() {
   const searchParams = useSearchParams();
 
   const { data: computedWeightedAgents } =
@@ -146,15 +145,7 @@ export function AgentContentListContent() {
         />
         <AgentsTabView />
       </div>
-      {content}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">{content}</div>
     </div>
   );
 }
-
-export const AgentContentList = () => {
-  return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <AgentContentListContent />
-    </Suspense>
-  );
-};
