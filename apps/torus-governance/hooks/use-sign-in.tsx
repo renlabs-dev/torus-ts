@@ -39,7 +39,9 @@ export const useSignIn = () => {
 
   const authenticateUser = async () => {
     try {
-      const authReqData = createAuthReqData(env.NEXT_PUBLIC_AUTH_ORIGIN);
+      const authReqData = createAuthReqData(
+        String(env("NEXT_PUBLIC_AUTH_ORIGIN")),
+      );
       const signedData = await signData(signHex, authReqData);
       const startSessionData =
         await startSessionMutation.mutateAsync(signedData);
