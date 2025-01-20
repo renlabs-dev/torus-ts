@@ -10,6 +10,11 @@ deployment:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: next_public_ws_url
+    TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_ws_url
     NEXT_PUBLIC_TORUS_RPC_HTTPS_URL:
       valueFrom:
         configMapKeyRef:
