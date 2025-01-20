@@ -9,9 +9,6 @@ dump-metadata name:
 gen-types name: (dump-metadata name)
 	(cd packages/subspace && just gen-types {{ name }})
 
-copy-specs:
-	cp ../subspace/specs/* ./data/chain-specs/
-
 # == Dev ==
 
 install:
