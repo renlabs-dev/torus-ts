@@ -28,12 +28,14 @@ export function CreateCadreCandidates() {
   const [error, setError] = useState<string | null>(null);
   const [remainingChars, setRemainingChars] = useState(MAX_CONTENT_CHARACTERS);
 
-  const { selectedAccount, accountStakedBalance } = useGovernance();
+  const {
+    selectedAccount,
+    accountStakedBalance,
+    isUserCadre,
+    isUserCadreCandidate,
+  } = useGovernance();
 
-  const { data: cadreUsers } = api.cadre.all.useQuery();
-  const { data: cadreCandidates } = api.cadreCandate.all.useQuery();
-
-  const createCadreCandidateMutation = api.cadreCandate.create.useMutation({
+  const createCadreCandidateMutation = api.cadreCandidate.create.useMutation({
     onSuccess: () => {
       router.refresh();
       setDiscordId("");
@@ -48,19 +50,6 @@ export function CreateCadreCandidates() {
       );
     },
   });
-
-  const isUserCadre = useMemo(
-    () => cadreUsers?.some((user) => user.userKey === selectedAccount?.address),
-    [cadreUsers, selectedAccount],
-  );
-
-  const isUserCadreCandidate = useMemo(
-    () =>
-      cadreCandidates?.some(
-        (user) => user.userKey === selectedAccount?.address,
-      ),
-    [selectedAccount, cadreCandidates],
-  );
 
   if (isUserCadre || !selectedAccount) {
     return null;

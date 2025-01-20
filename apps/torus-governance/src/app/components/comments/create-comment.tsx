@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/toast-provider";
@@ -21,8 +21,8 @@ export function CreateComment({
   id: number;
   itemType: "PROPOSAL" | "AGENT_APPLICATION";
 }) {
-  const { selectedAccount, accountStakedBalance } = useGovernance();
-  const { data: cadreUsers } = api.cadre.all.useQuery();
+  const { selectedAccount, accountStakedBalance, isUserCadre } =
+    useGovernance();
 
   const [content, setContent] = useState<string>("");
   const [name, setName] = useState<string>("");
@@ -43,11 +43,6 @@ export function CreateComment({
       }
     },
   });
-
-  const isUserCadre = useMemo(
-    () => cadreUsers?.some((user) => user.userKey === selectedAccount?.address),
-    [cadreUsers, selectedAccount],
-  );
 
   useEffect(() => {
     setUserHasEnoughBalance(
@@ -77,9 +72,7 @@ export function CreateComment({
         return;
       }
     } else {
-      if (
-        !cadreUsers?.some((user) => user.userKey === selectedAccount.address)
-      ) {
+      if (isUserCadre) {
         toast.error(
           "Only Curator DAO members can submit comments in DAO mode.",
         );
@@ -115,9 +108,7 @@ export function CreateComment({
       );
     }
     {
-      return !cadreUsers?.some(
-        (user) => user.userKey === selectedAccount.address,
-      );
+      return !isUserCadre;
     }
   };
 
