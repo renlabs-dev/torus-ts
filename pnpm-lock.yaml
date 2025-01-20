@@ -1209,6 +1209,9 @@ importers:
       tsafe:
         specifier: 'catalog:'
         version: 1.8.5
+      zod:
+        specifier: 'catalog:'
+        version: 3.24.1
     devDependencies:
       '@torus-ts/eslint-config':
         specifier: workspace:*
