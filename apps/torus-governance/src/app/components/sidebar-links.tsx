@@ -16,13 +16,15 @@ import {
   SelectValue,
 } from "@torus-ts/ui";
 
-const navSidebarOptions = [
+export const navSidebarOptions = [
   { title: "Whitelist Applications", href: "agent-applications" },
   { title: "Proposals", href: "proposals" },
+  { title: "DAO Portal", href: "dao-portal" },
   //TODO: Uncomment when the other pages get done
   // { title: "Community Concepts", href: "community-concepts" },
-  // { title: "DAO Members Dashboard", href: "dao-members-dashboard" },
 ] as const;
+
+export type GovernanceViewMode = (typeof navSidebarOptions)[number]["href"];
 
 export const Sidebar = () => {
   const searchParams = useSearchParams();

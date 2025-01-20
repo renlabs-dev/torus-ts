@@ -28,7 +28,7 @@ export const appRouter = createTRPCRouter({
   // Cadre
   cadre: cadreRouter,
   cadreVote: cadreVoteRouter,
-  cadreCandate: cadreCandidateRouter,
+  cadreCandidate: cadreCandidateRouter,
   // Comment
   comment: commentRouter,
   commentReport: commentReportRouter,
