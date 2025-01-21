@@ -3,7 +3,7 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Container, Layout } from "@torus-ts/ui";
+import { Layout } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -45,7 +45,7 @@ export default function RootLayout({
             <AllocatorHeader />
             <TutorialDialog />
             <DelegatedList />
-            <Container>{children}</Container>
+            {children}
           </TRPCReactProvider>
         </TorusProvider>
       </ToastProvider>

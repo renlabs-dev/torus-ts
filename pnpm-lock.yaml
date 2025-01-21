@@ -535,6 +535,12 @@ importers:
 
   apps/torus-validator:
     dependencies:
+      '@react-three/drei':
+        specifier: ^9.117.3
+        version: 9.120.6(@react-three/fiber@9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.76.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1))(@types/react@18.2.79)(@types/three@0.165.0)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(three@0.164.1)(use-sync-external-store@1.4.0(react@18.2.0))
+      '@react-three/fiber':
+        specifier: 9.0.0-alpha.8
+        version: 9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.76.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.63.0(react@18.2.0)
@@ -571,9 +577,15 @@ importers:
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.0.0-rc.695(typescript@5.7.3)
+      '@types/three':
+        specifier: ^0.165.0
+        version: 0.165.0
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.2.0)
+      maath:
+        specifier: ^0.10.8
+        version: 0.10.8(@types/three@0.165.0)(three@0.164.1)
       multiformats:
         specifier: 'catalog:'
         version: 13.3.1
@@ -589,6 +601,9 @@ importers:
       superjson:
         specifier: 2.2.1
         version: 2.2.1
+      three:
+        specifier: ^0.164.1
+        version: 0.164.1
       zod:
         specifier: 'catalog:'
         version: 3.24.1
