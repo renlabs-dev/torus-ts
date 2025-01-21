@@ -14,6 +14,9 @@ import {
   BLOCK_TIME,
   getApplications,
   log,
+  processAllVotes,
+  processCadreVotes,
+  getCadreVotes,
   sleep,
   sleepUntilNewBlock,
 } from "../common";
@@ -66,6 +69,12 @@ export async function processApplicationsWorker(props: WorkerProps) {
         vote_threshold,
         apps_map,
       );
+      const cadreVotes = await getCadreVotes();
+      await processCadreVotes(
+        cadreVotes,
+        vote_threshold,
+      )
+      console.log("threshold: ", vote_threshold);
       const factors = await getPenaltyFactors(vote_threshold);
       await processPenalty(props.api, mnemonic, factors);
     } catch (e) {
