@@ -15,15 +15,20 @@ import {
   agentSchema,
   cadreSchema,
   cadreVoteSchema,
+  cadreVoteHistory,
   computedAgentWeightSchema,
   governanceNotificationSchema,
   userAgentWeightSchema,
   penalizeAgentVotesSchema,
+  cadreCandidateSchema,
+  candidacyStatusValues,
 } from "@torus-ts/db/schema";
 import type {
   Agent as TorusAgent,
   GovernanceItemType,
+  SS58Address,
 } from "@torus-ts/subspace";
+import { checkSS58 } from "@torus-ts/subspace";
 import { getOrSetDefault } from "@torus-ts/utils/collections";
 
 const db = createDb();
@@ -32,6 +37,7 @@ export type NewVote = typeof cadreVoteSchema.$inferInsert;
 export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export async function insertAgentWeight(weights: AgentWeight[]) {
   await db
@@ -81,11 +87,19 @@ export async function upsertAgentData(agents: Agent[]) {
     .execute();
 }
 
-export interface VotesByApplication {
-  appId: number;
+
+interface VotesByIdBase {
   acceptVotes: number;
   refuseVotes: number;
   removeVotes: number;
+}
+
+export interface VotesByNumericId extends VotesByIdBase {
+  appId: number;
+}
+
+export interface VotesByKey extends VotesByIdBase {
+  appId: SS58Address;
 }
 
 export async function vote(new_vote: NewVote) {
@@ -96,7 +110,7 @@ export async function addSeenProposal(proposal: NewNotification) {
   await db.insert(governanceNotificationSchema).values(proposal);
 }
 
-export async function queryTotalVotesPerApp(): Promise<VotesByApplication[]> {
+export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
   const result = await db
     .select({
       appId: agentApplicationVoteSchema.applicationId,
@@ -117,6 +131,95 @@ export async function queryTotalVotesPerApp(): Promise<VotesByApplication[]> {
     agentId: row.appId,
   }));
 }
+
+
+export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
+  const result = await db
+    .select({
+      appId: cadreVoteSchema.applicantKey,
+      acceptVotes: sql<number>`count(case when ${cadreVoteSchema.vote} = ${cadreVoteSchema.vote.enumValues[0]} then 1 end)`,
+      refuseVotes: sql<number>`count(case when ${cadreVoteSchema.vote} = ${cadreVoteSchema.vote.enumValues[1]} then 1 end)`,
+      removeVotes: sql<number>`count(case when ${cadreVoteSchema.vote} = ${cadreVoteSchema.vote.enumValues[2]} then 1 end)`,
+    })
+    .from(cadreVoteSchema)
+    .where(isNull(cadreVoteSchema.deletedAt))
+    .groupBy(cadreVoteSchema.applicantKey)
+    .execute();
+
+  return result.map((row) => ({
+    appId: checkSS58(row.appId),
+    acceptVotes: row.acceptVotes,
+    refuseVotes: row.refuseVotes,
+    removeVotes: row.removeVotes,
+  }));
+}
+
+
+export async function archiveCadreVotes(
+  applicantKey: SS58Address, 
+  tx: Transaction
+){
+    const votes = await tx
+      .select()
+      .from(cadreVoteSchema)
+      .where(eq(cadreVoteSchema.applicantKey, applicantKey));
+
+    await tx.insert(cadreVoteHistory).values(
+      votes.map((vote) => ({
+        userKey: vote.userKey,
+        applicantKey: vote.applicantKey,
+        vote: vote.vote,
+        createdAt: vote.createdAt, // Explicit to keep history
+        updatedAt: vote.updatedAt,
+      }))
+    );
+
+    await tx
+      .delete(cadreVoteSchema)
+      .where(eq(cadreVoteSchema.applicantKey, applicantKey));
+}
+
+export async function addCadreMember(userKey: SS58Address, discordId: string) {
+  await db.transaction(async (tx) => {
+    await tx.insert(cadreSchema).values({
+        userKey: userKey,
+        discordId: discordId,
+      });
+    await tx
+      .update(cadreCandidateSchema)
+      .set({
+        candidacyStatus: candidacyStatusValues.ACCEPTED,
+      })
+      .where(eq(cadreCandidateSchema.userKey, userKey))
+    
+    await archiveCadreVotes(userKey, tx);
+  });
+}
+
+export async function removeCadreMember(userKey: SS58Address) {
+  await db.transaction(async (tx) => {
+    await archiveCadreVotes(userKey, tx);
+    await tx
+      .delete(cadreSchema)
+      .where(eq(cadreSchema.userKey, userKey));
+    await tx
+    .update(cadreCandidateSchema)
+    .set({candidacyStatus: candidacyStatusValues.REMOVED})
+    .where(eq(cadreCandidateSchema.userKey, userKey));
+  });
+}
+
+export async function refuseCadreApplication(userKey: SS58Address) {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(cadreCandidateSchema)
+      .set({candidacyStatus: candidacyStatusValues.REJECTED})
+      .where(eq(cadreCandidateSchema.userKey, userKey));
+
+    await archiveCadreVotes(userKey, tx);
+  });
+}
+
 
 export async function getGovItemIdsByType(
   type: GovernanceItemType,
