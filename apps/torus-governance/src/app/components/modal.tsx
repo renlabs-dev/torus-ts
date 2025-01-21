@@ -50,7 +50,7 @@ export function CreateModal() {
           </SelectTrigger>
           <SelectContent className="w-fit border-muted">
             <SelectItem value="create-agent-application">
-              Whitelist an agent
+              Apply to whitelist your agent
             </SelectItem>
             <SelectItem value="register-agent">
               Register a whitelisted agent
