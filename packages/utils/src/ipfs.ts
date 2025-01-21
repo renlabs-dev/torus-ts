@@ -4,11 +4,11 @@ import { z } from "zod";
 import { assert_error } from "./";
 import type { Result } from "./typing";
 
+export { CID } from "multiformats/cid";
+
 export const URL_SCHEMA = z.string().trim().url();
 
-export interface CustomDataError {
-  message: string;
-}
+export const cidToIpfsUri = (cid: CID): string => `ipfs://${cid.toString()}`;
 
 const IPFS_URI_REGEX = /^ipfs:\/\/(\w+)$/;
 
@@ -56,6 +56,10 @@ const handleCleanPrefix = (uri: string, prefix: string): string => {
   return uri;
 };
 
+export interface CustomDataError {
+  message: string;
+}
+
 /**
  * @deprecated Use IPFS_URI_SCHEMA instead.
  */
@@ -77,3 +81,9 @@ export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
     return { Err: { message } };
   }
 }
+
+// == Pinata ==
+
+export const PINATA_PIN_FILE_RESULT = z.object({
+  IpfsHash: CID_SCHEMA,
+});

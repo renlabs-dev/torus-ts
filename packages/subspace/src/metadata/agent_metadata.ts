@@ -2,7 +2,6 @@ import { CID } from "multiformats";
 import { z } from "zod";
 
 import type { AnyJson } from "@polkadot/types/types";
-import type { Nullish } from "@torus-ts/utils";
 import { assert_error } from "@torus-ts/utils";
 import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
 
@@ -17,20 +16,26 @@ export const AGENT_METADATA_SCHEMA = z.object({
     .nonempty("Agent short description is required")
     .max(
       AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
-      `Short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters"`,
+      `Agent short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters long`,
     ),
   description: z.string().nonempty("Agent description is required"),
-  icon: z.union([IPFS_URI_SCHEMA, z_url]).optional(),
-  banner: z.union([IPFS_URI_SCHEMA, z_url]).optional(),
   website: z_url.optional(),
+  images: z
+    .object({
+      icon: z.union([IPFS_URI_SCHEMA, z_url]),
+      banner: z.union([IPFS_URI_SCHEMA, z_url]),
+    })
+    .partial()
+    .optional(),
   socials: z
     .object({
-      twitter: z.string(),
-      discord: z.string(),
-      github: z.string(),
-      telegram: z.string(),
+      discord: z_url,
+      github: z_url,
+      telegram: z_url,
+      twitter: z_url,
     })
-    .partial(),
+    .partial()
+    .optional(),
 });
 
 export type AgentMetadata = z.infer<typeof AGENT_METADATA_SCHEMA>;
@@ -76,7 +81,7 @@ const fetchBlob = (url: string): Promise<Blob> =>
 export async function fetchAgentMetadata(
   uri: string,
   { fetchImages = false },
-): Promise<{ metadata: AgentMetadata; files: Record<string, Blob | null> }> {
+): Promise<{ metadata: AgentMetadata; images: Record<string, Blob> }> {
   // fetch Agent Metadata as JSON
   const data = await fetchFromIpfsOrUrl(uri, fetchJson);
 
@@ -87,31 +92,36 @@ export async function fetchAgentMetadata(
   }
   const metadata = parsed.data;
 
-  const fetchFile = async (name: string, pointer: CID | string | Nullish) => {
-    if (pointer == null) {
-      return { [name]: null };
-    }
+  const fetchFile = async <Name extends string>(
+    name: Name,
+    pointer: CID | string,
+  ): Promise<Record<Name, Blob>> => {
     const result =
       pointer instanceof CID
         ? await fetchBlob(buildIpfsGatewayUrl(pointer))
         : await fetchFromIpfsOrUrl(pointer, fetchBlob);
-    return { [name]: result };
+    return { [name]: result } as Record<Name, Blob>;
   };
 
-  if (fetchImages) {
-    const { icon, banner } = parsed.data;
-    const [iconResult, bannerResult] = await Promise.all([
-      fetchFile("icon", icon),
-      fetchFile("banner", banner),
-    ]);
+  const imageUris = parsed.data.images;
+
+  if (fetchImages && imageUris) {
+    const imageResults = await Promise.all(
+      Object.entries(imageUris).map(([name, pointer]) =>
+        fetchFile(name, pointer),
+      ),
+    );
+
+    const images = imageResults.reduce(
+      (acc, curr) => ({ ...acc, ...curr }),
+      {},
+    );
+
     return {
       metadata,
-      files: {
-        ...iconResult,
-        ...bannerResult,
-      },
+      images,
     };
   }
 
-  return { metadata, files: {} };
+  return { metadata, images: {} };
 }
