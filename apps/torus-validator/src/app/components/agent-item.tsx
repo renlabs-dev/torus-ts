@@ -1,15 +1,7 @@
 "use client";
 
-import { Anvil, ArrowRight, Crown, Globe } from "lucide-react";
-import {
-  Badge,
-  Button,
-  Card,
-  CopyButton,
-  Icons,
-  Label,
-  links,
-} from "@torus-ts/ui";
+import { Anvil, ArrowRight, Crown, Globe, IdCard } from "lucide-react";
+import { Button, Card, CopyButton, Icons, Label, links } from "@torus-ts/ui";
 import { DelegateModuleWeight } from "./delegate-module-weight";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { toast } from "@torus-ts/toast-provider";
@@ -57,6 +49,11 @@ export function AgentItem(props: AgentCardProps) {
         <Icons.telegram className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />
       ),
     },
+    {
+      name: "Website",
+      href: links.landing_page,
+      icon: <Globe className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    },
   ];
 
   return (
@@ -98,7 +95,7 @@ export function AgentItem(props: AgentCardProps) {
       <div className="mt-4 flex flex-col gap-2">
         <div className="flex flex-row-reverse items-center gap-3 border px-3 sm:ml-auto sm:flex-row md:ml-0 md:flex-row-reverse lg:flex-row">
           <Label className="flex items-center gap-1.5 text-base font-semibold">
-            <Globe size={16} />
+            <IdCard size={16} />
             {props.id}
           </Label>
 
