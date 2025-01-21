@@ -14,12 +14,12 @@ export default function Page() {
         <div className="mx-auto w-full max-w-screen-xl px-4">
           <main className="mx-auto min-w-full py-10 text-white">
             <div className="flex w-full flex-col justify-around gap-3 md:flex-row md:gap-6">
-              {/* <div className="flex w-full flex-col gap-4 md:max-w-[280px]">
+              <div className="flex w-full flex-col gap-4 md:max-w-[280px]">
                 <div className="flex w-full gap-2">
                   <SidebarLinks />
                 </div>
                 <SidebarInfo />
-              </div> */}
+              </div>
               <PopoverInfo />
               <div className="flex w-full flex-col">
                 <Suspense fallback={<div>Loading...</div>}>

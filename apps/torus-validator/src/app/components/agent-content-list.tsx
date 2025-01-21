@@ -145,7 +145,7 @@ export function AgentContentList() {
         />
         <AgentsTabView />
       </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">{content}</div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{content}</div>
     </div>
   );
 }

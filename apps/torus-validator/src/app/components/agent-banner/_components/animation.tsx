@@ -10,13 +10,14 @@ import {
   ScrollControls,
   useScroll,
   useTexture,
+  Environment,
 } from "@react-three/drei";
 import { easing } from "maath";
 import "./util";
 
 export const Animation = () => (
   <div className="margin-0 padding-0 box-border h-96 w-full overflow-hidden bg-accent/60">
-    <Canvas camera={{ position: [0, 0, 100], fov: 9 }}>
+    <Canvas camera={{ position: [0, 0, 100], fov: 8 }}>
       <fog attach="fog" args={["#000000", 8.5, 12]} />
       <ScrollControls pages={4} infinite>
         <Rig rotation={[0, 0, 0.15]}>
@@ -24,6 +25,13 @@ export const Animation = () => (
         </Rig>
         <Banner position={[0, -0.15, 0]} />
       </ScrollControls>
+
+      <Environment
+        preset="city"
+        background
+        blur={0.5}
+        backgroundIntensity={0.08}
+      />
     </Canvas>
   </div>
 );
@@ -70,7 +78,7 @@ function Card({ url, ...props }) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     easing.damp3(ref.current.scale, hovered ? 1.15 : 1, 0.1, delta);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    easing.damp(ref.current.material, "zoom", hovered ? 1 : 1.5, 0.2, delta);
+    easing.damp(ref.current.material, "zoom", hovered ? 1 : 1, 0.2, delta);
   });
   return (
     <Image

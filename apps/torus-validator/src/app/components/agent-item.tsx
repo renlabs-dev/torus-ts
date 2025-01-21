@@ -93,7 +93,7 @@ export function AgentItem(props: AgentCardProps) {
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
-        <div className="flex flex-row-reverse items-center gap-3 border px-3 sm:ml-auto sm:flex-row md:ml-0 md:flex-row-reverse lg:flex-row">
+        <div className="flex flex-row-reverse items-center justify-around gap-3 border px-3 sm:ml-auto sm:flex-row md:ml-0 md:flex-row-reverse lg:flex-row">
           <Label className="flex items-center gap-1.5 text-base font-semibold">
             <IdCard size={16} />
             {props.id}
@@ -113,7 +113,12 @@ export function AgentItem(props: AgentCardProps) {
             className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
           >
             <Crown className="h-6 w-6" />
-            <span>{smallAddress(props.agentKey, 11)}</span>
+            <span className="hidden md:block">
+              {smallAddress(props.agentKey, 11)}
+            </span>
+            <span className="block md:hidden">
+              {smallAddress(props.agentKey, 8)}
+            </span>
           </CopyButton>
         </div>
         <div>
