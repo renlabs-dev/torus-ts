@@ -73,7 +73,7 @@ export async function fetchFromIpfsOrUrl<T>(
 }
 
 const fetchJson = (url: string): Promise<AnyJson> =>
-  fetch(url).then((res) => res.json());
+  fetch(url).then((res) => res.json() as unknown as AnyJson);
 
 const fetchBlob = (url: string): Promise<Blob> =>
   fetch(url).then((res) => res.blob());
