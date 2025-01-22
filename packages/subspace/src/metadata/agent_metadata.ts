@@ -2,7 +2,7 @@ import { CID } from "multiformats";
 import { z } from "zod";
 
 import type { AnyJson } from "@polkadot/types/types";
-import { assert_error } from "@torus-ts/utils";
+import { assert_error, typed_non_null_entries } from "@torus-ts/utils";
 import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 64;
@@ -39,6 +39,8 @@ export const AGENT_METADATA_SCHEMA = z.object({
 });
 
 export type AgentMetadata = z.infer<typeof AGENT_METADATA_SCHEMA>;
+
+export type AgentMetadataImageName = keyof NonNullable<AgentMetadata["images"]>;
 
 export async function fetchFromIpfsOrUrl<T>(
   uri: string,
@@ -81,7 +83,10 @@ const fetchBlob = (url: string): Promise<Blob> =>
 export async function fetchAgentMetadata(
   uri: string,
   { fetchImages = false },
-): Promise<{ metadata: AgentMetadata; images: Record<string, Blob> }> {
+): Promise<{
+  metadata: AgentMetadata;
+  images: Partial<Record<AgentMetadataImageName, Blob>>;
+}> {
   // fetch Agent Metadata as JSON
   const data = await fetchFromIpfsOrUrl(uri, fetchJson);
 
@@ -106,16 +111,13 @@ export async function fetchAgentMetadata(
   const imageUris = parsed.data.images;
 
   if (fetchImages && imageUris) {
-    const imageResults = await Promise.all(
-      Object.entries(imageUris).map(([name, pointer]) =>
-        fetchFile(name, pointer),
-      ),
+    // const entries = typed_non_null_entries(imageUris);
+    const jobs = typed_non_null_entries(imageUris).map(([name, pointer]) =>
+      fetchFile(name, pointer),
     );
+    const imageResults = await Promise.all(jobs);
 
-    const images = imageResults.reduce(
-      (acc, curr) => ({ ...acc, ...curr }),
-      {},
-    );
+    const images = imageResults.reduce((acc, curr) => ({ ...acc, ...curr }));
 
     return {
       metadata,
