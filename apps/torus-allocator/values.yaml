@@ -1,6 +1,6 @@
 deployment:
   image:
-    repository: ghcr.io/renlabs-dev/torus-validator
+    repository: ghcr.io/renlabs-dev/torus-allocator
 
   env:
     JWT_SECRET:

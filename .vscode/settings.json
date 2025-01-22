@@ -110,6 +110,7 @@
     "unstaking",
     "UNVOTED",
     "viem",
-    "wagmi"
+    "wagmi",
+    "webapps"
   ]
 }
