@@ -189,7 +189,7 @@ export function TorusProvider({
 
   async function getWallets(): Promise<InjectedAccountWithMeta[] | undefined> {
     if (!torusApi.web3Enable || !torusApi.web3Accounts) return;
-    await torusApi.web3Enable("torus Ai");
+    await torusApi.web3Enable("Torus Network");
 
     try {
       const response = await torusApi.web3Accounts();
