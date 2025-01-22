@@ -1,0 +1,30 @@
+# .github/workflows/torus-page.yml
+name: torus-page
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - "apps/torus-governance/**"
+      - "apps/torus-validator/**"
+      - "apps/torus-bridge/**"
+      - "apps/torus-worker/**"
+      - "apps/torus-wallet/**"
+      - "apps/torus-cache/**"
+
+jobs:
+  kubernetes:
+    if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
+    uses: ./.github/workflows/app-deployment-template.yml
+    with:
+      app_name: torus-page
+    secrets:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+
+  dry-run-build:
+    if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-page
