@@ -1,0 +1,27 @@
+# .github/workflows/torus-cache.yml
+name: torus-cache
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - dev
+      - cicd
+    paths-ignore:
+      - "apps/torus-page/**"
+      - "apps/torus-validator/**"
+      - "apps/torus-bridge/**"
+      - "apps/torus-worker/**"
+      - "apps/torus-governance/**"
+      - "apps/torus-wallet/**"
+
+jobs:
+  kubernetes:
+    uses: ./.github/workflows/app-deployment-template.yml
+    with:
+      app_name: torus-cache
+    secrets:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}

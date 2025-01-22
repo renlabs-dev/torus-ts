@@ -1,0 +1,27 @@
+# .github/workflows/torus-governance.yml
+name: torus-governance
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - dev
+      - cicd
+    paths-ignore:
+      - "apps/torus-page/**"
+      - "apps/torus-validator/**"
+      - "apps/torus-bridge/**"
+      - "apps/torus-worker/**"
+      - "apps/torus-wallet/**"
+      - "apps/torus-cache/**"
+
+jobs:
+  kubernetes:
+    uses: ./.github/workflows/app-deployment-template.yml
+    with:
+      app_name: torus-governance
+    secrets:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
