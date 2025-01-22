@@ -14,7 +14,7 @@ on:
 
 jobs:
   kubernetes:
-    if: "contains(['main', 'dev', 'cicd'], github.ref_name)"
+    if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
     uses: ./.github/workflows/app-deployment-template.yml
     with:
       app_name: torus-bridge
@@ -24,7 +24,7 @@ jobs:
       VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
 
   dry-run-build:
-    if: "!contains(['main', 'dev', 'cicd'], github.ref_name)"
+    if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-bridge
