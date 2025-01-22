@@ -332,10 +332,12 @@ export const cadreCandidateSchema = createTable("cadre_candidate", {
 
   ...timeFields(),
 });
+
 export const cadreVoteTypeEnum = pgEnum("cadre_vote_type", [
   "ACCEPT",
   "REFUSE",
 ]);
+
 export const applicationVoteType = pgEnum("agent_application_vote_type", [
   "ACCEPT",
   "REFUSE",
