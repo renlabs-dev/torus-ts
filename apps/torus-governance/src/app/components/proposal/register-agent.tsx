@@ -143,10 +143,10 @@ export function RegisterAgent(): JSX.Element {
     try {
       setUploading(true);
 
-      let iconUriObj: Record<string, string> = {};
+      let imageObj: Record<string, Record<string, string>> = {};
       if (icon) {
         const { cid } = await pinFile(icon);
-        iconUriObj = { icon: cidToIpfsUri(cid) };
+        imageObj = { images: { icon: cidToIpfsUri(cid) } };
       }
 
       const metadata = {
@@ -154,7 +154,7 @@ export function RegisterAgent(): JSX.Element {
         short_description: shortDescription,
         description: body,
         website: "https://example.com", // FIXME: website field
-        ...iconUriObj,
+        ...imageObj,
         socials: {
           twitter: twitter || undefined,
           github: github || undefined,
