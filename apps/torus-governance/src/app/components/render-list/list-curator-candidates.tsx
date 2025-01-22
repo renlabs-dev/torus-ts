@@ -37,8 +37,8 @@ export const ListCuratorCandidates = () => {
     return (
       <Card className="py-8">
         <p className="text-center">
-          Are you a curator DAO?
-          <br /> Connect your wallet to have acces to this page.
+          Are you a Curator DAO member?
+          <br /> Please connect your wallet to view this page.
         </p>
       </Card>
     );
@@ -49,7 +49,7 @@ export const ListCuratorCandidates = () => {
   if (!cadreCandidatesList && isFetchingCadreCandidates)
     return <ListCardsLoadingSkeleton />;
 
-  if (!cadreCandidatesList) return <p>No cadre candidates found.</p>;
+  if (!cadreCandidatesList) return <p>No Curator DAO candidates found.</p>;
 
   const filteredCadreCandidates = cadreCandidatesList.map((candidate) => {
     const search = searchParams.get("search")?.toLocaleLowerCase();
@@ -64,7 +64,7 @@ export const ListCuratorCandidates = () => {
     }
 
     return (
-      <CuratorCandidatesList key={candidate.id} curatorCandidates={candidate} />
+      <CuratorCandidatesList key={candidate.id} curatorCandidate={candidate} />
     );
   });
 
