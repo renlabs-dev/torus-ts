@@ -5,7 +5,7 @@ import type { AnyJson } from "@polkadot/types/types";
 import { assert_error, typed_non_null_entries } from "@torus-ts/utils";
 import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
 
-export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 64;
+export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
 
 const z_url = z.string().url();
 

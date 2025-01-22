@@ -1,18 +1,12 @@
 import { AgentInfoCard } from "~/app/components/agent-info-card";
 import { api } from "~/trpc/server";
-import { ArrowLeft } from "lucide-react";
-import { Button, Container } from "@torus-ts/ui";
+import { ArrowLeft, Globe } from "lucide-react";
+import { Button, Container, Icons } from "@torus-ts/ui";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
-import { fetchCustomMetadata } from "@torus-ts/subspace";
+import { fetchAgentMetadata } from "@torus-ts/subspace";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-
-interface CustomMetadata {
-  Ok?: {
-    title?: string;
-    body?: string;
-  };
-}
+import BlobImage from "~/app/components/blob-image";
 
 export default async function AgentPage({
   params,
@@ -33,14 +27,59 @@ export default async function AgentPage({
     notFound();
   }
 
-  const metadata = (await fetchCustomMetadata(
-    "proposal",
-    mdl.id,
-    mdl.metadataUri ?? "",
-  )) as CustomMetadata;
+  if (!mdl.metadataUri) {
+    notFound();
+  }
 
-  // limited to 140 characters
-  const description = metadata.Ok?.body ?? "This agent has no custom metadata";
+  let metadata;
+  let images;
+
+  try {
+    const r = await fetchAgentMetadata(mdl.metadataUri, {
+      fetchImages: true,
+    });
+    metadata = r.metadata;
+    images = r.images;
+  } catch (e) {
+    console.error(e);
+    notFound();
+  }
+  console.log(metadata);
+  // Blob URL for the icon
+  const icon = images.icon;
+  console.log(icon);
+
+  const _socialList = [
+    {
+      name: "Discord",
+      href: metadata.socials?.discord ?? null,
+      icon: (
+        <Icons.discord className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />
+      ),
+    },
+    {
+      name: "X",
+      href: metadata.socials?.twitter ?? null,
+      icon: <Icons.x className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    },
+    {
+      name: "GitHub",
+      href: metadata.socials?.github ?? null,
+      icon: <Icons.github className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    },
+    {
+      name: "Telegram",
+      href: metadata.socials?.telegram ?? null,
+      icon: (
+        <Icons.telegram className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />
+      ),
+    },
+    {
+      name: "Website",
+      href: metadata.website ?? null,
+      icon: <Globe className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    },
+  ];
 
   return (
     <Container>
@@ -59,6 +98,10 @@ export default async function AgentPage({
           </Link>
         </Button>
 
+        {icon && (
+          <BlobImage blob={icon} alt="My Blob Image" width={400} height={300} />
+        )}
+
         <div className="mb-6 mt-10 flex w-full">
           <h1 className="flex-grow animate-fade-right text-start text-3xl font-semibold">
             {mdl.name}
@@ -66,7 +109,7 @@ export default async function AgentPage({
         </div>
         <div className="flex flex-col gap-6 md:flex-row">
           <div className="mb-12 flex animate-fade-down flex-col gap-6 animate-delay-500 md:w-2/3">
-            <ExpandedViewContent content={description} />
+            <ExpandedViewContent content={metadata.description} />
           </div>
           <div className="flex animate-fade-down flex-col gap-6 animate-delay-500 md:w-1/3">
             <AgentInfoCard agent={mdl} />
