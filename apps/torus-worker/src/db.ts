@@ -133,6 +133,24 @@ export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
 }
 
 
+export async function getCadreDiscord(cadreKey: SS58Address) {
+  const result = await db
+    .select({
+      discordId: cadreCandidateSchema.discordId,
+    })
+    .from(cadreCandidateSchema)
+    .where(
+      and(
+      isNull(cadreCandidateSchema.deletedAt), 
+      eq(cadreCandidateSchema.userKey, cadreKey)
+    ))
+    .limit(1)
+    .execute();
+
+  return result.pop()?.discordId;
+}
+
+
 export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
   const result = await db
     .select({

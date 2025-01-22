@@ -20,6 +20,7 @@ import {
   addCadreMember,
   queryTotalVotesPerCadre,
   removeCadreMember,
+  getCadreDiscord,
   refuseCadreApplication,
 } from "../db";
 
@@ -178,7 +179,13 @@ export async function processCadreVotes(
       const { appId: applicatorKey, acceptVotes, refuseVotes, removeVotes } = vote_info;
       if (acceptVotes >= vote_threshold) {
         console.log("Adding cadre member:", applicatorKey);
-        await addCadreMember(applicatorKey, "3");
+        const cadreDiscord = await getCadreDiscord(applicatorKey);
+        if (cadreDiscord == null) {
+          throw new Error(
+            "No discord account found for cadre member: " + applicatorKey
+          );
+        }
+        await addCadreMember(applicatorKey, cadreDiscord);
       } else if (refuseVotes >= vote_threshold) {
         console.log("Refusing cadre application:", applicatorKey);
         await refuseCadreApplication(applicatorKey);
