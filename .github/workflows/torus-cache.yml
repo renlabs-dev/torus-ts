@@ -4,10 +4,6 @@ name: torus-cache
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - dev
-      - cicd
     paths-ignore:
       - "apps/torus-page/**"
       - "apps/torus-validator/**"
@@ -18,6 +14,7 @@ on:
 
 jobs:
   kubernetes:
+    if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
     uses: ./.github/workflows/app-deployment-template.yml
     with:
       app_name: torus-cache
@@ -25,3 +22,9 @@ jobs:
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
       VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+
+  dry-run-build:
+    if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-cache
