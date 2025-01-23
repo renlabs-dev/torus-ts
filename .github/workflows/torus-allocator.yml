@@ -1,5 +1,5 @@
-# .github/workflows/torus-validator.yml
-name: torus-validator
+# .github/workflows/torus-allocator.yml
+name: torus-allocator
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
     if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
     uses: ./.github/workflows/app-deployment-template.yml
     with:
-      app_name: torus-validator
+      app_name: torus-allocator
     secrets:
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
@@ -27,4 +27,4 @@ jobs:
     if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
-      app_name: torus-validator
+      app_name: torus-allocator
