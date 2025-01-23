@@ -1,6 +1,5 @@
 import { DateTime } from "luxon";
 import { assert, AssertionError } from "tsafe";
-import { z } from "zod";
 
 export * from "./typing";
 
@@ -28,8 +27,21 @@ export function assertOrThrow(
 export const is_error = (err: unknown): err is Error => err instanceof Error;
 
 export function assert_error(err: unknown): asserts err is Error {
-  return assert(is_error(err));
+  return assert(is_error(err), "Caught error is not of type Error");
 }
+
+export const is_not_null = <T>(value: T): value is NonNullable<T> =>
+  value != null;
+
+// == Objects ==
+
+export const typed_entries = <T extends object>(obj: T) =>
+  Object.entries(obj) as { [K in keyof T]: [K, T[K]] }[keyof T][];
+
+export const typed_non_null_entries = <T extends object>(obj: T) =>
+  typed_entries(obj).filter(([_, value]) => is_not_null(value)) as {
+    [K in keyof T]-?: [K, NonNullable<T[K]>];
+  }[keyof T][];
 
 // == Numeric ==
 
@@ -50,11 +62,7 @@ export function bigintDivision(a: bigint, b: bigint, precision = 8n): number {
   return Number((a * base) / b) / Number(base);
 }
 
-// == URL ==
-
-export const URL_SCHEMA = z.string().trim().url();
-
-export const isNotNull = <T>(item: T | null): item is T => item !== null;
+// == Emoji LMAO == TODO: remove
 
 export function removeEmojisLmao(text: string): string {
   const emojiPattern =
@@ -101,19 +109,4 @@ export function getCreationTime(
   return creationDate.toLocaleString(DateTime.DATETIME_SHORT);
 }
 
-function chunkString (str: string, len: number): string[] {
-  const size = Math.ceil(str.length/len)
-  const r: string[] = Array<string>(size)
-  let offset = 0
-  
-  for (let i = 0; i < size; i++) {
-    r[i] = str.substring(offset, offset + len)
-    offset += len
-  }
-  
-  return r
-}
-
-export function splitAddress(address: string, len = 4) {
-  return chunkString(address, len)
-}
+// ==

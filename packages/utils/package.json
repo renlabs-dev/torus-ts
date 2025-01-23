@@ -10,7 +10,8 @@
     "./subspace": "./src/subspace.ts",
     "./typing": "./src/typing.ts",
     "./collections": "./src/collections.ts",
-    "./env": "./src/env.ts"
+    "./env": "./src/env.ts",
+    "./files": "./src/files.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",

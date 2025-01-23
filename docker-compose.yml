@@ -75,12 +75,12 @@ services:
     ports:
       - 3022:8000
 
-  torus-validator:
+  torus-allocator:
     build:
       context: .
       dockerfile: docker/Dockerfile
       args:
-        APP_NAME: torus-validator
+        APP_NAME: torus-allocator
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
       - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
@@ -95,7 +95,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       args:
-        APP_NAME: torus-validator
+        APP_NAME: torus-wallet
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
       - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME

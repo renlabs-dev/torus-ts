@@ -93,6 +93,7 @@
     "rainbowkit",
     "rootnet",
     "rustie",
+    "shadcn",
     "Solana",
     "superjson",
     "tailwindcss",
@@ -109,6 +110,7 @@
     "unstaking",
     "UNVOTED",
     "viem",
-    "wagmi"
+    "wagmi",
+    "webapps"
   ]
 }
