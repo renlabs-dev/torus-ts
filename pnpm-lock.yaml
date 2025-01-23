@@ -207,6 +207,9 @@ importers:
       three:
         specifier: ^0.164.1
         version: 0.164.1
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
       zod:
         specifier: 'catalog:'
         version: 3.24.1
