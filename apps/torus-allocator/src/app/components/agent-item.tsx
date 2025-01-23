@@ -1,82 +1,144 @@
 "use client";
 
-import { Anvil, ArrowRight, Crown, Globe, IdCard } from "lucide-react";
-import { Button, Card, CopyButton, Icons, Label, links } from "@torus-ts/ui";
-import { DelegateModuleWeight } from "./delegate-module-weight";
-import { smallAddress } from "@torus-ts/utils/subspace";
-import { toast } from "@torus-ts/toast-provider";
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { Anvil, ArrowRight, Globe, IdCard } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+
+import { toast } from "@torus-ts/toast-provider";
+import { Button, Card, CopyButton, Icons, Label } from "@torus-ts/ui";
+import type { Nullish } from "@torus-ts/utils";
+import { smallAddress } from "@torus-ts/utils/subspace";
+
+import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+
+import { DelegateModuleWeight } from "./delegate-module-weight";
 
 interface AgentCardProps {
   id: number;
   name: string;
-  agentKey: string; // SS58.1
+  agentKey: string;
+  metadataUri: string | null;
   percentage?: number | null;
   isDelegated?: boolean;
   globalWeightPerc?: number;
 }
 
-export function AgentItem(props: AgentCardProps) {
-  const { delegatedAgents } = useDelegateAgentStore();
-  const isAgentDelegated = delegatedAgents.some(
-    (m) => m.address === props.agentKey,
-  );
+interface SocialItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+}
 
-  const _socialList = [
-    {
-      name: "Discord",
-      href: links.discord,
-      icon: (
-        <Icons.discord className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />
-      ),
-    },
-    {
-      name: "X",
-      href: links.x,
-      icon: <Icons.x className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
-    },
-    {
-      name: "GitHub",
-      href: links.github,
-      icon: <Icons.github className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
-    },
-    {
-      name: "Telegram",
-      href: links.telegram,
-      icon: (
-        <Icons.telegram className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />
-      ),
-    },
-    {
-      name: "Website",
-      href: links.landing_page,
-      icon: <Globe className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
-    },
-  ];
+const SOCIALS_VALUES = {
+  website: {
+    name: "Website",
+    icon: <Globe className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+  },
+  discord: {
+    name: "Discord",
+    icon: <Icons.discord className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+  },
+  twitter: {
+    name: "X",
+    icon: <Icons.x className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+  },
+  github: {
+    name: "GitHub",
+    icon: <Icons.github className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+  },
+  telegram: {
+    name: "Telegram",
+    icon: <Icons.telegram className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+  },
+};
+
+type SocialKind = keyof typeof SOCIALS_VALUES;
+
+const SOCIALS_ORDER: SocialKind[] = [
+  "website",
+  "discord",
+  "twitter",
+  "github",
+  "telegram",
+];
+
+function buildSocials(
+  socials: Partial<Record<SocialKind, string>>,
+  website?: string,
+): SocialItem[] {
+  const result: SocialItem[] = [];
+  for (const kind of SOCIALS_ORDER) {
+    const val = kind === "website" ? website : socials[kind];
+    if (!val) continue;
+    result.push({
+      ...SOCIALS_VALUES[kind],
+      href: val,
+    });
+  }
+  return result;
+}
+
+const useBlobUrl = (blob: Blob | Nullish) => {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!blob) return;
+    const objectUrl = URL.createObjectURL(blob);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [blob]);
+
+  return url;
+};
+
+export function AgentItem(props: AgentCardProps) {
+  const { agentKey, metadataUri } = props;
+
+  const { delegatedAgents } = useDelegateAgentStore();
+
+  const { data: agentMetadataResult } = useQueryAgentMetadata(metadataUri);
+  const metadata = agentMetadataResult?.metadata;
+  const images = agentMetadataResult?.images;
+
+  const iconUrl = useBlobUrl(images?.icon);
+
+  const title = metadata?.title ?? `<Missing Agent Title ${props.name}>`;
+  const shortDescription =
+    metadata?.short_description ?? "<Missing Agent Short Description>";
+
+  const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
+
+  const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
 
   return (
     <Card
       className={`border p-6 ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "text-white"}`}
     >
       <div className="flex w-full items-center gap-3">
-        <Image
-          src="/agent-icon-example.png"
-          alt="agent"
-          width={1000}
-          height={1000}
-          className={`h-28 w-28 ${isAgentDelegated && "border border-blue-500"}`}
-        />
+        {iconUrl ? (
+          <Image
+            src={iconUrl}
+            alt="agent"
+            width={1000}
+            height={1000}
+            className={`h-28 w-28 ${isAgentDelegated && "border border-blue-500"}`}
+          />
+        ) : (
+          // Missing icon
+          <div className="h-28 w-28 border border-gray-500 bg-gray-500/10" />
+        )}
         <div className="flex flex-col gap-2">
           <div className="flex justify-between">
             <h2
               className={`line-clamp-1 w-full max-w-fit text-ellipsis text-base font-semibold ${isAgentDelegated ? "text-blue-500" : "text-white"}`}
             >
-              {props.name}
+              {title}
             </h2>
             <div className="flex gap-1.5">
-              {_socialList.map((social) => {
+              {socialsList.map((social) => {
                 return (
                   <Link key={social.name} href={social.href}>
                     {social.icon}
@@ -85,19 +147,16 @@ export function AgentItem(props: AgentCardProps) {
               })}
             </div>
           </div>
-          <p className="text-sm">
-            Honza, perfect junior Dev Agent Of Torus. He is a developer and a
-            designer.
-          </p>
+          <p className="text-sm">{shortDescription}</p>
         </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
         <div className="flex flex-row-reverse items-center justify-around gap-3 border px-3 sm:ml-auto sm:flex-row md:ml-0 md:flex-row-reverse lg:flex-row">
-          <Label className="flex items-center gap-1.5 text-base font-semibold">
+          {/* <Label className="flex items-center gap-1.5 text-base font-semibold">
             <IdCard size={16} />
             {props.id}
-          </Label>
+          </Label> */}
 
           <Label
             className={`flex items-center gap-1.5 text-base font-semibold`}
@@ -112,7 +171,8 @@ export function AgentItem(props: AgentCardProps) {
             notify={() => toast.success("Copied to clipboard")}
             className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
           >
-            <Crown className="h-6 w-6" />
+            {/* <Crown className="h-6 w-6" /> */}
+            <IdCard size={16} />
             <span className="hidden md:block">
               {smallAddress(props.agentKey, 11)}
             </span>

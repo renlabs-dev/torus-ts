@@ -44,6 +44,9 @@ export const IPFS_URI_SCHEMA = z
   })
   .pipe(CID_SCHEMA);
 
+export const isIpfsUri = (uri: string): boolean =>
+  IPFS_URI_SCHEMA.safeParse(uri).success;
+
 export function buildIpfsGatewayUrl(cid: CID): string {
   const cidStr = cid.toString();
   return `https://ipfs.io/ipfs/${cidStr}`;

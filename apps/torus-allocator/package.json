@@ -36,6 +36,7 @@
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
     "superjson": "2.2.1",
+    "tsafe": "catalog:",
     "zod": "catalog:",
     "zustand": "^4.5.4"
   },
