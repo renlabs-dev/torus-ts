@@ -105,9 +105,9 @@ export function AgentItem(props: AgentCardProps) {
 
   const iconUrl = useBlobUrl(images?.icon);
 
-  const title = metadata?.title ?? `<Missing Agent Title ${props.name}>`;
+  const title = metadata?.title ?? `Missing Agent Title ${props.name}`;
   const shortDescription =
-    metadata?.short_description ?? "<Missing Agent Short Description>";
+    metadata?.short_description ?? "Missing Agent Short Description";
 
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
 
@@ -117,7 +117,9 @@ export function AgentItem(props: AgentCardProps) {
     <Card
       className={`border p-6 ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "text-white"}`}
     >
-      <div className="flex w-full items-center gap-3">
+      <div
+        className={`flex w-full items-center gap-3 border ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "text-white"}`}
+      >
         {iconUrl ? (
           <Image
             src={iconUrl}
@@ -127,60 +129,55 @@ export function AgentItem(props: AgentCardProps) {
             className={`h-28 w-28 ${isAgentDelegated && "border border-blue-500"}`}
           />
         ) : (
-          // Missing icon
-          <div className="h-28 w-28 border border-gray-500 bg-gray-500/10" />
-        )}
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between">
-            <h2
-              className={`line-clamp-1 w-full max-w-fit text-ellipsis text-base font-semibold ${isAgentDelegated ? "text-blue-500" : "text-white"}`}
-            >
-              {title}
-            </h2>
-            <div className="flex gap-1.5">
-              {socialsList.map((social) => {
-                return (
-                  <Link key={social.name} href={social.href}>
-                    {social.icon}
-                  </Link>
-                );
-              })}
-            </div>
+          <div className="flex h-28 w-28 items-center justify-center border border-gray-500 bg-gray-500/10">
+            <Icons.logo className="h-16 w-16 opacity-30" />
           </div>
-          <p className="text-sm">{shortDescription}</p>
+        )}
+
+        <div className="flex h-full flex-col justify-around gap-3 pt-2">
+          <div className="flex gap-2">
+            {socialsList.map((social) => {
+              return (
+                <Link key={social.name} href={social.href}>
+                  {social.icon}
+                </Link>
+              );
+            })}
+          </div>
+          <h2
+            className={`line-clamp-1 w-fit text-ellipsis text-base font-semibold md:max-w-fit ${isAgentDelegated ? "text-blue-500" : "text-white"}`}
+          >
+            {title}
+          </h2>
+          <div className="flex items-center justify-between gap-3 pr-4">
+            <Label
+              className={`flex items-center gap-1.5 text-base font-semibold`}
+            >
+              <Anvil size={16} />
+              {props.percentage}%
+            </Label>
+
+            <CopyButton
+              variant="link"
+              copy={props.agentKey}
+              notify={() => toast.success("Copied to clipboard")}
+              className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+            >
+              <IdCard size={16} />
+              <span className="hidden md:block">
+                {smallAddress(props.agentKey, 10)}
+              </span>
+              <span className="block md:hidden">
+                {smallAddress(props.agentKey, 6)}
+              </span>
+            </CopyButton>
+          </div>
         </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
-        <div className="flex flex-row-reverse items-center justify-around gap-3 border px-3 sm:ml-auto sm:flex-row md:ml-0 md:flex-row-reverse lg:flex-row">
-          {/* <Label className="flex items-center gap-1.5 text-base font-semibold">
-            <IdCard size={16} />
-            {props.id}
-          </Label> */}
+        <p className="text-sm md:min-h-16">{shortDescription}</p>
 
-          <Label
-            className={`flex items-center gap-1.5 text-base font-semibold`}
-          >
-            <Anvil size={16} />
-            {props.percentage}%
-          </Label>
-
-          <CopyButton
-            variant="link"
-            copy={props.agentKey}
-            notify={() => toast.success("Copied to clipboard")}
-            className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
-          >
-            {/* <Crown className="h-6 w-6" /> */}
-            <IdCard size={16} />
-            <span className="hidden md:block">
-              {smallAddress(props.agentKey, 11)}
-            </span>
-            <span className="block md:hidden">
-              {smallAddress(props.agentKey, 8)}
-            </span>
-          </CopyButton>
-        </div>
         <div>
           <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
             <span className="text-blue-500">{props.globalWeightPerc}%</span>{" "}
