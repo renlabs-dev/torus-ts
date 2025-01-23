@@ -8,14 +8,3 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: wallet_connect_id
-
-    NEXT_PUBLIC_TORUS_CHAIN_ENV:
-      valueFrom:
-        configMapKeyRef:
-          name: '{{ template "application.name" . }}-config'
-          key: next_public_chain_env
-
-configMap:
-  files:
-    config:
-      next_public_chain_env: "{{ .Values.chainEnv }}"

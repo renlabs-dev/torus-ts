@@ -9,6 +9,7 @@ environments:
       - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-torus-page
       - ingressHost: testnet.torus.network
+      - chainEnv: testnet
   prod:
     values:
       - ../../helm/values.yaml
@@ -19,6 +20,7 @@ environments:
       - cacheUrl: https://cache.torus.network
       - releaseName: torus-page
       - ingressHost: torus.network
+      - chainEnv: mainnet
 ---
 helmDefaults:
   wait: true

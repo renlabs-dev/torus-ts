@@ -1,15 +1,3 @@
 deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-wallet
-
-  env:
-    NEXT_PUBLIC_TORUS_CHAIN_ENV:
-      valueFrom:
-        configMapKeyRef:
-          name: '{{ template "application.name" . }}-config'
-          key: next_public_chain_env
-
-configMap:
-  files:
-    config:
-      next_public_chain_env: "{{ .Values.chainEnv }}"

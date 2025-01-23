@@ -7,6 +7,7 @@ environments:
       - environmentName: dev
       - wssApiEndpoint: wss://api.testnet.torus.network
       - namespace: torus-dev-web-apps
+      - chainEnv: testnet
   prod:
     values:
       - ../../helm/values.yaml
@@ -15,6 +16,7 @@ environments:
       - environmentName: prod
       - wssApiEndpoint: wss://api.torus.network
       - namespace: torus-prod-web-apps
+      - chainEnv: mainnet
 ---
 helmDefaults:
   wait: true
