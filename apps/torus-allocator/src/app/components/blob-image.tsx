@@ -6,15 +6,11 @@ import Image from "next/image";
 interface BlobImageProps {
   blob: Blob;
   alt?: string;
-  width?: number;
-  height?: number;
 }
 
 const BlobImage = ({
   blob,
   alt = "Agent Icon",
-  width = 300,
-  height = 300,
 }: BlobImageProps): JSX.Element => {
   const [imageSrc, setImageSrc] = useState("");
 
@@ -35,9 +31,13 @@ const BlobImage = ({
   }
 
   return (
-    <div>
-      <Image src={imageSrc} alt={alt} width={width} height={height} />
-    </div>
+    <Image
+      src={imageSrc}
+      alt={alt}
+      width={1000}
+      height={1000}
+      className="border md:max-h-48 md:min-h-48 md:min-w-48 md:max-w-48"
+    />
   );
 };
 

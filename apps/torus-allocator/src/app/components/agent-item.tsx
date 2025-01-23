@@ -32,7 +32,7 @@ interface SocialItem {
   icon: React.ReactNode;
 }
 
-const SOCIALS_VALUES = {
+export const SOCIALS_VALUES = {
   website: {
     name: "Website",
     icon: <Globe className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
@@ -57,7 +57,7 @@ const SOCIALS_VALUES = {
 
 type SocialKind = keyof typeof SOCIALS_VALUES;
 
-const SOCIALS_ORDER: SocialKind[] = [
+export const SOCIALS_ORDER: SocialKind[] = [
   "website",
   "discord",
   "twitter",
@@ -65,7 +65,7 @@ const SOCIALS_ORDER: SocialKind[] = [
   "telegram",
 ];
 
-function buildSocials(
+export function buildSocials(
   socials: Partial<Record<SocialKind, string>>,
   website?: string,
 ): SocialItem[] {
@@ -118,7 +118,7 @@ export function AgentItem(props: AgentCardProps) {
       className={`border p-6 ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "text-white"}`}
     >
       <div
-        className={`flex w-full items-center gap-3 border ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "text-white"}`}
+        className={`flex w-full items-center gap-3 border ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "border-border text-white"}`}
       >
         {iconUrl ? (
           <Image
@@ -129,7 +129,7 @@ export function AgentItem(props: AgentCardProps) {
             className={`h-28 w-28 ${isAgentDelegated && "border border-blue-500"}`}
           />
         ) : (
-          <div className="flex h-28 w-28 items-center justify-center border border-gray-500 bg-gray-500/10">
+          <div className="flex h-28 w-28 items-center justify-center border-r bg-gray-500/10">
             <Icons.logo className="h-16 w-16 opacity-30" />
           </div>
         )}

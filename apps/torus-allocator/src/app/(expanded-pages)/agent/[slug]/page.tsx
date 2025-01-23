@@ -1,12 +1,13 @@
 import { AgentInfoCard } from "~/app/components/agent-info-card";
 import { api } from "~/trpc/server";
-import { ArrowLeft, Globe } from "lucide-react";
-import { Button, Container, Icons } from "@torus-ts/ui";
+import { ArrowLeft } from "lucide-react";
+import { Button, Card, Container, Label } from "@torus-ts/ui";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { fetchAgentMetadata } from "@torus-ts/subspace";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BlobImage from "~/app/components/blob-image";
+import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
 
 export default async function AgentPage({
   params,
@@ -44,42 +45,13 @@ export default async function AgentPage({
     console.error(e);
     notFound();
   }
-  console.log(metadata);
+
   // Blob URL for the icon
   const icon = images.icon;
-  console.log(icon);
 
-  const _socialList = [
-    {
-      name: "Discord",
-      href: metadata.socials?.discord ?? null,
-      icon: (
-        <Icons.discord className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />
-      ),
-    },
-    {
-      name: "X",
-      href: metadata.socials?.twitter ?? null,
-      icon: <Icons.x className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
-    },
-    {
-      name: "GitHub",
-      href: metadata.socials?.github ?? null,
-      icon: <Icons.github className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
-    },
-    {
-      name: "Telegram",
-      href: metadata.socials?.telegram ?? null,
-      icon: (
-        <Icons.telegram className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />
-      ),
-    },
-    {
-      name: "Website",
-      href: metadata.website ?? null,
-      icon: <Globe className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
-    },
-  ];
+  const computedAgentWeight = await api.computedAgentWeight.all();
+
+  const globalWeight = computedAgentWeight.find((d) => d.agentKey === agentKey);
 
   return (
     <Container>
@@ -91,28 +63,55 @@ export default async function AgentPage({
         >
           <Link
             href="/?view=agents"
-            className="flex animate-fade-left items-center text-white transition duration-200"
+            className="mb-4 flex animate-fade-left items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
             Go back to agents list
           </Link>
         </Button>
 
-        {icon && (
-          <BlobImage blob={icon} alt="My Blob Image" width={400} height={300} />
-        )}
-
-        <div className="mb-6 mt-10 flex w-full">
-          <h1 className="flex-grow animate-fade-right text-start text-3xl font-semibold">
-            {mdl.name}
-          </h1>
-        </div>
-        <div className="flex flex-col gap-6 md:flex-row">
+        <div className="mb-12 flex flex-col gap-6 md:flex-row">
           <div className="mb-12 flex animate-fade-down flex-col gap-6 animate-delay-500 md:w-2/3">
+            <Card className="mb-6 flex flex-col gap-6 md:flex-row">
+              {icon && <BlobImage blob={icon} alt="My Blob Image" />}
+              <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
+                <h1 className="animate-fade-right text-start text-3xl font-semibold">
+                  {mdl.name}
+                </h1>
+
+                <p className="text-card-foreground">
+                  {metadata.short_description}
+                </p>
+              </div>
+            </Card>
+
             <ExpandedViewContent content={metadata.description} />
           </div>
           <div className="flex animate-fade-down flex-col gap-6 animate-delay-500 md:w-1/3">
             <AgentInfoCard agent={mdl} />
+            <Card className="flex items-center justify-between p-6">
+              <p>Agent Links:</p>
+              <ExpandedViewSocials
+                socials={metadata.socials}
+                website={metadata.website}
+              />
+            </Card>
+            <Card className="p-6">
+              <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
+                <span className="text-blue-500">
+                  {globalWeight ? globalWeight.percComputedWeight : 0}%
+                </span>{" "}
+                Current Network Allocation
+              </Label>
+              <div className="rounded-radius my-2 w-full bg-primary-foreground">
+                <div
+                  className="rounded-radius bg-gradient-to-r from-blue-700 to-blue-500 py-2"
+                  style={{
+                    width: `${globalWeight ? globalWeight.percComputedWeight.toFixed(0) : 0}%`,
+                  }}
+                />
+              </div>
+            </Card>
           </div>
         </div>
       </div>
