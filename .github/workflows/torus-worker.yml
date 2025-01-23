@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
-      - "apps/torus-validator/**"
+      - "apps/torus-allocator/**"
       - "apps/torus-governance/**"
       - "apps/torus-page/**"
       - "apps/torus-bridge/**"

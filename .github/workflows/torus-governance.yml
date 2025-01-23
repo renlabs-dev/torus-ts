@@ -6,7 +6,7 @@ on:
   push:
     paths-ignore:
       - "apps/torus-page/**"
-      - "apps/torus-validator/**"
+      - "apps/torus-allocator/**"
       - "apps/torus-bridge/**"
       - "apps/torus-worker/**"
       - "apps/torus-wallet/**"
