@@ -89,3 +89,4 @@ releases:
               cpu: 0.3
             requests:
               memory: 200Mi
+    timeout: 600
