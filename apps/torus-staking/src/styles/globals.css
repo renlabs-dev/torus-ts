@@ -2,18 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+/* width */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+/* Track */
+::-webkit-scrollbar-track {
+  background: hsl(228 20% 20%);
+  border-radius: 2px;
+  margin: 1px 0 1px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: hsl(220 15% 70%);
+  border-radius: 2px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(220 30% 95%);
+}
+
+:root {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  :root {
+    --background: 240 10% 6%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 10;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 10;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 10;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 12% 17%;
+    --input: 240 3.7% 12;
+    --ring: 240 4.9% 83.9%;
+    --radius: 0.5rem;
+  }
 }
