@@ -40,4 +40,3 @@ releases:
               paths:
                 - path: /
                   pathType: Prefix
-    timeout: 6000
