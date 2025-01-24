@@ -1,0 +1,42 @@
+{
+  "name": "torus-staking",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3009",
+    "lint": "eslint",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "catalog:",
+    "@torus-ts/query-provider": "workspace:*",
+    "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/toast-provider": "workspace:*",
+    "@torus-ts/torus-provider": "workspace:*",
+    "@torus-ts/ui": "workspace:*",
+    "@torus-ts/env-validation": "workspace:*",
+    "lucide-react": "^0.454.0",
+    "next": "catalog:",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "catalog:",
+    "@tailwindcss/typography": "catalog:",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tailwind-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react18",
+    "@types/react-dom": "catalog:react18",
+    "jiti": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}
