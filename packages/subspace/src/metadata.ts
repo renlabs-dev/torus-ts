@@ -3,8 +3,8 @@ import { z } from "zod";
 
 import type { Result } from "@torus-ts/utils";
 import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
-import type { AgentMetadata } from "./metadata/agent_metadata";
-import { AGENT_METADATA_SCHEMA } from "./metadata/agent_metadata";
+import type { AgentMetadata } from "./agent_metadata/agent_metadata";
+import { AGENT_METADATA_SCHEMA } from "./agent_metadata/agent_metadata";
 
 const CUSTOM_METADATA_SCHEMA = z.object({
   title: z.string().optional(),
