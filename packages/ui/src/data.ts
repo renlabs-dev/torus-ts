@@ -4,7 +4,7 @@ export const links = {
   docs: "https://docs.torus.network/",
   cadre: "/cadre",
 
-  blog: "https://mirror.xyz/0xD80E194aBe2d8084fAecCFfd72877e63F5822Fc5",
+  blog: "https://x.com/torus_network/articles",
   discord: "https://discord.gg/torus",
   github: "https://github.com/renlabs-dev",
   telegram: "https://t.me/torusnetwork",
