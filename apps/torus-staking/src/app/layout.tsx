@@ -4,7 +4,7 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
-import { Container, Footer, Layout } from "@torus-ts/ui/components";
+import { Footer, Layout } from "@torus-ts/ui/components";
 import { StakingHeader } from "./components/staking-header";
 import { EnvScript, env } from "~/env";
 
@@ -37,7 +37,7 @@ export default function RootLayout({
         >
           <ReactQueryProvider>
             <StakingHeader />
-            <Container>{children}</Container>
+            {children}
           </ReactQueryProvider>
         </TorusProvider>
       </ToastProvider>
