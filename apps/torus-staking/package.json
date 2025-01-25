@@ -18,10 +18,14 @@
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
+    "@react-three/drei": "^9.117.3",
+    "@react-three/fiber": "9.0.0-alpha.8",
     "lucide-react": "^0.454.0",
+    "motion": "^11.15.0",
     "next": "catalog:",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
+    "three": "^0.164.1",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -34,6 +38,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
+    "@types/three": "^0.165.0",
     "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
