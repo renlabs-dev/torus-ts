@@ -11,22 +11,39 @@ export const HeroSection = () => {
 
   return (
     <section className="relative h-[40vh] w-full">
-      <Canvas
-        camera={{
-          position: [0, 2, 4],
-          fov: 75,
-          near: 0.1,
-          far: 100,
-        }}
-        dpr={dpr}
-        onCreated={({ gl }) => {
-          gl.setClearColor(new THREE.Color(COLORS.background));
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('/background.webp')",
+          backgroundPosition: "center 0%",
         }}
       >
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <ParticleSystem count={1000} bounds={10} />
-      </Canvas>
+        {/* Darkening Overlay */}
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
+
+      {/* Three.js Canvas */}
+      <div className="absolute inset-0">
+        <Canvas
+          camera={{
+            position: [0, 2, 4],
+            fov: 75,
+            near: 0.1,
+            far: 100,
+          }}
+          dpr={dpr}
+          onCreated={({ gl }) => {
+            gl.setClearColor(new THREE.Color(COLORS.background), 0); // Set alpha to 0 for transparency
+          }}
+        >
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} />
+          <ParticleSystem count={1500} bounds={12} />
+        </Canvas>
+      </div>
+
+      {/* Content */}
       <div className="absolute inset-0 z-10 flex items-center justify-center">
         <h1 className="text-5xl font-bold text-white">STATS</h1>
       </div>
