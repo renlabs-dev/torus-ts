@@ -16,7 +16,7 @@ import { easing } from "maath";
 import "./util";
 
 export const Animation = () => (
-  <div className="margin-0 padding-0 box-border h-96 w-full overflow-hidden bg-accent/60">
+  <div className="margin-0 padding-0 box-border h-80 w-full overflow-hidden bg-accent/60">
     <Canvas camera={{ position: [0, 0, 100], fov: 8 }}>
       <fog attach="fog" args={["#000000", 8.5, 12]} />
       <ScrollControls pages={4} infinite>
@@ -27,10 +27,10 @@ export const Animation = () => (
       </ScrollControls>
 
       <Environment
-        preset="city"
+        preset="studio"
         background
-        blur={0.5}
-        backgroundIntensity={0.08}
+        blur={0.1}
+        backgroundIntensity={0.1}
       />
     </Canvas>
   </div>

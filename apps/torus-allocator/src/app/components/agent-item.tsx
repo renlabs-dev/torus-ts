@@ -7,7 +7,15 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { toast } from "@torus-ts/toast-provider";
-import { Button, Card, CopyButton, Icons, Label } from "@torus-ts/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  CopyButton,
+  Icons,
+  Label,
+  Separator,
+} from "@torus-ts/ui";
 import type { Nullish } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
@@ -114,11 +122,9 @@ export function AgentItem(props: AgentCardProps) {
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
 
   return (
-    <Card
-      className={`border p-6 ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "text-white"}`}
-    >
+    <Card className={`border p-6`}>
       <div
-        className={`flex w-full items-center gap-3 border ${isAgentDelegated ? "border-blue-500 bg-blue-500/5" : "border-border text-white"}`}
+        className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
       >
         {iconUrl ? (
           <Image
@@ -126,30 +132,37 @@ export function AgentItem(props: AgentCardProps) {
             alt="agent"
             width={1000}
             height={1000}
-            className={`h-28 w-28 ${isAgentDelegated && "border border-blue-500"}`}
+            className={`aspect-square md:h-36 md:w-36`}
           />
         ) : (
-          <div className="flex h-28 w-28 items-center justify-center border-r bg-gray-500/10">
-            <Icons.logo className="h-16 w-16 opacity-30" />
+          <div className="flex aspect-square h-full w-full items-center justify-center border bg-gray-500/10 md:h-36 md:w-36">
+            <Icons.logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
           </div>
         )}
 
-        <div className="flex h-full flex-col justify-around gap-3 pt-2">
-          <div className="flex gap-2">
-            {socialsList.map((social) => {
-              return (
-                <Link key={social.name} href={social.href}>
-                  {social.icon}
-                </Link>
-              );
-            })}
+        <div className="flex h-full w-full flex-col justify-between gap-3">
+          <div className="flex w-full items-center justify-between gap-4">
+            <div className="flex gap-2">
+              {socialsList.map((social) => {
+                return (
+                  <Link key={social.name} href={social.href}>
+                    {social.icon}
+                  </Link>
+                );
+              })}
+            </div>
+            {isAgentDelegated && (
+              <Badge className="bg-blue-500 text-xs text-white" variant="solid">
+                Delegated
+              </Badge>
+            )}
           </div>
           <h2
-            className={`line-clamp-1 w-fit text-ellipsis text-base font-semibold md:max-w-fit ${isAgentDelegated ? "text-blue-500" : "text-white"}`}
+            className={`w-fit text-ellipsis text-base font-semibold md:max-w-fit`}
           >
             {title}
           </h2>
-          <div className="flex items-center justify-between gap-3 pr-4">
+          <div className="flex items-center justify-between gap-3">
             <Label
               className={`flex items-center gap-1.5 text-base font-semibold`}
             >
@@ -175,9 +188,10 @@ export function AgentItem(props: AgentCardProps) {
         </div>
       </div>
 
+      <Separator className="my-4" />
+
       <div className="mt-4 flex flex-col gap-2">
         <p className="text-sm md:min-h-16">{shortDescription}</p>
-
         <div>
           <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
             <span className="text-blue-500">{props.globalWeightPerc}%</span>{" "}
