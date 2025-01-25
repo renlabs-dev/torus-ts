@@ -7,7 +7,6 @@ const ClientHeroSection = dynamic(() => import("./ClientHeroSection"), {
   loading: () => <div>Loading...</div>,
 });
 
-// This is now a Client Component
 const HeroSection = () => <ClientHeroSection />;
 
 export { HeroSection };
