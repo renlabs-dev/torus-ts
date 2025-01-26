@@ -1,21 +1,12 @@
 import { BigNumber } from "bignumber.js";
 
+import type { Brand } from "./";
+import { BaseTaggedBigNumber } from "./bignumber";
+
 export const DECIMALS = 18;
 
 export const DECIMALS_BIG = BigInt(DECIMALS);
 export const DECIMALS_MULTIPLIER = 10n ** DECIMALS_BIG;
-
-// ---- Arbitrary precision decimals ----
-
-export const TorBigNumberCfg = BigNumber.clone({
-  DECIMAL_PLACES: DECIMALS,
-  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // better for financial
-});
-
-export const TorBigNumber = (value: BigNumber.Value) =>
-  new TorBigNumberCfg(value);
-
-export const DECIMALS_BN_MULTIPLIER = TorBigNumber(10).pow(DECIMALS);
 
 // ==== Address ====
 
@@ -39,6 +30,22 @@ export function smallWalletName(address: string, size?: number): string {
 }
 
 // ==== Amounts ====
+
+export type RemAmount = Brand<"RemAmount", bigint>;
+
+// ---- Arbitrary precision decimals ----
+
+export const TorBigNumberCfg = BigNumber.clone({
+  DECIMAL_PLACES: DECIMALS,
+  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // better for financial
+});
+
+export const TorAmount = (value: BigNumber.Value) =>
+  BaseTaggedBigNumber<"TorAmount">.from(value, TorBigNumberCfg);
+
+// export const DECIMALS_BN_MULTIPLIER = TorBigNumber(10).pow(DECIMALS);
+
+export type TorAmount = BaseTaggedBigNumber<"TorAmount">;
 
 // ---- old ----
 

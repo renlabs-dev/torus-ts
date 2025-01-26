@@ -11,7 +11,8 @@
     "./typing": "./src/typing.ts",
     "./collections": "./src/collections.ts",
     "./env": "./src/env.ts",
-    "./files": "./src/files.ts"
+    "./files": "./src/files.ts",
+    "./bignumber": "./src/bignumber.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",
@@ -25,7 +26,8 @@
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@types/luxon": "^3.4.2"
+    "@types/luxon": "^3.4.2",
+    "type-fest": "^4.33.0"
   },
   "compilerOptions": {
     "module": "ESNext",
