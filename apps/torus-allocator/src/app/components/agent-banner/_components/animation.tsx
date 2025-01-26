@@ -11,6 +11,7 @@ import {
   useScroll,
   useTexture,
   Environment,
+  Sparkles,
 } from "@react-three/drei";
 import { easing } from "maath";
 import "./util";
@@ -25,12 +26,12 @@ export const Animation = () => (
         </Rig>
         <Banner position={[0, -0.15, 0]} />
       </ScrollControls>
-
+      <Sparkles count={1000} scale={[20, 20, 10]} size={2} speed={1} />
       <Environment
         preset="studio"
         background
         blur={0.1}
-        backgroundIntensity={0.1}
+        backgroundIntensity={0.05}
       />
     </Canvas>
   </div>
