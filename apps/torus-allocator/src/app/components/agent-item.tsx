@@ -122,7 +122,9 @@ export function AgentItem(props: AgentCardProps) {
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
 
   return (
-    <Card className={`border p-6 transition duration-300 hover:bg-accent/60`}>
+    <Card
+      className={`border bg-gradient-to-t from-[#0A0B13] to-background p-6 transition duration-300 hover:scale-[101%] hover:shadow-2xl`}
+    >
       <div
         className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
       >
@@ -132,10 +134,10 @@ export function AgentItem(props: AgentCardProps) {
             alt="agent"
             width={1000}
             height={1000}
-            className={`aspect-square md:h-36 md:w-36`}
+            className={`aspect-square rounded-sm shadow-xl md:h-36 md:w-36`}
           />
         ) : (
-          <div className="flex aspect-square h-full w-full items-center justify-center border bg-gray-500/10 md:h-36 md:w-36">
+          <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-36 md:w-36">
             <Icons.logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
           </div>
         )}
@@ -152,7 +154,7 @@ export function AgentItem(props: AgentCardProps) {
               })}
             </div>
             {isAgentDelegated && (
-              <Badge className="bg-blue-500 text-xs text-white" variant="solid">
+              <Badge className="border-blue-500 bg-blue-500/10 text-blue-500 hover:bg-blue-500/10">
                 Delegated
               </Badge>
             )}
@@ -215,7 +217,7 @@ export function AgentItem(props: AgentCardProps) {
             className="w-full"
           />
 
-          <Button asChild variant="outline" className="w-full">
+          <Button asChild variant="outline" className="w-full border-gray-500">
             <Link href={`agent/${props.agentKey}`}>
               View More <ArrowRight className="h-5 w-5" />
             </Link>
