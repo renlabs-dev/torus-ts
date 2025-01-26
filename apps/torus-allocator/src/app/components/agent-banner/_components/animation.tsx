@@ -10,8 +10,9 @@ import {
   ScrollControls,
   useScroll,
   useTexture,
-  Environment,
   Sparkles,
+  Clouds,
+  Cloud,
 } from "@react-three/drei";
 import { easing } from "maath";
 import "./util";
@@ -26,13 +27,12 @@ export const Animation = () => (
         </Rig>
         <Banner position={[0, -0.15, 0]} />
       </ScrollControls>
-      <Sparkles count={1000} scale={[20, 20, 10]} size={2} speed={1} />
-      <Environment
-        preset="studio"
-        background
-        blur={0.1}
-        backgroundIntensity={0.05}
-      />
+      <Sparkles count={2000} scale={[20, 20, 10]} size={2} speed={1} />
+
+      <Clouds material={THREE.MeshBasicMaterial} position={[0, 0, -2]}>
+        <Cloud segments={40} bounds={[10, 2, 2]} volume={10} color="#809DE8" />
+        <Cloud seed={1} scale={2} volume={5} color="black" fade={100} />
+      </Clouds>
     </Canvas>
   </div>
 );
