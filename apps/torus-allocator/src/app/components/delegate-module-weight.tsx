@@ -42,7 +42,7 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
     <Button
       onClick={handleDelegateClick}
       variant="outline"
-      className={`flex w-fit items-center gap-2 text-white ${props.className}`}
+      className={`flex w-fit items-center gap-2 text-white ${props.className} ${isModuleDelegated ? "text-red-500" : "text-blue-500"}`}
     >
       <ChartPie className={`h-6 w-6`} />
       {isModuleDelegated ? "Remove Allocation" : "Allocate to Agent"}
