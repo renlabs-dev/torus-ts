@@ -10,27 +10,100 @@ const AnimatedIcosahedron = () => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
   const animationConfig = useAnimationConfig();
+  const animationState = useRef({
+    isExpanding: true,
+    progress: 0,
+    baseScale: 1,
+    maxScale: 0,
+    holdTimer: 0,
+    holdDuration: 2,
+  });
 
   useEffect(() => {
     if (meshRef.current) {
-      const scale = Math.max(viewport.width, viewport.height) * 1.5;
-      meshRef.current.scale.set(scale, scale, scale);
+      const maxScale = Math.max(viewport.width, viewport.height) * 1.5;
+      animationState.current.maxScale = maxScale;
+      animationState.current.baseScale = maxScale * 0.01; // Smaller base scale
+      meshRef.current.scale.setScalar(animationState.current.baseScale);
     }
   }, [viewport]);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
 
-    // Enhanced interactive rotation
-    const mouseX = state.mouse.x * viewport.width * 0.001;
-    const mouseY = state.mouse.y * viewport.height * 0.001;
+    const { isExpanding, baseScale, maxScale, holdDuration } =
+      animationState.current;
+    // Much slower animation speed
+    const expansionSpeed = 0.08;
+    const contractionSpeed = 0.06; // Even slower contraction
 
-    meshRef.current.rotation.x += delta * 0.05 + mouseY * 0.02;
-    meshRef.current.rotation.y += delta * 0.1 + mouseX * 0.02;
+    // Update progress with different speeds for expansion and contraction
+    if (isExpanding) {
+      if (animationState.current.holdTimer > 0) {
+        animationState.current.holdTimer -= delta;
+      } else {
+        // Super gradual expansion
+        animationState.current.progress += delta * expansionSpeed;
+        if (animationState.current.progress >= 1) {
+          animationState.current.progress = 1;
+          animationState.current.holdTimer = holdDuration;
+        }
+      }
+    } else {
+      // Extra slow contraction
+      animationState.current.progress -= delta * contractionSpeed;
+      if (animationState.current.progress <= 0) {
+        // Add small delay before starting expansion again
+        setTimeout(() => {
+          animationState.current.isExpanding = true;
+        }, 500);
+        animationState.current.progress = 0;
+      }
+    }
 
-    // Enhanced breathing effect
-    const breathingScale = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.02;
-    meshRef.current.scale.multiplyScalar(breathingScale);
+    if (
+      animationState.current.holdTimer <= 0 &&
+      animationState.current.progress >= 1
+    ) {
+      animationState.current.isExpanding = false;
+    }
+
+    // Smooth easing with extra gentle curves
+    const progress = animationState.current.progress;
+    const easedProgress = isExpanding
+      ? easeInOutCubic(progress)
+      : easeInOutCubic(progress);
+
+    const currentScale = baseScale + (maxScale - baseScale) * easedProgress;
+
+    // Extra smooth scale transition
+    meshRef.current.scale.lerp(
+      new THREE.Vector3(currentScale, currentScale, currentScale),
+      0.015, // Very slow lerp factor
+    );
+
+    // Gentler rotation
+    const mouseX = state.mouse.x * viewport.width * 0.0002;
+    const mouseY = state.mouse.y * viewport.height * 0.0002;
+
+    meshRef.current.rotation.x = THREE.MathUtils.lerp(
+      meshRef.current.rotation.x,
+      meshRef.current.rotation.x + mouseY,
+      0.03,
+    );
+    meshRef.current.rotation.y = THREE.MathUtils.lerp(
+      meshRef.current.rotation.y,
+      meshRef.current.rotation.y + mouseX,
+      0.03,
+    );
+
+    // Very subtle depth movement
+    const depthMovement = Math.sin(state.clock.elapsedTime * 0.2) * 0.08;
+    meshRef.current.position.z = THREE.MathUtils.lerp(
+      meshRef.current.position.z,
+      depthMovement,
+      0.01,
+    );
   });
 
   return (
@@ -39,6 +112,10 @@ const AnimatedIcosahedron = () => {
       <ShaderMaterial config={animationConfig} />
     </mesh>
   );
+};
+
+const easeInOutCubic = (t: number): number => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
 const ParticleField = () => {

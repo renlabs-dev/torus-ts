@@ -16,15 +16,16 @@ export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
     if (!materialRef.current) return;
 
     Object.entries(config).forEach(([key, value]) => {
-      if (
-        key !== "time" &&
-        materialRef.current?.uniforms[
-          `u${key.charAt(0).toUpperCase()}${key.slice(1)}`
-        ]
-      ) {
-        materialRef.current.uniforms[
-          `u${key.charAt(0).toUpperCase()}${key.slice(1)}`
-        ].value = value;
+      const uniformName = `u${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+      if (key !== "time" && materialRef.current?.uniforms[uniformName]) {
+        const current = materialRef.current.uniforms[uniformName].value;
+        const next = value;
+        // Smoother interpolation
+        materialRef.current.uniforms[uniformName].value = THREE.MathUtils.lerp(
+          current,
+          next,
+          0.05,
+        );
       }
     });
   });
@@ -32,8 +33,8 @@ export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
   return (
     <shaderMaterial
       ref={materialRef}
-      vertexShader={vertexShader}
-      fragmentShader={fragmentShader}
+      vertexShader={vertexShader as string}
+      fragmentShader={fragmentShader as string}
       wireframe
       transparent
       blending={THREE.AdditiveBlending}
