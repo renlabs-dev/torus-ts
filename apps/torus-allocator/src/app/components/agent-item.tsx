@@ -122,7 +122,7 @@ export function AgentItem(props: AgentCardProps) {
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
 
   return (
-    <Card className={`border p-6`}>
+    <Card className={`border p-6 transition duration-300 hover:bg-accent/60`}>
       <div
         className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
       >
