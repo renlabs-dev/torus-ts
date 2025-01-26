@@ -178,8 +178,13 @@ const ClientHeroSection = () => {
       >
         <Scene />
       </Canvas>
-      <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-black/30 to-transparent">
-        <h1 className="text-6xl font-bold tracking-wider text-white">STATS</h1>
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-transparent">
+        <h1 className="mb-6 font-['Italiana'] text-7xl font-light tracking-[0.15em] text-white/90">
+          DELEGATE YOUR POWER
+        </h1>
+        <p className="font-['Inter'] text-sm font-light tracking-wider text-white/70">
+          emission landscape is dynamic, APR might change quickly
+        </p>
       </div>
     </section>
   );
