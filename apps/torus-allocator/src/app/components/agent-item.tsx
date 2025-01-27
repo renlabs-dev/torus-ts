@@ -134,16 +134,16 @@ export function AgentItem(props: AgentCardProps) {
             alt="agent"
             width={1000}
             height={1000}
-            className={`aspect-square rounded-sm shadow-xl md:h-36 md:w-36`}
+            className={`aspect-square rounded-sm shadow-xl md:h-32 md:w-32`}
           />
         ) : (
-          <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-36 md:w-36">
+          <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
             <Icons.logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
           </div>
         )}
 
         <div className="flex h-full w-full flex-col justify-between gap-3">
-          <div className="flex w-full items-center justify-between gap-4">
+          <div className="justify-betweed flex w-fit items-center gap-4">
             <div className="flex gap-2">
               {socialsList.map((social) => {
                 return (
@@ -180,7 +180,7 @@ export function AgentItem(props: AgentCardProps) {
             >
               <IdCard size={16} />
               <span className="hidden md:block">
-                {smallAddress(props.agentKey, 10)}
+                {smallAddress(props.agentKey, 7)}
               </span>
               <span className="block md:hidden">
                 {smallAddress(props.agentKey, 6)}
