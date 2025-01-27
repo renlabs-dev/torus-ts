@@ -19,8 +19,6 @@ import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { Codec, ISubmittableResult } from "@polkadot/types/types";
 import { useTorus } from "@torus-ts/torus-provider";
 
-import { env } from "~/env";
-
 type TransactionExtrinsicPromise =
   | SubmittableExtrinsic<"promise", ISubmittableResult>
   | undefined;
@@ -85,11 +83,15 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
+interface WalletProviderProps {
+  children: React.ReactNode;
+  cacheUrl: string;
+}
+
 export function WalletProvider({
   children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+  cacheUrl,
+}: WalletProviderProps): JSX.Element {
   // == API Context ==
   const {
     accounts,
@@ -111,7 +113,7 @@ export function WalletProvider({
   } = useTorus();
 
   // == Subspace ==
-  const stakeOut = useCachedStakeOut(env('NEXT_PUBLIC_TORUS_CACHE_URL'));
+  const stakeOut = useCachedStakeOut(cacheUrl);
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(

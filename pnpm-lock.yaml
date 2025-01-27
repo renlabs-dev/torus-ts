@@ -674,6 +674,9 @@ importers:
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@torus-ts/wallet-provider':
+        specifier: workspace:*
+        version: link:../../packages/wallet-provider
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.2.0)
@@ -1246,6 +1249,52 @@ importers:
       '@types/luxon':
         specifier: ^3.4.2
         version: 3.4.2
+
+  packages/wallet-provider:
+    dependencies:
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.63.0(react@18.2.0)
+      '@torus-ts/query-provider':
+        specifier: workspace:*
+        version: link:../query-provider
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../subspace
+      '@torus-ts/torus-provider':
+        specifier: workspace:*
+        version: link:../torus-provider
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../utils
+      next:
+        specifier: 'catalog:'
+        version: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react:
+        specifier: catalog:react18
+        version: 18.2.0
+      react-dom:
+        specifier: catalog:react18
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.17.12
+      '@types/react':
+        specifier: catalog:react18
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: catalog:react18
+        version: 18.2.25
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
 
   tooling/eslint:
     dependencies:

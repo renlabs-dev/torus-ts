@@ -3,7 +3,16 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import {
+  AmountButtons,
+  Button,
+  Card,
+  FeeLabel,
+  Input,
+  Label,
+  TransactionStatus,
+  WalletTransactionReview,
+} from "@torus-ts/ui";
 import {
   formatToken,
   fromNano,
@@ -11,12 +20,9 @@ import {
   toNano,
 } from "@torus-ts/utils/subspace";
 
-import { useWallet } from "~/context/wallet-provider";
-import { AmountButtons } from "../amount-buttons";
-import { ValidatorsList } from "../validators-list";
-import { WalletTransactionReview } from "../wallet-review";
 import { isSS58 } from "@torus-ts/subspace";
-import { FeeLabel } from "../fee-label";
+import { useWallet } from "@torus-ts/wallet-provider";
+import { ValidatorsList } from "../validators-list";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;

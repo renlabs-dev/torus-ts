@@ -3,13 +3,19 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import {
+  Button,
+  AmountButtons,
+  Card,
+  Input,
+  Label,
+  WalletTransactionReview,
+  TransactionStatus,
+} from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
-import { useWallet } from "~/context/wallet-provider";
-import { AmountButtons } from "../amount-buttons";
+import { useWallet } from "@torus-ts/wallet-provider";
 import { ValidatorsList } from "../validators-list";
-import { WalletTransactionReview } from "../wallet-review";
 
 export function TransferStakeAction() {
   const { accountStakedBy, transferStake, selectedAccount } = useWallet();

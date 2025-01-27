@@ -6,7 +6,7 @@ import { Lock, Unlock } from "lucide-react";
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
-import { useWallet } from "~/context/wallet-provider";
+import { useWallet } from "@torus-ts/wallet-provider";
 
 export function WalletBalance() {
   const {

@@ -1,0 +1,36 @@
+{
+  "name": "@torus-ts/wallet-provider",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/wallet-provider.tsx"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "clean": "rm -rf .turbo node_modules",
+    "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:"
+  },
+  "dependencies": {
+    "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/utils": "workspace:*",
+    "@torus-ts/torus-provider": "workspace:*",
+    "@torus-ts/query-provider": "workspace:*",
+    "next": "catalog:",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18"
+  },
+  "devDependencies": {
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react18",
+    "@types/react-dom": "catalog:react18",
+    "typescript": "catalog:"
+  }
+}
