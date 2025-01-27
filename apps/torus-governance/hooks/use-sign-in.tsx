@@ -4,13 +4,11 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { createAuthReqData } from "@torus-ts/utils/auth";
 import { signData } from "node_modules/@torus-ts/api/src/auth/sign";
 import { useEffect, useState } from "react";
-import { useGovernance } from "~/context/governance-provider";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 
 export const useSignIn = () => {
-  const { signHex } = useTorus();
-  const { selectedAccount } = useGovernance();
+  const { signHex, selectedAccount } = useTorus();
 
   const [isUserAuthenticated, setIsUserAuthenticated] = useState<
     boolean | null
@@ -38,6 +36,10 @@ export const useSignIn = () => {
   }, []);
 
   useEffect(() => {
+    const favoriteWalletAddress = localStorage.getItem("favoriteWalletAddress");
+    if (!selectedAccount || favoriteWalletAddress === selectedAccount.address)
+      return;
+
     setIsUserAuthenticated(null);
     localStorage.removeItem("authorization");
   }, [selectedAccount]);
