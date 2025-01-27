@@ -5,7 +5,6 @@ import "@torus-ts/db/schema";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { CADRE_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { cadreVoteSchema } from "@torus-ts/db/schema";
-import { z } from "zod";
 import { and, eq, isNull } from "@torus-ts/db";
 
 export const cadreVoteRouter = {
@@ -31,7 +30,7 @@ export const cadreVoteRouter = {
         .values({ ...input, userKey: userKey })
         .execute();
     }),
-    // DELETE
+  // DELETE
   delete: authenticatedProcedure
     .input(CADRE_VOTE_INSERT_SCHEMA.pick({ applicantKey: true }))
     .mutation(async ({ ctx, input }) => {
@@ -41,8 +40,10 @@ export const cadreVoteRouter = {
       await ctx.db
         .delete(cadreVoteSchema)
         .where(
-          and(eq(cadreVoteSchema.userKey, userKey), eq(cadreVoteSchema.applicantKey, input.applicantKey))
-          
+          and(
+            eq(cadreVoteSchema.userKey, userKey),
+            eq(cadreVoteSchema.applicantKey, input.applicantKey),
+          ),
         )
         .execute();
     }),
