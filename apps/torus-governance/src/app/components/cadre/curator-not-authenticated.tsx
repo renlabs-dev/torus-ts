@@ -13,8 +13,8 @@ export const CuratorNotAuthenticated = (props: {
     return (
       <Card className="py-8">
         <div className="flex flex-col items-center justify-center gap-4">
-          <h1 className="font-bold">
-            This content is only avaiable to Curators.
+          <h1 className="text-center font-bold">
+            This content is only avaiable to Curator DAO Members.
           </h1>
           <CreateCadreCandidates />
         </div>
@@ -23,10 +23,10 @@ export const CuratorNotAuthenticated = (props: {
 
   if (isUserCadre)
     return (
-      <Card className="py-8">
+      <Card className="px-4 py-8">
         <div className="flex flex-col items-center justify-center gap-1">
-          <h1 className="font-bold">You are not authenticated.</h1>
-          <p className="">Please sign in to view this page.</p>
+          <h1 className="text-center font-bold">You are not authenticated.</h1>
+          <p className="text-center">Please sign in to view this page.</p>
           <Button
             variant="default"
             className="mt-4 px-4 py-2"
@@ -40,13 +40,13 @@ export const CuratorNotAuthenticated = (props: {
 
   if (isUserCadreCandidate)
     return (
-      <Card className="py-8">
+      <Card className="px-4 py-8">
         <div className="flex flex-col items-center justify-center gap-1">
-          <h1 className="font-bold">
-            Your candidacy has not been approved yet
+          <h1 className="text-center font-bold">
+            Your candidacy is under vote.
           </h1>
-          <p className="">
-            Unfortunately, you are not allowed to view this content.
+          <p className="text-center">
+            Access will be granted once approved. Thank you for your patience.
           </p>
         </div>
       </Card>
