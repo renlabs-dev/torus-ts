@@ -36,10 +36,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
 const PINATA_PIN_FILE_URL = "https://api.pinata.cloud/pinning/pinFileToIPFS";
 
+export interface PinFileOnPinataResponse { cid: CID }
+
 async function pinFileOnPinata(
   file: File,
   name?: string,
-): Promise<{ cid: CID }> {
+): Promise<PinFileOnPinataResponse> {
   const PINATA_JWT = env("PINATA_JWT");
 
   const pinataOptions = {
