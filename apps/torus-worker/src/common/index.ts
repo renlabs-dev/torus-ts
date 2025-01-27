@@ -3,7 +3,10 @@ import type { ApiPromise } from "@polkadot/api";
 import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
 import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
 
-import type { VotesByNumericId as VoteById, VotesByKey as VoteByKey } from "../db";
+import type {
+  VotesByNumericId as VoteById,
+  VotesByKey as VoteByKey,
+} from "../db";
 import {
   queryTotalVotesPerApp as queryTotalVotesPerApp,
   countCadreKeys,
@@ -92,8 +95,7 @@ export async function getVotesOnPending(
   return votes_on_pending;
 }
 
-export async function getCadreVotes(
-): Promise<VoteByKey[]> {
+export async function getCadreVotes(): Promise<VoteByKey[]> {
   const votes = await queryTotalVotesPerCadre();
   return votes;
 }
@@ -151,7 +153,6 @@ export async function processVotesOnProposal(
   }
 }
 
-
 // TODO: abstract common logic and merge with processVotesOnProposal
 export async function processCadreVotes(
   votes: VoteByKey[],
@@ -159,13 +160,18 @@ export async function processCadreVotes(
 ) {
   await Promise.all(
     votes.map(async (vote_info) => {
-      const { appId: applicatorKey, acceptVotes, refuseVotes, removeVotes } = vote_info;
+      const {
+        appId: applicatorKey,
+        acceptVotes,
+        refuseVotes,
+        removeVotes,
+      } = vote_info;
       if (acceptVotes >= vote_threshold) {
         console.log("Adding cadre member:", applicatorKey);
         const cadreDiscord = await getCadreDiscord(applicatorKey);
         if (cadreDiscord == null) {
           throw new Error(
-            "No discord account found for cadre member: " + applicatorKey
+            "No discord account found for cadre member: " + applicatorKey,
           );
         }
         await addCadreMember(applicatorKey, cadreDiscord);
@@ -176,12 +182,11 @@ export async function processCadreVotes(
         console.log("Removing cadre member:", applicatorKey);
         await removeCadreMember(applicatorKey);
       }
-    }) 
-    ,
-  )
-  .catch((error) => console.log(`Failed to process vote for reason: ${error}`));
+    }),
+  ).catch((error) =>
+    console.log(`Failed to process vote for reason: ${error}`),
+  );
 }
-
 
 export async function processAllVotes(
   votes_on_pending: VoteById[],

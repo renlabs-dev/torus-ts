@@ -53,7 +53,6 @@ export const ListCuratorCandidates = () => {
 
   const filteredCadreCandidates = cadreCandidatesList.map((candidate) => {
     const search = searchParams.get("search")?.toLocaleLowerCase();
-
     if (
       search &&
       !candidate.content.toLocaleLowerCase().includes(search) &&
