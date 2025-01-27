@@ -48,6 +48,7 @@ import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
 import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
 import type { TRPCClientErrorLike } from "@trpc/client";
+import { useSignIn } from "hooks/use-sign-in";
 
 type CadreCandidates = inferProcedureOutput<AppRouter["cadreCandidate"]["all"]>;
 type CadreList = inferProcedureOutput<AppRouter["cadre"]["all"]>;
@@ -99,6 +100,8 @@ interface GovernanceContextType {
     TRPCClientErrorLike<AppRouter>
   >;
   cadreList: UseTRPCQueryResult<CadreList, TRPCClientErrorLike<AppRouter>>;
+  authenticateUser: () => Promise<void>;
+  isUserAuthenticated: boolean | null;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -162,6 +165,7 @@ export function GovernanceProvider({
     (user) => user.userKey === selectedAccount?.address,
   );
 
+  const { isUserAuthenticated, authenticateUser } = useSignIn();
   // == Subspace ==
   const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
 
@@ -255,6 +259,8 @@ export function GovernanceProvider({
         torusCacheUrl,
         unrewardedProposals,
         voteProposal,
+        authenticateUser,
+        isUserAuthenticated,
       }}
     >
       <Header

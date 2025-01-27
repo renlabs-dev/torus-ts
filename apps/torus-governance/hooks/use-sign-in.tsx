@@ -2,6 +2,7 @@
 
 import { useTorus } from "@torus-ts/torus-provider";
 import { createAuthReqData } from "@torus-ts/utils/auth";
+import { useSearchParams } from "next/navigation";
 import { signData } from "node_modules/@torus-ts/api/src/auth/sign";
 import { useEffect, useState } from "react";
 import { env } from "~/env";
@@ -16,9 +17,17 @@ export const useSignIn = () => {
 
   const checkSession = api.auth.checkSession.useMutation();
 
+  const searchParams = useSearchParams();
+  const viewMode = searchParams.get("view");
+
   useEffect(() => {
+    if (!(viewMode === "dao-portal")) return;
+
     const auth = localStorage.getItem("authorization");
-    if (!auth) return;
+    if (!auth) {
+      setIsUserAuthenticated(false);
+      return;
+    }
 
     checkSession
       .mutateAsync({ auth })
@@ -33,7 +42,7 @@ export const useSignIn = () => {
         localStorage.removeItem("authorization");
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [viewMode]);
 
   useEffect(() => {
     const favoriteWalletAddress = localStorage.getItem("favoriteWalletAddress");

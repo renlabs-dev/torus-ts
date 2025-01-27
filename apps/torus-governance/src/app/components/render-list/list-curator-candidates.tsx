@@ -5,7 +5,6 @@ import { CuratorCandidatesList } from "../cadre/curator-candidates-list";
 import { ListContainer } from "./list-container";
 import { useGovernance } from "~/context/governance-provider";
 import { Card } from "@torus-ts/ui";
-import { useSignIn } from "hooks/use-sign-in";
 import { CuratorNotAuthenticated } from "../cadre/curator-not-authenticated";
 
 const ListCardsLoadingSkeleton = () => {
@@ -25,9 +24,13 @@ const ListCardsLoadingSkeleton = () => {
 };
 
 export const ListCuratorCandidates = () => {
-  const { selectedAccount, cadreCandidates } = useGovernance();
+  const {
+    selectedAccount,
+    cadreCandidates,
+    isUserAuthenticated,
+    authenticateUser,
+  } = useGovernance();
 
-  const { isUserAuthenticated, authenticateUser } = useSignIn();
   const { data: cadreCandidatesList, isFetching: isFetchingCadreCandidates } =
     cadreCandidates;
 
