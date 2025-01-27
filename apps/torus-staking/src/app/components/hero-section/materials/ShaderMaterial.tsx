@@ -1,13 +1,15 @@
 import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { AnimationConfig } from "../types/animation";
+import type { AnimationConfig } from "../types/animation";
 import vertexShader from "../shaders/vertex.glsl";
 import fragmentShader from "../shaders/fragment.glsl";
 
 interface ShaderMaterialProps {
   config: AnimationConfig;
 }
+
+type CustomUniforms = Record<string, THREE.IUniform<number>>;
 
 export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
@@ -17,15 +19,13 @@ export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
 
     Object.entries(config).forEach(([key, value]) => {
       const uniformName = `u${key.charAt(0).toUpperCase()}${key.slice(1)}`;
-      if (key !== "time" && materialRef.current?.uniforms[uniformName]) {
-        const current = materialRef.current.uniforms[uniformName].value;
-        const next = value;
-        // Smoother interpolation
-        materialRef.current.uniforms[uniformName].value = THREE.MathUtils.lerp(
-          current,
-          next,
-          0.05,
-        );
+      const uniforms = materialRef.current?.uniforms as CustomUniforms;
+
+      if (key !== "time" && uniforms[uniformName]) {
+        const current = Number(uniforms[uniformName].value);
+        const next = Number(value);
+
+        uniforms[uniformName].value = THREE.MathUtils.lerp(current, next, 0.05);
       }
     });
   });
@@ -33,8 +33,10 @@ export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
   return (
     <shaderMaterial
       ref={materialRef}
-      vertexShader={vertexShader as string}
-      fragmentShader={fragmentShader as string}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      vertexShader={vertexShader}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      fragmentShader={fragmentShader}
       wireframe
       transparent
       blending={THREE.AdditiveBlending}

@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { useEffect, useState } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -71,20 +73,6 @@ export function APRDisplay() {
 
       const aprNumerator = rewardsAfterTreasuryFee * 100n;
       const aprValue = Number(aprNumerator / stakingAmount);
-
-      // console.debug("APR Calculation Details:", {
-      //   recyclingRate,
-      //   treasuryFee,
-      //   halvingCount,
-      //   totalIssuance: totalFreeBalance.toString(),
-      //   totalStake: totalStakeBigInt.toString(),
-      //   baseEmission: BLOCK_EMISSION.toString(),
-      //   currentEmission: currentEmission.toString(),
-      //   dailyRewards: dailyRewards.toString(),
-      //   yearlyRewards: yearlyRewards.toString(),
-      //   rewardsAfterTreasuryFee: rewardsAfterTreasuryFee.toString(),
-      //   finalApr: aprValue,
-      // });
 
       setApr(aprValue);
     } catch (error) {

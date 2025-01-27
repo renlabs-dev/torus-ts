@@ -5,8 +5,9 @@ import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { Footer, Layout } from "@torus-ts/ui/components";
-import { StakingHeader } from "./components/staking-header";
+import { StakingHeader } from "./components/staking-section/staking-header";
 import { EnvScript, env } from "~/env";
+import { WalletProvider } from "@torus-ts/features/context/wallet-provider";
 
 const APP_NAME = "Torus Staking";
 
@@ -36,8 +37,10 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <ReactQueryProvider>
-            <StakingHeader />
-            {children}
+            <WalletProvider cacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}>
+              <StakingHeader />
+              {children}
+            </WalletProvider>
           </ReactQueryProvider>
         </TorusProvider>
       </ToastProvider>

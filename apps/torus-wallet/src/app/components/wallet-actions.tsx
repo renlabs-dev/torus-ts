@@ -8,7 +8,7 @@ import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
-import { useWallet } from "~/context/wallet-provider";
+import { useWallet } from "@torus-ts/features/context/wallet-provider";
 
 const buttons = [
   { text: "Send", component: <SendAction /> },

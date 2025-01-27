@@ -7,7 +7,7 @@ import { isSS58 } from "@torus-ts/subspace";
 import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
-import { useWallet } from "~/context/wallet-provider";
+import { useWallet } from "@torus-ts/features/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { FeeLabel } from "../fee-label";
 import { WalletTransactionReview } from "../wallet-review";

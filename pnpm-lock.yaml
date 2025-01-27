@@ -550,6 +550,9 @@ importers:
       '@torus-ts/env-validation':
         specifier: workspace:*
         version: link:../../packages/env-validation
+      '@torus-ts/features':
+        specifier: workspace:*
+        version: link:../../packages/features
       '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
@@ -756,6 +759,9 @@ importers:
       '@torus-ts/env-validation':
         specifier: workspace:*
         version: link:../../packages/env-validation
+      '@torus-ts/features':
+        specifier: workspace:*
+        version: link:../../packages/features
       '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../../packages/query-provider
@@ -1010,6 +1016,52 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
+
+  packages/features:
+    dependencies:
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.63.0(react@18.2.0)
+      '@torus-ts/query-provider':
+        specifier: workspace:*
+        version: link:../query-provider
+      '@torus-ts/subspace':
+        specifier: workspace:*
+        version: link:../subspace
+      '@torus-ts/torus-provider':
+        specifier: workspace:*
+        version: link:../torus-provider
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../utils
+      next:
+        specifier: 'catalog:'
+        version: 15.1.4(@babel/core@7.26.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react:
+        specifier: catalog:react18
+        version: 18.2.0
+      react-dom:
+        specifier: catalog:react18
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.17.12
+      '@types/react':
+        specifier: catalog:react18
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: catalog:react18
+        version: 18.2.25
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
 
   packages/query-provider:
     dependencies:

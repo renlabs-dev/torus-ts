@@ -16,6 +16,7 @@ const config = {
     "@torus-ts/ui",
     "@torus-ts/utils",
     "@torus-ts/env-validation",
+    "@torus-ts/features",
   ],
 
   /** We already do linting and typechecking as separate tasks in CI */

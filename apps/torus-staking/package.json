@@ -19,6 +19,7 @@
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/features": "workspace:*",
     "@torus-ts/toast-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",

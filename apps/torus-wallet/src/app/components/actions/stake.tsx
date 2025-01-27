@@ -11,13 +11,13 @@ import {
   toNano,
 } from "@torus-ts/utils/subspace";
 
-import { useWallet } from "~/context/wallet-provider";
+import { useWallet } from "@torus-ts/features/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
 import { isSS58 } from "@torus-ts/subspace";
 import { FeeLabel } from "../fee-label";
-import { APRDisplay } from "../apr-display";
+import { APRDisplay } from "@torus-ts/features";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { AnimationConfig } from "../types/animation";
+import type { AnimationConfig } from "../types/animation";
 
 export const useAnimationConfig = () => {
   const params = useRef<AnimationConfig>({
