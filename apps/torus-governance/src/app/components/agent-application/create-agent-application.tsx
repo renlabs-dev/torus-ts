@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
 
@@ -21,6 +20,7 @@ import {
 import { formatToken } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
+import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -30,7 +30,6 @@ const agentApplicationSchema = z.object({
 });
 
 export function CreateAgentApplication(): JSX.Element {
-  const router = useRouter();
   const {
     isAccountConnected,
     AddAgentApplication,
@@ -89,13 +88,9 @@ export function CreateAgentApplication(): JSX.Element {
         method: "POST",
         body: data,
       });
-      const ipfs = (await res.json()) as { IpfsHash: string };
+      const { cid } = PIN_FILE_RESULT.parse(await res.json());
+      console.log(cid.toString());
       setUploading(false);
-
-      if (ipfs.IpfsHash === "undefined" || !ipfs.IpfsHash) {
-        toast.error("Error uploading transfer dao treasury proposal");
-        return;
-      }
 
       if (!accountFreeBalance.data) {
         toast.error("Balance is still loading");
@@ -112,7 +107,7 @@ export function CreateAgentApplication(): JSX.Element {
       if (accountFreeBalance.data > daoApplicationCost) {
         void AddAgentApplication({
           applicationKey,
-          IpfsHash: `ipfs://${ipfs.IpfsHash}`,
+          IpfsHash: cidToIpfsUri(cid),
           removing: false,
           callback: handleCallback,
           refetchHandler,
@@ -121,16 +116,10 @@ export function CreateAgentApplication(): JSX.Element {
         toast.error(
           `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
         );
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Insufficient balance to create Agent Application",
-        });
       }
-      router.refresh();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       setUploading(false);
+      console.error(e);
       toast.error("Error uploading Agent Application");
     }
   }
@@ -187,6 +176,16 @@ export function CreateAgentApplication(): JSX.Element {
     }
     return "Submit Application";
   };
+
+  const isSubmitDisabled =
+    !criteriaAgreement ||
+    uploading ||
+    !userHasEnoughtBalance ||
+    !title ||
+    !body ||
+    !selectedAccount?.address ||
+    !discordId ||
+    !applicationKey;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -316,12 +315,7 @@ export function CreateAgentApplication(): JSX.Element {
         type="submit"
         variant="default"
         className="flex items-center gap-2"
-        disabled={
-          !isAccountConnected ||
-          !criteriaAgreement ||
-          uploading ||
-          !userHasEnoughtBalance
-        }
+        disabled={isSubmitDisabled}
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>
