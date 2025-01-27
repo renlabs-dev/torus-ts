@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/toast-provider";
@@ -142,10 +142,7 @@ export function PenaltyManager({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          className="animate-fade-down animate-delay-[1400ms]"
-        >
+        <Button variant="secondary" className="animate-fade-down">
           Apply Penalty
         </Button>
       </PopoverTrigger>
