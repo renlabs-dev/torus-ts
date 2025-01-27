@@ -20,6 +20,10 @@ import "./util";
 export const Animation = () => (
   <div className="margin-0 padding-0 box-border h-80 w-full overflow-hidden bg-accent/60">
     <Canvas camera={{ position: [0, 0, 100], fov: 8 }}>
+      <Clouds material={THREE.MeshBasicMaterial} position={[0, 0, -2]}>
+        <Cloud segments={20} bounds={[10, 2, 2]} volume={10} color="#506396" />
+        <Cloud seed={1} scale={2} volume={10} color="black" fade={100} />
+      </Clouds>
       <fog attach="fog" args={["#000000", 8.5, 12]} />
       <ScrollControls pages={4} infinite>
         <Rig rotation={[0, 0, 0.15]}>
@@ -28,11 +32,6 @@ export const Animation = () => (
         <Banner position={[0, -0.15, 0]} />
       </ScrollControls>
       <Sparkles count={2000} scale={[20, 20, 10]} size={2} speed={1} />
-
-      <Clouds material={THREE.MeshBasicMaterial} position={[0, 0, -2]}>
-        <Cloud segments={20} bounds={[10, 2, 2]} volume={10} color="#506396" />
-        <Cloud seed={1} scale={2} volume={10} color="black" fade={100} />
-      </Clouds>
     </Canvas>
   </div>
 );

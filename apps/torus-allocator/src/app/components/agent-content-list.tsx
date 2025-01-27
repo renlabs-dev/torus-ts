@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { FilterContent } from "./filter-content";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useSearchParams } from "next/navigation";
+import { UserWeightInfo } from "./user-weight-info";
 
 interface Agent {
   id: number;
@@ -37,9 +38,6 @@ export function AgentContentList() {
 
   const { delegatedAgents } = useDelegateAgentStore();
   const { data: agents, isLoading: isLoadingAgents } = api.agent.all.useQuery();
-
-  const view = searchParams.get("view");
-  if (view !== "agents") return null;
 
   const viewType = searchParams.get("view-type");
   const search = searchParams.get("search");
@@ -145,6 +143,7 @@ export function AgentContentList() {
               : delegatedAgents.length === 0)
           }
         />
+        <UserWeightInfo />
         <AgentsTabView />
       </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">{content}</div>

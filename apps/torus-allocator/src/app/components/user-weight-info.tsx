@@ -17,7 +17,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { VALIDATOR_ADDRESS } from "./delegated-list";
 import type { SS58Address } from "@torus-ts/subspace";
 
-export const SidebarInfo = () => {
+export const UserWeightInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
   const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
     useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
@@ -36,22 +36,14 @@ export const SidebarInfo = () => {
   }, [accountStakedBy, isLoadingAccountStakedBy, selectedAccount]);
 
   return (
-    <Card className="hidden animate-fade-up flex-row gap-6 px-7 py-5 animate-delay-[400ms] md:flex">
-      <div>
-        {userWeightPower === null ? (
-          <Skeleton className="flex w-3/4 py-3" />
-        ) : (
-          <span className="flex items-end gap-1.5">
-            {userWeightPower}
-            <span className="mb-0.5 text-xs">TORUS</span>
-          </span>
-        )}
+    <Card className="hidden w-fit flex-row gap-4 px-3 py-2 md:flex">
+      <div className="flex items-center gap-2 text-sm">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <span className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Info size={14} />
-                Your Weight Power
+              <span className="flex items-center gap-1.5 text-nowrap text-sm text-muted-foreground">
+                <Info size={16} />
+                Weight Power:
               </span>
             </TooltipTrigger>
             <TooltipContent className="max-w-[200px] space-y-3">
@@ -63,18 +55,24 @@ export const SidebarInfo = () => {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        {userWeightPower === null ? (
+          <Skeleton className="flex w-3/4 py-3" />
+        ) : (
+          <span>
+            {userWeightPower}
+            <span className="ml-0.5 text-xs">TORUS</span>
+          </span>
+        )}
       </div>
-      <div>
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-nowrap text-muted-foreground">
+          Agents Allocated:
+        </span>
         {userWeightPower === null ? (
           <Skeleton className="flex w-1/4 py-3" />
         ) : (
-          <span className="flex items-end gap-1.5">
-            {delegatedAgents.length}
-          </span>
+          <span>{delegatedAgents.length}</span>
         )}
-        <span className="mt-2 text-sm text-muted-foreground">
-          Agents Allocated
-        </span>
       </div>
     </Card>
   );
