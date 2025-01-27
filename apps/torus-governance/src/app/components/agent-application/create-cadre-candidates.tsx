@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/toast-provider";
@@ -22,7 +21,6 @@ const MAX_CONTENT_CHARACTERS = 500;
 const MIN_STAKE_REQUIRED = 5000;
 
 export function CreateCadreCandidates() {
-  const router = useRouter();
   const [discordId, setDiscordId] = useState("");
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,21 +29,22 @@ export function CreateCadreCandidates() {
   const {
     selectedAccount,
     accountStakedBalance,
+    cadreCandidates,
     isUserCadre,
     isUserCadreCandidate,
   } = useGovernance();
 
   const createCadreCandidateMutation = api.cadreCandidate.create.useMutation({
-    onSuccess: () => {
-      router.refresh();
+    onSuccess: async () => {
       setDiscordId("");
       setContent("");
+      await cadreCandidates.refetch();
       toast.success(
         "Curador DAO member candidate request submitted successfully!",
       );
     },
     onError: (error) => {
-      setError(
+      toast.error(
         error.message || "An unexpected error occurred. Please try again.",
       );
     },
@@ -104,10 +103,7 @@ export function CreateCadreCandidates() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          className="animate-fade-down animate-delay-[1400ms]"
-        >
+        <Button variant="secondary" className="animate-fade-down">
           Apply to join the Curator DAO
         </Button>
       </PopoverTrigger>
