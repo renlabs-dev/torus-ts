@@ -27,21 +27,18 @@ import {
 } from "@torus-ts/ui";
 import { smallFilename, strToFile } from "@torus-ts/utils/files";
 import type { CID } from "@torus-ts/utils/ipfs";
-import { CID_SCHEMA, cidToIpfsUri } from "@torus-ts/utils/ipfs";
+import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 import {
   DECIMALS_MULTIPLIER,
   formatToken,
   fromNano,
 } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 
 const MODULE_REGISTER_COST = 200n * DECIMALS_MULTIPLIER; // FIXME: this should be dynamic
 
-const PIN_FILE_RESULT = z.object({
-  cid: CID_SCHEMA,
-});
-
-const pinFile = async (file: File): Promise<{ cid: CID }> => {
+const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();
   body.set("file", file);
   const res = await fetch("/api/files", {
