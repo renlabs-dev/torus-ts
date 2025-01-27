@@ -90,3 +90,7 @@ export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
 export const PINATA_PIN_FILE_RESULT = z.object({
   IpfsHash: CID_SCHEMA,
 });
+
+export const PIN_FILE_RESULT = z.object({
+  cid: CID_SCHEMA,
+});
