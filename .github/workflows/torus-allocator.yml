@@ -5,12 +5,10 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
-      - "apps/torus-worker/**"
       - "apps/torus-governance/**"
       - "apps/torus-page/**"
       - "apps/torus-bridge/**"
       - "apps/torus-wallet/**"
-      - "apps/torus-cache/**"
 
 jobs:
   kubernetes:

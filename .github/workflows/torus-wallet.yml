@@ -10,7 +10,6 @@ on:
       - "apps/torus-bridge/**"
       - "apps/torus-worker/**"
       - "apps/torus-governance/**"
-      - "apps/torus-cache/**"
 
 jobs:
   kubernetes:

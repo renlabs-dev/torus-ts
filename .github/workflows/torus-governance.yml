@@ -8,9 +8,7 @@ on:
       - "apps/torus-page/**"
       - "apps/torus-allocator/**"
       - "apps/torus-bridge/**"
-      - "apps/torus-worker/**"
       - "apps/torus-wallet/**"
-      - "apps/torus-cache/**"
 
 jobs:
   kubernetes:
