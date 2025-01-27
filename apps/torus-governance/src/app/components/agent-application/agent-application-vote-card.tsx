@@ -24,7 +24,7 @@ const voteOptions: WhitelistVoteType[] = ["ACCEPT", "REFUSE"];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
-    <div className="animate-fade-down animate-delay-200">
+    <div className="animate-fade-down">
       <div className="pb-6 pl-0">
         <h3 className="text-lg">Cast your vote</h3>
       </div>
@@ -148,8 +148,8 @@ const VoteCardFunctionsContent = (props: {
       </div>
       {!isAccountConnected && (
         <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-          <span>Are you a Curador DAO?</span>
-          <span>Connect your wallet to vote</span>
+          <span>Are you a Curator DAO member?</span>
+          <span>Please connect your wallet to vote</span>
         </div>
       )}
       {isAccountConnected && !isUserCadre && (

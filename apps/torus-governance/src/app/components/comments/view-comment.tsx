@@ -274,7 +274,7 @@ export function ViewComment({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-700">
+      <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200">
         <CommentsHeader
           sortBy={sortBy}
           isLoading={isLoading}

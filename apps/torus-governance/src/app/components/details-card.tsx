@@ -26,7 +26,7 @@ export const DetailsCard = (props: DetailsCardProps) => {
   } = props;
 
   return (
-    <Card className="animate-fade-down p-4 animate-delay-[1200ms] lg:p-6">
+    <Card className="animate-fade-down p-4 lg:p-6">
       <CardHeader className="pl-0 pt-0">
         <CardTitle className="font-semibold">Details</CardTitle>
       </CardHeader>
