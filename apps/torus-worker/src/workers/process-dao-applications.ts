@@ -45,10 +45,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
         props.api,
       );
       const cadreVotes = await getCadreVotes();
-      await processCadreVotes(
-        cadreVotes,
-        vote_threshold,
-      )
+      await processCadreVotes(cadreVotes, vote_threshold);
       console.log("threshold: ", vote_threshold);
       const factors = await getPenaltyFactors(vote_threshold);
       await processPenalty(factors, props.api);
