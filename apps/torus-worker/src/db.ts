@@ -87,7 +87,6 @@ export async function upsertAgentData(agents: Agent[]) {
     .execute();
 }
 
-
 interface VotesByIdBase {
   acceptVotes: number;
   refuseVotes: number;
@@ -132,7 +131,6 @@ export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
   }));
 }
 
-
 export async function getCadreDiscord(cadreKey: SS58Address) {
   const result = await db
     .select({
@@ -141,15 +139,15 @@ export async function getCadreDiscord(cadreKey: SS58Address) {
     .from(cadreCandidateSchema)
     .where(
       and(
-      isNull(cadreCandidateSchema.deletedAt), 
-      eq(cadreCandidateSchema.userKey, cadreKey)
-    ))
+        isNull(cadreCandidateSchema.deletedAt),
+        eq(cadreCandidateSchema.userKey, cadreKey),
+      ),
+    )
     .limit(1)
     .execute();
 
   return result.pop()?.discordId;
 }
-
 
 export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
   const result = await db
@@ -172,44 +170,43 @@ export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
   }));
 }
 
-
 export async function archiveCadreVotes(
-  applicantKey: SS58Address, 
-  tx: Transaction
-){
-    const votes = await tx
-      .select()
-      .from(cadreVoteSchema)
-      .where(eq(cadreVoteSchema.applicantKey, applicantKey));
+  applicantKey: SS58Address,
+  tx: Transaction,
+) {
+  const votes = await tx
+    .select()
+    .from(cadreVoteSchema)
+    .where(eq(cadreVoteSchema.applicantKey, applicantKey));
 
-    await tx.insert(cadreVoteHistory).values(
-      votes.map((vote) => ({
-        userKey: vote.userKey,
-        applicantKey: vote.applicantKey,
-        vote: vote.vote,
-        createdAt: vote.createdAt, // Explicit to keep history
-        updatedAt: vote.updatedAt,
-      }))
-    );
+  await tx.insert(cadreVoteHistory).values(
+    votes.map((vote) => ({
+      userKey: vote.userKey,
+      applicantKey: vote.applicantKey,
+      vote: vote.vote,
+      createdAt: vote.createdAt, // Explicit to keep history
+      updatedAt: vote.updatedAt,
+    })),
+  );
 
-    await tx
-      .delete(cadreVoteSchema)
-      .where(eq(cadreVoteSchema.applicantKey, applicantKey));
+  await tx
+    .delete(cadreVoteSchema)
+    .where(eq(cadreVoteSchema.applicantKey, applicantKey));
 }
 
 export async function addCadreMember(userKey: SS58Address, discordId: string) {
   await db.transaction(async (tx) => {
     await tx.insert(cadreSchema).values({
-        userKey: userKey,
-        discordId: discordId,
-      });
+      userKey: userKey,
+      discordId: discordId,
+    });
     await tx
       .update(cadreCandidateSchema)
       .set({
         candidacyStatus: candidacyStatusValues.ACCEPTED,
       })
-      .where(eq(cadreCandidateSchema.userKey, userKey))
-    
+      .where(eq(cadreCandidateSchema.userKey, userKey));
+
     await archiveCadreVotes(userKey, tx);
   });
 }
@@ -217,13 +214,11 @@ export async function addCadreMember(userKey: SS58Address, discordId: string) {
 export async function removeCadreMember(userKey: SS58Address) {
   await db.transaction(async (tx) => {
     await archiveCadreVotes(userKey, tx);
+    await tx.delete(cadreSchema).where(eq(cadreSchema.userKey, userKey));
     await tx
-      .delete(cadreSchema)
-      .where(eq(cadreSchema.userKey, userKey));
-    await tx
-    .update(cadreCandidateSchema)
-    .set({candidacyStatus: candidacyStatusValues.REMOVED})
-    .where(eq(cadreCandidateSchema.userKey, userKey));
+      .update(cadreCandidateSchema)
+      .set({ candidacyStatus: candidacyStatusValues.REMOVED })
+      .where(eq(cadreCandidateSchema.userKey, userKey));
   });
 }
 
@@ -231,13 +226,12 @@ export async function refuseCadreApplication(userKey: SS58Address) {
   await db.transaction(async (tx) => {
     await tx
       .update(cadreCandidateSchema)
-      .set({candidacyStatus: candidacyStatusValues.REJECTED})
+      .set({ candidacyStatus: candidacyStatusValues.REJECTED })
       .where(eq(cadreCandidateSchema.userKey, userKey));
 
     await archiveCadreVotes(userKey, tx);
   });
 }
-
 
 export async function getGovItemIdsByType(
   type: GovernanceItemType,
