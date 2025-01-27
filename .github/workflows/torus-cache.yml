@@ -16,12 +16,9 @@ jobs:
   kubernetes:
     if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
     uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
     with:
       app_name: torus-cache
-    secrets:
-      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
 
   dry-run-build:
     if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'

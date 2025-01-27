@@ -5,23 +5,18 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
-      - "apps/torus-worker/**"
       - "apps/torus-governance/**"
       - "apps/torus-page/**"
       - "apps/torus-bridge/**"
       - "apps/torus-wallet/**"
-      - "apps/torus-cache/**"
 
 jobs:
   kubernetes:
     if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
     uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
     with:
       app_name: torus-allocator
-    secrets:
-      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
 
   dry-run-build:
     if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
