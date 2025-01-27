@@ -5,94 +5,106 @@ import * as THREE from "three";
 import { useFrame, useThree, Canvas } from "@react-three/fiber";
 import { useAnimationConfig } from "./hooks/useAnimationConfig";
 import { ShaderMaterial } from "./materials/ShaderMaterial";
+import { BalanceDisplay } from "./BalanceDisplay";
 
 const AnimatedIcosahedron = () => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
   const animationConfig = useAnimationConfig();
-  const animationState = useRef({
-    isExpanding: true,
-    progress: 0,
+
+  const state = useRef({
+    initialTime: Date.now(),
     baseScale: 1,
-    maxScale: 0,
+    maxScale: 1,
+    currentScale: 1,
+    rotationX: 0,
+    rotationY: 0,
+    positionZ: 0,
+    progress: 0,
+    isExpanding: true,
     holdTimer: 0,
     holdDuration: 2,
-  });
+  }).current;
 
+  // Initialize scales when viewport changes
   useEffect(() => {
-    if (meshRef.current) {
-      const maxScale = Math.max(viewport.width, viewport.height) * 1.5;
-      animationState.current.maxScale = maxScale;
-      animationState.current.baseScale = maxScale * 0.01;
-      meshRef.current.scale.setScalar(animationState.current.baseScale);
-    }
-  }, [viewport]);
-
-  useFrame((state, delta) => {
     if (!meshRef.current) return;
 
-    const { isExpanding, baseScale, maxScale, holdDuration } =
-      animationState.current;
+    state.maxScale = Math.max(viewport.width, viewport.height) * 1.5;
+    state.baseScale = state.maxScale * 0.01;
+
+    if (!state.isExpanding && state.progress === 0) {
+      state.currentScale = state.baseScale;
+      meshRef.current.scale.setScalar(state.baseScale);
+    }
+  }, [viewport, state]);
+
+  useFrame((three, delta) => {
+    if (!meshRef.current) return;
+
+    // Expansion/Contraction animation
     const expansionSpeed = 0.08;
     const contractionSpeed = 0.06;
 
-    if (isExpanding) {
-      if (animationState.current.holdTimer > 0) {
-        animationState.current.holdTimer -= delta;
+    if (state.isExpanding) {
+      if (state.holdTimer > 0) {
+        state.holdTimer -= delta;
       } else {
-        animationState.current.progress += delta * expansionSpeed;
-        if (animationState.current.progress >= 1) {
-          animationState.current.progress = 1;
-          animationState.current.holdTimer = holdDuration;
+        state.progress += delta * expansionSpeed;
+        if (state.progress >= 1) {
+          state.progress = 1;
+          state.holdTimer = state.holdDuration;
         }
       }
     } else {
-      animationState.current.progress -= delta * contractionSpeed;
-      if (animationState.current.progress <= 0) {
+      state.progress -= delta * contractionSpeed;
+      if (state.progress <= 0) {
+        state.progress = 0;
         setTimeout(() => {
-          animationState.current.isExpanding = true;
+          state.isExpanding = true;
         }, 500);
-        animationState.current.progress = 0;
       }
     }
 
-    if (
-      animationState.current.holdTimer <= 0 &&
-      animationState.current.progress >= 1
-    ) {
-      animationState.current.isExpanding = false;
+    if (state.holdTimer <= 0 && state.progress >= 1) {
+      state.isExpanding = false;
     }
 
-    const progress = animationState.current.progress;
-    const easedProgress = easeInOutCubic(progress);
-
-    const currentScale = baseScale + (maxScale - baseScale) * easedProgress;
+    // Scale calculation with easing
+    const easedProgress = easeInOutCubic(state.progress);
+    const targetScale =
+      state.baseScale + (state.maxScale - state.baseScale) * easedProgress;
 
     meshRef.current.scale.lerp(
-      new THREE.Vector3(currentScale, currentScale, currentScale),
-      0.015
+      new THREE.Vector3(targetScale, targetScale, targetScale),
+      0.015,
     );
 
-    const mouseX = state.mouse.x * viewport.width * 0.0002;
-    const mouseY = state.mouse.y * viewport.height * 0.0002;
+    // Mouse-based rotation
+    const mouseX = three.mouse.x * viewport.width * 0.0002;
+    const mouseY = three.mouse.y * viewport.height * 0.0002;
 
-    meshRef.current.rotation.x = THREE.MathUtils.lerp(
-      meshRef.current.rotation.x,
-      meshRef.current.rotation.x + mouseY,
-      0.03
+    state.rotationX = THREE.MathUtils.lerp(
+      state.rotationX,
+      state.rotationX + mouseY,
+      0.03,
     );
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(
-      meshRef.current.rotation.y,
-      meshRef.current.rotation.y + mouseX,
-      0.03
+    state.rotationY = THREE.MathUtils.lerp(
+      state.rotationY,
+      state.rotationY + mouseX,
+      0.03,
     );
 
-    const depthMovement = Math.sin(state.clock.elapsedTime * 0.2) * 0.08;
-    meshRef.current.position.z = THREE.MathUtils.lerp(
-      meshRef.current.position.z,
-      depthMovement,
-      0.01
-    );
+    meshRef.current.rotation.x = state.rotationX;
+    meshRef.current.rotation.y = state.rotationY;
+
+    // Floating animation
+    const elapsedTime = (Date.now() - state.initialTime) / 1000;
+    const targetZ = Math.sin(elapsedTime * 0.2) * 0.08;
+
+    state.positionZ = THREE.MathUtils.lerp(state.positionZ, targetZ, 0.01);
+
+    meshRef.current.position.z = state.positionZ;
   });
 
   return (
@@ -168,10 +180,11 @@ const ClientHeroSection = () => (
     >
       <Scene />
     </Canvas>
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-transparent">
-      <h1 className="mb-6 font-['Italiana'] text-7xl font-light tracking-[0.15em] text-white/90">
-        DELEGATE YOUR POWER
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 bg-gradient-to-b from-black/30 to-transparent">
+      <h1 className="font-['Italiana'] text-7xl font-light tracking-[0.15em] text-white/90">
+        TORUS STAKING
       </h1>
+      <BalanceDisplay />
       <p className="font-['Inter'] text-sm font-light tracking-wider text-white/70">
         emission landscape is dynamic, APR might change quickly
       </p>

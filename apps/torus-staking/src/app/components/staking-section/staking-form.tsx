@@ -39,9 +39,7 @@ export function StakingForm() {
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
   const [maxAmount, setMaxAmount] = useState<string>("");
-  const [currentView, setCurrentView] = useState<"form" | "validators">(
-    "minAllowedStake",
-  );
+  const [currentView, setCurrentView] = useState<"form" | "validators">("form");
 
   const [minAllowedStake, setMinAllowedStake] = useState<bigint>(
     MIN_ALLOWED_STAKE_SAFEGUARD,
