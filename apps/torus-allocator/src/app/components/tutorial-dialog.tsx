@@ -27,7 +27,7 @@ export const tutorialData = {
       "Connect your wallet to the Torus Network using the menu in the top-right corner.",
       <p>
         You can find a detailed guide in our docs at{" "}
-        <Link href={links.setup_a_wallet} className="text-blue-500 underline">
+        <Link href={links.setup_a_wallet} className="text-cyan-500 underline">
           Setup a wallet
         </Link>
         .
@@ -40,7 +40,7 @@ export const tutorialData = {
     steps: [
       <p>
         Go to our{" "}
-        <Link href={links.setup_a_wallet} className="text-blue-500 underline">
+        <Link href={links.setup_a_wallet} className="text-cyan-500 underline">
           Wallet App
         </Link>
         .

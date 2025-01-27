@@ -24,7 +24,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
       return (
         <Badge
           variant="solid"
-          className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/10"
+          className="bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10"
         >
           Global Params
         </Badge>

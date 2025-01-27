@@ -36,7 +36,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
+    <Layout
+      font={firaMono}
+      headScripts={[EnvScript]}
+      className="bg-[url(/background.svg)]"
+    >
       <ToastProvider>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
@@ -46,7 +50,7 @@ export default function RootLayout({
             <AllocatorHeader />
             <TutorialDialog />
             <DelegatedList />
-            <div className="h-full w-full bg-[url(/background.svg)] pt-12">
+            <div className="h-full w-full pt-12">
               <AgentBanner />
               {children}
             </div>

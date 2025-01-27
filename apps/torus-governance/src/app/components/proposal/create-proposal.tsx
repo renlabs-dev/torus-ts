@@ -220,7 +220,7 @@ export function CreateProposal(): JSX.Element {
         <Label className="text-sm text-white">
           Want a different approach?{" "}
           <Link
-            className="text-blue-500 underline"
+            className="text-cyan-500 underline"
             href="https://docs.torus.network/concepts/torus-dao"
             target="_blank"
           >

@@ -98,14 +98,14 @@ export default async function AgentPage({
             </Card>
             <Card className="p-6">
               <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
-                <span className="text-blue-500">
+                <span className="text-cyan-500">
                   {globalWeight ? globalWeight.percComputedWeight : 0}%
                 </span>{" "}
                 Current Network Allocation
               </Label>
               <div className="rounded-radius my-2 w-full bg-primary-foreground">
                 <div
-                  className="rounded-radius bg-gradient-to-r from-blue-700 to-blue-500 py-2"
+                  className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
                   style={{
                     width: `${globalWeight ? globalWeight.percComputedWeight.toFixed(0) : 0}%`,
                   }}

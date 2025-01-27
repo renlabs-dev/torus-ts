@@ -154,7 +154,7 @@ export function AgentItem(props: AgentCardProps) {
               })}
             </div>
             {isAgentDelegated && (
-              <Badge className="border-blue-500 bg-blue-500/10 text-blue-500 hover:bg-blue-500/10">
+              <Badge className="border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10">
                 Delegated
               </Badge>
             )}
@@ -196,12 +196,12 @@ export function AgentItem(props: AgentCardProps) {
         <p className="text-sm md:min-h-16">{shortDescription}</p>
         <div>
           <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
-            <span className="text-blue-500">{props.globalWeightPerc}%</span>{" "}
+            <span className="text-cyan-500">{props.globalWeightPerc}%</span>{" "}
             Current Network Allocation
           </Label>
           <div className="rounded-radius my-2 w-full bg-primary-foreground">
             <div
-              className="rounded-radius bg-gradient-to-r from-blue-700 to-blue-500 py-2"
+              className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
               style={{
                 width: `${props.globalWeightPerc?.toFixed(0)}%`,
               }}
