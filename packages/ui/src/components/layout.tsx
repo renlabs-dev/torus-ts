@@ -22,7 +22,6 @@ export function Layout({
   children,
   font,
   className,
-  torusPage,
   headScripts,
 }: LayoutProps): JSX.Element {
   return (

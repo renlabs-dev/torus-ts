@@ -76,7 +76,7 @@ export function TutorialDialog() {
   return (
     <Dialog>
       <Button asChild variant="outline">
-        <DialogTrigger className="fixed bottom-4 right-52 z-50">
+        <DialogTrigger className="fixed bottom-14 right-52 z-50">
           <BookText />
           <p className="hidden md:block">Tutorial</p>
         </DialogTrigger>

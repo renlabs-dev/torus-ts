@@ -43,23 +43,23 @@ interface SocialItem {
 export const SOCIALS_VALUES = {
   website: {
     name: "Website",
-    icon: <Globe className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    icon: <Globe className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   discord: {
     name: "Discord",
-    icon: <Icons.discord className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    icon: <Icons.discord className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   twitter: {
     name: "X",
-    icon: <Icons.x className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    icon: <Icons.x className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   github: {
     name: "GitHub",
-    icon: <Icons.github className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    icon: <Icons.github className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   telegram: {
     name: "Telegram",
-    icon: <Icons.telegram className="h-4 w-4 md:h-3.5 md:w-3.5" color="gray" />,
+    icon: <Icons.telegram className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
 };
 
@@ -214,6 +214,7 @@ export function AgentItem(props: AgentCardProps) {
             id={props.id}
             name={props.name}
             agentKey={props.agentKey}
+            metadataUri={metadataUri}
             className="w-full"
           />
 

@@ -30,7 +30,7 @@ export const Animation = () => (
       <Sparkles count={2000} scale={[20, 20, 10]} size={2} speed={1} />
 
       <Clouds material={THREE.MeshBasicMaterial} position={[0, 0, -2]}>
-        <Cloud segments={20} bounds={[10, 2, 2]} volume={10} color="#566BA3" />
+        <Cloud segments={20} bounds={[10, 2, 2]} volume={10} color="#506396" />
         <Cloud seed={1} scale={2} volume={10} color="black" fade={100} />
       </Clouds>
     </Canvas>

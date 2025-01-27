@@ -57,9 +57,8 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
     <Card className="p-6">
       <CardTitle className="mb-6 flex flex-row items-center justify-between text-lg font-semibold">
         General Information
-        <ReportAgent agentKey={agent.key} />
       </CardTitle>
-      <CardContent className="flex flex-col gap-2 px-0 pb-0">
+      <CardContent className="flex w-full flex-col gap-2 px-0 pb-4">
         {dataGroups.map((field, fieldIndex) => (
           <div key={fieldIndex} className="flex items-center justify-between">
             <span className="text-muted-foreground">{field.label}:</span>
@@ -67,6 +66,7 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
           </div>
         ))}
       </CardContent>
+      <ReportAgent agentKey={agent.key} />
     </Card>
   );
 }

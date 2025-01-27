@@ -106,10 +106,10 @@ export function ReportAgent({ agentKey }: ReportAgentProps) {
         type="button"
         variant="outline"
         asChild
-        className="flex h-4 w-4 items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65 transition duration-200 hover:text-red-500 hover:opacity-100"
+        className="flex w-full items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65 transition duration-200 hover:text-red-500 hover:opacity-100"
       >
         <DialogTrigger>
-          <TriangleAlert className="h-4 w-3" />
+          <TriangleAlert className="h-4 w-3" /> Report Agent to DAO
         </DialogTrigger>
       </Button>
 

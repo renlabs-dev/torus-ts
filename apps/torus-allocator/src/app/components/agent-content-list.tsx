@@ -87,30 +87,28 @@ export function AgentContentList() {
     return renderAgentItems(allAgentsList);
   };
 
-  // TODO: @Ed
+  const renderWeightedAgentsView = () => {
+    if (isLoadingAgents) return <p>Loading... </p>;
+    if (delegatedAgents.length === 0) return <p>No weighted agents found.</p>;
 
-  // const renderWeightedAgentsView = () => {
-  //   if (isLoadingAgents) return <p>Loading... </p>;
-  //   if (delegatedAgents.length === 0) return <p>No weighted agents found.</p>;
-  //
-  //   const delegatedAgentsList = delegatedAgents.map((agent) => {
-  //     const globalWeight = computedWeightedAgents?.find(
-  //       (d) => d.agentKey === agent.address, // ?
-  //     );
-  //     return {
-  //       ...agent,
-  //       key: agent.address, // ?
-  //       isDelegated: true,
-  //       percentage: agent.percentage,
-  //       globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
-  //     };
-  //   });
-  //
-  //   const filteredAgents = filterAgentsBySearch(delegatedAgentsList, search);
-  //   if (filteredAgents.length === 0) return <p>No weighted agents found.</p>;
-  //
-  //   return renderAgentItems(filteredAgents);
-  // };
+    const delegatedAgentsList = delegatedAgents.map((agent) => {
+      const globalWeight = computedWeightedAgents?.find(
+        (d) => d.agentKey === agent.address, // ?
+      );
+      return {
+        ...agent,
+        key: agent.address,
+        isDelegated: true,
+        percentage: agent.percentage,
+        globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
+      };
+    });
+
+    const filteredAgents = filterAgentsBySearch(delegatedAgentsList, search);
+    if (filteredAgents.length === 0) return <p>No weighted agents found.</p>;
+
+    return renderAgentItems(filteredAgents);
+  };
 
   const renderPopularAgentsView = () => {
     if (isLoadingAgents) return <p>Loading... </p>;
@@ -127,7 +125,7 @@ export function AgentContentList() {
 
   const contentMap: Record<string, () => JSX.Element | JSX.Element[]> = {
     all: renderAllAgentsView,
-    // weighted: renderWeightedAgentsView, // TODO: @Ed
+    weighted: renderWeightedAgentsView,
     popular: renderPopularAgentsView,
   };
 
@@ -149,7 +147,7 @@ export function AgentContentList() {
         />
         <AgentsTabView />
       </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{content}</div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">{content}</div>
     </div>
   );
 }

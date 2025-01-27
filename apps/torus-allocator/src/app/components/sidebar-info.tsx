@@ -36,7 +36,7 @@ export const SidebarInfo = () => {
   }, [accountStakedBy, isLoadingAccountStakedBy, selectedAccount]);
 
   return (
-    <Card className="hidden animate-fade-up flex-col gap-6 px-7 py-5 animate-delay-[400ms] md:flex">
+    <Card className="hidden animate-fade-up flex-row gap-6 px-7 py-5 animate-delay-[400ms] md:flex">
       <div>
         {userWeightPower === null ? (
           <Skeleton className="flex w-3/4 py-3" />

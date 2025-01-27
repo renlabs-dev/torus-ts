@@ -164,6 +164,7 @@ export function DelegatedList() {
         title: agent.agent.name ?? "",
         name: agent.agent.name ?? "",
         percentage: agent.user_agent_weight.weight,
+        metadataUri: agent.agent.metadataUri,
       }));
 
       setDelegatedAgentsFromDB(formattedModules ?? []);
@@ -239,6 +240,7 @@ export function DelegatedList() {
         title: agent.agent.name ?? "",
         name: agent.agent.name ?? "",
         percentage: agent.user_agent_weight.weight,
+        metadataUri: agent.agent.metadataUri,
       }));
       setDelegatedAgentsFromDB(formattedModules);
     }
@@ -262,7 +264,7 @@ export function DelegatedList() {
     <Sheet>
       <SheetTrigger
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-4 right-4 z-[50] ${buttonVariants({ variant: "outline" })} marker:flex`}
+        className={`fixed bottom-14 right-4 z-[50] ${buttonVariants({ variant: "outline" })} marker:flex`}
       >
         <PieChart />
         Allocation Menu

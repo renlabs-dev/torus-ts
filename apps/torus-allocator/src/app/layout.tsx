@@ -3,7 +3,7 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Layout } from "@torus-ts/ui";
+import { Footer, Layout } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -13,6 +13,7 @@ import { TutorialDialog } from "./components/tutorial-dialog";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript } from "~/env";
 import { ToastProvider } from "@torus-ts/toast-provider";
+import { AgentBanner } from "./components/agent-banner";
 
 const APP_NAME = "Allocator";
 
@@ -45,7 +46,11 @@ export default function RootLayout({
             <AllocatorHeader />
             <TutorialDialog />
             <DelegatedList />
-            {children}
+            <div className="h-full w-full bg-[url(/background.svg)] pt-12">
+              <AgentBanner />
+              {children}
+            </div>
+            <Footer />
           </TRPCReactProvider>
         </TorusProvider>
       </ToastProvider>
