@@ -756,6 +756,9 @@ importers:
       tsafe:
         specifier: 'catalog:'
         version: 1.8.5
+      zod:
+        specifier: 'catalog:'
+        version: 3.24.1
     devDependencies:
       '@polkadot/api-augment':
         specifier: 'catalog:'

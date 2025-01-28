@@ -359,10 +359,10 @@ export async function removeFromWhitelist(
 export async function acceptApplication(
   api: ApiPromise,
   proposalId: number,
-  mnemonic: string | undefined,
+  mnemonic: string,
 ) {
   if (!mnemonic) {
-    throw new Error("No sudo mnemonic provided");
+    throw new Error("No sudo mnemonic provided to accept application");
   }
 
   const tx = api.tx.governance.acceptApplication(proposalId);
@@ -377,10 +377,10 @@ export async function penalizeAgent(
   api: ApiPromise,
   agentKey: string,
   penaltyFactor: number,
-  mnemonic: string | undefined,
+  mnemonic: string,
 ) {
   if (!mnemonic) {
-    throw new Error("No sudo mnemonic provided");
+    throw new Error("No sudo mnemonic provided to penalize agent");
   }
 
   const tx = api.tx.governance.penalizeAgent(agentKey, penaltyFactor);
