@@ -196,7 +196,7 @@ export function CreateAgentApplication(): JSX.Element {
         >
           <Input
             onChange={(e) => setApplicationKey(e.target.value)}
-            placeholder="Agent address (SS58 eg. 5D5F...EBnt)"
+            placeholder="Agent address (SS58 e.g. 5D5F...EBnt)"
             className="placeholder:text-sm"
             type="text"
             required
