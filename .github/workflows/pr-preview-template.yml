@@ -1,0 +1,160 @@
+# .github/workflows/pr-preview-template.yml
+name: PR Preview Deployment Template
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        required: true
+        type: string
+      delete:
+        required: false
+        type: boolean
+        default: false
+      pr_number:
+        required: true
+        type: number
+    secrets:
+      VAULT_ADDR:
+        required: true
+      VAULT_ROLE_ID:
+        required: true
+      VAULT_SECRET_ID:
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.pr_number }}-${{ inputs.app_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-build:
+    if: ${{ !inputs.delete }}
+    permissions: write-all
+    runs-on: ubuntu-22.04-32core-karl
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Login
+        uses: docker/login-action@v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: commit
+        uses: prompt/actions-commit-hash@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          file: docker/Dockerfile
+          build-args: |
+            APP_NAME=${{ inputs.app_name }}
+          tags: |
+            ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ steps.commit.outputs.short }}-pr
+            ghcr.io/renlabs-dev/${{ inputs.app_name }}:pr-${{ inputs.pr_number }}
+
+  clean-stale:
+    if: ${{ !inputs.delete }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/renlabs-dev/devops-ci:latest
+
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+
+    steps:
+      - name: Setup Kubernetes authentication
+        run: /apps/k8s_auth_w_approle_sa.sh
+
+      - name: Clean stale releases
+        run: |
+          /apps/clean_stale_releases.sh torus-dev-web-apps
+
+  deploy:
+    if: ${{ !inputs.delete }}
+    needs: [docker-build, clean-stale]
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/renlabs-dev/devops-ci:latest
+
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubernetes authentication
+        run: /apps/k8s_auth_w_approle_sa.sh
+
+      - name: Add and update Helm repositories
+        run: |
+          helm repo add renlabs https://charts.renlabs.dev/
+          helm repo update
+
+      - id: commit
+        uses: prompt/actions-commit-hash@v3
+
+      - name: Install shared resources
+        run: |
+          helm template torus-dev-aux \
+            -f helm/values-utils.yaml \
+            -n torus-dev-web-apps \
+            --set environmentName=dev \
+            renlabs/utils | kubectl apply -f -
+
+      - name: Deploy application
+        working-directory: apps/${{ inputs.app_name }}
+        run: |
+          helmfile sync -e dev \
+          --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
+          --state-values-set ingressHost=p${{ inputs.pr_number }}.${{ inputs.app_name }}.torus.network \
+          --state-values-set releaseName=pr-${{ inputs.pr_number }}-${{ inputs.app_name }} \
+          --state-values-set releasePrefix=pr-${{ inputs.pr_number }}-${{ inputs.app_name }}
+
+      - name: Wait for App URL
+        uses: iFaxity/wait-on-action@v1.2.1
+        with:
+          resource: https://p${{ inputs.pr_number }}.${{ inputs.app_name }}.torus.network
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            🚀 **${{ inputs.app_name }}** Preview deployment will be available at: https://p${{ inputs.pr_number }}.${{ inputs.app_name }}.torus.network
+          comment-tag: ${{ inputs.app_name }}-preview-url
+
+  destroy:
+    if: ${{ inputs.delete }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/renlabs-dev/devops-ci:latest
+
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubernetes authentication
+        run: /apps/k8s_auth_w_approle_sa.sh
+
+      - name: Destroy PR preview app deployment
+        working-directory: apps/${{ inputs.app_name }}
+        run: |
+          helmfile destroy -e dev \
+          --state-values-set releaseName=pr-${{ inputs.pr_number }}-${{ inputs.app_name }} \
+          --state-values-set releasePrefix=pr-${{ inputs.pr_number }}-${{ inputs.app_name }}
