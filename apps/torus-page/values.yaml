@@ -1,3 +1,6 @@
 deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-page
+
+  podLabels:
+    app: torus-page
