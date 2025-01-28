@@ -19,6 +19,11 @@ import { env } from "~/env";
 export const SidebarLinks = () => {
   const chainEnv = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");
 
+  const walletLink =
+    chainEnv === "mainnet"
+      ? "https://wallet.torus.network"
+      : "https://wallet.testnet.torus.network";
+
   const bridgeLink =
     chainEnv === "mainnet"
       ? "https://bridge.torus.network"
@@ -26,12 +31,13 @@ export const SidebarLinks = () => {
 
   return (
     <>
-      <Select defaultValue="wallet">
+      <Select defaultValue="staking">
         <SelectTrigger className="w-full lg:hidden">
           <SelectValue placeholder="Select a view" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
+            <SelectItem value="staking">Staking</SelectItem>
             <SelectItem value="wallet">Wallet</SelectItem>
             <SelectItem value="bridge">Bridge</SelectItem>
           </SelectGroup>
@@ -46,9 +52,16 @@ export const SidebarLinks = () => {
             className={`w-full justify-between gap-4 border-none bg-accent px-3 text-base`}
           >
             <Link href="/">
-              Wallet
+              Staking
               <Check size={16} />
             </Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            className={`w-full justify-between gap-4 border-none px-3 text-base`}
+          >
+            <Link href={walletLink}>Wallet</Link>
           </Button>
           <Button
             asChild
