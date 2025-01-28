@@ -4,6 +4,9 @@ name: migrations
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
+      - dev
     paths:
       - "packages/db/**"
       - ".github/workflows/migrations.yml"
