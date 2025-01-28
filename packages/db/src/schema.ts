@@ -338,12 +338,6 @@ export const cadreVoteTypeEnum = pgEnum("cadre_vote_type", [
   "REFUSE",
 ]);
 
-export const applicationVoteType = pgEnum("agent_application_vote_type", [
-  "ACCEPT",
-  "REFUSE",
-  "REMOVE",
-]);
-
 /**
  * This table stores votes on Cadre Candidates.
  */
@@ -358,7 +352,7 @@ export const cadreVoteSchema = createTable(
     applicantKey: ss58Address("applicant_key")
       .references(() => cadreCandidateSchema.userKey)
       .notNull(),
-    vote: applicationVoteType("vote").notNull(),
+    vote: cadreVoteTypeEnum("vote").notNull(),
 
     ...timeFields(),
   },
@@ -369,13 +363,16 @@ export const cadreVoteHistory = createTable("cadre_vote_history", {
   id: serial("id").primaryKey(),
   userKey: ss58Address("user_key").notNull(),
   applicantKey: ss58Address("applicant_key").notNull(),
-  vote: applicationVoteType("vote").notNull(),
+  vote: cadreVoteTypeEnum("vote").notNull(),
 
   ...timeFields(),
 });
 
-/**
- */
+export const applicationVoteType = pgEnum("agent_application_vote_type", [
+  "ACCEPT",
+  "REFUSE",
+  "REMOVE",
+]);
 
 /**
  * This table stores votes on Agent Applications.
