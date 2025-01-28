@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from "react";
 
-import { Anvil, ArrowRight, Cuboid, Globe, IdCard } from "lucide-react";
+import { Cuboid, Globe, IdCard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { toast } from "@torus-ts/toast-provider";
-import { Badge, Button, Card, CopyButton, Icons, Label } from "@torus-ts/ui";
+import {
+  Badge,
+  Card,
+  CopyButton,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+  Icons,
+  Label,
+  Separator,
+} from "@torus-ts/ui";
 import type { Nullish } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
@@ -115,111 +125,133 @@ export function AgentItem(props: AgentCardProps) {
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
 
   return (
-    <Card
-      className={`border bg-gradient-to-t from-[#0A0B13] to-background p-6 transition duration-300 hover:scale-[101%] hover:shadow-2xl`}
-    >
-      <div
-        className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
-      >
-        {iconUrl ? (
-          <Image
-            src={iconUrl}
-            alt="agent"
-            width={1000}
-            height={1000}
-            className={`aspect-square rounded-sm shadow-xl md:h-32 md:w-32`}
-          />
-        ) : (
-          <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
-            <Icons.logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
-          </div>
-        )}
-
-        <div className="flex h-full w-full flex-col justify-between gap-3">
-          <div className="justify-betweed flex w-fit items-center gap-4">
-            <div className="flex gap-2">
-              {socialsList.map((social) => {
-                return (
-                  <Link key={social.name} href={social.href}>
-                    {social.icon}
-                  </Link>
-                );
-              })}
-            </div>
-            {isAgentDelegated && (
-              <Badge className="border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10">
-                Delegated
-              </Badge>
-            )}
-          </div>
-          <h2
-            className={`w-fit text-ellipsis text-base font-semibold md:max-w-fit`}
-          >
-            {title}
-          </h2>
-        </div>
-      </div>
-
-      <div className="mt-2 flex items-center justify-between gap-3 border px-4">
-        <Label className={`flex items-center gap-1.5 text-base font-semibold`}>
-          <Anvil size={16} />
-          {props.percentage}%
-        </Label>
-
-        <Label className={`flex items-center gap-1.5 text-base font-semibold`}>
-          <Cuboid size={16} />
-          {props.registrationBlock}
-        </Label>
-
-        <CopyButton
-          variant="link"
-          copy={props.agentKey}
-          notify={() => toast.success("Copied to clipboard")}
-          className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+    <div className="relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:bg-accent hover:shadow-2xl">
+      <div>
+        <div
+          className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
         >
-          <IdCard size={16} />
-          <span className="hidden md:block">
-            {smallAddress(props.agentKey, 7)}
-          </span>
-          <span className="block md:hidden">
-            {smallAddress(props.agentKey, 6)}
-          </span>
-        </CopyButton>
-      </div>
+          {iconUrl ? (
+            <Image
+              src={iconUrl}
+              alt="agent"
+              width={1000}
+              height={1000}
+              className={`aspect-square rounded-sm shadow-xl md:h-32 md:w-32`}
+            />
+          ) : (
+            <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
+              <Icons.logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
+            </div>
+          )}
 
-      <div className="mt-4 flex flex-col gap-2">
-        <p className="text-sm md:min-h-16">{shortDescription}</p>
-        <div>
-          <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
-            <span className="text-cyan-500">{props.globalWeightPerc}%</span>{" "}
-            Current Network Allocation
-          </Label>
-          <div className="rounded-radius my-2 w-full bg-primary-foreground">
-            <div
-              className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
-              style={{
-                width: `${props.globalWeightPerc?.toFixed(0)}%`,
-              }}
+          <div className="mt-1 flex h-full w-full flex-col justify-between gap-3">
+            <div className="flex w-full items-center justify-between gap-4">
+              <div className="relative z-50 flex gap-2">
+                {socialsList.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </div>
+              <Badge
+                className={`border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10 ${isAgentDelegated ? "visible" : "invisible"}`}
+              >
+                Selected
+              </Badge>
+            </div>
+            <h2
+              className={`w-fit text-ellipsis text-base font-semibold md:max-w-fit`}
+            >
+              {title}
+            </h2>
+            <div className="flex items-center justify-between">
+              <HoverCard>
+                <HoverCardTrigger>
+                  <Label
+                    className={`flex items-center gap-1.5 text-xs font-semibold`}
+                  >
+                    <Globe size={14} />
+                    {props.globalWeightPerc}%
+                  </Label>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <p className="text-sm">
+                    Current Network Allocation on this agent.
+                  </p>
+                </HoverCardContent>
+              </HoverCard>
+
+              <HoverCard>
+                <HoverCardTrigger>
+                  <Label
+                    className={`flex items-center gap-1.5 text-xs font-semibold`}
+                  >
+                    <Cuboid size={16} />
+                    {props.registrationBlock}
+                  </Label>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <p className="text-sm">Registration Block of this agent.</p>
+                </HoverCardContent>
+              </HoverCard>
+
+              <CopyButton
+                variant="link"
+                copy={props.agentKey}
+                notify={() => toast.success("Copied to clipboard")}
+                className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+              >
+                <IdCard size={14} />
+                <span className="hidden text-xs md:block">
+                  {smallAddress(props.agentKey, 4)}
+                </span>
+                <span className="block text-xs md:hidden">
+                  {smallAddress(props.agentKey, 4)}
+                </span>
+              </CopyButton>
+            </div>
+          </div>
+        </div>
+
+        <Separator className="mt-4" />
+
+        <div className="mt-4 flex flex-col gap-2">
+          <p className="text-sm md:min-h-16">{shortDescription}</p>
+
+          <div>
+            <Label className="absolute ml-2 mt-3 flex items-center gap-1.5 text-xs font-semibold">
+              Your current allocation: {props.percentage}%
+            </Label>
+            <div className="rounded-radius my-2 w-full border bg-primary-foreground">
+              <div
+                className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-3"
+                style={{
+                  width: `${props.percentage?.toFixed(0)}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex w-full flex-col gap-2 md:flex-row">
+            <DelegateModuleWeight
+              id={props.id}
+              name={props.name}
+              agentKey={props.agentKey}
+              metadataUri={metadataUri}
+              className="w-full"
             />
           </div>
         </div>
-
-        <div className="flex w-full flex-col gap-2 md:flex-row">
-          <DelegateModuleWeight
-            id={props.id}
-            name={props.name}
-            agentKey={props.agentKey}
-            metadataUri={metadataUri}
-            className="w-full"
-          />
-
-          <Button asChild variant="outline" className="w-full border-gray-500">
-            <Link href={`agent/${props.agentKey}`}>
-              View More <ArrowRight className="h-5 w-5" />
-            </Link>
-          </Button>
-        </div>
       </div>
-    </Card>
+      <Link href={`agent/${props.agentKey}`} className="absolute inset-0">
+        <span className="sr-only">View agent details</span>
+      </Link>
+    </div>
   );
 }

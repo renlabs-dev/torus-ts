@@ -1,4 +1,5 @@
 import {
+  Anvil,
   ArrowLeftRight,
   BookMarked,
   Globe,
@@ -51,7 +52,7 @@ export function Footer() {
             <div className="flex gap-2.5 py-1">
               {_socialList.map((social) => {
                 return (
-                  <a key={social.name} href={social.href} target="_blank">
+                  <a key={social.name} href={social.href}>
                     {social.icon}
                   </a>
                 );
@@ -119,6 +120,11 @@ const _appList = [
     icon: <BookMarked className="h-3 w-3" />,
     name: "Docs",
     href: links.docs,
+  },
+  {
+    icon: <Anvil className="h-3 w-3" />,
+    name: "Allocator",
+    href: links.allocator,
   },
   {
     icon: <Telescope className="h-3 w-3" />,
