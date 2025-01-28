@@ -10,6 +10,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-worker
 
+  podLabels:
+    app: torus-worker
+
   command: ["pnpm", "tsx", "./src/index.ts"]
 
   startupProbe:

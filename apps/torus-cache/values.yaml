@@ -4,6 +4,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-cache
 
+  podLabels:
+    app: torus-cache
+
   resources:
     limits:
       memory: 512Mi

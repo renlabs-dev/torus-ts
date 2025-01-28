@@ -2,6 +2,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-bridge
 
+  podLabels:
+    app: torus-bridge
+
   env:
     NEXT_PUBLIC_WALLET_CONNECT_ID:
       valueFrom:

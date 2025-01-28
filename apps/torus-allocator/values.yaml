@@ -2,6 +2,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-allocator
 
+  podLabels:
+    app: torus-allocator
+
   env:
     JWT_SECRET:
       valueFrom:

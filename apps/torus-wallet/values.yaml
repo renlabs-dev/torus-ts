@@ -1,3 +1,6 @@
 deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-wallet
+
+  podLabels:
+    app: torus-wallet
