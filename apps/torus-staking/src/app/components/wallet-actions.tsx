@@ -1,16 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@torus-ts/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
 
 import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
@@ -23,45 +15,18 @@ const buttons = [
   { text: "Move Stake", component: <TransferStakeAction /> },
 ];
 
-const unstakeRelatedActions = [buttons[1]?.text, buttons[2]?.text];
-
 function WalletOptions() {
-  const { accountStakedBy, selectedAccount } = useWallet();
+  const { selectedAccount } = useWallet();
   const [currentTab, setCurrentTab] = useState(buttons[0]?.text);
-
-  const userHasNotStaked = accountStakedBy.data?.length === 0;
 
   const ActionTabs: React.FC<{ text: string }> = (props) => {
     const { text } = props;
-
-    if (userHasNotStaked && unstakeRelatedActions.includes(text)) {
-      return (
-        <HoverCard>
-          <HoverCardTrigger className="flex items-center justify-center text-center">
-            <TabsTrigger className="text-center" value={text} disabled>
-              {text}
-            </TabsTrigger>
-          </HoverCardTrigger>
-          <HoverCardContent className="mb-2.5 w-fit" side="top">
-            <p>Coming Soon</p>
-          </HoverCardContent>
-        </HoverCard>
-      );
-    }
-
     return (
       <TabsTrigger onClick={() => setCurrentTab(text)} value={text}>
         {text}
       </TabsTrigger>
     );
   };
-
-  useEffect(() => {
-    if (userHasNotStaked && unstakeRelatedActions.includes(currentTab)) {
-      setCurrentTab(buttons[0]?.text);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAccount?.address, userHasNotStaked]);
 
   return (
     <>
