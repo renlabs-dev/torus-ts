@@ -64,7 +64,7 @@ export function WalletBalance() {
           className="flex w-full flex-col gap-2 px-7 py-5"
         >
           {typeof balance.amount === "bigint" && (
-            <p className="text-muted-fofreground flex items-end gap-1">
+            <p className="text-muted-fofreground flex items-end gap-1 text-sm">
               {formatToken(balance.amount)}
               <span className="mb-0.5 text-xs">TORUS</span>
             </p>
@@ -73,7 +73,7 @@ export function WalletBalance() {
             <Skeleton className="flex w-1/2 py-3" />
           )}
 
-          <span className="text-sx flex items-center gap-2">
+          <span className="flex items-center gap-2 text-xs">
             {balance.icon} {balance.label}
           </span>
         </Card>

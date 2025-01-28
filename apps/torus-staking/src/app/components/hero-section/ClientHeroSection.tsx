@@ -45,7 +45,7 @@ const AnimatedIcosahedron = () => {
 
     // Expansion/Contraction animation
     const expansionSpeed = 0.08;
-    const contractionSpeed = 0.06;
+    const contractionSpeed = 0.07;
 
     if (state.isExpanding) {
       if (state.holdTimer > 0) {
@@ -232,20 +232,18 @@ const ClientHeroSection = () => (
     >
       <Scene />
     </Canvas>
-    <div className="absolute inset-0 z-10 flex flex-col items-center bg-gradient-to-b from-black/30 to-transparent">
-      {/* APR Display with custom padding */}
+    <div className="absolute inset-0 z-10 flex flex-col items-center bg-gradient-to-b from-black/30 via-transparent to-black/60">
       <div className="w-full pt-[53px]">
         <APRDisplay />
       </div>
-
       {/* Main content centered in remaining space */}
       <div className="flex flex-1 flex-col items-center justify-center gap-8">
-        <h1 className="font-['Italiana'] text-7xl font-light tracking-[0.15em] text-white/90">
+        <h1 className="font-['Syncopate'] text-7xl font-light tracking-[0.15em] text-white/90">
           TORUS STAKING
         </h1>
         <BalanceDisplay />
         <p className="font-['Inter'] text-sm font-light tracking-wider text-white/70">
-          emission landscape is dynamic, APR might change quickly
+          Emission landscape is dynamic, APR might change quickly.
         </p>
       </div>
     </div>

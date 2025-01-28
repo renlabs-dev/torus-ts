@@ -22,7 +22,7 @@ export function RunningAPRBar({
     Number(totalStaked * 100000n) / Number(totalSupply) / 1000;
 
   return (
-    <div className="relative h-8 w-full overflow-hidden bg-black shadow-lg">
+    <div className="relative h-8 w-full overflow-hidden bg-black shadow-2xl">
       {/* Subtle motion indicators */}
       <div className="absolute inset-0 flex justify-center">
         <motion.div
@@ -62,14 +62,14 @@ export function RunningAPRBar({
                     {apr.toFixed(2)}%
                   </span>
                   <span className="mx-2 text-white/30">|</span>
-                  <span className="text-white/60">STAKED</span>
+                  <span className="text-white/60">TOTAL STAKED</span>
                   <span className="mx-1 text-white/40">›</span>
                   <span className="font-semibold text-white">
                     {formatToken(totalStaked)}
                   </span>
                   <span className="ml-1 text-white/50">$TORUS</span>
                   <span className="mx-2 text-white/30">|</span>
-                  <span className="text-white/60">RATIO</span>
+                  <span className="text-white/60">NETWORK RATIO</span>
                   <span className="mx-1 text-white/40">›</span>
                   <span className="font-semibold text-white">
                     {stakedPercentage.toFixed(2)}%
