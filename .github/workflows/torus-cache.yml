@@ -45,7 +45,6 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-cache
-      pr_number: ${{ github.event.number }}
       healthCheckPath: /api/stake-out
 
   pr-preview-delete:
@@ -54,5 +53,4 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-cache
-      pr_number: ${{ github.event.number }}
       delete: true
