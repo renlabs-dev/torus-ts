@@ -1,7 +1,7 @@
 "use client";
 
 import type { inferProcedureOutput } from "@trpc/server";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Delete, TicketX } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
@@ -24,7 +24,7 @@ const voteOptions: WhitelistVoteType[] = ["ACCEPT", "REFUSE"];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
-    <div className="animate-fade-down animate-delay-200">
+    <div className="animate-fade-down">
       <div className="pb-6 pl-0">
         <h3 className="text-lg">Cast your vote</h3>
       </div>
@@ -83,7 +83,7 @@ const VoteCardFunctionsContent = (props: {
   vote: WhitelistVoteType | "UNVOTED";
   voteLoading: boolean;
   isAccountConnected: boolean;
-  isCadreUser: boolean;
+  isUserCadre: boolean;
   handleVote: () => void;
   setVote: (vote: WhitelistVoteType | "UNVOTED") => void;
 }): JSX.Element => {
@@ -91,7 +91,7 @@ const VoteCardFunctionsContent = (props: {
     vote,
     voteLoading,
     isAccountConnected,
-    isCadreUser,
+    isUserCadre,
     handleVote,
     setVote,
   } = props;
@@ -103,14 +103,18 @@ const VoteCardFunctionsContent = (props: {
 
   return (
     <div className="flex w-full flex-col items-end gap-4">
-      <div className={`relative z-20 flex w-full flex-col items-start gap-2`}>
+      <div
+        className={`relative z-20 flex w-full flex-col items-start gap-2 ${
+          (!isAccountConnected || !isUserCadre) && "blur-md"
+        }`}
+      >
         <ToggleGroup
           type="single"
           value={vote}
           onValueChange={(voteType) =>
             handleVotePreference(voteType as WhitelistVoteType | "")
           }
-          disabled={voteLoading || !isCadreUser}
+          disabled={voteLoading || !isUserCadre}
           className="flex w-full gap-2"
         >
           {voteOptions.map((option) => (
@@ -135,7 +139,7 @@ const VoteCardFunctionsContent = (props: {
               ? "cursor-not-allowed text-gray-400"
               : ""
           } `}
-          disabled={vote === "UNVOTED" || voteLoading || !isCadreUser}
+          disabled={vote === "UNVOTED" || voteLoading || !isUserCadre}
           onClick={handleVote}
           type="button"
         >
@@ -144,20 +148,17 @@ const VoteCardFunctionsContent = (props: {
       </div>
       {!isAccountConnected && (
         <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-          <span>Are you a Curador DAO?</span>
-          <span>Connect your wallet to vote</span>
+          <span>Are you a Curator DAO member?</span>
+          <span>Please connect your wallet to vote</span>
         </div>
       )}
-      {isAccountConnected && !isCadreUser && (
+      {isAccountConnected && !isUserCadre && (
         <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
           <span className="my-4">
             You must be a Curator DAO member to be able to vote on agent
             applications.
           </span>
         </div>
-      )}
-      {(!isAccountConnected || !isCadreUser) && (
-        <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
       )}
     </div>
   );
@@ -168,7 +169,7 @@ export function AgentApplicationVoteTypeCard(props: {
   applicationId: number;
 }) {
   const { applicationId, applicationStatus } = props;
-  const { isAccountConnected, selectedAccount } = useGovernance();
+  const { isAccountConnected, selectedAccount, isUserCadre } = useGovernance();
 
   const [vote, setVote] = useState<WhitelistVoteType | "UNVOTED">("UNVOTED");
 
@@ -176,14 +177,8 @@ export function AgentApplicationVoteTypeCard(props: {
   const { data: votes } = api.agentApplicationVote.byApplicationId.useQuery({
     applicationId,
   });
-  const { data: cadreUsers } = api.cadre.all.useQuery();
 
   const userVote = votes?.find((v) => v.userKey === selectedAccount?.address);
-
-  const isCadreUser = useMemo(
-    () => cadreUsers?.some((user) => user.userKey === selectedAccount?.address),
-    [cadreUsers, selectedAccount],
-  );
 
   const createVoteMutation = api.agentApplicationVote.create.useMutation({
     onSuccess: async () => {
@@ -218,8 +213,8 @@ export function AgentApplicationVoteTypeCard(props: {
     }
     return true;
   };
-  const ensureIsCadreUser = (): boolean => {
-    if (!isCadreUser) {
+  const ensureisUserCadre = (): boolean => {
+    if (!isUserCadre) {
       toast.error("Only Curator DAO members can perform this action.");
       return false;
     }
@@ -227,7 +222,7 @@ export function AgentApplicationVoteTypeCard(props: {
   };
 
   const handleVoteAction = (voteType: WhitelistVoteType | "REMOVE"): void => {
-    if (!ensureConnected() || !ensureIsCadreUser()) return;
+    if (!ensureConnected() || !ensureisUserCadre()) return;
 
     createVoteMutation.mutate({ applicationId, vote: voteType });
   };
@@ -271,7 +266,7 @@ export function AgentApplicationVoteTypeCard(props: {
             voteLoading={isMutating}
             vote={vote}
             setVote={setVote}
-            isCadreUser={!!isCadreUser}
+            isUserCadre={!!isUserCadre}
           />
         </CardBarebones>
       );
@@ -295,7 +290,7 @@ export function AgentApplicationVoteTypeCard(props: {
                 status="ACCEPTED"
                 governanceModel="whitelist application"
               >
-                {isAccountConnected && isCadreUser && (
+                {isAccountConnected && isUserCadre && (
                   <Button
                     // variant={"outline"}
                     variant={"link"}
