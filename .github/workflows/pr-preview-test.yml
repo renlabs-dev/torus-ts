@@ -1,0 +1,25 @@
+# .github/workflows/pr-preview-test.yml
+name: pr-preview-test
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - closed
+      - synchronize
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo ${{ github.event.pull_request.id }}
+          echo ${{ github.event.number }}
+          echo ${{ github.event.pull_request.state }} # open/closed
+          echo ${{ github.event.repository.fork }}
+
+      - run: echo "GITHUB_CONTEXT is $GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github.event) }}
+# helmfile template -e dev --state-values-set ingressHost=test.com,releaseName=pr-xx-torus-page helmfile.yaml
