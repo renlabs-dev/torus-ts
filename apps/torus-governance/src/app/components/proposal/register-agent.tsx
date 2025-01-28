@@ -8,7 +8,7 @@ import { useGovernance } from "~/context/governance-provider";
 import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
-  sb_address,
+  checkSS58,
 } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -25,6 +25,7 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
+
 import { smallFilename, strToFile } from "@torus-ts/utils/files";
 import type { CID } from "@torus-ts/utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
@@ -45,6 +46,14 @@ const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   return { cid };
 };
 
+const parseUrl = (url: string): string => {
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  } else {
+    return "https://" + url;
+  }
+};
+
 type TabsViews = "agent-info" | "about" | "socials" | "register";
 
 export function RegisterAgent(): JSX.Element {
@@ -56,7 +65,9 @@ export function RegisterAgent(): JSX.Element {
     burnAmount,
     agentApplications,
     agents,
+    lastBlock,
   } = useGovernance();
+
   const { registerAgentTransaction, estimateFee } = useTorus();
 
   const [agentKey, setAgentKey] = useState("");
@@ -77,8 +88,8 @@ export function RegisterAgent(): JSX.Element {
 
   const [uploading, setUploading] = useState(false);
   const [aboutPreview, setAboutPreview] = useState(false);
-  // const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
-  const [currentTab, setCurrentTab] = useState<TabsViews>("register");
+  const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
+  // const [currentTab, setCurrentTab] = useState<TabsViews>("register");
 
   const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
 
@@ -136,7 +147,6 @@ export function RegisterAgent(): JSX.Element {
     setUserHasEnoughBalance(
       accountFreeBalance.data > estimatedFee + (burnAmount.data ?? 0n),
     );
-    console.log(accountFreeBalance.data > estimatedFee);
   }, [
     accountFreeBalance.data,
     accountFreeBalance.isFetching,
@@ -160,13 +170,14 @@ export function RegisterAgent(): JSX.Element {
         title,
         short_description: shortDescription,
         description: body,
-        website: "https://example.com", // FIXME: website field
+        website: website !== "" ? parseUrl(website) : undefined,
         ...imageObj,
+
         socials: {
-          twitter: twitter || undefined,
-          github: github || undefined,
-          telegram: telegram || undefined,
-          discord: discord || undefined,
+          twitter: twitter !== "" ? parseUrl(twitter) : undefined,
+          github: github !== "" ? parseUrl(github) : undefined,
+          telegram: telegram !== "" ? parseUrl(telegram) : undefined,
+          discord: discord !== "" ? parseUrl(discord) : undefined,
         },
       };
 
@@ -219,7 +230,7 @@ export function RegisterAgent(): JSX.Element {
       return;
     }
 
-    const parsedAgentKey = sb_address.parse(agentKey);
+    const parsedAgentKey = checkSS58(agentKey);
 
     if (!agentApplications.data?.find((app) => app.agentKey === agentKey)) {
       toast.error(
@@ -255,17 +266,17 @@ export function RegisterAgent(): JSX.Element {
       title,
       short_description: shortDescription,
       description: body,
-      website: website,
+      website: website !== "" ? parseUrl(website) : undefined,
       socials: {
-        twitter: twitter || undefined,
-        github: github || undefined,
-        telegram: telegram || undefined,
-        discord: discord || undefined,
+        twitter: twitter !== "" ? parseUrl(twitter) : undefined,
+        github: github !== "" ? parseUrl(github) : undefined,
+        telegram: telegram !== "" ? parseUrl(telegram) : undefined,
+        discord: discord !== "" ? parseUrl(discord) : undefined,
       },
     };
 
     const parsedMetadata = AGENT_METADATA_SCHEMA.safeParse(partialMetadata);
-
+    console.log(partialMetadata);
     if (!parsedMetadata.success) {
       toast.error(
         parsedMetadata.error.errors
@@ -275,7 +286,7 @@ export function RegisterAgent(): JSX.Element {
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
-        message: "Error on form validation...",
+        message: "Error on form validation.",
       });
       return;
     }
@@ -294,7 +305,7 @@ export function RegisterAgent(): JSX.Element {
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
-        message: "Error on form validation...",
+        message: "Error on form validation.",
       });
       return;
     }
@@ -302,14 +313,21 @@ export function RegisterAgent(): JSX.Element {
     const cid = await doMetadataPin();
     if (cid == null) return;
     console.info("Pinned metadata at:", cidToIpfsUri(cid));
+    console.log({
+      agentKey,
+      name,
+      url: parsedAgentApiUrl.data,
+      metadata: cidToIpfsUri(cid),
+      callback: handleCallback,
+    });
 
-    // void registerAgent({
-    //   agentKey,
-    //   name,
-    //   url: parsedAgentApiUrl.data,
-    //   metadata: cidToIpfsUri(cid),
-    //   callback: handleCallback,
-    // });
+    void registerAgent({
+      agentKey,
+      name,
+      url: parsedAgentApiUrl.data,
+      metadata: cidToIpfsUri(cid),
+      callback: handleCallback,
+    });
   }
 
   const getButtonSubmitLabel = ({
@@ -488,7 +506,12 @@ export function RegisterAgent(): JSX.Element {
             {!aboutPreview && (
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="title">Agent title</Label>
+                  <Label htmlFor="title" className="flex items-center gap-2">
+                    Agent title
+                    <span className="text-sm text-muted-foreground">
+                      (required)
+                    </span>
+                  </Label>
                   <div className="flex flex-col items-center gap-2 sm:flex-row">
                     <Input
                       id="title"
@@ -502,7 +525,12 @@ export function RegisterAgent(): JSX.Element {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="body">Agent description</Label>
+                  <Label htmlFor="body" className="flex items-center gap-2">
+                    Agent description
+                    <span className="text-sm text-muted-foreground">
+                      (required)
+                    </span>
+                  </Label>
                   <Textarea
                     id="body"
                     onChange={(e) => setBody(e.target.value)}
@@ -534,7 +562,7 @@ export function RegisterAgent(): JSX.Element {
             onSubmit={() => setCurrentTab("register")}
             className="flex flex-col gap-4 py-5"
           >
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-col gap-2">
               <div className="relative h-auto w-fit border bg-[#080808]">
                 <Dropzone
                   containerClassName="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 border-none"
@@ -699,13 +727,33 @@ export function RegisterAgent(): JSX.Element {
 
         <TabsContent value="register" className="animate-fade">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-5">
-            <AllocatorAgentItem
-              agentKey={agentKey}
-              iconUrl={icon ? URL.createObjectURL(icon) : null}
-              socialsList={{ discord, github, telegram, twitter, website }}
-              shortDescription={shortDescription}
-              title={title}
-            />
+            <div className="flex flex-col gap-4 lg:flex-row">
+              <div className="flex w-fit flex-col gap-2 lg:w-1/2">
+                <span>Agent Card Preview</span>
+                <AllocatorAgentItem
+                  agentKey={agentKey}
+                  iconUrl={icon ? URL.createObjectURL(icon) : null}
+                  socialsList={{ discord, github, telegram, twitter, website }}
+                  shortDescription={shortDescription}
+                  title={title}
+                  currentBlock={lastBlock.data?.blockNumber}
+                />
+              </div>
+              <div className="flex w-full flex-col gap-2 lg:w-1/2">
+                <span>Agent Expanded Preview</span>
+                {body && (
+                  <MarkdownPreview
+                    className="max-h-[44vh] w-full overflow-auto pb-4"
+                    source={`# ${title == "" ? "No title" : title}\n${body}`}
+                    style={{
+                      backgroundColor: "transparent",
+                      color: "white",
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+
             <Button
               size="lg"
               type="submit"
