@@ -46,6 +46,7 @@ jobs:
     with:
       app_name: torus-cache
       pr_number: ${{ github.event.number }}
+      healthCheckPath: /api/stake-out
 
   pr-preview-delete:
     if: github.event.pull_request.state == 'closed'

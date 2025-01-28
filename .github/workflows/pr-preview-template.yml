@@ -18,6 +18,10 @@ on:
         required: false
         type: boolean
         default: true
+      healthCheckPath:
+        required: false
+        type: string
+        default: /
     secrets:
       VAULT_ADDR:
         required: true
@@ -130,7 +134,7 @@ jobs:
         if: ${{ inputs.hasURL }}
         uses: iFaxity/wait-on-action@v1.2.1
         with:
-          resource: https://p${{ inputs.pr_number }}.${{ inputs.app_name }}.torus.network
+          resource: https://p${{ inputs.pr_number }}.${{ inputs.app_name }}.torus.network${{ inputs.healthCheckPath }}
 
       - name: Comment PR
         if: ${{ inputs.hasURL }}
