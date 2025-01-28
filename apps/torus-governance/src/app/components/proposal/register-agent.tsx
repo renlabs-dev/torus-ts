@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { FolderUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
-import { z } from "zod";
 import { useGovernance } from "~/context/governance-provider";
 
 import {
@@ -35,6 +34,7 @@ import {
 } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
+import Image from "next/image";
 
 const MODULE_REGISTER_COST = 200n * DECIMALS_MULTIPLIER; // FIXME: this should be dynamic
 
@@ -49,6 +49,8 @@ const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   return { cid };
 };
 
+type TabsViews = "agent-info" | "about" | "socials" | "register";
+
 export function RegisterAgent(): JSX.Element {
   const router = useRouter();
   const {
@@ -62,7 +64,7 @@ export function RegisterAgent(): JSX.Element {
 
   const [agentKey, setAgentKey] = useState("");
   const [name, setName] = useState("");
-  const [url, setUrl] = useState("");
+  const [agentApiUrl, setAgentApiUrl] = useState("");
 
   const [title, setTitle] = useState("");
   const [shortDescription, setShortDescription] = useState("");
@@ -74,9 +76,13 @@ export function RegisterAgent(): JSX.Element {
   const [github, setGithub] = useState("");
   const [telegram, setTelegram] = useState("");
   const [discord, setDiscord] = useState("");
+  const [website, setWebsite] = useState("");
 
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState("edit");
+  const [aboutPreview, setAboutPreview] = useState(false);
+  const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
+  const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
+
   const [estimatedFee, setEstimatedFee] = useState(0n);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -118,23 +124,24 @@ export function RegisterAgent(): JSX.Element {
     void fetchFee();
   }, [estimateFee, registerAgentTransaction, selectedAccount?.address]);
 
-  const userHasEnoughBalance = useCallback(() => {
+  useEffect(() => {
     if (
-      !isAccountConnected ||
+      !selectedAccount?.address ||
       !accountFreeBalance.data ||
       estimatedFee === 0n ||
       accountFreeBalance.isFetching
     ) {
-      return null;
+      console.log("ainda caindo no if?");
+      return;
     }
-
-    return accountFreeBalance.data > estimatedFee;
+    setUserHasEnoughBalance(accountFreeBalance.data > estimatedFee);
+    console.log(accountFreeBalance.data > estimatedFee);
   }, [
-    isAccountConnected,
     accountFreeBalance.data,
     accountFreeBalance.isFetching,
     estimatedFee,
-  ])();
+    selectedAccount?.address,
+  ]);
 
   async function doMetadataPin(): Promise<CID | null> {
     try {
@@ -269,7 +276,7 @@ export function RegisterAgent(): JSX.Element {
     void registerAgent({
       agentKey,
       name,
-      url,
+      url: agentApiUrl == "" ? "null:" : agentApiUrl,
       metadata: cidToIpfsUri(cid),
       callback: handleCallback,
     });
@@ -293,81 +300,292 @@ export function RegisterAgent(): JSX.Element {
     return "Register Agent/Module";
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col items-center gap-2 sm:flex-row">
-          <Input
-            onChange={(e) => setAgentKey(e.target.value)}
-            placeholder="Agent address (SS58 eg. 5D5F...EBnt)"
-            className="placeholder:text-sm"
-            type="text"
-            value={agentKey}
-            title="Paste the same address that you used in your agent/module application!"
-          />
-          <Button
-            variant="outline"
-            type="button"
-            className="w-full sm:w-fit"
-            onClick={() => setAgentKey(selectedAccount?.address ?? "")}
-            title="Only use your wallet's address if you also used it in your agent/module application!"
-          >
-            Paste my address
-          </Button>
-        </div>
+  const aboutViewDisabled =
+    agentKey === "" ||
+    name === "" ||
+    shortDescription === "" ||
+    !userHasEnoughBalance ||
+    !selectedAccount?.address;
 
-        <Input
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Agent URL (eg. https://agent-one.com)"
-          type="text"
-          value={url}
-        />
-        <div className="mt-4 flex flex-row gap-2">
-          <div className="flex">
-            <div className="w-fit border bg-[#080808]">
-              <Dropzone
-                onDrop={(acceptedFiles: File[]) => {
-                  if (acceptedFiles[0]) {
-                    setIcon(acceptedFiles[0]);
-                  }
-                }}
-                multiple={false}
-                disabled={uploading}
-                maxSize={512000}
-                maxFiles={1}
+  const socialsViewDisabled = title === "" || body === "" || aboutViewDisabled;
+
+  const registerViewDisabled = socialsViewDisabled;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Tabs
+        defaultValue="agent-info"
+        onValueChange={(tab: string) => {
+          setCurrentTab(tab as TabsViews);
+        }}
+        value={currentTab}
+      >
+        <TabsList className="flex w-full flex-row justify-between">
+          <TabsTrigger value="agent-info" className="w-1/3">
+            Agent
+          </TabsTrigger>
+          <TabsTrigger
+            value="about"
+            className="w-1/4"
+            disabled={aboutViewDisabled}
+          >
+            About
+          </TabsTrigger>
+          <TabsTrigger
+            value="socials"
+            className="w-1/4"
+            disabled={socialsViewDisabled}
+          >
+            Socials
+          </TabsTrigger>
+          <TabsTrigger
+            value="register"
+            className="w-1/4"
+            disabled={registerViewDisabled}
+          >
+            Register
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="agent-info" className="animate-fade">
+          <form
+            className="flex flex-col gap-4 py-5"
+            onSubmit={() => setCurrentTab("about")}
+          >
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="agent-key" className="flex items-center gap-2">
+                Agent address
+                <span className="text-sm text-muted-foreground">
+                  (required)
+                </span>
+              </Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="agent-key"
+                  onChange={(e) => setAgentKey(e.target.value)}
+                  placeholder="5D5Fb...REBnt"
+                  className="placeholder:text-sm"
+                  type="text"
+                  minLength={47}
+                  maxLength={48}
+                  value={agentKey}
+                  required
+                  title="Paste the same address that you used in your agent/module application!"
+                />
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full sm:w-fit"
+                  onClick={() => setAgentKey(selectedAccount?.address ?? "")}
+                  title="Only use your wallet's address if you also used it in your agent/module application!"
+                >
+                  Paste my address
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="agent-api-url">Agent API URL</Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="agent-api-url"
+                  onChange={(e) => setAgentApiUrl(e.target.value)}
+                  placeholder="https://agent-one.com"
+                  type="text"
+                  value={agentApiUrl}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="agent-name" className="flex items-center gap-2">
+                Agent Name
+                <span className="text-sm text-muted-foreground">
+                  (required)
+                </span>
+              </Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="agent-name"
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="My Agent's Name"
+                  type="text"
+                  required
+                  value={name}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="agent-short-description"
+                className="flex items-center gap-2"
               >
-                {(dropzone: DropzoneState) => (
-                  <div className="px-12">
-                    {dropzone.isDragAccept ? (
-                      <div className="text-sm font-medium">
-                        Drop your files here!
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-1.5">
-                        <div className="flex flex-col items-center gap-1 text-sm font-medium">
-                          <span className="flex gap-1 text-nowrap">
-                            <FolderUp className="h-4 w-4" /> Upload Agent Icon
-                          </span>
-                          <span className="text-center text-gray-400">
-                            Square Img (512x512)
-                          </span>
+                Short Description{" "}
+                <span className="text-sm text-muted-foreground">
+                  (required)
+                </span>
+              </Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Textarea
+                  id="agent-short-description"
+                  onChange={(e) => setShortDescription(e.target.value)}
+                  placeholder={`Max ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters`}
+                  rows={1}
+                  value={shortDescription}
+                  maxLength={AGENT_SHORT_DESCRIPTION_MAX_LENGTH}
+                  required
+                />
+              </div>
+            </div>
+            <Button disabled={aboutViewDisabled}>Continue</Button>
+          </form>
+        </TabsContent>
+
+        <TabsContent value="about" className="animate-fade">
+          <form
+            onSubmit={() => setCurrentTab("socials")}
+            className="flex flex-col gap-4 py-5"
+          >
+            <Button
+              type="button"
+              className="w-fit"
+              variant={"outline"}
+              onClick={() => setAboutPreview(!aboutPreview)}
+              disabled={!body}
+            >
+              {aboutPreview ? "Edit" : "Preview"}
+            </Button>
+
+            {!aboutPreview && (
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="title">Agent title</Label>
+                  <div className="flex flex-col items-center gap-2 sm:flex-row">
+                    <Input
+                      id="title"
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="My Agent's Title"
+                      type="text"
+                      required
+                      value={title}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="body">Agent description</Label>
+                  <Textarea
+                    id="body"
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder="Describe your agent (Markdown supported, HTML tags are not supported)"
+                    rows={5}
+                    required
+                    value={body}
+                  />
+                </div>
+              </div>
+            )}
+
+            {aboutPreview && body && (
+              <MarkdownPreview
+                className="max-h-[40vh] overflow-auto py-4"
+                source={`# ${title == "" ? "No title" : title}\n${body}`}
+                style={{
+                  backgroundColor: "transparent",
+                  color: "white",
+                }}
+              />
+            )}
+            <Button disabled={socialsViewDisabled}>Continue</Button>
+          </form>
+        </TabsContent>
+
+        <TabsContent value="socials" className="animate-fade">
+          <form
+            onSubmit={() => setCurrentTab("register")}
+            className="flex flex-col gap-4 py-5"
+          >
+            <div className="flex flex-row gap-2">
+              <div className="relative h-auto w-fit border bg-[#080808]">
+                <Dropzone
+                  containerClassName="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 border-none"
+                  dropZoneClassName="border-none"
+                  onFileDialogOpen={() => {
+                    setIcon(null);
+                  }}
+                  onDrop={(acceptedFiles: File[]) => {
+                    if (acceptedFiles[0]) {
+                      setIcon(acceptedFiles[0]);
+                    }
+                  }}
+                  multiple={false}
+                  disabled={uploading}
+                  maxSize={512000}
+                  maxFiles={1}
+                  accept={{
+                    "image/png": [".png"],
+                    "image/jpeg": [".jpg", ".jpeg"],
+                    "image/gif": [".gif"],
+                    "image/webp": [".webp"],
+                    "image/svg+xml": [".svg"],
+                  }}
+                >
+                  {(dropzone: DropzoneState) => (
+                    <div className="px-12">
+                      {dropzone.isDragAccept && (
+                        <div className="text-sm font-medium">
+                          Drop your files here!
                         </div>
-                      </div>
-                    )}
-                    <div className="text-center text-xs font-medium text-gray-400">
-                      {dropzone.acceptedFiles.map((file, idx) => (
-                        <span key={idx} className="text-xs font-medium">
-                          {smallFilename(file.name)}
-                        </span>
-                      ))}
-                    </div>
-                    {dropzone.fileRejections.map((fileRej, idx) => (
-                      <div
-                        key={idx}
-                        className="flex flex-col items-center gap-1 text-sm font-medium"
-                      >
-                        <span className="flex gap-1 text-nowrap">
-                          Rejected file: {smallFilename(fileRej.file.name)}
+                      )}
+
+                      {!icon &&
+                        !dropzone.isDragAccept &&
+                        dropzone.fileRejections.length === 0 && (
+                          <div className="flex flex-col items-center gap-1 text-sm font-medium">
+                            <span className="flex gap-2 text-nowrap">
+                              <FolderUp className="h-4 w-4" />
+                              Upload Agent Icon
+                            </span>
+                            <span className="text-center text-gray-400">
+                              Square Image
+                            </span>
+                            <span className="text-center text-gray-400">
+                              (Max 512x512)
+                            </span>
+                          </div>
+                        )}
+
+                      {icon && dropzone.fileRejections.length === 0 && (
+                        <div className="flex flex-col items-center gap-1 text-sm font-medium">
+                          <span className="flex gap-2 text-nowrap">
+                            <FolderUp className="h-4 w-4" />
+                            Click to change Icon
+                          </span>
+                          <span key={icon.name} className="text-xs font-medium">
+                            {smallFilename(icon.name)}
+                          </span>
+                          <span key={icon.size} className="text-xs font-medium">
+                            {(icon.size / 1000).toFixed(1)} KB
+                          </span>
+                          <Image
+                            className="absolute inset-0 h-full w-full object-cover opacity-20"
+                            src={URL.createObjectURL(icon)}
+                            alt={icon.name}
+                            width={100}
+                            height={100}
+                          />
+                        </div>
+                      )}
+
+                      {dropzone.fileRejections.map((fileRej, idx) => (
+                        <div
+                          key={idx}
+                          className="flex flex-col items-center gap-1 text-sm font-medium"
+                        >
+                          <span className="flex gap-1.5 text-nowrap">
+                            Rejected file: {smallFilename(fileRej.file.name)}
+                          </span>
                           {fileRej.errors.map((err, idx) => (
                             <span
                               key={idx}
@@ -376,144 +594,135 @@ export function RegisterAgent(): JSX.Element {
                               {err.message}
                             </span>
                           ))}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Dropzone>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Dropzone>
+              </div>
             </div>
-          </div>
-          <div className="flex w-full flex-col gap-2">
-            <Input
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Agent Name / Identifier (eg. agent-one)"
-              type="text"
-              value={name}
-            />
-            <Textarea
-              onChange={(e) => setShortDescription(e.target.value)}
-              placeholder="Agent Short Description (Max 60 characters)"
-              rows={3}
-              value={shortDescription}
-              maxLength={AGENT_SHORT_DESCRIPTION_MAX_LENGTH}
-              className="pb-[1rem]"
-            />
-          </div>
-        </div>
 
-        <div className="flex gap-2">
-          <Input
-            onChange={(e) => setTwitter(e.target.value)}
-            placeholder={"Agent X (eg. x.com/agent-one)"}
-            type="text"
-            value={twitter}
-          />
-          <Input
-            onChange={(e) => setGithub(e.target.value)}
-            placeholder={"Agent Github (eg. github.com/agent-one)"}
-            type="text"
-            value={github}
-          />
-          <Input
-            onChange={(e) => setTelegram(e.target.value)}
-            placeholder={"Agent Telegram (eg. t.me/agent-one)"}
-            type="text"
-            value={telegram}
-          />
-          <Input
-            onChange={(e) => setDiscord(e.target.value)}
-            placeholder={"Agent Discord (eg. discord.gg/agent-one)"}
-            type="text"
-            value={discord}
-          />
-        </div>
-      </div>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList
-          className="mt-3"
-          title="Switch between editing and previewing the markdown content"
-        >
-          <TabsTrigger value="edit">Edit Content</TabsTrigger>
-          <TabsTrigger value="preview">Preview Content</TabsTrigger>
-        </TabsList>
-        <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
-          <Input
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Agent/Module title..."
-            type="text"
-            required
-            value={title}
-          />
-          <Textarea
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Agent/Module body... (Markdown supported, HTML tags are not supported)"
-            rows={5}
-            required
-            value={body}
-          />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="socials-x/twitter">X/Twitter</Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="socials-x/twitter"
+                  onChange={(e) => setTwitter(e.target.value)}
+                  placeholder={"x.com/agent-profile"}
+                  type="text"
+                  value={twitter}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="socials-github">Github</Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="socials-github"
+                  onChange={(e) => setGithub(e.target.value)}
+                  placeholder={"github.com/agent-repository"}
+                  type="text"
+                  value={github}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="socials-telegram">Telegram</Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="socials-telegram"
+                  onChange={(e) => setTelegram(e.target.value)}
+                  placeholder={"t.me/agent-profile"}
+                  type="text"
+                  value={telegram}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="socials-discord">Discord</Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="socials-discord"
+                  onChange={(e) => setDiscord(e.target.value)}
+                  placeholder={"discord.gg/agent-server"}
+                  type="text"
+                  value={discord}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="socials-website">Website</Label>
+              <div className="flex flex-col items-center gap-2 sm:flex-row">
+                <Input
+                  id="socials-website"
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder={"www.agent-website.com"}
+                  type="text"
+                  value={website}
+                />
+              </div>
+            </div>
+            <Button>Continue</Button>
+          </form>
         </TabsContent>
-        <TabsContent
-          value="preview"
-          className="rounded-radius mt-0 bg-muted p-4"
-        >
-          {body ? (
-            <MarkdownPreview
-              className="max-h-[40vh] overflow-auto"
-              source={`# ${title}\n${body}`}
-              style={{
-                backgroundColor: "transparent",
-                color: "white",
-              }}
-            />
-          ) : (
-            <Label className="text-sm text-white">
-              Fill the body to preview here :)
-            </Label>
-          )}
+
+        <TabsContent value="register" className="animate-fade">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-5">
+            <Button
+              size="lg"
+              type="submit"
+              variant="default"
+              className="flex items-center gap-2"
+              disabled={registerViewDisabled}
+            >
+              {getButtonSubmitLabel({ uploading, isAccountConnected })}
+            </Button>
+
+            {transactionStatus.status && (
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
+              />
+            )}
+          </form>
         </TabsContent>
       </Tabs>
-      <div className="flex items-start gap-2">
-        <span className="text-white">
-          Application fee:{" "}
-          {selectedAccount && (
-            <span className="text-muted-foreground">
-              {estimatedFee ? `${fromNano(estimatedFee)} TORUS` : "Loading..."}
-            </span>
-          )}
-          {!selectedAccount && (
-            <span className="text-muted-foreground">
-              connect your wallet to calculate the fee.
-            </span>
-          )}
-        </span>
-      </div>
-      <div className="flex items-start gap-2 text-sm text-muted-foreground">
-        <span className="text-sm">
-          Note: The application fee will be deducted from your connected wallet.
-        </span>
-      </div>
-      {!userHasEnoughBalance && selectedAccount?.address && (
-        <span className="text-sm text-red-400">
-          You don't have enough balance to submit an application.
-        </span>
-      )}
-      <Button
-        size="lg"
-        type="submit"
-        variant="default"
-        className="flex items-center gap-2"
-        disabled={!isAccountConnected || uploading || !userHasEnoughBalance}
-      >
-        {getButtonSubmitLabel({ uploading, isAccountConnected })}
-      </Button>
 
-      {transactionStatus.status && (
-        <TransactionStatus
-          status={transactionStatus.status}
-          message={transactionStatus.message}
-        />
-      )}
-    </form>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5 text-start">
+          {!userHasEnoughBalance &&
+            selectedAccount?.address &&
+            estimatedFee !== 0n && (
+              <span className="text-sm text-red-400">
+                You don't have enough balance to submit an application.
+              </span>
+            )}
+          <span className="text-white">
+            Application fee:{" "}
+            {selectedAccount && (
+              <span className="text-muted-foreground">
+                {estimatedFee
+                  ? `${fromNano(estimatedFee)} TORUS`
+                  : "Loading..."}
+              </span>
+            )}
+            {!selectedAccount && (
+              <span className="text-muted-foreground">
+                connect your wallet to calculate the fee.
+              </span>
+            )}
+          </span>
+
+          <span className="text-sm text-muted-foreground">
+            Note: The application fee will be deducted from your connected
+            wallet.
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
