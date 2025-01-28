@@ -37,8 +37,8 @@ export const SidebarLinks = () => {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="staking">Staking</SelectItem>
             <SelectItem value="wallet">Wallet</SelectItem>
+            <SelectItem value="staking">Staking</SelectItem>
             <SelectItem value="bridge">Bridge</SelectItem>
           </SelectGroup>
         </SelectContent>
@@ -49,19 +49,19 @@ export const SidebarLinks = () => {
           <Button
             asChild
             variant="ghost"
+            className={`w-full justify-between gap-4 border-none px-3 text-base`}
+          >
+            <Link href={walletLink}>Wallet</Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
             className={`w-full justify-between gap-4 border-none bg-accent px-3 text-base`}
           >
             <Link href="/">
               Staking
               <Check size={16} />
             </Link>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            className={`w-full justify-between gap-4 border-none px-3 text-base`}
-          >
-            <Link href={walletLink}>Wallet</Link>
           </Button>
           <Button
             asChild
