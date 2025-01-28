@@ -18,6 +18,7 @@ jobs:
           echo ${{ github.event.number }}
           echo ${{ github.event.pull_request.state }} # open/closed
           echo ${{ github.event.repository.fork }}
+          echo ${{ github.ref_name }}
 
       - run: echo "GITHUB_CONTEXT is $GITHUB_CONTEXT"
         env:
