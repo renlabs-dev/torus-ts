@@ -22,7 +22,6 @@ export const smallFilename = (name: string, maxLength = 20): string => {
 
   if (extPart) {
     const extSize = extPart.length;
-    console.log(extSize, maxLength - extSize);
     const inner = smallFilename(namePart, maxLength - extSize);
     return `${inner}${extPart}`;
   }
