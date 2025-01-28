@@ -1,5 +1,7 @@
 import { Suspense } from "react";
+
 import { Loading } from "@torus-ts/ui";
+
 import { SidebarLinks } from "./components/sidebar-links";
 import WalletActions from "./components/wallet-actions";
 import { WalletBalance } from "./components/wallet-balance";
