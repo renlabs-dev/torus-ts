@@ -15,6 +15,7 @@ interface Agent {
   metadataUri: string | null;
   isDelegated: boolean;
   percentage: number;
+  registrationBlock: number | null;
   globalWeightPerc?: number;
   // globalWeightStaked: number;
 }
@@ -55,6 +56,7 @@ export function AgentContentList() {
         ...agent,
         isDelegated: !!delegated,
         percentage: delegated?.percentage ?? 0,
+        registrationBlock: agent.registrationBlock,
         globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
       };
     });
@@ -70,6 +72,7 @@ export function AgentContentList() {
         name={agent.name ?? "<MISSING_NAME>"}
         agentKey={agent.key ?? "<MISSING_KEY>"}
         metadataUri={agent.metadataUri}
+        registrationBlock={agent.registrationBlock}
         isDelegated={agent.isDelegated}
         percentage={agent.percentage}
         globalWeightPerc={agent.globalWeightPerc}
@@ -98,6 +101,7 @@ export function AgentContentList() {
         key: agent.address,
         isDelegated: true,
         percentage: agent.percentage,
+        registrationBlock: agent.registrationBlock,
         globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
       };
     });

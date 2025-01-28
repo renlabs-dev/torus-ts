@@ -2,20 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-import { Anvil, ArrowRight, Globe, IdCard } from "lucide-react";
+import { Anvil, ArrowRight, Cuboid, Globe, IdCard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { toast } from "@torus-ts/toast-provider";
-import {
-  Badge,
-  Button,
-  Card,
-  CopyButton,
-  Icons,
-  Label,
-  Separator,
-} from "@torus-ts/ui";
+import { Badge, Button, Card, CopyButton, Icons, Label } from "@torus-ts/ui";
 import type { Nullish } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
@@ -30,6 +22,7 @@ interface AgentCardProps {
   agentKey: string;
   metadataUri: string | null;
   percentage?: number | null;
+  registrationBlock?: number | null;
   isDelegated?: boolean;
   globalWeightPerc?: number;
 }
@@ -164,33 +157,35 @@ export function AgentItem(props: AgentCardProps) {
           >
             {title}
           </h2>
-          <div className="flex items-center justify-between gap-3">
-            <Label
-              className={`flex items-center gap-1.5 text-base font-semibold`}
-            >
-              <Anvil size={16} />
-              {props.percentage}%
-            </Label>
-
-            <CopyButton
-              variant="link"
-              copy={props.agentKey}
-              notify={() => toast.success("Copied to clipboard")}
-              className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
-            >
-              <IdCard size={16} />
-              <span className="hidden md:block">
-                {smallAddress(props.agentKey, 7)}
-              </span>
-              <span className="block md:hidden">
-                {smallAddress(props.agentKey, 6)}
-              </span>
-            </CopyButton>
-          </div>
         </div>
       </div>
 
-      <Separator className="my-4" />
+      <div className="mt-2 flex items-center justify-between gap-3 border px-4">
+        <Label className={`flex items-center gap-1.5 text-base font-semibold`}>
+          <Anvil size={16} />
+          {props.percentage}%
+        </Label>
+
+        <Label className={`flex items-center gap-1.5 text-base font-semibold`}>
+          <Cuboid size={16} />
+          {props.registrationBlock}
+        </Label>
+
+        <CopyButton
+          variant="link"
+          copy={props.agentKey}
+          notify={() => toast.success("Copied to clipboard")}
+          className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+        >
+          <IdCard size={16} />
+          <span className="hidden md:block">
+            {smallAddress(props.agentKey, 7)}
+          </span>
+          <span className="block md:hidden">
+            {smallAddress(props.agentKey, 6)}
+          </span>
+        </CopyButton>
+      </div>
 
       <div className="mt-4 flex flex-col gap-2">
         <p className="text-sm md:min-h-16">{shortDescription}</p>

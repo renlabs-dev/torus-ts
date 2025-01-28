@@ -164,6 +164,7 @@ export function DelegatedList() {
         title: agent.agent.name ?? "",
         name: agent.agent.name ?? "",
         percentage: agent.user_agent_weight.weight,
+        registrationBlock: agent.agent.registrationBlock,
         metadataUri: agent.agent.metadataUri,
       }));
 
@@ -240,6 +241,7 @@ export function DelegatedList() {
         title: agent.agent.name ?? "",
         name: agent.agent.name ?? "",
         percentage: agent.user_agent_weight.weight,
+        registrationBlock: agent.agent.registrationBlock,
         metadataUri: agent.agent.metadataUri,
       }));
       setDelegatedAgentsFromDB(formattedModules);

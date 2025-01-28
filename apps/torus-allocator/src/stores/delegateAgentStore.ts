@@ -8,6 +8,7 @@ interface DelegatedAgent {
   address: string;
   percentage: number;
   metadataUri: string | null;
+  registrationBlock: number | null;
 }
 
 interface DelegateState {
