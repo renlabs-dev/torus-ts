@@ -133,42 +133,54 @@ const createParticlePositions = (count: number) => {
   return positions;
 };
 
-const createStarTexture = () => {
-  const canvas = document.createElement("canvas");
-  canvas.width = 32;
-  canvas.height = 32;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-
-  // Sharper, brighter gradient
-  const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-  gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-  gradient.addColorStop(0.4, "rgba(255, 255, 255, 1)");
-  gradient.addColorStop(0.8, "rgba(255, 255, 255, 0.3)");
-  gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 32, 32);
-
-  return new THREE.CanvasTexture(canvas);
-};
-
 const ParticleField = () => {
+  const createStarTexture = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Sharper, brighter gradient
+    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+    gradient.addColorStop(0.4, "rgba(255, 255, 255, 1)");
+    gradient.addColorStop(0.8, "rgba(255, 255, 255, 0.3)");
+    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 32, 32);
+
+    return new THREE.CanvasTexture(canvas);
+  };
+  // Hooks first
   const particlesRef = useRef<THREE.Points>(null);
-  const particleCount = 5000;
-  const positions = createParticlePositions(particleCount);
   const texture = useMemo(() => createStarTexture(), []);
 
-  const sizes = new Float32Array(particleCount);
-  for (let i = 0; i < particleCount; i++) {
-    sizes[i] = Math.random() * 0.15 + 0.05; // Increased size range
-  }
+  const MAX_PARTICLE_SIZE = 0.15;
+
+  // Constants and calculations after hooks
+  const particleCount = 5000;
+  const positions = useMemo(
+    () => createParticlePositions(particleCount),
+    [particleCount],
+  );
+  const sizes = useMemo(() => {
+    const sizeArray = new Float32Array(particleCount);
+    for (let i = 0; i < particleCount; i++) {
+      // Keep the original random calculation but cap it at MAX_PARTICLE_SIZE
+      sizeArray[i] = Math.min(Math.random() * 0.15 + 0.05, MAX_PARTICLE_SIZE);
+    }
+    return sizeArray;
+  }, [particleCount]);
 
   useFrame((_, delta) => {
     if (particlesRef.current) {
       particlesRef.current.rotation.y += delta * 0.02;
     }
   });
+
+  if (!texture) return null;
 
   return (
     <points ref={particlesRef}>
@@ -187,10 +199,10 @@ const ParticleField = () => {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.1} // Increased base size
+        size={0.1}
         sizeAttenuation={true}
         transparent={true}
-        opacity={1} // Full opacity
+        opacity={1}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
         map={texture}
@@ -222,7 +234,7 @@ const ClientHeroSection = () => (
     </Canvas>
     <div className="absolute inset-0 z-10 flex flex-col items-center bg-gradient-to-b from-black/30 to-transparent">
       {/* APR Display with custom padding */}
-      <div className="w-full pt-[68px]">
+      <div className="w-full pt-[53px]">
         <APRDisplay />
       </div>
 

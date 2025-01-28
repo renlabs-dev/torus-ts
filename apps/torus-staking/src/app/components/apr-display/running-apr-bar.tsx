@@ -1,22 +1,32 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 interface RunningAPRBarProps {
   apr: number;
+  totalStaked: bigint;
+  totalSupply: bigint;
 }
 
-export function RunningAPRBar({ apr }: RunningAPRBarProps) {
+export function RunningAPRBar({
+  apr,
+  totalStaked,
+  totalSupply,
+}: RunningAPRBarProps) {
   const aprEntries = Array.from({ length: 5 }, () => ({
     value: apr,
   }));
 
+  const stakedPercentage =
+    Number(totalStaked * 100000n) / Number(totalSupply) / 1000;
+
   return (
-    <div className="relative h-8 w-full overflow-hidden bg-gray-800/95 shadow-sm">
+    <div className="relative h-8 w-full overflow-hidden bg-black shadow-lg">
       {/* Subtle motion indicators */}
       <div className="absolute inset-0 flex justify-center">
         <motion.div
-          className="h-full w-[200px] rotate-45 bg-gradient-to-r from-transparent via-gray-500/10 to-transparent"
+          className="h-full w-[200px] rotate-45 bg-gradient-to-r from-transparent via-gray-800/10 to-transparent"
           initial={{ x: -500 }}
           animate={{ x: 500 }}
           transition={{
@@ -28,7 +38,7 @@ export function RunningAPRBar({ apr }: RunningAPRBarProps) {
       </div>
 
       <motion.div
-        className="absolute flex h-full w-full items-center gap-48 whitespace-nowrap"
+        className="absolute flex h-full w-full items-center gap-32 whitespace-nowrap"
         initial={{ x: "0%" }}
         animate={{ x: "-50%" }}
         transition={{
@@ -39,15 +49,32 @@ export function RunningAPRBar({ apr }: RunningAPRBarProps) {
         }}
       >
         {[0, 1].map((setIndex) => (
-          <div key={setIndex} className="flex gap-48">
+          <div key={setIndex} className="flex gap-32">
             {aprEntries.map((_, index) => (
               <div
                 key={`${setIndex}-${index}`}
-                className="flex items-center gap-2 text-sm tracking-wide text-white/90"
+                className="flex items-center font-mono text-sm tracking-tight"
               >
-                <span className="font-medium">APR</span>
-                <span className="text-white/50">~</span>
-                <span className="font-semibold">{apr.toFixed(2)}%</span>
+                <div className="flex items-center">
+                  <span className="text-white/60">APR</span>
+                  <span className="mx-1 text-white/40">›</span>
+                  <span className="font-semibold text-white">
+                    {apr.toFixed(2)}%
+                  </span>
+                  <span className="mx-2 text-white/30">|</span>
+                  <span className="text-white/60">STAKED</span>
+                  <span className="mx-1 text-white/40">›</span>
+                  <span className="font-semibold text-white">
+                    {formatToken(totalStaked)}
+                  </span>
+                  <span className="ml-1 text-white/50">$TORUS</span>
+                  <span className="mx-2 text-white/30">|</span>
+                  <span className="text-white/60">RATIO</span>
+                  <span className="mx-1 text-white/40">›</span>
+                  <span className="font-semibold text-white">
+                    {stakedPercentage.toFixed(2)}%
+                  </span>
+                </div>
               </div>
             ))}
           </div>

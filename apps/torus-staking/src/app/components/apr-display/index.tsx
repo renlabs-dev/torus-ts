@@ -103,7 +103,14 @@ export function APRDisplay() {
 
   return (
     <div className="w-full">
-      <RunningAPRBar apr={apr} />
+      <RunningAPRBar
+        apr={apr}
+        totalStaked={BigInt(totalStakeQuery.data.toString())}
+        totalSupply={
+          BigInt(totalStakeQuery.data.toString()) +
+          BigInt(totalIssuanceQuery.data.toString())
+        }
+      />
     </div>
   );
 }
