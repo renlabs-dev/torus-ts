@@ -10,11 +10,37 @@ const config = {
   reactStrictMode: true,
 
   /** Enables hot reloading for local packages without a build step */
-  transpilePackages: ["@torus-ts/api", "@torus-ts/db", "@torus-ts/ui", "@torus-ts/utils", "@torus-ts/env-validation"],
+  transpilePackages: [
+    "@torus-ts/api",
+    "@torus-ts/db",
+    "@torus-ts/ui",
+    "@torus-ts/utils",
+    "@torus-ts/env-validation",
+    "@torus-ts/wallet-provider",
+  ],
 
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+
+  webpack: (config, { isServer }) => {
+    // Add rule for shader files
+    config.module.rules.push({
+      test: /\.(glsl|vs|fs|vert|frag)$/,
+      exclude: /node_modules/,
+      use: [
+        "raw-loader",
+        {
+          loader: "glslify-loader",
+          options: {
+            transform: [["glslify-import"], ["glslify-hex"]],
+          },
+        },
+      ],
+    });
+
+    return config;
+  },
 };
 
 export default config;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useWallet } from "@torus-ts/features/context/wallet-provider";
+import { useWallet } from "@torus-ts/wallet-provider";
 import { formatToken } from "@torus-ts/utils/subspace";
 
 export function BalanceDisplay() {
