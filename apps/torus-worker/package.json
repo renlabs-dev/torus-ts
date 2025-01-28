@@ -26,7 +26,8 @@
     "@torus-ts/utils": "workspace:*",
     "express": "^4.19.2",
     "rustie": "catalog:",
-    "tsafe": "catalog:"
+    "tsafe": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@polkadot/api-augment": "catalog:",
