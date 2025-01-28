@@ -35,6 +35,7 @@ import {
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 import Image from "next/image";
+import { z } from "zod";
 
 const MODULE_REGISTER_COST = 200n * DECIMALS_MULTIPLIER; // FIXME: this should be dynamic
 
@@ -167,8 +168,6 @@ export function RegisterAgent(): JSX.Element {
         },
       };
 
-      console.log(metadata);
-
       const validatedMetadata = AGENT_METADATA_SCHEMA.safeParse(metadata);
 
       if (!validatedMetadata.success) {
@@ -216,7 +215,7 @@ export function RegisterAgent(): JSX.Element {
       title,
       short_description: shortDescription,
       description: body,
-      website: "https://example.com", // FIXME: website field
+      website: website, // FIXME: website field
       socials: {
         twitter: twitter || undefined,
         github: github || undefined,
@@ -230,6 +229,25 @@ export function RegisterAgent(): JSX.Element {
     if (!parsedMetadata.success) {
       toast.error(
         parsedMetadata.error.errors
+          .map((e) => `${e.message} at ${e.path.join(".")}`)
+          .join(", "),
+      );
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Error on form validation",
+      });
+      return;
+    }
+
+    const parsedAgentApiUrl = z
+      .string()
+      .url()
+      .safeParse(agentApiUrl.trim() === "" ? "null:" : agentApiUrl);
+
+    if (!parsedAgentApiUrl.success) {
+      toast.error(
+        parsedAgentApiUrl.error.errors
           .map((e) => `${e.message} at ${e.path.join(".")}`)
           .join(", "),
       );
@@ -276,7 +294,7 @@ export function RegisterAgent(): JSX.Element {
     void registerAgent({
       agentKey,
       name,
-      url: agentApiUrl == "" ? "null:" : agentApiUrl,
+      url: parsedAgentApiUrl.data,
       metadata: cidToIpfsUri(cid),
       callback: handleCallback,
     });
@@ -528,7 +546,6 @@ export function RegisterAgent(): JSX.Element {
                     "image/jpeg": [".jpg", ".jpeg"],
                     "image/gif": [".gif"],
                     "image/webp": [".webp"],
-                    "image/svg+xml": [".svg"],
                   }}
                 >
                   {(dropzone: DropzoneState) => (
