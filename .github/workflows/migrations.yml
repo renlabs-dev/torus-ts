@@ -1,0 +1,50 @@
+# .github/workflows/migrations.yml
+name: migrations
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "packages/db/**"
+      - ".github/workflows/migrations.yml"
+
+jobs:
+  drizzle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          export ENV_NAME=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+          echo "SECRET_NAME=${ENV_NAME}_web_apps" >> $GITHUB_ENV
+
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          method: approle
+          url: ${{ secrets.VAULT_ADDR }}
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            torus_infra/data/${{env.SECRET_NAME}} torus_webapps_db_url | POSTGRES_URL
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+
+      - name: pnpm install
+        run: pnpm install
+        working-directory: packages/db
+
+      - name: drizzle-kit generate
+        run: pnpm exec drizzle-kit generate
+        working-directory: packages/db
+
+      - name: drizzle-kit migrate
+        run: pnpm exec drizzle-kit migrate
+        working-directory: packages/db
