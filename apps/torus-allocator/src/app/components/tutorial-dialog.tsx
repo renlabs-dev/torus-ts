@@ -20,54 +20,48 @@ import { VALIDATOR_ADDRESS } from "./delegated-list";
 export const tutorialData = {
   "1": {
     icon: <Wallet className="h-5 w-5" />,
-    description: "Creating a wallet",
+    description: "Set Up Your Wallet",
     steps: [
-      "Install the polkadot.js or SubWallet browser extension.",
-      "Create or import a wallet within the extension.",
-      "Connect your wallet to the Torus Network using the menu in the top-right corner.",
       <p>
-        You can find a detailed guide in our docs at{" "}
+        Follow our{" "}
         <Link href={links.setup_a_wallet} className="text-cyan-500 underline">
-          Setup a wallet
-        </Link>
-        .
+          wallet setup guide
+        </Link>{" "}
+        to install and configure your wallet.
       </p>,
+      "Connect your wallet to the Torus Network via the top-right menu.",
     ],
   },
   "2": {
     icon: <Zap className="h-5 w-5" />,
-    description: "Staking on the Allocator",
+    description: "Stake on the Allocator",
     steps: [
       <p>
-        Go to our{" "}
+        Open the{" "}
         <Link href={links.setup_a_wallet} className="text-cyan-500 underline">
           Wallet App
         </Link>
         .
       </p>,
-      <div className="sm:flex sm:items-center sm:gap-1.5">
-        <p>Add the</p>{" "}
-        <CopyButton
-          copy={VALIDATOR_ADDRESS}
-          variant="link"
-          className="h-5 p-0 text-sm underline"
-          notify={() => toast.success("Copied to clipboard")}
-        >
-          Allocator Address
-        </CopyButton>{" "}
-        <p>to your wallet.</p>
-      </div>,
-      "Stake the amount you want. This amount determines your voting power.",
-      "Note: Your staked balance remains untouched - it's only used to calculate voting power.",
+      "Stake your desired amount to determine your voting power.",
+      <CopyButton
+        copy={VALIDATOR_ADDRESS}
+        variant="link"
+        className="h-5 p-0 text-sm underline"
+        notify={() => toast.success("Copied to clipboard")}
+      >
+        Click to copy the Allocator address.
+      </CopyButton>,
+      "Note: Staking does not spend your funds - it is only used to calculate voting power.",
     ],
   },
   "3": {
     icon: <Scale className="h-5 w-5" />,
-    description: "Assigning weights to Agents",
+    description: "Assign Weights to Agents",
     steps: [
-      "Select your preferred Agents.",
-      "Review your choices in the 'Allocation Menu'.",
-      "Click 'Submit Agents' to confirm your weight assignments.",
+      "Select your preferred Agent(s)",
+      "Review your choices in the 'Allocation Menu'",
+      "Click 'Submit Agents' to finalize your assignments.",
     ],
   },
 };
@@ -85,7 +79,7 @@ export function TutorialDialog() {
         <DialogHeader>
           <DialogTitle>Tutorial</DialogTitle>
           <DialogDescription>
-            Learn how to interact with agents in the allocator.
+            Getting Started with the Allocator.
           </DialogDescription>
         </DialogHeader>
         <div>

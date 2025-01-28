@@ -2,7 +2,6 @@
 
 import {
   Card,
-  Skeleton,
   Tooltip,
   TooltipContent,
   TooltipProvider,
