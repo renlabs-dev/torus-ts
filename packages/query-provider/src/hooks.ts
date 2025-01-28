@@ -27,6 +27,8 @@ import {
   queryRewardAllocation,
   queryUnrewardedProposals,
   queryGlobalGovernanceConfig,
+  queryBurnValue,
+  queryAgents,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -115,6 +117,16 @@ export function useAgentApplications(api: Api | Nullish) {
     queryKey: ["daos"],
     enabled: api != null,
     queryFn: () => queryAgentApplications(api!),
+    staleTime: PROPOSALS_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAgents(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["agents"],
+    enabled: api != null,
+    queryFn: () => queryAgents(api!),
     staleTime: PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -226,6 +238,16 @@ export function useKeyStakedBy(
     queryKey: ["user_total_staked", address],
     enabled: api != null && address != null,
     queryFn: () => queryKeyStakedBy(api!, address! as SS58Address),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useBurnValue(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["burn_value"],
+    enabled: api != null,
+    queryFn: () => queryBurnValue(api!),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

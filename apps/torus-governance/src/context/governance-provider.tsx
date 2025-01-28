@@ -5,6 +5,7 @@ import { createContext, useContext, useMemo } from "react";
 
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import type {
+  Agent,
   AgentApplication,
   Api,
   LastBlock,
@@ -37,6 +38,8 @@ import {
   useRewardAllocation,
   useUnrewardedProposals,
   useGlobalConfig,
+  useBurnValue,
+  useAgents,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Header, WalletDropdown } from "@torus-ts/ui";
@@ -66,6 +69,7 @@ interface GovernanceContextType {
     proposal: addDaoTreasuryTransferProposal,
   ) => Promise<void>;
   agentApplications: UseQueryResult<ApplicationState[], Error>;
+  agents: UseQueryResult<Map<SS58Address, Agent>, Error>;
   agentApplicationsWithMeta: ApplicationState[] | undefined;
   api: Api | null;
   daoTreasuryAddress: UseQueryResult<SS58Address, Error>;
@@ -84,6 +88,7 @@ interface GovernanceContextType {
   torusCacheUrl: string;
   unrewardedProposals: UseQueryResult<number[], Error>;
   voteProposal: (vote: Vote) => Promise<void>;
+  burnAmount: UseQueryResult<bigint, Error>;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -171,6 +176,8 @@ export function GovernanceProvider({
 
   // == Agent Applications ==
   const agentApplications = useAgentApplications(api);
+  const agents = useAgents(api);
+
   const appMetadataQueryMap = useCustomMetadata<BaseDao>(
     "application",
     lastBlock.data,
@@ -190,6 +197,8 @@ export function GovernanceProvider({
     },
   );
 
+  const burnAmount = useBurnValue(api);
+
   // == Treasury ==
   const daoTreasuryAddress = useDaoTreasuryAddress(lastBlock.data?.apiAtBlock);
 
@@ -207,6 +216,8 @@ export function GovernanceProvider({
         agentApplications,
         agentApplicationsWithMeta,
         api,
+        burnAmount,
+        agents,
         daoTreasuryAddress,
         daoTreasuryBalance,
         isAccountConnected,

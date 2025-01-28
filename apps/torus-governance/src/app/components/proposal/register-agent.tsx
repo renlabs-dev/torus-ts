@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { FolderUp } from "lucide-react";
-import { useRouter } from "next/navigation";
 import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
 import { useGovernance } from "~/context/governance-provider";
@@ -9,11 +8,13 @@ import { useGovernance } from "~/context/governance-provider";
 import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
+  sb_address,
 } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
+  AllocatorAgentItem,
   Button,
   Input,
   Label,
@@ -27,17 +28,11 @@ import {
 import { smallFilename, strToFile } from "@torus-ts/utils/files";
 import type { CID } from "@torus-ts/utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
-import {
-  DECIMALS_MULTIPLIER,
-  formatToken,
-  fromNano,
-} from "@torus-ts/utils/subspace";
+import { formatToken, fromNano } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 import Image from "next/image";
 import { z } from "zod";
-
-const MODULE_REGISTER_COST = 200n * DECIMALS_MULTIPLIER; // FIXME: this should be dynamic
 
 const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();
@@ -53,14 +48,15 @@ const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
 type TabsViews = "agent-info" | "about" | "socials" | "register";
 
 export function RegisterAgent(): JSX.Element {
-  const router = useRouter();
   const {
     isAccountConnected,
     registerAgent,
     accountFreeBalance,
     selectedAccount,
+    burnAmount,
+    agentApplications,
+    agents,
   } = useGovernance();
-
   const { registerAgentTransaction, estimateFee } = useTorus();
 
   const [agentKey, setAgentKey] = useState("");
@@ -81,7 +77,9 @@ export function RegisterAgent(): JSX.Element {
 
   const [uploading, setUploading] = useState(false);
   const [aboutPreview, setAboutPreview] = useState(false);
-  const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
+  // const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
+  const [currentTab, setCurrentTab] = useState<TabsViews>("register");
+
   const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
 
   const [estimatedFee, setEstimatedFee] = useState(0n);
@@ -130,18 +128,22 @@ export function RegisterAgent(): JSX.Element {
       !selectedAccount?.address ||
       !accountFreeBalance.data ||
       estimatedFee === 0n ||
-      accountFreeBalance.isFetching
+      accountFreeBalance.isFetching ||
+      burnAmount.isFetching
     ) {
-      console.log("ainda caindo no if?");
       return;
     }
-    setUserHasEnoughBalance(accountFreeBalance.data > estimatedFee);
+    setUserHasEnoughBalance(
+      accountFreeBalance.data > estimatedFee + (burnAmount.data ?? 0n),
+    );
     console.log(accountFreeBalance.data > estimatedFee);
   }, [
     accountFreeBalance.data,
     accountFreeBalance.isFetching,
     estimatedFee,
     selectedAccount?.address,
+    burnAmount.data,
+    burnAmount.isFetching,
   ]);
 
   async function doMetadataPin(): Promise<CID | null> {
@@ -205,6 +207,44 @@ export function RegisterAgent(): JSX.Element {
   ): Promise<void> {
     event.preventDefault();
 
+    if (!userHasEnoughBalance) {
+      toast.error(
+        `Insufficient balance to create agent. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`,
+      );
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Insufficient balance",
+      });
+      return;
+    }
+
+    const parsedAgentKey = sb_address.parse(agentKey);
+
+    if (!agentApplications.data?.find((app) => app.agentKey === agentKey)) {
+      toast.error(
+        "Agent not whitelisted. Whitelist required for registration.",
+      );
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Agent not whitelisted.",
+      });
+      return;
+    }
+
+    if (agents.data?.has(parsedAgentKey)) {
+      toast.error(
+        "Agent already registered. Make sure you are using the correct address.",
+      );
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Agent already registered.",
+      });
+      return;
+    }
+
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
@@ -215,7 +255,7 @@ export function RegisterAgent(): JSX.Element {
       title,
       short_description: shortDescription,
       description: body,
-      website: website, // FIXME: website field
+      website: website,
       socials: {
         twitter: twitter || undefined,
         github: github || undefined,
@@ -235,7 +275,7 @@ export function RegisterAgent(): JSX.Element {
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
-        message: "Error on form validation",
+        message: "Error on form validation...",
       });
       return;
     }
@@ -254,52 +294,22 @@ export function RegisterAgent(): JSX.Element {
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
-        message: "Error on form validation",
+        message: "Error on form validation...",
       });
       return;
     }
-
-    const moduleCost = MODULE_REGISTER_COST; // FIXME: this should be dynamic
-
-    if (!accountFreeBalance.data) {
-      toast.error("Your balance is still loading");
-      return;
-    }
-
-    console.log("moduleCost", moduleCost);
-    console.log("accountFreeBalance.data", accountFreeBalance.data);
-    console.log(
-      "Number(accountFreeBalance.data)",
-      Number(accountFreeBalance.data),
-    );
-
-    if (moduleCost > accountFreeBalance.data) {
-      toast.error(
-        `Insufficient balance to create agent. Required: ${formatToken(moduleCost)} but got ${formatToken(accountFreeBalance.data)}`,
-      );
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Insufficient balance",
-      });
-      return;
-    }
-
-    // TODO: check if module is whitelisted
 
     const cid = await doMetadataPin();
     if (cid == null) return;
     console.info("Pinned metadata at:", cidToIpfsUri(cid));
 
-    void registerAgent({
-      agentKey,
-      name,
-      url: parsedAgentApiUrl.data,
-      metadata: cidToIpfsUri(cid),
-      callback: handleCallback,
-    });
-
-    router.refresh();
+    // void registerAgent({
+    //   agentKey,
+    //   name,
+    //   url: parsedAgentApiUrl.data,
+    //   metadata: cidToIpfsUri(cid),
+    //   callback: handleCallback,
+    // });
   }
 
   const getButtonSubmitLabel = ({
@@ -689,6 +699,13 @@ export function RegisterAgent(): JSX.Element {
 
         <TabsContent value="register" className="animate-fade">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-5">
+            <AllocatorAgentItem
+              agentKey={agentKey}
+              iconUrl={icon ? URL.createObjectURL(icon) : null}
+              socialsList={{ discord, github, telegram, twitter, website }}
+              shortDescription={shortDescription}
+              title={title}
+            />
             <Button
               size="lg"
               type="submit"
@@ -733,10 +750,25 @@ export function RegisterAgent(): JSX.Element {
               </span>
             )}
           </span>
+          <span className="text-white">
+            Burn amount:{" "}
+            {selectedAccount && (
+              <span className="text-muted-foreground">
+                {burnAmount.data != null
+                  ? `${fromNano(burnAmount.data)} TORUS`
+                  : "Loading..."}
+              </span>
+            )}
+            {!selectedAccount && (
+              <span className="text-muted-foreground">
+                connect your wallet to calculate the burn amount.
+              </span>
+            )}
+          </span>
 
           <span className="text-sm text-muted-foreground">
-            Note: The application fee will be deducted from your connected
-            wallet.
+            Note: The application fee and burn amount will be deducted from your
+            connected wallet.
           </span>
         </div>
       </div>
