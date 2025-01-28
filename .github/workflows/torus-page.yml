@@ -44,7 +44,6 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-page
-      pr_number: ${{ github.event.number }}
 
   pr-preview-delete:
     if: github.event.pull_request.state == 'closed'
@@ -52,5 +51,4 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-page
-      pr_number: ${{ github.event.number }}
       delete: true
