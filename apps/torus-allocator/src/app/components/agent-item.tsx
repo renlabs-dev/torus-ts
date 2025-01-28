@@ -9,7 +9,6 @@ import Link from "next/link";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Badge,
-  Card,
   CopyButton,
   HoverCard,
   HoverCardContent,
@@ -170,7 +169,7 @@ export function AgentItem(props: AgentCardProps) {
             >
               {title}
             </h2>
-            <div className="flex items-center justify-between">
+            <div className="relative z-30 flex items-center justify-between">
               <HoverCard>
                 <HoverCardTrigger>
                   <Label
@@ -238,7 +237,7 @@ export function AgentItem(props: AgentCardProps) {
             </div>
           </div>
 
-          <div className="flex w-full flex-col gap-2 md:flex-row">
+          <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
             <DelegateModuleWeight
               id={props.id}
               name={props.name}
