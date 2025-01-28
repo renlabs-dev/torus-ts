@@ -8,6 +8,10 @@ on:
         required: true
         type: string
 
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.app_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     permissions: write-all
