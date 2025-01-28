@@ -1,5 +1,6 @@
 import type { ApiPromise } from "@polkadot/api";
 import { match } from "rustie";
+import { z } from "zod";
 
 import type { AgentApplication } from "@torus-ts/subspace";
 import {
@@ -8,6 +9,7 @@ import {
   penalizeAgent,
   removeFromWhitelist,
 } from "@torus-ts/subspace";
+import { validateEnvOrExit } from "@torus-ts/utils/env";
 
 import type { WorkerProps } from "../common";
 import {
@@ -24,15 +26,26 @@ import {
   queryTotalVotesPerApp,
   updatePenalizeAgentVotes,
 } from "../db";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
-
-import { z } from "zod";
 
 const getEnv = validateEnvOrExit({
   TORUS_CURATOR_MNEMONIC: z
     .string()
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
 });
+
+type ApplicationVoteStatus = "open" | "accepted" | "locked";
+
+const getApplicationVoteStatus = (
+  app: AgentApplication,
+): ApplicationVoteStatus =>
+  match(app.status)({
+    Open: () => "open",
+    Resolved: ({ accepted }) => (accepted ? "accepted" : "locked"),
+    Expired: () => "locked",
+  });
+
+const applicationIsPending = (app: AgentApplication) =>
+  getApplicationVoteStatus(app) != "locked";
 
 export async function processApplicationsWorker(props: WorkerProps) {
   const env = getEnv(process.env);
@@ -44,13 +57,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
       props.lastBlock = lastBlock;
       log(`Block ${props.lastBlock.blockNumber}: processing`);
 
-      const apps_map = await getApplications(props.api, (app) =>
-        match(app.status)({
-          Open: () => true,
-          Resolved: ({ accepted }) => accepted,
-          Expired: () => false,
-        }),
-      );
+      const apps_map = await getApplications(props.api, applicationIsPending);
 
       const votes_on_pending = await getVotesOnPending(
         apps_map,
@@ -104,48 +111,43 @@ export async function processVotesOnProposal(
   vote_threshold: number,
   applications_map: Record<number, AgentApplication>,
 ) {
-  const { appId: agentId, acceptVotes, refuseVotes, removeVotes } = vote_info;
-  log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
-  log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);
-  log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
+  const { appId, acceptVotes, refuseVotes, removeVotes } = vote_info;
 
-  const app = applications_map[agentId];
-  if (app == null) throw new Error("application not found");
+  const app = applications_map[appId];
+  if (app == null) throw new Error("Impossible: Application ID not found");
 
-  if (acceptVotes >= vote_threshold) {
-    log(`Accepting proposal ${agentId}`);
-    // await pushToWhitelist(api, app.payerKey, mnemonic);
-    await acceptApplication(api, agentId, mnemonic);
-  } else if (refuseVotes >= vote_threshold) {
-    log(`Refusing proposal ${agentId}`);
-    await denyApplication(api, agentId, mnemonic);
-  } else if (
-    removeVotes >= vote_threshold &&
-    applications_map[agentId] !== undefined
-  ) {
-    const status = applications_map[agentId].status;
-    const isResolved = match(status)({
-      Open: () => false,
-      Resolved: ({ accepted }) => accepted,
-      Expired: () => false,
-    });
-    if (isResolved) {
-      log(`Removing proposal ${agentId}`);
-      await removeFromWhitelist(
-        api,
-        applications_map[agentId].agentKey,
-        mnemonic,
-      );
+  const appVoteStatus = getApplicationVoteStatus(app);
+  log(
+    `Application ${appId} [${appVoteStatus}] votes[ accept:${acceptVotes}, refuse:${refuseVotes}, remove:${removeVotes} ]`,
+  );
+
+  // Application is open and we have votes to accept or refuse
+  if (appVoteStatus == "open") {
+    if (acceptVotes >= vote_threshold) {
+      log(`Accepting proposal ${appId} ${app.agentKey}`);
+      const res = await acceptApplication(api, appId, mnemonic);
+      console.log("acceptApplication executed:", res.toHuman());
+    } else if (refuseVotes >= vote_threshold) {
+      log(`Refusing proposal ${appId}`);
+      const res = await denyApplication(api, appId, mnemonic);
+      console.log("denyApplication executed:", res.toHuman());
     }
+  } else if (
+    appVoteStatus == "accepted" &&
+    removeVotes >= vote_threshold &&
+    applications_map[appId] !== undefined
+  ) {
+    log(`Removing proposal ${appId}`);
+    // Note: if chain is updated to include revoking logic, this should be
+    // `revokeApplication` instead of `removeFromWhitelist`
+    const res = await removeFromWhitelist(
+      api,
+      applications_map[appId].agentKey,
+      mnemonic,
+    );
+    console.log("removeFromWhitelist executed:", res.toHuman());
   }
 }
-
-const applicationIsOpen = (app: AgentApplication) =>
-  match(app.status)({
-    Open: () => true,
-    Resolved: ({ accepted }) => accepted,
-    Expired: () => false,
-  });
 
 export async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
@@ -155,7 +157,7 @@ export async function getVotesOnPending(
   const votes_on_pending = votes.filter((vote) => {
     const app = applications_map[vote.appId];
     if (app == null) return false;
-    return applicationIsOpen(app) && app.expiresAt > last_block_number;
+    return applicationIsPending(app) && app.expiresAt > last_block_number;
   });
   return votes_on_pending;
 }

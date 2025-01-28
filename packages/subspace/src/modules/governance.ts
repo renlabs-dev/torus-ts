@@ -343,16 +343,8 @@ export async function removeFromWhitelist(
 
   const keyring = new Keyring({ type: "sr25519" });
   const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx
-    .signAndSend(sudoKeypair)
-    .catch((err) => {
-      console.error(err);
-      return false;
-    })
-    .then(() => {
-      console.log(`Extrinsic: ${extrinsic}`);
-      return true;
-    });
+  const extrinsic = await tx.signAndSend(sudoKeypair);
+  return extrinsic;
 }
 
 // TODO: receive key instead of mnemonic
