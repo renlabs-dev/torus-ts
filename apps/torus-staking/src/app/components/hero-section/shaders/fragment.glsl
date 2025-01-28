@@ -9,11 +9,16 @@ vec3 cosPalette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
 
 void main() {
   float distort = vDistortion * 3.;
-  vec3 brightness = vec3(.1, .1, .9);
-  vec3 contrast = vec3(.3, .3, .3);
-  vec3 oscilation = vec3(.5, .5, .9);
-  vec3 phase = vec3(.9, .1, .8);
+
+  // Updated color parameters for monochrome look
+  vec3 brightness = vec3(0.1, 0.1, 0.1);    // Reduced color variation
+  vec3 contrast = vec3(0.3, 0.3, 0.3);      // Kept neutral
+  vec3 oscilation = vec3(0.5, 0.5, 0.5);    // Made uniform for all channels
+  vec3 phase = vec3(0.2, 0.2, 0.2);         // Reduced color separation
+
   vec3 color = cosPalette(distort, brightness, contrast, oscilation, phase);
   gl_FragColor = vec4(color, vDistortion);
-  gl_FragColor += vec4(min(uDeepPurple, 1.), 0., .5, min(uOpacity, 1.));
+
+  // Removed purple tint, replaced with neutral gray
+  gl_FragColor += vec4(0.1, 0.1, 0.1, min(uOpacity, 1.));
 }

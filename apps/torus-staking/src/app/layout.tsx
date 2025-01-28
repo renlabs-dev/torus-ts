@@ -43,12 +43,11 @@ export default function RootLayout({
           <ReactQueryProvider>
             <WalletProvider cacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}>
               <WalletHeader />
-              <Container>{children}</Container>
+              <Container className="p-0">{children}</Container>
             </WalletProvider>
           </ReactQueryProvider>
         </TorusProvider>
       </ToastProvider>
-      <Footer />
     </Layout>
   );
 }

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, Canvas } from "@react-three/fiber";
 import { useAnimationConfig } from "./hooks/useAnimationConfig";
 import { ShaderMaterial } from "./materials/ShaderMaterial";
 import { BalanceDisplay } from "./BalanceDisplay";
+import { APRDisplay } from "../apr-display";
 
 const AnimatedIcosahedron = () => {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -121,22 +122,51 @@ const easeInOutCubic = (t: number): number => {
 
 const createParticlePositions = (count: number) => {
   const positions = new Float32Array(count * 3);
+  const spread = 30; // Increased spread for more distributed stars
+
   for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 10;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    // Random distribution with more variance
+    positions[i * 3] = (Math.random() - 0.5) * spread;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * spread;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * spread;
   }
   return positions;
 };
 
+const createStarTexture = () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 32;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  // Sharper, brighter gradient
+  const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+  gradient.addColorStop(0.4, "rgba(255, 255, 255, 1)");
+  gradient.addColorStop(0.8, "rgba(255, 255, 255, 0.3)");
+  gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 32, 32);
+
+  return new THREE.CanvasTexture(canvas);
+};
+
 const ParticleField = () => {
   const particlesRef = useRef<THREE.Points>(null);
-  const particleCount = 1000;
+  const particleCount = 5000;
   const positions = createParticlePositions(particleCount);
+  const texture = useMemo(() => createStarTexture(), []);
+
+  const sizes = new Float32Array(particleCount);
+  for (let i = 0; i < particleCount; i++) {
+    sizes[i] = Math.random() * 0.15 + 0.05; // Increased size range
+  }
 
   useFrame((_, delta) => {
     if (particlesRef.current) {
-      particlesRef.current.rotation.y += delta * 0.05;
+      particlesRef.current.rotation.y += delta * 0.02;
     }
   });
 
@@ -149,13 +179,23 @@ const ParticleField = () => {
           array={positions}
           itemSize={3}
         />
+        <bufferAttribute
+          attach="attributes-size"
+          count={particleCount}
+          array={sizes}
+          itemSize={1}
+        />
       </bufferGeometry>
       <pointsMaterial
-        size={0.02}
-        color="#ffffff"
-        transparent
-        opacity={0.6}
+        size={0.1} // Increased base size
+        sizeAttenuation={true}
+        transparent={true}
+        opacity={1} // Full opacity
+        depthWrite={false}
         blending={THREE.AdditiveBlending}
+        map={texture}
+        alphaMap={texture}
+        color="#ffffff"
       />
     </points>
   );
@@ -171,7 +211,7 @@ const Scene = () => (
 );
 
 const ClientHeroSection = () => (
-  <section className="relative h-[40vh] w-full">
+  <section className="relative h-[40vh] w-screen">
     <Canvas
       className="absolute inset-0"
       camera={{ position: [0, 0, 2.5], fov: 75 }}
@@ -180,14 +220,22 @@ const ClientHeroSection = () => (
     >
       <Scene />
     </Canvas>
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 bg-gradient-to-b from-black/30 to-transparent">
-      <h1 className="font-['Italiana'] text-7xl font-light tracking-[0.15em] text-white/90">
-        TORUS STAKING
-      </h1>
-      <BalanceDisplay />
-      <p className="font-['Inter'] text-sm font-light tracking-wider text-white/70">
-        emission landscape is dynamic, APR might change quickly
-      </p>
+    <div className="absolute inset-0 z-10 flex flex-col items-center bg-gradient-to-b from-black/30 to-transparent">
+      {/* APR Display with custom padding */}
+      <div className="w-full pt-[68px]">
+        <APRDisplay />
+      </div>
+
+      {/* Main content centered in remaining space */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-8">
+        <h1 className="font-['Italiana'] text-7xl font-light tracking-[0.15em] text-white/90">
+          TORUS STAKING
+        </h1>
+        <BalanceDisplay />
+        <p className="font-['Inter'] text-sm font-light tracking-wider text-white/70">
+          emission landscape is dynamic, APR might change quickly
+        </p>
+      </div>
     </div>
   </section>
 );

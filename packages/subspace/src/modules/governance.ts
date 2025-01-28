@@ -26,6 +26,7 @@ import {
 } from "../types";
 import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
+import type { Percent } from "@polkadot/types/interfaces";
 
 const ADDRESS_FORMAT = 42;
 
@@ -261,6 +262,11 @@ export async function queryGlobalGovernanceConfig(
   const config = await api.query.governance.globalGovernanceConfig();
   const parsed_config = GOVERNANCE_CONFIGURATION_SCHEMA.parse(config);
   return parsed_config;
+}
+
+export async function queryTreasuryEmissionFee(api: Api): Promise<Percent> {
+  const treasuryEmissionFee = await api.query.governance.treasuryEmissionFee();
+  return treasuryEmissionFee;
 }
 
 export function getRewardAllocation(

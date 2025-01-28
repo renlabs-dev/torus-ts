@@ -28,6 +28,7 @@
     "glslify-hex": "^2.1.1",
     "glslify-import": "^3.1.0",
     "lucide-react": "^0.454.0",
+    "framer-motion": "^11.0.0",
     "next": "catalog:",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
