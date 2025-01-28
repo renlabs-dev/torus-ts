@@ -7,13 +7,13 @@ import { Footer, Layout } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-import { DelegatedList } from "./components/delegated-list";
-import { AllocatorHeader } from "./components/allocator-header";
-import { TutorialDialog } from "./components/tutorial-dialog";
+
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript } from "~/env";
 import { ToastProvider } from "@torus-ts/toast-provider";
-import { AgentBanner } from "./components/agent-banner";
+import { AllocatorHeader } from "./components/allocator-header";
+import { DelegatedList } from "./components/delegated-list";
+import { TutorialDialog } from "./components/tutorial-dialog";
 
 const APP_NAME = "Allocator";
 
@@ -50,10 +50,7 @@ export default function RootLayout({
             <AllocatorHeader />
             <TutorialDialog />
             <DelegatedList />
-            <div className="h-full w-full pt-12">
-              <AgentBanner />
-              {children}
-            </div>
+            {children}
             <Footer />
           </TRPCReactProvider>
         </TorusProvider>

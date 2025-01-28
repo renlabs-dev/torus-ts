@@ -2,7 +2,7 @@
 
 import { api } from "~/trpc/react";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-import { PieChart, X } from "lucide-react";
+import { LoaderCircle, PieChart, X } from "lucide-react";
 import { toast } from "@torus-ts/toast-provider";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -258,15 +258,18 @@ export function DelegatedList() {
     return () => clearTimeout(timeoutId);
   }, [delegatedAgents, isOpen]);
 
-  if (!selectedAccount) return null;
-
   return (
     <Sheet>
       <SheetTrigger
         onClick={() => setIsOpen(!isOpen)}
+        disabled={!selectedAccount}
         className={`fixed bottom-14 right-4 z-[50] ${buttonVariants({ variant: "outline" })} marker:flex`}
       >
-        <PieChart />
+        {!selectedAccount ? (
+          <LoaderCircle className="animate-spin" />
+        ) : (
+          <PieChart />
+        )}
         Allocation Menu
       </SheetTrigger>
 

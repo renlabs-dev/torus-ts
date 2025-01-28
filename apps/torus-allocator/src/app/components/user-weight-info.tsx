@@ -56,7 +56,10 @@ export const UserWeightInfo = () => {
           </Tooltip>
         </TooltipProvider>
         {userWeightPower === null ? (
-          <Skeleton className="flex w-3/4 py-3" />
+          <div className="flex items-center">
+            <span className="animate-pulse text-gray-400">00.00</span>
+            <span className="ml-0.5 text-xs">TORUS</span>
+          </div>
         ) : (
           <span>
             {userWeightPower}
@@ -69,7 +72,7 @@ export const UserWeightInfo = () => {
           Agents Allocated:
         </span>
         {userWeightPower === null ? (
-          <Skeleton className="flex w-1/4 py-3" />
+          <span className="animate-pulse text-gray-400">0</span>
         ) : (
           <span>{delegatedAgents.length}</span>
         )}

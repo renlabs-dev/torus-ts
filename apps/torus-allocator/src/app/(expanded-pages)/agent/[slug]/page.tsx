@@ -2,12 +2,12 @@ import { AgentInfoCard } from "~/app/components/agent-info-card";
 import { api } from "~/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import { Button, Card, Container, Label } from "@torus-ts/ui";
-import { ExpandedViewContent } from "~/app/components/expanded-view-content";
 import { fetchAgentMetadata } from "@torus-ts/subspace";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BlobImage from "~/app/components/blob-image";
 import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
+import { MarkdownView } from "@torus-ts/ui/markdown-view";
 
 export default async function AgentPage({
   params,
@@ -55,14 +55,14 @@ export default async function AgentPage({
 
   return (
     <Container>
-      <div className="mx-auto min-h-[calc(100vh-169px)] text-white">
+      <div className="mx-auto text-white">
         <Button
           asChild
           variant="link"
           className="flex w-fit items-center gap-1.5 p-0"
         >
           <Link
-            href="/?view=agents"
+            href="/"
             className="mb-4 flex animate-fade-left items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -85,7 +85,7 @@ export default async function AgentPage({
               </div>
             </Card>
 
-            <ExpandedViewContent content={metadata.description} />
+            <MarkdownView source={metadata.description} />
           </div>
           <div className="flex animate-fade-down flex-col gap-6 animate-delay-500 md:w-1/3">
             <AgentInfoCard agent={mdl} />
