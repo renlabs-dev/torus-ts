@@ -143,5 +143,5 @@ jobs:
 
       - name: Show logs
         run: |
-          timeout 120 kubectl logs -n torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps -l app=${{ inputs.app_name }} -f
+          timeout 240 kubectl logs -n torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps -l app=${{ inputs.app_name }} -f
         continue-on-error: true
