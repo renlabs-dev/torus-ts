@@ -46,6 +46,7 @@ jobs:
     with:
       app_name: torus-worker
       pr_number: ${{ github.event.number }}
+      hasURL: false
 
   pr-preview-delete:
     if: github.event.pull_request.state == 'closed'

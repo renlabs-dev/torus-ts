@@ -14,6 +14,10 @@ on:
       pr_number:
         required: true
         type: number
+      hasURL:
+        required: false
+        type: boolean
+        default: true
     secrets:
       VAULT_ADDR:
         required: true
@@ -123,11 +127,13 @@ jobs:
           --state-values-set releasePrefix=pr-${{ inputs.pr_number }}-${{ inputs.app_name }}
 
       - name: Wait for App URL
+        if: ${{ inputs.hasURL }}
         uses: iFaxity/wait-on-action@v1.2.1
         with:
           resource: https://p${{ inputs.pr_number }}.${{ inputs.app_name }}.torus.network
 
       - name: Comment PR
+        if: ${{ inputs.hasURL }}
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
