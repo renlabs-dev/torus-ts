@@ -7,27 +7,12 @@ import {
   queryLastBlock,
 } from "@torus-ts/subspace";
 
-import type {
-  VotesByNumericId as VoteById,
-  VotesByKey as VoteByKey,
-} from "../db";
-import {
-  queryTotalVotesPerApp as queryTotalVotesPerApp,
-  countCadreKeys,
-  pendingPenalizations,
-  addCadreMember,
-  queryTotalVotesPerCadre,
-  removeCadreMember,
-  getCadreDiscord,
-  refuseCadreApplication,
-} from "../db";
 
 import type { VotesByNumericId as VoteById, VotesByKey as VoteByKey } from "../db";
 import {
   queryTotalVotesPerApp as queryTotalVotesPerApp,
   countCadreKeys,
   pendingPenalizations,
-  updatePenalizeAgentVotes,
   addCadreMember,
   queryTotalVotesPerCadre,
   removeCadreMember,
