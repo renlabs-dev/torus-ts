@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Layout } from "@torus-ts/ui";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { AppContextProvider } from "~/context/app-context-provider";
+import { EnvScript } from "~/env";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -25,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono}>
+    <Layout font={firaMono} headScripts={[EnvScript]}>
       <AppContextProvider>{children}</AppContextProvider>
     </Layout>
   );

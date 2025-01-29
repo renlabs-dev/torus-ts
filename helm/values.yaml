@@ -5,7 +5,17 @@ deployment:
     - name: renlabs-ghcr-secret
 
   env:
+    NEXT_PUBLIC_TORUS_CHAIN_ENV:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_chain_env
     NEXT_PUBLIC_TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_ws_url
+    TORUS_RPC_URL:
       valueFrom:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
@@ -95,3 +105,4 @@ configMap:
       next_public_ws_url: "{{ .Values.wssApiEndpoint }}"
       next_public_rpc_https_url: '{{ .Values.wssApiEndpoint | replace "wss" "https" }}/'
       next_public_cache_provider_url: "{{ .Values.cacheUrl }}"
+      next_public_chain_env: "{{ .Values.chainEnv }}"

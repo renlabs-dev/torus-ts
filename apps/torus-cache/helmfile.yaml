@@ -8,6 +8,7 @@ environments:
       - wssApiEndpoint: wss://api.testnet.torus.network
       - releaseName: dev-torus-cache
       - ingressHost: cache.testnet.torus.network
+      - chainEnv: testnet
   prod:
     values:
       - ../../helm/values.yaml
@@ -17,6 +18,7 @@ environments:
       - wssApiEndpoint: wss://api.torus.network
       - releaseName: torus-cache
       - ingressHost: cache.torus.network
+      - chainEnv: mainnet
 ---
 helmDefaults:
   wait: true

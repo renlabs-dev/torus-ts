@@ -43,6 +43,15 @@ import { Header, WalletDropdown } from "@torus-ts/ui";
 
 import { env } from "~/env";
 import { toast } from "@torus-ts/toast-provider";
+import { api as trpcApi } from "~/trpc/react";
+import type { AppRouter } from "@torus-ts/api";
+import type { inferProcedureOutput } from "@trpc/server";
+import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { useSignIn } from "hooks/use-sign-in";
+
+type CadreCandidates = inferProcedureOutput<AppRouter["cadreCandidate"]["all"]>;
+type CadreList = inferProcedureOutput<AppRouter["cadre"]["all"]>;
 
 interface GovernanceContextType {
   accountFreeBalance: UseQueryResult<bigint, Error>;
@@ -84,6 +93,15 @@ interface GovernanceContextType {
   torusCacheUrl: string;
   unrewardedProposals: UseQueryResult<number[], Error>;
   voteProposal: (vote: Vote) => Promise<void>;
+  isUserCadre: boolean;
+  isUserCadreCandidate: boolean;
+  cadreCandidates: UseTRPCQueryResult<
+    CadreCandidates,
+    TRPCClientErrorLike<AppRouter>
+  >;
+  cadreList: UseTRPCQueryResult<CadreList, TRPCClientErrorLike<AppRouter>>;
+  authenticateUser: () => Promise<void>;
+  isUserAuthenticated: boolean | null;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -111,6 +129,7 @@ export function GovernanceProvider({
     torusCacheUrl,
     voteProposal,
   } = useTorus();
+
   const lastBlock = useLastBlock(api);
 
   // == Network ==
@@ -135,8 +154,20 @@ export function GovernanceProvider({
     return false;
   }, [selectedAccount, accountsNotDelegatingVoting]);
 
+  const cadreList = trpcApi.cadre.all.useQuery();
+  const isUserCadre = !!cadreList.data?.find(
+    (cadre) => cadre.userKey === selectedAccount?.address,
+  );
+
+  const cadreCandidates = trpcApi.cadreCandidate.all.useQuery();
+
+  const isUserCadreCandidate = !!cadreCandidates.data?.find(
+    (user) => user.userKey === selectedAccount?.address,
+  );
+
+  const { isUserAuthenticated, authenticateUser } = useSignIn();
   // == Subspace ==
-  const stakeOut = useCachedStakeOut(env.NEXT_PUBLIC_TORUS_CACHE_URL);
+  const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
 
   const accountStakedBalance =
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -207,11 +238,15 @@ export function GovernanceProvider({
         agentApplications,
         agentApplicationsWithMeta,
         api,
+        cadreCandidates,
+        cadreList,
         daoTreasuryAddress,
         daoTreasuryBalance,
         isAccountConnected,
         isAccountPowerUser,
         isInitialized,
+        isUserCadre,
+        isUserCadreCandidate,
         lastBlock,
         networkConfigs,
         proposals,
@@ -224,6 +259,8 @@ export function GovernanceProvider({
         torusCacheUrl,
         unrewardedProposals,
         voteProposal,
+        authenticateUser,
+        isUserAuthenticated,
       }}
     >
       <Header

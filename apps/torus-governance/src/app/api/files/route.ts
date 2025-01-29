@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
 import { env } from "~/env";
+
+import type { CID } from "@torus-ts/utils/ipfs";
+import { PINATA_PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 
 export function config(): { api: { bodyParser: false } } {
   return {
@@ -14,24 +16,53 @@ export function config(): { api: { bodyParser: false } } {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const data = await request.formData();
-    const file: File | null = data.get("file") as unknown as File;
-    data.append("file", file);
-    data.append("pinataMetadata", JSON.stringify({ name: "File to upload" }));
-    const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.PINATA_JWT}`,
-      },
-      body: data,
-    });
-    const { IpfsHash } = (await res.json()) as { IpfsHash: string };
 
-    return NextResponse.json({ IpfsHash }, { status: 200 });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const file = data.get("file");
+    if (!(file instanceof File)) {
+      throw new Error(`Key "file" should be a File`);
+    }
+
+    const { cid } = await pinFileOnPinata(file, file.name);
+
+    return NextResponse.json({ cid: cid.toString() }, { status: 200 });
   } catch (e) {
+    console.error(e);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
     );
   }
+}
+
+const PINATA_PIN_FILE_URL = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+
+async function pinFileOnPinata(
+  file: File,
+  name?: string,
+): Promise<{ cid: CID }> {
+  const PINATA_JWT = env("PINATA_JWT");
+
+  const pinataOptions = {
+    cidVersion: 1,
+  };
+  const pinataMetadata = {
+    name: name ?? file.name,
+  };
+
+  const requestBody = new FormData();
+  requestBody.append("pinataOptions", JSON.stringify(pinataOptions));
+  requestBody.append("pinataMetadata", JSON.stringify(pinataMetadata));
+  requestBody.append("file", file);
+
+  const res = await fetch(PINATA_PIN_FILE_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${PINATA_JWT}`,
+    },
+    body: requestBody,
+  });
+
+  const { IpfsHash } = PINATA_PIN_FILE_RESULT.parse(await res.json());
+
+  return { cid: IpfsHash };
 }

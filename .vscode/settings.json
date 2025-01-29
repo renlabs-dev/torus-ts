@@ -1,14 +1,23 @@
 {
   // Git
   "git.autofetch": true,
+
   // Liveshare
   "liveshare.allowGuestDebugControl": true,
   "liveshare.allowGuestTaskControl": true,
   "liveshare.languages.allowGuestCommandControl": true,
   "liveshare.openSharedServers": false,
   "liveshare.publishWorkspaceInfo": true,
+
   // TypeScript
   "typescript.tsdk": "node_modules/typescript/lib",
+
+  // Editor
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "**/tooling/typescript/*.json": "jsonc"
+  },
+
   // Eslint
   "eslint.workingDirectories": [
     {
@@ -21,11 +30,27 @@
       "severity": "warn"
     }
   ],
-  // Editor
-  "editor.formatOnSave": true,
-  "files.associations": {
-    "**/tooling/typescript/*.json": "jsonc"
+
+  // Formatting
+  "tsImportSorter.configuration.autoFormat": "off",
+  "tsImportSorter.configuration.maxLineLength": 80,
+  "tsImportSorter.configuration.wrappingStyle": {
+    "maxBindingNamesPerLine": 0,
+    "maxDefaultAndBindingNamesPerLine": 0,
+    "maxExportNamesPerLine": 0,
+    "maxNamesPerWrappedLine": 1,
+    "ignoreComments": true
   },
+  "tsImportSorter.configuration.groupRules": [
+    "^react(-dom)?$",
+    "^node:",
+    {},
+    // "^[@]",
+    "^@torus-ts",
+    "^~",
+    "^[.]"
+  ],
+
   // Conventional Commits
   "conventionalCommits.scopes": [
     "cache",
@@ -38,8 +63,10 @@
     "package",
     "tooling"
   ],
+
   // Spell Check
   "cSpell.words": [
+    "Blockscout",
     "comrads",
     "daos",
     "datetime",
@@ -66,6 +93,7 @@
     "rainbowkit",
     "rootnet",
     "rustie",
+    "shadcn",
     "Solana",
     "superjson",
     "tailwindcss",
@@ -82,6 +110,7 @@
     "unstaking",
     "UNVOTED",
     "viem",
-    "wagmi"
+    "wagmi",
+    "webapps"
   ]
 }

@@ -1,9 +1,10 @@
 import type { ZodSchema } from "zod";
-import { match } from "rustie";
 import { z } from "zod";
 
 import type { Result } from "@torus-ts/utils";
-import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
+import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
+import type { AgentMetadata } from "./agent_metadata/agent_metadata";
+import { AGENT_METADATA_SCHEMA } from "./agent_metadata/agent_metadata";
 
 const CUSTOM_METADATA_SCHEMA = z.object({
   title: z.string().optional(),
@@ -65,27 +66,38 @@ export async function processApplicationMetadata(
   );
 }
 
+export async function processAgentMetadata(
+  url: string,
+  entryId: number,
+): Promise<Result<AgentMetadata, CustomDataError>> {
+  return await processMetadata(AGENT_METADATA_SCHEMA, url, entryId, "AGENT  ");
+}
+
 export async function fetchCustomMetadata(
-  kind: "proposal" | "application",
+  kind: "proposal" | "application" | "agent",
   entryId: number,
   metadataField: string,
 ): Promise<Result<CustomMetadata, CustomDataError>> {
-  const r = parseIpfsUri(metadataField);
+  const r = IPFS_URI_SCHEMA.safeParse(metadataField);
 
-  return await match(r)({
-    async Ok(cid) {
-      const url = buildIpfsGatewayUrl(cid); // this is wrong
-      const metadata =
-        kind == "proposal"
-          ? await processProposalMetadata(url, entryId)
-          : await processApplicationMetadata(url, entryId);
-      return metadata;
-    },
-    // eslint-disable-next-line @typescript-eslint/require-await
-    async Err({ message }) {
-      return appendErrorInfo(message, `for ${kind} ${entryId}`);
-    },
-  });
+  if (!r.success) {
+    return appendErrorInfo(
+      r.error.errors.map((e) => e.message).join("\n"),
+      `for ${kind} ${entryId}`,
+    );
+  }
+
+  const cid = r.data;
+  const url = buildIpfsGatewayUrl(cid);
+
+  const metadata =
+    kind == "proposal"
+      ? await processProposalMetadata(url, entryId)
+      : kind == "application"
+        ? await processApplicationMetadata(url, entryId)
+        : await processAgentMetadata(url, entryId);
+
+  return metadata;
 }
 
 export function appendErrorInfo(

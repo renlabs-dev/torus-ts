@@ -2,6 +2,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-governance
 
+  podLabels:
+    app: torus-governance
+
   env:
     JWT_SECRET:
       valueFrom:

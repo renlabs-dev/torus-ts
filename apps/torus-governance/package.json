@@ -11,12 +11,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
+    "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
-    "@torus-ts/toast-provider": "workspace:*",
     "@torus-ts/subspace": "workspace:*",
+    "@torus-ts/toast-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
@@ -29,6 +29,7 @@
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
     "rustie": "catalog:",
+    "shadcn-dropzone": "^0.2.1",
     "superjson": "2.2.1",
     "tsafe": "catalog:",
     "zod": "catalog:"

@@ -23,3 +23,4 @@ export * from "./types/zod";
 
 // == Metadata ==
 export * from "./metadata";
+export * from "./agent_metadata/agent_metadata";

@@ -6,25 +6,50 @@ on:
   push:
     paths-ignore:
       - "apps/torus-page/**"
-      - "apps/torus-validator/**"
+      - "apps/torus-allocator/**"
       - "apps/torus-governance/**"
       - "apps/torus-worker/**"
       - "apps/torus-wallet/**"
       - "apps/torus-cache/**"
+  # pull_request:
+  #   types:
+  #     - opened
+  #     - reopened
+  #     - closed
+  #     - synchronize
+  #   paths-ignore:
+  #     - "apps/torus-page/**"
+  #     - "apps/torus-allocator/**"
+  #     - "apps/torus-governance/**"
+  #     - "apps/torus-worker/**"
+  #     - "apps/torus-wallet/**"
+  #     - "apps/torus-cache/**"
 
 jobs:
   kubernetes:
-    if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
+    if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd')
     uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
     with:
       app_name: torus-bridge
-    secrets:
-      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
 
   dry-run-build:
-    if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
+    if: github.event_name == 'push' && (github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd')
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-bridge
+
+  # pr-preview-activate:
+  #   if: github.event.pull_request.state == 'open' && !github.event.repository.fork
+  #   uses: ./.github/workflows/pr-preview-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
+
+  # pr-preview-delete:
+  #   if: github.event.pull_request.state == 'closed'
+  #   uses: ./.github/workflows/pr-preview-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
+  #     delete: true

@@ -1,0 +1,18 @@
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/torus-allocator
+
+  podLabels:
+    app: torus-allocator
+
+  env:
+    JWT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: jwt_secret
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: torus_webapps_db_url

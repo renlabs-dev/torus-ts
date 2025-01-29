@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const validateEnvOrExit =
-  (varSchemas: Record<string, z.ZodType>) => (env: unknown) => {
+  <S extends Record<string, z.ZodType>>(varSchemas: S) =>
+  (env: unknown) => {
     const envSchema = z.object(varSchemas);
 
     const result = envSchema.safeParse(env);

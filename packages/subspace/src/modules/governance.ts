@@ -343,26 +343,18 @@ export async function removeFromWhitelist(
 
   const keyring = new Keyring({ type: "sr25519" });
   const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx
-    .signAndSend(sudoKeypair)
-    .catch((err) => {
-      console.error(err);
-      return false;
-    })
-    .then(() => {
-      console.log(`Extrinsic: ${extrinsic}`);
-      return true;
-    });
+  const extrinsic = await tx.signAndSend(sudoKeypair);
+  return extrinsic;
 }
 
 // TODO: receive key instead of mnemonic
 export async function acceptApplication(
   api: ApiPromise,
   proposalId: number,
-  mnemonic: string | undefined,
+  mnemonic: string,
 ) {
   if (!mnemonic) {
-    throw new Error("No sudo mnemonic provided");
+    throw new Error("No sudo mnemonic provided to accept application");
   }
 
   const tx = api.tx.governance.acceptApplication(proposalId);
@@ -373,15 +365,14 @@ export async function acceptApplication(
   return extrinsic;
 }
 
-
 export async function penalizeAgent(
   api: ApiPromise,
   agentKey: string,
   penaltyFactor: number,
-  mnemonic: string | undefined,
+  mnemonic: string,
 ) {
   if (!mnemonic) {
-    throw new Error("No sudo mnemonic provided");
+    throw new Error("No sudo mnemonic provided to penalize agent");
   }
 
   const tx = api.tx.governance.penalizeAgent(agentKey, penaltyFactor);
@@ -391,7 +382,6 @@ export async function penalizeAgent(
   const extrinsic = await tx.signAndSend(sudoKeypair);
   return extrinsic;
 }
-
 
 export async function denyApplication(
   api: ApiPromise,

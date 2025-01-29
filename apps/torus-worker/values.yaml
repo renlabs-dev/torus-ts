@@ -10,6 +10,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-worker
 
+  podLabels:
+    app: torus-worker
+
   command: ["pnpm", "tsx", "./src/index.ts"]
 
   startupProbe:
@@ -28,6 +31,11 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: torus_allocator_mnemonic
+    TORUS_CURATOR_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: torus_curator_mnemonic
     POSTGRES_URL:
       valueFrom:
         secretKeyRef:

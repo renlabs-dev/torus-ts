@@ -17,6 +17,8 @@ export const links = {
   hyperlane_explorer: "https://explorer.hyperlane.xyz",
 
   torex_explorer: "https://torex.rs/",
+
+  // TODO: use correct chain env suffix depending on the chain env
   explorer: "https://explorer.torus.network/",
   governance: "https://dao.torus.network/",
   allocator: "https://allocator.torus.network/",

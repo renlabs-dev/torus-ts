@@ -290,7 +290,7 @@ export function CreateAgentApplication(): JSX.Element {
         <Label htmlFor="terms" className="leading-normal">
           My application meets all the{" "}
           <Link
-            className="text-blue-500 underline"
+            className="text-cyan-500 underline"
             href="https://docs.torus.network/concepts/agent-application"
             target="_blank"
           >

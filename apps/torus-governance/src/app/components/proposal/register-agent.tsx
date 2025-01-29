@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { FolderUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { DropzoneState } from "shadcn-dropzone";
+import Dropzone from "shadcn-dropzone";
+import { z } from "zod";
+import { useGovernance } from "~/context/governance-provider";
+
+import {
+  AGENT_METADATA_SCHEMA,
+  AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
+} from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
+import { useTorus } from "@torus-ts/torus-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
   Button,
   Input,
@@ -16,15 +25,32 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
-import { formatToken, fromNano } from "@torus-ts/utils/subspace";
+import { smallFilename, strToFile } from "@torus-ts/utils/files";
+import type { CID } from "@torus-ts/utils/ipfs";
+import { CID_SCHEMA, cidToIpfsUri } from "@torus-ts/utils/ipfs";
+import {
+  DECIMALS_MULTIPLIER,
+  formatToken,
+  fromNano,
+} from "@torus-ts/utils/subspace";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 
-import { useGovernance } from "~/context/governance-provider";
-import { useTorus } from "@torus-ts/torus-provider";
+const MODULE_REGISTER_COST = 200n * DECIMALS_MULTIPLIER; // FIXME: this should be dynamic
 
-const moduleSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  body: z.string().min(1, "Body is required"),
+const PIN_FILE_RESULT = z.object({
+  cid: CID_SCHEMA,
 });
+
+const pinFile = async (file: File): Promise<{ cid: CID }> => {
+  const body = new FormData();
+  body.set("file", file);
+  const res = await fetch("/api/files", {
+    method: "POST",
+    body,
+  });
+  const { cid } = PIN_FILE_RESULT.parse(await res.json());
+  return { cid };
+};
 
 export function RegisterAgent(): JSX.Element {
   const router = useRouter();
@@ -42,7 +68,15 @@ export function RegisterAgent(): JSX.Element {
   const [url, setUrl] = useState("");
 
   const [title, setTitle] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
   const [body, setBody] = useState("");
+
+  const [icon, setIcon] = useState<File | null>(null);
+
+  const [twitter, setTwitter] = useState("");
+  const [github, setGithub] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [discord, setDiscord] = useState("");
 
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
@@ -87,7 +121,7 @@ export function RegisterAgent(): JSX.Element {
     void fetchFee();
   }, [estimateFee, registerAgentTransaction, selectedAccount?.address]);
 
-  const userHasEnoughtBalance = useCallback(() => {
+  const userHasEnoughBalance = useCallback(() => {
     if (
       !isAccountConnected ||
       !accountFreeBalance.data ||
@@ -105,71 +139,96 @@ export function RegisterAgent(): JSX.Element {
     estimatedFee,
   ])();
 
-  async function uploadFile(fileToUpload: File): Promise<void> {
+  async function doMetadataPin(): Promise<CID | null> {
     try {
       setUploading(true);
-      const data = new FormData();
-      data.set("file", fileToUpload);
-      const res = await fetch("/api/files", {
-        method: "POST",
-        body: data,
-      });
-      const ipfs = (await res.json()) as { IpfsHash: string };
-      setUploading(false);
 
-      if (ipfs.IpfsHash === "undefined" || !ipfs.IpfsHash) {
-        toast.error("Error uploading transfer dao treasury agent cost");
-        return;
+      let imageObj: Record<string, Record<string, string>> = {};
+      if (icon) {
+        const { cid } = await pinFile(icon);
+        imageObj = { images: { icon: cidToIpfsUri(cid) } };
       }
 
-      if (!accountFreeBalance.data) {
-        toast.error("Balance is still loading");
-        return;
-      }
+      const metadata = {
+        title,
+        short_description: shortDescription,
+        description: body,
+        website: "https://example.com", // FIXME: website field
+        ...imageObj,
+        socials: {
+          twitter: twitter || undefined,
+          github: github || undefined,
+          telegram: telegram || undefined,
+          discord: discord || undefined,
+        },
+      };
 
-      const moduleCost = 2000;
+      console.log(metadata);
 
-      if (Number(accountFreeBalance.data) > moduleCost) {
-        void registerAgent({
-          agentKey,
-          name,
-          url,
-          metadata: `ipfs://${ipfs.IpfsHash}`,
-          callback: handleCallback,
-        });
-      } else {
+      const validatedMetadata = AGENT_METADATA_SCHEMA.safeParse(metadata);
+
+      if (!validatedMetadata.success) {
         toast.error(
-          `Insufficient balance to create agent. Required: ${moduleCost} but got ${formatToken(accountFreeBalance.data)}`,
+          validatedMetadata.error.errors.map((e) => e.message).join(", "),
         );
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message: "Insufficient balance",
+          message: "Error on form validation",
         });
+        return null;
       }
-      router.refresh();
+
+      const metadataJson = JSON.stringify(metadata, null, 2);
+
+      const file = strToFile(metadataJson, `${name}-agent-metadata.json`);
+      const { cid } = await pinFile(file);
+
+      setUploading(false);
+
+      return cid;
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       setUploading(false);
       toast.error("Error uploading agent");
     }
+
+    return null;
   }
 
-  function HandleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> {
     event.preventDefault();
+
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
       message: "Starting agent creation...",
     });
 
-    const result = moduleSchema.safeParse({
+    const partialMetadata = {
       title,
-      body,
-    });
+      short_description: shortDescription,
+      description: body,
+      website: "https://example.com", // FIXME: website field
+      socials: {
+        twitter: twitter || undefined,
+        github: github || undefined,
+        telegram: telegram || undefined,
+        discord: discord || undefined,
+      },
+    };
 
-    if (!result.success) {
-      toast.error(result.error.errors.map((e) => e.message).join(", "));
+    const parsedMetadata = AGENT_METADATA_SCHEMA.safeParse(partialMetadata);
+
+    if (!parsedMetadata.success) {
+      toast.error(
+        parsedMetadata.error.errors
+          .map((e) => `${e.message} at ${e.path.join(".")}`)
+          .join(", "),
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -178,15 +237,47 @@ export function RegisterAgent(): JSX.Element {
       return;
     }
 
-    const moduleData = JSON.stringify({
-      title,
-      body,
+    const moduleCost = MODULE_REGISTER_COST; // FIXME: this should be dynamic
+
+    if (!accountFreeBalance.data) {
+      toast.error("Your balance is still loading");
+      return;
+    }
+
+    console.log("moduleCost", moduleCost);
+    console.log("accountFreeBalance.data", accountFreeBalance.data);
+    console.log(
+      "Number(accountFreeBalance.data)",
+      Number(accountFreeBalance.data),
+    );
+
+    if (moduleCost > accountFreeBalance.data) {
+      toast.error(
+        `Insufficient balance to create agent. Required: ${formatToken(moduleCost)} but got ${formatToken(accountFreeBalance.data)}`,
+      );
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Insufficient balance",
+      });
+      return;
+    }
+
+    // TODO: check if module is whitelisted
+
+    const cid = await doMetadataPin();
+    if (cid == null) return;
+    console.info("Pinned metadata at:", cidToIpfsUri(cid));
+
+    void registerAgent({
+      agentKey,
+      name,
+      url,
+      metadata: cidToIpfsUri(cid),
+      callback: handleCallback,
     });
-    const blob = new Blob([moduleData], { type: "application/json" });
-    const fileToUpload = new File([blob], "proposal.json", {
-      type: "application/json",
-    });
-    void uploadFile(fileToUpload);
+
+    router.refresh();
   }
 
   const getButtonSubmitLabel = ({
@@ -206,7 +297,7 @@ export function RegisterAgent(): JSX.Element {
   };
 
   return (
-    <form onSubmit={HandleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div className="flex flex-col items-center gap-2 sm:flex-row">
           <Input
@@ -227,18 +318,119 @@ export function RegisterAgent(): JSX.Element {
             Paste my address
           </Button>
         </div>
-        <Input
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Agent Name (eg. agent-one)"
-          type="text"
-          value={name}
-        />
+
         <Input
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Agent URL (eg. https://agent-one.com)"
           type="text"
           value={url}
         />
+        <div className="mt-4 flex flex-row gap-2">
+          <div className="flex">
+            <div className="w-fit border bg-[#080808]">
+              <Dropzone
+                onDrop={(acceptedFiles: File[]) => {
+                  if (acceptedFiles[0]) {
+                    setIcon(acceptedFiles[0]);
+                  }
+                }}
+                multiple={false}
+                disabled={uploading}
+                maxSize={512000}
+                maxFiles={1}
+              >
+                {(dropzone: DropzoneState) => (
+                  <div className="px-12">
+                    {dropzone.isDragAccept ? (
+                      <div className="text-sm font-medium">
+                        Drop your files here!
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="flex flex-col items-center gap-1 text-sm font-medium">
+                          <span className="flex gap-1 text-nowrap">
+                            <FolderUp className="h-4 w-4" /> Upload Agent Icon
+                          </span>
+                          <span className="text-center text-gray-400">
+                            Square Img (512x512)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="text-center text-xs font-medium text-gray-400">
+                      {dropzone.acceptedFiles.map((file, idx) => (
+                        <span key={idx} className="text-xs font-medium">
+                          {smallFilename(file.name)}
+                        </span>
+                      ))}
+                    </div>
+                    {dropzone.fileRejections.map((fileRej, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col items-center gap-1 text-sm font-medium"
+                      >
+                        <span className="flex gap-1 text-nowrap">
+                          Rejected file: {smallFilename(fileRej.file.name)}
+                          {fileRej.errors.map((err, idx) => (
+                            <span
+                              key={idx}
+                              className="text-xs font-medium text-red-500"
+                            >
+                              {err.message}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Dropzone>
+            </div>
+          </div>
+          <div className="flex w-full flex-col gap-2">
+            <Input
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Agent Name / Identifier (eg. agent-one)"
+              type="text"
+              value={name}
+            />
+            <Textarea
+              onChange={(e) => setShortDescription(e.target.value)}
+              placeholder="Agent Short Description (Max 60 characters)"
+              rows={3}
+              value={shortDescription}
+              maxLength={AGENT_SHORT_DESCRIPTION_MAX_LENGTH}
+              className="pb-[1rem]"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Input
+            onChange={(e) => setTwitter(e.target.value)}
+            placeholder={"Agent X (eg. x.com/agent-one)"}
+            type="text"
+            value={twitter}
+          />
+          <Input
+            onChange={(e) => setGithub(e.target.value)}
+            placeholder={"Agent Github (eg. github.com/agent-one)"}
+            type="text"
+            value={github}
+          />
+          <Input
+            onChange={(e) => setTelegram(e.target.value)}
+            placeholder={"Agent Telegram (eg. t.me/agent-one)"}
+            type="text"
+            value={telegram}
+          />
+          <Input
+            onChange={(e) => setDiscord(e.target.value)}
+            placeholder={"Agent Discord (eg. discord.gg/agent-one)"}
+            type="text"
+            value={discord}
+          />
+        </div>
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList
@@ -304,7 +496,7 @@ export function RegisterAgent(): JSX.Element {
           Note: The application fee will be deducted from your connected wallet.
         </span>
       </div>
-      {!userHasEnoughtBalance && selectedAccount?.address && (
+      {!userHasEnoughBalance && selectedAccount?.address && (
         <span className="text-sm text-red-400">
           You don't have enough balance to submit an application.
         </span>
@@ -314,7 +506,7 @@ export function RegisterAgent(): JSX.Element {
         type="submit"
         variant="default"
         className="flex items-center gap-2"
-        disabled={!isAccountConnected || uploading || !userHasEnoughtBalance}
+        disabled={!isAccountConnected || uploading || !userHasEnoughBalance}
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>

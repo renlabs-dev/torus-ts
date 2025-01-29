@@ -1,7 +1,7 @@
 import React from "react";
-import Link from "next/link";
 
 import { Check } from "lucide-react";
+import Link from "next/link";
 
 import {
   Button,
@@ -14,7 +14,16 @@ import {
   SelectValue,
 } from "@torus-ts/ui";
 
+import { env } from "~/env";
+
 export const SidebarLinks = () => {
+  const chainEnv = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");
+
+  const bridgeLink =
+    chainEnv === "mainnet"
+      ? "https://bridge.torus.network"
+      : "https://bridge.testnet.torus.network";
+
   return (
     <>
       <Select defaultValue="wallet">
@@ -46,7 +55,7 @@ export const SidebarLinks = () => {
             variant="ghost"
             className={`w-full justify-between gap-4 border-none px-3 text-base`}
           >
-            <Link href="https://bridge.torus.network">Bridge</Link>
+            <Link href={bridgeLink}>Bridge</Link>
           </Button>
         </Card>
       </div>

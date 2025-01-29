@@ -5,6 +5,7 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Layout } from "@torus-ts/ui";
 import { HoverHeader } from "./components/hover-header";
+import { EnvScript } from "~/env";
 import { Footer } from "./components/footer";
 
 const APP_NAME = "Torus";
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <Layout font={firaMono}>
+    <Layout font={firaMono} torusPage headScripts={[EnvScript]}>
       <HoverHeader />
       {children}
       <Footer />

@@ -18,10 +18,12 @@ import { env } from "~/env";
 const TORUS_NETWORK_NAME: string = {
   mainnet: "Torus",
   testnet: "Torus Testnet",
-}[env.NEXT_PUBLIC_CHAIN_ENV];
+}[env("NEXT_PUBLIC_TORUS_CHAIN_ENV")];
 
 export function WalletBalance() {
-  const getChainValues = getChainValuesOnEnv(env.NEXT_PUBLIC_CHAIN_ENV);
+  const getChainValues = getChainValuesOnEnv(
+    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
+  );
 
   const { chainId: torusEvmChainId } = getChainValues("torus");
   const { chainId: baseChainId } = getChainValues("base");
