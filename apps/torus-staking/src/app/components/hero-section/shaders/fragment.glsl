@@ -1,7 +1,9 @@
 uniform float uOpacity;
 uniform float uDeepPurple;
+uniform float uTime;
 
 varying float vDistortion;
+varying float vDepth; // New varying for depth
 
 vec3 cosPalette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
   return a + b * cos(6.28318 * (c * t + d));
@@ -10,15 +12,20 @@ vec3 cosPalette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
 void main() {
   float distort = vDistortion * 3.;
 
-  // Updated color parameters for monochrome look
-  vec3 brightness = vec3(0.1, 0.1, 0.1);    // Reduced color variation
-  vec3 contrast = vec3(0.3, 0.3, 0.3);      // Kept neutral
-  vec3 oscilation = vec3(0.5, 0.5, 0.5);    // Made uniform for all channels
-  vec3 phase = vec3(0.2, 0.2, 0.2);         // Reduced color separation
+  // Use depth to affect brightness and opacity
+  float depthFactor = smoothstep(-1.0, 1.0, vDepth);
+  float opacity = mix(0.3, 1.0, depthFactor) * uOpacity;
+
+  // Brighter for outer parts, darker for inner
+  vec3 brightness = vec3(0.1 + depthFactor * 0.3);
+  vec3 contrast = vec3(0.3);
+  vec3 oscilation = vec3(0.5);
+  vec3 phase = vec3(0.2);
 
   vec3 color = cosPalette(distort, brightness, contrast, oscilation, phase);
-  gl_FragColor = vec4(color, vDistortion);
 
-  // Removed purple tint, replaced with neutral gray
-  gl_FragColor += vec4(0.1, 0.1, 0.1, min(uOpacity, 1.));
+  // Apply depth-based color adjustment
+  color *= (0.5 + depthFactor * 0.5);
+
+  gl_FragColor = vec4(color, opacity);
 }

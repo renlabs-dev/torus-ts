@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
 import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
-import { useWallet } from "@torus-ts/wallet-provider";
 
 const buttons = [
   { text: "Stake", component: <StakeAction /> },
@@ -16,7 +15,6 @@ const buttons = [
 ];
 
 function WalletOptions() {
-  const { selectedAccount } = useWallet();
   const [currentTab, setCurrentTab] = useState(buttons[0]?.text);
 
   const ActionTabs: React.FC<{ text: string }> = (props) => {

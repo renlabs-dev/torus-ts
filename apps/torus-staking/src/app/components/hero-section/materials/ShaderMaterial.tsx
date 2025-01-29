@@ -33,9 +33,7 @@ export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
   return (
     <shaderMaterial
       ref={materialRef}
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       vertexShader={vertexShader}
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       fragmentShader={fragmentShader}
       wireframe
       transparent
