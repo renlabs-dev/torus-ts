@@ -12,13 +12,11 @@ import {
   PopoverTrigger,
   Textarea,
 } from "@torus-ts/ui";
-import { formatToken } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
 const MAX_CONTENT_CHARACTERS = 500;
-const MIN_STAKE_REQUIRED = 5000;
 
 export function CreateCadreCandidates() {
   const [discordId, setDiscordId] = useState("");
@@ -28,7 +26,6 @@ export function CreateCadreCandidates() {
 
   const {
     selectedAccount,
-    accountStakedBalance,
     cadreCandidates,
     isUserCadre,
     isUserCadreCandidate,
@@ -60,16 +57,6 @@ export function CreateCadreCandidates() {
 
     if (!selectedAccount.address) {
       setError("Please connect your wallet to submit a request.");
-      return;
-    }
-
-    if (
-      !accountStakedBalance ||
-      Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
-    ) {
-      setError(
-        `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to apply.`,
-      );
       return;
     }
 
