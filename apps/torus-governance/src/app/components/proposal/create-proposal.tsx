@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -34,6 +34,7 @@ export function CreateProposal(): JSX.Element {
     addCustomProposal,
     accountFreeBalance,
     networkConfigs,
+    selectedAccount,
   } = useGovernance();
 
   const [title, setTitle] = useState("");
@@ -53,6 +54,20 @@ export function CreateProposal(): JSX.Element {
   function handleCallback(callbackReturn: TransactionResult): void {
     setTransactionStatus(callbackReturn);
   }
+
+  const userHasEnoughtBalance = useCallback(() => {
+    if (
+      !selectedAccount ||
+      !networkConfigs.data ||
+      !accountFreeBalance.data ||
+      networkConfigs.isFetching ||
+      accountFreeBalance.isFetching
+    ) {
+      return null;
+    }
+
+    return accountFreeBalance.data > networkConfigs.data.agentApplicationCost;
+  }, [selectedAccount, networkConfigs, accountFreeBalance])();
 
   async function uploadFile(fileToUpload: File): Promise<void> {
     try {
@@ -201,11 +216,25 @@ export function CreateProposal(): JSX.Element {
         </span>
       </div>
 
+      <div className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
+        <span>
+          Note: The proposal cost will be deducted from your connected wallet.
+        </span>
+
+        {!userHasEnoughtBalance && selectedAccount?.address && (
+          <span className="text-red-400">
+            You don't have enough balance to submit an application.
+          </span>
+        )}
+      </div>
+
       <Button
         size="lg"
         type="submit"
         variant="default"
-        disabled={!isAccountConnected}
+        disabled={
+          !isAccountConnected || !title || !body || !userHasEnoughtBalance
+        }
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>

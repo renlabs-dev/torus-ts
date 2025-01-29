@@ -265,7 +265,7 @@ export function DelegatedList() {
       <SheetTrigger
         onClick={() => setIsOpen(!isOpen)}
         disabled={!selectedAccount}
-        className={`fixed bottom-14 right-4 z-[50] ${buttonVariants({ variant: "outline" })} marker:flex`}
+        className={`fixed bottom-4 right-4 z-[50] md:bottom-14 ${buttonVariants({ variant: "outline" })} marker:flex`}
       >
         {!selectedAccount ? (
           <LoaderCircle className="animate-spin" />

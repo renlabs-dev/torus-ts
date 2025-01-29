@@ -83,6 +83,12 @@ export async function queryKeyStakedTo(
   return result;
 }
 
+export async function queryBurnValue(api: Api): Promise<bigint> {
+  const burn = await api.query.torus0.burn();
+  const parsedBurn = sb_bigint.parse(burn);
+  return parsedBurn;
+}
+
 export async function queryStakeIn(api: Api): Promise<{
   total: bigint;
   perAddr: Map<SS58Address, bigint>;

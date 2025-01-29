@@ -121,27 +121,3 @@ jobs:
         working-directory: apps/${{ env.APP_NAME }}
         run: |
           helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${{ steps.commit.outputs.short }}
-
-  monitor:
-    needs: [docker-build, clean-stale]
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/renlabs-dev/devops-ci:latest
-
-    env:
-      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
-      APP_NAME: ${{ inputs.app_name }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Kubernetes authentication
-        run: /apps/k8s_auth_w_approle_sa.sh
-
-      - name: Show logs
-        run: |
-          timeout 240 kubectl logs -n torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps -l app=${{ inputs.app_name }} -f
-        continue-on-error: true

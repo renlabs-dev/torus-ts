@@ -22,13 +22,48 @@ import { RegisterAgent } from "./proposal/register-agent";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { ClipboardPlus } from "lucide-react";
+import { useGovernance } from "~/context/governance-provider";
 
+type ViewType =
+  | "whitelist-agent"
+  | "register-agent"
+  | "create-proposal"
+  | "create-transfer-dao-treasury-proposal";
+
+interface ViewSpec {
+  label: string;
+  component: JSX.Element;
+  separatorAfter?: boolean;
+}
+
+const viewList: Record<ViewType, ViewSpec> = {
+  "whitelist-agent": {
+    label: "Whitelist an agent",
+    component: <CreateAgentApplication />,
+  },
+  "register-agent": {
+    label: "Register an agent",
+    component: <RegisterAgent />,
+    separatorAfter: true,
+  },
+  "create-proposal": {
+    label: "Create a proposal",
+    component: <CreateProposal />,
+  },
+  "create-transfer-dao-treasury-proposal": {
+    label: "Transfer DAO Treasury",
+    component: <CreateTransferDaoTreasuryProposal />,
+  },
+};
 export function CreateModal() {
-  const [selectedView, setSelectedView] = useState("create-agent-application");
+  const { isInitialized } = useGovernance();
+  const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");
+
+  const selectedFormAction = viewList[selectedView];
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild disabled={!isInitialized}>
         <Button
           variant="outline"
           className="flex items-center gap-2"
@@ -38,39 +73,30 @@ export function CreateModal() {
           Shape the network
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-svh w-full max-w-[100vw] gap-6 overflow-y-auto border-muted md:w-[80%] md:max-w-screen-xl">
+      <DialogContent className="max-h-[90%] w-full max-w-[100vw] gap-6 overflow-y-auto border-muted md:w-[80%] md:max-w-screen-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Shape the network
           </DialogTitle>
         </DialogHeader>
-        <Select value={selectedView} onValueChange={setSelectedView}>
+        <Select
+          value={selectedView}
+          onValueChange={(value) => setSelectedView(value as ViewType)}
+        >
           <SelectTrigger className="w-full border-transparent bg-accent p-3 text-white">
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
+
           <SelectContent className="w-fit border-muted">
-            <SelectItem value="create-agent-application">
-              Apply to whitelist your agent
-            </SelectItem>
-            <SelectItem value="register-agent">
-              Register a whitelisted agent
-            </SelectItem>
-            <SelectSeparator />
-            <SelectItem value="create-proposal">Create new Proposal</SelectItem>
-            <SelectItem value="create-transfer-dao-treasury">
-              Create Transfer Dao Treasury Proposal
-            </SelectItem>
+            {Object.entries(viewList).map(([view, spec]) => (
+              <div key={view}>
+                <SelectItem value={view as ViewType}>{spec.label}</SelectItem>
+                {spec.separatorAfter && <SelectSeparator />}
+              </div>
+            ))}
           </SelectContent>
         </Select>
-        {selectedView === "create-proposal" ? (
-          <CreateProposal />
-        ) : selectedView === "create-agent-application" ? (
-          <CreateAgentApplication />
-        ) : selectedView === "create-transfer-dao-treasury" ? (
-          <CreateTransferDaoTreasuryProposal />
-        ) : (
-          <RegisterAgent />
-        )}
+        {selectedFormAction.component}
       </DialogContent>
     </Dialog>
   );

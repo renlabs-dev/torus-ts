@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 
-const AUTH_ORIGIN_DEFAULT = "governance.torus.network";
+const AUTH_ORIGIN_DEFAULT = "dao.torus.network";
 
 const NodeEnvSchema = z
   .enum(["development", "production", "test"])
