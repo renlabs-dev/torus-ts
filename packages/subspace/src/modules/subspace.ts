@@ -84,7 +84,7 @@ export async function queryKeyStakedTo(
 }
 
 export async function queryBurnValue(api: Api): Promise<bigint> {
-  const burn = await api.query.torus0.burn()
+  const burn = await api.query.torus0.burn();
   const parsedBurn = sb_bigint.parse(burn);
   return parsedBurn;
 }
