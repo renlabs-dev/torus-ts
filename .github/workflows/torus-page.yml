@@ -17,6 +17,9 @@ on:
       - "apps/torus-wallet/**"
       - "apps/torus-cache/**"
   pull_request:
+    branches-ignore:
+      - main
+      - dev
     types:
       - opened
       - reopened

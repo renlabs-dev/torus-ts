@@ -16,6 +16,9 @@ on:
       - "apps/torus-bridge/**"
       - "apps/torus-wallet/**"
   pull_request:
+    branches-ignore:
+      - main
+      - dev
     types:
       - opened
       - reopened

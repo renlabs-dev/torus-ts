@@ -18,6 +18,9 @@ on:
       - "apps/torus-governance/**"
       - "apps/torus-wallet/**"
   pull_request:
+    branches-ignore:
+      - main
+      - dev
     types:
       - opened
       - reopened

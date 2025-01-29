@@ -17,6 +17,9 @@ on:
       - "apps/torus-worker/**"
       - "apps/torus-governance/**"
   pull_request:
+    branches-ignore:
+      - main
+      - dev
     types:
       - opened
       - reopened
