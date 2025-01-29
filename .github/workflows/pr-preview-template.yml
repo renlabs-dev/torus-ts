@@ -114,7 +114,7 @@ jobs:
         run: |
           export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
           echo "APP_URL=${SANITIZED_REF}.${{ inputs.app_name }}.torus.network" >> $GITHUB_ENV
-          echo "CACHE_URL=${SANITIZED_REF}.torus-cache.torus.network" >> $GITHUB_ENV
+          echo "CACHE_URL=https://${SANITIZED_REF}.torus-cache.torus.network" >> $GITHUB_ENV
           echo "RELEASE_NAME=${SANITIZED_REF}-${{ inputs.app_name }}" >> $GITHUB_ENV
 
       - name: Install shared resources
