@@ -29,6 +29,12 @@ export async function queryFreeBalance(
   return balance;
 }
 
+export async function queryMinAllowedStake(api: Api): Promise<bigint> {
+  const q = await api.query.torus0.minAllowedStake();
+  const minAllowedStake = sb_balance.parse(q);
+  return minAllowedStake;
+}
+
 const sb_balance_option_zero = sb_option_default(sb_balance, 0n);
 
 /** TODO: refactor: return Map */

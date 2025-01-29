@@ -30,7 +30,7 @@ import type {
 } from "./_types";
 import { sendTransaction } from "./_components/send-transaction";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { Codec, ISubmittableResult } from "@polkadot/types/types";
+import type { ISubmittableResult } from "@polkadot/types/types";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
@@ -94,7 +94,6 @@ interface TorusContextType {
   }>;
 
   getExistencialDeposit: () => bigint | undefined;
-  getMinAllowedStake: () => Promise<Codec>;
 
   // TRANSACTIONS
   transferTransaction: ({
@@ -285,14 +284,6 @@ export function TorusProvider({
   const getExistencialDeposit = () => {
     if (!api) return;
     return api.consts.balances.existentialDeposit.toBigInt();
-  };
-
-  const getMinAllowedStake = async () => {
-    if (!api?.query.torus0?.minAllowedStake) {
-      throw new Error("minAllowedStake is not defined");
-    }
-    const minAllowedStake = await api.query.torus0.minAllowedStake();
-    return minAllowedStake;
   };
 
   // == Transactions ==
@@ -642,7 +633,6 @@ export function TorusProvider({
         api,
         estimateFee,
         getExistencialDeposit,
-        getMinAllowedStake,
         handleGetWallets,
         handleLogout,
         handleSelectWallet,

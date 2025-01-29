@@ -32,7 +32,7 @@ export function StakeAction() {
     addStakeTransaction,
     estimateFee,
     getExistencialDeposit,
-    getMinAllowedStake,
+    minAllowedStake,
   } = useWallet();
 
   const [amount, setAmount] = useState<string>("");
@@ -40,10 +40,8 @@ export function StakeAction() {
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
-  // Chain-driven or fallback min stake
-  const [minAllowedStake, setMinAllowedStake] = useState<bigint>(
-    MIN_ALLOWED_STAKE_SAFEGUARD,
-  );
+  const minAllowedStakeData =
+    minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
 
   const [maxAmount, setMaxAmount] = useState<string>("");
   const [inputError, setInputError] = useState<{
@@ -201,10 +199,10 @@ export function StakeAction() {
     const stakeAmount = toNano(newAmountStr);
     if (stakeAmount <= 0n) return;
 
-    if (stakeAmount < minAllowedStake) {
+    if (stakeAmount < minAllowedStakeData) {
       setInputError((prev) => ({
         ...prev,
-        value: `You must stake at least ${formatToken(minAllowedStake)} TORUS`,
+        value: `You must stake at least ${formatToken(minAllowedStakeData)} TORUS`,
       }));
       return;
     }
@@ -253,19 +251,6 @@ export function StakeAction() {
     setInputError({ recipient: null, value: null });
   }, [selectedAccount?.address]);
 
-  useEffect(() => {
-    async function fetchMinStakeAllowed() {
-      try {
-        const minStakeFromChain = await getMinAllowedStake();
-        setMinAllowedStake(BigInt(minStakeFromChain.toString()));
-      } catch (err) {
-        console.error("Error fetching min stake from chain:", err);
-        setMinAllowedStake(MIN_ALLOWED_STAKE_SAFEGUARD);
-      }
-    }
-    void fetchMinStakeAllowed();
-  }, [recipient, getMinAllowedStake]);
-
   const reviewData = [
     {
       label: "To",
@@ -274,7 +259,7 @@ export function StakeAction() {
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "Connect Wallet"}`,
+      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "-"}`,
     },
   ];
 
@@ -335,7 +320,7 @@ export function StakeAction() {
                   id="stake-amount"
                   type="number"
                   value={amount}
-                  min={fromNano(minAllowedStake)}
+                  min={fromNano(minAllowedStakeData)}
                   step={0.000000000000000001}
                   required
                   onChange={(e) => handleAmountChange(e.target.value)}
@@ -356,7 +341,11 @@ export function StakeAction() {
               )}
             </div>
 
-            <FeeLabel estimatedFee={estimatedFee} isEstimating={isEstimating} />
+            <FeeLabel
+              estimatedFee={estimatedFee}
+              isEstimating={isEstimating}
+              accountConnected={!!selectedAccount}
+            />
 
             {transactionStatus.status && (
               <TransactionStatus

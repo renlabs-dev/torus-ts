@@ -29,6 +29,7 @@ import {
   queryGlobalGovernanceConfig,
   queryBurnValue,
   queryAgents,
+  queryMinAllowedStake,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -93,6 +94,16 @@ export function useFreeBalance(
     queryKey: ["free_balance", address],
     enabled: api != null && address != null,
     queryFn: () => queryFreeBalance(api!, address!),
+    staleTime: LAST_BLOCK_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useMinAllowedStake(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["min_allowed_stake"],
+    enabled: api != null,
+    queryFn: () => queryMinAllowedStake(api!),
     staleTime: LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });

@@ -14,9 +14,10 @@ import {
   useCachedStakeOut,
   useFreeBalance,
   useKeyStakingTo,
+  useMinAllowedStake,
 } from "@torus-ts/query-provider/hooks";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { Codec, ISubmittableResult } from "@polkadot/types/types";
+import type { ISubmittableResult } from "@polkadot/types/types";
 import { useTorus } from "@torus-ts/torus-provider";
 
 import { env } from "~/env";
@@ -53,7 +54,7 @@ interface WalletContextType {
   stakeOut: UseQueryResult<StakeData, Error>;
 
   getExistencialDeposit: () => bigint | undefined;
-  getMinAllowedStake: () => Promise<Codec>;
+  minAllowedStake: UseQueryResult<bigint, Error>;
   // TRANSACTIONS
   transferTransaction: ({
     to,
@@ -107,17 +108,18 @@ export function WalletProvider({
     transferStake,
     transferStakeTransaction,
     transferTransaction,
-    getMinAllowedStake,
   } = useTorus();
 
   // == Subspace ==
-  const stakeOut = useCachedStakeOut(env('NEXT_PUBLIC_TORUS_CACHE_URL'));
+  const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(
     api,
     selectedAccount?.address as SS58Address,
   );
+
+  const minAllowedStake = useMinAllowedStake(api);
 
   const accountStakedBy = useKeyStakingTo(api, selectedAccount?.address);
 
@@ -136,7 +138,7 @@ export function WalletProvider({
         addStakeTransaction,
         estimateFee,
         getExistencialDeposit,
-        getMinAllowedStake,
+        minAllowedStake,
         isAccountConnected,
         isInitialized,
         removeStake,
