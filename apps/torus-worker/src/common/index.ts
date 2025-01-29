@@ -5,10 +5,6 @@ import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
 import {
   queryAgentApplications,
   queryLastBlock,
-  denyApplication,
-  acceptApplication,
-  penalizeAgent,
-  removeFromWhitelist,
 } from "@torus-ts/subspace";
 
 import type {
@@ -19,7 +15,6 @@ import {
   queryTotalVotesPerApp as queryTotalVotesPerApp,
   countCadreKeys,
   pendingPenalizations,
-  updatePenalizeAgentVotes,
   addCadreMember,
   queryTotalVotesPerCadre,
   removeCadreMember,
@@ -127,48 +122,6 @@ export async function getPenaltyFactors(cadreThreshold: number) {
   return penalizations;
 }
 
-export async function processVotesOnProposal(
-  vote_info: VoteById,
-  vote_threshold: number,
-  applications_map: Record<number, AgentApplication>,
-  api: ApiPromise,
-) {
-  const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
-  const { appId: agentId, acceptVotes, refuseVotes, removeVotes } = vote_info;
-  log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
-  log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);
-  log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
-
-  const app = applications_map[agentId];
-  if (app == null) throw new Error("application not found");
-
-  if (acceptVotes >= vote_threshold) {
-    log(`Accepting whitelist application ${agentId}`);
-    // await pushToWhitelist(api, app.payerKey, mnemonic);
-    await acceptApplication(api, agentId, mnemonic);
-  } else if (refuseVotes >= vote_threshold) {
-    log(`Refusing whitelist application ${agentId}`);
-    await denyApplication(api, agentId, mnemonic);
-  } else if (
-    removeVotes >= vote_threshold &&
-    applications_map[agentId] !== undefined
-  ) {
-    const status = applications_map[agentId].status;
-    const isResolved = match(status)({
-      Open: () => false,
-      Resolved: ({ accepted }) => accepted,
-      Expired: () => false,
-    });
-    if (isResolved) {
-      log(`Removing agent ${agentId}`);
-      await removeFromWhitelist(
-        api,
-        applications_map[agentId].agentKey,
-        mnemonic,
-      );
-    }
-  }
-}
 
 // TODO: abstract common logic and merge with processVotesOnProposal
 export async function processCadreVotes(
@@ -203,42 +156,4 @@ export async function processCadreVotes(
   ).catch((error) =>
     console.log(`Failed to process vote for reason: ${error}`),
   );
-}
-
-export async function processAllVotes(
-  votes_on_pending: VoteById[],
-  vote_threshold: number,
-  application_map: Record<number, AgentApplication>,
-  api: ApiPromise,
-) {
-  await Promise.all(
-    votes_on_pending.map((vote_info) =>
-      processVotesOnProposal(
-        vote_info,
-        vote_threshold,
-        application_map,
-        api,
-      ).catch((error) =>
-        console.log(`Failed to process vote for reason: ${error}`),
-      ),
-    ),
-  );
-}
-
-export async function processPenalty(
-  penaltiesToApply: {
-    agentKey: string;
-    medianPenaltyFactor: number;
-  }[],
-  api: ApiPromise,
-) {
-  const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
-  console.log("Penalties to apply: ", penaltiesToApply);
-  for (const penalty of penaltiesToApply) {
-    const { agentKey, medianPenaltyFactor } = penalty;
-    await penalizeAgent(api, agentKey, medianPenaltyFactor, mnemonic);
-  }
-  const penalizedKeys = penaltiesToApply.map((item) => item.agentKey);
-  await updatePenalizeAgentVotes(penalizedKeys);
-  console.log("Penalties applied");
 }
