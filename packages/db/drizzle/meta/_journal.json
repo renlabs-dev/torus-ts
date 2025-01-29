@@ -8,6 +8,13 @@
       "when": 1737657840091,
       "tag": "0000_handy_arachne",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1738118214281,
+      "tag": "0001_rich_daredevil",
+      "breakpoints": true
     }
   ]
 }
