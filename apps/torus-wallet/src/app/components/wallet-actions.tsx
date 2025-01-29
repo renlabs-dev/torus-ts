@@ -7,7 +7,10 @@ import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
 
-const transferButtons = [{ text: "Send", component: <SendAction /> }];
+const transferButtons = [
+  { text: "Send", component: <SendAction /> },
+  { text: "Receive", component: <SendAction /> },
+];
 
 const stakingButtons = [
   { text: "Stake", component: <StakeAction /> },
