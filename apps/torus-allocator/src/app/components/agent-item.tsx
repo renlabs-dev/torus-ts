@@ -2,14 +2,19 @@
 
 import { useEffect, useState } from "react";
 
-import { Cuboid, Globe, IdCard } from "lucide-react";
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  Cuboid,
+  Globe,
+  IdCard,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { toast } from "@torus-ts/toast-provider";
 import {
   Badge,
-  Card,
   CopyButton,
   HoverCard,
   HoverCardContent,
@@ -125,7 +130,13 @@ export function AgentItem(props: AgentCardProps) {
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
 
   return (
-    <div className="relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:bg-accent hover:shadow-2xl">
+    <div className="group relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:bg-accent hover:shadow-2xl">
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <span className="mb-5 flex animate-pulse items-center gap-1 rounded-full bg-background bg-opacity-75 px-3 py-1 text-xs">
+          <ChevronsLeft size={16} />
+          Click to expand <ChevronsRight size={16} />
+        </span>
+      </div>
       <div>
         <div
           className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
@@ -170,7 +181,7 @@ export function AgentItem(props: AgentCardProps) {
             >
               {title}
             </h2>
-            <div className="flex items-center justify-between">
+            <div className="relative z-30 flex items-center justify-between">
               <HoverCard>
                 <HoverCardTrigger>
                   <Label
@@ -238,12 +249,13 @@ export function AgentItem(props: AgentCardProps) {
             </div>
           </div>
 
-          <div className="flex w-full flex-col gap-2 md:flex-row">
+          <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
             <DelegateModuleWeight
               id={props.id}
               name={props.name}
               agentKey={props.agentKey}
               metadataUri={metadataUri}
+              registrationBlock={props.registrationBlock ?? null}
               className="w-full"
             />
           </div>

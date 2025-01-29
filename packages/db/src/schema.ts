@@ -312,8 +312,6 @@ export const cadreSchema = createTable("cadre", {
   ...timeFields(),
 });
 
-
-
 export const candidacyStatus = pgEnum("candidacy_status", [
   "PENDING",
   "ACCEPTED",
@@ -327,15 +325,15 @@ export const cadreCandidateSchema = createTable("cadre_candidate", {
 
   userKey: ss58Address("user_key").notNull().unique(),
   discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
-  candidacyStatus: candidacyStatus().notNull().default(candidacyStatusValues.PENDING),
+  candidacyStatus: candidacyStatus()
+    .notNull()
+    .default(candidacyStatusValues.PENDING),
   content: text("content").notNull(),
 
   ...timeFields(),
 });
-export const cadreVoteTypeEnum = pgEnum("cadre_vote_type", [
-  "ACCEPT",
-  "REFUSE",
-]);
+
+
 export const applicationVoteType = pgEnum("agent_application_vote_type", [
   "ACCEPT",
   "REFUSE",
@@ -345,34 +343,33 @@ export const applicationVoteType = pgEnum("agent_application_vote_type", [
 /**
  * This table stores votes on Cadre Candidates.
  */
-export const cadreVoteSchema = createTable("cadre_vote", {
-  id: serial("id").primaryKey(),
+export const cadreVoteSchema = createTable(
+  "cadre_vote",
+  {
+    id: serial("id").primaryKey(),
 
-  userKey: ss58Address("user_key")
-    .references(() => cadreSchema.userKey)
-    .notNull(),
-  applicantKey: ss58Address("applicant_key")
-    .references(() => cadreCandidateSchema.userKey)
-    .notNull(),
-  vote: applicationVoteType("vote").notNull(),
+    userKey: ss58Address("user_key")
+      .references(() => cadreSchema.userKey)
+      .notNull(),
+    applicantKey: ss58Address("applicant_key")
+      .references(() => cadreCandidateSchema.userKey)
+      .notNull(),
+    vote: applicationVoteType("vote").notNull(), // TODO: create a new type
 
-  ...timeFields(),
-}, (t) => [unique().on(t.userKey, t.applicantKey)]
+    ...timeFields(),
+  },
+  (t) => [unique().on(t.userKey, t.applicantKey)],
 );
 
 export const cadreVoteHistory = createTable("cadre_vote_history", {
   id: serial("id").primaryKey(),
-  userKey: ss58Address("user_key")
-    .notNull(),
-  applicantKey: ss58Address("applicant_key")
-    .notNull(),
+  userKey: ss58Address("user_key").notNull(),
+  applicantKey: ss58Address("applicant_key").notNull(),
   vote: applicationVoteType("vote").notNull(),
 
-  ...timeFields(),  
+  ...timeFields(),
 });
 
-/**
- */
 
 /**
  * This table stores votes on Agent Applications.

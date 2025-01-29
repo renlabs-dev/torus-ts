@@ -1,7 +1,26 @@
 import type { ApiPromise } from "@polkadot/api";
+import { match } from "rustie";
 
 import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
-import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
+import {
+  queryAgentApplications,
+  queryLastBlock,
+} from "@torus-ts/subspace";
+
+import type {
+  VotesByNumericId as VoteById,
+  VotesByKey as VoteByKey,
+} from "../db";
+import {
+  queryTotalVotesPerApp as queryTotalVotesPerApp,
+  countCadreKeys,
+  pendingPenalizations,
+  addCadreMember,
+  queryTotalVotesPerCadre,
+  removeCadreMember,
+  getCadreDiscord,
+  refuseCadreApplication,
+} from "../db";
 
 import type { VotesByNumericId as VoteById, VotesByKey as VoteByKey } from "../db";
 import {
@@ -62,6 +81,15 @@ export async function sleepUntilNewBlock(props: WorkerProps) {
   }
 }
 
+// -- DAO Applications -- //
+
+const applicationIsOpen = (app: AgentApplication) =>
+  match(app.status)({
+    Open: () => true,
+    Resolved: ({ accepted }) => accepted,
+    Expired: () => false,
+  });
+
 export async function getApplications(
   api: ApiPromise,
   filterFn: (app: AgentApplication) => boolean,
@@ -92,8 +120,7 @@ export async function getVotesOnPending(
   return votes_on_pending;
 }
 
-export async function getCadreVotes(
-): Promise<VoteByKey[]> {
+export async function getCadreVotes(): Promise<VoteByKey[]> {
   const votes = await queryTotalVotesPerCadre();
   return votes;
 }
@@ -108,49 +135,6 @@ export async function getPenaltyFactors(cadreThreshold: number) {
   return penalizations;
 }
 
-export async function processVotesOnProposal(
-  vote_info: VoteById,
-  vote_threshold: number,
-  applications_map: Record<number, AgentApplication>,
-  api: ApiPromise,
-) {
-  const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
-  const { appId: agentId, acceptVotes, refuseVotes, removeVotes } = vote_info;
-  log(`Accept: ${acceptVotes} ${agentId} Threshold: ${vote_threshold}`);
-  log(`Refuse: ${refuseVotes} ${agentId} Threshold: ${vote_threshold}`);
-  log(`Remove: ${removeVotes} ${agentId} Threshold: ${vote_threshold}`);
-
-  const app = applications_map[agentId];
-  if (app == null) throw new Error("application not found");
-
-  if (acceptVotes >= vote_threshold) {
-    log(`Accepting whitelist application ${agentId}`);
-    // await pushToWhitelist(api, app.payerKey, mnemonic);
-    await acceptApplication(api, agentId, mnemonic);
-  } else if (refuseVotes >= vote_threshold) {
-    log(`Refusing whitelist application ${agentId}`);
-    await denyApplication(api, agentId, mnemonic);
-  } else if (
-    removeVotes >= vote_threshold &&
-    applications_map[agentId] !== undefined
-  ) {
-    const status = applications_map[agentId].status;
-    const isResolved = match(status)({
-      Open: () => false,
-      Resolved: ({ accepted }) => accepted,
-      Expired: () => false,
-    });
-    if (isResolved) {
-      log(`Removing agent ${agentId}`);
-      await removeFromWhitelist(
-        api,
-        applications_map[agentId].agentKey,
-        mnemonic,
-      );
-    }
-  }
-}
-
 
 // TODO: abstract common logic and merge with processVotesOnProposal
 export async function processCadreVotes(
@@ -159,13 +143,18 @@ export async function processCadreVotes(
 ) {
   await Promise.all(
     votes.map(async (vote_info) => {
-      const { appId: applicatorKey, acceptVotes, refuseVotes, removeVotes } = vote_info;
+      const {
+        appId: applicatorKey,
+        acceptVotes,
+        refuseVotes,
+        removeVotes,
+      } = vote_info;
       if (acceptVotes >= vote_threshold) {
         console.log("Adding cadre member:", applicatorKey);
         const cadreDiscord = await getCadreDiscord(applicatorKey);
         if (cadreDiscord == null) {
           throw new Error(
-            "No discord account found for cadre member: " + applicatorKey
+            "No discord account found for cadre member: " + applicatorKey,
           );
         }
         await addCadreMember(applicatorKey, cadreDiscord);
@@ -176,47 +165,8 @@ export async function processCadreVotes(
         console.log("Removing cadre member:", applicatorKey);
         await removeCadreMember(applicatorKey);
       }
-    }) 
-    ,
-  )
-  .catch((error) => console.log(`Failed to process vote for reason: ${error}`));
-}
-
-
-export async function processAllVotes(
-  votes_on_pending: VoteById[],
-  vote_threshold: number,
-  application_map: Record<number, AgentApplication>,
-  api: ApiPromise,
-) {
-  await Promise.all(
-    votes_on_pending.map((vote_info) =>
-      processVotesOnProposal(
-        vote_info,
-        vote_threshold,
-        application_map,
-        api,
-      ).catch((error) =>
-        console.log(`Failed to process vote for reason: ${error}`),
-      ),
-    ),
+    }),
+  ).catch((error) =>
+    console.log(`Failed to process vote for reason: ${error}`),
   );
-}
-
-export async function processPenalty(
-  penaltiesToApply: {
-    agentKey: string;
-    medianPenaltyFactor: number;
-  }[],
-  api: ApiPromise,
-) {
-  const mnemonic = process.env.TORUS_CURATOR_MNEMONIC;
-  console.log("Penalties to apply: ", penaltiesToApply);
-  for (const penalty of penaltiesToApply) {
-    const { agentKey, medianPenaltyFactor } = penalty;
-    await penalizeAgent(api, agentKey, medianPenaltyFactor, mnemonic);
-  }
-  const penalizedKeys = penaltiesToApply.map((item) => item.agentKey);
-  await updatePenalizeAgentVotes(penalizedKeys);
-  console.log("Penalties applied");
 }

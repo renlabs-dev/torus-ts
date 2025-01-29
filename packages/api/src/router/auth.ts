@@ -49,11 +49,11 @@ export const authRouter = {
 
       return { token, authenticationType: "Bearer" };
     }),
-    checkSession: publicProcedure
+  checkSession: publicProcedure
     .input(z.object({ auth: z.string() }))
     .mutation(({ ctx, input }) => {
       const [_authType, authToken] = input.auth.split(" ");
-  
+
       try {
         const decodedPayload = jwt.verify(authToken ?? "", ctx.jwtSecret);
         return {
@@ -66,7 +66,7 @@ export const authRouter = {
           decodedPayload: null,
         };
       }
-    })
+    }),
 } satisfies TRPCRouterRecord;
 
 /**

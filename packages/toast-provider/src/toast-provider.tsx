@@ -18,7 +18,7 @@ function ToastProvider({
         newestOnTop={true}
         pauseOnFocusLoss
         pauseOnHover
-        position="bottom-right"
+        position="bottom-left"
         rtl={false}
         theme="dark"
         toastStyle={{

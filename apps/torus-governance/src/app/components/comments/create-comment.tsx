@@ -124,7 +124,7 @@ export function CreateComment({
   };
 
   return (
-    <div className="hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-1000 md:flex">
+    <div className="hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200 md:flex">
       <div className="mb-2 w-full pb-1">
         <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
       </div>
@@ -191,9 +191,11 @@ export function CreateComment({
           )}
         {!selectedAccount && itemType === "AGENT_APPLICATION" && (
           <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-            <p className="mt-2 text-center text-sm">Are you a Curator DAO?</p>
             <p className="mt-2 text-center text-sm">
-              Connect your wallet to comment.
+              Are you a Curator DAO member?
+            </p>
+            <p className="mt-2 text-center text-sm">
+              Please connect your wallet to comment.
             </p>
           </div>
         )}
