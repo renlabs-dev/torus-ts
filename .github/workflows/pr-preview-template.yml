@@ -114,6 +114,7 @@ jobs:
         run: |
           export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
           echo "APP_URL=${SANITIZED_REF}.${{ inputs.app_name }}.torus.network" >> $GITHUB_ENV
+          echo "CACHE_URL=${SANITIZED_REF}.torus-cache.torus.network" >> $GITHUB_ENV
           echo "RELEASE_NAME=${SANITIZED_REF}-${{ inputs.app_name }}" >> $GITHUB_ENV
 
       - name: Install shared resources
@@ -130,6 +131,7 @@ jobs:
           helmfile sync -e dev \
           --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
           --state-values-set ingressHost=${{ env.APP_URL }} \
+          --state-values-set cacheUrl=${{ env.CACHE_URL }} \
           --state-values-set releaseName=${{ env.RELEASE_NAME }} \
           --state-values-set releasePrefix=${{ env.RELEASE_NAME }}
 
