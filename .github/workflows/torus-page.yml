@@ -2,6 +2,12 @@ name: torus-page
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_build:
+        required: false
+        description: "Skip Docker Build"
+        type: boolean
+        default: false
   push:
     paths-ignore:
       - "apps/torus-governance/**"
@@ -31,6 +37,7 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-page
+      skip_build: ${{ inputs.skip_build || false }}
 
   dry-run-build:
     if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
@@ -39,14 +46,14 @@ jobs:
       app_name: torus-page
 
   pr-preview-activate:
-    if: github.event.pull_request.state == 'open' && !github.event.repository.fork
+    if: github.event.pull_request.state == 'open' && !github.event.repository.fork && github.ref_name != 'main' && github.ref_name != 'dev'
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
       app_name: torus-page
 
   pr-preview-delete:
-    if: github.event.pull_request.state == 'closed'
+    if: github.event.pull_request.state == 'closed' && github.ref_name != 'main' && github.ref_name != 'dev'
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
