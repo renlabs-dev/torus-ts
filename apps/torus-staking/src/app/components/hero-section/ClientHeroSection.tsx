@@ -144,8 +144,8 @@ const AnimatedIcosahedron = () => {
       <ShaderMaterial
         config={{
           ...animationConfig,
-          uOpacity: 0.8 - state.progress * 0.3, // Adjust opacity based on depth
-          uStrength: 0.2 + state.progress * 0.4, // Enhance depth effect
+          uOpacity: Math.max(0.8 - state.progress * 0.3, 0.4), // Higher opacity range
+          uStrength: 0.15 + state.progress * 0.3,
         }}
       />
     </mesh>

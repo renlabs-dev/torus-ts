@@ -9,8 +9,14 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  TooltipProps,
   ResponsiveContainer,
 } from "recharts";
+
+import {
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 const SAMPLE_APR = 12; // 12% APR
 
@@ -25,26 +31,65 @@ interface ChartData {
   day: number;
 }
 
+interface CalculationResult {
+  rewards: number;
+  total: number;
+}
+
+const periods: Period[] = [
+  { label: "1 Day", days: 1 },
+  { label: "1 Month", days: 30 },
+  { label: "3 Months", days: 90 },
+  { label: "1 Year", days: 365 },
+];
+
+const formatDate = (date: Date): string => {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const calculateCompoundInterest = (
+  principal: number,
+  days: number,
+): CalculationResult => {
+  const rate = SAMPLE_APR / 100 / 365;
+  const finalAmount = principal * Math.pow(1 + rate, days);
+  const rewards = finalAmount - principal;
+
+  return {
+    rewards: Number(rewards.toFixed(2)),
+    total: Number(finalAmount.toFixed(2)),
+  };
+};
+
+const CustomTooltip = ({
+  active,
+  payload,
+}: TooltipProps<ValueType, NameType>) => {
+  if (!active || !payload?.[0]) return null;
+
+  const data = payload[0];
+  const chartData = data.payload as ChartData;
+
+  return (
+    <div className="rounded-lg border bg-background p-4 shadow-md">
+      <div className="space-y-1">
+        <p className="text-sm text-muted-foreground">
+          {formatDate(chartData.date)}
+        </p>
+        <p className="text-lg font-medium">
+          {data.value?.toLocaleString()} TORUS
+        </p>
+        <p className="text-xs text-muted-foreground">Day {chartData.day}</p>
+      </div>
+    </div>
+  );
+};
+
 export const StakingCalculator: React.FC = () => {
   const [amount, setAmount] = useState<string>("");
-
-  const periods: Period[] = [
-    { label: "1 Day", days: 1 },
-    { label: "1 Month", days: 30 },
-    { label: "3 Months", days: 90 },
-    { label: "1 Year", days: 365 },
-  ];
-
-  const calculateCompoundInterest = (principal: number, days: number) => {
-    const rate = SAMPLE_APR / 100 / 365;
-    const finalAmount = principal * Math.pow(1 + rate, days);
-    const rewards = finalAmount - principal;
-
-    return {
-      rewards: Number(rewards.toFixed(2)),
-      total: Number(finalAmount.toFixed(2)),
-    };
-  };
 
   const chartData = useMemo(() => {
     if (!amount) return [];
@@ -67,13 +112,6 @@ export const StakingCalculator: React.FC = () => {
 
     return data;
   }, [amount]);
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   return (
     <Card className="mt-6 space-y-8 p-8">
@@ -115,29 +153,10 @@ export const StakingCalculator: React.FC = () => {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `${value.toLocaleString()}`}
+                  tickFormatter={(value: number) => value.toLocaleString()}
                   tick={{ fill: "#888888" }}
                 />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    return (
-                      <div className="rounded-lg border bg-background p-4 shadow-md">
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(payload[0].payload.date)}
-                          </p>
-                          <p className="text-lg font-medium">
-                            {payload[0].value?.toLocaleString()} TORUS
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Day {payload[0].payload.day}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  }}
-                />
+                <Tooltip content={CustomTooltip} />
                 <Line
                   type="monotone"
                   dataKey="balance"
