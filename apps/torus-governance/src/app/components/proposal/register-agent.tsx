@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { FolderUp } from "lucide-react";
+import { FolderUp, Info } from "lucide-react";
 import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
 import { useGovernance } from "~/context/governance-provider";
@@ -14,6 +14,9 @@ import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   AllocatorAgentItem,
   Button,
   Input,
@@ -366,30 +369,30 @@ export function RegisterAgent(): JSX.Element {
         }}
         value={currentTab}
       >
-        <TabsList className="flex w-full flex-row justify-between">
-          <TabsTrigger value="agent-info" className="w-1/3">
-            Agent
+        <TabsList className="w-full rounded-full">
+          <TabsTrigger value="agent-info" className="w-full rounded-full">
+            1. Agent Info
           </TabsTrigger>
           <TabsTrigger
             value="about"
-            className="w-1/4"
             disabled={aboutViewDisabled}
+            className="w-full rounded-full"
           >
-            About
+            2. Agent Metadata
           </TabsTrigger>
           <TabsTrigger
             value="socials"
-            className="w-1/4"
             disabled={socialsViewDisabled}
+            className="w-full rounded-full"
           >
-            Socials
+            3. Links & Socials
           </TabsTrigger>
           <TabsTrigger
             value="register"
-            className="w-1/4"
             disabled={registerViewDisabled}
+            className="w-full rounded-full"
           >
-            Register
+            4. Register
           </TabsTrigger>
         </TabsList>
 
@@ -500,7 +503,7 @@ export function RegisterAgent(): JSX.Element {
               onClick={() => setAboutPreview(!aboutPreview)}
               disabled={!body}
             >
-              {aboutPreview ? "Edit" : "Preview"}
+              {aboutPreview ? "Edit Agent Markdown" : "Preview Agent Markdown"}
             </Button>
 
             {!aboutPreview && (
@@ -563,7 +566,7 @@ export function RegisterAgent(): JSX.Element {
             className="flex flex-col gap-4 py-5"
           >
             <div className="flex flex-col gap-2">
-              <div className="relative h-auto w-fit border bg-[#080808]">
+              <div className="relative h-auto w-full border bg-[#080808]">
                 <Dropzone
                   containerClassName="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 border-none"
                   dropZoneClassName="border-none"
@@ -783,41 +786,47 @@ export function RegisterAgent(): JSX.Element {
                 You don't have enough balance to submit an application.
               </span>
             )}
-          <span className="text-white">
-            Application fee:{" "}
-            {selectedAccount && (
-              <span className="text-muted-foreground">
-                {estimatedFee
-                  ? `${fromNano(estimatedFee)} TORUS`
-                  : "Loading..."}
-              </span>
-            )}
-            {!selectedAccount && (
-              <span className="text-muted-foreground">
-                connect your wallet to calculate the fee.
-              </span>
-            )}
-          </span>
-          <span className="text-white">
-            Burn amount:{" "}
-            {selectedAccount && (
-              <span className="text-muted-foreground">
-                {burnAmount.data != null
-                  ? `${fromNano(burnAmount.data)} TORUS`
-                  : "Loading..."}
-              </span>
-            )}
-            {!selectedAccount && (
-              <span className="text-muted-foreground">
-                connect your wallet to calculate the burn amount.
-              </span>
-            )}
-          </span>
 
-          <span className="text-sm text-muted-foreground">
-            Note: The application fee and burn amount will be deducted from your
-            connected wallet.
-          </span>
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle>
+              Info: The registration fee and burn amount will be deducted from
+              your connected wallet.
+            </AlertTitle>
+            <AlertDescription className="flex flex-row gap-2 text-sm">
+              <span className="text-white">
+                Application fee:{" "}
+                {selectedAccount && (
+                  <span className="text-muted-foreground">
+                    {estimatedFee
+                      ? `${fromNano(estimatedFee)} TORUS`
+                      : "Loading..."}
+                  </span>
+                )}
+                {!selectedAccount && (
+                  <span className="text-muted-foreground">
+                    connect your wallet to calculate the fee.
+                  </span>
+                )}
+              </span>
+
+              <span className="text-white">
+                Burn amount:{" "}
+                {selectedAccount && (
+                  <span className="text-muted-foreground">
+                    {burnAmount.data != null
+                      ? `${fromNano(burnAmount.data)} TORUS`
+                      : "Loading..."}
+                  </span>
+                )}
+                {!selectedAccount && (
+                  <span className="text-muted-foreground">
+                    connect your wallet to calculate the burn amount.
+                  </span>
+                )}
+              </span>
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     </div>

@@ -38,7 +38,7 @@ export const tutorialData = {
     steps: [
       <p>
         Open the{" "}
-        <Link href={links.setup_a_wallet} className="text-cyan-500 underline">
+        <Link href={links.wallet} className="text-cyan-500 underline">
           Wallet App
         </Link>
         .
@@ -70,7 +70,7 @@ export function TutorialDialog() {
   return (
     <Dialog>
       <Button asChild variant="outline">
-        <DialogTrigger className="fixed bottom-14 right-52 z-50">
+        <DialogTrigger className="fixed bottom-4 right-52 z-50 md:bottom-14">
           <BookText />
           <p className="hidden md:block">Tutorial</p>
         </DialogTrigger>

@@ -73,7 +73,7 @@ export function CreateModal() {
           Shape the network
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-svh w-full max-w-[100vw] gap-6 overflow-y-auto border-muted md:w-[80%] md:max-w-screen-xl">
+      <DialogContent className="max-h-[90%] w-full max-w-[100vw] gap-6 overflow-y-auto border-muted md:w-[80%] md:max-w-screen-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Shape the network
