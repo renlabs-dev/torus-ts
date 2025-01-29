@@ -1,0 +1,23 @@
+name: Dump GH events and payloads
+
+on:
+  push:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - closed
+      - synchronize
+
+jobs:
+  test:
+    name: debug
+    runs-on: [ubuntu]
+
+    steps:
+      - name: print whole context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "GITHUB_CONTEXT is $GITHUB_CONTEXT"
+          echo "event is  ${{ GITHUB_CONTEXT.event }} "
