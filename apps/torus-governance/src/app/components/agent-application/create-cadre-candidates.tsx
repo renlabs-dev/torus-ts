@@ -36,9 +36,7 @@ export function CreateCadreCandidates() {
       setDiscordId("");
       setContent("");
       await cadreCandidates.refetch();
-      toast.success(
-        "Curador DAO member candidate request submitted successfully!",
-      );
+      toast.success("Curator DAO member request submitted successfully!");
     },
     onError: (error) => {
       toast.error(
