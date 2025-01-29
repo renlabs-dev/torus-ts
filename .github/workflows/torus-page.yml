@@ -26,14 +26,14 @@ on:
 
 jobs:
   kubernetes:
-    if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd')
+    if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-page
 
   dry-run-build:
-    if: github.event_name == 'push' && (github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd')
+    if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-page
