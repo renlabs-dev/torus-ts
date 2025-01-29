@@ -8,6 +8,7 @@ import Link from "next/link";
 import BlobImage from "~/app/components/blob-image";
 import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
+import { DelegateModuleWeight } from "~/app/components/delegate-module-weight";
 
 export default async function AgentPage({
   params,
@@ -55,7 +56,7 @@ export default async function AgentPage({
 
   return (
     <Container>
-      <div className="mx-auto text-white">
+      <div className="mx-auto pb-16 text-white">
         <Button
           asChild
           variant="link"
@@ -96,6 +97,7 @@ export default async function AgentPage({
                 website={metadata.website}
               />
             </Card>
+
             <Card className="p-6">
               <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
                 <span className="text-cyan-500">
@@ -112,6 +114,16 @@ export default async function AgentPage({
                 />
               </div>
             </Card>
+            <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
+              <DelegateModuleWeight
+                id={mdl.id}
+                name={mdl.name ?? "Missing Agent Name"}
+                agentKey={mdl.key}
+                metadataUri={mdl.metadataUri}
+                registrationBlock={mdl.registrationBlock}
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
       </div>

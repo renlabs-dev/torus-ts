@@ -11,6 +11,7 @@ interface DelegateModuleWeightProps {
   name: string;
   agentKey: string;
   metadataUri: string | null;
+  registrationBlock: number | null;
   className?: string;
 }
 
@@ -36,6 +37,7 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
         name: props.name,
         address: props.agentKey,
         metadataUri: props.metadataUri,
+        registrationBlock: props.registrationBlock,
       });
     }
   };
