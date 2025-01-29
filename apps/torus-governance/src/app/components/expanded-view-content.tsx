@@ -38,24 +38,22 @@ export const ExpandedViewContent = (
   }, [body]);
 
   return (
-    <div
-      className={`flex h-fit w-full animate-fade-down flex-col animate-delay-100`}
-    >
+    <div className={`flex h-fit w-full animate-fade-down flex-col`}>
       <h2 className="break-words pb-5 text-2xl font-bold text-white">
         {title ?? "Title not found"}
       </h2>
       <div
         ref={contentRef}
-        className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-12" : "max-h-[250px] pb-0"} duration-1000`}
+        className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-24" : "max-h-[250px] pb-0"} duration-1000`}
       >
         <MarkdownView source={removeEmojisLmao(body ?? "Content not found.")} />
 
         {isOverflowing && (
           <div
-            className={`absolute bottom-0 flex w-full items-end justify-center ${expandedText ? "h-9 animate-accordion-up bg-transparent" : "h-24 animate-accordion-down bg-gradient-to-b from-transparent to-background"} `}
+            className={`absolute -bottom-0 flex w-full items-end justify-center ${expandedText ? "h-0 animate-fade" : "h-12 animate-fade"} bg-gradient-to-b from-transparent to-black transition-all duration-100`}
           >
             <Button
-              className="flex w-32 items-center gap-2"
+              className="flex w-32 items-center gap-2 bg-black"
               onClick={() => handleExpandedText()}
               variant="outline"
               aria-expanded={expandedText}

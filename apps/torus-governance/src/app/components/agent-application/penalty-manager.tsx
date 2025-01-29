@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/toast-provider";
@@ -35,9 +35,8 @@ export function PenaltyManager({
   const [error, setError] = useState<string | null>(null);
   const [remainingChars, setRemainingChars] = useState(MAX_CONTENT_CHARACTERS);
 
-  const { selectedAccount } = useGovernance();
+  const { selectedAccount, isUserCadre } = useGovernance();
 
-  const { data: cadreUsers } = api.cadre.all.useQuery();
   const { data: agentList } = api.agent.all.useQuery();
   const { data: penaltiesByAgentKey, refetch: refetchPenalties } =
     api.penalty.byAgentKey.useQuery({
@@ -45,11 +44,6 @@ export function PenaltyManager({
     });
 
   const isAgentActive = agentList?.find((agent) => agent.key === agentKey);
-
-  const isUserCadre = useMemo(
-    () => cadreUsers?.some((user) => user.userKey === selectedAccount?.address),
-    [cadreUsers, selectedAccount],
-  );
 
   const createPenaltyMutation = api.penalty.create.useMutation({
     onSuccess: () => {
@@ -148,10 +142,7 @@ export function PenaltyManager({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          className="animate-fade-down animate-delay-[1400ms]"
-        >
+        <Button variant="secondary" className="animate-fade-down">
           Apply Penalty
         </Button>
       </PopoverTrigger>

@@ -1,7 +1,6 @@
-import type { ApiPromise } from "@polkadot/api";
 import { match } from "rustie";
 import { z } from "zod";
-
+import type { ApiPromise } from "@polkadot/api";
 import type { AgentApplication } from "@torus-ts/subspace";
 import {
   acceptApplication,
@@ -16,10 +15,12 @@ import {
   BLOCK_TIME,
   getApplications,
   log,
+  processCadreVotes,
+  getCadreVotes,
   sleep,
   sleepUntilNewBlock,
 } from "../common";
-import type { VotesByApplication } from "../db";
+import type { VotesByNumericId } from "../db";
 import {
   countCadreKeys,
   pendingPenalizations,
@@ -32,7 +33,6 @@ const getEnv = validateEnvOrExit({
     .string()
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
 });
-
 type ApplicationVoteStatus = "open" | "accepted" | "locked";
 
 const getApplicationVoteStatus = (
@@ -48,9 +48,6 @@ const applicationIsPending = (app: AgentApplication) =>
   getApplicationVoteStatus(app) != "locked";
 
 export async function processApplicationsWorker(props: WorkerProps) {
-  const env = getEnv(process.env);
-  const mnemonic = env.TORUS_CURATOR_MNEMONIC;
-
   while (true) {
     try {
       const lastBlock = await sleepUntilNewBlock(props);
@@ -65,7 +62,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
       );
 
       const vote_threshold = await getCadreThreshold();
-
+      const mnemonic = getEnv(process.env).TORUS_CURATOR_MNEMONIC;
       await processAllVotes(
         props.api,
         mnemonic,
@@ -73,6 +70,9 @@ export async function processApplicationsWorker(props: WorkerProps) {
         vote_threshold,
         apps_map,
       );
+      const cadreVotes = await getCadreVotes();
+      await processCadreVotes(cadreVotes, vote_threshold);
+      console.log("threshold: ", vote_threshold);
       const factors = await getPenaltyFactors(vote_threshold);
       await processPenalty(props.api, mnemonic, factors);
     } catch (e) {
@@ -85,7 +85,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
 export async function processAllVotes(
   api: ApiPromise,
   mnemonic: string,
-  votes_on_pending: VotesByApplication[],
+  votes_on_pending: VotesByNumericId[],
   vote_threshold: number,
   application_map: Record<number, AgentApplication>,
 ) {
@@ -107,7 +107,7 @@ export async function processAllVotes(
 export async function processVotesOnProposal(
   api: ApiPromise,
   mnemonic: string,
-  vote_info: VotesByApplication,
+  vote_info: VotesByNumericId,
   vote_threshold: number,
   applications_map: Record<number, AgentApplication>,
 ) {
@@ -152,7 +152,7 @@ export async function processVotesOnProposal(
 export async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
   last_block_number: number,
-): Promise<VotesByApplication[]> {
+): Promise<VotesByNumericId[]> {
   const votes = await queryTotalVotesPerApp();
   const votes_on_pending = votes.filter((vote) => {
     const app = applications_map[vote.appId];

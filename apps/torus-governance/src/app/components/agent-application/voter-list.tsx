@@ -51,7 +51,7 @@ export function VoterList(props: VoterListProps): JSX.Element {
 
   if (isLoading) {
     return (
-      <Card className="animate-fade-down p-4 animate-delay-500 md:p-6">
+      <Card className="animate-fade-down p-4 animate-delay-200 md:p-6">
         <CardHeader className="pl-0 pt-0">
           <h3>Voters List</h3>
         </CardHeader>
