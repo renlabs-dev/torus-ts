@@ -18,6 +18,9 @@ on:
       - "apps/torus-governance/**"
       - "apps/torus-wallet/**"
   pull_request:
+    branches-ignore:
+      - main
+      - dev
     types:
       - opened
       - reopened
@@ -43,7 +46,7 @@ jobs:
       app_name: torus-cache
 
   pr-preview-activate:
-    if: github.event.pull_request.state == 'open' && !github.event.repository.fork && github.ref_name != 'main' && github.ref_name != 'dev'
+    if: github.event.pull_request.state == 'open' && !github.event.repository.fork
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
@@ -51,7 +54,7 @@ jobs:
       healthCheckPath: /api/stake-out
 
   pr-preview-delete:
-    if: github.event.pull_request.state == 'closed' && github.ref_name != 'main' && github.ref_name != 'dev'
+    if: github.event.pull_request.state == 'closed'
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:

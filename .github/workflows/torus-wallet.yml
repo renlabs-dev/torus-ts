@@ -17,6 +17,9 @@ on:
       - "apps/torus-worker/**"
       - "apps/torus-governance/**"
   pull_request:
+    branches-ignore:
+      - main
+      - dev
     types:
       - opened
       - reopened
@@ -45,14 +48,14 @@ jobs:
       app_name: torus-wallet
 
   pr-preview-activate:
-    if: github.event.pull_request.state == 'open' && !github.event.repository.fork && github.ref_name != 'main' && github.ref_name != 'dev'
+    if: github.event.pull_request.state == 'open' && !github.event.repository.fork
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
       app_name: torus-wallet
 
   pr-preview-delete:
-    if: github.event.pull_request.state == 'closed' && github.ref_name != 'main' && github.ref_name != 'dev'
+    if: github.event.pull_request.state == 'closed'
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
