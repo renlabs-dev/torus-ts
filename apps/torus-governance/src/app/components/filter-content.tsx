@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SearchIcon } from "lucide-react";
 
 import { Input } from "@torus-ts/ui";
+import { useGovernance } from "~/context/governance-provider";
 
 export const Filter = () => {
+  const { isInitialized } = useGovernance();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -36,11 +38,15 @@ export const Filter = () => {
 
   return (
     <div className="rounded-radius flex w-full items-center justify-center border pl-3 lg:w-3/5">
-      <SearchIcon size={16} />
+      <SearchIcon
+        size={16}
+        className={`${!isInitialized && "cursor-not-allowed opacity-50"} animate-ease-in-out`}
+      />
       <Input
+        disabled={!isInitialized}
         onChange={handleSearchChange}
         placeholder="Search"
-        className="border-none focus-visible:ring-0"
+        className="border-none animate-ease-in-out focus-visible:ring-0"
       />
     </div>
   );

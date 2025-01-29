@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { z } from "zod";
@@ -35,6 +35,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
     isAccountConnected,
     accountFreeBalance,
     addDaoTreasuryTransferProposal,
+    selectedAccount,
   } = useGovernance();
 
   const [value, setValue] = useState("");
@@ -57,6 +58,20 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
   function handleCallback(TransactionReturn: TransactionResult): void {
     setTransactionStatus(TransactionReturn);
   }
+
+  const userHasEnoughtBalance = useCallback(() => {
+    if (
+      !selectedAccount ||
+      !networkConfigs.data ||
+      !accountFreeBalance.data ||
+      networkConfigs.isFetching ||
+      accountFreeBalance.isFetching
+    ) {
+      return null;
+    }
+
+    return accountFreeBalance.data > networkConfigs.data.agentApplicationCost;
+  }, [selectedAccount, networkConfigs, accountFreeBalance])();
 
   async function uploadFile(fileToUpload: File): Promise<void> {
     try {
@@ -221,11 +236,31 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
           </span>
         </span>
       </div>
+
+      <div className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
+        <span>
+          Note: The proposal cost will be deducted from your connected wallet.
+        </span>
+
+        {!userHasEnoughtBalance && selectedAccount?.address && (
+          <span className="text-red-400">
+            You don't have enough balance to submit an application.
+          </span>
+        )}
+      </div>
       <Button
         size="lg"
         type="submit"
         variant="default"
-        disabled={!isAccountConnected || uploading}
+        disabled={
+          !isAccountConnected ||
+          uploading ||
+          !title ||
+          !body ||
+          !value ||
+          !destinationKey ||
+          !userHasEnoughtBalance
+        }
       >
         {getButtonSubmitLabel({ uploading, isAccountConnected })}
       </Button>
