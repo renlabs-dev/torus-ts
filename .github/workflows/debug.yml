@@ -20,4 +20,4 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
           echo "GITHUB_CONTEXT is $GITHUB_CONTEXT"
-          echo "event is  ${{ GITHUB_CONTEXT.event }} "
+          echo "event is  ${{ env.GITHUB_CONTEXT.event }} "
