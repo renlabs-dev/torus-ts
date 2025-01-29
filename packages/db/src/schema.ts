@@ -325,7 +325,7 @@ export const cadreCandidateSchema = createTable("cadre_candidate", {
 
   userKey: ss58Address("user_key").notNull().unique(),
   discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
-  candidacyStatus: candidacyStatus()
+  candidacyStatus: candidacyStatus("candidacy_status")
     .notNull()
     .default(candidacyStatusValues.PENDING),
   content: text("content").notNull(),
