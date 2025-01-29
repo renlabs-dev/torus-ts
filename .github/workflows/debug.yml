@@ -10,18 +10,33 @@ on:
       - synchronize
 
 jobs:
-  test:
-    name: debug
+  check-pr:
+    name: Check for existing PR
     runs-on: ubuntu-latest
+    outputs:
+      pr_exists: ${{ steps.findPr.outputs.number != '' }}
+      pr_number: ${{ steps.findPr.outputs.number }}
 
     steps:
       - uses: jwalton/gh-find-current-pr@master
         id: findPr
-      # This will echo "Your PR is 7", or be skipped if there is no current PR.
-      - run: echo "Your PR is ${PR}"
-        if: success() && steps.findPr.outputs.number
-        env:
-          PR: ${{ steps.findPr.outputs.pr }}
+
+      - name: Debug PR info
+        run: |
+          echo "PR exists: ${{ steps.findPr.outputs.number != '' }}"
+          echo "PR number: ${{ steps.findPr.outputs.number }}"
+
+  test:
+    name: debug
+    needs: check-pr
+    runs-on: ubuntu-latest
+    if: needs.check-pr.outputs.pr_exists == 'false'
+
+    steps:
+      - name: Debug PR status
+        run: |
+          echo "Running because no PR exists"
+
       - name: print whole context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
