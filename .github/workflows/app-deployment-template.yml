@@ -7,6 +7,11 @@ on:
       app_name:
         required: true
         type: string
+      skip_build:
+        required: false
+        description: "Skip Docker Build"
+        type: boolean
+        default: false
     secrets:
       VAULT_ADDR:
         required: true
@@ -21,6 +26,9 @@ concurrency:
 
 jobs:
   docker-build:
+    if: |
+      !inputs.skip_build && 
+      !contains(github.event.head_commit.message, 'skip build')
     permissions: write-all
     runs-on: ubuntu-22.04-32core-karl
     steps:
@@ -80,6 +88,10 @@ jobs:
 
   deploy:
     needs: [docker-build, clean-stale]
+    if: |
+      always() &&
+      (needs.clean-stale.result == 'success') &&
+      (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped')
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
@@ -108,16 +120,27 @@ jobs:
       - name: Set environment variables
         run: |
           echo "ENV_NAME=${{ github.ref_name == 'main' && 'prod' || 'dev' }}" >> $GITHUB_ENV
+          echo "NAMESPACE=torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps" >> $GITHUB_ENV
 
       - name: Install shared resources
         run: |
           helm template torus-${ENV_NAME}-aux \
             -f helm/values-utils.yaml \
-            -n torus-${ENV_NAME}-web-apps \
+            -n ${NAMESPACE} \
             --set environmentName=${ENV_NAME} \
             renlabs/utils | kubectl apply -f -
 
-      - name: Deploy application
+      - name: Deploy application (new tag)
+        if: needs.docker-build.result == 'success'
         working-directory: apps/${{ env.APP_NAME }}
         run: |
           helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${{ steps.commit.outputs.short }}
+
+      - name: Deploy application (apply diff only)
+        if: needs.docker-build.result == 'skipped'
+        working-directory: apps/${{ env.APP_NAME }}
+        run: |
+          export RELEASE_NAME=$(helmfile -e ${ENV_NAME} list --output json | jq -r '.[].name')
+          export IMAGE_TAG=$(helm get values ${RELEASE_NAME} -n ${NAMESPACE} --output  json | jq -r '.deployment.image.tag')
+
+          helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${IMAGE_TAG}

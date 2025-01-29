@@ -3,6 +3,12 @@ name: torus-wallet
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_build:
+        required: false
+        description: "Skip Docker Build"
+        type: boolean
+        default: false
   push:
     paths-ignore:
       - "apps/torus-page/**"
@@ -30,6 +36,7 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-wallet
+      skip_build: ${{ inputs.skip_build || false }}
 
   dry-run-build:
     if: github.ref_name != 'main' && github.ref_name != 'dev' && github.ref_name != 'cicd'
