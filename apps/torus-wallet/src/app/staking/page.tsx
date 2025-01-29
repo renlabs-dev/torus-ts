@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 
 import { Loading } from "@torus-ts/ui";
-import WalletActions from "./components/wallet-actions";
+import WalletActions from "../components/wallet-actions";
 
 export default function Page(): JSX.Element {
   return (
     <Suspense fallback={<Loading />}>
-      <WalletActions route="transfer" />
+      <WalletActions route="staking" />
     </Suspense>
   );
 }
