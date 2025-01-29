@@ -26,12 +26,13 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
 
   const handleDelegateClick = () => {
     if (!selectedAccount?.address) {
-      toast.error("Connect Wallet to delegate to a subnet.");
+      toast.error("Connect Wallet to allocate to this agent.");
       return;
     }
     if (isModuleDelegated) {
       removeAgent(props.agentKey);
     } else {
+      toast.success("Agent added, open allocation menu to set percentages.");
       addAgent({
         id: props.id,
         name: props.name,
