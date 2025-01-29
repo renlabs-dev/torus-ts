@@ -299,18 +299,24 @@ export const commentReportSchema = createTable("comment_report", {
 
 // ---- Cadre ----
 
-const DISCORD_ID_LENGTH = 18;
+const DISCORD_ID_LENGTH = 20;
 /**
  * A groups of users that can vote on Applications.
  */
-export const cadreSchema = createTable("cadre", {
-  id: serial("id").primaryKey(),
+export const cadreSchema = createTable(
+  "cadre",
+  {
+    id: serial("id").primaryKey(),
 
-  userKey: ss58Address("user_key").notNull().unique(),
-  discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
+    userKey: ss58Address("user_key").notNull().unique(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
 
-  ...timeFields(),
-});
+    ...timeFields(),
+  },
+  (t) => [
+    check("discord_id_check", sql`LENGTH(${t.discordId}) BETWEEN 17 AND 20 `),
+  ],
+);
 
 export const candidacyStatus = pgEnum("candidacy_status", [
   "PENDING",
@@ -320,18 +326,24 @@ export const candidacyStatus = pgEnum("candidacy_status", [
 ]);
 export const candidacyStatusValues = extract_pgenum_values(candidacyStatus);
 
-export const cadreCandidateSchema = createTable("cadre_candidate", {
-  id: serial("id").primaryKey(),
+export const cadreCandidateSchema = createTable(
+  "cadre_candidate",
+  {
+    id: serial("id").primaryKey(),
 
-  userKey: ss58Address("user_key").notNull().unique(),
-  discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
-  candidacyStatus: candidacyStatus("candidacy_status")
-    .notNull()
-    .default(candidacyStatusValues.PENDING),
-  content: text("content").notNull(),
+    userKey: ss58Address("user_key").notNull().unique(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
+    candidacyStatus: candidacyStatus("candidacy_status")
+      .notNull()
+      .default(candidacyStatusValues.PENDING),
+    content: text("content").notNull(),
 
-  ...timeFields(),
-});
+    ...timeFields(),
+  },
+  (t) => [
+    check("discord_id_check", sql`LENGTH(${t.discordId}) BETWEEN 17 AND 20 `),
+  ],
+);
 
 export const applicationVoteType = pgEnum("agent_application_vote_type", [
   "ACCEPT",

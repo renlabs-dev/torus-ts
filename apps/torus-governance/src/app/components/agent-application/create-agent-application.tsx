@@ -24,7 +24,10 @@ import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
-  discordId: z.string().min(16, "Discord ID is required"),
+  discordId: z
+    .string()
+    .min(17, "Discord ID is too short")
+    .max(20, "Discord ID is too long"),
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Body is required"),
 });
@@ -212,10 +215,12 @@ export function CreateAgentApplication(): JSX.Element {
           </Button>
         </div>
         <Input
-          onChange={(e) => setDiscordId(e.target.value)}
-          placeholder="Discord ID (17-18 digits)"
+          onChange={(e) =>
+            setDiscordId(e.target.value.replace(/[^0-9]/g, "").slice(0, 20))
+          }
+          placeholder="Discord ID (17-20 digits)"
           minLength={17}
-          maxLength={18}
+          maxLength={20}
           type="text"
           required
           value={discordId}

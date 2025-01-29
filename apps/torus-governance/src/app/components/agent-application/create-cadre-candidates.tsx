@@ -102,10 +102,13 @@ export function CreateCadreCandidates() {
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
           <Input
             type="text"
-            placeholder="Discord ID (e.g., 146386789998853569)"
+            placeholder="Discord ID (17-20 digits)"
             value={discordId}
-            onChange={(e) => setDiscordId(e.target.value)}
+            onChange={(e) =>
+              setDiscordId(e.target.value.replace(/[^0-9]/g, "").slice(0, 20))
+            }
             minLength={17}
+            maxLength={20}
             className="w-full bg-gray-600/10 p-3 text-white"
           />
           <div className="relative">
