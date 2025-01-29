@@ -2,10 +2,7 @@ import type { ApiPromise } from "@polkadot/api";
 import { match } from "rustie";
 
 import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
-import {
-  queryAgentApplications,
-  queryLastBlock,
-} from "@torus-ts/subspace";
+import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
 
 import type {
   VotesByNumericId as VoteById,
@@ -121,7 +118,6 @@ export async function getPenaltyFactors(cadreThreshold: number) {
   const penalizations = await pendingPenalizations(cadreThreshold);
   return penalizations;
 }
-
 
 // TODO: abstract common logic and merge with processVotesOnProposal
 export async function processCadreVotes(
