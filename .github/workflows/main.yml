@@ -19,10 +19,6 @@ on:
       - closed
       - synchronize
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   pr-preview-activate:
     if: github.event.pull_request.state == 'open' && !github.event.repository.fork
