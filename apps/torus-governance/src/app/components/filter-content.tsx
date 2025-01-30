@@ -4,10 +4,17 @@ import { Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchIcon } from "lucide-react";
 
-import { Input } from "@torus-ts/ui";
+import {
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui";
 import { useGovernance } from "~/context/governance-provider";
 
-export const Filter = () => {
+export const SearchBar = () => {
   const { isInitialized } = useGovernance();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -52,10 +59,49 @@ export const Filter = () => {
   );
 };
 
+const WhitelistFilter = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const isWhitelistApplication =
+    searchParams.get("view") === "agent-applications";
+
+  if (!isWhitelistApplication) return null;
+
+  const handleSelectWhitelistStatus = (selectedValue: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (!selectedValue) {
+      params.delete("whitelist-status");
+      return router.push(`/?${params.toString()}`);
+    }
+
+    params.set("whitelist-status", selectedValue);
+
+    router.push(`/?${params.toString()}`);
+  };
+
+  return (
+    <>
+      <Select onValueChange={(e) => handleSelectWhitelistStatus(e)}>
+        <SelectTrigger className="w-[180px] bg-card outline-none">
+          <SelectValue placeholder="Select a status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="accepted">Accepted</SelectItem>
+          <SelectItem value="rejected">Rejected</SelectItem>
+          <SelectItem value="expired">Expired</SelectItem>
+        </SelectContent>
+      </Select>
+    </>
+  );
+};
+
 export const FilterContent = () => {
   return (
     <Suspense>
-      <Filter />
+      <SearchBar />
+      <WhitelistFilter />
     </Suspense>
   );
 };
