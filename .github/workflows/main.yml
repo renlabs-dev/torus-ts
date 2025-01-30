@@ -43,7 +43,7 @@ jobs:
   torus-wallet:
     needs: turbo-check
     if: |
-      inputs.skip_build && ||
+      inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-wallet == 'true' &&
@@ -57,7 +57,7 @@ jobs:
   torus-allocator:
     needs: turbo-check
     if: |
-      inputs.skip_build && ||
+      inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-allocator == 'true' &&
@@ -71,7 +71,7 @@ jobs:
   torus-bridge:
     needs: turbo-check
     if: |
-      inputs.skip_build && ||
+      inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-bridge == 'true' &&
@@ -85,7 +85,7 @@ jobs:
   torus-cache:
     needs: turbo-check
     if: |
-      inputs.skip_build && ||
+      inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-cache == 'true' &&
@@ -99,7 +99,7 @@ jobs:
   torus-governance:
     needs: turbo-check
     if: |
-      inputs.skip_build && ||
+      inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-governance == 'true' &&
@@ -113,7 +113,7 @@ jobs:
   torus-worker:
     needs: turbo-check
     if: |
-      inputs.skip_build && ||
+      inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-worker == 'true' &&
