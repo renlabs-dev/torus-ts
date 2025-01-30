@@ -24,6 +24,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pr-preview-activate:
+    if: github.event.pull_request.state == 'open' && !github.event.repository.fork
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug PR info
+        run: |
+          echo "PR opening/reopening/synchronizing"
+
+  pr-preview-delete:
+    if: github.event.pull_request.state == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug PR info
+        run: |
+          echo "PR closing"
+
   pr-check:
     runs-on: ubuntu-latest
     outputs:
