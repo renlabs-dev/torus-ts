@@ -1,0 +1,171 @@
+name: Apps Deployment
+
+on:
+  push:
+  pull_request:
+    branches-ignore:
+      - main
+      - dev
+    types:
+      - opened
+      - reopened
+      - closed
+      - synchronize
+
+jobs:
+  pr-push-check:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ github.event_name == 'push' && steps.findPr.outputs.number != '' }}
+    steps:
+      - uses: jwalton/gh-find-current-pr@master
+        id: findPr
+
+      - name: Debug PR info
+        run: |
+          echo "PR exists: ${{ steps.findPr.outputs.number != '' }}"
+          echo "PR number: ${{ steps.findPr.outputs.number }}"
+          echo "Is push based: ${{ github.event_name == 'push' }}"
+
+  turbo-check:
+    needs: pr-push-check
+    if: needs.pr-push-check.outputs.skip == 'false'
+    uses: ./.github/workflows/turbo-check.yml
+
+  torus-wallet:
+    needs: turbo-check
+    if: |
+      github.ref_name == 'main' || 
+      (needs.turbo-check.outputs.torus-wallet == 'true' &&
+      (github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-wallet
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-allocator:
+    needs: turbo-check
+    if: |
+      github.ref_name == 'main' || 
+      (needs.turbo-check.outputs.torus-allocator == 'true' &&
+      (github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-allocator
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-bridge:
+    needs: turbo-check
+    if: |
+      github.ref_name == 'main' || 
+      (needs.turbo-check.outputs.torus-bridge == 'true' &&
+      (github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-cache:
+    needs: turbo-check
+    if: |
+      github.ref_name == 'main' || 
+      (needs.turbo-check.outputs.torus-cache == 'true' &&
+      (github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-cache
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-governance:
+    needs: turbo-check
+    if: |
+      github.ref_name == 'main' || 
+      (needs.turbo-check.outputs.torus-governance == 'true' &&
+      (github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-governance
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-worker:
+    needs: turbo-check
+    if: |
+      github.ref_name == 'main' || 
+      (needs.turbo-check.outputs.torus-worker == 'true' &&
+      (github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-worker
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-wallet-dry-run:
+    needs: turbo-check
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-wallet == 'true'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-wallet
+
+  torus-allocator-dry-run:
+    needs: turbo-check
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-allocator == 'true'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-allocator
+
+  torus-bridge-dry-run:
+    needs: turbo-check
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-bridge == 'true'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-bridge
+
+  torus-cache-dry-run:
+    needs: turbo-check
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-cache == 'true'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-cache
+
+  torus-governance-dry-run:
+    needs: turbo-check
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-governance == 'true'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-governance
+
+  torus-worker-dry-run:
+    needs: turbo-check
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-worker == 'true'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    with:
+      app_name: torus-worker
