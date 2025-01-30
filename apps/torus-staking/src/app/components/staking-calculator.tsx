@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calculator, Rocket, ArrowUpRight, Edit2 } from "lucide-react";
+import { Calculator, Leaf, ArrowUpRight, Edit2 } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -13,9 +13,9 @@ import {
 } from "recharts";
 import { Input, Button } from "@torus-ts/ui";
 
-const PROJECTED_APR = 15;
-const DAILY_COMPOUNDS = 365;
-const FORECAST_MONTHS = 12;
+const PROJECTED_APR = 24;
+const MONTHLY_COMPOUNDS = 12;
+const FORECAST_MONTHS = 24;
 
 interface ProjectedData {
   date: Date;
@@ -23,16 +23,15 @@ interface ProjectedData {
   initial: number;
 }
 
-const calculateProjectedGrowth = (stake: number, days: number): number => {
+const calculateProjectedGrowth = (stake: number, months: number): number => {
   const apr = PROJECTED_APR / 100;
-  const compounds = DAILY_COMPOUNDS;
-  const timeframe = days / 365;
-  // Enhanced growth factor for more exciting projections
-  return stake * Math.pow(1 + apr / compounds, compounds * timeframe * 1.5);
+  const compounds = MONTHLY_COMPOUNDS;
+  const timeframe = months / 12;
+  return stake * Math.pow(1 + (apr * 1.2) / compounds, compounds * timeframe);
 };
 
 const formatMonth = (date: Date): string => {
-  return date.toLocaleDateString("en-US", { month: "short" });
+  return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 };
 
 const GrowthTooltip = ({ active, payload }: TooltipProps<number, string>) => {
@@ -43,21 +42,22 @@ const GrowthTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   const growthRate = (gains / data.initial) * 100;
 
   return (
-    <div className="rounded-lg border bg-background/95 p-3 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <p className="text-sm font-medium">{formatMonth(data.date)}</p>
-      <p className="text-lg font-bold text-primary">
+    <div className="rounded-lg border bg-background/95 p-3 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <p className="text-sm text-muted-foreground">{formatMonth(data.date)}</p>
+      <p className="text-lg font-bold">
         {Math.floor(data.projected).toLocaleString()} TORUS
       </p>
-      <div className="flex items-center gap-1.5 text-emerald-500">
-        <ArrowUpRight className="h-4 w-4" />
-        <span className="text-sm font-medium">+{growthRate.toFixed(1)}%</span>
+      <div className="flex items-center gap-1.5">
+        <ArrowUpRight className="h-4 w-4 text-violet-500" />
+        <span className="text-sm font-semibold text-violet-500">
+          +{growthRate.toFixed(1)}%
+        </span>
       </div>
     </div>
   );
 };
 
 export const StakingCalculator: React.FC = () => {
-  // In real implementation, this would be fetched from wallet
   const [stakedBalance, setStakedBalance] = useState(10000);
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [customAmount, setCustomAmount] = useState(stakedBalance.toString());
@@ -68,11 +68,10 @@ export const StakingCalculator: React.FC = () => {
     const initialAmount = isCustomizing ? Number(customAmount) : stakedBalance;
 
     for (let i = 0; i <= FORECAST_MONTHS; i++) {
-      const days = Math.floor((365 / FORECAST_MONTHS) * i);
-      const date = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+      const date = new Date(startDate.setMonth(startDate.getMonth() + 1));
       data.push({
-        date,
-        projected: calculateProjectedGrowth(initialAmount, days),
+        date: new Date(date),
+        projected: calculateProjectedGrowth(initialAmount, i),
         initial: initialAmount,
       });
     }
@@ -86,11 +85,12 @@ export const StakingCalculator: React.FC = () => {
   const projectedReturn = (totalGains / initialAmount) * 100;
 
   return (
-    <div className="space-y-6 rounded-xl border bg-card p-6">
+    <div className="space-y-5 rounded-xl border bg-card p-6 shadow-lg">
+      {/* Header section */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-primary" />
-          <h3 className="font-medium">Staking Growth</h3>
+          <Calculator className="h-5 w-5 text-muted-foreground" />
+          <h3 className="font-medium">Yield Projections</h3>
         </div>
         <div className="flex items-center gap-4">
           <Button
@@ -100,14 +100,17 @@ export const StakingCalculator: React.FC = () => {
             className="flex items-center gap-2"
           >
             <Edit2 className="h-4 w-4" />
-            {isCustomizing ? "Use Current Balance" : "Customize Amount"}
+            {isCustomizing ? "Use Current Balance" : "Simulate Custom Amount"}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Target {PROJECTED_APR}% APR • Daily Compounding
+            Projected{" "}
+            <span className="font-semibold text-violet-500">
+              {PROJECTED_APR}% APR
+            </span>{" "}
+            • Monthly Compounding
           </p>
         </div>
       </div>
-
       {isCustomizing && (
         <div className="flex items-center gap-4">
           <Input
@@ -118,36 +121,31 @@ export const StakingCalculator: React.FC = () => {
             placeholder="Enter TORUS amount"
           />
           <p className="text-sm text-muted-foreground">
-            Experiment with different amounts
+            Explore potential yields with different amounts
           </p>
         </div>
       )}
-
-      <div className="grid grid-cols-4 gap-4 rounded-lg bg-primary/5 p-4">
-        {[30, 90, 180, 365].map((days) => {
-          const estimated = calculateProjectedGrowth(initialAmount, days);
+      <div className="grid grid-cols-4 gap-4 rounded-lg bg-muted/50 p-4">
+        {[3, 6, 12, 24].map((months) => {
+          const estimated = calculateProjectedGrowth(initialAmount, months);
           const profit = estimated - initialAmount;
           const percentGain = (profit / initialAmount) * 100;
           return (
-            <div key={days} className="space-y-1.5">
-              <p className="text-sm text-muted-foreground">{days}d forecast</p>
+            <div key={months} className="space-y-1.5">
+              <p className="text-sm text-muted-foreground">
+                {months}m forecast
+              </p>
               <p className="text-lg font-medium">
                 {Math.floor(estimated).toLocaleString()}
               </p>
-              <div className="flex items-center gap-1.5 text-emerald-500">
-                <ArrowUpRight className="h-3.5 w-3.5" />
-                <p className="text-sm font-medium">
-                  +{Math.floor(profit).toLocaleString()} (
-                  {percentGain.toFixed(1)}
-                  %)
-                </p>
-              </div>
+              <p className="text-sm font-medium text-violet-500">
+                +{percentGain.toFixed(1)}%
+              </p>
             </div>
           );
         })}
       </div>
-
-      <div className="h-[240px] w-full">
+      <div className="h-[260px] w-full">
         <ResponsiveContainer>
           <AreaChart
             data={projectedGrowth}
@@ -157,13 +155,13 @@ export const StakingCalculator: React.FC = () => {
               <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor="hsl(var(--primary))"
-                  stopOpacity={0.4}
+                  stopColor="rgb(139, 92, 246)"
+                  stopOpacity={0.08}
                 />
                 <stop
                   offset="95%"
-                  stopColor="hsl(var(--primary))"
-                  stopOpacity={0.05}
+                  stopColor="rgb(139, 92, 246)"
+                  stopOpacity={0.01}
                 />
               </linearGradient>
             </defs>
@@ -186,29 +184,24 @@ export const StakingCalculator: React.FC = () => {
             <Area
               type="monotone"
               dataKey="projected"
-              stroke="hsl(var(--primary))"
-              strokeWidth={3}
+              stroke="#e2e8f0"
+              strokeWidth={1.5}
               fill="url(#colorGrowth)"
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
-
-      <div className="flex items-center justify-between rounded-lg bg-primary/5 p-4">
+      <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
         <div className="space-y-1">
-          <p className="font-medium">
-            {isCustomizing
-              ? "Potential Annual Value (with custom amount)"
-              : "Potential Annual Value (with current staked amount)"}
-          </p>
-          <p className="text-2xl font-bold text-primary">
+          <p className="font-medium">Projected {FORECAST_MONTHS}-Month Value</p>
+          <p className="text-2xl font-bold">
             {Math.floor(maxProjected).toLocaleString()} $TORUS
           </p>
         </div>
-        <div className="flex items-center gap-2 text-emerald-500">
-          <Rocket className="h-6 w-6" />
-          <span className="text-lg font-medium">
-            +{projectedReturn.toFixed(1)}% Projected Growth
+        <div className="flex items-center gap-2">
+          <Leaf className="h-6 w-6 text-white" />
+          <span className="text-lg font-semibold text-violet-500">
+            +{projectedReturn.toFixed(1)}%
           </span>
         </div>
       </div>
