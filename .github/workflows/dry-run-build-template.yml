@@ -37,7 +37,7 @@ jobs:
       - id: commit
         uses: prompt/actions-commit-hash@v3
 
-      - name: Build and push
+      - name: Docker build (no push)
         uses: docker/build-push-action@v6
         with:
           context: .
