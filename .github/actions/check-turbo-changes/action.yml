@@ -54,7 +54,13 @@ runs:
         echo "Found packages:"
         cat packages_to_track.json
 
-    - name: Get build json
+    # - name: Get build json (PR based)
+    #   if: github.event_name == 'pull_request'
+    #   shell: bash
+    #   run: |
+    #     pnpm exec turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
+    - name: Get build json (Push based)
+      if: github.event_name == 'push'
       shell: bash
       run: |
         # Find the merge-base between current HEAD and the previous known state
