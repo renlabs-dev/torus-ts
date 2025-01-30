@@ -12,7 +12,7 @@ const AnimatedIcosahedron = () => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
   const animationConfig = useAnimationConfig();
-  const originalPositions = useRef<Float32Array>();
+  const originalPositions = useRef<Float32Array | null>(null);
 
   const state = useRef({
     time: 0,
@@ -23,10 +23,13 @@ const AnimatedIcosahedron = () => {
     isExpanding: true,
     holdTimer: 0,
     holdDuration: 1.5,
+    isInitialized: false,
   }).current;
 
+  // Initialize once
   useEffect(() => {
-    if (!meshRef.current?.geometry.attributes.position) return;
+    if (state.isInitialized || !meshRef.current?.geometry.attributes.position)
+      return;
 
     const positions = meshRef.current.geometry.attributes.position.array;
     originalPositions.current = new Float32Array(positions);
@@ -35,7 +38,8 @@ const AnimatedIcosahedron = () => {
     state.baseScale = state.maxScale * 0.01;
     state.currentScale = state.baseScale;
     meshRef.current.scale.setScalar(state.baseScale);
-  }, [viewport]);
+    state.isInitialized = true;
+  }, [viewport.width, viewport.height]);
 
   useFrame((_, delta) => {
     if (
@@ -44,10 +48,10 @@ const AnimatedIcosahedron = () => {
     )
       return;
 
-    state.time += delta * 0.6; // Slowed down the overall animation
+    state.time += delta * 0.6;
 
-    const expansionSpeed = 0.06; // Slower expansion
-    const contractionSpeed = 0.05; // Slower contraction
+    const expansionSpeed = 0.06;
+    const contractionSpeed = 0.05;
 
     // Animation cycle management
     if (state.isExpanding) {
@@ -80,16 +84,13 @@ const AnimatedIcosahedron = () => {
       const origY = originalPositions.current[i + 1];
       const origZ = originalPositions.current[i + 2];
 
-      // Calculate radius and angles for depth effect
-      const radius = Math.sqrt(origX * origX + origY * origY + origZ * origZ);
+      const radius = Math.sqrt(origX ** 2 + origY ** 2 + origZ ** 2);
       const theta = Math.atan2(origY, origX);
       const phi = Math.acos(origZ / radius);
 
-      // Modified wave parameters for smoother deformation
       const voidFreq = 1.2;
       const voidSpeed = 0.4;
 
-      // Layered wave deformation
       const depthWave =
         Math.sin(theta * voidFreq + state.time * voidSpeed) *
         Math.cos(phi * voidFreq + state.time * voidSpeed * 0.7) *
@@ -99,21 +100,17 @@ const AnimatedIcosahedron = () => {
         Math.sin(phi * voidFreq * 0.8 + state.time * voidSpeed * 0.5) *
         Math.cos(theta * voidFreq * 0.8 + state.time * voidSpeed * 0.4);
 
-      // Combined deformation effect
       const depthEffect =
         (depthWave + secondaryWave) *
         state.progress *
         (0.8 + Math.sin(radius * 2.5 + state.time * 0.4));
 
-      // Smooth vertex displacement
       const displacement = Math.max(0, depthEffect) * 0.3;
       const totalDeformation = depthEffect * 0.2 * (1 + state.progress * 0.4);
 
-      // Calculate normalized position for consistent deformation
       const normalizedPos = new THREE.Vector3(origX, origY, origZ).normalize();
       const deformAmount = 1 + totalDeformation + displacement;
 
-      // Apply deformation
       positions[i] =
         origX * deformAmount + normalizedPos.x * state.progress * 0.12;
       positions[i + 1] =
@@ -122,18 +119,16 @@ const AnimatedIcosahedron = () => {
         origZ * deformAmount + normalizedPos.z * state.progress * 0.12;
     }
 
-    // Update geometry and apply smooth scaling
     meshRef.current.geometry.attributes.position.needsUpdate = true;
+
     const targetScale =
       state.baseScale +
       (state.maxScale - state.baseScale) * easeInOutCubic(state.progress);
-
     meshRef.current.scale.lerp(
       new THREE.Vector3(targetScale, targetScale, targetScale),
       0.015,
     );
 
-    // Smooth rotation
     meshRef.current.rotation.x += delta * 0.06;
     meshRef.current.rotation.y += delta * 0.04;
   });
@@ -144,8 +139,8 @@ const AnimatedIcosahedron = () => {
       <ShaderMaterial
         config={{
           ...animationConfig,
-          uOpacity: Math.max(0.8 - state.progress * 0.3, 0.4), // Higher opacity range
-          uStrength: 0.15 + state.progress * 0.3,
+          opacity: Math.max(0.8 - state.progress * 0.3, 0.4),
+          strength: 0.15 + state.progress * 0.3,
         }}
       />
     </mesh>
