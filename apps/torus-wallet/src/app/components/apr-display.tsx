@@ -22,6 +22,8 @@ export function APRDisplay() {
       <div className="absolute top-14 w-full">
         <div className="text-center text-sm text-red-500">
           Unable to calculate APR
+          {isError && " due to error"}
+          {apr === null && " due to null"}
         </div>
       </div>
     );
