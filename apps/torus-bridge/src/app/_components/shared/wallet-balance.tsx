@@ -115,7 +115,7 @@ export function WalletBalance() {
       address: evmAddress,
     },
     {
-      amount: baseBalance ? baseBalance : null,
+      amount: baseBalance ?? null,
       // amount: baseBalance,
       label: `${baseChain.name}`,
       icon: (
