@@ -3,30 +3,17 @@
 import React from "react";
 import { RunningAPRBar } from "./running-apr-bar";
 import { useAPR } from "~/hooks/useAPR";
+import { SkeletonLoader } from "./apr-bar-skeleton";
 
 export function APRDisplay() {
   const { apr, isLoading, isError, totalStake, totalIssuance } = useAPR();
 
   if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="absolute top-14 text-center text-sm text-gray-500">
-          Calculating APR...
-        </div>
-      </div>
-    );
+    return <SkeletonLoader />;
   }
 
   if (isError || apr === null) {
-    return (
-      <div className="absolute top-14 w-full">
-        <div className="text-center text-sm text-red-500">
-          Unable to calculate APR
-          {isError && " due to error"}
-          {apr === null && " due to null"}
-        </div>
-      </div>
-    );
+    return <SkeletonLoader />;
   }
 
   return (
