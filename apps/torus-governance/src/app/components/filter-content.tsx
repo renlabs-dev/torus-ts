@@ -37,7 +37,7 @@ export const Filter = () => {
   };
 
   return (
-    <div className="rounded-radius flex w-full items-center justify-center border pl-3 lg:w-3/5">
+    <div className="rounded-radius flex w-full items-center justify-center border bg-card pl-3 lg:w-3/5">
       <SearchIcon
         size={16}
         className={`${!isInitialized && "cursor-not-allowed opacity-50"} animate-ease-in-out`}
