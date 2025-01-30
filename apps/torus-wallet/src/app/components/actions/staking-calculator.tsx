@@ -1,5 +1,7 @@
 "use client";
 
+import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button, Card, Input } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { ArrowUpRight, Calculator, Edit2, Leaf } from "lucide-react";
@@ -13,8 +15,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useTorus } from "@torus-ts/torus-provider";
-import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { env } from "~/env";
 import { useAPR } from "~/hooks/useAPR";
 
@@ -62,14 +62,16 @@ export const StakingCalculator: React.FC = () => {
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [customAmount, setCustomAmount] = useState("0");
 
-  const calculateProjectedGrowth = (stake: number, months: number): number => {
-    const aprRate = projectedApr / 100;
-    const compounds = MONTHLY_COMPOUNDS;
-    const timeframe = months / 12;
-    return (
-      stake * Math.pow(1 + (aprRate * 1.2) / compounds, compounds * timeframe)
-    );
-  };
+  const calculateProjectedGrowth = useMemo(() => {
+    return (stake: number, months: number): number => {
+      const aprRate = projectedApr / 100;
+      const compounds = MONTHLY_COMPOUNDS;
+      const timeframe = months / 12;
+      return (
+        stake * Math.pow(1 + (aprRate * 1.2) / compounds, compounds * timeframe)
+      );
+    };
+  }, [projectedApr]);
 
   // Calculate total staked amount
   const actualStakedBalance = useMemo(() => {
@@ -100,7 +102,6 @@ export const StakingCalculator: React.FC = () => {
     isCustomizing,
     customAmount,
     calculateProjectedGrowth,
-    projectedApr,
   ]);
 
   const maxProjected =
