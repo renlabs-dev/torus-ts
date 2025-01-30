@@ -6,9 +6,24 @@ on:
   pull_request:
 
 jobs:
-  check:
+  turbo-check:
     runs-on: ubuntu-latest
     steps:
+      - uses: jwalton/gh-find-current-pr@master
+        id: findPr
+
+      - name: Debug PR info
+        run: |
+          echo "PR exists: ${{ steps.findPr.outputs.number != '' }}"
+          echo "PR number: ${{ steps.findPr.outputs.number }}"
+
+      - name: Check and exit if condition
+        if: github.event_name == 'push' && steps.findPr.outputs.number != ''
+        shell: bash
+        run: |
+          echo "Push event but commit is part of a Pull Request. Exiting..."
+          exit 0
+
       - uses: actions/checkout@v4
 
       - uses: ./.github/actions/check-turbo-changes
