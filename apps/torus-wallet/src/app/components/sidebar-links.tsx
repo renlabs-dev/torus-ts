@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import {
   Button,
@@ -20,7 +20,6 @@ import { env } from "~/env";
 export const SidebarLinks = () => {
   const chainEnv = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");
   const pathname = usePathname();
-  const router = useRouter();
 
   const bridgeLink =
     chainEnv === "mainnet"
@@ -29,26 +28,9 @@ export const SidebarLinks = () => {
 
   const isActive = (path: string) => pathname === path;
 
-  const handleSelectChange = (value: string) => {
-    switch (value) {
-      case "wallet":
-        router.push("/");
-        break;
-      case "staking":
-        router.push("/staking");
-        break;
-      case "bridge":
-        router.push(bridgeLink);
-        break;
-    }
-  };
-
   return (
     <>
-      <Select
-        onValueChange={handleSelectChange}
-        defaultValue={pathname === "/" ? "wallet" : pathname.slice(1)}
-      >
+      <Select defaultValue="wallet">
         <SelectTrigger className="w-full lg:hidden">
           <SelectValue placeholder="Select a view" />
         </SelectTrigger>
