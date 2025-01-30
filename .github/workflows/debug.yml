@@ -21,7 +21,7 @@ jobs:
 
       - name: Build torus-page
         if: steps.changes.outputs.torus-page == 'true'
-        run: echo "Building torus-page..."
+        run: echo "Building torus-page... "
 
       # Debug output
       - name: Show changes
