@@ -149,7 +149,7 @@ export const StakingCalculator: React.FC = () => {
         <ResponsiveContainer>
           <AreaChart
             data={projectedGrowth}
-            margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+            margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
           >
             <defs>
               <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
@@ -179,6 +179,7 @@ export const StakingCalculator: React.FC = () => {
               tickSize={0}
               axisLine={false}
               tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+              domain={[(dataMin) => dataMin * 0.95, "dataMax"]} // Adds 5% padding at the bottom
             />
             <Tooltip content={GrowthTooltip} />
             <Area
@@ -195,7 +196,7 @@ export const StakingCalculator: React.FC = () => {
         <div className="space-y-1">
           <p className="font-medium">Projected {FORECAST_MONTHS}-Month Value</p>
           <p className="text-2xl font-bold">
-            {Math.floor(maxProjected).toLocaleString()} $TORUS
+            {Math.floor(maxProjected).toLocaleString()} TORUS
           </p>
         </div>
         <div className="flex items-center gap-2">
