@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, Card, Input } from "@torus-ts/ui";
+import { Card, Input } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
-import { ArrowUpRight, Calculator, Edit2, Leaf } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowUpRight, Calculator, Leaf } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import type { TooltipProps } from "recharts";
 import {
   Area,
@@ -39,7 +39,7 @@ const GrowthTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   const growthRate = (gains / data.initial) * 100;
 
   return (
-    <div className="rounded-lg border bg-background/95 p-3 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="border bg-background/95 p-3 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <p className="text-sm text-muted-foreground">{formatMonth(data.date)}</p>
       <p className="text-lg font-bold">
         {Math.floor(data.projected).toLocaleString()} TORUS
@@ -59,8 +59,18 @@ export const StakingCalculator: React.FC = () => {
   const { apr } = useAPR();
   const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
   const projectedApr = apr ?? 24;
-  const [isCustomizing, setIsCustomizing] = useState(false);
-  const [customAmount, setCustomAmount] = useState("0");
+  const [customAmount, setCustomAmount] = useState("");
+
+  const actualStakedBalance = useMemo(() => {
+    if (!selectedAccount?.address || !stakeOut.data?.perAddr) return 0;
+
+    const walletStake = stakeOut.data.perAddr[selectedAccount.address];
+    return Number(formatToken(walletStake ?? 0n).replace(/,/g, ""));
+  }, [selectedAccount?.address, stakeOut.data]);
+
+  useEffect(() => {
+    setCustomAmount(actualStakedBalance.toString());
+  }, [actualStakedBalance]);
 
   const calculateProjectedGrowth = (stake: number, months: number): number => {
     const aprRate = projectedApr / 100;
@@ -71,20 +81,10 @@ export const StakingCalculator: React.FC = () => {
     );
   };
 
-  // Calculate total staked amount
-  const actualStakedBalance = useMemo(() => {
-    if (!selectedAccount?.address || !stakeOut.data?.perAddr) return 0;
-
-    const walletStake = stakeOut.data.perAddr[selectedAccount.address];
-    return Number(formatToken(walletStake ?? 0n).replace(/,/g, ""));
-  }, [selectedAccount?.address, stakeOut.data]);
-
   const projectedGrowth = useMemo(() => {
     const startDate = new Date();
     const data: ProjectedData[] = [];
-    const initialAmount = isCustomizing
-      ? Number(customAmount)
-      : actualStakedBalance;
+    const initialAmount = Number(customAmount) || actualStakedBalance;
 
     for (let i = 0; i <= FORECAST_MONTHS; i++) {
       const date = new Date(startDate.setMonth(startDate.getMonth() + 1));
@@ -97,62 +97,46 @@ export const StakingCalculator: React.FC = () => {
     return data;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    actualStakedBalance,
-    isCustomizing,
     customAmount,
+    actualStakedBalance,
     calculateProjectedGrowth,
     projectedApr,
   ]);
 
   const maxProjected =
     projectedGrowth[projectedGrowth.length - 1]?.projected ?? 0;
-  const initialAmount = isCustomizing
-    ? Number(customAmount)
-    : actualStakedBalance;
+  const initialAmount = Number(customAmount) || actualStakedBalance;
   const totalGains = maxProjected - initialAmount;
   const projectedReturn = (totalGains / (initialAmount || 1)) * 100;
 
   return (
-    <Card className="mb-24 p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <Card className="mx-auto mb-16 w-full p-6">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calculator className="h-5 w-5 text-muted-foreground" />
           <h3 className="font-medium">Yield Projections</h3>
         </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsCustomizing(!isCustomizing)}
-            className="flex items-center gap-2"
-          >
-            <Edit2 className="h-4 w-4" />
-            {isCustomizing ? "Use Current Balance" : "Simulate Custom Amount"}
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Projected{" "}
-            <span className="font-semibold text-violet-500">
-              {projectedApr.toFixed(1)}% APR
-            </span>{" "}
-            • Monthly Compounding
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Projected{" "}
+          <span className="font-semibold text-violet-500">
+            {projectedApr.toFixed(1)}% APR
+          </span>{" "}
+          • Monthly Compounding
+        </p>
       </div>
-      {isCustomizing && (
-        <div className="mb-6 flex items-center gap-4">
-          <Input
-            type="number"
-            value={customAmount}
-            onChange={(e) => setCustomAmount(e.target.value)}
-            className="max-w-[200px]"
-            placeholder="Enter TORUS amount"
-          />
-          <p className="text-sm text-muted-foreground">
-            Explore potential yields with different amounts
-          </p>
-        </div>
-      )}
-      <div className="mb-6 grid grid-cols-4 gap-4 rounded-lg bg-muted/50 p-4">
+      <div className="mb-4 flex items-center justify-between gap-4 border bg-[#080808] pr-4">
+        <Input
+          type="number"
+          value={customAmount}
+          onChange={(e) => setCustomAmount(e.target.value)}
+          className="max-w-[200px] border-b-0 border-l-0 border-r border-t-0"
+          placeholder="Enter TORUS amount"
+        />
+        <p className="text-sm text-muted-foreground">
+          You can edit the amount to see how it affects your projected growth
+        </p>
+      </div>
+      <div className="mb-6 grid grid-cols-4 gap-4 bg-muted/50 px-4 py-2">
         {[3, 6, 12, 24].map((months) => {
           const estimated = calculateProjectedGrowth(initialAmount, months);
           const profit = estimated - initialAmount;
@@ -162,17 +146,19 @@ export const StakingCalculator: React.FC = () => {
               <p className="text-sm text-muted-foreground">
                 {months}m forecast
               </p>
-              <p className="text-lg font-medium">
-                {Math.floor(estimated).toLocaleString()}
-              </p>
-              <p className="text-sm font-medium text-violet-500">
-                +{percentGain.toFixed(1)}%
-              </p>
+              <div className="flex gap-2">
+                <p className="text-lg font-medium">
+                  {Math.floor(estimated).toLocaleString()}
+                </p>
+                <p className="text-sm font-medium text-violet-500">
+                  +{percentGain.toFixed(1)}%
+                </p>
+              </div>
             </div>
           );
         })}
       </div>
-      <div className="h-[260px] w-full">
+      <div className="h-[200px] w-full">
         <ResponsiveContainer>
           <AreaChart
             data={projectedGrowth}
@@ -224,15 +210,17 @@ export const StakingCalculator: React.FC = () => {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
-        <div className="space-y-1">
-          <p className="font-medium">Projected {FORECAST_MONTHS}-Month Value</p>
-          <p className="text-2xl font-bold">
-            {Math.floor(maxProjected).toLocaleString()} TORUS
+      <div className="flex items-center justify-between bg-muted/50 p-4">
+        <div className="flex items-center gap-1 space-y-1">
+          <p className="font-medium">
+            Projected {FORECAST_MONTHS}-Month Value:{" "}
+            <span className="font-bold text-violet-500">
+              {Math.floor(maxProjected).toLocaleString()} TORUS
+            </span>
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Leaf className="h-6 w-6 text-white" />
+          <Leaf className="h-4 w-4 text-white" />
           <span className="text-lg font-semibold text-violet-500">
             +{projectedReturn.toFixed(1)}%
           </span>

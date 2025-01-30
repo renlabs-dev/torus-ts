@@ -252,9 +252,8 @@ const Scene = () => (
 );
 
 const ClientHeroSection = () => (
-  <section className="absolute h-screen w-screen opacity-20">
+  <section className="absolute -z-10 h-screen w-screen opacity-20">
     <Canvas
-      className="absolute inset-0"
       camera={{ position: [0, 0, 2.5], fov: 75 }}
       dpr={[1, 2]}
       gl={{ antialias: true }}
