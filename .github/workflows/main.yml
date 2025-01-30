@@ -10,9 +10,6 @@ on:
         default: false
   push:
   pull_request:
-    branches-ignore:
-      - main
-      - dev
     types:
       - opened
       - reopened
