@@ -80,7 +80,7 @@ export function APRDisplay() {
   ) {
     return (
       <div className="w-full">
-        <div className="text-center text-sm text-gray-500">
+        <div className="absolute top-14 text-center text-sm text-gray-500">
           Calculating APR...
         </div>
       </div>
@@ -95,7 +95,7 @@ export function APRDisplay() {
     apr === null
   ) {
     return (
-      <div className="w-full">
+      <div className="absolute top-14 w-full">
         <div className="text-center text-sm text-red-500">
           Unable to calculate APR
         </div>
