@@ -8,10 +8,12 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  TooltipProps,
   ResponsiveContainer,
 } from "recharts";
+import type { TooltipProps } from "recharts";
 import { Input, Button } from "@torus-ts/ui";
+import { useWallet } from "@torus-ts/wallet-provider";
+import { formatToken } from "@torus-ts/utils/subspace";
 
 const PROJECTED_APR = 24;
 const MONTHLY_COMPOUNDS = 12;
@@ -58,14 +60,23 @@ const GrowthTooltip = ({ active, payload }: TooltipProps<number, string>) => {
 };
 
 export const StakingCalculator: React.FC = () => {
-  const [stakedBalance, setStakedBalance] = useState(10000);
+  const { accountStakedBy } = useWallet();
   const [isCustomizing, setIsCustomizing] = useState(false);
-  const [customAmount, setCustomAmount] = useState(stakedBalance.toString());
+  const [customAmount, setCustomAmount] = useState("0");
+
+  // Calculate total staked amount
+  const actualStakedBalance = useMemo(() => {
+    const totalStaked =
+      accountStakedBy.data?.reduce((acc, curr) => acc + curr.stake, 0n) ?? 0n;
+    return Number(formatToken(totalStaked).replace(/,/g, ""));
+  }, [accountStakedBy.data]);
 
   const projectedGrowth = useMemo(() => {
     const startDate = new Date();
     const data: ProjectedData[] = [];
-    const initialAmount = isCustomizing ? Number(customAmount) : stakedBalance;
+    const initialAmount = isCustomizing
+      ? Number(customAmount)
+      : actualStakedBalance;
 
     for (let i = 0; i <= FORECAST_MONTHS; i++) {
       const date = new Date(startDate.setMonth(startDate.getMonth() + 1));
@@ -76,13 +87,15 @@ export const StakingCalculator: React.FC = () => {
       });
     }
     return data;
-  }, [stakedBalance, isCustomizing, customAmount]);
+  }, [actualStakedBalance, isCustomizing, customAmount]);
 
   const maxProjected =
     projectedGrowth[projectedGrowth.length - 1]?.projected ?? 0;
-  const initialAmount = isCustomizing ? Number(customAmount) : stakedBalance;
+  const initialAmount = isCustomizing
+    ? Number(customAmount)
+    : actualStakedBalance;
   const totalGains = maxProjected - initialAmount;
-  const projectedReturn = (totalGains / initialAmount) * 100;
+  const projectedReturn = (totalGains / (initialAmount || 1)) * 100;
 
   return (
     <div className="space-y-5 rounded-xl border bg-card p-6 shadow-lg">
@@ -178,8 +191,13 @@ export const StakingCalculator: React.FC = () => {
               fontSize={12}
               tickSize={0}
               axisLine={false}
-              tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-              domain={[(dataMin) => dataMin * 0.95, "dataMax"]} // Adds 5% padding at the bottom
+              tickFormatter={(value: number) => {
+                if (value >= 1000) {
+                  return `${(value / 1000).toFixed(0)}k`;
+                }
+                return value.toFixed(0);
+              }}
+              domain={[(dataMin: number) => dataMin * 0.95, "dataMax"]}
             />
             <Tooltip content={GrowthTooltip} />
             <Area
