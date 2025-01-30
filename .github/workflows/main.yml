@@ -20,7 +20,7 @@ on:
       - synchronize
 
 jobs:
-  pr-push-check:
+  pr-check:
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ github.event_name == 'push' && steps.findPr.outputs.number != '' }}
@@ -36,8 +36,8 @@ jobs:
           echo "Is push based: ${{ github.event_name == 'push' }}"
 
   turbo-check:
-    needs: pr-push-check
-    if: needs.pr-push-check.outputs.skip == 'false'
+    needs: pr-check
+    if: needs.pr-check.outputs.skip == 'false'
     uses: ./.github/workflows/turbo-check.yml
 
   torus-wallet:
@@ -113,73 +113,73 @@ jobs:
       skip_build: ${{ inputs.skip_build || false }}
 
   torus-wallet-dry-run:
-    needs: [turbo-check, pr-push-check]
+    needs: [turbo-check, pr-check]
     if: |
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
       needs.turbo-check.outputs.torus-wallet == 'true' &&
-      needs.pr-push-check.outputs.pr_exists == 'false'
+      needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-wallet
 
   torus-allocator-dry-run:
-    needs: [turbo-check, pr-push-check]
+    needs: [turbo-check, pr-check]
     if: |
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
       needs.turbo-check.outputs.torus-allocator == 'true' &&
-      needs.pr-push-check.outputs.pr_exists == 'false'
+      needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-allocator
 
   torus-bridge-dry-run:
-    needs: [turbo-check, pr-push-check]
+    needs: [turbo-check, pr-check]
     if: |
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
       needs.turbo-check.outputs.torus-bridge == 'true' &&
-      needs.pr-push-check.outputs.pr_exists == 'false'
+      needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-bridge
 
   torus-cache-dry-run:
-    needs: [turbo-check, pr-push-check]
+    needs: [turbo-check, pr-check]
     if: |
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
       needs.turbo-check.outputs.torus-cache == 'true' &&
-      needs.pr-push-check.outputs.pr_exists == 'false'
+      needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-cache
 
   torus-governance-dry-run:
-    needs: [turbo-check, pr-push-check]
+    needs: [turbo-check, pr-check]
     if: |
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
       needs.turbo-check.outputs.torus-governance == 'true' &&
-      needs.pr-push-check.outputs.pr_exists == 'false'
+      needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-governance
 
   torus-worker-dry-run:
-    needs: [turbo-check, pr-push-check]
+    needs: [turbo-check, pr-check]
     if: |
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
       needs.turbo-check.outputs.torus-worker == 'true' &&
-      needs.pr-push-check.outputs.pr_exists == 'false'
+      needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
     with:
       app_name: torus-worker
