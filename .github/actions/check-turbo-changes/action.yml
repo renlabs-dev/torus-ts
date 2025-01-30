@@ -58,7 +58,7 @@ runs:
       if: github.event_name == 'pull_request'
       shell: bash
       run: |
-        pnpm exec turbo run build --filter="...[${{ github.event.pull_request.base.sha }}]" --dry-run=json 2>/dev/null > build.json
+        pnpm exec turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
 
     - name: Get build json (Push based)
       if: github.event_name == 'push'
