@@ -28,7 +28,7 @@ export function APRDisplay() {
   }
 
   return (
-    <div className="absolute top-14 w-full">
+    <div className="absolute top-[3.4em] w-full">
       <RunningAPRBar
         apr={apr}
         totalStaked={BigInt(totalStake?.toString() ?? "0")}

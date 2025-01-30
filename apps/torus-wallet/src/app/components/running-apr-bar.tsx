@@ -22,7 +22,7 @@ export function RunningAPRBar({
     Number(totalStaked * 100000n) / Number(totalSupply) / 1000;
 
   return (
-    <div className="relative h-8 w-full overflow-hidden border-b bg-[#080808] shadow-2xl">
+    <div className="relative z-40 h-8 w-full overflow-hidden border-b bg-[#080808] shadow-2xl">
       {/* Subtle motion indicators */}
       <div className="absolute inset-0 flex justify-center">
         <motion.div
