@@ -10,9 +10,6 @@ on:
         default: false
   push:
   pull_request:
-    branches-ignore:
-      - main
-      - dev
     types:
       - opened
       - reopened
@@ -23,10 +20,15 @@ jobs:
   pr-preview-activate:
     if: github.event.pull_request.state == 'open' && !github.event.repository.fork
     runs-on: ubuntu-latest
+    env:
+      GITHUB_CONTEXT: ${{ toJson(github) }}
     steps:
       - name: Debug PR info
         run: |
           echo "PR opening/reopening/synchronizing"
+
+      - run: |
+          echo "GITHUB_CONTEXT is $GITHUB_CONTEXT"
 
   pr-preview-delete:
     if: github.event.pull_request.state == 'closed'
