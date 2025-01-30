@@ -1,6 +1,13 @@
 name: Apps Deployment
 
 on:
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        required: false
+        description: "Skip Docker Build"
+        type: boolean
+        default: false
   push:
   pull_request:
     branches-ignore:
