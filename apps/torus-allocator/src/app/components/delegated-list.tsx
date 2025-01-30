@@ -24,8 +24,8 @@ import {
   SheetTrigger,
 } from "@torus-ts/ui";
 
-// TODO: VERIFY VALIDATOR ADDRESS BEFORE PUSHING TO MAIN
-export const VALIDATOR_ADDRESS =
+// TODO: VERIFY ALLOCATOR ADDRESS BEFORE PUSHING TO MAIN
+export const ALLOCATOR_ADDRESS =
   "5DJBFtDLxZ3cahV2zdUzbe5xJiZRqbJdRCdU3WL6txZNqBBj" as SS58Address;
 
 export function DelegatedList() {
@@ -40,7 +40,7 @@ export function DelegatedList() {
   } = useDelegateAgentStore();
 
   const { selectedAccount, api: torusApi } = useTorus();
-  const accountStakedBy = useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
+  const accountStakedBy = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
 
   const {
     data: userAgentWeight,

@@ -254,7 +254,7 @@ export function StakeAction() {
   const reviewData = [
     {
       label: "To",
-      content: `${recipient ? smallAddress(recipient, 6) : "Validator Address"}`,
+      content: `${recipient ? smallAddress(recipient, 6) : "Allocator Address"}`,
     },
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
@@ -282,7 +282,7 @@ export function StakeAction() {
           >
             <div className="flex w-full flex-col gap-2">
               <Label htmlFor="stake-recipient" className="text-base">
-                Validator Address
+                Allocator Address
               </Label>
               <div className="flex flex-row gap-2">
                 <Input
@@ -291,7 +291,7 @@ export function StakeAction() {
                   value={recipient}
                   required
                   onChange={handleRecipientChange}
-                  placeholder="Full validator address"
+                  placeholder="Full Allocator address"
                   disabled={!selectedAccount?.address || isEstimating}
                 />
                 <Button

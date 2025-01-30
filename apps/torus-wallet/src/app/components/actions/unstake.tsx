@@ -245,7 +245,7 @@ export function UnstakeAction() {
             className="flex w-full flex-col gap-6"
           >
             <div className="flex w-full flex-col gap-2">
-              <Label htmlFor="unstake-recipient">Validator Address</Label>
+              <Label htmlFor="unstake-recipient">Allocator Address</Label>
               <div className="flex flex-col gap-2 md:flex-row">
                 <Input
                   id="unstake-recipient"
@@ -254,7 +254,7 @@ export function UnstakeAction() {
                   required
                   onChange={handleRecipientChange}
                   disabled={!selectedAccount?.address}
-                  placeholder="Full validator address"
+                  placeholder="Full Allocator address"
                 />
                 <Button
                   type="button"

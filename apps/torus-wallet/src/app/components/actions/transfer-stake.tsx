@@ -196,14 +196,14 @@ export function TransferStakeAction() {
             className="flex w-full flex-col gap-6"
           >
             <div className="flex flex-col gap-2">
-              <Label htmlFor="transfer-from">From Validator</Label>
+              <Label htmlFor="transfer-from">From Allocator</Label>
               <div className="flex flex-row gap-2">
                 <Input
                   id="transfer-from"
                   type="text"
                   value={fromValidator}
                   onChange={handleFromValidatorChange}
-                  placeholder="Full validator address"
+                  placeholder="Full Allocator address"
                   className="w-full p-2"
                   disabled={!selectedAccount?.address}
                 />
@@ -226,7 +226,7 @@ export function TransferStakeAction() {
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="transfer-to" className="text-base">
-                To Validator
+                To Allocator
               </Label>
               <div className="flex flex-row gap-2">
                 <Input
@@ -235,7 +235,7 @@ export function TransferStakeAction() {
                   value={recipient}
                   required
                   onChange={handleRecipientChange}
-                  placeholder="Full validator address"
+                  placeholder="Full Allocator address"
                   disabled={!selectedAccount?.address}
                   className="w-full p-2"
                 />

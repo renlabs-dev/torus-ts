@@ -28,7 +28,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
   const validatorsList = [
     {
       name: "Torus Allocator",
-      description: "Validator of the Torus Allocator platform.",
+      description: "Allocator of the Torus Allocator platform.",
       address: "5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b",
     },
   ];
