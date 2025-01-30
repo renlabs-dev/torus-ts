@@ -111,7 +111,7 @@ export const StakingCalculator: React.FC = () => {
 
   return (
     <Card className="mx-auto mb-16 w-full p-6">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center md:gap-0">
         <div className="flex items-center gap-2">
           <Calculator className="h-5 w-5 text-muted-foreground" />
           <h3 className="font-medium">Yield Projections</h3>
@@ -136,7 +136,7 @@ export const StakingCalculator: React.FC = () => {
           You can edit the amount to see how it affects your projected growth
         </p>
       </div>
-      <div className="mb-6 grid grid-cols-4 gap-4 bg-muted/50 px-4 py-2">
+      <div className="mb-6 grid grid-cols-1 gap-4 bg-muted/50 px-4 py-2 md:grid-cols-4">
         {[3, 6, 12, 24].map((months) => {
           const estimated = calculateProjectedGrowth(initialAmount, months);
           const profit = estimated - initialAmount;
