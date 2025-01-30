@@ -13,24 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-pr:
-    name: Check for existing PR
-    runs-on: ubuntu-latest
-    outputs:
-      pr_exists: ${{ steps.findPr.outputs.number != '' }}
-      pr_number: ${{ steps.findPr.outputs.number }}
-
-    steps:
-      - uses: jwalton/gh-find-current-pr@master
-        id: findPr
-
-      - name: Debug PR info
-        run: |
-          echo "PR exists: ${{ steps.findPr.outputs.number != '' }}"
-          echo "PR number: ${{ steps.findPr.outputs.number }}"
   build:
-    needs: check-pr
-    if: needs.check-pr.outputs.pr_exists == 'false'
     permissions: write-all
     runs-on: ubuntu-22.04-32core-karl
     steps:
@@ -54,7 +37,7 @@ jobs:
       - id: commit
         uses: prompt/actions-commit-hash@v3
 
-      - name: Build and push
+      - name: Docker build (no push)
         uses: docker/build-push-action@v6
         with:
           context: .
