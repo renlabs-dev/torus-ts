@@ -95,6 +95,7 @@ export const StakingCalculator: React.FC = () => {
       });
     }
     return data;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     actualStakedBalance,
     isCustomizing,
@@ -112,7 +113,7 @@ export const StakingCalculator: React.FC = () => {
   const projectedReturn = (totalGains / (initialAmount || 1)) * 100;
 
   return (
-    <Card className="p-6">
+    <Card className="mb-24 p-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calculator className="h-5 w-5 text-muted-foreground" />

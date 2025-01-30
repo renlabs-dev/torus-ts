@@ -14,6 +14,7 @@ import { EnvScript, env } from "~/env";
 import { SidebarLinks } from "./components/sidebar-links";
 import { WalletBalance } from "./components/wallet-balance";
 import { APRDisplay } from "./components/apr-display";
+import ClientHeroSection from "./components/animation/client-hero-section";
 
 const APP_NAME = "Torus Wallet";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
             <WalletProvider>
               <WalletHeader />
               <APRDisplay />
+              <ClientHeroSection />
               <Container>
                 <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
                   <div className="flex w-full flex-col justify-around gap-6 lg:mt-[18vh] lg:flex-row">
