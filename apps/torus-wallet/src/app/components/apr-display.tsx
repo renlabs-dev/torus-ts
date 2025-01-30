@@ -9,11 +9,19 @@ export function APRDisplay() {
   const { apr, isLoading, isError, totalStake, totalIssuance } = useAPR();
 
   if (isLoading) {
-    return <SkeletonLoader />;
+    return (
+      <div className="absolute top-[3.4em] w-full">
+        <SkeletonLoader />;
+      </div>
+    );
   }
 
   if (isError || apr === null) {
-    return <SkeletonLoader />;
+    return (
+      <div className="absolute top-[3.4em] w-full">
+        <SkeletonLoader />
+      </div>
+    );
   }
 
   return (
