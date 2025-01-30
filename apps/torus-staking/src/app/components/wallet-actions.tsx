@@ -11,7 +11,7 @@ const buttons = [
   { text: "Stake", component: <StakeAction /> },
   { text: "Unstake", component: <UnstakeAction /> },
   { text: "Move Stake", component: <TransferStakeAction /> },
-  { text: "Calculator", component: <StakingCalculator /> },
+  { text: "APY Forecast", component: <StakingCalculator /> },
 ];
 
 function WalletOptions() {
