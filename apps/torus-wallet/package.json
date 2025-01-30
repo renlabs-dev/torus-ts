@@ -27,7 +27,14 @@
     "glsl-noise": "^0.0.0",
     "glsl-rotate": "^2.0.0",
     "glslify-hex": "^2.1.1",
-    "glslify-import": "^3.1.0"
+    "glslify-import": "^3.1.0",
+    "@react-spring/three": "^9.7.5",
+    "@react-three/drei": "^9.117.3",
+    "@react-three/fiber": "9.0.0-alpha.8",
+    "@react-three/postprocessing": "^2.19.1",
+    "install": "^0.13.0",
+    "recharts": "^2.13.0-alpha.4",
+    "three": "^0.164.1"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "catalog:",
@@ -45,6 +52,7 @@
     "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "@types/three": "^0.165.0"
   }
 }

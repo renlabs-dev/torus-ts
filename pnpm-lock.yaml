@@ -653,6 +653,18 @@ importers:
 
   apps/torus-wallet:
     dependencies:
+      '@react-spring/three':
+        specifier: ^9.7.5
+        version: 9.7.5(@react-three/fiber@9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.77.0(@babel/core@7.26.7)(@babel/preset-env@7.26.7(@babel/core@7.26.7))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1))(react@18.2.0)(three@0.164.1)
+      '@react-three/drei':
+        specifier: ^9.117.3
+        version: 9.121.4(@react-three/fiber@9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.77.0(@babel/core@7.26.7)(@babel/preset-env@7.26.7(@babel/core@7.26.7))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1))(@types/react@18.2.79)(@types/three@0.165.0)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(three@0.164.1)(use-sync-external-store@1.4.0(react@18.2.0))
+      '@react-three/fiber':
+        specifier: 9.0.0-alpha.8
+        version: 9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.77.0(@babel/core@7.26.7)(@babel/preset-env@7.26.7(@babel/core@7.26.7))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1)
+      '@react-three/postprocessing':
+        specifier: ^2.19.1
+        version: 2.19.1(@react-three/fiber@9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.77.0(@babel/core@7.26.7)(@babel/preset-env@7.26.7(@babel/core@7.26.7))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1))(@types/three@0.165.0)(react@18.2.0)(three@0.164.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.65.1(react@18.2.0)
@@ -689,6 +701,9 @@ importers:
       glslify-import:
         specifier: ^3.1.0
         version: 3.1.0
+      install:
+        specifier: ^0.13.0
+        version: 0.13.0
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.2.0)
@@ -701,6 +716,12 @@ importers:
       react-dom:
         specifier: catalog:react18
         version: 18.2.0(react@18.2.0)
+      recharts:
+        specifier: ^2.13.0-alpha.4
+        version: 2.15.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      three:
+        specifier: ^0.164.1
+        version: 0.164.1
       zod:
         specifier: 'catalog:'
         version: 3.24.1
@@ -732,6 +753,9 @@ importers:
       '@types/react-dom':
         specifier: catalog:react18
         version: 18.2.25
+      '@types/three':
+        specifier: ^0.165.0
+        version: 0.165.0
       glslify:
         specifier: ^7.1.1
         version: 7.1.1
@@ -5116,6 +5140,13 @@ packages:
         optional: true
       react-native:
         optional: true
+
+  '@react-three/postprocessing@2.19.1':
+    resolution: {integrity: sha512-7P25LOSToH/I6b3UipNK17IIFlX4FDUmWcaomfwu82+CzhXTOz8Fcc1ZXEZ7vFA/5Fr/2peNlXgXZJvoa+aCdA==}
+    peerDependencies:
+      '@react-three/fiber': ^8.0
+      react: ^18.0
+      three: '>= 0.138.0'
 
   '@react-types/breadcrumbs@3.7.10':
     resolution: {integrity: sha512-5HhRxkKHfAQBoyOYzyf4HT+24HgPE/C/QerxJLNNId303LXO03yeYrbvRqhYZSlD1ACLJW9OmpPpREcw5iSqgw==}
@@ -9634,6 +9665,10 @@ packages:
     resolution: {integrity: sha512-M1WuAmb7pn9zdFRtQYk26ZBoY043Sse0wVDdk4Bppr+JOXyQYybdtvK+l9wUibhtjdjvtoiNy8tk+EgsYIUqKg==}
     engines: {node: '>=12.0.0'}
 
+  install@0.13.0:
+    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
+    engines: {node: '>= 0.10'}
+
   int64-buffer@1.1.0:
     resolution: {integrity: sha512-94smTCQOvigN4d/2R/YDjz8YVG0Sufvv2aAh8P5m42gwhCsDAJqnbNOrxJsrADuAFAA69Q/ptGzxvNcNuIJcvw==}
 
@@ -10341,6 +10376,12 @@ packages:
       '@types/three': '>=0.134.0'
       three: '>=0.134.0'
 
+  maath@0.6.0:
+    resolution: {integrity: sha512-dSb2xQuP7vDnaYqfoKzlApeRcR2xtN8/f7WV/TMAkBC8552TwTLtOO0JTcSygkYMjNDPoo6V01jTw/aPi4JrMw==}
+    peerDependencies:
+      '@types/three': '>=0.144.0'
+      three: '>=0.144.0'
+
   make-dir@2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
     engines: {node: '>=6'}
@@ -10780,6 +10821,12 @@ packages:
 
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
+
+  n8ao@1.9.4:
+    resolution: {integrity: sha512-gbpAorQecZn2oGK/rheHxPTNwOxVsEC6216+Jr9tXHUk9L5VCE2q/uxsSrQpfNkZDoCmQHf7oSg3SYFWCAt0wg==}
+    peerDependencies:
+      postprocessing: '>=6.30.0'
+      three: '>=0.137'
 
   nan@2.22.0:
     resolution: {integrity: sha512-nbajikzWTMwsW+eSsNm3QwlOs7het9gGJU5dDZzRTQGk03vyBOauxgI4VakDzE0PtsGTmXPsXTbbjVhRwR5mpw==}
@@ -11327,6 +11374,11 @@ packages:
   postgres@3.4.5:
     resolution: {integrity: sha512-cDWgoah1Gez9rN3H4165peY9qfpEo+SA61oQv65O3cRUE1pOEoJWwddwcqKE8XZYjbblOJlYDlLV4h67HrEVDg==}
     engines: {node: '>=12'}
+
+  postprocessing@6.36.6:
+    resolution: {integrity: sha512-mjJjoXbC97XMV6iQVhOZYNjD5X93o3+/zpYm9oRmsyjP3LjfwedT8PgusECTk+s5DZeZoJ8vA9htdWuH8JH+mQ==}
+    peerDependencies:
+      three: '>= 0.157.0 < 0.173.0'
 
   potpack@1.0.2:
     resolution: {integrity: sha512-choctRBIV9EMT9WGAZHn3V7t0Z2pMQyl0EZE6pFc/6ml3ssw7Dlf/oAOvFwjm1HVsqfQN8GfeFyJ+d8tRzqueQ==}
@@ -19697,6 +19749,19 @@ snapshots:
       - '@types/react'
       - immer
 
+  '@react-three/postprocessing@2.19.1(@react-three/fiber@9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.77.0(@babel/core@7.26.7)(@babel/preset-env@7.26.7(@babel/core@7.26.7))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1))(@types/three@0.165.0)(react@18.2.0)(three@0.164.1)':
+    dependencies:
+      '@react-three/fiber': 9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.77.0(@babel/core@7.26.7)(@babel/preset-env@7.26.7(@babel/core@7.26.7))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1)
+      buffer: 6.0.3
+      maath: 0.6.0(@types/three@0.165.0)(three@0.164.1)
+      n8ao: 1.9.4(postprocessing@6.36.6(three@0.164.1))(three@0.164.1)
+      postprocessing: 6.36.6(three@0.164.1)
+      react: 18.2.0
+      three: 0.164.1
+      three-stdlib: 2.35.13(three@0.164.1)
+    transitivePeerDependencies:
+      - '@types/three'
+
   '@react-types/breadcrumbs@3.7.10(react@18.2.0)':
     dependencies:
       '@react-types/link': 3.5.10(react@18.2.0)
@@ -26300,6 +26365,8 @@ snapshots:
       through: 2.3.8
       wrap-ansi: 6.2.0
 
+  install@0.13.0: {}
+
   int64-buffer@1.1.0: {}
 
   internal-slot@1.1.0:
@@ -27046,6 +27113,11 @@ snapshots:
       '@types/three': 0.165.0
       three: 0.164.1
 
+  maath@0.6.0(@types/three@0.165.0)(three@0.164.1):
+    dependencies:
+      '@types/three': 0.165.0
+      three: 0.164.1
+
   make-dir@2.1.0:
     dependencies:
       pify: 4.0.1
@@ -27778,6 +27850,11 @@ snapshots:
       object-assign: 4.1.1
       thenify-all: 1.6.0
 
+  n8ao@1.9.4(postprocessing@6.36.6(three@0.164.1))(three@0.164.1):
+    dependencies:
+      postprocessing: 6.36.6(three@0.164.1)
+      three: 0.164.1
+
   nan@2.22.0: {}
 
   nano-json-stream-parser@0.1.2: {}
@@ -28396,6 +28473,10 @@ snapshots:
       source-map-js: 1.2.1
 
   postgres@3.4.5: {}
+
+  postprocessing@6.36.6(three@0.164.1):
+    dependencies:
+      three: 0.164.1
 
   potpack@1.0.2: {}
 
