@@ -15,8 +15,14 @@ import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { useGovernance } from "~/context/governance-provider";
 
 export const PopoverInfo = () => {
-  const { rewardAllocation, daoTreasuryBalance, daoTreasuryAddress } =
-    useGovernance();
+  const {
+    rewardAllocation,
+    daoTreasuryBalance,
+    daoTreasuryAddress,
+    cadreList,
+  } = useGovernance();
+
+  const { data: cadreListData, isFetching: isFetchingCadreList } = cadreList;
 
   function handleCopyClick(value: string): void {
     navigator.clipboard
@@ -80,6 +86,31 @@ export const PopoverInfo = () => {
           )}
           <span className="text-sm text-muted-foreground">
             Next DAO incentives payout
+          </span>
+        </div>
+        <div>
+          <p>
+            {isFetchingCadreList ? (
+              <Skeleton className="flex w-1/5 py-3" />
+            ) : (
+              (cadreListData?.length ?? 0)
+            )}
+          </p>
+          <span className="text-sm text-muted-foreground">
+            Nº of Curator DAO Members
+          </span>
+        </div>
+
+        <div>
+          <p>
+            {isFetchingCadreList ? (
+              <Skeleton className="flex w-1/5 py-3" />
+            ) : (
+              Math.floor((cadreListData?.length ?? 0) / 2 + 1)
+            )}
+          </p>
+          <span className="text-sm text-muted-foreground">
+            Curator DAO Vote threshold
           </span>
         </div>
       </PopoverContent>
