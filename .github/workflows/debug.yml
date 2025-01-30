@@ -10,24 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check if before commit exists
-        run: |
-          if git rev-parse --quiet --verify ${{ github.event.before }}^{commit}; then
-            echo "Before commit exists "
-          else
-            echo "Before commit does not exist"
-          fi
-
-      - name: Check merge-base
-        run: |
-          if git merge-base ${{ github.event.before }} HEAD; then
-            echo "Before commit exists"
-          else
-            echo "Before commit does not exist"
-          fi
 
       - uses: ./.github/actions/check-turbo-changes
         id: changes
