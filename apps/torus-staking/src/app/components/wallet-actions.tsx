@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
-
 import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
+import { StakingCalculator } from "./staking-calculator";
 
 const buttons = [
   { text: "Stake", component: <StakeAction /> },
   { text: "Unstake", component: <UnstakeAction /> },
   { text: "Move Stake", component: <TransferStakeAction /> },
+  { text: "Calculator", component: <StakingCalculator /> },
 ];
 
 function WalletOptions() {
@@ -33,7 +33,7 @@ function WalletOptions() {
         value={currentTab}
         className="flex w-full animate-fade flex-col gap-4"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           {buttons.map((button) => (
             <ActionTabs key={button.text} text={button.text} />
           ))}

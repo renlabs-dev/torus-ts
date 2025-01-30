@@ -4,7 +4,6 @@ import { SidebarLinks } from "./components/sidebar-links";
 import WalletActions from "./components/wallet-actions";
 import { WalletBalance } from "./components/wallet-balance";
 import { HeroSection } from "./components/hero-section";
-import { StakingCalculator } from "./components/staking-calculator";
 
 export default function Page(): JSX.Element {
   return (
@@ -20,7 +19,6 @@ export default function Page(): JSX.Element {
           </div>
           <div className="flex w-full flex-col lg:w-9/12">
             <WalletActions />
-            <StakingCalculator />
           </div>
         </div>
       </main>
