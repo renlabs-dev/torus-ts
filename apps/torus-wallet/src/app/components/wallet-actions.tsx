@@ -7,6 +7,7 @@ import { StakeAction } from "./actions/stake";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
 import { ReceiveAction } from "./actions/receive";
+import { StakingCalculator } from "./actions/staking-calculator";
 
 const transferButtons = [
   { text: "Send", component: <SendAction /> },
@@ -17,6 +18,7 @@ const stakingButtons = [
   { text: "Stake", component: <StakeAction /> },
   { text: "Unstake", component: <UnstakeAction /> },
   { text: "Transfer Stake", component: <TransferStakeAction /> },
+  { text: "APY Forecast", component: <StakingCalculator /> },
 ];
 
 interface WalletOptionsProps {
