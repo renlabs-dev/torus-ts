@@ -30,7 +30,7 @@ export function SelectTokenIdField({ name, disabled }: Props) {
       <button type="button" className={styles.base} onClick={onClick}>
         <div className="flex items-center">
           <span className={`ml-2 ${!tokenId && "text-slate-400"}`}>
-            {tokenId ? tokenId : "Select Token Id"}
+            {tokenId ?? "Select Token Id"}
           </span>
         </div>
         <ChevronIcon width={12} height={8} direction="s" />
