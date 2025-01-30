@@ -1,0 +1,93 @@
+# .github/actions/check-turbo-changes/action.yml
+name: Check Turbo Changes
+description: Check which packages are marked to build by Turbo
+
+outputs:
+  torus-wallet:
+    description: "Whether torus-wallet changed"
+    value: ${{ steps.changed.outputs.torus-wallet }}
+  torus-page:
+    description: "Whether torus-page changed"
+    value: ${{ steps.changed.outputs.torus-page }}
+  torus-allocator:
+    description: "Whether torus-allocator changed"
+    value: ${{ steps.changed.outputs.torus-allocator }}
+  torus-cache:
+    description: "Whether torus-cache changed"
+    value: ${{ steps.changed.outputs.torus-cache }}
+  torus-bridge:
+    description: "Whether torus-bridge changed"
+    value: ${{ steps.changed.outputs.torus-bridge }}
+  torus-worker:
+    description: "Whether torus-worker changed"
+    value: ${{ steps.changed.outputs.torus-worker }}
+  torus-governance:
+    description: "Whether torus-governance changed"
+    value: ${{ steps.changed.outputs.torus-governance }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: pnpm/action-setup@v4
+      name: Install pnpm
+      with:
+        run_install: false
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: "pnpm"
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install
+
+    - name: Get apps list
+      shell: bash
+      run: |
+        ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]' > packages_to_track.json
+        echo "Found packages:"
+        cat packages_to_track.json
+
+    - name: Get build json
+      shell: bash
+      run: |
+        # Find the merge-base between current HEAD and the previous known state
+          
+        if git rev-parse --quiet --verify ${{ github.event.before }}^{commit}; then
+          BASE_COMMIT=$(git merge-base ${{ github.event.before }} HEAD)
+          pnpm exec turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
+        else
+          pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
+        fi
+      # pnpm exec turbo run build --filter="...[HEAD^1]" --dry-run=json 2>/dev/null > build.json
+
+    - name: Get changed packages
+      shell: bash
+      run: |
+        cat build.json | jq -c '[.tasks[].package]' > package_list
+        echo "Changed packages:"
+        cat package_list
+
+    - name: Check changed packages
+      id: changed
+      shell: bash
+      run: |
+        CHANGED_PACKAGES=$(cat package_list)
+
+        while read -r package; do
+          package=$(echo "$package" | tr -d '"')
+          IS_CHANGED=$(echo $CHANGED_PACKAGES | jq -r "any(. == \"$package\")")
+          echo "$package=$IS_CHANGED" >> $GITHUB_OUTPUT
+        done < <(jq -c '.[]' packages_to_track.json)
+
+    - name: Debug outputs
+      shell: bash
+      run: |
+        echo 'Changed packages status:'
+        echo '${{ toJSON(steps.changed.outputs) }}' | jq '.'
