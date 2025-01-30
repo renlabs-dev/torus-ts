@@ -43,6 +43,8 @@ jobs:
   torus-wallet:
     needs: turbo-check
     if: |
+      inputs.skip_build && ||
+      contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-wallet == 'true' &&
       (github.ref_name == 'dev' || github.ref_name == 'cicd'))
@@ -55,6 +57,8 @@ jobs:
   torus-allocator:
     needs: turbo-check
     if: |
+      inputs.skip_build && ||
+      contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-allocator == 'true' &&
       (github.ref_name == 'dev' || github.ref_name == 'cicd'))
@@ -67,6 +71,8 @@ jobs:
   torus-bridge:
     needs: turbo-check
     if: |
+      inputs.skip_build && ||
+      contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-bridge == 'true' &&
       (github.ref_name == 'dev' || github.ref_name == 'cicd'))
@@ -79,6 +85,8 @@ jobs:
   torus-cache:
     needs: turbo-check
     if: |
+      inputs.skip_build && ||
+      contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-cache == 'true' &&
       (github.ref_name == 'dev' || github.ref_name == 'cicd'))
@@ -91,6 +99,8 @@ jobs:
   torus-governance:
     needs: turbo-check
     if: |
+      inputs.skip_build && ||
+      contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-governance == 'true' &&
       (github.ref_name == 'dev' || github.ref_name == 'cicd'))
@@ -103,6 +113,8 @@ jobs:
   torus-worker:
     needs: turbo-check
     if: |
+      inputs.skip_build && ||
+      contains(github.event.head_commit.message, 'skip build') ||
       github.ref_name == 'main' || 
       (needs.turbo-check.outputs.torus-worker == 'true' &&
       (github.ref_name == 'dev' || github.ref_name == 'cicd'))
