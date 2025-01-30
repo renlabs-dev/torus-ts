@@ -49,6 +49,9 @@ export const ListAgentApplications = () => {
     if (!body) return;
 
     const search = searchParams.get("search")?.toLocaleLowerCase();
+    // const whitelistStatusFilter = searchParams
+    //   .get("whitelist-status")
+    //   ?.toLocaleLowerCase();
 
     if (
       search &&
