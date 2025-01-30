@@ -30,6 +30,10 @@ import {
   queryBurnValue,
   queryAgents,
   queryMinAllowedStake,
+  queryTotalIssuance,
+  queryTreasuryEmissionFee,
+  queryTotalStake,
+  queryRecyclingPercentage,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -84,6 +88,18 @@ export function useLastBlock(
   });
 }
 
+// == Balances Module ==
+
+export function useTotalIssuance(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["total_issuance"],
+    enabled: api != null,
+    queryFn: () => queryTotalIssuance(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 // == System ==
 
 export function useFreeBalance(
@@ -95,6 +111,18 @@ export function useFreeBalance(
     enabled: api != null && address != null,
     queryFn: () => queryFreeBalance(api!, address!),
     staleTime: LAST_BLOCK_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useTreasuryEmissionFee(
+  api: Api | Nullish,
+): UseQueryResult<Proposal[], Error> {
+  return useQuery({
+    queryKey: ["treasury_emission_fee"],
+    enabled: api != null,
+    queryFn: () => queryTreasuryEmissionFee(api!),
+    staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -187,6 +215,18 @@ export function useRewardAllocation(api: Api | Nullish) {
   });
 }
 
+// == Torus Module ==
+
+export function useTotalStake(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["total_stake"],
+    enabled: api != null,
+    queryFn: () => queryTotalStake(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 // == Subspace Module ==
 
 export function useCachedStakeOut(
@@ -198,6 +238,18 @@ export function useCachedStakeOut(
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
     // throwOnError: false, // TODO
+  });
+}
+
+// == Emissions Module ==
+
+export function useRecyclingPercentage(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["recycling_percentage"],
+    enabled: api != null,
+    queryFn: () => queryRecyclingPercentage(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
   });
 }
 
