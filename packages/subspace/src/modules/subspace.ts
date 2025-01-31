@@ -44,6 +44,10 @@ export async function queryTotalStake(api: Api): Promise<Balance> {
   return balance;
 }
 
+export async function queryRewardInterval(api: Api): Promise<bigint> {
+  return api.query.torus0.rewardInterval().then((x) => sb_bigint.parse(x));
+}
+
 export async function queryTotalIssuance(api: Api): Promise<Balance> {
   const q = await api.query.balances.totalIssuance();
   const balance = sb_balance.parse(q);

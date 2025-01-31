@@ -34,6 +34,7 @@ import {
   queryTreasuryEmissionFee,
   queryTotalStake,
   queryRecyclingPercentage,
+  queryRewardInterval,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -222,6 +223,16 @@ export function useTotalStake(api: Api | Nullish) {
     queryKey: ["total_stake"],
     enabled: api != null,
     queryFn: () => queryTotalStake(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useRewardInterval(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["reward_interval"],
+    enabled: api != null,
+    queryFn: () => queryRewardInterval(api!),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

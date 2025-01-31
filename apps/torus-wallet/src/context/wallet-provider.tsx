@@ -3,7 +3,12 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
-import type { Balance, SS58Address, StakeData } from "@torus-ts/subspace";
+import type {
+  Balance,
+  SS58Address,
+  StakeData,
+  LastBlock,
+} from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import type {
   Stake,
@@ -15,6 +20,8 @@ import {
   useFreeBalance,
   useKeyStakingTo,
   useMinAllowedStake,
+  useLastBlock,
+  useRewardInterval,
 } from "@torus-ts/query-provider/hooks";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
@@ -82,6 +89,9 @@ interface WalletContextType {
     TransferStake,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
+
+  lastBlock: UseQueryResult<LastBlock, Error>;
+  rewardInterval: UseQueryResult<bigint, Error>;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -127,6 +137,9 @@ export function WalletProvider({
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
     stakeOut.data?.perAddr[selectedAccount?.address!];
 
+  const lastBlock = useLastBlock(api);
+  const rewardInterval = useRewardInterval(api);
+
   return (
     <WalletContext.Provider
       value={{
@@ -149,6 +162,8 @@ export function WalletProvider({
         transferStake,
         transferStakeTransaction,
         transferTransaction,
+        lastBlock,
+        rewardInterval,
       }}
     >
       {children}
