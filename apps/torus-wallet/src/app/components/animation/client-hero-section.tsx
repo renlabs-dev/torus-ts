@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, Canvas } from "@react-three/fiber";
 import { ShaderMaterial } from "./shader-material";
-import { Sparkles } from "@react-three/drei";
+import { CameraShake, Sparkles } from "@react-three/drei";
 
 const AnimatedIcosahedron = () => {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -139,23 +139,29 @@ const easeInOutCubic = (t: number): number => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
-const Scene = () => (
-  <>
-    <AnimatedIcosahedron />
-    <Sparkles count={3000} scale={[20, 20, 10]} size={5} speed={1} />
-  </>
-);
-
 const ClientHeroSection = () => (
-  <section className="absolute -z-10 h-screen w-screen opacity-20">
-    <Canvas
-      camera={{ position: [0, 0, 2.5], fov: 75 }}
-      dpr={[1, 2]}
-      gl={{ antialias: true }}
-    >
-      <Scene />
-    </Canvas>
-  </section>
+  <div className="animate-fade animate-delay-700">
+    <section className="absolute -z-10 h-screen w-screen opacity-25">
+      <Canvas
+        camera={{ position: [0, 0, 2.5], fov: 75 }}
+        dpr={[1, 2]}
+        gl={{ antialias: true }}
+      >
+        <AnimatedIcosahedron />
+        <Sparkles count={4000} scale={[20, 20, 10]} size={5} speed={0.5} />
+        <CameraShake
+          maxYaw={0.1}
+          maxPitch={0.1}
+          maxRoll={1}
+          yawFrequency={0.1}
+          pitchFrequency={0.1}
+          rollFrequency={0.1}
+          intensity={0.5}
+          decayRate={0.65}
+        />
+      </Canvas>
+    </section>
+  </div>
 );
 
 export default ClientHeroSection;
