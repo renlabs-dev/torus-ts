@@ -49,7 +49,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
   const isProposalOpen = proposalStatus && "Open" in proposalStatus;
   return (
     <>
-      <Card className="w-full p-4 transition duration-300 hover:bg-accent lg:p-6">
+      <Card className="w-full animate-fade-down p-4 transition duration-500 hover:bg-accent lg:p-6">
         <CardHeader className="flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0 md:flex-col-reverse xl:flex-row">
           <div className="flex w-fit flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-5">
             <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">
