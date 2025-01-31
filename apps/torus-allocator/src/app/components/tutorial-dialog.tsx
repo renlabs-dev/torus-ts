@@ -15,7 +15,7 @@ import {
 
 import { BookText, Scale, Wallet, Zap } from "lucide-react";
 import Link from "next/link";
-import { VALIDATOR_ADDRESS } from "./delegated-list";
+import { ALLOCATOR_ADDRESS } from "./delegated-list";
 
 export const tutorialData = {
   "1": {
@@ -45,7 +45,7 @@ export const tutorialData = {
       </p>,
       "Stake your desired amount to determine your voting power.",
       <CopyButton
-        copy={VALIDATOR_ADDRESS}
+        copy={ALLOCATOR_ADDRESS}
         variant="link"
         className="h-5 p-0 text-sm underline"
         notify={() => toast.success("Copied to clipboard")}
