@@ -72,7 +72,7 @@ export function CreateComment({
         return;
       }
     } else {
-      if (isUserCadre) {
+      if (!isUserCadre) {
         toast.error(
           "Only Curator DAO members can submit comments in DAO mode.",
         );
