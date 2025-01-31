@@ -40,6 +40,7 @@ import {
   useGlobalConfig,
   useBurnValue,
   useAgents,
+  useWhitelist,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Header, WalletDropdown } from "@torus-ts/ui";
@@ -107,6 +108,7 @@ interface GovernanceContextType {
   cadreList: UseTRPCQueryResult<CadreList, TRPCClientErrorLike<AppRouter>>;
   authenticateUser: () => Promise<void>;
   isUserAuthenticated: boolean | null;
+  whitelist: UseQueryResult<SS58Address[], Error>;
 }
 
 const GovernanceContext = createContext<GovernanceContextType | null>(null);
@@ -209,6 +211,8 @@ export function GovernanceProvider({
   const agentApplications = useAgentApplications(api);
   const agents = useAgents(api);
 
+  const whitelist = useWhitelist(api);
+
   const appMetadataQueryMap = useCustomMetadata<BaseDao>(
     "application",
     lastBlock.data,
@@ -246,9 +250,10 @@ export function GovernanceProvider({
         addDaoTreasuryTransferProposal,
         agentApplications,
         agentApplicationsWithMeta,
-        api,
-        burnAmount,
         agents,
+        api,
+        authenticateUser,
+        burnAmount,
         cadreCandidates,
         cadreList,
         daoTreasuryAddress,
@@ -256,6 +261,7 @@ export function GovernanceProvider({
         isAccountConnected,
         isAccountPowerUser,
         isInitialized,
+        isUserAuthenticated,
         isUserCadre,
         isUserCadreCandidate,
         lastBlock,
@@ -270,8 +276,7 @@ export function GovernanceProvider({
         torusCacheUrl,
         unrewardedProposals,
         voteProposal,
-        authenticateUser,
-        isUserAuthenticated,
+        whitelist,
       }}
     >
       <Header
