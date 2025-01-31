@@ -57,9 +57,7 @@ export const Sidebar = () => {
   return (
     <>
       <Select
-        onValueChange={(value) =>
-          router.push(`/?${createQueryString("view", value)}`)
-        }
+        onValueChange={(value) => router.push(`?view=${value}`)}
         value={viewMode ?? defaultView}
       >
         <SelectTrigger className="w-full lg:hidden">
