@@ -12,6 +12,8 @@ import type { FC } from "react";
 import { env, PublicEnvScript } from "next-runtime-env";
 import type { NonceConfig } from "next-runtime-env/build/typings/nonce";
 import { unstable_noStore as noStore } from "next/cache";
+import type { Equals } from "tsafe";
+import { assert } from "tsafe";
 import type { ZodType, ZodTypeAny } from "zod";
 import { z } from "zod";
 
@@ -103,7 +105,30 @@ export function buildZodEnvScript<S extends Record<string, ZodType<unknown>>>(
     ),
     env: (key) => {
       const val = env(key);
-      return opts?.skipValidation ? val : schema[key]!.parse(val);
+      if (opts?.skipValidation) {
+        return val;
+      }
+      assert(schema[key], `Schema not found for environment variable ${key}`);
+      const parsed = schema[key].safeParse(val);
+      if (!parsed.success) {
+        const msg = `Failed to validate environment variable ${key}: ${parsed.error.message}`;
+        console.log(msg, parsed.error);
+        throw new Error(msg);
+      }
+      return parsed.data;
     },
   };
+}
+
+function _test() {
+  const { env } = buildZodEnvScript({
+    NEXT_PUBLIC_FAVORITE_COLOR: z.string(),
+    NEXT_PUBLIC_FAVORITE_NUMBER: z.number(),
+  });
+
+  const _color = env("NEXT_PUBLIC_FAVORITE_COLOR");
+  const _number = env("NEXT_PUBLIC_FAVORITE_NUMBER");
+
+  assert<Equals<typeof _color, string>>();
+  assert<Equals<typeof _number, number>>();
 }

@@ -7,9 +7,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "next-runtime-env": "^3.2.2",
     "next": "catalog:",
-    "react": "catalog:react18"
+    "next-runtime-env": "^3.2.2",
+    "react": "catalog:react18",
+    "tsafe": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",

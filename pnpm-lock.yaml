@@ -972,6 +972,9 @@ importers:
       react:
         specifier: catalog:react18
         version: 18.2.0
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
     devDependencies:
       '@torus-ts/eslint-config':
         specifier: workspace:*
