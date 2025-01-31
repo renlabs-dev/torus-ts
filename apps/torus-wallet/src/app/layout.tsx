@@ -13,8 +13,8 @@ import { WalletHeader } from "./components/wallet-header";
 import { EnvScript, env } from "~/env";
 import { SidebarLinks } from "./components/sidebar-links";
 import { WalletBalance } from "./components/wallet-balance";
-import { APRDisplay } from "./components/apr-display";
 import ClientHeroSection from "./components/animation/client-hero-section";
+import { APRBar } from "./components/apr-bar";
 
 const APP_NAME = "Torus Wallet";
 
@@ -47,7 +47,7 @@ export default function RootLayout({
           <ReactQueryProvider>
             <WalletProvider>
               <WalletHeader />
-              <APRDisplay />
+              <APRBar />
               <ClientHeroSection />
               <Container>
                 <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">

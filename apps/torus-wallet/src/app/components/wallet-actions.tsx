@@ -17,7 +17,7 @@ const transferButtons = [
 const stakingButtons = [
   { text: "Stake", component: <StakeAction /> },
   { text: "Unstake", component: <UnstakeAction /> },
-  { text: "Transfer", component: <TransferStakeAction /> },
+  { text: "Move", component: <TransferStakeAction /> },
   { text: "APY Forecast", component: <StakingCalculator /> },
 ];
 

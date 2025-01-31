@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-export const SkeletonLoader = () => {
+export const APRBarSkeleton = () => {
   return (
     <div className="absolute top-[3.4em] w-full animate-fade-up">
       <div className="relative z-40 h-8 w-full overflow-hidden border-b bg-[#080808] shadow-2xl">
