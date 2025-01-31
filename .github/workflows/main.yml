@@ -200,6 +200,7 @@ jobs:
   ######## DRY RUN BUILDS  ##########
   ###################################
   torus-allocator-pr-activate:
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
@@ -220,6 +221,7 @@ jobs:
       delete: true
 
   torus-cache-pr-activate:
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
@@ -243,6 +245,7 @@ jobs:
       delete: true
 
   torus-governance-pr-activate:
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
@@ -263,6 +266,7 @@ jobs:
       delete: true
 
   torus-page-pr-activate:
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
@@ -283,6 +287,7 @@ jobs:
       delete: true
 
   torus-wallet-pr-activate:
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
