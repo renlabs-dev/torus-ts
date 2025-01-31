@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchIcon } from "lucide-react";
 
@@ -8,7 +8,9 @@ import {
   Input,
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui";
@@ -59,41 +61,64 @@ export const SearchBar = () => {
   );
 };
 
+const whitelistStatus = ["All", "Active", "Accepted", "Refused", "Expired"];
+
 const WhitelistFilter = () => {
+  const { isInitialized } = useGovernance();
   const searchParams = useSearchParams();
   const router = useRouter();
   const isWhitelistApplication =
     searchParams.get("view") === "agent-applications";
 
-  if (!isWhitelistApplication) return null;
+  const paramsStatus = searchParams.get("whitelist-status");
+
+  useEffect(() => {
+    if (!isWhitelistApplication) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    const isValidStatus = whitelistStatus
+      .map((s) => s.toLowerCase())
+      .includes(paramsStatus?.toLowerCase() ?? "");
+
+    if (!isValidStatus) {
+      params.set("whitelist-status", "all");
+      router.replace(`/?${params.toString()}`);
+    }
+  }, [paramsStatus, router, searchParams, isWhitelistApplication]);
+
+  if (!isWhitelistApplication) return;
 
   const handleSelectWhitelistStatus = (selectedValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (!selectedValue) {
+    if (selectedValue === "all") {
       params.delete("whitelist-status");
-      return router.push(`/?${params.toString()}`);
+    } else {
+      params.set("whitelist-status", selectedValue);
     }
-
-    params.set("whitelist-status", selectedValue);
 
     router.push(`/?${params.toString()}`);
   };
 
   return (
-    <>
-      <Select onValueChange={(e) => handleSelectWhitelistStatus(e)}>
-        <SelectTrigger className="w-[180px] bg-card outline-none">
-          <SelectValue placeholder="Select a status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="active">Active</SelectItem>
-          <SelectItem value="accepted">Accepted</SelectItem>
-          <SelectItem value="rejected">Rejected</SelectItem>
-          <SelectItem value="expired">Expired</SelectItem>
-        </SelectContent>
-      </Select>
-    </>
+    <Select
+      onValueChange={handleSelectWhitelistStatus}
+      disabled={!isInitialized}
+      value={paramsStatus ?? "all"}
+    >
+      <SelectTrigger className="w-full bg-card outline-none lg:w-[180px]">
+        <SelectValue placeholder="Select a status" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {whitelistStatus.map((status) => (
+            <SelectItem key={status} value={status.toLocaleLowerCase()}>
+              <SelectLabel>{status}</SelectLabel>
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 };
 
