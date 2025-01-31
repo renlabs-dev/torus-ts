@@ -34,6 +34,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const torusCacheUrl = env("NEXT_PUBLIC_TORUS_CACHE_URL");
   return (
     <Layout
       font={firaMono}
@@ -46,7 +47,7 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <TRPCReactProvider>
-            <AllocatorHeader />
+            <AllocatorHeader torusCacheUrl={torusCacheUrl} />
             <TutorialDialog />
             <AllocationMenu />
             {children}
