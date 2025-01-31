@@ -54,7 +54,10 @@ jobs:
 
   turbo-check:
     needs: pr-check
-    if: github.ref_name == 'main' || github.ref_name == 'dev' || needs.pr-check.outputs.skip == 'false'
+    if: |
+      github.event.pull_request.state != 'closed' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev'
+      || needs.pr-check.outputs.skip == 'false')
     uses: ./.github/workflows/turbo-check.yml
 
   torus-wallet:
