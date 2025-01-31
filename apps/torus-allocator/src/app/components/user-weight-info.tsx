@@ -13,7 +13,7 @@ import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useMemo } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
-import { ALLOCATOR_ADDRESS } from "./delegated-list";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { SS58Address } from "@torus-ts/subspace";
 
 export const UserWeightInfo = () => {

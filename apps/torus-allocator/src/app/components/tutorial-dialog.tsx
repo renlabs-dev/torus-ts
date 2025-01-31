@@ -1,5 +1,8 @@
 "use client";
 
+import { BookText, Scale, Wallet, Zap } from "lucide-react";
+import Link from "next/link";
+
 import { toast } from "@torus-ts/toast-provider";
 import {
   Dialog,
@@ -13,9 +16,7 @@ import {
   CopyButton,
 } from "@torus-ts/ui";
 
-import { BookText, Scale, Wallet, Zap } from "lucide-react";
-import Link from "next/link";
-import { ALLOCATOR_ADDRESS } from "./delegated-list";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 
 export const tutorialData = {
   "1": {
