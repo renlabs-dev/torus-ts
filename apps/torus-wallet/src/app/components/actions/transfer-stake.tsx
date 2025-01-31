@@ -214,7 +214,7 @@ export function TransferStakeAction() {
                   className="flex w-fit items-center px-6 py-2.5"
                   disabled={!selectedAccount?.address}
                 >
-                  Staked Validators
+                  Staked Allocators
                 </Button>
               </div>
               {inputError.fromValidator && (

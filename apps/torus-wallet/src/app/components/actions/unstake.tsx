@@ -262,7 +262,7 @@ export function UnstakeAction() {
                   disabled={!selectedAccount?.address}
                   onClick={() => setCurrentView("stakedValidators")}
                 >
-                  Staked Validators
+                  Staked Allocators
                 </Button>
               </div>
               {inputError.recipient && (
