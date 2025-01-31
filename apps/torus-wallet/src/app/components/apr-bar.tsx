@@ -24,7 +24,7 @@ export function APRBar() {
       {isLoading || isError || apr === null ? (
         <APRBarSkeleton />
       ) : (
-        <div className="absolute top-[3.4em] w-full">
+        <div className="absolute top-[3.3em] w-full">
           <div className="relative z-40 h-8 w-full overflow-hidden border-b bg-[#080808] shadow-2xl">
             <div className="absolute inset-0 flex justify-center">
               <motion.div

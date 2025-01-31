@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, Canvas } from "@react-three/fiber";
-import { useAnimationConfig } from "./use-animation-config";
 import { ShaderMaterial } from "./shader-material";
+import { Sparkles } from "@react-three/drei";
 
 const AnimatedIcosahedron = () => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
-  const animationConfig = useAnimationConfig();
+
   const originalPositions = useRef<Float32Array | null>(null);
 
   const state = useRef({
@@ -68,10 +68,6 @@ const AnimatedIcosahedron = () => {
           state.isExpanding = true;
         }, 300);
       }
-    }
-
-    if (state.holdTimer <= 0 && state.progress >= 1) {
-      state.isExpanding = false;
     }
 
     const positions = meshRef.current.geometry.attributes.position
@@ -134,13 +130,7 @@ const AnimatedIcosahedron = () => {
   return (
     <mesh ref={meshRef}>
       <icosahedronGeometry args={[1, 64]} />
-      <ShaderMaterial
-        config={{
-          ...animationConfig,
-          // opacity: Math.max(0.8 - state.progress * 0.3, 0.4),
-          strength: 0.15 + state.progress * 0.3,
-        }}
-      />
+      <ShaderMaterial />
     </mesh>
   );
 };
@@ -149,105 +139,10 @@ const easeInOutCubic = (t: number): number => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
-const createParticlePositions = (count: number) => {
-  const positions = new Float32Array(count * 3);
-  const spread = 30; // Increased spread for more distributed stars
-
-  for (let i = 0; i < count; i++) {
-    // Random distribution with more variance
-    positions[i * 3] = (Math.random() - 0.5) * spread;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * spread;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * spread;
-  }
-  return positions;
-};
-
-const ParticleField = () => {
-  const createStarTexture = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    // Sharper, brighter gradient
-    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-    gradient.addColorStop(0.4, "rgba(255, 255, 255, 1)");
-    gradient.addColorStop(0.8, "rgba(255, 255, 255, 0.3)");
-    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 32, 32);
-
-    return new THREE.CanvasTexture(canvas);
-  };
-  // Hooks first
-  const particlesRef = useRef<THREE.Points>(null);
-  const texture = useMemo(() => createStarTexture(), []);
-
-  const MAX_PARTICLE_SIZE = 0.15;
-
-  // Constants and calculations after hooks
-  const particleCount = 5000;
-  const positions = useMemo(
-    () => createParticlePositions(particleCount),
-    [particleCount],
-  );
-  const sizes = useMemo(() => {
-    const sizeArray = new Float32Array(particleCount);
-    for (let i = 0; i < particleCount; i++) {
-      // Keep the original random calculation but cap it at MAX_PARTICLE_SIZE
-      sizeArray[i] = Math.min(Math.random() * 0.15 + 0.05, MAX_PARTICLE_SIZE);
-    }
-    return sizeArray;
-  }, [particleCount]);
-
-  useFrame((_, delta) => {
-    if (particlesRef.current) {
-      particlesRef.current.rotation.y += delta * 0.02;
-    }
-  });
-
-  if (!texture) return null;
-
-  return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particleCount}
-          array={positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          count={particleCount}
-          array={sizes}
-          itemSize={1}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.1}
-        sizeAttenuation={true}
-        transparent={true}
-        opacity={1}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        map={texture}
-        alphaMap={texture}
-        color="#ffffff"
-      />
-    </points>
-  );
-};
-
 const Scene = () => (
   <>
-    <ambientLight intensity={0.5} />
-    <pointLight position={[10, 10, 10]} intensity={1} />
     <AnimatedIcosahedron />
-    <ParticleField />
+    <Sparkles count={3000} scale={[20, 20, 10]} size={5} speed={1} />
   </>
 );
 

@@ -1,43 +1,50 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import vertexShader from "./shaders/vertex.glsl";
 import fragmentShader from "./shaders/fragment.glsl";
 
-interface ShaderMaterialProps {
-  config: AnimationConfig;
-}
-
-type CustomUniforms = Record<string, THREE.IUniform<number>>;
-
-export interface AnimationConfig {
-  time: number;
-  frequency: number;
-  amplitude: number;
-  density: number;
-  strength: number;
-  deepPurple: number;
-}
-
-export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
+export const ShaderMaterial = () => {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
 
-  useFrame(() => {
+  const uniforms = useMemo(
+    () => ({
+      uFrequency: { value: 0.5 },
+      uAmplitude: { value: 0.5 },
+      uDensity: { value: 1 },
+      uStrength: { value: 0.1 },
+      uDeepPurple: { value: 0 },
+      uOpacity: { value: 0.5 },
+      uTime: { value: 0 },
+    }),
+    [],
+  );
+
+  useFrame((_, delta) => {
     if (!materialRef.current) return;
 
-    Object.entries(config).forEach(([key, value]) => {
-      const uniformName = `u${key.charAt(0).toUpperCase()}${key.slice(1)}`;
-      const uniforms = materialRef.current?.uniforms as CustomUniforms;
+    const t = (uniforms.uTime.value += delta);
 
-      if (key !== "time" && uniforms[uniformName]) {
-        const current = Number(uniforms[uniformName].value);
-        const next = Number(value);
-
-        uniforms[uniformName].value = THREE.MathUtils.lerp(current, next, 0.05);
-      }
-    });
+    uniforms.uFrequency.value =
+      Math.sin(t * 0.25) * 1 +
+      Math.cos(t * 0.15) * 0.75 +
+      Math.sin(t * 0.35) * 0.25 +
+      0.5;
+    uniforms.uAmplitude.value =
+      Math.cos(t * 0.15) * 1 +
+      Math.sin(t * 0.1) * 0.75 +
+      Math.cos(t * 0.25) * 0.15 +
+      0.5;
+    uniforms.uDensity.value =
+      Math.sin(t * 0.1) * 0.25 + Math.cos(t * 0.2) * 0.15 + 1.1;
+    uniforms.uStrength.value =
+      Math.abs(Math.sin(t * 0.1)) * 0.1 +
+      Math.abs(Math.cos(t * 0.15)) * 0.05 +
+      0.1;
+    uniforms.uDeepPurple.value =
+      (Math.sin(t * 0.05) * 0.25 + 0.25) * (Math.cos(t * 0.1) * 0.25 + 0.25);
   });
 
   return (
@@ -48,15 +55,7 @@ export const ShaderMaterial = ({ config }: ShaderMaterialProps) => {
       wireframe
       transparent
       blending={THREE.AdditiveBlending}
-      uniforms={{
-        uFrequency: { value: 0 },
-        uAmplitude: { value: 0 },
-        uDensity: { value: 0 },
-        uStrength: { value: 0 },
-        uDeepPurple: { value: 0 },
-        uOpacity: { value: 0.5 },
-        uTime: { value: 0 },
-      }}
+      uniforms={uniforms}
     />
   );
 };
