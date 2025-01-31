@@ -97,7 +97,7 @@ export const PopoverInfo = () => {
             )}
           </p>
           <span className="text-sm text-muted-foreground">
-            Nº of Curator DAO Members
+            Curator DAO Members
           </span>
         </div>
 
