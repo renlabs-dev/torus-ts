@@ -5,7 +5,7 @@ deployment:
     repository: ghcr.io/renlabs-dev/torus-cache
 
   podLabels:
-    app: torus-cache
+    app: torus-cache-rururu
 
   resources:
     limits:
