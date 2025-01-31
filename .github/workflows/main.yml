@@ -233,6 +233,7 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-cache
+      healthCheckPath: /api/stake-out
 
   torus-cache-pr-delete:
     if: |
