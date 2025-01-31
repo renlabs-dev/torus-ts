@@ -35,6 +35,7 @@ import {
   queryTotalStake,
   queryRecyclingPercentage,
   queryRewardInterval,
+  queryWhitelist,
 } from "@torus-ts/subspace";
 
 import type { ApiPromise } from "@polkadot/api";
@@ -157,6 +158,16 @@ export function useAgentApplications(api: Api | Nullish) {
     queryKey: ["daos"],
     enabled: api != null,
     queryFn: () => queryAgentApplications(api!),
+    staleTime: PROPOSALS_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useWhitelist(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["whitelist"],
+    enabled: api != null,
+    queryFn: () => queryWhitelist(api!),
     staleTime: PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });

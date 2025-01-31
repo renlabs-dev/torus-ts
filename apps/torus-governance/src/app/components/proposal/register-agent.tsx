@@ -66,13 +66,14 @@ export function RegisterAgent(): JSX.Element {
     accountFreeBalance,
     selectedAccount,
     burnAmount,
-    agentApplications,
     agents,
     lastBlock,
+    whitelist,
   } = useGovernance();
 
   const { registerAgentTransaction, estimateFee } = useTorus();
-
+  const { data: whitelistedApplications, isFetching: isFetchingWhitelist } =
+    whitelist;
   const [agentKey, setAgentKey] = useState("");
   const [name, setName] = useState("");
   const [agentApiUrl, setAgentApiUrl] = useState("");
@@ -92,7 +93,6 @@ export function RegisterAgent(): JSX.Element {
   const [uploading, setUploading] = useState(false);
   const [aboutPreview, setAboutPreview] = useState(false);
   const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
-  // const [currentTab, setCurrentTab] = useState<TabsViews>("register");
 
   const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
 
@@ -235,9 +235,17 @@ export function RegisterAgent(): JSX.Element {
 
     const parsedAgentKey = checkSS58(agentKey);
 
-    if (
-      !agentApplications.data?.find((app) => app.agentKey === parsedAgentKey)
-    ) {
+    if (isFetchingWhitelist) {
+      toast.error("Whitelist is still loading. Please try again later.");
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Whitelist is still loading.",
+      });
+      return;
+    }
+
+    if (!whitelistedApplications?.includes(parsedAgentKey)) {
       toast.error(
         "Agent not whitelisted. Whitelist required for registration.",
       );
