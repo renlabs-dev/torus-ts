@@ -8,12 +8,11 @@ import { APRBarSkeleton } from "./apr-bar-skeleton";
 export function APRBar() {
   const { apr, isLoading, isError, totalStake, totalIssuance } = useAPR();
 
-  const totalSupply =
-    formatToken(totalStake ?? 0) + formatToken(totalIssuance ?? 0);
+  const totalSupply = Number(totalStake) + Number(totalIssuance);
 
   const stakedPercentage = !totalStake
     ? 0
-    : Number(totalStake * 100000n) / Number(totalSupply) / 1000;
+    : (Number(totalStake) * 100) / totalSupply;
 
   const aprEntries = Array.from({ length: 5 }, () => ({
     value: apr,
