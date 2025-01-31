@@ -235,7 +235,9 @@ export function RegisterAgent(): JSX.Element {
 
     const parsedAgentKey = checkSS58(agentKey);
 
-    if (!agentApplications.data?.find((app) => app.agentKey === agentKey)) {
+    if (
+      !agentApplications.data?.find((app) => app.agentKey === parsedAgentKey)
+    ) {
       toast.error(
         "Agent not whitelisted. Whitelist required for registration.",
       );
