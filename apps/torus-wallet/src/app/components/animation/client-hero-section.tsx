@@ -70,49 +70,6 @@ const AnimatedIcosahedron = () => {
       }
     }
 
-    const positions = meshRef.current.geometry.attributes.position
-      .array as Float32Array;
-
-    for (let i = 0; i < positions.length; i += 3) {
-      const origX = originalPositions.current[i] ?? 0;
-      const origY = originalPositions.current[i + 1] ?? 0;
-      const origZ = originalPositions.current[i + 2] ?? 0;
-
-      const radius = Math.sqrt(origX ** 2 + origY ** 2 + origZ ** 2);
-      const theta = Math.atan2(origY, origX);
-      const phi = Math.acos(origZ / radius);
-
-      const voidFreq = 1.2;
-      const voidSpeed = 0.4;
-
-      const depthWave =
-        Math.sin(theta * voidFreq + state.time * voidSpeed) *
-        Math.cos(phi * voidFreq + state.time * voidSpeed * 0.7) *
-        Math.sin(radius * 2.0 + state.time * 0.3);
-
-      const secondaryWave =
-        Math.sin(phi * voidFreq * 0.8 + state.time * voidSpeed * 0.5) *
-        Math.cos(theta * voidFreq * 0.8 + state.time * voidSpeed * 0.4);
-
-      const depthEffect =
-        (depthWave + secondaryWave) *
-        state.progress *
-        (0.8 + Math.sin(radius * 2.5 + state.time * 0.4));
-
-      const displacement = Math.max(0, depthEffect) * 0.3;
-      const totalDeformation = depthEffect * 0.2 * (1 + state.progress * 0.4);
-
-      const normalizedPos = new THREE.Vector3(origX, origY, origZ).normalize();
-      const deformAmount = 1 + totalDeformation + displacement;
-
-      positions[i] =
-        origX * deformAmount + normalizedPos.x * state.progress * 0.12;
-      positions[i + 1] =
-        origY * deformAmount + normalizedPos.y * state.progress * 0.12;
-      positions[i + 2] =
-        origZ * deformAmount + normalizedPos.z * state.progress * 0.12;
-    }
-
     meshRef.current.geometry.attributes.position.needsUpdate = true;
 
     const targetScale =
@@ -140,28 +97,24 @@ const easeInOutCubic = (t: number): number => {
 };
 
 const ClientHeroSection = () => (
-  <div className="animate-fade animate-delay-700">
-    <section className="absolute -z-10 h-screen w-screen opacity-25">
-      <Canvas
-        camera={{ position: [0, 0, 2.5], fov: 75 }}
-        dpr={[1, 2]}
-        gl={{ antialias: true }}
-      >
+  <section className="absolute -z-30 h-screen w-screen animate-fade animate-delay-700">
+    <section className="h-screen w-screen opacity-25">
+      <Canvas camera={{ position: [0, 0, 2.5], fov: 75 }}>
         <AnimatedIcosahedron />
         <Sparkles count={4000} scale={[20, 20, 10]} size={5} speed={0.5} />
         <CameraShake
           maxYaw={0.1}
-          maxPitch={0.1}
-          maxRoll={1}
+          maxPitch={0.5}
+          maxRoll={0.5}
           yawFrequency={0.1}
           pitchFrequency={0.1}
           rollFrequency={0.1}
-          intensity={0.5}
+          intensity={0.7}
           decayRate={0.65}
         />
       </Canvas>
     </section>
-  </div>
+  </section>
 );
 
 export default ClientHeroSection;
