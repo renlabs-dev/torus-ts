@@ -25,26 +25,26 @@ export const ShaderMaterial = () => {
   useFrame((_, delta) => {
     if (!materialRef.current) return;
 
-    const t = (uniforms.uTime.value += delta);
+    const t = (uniforms.uTime.value += delta * 0.25); // Slower time progression
 
     uniforms.uFrequency.value =
-      Math.sin(t * 0.25) * 1 +
-      Math.cos(t * 0.15) * 0.75 +
-      Math.sin(t * 0.35) * 0.25 +
+      Math.sin(t * 0.1) * 0.5 +
+      Math.cos(t * 0.05) * 0.25 +
+      Math.sin(t * 0.15) * 0.15 +
       0.5;
     uniforms.uAmplitude.value =
-      Math.cos(t * 0.15) * 1 +
-      Math.sin(t * 0.1) * 0.75 +
-      Math.cos(t * 0.25) * 0.15 +
+      Math.cos(t * 0.05) * 0.5 +
+      Math.sin(t * 0.04) * 0.25 +
+      Math.cos(t * 0.1) * 0.1 +
       0.5;
     uniforms.uDensity.value =
-      Math.sin(t * 0.1) * 0.25 + Math.cos(t * 0.2) * 0.15 + 1.1;
+      Math.sin(t * 0.04) * 0.15 + Math.cos(t * 0.08) * 0.1 + 1.1;
     uniforms.uStrength.value =
-      Math.abs(Math.sin(t * 0.1)) * 0.1 +
-      Math.abs(Math.cos(t * 0.15)) * 0.05 +
+      Math.abs(Math.sin(t * 0.04)) * 0.08 +
+      Math.abs(Math.cos(t * 0.06)) * 0.03 +
       0.1;
     uniforms.uDeepPurple.value =
-      (Math.sin(t * 0.05) * 0.25 + 0.25) * (Math.cos(t * 0.1) * 0.25 + 0.25);
+      (Math.sin(t * 0.02) * 0.15 + 0.25) * (Math.cos(t * 0.04) * 0.15 + 0.25);
   });
 
   return (
