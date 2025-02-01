@@ -3,18 +3,12 @@ import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
 
 export default async function UserAgentPage({
-  params,
+  searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  searchParams: { [key: string]: string | undefined };
 }): Promise<JSX.Element> {
-  const { slug } = await params;
-
-  if (!slug) {
-    console.log("WAAHOOO");
-    return <div>WAHOOOO</div>;
-  }
-
-  const [userKey, agentKey] = slug.split("-");
+  const userKey = searchParams.userKey;
+  const agentKey = searchParams.agentKey;
 
   if (!userKey) {
     console.log(`User key not provided`);
@@ -32,18 +26,11 @@ export default async function UserAgentPage({
         <h1 className="mb-4 text-3xl font-semibold">User Agent Page</h1>
         <div className="flex flex-col gap-6">
           <Card className="p-6">
-            <h2 className="mb-2 text-xl font-semibold">Staker details</h2>
+            <h2 className="mb-2 text-xl font-semibold">User Details</h2>
             <p>User Key: {userKey}</p>
             {/* Add more user details as needed */}
           </Card>
-          {agentKey ? (
-            <Card className="p-6">
-              <h2 className="mb-2 text-xl font-semibold">Agent Details</h2>
-              <p>Agent Key: {agentKey}</p>
-              <p>Normalized Weight: {data[agentKey]}</p>
-              {/* Add more agent details as needed */}
-            </Card>
-          ) : (
+          {(
             <Card className="p-6">
               <h2 className="mb-2 text-xl font-semibold">
                 Normalized Weights for All Agents

@@ -9,18 +9,33 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { assert } from "tsafe";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
+import type { ApiPromise } from "@polkadot/api";
 
 import { createDb } from "@torus-ts/db/client";
 
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
+import { setup, SS58Address } from "@torus-ts/subspace";
+import { validateEnvOrExit } from "@torus-ts/utils/env";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
+let globalWSAPI: ApiPromise | null = null;
+
+const getEnv = validateEnvOrExit({
+  NEXT_PUBLIC_TORUS_RPC_URL: z
+    .string()
+    .nonempty("TORUS_CURATOR_MNEMONIC is required"),
+});
 
 function cacheCreateDb() {
   globalDb = globalDb ?? createDb();
   return globalDb;
+}
+
+async function cacheCreateWSAPI() {
+  globalWSAPI = globalWSAPI ?? await setup(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL);
+  return globalWSAPI;
 }
 
 /**
@@ -40,8 +55,10 @@ export const createTRPCContext = (opts: {
   session: null;
   jwtSecret: string;
   authOrigin: string;
+  allocatorAddress: SS58Address;
 }) => {
   const db = cacheCreateDb();
+  const wsAPI = cacheCreateWSAPI();
 
   const { jwtSecret } = opts;
 
@@ -71,6 +88,8 @@ export const createTRPCContext = (opts: {
     sessionData,
     jwtSecret,
     authOrigin: opts.authOrigin,
+    allocatorAddress: opts.allocatorAddress,
+    wsAPI: wsAPI,
   };
 };
 
