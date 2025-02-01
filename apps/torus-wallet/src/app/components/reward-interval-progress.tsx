@@ -60,7 +60,7 @@ export function RewardIntervalProgress() {
     <Card className="flex w-full animate-fade flex-col gap-2 p-6">
       <span className="text-white">
         {String(time.minutes).padStart(2, "0")}:
-        {String(time.seconds).padStart(2, "0")} minutes
+        {String(time.seconds).padStart(2, "0")}
       </span>{" "}
       <div className="items flex items-center gap-2">
         <Clock size={16} />
