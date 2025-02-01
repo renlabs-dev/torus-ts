@@ -6,13 +6,23 @@ import { useFrame, useThree, Canvas } from "@react-three/fiber";
 import { ShaderMaterial } from "./shader-material";
 import { CameraShake, Sparkles } from "@react-three/drei";
 
+interface AnimationState {
+  time: number;
+  baseScale: number;
+  maxScale: number;
+  currentScale: number;
+  progress: number;
+  isExpanding: boolean;
+  holdTimer: number;
+  holdDuration: number;
+  isInitialized: boolean;
+}
+
 const AnimatedIcosahedron = () => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
 
-  const originalPositions = useRef<Float32Array | null>(null);
-
-  const state = useRef({
+  const state = useRef<AnimationState>({
     time: 0,
     baseScale: 1,
     maxScale: 1,
@@ -24,13 +34,8 @@ const AnimatedIcosahedron = () => {
     isInitialized: false,
   }).current;
 
-  // Initialize once
   useEffect(() => {
-    if (state.isInitialized || !meshRef.current?.geometry.attributes.position)
-      return;
-
-    const positions = meshRef.current.geometry.attributes.position.array;
-    originalPositions.current = new Float32Array(positions);
+    if (!meshRef.current || state.isInitialized) return;
 
     state.maxScale = Math.max(viewport.width, viewport.height) * 1.5;
     state.baseScale = state.maxScale * 0.01;
@@ -40,48 +45,52 @@ const AnimatedIcosahedron = () => {
   }, [viewport.width, viewport.height, state]);
 
   useFrame((_, delta) => {
-    if (
-      !meshRef.current?.geometry.attributes.position ||
-      !originalPositions.current
-    )
-      return;
+    if (!meshRef.current) return;
 
-    state.time += delta * 0.6;
+    const animationSpeed = {
+      time: 0.2,
+      expansion: 0.04,
+      contraction: 0.03,
+      rotation: 0.01,
+    };
 
-    const expansionSpeed = 0.06;
-    const contractionSpeed = 0.05;
+    state.time += delta * animationSpeed.time;
 
-    // Animation cycle management
     if (state.isExpanding) {
       if (state.holdTimer > 0) {
         state.holdTimer -= delta;
       } else {
-        state.progress = Math.min(state.progress + delta * expansionSpeed, 1);
+        state.progress = Math.min(
+          state.progress + delta * animationSpeed.expansion,
+          1,
+        );
         if (state.progress >= 1) {
           state.holdTimer = state.holdDuration;
         }
       }
     } else {
-      state.progress = Math.max(state.progress - delta * contractionSpeed, 0);
+      state.progress = Math.max(
+        state.progress - delta * animationSpeed.contraction,
+        0,
+      );
       if (state.progress <= 0) {
         setTimeout(() => {
           state.isExpanding = true;
-        }, 300);
+        }, 2000);
       }
     }
-
-    meshRef.current.geometry.attributes.position.needsUpdate = true;
 
     const targetScale =
       state.baseScale +
       (state.maxScale - state.baseScale) * easeInOutCubic(state.progress);
+
     meshRef.current.scale.lerp(
       new THREE.Vector3(targetScale, targetScale, targetScale),
-      0.015,
+      0.01,
     );
 
-    meshRef.current.rotation.x += delta * 0.06;
-    meshRef.current.rotation.y += delta * 0.04;
+    meshRef.current.rotation.x += delta * animationSpeed.rotation;
+    meshRef.current.rotation.y += delta * animationSpeed.rotation;
   });
 
   return (
@@ -92,24 +101,29 @@ const AnimatedIcosahedron = () => {
   );
 };
 
-const easeInOutCubic = (t: number): number => {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-};
+const easeInOutCubic = (t: number): number =>
+  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 const ClientHeroSection = () => (
   <section className="absolute -z-30 h-screen w-screen animate-fade animate-delay-700">
     <section className="h-screen w-screen opacity-25">
       <Canvas camera={{ position: [0, 0, 2.5], fov: 75 }}>
         <AnimatedIcosahedron />
-        <Sparkles count={4000} scale={[20, 20, 10]} size={5} speed={0.5} />
+        <Sparkles
+          count={3500}
+          scale={[20, 20, 10]}
+          size={4}
+          speed={0.05}
+          noise={0.1}
+        />
         <CameraShake
-          maxYaw={0.1}
-          maxPitch={0.4}
-          maxRoll={0.4}
-          yawFrequency={0.1}
-          pitchFrequency={0.1}
-          rollFrequency={0.1}
-          intensity={0.4}
+          maxYaw={0.03}
+          maxPitch={0.03}
+          maxRoll={0.03}
+          yawFrequency={0.03}
+          pitchFrequency={0.03}
+          rollFrequency={0.03}
+          intensity={0.1}
           decayRate={0.65}
         />
       </Canvas>
