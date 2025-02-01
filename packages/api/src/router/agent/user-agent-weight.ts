@@ -9,6 +9,8 @@ import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-ts/subspace";
 import { typed_non_null_entries } from "@torus-ts/utils";
 import type { DB } from "@torus-ts/db/client";
 
+import type {DB} from "@torus-ts/db/client";
+
 import { eq, isNull, and } from "@torus-ts/db";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
