@@ -104,12 +104,12 @@ const ClientHeroSection = () => (
         <Sparkles count={4000} scale={[20, 20, 10]} size={5} speed={0.5} />
         <CameraShake
           maxYaw={0.1}
-          maxPitch={0.5}
-          maxRoll={0.5}
+          maxPitch={0.4}
+          maxRoll={0.4}
           yawFrequency={0.1}
           pitchFrequency={0.1}
           rollFrequency={0.1}
-          intensity={0.7}
+          intensity={0.4}
           decayRate={0.65}
         />
       </Canvas>
