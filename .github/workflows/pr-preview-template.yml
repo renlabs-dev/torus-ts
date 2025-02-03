@@ -113,7 +113,7 @@ jobs:
       - name: Craft App info
         run: |
           SUFIX="-${{ inputs.app_name }}"
-          MAX_REF_LENGTH=$((53 - ${#SUFIX}))  # Subtract sufix length from 53
+          MAX_REF_LENGTH=$((50 - ${#SUFIX}))  # Subtract sufix length from 50
 
           export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
 
@@ -179,7 +179,7 @@ jobs:
       - name: Craft App info
         run: |
           SUFIX="-${{ inputs.app_name }}"
-          MAX_REF_LENGTH=$((53 - ${#SUFIX}))  # Subtract sufix length from 53
+          MAX_REF_LENGTH=$((50 - ${#SUFIX}))  # Subtract sufix length from 50
 
           export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
 
