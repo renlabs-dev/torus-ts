@@ -121,6 +121,7 @@ jobs:
             SANITIZED_REF="${SANITIZED_REF:0:$MAX_REF_LENGTH}"
           fi
 
+          SANITIZED_REF=$(echo "$SANITIZED_REF" | sed 's/-*$//')
           echo "RELEASE_NAME=${SANITIZED_REF}${SUFIX}" >> $GITHUB_ENV
 
           echo "APP_URL=${SANITIZED_REF}.${{ inputs.app_name }}.torus.network" >> $GITHUB_ENV
@@ -187,6 +188,7 @@ jobs:
             SANITIZED_REF="${SANITIZED_REF:0:$MAX_REF_LENGTH}"
           fi
 
+          SANITIZED_REF=$(echo "$SANITIZED_REF" | sed 's/-*$//')
           echo "RELEASE_NAME=${SANITIZED_REF}${SUFIX}" >> $GITHUB_ENV
 
       - name: Destroy PR preview app deployment
