@@ -49,8 +49,8 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
       label: "Weight Factor",
       value: agent.weightFactor ?? "N/A",
     },
-    { label: "Total Staked", value: formatToken(agent.totalStaked ?? 0) },
-    { label: "Total Stakers", value: agent.totalStakers ?? 0 },
+    { label: "Total Allocation", value: formatToken(agent.totalStaked ?? 0) },
+    { label: "Total Allocated users", value: agent.totalStakers ?? 0 },
   ];
 
   return (
