@@ -246,7 +246,7 @@ export function TransferStakeAction() {
                   onClick={() => setCurrentView("validators")}
                   className="flex w-fit items-center px-6 py-2.5"
                 >
-                  Validators
+                  Allocators
                 </Button>
               </div>
               {inputError.recipient && (
