@@ -30,6 +30,14 @@ export function smallAddress(address: string, size?: number): string {
   return `${address.slice(0, size ?? 8)}…${address.slice(size ? size * -1 : -8)}`;
 }
 
+export function smallWalletName(address: string, size?: number): string {
+  const effectiveSize = size ?? 8;
+  if (address.length > effectiveSize) {
+    return `${address.slice(0, effectiveSize)}…`;
+  }
+  return address;
+}
+
 // ==== Amounts ====
 
 // ---- old ----
