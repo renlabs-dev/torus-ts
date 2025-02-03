@@ -322,9 +322,7 @@ export function UnstakeAction() {
             transactionStatus.status === "PENDING" ||
             !amount ||
             !recipient ||
-            (stakedAmount &&
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              amount > stakedAmount) ||
+            toNano(amount) > toNano(stakedAmount ?? "0") ||
             !!inputError.value
             // TODO FIX THIS CONDITION: !enoughBalanceToUnstake
           }
