@@ -28,6 +28,7 @@ export function UnstakeAction() {
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [enoughBalanceToUnstake, setEnoughBalanceToUnstake] =
     useState<boolean>(false);
 
@@ -324,8 +325,8 @@ export function UnstakeAction() {
             (stakedAmount &&
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
               amount > stakedAmount) ||
-            !!inputError.value ||
-            !enoughBalanceToUnstake
+            !!inputError.value
+            // TODO FIX THIS CONDITION: !enoughBalanceToUnstake
           }
           formRef={formRef}
           reviewContent={reviewData}
