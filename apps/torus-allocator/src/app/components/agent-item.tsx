@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import {
+  ChartPie,
   ChevronsLeft,
   ChevronsRight,
   Cuboid,
@@ -15,6 +16,7 @@ import Link from "next/link";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Badge,
+  Button,
   CopyButton,
   HoverCard,
   HoverCardContent,
@@ -30,6 +32,7 @@ import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 import { DelegateModuleWeight } from "./delegate-module-weight";
+import { useAllocationMenuStore } from "~/stores/allocationMenuStore";
 
 interface AgentCardProps {
   id: number;
@@ -114,6 +117,7 @@ export function AgentItem(props: AgentCardProps) {
   const { agentKey, metadataUri } = props;
 
   const { delegatedAgents } = useDelegateAgentStore();
+  const { setIsOpen } = useAllocationMenuStore();
 
   const { data: agentMetadataResult } = useQueryAgentMetadata(metadataUri);
   const metadata = agentMetadataResult?.metadata;
@@ -258,6 +262,13 @@ export function AgentItem(props: AgentCardProps) {
               registrationBlock={props.registrationBlock ?? null}
               className="w-full"
             />
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(true)}
+              className="border-white/80"
+            >
+              <ChartPie size={16} />
+            </Button>
           </div>
         </div>
       </div>
