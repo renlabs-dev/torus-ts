@@ -13,7 +13,6 @@ import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
-  buttonVariants,
   cn,
   Input,
   Label,
@@ -264,16 +263,19 @@ export function DelegatedList() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger
+        asChild
         onClick={toggleIsOpen}
         disabled={!selectedAccount}
-        className={`fixed bottom-4 right-4 z-[50] md:bottom-14 ${buttonVariants({ variant: "outline" })} marker:flex`}
+        className={`fixed bottom-4 right-4 z-[50] marker:flex md:bottom-14`}
       >
-        {!selectedAccount ? (
-          <LoaderCircle className="animate-spin" />
-        ) : (
-          <PieChart />
-        )}
-        Allocation Menu
+        <Button variant="outline" className="border-white/80">
+          {!selectedAccount ? (
+            <LoaderCircle className="animate-spin" />
+          ) : (
+            <PieChart />
+          )}
+          Allocation Menu
+        </Button>
       </SheetTrigger>
 
       <SheetContent className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}>
