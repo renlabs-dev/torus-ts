@@ -44,9 +44,8 @@ async function getUserAgentWeights(
 async function getNormalizedUserAgentWeights(
   db: DB,
   userKey?: SS58Address,
-  agentKey?: SS58Address,
+  targetAgentKey?: SS58Address,
 ) {
-  const _ = agentKey?.length;
   const weights = await getUserAgentWeights(db, userKey);
 
   const totalWeightByUser: Record<SS58Address, number> = weights.reduce(
@@ -64,6 +63,9 @@ async function getNormalizedUserAgentWeights(
   > = weights.reduce(
     (acc, row) => {
       const { userKey, agentKey, weight } = row;
+      if (targetAgentKey && agentKey !== targetAgentKey) {
+        return acc;
+      }
       if (!acc[userKey]) {
         acc[userKey] = {};
       }
