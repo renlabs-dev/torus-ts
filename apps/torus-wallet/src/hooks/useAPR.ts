@@ -17,7 +17,7 @@ interface APRResult {
   apr: number | null;
   isLoading: boolean;
   isError: boolean;
-  totalStake: unknown;
+  totalStake: bigint | undefined;
   totalIssuance: unknown;
 }
 
@@ -55,13 +55,19 @@ export function useAPR(): APRResult {
       // Calculate emission with recycling rate
       let currentEmission = BLOCK_EMISSION >> BigInt(halvingCount);
       const notRecycled = 1.0 - recyclingRate;
-      currentEmission = (currentEmission * BigInt(Math.floor(notRecycled * 100))) / 100n;
+      currentEmission =
+        (currentEmission * BigInt(Math.floor(notRecycled * 100))) / 100n;
 
       // Calculate rewards with incentives ratio
       const stakeRewardsRatio = 1 - incentivesRatio;
-      const dailyRewards = (BLOCKS_IN_DAY * currentEmission * BigInt(Math.floor(stakeRewardsRatio * 100))) / 100n;
+      const dailyRewards =
+        (BLOCKS_IN_DAY *
+          currentEmission *
+          BigInt(Math.floor(stakeRewardsRatio * 100))) /
+        100n;
       const yearlyRewards = dailyRewards * 365n;
-      const rewardsAfterTreasuryFee = (yearlyRewards * BigInt(Math.floor((1 - treasuryFee) * 100))) / 100n;
+      const rewardsAfterTreasuryFee =
+        (yearlyRewards * BigInt(Math.floor((1 - treasuryFee) * 100))) / 100n;
 
       // Calculate APR
       const stakingAmount = totalStake === 0n ? totalFreeBalance : totalStake;
