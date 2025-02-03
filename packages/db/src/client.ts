@@ -19,3 +19,4 @@ export function createDb() {
   const db = drizzle(conn, { schema });
   return db;
 }
+export type DB = ReturnType<typeof createDb>;
