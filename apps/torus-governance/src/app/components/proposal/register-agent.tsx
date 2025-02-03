@@ -74,6 +74,7 @@ export function RegisterAgent(): JSX.Element {
   const { registerAgentTransaction, estimateFee } = useTorus();
   const { data: whitelistedApplications, isFetching: isFetchingWhitelist } =
     whitelist;
+
   const [agentKey, setAgentKey] = useState("");
   const [name, setName] = useState("");
   const [agentApiUrl, setAgentApiUrl] = useState("");
