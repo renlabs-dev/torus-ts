@@ -29,7 +29,7 @@ export const agentApplicationVoteRouter = {
         ),
       });
     }),
-    byUserKey: publicProcedure
+  byUserKey: publicProcedure
     .input(z.object({ userKey: z.string() }))
     .query(({ ctx, input }) => {
       return ctx.db.query.agentApplicationVoteSchema.findMany({
