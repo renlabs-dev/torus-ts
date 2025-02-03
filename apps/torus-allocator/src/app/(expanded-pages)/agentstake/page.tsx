@@ -1,8 +1,6 @@
 import { Container, Card } from "@torus-ts/ui";
 import { api } from "~/trpc/server";
 import { formatToken } from "@torus-ts/utils/subspace";
-import { NextResponse } from 'next/server';
-
 
 export default async function UserAgentPage({
   searchParams,
@@ -12,20 +10,7 @@ export default async function UserAgentPage({
   const params = await searchParams;
   const userKey = params.userKey;
   const agentKey = params.agentKey;
-  const raw = params.raw;
 
-  if(raw === "true") {
-    return NextResponse.json("teste", {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    });
-  }
-
-
-  console.log(`User key: ${userKey}`);
-  console.log(`Agent key: ${agentKey}`);
   const data = await api.userAgentWeight.stakeWeight({
     userKey: userKey,
     agentKey: agentKey,

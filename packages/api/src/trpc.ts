@@ -13,10 +13,10 @@ import { ZodError, z } from "zod";
 import type { ApiPromise } from "@polkadot/api";
 
 import { createDb } from "@torus-ts/db/client";
-
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
-import { setup, SS58Address } from "@torus-ts/subspace";
+import type { SS58Address } from "@torus-ts/subspace";
+import { setup } from "@torus-ts/subspace";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
@@ -34,7 +34,8 @@ function cacheCreateDb() {
 }
 
 async function cacheCreateWSAPI() {
-  globalWSAPI = globalWSAPI ?? await setup(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL);
+  globalWSAPI =
+    globalWSAPI ?? (await setup(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
   return globalWSAPI;
 }
 
