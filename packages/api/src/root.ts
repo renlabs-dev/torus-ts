@@ -7,6 +7,7 @@ import { authRouter } from "./router/auth";
 import { cadreRouter } from "./router/cadre/cadre";
 import { cadreCandidateRouter } from "./router/cadre/cadre-candidate";
 import { cadreVoteRouter } from "./router/cadre/cadre-vote";
+import { cadreVoteHistoryRouter } from "./router/cadre/cadre-vote-history";
 import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   // Cadre
   cadre: cadreRouter,
   cadreVote: cadreVoteRouter,
+  cadreVoteHistory: cadreVoteHistoryRouter,
   cadreCandidate: cadreCandidateRouter,
   // Comment
   comment: commentRouter,
