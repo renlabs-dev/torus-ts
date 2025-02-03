@@ -32,7 +32,11 @@ import {
   NoWalletExtensionDisplay,
   ScrollArea,
 } from "@torus-ts/ui";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+import {
+  formatToken,
+  smallAddress,
+  smallWalletName,
+} from "@torus-ts/utils/subspace";
 
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 
@@ -195,19 +199,30 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     handleSelectWallet(accountExists);
   };
 
+  const WalletLabel = () => {
+    if (selectedAccount?.address) {
+      if (shouldDisplayText) {
+        return `Torus (${smallAddress(selectedAccount.address, 6)})`;
+      } else if (selectedAccount.meta.name) {
+        return smallWalletName(selectedAccount.meta.name, 15);
+      } else {
+        return smallAddress(selectedAccount.address, 6);
+      }
+    }
+    return `Connect ${shouldDisplayText ? "Torus " : ""}Wallet`;
+  };
+
   return (
     <div className="flex w-fit animate-fade-down justify-end py-1">
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
-          <button className="flex items-center gap-2 bg-background p-2 transition duration-200 hover:bg-background/60">
+          <button
+            className={cn(
+              "flex items-center gap-2 bg-background p-2 transition duration-200 hover:bg-background/60",
+            )}
+          >
             <WalletCards className="!h-5 !w-5" />
-            <span className="text-sm">
-              {selectedAccount?.address
-                ? shouldDisplayText
-                  ? `Torus (${smallAddress(selectedAccount.address, 6)})`
-                  : smallAddress(selectedAccount.address, 6)
-                : `Connect ${shouldDisplayText ? "Torus" : ""} Wallet`}
-            </span>
+            <span className="text-sm">{WalletLabel()}</span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
