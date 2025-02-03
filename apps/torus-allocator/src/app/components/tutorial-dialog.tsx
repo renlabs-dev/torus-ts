@@ -70,12 +70,16 @@ export const tutorialData = {
 export function TutorialDialog() {
   return (
     <Dialog>
-      <Button asChild variant="outline">
-        <DialogTrigger className="fixed bottom-4 right-52 z-50 md:bottom-14">
+      <DialogTrigger
+        asChild
+        className="fixed bottom-4 right-52 z-50 md:bottom-14"
+      >
+        <Button variant="outline" className="border-white/80">
           <BookText />
           <p className="hidden md:block">Tutorial</p>
-        </DialogTrigger>
-      </Button>
+        </Button>
+      </DialogTrigger>
+
       <DialogContent className="max-h-[100vh] overflow-auto sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>Tutorial</DialogTitle>
