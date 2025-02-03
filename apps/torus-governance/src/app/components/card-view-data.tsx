@@ -19,6 +19,8 @@ import { VoteLabel } from "./vote-label";
 import { VotePercentageBar } from "./vote-percentage-bar";
 import { AgentStatusLabel } from "./agent-application/agent-status-label";
 import { AgentActivityLabel } from "./agent-application/agent-activity-label";
+import { AgentApplicationVoteLabel } from "./agent-application/agent-application-vote-label";
+import type { AgentApplicationVoteType } from "./agent-application/agent-application-vote-label";
 
 export interface ProposalCardProps {
   author: SS58Address;
@@ -31,11 +33,13 @@ export interface ProposalCardProps {
   proposalType?: ProposalData;
   title: string | null;
   voted?: VoteStatus;
+  agentVoted?: AgentApplicationVoteType;
 }
 
 export function CardViewData(props: ProposalCardProps): JSX.Element {
   const {
     voted,
+    agentVoted,
     title,
     author,
     proposalType,
@@ -69,6 +73,7 @@ export function CardViewData(props: ProposalCardProps): JSX.Element {
           </div>
           <div className="!mb-4 flex gap-2 xl:!mb-0">
             {voted && <VoteLabel vote={voted} />}
+            {agentVoted && <AgentApplicationVoteLabel vote={agentVoted} />}
 
             {proposalType && <ProposalTypeLabel proposalType={proposalType} />}
 

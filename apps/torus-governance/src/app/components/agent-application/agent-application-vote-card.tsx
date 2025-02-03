@@ -1,10 +1,8 @@
 "use client";
 
-import type { inferProcedureOutput } from "@trpc/server";
 import { useState } from "react";
 import { Delete, TicketX } from "lucide-react";
 
-import type { AppRouter } from "@torus-ts/api";
 import { toast } from "@torus-ts/toast-provider";
 import { Button, Card, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
 
@@ -13,10 +11,6 @@ import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import type { AgentApplication } from "@torus-ts/subspace";
 import { match } from "rustie";
-
-export type AgentApplicationVoteType = NonNullable<
-  inferProcedureOutput<AppRouter["agentApplicationVote"]["byId"]>
->;
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
@@ -183,9 +177,14 @@ export function AgentApplicationVoteTypeCard(props: {
   const createVoteMutation = api.agentApplicationVote.create.useMutation({
     onSuccess: async () => {
       toast.success("Vote submitted successfully!");
-      await utils.agentApplicationVote.byApplicationId.invalidate({
-        applicationId,
-      });
+      await Promise.all([
+        utils.agentApplicationVote.byApplicationId.invalidate({
+          applicationId,
+        }),
+        utils.agentApplicationVote.byUserKey.invalidate({
+          userKey: selectedAccount?.address ?? "",
+        }),
+      ]);
     },
     onError: (error) => {
       toast.error(`Error submitting vote: ${error.message}`);
@@ -194,9 +193,14 @@ export function AgentApplicationVoteTypeCard(props: {
   const deleteVoteMutation = api.agentApplicationVote.delete.useMutation({
     onSuccess: async () => {
       toast.success("Vote removed successfully!");
-      await utils.agentApplicationVote.byApplicationId.invalidate({
-        applicationId,
-      });
+      await Promise.all([
+        utils.agentApplicationVote.byApplicationId.invalidate({
+          applicationId,
+        }),
+        utils.agentApplicationVote.byUserKey.invalidate({
+          userKey: selectedAccount?.address ?? "",
+        }),
+      ]);
     },
     onError: (error) => {
       toast.error(`Error removing vote: ${error.message}`);

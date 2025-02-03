@@ -32,14 +32,23 @@ const fromStatusToView = (status: AgentApplication["status"]) => {
 };
 
 export const ListAgentApplications = () => {
-  const { agentApplicationsWithMeta, isInitialized, agentApplications } =
-    useGovernance();
+  const {
+    agentApplicationsWithMeta,
+    isInitialized,
+    agentApplications,
+    selectedAccount,
+  } = useGovernance();
   const searchParams = useSearchParams();
   const {
     data: activeAgents,
     isLoading: isLoadingActiveAgents,
     error: activeAgentsError,
   } = api.agent.all.useQuery();
+
+  const { data: votesPerUserKey } = api.agentApplicationVote.byUserKey.useQuery(
+    { userKey: selectedAccount?.address ?? "" },
+    { enabled: !!selectedAccount },
+  );
 
   const isLoading =
     !agentApplicationsWithMeta ||
@@ -80,6 +89,10 @@ export const ListAgentApplications = () => {
           (agent) => agent.key === app.agentKey,
         );
 
+        const userVoted = votesPerUserKey?.find(
+          (vote) => vote.applicationId === app.id,
+        );
+
         return (
           <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
             <CardViewData
@@ -87,12 +100,13 @@ export const ListAgentApplications = () => {
               author={app.payerKey}
               agentApplicationStatus={app.status}
               activeAgent={isActiveAgent}
+              agentVoted={userVoted?.vote}
             />
           </Link>
         );
       })
       .filter(Boolean);
-  }, [agentApplicationsWithMeta, searchParams, activeAgents]);
+  }, [agentApplicationsWithMeta, searchParams, activeAgents, votesPerUserKey]);
 
   if (isLoading) return <ListCardsLoadingSkeleton />;
 
