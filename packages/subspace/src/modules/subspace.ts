@@ -185,6 +185,11 @@ export async function queryRecyclingPercentage(api: Api): Promise<Percent> {
   return recyclingPercentage;
 }
 
+export async function queryIncentivesRatio(api: Api): Promise<Percent> {
+  const incentivesRatio = await api.query.emission0.incentivesRatio();
+  return incentivesRatio;
+}
+
 // ==== Agents ====
 
 // type Query = Api["query"];

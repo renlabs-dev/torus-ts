@@ -34,6 +34,7 @@ import {
   queryTreasuryEmissionFee,
   queryTotalStake,
   queryRecyclingPercentage,
+  queryIncentivesRatio,
   queryRewardInterval,
   queryWhitelist,
 } from "@torus-ts/subspace";
@@ -270,6 +271,16 @@ export function useRecyclingPercentage(api: Api | Nullish) {
     queryKey: ["recycling_percentage"],
     enabled: api != null,
     queryFn: () => queryRecyclingPercentage(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useIncentivesRatio(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["incentives_ratio"],
+    enabled: api != null,
+    queryFn: () => queryIncentivesRatio(api!),
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
