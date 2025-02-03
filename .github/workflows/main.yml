@@ -146,6 +146,7 @@ jobs:
       needs.turbo-check.outputs.torus-wallet == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
     with:
       app_name: torus-wallet
 
@@ -158,6 +159,7 @@ jobs:
       needs.turbo-check.outputs.torus-allocator == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
     with:
       app_name: torus-allocator
 
@@ -170,6 +172,7 @@ jobs:
       needs.turbo-check.outputs.torus-bridge == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
     with:
       app_name: torus-bridge
 
@@ -185,6 +188,7 @@ jobs:
       needs.turbo-check.outputs.torus-allocator == 'true' ||
       needs.turbo-check.outputs.torus-wallet == 'true')
     uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
     with:
       app_name: torus-cache
 
@@ -197,6 +201,7 @@ jobs:
       needs.turbo-check.outputs.torus-governance == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
     with:
       app_name: torus-governance
 
@@ -211,6 +216,7 @@ jobs:
       needs.turbo-check.outputs.torus-governance == 'true' ||
       needs.turbo-check.outputs.torus-allocator == 'true')
     uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
     with:
       app_name: torus-worker
 
