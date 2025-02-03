@@ -16,3 +16,8 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: torus_webapps_db_url
+    TORUS_ALLOCATOR_ADDRESS:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: torus_allocator_address
