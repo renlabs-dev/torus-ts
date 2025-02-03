@@ -83,7 +83,7 @@ async function getNormalizedUserAgentWeights(
       acc[userKey] = Object.entries(agentWeights).reduce(
         (agentAcc, [agentKey, weight]) => {
           const normalizedWeight = totalWeight !== 0 ? weight / totalWeight : 0;
-          agentAcc[agentKey] = normalizedWeight * 100; // Convert to 0-100 scale
+          agentAcc[agentKey] = normalizedWeight;
           return agentAcc;
         },
         {} as Record<string, number>,
@@ -184,9 +184,12 @@ export const userAgentWeightRouter = {
           const innerMap = new Map(typed_non_null_entries(innerRecord));
           const innerStakeWeightMap = new Map<SS58Address, bigint>();
           innerMap.forEach((weight, agentKey) => {
+            // TODO: This is a temporary fix to convert to bigint
             innerStakeWeightMap.set(
               agentKey,
-              BigInt(weight) * (stakeInAllocator.get(userKey) ?? 0n),
+              (BigInt(Math.floor(weight * 100)) *
+                (stakeInAllocator.get(userKey) ?? 0n)) /
+                100n,
             );
           });
           stakeWeightMap.set(userKey, innerStakeWeightMap);
