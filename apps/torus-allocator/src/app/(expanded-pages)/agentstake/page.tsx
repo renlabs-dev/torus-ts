@@ -1,21 +1,32 @@
 import { Container, Card } from "@torus-ts/ui";
-import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
+import { formatToken } from "@torus-ts/utils/subspace";
+import { NextResponse } from 'next/server';
+
 
 export default async function UserAgentPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
-}): Promise<JSX.Element> {
-  const userKey = searchParams.userKey;
-  const agentKey = searchParams.agentKey;
+  searchParams: Promise<Record<string, string | undefined>>;
+}): Promise<JSX.Element | string | Response>  {
+  const params = await searchParams;
+  const userKey = params.userKey;
+  const agentKey = params.agentKey;
+  const raw = params.raw;
 
-  if (!userKey) {
-    console.log(`User key not provided`);
-    notFound();
+  if(raw === "true") {
+    return NextResponse.json("teste", {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+    });
   }
 
-  const data = await api.userAgentWeight.normalizedWeight({
+
+  console.log(`User key: ${userKey}`);
+  console.log(`Agent key: ${agentKey}`);
+  const data = await api.userAgentWeight.stakeWeight({
     userKey: userKey,
     agentKey: agentKey,
   });
@@ -25,23 +36,20 @@ export default async function UserAgentPage({
       <div className="mx-auto pb-16 text-white">
         <h1 className="mb-4 text-3xl font-semibold">User Agent Page</h1>
         <div className="flex flex-col gap-6">
-          <Card className="p-6">
-            <h2 className="mb-2 text-xl font-semibold">User Details</h2>
-            <p>User Key: {userKey}</p>
-            {/* Add more user details as needed */}
-          </Card>
-          {(
-            <Card className="p-6">
+          {Array.from(data.entries()).map(([outerKey, innerMap]) => (
+            <Card key={outerKey} className="p-6">
               <h2 className="mb-2 text-xl font-semibold">
-                Normalized Weights for All Agents
+                Stake Weights for User: {outerKey}
               </h2>
-              {Object.entries(data).map(([key, value]) => (
-                <p key={key}>
-                  {key}: {value}
-                </p>
-              ))}
+              {Array.from(innerMap.entries())
+                .filter(([key]) => !agentKey || key === agentKey)
+                .map(([agentKey, weight]) => (
+                  <p key={agentKey}>
+                    Agent: {agentKey}, Stake-weight: {formatToken(weight)}
+                  </p>
+                ))}
             </Card>
-          )}
+          ))}
         </div>
       </div>
     </Container>

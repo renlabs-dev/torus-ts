@@ -4,26 +4,26 @@ import "@torus-ts/db/schema";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { z } from "zod";
 import { agentSchema, userAgentWeightSchema } from "@torus-ts/db/schema";
-import {queryKeyStakedBy, SS58Address} from "@torus-ts/subspace";
-
-import type {DB} from "@torus-ts/db/client";
+import type { SS58Address } from "@torus-ts/subspace";
+import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-ts/subspace";
+import { typed_non_null_entries } from "@torus-ts/utils";
+import type { DB } from "@torus-ts/db/client";
 
 import { eq, isNull, and } from "@torus-ts/db";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
-
 async function getUserAgentWeights(
   db: DB,
   userKey?: SS58Address,
-  agentKey?: SS58Address
-){
+  agentKey?: SS58Address,
+) {
   const query = db
-  .select({
-    userKey: userAgentWeightSchema.userKey,
-    agentKey: userAgentWeightSchema.agentKey,
-    weight: userAgentWeightSchema.weight,
-  })
-  .from(userAgentWeightSchema);
+    .select({
+      userKey: userAgentWeightSchema.userKey,
+      agentKey: userAgentWeightSchema.agentKey,
+      weight: userAgentWeightSchema.weight,
+    })
+    .from(userAgentWeightSchema);
 
   if (userKey) {
     query.where(eq(userAgentWeightSchema.userKey, userKey));
@@ -34,27 +34,34 @@ async function getUserAgentWeights(
   }
 
   const result = await query.execute();
-  return result as {userKey: SS58Address; agentKey: SS58Address; weight: number}[];
+  return result as {
+    userKey: SS58Address;
+    agentKey: SS58Address;
+    weight: number;
+  }[];
 }
-
 
 async function getNormalizedUserAgentWeights(
   db: DB,
   userKey?: SS58Address,
-  agentKey?: SS58Address
+  agentKey?: SS58Address,
 ) {
-  const weights = await getUserAgentWeights(db, userKey, agentKey);
+  const _ = agentKey?.length;
+  const weights = await getUserAgentWeights(db, userKey);
 
   const totalWeightByUser: Record<SS58Address, number> = weights.reduce(
     (acc, row) => {
       const { userKey, weight } = row;
-      acc[userKey] = (acc[userKey] || 0) + weight;
+      acc[userKey] = (acc[userKey] ?? 0) + weight;
       return acc;
     },
-    {} as Record<SS58Address, number>
+    {} as Record<SS58Address, number>,
   );
 
-  const weightsByUserAndAgent: Record<SS58Address, Record<SS58Address, number>> = weights.reduce(
+  const weightsByUserAndAgent: Record<
+    SS58Address,
+    Record<SS58Address, number>
+  > = weights.reduce(
     (acc, row) => {
       const { userKey, agentKey, weight } = row;
       if (!acc[userKey]) {
@@ -63,25 +70,29 @@ async function getNormalizedUserAgentWeights(
       acc[userKey][agentKey] = weight;
       return acc;
     },
-    {} as Record<SS58Address, Record<SS58Address, number>>
+    {} as Record<SS58Address, Record<SS58Address, number>>,
   );
 
-  const normalizedWeights: Record<string, Record<string, number>> = Object.entries(
-    weightsByUserAndAgent
-  ).reduce((acc, [userKey, agentWeights]) => {
-    const totalWeight = totalWeightByUser[userKey] || 0;
+  const normalizedWeights: Record<
+    SS58Address,
+    Record<SS58Address, number>
+  > = typed_non_null_entries(weightsByUserAndAgent).reduce(
+    (acc, [userKey, agentWeights]) => {
+      const totalWeight = totalWeightByUser[userKey] ?? 0;
 
-    acc[userKey] = Object.entries(agentWeights).reduce(
-      (agentAcc, [agentKey, weight]) => {
-        const normalizedWeight = totalWeight !== 0 ? weight / totalWeight : 0;
-        agentAcc[agentKey] = normalizedWeight;
-        return agentAcc;
-      },
-      {} as Record<string, number>
-    );
+      acc[userKey] = Object.entries(agentWeights).reduce(
+        (agentAcc, [agentKey, weight]) => {
+          const normalizedWeight = totalWeight !== 0 ? weight / totalWeight : 0;
+          agentAcc[agentKey] = normalizedWeight * 100; // Convert to 0-100 scale
+          return agentAcc;
+        },
+        {} as Record<string, number>,
+      );
 
-    return acc;
-  }, {} as Record<string, Record<string, number>>);
+      return acc;
+    },
+    {} as Record<string, Record<string, number>>,
+  );
 
   return normalizedWeights;
 }
@@ -108,13 +119,13 @@ export const userAgentWeightRouter = {
         )
         .execute();
     }),
-    
-    userAgentWeights: publicProcedure
+
+  userAgentWeights: publicProcedure
     .input(
       z.object({
-        userKey: z.string().optional(),
-        agentKey: z.string().optional(),
-      })
+        userKey: SS58_SCHEMA.optional(),
+        agentKey: SS58_SCHEMA.optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const { userKey, agentKey } = input;
@@ -125,13 +136,12 @@ export const userAgentWeightRouter = {
       return weights;
     }),
 
-
-    normalizedUserAgentWeights: publicProcedure
+  normalizedUserAgentWeights: publicProcedure
     .input(
       z.object({
-        userKey: z.string().optional(),
-        agentKey: z.string().optional(),
-      })
+        userKey: SS58_SCHEMA.optional(),
+        agentKey: SS58_SCHEMA.optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const { userKey, agentKey } = input;
@@ -139,53 +149,51 @@ export const userAgentWeightRouter = {
       // Call the getUserAgentWeights function
 
       const normalizedWeights = await getNormalizedUserAgentWeights(
-        ctx.db, userKey, agentKey
+        ctx.db,
+        userKey,
+        agentKey,
       );
 
       return normalizedWeights;
     }),
 
-    stakeWeight: publicProcedure
+  stakeWeight: publicProcedure
     .input(
       z.object({
-        userKey: z.string(),
-        agentKey: z.string(),
-      })
+        userKey: SS58_SCHEMA.optional(),
+        agentKey: SS58_SCHEMA.optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const { userKey, agentKey } = input;
-
       const normalizedWeights = await getNormalizedUserAgentWeights(
-        ctx.db, userKey, agentKey
+        ctx.db,
+        userKey,
+        agentKey,
       );
-      const normalizedWeightsMap = new Map(Object.entries(normalizedWeights));
+      const normalizedWeightsMap = new Map(
+        typed_non_null_entries(normalizedWeights),
+      );
       const stakeInAllocator = await queryKeyStakedBy(
-        await ctx.wsAPI, ctx.allocatorAddress
+        await ctx.wsAPI,
+        ctx.allocatorAddress,
       );
-      const updatedStake: Record<string, Record<string, number>> = {};
+      const stakeWeightMap = new Map<SS58Address, Map<SS58Address, bigint>>();
       normalizedWeightsMap.forEach((innerRecord, userKey) => {
-        if(stakeInAllocator.has(userKey)) {
-
+        if (stakeInAllocator.has(userKey)) {
+          const innerMap = new Map(typed_non_null_entries(innerRecord));
+          const innerStakeWeightMap = new Map<SS58Address, bigint>();
+          innerMap.forEach((weight, agentKey) => {
+            innerStakeWeightMap.set(
+              agentKey,
+              BigInt(weight) * (stakeInAllocator.get(userKey) ?? 0n),
+            );
+          });
+          stakeWeightMap.set(userKey, innerStakeWeightMap);
         }
-      }
-
-      for (const [outerKey, innerRecord] of Object.entries(stakeInAllocator)) {
-        if (normalizedWeights.has(outerKey) {
-          const weight = normalizedWeights.get(outerKey);
-          const updatedInnerRecord: Record<string, number> = {};
-
-          for (const [innerKey, value] of Object.entries(innerRecord)) {
-            updatedInnerRecord[innerKey] = Number(BigInt(value) * weight);
-          }
-
-          updatedStake[outerKey] = updatedInnerRecord;
-        } else {
-          updatedStake[outerKey] = innerRecord;
-        }
-      }
-      return normalizedWeights[userKey][agentKey];
+      });
+      return stakeWeightMap;
     }),
-
 
   // POST
   createMany: authenticatedProcedure
