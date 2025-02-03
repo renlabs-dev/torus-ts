@@ -26,6 +26,7 @@ import {
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";
+import { useAllocationMenuStore } from "~/stores/allocationMenuStore";
 
 export function DelegatedList() {
   const {
@@ -37,6 +38,8 @@ export function DelegatedList() {
     updateOriginalAgents,
     updatePercentage,
   } = useDelegateAgentStore();
+
+  const { isOpen, toggleIsOpen, setIsOpen } = useAllocationMenuStore();
 
   const { selectedAccount, api: torusApi } = useTorus();
   const accountStakedBy = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
@@ -54,7 +57,6 @@ export function DelegatedList() {
   const router = useRouter();
   const totalPercentage = getTotalPercentage();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -260,9 +262,9 @@ export function DelegatedList() {
   }, [delegatedAgents, isOpen]);
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleIsOpen}
         disabled={!selectedAccount}
         className={`fixed bottom-4 right-4 z-[50] md:bottom-14 ${buttonVariants({ variant: "outline" })} marker:flex`}
       >
@@ -274,7 +276,7 @@ export function DelegatedList() {
         Allocation Menu
       </SheetTrigger>
 
-      <SheetContent className={`fixed z-[50] flex w-full flex-col sm:max-w-md`}>
+      <SheetContent className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}>
         <div className="flex h-full flex-col justify-between gap-8">
           <div className="flex h-full flex-col gap-8">
             <SheetHeader>
