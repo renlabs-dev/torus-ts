@@ -50,6 +50,14 @@ tooling
       └─ shared tsconfig you can extend from
 ```
 
+## Config Turborepo Remote cache (renlabs team only)
+
+You must have Vault installed, configured and authenticated
+
+```
+vault kv get -format=json torus_infra/turbo_remote_cache | jq '.data.data' > .turbo/config.json
+```
+
 ## Get it running
 
 ```sh
