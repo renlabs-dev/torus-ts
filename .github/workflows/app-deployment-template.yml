@@ -1,4 +1,3 @@
-# .github/workflows/app-deployment-template.yml
 name: App Deployment Template
 
 on:

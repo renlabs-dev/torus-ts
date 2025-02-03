@@ -11,6 +11,10 @@ import { Container, Footer, Layout } from "@torus-ts/ui/components";
 import { WalletProvider } from "~/context/wallet-provider";
 import { WalletHeader } from "./components/wallet-header";
 import { EnvScript, env } from "~/env";
+import { SidebarLinks } from "./components/sidebar-links";
+import { WalletBalance } from "./components/wallet-balance";
+import ClientHeroSection from "./components/animation/client-hero-section";
+import { APRBar } from "./components/apr-bar";
 
 const APP_NAME = "Torus Wallet";
 
@@ -37,13 +41,25 @@ export default function RootLayout({
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <ToastProvider>
         <TorusProvider
-          wsEndpoint={env('NEXT_PUBLIC_TORUS_RPC_URL')}
-          torusCacheUrl={env('NEXT_PUBLIC_TORUS_CACHE_URL')}
+          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <ReactQueryProvider>
             <WalletProvider>
               <WalletHeader />
-              <Container>{children}</Container>
+              <APRBar />
+              <ClientHeroSection />
+              <Container>
+                <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
+                  <div className="flex w-full flex-col justify-around gap-6 lg:mt-[10vh] lg:flex-row">
+                    <div className="flex w-full animate-fade flex-col gap-4 lg:w-4/12">
+                      <SidebarLinks />
+                      <WalletBalance />
+                    </div>
+                    {children}
+                  </div>
+                </main>
+              </Container>
             </WalletProvider>
           </ReactQueryProvider>
         </TorusProvider>

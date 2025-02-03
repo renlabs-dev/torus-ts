@@ -175,7 +175,7 @@ export function SendAction() {
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "Connect Wallet"}`,
+      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "-"}`,
     },
   ];
 
@@ -253,7 +253,11 @@ export function SendAction() {
             )}
           </div>
 
-          <FeeLabel estimatedFee={estimatedFee} isEstimating={isEstimating} />
+          <FeeLabel
+            estimatedFee={estimatedFee}
+            isEstimating={isEstimating}
+            accountConnected={!!selectedAccount}
+          />
 
           {transactionStatus.status && (
             <TransactionStatus

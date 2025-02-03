@@ -11,12 +11,13 @@ import {
 } from "@torus-ts/ui";
 
 import { formatToken } from "@torus-ts/utils/subspace";
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useMemo } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
-import { VALIDATOR_ADDRESS } from "./delegated-list";
 import type { SS58Address } from "@torus-ts/subspace";
+
+import { ALLOCATOR_ADDRESS } from "~/consts";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 export const PopoverInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
@@ -24,7 +25,7 @@ export const PopoverInfo = () => {
     data: accountStakedBy,
     isLoading: isLoadingAccountStakedBy,
     refetch: refetchAccountStakedBy,
-  } = useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
+  } = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
   const { delegatedAgents } = useDelegateAgentStore();
 
   const userWeightPower = useMemo(() => {

@@ -1,7 +1,8 @@
-import React from "react";
+"use client";
 
-import { Check } from "lucide-react";
 import Link from "next/link";
+import { Check } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   Button,
@@ -18,21 +19,43 @@ import { env } from "~/env";
 
 export const SidebarLinks = () => {
   const chainEnv = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");
+  const pathname = usePathname();
+  const router = useRouter();
 
   const bridgeLink =
     chainEnv === "mainnet"
       ? "https://bridge.torus.network"
       : "https://bridge.testnet.torus.network";
 
+  const isActive = (path: string) => pathname === path;
+
+  const handleSelectChange = (value: string) => {
+    switch (value) {
+      case "wallet":
+        router.push("/");
+        break;
+      case "staking":
+        router.push("/staking");
+        break;
+      case "bridge":
+        router.push(bridgeLink);
+        break;
+    }
+  };
+
   return (
     <>
-      <Select defaultValue="wallet">
+      <Select
+        onValueChange={handleSelectChange}
+        defaultValue={pathname === "/" ? "wallet" : pathname.slice(1)}
+      >
         <SelectTrigger className="w-full lg:hidden">
           <SelectValue placeholder="Select a view" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
             <SelectItem value="wallet">Wallet</SelectItem>
+            <SelectItem value="staking">Staking</SelectItem>
             <SelectItem value="bridge">Bridge</SelectItem>
           </SelectGroup>
         </SelectContent>
@@ -43,11 +66,21 @@ export const SidebarLinks = () => {
           <Button
             asChild
             variant="ghost"
-            className={`w-full justify-between gap-4 border-none bg-accent px-3 text-base`}
+            className={`w-full justify-between gap-4 border-none ${isActive("/") ? "bg-accent" : ""} px-3 text-base`}
           >
             <Link href="/">
               Wallet
-              <Check size={16} />
+              {isActive("/") && <Check size={16} />}
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            className={`w-full justify-between gap-4 border-none ${isActive("/staking") ? "bg-accent" : ""} px-3 text-base`}
+          >
+            <Link href="/staking">
+              Staking
+              {isActive("/staking") && <Check size={16} />}
             </Link>
           </Button>
           <Button

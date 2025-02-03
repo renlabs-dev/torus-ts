@@ -3,7 +3,12 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
-import type { Balance, SS58Address, StakeData } from "@torus-ts/subspace";
+import type {
+  Balance,
+  SS58Address,
+  StakeData,
+  LastBlock,
+} from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import type {
   Stake,
@@ -14,9 +19,12 @@ import {
   useCachedStakeOut,
   useFreeBalance,
   useKeyStakingTo,
+  useMinAllowedStake,
+  useLastBlock,
+  useRewardInterval,
 } from "@torus-ts/query-provider/hooks";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { Codec, ISubmittableResult } from "@polkadot/types/types";
+import type { ISubmittableResult } from "@polkadot/types/types";
 import { useTorus } from "@torus-ts/torus-provider";
 
 import { env } from "~/env";
@@ -53,7 +61,7 @@ interface WalletContextType {
   stakeOut: UseQueryResult<StakeData, Error>;
 
   getExistencialDeposit: () => bigint | undefined;
-  getMinAllowedStake: () => Promise<Codec>;
+  minAllowedStake: UseQueryResult<bigint, Error>;
   // TRANSACTIONS
   transferTransaction: ({
     to,
@@ -81,6 +89,9 @@ interface WalletContextType {
     TransferStake,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
+
+  lastBlock: UseQueryResult<LastBlock, Error>;
+  rewardInterval: UseQueryResult<bigint, Error>;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -107,11 +118,10 @@ export function WalletProvider({
     transferStake,
     transferStakeTransaction,
     transferTransaction,
-    getMinAllowedStake,
   } = useTorus();
 
   // == Subspace ==
-  const stakeOut = useCachedStakeOut(env('NEXT_PUBLIC_TORUS_CACHE_URL'));
+  const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
 
   // == Account ==
   const accountFreeBalance = useFreeBalance(
@@ -119,11 +129,16 @@ export function WalletProvider({
     selectedAccount?.address as SS58Address,
   );
 
+  const minAllowedStake = useMinAllowedStake(api);
+
   const accountStakedBy = useKeyStakingTo(api, selectedAccount?.address);
 
   const accountStakedBalance =
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
     stakeOut.data?.perAddr[selectedAccount?.address!];
+
+  const lastBlock = useLastBlock(api);
+  const rewardInterval = useRewardInterval(api);
 
   return (
     <WalletContext.Provider
@@ -136,7 +151,7 @@ export function WalletProvider({
         addStakeTransaction,
         estimateFee,
         getExistencialDeposit,
-        getMinAllowedStake,
+        minAllowedStake,
         isAccountConnected,
         isInitialized,
         removeStake,
@@ -147,6 +162,8 @@ export function WalletProvider({
         transferStake,
         transferStakeTransaction,
         transferTransaction,
+        lastBlock,
+        rewardInterval,
       }}
     >
       {children}

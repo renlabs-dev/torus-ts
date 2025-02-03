@@ -29,6 +29,13 @@ import {
   queryGlobalGovernanceConfig,
   queryBurnValue,
   queryAgents,
+  queryMinAllowedStake,
+  queryTotalIssuance,
+  queryTreasuryEmissionFee,
+  queryTotalStake,
+  queryRecyclingPercentage,
+  queryIncentivesRatio,
+  queryRewardInterval,
   queryWhitelist,
 } from "@torus-ts/subspace";
 
@@ -84,6 +91,18 @@ export function useLastBlock(
   });
 }
 
+// == Balances Module ==
+
+export function useTotalIssuance(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["total_issuance"],
+    enabled: api != null,
+    queryFn: () => queryTotalIssuance(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 // == System ==
 
 export function useFreeBalance(
@@ -94,6 +113,28 @@ export function useFreeBalance(
     queryKey: ["free_balance", address],
     enabled: api != null && address != null,
     queryFn: () => queryFreeBalance(api!, address!),
+    staleTime: LAST_BLOCK_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useTreasuryEmissionFee(
+  api: Api | Nullish,
+): UseQueryResult<Proposal[], Error> {
+  return useQuery({
+    queryKey: ["treasury_emission_fee"],
+    enabled: api != null,
+    queryFn: () => queryTreasuryEmissionFee(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useMinAllowedStake(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["min_allowed_stake"],
+    enabled: api != null,
+    queryFn: () => queryMinAllowedStake(api!),
     staleTime: LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -187,6 +228,28 @@ export function useRewardAllocation(api: Api | Nullish) {
   });
 }
 
+// == Torus Module ==
+
+export function useTotalStake(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["total_stake"],
+    enabled: api != null,
+    queryFn: () => queryTotalStake(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useRewardInterval(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["reward_interval"],
+    enabled: api != null,
+    queryFn: () => queryRewardInterval(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 // == Subspace Module ==
 
 export function useCachedStakeOut(
@@ -198,6 +261,28 @@ export function useCachedStakeOut(
     staleTime: STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
     // throwOnError: false, // TODO
+  });
+}
+
+// == Emissions Module ==
+
+export function useRecyclingPercentage(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["recycling_percentage"],
+    enabled: api != null,
+    queryFn: () => queryRecyclingPercentage(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useIncentivesRatio(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["incentives_ratio"],
+    enabled: api != null,
+    queryFn: () => queryIncentivesRatio(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
   });
 }
 

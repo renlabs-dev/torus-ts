@@ -7,6 +7,7 @@ import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
+import { RewardIntervalProgress } from "./reward-interval-progress";
 
 export function WalletBalance() {
   const {
@@ -78,6 +79,7 @@ export function WalletBalance() {
           </span>
         </Card>
       ))}
+      <RewardIntervalProgress />
     </div>
   );
 }

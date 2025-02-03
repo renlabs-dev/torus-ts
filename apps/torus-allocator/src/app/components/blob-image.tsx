@@ -14,10 +14,6 @@ const BlobImage = ({
 }: BlobImageProps): JSX.Element => {
   const [imageSrc, setImageSrc] = useState("");
 
-  console.log("suicide");
-
-  console.log(blob);
-
   useEffect(() => {
     const objectUrl = URL.createObjectURL(blob);
     setImageSrc(objectUrl);

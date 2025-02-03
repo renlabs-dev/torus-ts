@@ -29,6 +29,16 @@ export const agentApplicationVoteRouter = {
         ),
       });
     }),
+  byUserKey: publicProcedure
+    .input(z.object({ userKey: z.string() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.agentApplicationVoteSchema.findMany({
+        where: and(
+          eq(agentApplicationVoteSchema.userKey, input.userKey),
+          isNull(agentApplicationVoteSchema.deletedAt),
+        ),
+      });
+    }),
   // POST
   create: authenticatedProcedure
     .input(AGENT_APPLICATION_VOTE_INSERT_SCHEMA)

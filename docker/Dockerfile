@@ -6,11 +6,10 @@ FROM node:20-slim AS base
 # Setup pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-RUN pnpm --version
 
-# Install turbo
-RUN npm install -g "turbo@^2.1.1"
+RUN corepack enable
+RUN corepack prepare pnpm@9.7.1 --activate
+RUN pnpm --version
 
 # ======== pruner layer ======== #
 FROM base AS pruner
@@ -18,6 +17,9 @@ ARG APP_NAME
 
 COPY . /build
 WORKDIR /build
+
+# Install turbo
+RUN pnpm install -g "turbo@^2.1.1"
 
 # Prune input packages to only what is needed for the app.
 # Docs: https://turbo.build/repo/docs/guides/tools/docker

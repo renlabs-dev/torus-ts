@@ -1,5 +1,8 @@
 "use client";
 
+import { BookText, Scale, Wallet, Zap } from "lucide-react";
+import Link from "next/link";
+
 import { toast } from "@torus-ts/toast-provider";
 import {
   Dialog,
@@ -13,9 +16,7 @@ import {
   CopyButton,
 } from "@torus-ts/ui";
 
-import { BookText, Scale, Wallet, Zap } from "lucide-react";
-import Link from "next/link";
-import { VALIDATOR_ADDRESS } from "./delegated-list";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 
 export const tutorialData = {
   "1": {
@@ -45,7 +46,7 @@ export const tutorialData = {
       </p>,
       "Stake your desired amount to determine your voting power.",
       <CopyButton
-        copy={VALIDATOR_ADDRESS}
+        copy={ALLOCATOR_ADDRESS}
         variant="link"
         className="h-5 p-0 text-sm underline"
         notify={() => toast.success("Copied to clipboard")}

@@ -28,6 +28,7 @@ export function UnstakeAction() {
   const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [enoughBalanceToUnstake, setEnoughBalanceToUnstake] =
     useState<boolean>(false);
 
@@ -219,7 +220,7 @@ export function UnstakeAction() {
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "Connect Wallet"}`,
+      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "-"}`,
     },
   ];
 
@@ -245,7 +246,7 @@ export function UnstakeAction() {
             className="flex w-full flex-col gap-6"
           >
             <div className="flex w-full flex-col gap-2">
-              <Label htmlFor="unstake-recipient">Validator Address</Label>
+              <Label htmlFor="unstake-recipient">Allocator Address</Label>
               <div className="flex flex-col gap-2 md:flex-row">
                 <Input
                   id="unstake-recipient"
@@ -254,7 +255,7 @@ export function UnstakeAction() {
                   required
                   onChange={handleRecipientChange}
                   disabled={!selectedAccount?.address}
-                  placeholder="Full validator address"
+                  placeholder="Full Allocator address"
                 />
                 <Button
                   type="button"
@@ -262,7 +263,7 @@ export function UnstakeAction() {
                   disabled={!selectedAccount?.address}
                   onClick={() => setCurrentView("stakedValidators")}
                 >
-                  Staked Validators
+                  Staked Allocators
                 </Button>
               </div>
               {inputError.recipient && (
@@ -300,7 +301,11 @@ export function UnstakeAction() {
                 </p>
               )}
             </div>
-            <FeeLabel estimatedFee={estimatedFee} isEstimating={isEstimating} />
+            <FeeLabel
+              estimatedFee={estimatedFee}
+              isEstimating={isEstimating}
+              accountConnected={!!selectedAccount}
+            />
 
             {transactionStatus.status && (
               <TransactionStatus
@@ -320,8 +325,8 @@ export function UnstakeAction() {
             (stakedAmount &&
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
               amount > stakedAmount) ||
-            !!inputError.value ||
-            !enoughBalanceToUnstake
+            !!inputError.value
+            // TODO FIX THIS CONDITION: !enoughBalanceToUnstake
           }
           formRef={formRef}
           reviewContent={reviewData}

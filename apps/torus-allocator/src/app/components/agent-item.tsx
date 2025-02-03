@@ -188,7 +188,7 @@ export function AgentItem(props: AgentCardProps) {
                     className={`flex items-center gap-1.5 text-xs font-semibold`}
                   >
                     <Globe size={14} />
-                    {props.globalWeightPerc}%
+                    {Math.round((props.globalWeightPerc ?? 0) * 100)}%
                   </Label>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">

@@ -112,10 +112,20 @@ jobs:
 
       - name: Craft App info
         run: |
+          SUFIX="-${{ inputs.app_name }}"
+          MAX_REF_LENGTH=$((50 - ${#SUFIX}))  # Subtract sufix length from 50
+
           export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
+
+          if [ ${#SANITIZED_REF} -gt $MAX_REF_LENGTH ]; then
+            SANITIZED_REF="${SANITIZED_REF:0:$MAX_REF_LENGTH}"
+          fi
+
+          SANITIZED_REF=$(echo "$SANITIZED_REF" | sed 's/-*$//')
+          echo "RELEASE_NAME=${SANITIZED_REF}${SUFIX}" >> $GITHUB_ENV
+
           echo "APP_URL=${SANITIZED_REF}.${{ inputs.app_name }}.torus.network" >> $GITHUB_ENV
           echo "CACHE_URL=https://${SANITIZED_REF}.torus-cache.torus.network" >> $GITHUB_ENV
-          echo "RELEASE_NAME=${SANITIZED_REF}-${{ inputs.app_name }}" >> $GITHUB_ENV
 
       - name: Install shared resources
         run: |
@@ -169,8 +179,17 @@ jobs:
 
       - name: Craft App info
         run: |
+          SUFIX="-${{ inputs.app_name }}"
+          MAX_REF_LENGTH=$((50 - ${#SUFIX}))  # Subtract sufix length from 50
+
           export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
-          echo "RELEASE_NAME=${SANITIZED_REF}-${{ inputs.app_name }}" >> $GITHUB_ENV
+
+          if [ ${#SANITIZED_REF} -gt $MAX_REF_LENGTH ]; then
+            SANITIZED_REF="${SANITIZED_REF:0:$MAX_REF_LENGTH}"
+          fi
+
+          SANITIZED_REF=$(echo "$SANITIZED_REF" | sed 's/-*$//')
+          echo "RELEASE_NAME=${SANITIZED_REF}${SUFIX}" >> $GITHUB_ENV
 
       - name: Destroy PR preview app deployment
         working-directory: apps/${{ inputs.app_name }}

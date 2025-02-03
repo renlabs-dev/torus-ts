@@ -149,6 +149,8 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
     applicantKey: curatorCandidate.userKey,
   });
 
+  const { data: curatorVoteHistory } = api.cadreVoteHistory.all.useQuery();
+
   const createCadreVote = api.cadreVote.create.useMutation({
     onSuccess: () => refetchCuratorVotes(),
   });
@@ -156,17 +158,26 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
     onSuccess: () => refetchCuratorVotes(),
   });
 
-  const computedVotes = curatorVotes?.reduce(
-    (acc, vote) => {
-      if (vote.vote === "ACCEPT") {
-        acc.accept++;
-      } else if (vote.vote === "REFUSE") {
-        acc.refuse++;
-      }
-      return acc;
-    },
-    { accept: 0, refuse: 0 },
-  );
+  const computedVotes = () => {
+    if (curatorCandidate.candidacyStatus === "PENDING") {
+      const votes = curatorVotes ?? [];
+      return {
+        accept: votes.filter((v) => v.vote === "ACCEPT").length,
+        refuse: votes.filter((v) => v.vote === "REFUSE").length,
+        revoke: 0,
+      };
+    } else {
+      const votes =
+        curatorVoteHistory?.filter(
+          (v) => v.applicantKey === curatorCandidate.userKey,
+        ) ?? [];
+      return {
+        accept: votes.filter((v) => v.vote === "ACCEPT").length,
+        refuse: votes.filter((v) => v.vote === "REFUSE").length,
+        revoke: curatorVotes?.length ?? 0,
+      };
+    }
+  };
 
   const currentWalletVote = curatorVotes?.find(
     (vote) => vote.userKey === selectedAccount?.address,
@@ -208,6 +219,35 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [curatorCandidate, currentWalletVote]);
 
+  const { accept, refuse, revoke } = computedVotes();
+
+  const renderVotesCount = () => {
+    if (
+      curatorCandidate.candidacyStatus === "PENDING" ||
+      curatorCandidate.candidacyStatus === "REJECTED"
+    ) {
+      return (
+        <>
+          <span>
+            In favor
+            <span className="ml-2 text-green-400">{accept}</span>
+          </span>
+          <span className="pl-2">
+            <span className="mr-2 text-red-400">{refuse}</span>
+            Against
+          </span>
+        </>
+      );
+    }
+
+    return (
+      <span>
+        <span className="mr-2 text-red-400">{revoke}</span>
+        Revoke
+      </span>
+    );
+  };
+
   return (
     <Card className="relative">
       <li className={`relative flex h-full flex-col`}>
@@ -248,16 +288,7 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
 
         <CardFooter className="mt-auto flex flex-col gap-4">
           <div className="flex w-full gap-2 divide-x divide-white/10 text-sm text-muted-foreground">
-            <span>
-              In favor
-              <span className="ml-2 text-green-400">
-                {computedVotes?.accept}
-              </span>
-            </span>
-            <span className="pl-2">
-              <span className="mr-2 text-red-400">{computedVotes?.refuse}</span>
-              Against
-            </span>
+            {renderVotesCount()}
           </div>
 
           <div className="flex w-full gap-4">

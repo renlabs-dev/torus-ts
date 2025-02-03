@@ -8,8 +8,9 @@ import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useRouter } from "next/navigation";
-import { useTorus } from "@torus-ts/torus-provider";
+
 import type { SS58Address } from "@torus-ts/subspace";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
   buttonVariants,
@@ -24,9 +25,7 @@ import {
   SheetTrigger,
 } from "@torus-ts/ui";
 
-// TODO: VERIFY VALIDATOR ADDRESS BEFORE PUSHING TO MAIN
-export const VALIDATOR_ADDRESS =
-  "5DJBFtDLxZ3cahV2zdUzbe5xJiZRqbJdRCdU3WL6txZNqBBj" as SS58Address;
+import { ALLOCATOR_ADDRESS } from "~/consts";
 
 export function DelegatedList() {
   const {
@@ -40,7 +39,7 @@ export function DelegatedList() {
   } = useDelegateAgentStore();
 
   const { selectedAccount, api: torusApi } = useTorus();
-  const accountStakedBy = useKeyStakedBy(torusApi, VALIDATOR_ADDRESS);
+  const accountStakedBy = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
 
   const {
     data: userAgentWeight,

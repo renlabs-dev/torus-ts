@@ -37,10 +37,10 @@ releases:
           args: ["dao"]
           resources:
             limits:
-              memory: 256Mi
+              memory: 500Mi
               cpu: 1
             requests:
-              memory: 200Mi
+              memory: 300Mi
               cpu: 0.1
 
   - name: "{{ .Values.releasePrefix }}-module-fetcher"

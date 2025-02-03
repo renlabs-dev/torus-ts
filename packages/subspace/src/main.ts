@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
+import { queryMinAllowedStake } from "./modules/subspace";
 
 // $ pnpm exec tsx src/main.ts
 
@@ -24,7 +25,7 @@ async function connectToChainRpc(wsEndpoint: string) {
   return api;
 }
 
-// const api = connectToChainRpc(NODE_URL);
+const api = await connectToChainRpc(NODE_URL);
 
 // ====
 
