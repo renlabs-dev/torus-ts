@@ -21,7 +21,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         ])
     );
     
-    return NextResponse.json(SuperJSON.serialize(stakeWeightObject), { status: 200 });
+    return NextResponse.json(
+        SuperJSON.serialize(stakeWeightObject).json, { status: 200 }
+    );
 
     } catch (e) {
     console.error(e);
