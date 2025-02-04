@@ -214,7 +214,7 @@ export function UnstakeAction() {
   const formRef = useRef<HTMLFormElement>(null);
   const reviewData = [
     {
-      label: "To",
+      label: "From",
       content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
     },
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
