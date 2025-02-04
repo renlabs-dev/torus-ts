@@ -60,10 +60,10 @@ export function ValidatorsList(props: ValidatorsListProps) {
     <Card className="flex w-full animate-fade flex-col justify-between p-6">
       <CardHeader className="flex flex-col gap-2 px-0 pt-0">
         <h3 className="text-lg font-semibold text-primary">
-          Select a Validator
+          Select a Allocator
         </h3>
         <p className="pb-2 text-muted-foreground">
-          Once you select a validator, it will automatically fill the field with
+          Once you select a allocator, it will automatically fill the field with
           their address. View all validators list{" "}
           <Link
             href="https://torex.rs/agents"
