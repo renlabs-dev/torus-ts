@@ -130,7 +130,7 @@ async function doVote(
   try {
     console.log(`keypair: ${keypair.address}`);
     const setWeightsTx = await setChainWeights(api, keypair, weights);
-    console.log(`Set weights tx: ${setWeightsTx.toHuman()}`);
+    console.log(`Set weights tx: ${setWeightsTx.toString()}`);
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     console.error(`Failed to set weights on chain: ${err}`);
@@ -147,7 +147,7 @@ async function postAgentAggregation(
   const moduleWeightMap = await getUserWeightMap();
   // gambiarra to remove the allocator from the weights
   moduleWeightMap.forEach((innerMap, _) => {
-    if(innerMap.has(keypair.address)){
+    if (innerMap.has(keypair.address)) {
       innerMap.delete(keypair.address);
     }
   });
