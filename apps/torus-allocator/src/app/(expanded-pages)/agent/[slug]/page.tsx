@@ -101,7 +101,10 @@ export default async function AgentPage({
             <Card className="p-6">
               <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
                 <span className="text-cyan-500">
-                  {globalWeight ? globalWeight.percComputedWeight : 0}%
+                  {globalWeight
+                    ? (globalWeight.percComputedWeight * 100).toFixed(2)
+                    : 0}
+                  %
                 </span>{" "}
                 Current Network Allocation
               </Label>
@@ -109,7 +112,7 @@ export default async function AgentPage({
                 <div
                   className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
                   style={{
-                    width: `${globalWeight ? globalWeight.percComputedWeight.toFixed(0) : 0}%`,
+                    width: `${globalWeight ? (globalWeight.percComputedWeight * 100).toFixed(2) : 0}%`,
                   }}
                 />
               </div>

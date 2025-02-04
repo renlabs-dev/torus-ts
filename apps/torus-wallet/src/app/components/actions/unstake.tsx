@@ -214,8 +214,8 @@ export function UnstakeAction() {
   const formRef = useRef<HTMLFormElement>(null);
   const reviewData = [
     {
-      label: "To",
-      content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
+      label: "From",
+      content: `${recipient ? smallAddress(recipient, 6) : "From Address"}`,
     },
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
@@ -322,9 +322,7 @@ export function UnstakeAction() {
             transactionStatus.status === "PENDING" ||
             !amount ||
             !recipient ||
-            (stakedAmount &&
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              amount > stakedAmount) ||
+            toNano(amount) > toNano(stakedAmount ?? "0") ||
             !!inputError.value
             // TODO FIX THIS CONDITION: !enoughBalanceToUnstake
           }

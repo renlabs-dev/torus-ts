@@ -17,6 +17,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { env } from "~/env";
 import { useAPR } from "~/hooks/useAPR";
+import { DateTime } from "luxon";
 
 const MONTHLY_COMPOUNDS = 12;
 const FORECAST_MONTHS = 24;
@@ -27,8 +28,19 @@ interface ProjectedData {
   initial: number;
 }
 
-const formatMonth = (date: Date): string => {
-  return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+const formatMonth = (date: Date, withoutYear?: boolean): string => {
+  if (!withoutYear) {
+    return DateTime.fromJSDate(date).toLocaleString({
+      month: "short",
+      year: "2-digit",
+      day: "2-digit",
+    });
+  }
+
+  return DateTime.fromJSDate(date).toLocaleString({
+    month: "short",
+    day: "2-digit",
+  });
 };
 
 const GrowthTooltip = ({ active, payload }: TooltipProps<number, string>) => {
@@ -82,14 +94,16 @@ export const StakingCalculator: React.FC = () => {
   };
 
   const projectedGrowth = useMemo(() => {
-    const startDate = new Date();
     const data: ProjectedData[] = [];
     const initialAmount = Number(customAmount) || actualStakedBalance;
 
     for (let i = 0; i <= FORECAST_MONTHS; i++) {
-      const date = new Date(startDate.setMonth(startDate.getMonth() + 1));
+      const date = DateTime.fromJSDate(new Date())
+        .plus({ months: i })
+        .toJSDate();
+
       data.push({
-        date: new Date(date),
+        date: date,
         projected: calculateProjectedGrowth(initialAmount, i),
         initial: initialAmount,
       });
@@ -180,7 +194,7 @@ export const StakingCalculator: React.FC = () => {
             </defs>
             <XAxis
               dataKey="date"
-              tickFormatter={formatMonth}
+              tickFormatter={(date: Date) => formatMonth(date, true)}
               stroke="#888888"
               fontSize={12}
               tickSize={0}

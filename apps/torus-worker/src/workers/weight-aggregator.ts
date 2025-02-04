@@ -57,8 +57,8 @@ export async function weightAggregatorWorker(api: ApiPromise) {
 
       await weightAggregatorTask(api, keypair, lastBlock.blockNumber);
 
-      // We aim to run this task every 1 hour (8 seconds block * 450)
-      await sleep(BLOCK_TIME * 450);
+      // We aim to run this task every ~5 minutes (8 seconds block * 38)
+      await sleep(BLOCK_TIME * 37);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);
@@ -128,7 +128,9 @@ async function doVote(
 ) {
   const weights = buildNetworkVote(voteMap);
   try {
-    await setChainWeights(api, keypair, weights);
+    console.log(`keypair: ${keypair.address}`);
+    const setWeightsTx = await setChainWeights(api, keypair, weights);
+    console.log(`Set weights tx: ${setWeightsTx.toString()}`);
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     console.error(`Failed to set weights on chain: ${err}`);
@@ -143,6 +145,12 @@ async function postAgentAggregation(
   lastBlock: number,
 ) {
   const moduleWeightMap = await getUserWeightMap();
+  // gambiarra to remove the allocator from the weights
+  moduleWeightMap.forEach((innerMap, _) => {
+    if (innerMap.has(keypair.address)) {
+      innerMap.delete(keypair.address);
+    }
+  });
   const { stakeWeights, normalizedWeights, percWeights } = getNormalizedWeights(
     stakeOnCommunityValidator,
     moduleWeightMap,
