@@ -7,6 +7,7 @@ import { FilterContent } from "./filter-content";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useSearchParams } from "next/navigation";
 import { UserWeightInfo } from "./user-weight-info";
+import { AgentItemSkeleton } from "./agent-item-skeleton";
 
 interface Agent {
   id: number;
@@ -80,8 +81,18 @@ export function AgentContentList() {
     ));
   };
 
+  const renderSkeletons = () => {
+    return (
+      <>
+        <AgentItemSkeleton />
+        <AgentItemSkeleton />
+        <AgentItemSkeleton />
+      </>
+    );
+  };
+
   const renderAllAgentsView = () => {
-    if (isLoadingAgents) return <p>Loading... </p>;
+    if (isLoadingAgents) return renderSkeletons();
     const allAgentsList = prepareAgentsList(search);
     if (allAgentsList.length === 0) return <p>No agents found.</p>;
 
@@ -89,7 +100,7 @@ export function AgentContentList() {
   };
 
   const renderWeightedAgentsView = () => {
-    if (isLoadingAgents) return <p>Loading... </p>;
+    if (isLoadingAgents) return renderSkeletons();
     if (delegatedAgents.length === 0) return <p>No weighted agents found.</p>;
 
     const delegatedAgentsList = delegatedAgents.map((agent) => {
@@ -113,8 +124,7 @@ export function AgentContentList() {
   };
 
   const renderPopularAgentsView = () => {
-    if (isLoadingAgents) return <p>Loading... </p>;
-
+    if (isLoadingAgents) return renderSkeletons();
     const allAgentsList = prepareAgentsList(search);
     if (allAgentsList.length === 0) return <p>No popular agents found.</p>;
 
@@ -150,7 +160,9 @@ export function AgentContentList() {
         <UserWeightInfo />
         <AgentsTabView />
       </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">{content}</div>
+      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+        {content}
+      </div>
     </div>
   );
 }
