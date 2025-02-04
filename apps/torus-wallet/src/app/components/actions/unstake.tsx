@@ -215,7 +215,7 @@ export function UnstakeAction() {
   const reviewData = [
     {
       label: "From",
-      content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
+      content: `${recipient ? smallAddress(recipient, 6) : "From Address"}`,
     },
     { label: "Amount", content: `${amount ? amount : 0} TORUS` },
     {
