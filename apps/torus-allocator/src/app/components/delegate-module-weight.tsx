@@ -5,6 +5,7 @@ import { Anvil } from "lucide-react";
 import { toast } from "@torus-ts/toast-provider";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useTorus } from "@torus-ts/torus-provider";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 
 interface DelegateModuleWeightProps {
   id: number;
@@ -45,8 +46,9 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
 
   return (
     <Button
-      onClick={handleDelegateClick}
       variant="outline"
+      onClick={handleDelegateClick}
+      disabled={props.agentKey === ALLOCATOR_ADDRESS}
       className={`flex w-fit items-center gap-2 bg-transparent text-white transition duration-200 ${props.className} ${isModuleDelegated ? "border-red-500 text-red-500 hover:bg-red-500/10 hover:text-red-500" : "border-cyan-500 text-cyan-500 hover:bg-cyan-500/10 hover:text-cyan-500"}`}
     >
       <Anvil className={`h-6 w-6`} />
