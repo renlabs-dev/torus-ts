@@ -57,8 +57,8 @@ export async function weightAggregatorWorker(api: ApiPromise) {
 
       await weightAggregatorTask(api, keypair, lastBlock.blockNumber);
 
-      // We aim to run this task every 1 hour (8 seconds block * 450)
-      await sleep(BLOCK_TIME * 450);
+      // We aim to run this task every ~5 minutes (8 seconds block * 38)
+      await sleep(BLOCK_TIME * 37);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);
