@@ -128,7 +128,9 @@ async function doVote(
 ) {
   const weights = buildNetworkVote(voteMap);
   try {
-    await setChainWeights(api, keypair, weights);
+    console.log(`keypair: ${keypair.address}`);
+    const setWeightsTx = await setChainWeights(api, keypair, weights);
+    console.log(`Set weights tx: ${setWeightsTx.toHuman()}`);
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     console.error(`Failed to set weights on chain: ${err}`);
@@ -143,6 +145,12 @@ async function postAgentAggregation(
   lastBlock: number,
 ) {
   const moduleWeightMap = await getUserWeightMap();
+  // gambiarra to remove the allocator from the weights
+  moduleWeightMap.forEach((innerMap, _) => {
+    if(innerMap.has(keypair.address)){
+      innerMap.delete(keypair.address);
+    }
+  });
   const { stakeWeights, normalizedWeights, percWeights } = getNormalizedWeights(
     stakeOnCommunityValidator,
     moduleWeightMap,
