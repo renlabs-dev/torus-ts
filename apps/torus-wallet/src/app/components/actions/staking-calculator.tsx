@@ -94,14 +94,16 @@ export const StakingCalculator: React.FC = () => {
   };
 
   const projectedGrowth = useMemo(() => {
-    const startDate = new Date();
     const data: ProjectedData[] = [];
     const initialAmount = Number(customAmount) || actualStakedBalance;
 
     for (let i = 0; i <= FORECAST_MONTHS; i++) {
-      const date = new Date(startDate.setMonth(startDate.getMonth() + 1));
+      const date = DateTime.fromJSDate(new Date())
+        .plus({ months: i })
+        .toJSDate();
+
       data.push({
-        date: new Date(date),
+        date: date,
         projected: calculateProjectedGrowth(initialAmount, i),
         initial: initialAmount,
       });
