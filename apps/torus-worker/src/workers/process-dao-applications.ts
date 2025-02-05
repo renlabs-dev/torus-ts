@@ -165,6 +165,7 @@ export async function getVotesOnPending(
   return votes_on_pending;
 }
 
+// TODO: move `getCadreThreshold` to shared package
 export async function getCadreThreshold() {
   const keys = await countCadreKeys();
   return Math.floor(keys / 2) + 1;
