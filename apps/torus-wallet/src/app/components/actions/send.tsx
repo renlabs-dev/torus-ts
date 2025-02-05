@@ -1,16 +1,42 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
-import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import {
+  Card,
+  Input,
+  TransactionStatus,
+  Form,
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormItem,
+} from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { FeeLabel } from "../fee-label";
+
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { WalletTransactionReview } from "../wallet-review";
+
+const sendActionFormSchema = z.object({
+  recipient: z
+    .string()
+    .nonempty({ message: "Recipient address is required" })
+    .refine(isSS58, { message: "Invalid recipient address" }),
+  amount: z
+    .string()
+    .nonempty({ message: "Amount is required" })
+    .refine((amount) => toNano(amount) > 0n, {
+      message: "Amount must be greater than 0",
+    }),
+});
 
 export function SendAction() {
   const {
@@ -21,19 +47,9 @@ export function SendAction() {
     transferTransaction,
   } = useWallet();
 
-  const [amount, setAmount] = useState<string>("");
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
   const [maxAmount, setMaxAmount] = useState<string>("");
-  const [recipient, setRecipient] = useState<string>("");
-
-  const [inputError, setInputError] = useState<{
-    recipient: string | null;
-    value: string | null;
-  }>({
-    recipient: null,
-    value: null,
-  });
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -43,101 +59,68 @@ export function SendAction() {
     },
   );
 
-  const handleEstimateFee = async (): Promise<bigint | undefined> => {
-    if (!recipient) {
-      setEstimatedFee(null);
-      setMaxAmount("");
-      return;
-    }
+  const form = useForm<z.infer<typeof sendActionFormSchema>>({
+    resolver: zodResolver(sendActionFormSchema),
+    defaultValues: {
+      recipient: "",
+      amount: "",
+    },
+  });
+  const { watch, reset, clearErrors, setError, setValue, getValues, setFocus } =
+    form;
 
-    if (!isSS58(recipient)) {
-      setInputError((prev) => ({
-        ...prev,
-        recipient: "Invalid recipient address",
-      }));
-      return;
-    }
+  const recipientValue = getValues("recipient");
+  const amountValue = getValues("amount");
+  const amountRef = useRef(amountValue);
 
-    setIsEstimating(true);
-    try {
-      const transaction = transferTransaction({ to: recipient, amount: "0" });
-      if (!transaction) {
-        setInputError((prev) => ({
-          ...prev,
-          recipient: "Invalid transaction",
-        }));
+  const handleEstimateFee = useCallback(
+    async (recipient: string) => {
+      if (!isSS58(recipient)) {
+        setError("recipient", { message: "Invalid recipient address" });
         return;
       }
-      const fee = await estimateFee(transaction);
-      if (fee != null) {
-        const adjustedFee = (fee * 1005n) / 1000n;
-
-        setEstimatedFee(fromNano(adjustedFee));
-        return adjustedFee;
-      } else {
+      clearErrors("recipient");
+      setIsEstimating(true);
+      try {
+        const transaction = transferTransaction({ to: recipient, amount: "0" });
+        if (!transaction) {
+          setError("recipient", { message: "Invalid transaction" });
+          return;
+        }
+        const fee = await estimateFee(transaction);
+        if (fee != null) {
+          const adjustedFee = (fee * 1005n) / 1000n;
+          const feeStr = fromNano(adjustedFee);
+          setEstimatedFee(feeStr);
+          const afterFeesBalance =
+            (accountFreeBalance.data ?? 0n) - adjustedFee;
+          const maxTransferable = afterFeesBalance > 0n ? afterFeesBalance : 0n;
+          setMaxAmount(fromNano(maxTransferable));
+        } else {
+          setEstimatedFee(null);
+          setMaxAmount("");
+        }
+      } catch (error) {
+        console.error("Error estimating fee:", error);
         setEstimatedFee(null);
         setMaxAmount("");
+      } finally {
+        setIsEstimating(false);
       }
-    } catch (error) {
-      console.error("Error estimating fee:", error);
-      setEstimatedFee(null);
-      setMaxAmount("");
-    } finally {
-      setIsEstimating(false);
-    }
-  };
-
-  const handleUpdateMaxAmount = (fee: bigint | undefined) => {
-    if (!fee) return;
-    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - fee;
-    const maxAmount = afterFeesBalance > 0 ? afterFeesBalance : 0n;
-
-    setMaxAmount(fromNano(maxAmount));
-    const amountNano = toNano(amount || "0");
-    if (amountNano > maxAmount) {
-      setInputError((prev) => ({
-        ...prev,
-        value: "Amount exceeds maximum transferable amount",
-      }));
-    } else {
-      setInputError((prev) => ({ ...prev, value: null }));
-    }
-  };
-
-  const handleAmountChange = (amount: string) => {
-    const newAmount = amount.replace(/[^0-9.]/g, "");
-
-    const amountNano = toNano(newAmount || "0");
-    const estimatedFeeNano = toNano(estimatedFee ?? "0");
-    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - estimatedFeeNano;
-    const maxAmountNano = afterFeesBalance > 0n ? afterFeesBalance : 0n;
-
-    if (amountNano > maxAmountNano) {
-      setInputError((prev) => ({
-        ...prev,
-        value: "Amount exceeds maximum transferable amount",
-      }));
-    } else {
-      setInputError((prev) => ({ ...prev, value: null }));
-    }
-
-    setAmount(newAmount);
-  };
-
-  const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRecipient(e.target.value);
-    setAmount("");
-    setEstimatedFee(null);
-    setMaxAmount("");
-    setInputError({ recipient: null, value: null });
-  };
+    },
+    [
+      accountFreeBalance.data,
+      clearErrors,
+      estimateFee,
+      setError,
+      transferTransaction,
+    ],
+  );
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
     if (callbackReturn.status === "SUCCESS") {
-      setAmount("");
-      setRecipient("");
-      setInputError({ recipient: null, value: null });
+      reset();
     }
   };
 
@@ -145,11 +128,17 @@ export function SendAction() {
     await accountFreeBalance.refetch();
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const onSubmit = async (values: z.infer<typeof sendActionFormSchema>) => {
+    const feeNano = toNano(estimatedFee ?? "0");
+    const balance = accountFreeBalance.data ?? 0n;
+    const maxTransferable = balance - feeNano;
 
-    const isValidInput = amount && recipient && !inputError.value;
-    if (!isValidInput) return;
+    if (toNano(values.amount) > maxTransferable) {
+      setError("amount", {
+        message: "Amount exceeds maximum transferable amount",
+      });
+      return;
+    }
 
     setTransactionStatus({
       status: "STARTING",
@@ -157,9 +146,9 @@ export function SendAction() {
       message: "Starting transaction...",
     });
 
-    void transfer({
-      to: recipient,
-      amount,
+    await transfer({
+      to: values.recipient,
+      amount: values.amount,
       callback: handleCallback,
       refetchHandler,
     });
@@ -167,117 +156,154 @@ export function SendAction() {
 
   const formRef = useRef<HTMLFormElement>(null);
 
+  const handleAmountChange = (amount: string) => {
+    const newAmount = amount.replace(/[^0-9.]/g, "");
+    setValue("amount", newAmount);
+    return newAmount;
+  };
+
+  const validateAmount = (amount: string) => {
+    const amountNano = toNano(amount || "0");
+
+    const feeNano = toNano(estimatedFee ?? "0");
+    const balanceAfterFees = (accountFreeBalance.data ?? 0n) - feeNano;
+
+    const maxAmountNano = balanceAfterFees > 0n ? balanceAfterFees : 0n;
+
+    if (amountNano > maxAmountNano) {
+      setError("amount", {
+        message: "Amount exceeds maximum transferable amount",
+      });
+      return;
+    } else {
+      clearErrors("amount");
+      return;
+    }
+  };
+
+  useEffect(() => {
+    const { unsubscribe } = watch((formData, { name, type }) => {
+      if (
+        name === "recipient" &&
+        type === "change" &&
+        (formData.recipient?.length ?? 0) >= 47 &&
+        (formData.recipient?.length ?? 0) <= 48
+      ) {
+        void handleEstimateFee(String(formData.recipient));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [watch, handleEstimateFee]);
+
+  useEffect(() => {
+    reset();
+    setEstimatedFee(null);
+    setMaxAmount("");
+  }, [selectedAccount?.address, reset]);
+
   const reviewData = [
     {
       label: "To",
-      content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
+      content: recipientValue
+        ? smallAddress(recipientValue, 6)
+        : "Recipient Address",
     },
-    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
+    {
+      label: "Amount",
+      content: amountValue ? `${amountValue} TORUS` : "0 TORUS",
+    },
     {
       label: "Fee",
-      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "-"}`,
+      content:
+        recipientValue && selectedAccount?.address
+          ? `${estimatedFee} TORUS`
+          : "-",
     },
   ];
-
-  useEffect(() => {
-    async function fetchFeeAndMax() {
-      const fee = await handleEstimateFee();
-      handleUpdateMaxAmount(fee);
-    }
-
-    void fetchFeeAndMax();
-  }, [recipient]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    setRecipient("");
-    setAmount("");
-    setMaxAmount("");
-    setInputError({ recipient: null, value: null });
-  }, [selectedAccount?.address]);
 
   return (
     <div className="l flex w-full flex-col gap-4 md:flex-row">
       <Card className="w-full animate-fade p-6 md:w-3/5">
-        <form
-          onSubmit={handleSubmit}
-          ref={formRef}
-          className="flex w-full flex-col gap-6"
-        >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="send-recipient" className="">
-              To
-            </Label>
-            <Input
-              id="send-recipient"
-              type="text"
-              value={recipient}
-              required
-              onChange={handleRecipientChange}
-              placeholder="Full recipient address"
-              disabled={!selectedAccount?.address || isEstimating}
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            ref={formRef}
+            className="flex w-full flex-col gap-6"
+          >
+            <FormField
+              control={form.control}
+              name="recipient"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-2">
+                  <FormLabel>To</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Full recipient address"
+                      disabled={!selectedAccount?.address || isEstimating}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {inputError.recipient && (
-              <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                {inputError.recipient}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="send-amount" className="text-base">
-              Amount
-            </Label>
-            <div className="flex w-full flex-col gap-2">
-              <Input
-                id="send-amount"
-                type="number"
-                value={amount}
-                max={maxAmount}
-                min={0}
-                step={0.000000000000000001}
-                required
-                onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="Amount of TORUS"
-                className="disabled:cursor-not-allowed"
-                disabled={!recipient || isEstimating}
-              />
-              <AmountButtons
-                setAmount={handleAmountChange}
-                availableFunds={maxAmount}
-                disabled={!recipient || isEstimating}
-              />
-            </div>
-            {inputError.value && (
-              <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                {inputError.value}
-              </span>
-            )}
-          </div>
 
-          <FeeLabel
-            estimatedFee={estimatedFee}
-            isEstimating={isEstimating}
-            accountConnected={!!selectedAccount}
-          />
-
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-2">
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onBlur={() => {
+                        if (amountRef.current !== field.value) {
+                          const newAmount = handleAmountChange(field.value);
+                          amountRef.current = newAmount;
+                          validateAmount(newAmount);
+                        }
+                        return null;
+                      }}
+                      placeholder="Amount of TORUS"
+                      disabled={
+                        isEstimating || !estimatedFee || !String(recipientValue)
+                      }
+                      type="number"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          )}
-        </form>
+
+            <AmountButtons
+              setAmount={(value) => {
+                handleAmountChange(value);
+                setFocus("amount");
+              }}
+              availableFunds={maxAmount}
+              disabled={isEstimating || !estimatedFee}
+            />
+
+            <FeeLabel
+              estimatedFee={estimatedFee}
+              isEstimating={isEstimating}
+              accountConnected={!!selectedAccount}
+            />
+
+            {transactionStatus.status && (
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
+              />
+            )}
+          </form>
+        </Form>
       </Card>
-      <WalletTransactionReview
-        disabled={
-          transactionStatus.status === "PENDING" ||
-          !amount ||
-          !recipient ||
-          isEstimating ||
-          !!inputError.value
-        }
-        formRef={formRef}
-        reviewContent={reviewData}
-      />
+
+      <WalletTransactionReview formRef={formRef} reviewContent={reviewData} />
     </div>
   );
 }
