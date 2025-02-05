@@ -34,7 +34,9 @@ export function WalletTransactionReview(props: WalletTransactionReviewProps) {
             return (
               <span className="flex w-full justify-between" key={content.label}>
                 {content.label}:
-                <span className="text-muted-foreground">{content.content}</span>
+                <span className="text-right text-muted-foreground">
+                  {content.content}
+                </span>
               </span>
             );
           })}
