@@ -12,7 +12,7 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript } from "~/env";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { AllocatorHeader } from "./components/allocator-header";
-import { DelegatedList } from "./components/delegated-list";
+import { AllocationMenu } from "./components/allocation-menu";
 import { TutorialDialog } from "./components/tutorial-dialog";
 
 const APP_NAME = "Allocator";
@@ -49,7 +49,7 @@ export default function RootLayout({
           <TRPCReactProvider>
             <AllocatorHeader />
             <TutorialDialog />
-            <DelegatedList />
+            <AllocationMenu />
             {children}
             <Footer />
           </TRPCReactProvider>

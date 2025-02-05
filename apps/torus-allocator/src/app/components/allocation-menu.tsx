@@ -22,12 +22,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  Slider,
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useAllocationMenuStore } from "~/stores/allocationMenuStore";
 
-export function DelegatedList() {
+export function AllocationMenu() {
   const {
     delegatedAgents,
     getTotalPercentage,
@@ -333,6 +334,16 @@ export function DelegatedList() {
                           </Button>
                         </div>
                       </div>
+                      <Slider
+                        value={[agent.percentage]}
+                        onValueChange={(value) =>
+                          handlePercentageChange(
+                            agent.address,
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                            value[0]!.toString(),
+                          )
+                        }
+                      />
                     </div>
                   ))
                 ) : (
