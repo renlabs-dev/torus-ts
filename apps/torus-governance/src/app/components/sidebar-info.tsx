@@ -93,7 +93,7 @@ export const SidebarInfo = () => {
           {isFetchingCadreList ? (
             <Skeleton className="flex w-1/5 py-3" />
           ) : (
-            Math.floor((cadreListData?.length ?? 0) / 2 + 1)
+            Math.floor((cadreListData?.length ?? 0) / 2 + 1) // TODO: move logic out of component
           )}
         </p>
         <span className="text-sm text-muted-foreground">
