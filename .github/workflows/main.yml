@@ -44,9 +44,7 @@ jobs:
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
   torus-wallet:
-    needs:
-      - turbo-check
-      - torus-cache
+    needs: turbo-check
     if: |
       inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
@@ -59,10 +57,7 @@ jobs:
       skip_build: ${{ inputs.skip_build || false }}
 
   torus-allocator:
-    needs:
-      - turbo-check
-      - torus-cache
-      - torus-worker
+    needs: turbo-check
     if: |
       inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
@@ -104,10 +99,7 @@ jobs:
       skip_build: ${{ inputs.skip_build || false }}
 
   torus-governance:
-    needs:
-      - turbo-check
-      - torus-cache
-      - torus-worker
+    needs: turbo-check
     if: |
       inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
@@ -224,9 +216,7 @@ jobs:
   ######## DRY RUN BUILDS  ##########
   ###################################
   torus-allocator-pr-activate:
-    needs:
-      - turbo-check
-      - torus-cache-pr-activate
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
@@ -272,9 +262,7 @@ jobs:
       delete: true
 
   torus-governance-pr-activate:
-    needs:
-      - turbo-check
-      - torus-cache-pr-activate
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
@@ -316,9 +304,7 @@ jobs:
       delete: true
 
   torus-wallet-pr-activate:
-    needs:
-      - turbo-check
-      - torus-cache-pr-activate
+    needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
