@@ -653,6 +653,9 @@ importers:
 
   apps/torus-wallet:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^3.9.1
+        version: 3.10.0(react-hook-form@7.54.2(react@18.2.0))
       '@react-spring/three':
         specifier: ^9.7.5
         version: 9.7.5(@react-three/fiber@9.0.0-alpha.8(@types/react@18.2.79)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react-native@0.77.0(@babel/core@7.26.7)(@babel/preset-env@7.26.7(@babel/core@7.26.7))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))(react@18.2.0)(three@0.164.1))(react@18.2.0)(three@0.164.1)
@@ -716,6 +719,9 @@ importers:
       react-dom:
         specifier: catalog:react18
         version: 18.2.0(react@18.2.0)
+      react-hook-form:
+        specifier: ^7.53.2
+        version: 7.54.2(react@18.2.0)
       recharts:
         specifier: ^2.13.0-alpha.4
         version: 2.15.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)

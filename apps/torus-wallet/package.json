@@ -14,6 +14,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.1",
+    "@react-spring/three": "^9.7.5",
+    "@react-three/drei": "^9.117.3",
+    "@react-three/fiber": "9.0.0-alpha.8",
+    "@react-three/postprocessing": "^2.19.1",
     "@tanstack/react-query": "catalog:",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
@@ -22,22 +27,19 @@
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "framer-motion": "^11.15.0",
-    "lucide-react": "^0.454.0",
-    "next": "catalog:",
-    "react": "catalog:react18",
-    "react-dom": "catalog:react18",
-    "zod": "catalog:",
     "glsl-noise": "^0.0.0",
     "glsl-rotate": "^2.0.0",
     "glslify-hex": "^2.1.1",
     "glslify-import": "^3.1.0",
-    "@react-spring/three": "^9.7.5",
-    "@react-three/drei": "^9.117.3",
-    "@react-three/fiber": "9.0.0-alpha.8",
-    "@react-three/postprocessing": "^2.19.1",
     "install": "^0.13.0",
+    "lucide-react": "^0.454.0",
+    "next": "catalog:",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18",
+    "react-hook-form": "^7.53.2",
     "recharts": "^2.13.0-alpha.4",
-    "three": "^0.164.1"
+    "three": "^0.164.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "catalog:",
@@ -49,13 +51,13 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
+    "@types/three": "^0.165.0",
     "glslify": "^7.1.1",
     "glslify-loader": "^2.0.0",
-    "raw-loader": "^4.0.2",
     "jiti": "catalog:",
     "postcss": "catalog:",
+    "raw-loader": "^4.0.2",
     "tailwindcss": "catalog:",
-    "typescript": "catalog:",
-    "@types/three": "^0.165.0"
+    "typescript": "catalog:"
   }
 }
