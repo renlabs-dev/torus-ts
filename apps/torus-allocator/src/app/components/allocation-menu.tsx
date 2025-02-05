@@ -37,6 +37,7 @@ export function AllocationMenu() {
     setDelegatedAgentsFromDB,
     updateOriginalAgents,
     updatePercentage,
+    getAgentPercentage,
   } = useDelegateAgentStore();
 
   const { isOpen, toggleIsOpen, setIsOpen } = useAllocationMenuStore();
@@ -292,60 +293,66 @@ export function AllocationMenu() {
             >
               <div className="flex flex-col gap-2">
                 {delegatedAgents.length ? (
-                  delegatedAgents.map((agent) => (
-                    <div
-                      key={agent.id}
-                      className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"}`}
-                    >
-                      <span className="font-medium">{agent.name}</span>
+                  delegatedAgents
+                    .slice() // Create a shallow copy to avoid mutating the original array
+                    .sort((a, b) => a.address.localeCompare(b.address)) // Sort by address
+                    .map((agent) => (
+                      <div
+                        key={agent.address} // Use address as the key for more stability
+                        className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${
+                          isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"
+                        }`}
+                      >
+                        <span className="font-medium">{agent.name}</span>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400">
-                          {smallAddress(agent.address, 6)}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400">
+                            {smallAddress(agent.address, 6)}
+                          </span>
 
-                        <div className="flex items-center gap-1">
-                          <Label
-                            className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
-                            htmlFor={`percentage:${agent.id}`}
-                          >
-                            <Input
-                              id={`percentage:${agent.id}`}
-                              type="text"
-                              value={agent.percentage}
-                              onChange={(e) =>
-                                handlePercentageChange(
-                                  agent.address,
-                                  e.target.value,
-                                )
-                              }
-                              maxLength={3}
-                              className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
-                            />
+                          <div className="flex items-center gap-1">
+                            <Label
+                              className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
+                              htmlFor={`percentage:${agent.address}`} // Use address instead of id
+                            >
+                              <Input
+                                type="text"
+                                value={getAgentPercentage(agent.address)}
+                                onChange={(e) =>
+                                  handlePercentageChange(
+                                    agent.address,
+                                    e.target.value,
+                                  )
+                                }
+                                maxLength={3}
+                                className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
+                              />
 
-                            <span className="text-muted-foreground">%</span>
-                          </Label>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => removeAgent(agent.address)}
-                          >
-                            <X className="h-5 w-5" />
-                          </Button>
+                              <span className="text-muted-foreground">%</span>
+                            </Label>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={() => removeAgent(agent.address)}
+                            >
+                              <X className="h-5 w-5" />
+                            </Button>
+                          </div>
                         </div>
+                        <Slider
+                          value={[getAgentPercentage(agent.address)]}
+                          onValueChange={(value) =>
+                            handlePercentageChange(
+                              agent.address,
+                              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                              value[0]!.toString(),
+                            )
+                          }
+                          max={100}
+                          step={1}
+                        />
                       </div>
-                      <Slider
-                        value={[agent.percentage]}
-                        onValueChange={(value) =>
-                          handlePercentageChange(
-                            agent.address,
-                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                            value[0]!.toString(),
-                          )
-                        }
-                      />
-                    </div>
-                  ))
+                    ))
                 ) : (
                   <p>Select a agent to allocate through the agents page.</p>
                 )}

@@ -24,6 +24,7 @@ import {
   Icons,
   Label,
   Separator,
+  Slider,
 } from "@torus-ts/ui";
 import type { Nullish } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
@@ -116,7 +117,8 @@ const useBlobUrl = (blob: Blob | Nullish) => {
 export function AgentItem(props: AgentCardProps) {
   const { agentKey, metadataUri } = props;
 
-  const { delegatedAgents } = useDelegateAgentStore();
+  const { delegatedAgents, updatePercentage, getAgentPercentage } =
+    useDelegateAgentStore();
   const { setIsOpen } = useAllocationMenuStore();
 
   const { data: agentMetadataResult } = useQueryAgentMetadata(metadataUri);
@@ -132,6 +134,13 @@ export function AgentItem(props: AgentCardProps) {
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
 
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
+
+  const handlePercentageChange = (value: number[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    updatePercentage(props.agentKey, value[0]!);
+  };
+
+  const currentPercentage = getAgentPercentage(props.agentKey);
 
   return (
     <div className="group relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:bg-accent hover:shadow-2xl">
@@ -240,17 +249,17 @@ export function AgentItem(props: AgentCardProps) {
           <p className="text-sm md:min-h-16">{shortDescription}</p>
 
           <div>
-            <Label className="absolute ml-2 mt-3 flex items-center gap-1.5 text-xs font-semibold">
+            <Label className="absolute mb-3 flex items-center gap-1.5 text-xs font-semibold">
               Your current allocation: {props.percentage}%
             </Label>
-            <div className="rounded-radius my-2 w-full border bg-primary-foreground">
-              <div
-                className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-3"
-                style={{
-                  width: `${props.percentage?.toFixed(0)}%`,
-                }}
-              />
-            </div>
+
+            <Slider
+              value={[currentPercentage]}
+              onValueChange={handlePercentageChange}
+              max={100}
+              step={1}
+              className="relative z-30 mb-2 mt-6"
+            />
           </div>
 
           <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
