@@ -13,7 +13,6 @@ import { EnvScript } from "~/env";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { AllocatorHeader } from "./components/allocator-header";
 import { AllocationMenu } from "./components/allocation-menu";
-import { TutorialDialog } from "./components/tutorial-dialog";
 
 const APP_NAME = "Allocator";
 
@@ -48,7 +47,7 @@ export default function RootLayout({
         >
           <TRPCReactProvider>
             <AllocatorHeader />
-            <TutorialDialog />
+
             <AllocationMenu />
             {children}
             <Footer />

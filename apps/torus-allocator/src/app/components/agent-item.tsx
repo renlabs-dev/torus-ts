@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import {
-  ChartPie,
   ChevronsLeft,
   ChevronsRight,
   Cuboid,
@@ -16,7 +15,6 @@ import Link from "next/link";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Badge,
-  Button,
   CopyButton,
   HoverCard,
   HoverCardContent,
@@ -32,8 +30,7 @@ import { smallAddress } from "@torus-ts/utils/subspace";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
-import { DelegateModuleWeight } from "./delegate-module-weight";
-import { useAllocationMenuStore } from "~/stores/allocationMenuStore";
+import { useTorus } from "@torus-ts/torus-provider";
 
 interface AgentCardProps {
   id: number;
@@ -117,9 +114,15 @@ const useBlobUrl = (blob: Blob | Nullish) => {
 export function AgentItem(props: AgentCardProps) {
   const { agentKey, metadataUri } = props;
 
-  const { delegatedAgents, updatePercentage, getAgentPercentage } =
-    useDelegateAgentStore();
-  const { setIsOpen } = useAllocationMenuStore();
+  const {
+    delegatedAgents,
+    addAgent,
+    removeAgent,
+    updatePercentage,
+    getAgentPercentage,
+  } = useDelegateAgentStore();
+
+  const { selectedAccount } = useTorus();
 
   const { data: agentMetadataResult } = useQueryAgentMetadata(metadataUri);
   const metadata = agentMetadataResult?.metadata;
@@ -137,11 +140,34 @@ export function AgentItem(props: AgentCardProps) {
 
   const handlePercentageChange = (value: number[]) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    updatePercentage(props.agentKey, value[0]!);
+    const newPercentage = value[0]!;
+
+    if (!selectedAccount?.address) {
+      toast.error("Connect Wallet to allocate to this agent.");
+      return;
+    }
+
+    if (newPercentage > 0) {
+      if (!isAgentDelegated) {
+        addAgent({
+          id: props.id,
+          name: props.name,
+          address: props.agentKey,
+          metadataUri: props.metadataUri,
+          registrationBlock: props.registrationBlock ?? null,
+        });
+        toast.success("Agent added to allocation.");
+      }
+      updatePercentage(props.agentKey, newPercentage);
+    } else {
+      if (isAgentDelegated) {
+        removeAgent(props.agentKey);
+        toast.info("Agent removed from allocation.");
+      }
+    }
   };
 
   const currentPercentage = getAgentPercentage(props.agentKey);
-
   return (
     <div className="group relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:bg-accent hover:shadow-2xl">
       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -248,7 +274,7 @@ export function AgentItem(props: AgentCardProps) {
         <div className="mt-4 flex flex-col gap-2">
           <p className="text-sm md:min-h-16">{shortDescription}</p>
 
-          <div>
+          <div className="mt-4">
             <Label className="absolute mb-3 flex items-center gap-1.5 text-xs font-semibold">
               Your current allocation: {props.percentage}%
             </Label>
@@ -258,26 +284,8 @@ export function AgentItem(props: AgentCardProps) {
               onValueChange={handlePercentageChange}
               max={100}
               step={1}
-              className="relative z-30 mb-2 mt-6"
+              className="relative z-30 mt-6 py-2"
             />
-          </div>
-
-          <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
-            <DelegateModuleWeight
-              id={props.id}
-              name={props.name}
-              agentKey={props.agentKey}
-              metadataUri={metadataUri}
-              registrationBlock={props.registrationBlock ?? null}
-              className="w-full"
-            />
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(true)}
-              className="border-white/80"
-            >
-              <ChartPie size={16} />
-            </Button>
           </div>
         </div>
       </div>

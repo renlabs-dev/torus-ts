@@ -70,11 +70,8 @@ export const tutorialData = {
 export function TutorialDialog() {
   return (
     <Dialog>
-      <DialogTrigger
-        asChild
-        className="fixed bottom-4 right-52 z-50 md:bottom-14"
-      >
-        <Button variant="outline" className="border-white/80">
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
           <BookText />
           <p className="hidden md:block">Tutorial</p>
         </Button>

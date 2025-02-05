@@ -2,7 +2,7 @@
 
 import { api } from "~/trpc/react";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-import { LoaderCircle, PieChart, X } from "lucide-react";
+import { Anvil, LoaderCircle, PieChart, X } from "lucide-react";
 import { toast } from "@torus-ts/toast-provider";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -263,153 +263,173 @@ export function AllocationMenu() {
   }, [delegatedAgents, isOpen]);
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger
-        asChild
-        onClick={toggleIsOpen}
-        disabled={!selectedAccount}
-        className={`fixed bottom-4 right-4 z-[50] marker:flex md:bottom-14`}
-      >
-        <Button variant="outline" className="border-white/80">
-          {!selectedAccount ? (
-            <LoaderCircle className="animate-spin" />
-          ) : (
-            <PieChart />
-          )}
-          Allocation Menu
-        </Button>
-      </SheetTrigger>
-
-      <SheetContent className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}>
-        <div className="flex h-full flex-col justify-between gap-8">
-          <div className="flex h-full flex-col gap-8">
-            <SheetHeader>
-              <SheetTitle>Allocation Menu</SheetTitle>
-            </SheetHeader>
-
-            <div
-              ref={contentRef}
-              className="max-h-[calc(100vh-270px)] overflow-y-auto"
+    <>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <div className="fixed bottom-4 right-0 z-[50] flex w-full items-center justify-end gap-2 p-2 marker:flex md:bottom-11">
+          <div className="flex flex-col items-center gap-2">
+            <SheetTrigger
+              asChild
+              onClick={toggleIsOpen}
+              disabled={!selectedAccount}
             >
-              <div className="flex flex-col gap-2">
-                {delegatedAgents.length ? (
-                  delegatedAgents
-                    .slice() // Create a shallow copy to avoid mutating the original array
-                    .sort((a, b) => a.address.localeCompare(b.address)) // Sort by address
-                    .map((agent) => (
-                      <div
-                        key={agent.address} // Use address as the key for more stability
-                        className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${
-                          isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"
-                        }`}
-                      >
-                        <span className="font-medium">{agent.name}</span>
-
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-400">
-                            {smallAddress(agent.address, 6)}
-                          </span>
-
-                          <div className="flex items-center gap-1">
-                            <Label
-                              className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
-                              htmlFor={`percentage:${agent.address}`} // Use address instead of id
-                            >
-                              <Input
-                                type="text"
-                                value={getAgentPercentage(agent.address)}
-                                onChange={(e) =>
-                                  handlePercentageChange(
-                                    agent.address,
-                                    e.target.value,
-                                  )
-                                }
-                                maxLength={3}
-                                className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
-                              />
-
-                              <span className="text-muted-foreground">%</span>
-                            </Label>
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              onClick={() => removeAgent(agent.address)}
-                            >
-                              <X className="h-5 w-5" />
-                            </Button>
-                          </div>
-                        </div>
-                        <Slider
-                          value={[getAgentPercentage(agent.address)]}
-                          onValueChange={(value) =>
-                            handlePercentageChange(
-                              agent.address,
-                              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                              value[0]!.toString(),
-                            )
-                          }
-                          max={100}
-                          step={1}
-                        />
-                      </div>
-                    ))
+              <Button variant="outline" className="w-full" size="lg">
+                {!selectedAccount ? (
+                  <LoaderCircle className="animate-spin" />
                 ) : (
-                  <p>Select a agent to allocate through the agents page.</p>
+                  <PieChart />
                 )}
-              </div>
-            </div>
-          </div>
-
-          <SheetFooter className="flex min-h-fit gap-4 sm:flex-col sm:space-x-0">
-            <Label
-              className={cn("pt-2 text-center text-sm", {
-                "text-pink-500":
-                  submitStatus.message === "You have unsaved changes",
-                "text-cyan-500": submitStatus.message === "All changes saved!",
-                "text-green-500": submitStatus.message === "All changes saved!",
-                "text-amber-500": ![
-                  "You have unsaved changes",
-                  "All changes saved!",
-                ].includes(submitStatus.message),
-              })}
-            >
-              {submitStatus.message}
-            </Label>
-            <div className="mt-auto flex w-full flex-col gap-2">
-              <div className="flex flex-row gap-2">
-                <Button
-                  onClick={handleAutoCompletePercentage}
-                  className="w-1/2"
-                  disabled={
-                    totalPercentage === 100 || delegatedAgents.length === 0
-                  }
-                  variant="outline"
-                >
-                  Complete 100%
-                </Button>
-
-                <Button
-                  onClick={handleRemoveAllWeight}
-                  className="w-1/2"
-                  disabled={isSubmitting || !hasItemsToClear}
-                  variant="outline"
-                >
-                  {isSubmitting ? "Removing..." : `Remove Agents`}
-                </Button>
-              </div>
-              <Button
-                onClick={handleSubmit}
-                variant="outline"
-                className="w-full"
-                disabled={submitStatus.disabled}
-                title={submitStatus.disabled ? submitStatus.message : ""}
-              >
-                {isSubmitting ? "Submitting..." : "Submit Agents"}
+                Allocation Menu
               </Button>
-            </div>
-          </SheetFooter>
+            </SheetTrigger>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleSubmit}
+              disabled={submitStatus.disabled}
+              className="w-full border border-green-500 bg-[#14252A] text-green-500"
+              title={submitStatus.disabled ? submitStatus.message : ""}
+            >
+              <Anvil />
+              {isSubmitting ? "Submitting..." : "Submit Allocation"}
+            </Button>
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+
+        <SheetContent
+          className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}
+        >
+          <div className="flex h-full flex-col justify-between gap-8">
+            <div className="flex h-full flex-col gap-8">
+              <SheetHeader>
+                <SheetTitle>Allocation Menu</SheetTitle>
+              </SheetHeader>
+
+              <div
+                ref={contentRef}
+                className="max-h-[calc(100vh-270px)] overflow-y-auto"
+              >
+                <div className="flex flex-col gap-2">
+                  {delegatedAgents.length ? (
+                    delegatedAgents
+                      .slice() // Create a shallow copy to avoid mutating the original array
+                      .sort((a, b) => a.address.localeCompare(b.address)) // Sort by address
+                      .map((agent) => (
+                        <div
+                          key={agent.address} // Use address as the key for more stability
+                          className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${
+                            isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"
+                          }`}
+                        >
+                          <span className="font-medium">{agent.name}</span>
+
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-400">
+                              {smallAddress(agent.address, 6)}
+                            </span>
+
+                            <div className="flex items-center gap-1">
+                              <Label
+                                className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
+                                htmlFor={`percentage:${agent.address}`} // Use address instead of id
+                              >
+                                <Input
+                                  type="text"
+                                  value={getAgentPercentage(agent.address)}
+                                  onChange={(e) =>
+                                    handlePercentageChange(
+                                      agent.address,
+                                      e.target.value,
+                                    )
+                                  }
+                                  maxLength={3}
+                                  className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
+                                />
+
+                                <span className="text-muted-foreground">%</span>
+                              </Label>
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                onClick={() => removeAgent(agent.address)}
+                              >
+                                <X className="h-5 w-5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <Slider
+                            value={[getAgentPercentage(agent.address)]}
+                            onValueChange={(value) =>
+                              handlePercentageChange(
+                                agent.address,
+                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                value[0]!.toString(),
+                              )
+                            }
+                            max={100}
+                            step={1}
+                          />
+                        </div>
+                      ))
+                  ) : (
+                    <p>Select a agent to allocate through the agents page.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <SheetFooter className="flex min-h-fit gap-4 sm:flex-col sm:space-x-0">
+              <Label
+                className={cn("pt-2 text-center text-sm", {
+                  "text-pink-500":
+                    submitStatus.message === "You have unsaved changes",
+                  "text-cyan-500":
+                    submitStatus.message === "All changes saved!",
+                  "text-green-500":
+                    submitStatus.message === "All changes saved!",
+                  "text-amber-500": ![
+                    "You have unsaved changes",
+                    "All changes saved!",
+                  ].includes(submitStatus.message),
+                })}
+              >
+                {submitStatus.message}
+              </Label>
+              <div className="mt-auto flex w-full flex-col gap-2">
+                <div className="flex flex-row gap-2">
+                  <Button
+                    onClick={handleAutoCompletePercentage}
+                    className="w-1/2"
+                    disabled={
+                      totalPercentage === 100 || delegatedAgents.length === 0
+                    }
+                    variant="outline"
+                  >
+                    Complete 100%
+                  </Button>
+
+                  <Button
+                    onClick={handleRemoveAllWeight}
+                    className="w-1/2"
+                    disabled={isSubmitting || !hasItemsToClear}
+                    variant="outline"
+                  >
+                    {isSubmitting ? "Removing..." : `Remove Agents`}
+                  </Button>
+                </div>
+                <Button
+                  onClick={handleSubmit}
+                  variant="outline"
+                  className="w-full"
+                  disabled={submitStatus.disabled}
+                  title={submitStatus.disabled ? submitStatus.message : ""}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Agents"}
+                </Button>
+              </div>
+            </SheetFooter>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
