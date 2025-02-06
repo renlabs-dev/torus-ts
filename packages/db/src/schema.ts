@@ -22,6 +22,7 @@ export const createTable = pgTableCreator((name) => `${name}`);
 import { extract_pgenum_values } from "./utils";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
+import { number } from "zod";
 
 // ==== Util ====
 
@@ -124,6 +125,28 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
 
   ...timeFields(),
 });
+
+
+
+export const applicationStatus = pgEnum("application_status", [
+  "OPEN",
+  "ACCEPTED",
+  "REJECTED",
+  "EXPIRED",
+]);
+export const whitelistApplicationSchema = createTable("whitelist_application", {
+  id: serial("id").primaryKey(),
+
+  agentKey: ss58Address("user_key").notNull().unique(),
+  payerKey: ss58Address("payer_key").notNull(),
+  data: text("data").notNull(),
+  cost: bigint("cost").notNull(),
+  expiresAt: integer("expires_at").notNull(), // block
+  status: applicationStatus("status").notNull(),
+  notified: boolean("notified").notNull().default(false), // offchain
+  ...timeFields(),
+});
+
 
 export const penalizeAgentVotesSchema = createTable(
   "penalize_agent_votes",

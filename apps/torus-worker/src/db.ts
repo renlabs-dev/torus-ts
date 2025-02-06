@@ -22,6 +22,7 @@ import {
   penalizeAgentVotesSchema,
   cadreCandidateSchema,
   candidacyStatusValues,
+  whitelistApplicationSchema,
 } from "@torus-ts/db/schema";
 import type {
   Agent as TorusAgent,
@@ -38,6 +39,8 @@ export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type Application = typeof whitelistApplicationSchema.$inferInsert;
+
 
 export async function insertAgentWeight(weights: AgentWeight[]) {
   await db
@@ -52,6 +55,31 @@ export async function insertAgentWeight(weights: AgentWeight[]) {
     )
     .execute();
 }
+
+
+export async function upsertWhitelistApplication(applications: Application[]) {
+  await db
+    .insert(whitelistApplicationSchema)
+    .values(
+      applications.map((a) => ({
+        agentKey: a.agentKey,
+        payerKey: a.payerKey,
+        status: a.status,
+        expires_at: a.expires_at,
+        cost: a.cost,
+        data: a.data,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [whitelistApplicationSchema.agentKey],
+      set: buildConflictUpdateColumns(whitelistApplicationSchema, [
+        "status",
+        "notified",
+      ]),
+    })
+    .execute();
+}
+
 
 export async function upsertAgentData(agents: Agent[]) {
   await db
