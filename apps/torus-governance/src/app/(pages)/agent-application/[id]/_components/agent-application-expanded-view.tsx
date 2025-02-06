@@ -121,7 +121,11 @@ export function AgentApplicationExpandedView(
 
           {/* Comments Section */}
           <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
-          <CreateComment id={content.id} itemType="AGENT_APPLICATION" />
+          <CreateComment
+            id={content.id}
+            author={content.author}
+            itemType="AGENT_APPLICATION"
+          />
           <VoterList {...votersListProps} />
         </div>
 

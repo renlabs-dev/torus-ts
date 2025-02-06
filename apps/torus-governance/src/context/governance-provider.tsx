@@ -280,7 +280,7 @@ export function GovernanceProvider({
       }}
     >
       <Header
-        appName="DAO Portal"
+        appName="Torus DAO"
         wallet={
           <WalletDropdown
             balance={accountFreeBalance.data}
