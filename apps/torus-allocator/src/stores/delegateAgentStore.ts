@@ -48,87 +48,83 @@ export const useDelegateAgentStore = create<DelegateState>()(
             (agent) => agent.address !== agentKey,
           ),
         })),
-      updatePercentage: (agentKey, newPercentage) =>
+      updatePercentage: (agentKey: string, newPercentage: number) =>
         set((state) => {
-          const currentAgent = state.delegatedAgents.find(
+          const agentIndex = state.delegatedAgents.findIndex(
             (agent) => agent.address === agentKey,
           );
-          if (!currentAgent) return state;
 
-          const otherAgents = state.delegatedAgents.filter(
-            (agent) => agent.address !== agentKey,
-          );
+          const updatedAgents = [...state.delegatedAgents];
+          const currentAgent = updatedAgents[agentIndex];
 
-          const currentTotal = state.delegatedAgents.reduce(
+          if (!currentAgent) {
+            return state;
+          }
+
+          currentAgent.percentage = newPercentage;
+
+          const totalPercentage = updatedAgents.reduce(
             (sum, agent) => sum + agent.percentage,
             0,
           );
-          const newTotal =
-            currentTotal - currentAgent.percentage + newPercentage;
 
-          if (newTotal <= 100) {
-            // If new total is within limit, update the current agent and adjust others if needed
-            const updatedAgents = state.delegatedAgents.map((agent) =>
-              agent.address === agentKey
-                ? { ...agent, percentage: newPercentage }
-                : agent,
-            );
+          const remainingAgentsCount = updatedAgents.length - 1;
 
-            // Distribute any remaining percentage
-            const remainingPercentage =
-              100 -
-              updatedAgents.reduce((sum, agent) => sum + agent.percentage, 0);
-            for (let i = 0; i < remainingPercentage; i++) {
-              if (
-                updatedAgents[i % updatedAgents.length]?.address !== agentKey
-              ) {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                updatedAgents[i % updatedAgents.length]!.percentage += 1;
+          if (totalPercentage > 100) {
+            const excess = totalPercentage - 100;
+
+            if (remainingAgentsCount) {
+              for (let i = 0; i < updatedAgents.length; i++) {
+                const agent = updatedAgents[i];
+                if (agent && i !== agentIndex) {
+                  agent.percentage = Math.max(
+                    0,
+                    Math.round(
+                      agent.percentage -
+                        (agent.percentage /
+                          (totalPercentage - currentAgent.percentage)) *
+                          excess,
+                    ),
+                  );
+                }
               }
             }
-
-            return { delegatedAgents: updatedAgents };
-          } else {
-            // If new total exceeds 100%, adjust other agents proportionally
-            const excessPercentage = newTotal - 100;
-            const totalOtherPercentage = otherAgents.reduce(
-              (sum, agent) => sum + agent.percentage,
-              0,
-            );
-
-            const adjustedOtherAgents = otherAgents.map((agent) => {
-              const reductionFactor = agent.percentage / totalOtherPercentage;
-              const newPercentage = Math.max(
-                0,
-                Math.round(
-                  agent.percentage - excessPercentage * reductionFactor,
-                ),
-              );
-              return { ...agent, percentage: newPercentage };
-            });
-
-            // Ensure total is exactly 100%
-            const adjustedTotal =
-              adjustedOtherAgents.reduce(
-                (sum, agent) => sum + agent.percentage,
-                0,
-              ) + newPercentage;
-            const difference = 100 - adjustedTotal;
-
-            // Distribute any remaining or excess percentage
-            for (let i = 0; i < Math.abs(difference); i++) {
-              const index = i % adjustedOtherAgents.length;
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              adjustedOtherAgents[index]!.percentage += Math.sign(difference);
+          } else if (totalPercentage < 100) {
+            const needed = 100 - totalPercentage;
+            if (remainingAgentsCount > 0) {
+              for (let i = 0; i < updatedAgents.length; i++) {
+                const agent = updatedAgents[i];
+                if (agent && i !== agentIndex) {
+                  agent.percentage = Math.round(
+                    agent.percentage +
+                      (agent.percentage /
+                        (totalPercentage - currentAgent.percentage)) *
+                        needed,
+                  );
+                }
+              }
             }
-
-            return {
-              delegatedAgents: [
-                ...adjustedOtherAgents,
-                { ...currentAgent, percentage: newPercentage },
-              ],
-            };
           }
+
+          const finalTotal = updatedAgents.reduce(
+            (sum, agent) => sum + agent.percentage,
+            0,
+          );
+          let diff = Math.round(100 - finalTotal);
+
+          if (diff !== 0) {
+            let remainingAgentsToAdjust = remainingAgentsCount;
+            for (let i = 0; i < updatedAgents.length; i++) {
+              const agent = updatedAgents[i];
+              if (agent && i !== agentIndex && remainingAgentsToAdjust > 0) {
+                const adjustment = Math.round(diff / remainingAgentsToAdjust);
+                agent.percentage += adjustment;
+                diff -= adjustment;
+                remainingAgentsToAdjust--;
+              }
+            }
+          }
+          return { delegatedAgents: updatedAgents };
         }),
       getTotalPercentage: () => {
         return get().delegatedAgents.reduce(
