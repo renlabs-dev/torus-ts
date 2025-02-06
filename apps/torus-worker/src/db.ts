@@ -264,7 +264,8 @@ export async function countCadreKeys(): Promise<number> {
   return result[0].count;
 }
 
-export async function pendingPenalizations(threshold: number) {
+
+export async function pendingPenalizations(threshold: number, n: number) {
   const subquery = db
     .select({ agentKey: penalizeAgentVotesSchema.agentKey })
     .from(penalizeAgentVotesSchema)
@@ -276,8 +277,17 @@ export async function pendingPenalizations(threshold: number) {
     .with(subquery.as("subquery"))
     .select({
       agentKey: penalizeAgentVotesSchema.agentKey,
-      medianPenaltyFactor:
-        sql`percentile_cont(0.6) within group (order by ${penalizeAgentVotesSchema.penaltyFactor})`.as<number>(),
+      nthBiggestPenaltyFactor: sql`
+        (
+          SELECT penalty_factor
+          FROM ${penalizeAgentVotesSchema} as inner_p
+          WHERE 
+            inner_p.agent_key = ${penalizeAgentVotesSchema.agentKey} AND
+            NOT inner_p.executed
+          ORDER BY penalty_factor DESC
+          LIMIT 1 OFFSET ${n - 1}
+        )
+      `.as<number>(),
     })
     .from(penalizeAgentVotesSchema)
     .where(
@@ -290,7 +300,6 @@ export async function pendingPenalizations(threshold: number) {
 
   return result;
 }
-
 
 export async function updatePenalizeAgentVotes(agentKeys: string[]) {
   await db
