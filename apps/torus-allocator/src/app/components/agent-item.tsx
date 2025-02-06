@@ -120,6 +120,7 @@ export function AgentItem(props: AgentCardProps) {
     removeAgent,
     updatePercentage,
     getAgentPercentage,
+    removeZeroPercentageAgents,
   } = useDelegateAgentStore();
 
   const { selectedAccount } = useTorus();
@@ -137,6 +138,14 @@ export function AgentItem(props: AgentCardProps) {
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
 
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
+
+  const currentPercentage = getAgentPercentage(props.agentKey);
+
+  useEffect(() => {
+    if (currentPercentage === 0) {
+      removeAgent(props.agentKey);
+    }
+  }, [currentPercentage, removeAgent, props.agentKey]);
 
   const handlePercentageChange = (value: number[]) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -160,14 +169,14 @@ export function AgentItem(props: AgentCardProps) {
       }
       updatePercentage(props.agentKey, newPercentage);
     } else {
-      if (isAgentDelegated) {
-        removeAgent(props.agentKey);
-        toast.info("Agent removed from allocation.");
-      }
+      removeAgent(props.agentKey);
+      toast.info("Agent removed from allocation.");
     }
+
+    // Remove any agents that might have been set to zero as a side effect
+    removeZeroPercentageAgents();
   };
 
-  const currentPercentage = getAgentPercentage(props.agentKey);
   return (
     <div className="group relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:bg-accent hover:shadow-2xl">
       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
