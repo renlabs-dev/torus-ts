@@ -264,7 +264,6 @@ export async function countCadreKeys(): Promise<number> {
   return result[0].count;
 }
 
-
 export async function pendingPenalizations(threshold: number, n: number) {
   const subquery = db
     .select({ agentKey: penalizeAgentVotesSchema.agentKey })

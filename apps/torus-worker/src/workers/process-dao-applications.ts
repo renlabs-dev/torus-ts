@@ -73,7 +73,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
       const cadreVotes = await getCadreVotes();
       await processCadreVotes(cadreVotes, vote_threshold);
       console.log("threshold: ", vote_threshold);
-      
+
       const penaltyVoteThreshold = await getPenaltyThreshold();
       console.log("penalty threshold: ", penaltyVoteThreshold);
       const factors = await getPenaltyFactors(penaltyVoteThreshold);
