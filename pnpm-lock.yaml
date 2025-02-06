@@ -1084,6 +1084,9 @@ importers:
 
   packages/torus-provider:
     dependencies:
+      '@polkadot-api/merkleize-metadata':
+        specifier: ^1.1.13
+        version: 1.1.13
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -3870,6 +3873,12 @@ packages:
   '@polkadot-api/json-rpc-provider@0.0.1':
     resolution: {integrity: sha512-/SMC/l7foRjpykLTUTacIH05H3mr9ip8b5xxfwXlVezXrNVLp3Cv0GX6uItkKd+ZjzVPf3PFrDF2B2/HLSNESA==}
 
+  '@polkadot-api/merkleize-metadata@1.1.13':
+    resolution: {integrity: sha512-qz2nAb2x1CvVBZXsTbCMj+Gp9w/k7EwJd+Xb29t8inTBl9VVit0kvGYSeBkQK64zqgl8BZywzFC+1JB62YoJCA==}
+
+  '@polkadot-api/metadata-builders@0.10.1':
+    resolution: {integrity: sha512-0GQFph1vT0wWTfijM7eO+JICR7hwqJeVmil1P29uLjScBI4IH7gX032nOuNz/SG1Qlu0CtDFasFWVeazuPJ0pw==}
+
   '@polkadot-api/metadata-builders@0.3.2':
     resolution: {integrity: sha512-TKpfoT6vTb+513KDzMBTfCb/ORdgRnsS3TDFpOhAhZ08ikvK+hjHMt5plPiAX/OWkm1Wc9I3+K6W0hX5Ab7MVg==}
 
@@ -3879,6 +3888,9 @@ packages:
       '@polkadot-api/substrate-client': 0.1.4
       rxjs: '>=7.8.0'
 
+  '@polkadot-api/substrate-bindings@0.11.0':
+    resolution: {integrity: sha512-UGCa0xYtfcS/5LJAcro1vhIwxF31fsF5f42mzro9G85T854cbXPzqABDICYmJqdF72tBRMrnJlx6okGtLx9TKA==}
+
   '@polkadot-api/substrate-bindings@0.6.0':
     resolution: {integrity: sha512-lGuhE74NA1/PqdN7fKFdE5C1gNYX357j1tWzdlPXI0kQ7h3kN0zfxNOpPUN7dIrPcOFZ6C0tRRVrBylXkI6xPw==}
 
@@ -3887,6 +3899,9 @@ packages:
 
   '@polkadot-api/utils@0.1.0':
     resolution: {integrity: sha512-MXzWZeuGxKizPx2Xf/47wx9sr/uxKw39bVJUptTJdsaQn/TGq+z310mHzf1RCGvC1diHM8f593KrnDgc9oNbJA==}
+
+  '@polkadot-api/utils@0.1.2':
+    resolution: {integrity: sha512-yhs5k2a8N1SBJcz7EthZoazzLQUkZxbf+0271Xzu42C5AEM9K9uFLbsB+ojzHEM72O5X8lPtSwGKNmS7WQyDyg==}
 
   '@polkadot/api-augment@14.3.1':
     resolution: {integrity: sha512-PE6DW+8kRhbnGKn7qCF7yM6eEt/kqrY8bh1i0RZcPY9QgwXW4bZZrtMK4WssX6Z70NTEoOW6xHYIjc7gFZuz8g==}
@@ -17745,6 +17760,17 @@ snapshots:
   '@polkadot-api/json-rpc-provider@0.0.1':
     optional: true
 
+  '@polkadot-api/merkleize-metadata@1.1.13':
+    dependencies:
+      '@polkadot-api/metadata-builders': 0.10.1
+      '@polkadot-api/substrate-bindings': 0.11.0
+      '@polkadot-api/utils': 0.1.2
+
+  '@polkadot-api/metadata-builders@0.10.1':
+    dependencies:
+      '@polkadot-api/substrate-bindings': 0.11.0
+      '@polkadot-api/utils': 0.1.2
+
   '@polkadot-api/metadata-builders@0.3.2':
     dependencies:
       '@polkadot-api/substrate-bindings': 0.6.0
@@ -17759,6 +17785,13 @@ snapshots:
       '@polkadot-api/utils': 0.1.0
       rxjs: 7.8.1
     optional: true
+
+  '@polkadot-api/substrate-bindings@0.11.0':
+    dependencies:
+      '@noble/hashes': 1.7.1
+      '@polkadot-api/utils': 0.1.2
+      '@scure/base': 1.2.4
+      scale-ts: 1.6.1
 
   '@polkadot-api/substrate-bindings@0.6.0':
     dependencies:
@@ -17776,6 +17809,8 @@ snapshots:
 
   '@polkadot-api/utils@0.1.0':
     optional: true
+
+  '@polkadot-api/utils@0.1.2': {}
 
   '@polkadot/api-augment@14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
@@ -29466,8 +29501,7 @@ snapshots:
       '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       eventemitter3: 4.0.7
 
-  scale-ts@1.6.1:
-    optional: true
+  scale-ts@1.6.1: {}
 
   scheduler@0.19.1:
     dependencies:
