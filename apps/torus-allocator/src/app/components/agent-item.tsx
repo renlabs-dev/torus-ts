@@ -151,11 +151,6 @@ export function AgentItem(props: AgentCardProps) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const newPercentage = value[0]!;
 
-    if (!selectedAccount?.address) {
-      toast.error("Connect Wallet to allocate to this agent.");
-      return;
-    }
-
     if (newPercentage > 0) {
       if (!isAgentDelegated) {
         addAgent({
@@ -294,6 +289,7 @@ export function AgentItem(props: AgentCardProps) {
               max={100}
               step={1}
               className="relative z-30 mt-6 py-2"
+              disabled={!selectedAccount?.address}
             />
           </div>
         </div>
