@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { toast } from "@torus-ts/toast-provider";
@@ -9,6 +9,7 @@ import { formatToken, toNano } from "@torus-ts/utils/subspace";
 
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import type { SS58Address } from "@torus-ts/subspace";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
@@ -17,23 +18,26 @@ const MIN_STAKE_REQUIRED = 2000;
 export function CreateComment({
   id,
   itemType,
+  author,
 }: {
   id: number;
   itemType: "PROPOSAL" | "AGENT_APPLICATION";
+  author?: SS58Address;
 }) {
   const { selectedAccount, accountStakedBalance, isUserCadre } =
     useGovernance();
 
   const [content, setContent] = useState<string>("");
   const [name, setName] = useState<string>("");
-  const [remainingChars, setRemainingChars] = useState(MAX_CHARACTERS);
-  const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
+  const remainingChars = MAX_CHARACTERS - content.length;
+  const userHasEnoughBalance = accountStakedBalance
+    ? accountStakedBalance > toNano(MIN_STAKE_REQUIRED)
+    : false;
 
   const utils = api.useUtils();
   const CreateComment = api.comment.create.useMutation({
     onSuccess: () => {
       setContent("");
-      setRemainingChars(MAX_CHARACTERS);
     },
     onError: (err) => {
       if (err instanceof z.ZodError) {
@@ -44,18 +48,6 @@ export function CreateComment({
     },
   });
 
-  useEffect(() => {
-    setUserHasEnoughBalance(
-      accountStakedBalance
-        ? accountStakedBalance > toNano(MIN_STAKE_REQUIRED)
-        : false,
-    );
-  }, [accountStakedBalance, selectedAccount]);
-
-  useEffect(() => {
-    setRemainingChars(MAX_CHARACTERS - content.length);
-  }, [content]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -64,20 +56,20 @@ export function CreateComment({
       return;
     }
 
-    if (itemType === "PROPOSAL") {
-      if (userHasEnoughBalance) {
-        toast.error(
-          `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
-        );
-        return;
-      }
-    } else {
-      if (!isUserCadre) {
-        toast.error(
-          "Only Curator DAO members can submit comments in DAO mode.",
-        );
-        return;
-      }
+    if (itemType === "PROPOSAL" && !userHasEnoughBalance) {
+      toast.error(
+        `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
+      );
+      return;
+    }
+
+    if (
+      itemType === "AGENT_APPLICATION" &&
+      !isUserCadre &&
+      author !== selectedAccount.address
+    ) {
+      toast.error("Only Curator DAO members can submit comments in DAO mode.");
+      return;
     }
 
     try {
@@ -108,18 +100,19 @@ export function CreateComment({
       );
     }
     {
-      return !isUserCadre;
+      return !isUserCadre && author !== selectedAccount.address;
     }
   };
 
   const setOverlay = () => {
+    if (!selectedAccount?.address) return true;
+    if (itemType === "PROPOSAL" && !userHasEnoughBalance) return true;
     if (
-      !selectedAccount ||
-      (itemType === "PROPOSAL" && !userHasEnoughBalance) ||
-      (itemType === "AGENT_APPLICATION" && !isUserCadre)
-    ) {
+      itemType === "AGENT_APPLICATION" &&
+      !isUserCadre &&
+      author !== selectedAccount.address
+    )
       return true;
-    }
     return false;
   };
 
@@ -171,6 +164,7 @@ export function CreateComment({
         {setOverlay() && (
           <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
         )}
+
         {!selectedAccount?.address && itemType === "PROPOSAL" && (
           <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
             <p className="mt-2 text-center text-lg">
@@ -179,9 +173,9 @@ export function CreateComment({
           </div>
         )}
 
-        {!userHasEnoughBalance &&
-          itemType === "PROPOSAL" &&
-          selectedAccount?.address && (
+        {selectedAccount?.address &&
+          !userHasEnoughBalance &&
+          itemType === "PROPOSAL" && (
             <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
               <p className="mt-2 text-center text-lg">
                 You need to have at least {MIN_STAKE_REQUIRED} TORUS total
@@ -189,7 +183,8 @@ export function CreateComment({
               </p>
             </div>
           )}
-        {!selectedAccount && itemType === "AGENT_APPLICATION" && (
+
+        {!selectedAccount?.address && itemType === "AGENT_APPLICATION" && (
           <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
             <p className="mt-2 text-center text-sm">
               Are you a Curator DAO member?
@@ -199,8 +194,10 @@ export function CreateComment({
             </p>
           </div>
         )}
+
         {selectedAccount &&
           !isUserCadre &&
+          author !== selectedAccount.address &&
           itemType === "AGENT_APPLICATION" && (
             <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
               <p className="mt-2 text-center text-lg">
