@@ -115,7 +115,10 @@ export async function getCadreThreshold() {
 }
 
 export async function getPenaltyFactors(cadreThreshold: number) {
-  const penalizations = await pendingPenalizations(cadreThreshold);
+  const penalizations = await pendingPenalizations(
+    cadreThreshold,
+    Math.max(cadreThreshold - 1, 1),
+  );
   return penalizations;
 }
 

@@ -73,7 +73,10 @@ export async function processApplicationsWorker(props: WorkerProps) {
       const cadreVotes = await getCadreVotes();
       await processCadreVotes(cadreVotes, vote_threshold);
       console.log("threshold: ", vote_threshold);
-      const factors = await getPenaltyFactors(vote_threshold);
+
+      const penaltyVoteThreshold = await getPenaltyThreshold();
+      console.log("penalty threshold: ", penaltyVoteThreshold);
+      const factors = await getPenaltyFactors(penaltyVoteThreshold);
       await processPenalty(props.api, mnemonic, factors);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
@@ -167,8 +170,14 @@ export async function getCadreThreshold() {
   return Math.floor(keys / 2) + 1;
 }
 
+export async function getPenaltyThreshold() {
+  const keys = await countCadreKeys();
+  return Math.floor(Math.sqrt(keys)) + 1;
+}
+
 export async function getPenaltyFactors(cadreThreshold: number) {
-  const penalizations = await pendingPenalizations(cadreThreshold);
+  const nth_factor = Math.max(cadreThreshold - 1, 1);
+  const penalizations = await pendingPenalizations(cadreThreshold, nth_factor);
   return penalizations;
 }
 
@@ -177,13 +186,13 @@ export async function processPenalty(
   mnemonic: string,
   penaltiesToApply: {
     agentKey: string;
-    medianPenaltyFactor: number;
+    nthBiggestPenaltyFactor: number;
   }[],
 ) {
   console.log("Penalties to apply: ", penaltiesToApply);
   for (const penalty of penaltiesToApply) {
-    const { agentKey, medianPenaltyFactor } = penalty;
-    await penalizeAgent(api, agentKey, medianPenaltyFactor, mnemonic);
+    const { agentKey, nthBiggestPenaltyFactor } = penalty;
+    await penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic);
   }
   const penalizedKeys = penaltiesToApply.map((item) => item.agentKey);
   await updatePenalizeAgentVotes(penalizedKeys);
