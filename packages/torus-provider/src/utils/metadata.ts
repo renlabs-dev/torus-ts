@@ -2,14 +2,11 @@ import type { ApiPromise } from "@polkadot/api";
 import type {
   InjectedExtension,
   MetadataDef,
-  InjectedMetadataKnown,
 } from "@polkadot/extension-inject/types";
 import { getSpecTypes } from "@polkadot/types-known";
 import { base64Encode } from "@polkadot/util-crypto";
 
 async function getMetadata(api: ApiPromise, extension: InjectedExtension) {
-  console.log(`Attempting to get metadata for extension: ${extension.name}`);
-
   if (!extension.metadata) {
     console.warn(
       `No metadata interface found for extension: ${extension.name}`,
@@ -20,26 +17,12 @@ async function getMetadata(api: ApiPromise, extension: InjectedExtension) {
   try {
     const metadata = extension.metadata;
     const known = await metadata.get();
-    console.log(`Current known metadata for ${extension.name}:`, {
-      knownVersions: known.map((k: InjectedMetadataKnown) => ({
-        genesisHash: k.genesisHash,
-        specVersion: k.specVersion,
-      })),
-    });
-
     return {
       extension,
       known,
       update: async (def: MetadataDef): Promise<boolean> => {
         try {
-          console.log(`Forcing metadata update for ${extension.name} with:`, {
-            chain: def.chain,
-            specVersion: def.specVersion,
-            genesisHash: def.genesisHash,
-          });
-
           const result = await metadata.provide(def);
-          console.log(`Metadata update result for ${extension.name}:`, result);
           return result;
         } catch (error) {
           console.error(
@@ -119,13 +102,9 @@ export async function updateMetadata(
   for (const [index, extension] of extensions.entries()) {
     // Skip if this extension doesn't need an update
     if (!needsUpdate[index]) {
-      console.log(
-        `Skipping metadata update for ${extension.name} - already up to date`,
-      );
       continue;
     }
 
-    console.log(`Processing extension: ${extension.name}`);
     const extInfo = await getMetadata(api, extension);
     if (!extInfo) {
       console.warn(
@@ -135,12 +114,7 @@ export async function updateMetadata(
     }
 
     try {
-      console.log(`Updating metadata for ${extension.name}...`);
-      const updateResult = await extInfo.update(metadataDef);
-      console.log(`Update completed for ${extension.name}:`, {
-        success: updateResult,
-        timestamp: new Date().toISOString(),
-      });
+      await extInfo.update(metadataDef);
 
       // Verify the update
       const updatedKnown = await extension.metadata?.get();
@@ -156,6 +130,4 @@ export async function updateMetadata(
       throw error;
     }
   }
-
-  console.log("Metadata update process completed");
 }
