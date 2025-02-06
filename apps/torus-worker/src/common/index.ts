@@ -13,7 +13,7 @@ import {
   refuseCadreApplication,
 } from "../db";
 import type { ApiPromise } from "@polkadot/api";
-import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
+import type { AgentApplication, LastBlock, Api } from "@torus-ts/subspace";
 import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
 import { match } from "rustie";
 
@@ -65,7 +65,21 @@ export async function sleepUntilNewBlock(props: WorkerProps) {
 
 // -- DAO Applications -- //
 
-const applicationIsOpen = (app: AgentApplication) =>
+type ApplicationVoteStatus = "open" | "accepted" | "locked";
+
+export const getApplicationVoteStatus = (
+  app: AgentApplication,
+): ApplicationVoteStatus =>
+  match(app.status)({
+    Open: () => "open",
+    Resolved: ({ accepted }) => (accepted ? "accepted" : "locked"),
+    Expired: () => "locked",
+  });
+
+export const applicationIsPending = (app: AgentApplication) =>
+  getApplicationVoteStatus(app) != "locked";
+
+export const applicationIsOpen = (app: AgentApplication) =>
   match(app.status)({
     Open: () => true,
     Resolved: ({ accepted }) => accepted,
@@ -73,7 +87,7 @@ const applicationIsOpen = (app: AgentApplication) =>
   });
 
 export async function getApplications(
-  api: ApiPromise,
+  api: Api,
   filterFn: (app: AgentApplication) => boolean,
 ) {
   const application_entries = await queryAgentApplications(api);
