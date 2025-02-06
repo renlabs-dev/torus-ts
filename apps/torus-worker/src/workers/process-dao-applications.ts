@@ -73,7 +73,10 @@ export async function processApplicationsWorker(props: WorkerProps) {
       const cadreVotes = await getCadreVotes();
       await processCadreVotes(cadreVotes, vote_threshold);
       console.log("threshold: ", vote_threshold);
-      const factors = await getPenaltyFactors(vote_threshold);
+
+      const penaltyVoteThreshold = await getPenaltyThreshold();
+      console.log("penalty threshold: ", penaltyVoteThreshold);
+      const factors = await getPenaltyFactors(penaltyVoteThreshold);
       await processPenalty(props.api, mnemonic, factors);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
@@ -165,6 +168,11 @@ export async function getVotesOnPending(
 export async function getCadreThreshold() {
   const keys = await countCadreKeys();
   return Math.floor(keys / 2) + 1;
+}
+
+export async function getPenaltyThreshold() {
+  const keys = await countCadreKeys();
+  return Math.floor(Math.sqrt(keys)) + 1;
 }
 
 export async function getPenaltyFactors(cadreThreshold: number) {

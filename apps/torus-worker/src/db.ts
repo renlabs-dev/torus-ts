@@ -277,7 +277,7 @@ export async function pendingPenalizations(threshold: number) {
     .select({
       agentKey: penalizeAgentVotesSchema.agentKey,
       medianPenaltyFactor:
-        sql`percentile_cont(0.5) within group (order by ${penalizeAgentVotesSchema.penaltyFactor})`.as<number>(),
+        sql`percentile_cont(0.6) within group (order by ${penalizeAgentVotesSchema.penaltyFactor})`.as<number>(),
     })
     .from(penalizeAgentVotesSchema)
     .where(
@@ -290,6 +290,7 @@ export async function pendingPenalizations(threshold: number) {
 
   return result;
 }
+
 
 export async function updatePenalizeAgentVotes(agentKeys: string[]) {
   await db
