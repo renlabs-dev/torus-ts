@@ -20,6 +20,10 @@ interface DelegateState {
     agentKey: string | SS58Address,
     percentage: number,
   ) => void;
+  updateBalancedPercentage: (
+    agentKey: string | SS58Address,
+    percentage: number,
+  ) => void;
   getTotalPercentage: () => number;
   setDelegatedAgentsFromDB: (agents: DelegatedAgent[]) => void;
   hasUnsavedChanges: () => boolean;
@@ -48,7 +52,13 @@ export const useDelegateAgentStore = create<DelegateState>()(
             (agent) => agent.address !== agentKey,
           ),
         })),
-      updatePercentage: (agentKey: string, newPercentage: number) =>
+      updatePercentage: (agentKey, percentage) =>
+        set((state) => ({
+          delegatedAgents: state.delegatedAgents.map((agent) =>
+            agent.address === agentKey ? { ...agent, percentage } : agent,
+          ),
+        })),
+      updateBalancedPercentage: (agentKey: string, newPercentage: number) =>
         set((state) => {
           const agentIndex = state.delegatedAgents.findIndex(
             (agent) => agent.address === agentKey,

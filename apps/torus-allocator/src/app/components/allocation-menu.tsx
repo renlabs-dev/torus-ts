@@ -22,7 +22,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  Slider,
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";
@@ -206,6 +205,13 @@ export function AllocationMenu() {
     return items.some((item) => item.percentage === 0);
   };
 
+  const hasPercentageChanged = () => {
+    const items = delegatedAgents;
+    return items.some(
+      (item) => item.percentage !== getAgentPercentage(item.address),
+    );
+  };
+
   function getSubmitStatus() {
     if (!selectedAccount?.address) {
       return { disabled: true, message: "Please connect your wallet" };
@@ -223,6 +229,9 @@ export function AllocationMenu() {
       return { disabled: true, message: "Submitting..." };
     }
     if (hasUnsavedChanges()) {
+      return { disabled: false, message: "You have unsaved changes" };
+    }
+    if (hasPercentageChanged()) {
       return { disabled: false, message: "You have unsaved changes" };
     }
     return { disabled: false, message: "All changes saved!" };
@@ -265,14 +274,17 @@ export function AllocationMenu() {
   return (
     <>
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <div className="fixed bottom-4 right-0 z-[50] flex w-full items-center justify-end gap-2 p-2 marker:flex md:bottom-11">
-          <div className="flex flex-col items-center gap-2">
+        <div className="fixed bottom-4 right-3 z-[50] flex w-fit flex-col items-center justify-end marker:flex md:bottom-14">
+          <div className="flex items-center gap-2">
             <SheetTrigger
               asChild
               onClick={toggleIsOpen}
               disabled={!selectedAccount}
             >
-              <Button variant="outline" className="w-full" size="lg">
+              <Button
+                variant="outline"
+                className="w-full border border-primary/80"
+              >
                 {!selectedAccount ? (
                   <LoaderCircle className="animate-spin" />
                 ) : (
@@ -282,15 +294,14 @@ export function AllocationMenu() {
               </Button>
             </SheetTrigger>
             <Button
-              size="lg"
               variant="outline"
               onClick={handleSubmit}
               disabled={submitStatus.disabled}
-              className="w-full border border-green-500 bg-[#14252A] text-green-500"
+              className={`w-full border ${submitStatus.message === "All changes saved!" ? "border-green-500 bg-[#14252A] text-green-500 hover:bg-green-500/20 hover:text-green-500" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-500"}`}
               title={submitStatus.disabled ? submitStatus.message : ""}
             >
               <Anvil />
-              {isSubmitting ? "Submitting..." : "Submit Allocation"}
+              {isSubmitting ? "Submitting Allocation" : "Submit Allocation"}
             </Button>
           </div>
         </div>
@@ -356,18 +367,6 @@ export function AllocationMenu() {
                               </Button>
                             </div>
                           </div>
-                          <Slider
-                            value={[getAgentPercentage(agent.address)]}
-                            onValueChange={(value) =>
-                              handlePercentageChange(
-                                agent.address,
-                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                                value[0]!.toString(),
-                              )
-                            }
-                            max={100}
-                            step={1}
-                          />
                         </div>
                       ))
                   ) : (

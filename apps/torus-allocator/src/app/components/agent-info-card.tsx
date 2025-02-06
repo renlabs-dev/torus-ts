@@ -3,7 +3,7 @@
 import { Copy } from "lucide-react";
 import { CopyButton, Card, CardTitle, CardContent } from "@torus-ts/ui";
 import { ReportAgent } from "./report-agent";
-import { smallAddress, formatToken } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-ts/utils/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import type { Agent } from "~/utils/types";
 
@@ -49,8 +49,8 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
       label: "Weight Factor",
       value: agent.weightFactor ?? "N/A",
     },
-    { label: "Total Allocation", value: formatToken(agent.totalStaked ?? 0) },
-    { label: "Total Allocated users", value: agent.totalStakers ?? 0 },
+    // { label: "Total Allocation", value: formatToken(agent.totalStaked ?? 0) },
+    // { label: "Total Allocated users", value: agent.totalStakers ?? 0 },
   ];
 
   return (

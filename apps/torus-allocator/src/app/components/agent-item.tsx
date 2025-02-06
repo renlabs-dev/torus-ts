@@ -118,7 +118,7 @@ export function AgentItem(props: AgentCardProps) {
     delegatedAgents,
     addAgent,
     removeAgent,
-    updatePercentage,
+    updateBalancedPercentage,
     getAgentPercentage,
     removeZeroPercentageAgents,
   } = useDelegateAgentStore();
@@ -160,12 +160,10 @@ export function AgentItem(props: AgentCardProps) {
           metadataUri: props.metadataUri,
           registrationBlock: props.registrationBlock ?? null,
         });
-        toast.success("Agent added to allocation.");
       }
-      updatePercentage(props.agentKey, newPercentage);
+      updateBalancedPercentage(props.agentKey, newPercentage);
     } else {
       removeAgent(props.agentKey);
-      toast.info("Agent removed from allocation.");
     }
 
     // Remove any agents that might have been set to zero as a side effect
@@ -175,7 +173,7 @@ export function AgentItem(props: AgentCardProps) {
   return (
     <div className="group relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:bg-accent hover:shadow-2xl">
       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        <span className="mb-5 flex animate-pulse items-center gap-1 rounded-full bg-background bg-opacity-75 px-3 py-1 text-xs">
+        <span className="flex animate-pulse items-center gap-1 rounded-full bg-background bg-opacity-75 px-3 py-1 text-xs">
           <ChevronsLeft size={16} />
           Click to expand <ChevronsRight size={16} />
         </span>
@@ -280,7 +278,8 @@ export function AgentItem(props: AgentCardProps) {
 
           <div className="mt-4">
             <Label className="absolute mb-3 flex items-center gap-1.5 text-xs font-semibold">
-              Your current allocation: {props.percentage}%
+              Your current allocation:{" "}
+              <span className="text-cyan-500">{props.percentage}%</span>
             </Label>
 
             <Slider
@@ -288,7 +287,7 @@ export function AgentItem(props: AgentCardProps) {
               onValueChange={handlePercentageChange}
               max={100}
               step={1}
-              className="relative z-30 mt-6 py-2"
+              className="relative z-30 mt-6 py-1"
               disabled={!selectedAccount?.address}
             />
           </div>
