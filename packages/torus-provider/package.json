@@ -21,6 +21,7 @@
     "@polkadot/api": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/extension-inject": "catalog:",
+    "@polkadot-api/merkleize-metadata": "^1.1.13",
     "react-toastify": "11.0.1",
     "react": "catalog:react18",
     "react-dom": "catalog:react18"
