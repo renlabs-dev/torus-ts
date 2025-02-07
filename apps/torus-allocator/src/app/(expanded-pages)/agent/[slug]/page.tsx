@@ -9,6 +9,7 @@ import BlobImage from "~/app/components/blob-image";
 import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
 import { DelegateModuleWeight } from "~/app/components/delegate-module-weight";
+import { PenaltyList } from "~/app/components/penalties-list";
 
 export default async function AgentPage({
   params,
@@ -24,7 +25,9 @@ export default async function AgentPage({
   const agentKey = slug;
 
   const mdl = await api.agent.byKeyLastBlock({ key: agentKey });
+  const penalties = await api.penalty.byAgentKey({ agentKey });
 
+  console.log(penalties);
   if (!mdl) {
     notFound();
   }
@@ -127,6 +130,9 @@ export default async function AgentPage({
                 className="w-full"
               />
             </div>
+            {mdl.weightFactor !== null &&
+              mdl.weightFactor > 0 &&
+              penalties.length > 0 && <PenaltyList penalties={penalties} />}
           </div>
         </div>
       </div>
