@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { CardSkeleton } from "../card-skeleton";
 import { ListAgentApplications } from "./list-agent-applications";
 import { ListProposals } from "./list-proposals";
-import { ListCuratorCandidates } from "./list-curator-candidates";
+import { DaoPortalFeatures } from "./dao-portal-features";
 import { navSidebarOptions } from "../sidebar-links";
 import type { GovernanceViewMode } from "../sidebar-links";
 
@@ -31,7 +31,7 @@ const validViews = navSidebarOptions.map(({ href }) => href);
 const VIEW_MODE_COMPONENTS: Record<GovernanceViewMode, JSX.Element> = {
   proposals: <ListProposals />,
   "agent-applications": <ListAgentApplications />,
-  "dao-portal": <ListCuratorCandidates />,
+  "dao-portal": <DaoPortalFeatures />,
 };
 
 export const ListCardsContent = () => {
