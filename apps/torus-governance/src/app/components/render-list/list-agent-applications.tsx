@@ -6,7 +6,7 @@ import { useGovernance } from "~/context/governance-provider";
 import { useSearchParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { CardSkeleton } from "../card-skeleton";
-import { ListContainer } from "./list-container";
+import { ListContainer } from "./container-list";
 import { match } from "rustie";
 import type { AgentApplication } from "@torus-ts/subspace";
 import { useMemo } from "react";
