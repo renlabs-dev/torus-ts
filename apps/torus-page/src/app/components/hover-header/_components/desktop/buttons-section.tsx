@@ -187,31 +187,50 @@ export function ButtonsSection({
                 {isExpanded && (
                   <>
                     <p className="mt-3">
-                      Torus is a self-assembling & self-evolving p2p monetary
-                      organism composed of an emergent multi-graph of
-                      recursively delegated onchain & offchain control
-                      permissions and incentives among agents, with arbitrarily
-                      complex and granular emergent specialization.
+                      Torus is an open-ended experiment to encode biology's
+                      principles of autonomy and self-organization into a L1
+                      stake-anchored agentic protocol, perpetually producing
+                      novelty.
                     </p>
                     <p className="mt-3">
-                      The graph forms an agency-centric multi-scale competency
-                      architecture with full autonomy at every level and open
-                      market selection at every edge, bottom-up aligning towards
-                      the stake root, able to maintain high-level coherence at
-                      increasing organism complexity.
+                      Torus is a self-assembling & self-evolving superorganism
+                      composed of an emergent hypergraph of recursively
+                      delegated onchain & offchain control permissions and
+                      incentives among agents, anchored to the stake root, with
+                      unbound specialization and optimization.
                     </p>
                     <p className="mt-3">
-                      Stake is the organisms container for monetary energy,
-                      transmutable towards its emergent agency. Forming a
-                      circular value flow between incentives and stake in their
-                      outcome.
+                      The graph forms a multi-scale competency architecture with
+                      full autonomy at every level and open market selection at
+                      every edge, bottom-up aligning towards the stake root,
+                      able to maintain high-level coherence at increasing
+                      organism complexity.
                     </p>
                     <p className="mt-3">
-                      The abstractions of control space, permissions, recursive
-                      programmatic delegation and agents, expressed in an
-                      emergent multi-graph, enable rich incentive programming
-                      with enough self-regulation capacity to retain system
-                      coherence admits adversarial presence.
+                      Stake is the organisms root container of authority and
+                      monetary energy, transmutable towards its emergent agency.
+                      Forming a circular value flow between incentives and stake
+                      in their outcome.
+                    </p>
+                    <p className="mt-3">
+                      Given the Torus hypergraph originates from the stake root,
+                      alignment to stake is intrinsic at any scale. Selection
+                      pressures at the root cascade down every path of the
+                      graph. Reliably tethering the system to humanity.
+                    </p>
+                    <p className="mt-3">
+                      The abstractions of control space, programmatic &
+                      composable permissions, recursive delegation and agents,
+                      expressed in one emergent fractal hypergraph, enable
+                      arbitrarily complex & interwoven autonomous swarms to
+                      assemble and co-evolve, while sharing organs and
+                      functions.
+                    </p>
+                    <p className="mt-3">
+                      The system has strong self-regulation capacity to retain
+                      coherence admits adversarial presence and
+                      paradigm-agnostic incentive programming can be applied at
+                      any position in the graph.
                     </p>
                     <p className="mt-3">
                       Torus exhibits a continuous emergent process with
