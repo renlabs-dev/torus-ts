@@ -170,8 +170,8 @@ export function ButtonsSection({
             >
               <motion.div layout>
                 Torus is an open-ended experiment to encode biology's principles
-                of autonomy, adaptive inference and self-organization into a
-                stake-anchored agentic protocol, perpetually producing novelty.
+                of autonomy and self-organization into a L1 stake-anchored
+                agentic protocol, perpetually producing novelty.
               </motion.div>
               {!isExpanded && (
                 <motion.div layout className="mt-2 flex justify-center">
@@ -186,12 +186,6 @@ export function ButtonsSection({
               >
                 {isExpanded && (
                   <>
-                    <p className="mt-3">
-                      Torus is an open-ended experiment to encode biology's
-                      principles of autonomy and self-organization into a L1
-                      stake-anchored agentic protocol, perpetually producing
-                      novelty.
-                    </p>
                     <p className="mt-3">
                       Torus is a self-assembling & self-evolving superorganism
                       composed of an emergent hypergraph of recursively
