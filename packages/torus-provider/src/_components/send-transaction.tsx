@@ -82,11 +82,11 @@ export async function sendTransaction({
     const txOptions = {
       signer: injector.signer,
       tip: 0,
-      era: 0,
       nonce: -1,
       mode: 1, //  mortal
       metadataHash,
       signedExtensions: api.registry.signedExtensions,
+      withSignedTransaction: true,
     };
 
     await transaction.signAndSend(
