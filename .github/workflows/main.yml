@@ -43,6 +43,19 @@ jobs:
   ###################################
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
+  torus-page:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-page == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-page
+      skip_build: ${{ inputs.skip_build || false }}
+
   torus-wallet:
     needs: turbo-check
     if: |
@@ -129,6 +142,19 @@ jobs:
   ###################################
   ######## DRY RUN BUILDS  ##########
   ###################################
+  torus-page-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-page == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-page
+
   torus-wallet-dry-run:
     needs: [turbo-check, pr-check]
     if: |
