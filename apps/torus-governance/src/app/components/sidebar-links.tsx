@@ -20,6 +20,7 @@ export const navSidebarOptions = [
   { title: "Whitelist Applications", href: "agent-applications" },
   { title: "Proposals", href: "proposals" },
   { title: "DAO Portal", href: "dao-portal" },
+  { title: "Agents", href: "agents" },
   //TODO: Uncomment when the other pages get done
   // { title: "Community Concepts", href: "community-concepts" },
 ] as const;
