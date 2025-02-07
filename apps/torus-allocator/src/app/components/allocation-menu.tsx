@@ -37,6 +37,8 @@ export function AllocationMenu() {
     updateOriginalAgents,
     updatePercentage,
     getAgentPercentage,
+    hasPercentageChange,
+    setPercentageChange,
   } = useDelegateAgentStore();
 
   const { isOpen, toggleIsOpen, setIsOpen } = useAllocationMenuStore();
@@ -172,6 +174,7 @@ export function AllocationMenu() {
       setDelegatedAgentsFromDB(formattedModules ?? []);
 
       setIsSubmitting(false);
+      setPercentageChange(false);
     } catch (error) {
       console.error("Error submitting data:", error);
       setIsSubmitting(false);
@@ -205,13 +208,6 @@ export function AllocationMenu() {
     return items.some((item) => item.percentage === 0);
   };
 
-  const hasPercentageChanged = () => {
-    const items = delegatedAgents;
-    return items.some(
-      (item) => item.percentage !== getAgentPercentage(item.address),
-    );
-  };
-
   function getSubmitStatus() {
     if (!selectedAccount?.address) {
       return { disabled: true, message: "Please connect your wallet" };
@@ -231,7 +227,7 @@ export function AllocationMenu() {
     if (hasUnsavedChanges()) {
       return { disabled: false, message: "You have unsaved changes" };
     }
-    if (hasPercentageChanged()) {
+    if (hasPercentageChange) {
       return { disabled: false, message: "You have unsaved changes" };
     }
     return { disabled: false, message: "All changes saved!" };

@@ -5,9 +5,10 @@ import { AgentsTabView } from "./agents-tab-view";
 import { api } from "~/trpc/react";
 import { FilterContent } from "./filter-content";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { UserWeightInfo } from "./user-weight-info";
 import { AgentItemSkeleton } from "./agent-item-skeleton";
+import { CustomPagination } from "./pagination-controls";
 
 interface Agent {
   id: number;
@@ -32,6 +33,8 @@ const filterAgentsBySearch = (agents: Agent[], searchTerm: string | null) => {
   );
 };
 
+const ITEMS_PER_PAGE = 9;
+
 export function AgentContentList() {
   const searchParams = useSearchParams();
 
@@ -43,6 +46,8 @@ export function AgentContentList() {
 
   const viewType = searchParams.get("view-type");
   const search = searchParams.get("search");
+
+  const router = useRouter();
 
   const prepareAgentsList = (searchTerm: string | null = null) => {
     if (isLoadingAgents || !agents) return [];
@@ -65,7 +70,33 @@ export function AgentContentList() {
     return filterAgentsBySearch(agentsList, searchTerm);
   };
 
+  const currentPage = Number(searchParams.get("page")) || 1;
+
+  const paginateAgents = (agentsList: Agent[]) => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return agentsList.slice(startIndex, endIndex);
+  };
+
+  const renderPagination = (totalItems: number) => {
+    return (
+      <CustomPagination
+        currentPage={currentPage}
+        totalItems={totalItems}
+        itemsPerPage={ITEMS_PER_PAGE}
+        search={search}
+        viewType={viewType}
+        onPageChange={(page) => {
+          router.push(
+            `?page=${page}${search ? `&search=${search}` : ""}${viewType ? `&view-type=${viewType}` : ""}`,
+          );
+        }}
+      />
+    );
+  };
+
   const renderAgentItems = (agentsList: Agent[]) => {
+    if (agentsList.length === 0) return <p>No agents found.</p>;
     return agentsList.map((agent: Agent) => (
       <AgentItem
         id={agent.id}
@@ -83,20 +114,28 @@ export function AgentContentList() {
 
   const renderSkeletons = () => {
     return (
-      <>
+      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
         <AgentItemSkeleton />
         <AgentItemSkeleton />
         <AgentItemSkeleton />
-      </>
+      </div>
     );
   };
 
   const renderAllAgentsView = () => {
     if (isLoadingAgents) return renderSkeletons();
     const allAgentsList = prepareAgentsList(search);
-    if (allAgentsList.length === 0) return <p>No agents found.</p>;
+    const paginatedAgents = paginateAgents(allAgentsList);
 
-    return renderAgentItems(allAgentsList);
+    return (
+      <div className="flex w-full flex-col">
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+          {renderAgentItems(paginatedAgents)}
+        </div>
+
+        {renderPagination(allAgentsList.length)}
+      </div>
+    );
   };
 
   const renderWeightedAgentsView = () => {
@@ -118,9 +157,17 @@ export function AgentContentList() {
     });
 
     const filteredAgents = filterAgentsBySearch(delegatedAgentsList, search);
-    if (filteredAgents.length === 0) return <p>No weighted agents found.</p>;
+    const paginatedAgents = paginateAgents(filteredAgents);
 
-    return renderAgentItems(filteredAgents);
+    return (
+      <div className="flex w-full flex-col">
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+          {renderAgentItems(paginatedAgents)}
+        </div>
+
+        {renderPagination(filteredAgents.length)}
+      </div>
+    );
   };
 
   const renderPopularAgentsView = () => {
@@ -131,8 +178,16 @@ export function AgentContentList() {
     const sortedAgentsList = [...allAgentsList].sort(
       (a, b) => (b.globalWeightPerc ?? 0) - (a.globalWeightPerc ?? 0),
     );
+    const paginatedAgents = paginateAgents(sortedAgentsList);
 
-    return renderAgentItems(sortedAgentsList);
+    return (
+      <div className="flex w-full flex-col">
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+          {renderAgentItems(paginatedAgents)}
+        </div>
+        {renderPagination(sortedAgentsList.length)}
+      </div>
+    );
   };
 
   const contentMap: Record<string, () => JSX.Element | JSX.Element[]> = {
@@ -144,7 +199,7 @@ export function AgentContentList() {
   const content =
     viewType && contentMap[viewType]
       ? contentMap[viewType]()
-      : renderAllAgentsView();
+      : renderPopularAgentsView();
 
   return (
     <div className="flex w-full flex-col">
@@ -160,9 +215,8 @@ export function AgentContentList() {
         <UserWeightInfo />
         <AgentsTabView />
       </div>
-      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
-        {content}
-      </div>
+
+      {content}
     </div>
   );
 }

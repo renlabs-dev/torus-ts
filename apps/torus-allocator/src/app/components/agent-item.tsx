@@ -120,6 +120,7 @@ export function AgentItem(props: AgentCardProps) {
     removeAgent,
     updateBalancedPercentage,
     getAgentPercentage,
+    setPercentageChange,
     removeZeroPercentageAgents,
   } = useDelegateAgentStore();
 
@@ -150,6 +151,7 @@ export function AgentItem(props: AgentCardProps) {
   const handlePercentageChange = (value: number[]) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const newPercentage = value[0]!;
+    setPercentageChange(true);
 
     if (newPercentage > 0) {
       if (!isAgentDelegated) {

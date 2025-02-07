@@ -29,6 +29,9 @@ interface DelegateState {
   hasUnsavedChanges: () => boolean;
   updateOriginalAgents: () => void;
 
+  hasPercentageChange: boolean;
+  setPercentageChange: (isOpen: boolean) => void;
+
   getAgentPercentage: (agentKey: string | SS58Address) => number;
   removeZeroPercentageAgents: () => void;
 }
@@ -169,7 +172,11 @@ export const useDelegateAgentStore = create<DelegateState>()(
             (agent) => agent.percentage > 0,
           ),
         })),
+      hasPercentageChange: false,
+      setPercentageChange: (hasPercentageChange) =>
+        set({ hasPercentageChange }),
     }),
+
     {
       name: "delegate-module-storage",
     },
