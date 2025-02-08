@@ -55,7 +55,7 @@ export const agentRouter = {
         .limit(1);
       return result[0];
     }),
-  AllWithAggregatedPenalties: publicProcedure.query(async ({ ctx }) => {
+  allWithAggregatedPenalties: publicProcedure.query(async ({ ctx }) => {
     const agents = await ctx.db.query.agentSchema.findMany({
       where: and(
         eq(agentSchema.isWhitelisted, true),
