@@ -30,7 +30,7 @@ const handleStatusColors = (executed: boolean) =>
     : "text-yellow-400 ring-yellow-400/20";
 
 type AgentWithAggregatedPenalties = NonNullable<
-  inferProcedureOutput<AppRouter["agent"]["AllWithAggregatedPenalties"]>
+  inferProcedureOutput<AppRouter["agent"]["allWithAggregatedPenalties"]>
 >;
 
 type PenaltyList = AgentWithAggregatedPenalties[number]["penalties"];
@@ -67,7 +67,7 @@ function processAgent({
 
 export const ListAgents = () => {
   const { data: agentsWithPenalties, isFetching } =
-    api.agent.AllWithAggregatedPenalties.useQuery();
+    api.agent.allWithAggregatedPenalties.useQuery();
   const [penaltiesDialog, setPenaltiesDialog] =
     useState<DialogPenaltiesState | null>(null);
   const hiddenTriggerRef = useRef<HTMLButtonElement>(null);
