@@ -27,7 +27,6 @@ export default async function AgentPage({
   const mdl = await api.agent.byKeyLastBlock({ key: agentKey });
   const penalties = await api.penalty.byAgentKey({ agentKey });
 
-  console.log(penalties);
   if (!mdl) {
     notFound();
   }
