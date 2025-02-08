@@ -68,9 +68,8 @@ function processAgent({
 export const ListAgents = () => {
   const { data: agentsWithPenalties, isFetching } =
     api.agent.AllWithAggregatedPenalties.useQuery();
-  const [penaltiesDialog, setPenaltiesDialog] = useState<DialogPenaltiesState>(
-    {} as DialogPenaltiesState,
-  );
+  const [penaltiesDialog, setPenaltiesDialog] =
+    useState<DialogPenaltiesState | null>(null);
   const hiddenTriggerRef = useRef<HTMLButtonElement>(null);
 
   const searchParams = useSearchParams();
@@ -119,9 +118,9 @@ export const ListAgents = () => {
         <DialogContent className="w-full max-w-[80vw]">
           <DialogTitle>
             Penalties
-            {penaltiesDialog.agentName && ` for ${penaltiesDialog.agentName}`}
+            {penaltiesDialog?.agentName && ` for ${penaltiesDialog.agentName}`}
           </DialogTitle>
-          <PenaltiesList penalties={penaltiesDialog.penalties} />
+          <PenaltiesList penalties={penaltiesDialog?.penalties} />
         </DialogContent>
       </Dialog>
     </>
@@ -184,17 +183,14 @@ const AgentPenaltiesCard = (props: {
   );
 };
 
-const PenaltiesList = (props: { penalties: PenaltyList }) => {
+const PenaltiesList = (props: { penalties?: PenaltyList }) => {
   const { penalties } = props;
-  const { data: penaltiesList } = api.penalty.all.useQuery();
+
+  if (!penalties || penalties.length === 0) return <p>No penalties found</p>;
 
   return (
     <ListContainer>
       {penalties.map((penalty) => {
-        const penaltyExecuted = penaltiesList?.find(
-          (p) => p.cadreKey === penalty.cadreKey,
-        )?.executed;
-
         return (
           <Card key={penalty.cadreKey}>
             <li className="relative flex h-full flex-col">
@@ -211,10 +207,10 @@ const PenaltiesList = (props: { penalties: PenaltyList }) => {
                     </CopyButton>
                     <span
                       className={`items-center rounded-full bg-muted-foreground/5 px-1.5 py-0.5 ${handleStatusColors(
-                        penaltyExecuted ?? false,
+                        penalty.executed,
                       )} text-xs font-medium ring-1 ring-inset`}
                     >
-                      {penaltyExecuted ? "EXECUTED" : "PENDING"}
+                      {penalty.executed ? "EXECUTED" : "PENDING"}
                     </span>
                   </div>
                   <div className="flex gap-4">
