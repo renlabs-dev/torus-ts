@@ -1,42 +1,19 @@
-"use client";
 import { useSearchParams } from "next/navigation";
-import { CardSkeleton } from "../card-skeleton";
-import { CuratorCandidatesList } from "../cadre/curator-candidates-list";
-import { ListContainer } from "./list-container";
 import { useGovernance } from "~/context/governance-provider";
+import { CuratorCandidatesList } from "../cadre/curator-candidates-list";
+import { ListContainer } from "./container-list";
+import { ListCardsLoadingSkeleton } from "./cards-skeleton-list";
 import { Button, Card } from "@torus-ts/ui";
 import { CreateCadreCandidates } from "../agent-application/create-cadre-candidates";
 
-const ListCardsLoadingSkeleton = () => {
-  return (
-    <div className="w-full space-y-4">
-      <div className="animate-fade-up animate-delay-200">
-        <CardSkeleton />
-      </div>
-      <div className="animate-fade-up animate-delay-500">
-        <CardSkeleton />
-      </div>
-      <div className="animate-fade-up animate-delay-700">
-        <CardSkeleton />
-      </div>
-    </div>
-  );
-};
-
-export const ListCuratorCandidates = () => {
+export const ListCadreCandidates = () => {
   const {
     selectedAccount,
-    cadreCandidates,
     isUserAuthenticated,
     authenticateUser,
     isUserCadre,
     isUserCadreCandidate,
   } = useGovernance();
-
-  const { data: cadreCandidatesList, isFetching: isFetchingCadreCandidates } =
-    cadreCandidates;
-
-  const searchParams = useSearchParams();
 
   if (!selectedAccount)
     return (
@@ -91,6 +68,16 @@ export const ListCuratorCandidates = () => {
       </Card>
     );
 
+  if (isUserCadre && isUserAuthenticated) return <CadreCandidatesList />;
+};
+
+export const CadreCandidatesList = () => {
+  const { cadreCandidates } = useGovernance();
+
+  const { data: cadreCandidatesList, isFetching: isFetchingCadreCandidates } =
+    cadreCandidates;
+  const searchParams = useSearchParams();
+
   if (!cadreCandidatesList && isFetchingCadreCandidates)
     return <ListCardsLoadingSkeleton />;
 
@@ -111,7 +98,5 @@ export const ListCuratorCandidates = () => {
       <CuratorCandidatesList key={candidate.id} curatorCandidate={candidate} />
     );
   });
-
-  if (isUserCadre && isUserAuthenticated)
-    return <ListContainer>{filteredCadreCandidates}</ListContainer>;
+  return <ListContainer>{filteredCadreCandidates}</ListContainer>;
 };

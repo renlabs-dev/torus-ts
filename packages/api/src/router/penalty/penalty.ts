@@ -4,12 +4,17 @@ import "@torus-ts/db/schema";
 
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
-import { eq, and } from "@torus-ts/db";
+import { eq, and, isNull } from "@torus-ts/db";
 import { penalizeAgentVotesSchema } from "@torus-ts/db/schema";
 import { PENALTY_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 export const penaltyRouter = {
   // GET
+  all: publicProcedure.query(({ ctx }) => {
+    return ctx.db.query.penalizeAgentVotesSchema.findMany({
+      where: and(isNull(penalizeAgentVotesSchema.deletedAt)),
+    });
+  }),
   byAgentKey: publicProcedure
     .input(PENALTY_INSERT_SCHEMA.pick({ agentKey: true }))
     .query(({ ctx, input }) => {

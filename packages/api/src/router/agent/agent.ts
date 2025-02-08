@@ -1,10 +1,10 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { eq, and, max, isNull } from "@torus-ts/db";
+import { eq, and, max, isNull, inArray } from "@torus-ts/db";
 
 import "@torus-ts/db/schema";
-import { agentSchema } from "@torus-ts/db/schema";
+import { agentSchema, penalizeAgentVotesSchema } from "@torus-ts/db/schema";
 import { publicProcedure } from "../../trpc";
 
 export const agentRouter = {
@@ -55,4 +55,34 @@ export const agentRouter = {
         .limit(1);
       return result[0];
     }),
+  allWithAggregatedPenalties: publicProcedure.query(async ({ ctx }) => {
+    const agents = await ctx.db.query.agentSchema.findMany({
+      where: and(
+        eq(agentSchema.isWhitelisted, true),
+        isNull(agentSchema.deletedAt),
+      ),
+    });
+
+    const agentKeys = agents.map((agent) => agent.key);
+
+    const penalties = await ctx.db.query.penalizeAgentVotesSchema.findMany({
+      where: inArray(penalizeAgentVotesSchema.agentKey, agentKeys),
+    });
+
+    const penaltiesByAgent = penalties.reduce(
+      (acc, penalty) => {
+        if (!acc[penalty.agentKey]) {
+          acc[penalty.agentKey] = [];
+        }
+        acc[penalty.agentKey]?.push(penalty);
+        return acc;
+      },
+      {} as Record<string, typeof penalties>,
+    );
+
+    return agents.map((agent) => ({
+      ...agent,
+      penalties: penaltiesByAgent[agent.key] ?? [],
+    }));
+  }),
 } satisfies TRPCRouterRecord;

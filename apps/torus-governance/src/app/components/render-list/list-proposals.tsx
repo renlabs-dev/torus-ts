@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
 import type { VoteStatus } from "../vote-label";
 import { CardSkeleton } from "../card-skeleton";
-import { ListContainer } from "./list-container";
+import { ListContainer } from "./container-list";
 
 const ListCardsLoadingSkeleton = () => {
   return (

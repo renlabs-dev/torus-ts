@@ -6,9 +6,10 @@ import { useSearchParams } from "next/navigation";
 import { CardSkeleton } from "../card-skeleton";
 import { ListAgentApplications } from "./list-agent-applications";
 import { ListProposals } from "./list-proposals";
-import { ListCuratorCandidates } from "./list-curator-candidates";
 import { navSidebarOptions } from "../sidebar-links";
 import type { GovernanceViewMode } from "../sidebar-links";
+import { ListCadreCandidates } from "./list-cadre-candidates";
+import { ListAgents } from "./list-agents";
 
 const ListCardsLoadingSkeleton = () => {
   return (
@@ -31,7 +32,8 @@ const validViews = navSidebarOptions.map(({ href }) => href);
 const VIEW_MODE_COMPONENTS: Record<GovernanceViewMode, JSX.Element> = {
   proposals: <ListProposals />,
   "agent-applications": <ListAgentApplications />,
-  "dao-portal": <ListCuratorCandidates />,
+  "dao-portal": <ListCadreCandidates />,
+  agents: <ListAgents />,
 };
 
 export const ListCardsContent = () => {
