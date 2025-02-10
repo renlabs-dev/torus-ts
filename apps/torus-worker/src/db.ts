@@ -40,7 +40,7 @@ export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type Application = typeof whitelistApplicationSchema.$inferInsert;
-
+export type ApplicationDB = typeof whitelistApplicationSchema.$inferSelect;
 
 export async function insertAgentWeight(weights: AgentWeight[]) {
   await db
@@ -56,7 +56,6 @@ export async function insertAgentWeight(weights: AgentWeight[]) {
     .execute();
 }
 
-
 export async function upsertWhitelistApplication(applications: Application[]) {
   await db
     .insert(whitelistApplicationSchema)
@@ -65,7 +64,7 @@ export async function upsertWhitelistApplication(applications: Application[]) {
         agentKey: a.agentKey,
         payerKey: a.payerKey,
         status: a.status,
-        expires_at: a.expires_at,
+        expiresAt: a.expiresAt,
         cost: a.cost,
         data: a.data,
       })),
@@ -79,7 +78,6 @@ export async function upsertWhitelistApplication(applications: Application[]) {
     })
     .execute();
 }
-
 
 export async function upsertAgentData(agents: Agent[]) {
   await db
@@ -133,8 +131,12 @@ export async function vote(new_vote: NewVote) {
   await db.insert(cadreVoteSchema).values(new_vote);
 }
 
-export async function addSeenProposal(proposal: NewNotification) {
-  await db.insert(governanceNotificationSchema).values(proposal);
+export async function toggleWhitelistNotification(proposal: ApplicationDB) {
+  await db
+  .update(whitelistApplicationSchema)
+  .set({ notified: true })
+  .where(eq(whitelistApplicationSchema.id, (proposal.id)))
+  .execute();
 }
 
 export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
@@ -158,6 +160,22 @@ export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
     agentId: row.appId,
   }));
 }
+
+
+export async function queryAgentApplicationsDB(): Promise<ApplicationDB[]> {
+  const result = await db
+    .select()
+    .from(whitelistApplicationSchema)
+    .where(
+      and(
+        isNull(whitelistApplicationSchema.deletedAt),
+      ))
+    .execute();
+
+  return result;
+}
+
+
 
 export async function getCadreDiscord(cadreKey: SS58Address) {
   const result = await db
