@@ -12,5 +12,5 @@ export default {
   ],
   presets: [baseConfig],
   theme: {},
-  plugins: [typography]
+  plugins: [typography],
 } satisfies Config;
