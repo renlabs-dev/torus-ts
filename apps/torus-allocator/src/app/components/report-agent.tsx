@@ -42,7 +42,7 @@ interface ReportAgentProps {
   agentKey: string;
 }
 
-export function ReportAgent({ agentKey }: ReportAgentProps) {
+export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState<ReportFormData>({
     reason: "SPAM",
@@ -151,7 +151,7 @@ export function ReportAgent({ agentKey }: ReportAgentProps) {
             )}
           </div>
           <div>
-            <label className="mb-2 block text-sm font-bold">Description</label>
+            <Label className="mb-2 block text-sm font-bold">Description</Label>
             <Textarea
               name="content"
               value={formData.content}

@@ -146,7 +146,7 @@ export function HoverHeader() {
           onHoverEnd={() => setIsHovered(false)}
           className="hover:background-acent/30 rounded-radius relative z-50 p-3 transition duration-300"
         >
-          <Icons.logo className="relative z-10 h-10 w-10" />
+          <Icons.Logo className="relative z-10 h-10 w-10" />
           <motion.div
             className="absolute inset-0 rounded-2xl bg-primary/15 blur-md"
             animate="pulse"

@@ -68,7 +68,7 @@ export function Footer() {
   );
 }
 
-function FooterItem({ children }: { children: React.ReactNode }) {
+function FooterItem({ children }: Readonly<{ children: React.ReactNode }>) {
   return <div className="bg-background px-2 py-0.5">{children}</div>;
 }
 
@@ -76,22 +76,22 @@ const _socialList = [
   {
     name: "Discord",
     href: links.discord,
-    icon: <Icons.discord className="h-6 w-6 md:h-3 md:w-3" />,
+    icon: <Icons.Discord className="h-6 w-6 md:h-3 md:w-3" />,
   },
   {
     name: "X",
     href: links.x,
-    icon: <Icons.x className="h-6 w-6 md:h-3 md:w-3" />,
+    icon: <Icons.X className="h-6 w-6 md:h-3 md:w-3" />,
   },
   {
     name: "GitHub",
     href: links.github,
-    icon: <Icons.github className="h-6 w-6 md:h-3 md:w-3" />,
+    icon: <Icons.Github className="h-6 w-6 md:h-3 md:w-3" />,
   },
   {
     name: "Telegram",
     href: links.telegram,
-    icon: <Icons.telegram className="h-6 w-6 md:h-3 md:w-3" />,
+    icon: <Icons.Telegram className="h-6 w-6 md:h-3 md:w-3" />,
   },
 ];
 

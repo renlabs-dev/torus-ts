@@ -56,19 +56,19 @@ export const SOCIALS_VALUES = {
   },
   discord: {
     name: "Discord",
-    icon: <Icons.discord className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.Discord className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   twitter: {
     name: "X",
-    icon: <Icons.x className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.X className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   github: {
     name: "GitHub",
-    icon: <Icons.github className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.Github className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   telegram: {
     name: "Telegram",
-    icon: <Icons.telegram className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.Telegram className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
 };
 
@@ -111,7 +111,7 @@ const useBlobUrl = (blob: Blob | Nullish) => {
   return url;
 };
 
-export function AgentItem(props: AgentCardProps) {
+export function AgentItem(props: Readonly<AgentCardProps>) {
   const { agentKey, metadataUri } = props;
 
   const {
@@ -186,7 +186,7 @@ export function AgentItem(props: AgentCardProps) {
             />
           ) : (
             <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
-              <Icons.logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
+              <Icons.Logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
             </div>
           )}
 
