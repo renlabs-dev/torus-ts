@@ -1,4 +1,4 @@
-default: check
+default: install check-all
 
 # == Chain metadata ==
 
@@ -14,7 +14,6 @@ gen-types name: (dump-metadata name)
 install:
   pnpm install
 
-check: install typecheck lint format
 
 fix: lint-fix format-fix
 
@@ -44,6 +43,9 @@ lint-fix:
 
 lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
+
+check-all:
+  pnpm exec turbo run typecheck lint format
 
 create-package:
   pnpm turbo gen init
