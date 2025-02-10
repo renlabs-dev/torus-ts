@@ -81,19 +81,19 @@ export const useDelegateAgentStore = create<DelegateState>()(
             0,
           );
 
-          if (
-            totalPercentageSet <= 100 &&
-            totalPercentageSet + newPercentage <= 100 &&
-            percentageDiff >= 0
-          ) {
-            console.log("Total percentage: ", totalPercentageSet);
-            console.log("New percentage: ", newPercentage);
-            console.log(
-              "Total percentage + new percentage: ",
-              totalPercentageSet + newPercentage,
-            );
-            return { delegatedAgents: agents };
-          }
+          // if (
+          //   totalPercentageSet <= 100 &&
+          //   totalPercentageSet + newPercentage <= 100 &&
+          //   percentageDiff >= 0
+          // ) {
+          //   console.log("Total percentage: ", totalPercentageSet);
+          //   console.log("New percentage: ", newPercentage);
+          //   console.log(
+          //     "Total percentage + new percentage: ",
+          //     totalPercentageSet + newPercentage,
+          //   );
+          //   return { delegatedAgents: agents };
+          // }
           console.log("didnt return");
 
           // const totalOtherPercentage = otherAgents.reduce(
@@ -107,6 +107,7 @@ export const useDelegateAgentStore = create<DelegateState>()(
               const proportion = totalOtherPercentage
                 ? agent.percentage / totalOtherPercentage
                 : 0;
+              console.log("proportion: ", proportion);
               const precisionFactor = 10000;
               const roundedProportion = Math.round(
                 parseFloat(proportion.toPrecision(4)) * precisionFactor,
@@ -120,17 +121,17 @@ export const useDelegateAgentStore = create<DelegateState>()(
               agent.percentage = adjustedPercentage;
             });
           }
-          return { delegatedAgents: agents };
-
+          
           // Normalize percentages to ensure they sum to 100% and handle precision
-          // const totalPercentage = agents.reduce(
-          //   (sum, agent) => sum + agent.percentage,
-          //   0,
-          // );
-          // agents.forEach((agent) => {
-          //   agent.percentage =
-          //     Math.round((agent.percentage / totalPercentage) * 10000) / 100;
-          // });
+          const totalPercentage = agents.reduce(
+            (sum, agent) => sum + agent.percentage,
+            0,
+          );
+          agents.forEach((agent) => {
+              agent.percentage =
+                Math.round((agent.percentage / totalPercentage) * 10000) / 100;
+            });
+            return { delegatedAgents: agents };
         }),
 
       getTotalPercentage: () => {
