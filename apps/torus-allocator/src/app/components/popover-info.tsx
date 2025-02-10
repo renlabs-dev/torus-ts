@@ -74,7 +74,7 @@ export const PopoverInfo = () => {
             <span>{delegatedAgents.length}</span>
           )}
           <span className="text-sm text-muted-foreground">
-            Agents Allocated
+            Selected Agents:
           </span>
         </div>
       </PopoverContent>

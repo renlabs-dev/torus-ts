@@ -112,18 +112,24 @@ export function AllocationMenu() {
     });
   }
 
+  const [tempInputs, setTempInputs] = useState<
+    Record<string, string | undefined>
+  >({});
+
   const handlePercentageChange = (
     agentKey: string | SS58Address,
-    percentage: string,
+    value: string,
   ) => {
-    const sanitizedPercentage = Number(percentage.replace(/[^\d.]/g, ""));
+    const sanitizedValue = value.replace(/[^\d.]/g, "");
+    setTempInputs((prev) => ({ ...prev, [agentKey]: sanitizedValue }));
+  };
 
-    if (
-      !isNaN(sanitizedPercentage) &&
-      sanitizedPercentage >= 0 &&
-      sanitizedPercentage <= 100
-    ) {
-      updatePercentage(agentKey, sanitizedPercentage);
+  const handleInputBlur = (agentKey: string | SS58Address) => {
+    const value = tempInputs[agentKey];
+    if (value !== undefined) {
+      const percentage = Math.min(Math.max(Number(value), 0), 100);
+      updatePercentage(agentKey, percentage);
+      setTempInputs((prev) => ({ ...prev, [agentKey]: undefined }));
     }
   };
 
@@ -141,7 +147,27 @@ export function AllocationMenu() {
       );
       return;
     }
+
+    // Filter out agents with 0 percentage
+    const filteredAgents = delegatedAgents.filter(
+      (agent) => agent.percentage !== 0,
+    );
+
+    // Recalculate total percentage after filtering
+    const filteredTotalPercentage = filteredAgents.reduce(
+      (sum, agent) => sum + agent.percentage,
+      0,
+    );
+
+    if (filteredTotalPercentage !== 100) {
+      toast.error(
+        "Total percentage must be 100% after removing agents with 0%",
+      );
+      return;
+    }
+
     setIsSubmitting(true);
+
     try {
       // Delete existing user agent data
       await deleteUserAgentData.mutateAsync({
@@ -149,7 +175,7 @@ export function AllocationMenu() {
       });
 
       // Prepare data for createManyUserAgentData
-      const agentsData = delegatedAgents.map((agent) => ({
+      const agentsData = filteredAgents.map((agent) => ({
         agentKey: agent.address,
         weight: agent.percentage,
       }));
@@ -175,6 +201,8 @@ export function AllocationMenu() {
 
       setIsSubmitting(false);
       setPercentageChange(false);
+
+      toast.success("Allocation submitted successfully");
     } catch (error) {
       console.error("Error submitting data:", error);
       setIsSubmitting(false);
@@ -203,23 +231,12 @@ export function AllocationMenu() {
 
   const hasItemsToClear = delegatedAgents.length > 0;
 
-  const hasZeroPercentage = () => {
-    const items = delegatedAgents;
-    return items.some((item) => item.percentage === 0);
-  };
-
   function getSubmitStatus() {
     if (!selectedAccount?.address) {
       return { disabled: true, message: "Please connect your wallet" };
     }
     if (totalPercentage !== 100) {
       return { disabled: true, message: "Total percentage must be 100%" };
-    }
-    if (hasZeroPercentage()) {
-      return {
-        disabled: true,
-        message: "Remove or allocate weight to all items",
-      };
     }
     if (isSubmitting) {
       return { disabled: true, message: "Submitting..." };
@@ -271,6 +288,21 @@ export function AllocationMenu() {
     <>
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <div className="fixed bottom-4 right-3 z-[50] flex w-fit flex-col items-center justify-end marker:flex md:bottom-14">
+          <Label
+            className={cn("mb-2 animate-pulse text-end text-sm", {
+              "text-red-500":
+                submitStatus.message === "You have unsaved changes",
+              "text-cyan-500": submitStatus.message === "All changes saved!",
+              "text-green-500": submitStatus.message === "All changes saved!",
+              "text-amber-500": ![
+                "You have unsaved changes",
+                "All changes saved!",
+              ].includes(submitStatus.message),
+            })}
+          >
+            {submitStatus.message !== "All changes saved!" &&
+              submitStatus.message}
+          </Label>
           <div className="flex items-center gap-2">
             <SheetTrigger
               asChild
@@ -341,13 +373,17 @@ export function AllocationMenu() {
                               >
                                 <Input
                                   type="text"
-                                  value={getAgentPercentage(agent.address)}
+                                  value={
+                                    tempInputs[agent.address] ??
+                                    getAgentPercentage(agent.address)
+                                  }
                                   onChange={(e) =>
                                     handlePercentageChange(
                                       agent.address,
                                       e.target.value,
                                     )
                                   }
+                                  onBlur={() => handleInputBlur(agent.address)}
                                   maxLength={3}
                                   className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
                                 />

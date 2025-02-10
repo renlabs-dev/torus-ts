@@ -115,13 +115,12 @@ export function AgentItem(props: AgentCardProps) {
   const { agentKey, metadataUri } = props;
 
   const {
+    originalAgents,
     delegatedAgents,
     addAgent,
-    removeAgent,
     updateBalancedPercentage,
     getAgentPercentage,
     setPercentageChange,
-    removeZeroPercentageAgents,
   } = useDelegateAgentStore();
 
   const { selectedAccount } = useTorus();
@@ -136,17 +135,15 @@ export function AgentItem(props: AgentCardProps) {
   const shortDescription =
     metadata?.short_description ?? "Missing Agent Short Description";
 
+  // TODO: those 2 are inverted keeeeek
+
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
+
+  const isAgentSelected = originalAgents.some((a) => a.address === agentKey);
 
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
 
   const currentPercentage = getAgentPercentage(props.agentKey);
-
-  useEffect(() => {
-    if (currentPercentage === 0) {
-      removeAgent(props.agentKey);
-    }
-  }, [currentPercentage, removeAgent, props.agentKey]);
 
   const handlePercentageChange = (value: number[]) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -164,12 +161,7 @@ export function AgentItem(props: AgentCardProps) {
         });
       }
       updateBalancedPercentage(props.agentKey, newPercentage);
-    } else {
-      removeAgent(props.agentKey);
     }
-
-    // Remove any agents that might have been set to zero as a side effect
-    removeZeroPercentageAgents();
   };
 
   return (
@@ -214,9 +206,9 @@ export function AgentItem(props: AgentCardProps) {
                 ))}
               </div>
               <Badge
-                className={`border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10 ${isAgentDelegated ? "visible" : "invisible"}`}
+                className={`${isAgentSelected ? "border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/10"} ${isAgentDelegated ? "visible" : "invisible"}`}
               >
-                Selected
+                {!isAgentSelected ? "Selected" : "Delegated"}
               </Badge>
             </div>
             <h2

@@ -68,7 +68,7 @@ export const UserWeightInfo = () => {
       </div>
       <div className="flex items-center gap-2 text-sm">
         <span className="text-nowrap text-muted-foreground">
-          Agents Allocated:
+          Selected Agents:
         </span>
         {userWeightPower === null ? (
           <span className="animate-pulse text-gray-400">0</span>
