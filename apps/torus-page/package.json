@@ -6,7 +6,10 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --port 3000",
-    "lint": "eslint",
+    "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },

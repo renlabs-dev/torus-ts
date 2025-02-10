@@ -31,16 +31,16 @@ typecheck:
   pnpm exec turbo run typecheck
 
 format:
-  pnpm exec turbo run format --continue -- --cache --cache-location .cache/.prettiercache
+  pnpm exec turbo run format --continue
 
 format-fix:
-  pnpm exec turbo run format --continue -- --write --cache --cache-location .cache/.prettiercache
+  pnpm exec turbo run format-fix --continue
 
 lint:
-  pnpm exec turbo run lint --continue -- --cache --cache-location .cache/.eslintcache
+  pnpm exec turbo run lint --continue
 
 lint-fix:
-  pnpm exec turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache
+  pnpm exec turbo run lint-fix --continue
 
 lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
@@ -74,6 +74,14 @@ clean-all:
       -name '.turbo' -o \
       -name 'dist' -o \
       -name '.cache' \
+    \) -prune -exec rm -rf '{}' +
+
+clean-output:
+  find . -type d \( \
+      -name '.cache' -o \
+      -name '.next' -o \
+      -name 'dist' -o \
+      -name '.turbo' \
     \) -prune -exec rm -rf '{}' +
 
 # == Github Actions ==
