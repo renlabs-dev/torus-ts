@@ -352,6 +352,7 @@ export const candidacyStatus = pgEnum("candidacy_status", [
 ]);
 export const candidacyStatusValues = extract_pgenum_values(candidacyStatus);
 
+// TODO: test autoupdate on the notified field
 export const cadreCandidateSchema = createTable(
   "cadre_candidate",
   {
@@ -363,6 +364,7 @@ export const cadreCandidateSchema = createTable(
       .notNull()
       .default(candidacyStatusValues.PENDING),
     content: text("content").notNull(),
+    notified: boolean("notified").notNull().default(false),
 
     ...timeFields(),
   },

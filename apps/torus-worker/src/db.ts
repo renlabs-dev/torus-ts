@@ -39,8 +39,9 @@ export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
-export type Application = typeof whitelistApplicationSchema.$inferInsert;
+export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
 export type ApplicationDB = typeof whitelistApplicationSchema.$inferSelect;
+export type CadreCandidate = typeof cadreCandidateSchema.$inferSelect;
 
 export async function insertAgentWeight(weights: AgentWeight[]) {
   await db
@@ -56,7 +57,7 @@ export async function insertAgentWeight(weights: AgentWeight[]) {
     .execute();
 }
 
-export async function upsertWhitelistApplication(applications: Application[]) {
+export async function upsertWhitelistApplication(applications: NewApplication[]) {
   await db
     .insert(whitelistApplicationSchema)
     .values(
@@ -195,6 +196,17 @@ export async function getCadreDiscord(cadreKey: SS58Address) {
   return result.pop()?.discordId;
 }
 
+
+export async function queryCadreCandidates(){
+  const result = await db
+  .select()
+  .from(cadreCandidateSchema)
+  .where(isNull(cadreCandidateSchema.deletedAt))
+  return result
+}
+
+
+
 export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
   const result = await db
     .select({
@@ -250,6 +262,7 @@ export async function addCadreMember(userKey: SS58Address, discordId: string) {
       .update(cadreCandidateSchema)
       .set({
         candidacyStatus: candidacyStatusValues.ACCEPTED,
+        notified: false,
       })
       .where(eq(cadreCandidateSchema.userKey, userKey));
 
@@ -263,7 +276,10 @@ export async function removeCadreMember(userKey: SS58Address) {
     await tx.delete(cadreSchema).where(eq(cadreSchema.userKey, userKey));
     await tx
       .update(cadreCandidateSchema)
-      .set({ candidacyStatus: candidacyStatusValues.REMOVED })
+      .set({ 
+        candidacyStatus: candidacyStatusValues.REMOVED,
+        notified: false, 
+      })
       .where(eq(cadreCandidateSchema.userKey, userKey));
   });
 }
@@ -272,7 +288,7 @@ export async function refuseCadreApplication(userKey: SS58Address) {
   await db.transaction(async (tx) => {
     await tx
       .update(cadreCandidateSchema)
-      .set({ candidacyStatus: candidacyStatusValues.REJECTED })
+      .set({ candidacyStatus: candidacyStatusValues.REJECTED, notified: false })
       .where(eq(cadreCandidateSchema.userKey, userKey));
 
     await archiveCadreVotes(userKey, tx);

@@ -1,8 +1,9 @@
 import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
-  Application,
+  NewApplication,
   ApplicationDB,
+  CadreCandidate,
 } from "../db";
 import { applicationStatusValues } from "@torus-ts/db/schema";
 
@@ -16,6 +17,7 @@ import {
   getCadreDiscord,
   refuseCadreApplication,
   queryAgentApplicationsDB,
+  queryCadreCandidates,
 } from "../db";
 import type { ApiPromise } from "@polkadot/api";
 import type { AgentApplication, LastBlock, Api } from "@torus-ts/subspace";
@@ -75,7 +77,7 @@ type ApplicationVoteStatus = "open" | "accepted" | "locked";
 // TODO: cursed function. Should refactor everywhere to just use Application
 export function agentApplicationToApplication(
   agentApplication: AgentApplication,
-): Application {
+): NewApplication {
   const mappedStatus = match(agentApplication.status)({
     Open: () => applicationStatusValues.OPEN,
     Resolved: ({ accepted }) =>
@@ -133,6 +135,12 @@ export async function getApplicationsDB(filterFn: (app: ApplicationDB) => boolea
   const applications = await queryAgentApplicationsDB();
   const pending_daos = applications.filter(filterFn);
   return pending_daos;
+}
+
+
+export async function getCadreCandidates(filterFn: (app: CadreCandidate) => boolean) {
+  const cadreCandidates = await queryCadreCandidates();
+  return cadreCandidates.filter(filterFn);
 }
 
 export async function getVotesOnPending(

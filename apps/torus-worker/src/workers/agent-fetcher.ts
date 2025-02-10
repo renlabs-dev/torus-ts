@@ -15,7 +15,7 @@ import {
   getApplications,
   agentApplicationToApplication,
 } from "../common";
-import type { Application } from "../db";
+import type { NewApplication } from "../db";
 import {
   SubspaceAgentToDatabase,
   upsertAgentData,
@@ -54,7 +54,7 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: running applications fetch`);
   const applications = await getApplications(lastBlock.apiAtBlock, (_) => true);
   const applicationsMap = new Map(Object.entries(applications));
-  const dbApplications: Application[] = [];
+  const dbApplications: NewApplication[] = [];
   applicationsMap.forEach((value, _) => {
     dbApplications.push(agentApplicationToApplication(value));
   });
