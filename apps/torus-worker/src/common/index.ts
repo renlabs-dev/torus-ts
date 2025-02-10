@@ -1,7 +1,16 @@
+
+import type { AgentApplication, Api, LastBlock, Proposal } from "@torus-ts/subspace";
+import { queryAgentApplications, queryLastBlock, queryProposals} from "@torus-ts/subspace";
+
 import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
+  NewApplication,
+  ApplicationDB,
+  CadreCandidate,
 } from "../db";
+import { applicationStatusValues } from "@torus-ts/db/schema";
+
 import {
   queryTotalVotesPerApp,
   countCadreKeys,
@@ -11,10 +20,10 @@ import {
   removeCadreMember,
   getCadreDiscord,
   refuseCadreApplication,
+  queryAgentApplicationsDB,
+  queryCadreCandidates,
 } from "../db";
 import type { ApiPromise } from "@polkadot/api";
-import type { AgentApplication, LastBlock, Api } from "@torus-ts/subspace";
-import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
 import { match } from "rustie";
 
 export interface WorkerProps {
@@ -67,6 +76,26 @@ export async function sleepUntilNewBlock(props: WorkerProps) {
 
 type ApplicationVoteStatus = "open" | "accepted" | "locked";
 
+// TODO: cursed function. Should refactor everywhere to just use Application
+export function agentApplicationToApplication(
+  agentApplication: AgentApplication,
+): NewApplication {
+  const mappedStatus = match(agentApplication.status)({
+    Open: () => applicationStatusValues.OPEN,
+    Resolved: ({ accepted }) =>
+      accepted
+        ? applicationStatusValues.ACCEPTED
+        : applicationStatusValues.REJECTED,
+    Expired: () => applicationStatusValues.REJECTED,
+  });
+
+  return {
+    ...agentApplication,
+    cost: agentApplication.cost.toString(),
+    status: mappedStatus,
+  };
+}
+
 export const getApplicationVoteStatus = (
   app: AgentApplication,
 ): ApplicationVoteStatus =>
@@ -86,6 +115,7 @@ export const applicationIsOpen = (app: AgentApplication) =>
     Expired: () => false,
   });
 
+// TODO: refactor to return using the db type
 export async function getApplications(
   api: Api,
   filterFn: (app: AgentApplication) => boolean,
@@ -101,6 +131,36 @@ export async function getApplications(
       {} as Record<number, AgentApplication>,
     );
   return applications_map;
+}
+
+
+export async function getProposals(
+  api: Api,
+  filterFn: (app: Proposal) => boolean,
+) {
+  const application_entries = await queryProposals(api);
+  const pending_daos = application_entries.filter(filterFn);
+  const applications_map: Record<number, Proposal> =
+    pending_daos.reduce(
+      (hashmap, proposal) => {
+        hashmap[proposal.id] = proposal;
+        return hashmap;
+      },
+      {} as Record<number, Proposal>,
+    );
+  return applications_map;
+}
+
+export async function getApplicationsDB(filterFn: (app: ApplicationDB) => boolean) {
+  const applications = await queryAgentApplicationsDB();
+  const pending_daos = applications.filter(filterFn);
+  return pending_daos;
+}
+
+
+export async function getCadreCandidates(filterFn: (app: CadreCandidate) => boolean) {
+  const cadreCandidates = await queryCadreCandidates();
+  return cadreCandidates.filter(filterFn);
 }
 
 export async function getVotesOnPending(
