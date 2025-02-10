@@ -73,63 +73,15 @@ export const useDelegateAgentStore = create<DelegateState>()(
           }
           agents[agentIndex].percentage = newPercentage;
 
-          const oldPercentage = agents[agentIndex].percentage;
-          const percentageDiff = newPercentage - oldPercentage;
-          const otherAgents = agents.filter((_, index) => index !== agentIndex);
-          const totalPercentageSet = otherAgents.reduce(
-            (sum, agent) => sum + agent.percentage,
-            0,
-          );
-
-          // if (
-          //   totalPercentageSet <= 100 &&
-          //   totalPercentageSet + newPercentage <= 100 &&
-          //   percentageDiff >= 0
-          // ) {
-          //   console.log("Total percentage: ", totalPercentageSet);
-          //   console.log("New percentage: ", newPercentage);
-          //   console.log(
-          //     "Total percentage + new percentage: ",
-          //     totalPercentageSet + newPercentage,
-          //   );
-          //   return { delegatedAgents: agents };
-          // }
-          console.log("didnt return");
-
-          // const totalOtherPercentage = otherAgents.reduce(
-          //   (sum, agent) => sum + agent.percentage,
-          //   0,
-          // );
-          const totalOtherPercentage = 100 - agents[agentIndex].percentage;
-          if (totalOtherPercentage > 0) {
-            console.log("Shouldnt be here, big boy");
-            otherAgents.forEach((agent) => {
-              const proportion = totalOtherPercentage
-                ? agent.percentage / totalOtherPercentage
-                : 0;
-              console.log("proportion: ", proportion);
-              const precisionFactor = 10000;
-              const roundedProportion = Math.round(
-                parseFloat(proportion.toPrecision(4)) * precisionFactor,
-              );
-              const adjustedPercentage =
-                agent.percentage -
-                Math.round(
-                  (percentageDiff * roundedProportion) / precisionFactor,
-                );
-              console.log("adjusted percentage: ", adjustedPercentage);
-              agent.percentage = adjustedPercentage;
-            });
-          }
-          
-          // Normalize percentages to ensure they sum to 100% and handle precision
           const totalPercentage = agents.reduce(
             (sum, agent) => sum + agent.percentage,
             0,
           );
           agents.forEach((agent) => {
-              agent.percentage =
-                Math.round((agent.percentage / totalPercentage) * 10000) / 100;
+              const precisionFactor = 10000;
+              const roundedPercentage = Math.round(parseFloat((agent.percentage / totalPercentage).toFixed(4)) * precisionFactor);
+              console.log("roundedPercentage: ", roundedPercentage);
+              agent.percentage = roundedPercentage / 100;
             });
             return { delegatedAgents: agents };
         }),
