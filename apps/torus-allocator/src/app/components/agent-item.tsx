@@ -150,18 +150,17 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
     const newPercentage = value[0]!;
     setPercentageChange(true);
 
-    if (newPercentage > 0) {
-      if (!isAgentDelegated) {
-        addAgent({
-          id: props.id,
-          name: props.name,
-          address: props.agentKey,
-          metadataUri: props.metadataUri,
-          registrationBlock: props.registrationBlock ?? null,
-        });
-      }
-      updateBalancedPercentage(props.agentKey, newPercentage);
+    if (!isAgentDelegated && newPercentage > 0) {
+      addAgent({
+        id: props.id,
+        name: props.name,
+        address: props.agentKey,
+        metadataUri: props.metadataUri,
+        registrationBlock: props.registrationBlock ?? null,
+      });
     }
+
+    updateBalancedPercentage(props.agentKey, newPercentage);
   };
 
   return (

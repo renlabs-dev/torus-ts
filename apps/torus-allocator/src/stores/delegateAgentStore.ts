@@ -60,84 +60,79 @@ export const useDelegateAgentStore = create<DelegateState>()(
             agent.address === agentKey ? { ...agent, percentage } : agent,
           ),
         })),
-      updateBalancedPercentage: (agentKey: string, newPercentage: number) =>
+      updateBalancedPercentage: (
+        agentKey: string | SS58Address,
+        newPercentage: number,
+      ) =>
         set((state) => {
-          const agentIndex = state.delegatedAgents.findIndex(
-            (agent) => agent.address === agentKey,
-          );
+          const agents = [...state.delegatedAgents];
+          const agentIndex = agents.findIndex((a) => a.address === agentKey);
 
-          const updatedAgents = [...state.delegatedAgents];
-          const currentAgent = updatedAgents[agentIndex];
-
-          if (!currentAgent) {
-            return state;
+          if (!agents[agentIndex]) {
+            return { delegatedAgents: agents };
           }
+          agents[agentIndex].percentage = newPercentage;
 
-          currentAgent.percentage = newPercentage;
-
-          const totalPercentage = updatedAgents.reduce(
+          const oldPercentage = agents[agentIndex].percentage;
+          const percentageDiff = newPercentage - oldPercentage;
+          const otherAgents = agents.filter((_, index) => index !== agentIndex);
+          const totalPercentageSet = otherAgents.reduce(
             (sum, agent) => sum + agent.percentage,
             0,
           );
 
-          const remainingAgentsCount = updatedAgents.length - 1;
-
-          if (totalPercentage > 100) {
-            const excess = totalPercentage - 100;
-
-            if (remainingAgentsCount) {
-              for (let i = 0; i < updatedAgents.length; i++) {
-                const agent = updatedAgents[i];
-                if (agent && i !== agentIndex) {
-                  agent.percentage = Math.max(
-                    0,
-                    Math.round(
-                      agent.percentage -
-                        (agent.percentage /
-                          (totalPercentage - currentAgent.percentage)) *
-                          excess,
-                    ),
-                  );
-                }
-              }
-            }
-          } else if (totalPercentage < 100) {
-            const needed = 100 - totalPercentage;
-            if (remainingAgentsCount > 0) {
-              for (let i = 0; i < updatedAgents.length; i++) {
-                const agent = updatedAgents[i];
-                if (agent && i !== agentIndex) {
-                  agent.percentage = Math.round(
-                    agent.percentage +
-                      (agent.percentage /
-                        (totalPercentage - currentAgent.percentage)) *
-                        needed,
-                  );
-                }
-              }
-            }
+          if (
+            totalPercentageSet <= 100 &&
+            totalPercentageSet + newPercentage <= 100 &&
+            percentageDiff >= 0
+          ) {
+            console.log("Total percentage: ", totalPercentageSet);
+            console.log("New percentage: ", newPercentage);
+            console.log(
+              "Total percentage + new percentage: ",
+              totalPercentageSet + newPercentage,
+            );
+            return { delegatedAgents: agents };
           }
+          console.log("didnt return");
 
-          const finalTotal = updatedAgents.reduce(
-            (sum, agent) => sum + agent.percentage,
-            0,
-          );
-          let diff = Math.round(100 - finalTotal);
-
-          if (diff !== 0) {
-            let remainingAgentsToAdjust = remainingAgentsCount;
-            for (let i = 0; i < updatedAgents.length; i++) {
-              const agent = updatedAgents[i];
-              if (agent && i !== agentIndex && remainingAgentsToAdjust > 0) {
-                const adjustment = Math.round(diff / remainingAgentsToAdjust);
-                agent.percentage += adjustment;
-                diff -= adjustment;
-                remainingAgentsToAdjust--;
-              }
-            }
+          // const totalOtherPercentage = otherAgents.reduce(
+          //   (sum, agent) => sum + agent.percentage,
+          //   0,
+          // );
+          const totalOtherPercentage = 100 - agents[agentIndex].percentage;
+          if (totalOtherPercentage > 0) {
+            console.log("Shouldnt be here, big boy");
+            otherAgents.forEach((agent) => {
+              const proportion = totalOtherPercentage
+                ? agent.percentage / totalOtherPercentage
+                : 0;
+              const precisionFactor = 10000;
+              const roundedProportion = Math.round(
+                parseFloat(proportion.toPrecision(4)) * precisionFactor,
+              );
+              const adjustedPercentage =
+                agent.percentage -
+                Math.round(
+                  (percentageDiff * roundedProportion) / precisionFactor,
+                );
+              console.log("adjusted percentage: ", adjustedPercentage);
+              agent.percentage = adjustedPercentage;
+            });
           }
-          return { delegatedAgents: updatedAgents };
+          return { delegatedAgents: agents };
+
+          // Normalize percentages to ensure they sum to 100% and handle precision
+          // const totalPercentage = agents.reduce(
+          //   (sum, agent) => sum + agent.percentage,
+          //   0,
+          // );
+          // agents.forEach((agent) => {
+          //   agent.percentage =
+          //     Math.round((agent.percentage / totalPercentage) * 10000) / 100;
+          // });
         }),
+
       getTotalPercentage: () => {
         return get().delegatedAgents.reduce(
           (sum, agent) => sum + agent.percentage,
