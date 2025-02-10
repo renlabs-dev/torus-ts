@@ -22,8 +22,7 @@ export const UserWeightInfo = () => {
   const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
     useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
   const { delegatedAgents } = useDelegateAgentStore();
-
-  const { setShouldShowTutorial } = useTutorialStore();
+  const { openTutorial } = useTutorialStore();
 
   const userWeightPower = useMemo(() => {
     if (isLoadingAccountStakedBy || !selectedAccount?.address) return null;
@@ -55,10 +54,7 @@ export const UserWeightInfo = () => {
               </p>
               <span>
                 Check the{" "}
-                <button
-                  onClick={() => setShouldShowTutorial(true)}
-                  className="underline"
-                >
+                <button onClick={openTutorial} className="underline">
                   tutorial
                 </button>{" "}
                 to learn more about how to stake.

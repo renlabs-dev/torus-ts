@@ -3,18 +3,21 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 interface TutorialStore {
   hasSeenTutorial: boolean;
-  setHasSeenTutorial: (value: boolean) => void;
-  shouldShowTutorial: boolean;
-  setShouldShowTutorial: (value: boolean) => void;
+  isTutorialOpen: boolean;
+  openTutorial: () => void;
+  closeTutorial: () => void;
+  markTutorialAsSeen: () => void;
 }
 
 export const useTutorialStore = create<TutorialStore>()(
   persist(
     (set) => ({
       hasSeenTutorial: false,
-      setHasSeenTutorial: (value) => set({ hasSeenTutorial: value }),
-      shouldShowTutorial: false,
-      setShouldShowTutorial: (value) => set({ shouldShowTutorial: value }),
+      isTutorialOpen: true,
+      openTutorial: () => set({ isTutorialOpen: true }),
+      closeTutorial: () => set({ isTutorialOpen: false }),
+      markTutorialAsSeen: () =>
+        set({ hasSeenTutorial: true, isTutorialOpen: false }),
     }),
     {
       name: "tutorial-storage",

@@ -17,7 +17,7 @@ import {
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";
-import React, { useEffect } from "react";
+import React from "react";
 import { useTutorialStore } from "~/stores/tutorialStore";
 
 export const tutorialData = {
@@ -71,26 +71,16 @@ export const tutorialData = {
 };
 
 export function TutorialDialog() {
-  const {
-    hasSeenTutorial,
-    setHasSeenTutorial,
-    shouldShowTutorial,
-    setShouldShowTutorial,
-  } = useTutorialStore();
-
-  useEffect(() => {
-    if (!hasSeenTutorial) {
-      setShouldShowTutorial(true);
-    }
-  }, [hasSeenTutorial, setShouldShowTutorial]);
+  const { isTutorialOpen, closeTutorial, markTutorialAsSeen } =
+    useTutorialStore();
 
   const handleClose = () => {
-    setShouldShowTutorial(false);
-    setHasSeenTutorial(true);
+    closeTutorial();
+    markTutorialAsSeen();
   };
 
   return (
-    <AlertDialog open={shouldShowTutorial} onOpenChange={setShouldShowTutorial}>
+    <AlertDialog open={isTutorialOpen} onOpenChange={handleClose}>
       <AlertDialogContent className="max-h-[90vh] overflow-auto sm:max-w-[625px]">
         <AlertDialogHeader>
           <AlertDialogTitle>Tutorial</AlertDialogTitle>
