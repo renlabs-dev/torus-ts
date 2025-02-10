@@ -1,55 +1,48 @@
-import type { WorkerProps } from "../common";
-import { getApplications, sleep } from "../common";
-import { parseEnvOrExit } from "../common/env";
-import type { NewNotification } from "../db";
-import * as db from "../db";
-import type { Embed, WebhookPayload } from "../discord";
-import { sendDiscordWebhook } from "../discord";
 import type { AgentApplication, GovernanceItemType } from "@torus-ts/subspace";
 import { processApplicationMetadata } from "@torus-ts/subspace";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
-import { match } from "rustie";
-import { z } from "zod";
 
+import type { WorkerProps } from "../common";
+import type { NewNotification, ApplicationDB } from "../db";
+import type { Embed, WebhookPayload } from "../discord";
+import { getApplicationsDB, sleep } from "../common";
+import { parseEnvOrExit } from "../common/env";
+import * as db from "../db";
+import { sendDiscordWebhook } from "../discord";
+import {z} from "zod";
 const THUMBNAIL_URL = "https://i.imgur.com/6hJKhMu.gif";
 
 export const env = parseEnvOrExit(
   z.object({
     CURATOR_DISCORD_WEBHOOK_URL: z.string().min(1),
+    NEXT_PUBLIC_TORUS_CHAIN_ENV: z.string().min(1),
   }),
 )(process.env);
 
-export async function notifyNewApplicationsWorker(props: WorkerProps) {
-  const open_applications = Object.values(
-    await getApplications(props.api, (app) =>
-      match(app.status)({
-        Open: () => true,
-        Resolved: ({ accepted: _ }) => false,
-        Expired: () => false,
-      }),
-    ),
+const HOUR = 60 * 60 * 1000;
+
+function isNotifiable(app: ApplicationDB): boolean {
+  // TODO: type guard here
+  return (
+    app.notified === false &&
+    app.createdAt.getTime() >= Date.now() - 1 * HOUR
   );
+}
+
+
+export async function notifyNewApplicationsWorker() {
+  const applications = await getApplicationsDB(isNotifiable);
 
   const item_type: GovernanceItemType = "AGENT_APPLICATION";
-  const know_applications = await db.getGovItemIdsByType(item_type);
-  const know_applications_set: Set<number> = new Set<number>(know_applications);
-
-  const is_known_proposal = (app_id: number) =>
-    know_applications_set.has(app_id);
-
-  const unseen_applications = open_applications.filter(
-    (application) => !is_known_proposal(application.id),
-  );
-
-  for (const unseen_proposal of unseen_applications) {
+  for (const unseen_proposal of applications) {
     await pushNotification(unseen_proposal, item_type);
     await sleep(1_000);
   }
 }
 
 async function pushNotification(
-  proposal: AgentApplication,
+  proposal: ApplicationDB,
   item_type: GovernanceItemType,
 ) {
   const r = parseIpfsUri(proposal.data);
@@ -66,41 +59,66 @@ async function pushNotification(
     console.warn(`Failed to get metadata on proposal ${proposal.id}`);
     return;
   }
-
+  
+  const urlQualifier = env.NEXT_PUBLIC_TORUS_CHAIN_ENV === "testnet" ? "testnet." : "";
   const notification = {
     discord_uid: `${resolved_metadata.discord_id}`,
     app_id: `${proposal.id}`,
-    application_url: `https://dao.torus.network/proposal/${proposal.id}`,
-  };
-  const seen_proposal: NewNotification = {
-    itemType: item_type,
-    itemId: proposal.id,
+    application_url: `https://dao.${urlQualifier}torus.network/agent-application/${proposal.id}`,
   };
 
   const discordMessage = buildDiscordMessage(
     notification.discord_uid,
-    String(proposal.id),
+    proposal,
     notification.application_url,
   );
 
   await sendDiscordWebhook(env.CURATOR_DISCORD_WEBHOOK_URL, discordMessage);
 
-  await db.addSeenProposal(seen_proposal);
+  await db.toggleWhitelistNotification(proposal);
+}
+
+function buildEmbedParams(proposal: ApplicationDB) {
+  const embedParamsMap = {
+    OPEN: {
+      title: "New Pending whitelist Application",
+      description: "A new whitelist application has been submitted",
+      color: 0xFFDE00, // Yellow
+    },
+    ACCEPTED: {
+      title: "Accepted whitelist Application",
+      description: "A whitelist application has been accepted",
+      color: 0x00ff00, // Green
+    },
+    REJECTED: {
+      title: "Rejected whitelist Application",
+      description: "A whitelist application has been rejected",
+      color: 0xff0000, // Red
+    },
+    EXPIRED: {
+      title: "EXPIRED whitelist Application",
+      description: "A whitelist application has expired",
+      color: 0xff0000, // Red
+    },
+  };
+
+  return embedParamsMap[proposal.status];
 }
 
 function buildDiscordMessage(
   discordId: string,
-  appId: string,
+  proposal: ApplicationDB,
   applicationUrl: string,
 ) {
+  const embedParams = buildEmbedParams(proposal);
   const embed: Embed = {
-    title: "New Pending DAO Application",
-    description: "A new DAO application has been submitted",
-    color: 0x00ff00, // Green color
+    title: embedParams.title,
+    description: embedParams.description,
+    color: embedParams.color,
     fields: [
       { name: "Application URL", value: applicationUrl },
       { name: "Applicant", value: `<@${discordId}>` },
-      { name: "Application ID", value: `${appId}` },
+      { name: "Application ID", value: `${String(proposal.id)}` },
     ],
     thumbnail: { url: THUMBNAIL_URL },
     // image: { url: 'https://example.com/image.png' },

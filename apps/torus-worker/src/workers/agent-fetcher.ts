@@ -7,15 +7,22 @@ import {
 } from "@torus-ts/subspace";
 
 import type { WorkerProps } from "../common";
-import { BLOCK_TIME, isNewBlock, log, sleep, getApplications, getApplicationVoteStatus } from "../common";
-import { 
-  SubspaceAgentToDatabase, 
-  upsertAgentData, 
-  upsertWhitelistApplication 
+import {
+  BLOCK_TIME,
+  isNewBlock,
+  log,
+  sleep,
+  getApplications,
+  agentApplicationToApplication,
+} from "../common";
+import type { Application } from "../db";
+import {
+  SubspaceAgentToDatabase,
+  upsertAgentData,
+  upsertWhitelistApplication,
 } from "../db";
 
-
-export async function runAgentFetch(lastBlock: LastBlock){
+export async function runAgentFetch(lastBlock: LastBlock) {
   const currentTime = new Date();
   const api = lastBlock.apiAtBlock;
   const blockNumber = lastBlock.blockNumber;
@@ -43,15 +50,17 @@ export async function runAgentFetch(lastBlock: LastBlock){
   );
 }
 
-
-export async function runApplicationsFetch(lastBlock: LastBlock){
+export async function runApplicationsFetch(lastBlock: LastBlock) {
+  log(`Block ${lastBlock.blockNumber}: running applications fetch`);
   const applications = await getApplications(lastBlock.apiAtBlock, (_) => true);
   const applicationsMap = new Map(Object.entries(applications));
-  applicationsMap.forEach((value, key) => {
-    value["status"] = "locked";
+  const dbApplications: Application[] = [];
+  applicationsMap.forEach((value, _) => {
+    dbApplications.push(agentApplicationToApplication(value));
   });
-  const applicationList = [...new Map(Object.entries(applications)).values()];
-  await upsertWhitelistApplication(applicationList);
+  log(`Block ${lastBlock.blockNumber}: upserting ${dbApplications.length} applications`);
+  await upsertWhitelistApplication(dbApplications);
+  log(`Block ${lastBlock.blockNumber}: applications upserted`);
 }
 
 export async function agentFetcherWorker(props: WorkerProps) {
@@ -68,7 +77,7 @@ export async function agentFetcherWorker(props: WorkerProps) {
       log(`Block ${lastBlock.blockNumber}: processing`);
 
       await runAgentFetch(lastBlock);
-
+      await runApplicationsFetch(lastBlock);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);

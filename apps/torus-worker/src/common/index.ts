@@ -1,7 +1,11 @@
 import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
+  Application,
+  ApplicationDB,
 } from "../db";
+import { applicationStatusValues } from "@torus-ts/db/schema";
+
 import {
   queryTotalVotesPerApp,
   countCadreKeys,
@@ -11,6 +15,7 @@ import {
   removeCadreMember,
   getCadreDiscord,
   refuseCadreApplication,
+  queryAgentApplicationsDB,
 } from "../db";
 import type { ApiPromise } from "@polkadot/api";
 import type { AgentApplication, LastBlock, Api } from "@torus-ts/subspace";
@@ -67,6 +72,26 @@ export async function sleepUntilNewBlock(props: WorkerProps) {
 
 type ApplicationVoteStatus = "open" | "accepted" | "locked";
 
+// TODO: cursed function. Should refactor everywhere to just use Application
+export function agentApplicationToApplication(
+  agentApplication: AgentApplication,
+): Application {
+  const mappedStatus = match(agentApplication.status)({
+    Open: () => applicationStatusValues.OPEN,
+    Resolved: ({ accepted }) =>
+      accepted
+        ? applicationStatusValues.ACCEPTED
+        : applicationStatusValues.REJECTED,
+    Expired: () => applicationStatusValues.REJECTED,
+  });
+
+  return {
+    ...agentApplication,
+    cost: agentApplication.cost.toString(),
+    status: mappedStatus,
+  };
+}
+
 export const getApplicationVoteStatus = (
   app: AgentApplication,
 ): ApplicationVoteStatus =>
@@ -86,6 +111,7 @@ export const applicationIsOpen = (app: AgentApplication) =>
     Expired: () => false,
   });
 
+// TODO: refactor to return using the db type
 export async function getApplications(
   api: Api,
   filterFn: (app: AgentApplication) => boolean,
@@ -101,6 +127,12 @@ export async function getApplications(
       {} as Record<number, AgentApplication>,
     );
   return applications_map;
+}
+
+export async function getApplicationsDB(filterFn: (app: ApplicationDB) => boolean) {
+  const applications = await queryAgentApplicationsDB();
+  const pending_daos = applications.filter(filterFn);
+  return pending_daos;
 }
 
 export async function getVotesOnPending(

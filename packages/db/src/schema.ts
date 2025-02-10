@@ -125,27 +125,31 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
   ...timeFields(),
 });
 
-
-
 export const applicationStatus = pgEnum("application_status", [
   "OPEN",
   "ACCEPTED",
   "REJECTED",
   "EXPIRED",
 ]);
+export const applicationStatusValues = extract_pgenum_values(applicationStatus);
+assert<
+  Equals<
+    keyof typeof applicationStatusValues,
+    "OPEN" | "ACCEPTED" | "REJECTED" | "EXPIRED"
+  >
+>();
 export const whitelistApplicationSchema = createTable("whitelist_application", {
   id: serial("id").primaryKey(),
 
   agentKey: ss58Address("user_key").notNull().unique(),
   payerKey: ss58Address("payer_key").notNull(),
   data: text("data").notNull(),
-  cost: bigint("cost").notNull(),
+  cost: numeric("cost").notNull(),
   expiresAt: integer("expires_at").notNull(), // block
   status: applicationStatus("status").notNull(),
   notified: boolean("notified").notNull().default(false), // offchain
   ...timeFields(),
 });
-
 
 export const penalizeAgentVotesSchema = createTable(
   "penalize_agent_votes",
