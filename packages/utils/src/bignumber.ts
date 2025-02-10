@@ -1,7 +1,9 @@
 import type BigNumber from "bignumber.js";
+import { assert, Equals } from "tsafe";
 import type { IsEqual } from "type-fest";
 
-type BNInput = BigNumber.Value;
+export type BNInput = BigNumber.Value;
+
 type RoundingMode = BigNumber.RoundingMode;
 
 type IfEquals<X, Y, A, B> = IsEqual<X, Y> extends true ? A : B;
@@ -14,6 +16,17 @@ type ReplaceBigNumberRecur<T, N> = T extends (infer U)[]
   ? ReplaceBigNumber<U, N>[]
   : ReplaceBigNumber<T, N>;
 
+type TransformBigNumberArgs<Args, New> = {
+  [I in keyof Args]: ReplaceBNInput<Args[I], New>;
+};
+
+/**
+ * Transforms the methods of a given type `T` by replacing the arguments and return types
+ * that are BigNumber instances with a new type `New`.
+ *
+ * @template T - The original type whose methods will be transformed.
+ * @template New - The new type that will replace BigNumber instances in the arguments and return types.
+ */
 type TransformBigNumberMethods<T, New> = {
   [K in keyof T]: T[K] extends (...args: infer Args) => infer R
     ? (
@@ -22,49 +35,49 @@ type TransformBigNumberMethods<T, New> = {
     : T[K];
 };
 
-type TransformBigNumberArgs<Args, New> = {
-  [I in keyof Args]: ReplaceBNInput<Args[I], New>;
-};
+function _test() {
+  type _Test1 = TransformBigNumberMethods<BigNumber, TaggedBigNumber<"X">>;
+  type _Test2 = _Test1["plus"];
 
-// type _Test1 = TransformBigNumberMethods<BigNumber, BigNumberBrand<"X">>;
-// type _Test2 = _Test1["plus"];
-
-export const BN_BRAND_TAG_KEY: unique symbol = Symbol("BN_BRAND_TAG_KEY");
+  assert<
+    Equals<
+      _Test2,
+      (n: TaggedBigNumber<"X">, base?: number) => TaggedBigNumber<"X">
+    >
+  >();
+}
 
 type BigNumberCtr = BigNumber.Constructor;
 
-export function TaggedBigNumber<Brand extends string>(
-  brand: Brand,
+export const buildTaggedBigNumberClass = <Tag extends string>(
+  brand: Tag,
   bigNumberCtr: BigNumberCtr,
-) {
-  class CustomTaggedBigNumber extends BaseTaggedBigNumber<CustomTaggedBigNumber> {
-    static readonly [BN_BRAND_TAG_KEY] = brand;
+) =>
+  class CustomTaggedBigNumber extends TaggedBigNumber<Tag> {
     static readonly bigNumberCtr = bigNumberCtr;
-  }
-  return CustomTaggedBigNumber;
-}
+    static readonly _brand = brand;
+  };
 
-// TODO: FIXME: remove recursive type
-export class BaseTaggedBigNumber<Self extends BaseTaggedBigNumber<Self>>
-  implements TransformBigNumberMethods<BigNumber, BaseTaggedBigNumber<Self>>
+export class TaggedBigNumber<Tag extends string>
+  implements TransformBigNumberMethods<BigNumber, TaggedBigNumber<Tag>>
 {
   static readonly bigNumberCtr: BigNumberCtr;
-
-  static readonly [BN_BRAND_TAG_KEY]: string;
+  static readonly _brand: string;
 
   constructor(public readonly value: BigNumber) {}
 
-  static from<Self extends BaseTaggedBigNumber<Self>>(
+  static from<Tag extends string>(
     value: BigNumber.Value | bigint,
     bigNumberCtr?: BigNumberCtr,
-  ): BaseTaggedBigNumber<Self> {
+  ): TaggedBigNumber<Tag> {
     if (typeof value === "bigint") {
       value = value.toString();
     }
     if (bigNumberCtr == null) {
       bigNumberCtr = this.bigNumberCtr;
     }
-    return new BaseTaggedBigNumber<Self>(bigNumberCtr(value));
+    debugger; // TODO: BUG, bigNumberCtr is undefined
+    return new TaggedBigNumber<Tag>(bigNumberCtr(value));
   }
 
   _isBigNumber = true;
@@ -79,15 +92,15 @@ export class BaseTaggedBigNumber<Self extends BaseTaggedBigNumber<Self>>
     return this.value.s;
   }
 
-  absoluteValue(): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.absoluteValue());
+  absoluteValue(): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.absoluteValue());
   }
 
-  abs(): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.abs());
+  abs(): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.abs());
   }
 
-  comparedTo(n: BaseTaggedBigNumber<Self>, base?: number): number {
+  comparedTo(n: TaggedBigNumber<Tag>, base?: number): number {
     return this.value.comparedTo(n.value, base);
   }
 
@@ -95,116 +108,109 @@ export class BaseTaggedBigNumber<Self extends BaseTaggedBigNumber<Self>>
   decimalPlaces(
     decimalPlaces: number,
     roundingMode?: RoundingMode,
-  ): BaseTaggedBigNumber<Self>;
+  ): TaggedBigNumber<Tag>;
 
   decimalPlaces(
     decimalPlaces?: number,
     roundingMode?: RoundingMode,
-  ): number | null | BaseTaggedBigNumber<Self> {
+  ): number | null | TaggedBigNumber<Tag> {
     if (decimalPlaces === undefined || typeof decimalPlaces === "number") {
       return this.value.decimalPlaces();
     }
     const result = this.value.decimalPlaces(decimalPlaces, roundingMode);
-    return BaseTaggedBigNumber.from(result);
+    return TaggedBigNumber.from(result);
   }
 
   dp(): number | null;
-  dp(
-    decimalPlaces: number,
-    roundingMode?: RoundingMode,
-  ): BaseTaggedBigNumber<Self>;
+  dp(decimalPlaces: number, roundingMode?: RoundingMode): TaggedBigNumber<Tag>;
   dp(
     decimalPlaces?: number,
     roundingMode?: RoundingMode,
-  ): null | number | BaseTaggedBigNumber<Self> {
+  ): null | number | TaggedBigNumber<Tag> {
     if (decimalPlaces === undefined) {
       return this.value.dp();
     }
     return this.decimalPlaces(decimalPlaces, roundingMode);
   }
 
-  plus(other: BaseTaggedBigNumber<Self>): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.plus(other.value));
+  plus(other: TaggedBigNumber<Tag>): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.plus(other.value));
   }
 
-  minus(other: BaseTaggedBigNumber<Self>): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.minus(other.value));
+  minus(other: TaggedBigNumber<Tag>): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.minus(other.value));
   }
 
-  multipliedBy(other: BaseTaggedBigNumber<Self>): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.multipliedBy(other.value));
+  multipliedBy(other: TaggedBigNumber<Tag>): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.multipliedBy(other.value));
   }
 
-  times = (o: BaseTaggedBigNumber<Self>) => this.multipliedBy(o);
+  times = (o: TaggedBigNumber<Tag>) => this.multipliedBy(o);
 
-  dividedBy(other: BaseTaggedBigNumber<Self>): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.dividedBy(other.value));
+  dividedBy(other: TaggedBigNumber<Tag>): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.dividedBy(other.value));
   }
 
-  div = (o: BaseTaggedBigNumber<Self>) => this.dividedBy(o);
+  div = (o: TaggedBigNumber<Tag>) => this.dividedBy(o);
 
-  dividedToIntegerBy(
-    other: BaseTaggedBigNumber<Self>,
-  ): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.dividedToIntegerBy(other.value));
+  dividedToIntegerBy(other: TaggedBigNumber<Tag>): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.dividedToIntegerBy(other.value));
   }
 
-  idiv = (o: BaseTaggedBigNumber<Self>) => this.dividedToIntegerBy(o);
+  idiv = (o: TaggedBigNumber<Tag>) => this.dividedToIntegerBy(o);
 
-  modulo(other: BaseTaggedBigNumber<Self>): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.modulo(other.value));
+  modulo(other: TaggedBigNumber<Tag>): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.modulo(other.value));
   }
 
-  mod = (o: BaseTaggedBigNumber<Self>) => this.modulo(o);
+  mod = (o: TaggedBigNumber<Tag>) => this.modulo(o);
 
-  negated(): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.negated());
+  negated(): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.negated());
   }
 
-  squareRoot(): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.squareRoot());
+  squareRoot(): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.squareRoot());
   }
 
   sqrt = () => this.squareRoot();
 
-  exponentiatedBy(
-    n: number | BaseTaggedBigNumber<Self>,
-  ): BaseTaggedBigNumber<Self> {
-    const value = n instanceof BaseTaggedBigNumber ? n.value : n;
-    return BaseTaggedBigNumber.from(this.value.exponentiatedBy(value));
+  exponentiatedBy(n: number | TaggedBigNumber<Tag>): TaggedBigNumber<Tag> {
+    const value = n instanceof TaggedBigNumber ? n.value : n;
+    return TaggedBigNumber.from(this.value.exponentiatedBy(value));
   }
 
-  pow = (n: number | BaseTaggedBigNumber<Self>) => this.exponentiatedBy(n);
+  pow = (n: number | TaggedBigNumber<Tag>) => this.exponentiatedBy(n);
 
-  isEqualTo(other: BaseTaggedBigNumber<Self>): boolean {
+  isEqualTo(other: TaggedBigNumber<Tag>): boolean {
     return this.value.isEqualTo(other.value);
   }
 
-  eq = (o: BaseTaggedBigNumber<Self>) => this.isEqualTo(o);
+  eq = (o: TaggedBigNumber<Tag>) => this.isEqualTo(o);
 
-  isGreaterThan(other: BaseTaggedBigNumber<Self>): boolean {
+  isGreaterThan(other: TaggedBigNumber<Tag>): boolean {
     return this.value.isGreaterThan(other.value);
   }
 
-  gt = (o: BaseTaggedBigNumber<Self>) => this.isGreaterThan(o);
+  gt = (o: TaggedBigNumber<Tag>) => this.isGreaterThan(o);
 
-  isGreaterThanOrEqualTo(other: BaseTaggedBigNumber<Self>): boolean {
+  isGreaterThanOrEqualTo(other: TaggedBigNumber<Tag>): boolean {
     return this.value.isGreaterThanOrEqualTo(other.value);
   }
 
-  gte = (o: BaseTaggedBigNumber<Self>) => this.isGreaterThanOrEqualTo(o);
+  gte = (o: TaggedBigNumber<Tag>) => this.isGreaterThanOrEqualTo(o);
 
-  isLessThan(other: BaseTaggedBigNumber<Self>): boolean {
+  isLessThan(other: TaggedBigNumber<Tag>): boolean {
     return this.value.isLessThan(other.value);
   }
 
-  lt = (o: BaseTaggedBigNumber<Self>) => this.isLessThan(o);
+  lt = (o: TaggedBigNumber<Tag>) => this.isLessThan(o);
 
-  isLessThanOrEqualTo(other: BaseTaggedBigNumber<Self>): boolean {
+  isLessThanOrEqualTo(other: TaggedBigNumber<Tag>): boolean {
     return this.value.isLessThanOrEqualTo(other.value);
   }
 
-  lte = (o: BaseTaggedBigNumber<Self>) => this.isLessThanOrEqualTo(o);
+  lte = (o: TaggedBigNumber<Tag>) => this.isLessThanOrEqualTo(o);
 
   isFinite(): boolean {
     return this.value.isFinite();
@@ -261,12 +267,12 @@ export class BaseTaggedBigNumber<Self extends BaseTaggedBigNumber<Self>>
 
   toFraction(
     max_denominator?: BigNumber.Value,
-  ): [BaseTaggedBigNumber<Self>, BaseTaggedBigNumber<Self>];
+  ): [TaggedBigNumber<Tag>, TaggedBigNumber<Tag>];
   toFraction(
-    max_denominator?: BaseTaggedBigNumber<Self>,
-  ): [BaseTaggedBigNumber<Self>, BaseTaggedBigNumber<Self>] {
+    max_denominator?: TaggedBigNumber<Tag>,
+  ): [TaggedBigNumber<Tag>, TaggedBigNumber<Tag>] {
     const [num, denom] = this.value.toFraction(max_denominator);
-    return [BaseTaggedBigNumber.from(num), BaseTaggedBigNumber.from(denom)];
+    return [TaggedBigNumber.from(num), TaggedBigNumber.from(denom)];
   }
 
   toJSON(): string {
@@ -292,12 +298,12 @@ export class BaseTaggedBigNumber<Self extends BaseTaggedBigNumber<Self>>
     return this.value.valueOf();
   }
 
-  shiftedBy(n: number): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.shiftedBy(n));
+  shiftedBy(n: number): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.shiftedBy(n));
   }
 
-  integerValue(rm?: RoundingMode): BaseTaggedBigNumber<Self> {
-    return BaseTaggedBigNumber.from(this.value.integerValue(rm));
+  integerValue(rm?: RoundingMode): TaggedBigNumber<Tag> {
+    return TaggedBigNumber.from(this.value.integerValue(rm));
   }
 
   precision(): number;
@@ -305,16 +311,16 @@ export class BaseTaggedBigNumber<Self extends BaseTaggedBigNumber<Self>>
   precision(
     significantDigits: number,
     roundingMode?: RoundingMode,
-  ): BaseTaggedBigNumber<Self>;
+  ): TaggedBigNumber<Tag>;
 
   precision(
     param?: number | boolean,
     roundingMode?: RoundingMode,
-  ): number | BaseTaggedBigNumber<Self> {
+  ): number | TaggedBigNumber<Tag> {
     if (param == undefined || typeof param === "boolean") {
       return this.value.precision(param);
     }
-    return BaseTaggedBigNumber.from(this.value.precision(param, roundingMode));
+    return TaggedBigNumber.from(this.value.precision(param, roundingMode));
   }
 
   sd(): number;
@@ -322,15 +328,15 @@ export class BaseTaggedBigNumber<Self extends BaseTaggedBigNumber<Self>>
   sd(
     significantDigits: number,
     roundingMode?: RoundingMode,
-  ): BaseTaggedBigNumber<Self>;
+  ): TaggedBigNumber<Tag>;
 
   sd(
     param?: number | boolean,
     roundingMode?: RoundingMode,
-  ): number | BaseTaggedBigNumber<Self> {
+  ): number | TaggedBigNumber<Tag> {
     if (param == undefined || typeof param === "boolean") {
       return this.value.sd(param);
     }
-    return BaseTaggedBigNumber.from(this.value.sd(param, roundingMode));
+    return TaggedBigNumber.from(this.value.sd(param, roundingMode));
   }
 }

@@ -10,6 +10,7 @@ import { z } from "zod";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
 import { queryMinAllowedStake } from "./modules/subspace";
+import { parseTorusTokens } from "@torus-ts/utils/subspace";
 
 // $ pnpm exec tsx src/main.ts
 
@@ -29,17 +30,21 @@ const api = await connectToChainRpc(NODE_URL);
 
 // ====
 
-const r1 = IPFS_URI_SCHEMA.safeParse(
-  "ipfs://QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB",
-);
+// const r1 = IPFS_URI_SCHEMA.safeParse(
+//   "ipfs://QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB",
+// );
 
-const r2 = IPFS_URI_SCHEMA.safeParse(
-  "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
-);
+// const r2 = IPFS_URI_SCHEMA.safeParse(
+//   "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
+// );
 
-console.log(r1, "\n", r1.error?.format());
+// console.log(r1, "\n", r1.error?.format());
 
-console.log(r2.data, "\n", r2.error?.format());
+// console.log(r2.data, "\n", r2.error?.format());
+
+const x = parseTorusTokens("100.5");
+
+// console.log(x.toFixed(2));
 
 debugger;
 

@@ -2,12 +2,12 @@
 
 import BigNumber from "bignumber.js";
 import {
-  BaseTaggedBigNumber,
-  BN_BRAND_TAG_KEY,
   TaggedBigNumber,
+  BN_BRAND_TAG_KEY,
+  buildTaggedBigNumberClass,
 } from "./bignumber";
 
-const MyBigNumber = TaggedBigNumber("MyBigNumber", BigNumber);
+const MyBigNumber = buildTaggedBigNumberClass("MyBigNumber", BigNumber);
 
 const x = MyBigNumber.from(2);
 
