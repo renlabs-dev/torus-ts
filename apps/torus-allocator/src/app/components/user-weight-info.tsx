@@ -15,12 +15,15 @@ import { useMemo } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { SS58Address } from "@torus-ts/subspace";
+import { useTutorialStore } from "~/stores/tutorialStore";
 
 export const UserWeightInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
   const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
     useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
   const { delegatedAgents } = useDelegateAgentStore();
+
+  const { setShouldShowTutorial } = useTutorialStore();
 
   const userWeightPower = useMemo(() => {
     if (isLoadingAccountStakedBy || !selectedAccount?.address) return null;
@@ -50,7 +53,16 @@ export const UserWeightInfo = () => {
                 Your weight power is the amount of stake you have in the
                 Allocator app.
               </p>
-              <p>Check the tutorial to learn more about how to stake.</p>
+              <span>
+                Check the{" "}
+                <button
+                  onClick={() => setShouldShowTutorial(true)}
+                  className="underline"
+                >
+                  tutorial
+                </button>{" "}
+                to learn more about how to stake.
+              </span>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -25,7 +25,6 @@ import {
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";
-import { useAllocationMenuStore } from "~/stores/allocationMenuStore";
 
 export function AllocationMenu() {
   const {
@@ -40,8 +39,6 @@ export function AllocationMenu() {
     hasPercentageChange,
     setPercentageChange,
   } = useDelegateAgentStore();
-
-  const { isOpen, toggleIsOpen, setIsOpen } = useAllocationMenuStore();
 
   const { selectedAccount, api: torusApi } = useTorus();
   const accountStakedBy = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
@@ -274,7 +271,7 @@ export function AllocationMenu() {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (contentRef.current && isOpen) {
+      if (contentRef.current) {
         const contentHeight = contentRef.current.scrollHeight;
         const maxAllowedHeight = window.innerHeight - 270;
         setIsOverflowing(contentHeight > maxAllowedHeight);
@@ -282,185 +279,174 @@ export function AllocationMenu() {
     }, 1); // Small delay to ensure content have been rendered before checking height
 
     return () => clearTimeout(timeoutId);
-  }, [delegatedAgents, isOpen]);
+  }, [delegatedAgents]);
 
   return (
-    <>
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <div className="fixed bottom-4 right-3 z-[50] flex w-fit flex-col items-center justify-end marker:flex md:bottom-14">
-          <Label
-            className={cn("mb-2 animate-pulse text-end text-sm", {
-              "text-red-500":
-                submitStatus.message === "You have unsaved changes",
-              "text-cyan-500": submitStatus.message === "All changes saved!",
-              "text-green-500": submitStatus.message === "All changes saved!",
-              "text-amber-500": ![
-                "You have unsaved changes",
-                "All changes saved!",
-              ].includes(submitStatus.message),
-            })}
-          >
-            {submitStatus.message !== "All changes saved!" &&
-              submitStatus.message}
-          </Label>
-          <div className="flex items-center gap-2">
-            <SheetTrigger
-              asChild
-              onClick={toggleIsOpen}
-              disabled={!selectedAccount}
-            >
-              <Button
-                variant="outline"
-                className="w-full border border-primary/80"
-              >
-                {!selectedAccount ? (
-                  <LoaderCircle className="animate-spin" />
-                ) : (
-                  <PieChart />
-                )}
-                Allocation Menu
-              </Button>
-            </SheetTrigger>
+    <Sheet>
+      <div className="fixed bottom-4 right-3 z-[50] flex w-fit flex-col items-center justify-end marker:flex md:bottom-14">
+        <Label
+          className={cn("mb-2 animate-pulse text-end text-sm", {
+            "text-red-500": submitStatus.message === "You have unsaved changes",
+            "text-cyan-500": submitStatus.message === "All changes saved!",
+            "text-green-500": submitStatus.message === "All changes saved!",
+            "text-amber-500": ![
+              "You have unsaved changes",
+              "All changes saved!",
+            ].includes(submitStatus.message),
+          })}
+        >
+          {submitStatus.message !== "All changes saved!" &&
+            submitStatus.message}
+        </Label>
+        <div className="flex items-center gap-2">
+          <SheetTrigger asChild disabled={!selectedAccount}>
             <Button
               variant="outline"
-              onClick={handleSubmit}
-              disabled={submitStatus.disabled}
-              className={`w-full border ${submitStatus.message === "All changes saved!" ? "border-green-500 bg-[#14252A] text-green-500 hover:bg-green-500/20 hover:text-green-500" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-500"}`}
-              title={submitStatus.disabled ? submitStatus.message : ""}
+              className="w-full border border-primary/80"
             >
-              <Anvil />
-              {isSubmitting ? "Submitting Allocation" : "Submit Allocation"}
+              {!selectedAccount ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                <PieChart />
+              )}
+              Allocation Menu
             </Button>
-          </div>
+          </SheetTrigger>
+          <Button
+            variant="outline"
+            onClick={handleSubmit}
+            disabled={submitStatus.disabled}
+            className={`w-full border ${submitStatus.message === "All changes saved!" ? "border-green-500 bg-[#14252A] text-green-500 hover:bg-green-500/20 hover:text-green-500" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-500"}`}
+            title={submitStatus.disabled ? submitStatus.message : ""}
+          >
+            <Anvil />
+            {isSubmitting ? "Submitting Allocation" : "Submit Allocation"}
+          </Button>
         </div>
+      </div>
 
-        <SheetContent
-          className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}
-        >
-          <div className="flex h-full flex-col justify-between gap-8">
-            <div className="flex h-full flex-col gap-8">
-              <SheetHeader>
-                <SheetTitle>Allocation Menu</SheetTitle>
-              </SheetHeader>
+      <SheetContent className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}>
+        <div className="flex h-full flex-col justify-between gap-8">
+          <div className="flex h-full flex-col gap-8">
+            <SheetHeader>
+              <SheetTitle>Allocation Menu</SheetTitle>
+            </SheetHeader>
 
-              <div
-                ref={contentRef}
-                className="max-h-[calc(100vh-270px)] overflow-y-auto"
-              >
-                <div className="flex flex-col gap-2">
-                  {delegatedAgents.length ? (
-                    delegatedAgents
-                      .slice() // Create a shallow copy to avoid mutating the original array
-                      .sort((a, b) => a.address.localeCompare(b.address)) // Sort by address
-                      .map((agent) => (
-                        <div
-                          key={agent.address} // Use address as the key for more stability
-                          className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${
-                            isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"
-                          }`}
-                        >
-                          <span className="font-medium">{agent.name}</span>
+            <div
+              ref={contentRef}
+              className="max-h-[calc(100vh-270px)] overflow-y-auto"
+            >
+              <div className="flex flex-col gap-2">
+                {delegatedAgents.length ? (
+                  delegatedAgents
+                    .slice() // Create a shallow copy to avoid mutating the original array
+                    .sort((a, b) => a.address.localeCompare(b.address)) // Sort by address
+                    .map((agent) => (
+                      <div
+                        key={agent.address} // Use address as the key for more stability
+                        className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${
+                          isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"
+                        }`}
+                      >
+                        <span className="font-medium">{agent.name}</span>
 
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-400">
-                              {smallAddress(agent.address, 6)}
-                            </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400">
+                            {smallAddress(agent.address, 6)}
+                          </span>
 
-                            <div className="flex items-center gap-1">
-                              <Label
-                                className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
-                                htmlFor={`percentage:${agent.address}`} // Use address instead of id
-                              >
-                                <Input
-                                  type="text"
-                                  value={
-                                    tempInputs[agent.address] ??
-                                    getAgentPercentage(agent.address)
-                                  }
-                                  onChange={(e) =>
-                                    handlePercentageChange(
-                                      agent.address,
-                                      e.target.value,
-                                    )
-                                  }
-                                  onBlur={() => handleInputBlur(agent.address)}
-                                  maxLength={3}
-                                  className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
-                                />
+                          <div className="flex items-center gap-1">
+                            <Label
+                              className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
+                              htmlFor={`percentage:${agent.address}`} // Use address instead of id
+                            >
+                              <Input
+                                type="text"
+                                value={
+                                  tempInputs[agent.address] ??
+                                  getAgentPercentage(agent.address)
+                                }
+                                onChange={(e) =>
+                                  handlePercentageChange(
+                                    agent.address,
+                                    e.target.value,
+                                  )
+                                }
+                                onBlur={() => handleInputBlur(agent.address)}
+                                maxLength={3}
+                                className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
+                              />
 
-                                <span className="text-muted-foreground">%</span>
-                              </Label>
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                onClick={() => removeAgent(agent.address)}
-                              >
-                                <X className="h-5 w-5" />
-                              </Button>
-                            </div>
+                              <span className="text-muted-foreground">%</span>
+                            </Label>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={() => removeAgent(agent.address)}
+                            >
+                              <X className="h-5 w-5" />
+                            </Button>
                           </div>
                         </div>
-                      ))
-                  ) : (
-                    <p>Select a agent to allocate through the agents page.</p>
-                  )}
-                </div>
+                      </div>
+                    ))
+                ) : (
+                  <p>Select a agent to allocate through the agents page.</p>
+                )}
               </div>
             </div>
+          </div>
 
-            <SheetFooter className="flex min-h-fit gap-4 sm:flex-col sm:space-x-0">
-              <Label
-                className={cn("pt-2 text-center text-sm", {
-                  "text-pink-500":
-                    submitStatus.message === "You have unsaved changes",
-                  "text-cyan-500":
-                    submitStatus.message === "All changes saved!",
-                  "text-green-500":
-                    submitStatus.message === "All changes saved!",
-                  "text-amber-500": ![
-                    "You have unsaved changes",
-                    "All changes saved!",
-                  ].includes(submitStatus.message),
-                })}
-              >
-                {submitStatus.message}
-              </Label>
-              <div className="mt-auto flex w-full flex-col gap-2">
-                <div className="flex flex-row gap-2">
-                  <Button
-                    onClick={handleAutoCompletePercentage}
-                    className="w-1/2"
-                    disabled={
-                      totalPercentage === 100 || delegatedAgents.length === 0
-                    }
-                    variant="outline"
-                  >
-                    Complete 100%
-                  </Button>
-
-                  <Button
-                    onClick={handleRemoveAllWeight}
-                    className="w-1/2"
-                    disabled={isSubmitting || !hasItemsToClear}
-                    variant="outline"
-                  >
-                    {isSubmitting ? "Removing..." : `Remove Agents`}
-                  </Button>
-                </div>
+          <SheetFooter className="flex min-h-fit gap-4 sm:flex-col sm:space-x-0">
+            <Label
+              className={cn("pt-2 text-center text-sm", {
+                "text-pink-500":
+                  submitStatus.message === "You have unsaved changes",
+                "text-cyan-500": submitStatus.message === "All changes saved!",
+                "text-green-500": submitStatus.message === "All changes saved!",
+                "text-amber-500": ![
+                  "You have unsaved changes",
+                  "All changes saved!",
+                ].includes(submitStatus.message),
+              })}
+            >
+              {submitStatus.message}
+            </Label>
+            <div className="mt-auto flex w-full flex-col gap-2">
+              <div className="flex flex-row gap-2">
                 <Button
-                  onClick={handleSubmit}
+                  onClick={handleAutoCompletePercentage}
+                  className="w-1/2"
+                  disabled={
+                    totalPercentage === 100 || delegatedAgents.length === 0
+                  }
                   variant="outline"
-                  className="w-full"
-                  disabled={submitStatus.disabled}
-                  title={submitStatus.disabled ? submitStatus.message : ""}
                 >
-                  {isSubmitting ? "Submitting..." : "Submit Agents"}
+                  Complete 100%
+                </Button>
+
+                <Button
+                  onClick={handleRemoveAllWeight}
+                  className="w-1/2"
+                  disabled={isSubmitting || !hasItemsToClear}
+                  variant="outline"
+                >
+                  {isSubmitting ? "Removing..." : `Remove Agents`}
                 </Button>
               </div>
-            </SheetFooter>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
+              <Button
+                onClick={handleSubmit}
+                variant="outline"
+                className="w-full"
+                disabled={submitStatus.disabled}
+                title={submitStatus.disabled ? submitStatus.message : ""}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Agents"}
+              </Button>
+            </div>
+          </SheetFooter>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
