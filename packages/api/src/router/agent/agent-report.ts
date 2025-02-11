@@ -25,7 +25,7 @@ export const agentReportRouter = {
     .input(AGENT_REPORT_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData?.userKey;
       await ctx.db.insert(agentReportSchema).values({ ...input, userKey });
     }),
 } satisfies TRPCRouterRecord;

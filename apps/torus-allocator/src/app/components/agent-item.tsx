@@ -177,7 +177,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
       </div>
       <div>
         <div
-          className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
+          className={"flex w-full flex-col items-center gap-6 md:flex-row md:gap-3"}
         >
           {iconUrl ? (
             <Image
@@ -185,7 +185,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
               alt="agent"
               width={1000}
               height={1000}
-              className={`aspect-square rounded-sm shadow-xl md:h-32 md:w-32`}
+              className={"aspect-square rounded-sm shadow-xl md:h-32 md:w-32"}
             />
           ) : (
             <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
@@ -215,7 +215,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
               </Badge>
             </div>
             <h2
-              className={`w-fit text-ellipsis text-base font-semibold md:max-w-fit`}
+              className={"w-fit text-ellipsis text-base font-semibold md:max-w-fit"}
             >
               {title}
             </h2>
@@ -223,7 +223,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
               <HoverCard>
                 <HoverCardTrigger>
                   <Label
-                    className={`flex items-center gap-1.5 text-xs font-semibold`}
+                    className={"flex items-center gap-1.5 text-xs font-semibold"}
                   >
                     <Globe size={14} />
                     {Math.round((props.globalWeightPerc ?? 0) * 100)}%
@@ -239,7 +239,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
               <HoverCard>
                 <HoverCardTrigger>
                   <Label
-                    className={`flex items-center gap-1.5 text-xs font-semibold`}
+                    className={"flex items-center gap-1.5 text-xs font-semibold"}
                   >
                     <Cuboid size={16} />
                     {props.registrationBlock}
@@ -254,7 +254,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
                 variant="link"
                 copy={props.agentKey}
                 notify={() => toast.success("Copied to clipboard")}
-                className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+                className={"text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline"}
               >
                 <IdCard size={14} />
                 <span className="hidden text-xs md:block">

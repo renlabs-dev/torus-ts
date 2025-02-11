@@ -287,7 +287,7 @@ export function AgentApplicationVoteTypeCard(props: {
               />
             </CardBarebones>
           );
-        } else {
+        }
           return (
             <CardBarebones>
               <GovernanceStatusNotOpen
@@ -317,8 +317,7 @@ export function AgentApplicationVoteTypeCard(props: {
               </GovernanceStatusNotOpen>
             </CardBarebones>
           );
-        }
-      } else {
+      }
         return (
           <CardBarebones>
             <GovernanceStatusNotOpen
@@ -327,7 +326,6 @@ export function AgentApplicationVoteTypeCard(props: {
             />
           </CardBarebones>
         );
-      }
     },
     Expired() {
       return (

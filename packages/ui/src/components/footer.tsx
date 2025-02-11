@@ -20,7 +20,7 @@ const Clock = dynamic(() => import("./clock"), {
 export function Footer() {
   return (
     <div
-      className={`fixed bottom-0 right-0 z-50 hidden w-full border-t border-border bg-accent p-2 pb-2.5 animate-delay-700 md:block`}
+      className={"fixed bottom-0 right-0 z-50 hidden w-full border-t border-border bg-accent p-2 pb-2.5 animate-delay-700 md:block"}
     >
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2 text-sm">

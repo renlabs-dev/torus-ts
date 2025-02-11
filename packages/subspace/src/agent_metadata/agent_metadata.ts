@@ -68,7 +68,7 @@ export async function fetchFromIpfsOrUrl<T>(
   }
 
   if (result == null) {
-    throw new Error("Failed to fetch agent metadata:" + problems.join("; "));
+    throw new Error(`Failed to fetch agent metadata:${problems.join("; ")}`);
   }
 
   return result;
@@ -93,7 +93,7 @@ export async function fetchAgentMetadata(
   // parse Agent Metadata
   const parsed = AGENT_METADATA_SCHEMA.safeParse(data);
   if (!parsed.success) {
-    throw new Error("Failed to parse agent metadata:" + parsed.error.message);
+    throw new Error(`Failed to parse agent metadata:${parsed.error.message}`);
   }
   const metadata = parsed.data;
 

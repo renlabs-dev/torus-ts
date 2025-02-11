@@ -91,9 +91,9 @@ export async function fetchCustomMetadata(
   const url = buildIpfsGatewayUrl(cid);
 
   const metadata =
-    kind == "proposal"
+    kind === "proposal"
       ? await processProposalMetadata(url, entryId)
-      : kind == "application"
+      : kind === "application"
         ? await processApplicationMetadata(url, entryId)
         : await processAgentMetadata(url, entryId);
 

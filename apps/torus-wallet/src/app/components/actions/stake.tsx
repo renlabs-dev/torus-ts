@@ -156,10 +156,9 @@ export function StakeAction() {
         const adjustedFee = (fee * FEE_BUFFER_PERCENT) / 100n;
         setEstimatedFee(fromNano(adjustedFee));
         return adjustedFee;
-      } else {
+      }
         setEstimatedFee(null);
         setMaxAmount("");
-      }
     } catch (error) {
       console.error("Error estimating fee:", error);
       setEstimatedFee(null);

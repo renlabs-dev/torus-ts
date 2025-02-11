@@ -19,7 +19,7 @@ export const cadreCandidateRouter = {
     .input(CADRE_CANDIDATE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData?.userKey;
       await ctx.db
         .insert(cadreCandidateSchema)
         .values({ ...input, userKey: userKey })

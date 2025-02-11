@@ -33,7 +33,7 @@ export function getIndexForToken(
   if (!token) return undefined;
   const index = warpCore.tokens.indexOf(token as Token);
   if (index >= 0) return index;
-  else return undefined;
+  return undefined;
 }
 
 export function getIndexForTokenByChainName(
@@ -42,7 +42,7 @@ export function getIndexForTokenByChainName(
 ): number | undefined {
   const index = warpCore.tokens.map((t) => t.chainName).indexOf(chainName);
   if (index >= 0) return index;
-  else return undefined;
+  return undefined;
 }
 
 export function tryFindToken(

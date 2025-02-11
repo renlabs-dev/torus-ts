@@ -48,12 +48,11 @@ export const typed_non_null_entries = <T extends object>(obj: T) =>
 export function check_int(value: unknown): bigint {
   if (typeof value === "bigint") {
     return value;
-  } else if (typeof value === "number") {
+  }if (typeof value === "number") {
     if (Number.isInteger(value)) return BigInt(value);
-    else throw new Error(`Expected integer, got ${value}`);
-  } else {
-    throw new Error(`Expected integer`);
+    throw new Error(`Expected integer, got ${value}`);
   }
+    throw new Error("Expected integer");
 }
 
 export function bigintDivision(a: bigint, b: bigint, precision = 8n): number {

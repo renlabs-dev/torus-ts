@@ -58,7 +58,7 @@ export const commentInteractionRouter = {
     .input(COMMENT_INTERACTION_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData?.userKey;
       await ctx.db
         .insert(commentInteractionSchema)
         .values({

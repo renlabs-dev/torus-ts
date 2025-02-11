@@ -112,8 +112,8 @@ export function TokenList({
         }))
         .sort((a, b) => {
           if (a.disabled && !b.disabled) return 1;
-          else if (!a.disabled && b.disabled) return -1;
-          else return 0;
+          if (!a.disabled && b.disabled) return -1;
+          return 0;
         })
         // Filter down to search query
         .filter((t) => {

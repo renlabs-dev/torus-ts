@@ -54,7 +54,7 @@ class MeshSineMaterial extends THREE.MeshBasicMaterial {
     `;
     shader.vertexShader = shader.vertexShader.replace(
       "#include <begin_vertex>",
-      `vec3 transformed = vec3(position.x, position.y + sin(time + uv.x * PI * 4.0) / 4.0, position.z);`,
+      "vec3 transformed = vec3(position.x, position.y + sin(time + uv.x * PI * 4.0) / 4.0, position.z);",
     );
   }
 }

@@ -42,7 +42,7 @@ function CustomButton({ href, children, isHidden }: ButtonProps) {
       variant="outline"
       size="lg"
       asChild
-      className={`w-28 animate-fade-down bg-background animate-delay-300`}
+      className={"w-28 animate-fade-down bg-background animate-delay-300"}
     >
       <Link href={href} target="_blank">
         {children}

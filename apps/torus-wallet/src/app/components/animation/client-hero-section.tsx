@@ -84,7 +84,7 @@ const AnimatedIcosahedron = () => {
 };
 
 const easeOutExpo = (x: number): number =>
-  x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+  x === 1 ? 1 : 1 - 2 ** (-10 * x);
 
 const ClientHeroSection = () => (
   <section className="absolute -z-30 h-screen w-screen animate-fade animate-delay-700">

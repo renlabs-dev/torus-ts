@@ -41,6 +41,4 @@ console.log(r1, "\n", r1.error?.format());
 
 console.log(r2.data, "\n", r2.error?.format());
 
-debugger;
-
 process.exit(0);

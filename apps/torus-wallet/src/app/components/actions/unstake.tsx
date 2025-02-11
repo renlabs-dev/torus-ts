@@ -175,9 +175,8 @@ export function UnstakeAction() {
 
         setEstimatedFee(fromNano(adjustedFee));
         return adjustedFee;
-      } else {
-        setEstimatedFee(null);
       }
+        setEstimatedFee(null);
     } catch (error) {
       console.error("Error estimating fee:", error);
       setEstimatedFee(null);

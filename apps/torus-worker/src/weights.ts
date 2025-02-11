@@ -29,10 +29,10 @@ export function calcFinalWeights<K>(
       (a, b) => a + b,
       0n,
     );
-    if (total_user_weight == 0n) continue;
+    if (total_user_weight === 0n) continue;
 
     for (const [module_key, weight] of user_weights.entries()) {
-      if (weight == 0n) continue;
+      if (weight === 0n) continue;
 
       const stake_weight =
         total_user_weight !== 0n
@@ -71,7 +71,7 @@ export function normalizeWeightsForVote<K>(
 
   const result = new Map<K, number>();
   for (const [module_key, weight] of weights.entries()) {
-    const normalized = max_weight != 0n ? (weight * SCALE) / max_weight : 0n;
+    const normalized = max_weight !== 0n ? (weight * SCALE) / max_weight : 0n;
     result.set(module_key, Number(normalized));
   }
   return result;
@@ -91,7 +91,7 @@ export function normalizeWeightsToPercent<K>(
   const result = new Map<K, number>();
   for (const [module_key, weight] of module_weights.entries()) {
     const normalized =
-      total_weight != 0n ? bigintDivision(weight, total_weight) : 0n;
+      total_weight !== 0n ? bigintDivision(weight, total_weight) : 0n;
     result.set(module_key, Number(normalized));
   }
 
@@ -147,10 +147,10 @@ function _testFinalWeights() {
   user_weight_maps.set("A", new Map());
   user_weight_maps.set("B", new Map());
   user_weight_maps.set("C", new Map());
-  user_weight_maps.get("A")!.set("module1", 100n);
-  user_weight_maps.get("B")!.set("module2", 50n);
-  user_weight_maps.get("B")!.set("module3", 50n);
-  user_weight_maps.get("C")!.set("module3", 100n);
+  user_weight_maps.get("A")?.set("module1", 100n);
+  user_weight_maps.get("B")?.set("module2", 50n);
+  user_weight_maps.get("B")?.set("module3", 50n);
+  user_weight_maps.get("C")?.set("module3", 100n);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const result = calcFinalWeights(user_stakes, user_weight_maps);

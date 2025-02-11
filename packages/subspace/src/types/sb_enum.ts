@@ -81,7 +81,7 @@ export class ZodSubstrateEnum<
 
     // Wraps the parsed values in object with the variant name
     const handleParseResult = (result: SyncParseReturnType<unknown>) => {
-      if (result.status == "aborted") return result;
+      if (result.status === "aborted") return result;
       const value = { [variant_name]: result.value };
       return { ...result, value };
     };
@@ -94,11 +94,10 @@ export class ZodSubstrateEnum<
       const parseResult = variantType._parseAsync(parseInput);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return parseResult.then(handleParseResult) as any;
-    } else {
+    }
       const parseResult = variantType._parseSync(parseInput);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return handleParseResult(parseResult) as any;
-    }
   }
 
   get variants() {

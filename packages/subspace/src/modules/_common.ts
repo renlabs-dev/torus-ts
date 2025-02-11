@@ -18,7 +18,7 @@ export function handleMapValues<K extends Codec, T extends ZodTypeAny>(
   for (const entry of rawEntries) {
     const [, valueRaw] = entry;
     try {
-      var parsed = schema.parse(valueRaw) as Out;
+      const parsed = schema.parse(valueRaw) as Out;
     } catch (err) {
       assert_error(err);
       errors.push(err);
@@ -44,14 +44,14 @@ export function handleMapEntries<K extends ZodTypeAny, V extends ZodTypeAny>(
     const [keysRaw, valueRaw] = entry;
     const [key1Raw] = keysRaw.args;
     try {
-      var parsedKey = keySchema.parse(key1Raw) as KeyOut;
+      const parsedKey = keySchema.parse(key1Raw) as KeyOut;
     } catch (err) {
       assert_error(err);
       errors.push(err);
       continue;
     }
     try {
-      var parsedVal = valueSchema.parse(valueRaw) as ValOut;
+      const parsedVal = valueSchema.parse(valueRaw) as ValOut;
     } catch (err) {
       assert_error(err);
       errors.push(err);
@@ -82,21 +82,21 @@ export function handleDoubleMapEntries<
     const [keysRaw, valueRaw] = entry;
     const [key1Raw, key2Raw] = keysRaw.args;
     try {
-      var parsedKey1 = key1Schema.parse(key1Raw) as Key1Out;
+      const parsedKey1 = key1Schema.parse(key1Raw) as Key1Out;
     } catch (err) {
       assert_error(err);
       errors.push(err);
       continue;
     }
     try {
-      var parsedKey2 = key2Schema.parse(key2Raw) as Key2Out;
+      const parsedKey2 = key2Schema.parse(key2Raw) as Key2Out;
     } catch (err) {
       assert_error(err);
       errors.push(err);
       continue;
     }
     try {
-      var parsedVal = valueSchema.parse(valueRaw) as ValOut;
+      const parsedVal = valueSchema.parse(valueRaw) as ValOut;
     } catch (err) {
       assert_error(err);
       errors.push(err);
@@ -107,7 +107,7 @@ export function handleDoubleMapEntries<
       entries.set(parsedKey1, new Map<Key2Out, ValOut>());
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    entries.get(parsedKey1)!.set(parsedKey2, parsedVal);
+    entries.get(parsedKey1)?.set(parsedKey2, parsedVal);
   }
   return [entries, errors];
 }

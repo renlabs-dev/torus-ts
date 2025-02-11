@@ -103,7 +103,7 @@ export function buildZodEnvScript<S extends Record<string, ZodType<unknown>>>(
     ),
     env: (key) => {
       const val = env(key);
-      return opts?.skipValidation ? val : schema[key]!.parse(val);
+      return opts?.skipValidation ? val : schema[key]?.parse(val);
     },
   };
 }

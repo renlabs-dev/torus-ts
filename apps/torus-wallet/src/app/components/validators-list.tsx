@@ -41,7 +41,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
       );
 
       return accountStakeList.map((item) => ({
-        name: ``,
+        name: "",
         description: `Staked amount: ${formatToken(Number(item.stake))}`,
         address: item.address,
         stake: item.stake,

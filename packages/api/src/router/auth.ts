@@ -18,7 +18,7 @@ export const authRouter = {
     .input(SIGNED_PAYLOAD_SCHEMA)
     .mutation(async ({ ctx, input }) => {
       try {
-        var { address, payload } = await verifySignedData(input);
+        const { address, payload } = await verifySignedData(input);
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",

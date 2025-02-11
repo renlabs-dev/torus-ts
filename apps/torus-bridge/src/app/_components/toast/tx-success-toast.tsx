@@ -22,7 +22,7 @@ export function TxSuccessToast({
 
   return (
     <div>
-      {msg + " "}
+      {`${msg} `}
       {url && (
         <a
           className="underline"

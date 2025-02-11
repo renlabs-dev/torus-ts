@@ -44,10 +44,9 @@ export function tryGetMsgIdFromTransferReceipt(
       const msgId = messages[0]?.messageId;
       logger.debug("Message id found in logs", msgId);
       return msgId;
-    } else {
+    }
       logger.warn("No messages found in logs");
       return undefined;
-    }
   } catch (error) {
     logger.error("Could not get msgId from transfer receipt", error);
     return undefined;

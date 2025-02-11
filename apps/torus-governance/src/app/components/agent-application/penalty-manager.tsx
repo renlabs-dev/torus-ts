@@ -113,7 +113,7 @@ export function PenaltyManager({
       return;
     }
 
-    if (content == "") {
+    if (content === "") {
       toast.error("Please enter a reason for the penalty.");
       return;
     }

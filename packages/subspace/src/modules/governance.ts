@@ -104,7 +104,7 @@ export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
       // We need to extract the proposal ID from this key and convert it to a number
       sb_id.parse(key.args[0]),
     )
-    .filter((id) => !isNaN(id));
+    .filter((id) => !Number.isNaN(id));
 }
 
 // -- Votes --

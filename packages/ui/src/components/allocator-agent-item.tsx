@@ -92,10 +92,10 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
 
   return (
     <Card
-      className={`w-full border bg-gradient-to-t from-[#0A0B13] to-background p-6 transition duration-300`}
+      className={"w-full border bg-gradient-to-t from-[#0A0B13] to-background p-6 transition duration-300"}
     >
       <div
-        className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
+        className={"flex w-full flex-col items-center gap-6 md:flex-row md:gap-3"}
       >
         {iconUrl ? (
           <Image
@@ -103,7 +103,7 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
             alt="agent"
             width={1000}
             height={1000}
-            className={`aspect-square rounded-sm shadow-xl md:h-32 md:w-32`}
+            className={"aspect-square rounded-sm shadow-xl md:h-32 md:w-32"}
           />
         ) : (
           <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
@@ -124,7 +124,7 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
             </div>
           </div>
           <h2
-            className={`w-fit text-ellipsis text-base font-semibold md:max-w-fit`}
+            className={"w-fit text-ellipsis text-base font-semibold md:max-w-fit"}
           >
             {title}
           </h2>
@@ -132,12 +132,12 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-3 border px-4">
-        <Label className={`flex items-center gap-1.5 text-base font-semibold`}>
+        <Label className={"flex items-center gap-1.5 text-base font-semibold"}>
           <Anvil size={16} />
           10%
         </Label>
 
-        <Label className={`flex items-center gap-1.5 text-base font-semibold`}>
+        <Label className={"flex items-center gap-1.5 text-base font-semibold"}>
           <Cuboid size={16} />
           {currentBlock}
         </Label>
@@ -146,7 +146,7 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
           variant="link"
           type="button"
           copy={agentKey}
-          className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+          className={"text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline"}
         >
           <IdCard size={16} />
           <span className="hidden md:block">{smallAddress(agentKey, 7)}</span>
@@ -165,7 +165,7 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
             <div
               className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
               style={{
-                width: `10%`,
+                width: "10%",
               }}
             />
           </div>
@@ -175,9 +175,9 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
           <Button
             type="button"
             variant="outline"
-            className={`flex w-fit items-center gap-2 border-cyan-500 bg-transparent text-cyan-500 text-white transition duration-200 hover:bg-cyan-500/10 hover:text-cyan-500`}
+            className={"flex w-fit items-center gap-2 border-cyan-500 bg-transparent text-cyan-500 text-white transition duration-200 hover:bg-cyan-500/10 hover:text-cyan-500"}
           >
-            <ChartPie className={`h-6 w-6`} />
+            <ChartPie className={"h-6 w-6"} />
             Allocate
           </Button>
 

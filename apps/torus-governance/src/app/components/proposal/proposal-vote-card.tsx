@@ -92,7 +92,7 @@ const VoteCardFunctionsContent = (props: {
 
   return (
     <div className="flex w-full flex-col items-end gap-4">
-      <div className={`z-20 flex w-full flex-col items-start gap-2`}>
+      <div className={"z-20 flex w-full flex-col items-start gap-2"}>
         <ToggleGroup
           type="single"
           value={vote}
@@ -144,7 +144,7 @@ const VoteCardFunctionsContent = (props: {
         </div>
       )}
       {!isAccountConnected && (
-        <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
+        <div className="absolute inset-0 z-10 bg-black bg-opacity-80" />
       )}
     </div>
   );
@@ -190,7 +190,7 @@ export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
   }
 
   function handleVote(): void {
-    const voteBoolean = vote === "FAVORABLE" ? true : false;
+    const voteBoolean = vote  === "FAVORABLE";
     try {
       void voteProposal({
         proposalId,

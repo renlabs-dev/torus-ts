@@ -80,7 +80,7 @@ export function TransferTokenForm() {
         from: initialValues.origin,
         to: initialValues.destination,
       });
-      router.push("/?" + query);
+      router.push(`/?${query}`);
     }
   }, [
     fromParam,

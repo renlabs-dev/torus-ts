@@ -140,7 +140,7 @@ export async function processCadreVotes(
         const cadreDiscord = await getCadreDiscord(applicatorKey);
         if (cadreDiscord == null) {
           throw new Error(
-            "No discord account found for cadre member: " + applicatorKey,
+            `No discord account found for cadre member: ${applicatorKey}`,
           );
         }
         await addCadreMember(applicatorKey, cadreDiscord);

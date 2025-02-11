@@ -34,7 +34,7 @@ export const makeAuthenticateUserFn = (
       const authClient = createTRPCClient<AppRouter>({
         links: [
           httpBatchLink({
-            url: baseUrl + "/api/trpc",
+            url: `${baseUrl}/api/trpc`,
             transformer: SuperJSON,
           }),
         ],

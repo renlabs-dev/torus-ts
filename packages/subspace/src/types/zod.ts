@@ -123,7 +123,7 @@ export const sb_option = <T extends ZodTypeAny>(
     if (val.isNone) {
       const none: Option<Out> = { None: null };
       return none;
-    } else if (val.isSome) {
+    }if (val.isSome) {
       const result = inner.safeParse(val.unwrap());
       if (!result.success) {
         ctx.addIssue({
@@ -165,7 +165,7 @@ export const sb_some = <T extends ZodTypeAny>(
         None: () => {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `Expected Some`,
+            message: "Expected Some",
             path: [...ctx.path, "Some"],
           });
           return z.NEVER;
@@ -227,7 +227,7 @@ export const sb_percent = sb_number_int.transform((val, ctx) => {
   if (val < 0 || val > 100) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `Percent must be between 0 and 100`,
+      message: "Percent must be between 0 and 100",
     });
   }
   return val;
@@ -244,7 +244,7 @@ export const sb_string = Bytes_schema.transform<string>((val, ctx) => {
   if (!val.isUtf8) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `Bytes is not valid UTF8`,
+      message: "Bytes is not valid UTF8",
     });
     return z.NEVER;
   }
@@ -269,7 +269,7 @@ export const sb_basic_enum = <
     if (!val.isBasic) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Enum is not basic (no values)`,
+        message: "Enum is not basic (no values)",
       });
     }
     return val.type;

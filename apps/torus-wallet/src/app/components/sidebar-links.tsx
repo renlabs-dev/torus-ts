@@ -86,7 +86,7 @@ export const SidebarLinks = () => {
           <Button
             asChild
             variant="ghost"
-            className={`w-full justify-between gap-4 border-none px-3 text-base`}
+            className={"w-full justify-between gap-4 border-none px-3 text-base"}
           >
             <Link href={bridgeLink}>Bridge</Link>
           </Button>

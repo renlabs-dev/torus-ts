@@ -23,13 +23,12 @@ export function WarpContextInitGateProvider({
       throw new Error(
         "Failed to initialize warp context. Please check your registry URL and connection status.",
       );
-    } else {
+    }
       return (
         <div className="min-w-screen flex min-h-screen items-center justify-center">
           <Loading /> Loading Bridge...
         </div>
       );
-    }
   }
 
   return <>{children}</>;

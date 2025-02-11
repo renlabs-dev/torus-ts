@@ -45,7 +45,7 @@ const getApplicationVoteStatus = (
   });
 
 const applicationIsPending = (app: AgentApplication) =>
-  getApplicationVoteStatus(app) != "locked";
+  getApplicationVoteStatus(app) !== "locked";
 
 export async function processApplicationsWorker(props: WorkerProps) {
   while (true) {
@@ -125,7 +125,7 @@ export async function processVotesOnProposal(
   );
 
   // Application is open and we have votes to accept or refuse
-  if (appVoteStatus == "open") {
+  if (appVoteStatus === "open") {
     if (acceptVotes >= vote_threshold) {
       log(`Accepting proposal ${appId} ${app.agentKey}`);
       const res = await acceptApplication(api, appId, mnemonic);
@@ -136,7 +136,7 @@ export async function processVotesOnProposal(
       console.log("denyApplication executed:", res.toHuman());
     }
   } else if (
-    appVoteStatus == "accepted" &&
+    appVoteStatus === "accepted" &&
     removeVotes >= vote_threshold &&
     applications_map[appId] !== undefined
   ) {

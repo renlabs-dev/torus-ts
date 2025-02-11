@@ -75,10 +75,9 @@ export function SendAction() {
 
         setEstimatedFee(fromNano(adjustedFee));
         return adjustedFee;
-      } else {
+      }
         setEstimatedFee(null);
         setMaxAmount("");
-      }
     } catch (error) {
       console.error("Error estimating fee:", error);
       setEstimatedFee(null);

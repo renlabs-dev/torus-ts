@@ -203,11 +203,10 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     if (selectedAccount?.address) {
       if (shouldDisplayText) {
         return `Torus (${smallAddress(selectedAccount.address, 6)})`;
-      } else if (selectedAccount.meta.name) {
+      }if (selectedAccount.meta.name) {
         return smallWalletName(selectedAccount.meta.name, 15);
-      } else {
-        return smallAddress(selectedAccount.address, 6);
       }
+        return smallAddress(selectedAccount.address, 6);
     }
     return `Connect ${shouldDisplayText ? "Torus " : ""}Wallet`;
   };

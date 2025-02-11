@@ -52,9 +52,8 @@ const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
 const parseUrl = (url: string): string => {
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
-  } else {
-    return "https://" + url;
   }
+    return `https://${url}`;
 };
 
 type TabsViews = "agent-info" | "about" | "socials" | "register";
@@ -560,7 +559,7 @@ export function RegisterAgent(): JSX.Element {
             {aboutPreview && body && (
               <MarkdownPreview
                 className="max-h-[40vh] overflow-auto py-4"
-                source={`# ${title == "" ? "No title" : title}\n${body}`}
+                source={`# ${title === "" ? "No title" : title}\n${body}`}
                 style={{
                   backgroundColor: "transparent",
                   color: "white",
@@ -758,7 +757,7 @@ export function RegisterAgent(): JSX.Element {
                 {body && (
                   <MarkdownPreview
                     className="max-h-[44vh] w-full overflow-auto pb-4"
-                    source={`# ${title == "" ? "No title" : title}\n${body}`}
+                    source={`# ${title === "" ? "No title" : title}\n${body}`}
                     style={{
                       backgroundColor: "transparent",
                       color: "white",

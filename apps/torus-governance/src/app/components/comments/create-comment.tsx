@@ -160,7 +160,7 @@ export function CreateComment({
         </form>
 
         {setOverlay() && (
-          <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
+          <div className="absolute inset-0 z-10 bg-black bg-opacity-80" />
         )}
 
         {!selectedAccount?.address && itemType === "PROPOSAL" && (

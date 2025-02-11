@@ -325,7 +325,7 @@ export function AllocationMenu() {
         </div>
       </div>
 
-      <SheetContent className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}>
+      <SheetContent className={"fixed z-[70] flex w-full flex-col sm:max-w-md"}>
         <div className="flex h-full flex-col justify-between gap-8">
           <div className="flex h-full flex-col gap-8">
             <SheetHeader>
@@ -431,7 +431,7 @@ export function AllocationMenu() {
                   disabled={isSubmitting || !hasItemsToClear}
                   variant="outline"
                 >
-                  {isSubmitting ? "Removing..." : `Remove Agents`}
+                  {isSubmitting ? "Removing..." : "Remove Agents"}
                 </Button>
               </div>
               <Button

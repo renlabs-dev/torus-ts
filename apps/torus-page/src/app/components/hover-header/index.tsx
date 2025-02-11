@@ -47,7 +47,7 @@ export function HoverHeader() {
     x2: number,
     y2: number,
   ): number => {
-    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   };
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export function HoverHeader() {
       logoCenterY,
     );
     const maxDistance = Math.sqrt(
-      Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
+      window.innerWidth ** 2 + window.innerHeight ** 2,
     );
 
     const scale = 0.15 + (maxDistance - distance) / maxDistance;

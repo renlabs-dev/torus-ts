@@ -89,7 +89,7 @@ export const StakingCalculator: React.FC = () => {
     const compounds = MONTHLY_COMPOUNDS;
     const timeframe = months / 12;
     return (
-      stake * Math.pow(1 + (aprRate * 1.2) / compounds, compounds * timeframe)
+      stake * (1 + (aprRate * 1.2) / compounds) ** (compounds * timeframe)
     );
   };
 

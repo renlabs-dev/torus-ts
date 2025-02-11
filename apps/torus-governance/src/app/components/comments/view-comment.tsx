@@ -165,13 +165,12 @@ export function ViewComment({
         return (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-      } else if (sortBy === "oldest") {
+      }if (sortBy === "oldest") {
         return (
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
-      } else {
-        return (Number(b.likes) || 0) - (Number(a.likes) || 0);
       }
+        return (Number(b.likes) || 0) - (Number(a.likes) || 0);
     });
   }, [comments, sortBy]);
 

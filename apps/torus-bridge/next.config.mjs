@@ -1,5 +1,5 @@
 // import createJiti from "jiti";
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
 
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
 // WARNING: ONLY NEEDED IF NEXT_PUBLIC_* VARIABLES ARE USED IN THE APP DIRECTLY
@@ -7,7 +7,6 @@ import { fileURLToPath } from "url";
 
 /** @type {import("next").NextConfig} */
 const config = {
-  reactStrictMode: true,
 
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: [

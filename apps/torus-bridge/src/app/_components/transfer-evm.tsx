@@ -156,7 +156,7 @@ export function TransferEVM() {
       );
       setTransactionStatus({
         status: "SUCCESS",
-        message: `Transaction included in the blockchain!`,
+        message: "Transaction included in the blockchain!",
         finalized: true,
       });
 

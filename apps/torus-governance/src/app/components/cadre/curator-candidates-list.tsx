@@ -166,7 +166,7 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
         refuse: votes.filter((v) => v.vote === "REFUSE").length,
         revoke: 0,
       };
-    } else {
+    }
       const votes =
         curatorVoteHistory?.filter(
           (v) => v.applicantKey === curatorCandidate.userKey,
@@ -176,7 +176,6 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
         refuse: votes.filter((v) => v.vote === "REFUSE").length,
         revoke: curatorVotes?.length ?? 0,
       };
-    }
   };
 
   const currentWalletVote = curatorVotes?.find(
@@ -250,7 +249,7 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
 
   return (
     <Card className="relative">
-      <li className={`relative flex h-full flex-col`}>
+      <li className={"relative flex h-full flex-col"}>
         <CardHeader className="w-full items-start justify-between">
           <div className="flex flex-col items-start gap-1">
             <div className="flex items-center gap-3">
