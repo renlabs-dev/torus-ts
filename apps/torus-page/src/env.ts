@@ -1,8 +1,11 @@
 import { z } from "zod";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 
-const NodeEnvSchema = z.enum(["development", "production", "test"]).default("development");
-if (process?.env) { // using Reflect to avoid inlining by Next  https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables#bundling-environment-variables-for-the-browser
+const NodeEnvSchema = z
+  .enum(["development", "production", "test"])
+  .default("development");
+if (process?.env) {
+  // using Reflect to avoid inlining by Next  https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables#bundling-environment-variables-for-the-browser
   Reflect.set(process.env, "NEXT_PUBLIC_NODE_ENV", process.env.NODE_ENV);
 }
 

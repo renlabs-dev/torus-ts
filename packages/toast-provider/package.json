@@ -11,8 +11,10 @@
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint",
+    "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

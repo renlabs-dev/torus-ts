@@ -36,7 +36,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
 const PINATA_PIN_FILE_URL = "https://api.pinata.cloud/pinning/pinFileToIPFS";
 
-export interface PinFileOnPinataResponse { cid: CID }
+export interface PinFileOnPinataResponse {
+  cid: CID;
+}
 
 async function pinFileOnPinata(
   file: File,
