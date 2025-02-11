@@ -2,7 +2,7 @@ import type { ZodSchema } from "zod";
 import { z } from "zod";
 
 import type { Result } from "@torus-ts/utils";
-import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
+import { IPFS_URI_SCHEMA, buildIpfsGatewayUrl } from "@torus-ts/utils/ipfs";
 import type { AgentMetadata } from "./agent_metadata/agent_metadata";
 import { AGENT_METADATA_SCHEMA } from "./agent_metadata/agent_metadata";
 

@@ -6,14 +6,14 @@ import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
 import { EvmWalletProvider } from "~/context/evm-wallet-provider";
 import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
 
-import { ToastProvider } from "@torus-ts/toast-provider";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
+import { ToastProvider } from "@torus-ts/toast-provider";
 
-import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { env } from "~/env";
-import { WalletHeader } from "~/app/_components/shared/wallet-header";
 import { Container, Footer } from "@torus-ts/ui";
+import { WalletHeader } from "~/app/_components/shared/wallet-header";
+import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
+import { env } from "~/env";
 
 export function AppContextProvider({
   children,

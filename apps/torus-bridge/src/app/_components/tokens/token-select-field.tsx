@@ -3,15 +3,15 @@ import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { useField, useFormikContext } from "formik";
 import { useEffect, useState } from "react";
 
-import type { TransferFormValues } from "../../../utils/types";
-import { TokenListModal } from "./token-list-modal";
+import { Button } from "@torus-ts/ui";
+import { TokenIcon } from "~/app/_components/token-icon";
 import {
   getIndexForToken,
   getTokenByIndex,
   useWarpCore,
 } from "../../../hooks/token";
-import { TokenIcon } from "~/app/_components/token-icon";
-import { Button } from "@torus-ts/ui";
+import type { TransferFormValues } from "../../../utils/types";
+import { TokenListModal } from "./token-list-modal";
 
 interface Props {
   name: string;

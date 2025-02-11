@@ -1,14 +1,14 @@
 "use client";
 
-import { useTorus } from "@torus-ts/torus-provider";
 import {
   useCachedStakeOut,
   useFreeBalance,
 } from "@torus-ts/query-provider/hooks";
-import { Header, WalletDropdown } from "@torus-ts/ui";
 import type { SS58Address } from "@torus-ts/subspace";
-import { env } from "~/env";
 import { toast } from "@torus-ts/toast-provider";
+import { useTorus } from "@torus-ts/torus-provider";
+import { Header, WalletDropdown } from "@torus-ts/ui";
+import { env } from "~/env";
 import ConnectButton from "../buttons/connect-button";
 
 export function WalletHeader() {

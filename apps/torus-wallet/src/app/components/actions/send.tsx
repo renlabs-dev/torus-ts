@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
 

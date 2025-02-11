@@ -1,13 +1,6 @@
 "use client";
 
 import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
-import {
   ChevronsDown,
   ChevronsUp,
   ClockArrowDown,
@@ -15,6 +8,13 @@ import {
   ThumbsUp,
   TriangleAlert,
 } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -29,10 +29,10 @@ import {
 } from "@torus-ts/ui";
 import { smallAddress } from "@torus-ts/utils/subspace";
 
-import { api } from "~/trpc/react";
-import { ReportComment } from "./report-comment";
 import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
+import { api } from "~/trpc/react";
+import { ReportComment } from "./report-comment";
 
 //  "LIKE" | "DISLIKE"
 export type CommentInteractionReactionType = NonNullable<

@@ -1,19 +1,18 @@
 "use client";
 
-import { api } from "~/trpc/react";
+import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
+import { toast } from "@torus-ts/toast-provider";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Anvil, LoaderCircle, PieChart, X } from "lucide-react";
-import { toast } from "@torus-ts/toast-provider";
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { api } from "~/trpc/react";
 
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
-  cn,
   Input,
   Label,
   Sheet,
@@ -22,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  cn,
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";

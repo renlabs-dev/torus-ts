@@ -11,7 +11,7 @@ export const APRBarSkeleton = () => {
             animate={{ x: 500 }}
             transition={{
               duration: 2.5,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               ease: "linear",
             }}
           />
@@ -23,7 +23,7 @@ export const APRBarSkeleton = () => {
           animate={{ x: "-50%" }}
           transition={{
             duration: 80,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: "linear",
             repeatType: "loop",
           }}

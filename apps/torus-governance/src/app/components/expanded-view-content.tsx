@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
 import { MoveDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@torus-ts/ui";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";

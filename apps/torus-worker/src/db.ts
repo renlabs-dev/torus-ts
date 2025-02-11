@@ -3,30 +3,30 @@ import {
   and,
   eq,
   getTableColumns,
-  isNull,
-  sql,
   gte,
   inArray,
+  isNull,
   not,
+  sql,
 } from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
   agentSchema,
+  cadreCandidateSchema,
   cadreSchema,
-  cadreVoteSchema,
   cadreVoteHistory,
+  cadreVoteSchema,
+  candidacyStatusValues,
   computedAgentWeightSchema,
   governanceNotificationSchema,
-  userAgentWeightSchema,
   penalizeAgentVotesSchema,
-  cadreCandidateSchema,
-  candidacyStatusValues,
+  userAgentWeightSchema,
 } from "@torus-ts/db/schema";
 import type {
-  Agent as TorusAgent,
   GovernanceItemType,
   SS58Address,
+  Agent as TorusAgent,
 } from "@torus-ts/subspace";
 import { checkSS58 } from "@torus-ts/subspace";
 import { getOrSetDefault } from "@torus-ts/utils/collections";

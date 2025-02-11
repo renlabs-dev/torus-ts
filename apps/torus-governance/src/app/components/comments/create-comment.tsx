@@ -7,9 +7,9 @@ import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui";
 import { formatToken, toNano } from "@torus-ts/utils/subspace";
 
+import type { SS58Address } from "@torus-ts/subspace";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import type { SS58Address } from "@torus-ts/subspace";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
@@ -99,9 +99,7 @@ export function CreateComment({
         Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
       );
     }
-    {
-      return !isUserCadre && author !== selectedAccount.address;
-    }
+    return !isUserCadre && author !== selectedAccount.address;
   };
 
   const setOverlay = () => {

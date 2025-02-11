@@ -9,14 +9,14 @@ import type {
   VotesByKey as VoteByKey,
 } from "../db";
 import {
-  queryTotalVotesPerApp as queryTotalVotesPerApp,
-  countCadreKeys,
-  pendingPenalizations,
   addCadreMember,
-  queryTotalVotesPerCadre,
-  removeCadreMember,
+  countCadreKeys,
   getCadreDiscord,
+  pendingPenalizations,
+  queryTotalVotesPerApp,
+  queryTotalVotesPerCadre,
   refuseCadreApplication,
+  removeCadreMember,
 } from "../db";
 
 export interface WorkerProps {

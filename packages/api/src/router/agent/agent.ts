@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { eq, and, max, isNull, inArray } from "@torus-ts/db";
+import { and, eq, inArray, isNull, max } from "@torus-ts/db";
 
 import "@torus-ts/db/schema";
 import { agentSchema, penalizeAgentVotesSchema } from "@torus-ts/db/schema";

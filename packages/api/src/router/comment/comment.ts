@@ -2,10 +2,10 @@ import type { TRPCRouterRecord } from "@trpc/server";
 
 import "@torus-ts/db/schema";
 
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { z } from "zod";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
-import { eq, and } from "@torus-ts/db";
+import { and, eq } from "@torus-ts/db";
 import {
   commentDigestView,
   commentSchema,

@@ -2,9 +2,9 @@ import type { IToken } from "@hyperlane-xyz/sdk";
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
 
+import { useToastError } from "~/app/_components/toast/use-toast-error";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { useWarpCore } from ".";
-import { useToastError } from "~/app/_components/toast/use-toast-error";
 
 export function useIsApproveRequired(
   token?: IToken,

@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { SearchIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect } from "react";
 
 import {
   Input,

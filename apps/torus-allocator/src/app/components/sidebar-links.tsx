@@ -1,9 +1,9 @@
 "use client";
 
-import React, { Suspense, useCallback, useEffect } from "react";
 import { Check } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useCallback, useEffect } from "react";
 
 import {
   Button,

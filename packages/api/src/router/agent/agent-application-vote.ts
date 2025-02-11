@@ -1,11 +1,11 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
 import "@torus-ts/db/schema";
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { z } from "zod";
-import { agentApplicationVoteSchema } from "@torus-ts/db/schema";
 import { and, eq, isNull, sql } from "@torus-ts/db";
+import { agentApplicationVoteSchema } from "@torus-ts/db/schema";
 import { AGENT_APPLICATION_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import { z } from "zod";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 export const agentApplicationVoteRouter = {
   // GET

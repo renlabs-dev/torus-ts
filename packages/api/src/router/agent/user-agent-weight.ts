@@ -1,15 +1,15 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
 import "@torus-ts/db/schema";
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { z } from "zod";
+import type { DB } from "@torus-ts/db/client";
 import { agentSchema, userAgentWeightSchema } from "@torus-ts/db/schema";
 import type { SS58Address } from "@torus-ts/subspace";
-import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-ts/subspace";
+import { SS58_SCHEMA, queryKeyStakedBy } from "@torus-ts/subspace";
 import { typed_non_null_entries } from "@torus-ts/utils";
-import type { DB } from "@torus-ts/db/client";
+import { z } from "zod";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
-import { eq, isNull, and } from "@torus-ts/db";
+import { and, eq, isNull } from "@torus-ts/db";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
 
 async function getUserAgentWeights(

@@ -9,8 +9,7 @@ body {
       rgba(0, 0, 0, 0.8) 10%,
       rgba(0, 0, 0, 0.9) 20%,
       rgba(0, 0, 0, 0.9) 100%
-    ),
-    url("/greek-statue.png");
+    ), url("/greek-statue.png");
   background-size: cover;
   background-position: top center;
   background-repeat: no-repeat;

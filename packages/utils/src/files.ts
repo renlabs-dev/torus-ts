@@ -37,7 +37,7 @@ export const smallFilename = (name: string, maxLength = 20): string => {
 export const strToFile = (
   str: string,
   filename: string,
-  type: string = "text/plain",
+  type = "text/plain",
 ) => {
   const file = new File([str], filename, { type });
   return file;

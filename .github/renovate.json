@@ -1,13 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
+  "extends": ["config:base"],
   "packageRules": [
     {
-      "matchPackagePatterns": [
-        "^@torus-ts/"
-      ],
+      "matchPackagePatterns": ["^@torus-ts/"],
       "enabled": false
     }
   ],
@@ -15,9 +11,6 @@
   "rangeStrategy": "bump",
   "automerge": true,
   "npm": {
-    "fileMatch": [
-      "(^|/)package\\.json$",
-      "(^|/)package\\.json\\.hbs$"
-    ]
+    "fileMatch": ["(^|/)package\\.json$", "(^|/)package\\.json\\.hbs$"]
   }
 }

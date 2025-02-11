@@ -17,9 +17,9 @@ import {
   Textarea,
 } from "@torus-ts/ui";
 
+import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
 
 const MAX_CONTENT_CHARACTERS = 240;
 

@@ -6,8 +6,8 @@ import { warpRouteConfigs } from "@hyperlane-xyz/registry";
 import type { WarpCoreConfig } from "@hyperlane-xyz/sdk";
 import { WarpCoreConfigSchema, validateZodResult } from "@hyperlane-xyz/sdk";
 import { objFilter, objMerge } from "@hyperlane-xyz/utils";
-import { WarpRoutesTs } from "~/consts/warp-routes";
 import { warpRouteWhitelist } from "~/consts/warp-route-whitelist";
+import { WarpRoutesTs } from "~/consts/warp-routes";
 import WarpRoutesYaml from "~/consts/warp-routes.yaml";
 
 export function assembleWarpCoreConfig(): WarpCoreConfig {
@@ -22,7 +22,7 @@ export function assembleWarpCoreConfig(): WarpCoreConfig {
 
   const configValues = Object.values(filteredWarpRouteConfigs);
 
-  const configTokens = configValues.map((c) => c.tokens).flat();
+  const configTokens = configValues.flatMap((c) => c.tokens);
   const tokens = dedupeTokens([
     ...configTokens,
     ...configTs.tokens,
@@ -34,7 +34,7 @@ export function assembleWarpCoreConfig(): WarpCoreConfig {
       "No warp route configs provided. Please check your registry, warp route whitelist, and custom route configs for issues.",
     );
 
-  const configOptions = configValues.map((c) => c.options).flat();
+  const configOptions = configValues.flatMap((c) => c.options);
   const combinedOptions = [
     ...configOptions,
     configTs.options,

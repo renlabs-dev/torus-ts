@@ -3,7 +3,7 @@ import {
   ExclamationCircleIcon,
 } from "@heroicons/react/24/solid";
 
-import { cn, Loading } from "..";
+import { Loading, cn } from "..";
 
 export interface TransactionResult {
   finalized: boolean;

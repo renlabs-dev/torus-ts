@@ -7,11 +7,11 @@ import { Footer, Layout } from "@torus-ts/ui";
 
 import { TRPCReactProvider } from "~/trpc/react";
 
+import { ToastProvider } from "@torus-ts/toast-provider";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript, env } from "~/env";
-import { ToastProvider } from "@torus-ts/toast-provider";
-import { AllocatorHeader } from "./components/allocator-header";
 import { AllocationMenu } from "./components/allocation-menu";
+import { AllocatorHeader } from "./components/allocator-header";
 import { TutorialDialog } from "./components/tutorial-dialog";
 
 const APP_NAME = "Allocator";

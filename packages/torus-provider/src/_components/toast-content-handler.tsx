@@ -32,6 +32,7 @@ export const renderWaitingForValidation = (
       style={linkStyle}
       target="_blank"
       href={getExplorerLink({ wsEndpoint, hash })}
+      rel="noreferrer"
     >
       View on block explorer
     </a>
@@ -49,6 +50,7 @@ export const renderSuccessfulyFinalized = (
       style={linkStyle}
       target="_blank"
       href={getExplorerLink({ wsEndpoint, hash })}
+      rel="noreferrer"
     >
       View on block explorer
     </a>
@@ -66,6 +68,7 @@ export const renderFinalizedWithError = (
       style={linkStyle}
       target="_blank"
       href={getExplorerLink({ wsEndpoint, hash })}
+      rel="noreferrer"
     >
       View on block explorer
     </a>

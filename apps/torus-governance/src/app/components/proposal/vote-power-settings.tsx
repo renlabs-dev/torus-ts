@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Info } from "lucide-react";
+import { useState } from "react";
 
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useTorus } from "@torus-ts/torus-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
   Button,
   Popover,

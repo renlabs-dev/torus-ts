@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback } from "react";
 
 export const AgentsTabViewContent = () => {
   const searchParams = useSearchParams();

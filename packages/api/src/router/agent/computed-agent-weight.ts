@@ -1,8 +1,8 @@
+import { and, eq, isNull, max } from "@torus-ts/db";
 import type { TRPCRouterRecord } from "@trpc/server";
-import { eq, max, and, isNull } from "@torus-ts/db";
 import "@torus-ts/db/schema";
-import { publicProcedure } from "../../trpc";
 import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
+import { publicProcedure } from "../../trpc";
 
 export const computedAgentWeightRouter = {
   // GET

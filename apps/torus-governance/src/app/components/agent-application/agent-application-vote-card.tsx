@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { Delete, TicketX } from "lucide-react";
+import { useState } from "react";
 
 import { toast } from "@torus-ts/toast-provider";
 import { Button, Card, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
 
+import type { AgentApplication } from "@torus-ts/subspace";
+import { match } from "rustie";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import type { AgentApplication } from "@torus-ts/subspace";
-import { match } from "rustie";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 

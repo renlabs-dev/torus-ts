@@ -5,12 +5,12 @@ import React, { useCallback } from "react";
 import { erc20Abi } from "viem";
 import * as wagmi from "wagmi";
 
-import Image from "next/image";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
+import Image from "next/image";
 
 import { getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useCallback } from "react";
 import { Lock, Unlock } from "lucide-react";
+import React, { useCallback } from "react";
 
 import { Card, Skeleton } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";

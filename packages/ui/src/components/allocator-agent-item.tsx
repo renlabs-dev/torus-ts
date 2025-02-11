@@ -11,8 +11,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-import { Button, Card, CopyButton, Icons, Label } from "./";
 import { smallAddress } from "@torus-ts/utils/subspace";
+import { Button, Card, CopyButton, Icons, Label } from "./";
 
 interface AgentCardProps {
   agentKey: string;

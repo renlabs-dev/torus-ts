@@ -5,11 +5,11 @@
 
 "use client";
 
-import { cn, Icons } from "@torus-ts/ui";
+import { Icons, cn } from "@torus-ts/ui";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { LinesSVG } from "./_components/desktop/lines-svg";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
+import { LinesSVG } from "./_components/desktop/lines-svg";
 import { ButtonsSectionMobile } from "./_components/mobile/buttons-section-mobile";
 import { LinesSVGMobile } from "./_components/mobile/lines-svg-mobile";
 
@@ -67,7 +67,7 @@ export function HoverHeader() {
       scale: [scale, scale * 1.2, scale],
       transition: {
         duration: 2,
-        repeat: Infinity,
+        repeat: Number.POSITIVE_INFINITY,
         ease: "easeInOut",
       },
     }),

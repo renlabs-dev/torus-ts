@@ -4,8 +4,8 @@ import type { ChainName } from "@hyperlane-xyz/sdk";
 
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 
-import { ChainLogo } from "../chain-logo";
 import { Button, Label } from "@torus-ts/ui";
+import { ChainLogo } from "../chain-logo";
 
 interface Props {
   name: string;

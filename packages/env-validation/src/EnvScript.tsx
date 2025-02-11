@@ -9,7 +9,7 @@
 
 import type { FC } from "react";
 
-import { env, PublicEnvScript } from "next-runtime-env";
+import { PublicEnvScript, env } from "next-runtime-env";
 import type { NonceConfig } from "next-runtime-env/build/typings/nonce";
 import { unstable_noStore as noStore } from "next/cache";
 import type { ZodType, ZodTypeAny } from "zod";

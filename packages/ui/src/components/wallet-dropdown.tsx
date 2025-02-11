@@ -1,8 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useMemo } from "react";
-import Link from "next/link";
 import {
   Copy,
   CreditCard,
@@ -12,13 +9,15 @@ import {
   SquareArrowOutUpRight,
   WalletCards,
 } from "lucide-react";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { useMemo } from "react";
 
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  cn,
   CopyButton,
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +27,10 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  links,
   NoWalletExtensionDisplay,
   ScrollArea,
+  cn,
+  links,
 } from "@torus-ts/ui";
 import {
   formatToken,

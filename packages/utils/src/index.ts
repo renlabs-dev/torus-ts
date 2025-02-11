@@ -57,7 +57,7 @@ export function check_int(value: unknown): bigint {
 }
 
 export function bigintDivision(a: bigint, b: bigint, precision = 8n): number {
-  if (b === 0n) return NaN;
+  if (b === 0n) return Number.NaN;
   const base = 10n ** precision;
   return Number((a * base) / b) / Number(base);
 }

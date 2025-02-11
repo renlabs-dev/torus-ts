@@ -1,21 +1,21 @@
+import { Enum } from "@polkadot/types";
 import type {
   ParseInput,
   ParseReturnType,
   ProcessedCreateParams,
   RawCreateParams,
   SyncParseReturnType,
-  z,
   ZodErrorMap,
   ZodTypeAny,
   ZodTypeDef,
+  z,
 } from "zod";
-import { Enum } from "@polkadot/types";
 import {
-  addIssueToContext,
   INVALID,
   ZodIssueCode,
   ZodParsedType,
   ZodType,
+  addIssueToContext,
 } from "zod";
 
 export type ZodSubstrateEnumVariants = Record<string, ZodTypeAny>;

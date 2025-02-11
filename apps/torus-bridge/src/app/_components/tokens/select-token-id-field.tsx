@@ -12,7 +12,7 @@ export function SelectTokenIdField({ name, disabled }: Props) {
   const [, , helpers] = useField<number>(name);
   const [tokenId, setTokenId] = useState<string | undefined>(undefined);
   const handleChange = (newTokenId: string) => {
-    void helpers.setValue(parseInt(newTokenId));
+    void helpers.setValue(Number.parseInt(newTokenId));
     setTokenId(newTokenId);
   };
 

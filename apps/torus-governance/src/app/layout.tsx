@@ -8,7 +8,7 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container, Footer, Layout } from "@torus-ts/ui/components";
 
 import { GovernanceProvider } from "~/context/governance-provider";
-import { env, EnvScript } from "~/env";
+import { EnvScript, env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const APP_NAME = "Torus DAO";

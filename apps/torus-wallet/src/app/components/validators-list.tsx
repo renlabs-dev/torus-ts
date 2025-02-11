@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 import { Button, Card, CardContent, CardHeader } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";

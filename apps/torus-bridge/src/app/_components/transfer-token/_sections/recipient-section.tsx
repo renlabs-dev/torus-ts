@@ -1,17 +1,17 @@
 import { useFormikContext } from "formik";
 
-import type { TransferFormValues } from "~/utils/types";
 import { useRecipientBalanceWatcher } from "~/hooks/use-balance-watcher";
+import type { TransferFormValues } from "~/utils/types";
 
 import { TextField } from "~/app/_components/text-field";
 
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { toast } from "@torus-ts/toast-provider";
-import { TokenBalance } from "../_components/token-balance";
+import { Button, Label } from "@torus-ts/ui";
+import { useDestinationBalance } from "~/hooks/balance/use-destination-balance";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { useDestinationBalance } from "~/hooks/balance/use-destination-balance";
-import { Button, Label } from "@torus-ts/ui";
+import { TokenBalance } from "../_components/token-balance";
 
 export function RecipientSection({ isReview }: { isReview: boolean }) {
   const { values } = useFormikContext<TransferFormValues>();

@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  Dialog,
-  DialogTrigger,
   Button,
+  Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogTrigger,
   links,
 } from "@torus-ts/ui";
 import { CircleHelp } from "lucide-react";

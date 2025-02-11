@@ -1,18 +1,18 @@
 // TODO: split `zod.ts` into multiple files
 
-import type { AnyJson, Codec } from "@polkadot/types/types";
-import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import {
-  bool,
   BTreeSet,
   Bytes,
   Enum,
   GenericAccountId,
   Null,
-  Option as polkadot_Option,
   Struct,
+  bool,
+  Option as polkadot_Option,
 } from "@polkadot/types";
+import type { AnyJson, Codec } from "@polkadot/types/types";
 import { match } from "rustie";
+import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";
 
 import type { Option } from "@torus-ts/utils";

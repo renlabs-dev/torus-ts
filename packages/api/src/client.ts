@@ -1,12 +1,12 @@
 import type { TRPCLink } from "@trpc/client";
-import { createTRPCClient, httpBatchLink, TRPCClientError } from "@trpc/client";
+import { TRPCClientError, createTRPCClient, httpBatchLink } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import SuperJSON from "superjson";
 
 import { createAuthReqData } from "@torus-ts/utils/auth";
 
-import type { AppRouter } from "./root";
 import { signData } from "./auth/sign";
+import type { AppRouter } from "./root";
 
 // == Auth ==
 

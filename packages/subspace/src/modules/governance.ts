@@ -6,8 +6,8 @@ import "@polkadot/api/augment";
 
 import type { ApiPromise } from "@polkadot/api";
 
+import type { Percent } from "@polkadot/types/interfaces";
 import type { SS58Address } from "../address";
-import type { Api } from "./_common";
 import { queryCachedStakeFrom, queryCachedStakeOut } from "../cached-queries";
 import {
   sb_address,
@@ -24,9 +24,9 @@ import {
   sb_struct,
   sb_to_primitive,
 } from "../types";
+import type { Api } from "./_common";
 import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
-import type { Percent } from "@polkadot/types/interfaces";
 
 const ADDRESS_FORMAT = 42;
 

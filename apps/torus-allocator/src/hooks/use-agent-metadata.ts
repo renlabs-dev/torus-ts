@@ -32,7 +32,7 @@ export const useQueryAgentMetadata = (
 
   // If the metadata URI is an IPFS URI, we don't want to refetch it
   if (metadataUri != null && isIpfsUri(metadataUri)) {
-    staleTime = Infinity;
+    staleTime = Number.POSITIVE_INFINITY;
   }
 
   return useQuery({

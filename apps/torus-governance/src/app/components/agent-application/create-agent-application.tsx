@@ -1,10 +1,10 @@
-import { useCallback, useState } from "react";
-import Link from "next/link";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import Link from "next/link";
+import { useCallback, useState } from "react";
 import { z } from "zod";
 
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
   Button,
   Checkbox,
@@ -19,8 +19,8 @@ import {
 } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 
+import { PIN_FILE_RESULT, cidToIpfsUri } from "@torus-ts/utils/ipfs";
 import { useGovernance } from "~/context/governance-provider";
-import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),

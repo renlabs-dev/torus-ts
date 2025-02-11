@@ -1,14 +1,15 @@
 "use client";
 
-import { useAccount, useWalletClient, useSwitchChain } from "wagmi";
-import type { CSSProperties } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import {
   convertH160ToSS58,
-  withdrawFromTorusEvm,
   waitForTransactionReceipt,
+  withdrawFromTorusEvm,
 } from "@torus-ts/subspace";
+import type { SS58Address } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
   Button,
   Card,
@@ -20,19 +21,18 @@ import {
   TransactionStatus,
 } from "@torus-ts/ui";
 import { smallAddress, toNano } from "@torus-ts/utils/subspace";
-import type { SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import Image from "next/image";
 import { ArrowLeftRight } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { CSSProperties } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useAccount, useSwitchChain, useWalletClient } from "wagmi";
 import * as wagmi from "wagmi";
 import { getChainValuesOnEnv } from "~/config";
-import { env } from "~/env";
-import { useFreeBalance } from "@torus-ts/query-provider/hooks";
-import { useRouter, useSearchParams } from "next/navigation";
-import { updateSearchParams } from "~/utils/query-params";
 import { initWagmi } from "~/context/evm-wallet-provider";
+import { env } from "~/env";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { updateSearchParams } from "~/utils/query-params";
 
 const DEFAULT_MODE = "bridge";
 
@@ -75,7 +75,7 @@ export function TransferEVM() {
   const evmSS58Addr = userInputEthAddr
     ? convertH160ToSS58(userInputEthAddr)
     : "";
-  const amountRems = amount ? toNano(parseFloat(amount)) : BigInt(0);
+  const amountRems = amount ? toNano(Number.parseFloat(amount)) : BigInt(0);
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
@@ -464,6 +464,7 @@ export const renderWaitingForValidation = (hash: string) => (
       style={linkStyle}
       target="_blank"
       href={`https://blockscout.torus.network/tx/${hash}`}
+      rel="noreferrer"
     >
       View on block explorer
     </a>
@@ -477,6 +478,7 @@ export const renderSuccessfulyFinalized = (hash: string) => (
       style={linkStyle}
       target="_blank"
       href={`https://blockscout.torus.network/tx/${hash}`}
+      rel="noreferrer"
     >
       View on block explorer
     </a>

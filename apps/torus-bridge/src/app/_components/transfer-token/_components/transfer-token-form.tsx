@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccounts } from "@hyperlane-xyz/widgets";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { useEffect, useMemo, useState } from "react";
 import { config } from "~/consts/config";
 
@@ -10,20 +10,20 @@ import {
   getIndexForTokenByChainName,
   useWarpCore,
 } from "~/hooks/token";
-import type { TransferFormValues } from "~/utils/types";
 import { logger } from "~/utils/logger";
+import type { TransferFormValues } from "~/utils/types";
 import { validateForm } from "./validate-form";
 
-import { SelectChainSection } from "../_sections/select-chain-section";
-import { AmountSection } from "../_sections/amount-section";
-import { RecipientSection } from "../_sections/recipient-section";
-import { ButtonSection } from "../_sections/button-section";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { Card, CardContent, CardFooter, CardHeader } from "@torus-ts/ui";
-import { WalletTransactionReview } from "../../shared/wallet-review";
-import { TokenSection } from "../_sections/token-section";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
+import { WalletTransactionReview } from "../../shared/wallet-review";
+import { AmountSection } from "../_sections/amount-section";
+import { ButtonSection } from "../_sections/button-section";
+import { RecipientSection } from "../_sections/recipient-section";
+import { SelectChainSection } from "../_sections/select-chain-section";
+import { TokenSection } from "../_sections/token-section";
 
 export function TransferTokenForm() {
   const searchParams = useSearchParams();

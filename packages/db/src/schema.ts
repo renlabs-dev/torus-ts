@@ -1,27 +1,27 @@
-import { asc, eq, sql, isNull, sum } from "drizzle-orm";
+import { asc, eq, isNull, sql, sum } from "drizzle-orm";
 import {
-  bigint as drizzleBigint,
   boolean,
+  check,
+  bigint as drizzleBigint,
+  timestamp as drizzleTimestamp,
   index,
   integer,
+  numeric,
   pgEnum,
   pgMaterializedView,
   pgTableCreator,
+  real,
   serial,
   text,
-  timestamp as drizzleTimestamp,
   unique,
   varchar,
-  real,
-  check,
-  numeric,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 
-import { extract_pgenum_values } from "./utils";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
+import { extract_pgenum_values } from "./utils";
 
 // ==== Util ====
 

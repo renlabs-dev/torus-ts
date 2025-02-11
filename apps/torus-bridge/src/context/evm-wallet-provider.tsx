@@ -20,13 +20,13 @@ import {
 } from "@rainbow-me/rainbowkit/wallets";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
-import { createClient, http } from "viem";
+import { http, createClient } from "viem";
 import { WagmiProvider, createConfig } from "wagmi";
 
 import { config } from "../consts/config";
 
-import { useWarpCore } from "../hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { useWarpCore } from "../hooks/token";
 
 export function initWagmi(multiProvider: MultiProtocolProvider) {
   const chains = getWagmiChainConfigs(multiProvider);

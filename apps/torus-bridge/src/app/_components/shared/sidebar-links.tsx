@@ -1,19 +1,19 @@
 "use client";
 
-import React, { Suspense } from "react";
-import Link from "next/link";
 import { Check } from "lucide-react";
+import Link from "next/link";
+import React, { Suspense } from "react";
 
 import {
   Button,
   Card,
-  links,
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  links,
 } from "@torus-ts/ui";
 
 const navSidebarOptions = [

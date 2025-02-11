@@ -4,8 +4,8 @@ import "@torus-ts/db/schema";
 
 import { and, eq, isNull, sql } from "@torus-ts/db";
 
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { z } from "zod";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 import {
   commentDigestView,

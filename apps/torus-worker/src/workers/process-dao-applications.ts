@@ -1,5 +1,3 @@
-import { match } from "rustie";
-import { z } from "zod";
 import type { ApiPromise } from "@polkadot/api";
 import type { AgentApplication } from "@torus-ts/subspace";
 import {
@@ -9,14 +7,16 @@ import {
   removeFromWhitelist,
 } from "@torus-ts/subspace";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { match } from "rustie";
+import { z } from "zod";
 
 import type { WorkerProps } from "../common";
 import {
   BLOCK_TIME,
   getApplications,
+  getCadreVotes,
   log,
   processCadreVotes,
-  getCadreVotes,
   sleep,
   sleepUntilNewBlock,
 } from "../common";

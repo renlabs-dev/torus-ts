@@ -31,12 +31,12 @@ import {
 
 import { smallFilename, strToFile } from "@torus-ts/utils/files";
 import type { CID } from "@torus-ts/utils/ipfs";
-import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
+import { PIN_FILE_RESULT, cidToIpfsUri } from "@torus-ts/utils/ipfs";
 import { formatToken, fromNano } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
-import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 import Image from "next/image";
 import { z } from "zod";
+import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 
 const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();

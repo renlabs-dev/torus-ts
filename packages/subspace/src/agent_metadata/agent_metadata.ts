@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import type { AnyJson } from "@polkadot/types/types";
 import { assert_error, typed_non_null_entries } from "@torus-ts/utils";
-import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
+import { IPFS_URI_SCHEMA, buildIpfsGatewayUrl } from "@torus-ts/utils/ipfs";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
 

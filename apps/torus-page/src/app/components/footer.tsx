@@ -16,7 +16,12 @@ function FooterContent() {
         <h4 className="text-sm font-semibold">Torus Network</h4>
         <p className="text-sm">
           Protocol core development by{" "}
-          <a href={links.ren_labs} className="underline" target="_blank">
+          <a
+            href={links.ren_labs}
+            className="underline"
+            target="_blank"
+            rel="noreferrer"
+          >
             RENLABS.
           </a>
         </p>

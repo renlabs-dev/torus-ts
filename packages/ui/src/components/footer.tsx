@@ -31,6 +31,7 @@ export function Footer() {
                   href={app.href}
                   target="_blank"
                   className="flex items-center gap-1.5 hover:underline"
+                  rel="noreferrer"
                 >
                   {app.icon}
                   <span>{app.name}</span>
@@ -44,7 +45,12 @@ export function Footer() {
             <span className="hidden xl:inline">
               Protocol core development by{" "}
             </span>
-            <a href={links.ren_labs} className="underline" target="_blank">
+            <a
+              href={links.ren_labs}
+              className="underline"
+              target="_blank"
+              rel="noreferrer"
+            >
               @renlabs
             </a>
           </FooterItem>

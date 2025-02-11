@@ -12,14 +12,14 @@ import { toast } from "react-toastify";
 
 import { logger } from "../utils/logger";
 
+import { toastTxSuccess } from "~/app/_components/toast/tx-success-toast";
 import { getChainDisplayName } from "../utils/chain";
 import type { AppState } from "../utils/store";
 import { useStore } from "../utils/store";
-import { getTokenByIndex, useWarpCore } from "./token";
+import { tryGetMsgIdFromTransferReceipt } from "../utils/transfer";
 import type { TransferContext, TransferFormValues } from "../utils/types";
 import { TransferStatus } from "../utils/types";
-import { tryGetMsgIdFromTransferReceipt } from "../utils/transfer";
-import { toastTxSuccess } from "~/app/_components/toast/tx-success-toast";
+import { getTokenByIndex, useWarpCore } from "./token";
 import { useMultiProvider } from "./use-multi-provider";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";

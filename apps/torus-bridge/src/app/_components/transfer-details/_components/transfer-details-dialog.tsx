@@ -7,17 +7,17 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ChevronsRight } from "lucide-react";
+import { tryFindToken, useWarpCore } from "~/hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { useWarpCore, tryFindToken } from "~/hooks/token";
 import { getChainDisplayName, hasPermissionlessChain } from "~/utils/chain";
 import { logger } from "~/utils/logger";
-import type { TransferContext } from "~/utils/types";
-import { TransferStatus } from "~/utils/types";
 import {
   formatTimestamp,
   isTransferFailed,
   isTransferSent,
 } from "~/utils/transfer";
+import type { TransferContext } from "~/utils/types";
+import { TransferStatus } from "~/utils/types";
 
 import {
   AlertDialog,
@@ -29,9 +29,9 @@ import {
   Loading,
 } from "@torus-ts/ui";
 
-import { TransferProperty } from "./transfer-property";
 import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
 import { getTransferStatusLabel } from "./get-transfer-status-label";
+import { TransferProperty } from "./transfer-property";
 
 export function TransfersDetailsDialog({
   isOpen,

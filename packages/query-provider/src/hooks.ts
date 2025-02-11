@@ -11,33 +11,33 @@ import type {
   StakeData,
   VoteWithStake,
 } from "@torus-ts/subspace";
-import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 import {
   fetchCustomMetadata,
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
-  queryCachedStakeOut,
   queryAgentApplications,
+  queryAgents,
+  queryBurnValue,
+  queryCachedStakeOut,
   queryDaoTreasuryAddress,
   queryFreeBalance,
+  queryGlobalGovernanceConfig,
+  queryIncentivesRatio,
   queryKeyStakedBy,
   queryKeyStakingTo,
   queryLastBlock,
-  queryProposals,
-  queryRewardAllocation,
-  queryUnrewardedProposals,
-  queryGlobalGovernanceConfig,
-  queryBurnValue,
-  queryAgents,
   queryMinAllowedStake,
-  queryTotalIssuance,
-  queryTreasuryEmissionFee,
-  queryTotalStake,
+  queryProposals,
   queryRecyclingPercentage,
-  queryIncentivesRatio,
+  queryRewardAllocation,
   queryRewardInterval,
+  queryTotalIssuance,
+  queryTotalStake,
+  queryTreasuryEmissionFee,
+  queryUnrewardedProposals,
   queryWhitelist,
 } from "@torus-ts/subspace";
+import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 
 import type { ApiPromise } from "@polkadot/api";
 import SuperJSON from "superjson";

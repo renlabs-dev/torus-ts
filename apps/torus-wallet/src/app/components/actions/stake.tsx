@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
@@ -11,12 +12,12 @@ import {
   toNano,
 } from "@torus-ts/utils/subspace";
 
+import { isSS58 } from "@torus-ts/subspace";
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
+import { FeeLabel } from "../fee-label";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
-import { isSS58 } from "@torus-ts/subspace";
-import { FeeLabel } from "../fee-label";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
