@@ -78,14 +78,15 @@ export const useDelegateAgentStore = create<DelegateState>()(
             0,
           );
           agents.forEach((agent) => {
-              const precisionFactor = 10000;
-              const roundedPercentage = Math.round(parseFloat((agent.percentage / totalPercentage).toFixed(4)) * precisionFactor);
-              console.log("roundedPercentage: ", roundedPercentage);
-              agent.percentage = roundedPercentage / 100;
-            });
-            return { delegatedAgents: agents };
+            const precisionFactor = 10000;
+            const roundedPercentage = Math.round(
+              parseFloat((agent.percentage / totalPercentage).toFixed(4)) *
+                precisionFactor,
+            );
+            agent.percentage = roundedPercentage / 100;
+          });
+          return { delegatedAgents: agents };
         }),
-
       getTotalPercentage: () => {
         return get().delegatedAgents.reduce(
           (sum, agent) => sum + agent.percentage,
