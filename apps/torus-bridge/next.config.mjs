@@ -5,11 +5,12 @@ import { fileURLToPath } from "url";
 // WARNING: ONLY NEEDED IF NEXT_PUBLIC_* VARIABLES ARE USED IN THE APP DIRECTLY
 // createJiti(fileURLToPath(import.meta.url))("./src/env");
 
+import webpack from "webpack";
+
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
 
-  /** Enables hot reloading for local packages without a build step */
   transpilePackages: [
     "@torus-ts/api",
     "@torus-ts/db",
@@ -25,16 +26,32 @@ const config = {
 
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      config.resolve.fallback.fs = false;
-      config.resolve.fallback.tls = false;
-      config.resolve.fallback.net = false;
-      config.resolve.fallback.child_process = false;
+      // Replace node: protocol imports with their browser versions
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+          resource.request = resource.request.replace(/^node:/, "");
+        }),
+      );
+
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        child_process: false,
+        util: fileURLToPath(new URL("util/", import.meta.url)),
+        crypto: fileURLToPath(new URL("crypto-browserify", import.meta.url)),
+        stream: fileURLToPath(new URL("stream-browserify", import.meta.url)),
+        events: fileURLToPath(new URL("events/", import.meta.url)),
+        process: fileURLToPath(new URL("process/browser", import.meta.url)),
+      };
     }
 
     config.module.rules.push({
       test: /\.ya?ml$/,
       use: "yaml-loader",
     });
+
     return config;
   },
 };

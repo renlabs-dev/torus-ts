@@ -325,6 +325,12 @@ importers:
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      crypto-browserify:
+        specifier: ^3.12.1
+        version: 3.12.1
+      events:
+        specifier: ^3.3.0
+        version: 3.3.0
       formik:
         specifier: ^2.4.6
         version: 2.4.6(react@18.2.0)
@@ -343,6 +349,9 @@ importers:
       pino-pretty:
         specifier: ^7.0.0
         version: 7.6.1
+      process:
+        specifier: ^0.11.10
+        version: 0.11.10
       react:
         specifier: catalog:react18
         version: 18.2.0
@@ -352,6 +361,12 @@ importers:
       react-tooltip:
         specifier: ^5.28.0
         version: 5.28.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      stream-browserify:
+        specifier: ^3.0.0
+        version: 3.0.0
+      util:
+        specifier: ^0.12.5
+        version: 0.12.5
       yaml:
         specifier: ^2.6.0
         version: 2.7.0
