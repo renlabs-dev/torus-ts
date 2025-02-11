@@ -5,8 +5,6 @@ import { fileURLToPath } from "url";
 // WARNING: ONLY NEEDED IF NEXT_PUBLIC_* VARIABLES ARE USED IN THE APP DIRECTLY
 // createJiti(fileURLToPath(import.meta.url))("./src/env");
 
-import webpack from "webpack";
-
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
@@ -24,7 +22,7 @@ const config = {
 
   reactStrictMode: true,
 
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
       // Replace node: protocol imports with their browser versions
       config.plugins.push(
