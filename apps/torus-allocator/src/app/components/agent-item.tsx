@@ -146,8 +146,12 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
   const currentPercentage = getAgentPercentage(props.agentKey);
 
   const handlePercentageChange = (value: number[]) => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const newPercentage = value[0]!;
+    const newPercentage = value[0];
+    if (typeof newPercentage !== "number") {
+      console.error("Invalid slider value");
+      return;
+    }
+
     setPercentageChange(true);
 
     if (!isAgentDelegated && newPercentage > 0) {

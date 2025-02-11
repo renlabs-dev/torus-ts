@@ -40,7 +40,6 @@ export const useDelegateAgentStore = create<DelegateState>()(
     (set, get) => ({
       delegatedAgents: [],
       originalAgents: [],
-      isAllocationMenuOpen: false,
       addAgent: (agent) =>
         set((state) => ({
           delegatedAgents: [
