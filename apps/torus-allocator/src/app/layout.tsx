@@ -5,14 +5,13 @@ import type { Metadata } from "next";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer, Layout } from "@torus-ts/ui";
 
-import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import { Fira_Mono as FiraMono } from "next/font/google";
-import { EnvScript } from "~/env";
+import { EnvScript, env } from "~/env";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { AllocatorHeader } from "./components/allocator-header";
-import { DelegatedList } from "./components/delegated-list";
+import { AllocationMenu } from "./components/allocation-menu";
 import { TutorialDialog } from "./components/tutorial-dialog";
 
 const APP_NAME = "Allocator";
@@ -32,9 +31,9 @@ export const firaMono = FiraMono({
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <Layout
       font={firaMono}
@@ -49,7 +48,7 @@ export default function RootLayout({
           <TRPCReactProvider>
             <AllocatorHeader />
             <TutorialDialog />
-            <DelegatedList />
+            <AllocationMenu />
             {children}
             <Footer />
           </TRPCReactProvider>

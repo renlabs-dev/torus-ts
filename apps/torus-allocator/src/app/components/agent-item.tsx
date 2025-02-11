@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import {
-  ChartPie,
   ChevronsLeft,
   ChevronsRight,
   Cuboid,
@@ -16,7 +15,6 @@ import Link from "next/link";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Badge,
-  Button,
   CopyButton,
   HoverCard,
   HoverCardContent,
@@ -24,6 +22,7 @@ import {
   Icons,
   Label,
   Separator,
+  Slider,
 } from "@torus-ts/ui";
 import type { Nullish } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
@@ -31,8 +30,7 @@ import { smallAddress } from "@torus-ts/utils/subspace";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
-import { DelegateModuleWeight } from "./delegate-module-weight";
-import { useAllocationMenuStore } from "~/stores/allocationMenuStore";
+import { useTorus } from "@torus-ts/torus-provider";
 
 interface AgentCardProps {
   id: number;
@@ -58,19 +56,19 @@ export const SOCIALS_VALUES = {
   },
   discord: {
     name: "Discord",
-    icon: <Icons.discord className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.Discord className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   twitter: {
     name: "X",
-    icon: <Icons.x className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.X className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   github: {
     name: "GitHub",
-    icon: <Icons.github className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.Github className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
   telegram: {
     name: "Telegram",
-    icon: <Icons.telegram className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
+    icon: <Icons.Telegram className="h-5 w-5 md:h-4 md:w-4" color="gray" />,
   },
 };
 
@@ -113,11 +111,19 @@ const useBlobUrl = (blob: Blob | Nullish) => {
   return url;
 };
 
-export function AgentItem(props: AgentCardProps) {
+export function AgentItem(props: Readonly<AgentCardProps>) {
   const { agentKey, metadataUri } = props;
 
-  const { delegatedAgents } = useDelegateAgentStore();
-  const { setIsOpen } = useAllocationMenuStore();
+  const {
+    originalAgents,
+    delegatedAgents,
+    addAgent,
+    updateBalancedPercentage,
+    getAgentPercentage,
+    setPercentageChange,
+  } = useDelegateAgentStore();
+
+  const { selectedAccount } = useTorus();
 
   const { data: agentMetadataResult } = useQueryAgentMetadata(metadataUri);
   const metadata = agentMetadataResult?.metadata;
@@ -129,14 +135,42 @@ export function AgentItem(props: AgentCardProps) {
   const shortDescription =
     metadata?.short_description ?? "Missing Agent Short Description";
 
+  // TODO: those 2 are inverted keeeeek
+
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
 
+  const isAgentSelected = originalAgents.some((a) => a.address === agentKey);
+
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
+
+  const currentPercentage = getAgentPercentage(props.agentKey);
+
+  const handlePercentageChange = (value: number[]) => {
+    const newPercentage = value[0];
+    if (typeof newPercentage !== "number") {
+      console.error("Invalid slider value");
+      return;
+    }
+
+    setPercentageChange(true);
+
+    if (!isAgentDelegated && newPercentage > 0) {
+      addAgent({
+        id: props.id,
+        name: props.name,
+        address: props.agentKey,
+        metadataUri: props.metadataUri,
+        registrationBlock: props.registrationBlock ?? null,
+      });
+    }
+
+    updateBalancedPercentage(props.agentKey, newPercentage);
+  };
 
   return (
     <div className="group relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:bg-accent hover:shadow-2xl">
       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        <span className="mb-5 flex animate-pulse items-center gap-1 rounded-full bg-background bg-opacity-75 px-3 py-1 text-xs">
+        <span className="flex animate-pulse items-center gap-1 rounded-full bg-background bg-opacity-75 px-3 py-1 text-xs">
           <ChevronsLeft size={16} />
           Click to expand <ChevronsRight size={16} />
         </span>
@@ -155,7 +189,7 @@ export function AgentItem(props: AgentCardProps) {
             />
           ) : (
             <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
-              <Icons.logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
+              <Icons.Logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
             </div>
           )}
 
@@ -175,9 +209,9 @@ export function AgentItem(props: AgentCardProps) {
                 ))}
               </div>
               <Badge
-                className={`border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10 ${isAgentDelegated ? "visible" : "invisible"}`}
+                className={`${isAgentSelected ? "border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/10"} ${isAgentDelegated ? "visible" : "invisible"}`}
               >
-                Selected
+                {!isAgentSelected ? "Selected" : "Delegated"}
               </Badge>
             </div>
             <h2
@@ -239,36 +273,20 @@ export function AgentItem(props: AgentCardProps) {
         <div className="mt-4 flex flex-col gap-2">
           <p className="text-sm md:min-h-16">{shortDescription}</p>
 
-          <div>
-            <Label className="absolute ml-2 mt-3 flex items-center gap-1.5 text-xs font-semibold">
-              Your current allocation: {props.percentage}%
+          <div className="mt-4">
+            <Label className="absolute mb-3 flex items-center gap-1.5 text-xs font-semibold">
+              Your current allocation:{" "}
+              <span className="text-cyan-500">{props.percentage}%</span>
             </Label>
-            <div className="rounded-radius my-2 w-full border bg-primary-foreground">
-              <div
-                className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-3"
-                style={{
-                  width: `${props.percentage?.toFixed(0)}%`,
-                }}
-              />
-            </div>
-          </div>
 
-          <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
-            <DelegateModuleWeight
-              id={props.id}
-              name={props.name}
-              agentKey={props.agentKey}
-              metadataUri={metadataUri}
-              registrationBlock={props.registrationBlock ?? null}
-              className="w-full"
+            <Slider
+              value={[currentPercentage]}
+              onValueChange={handlePercentageChange}
+              max={100}
+              step={1}
+              className="relative z-30 mt-6 py-1"
+              disabled={!selectedAccount?.address}
             />
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(true)}
-              className="border-white/80"
-            >
-              <ChartPie size={16} />
-            </Button>
           </div>
         </div>
       </div>

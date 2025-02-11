@@ -8,7 +8,7 @@ interface HeaderProps {
   wallet?: React.ReactNode;
 }
 
-export function Header(props: HeaderProps): JSX.Element {
+export function Header(props: Readonly<HeaderProps>): JSX.Element {
   return (
     <header
       className={cn(
@@ -16,7 +16,7 @@ export function Header(props: HeaderProps): JSX.Element {
       )}
     >
       <Link className={cn("flex gap-3 py-1.5 hover:cursor-pointer")} href="/">
-        <Icons.logo className="h-6 w-6" />
+        <Icons.Logo className="h-6 w-6" />
         {props.appName}
       </Link>
 

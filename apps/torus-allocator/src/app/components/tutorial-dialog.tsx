@@ -1,29 +1,31 @@
 "use client";
 
-import { BookText, Scale, Wallet, Zap } from "lucide-react";
+import { Scale, Wallet, Zap } from "lucide-react";
 import Link from "next/link";
 
 import { toast } from "@torus-ts/toast-provider";
 import {
-  Dialog,
-  DialogTrigger,
-  Button,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
   links,
   CopyButton,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";
+import React from "react";
+import { useTutorialStore } from "~/stores/tutorialStore";
 
 export const tutorialData = {
   "1": {
     icon: <Wallet className="h-5 w-5" />,
     description: "Set Up Your Wallet",
     steps: [
-      <p>
+      <p key="1.1">
         Follow our{" "}
         <Link href={links.setup_a_wallet} className="text-cyan-500 underline">
           wallet setup guide
@@ -37,7 +39,7 @@ export const tutorialData = {
     icon: <Zap className="h-5 w-5" />,
     description: "Stake on the Allocator",
     steps: [
-      <p>
+      <p key="2.1">
         Open the{" "}
         <Link href={links.wallet} className="text-cyan-500 underline">
           Wallet App
@@ -46,6 +48,7 @@ export const tutorialData = {
       </p>,
       "Stake your desired amount to determine your voting power.",
       <CopyButton
+        key="2.3"
         copy={ALLOCATOR_ADDRESS}
         variant="link"
         className="h-5 p-0 text-sm underline"
@@ -68,43 +71,52 @@ export const tutorialData = {
 };
 
 export function TutorialDialog() {
-  return (
-    <Dialog>
-      <DialogTrigger
-        asChild
-        className="fixed bottom-4 right-52 z-50 md:bottom-14"
-      >
-        <Button variant="outline" className="border-white/80">
-          <BookText />
-          <p className="hidden md:block">Tutorial</p>
-        </Button>
-      </DialogTrigger>
+  const { isTutorialOpen, closeTutorial, markTutorialAsSeen } =
+    useTutorialStore();
 
-      <DialogContent className="max-h-[100vh] overflow-auto sm:max-w-[625px]">
-        <DialogHeader>
-          <DialogTitle>Tutorial</DialogTitle>
-          <DialogDescription>
+  const handleClose = () => {
+    closeTutorial();
+    markTutorialAsSeen();
+  };
+
+  return (
+    <AlertDialog open={isTutorialOpen} onOpenChange={handleClose}>
+      <AlertDialogContent className="max-h-[90vh] overflow-auto sm:max-w-[625px]">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Tutorial</AlertDialogTitle>
+          <AlertDialogDescription>
             Getting Started with the Allocator.
-          </DialogDescription>
-        </DialogHeader>
-        <div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="py-4">
           {Object.entries(tutorialData).map(
             ([key, { icon, description, steps }]) => (
-              <div key={key} className="mb-8 flex flex-col gap-4">
+              <div key={key} className="flex flex-col gap-4 py-4">
                 <div className="flex items-center">
                   {icon}
                   <span className="ml-2 font-semibold">{description}</span>
                 </div>
                 <ul className="flex list-disc flex-col gap-1.5 pl-8 text-sm">
-                  {steps.map((step, i) => (
-                    <li key={i}>{step}</li>
+                  {steps.map((step, index) => (
+                    <li key={`${key}-step-${index}`}>
+                      {typeof step === "string"
+                        ? step
+                        : React.cloneElement(step, {
+                            key: `${key}-step-${index}`,
+                          })}
+                    </li>
                   ))}
                 </ul>
               </div>
             ),
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={handleClose} className="w-full">
+            Got it!
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

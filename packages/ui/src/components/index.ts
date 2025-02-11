@@ -200,3 +200,4 @@ export {
 } from "./form";
 export { Icons } from "./icons";
 export { AllocatorAgentItem } from "./allocator-agent-item";
+export { Slider } from "./slider";

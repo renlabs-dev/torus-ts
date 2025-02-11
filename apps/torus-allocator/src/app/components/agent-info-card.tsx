@@ -3,11 +3,11 @@
 import { Copy } from "lucide-react";
 import { CopyButton, Card, CardTitle, CardContent } from "@torus-ts/ui";
 import { ReportAgent } from "./report-agent";
-import { smallAddress, formatToken } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-ts/utils/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import type { Agent } from "~/utils/types";
 
-export function AgentInfoCard({ agent }: { agent: Agent }) {
+export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
   const dataGroups = [
     {
       label: "Agent Key",
@@ -49,8 +49,8 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
       label: "Weight Factor",
       value: agent.weightFactor ?? "N/A",
     },
-    { label: "Total Allocation", value: formatToken(agent.totalStaked ?? 0) },
-    { label: "Total Allocated users", value: agent.totalStakers ?? 0 },
+    // { label: "Total Allocation", value: formatToken(agent.totalStaked ?? 0) },
+    // { label: "Total Allocated users", value: agent.totalStakers ?? 0 },
   ];
 
   return (
@@ -59,8 +59,8 @@ export function AgentInfoCard({ agent }: { agent: Agent }) {
         General Information
       </CardTitle>
       <CardContent className="flex w-full flex-col gap-2 px-0 pb-4">
-        {dataGroups.map((field, fieldIndex) => (
-          <div key={fieldIndex} className="flex items-center justify-between">
+        {dataGroups.map((field) => (
+          <div key={field.label} className="flex items-center justify-between">
             <span className="text-muted-foreground">{field.label}:</span>
             <span className="">{field.value}</span>
           </div>

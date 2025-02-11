@@ -61,7 +61,6 @@ export async function sendTransaction({
     console.error("Missing required parameters");
     return;
   }
-
   const toastId = `${selectedAccount.address}:${transactionType}`;
 
   try {

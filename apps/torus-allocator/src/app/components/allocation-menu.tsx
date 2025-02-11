@@ -2,7 +2,7 @@
 
 import { api } from "~/trpc/react";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-import { LoaderCircle, PieChart, X } from "lucide-react";
+import { Anvil, LoaderCircle, PieChart, X } from "lucide-react";
 import { toast } from "@torus-ts/toast-provider";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -25,9 +25,8 @@ import {
 } from "@torus-ts/ui";
 
 import { ALLOCATOR_ADDRESS } from "~/consts";
-import { useAllocationMenuStore } from "~/stores/allocationMenuStore";
 
-export function DelegatedList() {
+export function AllocationMenu() {
   const {
     delegatedAgents,
     getTotalPercentage,
@@ -36,9 +35,10 @@ export function DelegatedList() {
     setDelegatedAgentsFromDB,
     updateOriginalAgents,
     updatePercentage,
+    getAgentPercentage,
+    hasPercentageChange,
+    setPercentageChange,
   } = useDelegateAgentStore();
-
-  const { isOpen, toggleIsOpen, setIsOpen } = useAllocationMenuStore();
 
   const { selectedAccount, api: torusApi } = useTorus();
   const accountStakedBy = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
@@ -109,18 +109,24 @@ export function DelegatedList() {
     });
   }
 
+  const [tempInputs, setTempInputs] = useState<
+    Record<string, string | undefined>
+  >({});
+
   const handlePercentageChange = (
     agentKey: string | SS58Address,
-    percentage: string,
+    value: string,
   ) => {
-    const sanitizedPercentage = Number(percentage.replace(/[^\d.]/g, ""));
+    const sanitizedValue = value.replace(/[^\d.]/g, "");
+    setTempInputs((prev) => ({ ...prev, [agentKey]: sanitizedValue }));
+  };
 
-    if (
-      !isNaN(sanitizedPercentage) &&
-      sanitizedPercentage >= 0 &&
-      sanitizedPercentage <= 100
-    ) {
-      updatePercentage(agentKey, sanitizedPercentage);
+  const handleInputBlur = (agentKey: string | SS58Address) => {
+    const value = tempInputs[agentKey];
+    if (value !== undefined) {
+      const percentage = Math.min(Math.max(Number(value), 0), 100);
+      updatePercentage(agentKey, percentage);
+      setTempInputs((prev) => ({ ...prev, [agentKey]: undefined }));
     }
   };
 
@@ -138,7 +144,27 @@ export function DelegatedList() {
       );
       return;
     }
+
+    // Filter out agents with 0 percentage
+    const filteredAgents = delegatedAgents.filter(
+      (agent) => agent.percentage !== 0,
+    );
+
+    // Recalculate total percentage after filtering
+    const filteredTotalPercentage = filteredAgents.reduce(
+      (sum, agent) => sum + agent.percentage,
+      0,
+    );
+
+    if (filteredTotalPercentage !== 100) {
+      toast.error(
+        "Total percentage must be 100% after removing agents with 0%",
+      );
+      return;
+    }
+
     setIsSubmitting(true);
+
     try {
       // Delete existing user agent data
       await deleteUserAgentData.mutateAsync({
@@ -146,7 +172,7 @@ export function DelegatedList() {
       });
 
       // Prepare data for createManyUserAgentData
-      const agentsData = delegatedAgents.map((agent) => ({
+      const agentsData = filteredAgents.map((agent) => ({
         agentKey: agent.address,
         weight: agent.percentage,
       }));
@@ -171,6 +197,9 @@ export function DelegatedList() {
       setDelegatedAgentsFromDB(formattedModules ?? []);
 
       setIsSubmitting(false);
+      setPercentageChange(false);
+
+      toast.success("Allocation submitted successfully");
     } catch (error) {
       console.error("Error submitting data:", error);
       setIsSubmitting(false);
@@ -199,11 +228,6 @@ export function DelegatedList() {
 
   const hasItemsToClear = delegatedAgents.length > 0;
 
-  const hasZeroPercentage = () => {
-    const items = delegatedAgents;
-    return items.some((item) => item.percentage === 0);
-  };
-
   function getSubmitStatus() {
     if (!selectedAccount?.address) {
       return { disabled: true, message: "Please connect your wallet" };
@@ -211,16 +235,13 @@ export function DelegatedList() {
     if (totalPercentage !== 100) {
       return { disabled: true, message: "Total percentage must be 100%" };
     }
-    if (hasZeroPercentage()) {
-      return {
-        disabled: true,
-        message: "Remove or allocate weight to all items",
-      };
-    }
     if (isSubmitting) {
       return { disabled: true, message: "Submitting..." };
     }
     if (hasUnsavedChanges()) {
+      return { disabled: false, message: "You have unsaved changes" };
+    }
+    if (hasPercentageChange) {
       return { disabled: false, message: "You have unsaved changes" };
     }
     return { disabled: false, message: "All changes saved!" };
@@ -250,7 +271,7 @@ export function DelegatedList() {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (contentRef.current && isOpen) {
+      if (contentRef.current) {
         const contentHeight = contentRef.current.scrollHeight;
         const maxAllowedHeight = window.innerHeight - 270;
         setIsOverflowing(contentHeight > maxAllowedHeight);
@@ -258,25 +279,51 @@ export function DelegatedList() {
     }, 1); // Small delay to ensure content have been rendered before checking height
 
     return () => clearTimeout(timeoutId);
-  }, [delegatedAgents, isOpen]);
+  }, [delegatedAgents]);
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger
-        asChild
-        onClick={toggleIsOpen}
-        disabled={!selectedAccount}
-        className={`fixed bottom-4 right-4 z-[50] marker:flex md:bottom-14`}
-      >
-        <Button variant="outline" className="border-white/80">
-          {!selectedAccount ? (
-            <LoaderCircle className="animate-spin" />
-          ) : (
-            <PieChart />
-          )}
-          Allocation Menu
-        </Button>
-      </SheetTrigger>
+    <Sheet>
+      <div className="fixed bottom-4 right-3 z-[50] flex w-fit flex-col items-center justify-end marker:flex md:bottom-14">
+        <Label
+          className={cn("mb-2 animate-pulse text-end text-sm", {
+            "text-red-500": submitStatus.message === "You have unsaved changes",
+            "text-cyan-500": submitStatus.message === "All changes saved!",
+            "text-green-500": submitStatus.message === "All changes saved!",
+            "text-amber-500": ![
+              "You have unsaved changes",
+              "All changes saved!",
+            ].includes(submitStatus.message),
+          })}
+        >
+          {submitStatus.message !== "All changes saved!" &&
+            submitStatus.message}
+        </Label>
+        <div className="flex items-center gap-2">
+          <SheetTrigger asChild disabled={!selectedAccount}>
+            <Button
+              variant="outline"
+              className="w-full border border-primary/80"
+            >
+              {!selectedAccount ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                <PieChart />
+              )}
+              Allocation Menu
+            </Button>
+          </SheetTrigger>
+          <Button
+            variant="outline"
+            onClick={handleSubmit}
+            disabled={submitStatus.disabled}
+            className={`w-full border ${submitStatus.message === "All changes saved!" ? "border-green-500 bg-[#14252A] text-green-500 hover:bg-green-500/20 hover:text-green-500" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-500"}`}
+            title={submitStatus.disabled ? submitStatus.message : ""}
+          >
+            <Anvil />
+            {isSubmitting ? "Submitting Allocation" : "Submit Allocation"}
+          </Button>
+        </div>
+      </div>
 
       <SheetContent className={`fixed z-[70] flex w-full flex-col sm:max-w-md`}>
         <div className="flex h-full flex-col justify-between gap-8">
@@ -291,50 +338,58 @@ export function DelegatedList() {
             >
               <div className="flex flex-col gap-2">
                 {delegatedAgents.length ? (
-                  delegatedAgents.map((agent) => (
-                    <div
-                      key={agent.id}
-                      className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"}`}
-                    >
-                      <span className="font-medium">{agent.name}</span>
+                  delegatedAgents
+                    .slice() // Create a shallow copy to avoid mutating the original array
+                    .sort((a, b) => a.address.localeCompare(b.address)) // Sort by address
+                    .map((agent) => (
+                      <div
+                        key={agent.address} // Use address as the key for more stability
+                        className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${
+                          isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"
+                        }`}
+                      >
+                        <span className="font-medium">{agent.name}</span>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400">
-                          {smallAddress(agent.address, 6)}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400">
+                            {smallAddress(agent.address, 6)}
+                          </span>
 
-                        <div className="flex items-center gap-1">
-                          <Label
-                            className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
-                            htmlFor={`percentage:${agent.id}`}
-                          >
-                            <Input
-                              id={`percentage:${agent.id}`}
-                              type="text"
-                              value={agent.percentage}
-                              onChange={(e) =>
-                                handlePercentageChange(
-                                  agent.address,
-                                  e.target.value,
-                                )
-                              }
-                              maxLength={3}
-                              className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
-                            />
+                          <div className="flex items-center gap-1">
+                            <Label
+                              className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
+                              htmlFor={`percentage:${agent.address}`} // Use address instead of id
+                            >
+                              <Input
+                                type="text"
+                                value={
+                                  tempInputs[agent.address] ??
+                                  getAgentPercentage(agent.address)
+                                }
+                                onChange={(e) =>
+                                  handlePercentageChange(
+                                    agent.address,
+                                    e.target.value,
+                                  )
+                                }
+                                onBlur={() => handleInputBlur(agent.address)}
+                                maxLength={3}
+                                className="w-7 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
+                              />
 
-                            <span className="text-muted-foreground">%</span>
-                          </Label>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => removeAgent(agent.address)}
-                          >
-                            <X className="h-5 w-5" />
-                          </Button>
+                              <span className="text-muted-foreground">%</span>
+                            </Label>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={() => removeAgent(agent.address)}
+                            >
+                              <X className="h-5 w-5" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))
                 ) : (
                   <p>Select a agent to allocate through the agents page.</p>
                 )}
