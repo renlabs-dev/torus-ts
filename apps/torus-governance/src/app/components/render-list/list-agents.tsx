@@ -173,7 +173,7 @@ const PenaltyLabel = ({
 
   return (
     <span className="text-muted-foreground text-xs">
-      Penalties {penaltyLength} | {penaltyThreshold}
+      Penalties {penaltyLength}/{penaltyThreshold}
     </span>
   );
 };
