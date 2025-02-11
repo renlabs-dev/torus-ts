@@ -89,8 +89,7 @@ export function SendAction() {
       recipient: "",
       amount: "",
     },
-    mode: "onBlur",
-    reValidateMode: "onChange",
+    mode: "onTouched",
   });
 
   const { reset, setError, setValue } = form;
