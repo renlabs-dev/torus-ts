@@ -54,7 +54,6 @@ export function SendAction() {
     },
   );
 
-  // Create a ref for the dialog (no useState needed here)
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
 
   const sendActionFormSchema = useMemo(() => {
