@@ -18,6 +18,7 @@
   },
   "linter": {
     "enabled": true,
+    "ignore": ["node_modules", "dist", ".cache", ".turbo", ".next"],
     "rules": {
       "recommended": true
     }

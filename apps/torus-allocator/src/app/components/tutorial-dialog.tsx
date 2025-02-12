@@ -97,12 +97,12 @@ export function TutorialDialog() {
                   <span className="ml-2 font-semibold">{description}</span>
                 </div>
                 <ul className="flex list-disc flex-col gap-1.5 pl-8 text-sm">
-                  {steps.map((step, index) => (
-                    <li key={`${key}-step-${index}`}>
+                  {steps.map((step) => (
+                    <li key={`${key}-step`}>
                       {typeof step === "string"
                         ? step
                         : React.cloneElement(step, {
-                            key: `${key}-step-${index}`,
+                            key: `${key}-step`,
                           })}
                     </li>
                   ))}

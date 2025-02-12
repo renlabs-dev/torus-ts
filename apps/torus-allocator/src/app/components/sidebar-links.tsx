@@ -48,7 +48,7 @@ export const Sidebar = () => {
         scroll: false,
       });
     }
-  }, [createQueryString, defaultView, router, searchParams, viewMode]);
+  }, [createQueryString, defaultView, router, viewMode]);
 
   return (
     <>
@@ -85,7 +85,9 @@ export const Sidebar = () => {
                   key={view.href}
                   variant="ghost"
                   disabled
-                  className={"w-full justify-between gap-4 border-none px-3 text-base"}
+                  className={
+                    "w-full justify-between gap-4 border-none px-3 text-base"
+                  }
                 >
                   {view.title} (Coming Soon)
                 </Button>
