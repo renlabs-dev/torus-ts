@@ -123,7 +123,7 @@ export function StakeAction() {
     mode: "onTouched",
   });
 
-  const { reset, setValue, trigger } = form;
+  const { reset, setValue, trigger, getValues } = form;
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -230,7 +230,7 @@ export function StakeAction() {
   };
 
   const reviewData = () => {
-    const { recipient, amount } = form.getValues();
+    const { recipient, amount } = getValues();
     return [
       {
         label: "To",
@@ -248,7 +248,7 @@ export function StakeAction() {
   };
 
   const handleReviewClick = async () => {
-    const isValid = await form.trigger();
+    const isValid = await trigger();
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }
@@ -316,11 +316,7 @@ export function StakeAction() {
                         placeholder="Amount of TORUS"
                         min={fromNano(minAllowedStakeData)}
                         step="0.000000000000000001"
-                        disabled={
-                          !form.getValues().recipient ||
-                          feeRef.current?.isLoading
-                        }
-                        onChange={(e) => handleAmountChange(e.target.value)}
+                        disabled={feeRef.current?.isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -361,7 +357,7 @@ export function StakeAction() {
         <ReviewTransactionDialog
           ref={reviewDialogRef}
           formRef={formRef}
-          reviewContent={reviewData()}
+          reviewContent={reviewData}
         />
       )}
     </div>
