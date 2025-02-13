@@ -33,8 +33,8 @@ import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import type { FeeLabelHandle } from "../send-fee-label";
-import { FeeLabel } from "../send-fee-label";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
 import { ReviewTransactionDialog } from "../review-transaction-dialog";
@@ -285,10 +285,7 @@ export function UnstakeAction() {
                         <Input
                           {...field}
                           placeholder="Full Validator address"
-                          disabled={
-                            !selectedAccount?.address ||
-                            feeRef.current?.isLoading
-                          }
+                          disabled={!selectedAccount?.address}
                         />
                       </FormControl>
                       <Button
@@ -319,10 +316,7 @@ export function UnstakeAction() {
                           placeholder="Amount to unstake"
                           min="0"
                           step="0.000000000000000001"
-                          disabled={
-                            !selectedAccount?.address ||
-                            feeRef.current?.isLoading
-                          }
+                          disabled={!selectedAccount?.address}
                         />
                       </FormControl>
                       <AmountButtons
@@ -332,8 +326,7 @@ export function UnstakeAction() {
                         availableFunds={maxAmountRef.current}
                         disabled={
                           !(toNano(maxAmountRef.current) > 0n) ||
-                          !selectedAccount?.address ||
-                          !feeRef.current?.isLoading
+                          !selectedAccount?.address
                         }
                       />
                     </div>

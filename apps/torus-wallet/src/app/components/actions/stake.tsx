@@ -33,7 +33,8 @@ import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { FeeLabel } from "../send-fee-label";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
 import { ReviewTransactionDialog } from "../review-transaction-dialog";
@@ -68,12 +69,8 @@ export function StakeAction() {
   const existencialDepositValue =
     getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
 
-  const feeRef = useRef<{
-    updateFee: (newFee: string | null) => void;
-    setLoading: (loading: boolean) => void;
-    getEstimatedFee: () => string | null;
-    isLoading: boolean;
-  }>(null);
+  const feeRef = useRef<FeeLabelHandle>(null);
+
   const maxAmountRef = useRef<string>("");
 
   const stakeActionFormSchema = useMemo(() => {
@@ -281,18 +278,13 @@ export function StakeAction() {
                         <Input
                           {...field}
                           placeholder="Full Allocator address"
-                          disabled={
-                            !selectedAccount?.address ||
-                            feeRef.current?.isLoading
-                          }
+                          disabled={!selectedAccount?.address}
                         />
                       </FormControl>
                       <Button
                         type="button"
                         variant="outline"
-                        disabled={
-                          !selectedAccount?.address || feeRef.current?.isLoading
-                        }
+                        disabled={!selectedAccount?.address}
                         onClick={() => setCurrentView("validators")}
                         className="flex w-fit items-center px-6 py-2.5"
                       >
@@ -308,7 +300,7 @@ export function StakeAction() {
                 name="amount"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Value</FormLabel>
+                    <FormLabel>Amount</FormLabel>
                     <div className="flex items-center gap-2">
                       <FormControl>
                         <Input
@@ -317,7 +309,7 @@ export function StakeAction() {
                           placeholder="Amount of TORUS"
                           min={fromNano(minAllowedStakeData)}
                           step="0.000000000000000001"
-                          disabled={feeRef.current?.isLoading}
+                          disabled={!selectedAccount?.address}
                         />
                       </FormControl>
                       <AmountButtons

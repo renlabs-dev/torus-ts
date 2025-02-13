@@ -24,8 +24,8 @@ import {
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../send-fee-label";
-import { FeeLabel } from "../send-fee-label";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,7 +47,7 @@ export function SendAction() {
     transferTransaction,
   } = useWallet();
 
-  const estimatedFeeRef = useRef<FeeLabelHandle>(null);
+  const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -77,7 +77,7 @@ export function SendAction() {
           (amount) =>
             isWithinTransferLimit(
               amount,
-              estimatedFeeRef.current?.getEstimatedFee() ?? "0",
+              feeRef.current?.getEstimatedFee() ?? "0",
               accountFreeBalance.data ?? 0n,
             ),
           { message: "Amount exceeds maximum transferable amount" },
@@ -97,7 +97,7 @@ export function SendAction() {
   const { reset, setValue, getValues, trigger } = form;
 
   const handleEstimateFee = useCallback(async () => {
-    estimatedFeeRef.current?.setLoading(true);
+    feeRef.current?.setLoading(true);
     try {
       const transaction = transferTransaction({
         to: ALLOCATOR_ADDRESS,
@@ -114,17 +114,18 @@ export function SendAction() {
           FEE_BUFFER_PERCENT,
           accountFreeBalance.data ?? 0n,
         );
-        estimatedFeeRef.current?.updateFee(feeStr);
+        feeRef.current?.updateFee(feeStr);
         maxAmountRef.current = fromNano(maxTransferable);
       } else {
-        estimatedFeeRef.current?.updateFee(null);
+        feeRef.current?.updateFee(null);
         maxAmountRef.current = "";
       }
     } catch (error) {
       console.error("Error estimating fee:", error);
-      estimatedFeeRef.current?.updateFee(null);
+      feeRef.current?.updateFee(null);
+      feeRef.current?.setLoading(false);
     } finally {
-      estimatedFeeRef.current?.setLoading(false);
+      feeRef.current?.setLoading(false);
     }
   }, [accountFreeBalance.data, estimateFee, transferTransaction]);
 
@@ -165,7 +166,7 @@ export function SendAction() {
 
   useEffect(() => {
     reset();
-    estimatedFeeRef.current?.updateFee(null);
+    feeRef.current?.updateFee(null);
   }, [selectedAccount?.address, reset]);
 
   const reviewData = () => {
@@ -182,7 +183,7 @@ export function SendAction() {
       },
       {
         label: "Fee",
-        content: `${estimatedFeeRef.current?.getEstimatedFee()} TORUS`,
+        content: `${feeRef.current?.getEstimatedFee()} TORUS`,
       },
     ];
   };
@@ -231,10 +232,7 @@ export function SendAction() {
                       <Input
                         {...field}
                         placeholder="Amount of TORUS"
-                        disabled={
-                          !estimatedFeeRef.current?.getEstimatedFee() ||
-                          !selectedAccount?.address
-                        }
+                        disabled={!selectedAccount?.address}
                         type="number"
                       />
                     </FormControl>
@@ -254,10 +252,7 @@ export function SendAction() {
               )}
             />
 
-            <FeeLabel
-              ref={estimatedFeeRef}
-              accountConnected={!!selectedAccount}
-            />
+            <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
 
             {transactionStatus.status && (
               <TransactionStatus

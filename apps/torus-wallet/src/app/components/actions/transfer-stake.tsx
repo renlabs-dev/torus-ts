@@ -39,7 +39,8 @@ import { isSS58, checkSS58 } from "@torus-ts/subspace";
 import { meetsMinimumStake, isAmountPositive } from "~/utils/validators";
 import { toast } from "@torus-ts/toast-provider";
 import { ALLOCATOR_ADDRESS } from "~/consts";
-import { FeeLabel } from "../send-fee-label";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
@@ -192,12 +193,7 @@ export function TransferStakeAction() {
     "wallet" | "validators" | "stakedValidators"
   >("wallet");
 
-  const feeRef = useRef<{
-    updateFee: (newFee: string | null) => void;
-    setLoading: (loading: boolean) => void;
-    getEstimatedFee: () => string | null;
-    isLoading: boolean;
-  }>(null);
+  const feeRef = useRef<FeeLabelHandle>(null);
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
@@ -378,7 +374,7 @@ export function TransferStakeAction() {
                           {...field}
                           type="number"
                           placeholder="Amount of TORUS"
-                          disabled={feeRef.current?.isLoading}
+                          disabled={!selectedAccount?.address}
                         />
                       </FormControl>
                       <AmountButtons
