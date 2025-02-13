@@ -23,8 +23,10 @@ apps
   |   └─ Landing Page
   |─ torus-allocator
   |   └─ Set weights to Agents
-  └─ torus-wallet
+  |─ torus-wallet
   |   └─ Transactions & Staking
+  └─ torus-bridge
+      └─ Bridge between Base and Torus
 services
   |─ torus-cache
   |   └─ Blockchain data caching service
