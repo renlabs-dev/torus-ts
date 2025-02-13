@@ -303,7 +303,7 @@ export function UnstakeAction() {
                         onClick={() => setCurrentView("stakedValidators")}
                         className="flex w-fit items-center px-6 py-2.5"
                       >
-                        Staked Validators
+                        Staked Allocators
                       </Button>
                     </div>
                     <FormMessage />
