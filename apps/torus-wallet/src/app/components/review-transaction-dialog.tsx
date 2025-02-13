@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@torus-ts/ui";
+import { toast } from "@torus-ts/toast-provider";
 
 export interface ReviewTransactionDialogHandle {
   openDialog: () => void;
@@ -65,8 +66,13 @@ export const ReviewTransactionDialog = forwardRef<
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                formRef.current?.requestSubmit();
-                setOpen(false);
+                try {
+                  formRef.current?.requestSubmit();
+                  setOpen(false);
+                } catch (error) {
+                  setOpen(false);
+                  toast.error(`Form submission failed: ${String(error)}`);
+                }
               }}
             >
               {triggerTitle}
