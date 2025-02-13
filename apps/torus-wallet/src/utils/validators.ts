@@ -4,7 +4,11 @@ import { toNano } from "@torus-ts/utils/subspace";
  * Check if the provided amount is greater than zero.
  */
 export function isAmountPositive(amount: string): boolean {
-  return toNano(amount) > 0n;
+  try {
+    return toNano(amount) > 0n;
+  } catch {
+    return false;
+  }
 }
 
 /**
