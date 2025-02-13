@@ -15,7 +15,7 @@ export interface ReviewTransactionDialogHandle {
 
 interface ReviewTransactionDialogProps {
   formRef: React.RefObject<HTMLFormElement>;
-  reviewContent: { label: string; content: string | React.ReactNode }[];
+  reviewContent: () => { label: string; content: string | React.ReactNode }[];
   triggerTitle?: string;
   title?: string;
 }
@@ -39,13 +39,14 @@ export const ReviewTransactionDialog = forwardRef<
       openDialog: () => setOpen(true),
     }));
 
+    const review = reviewContent();
     return (
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{title}</AlertDialogTitle>
             <div className="flex flex-col gap-2">
-              {reviewContent.map((content) => (
+              {review.map((content) => (
                 <span
                   className="flex w-full flex-col items-start md:flex-row md:justify-between"
                   key={content.label}
