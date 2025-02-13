@@ -7,6 +7,7 @@ import { Button, Card, CardContent, CardHeader } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";
@@ -29,7 +30,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
     {
       name: "Torus Allocator",
       description: "Allocator of the Torus Allocator platform.",
-      address: "5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b", // TODO: unhardcode/move
+      address: ALLOCATOR_ADDRESS, // TODO: unhardcode/move
     },
   ];
 
