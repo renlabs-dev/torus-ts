@@ -13,7 +13,7 @@ interface ValidatorsListProps {
   listType: "all" | "staked";
   onSelectValidator: (validator: { address: string; stake?: string }) => void;
   onBack: () => void;
-  excludeAddress?: string[];
+  excludeAddress?: () => string;
 }
 
 interface Validator {
@@ -38,7 +38,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
     if (props.listType === "staked" && accountStakedBy.data) {
       const accountStakeList = accountStakedBy.data.filter(
         (validatorAddress) =>
-          !props.excludeAddress?.includes(validatorAddress.address),
+          !props.excludeAddress?.().includes(validatorAddress.address),
       );
 
       return accountStakeList.map((item) => ({
@@ -51,7 +51,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
 
     return validatorsList.filter(
       (validatorAddress) =>
-        !props.excludeAddress?.includes(validatorAddress.address),
+        !props.excludeAddress?.().includes(validatorAddress.address),
     );
   }
 
