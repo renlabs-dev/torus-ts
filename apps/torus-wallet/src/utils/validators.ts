@@ -11,7 +11,14 @@ export function isAmountPositive(amount: string): boolean {
  * Check if the amount meets or exceeds the minimum stake requirement.
  */
 export function meetsMinimumStake(amount: string, minStake: bigint): boolean {
-  return toNano(amount) >= minStake;
+  if (minStake < 0n) {
+    return false;
+  }
+  try {
+    return toNano(amount) >= minStake;
+  } catch {
+    return false;
+  }
 }
 
 /**
