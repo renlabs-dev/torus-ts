@@ -23,9 +23,20 @@ export function isAboveExistentialDeposit(
   freeBalance: bigint,
   existentialDeposit: bigint
 ): boolean {
-  const stake = toNano(amount);
-  const feeNano = toNano(fee);
-  return freeBalance - stake - feeNano >= existentialDeposit;
+  if (freeBalance < 0n || existentialDeposit < 0n) {
+    return false;
+  }
+  try {
+    const stake = toNano(amount);
+    const feeNano = toNano(fee);
+    // Check for potential overflow
+    if (stake > freeBalance || feeNano > (freeBalance - stake)) {
+      return false;
+    }
+    return freeBalance - stake - feeNano >= existentialDeposit;
+  } catch {
+    return false;
+  }
 }
 
 /**
