@@ -45,10 +45,8 @@ packages
   |   └─ Substrate client library
   ├─ ui
   |   └─ UI components library
-  ├─ utils
-  |   └─ Common code
-  └─ types
-      └─ ==> TODO: migrate to `packages/utils` <==
+  └─ utils
+      └─ Common code
 tooling
   ├─ eslint
   |   └─ shared, fine-grained, eslint presets
