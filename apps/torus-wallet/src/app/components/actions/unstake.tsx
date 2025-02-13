@@ -37,11 +37,7 @@ import { FeeLabel } from "../send-fee-label";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
 import { ReviewTransactionDialog } from "../review-transaction-dialog";
-import {
-  isAboveExistentialDeposit,
-  isAmountPositive,
-  meetsMinimumStake,
-} from "~/utils/validators";
+import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
 import { toast } from "@torus-ts/toast-provider";
 
 interface StakedValidator {
