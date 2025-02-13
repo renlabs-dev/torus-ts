@@ -314,7 +314,7 @@ export function TransferStakeAction() {
                 control={form.control}
                 name="fromValidator"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col gap-2">
+                  <FormItem className="flex flex-col">
                     <FormLabel>From Allocator</FormLabel>
                     <div className="flex flex-row gap-2">
                       <FormControl>
@@ -342,7 +342,7 @@ export function TransferStakeAction() {
                 control={form.control}
                 name="toValidator"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col gap-2">
+                  <FormItem className="flex flex-col">
                     <FormLabel>To Allocator</FormLabel>
                     <div className="flex flex-row gap-2">
                       <FormControl>
@@ -370,27 +370,29 @@ export function TransferStakeAction() {
                 control={form.control}
                 name="amount"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col gap-2">
-                    <FormLabel>Value</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        placeholder="Amount of TORUS"
-                        disabled={feeRef.current?.isLoading}
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Amount</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder="Amount of TORUS"
+                          disabled={feeRef.current?.isLoading}
+                        />
+                      </FormControl>
+                      <AmountButtons
+                        setAmount={handleAmountChange}
+                        availableFunds={maxAmountRef.current || "0"}
+                        disabled={
+                          !(toNano(maxAmountRef.current) > 0n) ||
+                          !selectedAccount?.address
+                        }
                       />
-                    </FormControl>
+                    </div>
                     <FormMessage>{errors.amount?.message}</FormMessage>
                   </FormItem>
                 )}
-              />
-              <AmountButtons
-                setAmount={handleAmountChange}
-                availableFunds={maxAmountRef.current || "0"}
-                disabled={
-                  !(toNano(maxAmountRef.current) > 0n) ||
-                  !selectedAccount?.address
-                }
               />
 
               <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
