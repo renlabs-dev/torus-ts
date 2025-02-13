@@ -32,7 +32,7 @@ export function isAboveExistentialDeposit(
   amount: string,
   fee: string,
   freeBalance: bigint,
-  existentialDeposit: bigint
+  existentialDeposit: bigint,
 ): boolean {
   if (freeBalance < 0n || existentialDeposit < 0n) {
     return false;
@@ -41,7 +41,7 @@ export function isAboveExistentialDeposit(
     const stake = toNano(amount);
     const feeNano = toNano(fee);
     // Check for potential overflow
-    if (stake > freeBalance || feeNano > (freeBalance - stake)) {
+    if (stake > freeBalance || feeNano > freeBalance - stake) {
       return false;
     }
     return freeBalance - stake - feeNano >= existentialDeposit;
@@ -49,7 +49,6 @@ export function isAboveExistentialDeposit(
     return false;
   }
 }
-
 
 /**
  * Ensure the amount does not exceed the maximum allowed based on the free balance, fee, and existential deposit.
@@ -63,7 +62,7 @@ export function doesNotExceedMaxStake(
   amount: string,
   fee: string,
   freeBalance: bigint,
-  existentialDeposit: bigint
+  existentialDeposit: bigint,
 ): boolean {
   if (freeBalance < 0n || existentialDeposit < 0n) {
     return false;
@@ -72,7 +71,7 @@ export function doesNotExceedMaxStake(
     const stake = toNano(amount);
     const feeNano = toNano(fee);
     // Check if feeNano + existentialDeposit would overflow
-    if (feeNano > freeBalance || existentialDeposit > (freeBalance - feeNano)) {
+    if (feeNano > freeBalance || existentialDeposit > freeBalance - feeNano) {
       return false;
     }
     const maxStake = freeBalance - feeNano - existentialDeposit;
@@ -87,7 +86,7 @@ export function doesNotExceedMaxStake(
 export function isWithinTransferLimit(
   amount: string,
   fee: string,
-  freeBalance: bigint
+  freeBalance: bigint,
 ): boolean {
   if (freeBalance < 0n) {
     return false;
