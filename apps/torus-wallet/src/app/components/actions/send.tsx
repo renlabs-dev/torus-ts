@@ -32,6 +32,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
 import { ReviewTransactionDialog } from "../review-transaction-dialog";
+import { isWithinTransferLimit } from "~/utils/validators";
+import { computeFeeData } from "~/utils/helpers";
+import { toast } from "@torus-ts/toast-provider";
+
+const FEE_BUFFER_PERCENT = 102n;
 
 export function SendAction() {
   const {
@@ -69,14 +74,12 @@ export function SendAction() {
           message: "Amount must be greater than 0",
         })
         .refine(
-          (amount) => {
-            const feeNano = toNano(
+          (amount) =>
+            isWithinTransferLimit(
+              amount,
               estimatedFeeRef.current?.getEstimatedFee() ?? "0",
-            );
-            const balance = accountFreeBalance.data ?? 0n;
-            const maxTransferable = balance > feeNano ? balance - feeNano : 0n;
-            return toNano(amount) <= maxTransferable;
-          },
+              accountFreeBalance.data ?? 0n,
+            ),
           { message: "Amount exceeds maximum transferable amount" },
         ),
     });
@@ -91,7 +94,7 @@ export function SendAction() {
     mode: "onTouched",
   });
 
-  const { reset, setError, setValue } = form;
+  const { reset, setValue } = form;
 
   const handleEstimateFee = useCallback(async () => {
     estimatedFeeRef.current?.setLoading(true);
@@ -101,16 +104,17 @@ export function SendAction() {
         amount: "0",
       });
       if (!transaction) {
-        setError("recipient", { message: "Invalid transaction" });
+        toast.error("Error creating transaction for estimating fee.");
         return;
       }
       const fee = await estimateFee(transaction);
       if (fee != null) {
-        const adjustedFee = (fee * 1005n) / 1000n;
-        const feeStr = fromNano(adjustedFee);
+        const { feeStr, maxTransferable } = computeFeeData(
+          fee,
+          FEE_BUFFER_PERCENT,
+          accountFreeBalance.data ?? 0n,
+        );
         estimatedFeeRef.current?.updateFee(feeStr);
-        const afterFeesBalance = (accountFreeBalance.data ?? 0n) - adjustedFee;
-        const maxTransferable = afterFeesBalance > 0n ? afterFeesBalance : 0n;
         maxAmountRef.current = fromNano(maxTransferable);
       } else {
         estimatedFeeRef.current?.updateFee(null);
@@ -122,7 +126,7 @@ export function SendAction() {
     } finally {
       estimatedFeeRef.current?.setLoading(false);
     }
-  }, [accountFreeBalance.data, estimateFee, setError, transferTransaction]);
+  }, [accountFreeBalance.data, estimateFee, transferTransaction]);
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
