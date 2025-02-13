@@ -94,7 +94,7 @@ export function SendAction() {
     mode: "onTouched",
   });
 
-  const { reset, setValue } = form;
+  const { reset, setValue, getValues, trigger } = form;
 
   const handleEstimateFee = useCallback(async () => {
     estimatedFeeRef.current?.setLoading(true);
@@ -155,7 +155,7 @@ export function SendAction() {
 
   const handleAmountChange = async (amount: string) => {
     setValue("amount", amount);
-    await form.trigger("amount");
+    await trigger("amount");
   };
 
   useEffect(() => {
@@ -169,7 +169,8 @@ export function SendAction() {
   }, [selectedAccount?.address, reset]);
 
   const reviewData = () => {
-    const [recipient, amount] = form.getValues(["recipient", "amount"]);
+    const { recipient, amount } = getValues();
+
     return [
       {
         label: "To",
@@ -187,7 +188,7 @@ export function SendAction() {
   };
 
   const handleReviewClick = async () => {
-    const isValid = await form.trigger();
+    const isValid = await trigger();
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }
@@ -277,7 +278,7 @@ export function SendAction() {
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         formRef={formRef}
-        reviewContent={reviewData()}
+        reviewContent={reviewData}
       />
     </div>
   );
