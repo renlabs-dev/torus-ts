@@ -24,7 +24,10 @@ interface Validator {
 }
 
 export function ValidatorsList(props: ValidatorsListProps) {
+  const { excludeAddress, listType, onBack, onSelectValidator } = props;
   const { accountStakedBy } = useWallet();
+
+  const excludedAddress = excludeAddress ? excludeAddress() : "";
 
   const validatorsList = [
     {
@@ -35,10 +38,9 @@ export function ValidatorsList(props: ValidatorsListProps) {
   ];
 
   function getValidatorsList(): Validator[] {
-    if (props.listType === "staked" && accountStakedBy.data) {
+    if (listType === "staked" && accountStakedBy.data) {
       const accountStakeList = accountStakedBy.data.filter(
-        (validatorAddress) =>
-          !props.excludeAddress?.().includes(validatorAddress.address),
+        (validatorAddress) => excludedAddress !== validatorAddress.address,
       );
 
       return accountStakeList.map((item) => ({
@@ -50,8 +52,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
     }
 
     return validatorsList.filter(
-      (validatorAddress) =>
-        !props.excludeAddress?.().includes(validatorAddress.address),
+      (validatorAddress) => excludedAddress !== validatorAddress.address,
     );
   }
 
@@ -85,7 +86,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
           <Button
             key={item.address}
             variant="outline"
-            onClick={() => props.onSelectValidator({ address: item.address })}
+            onClick={() => onSelectValidator({ address: item.address })}
             className="flex h-fit w-full flex-col items-center font-semibold lg:flex-row lg:justify-between"
           >
             <span className="text-pretty">
@@ -99,7 +100,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
         ))}
       </CardContent>
       <Button
-        onClick={props.onBack}
+        onClick={onBack}
         variant="secondary"
         className="mt-6 flex w-full items-center justify-center text-nowrap px-4 py-2.5 font-semibold"
       >
