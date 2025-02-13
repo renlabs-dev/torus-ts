@@ -50,11 +50,14 @@ export function isAboveExistentialDeposit(
   }
 }
 
+
 /**
  * Ensure the amount does not exceed the maximum allowed based on the free balance, fee, and existential deposit.
- */
-/**
- * Ensure the amount does not exceed the maximum allowed based on the free balance, fee, and existential deposit.
+ * @param amount - The stake amount as a string to be validated
+ * @param fee - The transaction fee as a string
+ * @param freeBalance - The available balance in bigint
+ * @param existentialDeposit - The minimum required balance in bigint
+ * @returns {boolean} True if stake is within limit, false if it exceeds maximum or if invalid
  */
 export function doesNotExceedMaxStake(
   amount: string,
