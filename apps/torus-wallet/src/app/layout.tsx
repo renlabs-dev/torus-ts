@@ -51,7 +51,7 @@ export default function RootLayout({
               <ClientHeroSection />
               <Container>
                 <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
-                  <div className="flex w-full max-w-screen-lg flex-col justify-around gap-6 lg:mt-[10vh] lg:flex-row">
+                  <div className="flex w-full max-w-screen-xl flex-col justify-around gap-6 lg:mt-[10vh] lg:flex-row">
                     <div className="flex w-full animate-fade flex-col gap-4 lg:max-w-[320px]">
                       <SidebarLinks />
                       <WalletBalance />
