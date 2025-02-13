@@ -60,11 +60,20 @@ tooling
       └─ shared tsconfig you can extend from
 ```
 
+## Prerequisites
+
+- **Node.js** - `20.16.0` or higher.
+- **pnpm** - `9.7.1` or higher.
+- **just** - `20.10.7` or higher, [installation guide](https://github.com/baryshev/just).
+- **Text editor** - We recommend using [VSCode](https://code.visualstudio.com/).
+
 ## Get it running
 
 ```sh
 # Install dependencies
 pnpm install
+# or
+just install
 
 # Configure environment variables
 # There is an `.env.example` in the root directory you can use for reference
