@@ -121,7 +121,7 @@ export function UnstakeAction() {
     defaultValues: { validator: "", amount: "" },
     mode: "onTouched",
   });
-  const { reset, setValue, trigger, watch } = form;
+  const { reset, setValue, trigger, watch, getValues } = form;
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -242,7 +242,7 @@ export function UnstakeAction() {
   };
 
   const reviewData = () => {
-    const { validator, amount } = form.getValues();
+    const { validator, amount } = getValues();
     return [
       {
         label: "Validator",
@@ -260,7 +260,7 @@ export function UnstakeAction() {
   };
 
   const handleReviewClick = async () => {
-    const isValid = await form.trigger();
+    const isValid = await trigger();
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }
@@ -323,11 +323,7 @@ export function UnstakeAction() {
                         placeholder="Amount to unstake"
                         min="0"
                         step="0.000000000000000001"
-                        disabled={
-                          !form.getValues().validator ||
-                          feeRef.current?.isLoading
-                        }
-                        onChange={(e) => handleAmountChange(e.target.value)}
+                        disabled={feeRef.current?.isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -364,7 +360,7 @@ export function UnstakeAction() {
         <ReviewTransactionDialog
           ref={reviewDialogRef}
           formRef={formRef}
-          reviewContent={reviewData()}
+          reviewContent={reviewData}
         />
       )}
     </div>
