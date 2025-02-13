@@ -207,7 +207,7 @@ export function SendAction() {
               control={form.control}
               name="recipient"
               render={({ field }) => (
-                <FormItem className="flex flex-col gap-2">
+                <FormItem className="flex flex-col">
                   <FormLabel>To</FormLabel>
                   <FormControl>
                     <Input
@@ -224,32 +224,34 @@ export function SendAction() {
               control={form.control}
               name="amount"
               render={({ field }) => (
-                <FormItem className="flex flex-col gap-2">
+                <FormItem className="flex flex-col">
                   <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Amount of TORUS"
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Amount of TORUS"
+                        disabled={
+                          !estimatedFeeRef.current?.getEstimatedFee() ||
+                          !selectedAccount?.address
+                        }
+                        type="number"
+                      />
+                    </FormControl>
+                    <AmountButtons
+                      setAmount={async (value) => {
+                        await handleAmountChange(value);
+                      }}
+                      availableFunds={maxAmountRef.current}
                       disabled={
-                        !estimatedFeeRef.current?.getEstimatedFee() ||
+                        !(toNano(maxAmountRef.current) > 0n) ||
                         !selectedAccount?.address
                       }
-                      type="number"
                     />
-                  </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
-            />
-            <AmountButtons
-              setAmount={async (value) => {
-                await handleAmountChange(value);
-              }}
-              availableFunds={maxAmountRef.current}
-              disabled={
-                !(toNano(maxAmountRef.current) > 0n) ||
-                !selectedAccount?.address
-              }
             />
 
             <FeeLabel
