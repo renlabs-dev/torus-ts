@@ -82,7 +82,18 @@ export function isWithinTransferLimit(
   fee: string,
   freeBalance: bigint
 ): boolean {
-  const feeNano = toNano(fee);
-  const maxTransferable = freeBalance > feeNano ? freeBalance - feeNano : 0n;
-  return toNano(amount) <= maxTransferable;
+  if (freeBalance < 0n) {
+    return false;
+  }
+  try {
+    const feeNano = toNano(fee);
+    if (feeNano > freeBalance) {
+      return false;
+    }
+    const maxTransferable = freeBalance > feeNano ? freeBalance - feeNano : 0n;
+    const amountNano = toNano(amount);
+    return amountNano <= maxTransferable;
+  } catch {
+    return false;
+  }
 }
