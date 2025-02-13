@@ -286,7 +286,7 @@ export function UnstakeAction() {
                 control={form.control}
                 name="validator"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col gap-2">
+                  <FormItem className="flex flex-col">
                     <FormLabel>Validator Address</FormLabel>
                     <div className="flex flex-row gap-2">
                       <FormControl>
@@ -314,30 +314,35 @@ export function UnstakeAction() {
                 control={form.control}
                 name="amount"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col gap-2">
+                  <FormItem className="flex flex-col">
                     <FormLabel>Amount</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        placeholder="Amount to unstake"
-                        min="0"
-                        step="0.000000000000000001"
-                        disabled={feeRef.current?.isLoading}
+                    <div className="flex items-center gap-2">
+                      <FormControl className="flex items-center gap-2">
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder="Amount to unstake"
+                          min="0"
+                          step="0.000000000000000001"
+                          disabled={feeRef.current?.isLoading}
+                        />
+                      </FormControl>
+                      <AmountButtons
+                        setAmount={async (value) =>
+                          await handleAmountChange(value)
+                        }
+                        availableFunds={maxAmountRef.current}
+                        disabled={
+                          !(toNano(maxAmountRef.current) > 0n) ||
+                          !selectedAccount?.address
+                        }
                       />
-                    </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <AmountButtons
-                setAmount={async (value) => await handleAmountChange(value)}
-                availableFunds={maxAmountRef.current}
-                disabled={
-                  !(toNano(maxAmountRef.current) > 0n) ||
-                  !selectedAccount?.address
-                }
-              />
+
               <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
               {transactionStatus.status && (
                 <TransactionStatus
