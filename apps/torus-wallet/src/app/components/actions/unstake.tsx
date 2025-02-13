@@ -33,6 +33,7 @@ import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import type { FeeLabelHandle } from "../send-fee-label";
 import { FeeLabel } from "../send-fee-label";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
@@ -130,12 +131,7 @@ export function UnstakeAction() {
     "wallet",
   );
 
-  const feeRef = useRef<{
-    updateFee: (newFee: string | null) => void;
-    setLoading: (loading: boolean) => void;
-    getEstimatedFee: () => string | null;
-    isLoading: boolean;
-  }>(null);
+  const feeRef = useRef<FeeLabelHandle>(null);
 
   const maxAmountRef = useRef<string>("");
 
@@ -289,7 +285,10 @@ export function UnstakeAction() {
                         <Input
                           {...field}
                           placeholder="Full Validator address"
-                          disabled={!selectedAccount?.address}
+                          disabled={
+                            !selectedAccount?.address ||
+                            feeRef.current?.isLoading
+                          }
                         />
                       </FormControl>
                       <Button
@@ -320,7 +319,10 @@ export function UnstakeAction() {
                           placeholder="Amount to unstake"
                           min="0"
                           step="0.000000000000000001"
-                          disabled={feeRef.current?.isLoading}
+                          disabled={
+                            !selectedAccount?.address ||
+                            feeRef.current?.isLoading
+                          }
                         />
                       </FormControl>
                       <AmountButtons
@@ -330,7 +332,8 @@ export function UnstakeAction() {
                         availableFunds={maxAmountRef.current}
                         disabled={
                           !(toNano(maxAmountRef.current) > 0n) ||
-                          !selectedAccount?.address
+                          !selectedAccount?.address ||
+                          !feeRef.current?.isLoading
                         }
                       />
                     </div>
