@@ -28,7 +28,7 @@ export function AmountButtons(props: AmountButtonsProps) {
       {buttonAmounts.map((amount) => (
         <Button
           variant="outline"
-          size={"sm"}
+          size={"default"}
           disabled={disabled}
           type="button"
           key={amount.label}
