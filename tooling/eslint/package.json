@@ -29,6 +29,7 @@
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "eslint": "catalog:",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "prettier": "catalog:",
     "typescript": "catalog:"
   }
