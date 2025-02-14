@@ -7,12 +7,13 @@ import { Button, Card, CardContent, CardHeader } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 
 import { useWallet } from "~/context/wallet-provider";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";
   onSelectValidator: (validator: { address: string; stake?: string }) => void;
   onBack: () => void;
-  excludeAddress?: string[];
+  excludeAddress?: () => string;
 }
 
 interface Validator {
@@ -23,21 +24,23 @@ interface Validator {
 }
 
 export function ValidatorsList(props: ValidatorsListProps) {
+  const { excludeAddress, listType, onBack, onSelectValidator } = props;
   const { accountStakedBy } = useWallet();
+
+  const excludedAddress = excludeAddress ? excludeAddress() : "";
 
   const validatorsList = [
     {
       name: "Torus Allocator",
       description: "Allocator of the Torus Allocator platform.",
-      address: "5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b", // TODO: unhardcode/move
+      address: ALLOCATOR_ADDRESS, // TODO: unhardcode/move
     },
   ];
 
   function getValidatorsList(): Validator[] {
-    if (props.listType === "staked" && accountStakedBy.data) {
+    if (listType === "staked" && accountStakedBy.data) {
       const accountStakeList = accountStakedBy.data.filter(
-        (validatorAddress) =>
-          !props.excludeAddress?.includes(validatorAddress.address),
+        (validatorAddress) => excludedAddress !== validatorAddress.address,
       );
 
       return accountStakeList.map((item) => ({
@@ -49,8 +52,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
     }
 
     return validatorsList.filter(
-      (validatorAddress) =>
-        !props.excludeAddress?.includes(validatorAddress.address),
+      (validatorAddress) => excludedAddress !== validatorAddress.address,
     );
   }
 
@@ -84,7 +86,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
           <Button
             key={item.address}
             variant="outline"
-            onClick={() => props.onSelectValidator({ address: item.address })}
+            onClick={() => onSelectValidator({ address: item.address })}
             className="flex h-fit w-full flex-col items-center font-semibold lg:flex-row lg:justify-between"
           >
             <span className="text-pretty">
@@ -98,7 +100,7 @@ export function ValidatorsList(props: ValidatorsListProps) {
         ))}
       </CardContent>
       <Button
-        onClick={props.onBack}
+        onClick={onBack}
         variant="secondary"
         className="mt-6 flex w-full items-center justify-center text-nowrap px-4 py-2.5 font-semibold"
       >
