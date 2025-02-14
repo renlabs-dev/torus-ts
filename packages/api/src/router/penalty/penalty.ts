@@ -1,12 +1,11 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-
 import "@torus-ts/db/schema";
 
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
-
-import { eq, and, isNull } from "@torus-ts/db";
+import { and, eq, isNull } from "@torus-ts/db";
 import { penalizeAgentVotesSchema } from "@torus-ts/db/schema";
 import { PENALTY_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import type { TRPCRouterRecord } from "@trpc/server";
+
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 export const penaltyRouter = {
   // GET

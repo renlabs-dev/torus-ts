@@ -1,11 +1,11 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-
 import "@torus-ts/db/schema";
 
+import { isNull } from "@torus-ts/db";
 import { cadreCandidateSchema } from "@torus-ts/db/schema";
 import { CADRE_CANDIDATE_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import type { TRPCRouterRecord } from "@trpc/server";
+
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { isNull } from "@torus-ts/db";
 
 export const cadreCandidateRouter = {
   // GET

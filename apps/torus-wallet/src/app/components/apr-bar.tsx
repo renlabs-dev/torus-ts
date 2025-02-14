@@ -1,8 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { formatToken } from "@torus-ts/utils/subspace";
+import { motion } from "framer-motion";
+
 import { useAPR } from "~/hooks/useAPR";
+
 import { APRBarSkeleton } from "./apr-bar-skeleton";
 
 export function APRBar() {

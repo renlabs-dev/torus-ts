@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
 
+import type { ApiPromise } from "@polkadot/api";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
-
 import type {
   Api,
   LastBlock,
@@ -11,38 +11,35 @@ import type {
   StakeData,
   VoteWithStake,
 } from "@torus-ts/subspace";
-import type { ListItem, Nullish } from "@torus-ts/utils/typing";
+import type { SS58Address } from "@torus-ts/subspace";
 import {
   fetchCustomMetadata,
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
-  queryCachedStakeOut,
   queryAgentApplications,
+  queryAgents,
+  queryBurnValue,
+  queryCachedStakeOut,
   queryDaoTreasuryAddress,
   queryFreeBalance,
+  queryGlobalGovernanceConfig,
+  queryIncentivesRatio,
   queryKeyStakedBy,
   queryKeyStakingTo,
   queryLastBlock,
-  queryProposals,
-  queryRewardAllocation,
-  queryUnrewardedProposals,
-  queryGlobalGovernanceConfig,
-  queryBurnValue,
-  queryAgents,
   queryMinAllowedStake,
-  queryTotalIssuance,
-  queryTreasuryEmissionFee,
-  queryTotalStake,
+  queryProposals,
   queryRecyclingPercentage,
-  queryIncentivesRatio,
+  queryRewardAllocation,
   queryRewardInterval,
+  queryTotalIssuance,
+  queryTotalStake,
+  queryTreasuryEmissionFee,
+  queryUnrewardedProposals,
   queryWhitelist,
 } from "@torus-ts/subspace";
-
-import type { ApiPromise } from "@polkadot/api";
+import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 import SuperJSON from "superjson";
-
-import type { SS58Address } from "@torus-ts/subspace";
 
 // == Constants ==
 

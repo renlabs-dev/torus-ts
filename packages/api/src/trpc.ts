@@ -6,18 +6,18 @@
  * tl;dr - this is where all the tRPC server stuff is created and plugged in.
  * The pieces you will need to use are documented accordingly near the end
  */
-import { initTRPC, TRPCError } from "@trpc/server";
-import superjson from "superjson";
-import { assert } from "tsafe";
-import { ZodError, z } from "zod";
 import type { ApiPromise } from "@polkadot/api";
-
 import { createDb } from "@torus-ts/db/client";
-import type { SessionData } from "./auth";
-import { decodeSessionToken } from "./auth";
 import type { SS58Address } from "@torus-ts/subspace";
 import { setup } from "@torus-ts/subspace";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { initTRPC, TRPCError } from "@trpc/server";
+import superjson from "superjson";
+import { assert } from "tsafe";
+import { z,ZodError } from "zod";
+
+import type { SessionData } from "./auth";
+import { decodeSessionToken } from "./auth";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWSAPI: ApiPromise | null = null;

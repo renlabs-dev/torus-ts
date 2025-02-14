@@ -1,13 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
-
+import type { AppRouter } from "@torus-ts/api";
 import { toast } from "@torus-ts/toast-provider";
 import { Button, Card, CardTitle } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
-import type { AppRouter } from "@torus-ts/api";
+import { useLayoutEffect, useState } from "react";
 
 type PenaltyList = NonNullable<
   inferProcedureOutput<AppRouter["penalty"]["byAgentKey"]>

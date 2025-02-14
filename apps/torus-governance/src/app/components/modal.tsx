@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import {
   Button,
   Dialog,
@@ -16,13 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui";
+import { ClipboardPlus } from "lucide-react";
+import { useState } from "react";
+
+import { useGovernance } from "~/context/governance-provider";
 
 import { CreateAgentApplication } from "./agent-application/create-agent-application";
-import { RegisterAgent } from "./proposal/register-agent";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
-import { ClipboardPlus } from "lucide-react";
-import { useGovernance } from "~/context/governance-provider";
+import { RegisterAgent } from "./proposal/register-agent";
 
 type ViewType =
   | "whitelist-agent"

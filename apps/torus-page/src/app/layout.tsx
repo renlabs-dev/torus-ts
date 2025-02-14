@@ -1,12 +1,13 @@
 import "../styles/globals.css";
 
+import { Layout } from "@torus-ts/ui";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-import { Layout } from "@torus-ts/ui";
-import { HoverHeader } from "./components/hover-header";
 import { EnvScript } from "~/env";
+
 import { Footer } from "./components/footer";
+import { HoverHeader } from "./components/hover-header";
 
 const APP_NAME = "Torus";
 

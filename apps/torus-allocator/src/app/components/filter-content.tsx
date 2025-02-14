@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SearchIcon } from "lucide-react";
-
 import { Input, Label } from "@torus-ts/ui";
+import { SearchIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback } from "react";
 
 interface FilterProps {
   disabled: boolean;

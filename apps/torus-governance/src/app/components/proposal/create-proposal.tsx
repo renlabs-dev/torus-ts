@@ -1,12 +1,5 @@
-import { useCallback, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import { Info } from "lucide-react";
-import { z } from "zod";
-
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
   Button,
   Input,
@@ -19,6 +12,12 @@ import {
   TransactionStatus,
 } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import { Info } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
+import { z } from "zod";
 
 import { useGovernance } from "~/context/governance-provider";
 

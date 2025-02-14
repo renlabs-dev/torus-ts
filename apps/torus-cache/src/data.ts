@@ -1,12 +1,11 @@
 import type { ApiPromise } from "@polkadot/api";
-import SuperJSON from "superjson";
-
 import type { LastBlock, StakeData } from "@torus-ts/subspace";
 import {
   queryLastBlock,
   queryStakeIn,
   queryStakeOut,
 } from "@torus-ts/subspace";
+import SuperJSON from "superjson";
 
 import { setup } from "./server";
 import { log, sleep } from "./utils";

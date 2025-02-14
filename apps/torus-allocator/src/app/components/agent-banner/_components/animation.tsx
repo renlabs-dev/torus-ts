@@ -2,20 +2,21 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
-import * as THREE from "three";
-import { useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import "./util";
+
 import {
+  Cloud,
+  Clouds,
   Image,
   ScrollControls,
+  Sparkles,
   useScroll,
   useTexture,
-  Sparkles,
-  Clouds,
-  Cloud,
 } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
-import "./util";
+import { useRef, useState } from "react";
+import * as THREE from "three";
 
 export const Animation = () => (
   <div className="margin-0 padding-0 box-border h-80 w-full overflow-hidden bg-accent/60">

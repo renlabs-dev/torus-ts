@@ -1,5 +1,6 @@
 import type { ProposalStatus } from "@torus-ts/subspace";
 import { Skeleton } from "@torus-ts/ui";
+
 import { calcProposalFavorablePercent } from "~/utils";
 
 export const VotePercentageBar = (props: {

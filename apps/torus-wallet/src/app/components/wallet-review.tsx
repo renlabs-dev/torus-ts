@@ -1,5 +1,3 @@
-import React from "react";
-
 import {
   Button,
   Card,
@@ -7,6 +5,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@torus-ts/ui";
+import React from "react";
 
 interface WalletTransactionReviewProps {
   disabled?: boolean;

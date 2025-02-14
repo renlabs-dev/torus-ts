@@ -3,6 +3,7 @@
 import { Card } from "@torus-ts/ui";
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
+
 import { useWallet } from "~/context/wallet-provider";
 
 const BLOCK_TIME = 8;

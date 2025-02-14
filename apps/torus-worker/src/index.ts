@@ -1,11 +1,9 @@
 import "@polkadot/api-augment";
 
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { queryLastBlock } from "@torus-ts/subspace";
 import express from "express";
 import { z } from "zod";
-
-import { ApiPromise, WsProvider } from "@polkadot/api";
-
-import { queryLastBlock } from "@torus-ts/subspace";
 
 import { log } from "./common";
 import { parseEnvOrExit } from "./common/env";

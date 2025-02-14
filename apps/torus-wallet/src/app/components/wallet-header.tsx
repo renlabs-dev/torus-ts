@@ -1,7 +1,5 @@
 "use client";
 
-import { env } from "~/env";
-
 import {
   useCachedStakeOut,
   useFreeBalance,
@@ -10,6 +8,8 @@ import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Header, WalletDropdown } from "@torus-ts/ui";
+
+import { env } from "~/env";
 
 export function WalletHeader() {
   const {

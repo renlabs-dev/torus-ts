@@ -1,7 +1,6 @@
-import { match } from "rustie";
-
 import type { ProposalStatus } from "@torus-ts/subspace";
 import { Badge } from "@torus-ts/ui";
+import { match } from "rustie";
 
 import { useGovernance } from "~/context/governance-provider";
 

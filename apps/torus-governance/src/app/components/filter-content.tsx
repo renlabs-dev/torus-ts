@@ -1,9 +1,5 @@
 "use client";
 
-import { Suspense, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SearchIcon } from "lucide-react";
-
 import {
   Input,
   Select,
@@ -14,6 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui";
+import { SearchIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect } from "react";
+
 import { useGovernance } from "~/context/governance-provider";
 
 export const SearchBar = () => {

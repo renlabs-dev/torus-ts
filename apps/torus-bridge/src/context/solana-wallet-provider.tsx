@@ -1,3 +1,5 @@
+import "@solana/wallet-adapter-react-ui/styles.css";
+
 import type { WalletError } from "@solana/wallet-adapter-base";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
@@ -5,7 +7,6 @@ import {
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import "@solana/wallet-adapter-react-ui/styles.css";
 import {
   // BackpackWalletAdapter,
   LedgerWalletAdapter,
@@ -18,6 +19,7 @@ import { clusterApiUrl } from "@solana/web3.js";
 import type { PropsWithChildren } from "react";
 import { useCallback, useMemo } from "react";
 import { toast } from "react-toastify";
+
 import { logger } from "~/utils/logger";
 
 export function SolanaWalletProvider({ children }: PropsWithChildren<unknown>) {

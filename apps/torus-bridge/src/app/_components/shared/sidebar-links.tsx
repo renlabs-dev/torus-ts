@@ -1,9 +1,5 @@
 "use client";
 
-import React, { Suspense } from "react";
-import Link from "next/link";
-import { Check } from "lucide-react";
-
 import {
   Button,
   Card,
@@ -15,6 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui";
+import { Check } from "lucide-react";
+import Link from "next/link";
+import React, { Suspense } from "react";
 
 const navSidebarOptions = [
   { title: "Wallet", href: links.wallet },

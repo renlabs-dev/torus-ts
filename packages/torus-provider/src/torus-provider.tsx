@@ -1,24 +1,26 @@
 "use client";
 
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
   InjectedAccountWithMeta,
   InjectedExtension,
 } from "@polkadot/extension-inject/types";
-import { createContext, useContext, useEffect, useState } from "react";
-import { ApiPromise, WsProvider } from "@polkadot/api";
-
+import type { ISubmittableResult } from "@polkadot/types/types";
 import type {
-  Api,
   AgentApplication,
-  Proposal,
+  Api,
   CustomMetadataState,
+  Proposal,
 } from "@torus-ts/subspace";
 import { sb_balance } from "@torus-ts/subspace";
 import { toNano } from "@torus-ts/utils/subspace";
+import { createContext, useContext, useEffect, useState } from "react";
 
+import { sendTransaction } from "./_components/send-transaction";
 import type {
-  AddCustomProposal,
   AddAgentApplication,
+  AddCustomProposal,
   addDaoTreasuryTransferProposal,
   registerAgent,
   RemoveVote,
@@ -28,9 +30,6 @@ import type {
   UpdateDelegatingVotingPower,
   Vote,
 } from "./_types";
-import { sendTransaction } from "./_components/send-transaction";
-import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { ISubmittableResult } from "@polkadot/types/types";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 

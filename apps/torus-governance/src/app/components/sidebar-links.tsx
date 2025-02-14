@@ -1,10 +1,5 @@
 "use client";
 
-import React, { Suspense, useCallback, useEffect } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Check } from "lucide-react";
-
 import {
   Button,
   Card,
@@ -15,6 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui";
+import { Check } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useCallback, useEffect } from "react";
 
 export const navSidebarOptions = [
   { title: "Whitelist Applications", href: "agent-applications" },

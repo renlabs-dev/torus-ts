@@ -7,11 +7,10 @@ import {
   Telescope,
   WalletCards,
 } from "lucide-react";
-import { links } from "../data";
-
-import { Icons } from "./icons";
-
 import dynamic from "next/dynamic";
+
+import { links } from "../data";
+import { Icons } from "./icons";
 
 const Clock = dynamic(() => import("./clock"), {
   loading: () => <p>Loading...</p>,

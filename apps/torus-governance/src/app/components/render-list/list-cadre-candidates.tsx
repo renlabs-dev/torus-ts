@@ -1,10 +1,12 @@
-import { useSearchParams } from "next/navigation";
-import { useGovernance } from "~/context/governance-provider";
-import { CuratorCandidatesList } from "../cadre/curator-candidates-list";
-import { ListContainer } from "./container-list";
-import { ListCardsLoadingSkeleton } from "./cards-skeleton-list";
 import { Button, Card } from "@torus-ts/ui";
+import { useSearchParams } from "next/navigation";
+
+import { useGovernance } from "~/context/governance-provider";
+
 import { CreateCadreCandidates } from "../agent-application/create-cadre-candidates";
+import { CuratorCandidatesList } from "../cadre/curator-candidates-list";
+import { ListCardsLoadingSkeleton } from "./cards-skeleton-list";
+import { ListContainer } from "./container-list";
 
 export const ListCadreCandidates = () => {
   const {

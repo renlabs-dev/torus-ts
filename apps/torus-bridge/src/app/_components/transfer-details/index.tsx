@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
+
 import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
 
 export function TransferDetails() {

@@ -6,13 +6,14 @@ import { objFilter } from "@hyperlane-xyz/utils";
 import { toast } from "react-toastify";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { config } from "../consts/config";
-import { logger } from "./logger";
+
+import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
 
 import { assembleWarpCoreConfig } from "../app/_components/warp-core-config";
+import { config } from "../consts/config";
+import { logger } from "./logger";
 import type { TransferContext } from "./types";
 import { FinalTransferStatuses, TransferStatus } from "./types";
-import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
 
 // Increment this when persist state has breaking changes
 const PERSIST_STATE_VERSION = 2;

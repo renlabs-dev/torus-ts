@@ -1,15 +1,15 @@
 "use client";
 
-import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { CardSkeleton } from "../card-skeleton";
-import { ListAgentApplications } from "./list-agent-applications";
-import { ListProposals } from "./list-proposals";
-import { navSidebarOptions } from "../sidebar-links";
 import type { GovernanceViewMode } from "../sidebar-links";
-import { ListCadreCandidates } from "./list-cadre-candidates";
+import { navSidebarOptions } from "../sidebar-links";
+import { ListAgentApplications } from "./list-agent-applications";
 import { ListAgents } from "./list-agents";
+import { ListCadreCandidates } from "./list-cadre-candidates";
+import { ListProposals } from "./list-proposals";
 
 const ListCardsLoadingSkeleton = () => {
   return (

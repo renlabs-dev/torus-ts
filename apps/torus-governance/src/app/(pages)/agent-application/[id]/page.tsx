@@ -1,8 +1,8 @@
 import { Button } from "@torus-ts/ui";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
 export default async function AgentApplicationView({
   params,

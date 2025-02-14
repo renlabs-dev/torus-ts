@@ -1,9 +1,10 @@
-import { useFormikContext } from "formik";
-import type { TransferFormValues } from "~/utils/types";
-import { ArrowLeftRight } from "lucide-react";
 import { Button } from "@torus-ts/ui";
+import { useFormikContext } from "formik";
+import { ArrowLeftRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+
 import { updateSearchParams } from "~/utils/query-params";
+import type { TransferFormValues } from "~/utils/types";
 
 export function SwapChainsButton({ disabled }: { disabled?: boolean }) {
   const { values, setFieldValue } = useFormikContext<TransferFormValues>();

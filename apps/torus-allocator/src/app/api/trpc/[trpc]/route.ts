@@ -1,5 +1,6 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter, createTRPCContext } from "@torus-ts/api";
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+
 import { env } from "~/env";
 
 /**

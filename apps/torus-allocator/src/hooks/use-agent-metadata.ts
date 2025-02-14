@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { assert } from "tsafe";
-
 import { fetchAgentMetadata } from "@torus-ts/subspace";
 import { isIpfsUri } from "@torus-ts/utils/ipfs";
+import { assert } from "tsafe";
 
 /** Default stale time */
 const DEFAULT_STALE_TIME = 1000 * 60 * 5; // 5 minutes

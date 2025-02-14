@@ -1,11 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
-import { LoaderCircle } from "lucide-react";
-
+import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
 import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
+import { LoaderCircle } from "lucide-react";
+import { useMemo } from "react";
 
-import type { VoteStatus } from "../../../../components/vote-label";
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
 import { DetailsCard } from "~/app/components/details-card";
@@ -16,9 +15,10 @@ import { RewardLabel } from "~/app/components/proposal/reward-label";
 import { VoterList } from "~/app/components/proposal/voter-list";
 import { VoteData } from "~/app/components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
+
 import { handleCustomProposal } from "../../../../../utils";
 import { StatusLabel } from "../../../../components/status-label";
-import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
+import type { VoteStatus } from "../../../../components/vote-label";
 
 interface CustomContent {
   paramId: number;

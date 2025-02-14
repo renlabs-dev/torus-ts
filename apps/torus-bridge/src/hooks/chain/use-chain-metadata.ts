@@ -1,4 +1,5 @@
 import type { ChainName } from "@hyperlane-xyz/sdk";
+
 import { useMultiProvider } from "../use-multi-provider";
 
 export function useChainMetadata(chainName?: ChainName) {

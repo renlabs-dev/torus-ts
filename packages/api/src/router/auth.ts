@@ -1,13 +1,12 @@
+import type { AuthReq } from "@torus-ts/utils/auth";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-
-import type { AuthReq } from "@torus-ts/utils/auth";
+import * as jwt from "jsonwebtoken";
+import { z } from "zod";
 
 import { createSessionToken } from "../auth";
 import { SIGNED_PAYLOAD_SCHEMA, verifySignedData } from "../auth/sign";
 import { publicProcedure } from "../trpc";
-import { z } from "zod";
-import * as jwt from "jsonwebtoken";
 
 // Maps nonce -> timestamp
 const seenNonces = new Map<string, number>();

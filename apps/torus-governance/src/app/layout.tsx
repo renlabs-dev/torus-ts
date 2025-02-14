@@ -1,11 +1,10 @@
 import "../styles/globals.css";
 
-import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
-
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container, Footer, Layout } from "@torus-ts/ui/components";
+import type { Metadata } from "next";
+import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { GovernanceProvider } from "~/context/governance-provider";
 import { env, EnvScript } from "~/env";

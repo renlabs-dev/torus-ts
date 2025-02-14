@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { isSS58 } from "@torus-ts/subspace";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
 import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useWallet } from "~/context/wallet-provider";
+
 import { AmountButtons } from "../amount-buttons";
 import { FeeLabel } from "../fee-label";
 import { WalletTransactionReview } from "../wallet-review";

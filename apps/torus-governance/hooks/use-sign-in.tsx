@@ -5,6 +5,7 @@ import { createAuthReqData } from "@torus-ts/utils/auth";
 import { useSearchParams } from "next/navigation";
 import { signData } from "node_modules/@torus-ts/api/src/auth/sign";
 import { useEffect, useState } from "react";
+
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 

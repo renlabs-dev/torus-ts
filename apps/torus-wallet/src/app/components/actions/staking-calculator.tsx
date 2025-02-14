@@ -1,8 +1,11 @@
 "use client";
 
+import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Card, Input } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { ArrowUpRight, Calculator, Leaf } from "lucide-react";
+import { DateTime } from "luxon";
 import { useEffect, useMemo, useState } from "react";
 import type { TooltipProps } from "recharts";
 import {
@@ -13,11 +16,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useTorus } from "@torus-ts/torus-provider";
-import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
+
 import { env } from "~/env";
 import { useAPR } from "~/hooks/useAPR";
-import { DateTime } from "luxon";
 
 const MONTHLY_COMPOUNDS = 12;
 const FORECAST_MONTHS = 24;

@@ -1,8 +1,8 @@
-import { motion } from "framer-motion";
 import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
+import { motion } from "framer-motion";
+import { ArrowBigDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowBigDown } from "lucide-react";
 
 const buttonVariants = {
   hidden: { opacity: 0, y: -15 },

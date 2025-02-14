@@ -1,18 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import {
-  ChevronsLeft,
-  ChevronsRight,
-  Cuboid,
-  Globe,
-  IdCard,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-
 import { toast } from "@torus-ts/toast-provider";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Badge,
   CopyButton,
@@ -26,11 +15,19 @@ import {
 } from "@torus-ts/ui";
 import type { Nullish } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  Cuboid,
+  Globe,
+  IdCard,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-
-import { useTorus } from "@torus-ts/torus-provider";
 
 interface AgentCardProps {
   id: number;

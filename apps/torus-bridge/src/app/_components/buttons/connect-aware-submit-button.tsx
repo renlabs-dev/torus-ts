@@ -1,9 +1,3 @@
-import { useCallback } from "react";
-
-import { useFormikContext } from "formik";
-import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
-
 import type { ChainName } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
@@ -11,8 +5,12 @@ import {
   useConnectFns,
   useTimeout,
 } from "@hyperlane-xyz/widgets";
-
 import { Button } from "@torus-ts/ui";
+import { useFormikContext } from "formik";
+import { useCallback } from "react";
+
+import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 interface Props {
   chainName: ChainName;

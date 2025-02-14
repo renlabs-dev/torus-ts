@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Info } from "lucide-react";
-
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useTorus } from "@torus-ts/torus-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
   Button,
   Popover,
@@ -12,6 +9,9 @@ import {
   PopoverTrigger,
   TransactionStatus,
 } from "@torus-ts/ui";
+import { Info } from "lucide-react";
+import { useState } from "react";
+
 import { useGovernance } from "~/context/governance-provider";
 
 export function VotePowerSettings(): JSX.Element | null {

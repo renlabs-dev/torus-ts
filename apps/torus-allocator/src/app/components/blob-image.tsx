@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useEffect,useState } from "react";
 
 interface BlobImageProps {
   blob: Blob;

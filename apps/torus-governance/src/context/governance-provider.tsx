@@ -1,9 +1,24 @@
 "use client";
 
 import type { UseQueryResult } from "@tanstack/react-query";
-import { createContext, useContext, useMemo } from "react";
-
+import type { AppRouter } from "@torus-ts/api";
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
+import {
+  useAccountsNotDelegatingVoting,
+  useAgentApplications,
+  useAgents,
+  useBurnValue,
+  useCachedStakeOut,
+  useCustomMetadata,
+  useDaoTreasuryAddress,
+  useFreeBalance,
+  useGlobalConfig,
+  useLastBlock,
+  useProposals,
+  useRewardAllocation,
+  useUnrewardedProposals,
+  useWhitelist,
+} from "@torus-ts/query-provider/hooks";
 import type {
   Agent,
   AgentApplication,
@@ -13,46 +28,30 @@ import type {
   SS58Address,
   StakeData,
 } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
 import type {
   ApplicationState,
   InjectedAccountWithMeta,
   ProposalState,
 } from "@torus-ts/torus-provider";
+import { useTorus } from "@torus-ts/torus-provider";
 import type {
-  AddCustomProposal,
   AddAgentApplication,
+  AddCustomProposal,
   addDaoTreasuryTransferProposal,
   registerAgent,
   RemoveVote,
   Vote,
 } from "@torus-ts/torus-provider/types";
-import {
-  useAccountsNotDelegatingVoting,
-  useCachedStakeOut,
-  useCustomMetadata,
-  useAgentApplications,
-  useDaoTreasuryAddress,
-  useFreeBalance,
-  useLastBlock,
-  useProposals,
-  useRewardAllocation,
-  useUnrewardedProposals,
-  useGlobalConfig,
-  useBurnValue,
-  useAgents,
-  useWhitelist,
-} from "@torus-ts/query-provider/hooks";
-import { useTorus } from "@torus-ts/torus-provider";
 import { Header, WalletDropdown } from "@torus-ts/ui";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
+import type { inferProcedureOutput } from "@trpc/server";
+import { useSignIn } from "hooks/use-sign-in";
+import { createContext, useContext, useMemo } from "react";
 
 import { env } from "~/env";
-import { toast } from "@torus-ts/toast-provider";
 import { api as trpcApi } from "~/trpc/react";
-import type { AppRouter } from "@torus-ts/api";
-import type { inferProcedureOutput } from "@trpc/server";
-import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
-import type { TRPCClientErrorLike } from "@trpc/client";
-import { useSignIn } from "hooks/use-sign-in";
 
 type CadreCandidates = inferProcedureOutput<AppRouter["cadreCandidate"]["all"]>;
 type CadreList = inferProcedureOutput<AppRouter["cadre"]["all"]>;

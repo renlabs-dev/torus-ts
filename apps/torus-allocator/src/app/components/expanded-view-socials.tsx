@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import { buildSocials } from "./agent-item";
 
 // (property) socials?: {

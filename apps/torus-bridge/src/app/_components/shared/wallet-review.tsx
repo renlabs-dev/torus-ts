@@ -1,13 +1,13 @@
-import React from "react";
-
 import { toWei } from "@hyperlane-xyz/utils";
-import { useFormikContext } from "formik";
-import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";
-import { useWarpCore, getTokenByIndex } from "~/hooks/token";
-import type { TransferFormValues } from "~/utils/types";
-import { useFeeQuotes } from "~/hooks/use-fee-quotes";
 import { Loading } from "@torus-ts/ui";
 import { smallAddress } from "@torus-ts/utils/subspace";
+import { useFormikContext } from "formik";
+import React from "react";
+
+import { getTokenByIndex,useWarpCore } from "~/hooks/token";
+import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";
+import { useFeeQuotes } from "~/hooks/use-fee-quotes";
+import type { TransferFormValues } from "~/utils/types";
 
 export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
   const { values } = useFormikContext<TransferFormValues>();

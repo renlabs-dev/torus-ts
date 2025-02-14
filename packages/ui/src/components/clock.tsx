@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock as ClockIcon } from "lucide-react";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo,useState } from "react";
 
 export default function Clock() {
   const [date, setDate] = useState(new Date());

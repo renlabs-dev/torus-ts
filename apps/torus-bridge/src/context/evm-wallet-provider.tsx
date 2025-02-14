@@ -1,12 +1,13 @@
+import "@rainbow-me/rainbowkit/styles.css";
+
 import type { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import { getWagmiChainConfigs } from "@hyperlane-xyz/widgets";
 import {
-  RainbowKitProvider,
   connectorsForWallets,
   midnightTheme,
+  RainbowKitProvider,
 } from "@rainbow-me/rainbowkit";
-import "@rainbow-me/rainbowkit/styles.css";
 import {
   argentWallet,
   coinbaseWallet,
@@ -21,12 +22,12 @@ import {
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import { createClient, http } from "viem";
-import { WagmiProvider, createConfig } from "wagmi";
+import { createConfig,WagmiProvider } from "wagmi";
+
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 import { config } from "../consts/config";
-
 import { useWarpCore } from "../hooks/token";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function initWagmi(multiProvider: MultiProtocolProvider) {
   const chains = getWagmiChainConfigs(multiProvider);

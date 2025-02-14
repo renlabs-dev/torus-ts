@@ -2,6 +2,7 @@ import { toast } from "@torus-ts/toast-provider";
 import { Button, Card } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
+
 import { useWallet } from "~/context/wallet-provider";
 
 export function ReceiveAction() {
