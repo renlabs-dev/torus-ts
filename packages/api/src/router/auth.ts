@@ -15,13 +15,14 @@ export const authRouter = {
   startSession: publicProcedure
     .input(SIGNED_PAYLOAD_SCHEMA)
     .mutation(async ({ ctx, input }) => {
+      let address;
+      let payload;
       try {
-        var { address, payload } = await verifySignedData(input);
+        ({ address, payload } = await verifySignedData(input));
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          message: `Invalid signed payload: ${err}`,
+          message: `Invalid signed payload: ${String(err)}`,
           cause: err,
         });
       }
@@ -31,8 +32,7 @@ export const authRouter = {
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          message: `Invalid authentication request: ${err}`,
+          message: `Invalid authentication request: ${String(err)}`,
           cause: err,
         });
       }

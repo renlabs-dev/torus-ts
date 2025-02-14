@@ -8,7 +8,7 @@ import { TextField } from "~/app/_components/text-field";
 import { useOriginBalance } from "~/hooks/balance/use-origin-balance";
 import type { TransferFormValues } from "~/utils/types";
 
-export function AmountSection({ isReview }: { isReview: boolean }) {
+export function AmountSection({ isReview }: Readonly<{ isReview: boolean }>) {
   const { values } = useFormikContext<TransferFormValues>();
   const { balance } = useOriginBalance(values);
 

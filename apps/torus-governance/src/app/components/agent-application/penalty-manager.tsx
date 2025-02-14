@@ -24,10 +24,10 @@ const MAX_CONTENT_CHARACTERS = 240;
 export function PenaltyManager({
   agentKey,
   status,
-}: {
+}: Readonly<{
   agentKey: SS58Address;
   status: AgentApplication["status"];
-}) {
+}>) {
   const [penaltyFactor, setPenaltyFactor] = useState(1);
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);

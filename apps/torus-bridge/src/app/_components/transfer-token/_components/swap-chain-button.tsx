@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { updateSearchParams } from "~/utils/query-params";
 import type { TransferFormValues } from "~/utils/types";
 
-export function SwapChainsButton({ disabled }: { disabled?: boolean }) {
+export function SwapChainsButton({
+  disabled,
+}: Readonly<{ disabled?: boolean }>) {
   const { values, setFieldValue } = useFormikContext<TransferFormValues>();
   const { origin, destination } = values;
   const searchParams = useSearchParams();

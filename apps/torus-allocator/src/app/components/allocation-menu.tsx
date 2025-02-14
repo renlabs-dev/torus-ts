@@ -20,7 +20,7 @@ import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Anvil, LoaderCircle, PieChart, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ALLOCATOR_ADDRESS } from "~/consts";
+import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { api } from "~/trpc/react";
 
@@ -39,7 +39,10 @@ export function AllocationMenu() {
   } = useDelegateAgentStore();
 
   const { selectedAccount, api: torusApi } = useTorus();
-  const accountStakedBy = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
+  const accountStakedBy = useKeyStakedBy(
+    torusApi,
+    env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
+  );
 
   const {
     data: userAgentWeight,

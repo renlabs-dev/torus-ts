@@ -5,9 +5,9 @@ import Link from "next/link";
 
 export default async function ProposalView({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ id: string }>;
-}): Promise<JSX.Element> {
+}>): Promise<JSX.Element> {
   const { id } = await params;
 
   if (!id) {

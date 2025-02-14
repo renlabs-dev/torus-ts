@@ -11,10 +11,10 @@ import type { TransferFormValues } from "~/utils/types";
 export function MaxButton({
   balance,
   disabled,
-}: {
+}: Readonly<{
   balance?: TokenAmount;
   disabled?: boolean;
-}) {
+}>) {
   const { values, setFieldValue } = useFormikContext<TransferFormValues>();
   const { origin, destination, tokenIndex } = values;
   const multiProvider = useMultiProvider();

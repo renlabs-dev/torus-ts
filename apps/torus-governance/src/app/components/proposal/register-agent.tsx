@@ -411,7 +411,7 @@ export function RegisterAgent(): JSX.Element {
           >
             <div className="flex flex-col gap-2">
               <Label htmlFor="agent-key" className="flex items-center gap-2">
-                Agent address
+                Agent address{" "}
                 <span className="text-sm text-muted-foreground">
                   (required)
                 </span>
@@ -456,7 +456,7 @@ export function RegisterAgent(): JSX.Element {
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="agent-name" className="flex items-center gap-2">
-                Agent Name
+                Agent Name{" "}
                 <span className="text-sm text-muted-foreground">
                   (required)
                 </span>
@@ -518,7 +518,7 @@ export function RegisterAgent(): JSX.Element {
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="title" className="flex items-center gap-2">
-                    Agent title
+                    Agent title{" "}
                     <span className="text-sm text-muted-foreground">
                       (required)
                     </span>
@@ -537,7 +537,7 @@ export function RegisterAgent(): JSX.Element {
 
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="body" className="flex items-center gap-2">
-                    Agent description
+                    Agent description{" "}
                     <span className="text-sm text-muted-foreground">
                       (required)
                     </span>
@@ -644,17 +644,17 @@ export function RegisterAgent(): JSX.Element {
                         </div>
                       )}
 
-                      {dropzone.fileRejections.map((fileRej, idx) => (
+                      {dropzone.fileRejections.map((fileRej) => (
                         <div
-                          key={idx}
+                          key={fileRej.file.name}
                           className="flex flex-col items-center gap-1 text-sm font-medium"
                         >
                           <span className="flex gap-1.5 text-nowrap">
                             Rejected file: {smallFilename(fileRej.file.name)}
                           </span>
-                          {fileRej.errors.map((err, idx) => (
+                          {fileRej.errors.map((err) => (
                             <span
-                              key={idx}
+                              key={fileRej.file.name}
                               className="text-xs font-medium text-red-500"
                             >
                               {err.message}

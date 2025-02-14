@@ -14,22 +14,37 @@ import { CircleHelp } from "lucide-react";
 import Link from "next/link";
 
 export const tutorialData = [
-  <Button asChild variant="link" className="h-5 p-0 text-cyan-500">
+  <Button
+    key="subwallet"
+    asChild
+    variant="link"
+    className="h-5 p-0 text-cyan-500"
+  >
     <Link target="_blank" href={"https://www.youtube.com/watch?v=3JDQFYg0u_A"}>
       Install and setup Subwallet
     </Link>
   </Button>,
-  <Button asChild variant="link" className="h-5 p-0 text-cyan-500">
+  <Button
+    key="polkadot"
+    asChild
+    variant="link"
+    className="h-5 p-0 text-cyan-500"
+  >
     <Link target="_blank" href={"https://www.youtube.com/watch?v=x63AMYG5uGc"}>
       Install and setup PolkadotJS
     </Link>
   </Button>,
-  <Button asChild variant="link" className="h-5 p-0 text-cyan-500">
+  <Button
+    key="tutorial"
+    asChild
+    variant="link"
+    className="h-5 p-0 text-cyan-500"
+  >
     <Link target="_blank" href={"https://www.youtube.com/watch?v=l_AQ5KspoDo"}>
       Torus Bridge tutorial
     </Link>
   </Button>,
-  <p>
+  <p key="docs">
     More information on our{" "}
     <Button asChild variant="link" className="h-5 p-0 text-cyan-500">
       <Link target="_blank" href={links.docs}>
@@ -58,8 +73,8 @@ export function GuideDialog() {
         </DialogHeader>
         <div>
           <ul className="flex list-disc flex-col gap-1.5 pl-3 text-sm">
-            {tutorialData.map((step, i) => (
-              <li key={i}>{step}</li>
+            {tutorialData.map((step) => (
+              <li key={step.key}>{step}</li>
             ))}
           </ul>
         </div>

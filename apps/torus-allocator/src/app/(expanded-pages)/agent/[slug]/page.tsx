@@ -13,9 +13,9 @@ import { api } from "~/trpc/server";
 
 export default async function AgentPage({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ slug: string }>;
-}): Promise<JSX.Element> {
+}>): Promise<JSX.Element> {
   const { slug } = await params;
 
   if (!slug) {

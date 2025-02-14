@@ -215,10 +215,11 @@ export function UnstakeAction() {
       label: "From",
       content: `${recipient ? smallAddress(recipient, 6) : "From Address"}`,
     },
-    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
+    { label: "Amount", content: `${amount || 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "-"}`,
+      content:
+        amount && selectedAccount?.address ? estimatedFee + " TORUS" : "-",
     },
   ];
 

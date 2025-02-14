@@ -1,6 +1,5 @@
 import { Button } from "@torus-ts/ui";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
-import { removeEmojisLmao } from "@torus-ts/utils";
 import { MoveDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -45,7 +44,7 @@ export const ExpandedViewContent = (
         ref={contentRef}
         className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-24" : "max-h-[250px] pb-0"} duration-1000`}
       >
-        <MarkdownView source={removeEmojisLmao(body ?? "Content not found.")} />
+        <MarkdownView source={body ?? "Content not found."} />
 
         {isOverflowing && (
           <div

@@ -38,8 +38,8 @@ import { useTorus } from "@torus-ts/torus-provider";
 import type {
   AddCustomProposal,
   AddAgentApplication,
-  addDaoTreasuryTransferProposal,
-  registerAgent,
+  AddDaoTreasuryTransferProposal,
+  RegisterAgent,
   RemoveVote,
   Vote,
 } from "@torus-ts/torus-provider/types";
@@ -74,7 +74,7 @@ interface GovernanceContextType {
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   addDaoTreasuryTransferProposal: (
-    proposal: addDaoTreasuryTransferProposal,
+    proposal: AddDaoTreasuryTransferProposal,
   ) => Promise<void>;
   agentApplications: UseQueryResult<ApplicationState[], Error>;
   agents: UseQueryResult<Map<SS58Address, Agent>, Error>;
@@ -88,7 +88,7 @@ interface GovernanceContextType {
   lastBlock: UseQueryResult<LastBlock, Error>;
   proposals: UseQueryResult<Proposal[], Error>;
   proposalsWithMeta: ProposalState[] | undefined;
-  registerAgent: (registerAgent: registerAgent) => Promise<void>;
+  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   rewardAllocation: UseQueryResult<bigint, Error>;
   selectedAccount: InjectedAccountWithMeta | null;
@@ -113,9 +113,9 @@ const GovernanceContext = createContext<GovernanceContextType | null>(null);
 
 export function GovernanceProvider({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   // == API Context ==
   const {
     accounts,

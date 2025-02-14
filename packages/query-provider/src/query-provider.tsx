@@ -16,12 +16,17 @@ function getQueryClient(): QueryClient {
     return createQueryClient();
   }
   // Browser: use singleton pattern to keep the same query client
-  return (clientQueryClientSingleton ??= createQueryClient());
+  if (!clientQueryClientSingleton) {
+    clientQueryClientSingleton = createQueryClient();
+  }
+  return clientQueryClientSingleton;
 }
 
-export function ReactQueryProvider(props: {
-  children: React.ReactNode;
-}): JSX.Element {
+export function ReactQueryProvider(
+  props: Readonly<{
+    children: React.ReactNode;
+  }>,
+): JSX.Element {
   const queryClient = getQueryClient();
 
   return (

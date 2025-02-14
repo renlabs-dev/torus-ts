@@ -11,7 +11,7 @@ const INIT_TIMEOUT = 10_000; // 10 seconds
 // A wrapper app to delay rendering children until the warp context is ready
 export function WarpContextInitGateProvider({
   children,
-}: PropsWithChildren<unknown>) {
+}: Readonly<PropsWithChildren<unknown>>) {
   const isWarpContextReady = !!useReadyMultiProvider();
 
   const [isTimedOut, setIsTimedOut] = useState(false);

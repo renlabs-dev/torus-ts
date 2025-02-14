@@ -18,7 +18,7 @@ interface TransactionStatusProps {
 export function TransactionStatus({
   status,
   message,
-}: TransactionStatusProps): JSX.Element {
+}: Readonly<TransactionStatusProps>): JSX.Element {
   const statusConfig = {
     SUCCESS: { color: "text-cyan-300", Icon: CheckCircleIcon },
     ERROR: { color: "text-red-300", Icon: ExclamationCircleIcon },

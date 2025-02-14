@@ -13,14 +13,14 @@ import {
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Info } from "lucide-react";
 import { useMemo } from "react";
-import { ALLOCATOR_ADDRESS } from "~/consts";
+import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useTutorialStore } from "~/stores/tutorialStore";
 
 export const UserWeightInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
   const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
-    useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
+    useKeyStakedBy(torusApi, env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"));
   const { delegatedAgents } = useDelegateAgentStore();
   const { openTutorial } = useTutorialStore();
 

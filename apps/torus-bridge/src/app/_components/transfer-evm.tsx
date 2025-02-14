@@ -219,8 +219,6 @@ export function TransferEVM() {
   const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
   if (torusEvmClient == null) throw new Error("Torus EVM client not found");
 
-  // const { chain: torusEvmChain } = torusEvmClient;
-
   const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
     wagmi.useBalance({
       address: evmAddress,
@@ -257,13 +255,15 @@ export function TransferEVM() {
         setAmount(maxBalanceString.replace(/\.?0+$/, ""));
       }
     } else {
-      // withdraw mode
-      if (torusEvmBalance?.value) {
-        const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
-        const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
-
-        setAmount(maxBalanceString.replace(/\.?0+$/, ""));
+      if (!torusEvmBalance) {
+        console.error("Torus EVM balance is null");
+        return;
       }
+
+      const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
+      const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
+
+      setAmount(maxBalanceString.replace(/\.?0+$/, ""));
     }
   }, [currentMode, userAccountFreeBalance, torusEvmBalance]);
 
@@ -273,13 +273,13 @@ export function TransferEVM() {
         <div className="space-y-4">
           <div className="flex items-end gap-2">
             <div className="w-full">
-              <ChainField name="from" label="From" chainName={fromChain} />
+              <ChainField label="From" chainName={fromChain} />
             </div>
             <div className="flex flex-1 flex-col items-center">
               <SwapActionButton onClick={toggleMode} />
             </div>
             <div className="w-full">
-              <ChainField name="to" label="To" chainName={toChain} />
+              <ChainField label="To" chainName={toChain} />
             </div>
           </div>
         </div>
@@ -400,12 +400,11 @@ export function TransferEVM() {
 }
 
 interface ChainFieldProps {
-  name: string;
   label: string;
   chainName: string;
 }
 
-function ChainField({ label, chainName }: ChainFieldProps) {
+function ChainField({ label, chainName }: Readonly<ChainFieldProps>) {
   const isTorusEVM = chainName === "Torus EVM";
   return (
     <div className="flex w-full flex-col gap-2">
@@ -434,7 +433,7 @@ function ChainField({ label, chainName }: ChainFieldProps) {
   );
 }
 
-function SwapActionButton({ onClick }: { onClick: () => void }) {
+function SwapActionButton({ onClick }: Readonly<{ onClick: () => void }>) {
   return (
     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onClick}>
       <ArrowLeftRight className="h-4 w-4" />

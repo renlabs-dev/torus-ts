@@ -33,13 +33,13 @@ export const VotePercentageBar = (props: {
       />
       <div className="absolute inset-0 flex items-center justify-between px-3 text-sm">
         <div className="flex items-center gap-2 text-xs">
-          Favorable
+          Favorable{" "}
           <span className="text-muted-foreground">
             {favorablePercent.toFixed(2)}%
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          Against
+          Against{" "}
           <span className="text-muted-foreground">
             {againstPercent.toFixed(2)}%
           </span>

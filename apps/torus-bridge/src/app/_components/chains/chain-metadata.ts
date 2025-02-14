@@ -40,7 +40,7 @@ export async function assembleChainMetadata(
     (c, m): m is ChainMetadata => chainsInTokens.includes(c),
   );
 
-  // TODO have the registry do this automatically
+  // TODO: have the registry do this automatically
   registryChainMetadata = await promiseObjAll(
     objMap(
       registryChainMetadata,

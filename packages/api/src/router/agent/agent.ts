@@ -1,9 +1,8 @@
+import { publicProcedure } from "../../trpc";
 import { eq, and, max, isNull, inArray } from "@torus-ts/db";
+import { agentSchema, penalizeAgentVotesSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-import "@torus-ts/db/schema";
-import { publicProcedure } from "../../trpc";
-import { agentSchema, penalizeAgentVotesSchema } from "@torus-ts/db/schema";
 
 export const agentRouter = {
   // GET

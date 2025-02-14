@@ -103,7 +103,7 @@ export function CreateCadreCandidates() {
             placeholder="Discord ID (17-20 digits)"
             value={discordId}
             onChange={(e) =>
-              setDiscordId(e.target.value.replace(/[^0-9]/g, "").slice(0, 20))
+              setDiscordId(e.target.value.replace(/\D/g, "").slice(0, 20))
             }
             minLength={17}
             maxLength={20}

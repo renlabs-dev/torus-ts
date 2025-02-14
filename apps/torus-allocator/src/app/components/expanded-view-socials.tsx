@@ -25,7 +25,7 @@ interface ExpandedViewSocialsProps {
 export function ExpandedViewSocials({
   socials,
   website,
-}: ExpandedViewSocialsProps) {
+}: Readonly<ExpandedViewSocialsProps>) {
   const socialsList = buildSocials(socials ?? {}, website);
   return (
     <div className="flex gap-2">

@@ -16,7 +16,7 @@ interface VoterListProps {
   penalties: PenaltyList;
 }
 
-export function PenaltyList(props: VoterListProps): JSX.Element {
+export function PenaltyList(props: Readonly<VoterListProps>): JSX.Element {
   const { penalties } = props;
 
   const [isAtBottom, setIsAtBottom] = useState(false);

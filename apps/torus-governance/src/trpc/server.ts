@@ -16,7 +16,7 @@ const createContext = cache(async () => {
     headers: heads,
     jwtSecret: env("JWT_SECRET"),
     authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
-    allocatorAddress: env("TORUS_ALLOCATOR_ADDRESS"),
+    allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
   });
 });
 

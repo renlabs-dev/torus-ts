@@ -53,35 +53,33 @@ function WalletOptions() {
   }, [currentTab, router, searchParams]);
 
   return (
-    <>
-      <Tabs
-        value={
-          tabs.find((tab) => tab.params === currentTab)?.params ??
-          defaultTab.params
-        }
-        onValueChange={(value) => handleTabChange(value)}
-        className="flex w-full animate-fade flex-col gap-4"
-      >
-        <TabsList className="grid w-full grid-cols-2">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.text}
-              value={tab.params}
-              onClick={() => handleTabChange(tab.params)}
-            >
-              {tab.text}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {tabs.map((tab) => {
-          return (
-            <TabsContent key={tab.params} value={tab.params}>
-              {tab.component}
-            </TabsContent>
-          );
-        })}
-      </Tabs>
-    </>
+    <Tabs
+      value={
+        tabs.find((tab) => tab.params === currentTab)?.params ??
+        defaultTab.params
+      }
+      onValueChange={(value) => handleTabChange(value)}
+      className="flex w-full animate-fade flex-col gap-4"
+    >
+      <TabsList className="grid w-full grid-cols-2">
+        {tabs.map((tab) => (
+          <TabsTrigger
+            key={tab.text}
+            value={tab.params}
+            onClick={() => handleTabChange(tab.params)}
+          >
+            {tab.text}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {tabs.map((tab) => {
+        return (
+          <TabsContent key={tab.params} value={tab.params}>
+            {tab.component}
+          </TabsContent>
+        );
+      })}
+    </Tabs>
   );
 }
 

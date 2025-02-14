@@ -65,7 +65,9 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
   return { wagmiConfig, chains };
 }
 
-export function EvmWalletProvider({ children }: PropsWithChildren<unknown>) {
+export function EvmWalletProvider({
+  children,
+}: Readonly<PropsWithChildren<unknown>>) {
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 

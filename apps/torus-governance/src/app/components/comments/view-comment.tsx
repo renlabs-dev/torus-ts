@@ -133,10 +133,10 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
 export function ViewComment({
   id,
   itemType,
-}: {
+}: Readonly<{
   id: number;
   itemType: "PROPOSAL" | "AGENT_APPLICATION";
-}) {
+}>) {
   const { selectedAccount } = useTorus();
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(

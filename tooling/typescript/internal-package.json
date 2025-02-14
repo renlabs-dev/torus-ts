@@ -6,7 +6,6 @@
     "outDir": "${configDir}/dist",
     "declaration": true,
     "declarationMap": true,
-    // "emitDeclarationOnly": true,
     "noEmit": false
   },
   "include": ["${configDir}/src"],

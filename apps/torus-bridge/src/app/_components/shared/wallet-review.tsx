@@ -8,7 +8,9 @@ import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";
 import { useFeeQuotes } from "~/hooks/use-fee-quotes";
 import type { TransferFormValues } from "~/utils/types";
 
-export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
+export function WalletTransactionReview({
+  isReview,
+}: Readonly<{ isReview: boolean }>) {
   const { values } = useFormikContext<TransferFormValues>();
   const { amount, destination, tokenIndex } = values;
   const warpCore = useWarpCore();
@@ -65,12 +67,7 @@ export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
               label="Amount"
               value={`${Number(amount) > 0 ? amount : 0} ${originTokenSymbol}`}
             />
-            {/* {fees?.localQuote && fees.localQuote.amount > 0n && (
-              <ItemText
-                label="Local Gas (est.)"
-                value={`${fees.localQuote.getDecimalFormattedAmount().toFixed(4) || "0"} ${fees.localQuote.token.symbol || ""}`}
-              />
-            )} */}
+
             {fees?.interchainQuote && fees.interchainQuote.amount > 0n && (
               <p className="flex w-full justify-between">
                 <span className="min-w-[6.5rem]">Interchain Gas</span>
@@ -86,7 +83,10 @@ export function WalletTransactionReview({ isReview }: { isReview: boolean }) {
   );
 }
 
-function ItemText({ label, value }: { label: string; value: string }) {
+function ItemText({
+  label,
+  value,
+}: Readonly<{ label: string; value: string }>) {
   return (
     <p className="flex justify-between">
       <span>{label}</span>

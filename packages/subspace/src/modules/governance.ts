@@ -158,7 +158,7 @@ export async function processVotesAndStakes(
 
   // Process all votes and push it to an array to avoid spread
   const processedVotes: VoteWithStake[] = [];
-  votesFor.map((address) => {
+  votesFor.forEach((address) => {
     processedVotes.push({
       address,
       stake: totalStakeMap.get(address) ?? 0n,
@@ -166,7 +166,7 @@ export async function processVotesAndStakes(
     });
   });
 
-  votesAgainst.map((address) => {
+  votesAgainst.forEach((address) => {
     processedVotes.push({
       address,
       stake: totalStakeMap.get(address) ?? 0n,
@@ -175,8 +175,8 @@ export async function processVotesAndStakes(
   });
 
   // Sort the processed votes
-  const sortedVotes = processedVotes.sort((a, b) => Number(b.stake - a.stake));
-  return sortedVotes;
+  processedVotes.sort((a, b) => Number(b.stake - a.stake));
+  return processedVotes;
 }
 
 // == Applications ==

@@ -13,7 +13,7 @@ interface VoterListProps {
   isError: boolean;
 }
 
-export function VoterList(props: VoterListProps): JSX.Element {
+export function VoterList(props: Readonly<VoterListProps>): JSX.Element {
   const { isError, isLoading, voters } = props;
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(

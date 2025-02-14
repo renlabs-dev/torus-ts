@@ -214,7 +214,7 @@ export function CreateAgentApplication(): JSX.Element {
         </div>
         <Input
           onChange={(e) =>
-            setDiscordId(e.target.value.replace(/[^0-9]/g, "").slice(0, 20))
+            setDiscordId(e.target.value.replace(/\D/g, "").slice(0, 20))
           }
           placeholder="Discord ID (17-20 digits)"
           minLength={17}
@@ -273,9 +273,8 @@ export function CreateAgentApplication(): JSX.Element {
 
       <div className="flex items-start gap-2">
         <span className="text-white">
-          Application fee:
+          Application fee:{" "}
           <span className="text-muted-foreground">
-            {" "}
             {formatToken(networkConfigs.data?.agentApplicationCost ?? 0)} TORUS
           </span>
         </span>

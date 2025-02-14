@@ -20,10 +20,10 @@ const draw = {
 export function LinesSVG({
   showStarter,
   showNetwork,
-}: {
+}: Readonly<{
   showStarter: boolean;
   showNetwork: boolean;
-}) {
+}>) {
   return (
     <motion.svg
       initial="hidden"

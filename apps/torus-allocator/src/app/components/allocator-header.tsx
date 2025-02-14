@@ -9,7 +9,9 @@ import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Header, WalletDropdown } from "@torus-ts/ui";
 
-export function AllocatorHeader({ torusCacheUrl }: { torusCacheUrl: string }) {
+export function AllocatorHeader({
+  torusCacheUrl,
+}: Readonly<{ torusCacheUrl: string }>) {
   const {
     accounts,
     api,

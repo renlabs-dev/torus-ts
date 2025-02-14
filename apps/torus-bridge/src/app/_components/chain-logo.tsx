@@ -8,11 +8,11 @@ export function ChainLogo({
   chainName,
   background,
   size,
-}: {
+}: Readonly<{
   chainName?: string;
   background?: boolean;
   size?: number;
-}) {
+}>) {
   const registry = useStore((s) => s.registry);
   const chainMetadata = useChainMetadata(chainName);
   const { name, Icon } = useMemo(() => {

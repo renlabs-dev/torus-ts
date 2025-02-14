@@ -15,7 +15,6 @@ const createQueryClient = () =>
     defaultOptions: {
       queries: {
         staleTime: 30 * 1000,
-        // throwOnError: true, // TODO
       },
     },
   });
@@ -34,7 +33,9 @@ const getQueryClient = () => {
 
 export const api = createTRPCReact<AppRouter>();
 
-export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
+export function TRPCReactProvider({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const queryClient = getQueryClient();
 
   const { signHex } = useTorus();

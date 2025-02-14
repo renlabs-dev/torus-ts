@@ -16,8 +16,9 @@ export function handleMapValues<K extends Codec, T extends ZodTypeAny>(
   const errors: Error[] = [];
   for (const entry of rawEntries) {
     const [, valueRaw] = entry;
+    let parsed: Out;
     try {
-      var parsed = schema.parse(valueRaw) as Out;
+      parsed = schema.parse(valueRaw) as Out;
     } catch (err) {
       assert_error(err);
       errors.push(err);
@@ -42,15 +43,17 @@ export function handleMapEntries<K extends ZodTypeAny, V extends ZodTypeAny>(
   for (const entry of rawEntries) {
     const [keysRaw, valueRaw] = entry;
     const [key1Raw] = keysRaw.args;
+    let parsedKey: KeyOut;
     try {
-      var parsedKey = keySchema.parse(key1Raw) as KeyOut;
+      parsedKey = keySchema.parse(key1Raw) as KeyOut;
     } catch (err) {
       assert_error(err);
       errors.push(err);
       continue;
     }
+    let parsedVal: ValOut;
     try {
-      var parsedVal = valueSchema.parse(valueRaw) as ValOut;
+      parsedVal = valueSchema.parse(valueRaw) as ValOut;
     } catch (err) {
       assert_error(err);
       errors.push(err);
@@ -80,22 +83,25 @@ export function handleDoubleMapEntries<
   for (const entry of rawEntries) {
     const [keysRaw, valueRaw] = entry;
     const [key1Raw, key2Raw] = keysRaw.args;
+    let parsedKey1: Key1Out;
+    let parsedKey2: Key2Out;
+    let parsedVal: ValOut;
     try {
-      var parsedKey1 = key1Schema.parse(key1Raw) as Key1Out;
+      parsedKey1 = key1Schema.parse(key1Raw) as Key1Out;
     } catch (err) {
       assert_error(err);
       errors.push(err);
       continue;
     }
     try {
-      var parsedKey2 = key2Schema.parse(key2Raw) as Key2Out;
+      parsedKey2 = key2Schema.parse(key2Raw) as Key2Out;
     } catch (err) {
       assert_error(err);
       errors.push(err);
       continue;
     }
     try {
-      var parsedVal = valueSchema.parse(valueRaw) as ValOut;
+      parsedVal = valueSchema.parse(valueRaw) as ValOut;
     } catch (err) {
       assert_error(err);
       errors.push(err);

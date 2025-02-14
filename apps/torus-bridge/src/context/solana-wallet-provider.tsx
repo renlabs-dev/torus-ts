@@ -20,7 +20,9 @@ import { useCallback, useMemo } from "react";
 import { toast } from "react-toastify";
 import { logger } from "~/utils/logger";
 
-export function SolanaWalletProvider({ children }: PropsWithChildren<unknown>) {
+export function SolanaWalletProvider({
+  children,
+}: Readonly<PropsWithChildren<unknown>>) {
   // TODO support multiple networks
   const network = WalletAdapterNetwork.Mainnet;
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);

@@ -25,7 +25,7 @@ interface WalletOptionsProps {
   buttons: { text: string; component: JSX.Element }[];
 }
 
-function WalletOptions({ buttons }: WalletOptionsProps): JSX.Element {
+function WalletOptions({ buttons }: Readonly<WalletOptionsProps>): JSX.Element {
   const [currentTab, setCurrentTab] = useState(buttons[0]?.text);
 
   const ActionTabs: React.FC<{ text: string }> = ({ text }) => {

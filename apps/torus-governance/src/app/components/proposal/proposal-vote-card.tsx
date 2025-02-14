@@ -157,7 +157,9 @@ interface ProposalVoteCardProps {
   ) => Promise<QueryObserverResult<VoteWithStake[], Error>>;
 }
 
-export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
+export function ProposalVoteCard(
+  props: Readonly<ProposalVoteCardProps>,
+): JSX.Element {
   const {
     proposalId,
     voted = "UNVOTED",
@@ -187,10 +189,10 @@ export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
     setVotingStatus(callbackReturn);
   }
 
-  function handleVote(): void {
-    const voteBoolean = vote === "FAVORABLE" ? true : false;
+  async function handleVote(): Promise<void> {
+    const voteBoolean = vote === "FAVORABLE";
     try {
-      void voteProposal({
+      await voteProposal({
         proposalId,
         vote: voteBoolean,
         callback: handleCallback,
@@ -205,14 +207,14 @@ export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
     }
   }
 
-  function handleRemoveVote(): void {
+  async function handleRemoveVote(): Promise<void> {
     setVotingStatus({
       status: "STARTING",
       finalized: false,
       message: "Starting vote removal",
     });
     try {
-      void removeVoteProposal({
+      await removeVoteProposal({
         proposalId,
         callback: handleCallback,
         refetchHandler,

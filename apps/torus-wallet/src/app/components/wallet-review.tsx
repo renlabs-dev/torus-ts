@@ -15,7 +15,9 @@ interface WalletTransactionReviewProps {
   title?: string;
 }
 
-export function WalletTransactionReview(props: WalletTransactionReviewProps) {
+export function WalletTransactionReview(
+  props: Readonly<WalletTransactionReviewProps>,
+) {
   const {
     disabled = false,
     formRef,

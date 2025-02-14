@@ -78,7 +78,7 @@ function Card({ url, ...props }) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     easing.damp3(ref.current.scale, hovered ? 1.15 : 1, 0.1, delta);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    easing.damp(ref.current.material, "zoom", hovered ? 1 : 1, 0.2, delta);
+    easing.damp(ref.current.material, "zoom", 1, 0.2, delta);
   });
   return (
     <Image
