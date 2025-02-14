@@ -25,9 +25,9 @@ export const firaMono = FiraMono({
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <TorusProvider

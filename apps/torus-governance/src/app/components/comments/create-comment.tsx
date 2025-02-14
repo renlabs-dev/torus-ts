@@ -17,11 +17,11 @@ export function CreateComment({
   id,
   itemType,
   author,
-}: {
+}: Readonly<{
   id: number;
   itemType: "PROPOSAL" | "AGENT_APPLICATION";
   author?: SS58Address;
-}) {
+}>) {
   const { selectedAccount, accountStakedBalance, isUserCadre } =
     useGovernance();
 
@@ -97,9 +97,8 @@ export function CreateComment({
         Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
       );
     }
-    {
-      return !isUserCadre && author !== selectedAccount.address;
-    }
+
+    return !isUserCadre && author !== selectedAccount.address;
   };
 
   const setOverlay = () => {

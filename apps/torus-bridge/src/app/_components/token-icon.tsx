@@ -10,7 +10,7 @@ interface Props {
   size?: number;
 }
 
-export function TokenIcon({ token, size = 32 }: Props) {
+export function TokenIcon({ token, size = 32 }: Readonly<Props>) {
   const title = token?.symbol ?? "";
   const character = title ? title.charAt(0).toUpperCase() : "";
   const fontSize = Math.floor(size / 2);
@@ -28,6 +28,7 @@ export function TokenIcon({ token, size = 32 }: Props) {
       {imageSrc && !fallbackToText ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          alt="Token Logo"
           src={imageSrc}
           width={size}
           height={size}

@@ -4,9 +4,9 @@ import { api } from "~/trpc/server";
 
 export default async function UserAgentPage({
   searchParams,
-}: {
+}: Readonly<{
   searchParams: Promise<Record<string, string | undefined>>;
-}): Promise<JSX.Element | string | Response> {
+}>): Promise<JSX.Element | string | Response> {
   const params = await searchParams;
   const userKey = params.userKey;
   const agentKey = params.agentKey;

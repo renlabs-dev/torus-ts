@@ -1,5 +1,3 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import "@torus-ts/db/schema";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { and, eq, isNull, sql } from "@torus-ts/db";
 import {
@@ -8,6 +6,7 @@ import {
   commentSchema,
 } from "@torus-ts/db/schema";
 import { COMMENT_INTERACTION_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
 export const commentInteractionRouter = {

@@ -40,7 +40,7 @@ export interface RemoveVote extends TransactionHelpers {
   proposalId: number;
 }
 
-export interface registerAgent {
+export interface RegisterAgent {
   agentKey: string;
   name: string;
   url: string;
@@ -53,7 +53,7 @@ export interface AddCustomProposal {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface addDaoTreasuryTransferProposal {
+export interface AddDaoTreasuryTransferProposal {
   value: string;
   destinationKey: string;
   data: string; // IpfsHash

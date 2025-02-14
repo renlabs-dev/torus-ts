@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Label,
   Select,
   SelectContent,
   SelectGroup,
@@ -35,7 +36,10 @@ interface ReportCommentProps {
   setCommentId: (id: number | null) => void;
 }
 
-export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
+export function ReportComment({
+  commentId,
+  setCommentId,
+}: Readonly<ReportCommentProps>) {
   const [formData, setFormData] = useState<ReportFormData>({
     reason: "SPAM",
     content: "",
@@ -97,9 +101,12 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
+      <button
         className="absolute inset-0 bg-card/30 backdrop-blur-sm"
         onClick={() => setCommentId(null)}
+        onKeyDown={(e) => e.key === "Escape" && setCommentId(null)}
+        aria-label="Close report comment dialog"
+        type="button"
       />
       <Card className="relative h-fit w-full max-w-screen-md animate-fade-in-down text-left text-white">
         <CardHeader className="flex flex-row items-center justify-between gap-3 px-6 pt-6">
@@ -116,7 +123,7 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
         <CardContent className="px-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="mb-2 block text-sm font-bold">Reason</label>
+              <Label className="mb-2 block text-sm font-bold">Reason</Label>
               <Select
                 value={formData.reason}
                 onValueChange={(value) => handleInputChange("reason", value)}
@@ -141,9 +148,9 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
               )}
             </div>
             <div>
-              <label className="mb-2 block text-sm font-bold">
+              <Label className="mb-2 block text-sm font-bold">
                 Description
-              </label>
+              </Label>
               <Textarea
                 name="content"
                 value={formData.content}

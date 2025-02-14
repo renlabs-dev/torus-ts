@@ -16,7 +16,7 @@ interface CopyButtonProps
   asChild?: boolean;
 }
 
-export function CopyButton(props: CopyButtonProps): JSX.Element {
+export function CopyButton(props: Readonly<CopyButtonProps>): JSX.Element {
   const {
     children,
     className,

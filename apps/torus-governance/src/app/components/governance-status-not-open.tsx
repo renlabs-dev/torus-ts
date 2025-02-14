@@ -22,7 +22,7 @@ const statusColor: Record<GovernanceStatus, string> = {
 };
 
 export function GovernanceStatusNotOpen(
-  props: GovernanceStatusNotOpenProps,
+  props: Readonly<GovernanceStatusNotOpenProps>,
 ): JSX.Element {
   const { governanceModel, status, children } = props;
 

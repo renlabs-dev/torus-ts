@@ -15,13 +15,13 @@ export function TokenListModal({
   onSelect,
   origin,
   destination,
-}: {
+}: Readonly<{
   isOpen: boolean;
   close: () => void;
   onSelect: (token: IToken) => void;
   origin: ChainName;
   destination: ChainName;
-}) {
+}>) {
   const [search, setSearch] = useState("");
 
   const onClose = () => {
@@ -54,10 +54,10 @@ export function TokenListModal({
 function SearchBar({
   search,
   setSearch,
-}: {
+}: Readonly<{
   search: string;
   setSearch: (s: string) => void;
-}) {
+}>) {
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     inputRef.current?.focus();
@@ -88,12 +88,12 @@ export function TokenList({
   destination,
   searchQuery,
   onSelect,
-}: {
+}: Readonly<{
   origin: ChainName;
   destination: ChainName;
   searchQuery: string;
   onSelect: (token: IToken) => void;
-}) {
+}>) {
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 

@@ -29,7 +29,7 @@ interface ButtonProps {
   isHidden?: boolean;
 }
 
-function CustomButton({ href, children, isHidden }: ButtonProps) {
+function CustomButton({ href, children, isHidden }: Readonly<ButtonProps>) {
   if (isHidden) {
     return (
       <Button className="invisible w-28" size="lg">
@@ -67,7 +67,7 @@ export function ButtonsSection({
   onNetworkClick,
   isExpanded,
   setIsExpanded,
-}: ButtonsSectionProps) {
+}: Readonly<ButtonsSectionProps>) {
   const [cardPosition, setCardPosition] = useState(40);
 
   useEffect(() => {

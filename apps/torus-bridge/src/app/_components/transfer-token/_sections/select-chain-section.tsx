@@ -3,7 +3,9 @@
 import { ChainSelectField } from "../../chains/chain-select-field";
 import { SwapChainsButton } from "../_components/swap-chain-button";
 
-export function SelectChainSection({ isReview }: { isReview: boolean }) {
+export function SelectChainSection({
+  isReview,
+}: Readonly<{ isReview: boolean }>) {
   return (
     <div className="flex items-end gap-2">
       <div className="w-full">

@@ -9,7 +9,7 @@ interface Props {
   label: string;
 }
 
-export function ChainSelectField({ name, label }: Props) {
+export function ChainSelectField({ name, label }: Readonly<Props>) {
   const [field] = useField<ChainName>(name);
 
   const displayName = useChainDisplayName(field.value, true);

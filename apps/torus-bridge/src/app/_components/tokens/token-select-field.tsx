@@ -17,7 +17,7 @@ interface Props {
   disabled?: boolean;
 }
 
-export function TokenSelectField({ name, disabled }: Props) {
+export function TokenSelectField({ name, disabled }: Readonly<Props>) {
   const { values } = useFormikContext<TransferFormValues>();
   const [field, , helpers] = useField<number | undefined>(name);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,12 +81,12 @@ function TokenButton({
   disabled,
   onClick,
   isAutomatic,
-}: {
+}: Readonly<{
   token?: IToken;
   disabled?: boolean;
   onClick?: () => void;
   isAutomatic?: boolean;
-}) {
+}>) {
   return (
     <Button
       type="button"

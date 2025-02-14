@@ -12,7 +12,9 @@ import { useMemo } from "react";
 import { config } from "~/consts/config";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
-export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
+export function CosmosWalletProvider({
+  children,
+}: Readonly<PropsWithChildren<unknown>>) {
   const chainMetadata = useMultiProvider().metadata;
   const { chains, assets } = useMemo(() => {
     const multiProvider = new MultiProtocolProvider({

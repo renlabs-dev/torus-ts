@@ -86,10 +86,10 @@ export function AgentContentList() {
         itemsPerPage={ITEMS_PER_PAGE}
         search={search}
         viewType={viewType}
-        onPageChange={(page) => {
-          router.push(
-            `?page=${page}${search ? `&search=${search}` : ""}${viewType ? `&view-type=${viewType}` : ""}`,
-          );
+        onPageChange={(page: number) => {
+          const searchParam = search ? "&search=" + search : "";
+          const viewTypeParam = viewType ? "&view-type=" + viewType : "";
+          router.push("?page=" + page + searchParam + viewTypeParam);
         }}
       />
     );

@@ -13,7 +13,7 @@ import {
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Ellipsis } from "lucide-react";
 import { useMemo } from "react";
-import { ALLOCATOR_ADDRESS } from "~/consts";
+import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 export const PopoverInfo = () => {
@@ -22,7 +22,7 @@ export const PopoverInfo = () => {
     data: accountStakedBy,
     isLoading: isLoadingAccountStakedBy,
     refetch: refetchAccountStakedBy,
-  } = useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
+  } = useKeyStakedBy(torusApi, env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"));
   const { delegatedAgents } = useDelegateAgentStore();
 
   const userWeightPower = useMemo(() => {

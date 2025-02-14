@@ -12,11 +12,11 @@ export function TxSuccessToast({
   msg,
   txHash,
   chain,
-}: {
+}: Readonly<{
   msg: string;
   txHash: string;
   chain: ChainName;
-}) {
+}>) {
   const multiProvider = useMultiProvider();
   const url = multiProvider.tryGetExplorerTxUrl(chain, { hash: txHash });
 

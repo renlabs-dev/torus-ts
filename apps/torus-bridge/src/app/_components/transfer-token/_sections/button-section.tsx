@@ -12,12 +12,12 @@ export function ButtonSection({
   isValidating,
   setIsReview,
   resetForm,
-}: {
+}: Readonly<{
   isReview: boolean;
   isValidating: boolean;
   resetForm: () => void;
   setIsReview: (b: boolean) => void;
-}) {
+}>) {
   const { values } = useFormikContext<TransferFormValues>();
   const chainDisplayName = useChainDisplayName(values.destination);
 
@@ -46,7 +46,6 @@ export function ButtonSection({
     } catch (error) {
       console.error(error);
     } finally {
-      // await refetchHandler();
       setTransferLoading(false);
     }
   };
@@ -56,7 +55,6 @@ export function ButtonSection({
       <ConnectAwareSubmitButton
         chainName={values.origin}
         text={isValidating ? "Validating..." : "Continue"}
-        classes="mt-4 px-3 py-1.5"
       />
     );
   }

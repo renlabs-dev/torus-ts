@@ -14,13 +14,12 @@ import { useMultiProvider } from "~/hooks/use-multi-provider";
 interface Props {
   chainName: ChainName;
   text: string;
-  classes?: string;
 }
 
 export function ConnectAwareSubmitButton<FormValues = unknown>({
   chainName,
   text,
-}: Props) {
+}: Readonly<Props>) {
   const protocol = useChainProtocol(chainName) ?? ProtocolType.Ethereum;
   const connectFns = useConnectFns();
   const connectFn = connectFns[protocol];
@@ -38,11 +37,8 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   const firstError = `${Object.values(errors)[0]}` || "Unknown error";
 
   const variant = hasError ? "destructive" : "default";
-  const content = hasError
-    ? firstError
-    : isAccountReady
-      ? text
-      : "Connect wallet";
+  const accountReadyContent = isAccountReady ? text : "Connect wallet";
+  const content = hasError ? firstError : accountReadyContent;
   const type = isAccountReady ? "submit" : "button";
   const onClick = isAccountReady ? undefined : connectFn;
 

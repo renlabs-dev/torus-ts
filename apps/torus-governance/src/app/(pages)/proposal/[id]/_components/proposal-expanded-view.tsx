@@ -29,8 +29,7 @@ const handleUserVotes = ({
   proposalStatus: ProposalStatus;
   selectedAccountAddress: SS58Address;
 }): VoteStatus => {
-  if (!Object.prototype.hasOwnProperty.call(proposalStatus, "Open"))
-    return "UNVOTED";
+  if (!Object.hasOwn(proposalStatus, "Open")) return "UNVOTED";
 
   if (
     "Open" in proposalStatus &&
@@ -48,7 +47,9 @@ const handleUserVotes = ({
   return "UNVOTED";
 };
 
-export function ProposalExpandedView(props: CustomContent): JSX.Element {
+export function ProposalExpandedView(
+  props: Readonly<CustomContent>,
+): JSX.Element {
   const { paramId } = props;
   const {
     api,

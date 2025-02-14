@@ -10,7 +10,9 @@ import { useRecipientBalanceWatcher } from "~/hooks/use-balance-watcher";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { TransferFormValues } from "~/utils/types";
 
-export function RecipientSection({ isReview }: { isReview: boolean }) {
+export function RecipientSection({
+  isReview,
+}: Readonly<{ isReview: boolean }>) {
   const { values } = useFormikContext<TransferFormValues>();
   const { balance } = useDestinationBalance(values);
   useRecipientBalanceWatcher(values.recipient, balance);
@@ -34,7 +36,7 @@ export function RecipientSection({ isReview }: { isReview: boolean }) {
   );
 }
 
-function SelfButton({ disabled }: { disabled?: boolean }) {
+function SelfButton({ disabled }: Readonly<{ disabled?: boolean }>) {
   const { values, setFieldValue } = useFormikContext<TransferFormValues>();
   const multiProvider = useMultiProvider();
   const chainDisplayName = useChainDisplayName(values.destination);

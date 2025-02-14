@@ -14,9 +14,9 @@ import { env } from "~/env";
 
 export function AppContextProvider({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   return (
     <ToastProvider>
       <ReactQueryProvider>

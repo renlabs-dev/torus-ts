@@ -20,7 +20,7 @@ interface Validator {
   stake?: bigint;
 }
 
-export function ValidatorsList(props: ValidatorsListProps) {
+export function ValidatorsList(props: Readonly<ValidatorsListProps>) {
   const { accountStakedBy } = useWallet();
 
   const validatorsList = [

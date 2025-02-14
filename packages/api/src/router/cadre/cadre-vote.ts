@@ -1,9 +1,8 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import "@torus-ts/db/schema";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { and, eq, isNull } from "@torus-ts/db";
 import { cadreVoteSchema } from "@torus-ts/db/schema";
 import { CADRE_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import type { TRPCRouterRecord } from "@trpc/server";
 
 export const cadreVoteRouter = {
   // GET

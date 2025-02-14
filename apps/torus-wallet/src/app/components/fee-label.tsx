@@ -7,7 +7,7 @@ interface FeeLabelProps {
   accountConnected: boolean;
 }
 
-export function FeeLabel(props: FeeLabelProps) {
+export function FeeLabel(props: Readonly<FeeLabelProps>) {
   const { isEstimating, estimatedFee, accountConnected } = props;
 
   if (isEstimating) {

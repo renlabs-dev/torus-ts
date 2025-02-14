@@ -170,10 +170,11 @@ export function SendAction() {
       label: "To",
       content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
     },
-    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
+    { label: "Amount", content: `${amount || 0} TORUS` },
     {
       label: "Fee",
-      content: `${amount && selectedAccount?.address ? `${estimatedFee} TORUS` : "-"}`,
+      content:
+        amount && selectedAccount?.address ? estimatedFee + " TORUS" : "-",
     },
   ];
 

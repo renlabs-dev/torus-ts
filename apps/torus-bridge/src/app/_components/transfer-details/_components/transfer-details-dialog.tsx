@@ -34,11 +34,11 @@ export function TransfersDetailsDialog({
   isOpen,
   onClose,
   transfer,
-}: {
+}: Readonly<{
   isOpen: boolean;
   onClose: () => void;
   transfer: TransferContext;
-}) {
+}>) {
   const [fromUrl, setFromUrl] = useState<string>("");
   const [toUrl, setToUrl] = useState<string>("");
   const [originTxUrl, setOriginTxUrl] = useState<string>("");

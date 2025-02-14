@@ -42,8 +42,12 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
     startPage = Math.max(endPage - maxVisiblePages + 1, 1);
   }
 
-  const getPageUrl = (page: number) =>
-    `?page=${page}${search ? `&search=${search}` : ""}${viewType ? `&view-type=${viewType}` : ""}`;
+  const getPageUrl = (page: number) => {
+    let url = "?page=" + page;
+    if (search) url += "&search=" + search;
+    if (viewType) url += "&view-type=" + viewType;
+    return url;
+  };
 
   const handlePageClick = (page: number) => (e: React.MouseEvent) => {
     e.preventDefault();
