@@ -1,8 +1,7 @@
+import base from "./base";
 import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 import animated from "tailwindcss-animated";
-
-import base from "./base";
 
 export default {
   content: base.content,

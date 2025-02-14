@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
-
-import { useWallet } from "~/context/wallet-provider";
 import { AmountButtons } from "../amount-buttons";
 import { ValidatorsList } from "../validators-list";
 import { WalletTransactionReview } from "../wallet-review";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
+import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
+import React, { useEffect, useRef, useState } from "react";
+import { useWallet } from "~/context/wallet-provider";
 
 export function TransferStakeAction() {
   const { accountStakedBy, transferStake, selectedAccount } = useWallet();

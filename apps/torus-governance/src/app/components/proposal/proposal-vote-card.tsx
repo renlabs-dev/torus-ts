@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { TicketX } from "lucide-react";
-import { match } from "rustie";
-
+import { GovernanceStatusNotOpen } from "../governance-status-not-open";
+import type { VoteStatus } from "../vote-label";
+import { VotePowerSettings } from "./vote-power-settings";
+import type {
+  QueryObserverResult,
+  RefetchOptions,
+} from "@tanstack/react-query";
 import type { ProposalStatus, VoteWithStake } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -12,15 +15,10 @@ import {
   ToggleGroupItem,
   TransactionStatus,
 } from "@torus-ts/ui";
-
-import type { VoteStatus } from "../vote-label";
+import { TicketX } from "lucide-react";
+import { useState } from "react";
+import { match } from "rustie";
 import { useGovernance } from "~/context/governance-provider";
-import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import { VotePowerSettings } from "./vote-power-settings";
-import type {
-  QueryObserverResult,
-  RefetchOptions,
-} from "@tanstack/react-query";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 

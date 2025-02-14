@@ -1,6 +1,5 @@
-import { Coins } from "lucide-react";
-
 import { Skeleton } from "@torus-ts/ui";
+import { Coins } from "lucide-react";
 
 interface FeeLabelProps {
   isEstimating: boolean;

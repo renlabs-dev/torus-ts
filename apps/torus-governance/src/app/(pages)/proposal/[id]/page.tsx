@@ -1,6 +1,5 @@
-import { Button } from "@torus-ts/ui";
-
 import { ProposalExpandedView } from "./_components/proposal-expanded-view";
+import { Button } from "@torus-ts/ui";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 

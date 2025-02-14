@@ -1,3 +1,4 @@
+import { Enum } from "@polkadot/types";
 import type {
   ParseInput,
   ParseReturnType,
@@ -9,7 +10,6 @@ import type {
   ZodTypeAny,
   ZodTypeDef,
 } from "zod";
-import { Enum } from "@polkadot/types";
 import {
   addIssueToContext,
   INVALID,

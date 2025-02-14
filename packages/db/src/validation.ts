@@ -1,5 +1,3 @@
-import { createInsertSchema } from "drizzle-zod";
-
 import {
   cadreCandidateSchema,
   cadreVoteSchema,
@@ -11,6 +9,7 @@ import {
   userAgentWeightSchema,
   penalizeAgentVotesSchema,
 } from "./schema";
+import { createInsertSchema } from "drizzle-zod";
 
 export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
   agentReportSchema,

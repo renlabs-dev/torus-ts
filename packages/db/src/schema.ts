@@ -1,3 +1,4 @@
+import { extract_pgenum_values } from "./utils";
 import { asc, eq, sql, isNull, sum } from "drizzle-orm";
 import {
   bigint as drizzleBigint,
@@ -16,12 +17,10 @@ import {
   check,
   numeric,
 } from "drizzle-orm/pg-core";
-
-export const createTable = pgTableCreator((name) => `${name}`);
-
-import { extract_pgenum_values } from "./utils";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
+
+export const createTable = pgTableCreator((name) => `${name}`);
 
 // ==== Util ====
 

@@ -1,7 +1,14 @@
 "use client";
 
-import { Clock, Crown } from "lucide-react";
-
+import { AgentActivityLabel } from "./agent-application/agent-activity-label";
+import { AgentApplicationVoteLabel } from "./agent-application/agent-application-vote-label";
+import type { AgentApplicationVoteType } from "./agent-application/agent-application-vote-label";
+import { AgentStatusLabel } from "./agent-application/agent-status-label";
+import { ProposalTypeLabel } from "./proposal/proposal-type-label";
+import { StatusLabel } from "./status-label";
+import type { VoteStatus } from "./vote-label";
+import { VoteLabel } from "./vote-label";
+import { VotePercentageBar } from "./vote-percentage-bar";
 import type {
   AgentApplication,
   ProposalData,
@@ -11,16 +18,7 @@ import type {
 import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui";
 import { getExpirationTime } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
-
-import type { VoteStatus } from "./vote-label";
-import { ProposalTypeLabel } from "./proposal/proposal-type-label";
-import { StatusLabel } from "./status-label";
-import { VoteLabel } from "./vote-label";
-import { VotePercentageBar } from "./vote-percentage-bar";
-import { AgentStatusLabel } from "./agent-application/agent-status-label";
-import { AgentActivityLabel } from "./agent-application/agent-activity-label";
-import { AgentApplicationVoteLabel } from "./agent-application/agent-application-vote-label";
-import type { AgentApplicationVoteType } from "./agent-application/agent-application-vote-label";
+import { Clock, Crown } from "lucide-react";
 
 export interface ProposalCardProps {
   author: SS58Address;

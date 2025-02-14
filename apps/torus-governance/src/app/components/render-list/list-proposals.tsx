@@ -1,12 +1,12 @@
+import { CardSkeleton } from "../card-skeleton";
+import { CardViewData } from "../card-view-data";
+import type { VoteStatus } from "../vote-label";
+import { ListContainer } from "./container-list";
+import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomProposal } from "~/utils";
-import { CardViewData } from "../card-view-data";
-import { useSearchParams } from "next/navigation";
-import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
-import type { VoteStatus } from "../vote-label";
-import { CardSkeleton } from "../card-skeleton";
-import { ListContainer } from "./container-list";
 
 const ListCardsLoadingSkeleton = () => {
   return (

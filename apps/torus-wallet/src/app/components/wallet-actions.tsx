@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import { ReceiveAction } from "./actions/receive";
 import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
+import { StakingCalculator } from "./actions/staking-calculator";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
-import { ReceiveAction } from "./actions/receive";
-import { StakingCalculator } from "./actions/staking-calculator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import React, { useState } from "react";
 
 const transferButtons = [
   { text: "Send", component: <SendAction /> },

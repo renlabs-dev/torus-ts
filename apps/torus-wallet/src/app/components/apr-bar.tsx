@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { formatToken } from "@torus-ts/utils/subspace";
-import { useAPR } from "~/hooks/useAPR";
 import { APRBarSkeleton } from "./apr-bar-skeleton";
+import { formatToken } from "@torus-ts/utils/subspace";
+import { motion } from "framer-motion";
+import { useAPR } from "~/hooks/useAPR";
 
 export function APRBar() {
   const { apr, isLoading, isError, totalStake, totalIssuance } = useAPR();

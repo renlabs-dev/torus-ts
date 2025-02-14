@@ -1,7 +1,8 @@
 "use client";
 
-import { Ellipsis } from "lucide-react";
-
+import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
+import type { SS58Address } from "@torus-ts/subspace";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Button,
   Popover,
@@ -9,13 +10,9 @@ import {
   PopoverTrigger,
   Skeleton,
 } from "@torus-ts/ui";
-
 import { formatToken } from "@torus-ts/utils/subspace";
-import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
+import { Ellipsis } from "lucide-react";
 import { useMemo } from "react";
-import { useTorus } from "@torus-ts/torus-provider";
-import type { SS58Address } from "@torus-ts/subspace";
-
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 

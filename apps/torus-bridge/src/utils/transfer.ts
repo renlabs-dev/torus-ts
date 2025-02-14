@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+import { SentTransferStatuses, TransferStatus } from "./types";
 import type {
   ChainMap,
   ChainName,
@@ -6,8 +8,6 @@ import type {
   TypedTransactionReceipt,
 } from "@hyperlane-xyz/sdk";
 import { MultiProtocolCore, ProviderType } from "@hyperlane-xyz/sdk";
-import { logger } from "./logger";
-import { SentTransferStatuses, TransferStatus } from "./types";
 
 export function tryGetMsgIdFromTransferReceipt(
   multiProvider: MultiProtocolProvider,

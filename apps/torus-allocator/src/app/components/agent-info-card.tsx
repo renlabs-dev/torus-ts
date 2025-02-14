@@ -1,10 +1,10 @@
 "use client";
 
-import { Copy } from "lucide-react";
-import { CopyButton, Card, CardTitle, CardContent } from "@torus-ts/ui";
 import { ReportAgent } from "./report-agent";
-import { smallAddress } from "@torus-ts/utils/subspace";
 import { toast } from "@torus-ts/toast-provider";
+import { CopyButton, Card, CardTitle, CardContent } from "@torus-ts/ui";
+import { smallAddress } from "@torus-ts/utils/subspace";
+import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {

@@ -1,3 +1,5 @@
+import { links } from "../data";
+import { Icons } from "./icons";
 import {
   Anvil,
   ArrowLeftRight,
@@ -7,10 +9,6 @@ import {
   Telescope,
   WalletCards,
 } from "lucide-react";
-import { links } from "../data";
-
-import { Icons } from "./icons";
-
 import dynamic from "next/dynamic";
 
 const Clock = dynamic(() => import("./clock"), {

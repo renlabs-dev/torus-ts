@@ -1,6 +1,5 @@
-import { LoaderCircle } from "lucide-react";
-
 import { cn } from "..";
+import { LoaderCircle } from "lucide-react";
 
 export function Loading(props: {
   className?: string;

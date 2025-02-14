@@ -1,18 +1,14 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-
 import "@torus-ts/db/schema";
-
-import { and, eq, isNull, sql } from "@torus-ts/db";
-
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { z } from "zod";
-
+import { and, eq, isNull, sql } from "@torus-ts/db";
 import {
   commentDigestView,
   commentInteractionSchema,
   commentSchema,
 } from "@torus-ts/db/schema";
 import { COMMENT_INTERACTION_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import { z } from "zod";
 
 export const commentInteractionRouter = {
   // GET

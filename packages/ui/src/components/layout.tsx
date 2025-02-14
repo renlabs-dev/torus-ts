@@ -1,5 +1,5 @@
-import type { FC } from "react";
 import { cn } from ".";
+import type { FC } from "react";
 
 interface NextFont {
   className: string;

@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
-
-import { TransferToken } from "../transfer-token";
 import { TransferEVM } from "../transfer-evm";
+import { TransferToken } from "../transfer-token";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
 import { updateSearchParams } from "~/utils/query-params";
 
 const tabs = [

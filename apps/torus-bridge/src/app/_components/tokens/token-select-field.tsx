@@ -1,17 +1,16 @@
-import type { IToken } from "@hyperlane-xyz/sdk";
-import { ChevronIcon } from "@hyperlane-xyz/widgets";
-import { useField, useFormikContext } from "formik";
-import { useEffect, useState } from "react";
-
-import type { TransferFormValues } from "../../../utils/types";
-import { TokenListModal } from "./token-list-modal";
 import {
   getIndexForToken,
   getTokenByIndex,
   useWarpCore,
 } from "../../../hooks/token";
-import { TokenIcon } from "~/app/_components/token-icon";
+import type { TransferFormValues } from "../../../utils/types";
+import { TokenListModal } from "./token-list-modal";
+import type { IToken } from "@hyperlane-xyz/sdk";
+import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui";
+import { useField, useFormikContext } from "formik";
+import { useEffect, useState } from "react";
+import { TokenIcon } from "~/app/_components/token-icon";
 
 interface Props {
   name: string;

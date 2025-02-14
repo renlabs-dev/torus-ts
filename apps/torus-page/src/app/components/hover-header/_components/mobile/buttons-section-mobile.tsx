@@ -1,7 +1,7 @@
-import Link from "next/link";
+import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
 import { motion } from "framer-motion";
 import { CircleDotDashed, Diameter } from "lucide-react";
-import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
+import Link from "next/link";
 
 const buttonVariants = {
   hidden: { opacity: 0, y: -15 },

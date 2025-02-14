@@ -1,6 +1,6 @@
 "use client";
+
 import { toast } from "@torus-ts/toast-provider";
-import { DateTime } from "luxon";
 import {
   Button,
   Card,
@@ -11,9 +11,10 @@ import {
 } from "@torus-ts/ui";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Crown, TicketX } from "lucide-react";
-import { api } from "~/trpc/react";
-import { useGovernance } from "~/context/governance-provider";
+import { DateTime } from "luxon";
 import { useCallback } from "react";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 
 type CandidacyStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "REMOVED";
 

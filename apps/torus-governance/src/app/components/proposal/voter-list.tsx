@@ -1,12 +1,11 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
-
 import type { VoteWithStake } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import { Button, Card, CardHeader } from "@torus-ts/ui";
 import { copyToClipboard } from "@torus-ts/ui/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
+import { useLayoutEffect, useState } from "react";
 
 interface VoterListProps {
   voters: VoteWithStake[] | undefined;

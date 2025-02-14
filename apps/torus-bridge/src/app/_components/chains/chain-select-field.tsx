@@ -1,11 +1,8 @@
-import { useField } from "formik";
-
-import type { ChainName } from "@hyperlane-xyz/sdk";
-
-import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
-
 import { ChainLogo } from "../chain-logo";
+import type { ChainName } from "@hyperlane-xyz/sdk";
 import { Button, Label } from "@torus-ts/ui";
+import { useField } from "formik";
+import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 
 interface Props {
   name: string;

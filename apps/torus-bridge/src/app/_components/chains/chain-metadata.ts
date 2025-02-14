@@ -4,8 +4,8 @@ import type { ChainMap, ChainMetadata, ChainName } from "@hyperlane-xyz/sdk";
 import { ChainMetadataSchema, mergeChainMetadataMap } from "@hyperlane-xyz/sdk";
 import { objFilter, objMap, promiseObjAll } from "@hyperlane-xyz/utils";
 import { z } from "zod";
-import chainsYaml from "~/consts/chains.yaml";
 import { chainsTS } from "~/consts/chains";
+import chainsYaml from "~/consts/chains.yaml";
 import { config } from "~/consts/config";
 import { logger } from "~/utils/logger";
 

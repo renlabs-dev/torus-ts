@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 
-import type { ChainMap } from "@hyperlane-xyz/sdk";
 import { ADDRESS_BLACKLIST } from "./blacklist";
+import type { ChainMap } from "@hyperlane-xyz/sdk";
 import { env } from "~/env";
 
 const isDevMode = env("NEXT_PUBLIC_NODE_ENV") === "development";

@@ -1,10 +1,6 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-
 import "@torus-ts/db/schema";
-
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { z } from "zod";
-
 import { eq, and } from "@torus-ts/db";
 import {
   commentDigestView,
@@ -12,6 +8,7 @@ import {
   governanceItemTypeValues,
 } from "@torus-ts/db/schema";
 import { COMMENT_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import { z } from "zod";
 
 export const commentRouter = {
   // GET

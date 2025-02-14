@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-import { useTorus } from "@torus-ts/torus-provider";
 import {
   useRecyclingPercentage,
   useTotalIssuance,
@@ -7,7 +5,9 @@ import {
   useTreasuryEmissionFee,
   useIncentivesRatio,
 } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import { toNano } from "@torus-ts/utils/subspace";
+import { useMemo } from "react";
 
 const BLOCKS_IN_DAY = 10_800n;
 const BLOCK_EMISSION = toNano(64_000) / BLOCKS_IN_DAY;

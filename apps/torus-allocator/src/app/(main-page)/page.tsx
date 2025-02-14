@@ -1,6 +1,6 @@
-import { Suspense } from "react";
-import { PopoverInfo } from "../components/popover-info";
 import { AgentContentList } from "../components/agent-content-list";
+import { PopoverInfo } from "../components/popover-info";
+import { Suspense } from "react";
 
 export default function Page() {
   return (

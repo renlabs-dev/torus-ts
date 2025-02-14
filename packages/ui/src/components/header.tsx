@@ -1,7 +1,6 @@
-import Link from "next/link";
-
 import { cn } from ".";
 import { Icons } from "./icons";
+import Link from "next/link";
 
 interface HeaderProps {
   appName: string;

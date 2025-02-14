@@ -2,14 +2,12 @@
 /* eslint-disable no-debugger */
 
 import "@polkadot/api/augment";
-
+import { queryMinAllowedStake } from "./modules/subspace";
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
 import { CID } from "multiformats";
 import { assert } from "tsafe";
 import { z } from "zod";
-
-import { ApiPromise, WsProvider } from "@polkadot/api";
-import { IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
-import { queryMinAllowedStake } from "./modules/subspace";
 
 // $ pnpm exec tsx src/main.ts
 

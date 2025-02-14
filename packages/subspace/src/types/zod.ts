@@ -1,7 +1,6 @@
 // TODO: split `zod.ts` into multiple files
 
-import type { AnyJson, Codec } from "@polkadot/types/types";
-import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
+import { SS58_SCHEMA } from "../address";
 import {
   bool,
   BTreeSet,
@@ -12,12 +11,11 @@ import {
   Option as polkadot_Option,
   Struct,
 } from "@polkadot/types";
-import { match } from "rustie";
-import { z } from "zod";
-
+import type { AnyJson, Codec } from "@polkadot/types/types";
 import type { Option } from "@torus-ts/utils";
-
-import { SS58_SCHEMA } from "../address";
+import { match } from "rustie";
+import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
+import { z } from "zod";
 
 export { sb_enum } from "./sb_enum";
 

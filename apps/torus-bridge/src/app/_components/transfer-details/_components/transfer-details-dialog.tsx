@@ -1,24 +1,12 @@
+import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
+import { getTransferStatusLabel } from "./get-transfer-status-label";
+import { TransferProperty } from "./transfer-property";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
   useAccountForChain,
   useTimeout,
   useWalletDetails,
 } from "@hyperlane-xyz/widgets";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { ChevronsRight } from "lucide-react";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { useWarpCore, tryFindToken } from "~/hooks/token";
-import { getChainDisplayName, hasPermissionlessChain } from "~/utils/chain";
-import { logger } from "~/utils/logger";
-import type { TransferContext } from "~/utils/types";
-import { TransferStatus } from "~/utils/types";
-import {
-  formatTimestamp,
-  isTransferFailed,
-  isTransferSent,
-} from "~/utils/transfer";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +16,19 @@ import {
   AlertDialogTitle,
   Loading,
 } from "@torus-ts/ui";
-
-import { TransferProperty } from "./transfer-property";
-import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
-import { getTransferStatusLabel } from "./get-transfer-status-label";
+import { ChevronsRight } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useWarpCore, tryFindToken } from "~/hooks/token";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { getChainDisplayName, hasPermissionlessChain } from "~/utils/chain";
+import { logger } from "~/utils/logger";
+import {
+  formatTimestamp,
+  isTransferFailed,
+  isTransferSent,
+} from "~/utils/transfer";
+import type { TransferContext } from "~/utils/types";
+import { TransferStatus } from "~/utils/types";
 
 export function TransfersDetailsDialog({
   isOpen,

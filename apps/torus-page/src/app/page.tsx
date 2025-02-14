@@ -1,6 +1,5 @@
-import Image from "next/image";
-
 import { TorusObject } from "./components/torus";
+import Image from "next/image";
 
 export default function Page(): JSX.Element {
   return (

@@ -1,12 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { z } from "zod";
-
 import { toast } from "@torus-ts/toast-provider";
-
-import { api } from "~/trpc/react";
-import { TriangleAlert } from "lucide-react";
 import {
   Button,
   Dialog,
@@ -24,6 +18,10 @@ import {
   SelectValue,
   Textarea,
 } from "@torus-ts/ui";
+import { TriangleAlert } from "lucide-react";
+import { useState } from "react";
+import { z } from "zod";
+import { api } from "~/trpc/react";
 
 const reportSchema = z.object({
   reason: z.enum([

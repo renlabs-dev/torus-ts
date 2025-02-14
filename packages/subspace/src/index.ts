@@ -1,3 +1,5 @@
+import { ApiPromise, WsProvider } from "@polkadot/api";
+
 // === Address ===
 export * from "./address";
 
@@ -24,8 +26,6 @@ export * from "./types/zod";
 // == Metadata ==
 export * from "./metadata";
 export * from "./agent_metadata/agent_metadata";
-
-import { ApiPromise, WsProvider } from "@polkadot/api";
 
 export async function setup(wsEndpoint: string): Promise<ApiPromise> {
   console.log("Connecting to ", wsEndpoint);

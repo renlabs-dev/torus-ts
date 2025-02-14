@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { z } from "zod";
-
+import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui";
 import { formatToken, toNano } from "@torus-ts/utils/subspace";
-
+import { useState } from "react";
+import { z } from "zod";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import type { SS58Address } from "@torus-ts/subspace";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;

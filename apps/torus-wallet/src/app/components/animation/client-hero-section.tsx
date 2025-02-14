@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import * as THREE from "three";
-import { useFrame, useThree, Canvas } from "@react-three/fiber";
 import { ShaderMaterial } from "./shader-material";
 import { CameraShake, Sparkles } from "@react-three/drei";
+import { useFrame, useThree, Canvas } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 interface AnimationState {
   time: number;

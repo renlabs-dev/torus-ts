@@ -1,19 +1,18 @@
-import type { ApiPromise, SubmittableResult } from "@polkadot/api";
-import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
-import type { DispatchError } from "@polkadot/types/interfaces";
-import { toast } from "react-toastify";
-
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
+import { updateMetadata } from "../utils/metadata";
 import {
   renderSuccessfulyFinalized,
   renderFinalizedWithError,
   renderWaitingForValidation,
 } from "./toast-content-handler";
-import { updateMetadata } from "../utils/metadata";
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata";
+import type { ApiPromise, SubmittableResult } from "@polkadot/api";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
+import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
+import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
+import { toast } from "react-toastify";
 
 interface SendTransactionProps {
   api: ApiPromise | null;

@@ -1,7 +1,6 @@
-import { match } from "rustie";
-
 import type { AgentApplication } from "@torus-ts/subspace";
 import { Badge } from "@torus-ts/ui";
+import { match } from "rustie";
 
 interface StatusLabelProps {
   status: AgentApplication["status"];

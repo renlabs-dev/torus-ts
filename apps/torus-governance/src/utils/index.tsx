@@ -1,9 +1,8 @@
-import { if_let, match } from "rustie";
-
 import type { CustomMetadataState, ProposalStatus } from "@torus-ts/subspace";
 import type { ProposalState } from "@torus-ts/torus-provider";
 import { bigintDivision } from "@torus-ts/utils";
 import { formatToken } from "@torus-ts/utils/subspace";
+import { if_let, match } from "rustie";
 
 export interface ProposalCardFields {
   title: string | null;

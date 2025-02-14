@@ -1,10 +1,9 @@
 "use client";
 
-import * as React from "react";
+import { cn } from ".";
 import { DashIcon } from "@radix-ui/react-icons";
 import { OTPInput, OTPInputContext } from "input-otp";
-
-import { cn } from ".";
+import * as React from "react";
 
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
