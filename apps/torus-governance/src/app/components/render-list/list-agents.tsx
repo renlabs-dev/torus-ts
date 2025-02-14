@@ -23,9 +23,8 @@ import { DateTime } from "luxon";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import type { inferProcedureOutput } from "@trpc/server";
-import Link from "next/link";
 import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 
 const EmissionHealthFactorBadge = ({
   penaltyFactor,
@@ -173,7 +172,7 @@ const PenaltyLabel = ({
   }
 
   return (
-    <span className="text-xs text-muted-foreground">
+    <span className="text-muted-foreground text-xs">
       Penalties {penaltyLength}/{penaltyThreshold}
     </span>
   );
@@ -192,14 +191,14 @@ const AgentPenaltiesCard = (props: {
   };
 
   return (
-    <Card className="flex w-full animate-fade-down flex-col justify-between gap-4 p-6 transition duration-500 hover:bg-accent sm:flex-row sm:items-center sm:gap-2">
+    <Card className="animate-fade-down hover:bg-accent flex w-full flex-col justify-between gap-4 p-6 transition duration-500 sm:flex-row sm:items-center sm:gap-2">
       <div className="flex flex-col items-start gap-1">
         <div className="flex items-center gap-2">
           <CopyButton
             copy={content.key}
             variant="link"
             notify={() => toast.success("Copied to clipboard")}
-            className="mt-0.5 h-5 items-center p-0 text-sm text-muted-foreground hover:text-white"
+            className="text-muted-foreground mt-0.5 h-5 items-center p-0 text-sm hover:text-white"
           >
             {smallAddress(content.key, 6)}
           </CopyButton>
@@ -255,12 +254,12 @@ const PenaltiesList = (props: { penalties?: PenaltyList }) => {
                     copy={penalty.cadreKey}
                     variant="link"
                     notify={() => toast.success("Copied to clipboard")}
-                    className="h-5 items-center p-0 text-sm text-muted-foreground hover:text-white"
+                    className="text-muted-foreground h-5 items-center p-0 text-sm hover:text-white"
                   >
                     {smallAddress(penalty.cadreKey, 10)}
                   </CopyButton>
                   <span
-                    className={`items-center rounded-full bg-muted-foreground/5 px-1.5 py-0.5 ${handleStatusColors(
+                    className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5 ${handleStatusColors(
                       penalty.executed,
                     )} text-xs font-medium ring-1 ring-inset`}
                   >
