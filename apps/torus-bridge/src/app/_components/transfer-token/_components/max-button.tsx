@@ -4,7 +4,6 @@ import { SpinnerIcon, useAccounts } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui";
 import BigNumber from "bignumber.js";
 import { useFormikContext } from "formik";
-
 import { useFetchMaxAmount } from "~/hooks/use-fetch-max-amount";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { TransferFormValues } from "~/utils/types";

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { buildSocials } from "./agent-item";
+import Link from "next/link";
 
 // (property) socials?: {
 //     discord?: string | undefined;

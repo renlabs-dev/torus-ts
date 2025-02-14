@@ -1,15 +1,9 @@
-import type { ApiPromise } from "@polkadot/api";
-import { match } from "rustie";
-
-import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
-import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
-
 import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
 } from "../db";
 import {
-  queryTotalVotesPerApp as queryTotalVotesPerApp,
+  queryTotalVotesPerApp,
   countCadreKeys,
   pendingPenalizations,
   addCadreMember,
@@ -18,6 +12,10 @@ import {
   getCadreDiscord,
   refuseCadreApplication,
 } from "../db";
+import type { ApiPromise } from "@polkadot/api";
+import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
+import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
+import { match } from "rustie";
 
 export interface WorkerProps {
   lastBlockNumber: number;

@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { MoveDown } from "lucide-react";
-
 import { Button } from "@torus-ts/ui";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
 import { removeEmojisLmao } from "@torus-ts/utils";
+import { MoveDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ExpandedViewContentProps {
   title: string | null;

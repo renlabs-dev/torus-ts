@@ -1,11 +1,11 @@
 "use client";
 
+import { toast } from "@torus-ts/toast-provider";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui";
 import { Anvil } from "lucide-react";
-import { toast } from "@torus-ts/toast-provider";
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { useTorus } from "@torus-ts/torus-provider";
 import { ALLOCATOR_ADDRESS } from "~/consts";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 interface DelegateModuleWeightProps {
   id: number;

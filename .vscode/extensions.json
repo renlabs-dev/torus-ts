@@ -3,7 +3,6 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "yoavbls.pretty-ts-errors",
-    "bradlc.vscode-tailwindcss",
-    "dozerg.tsimportsorter"
+    "bradlc.vscode-tailwindcss"
   ]
 }

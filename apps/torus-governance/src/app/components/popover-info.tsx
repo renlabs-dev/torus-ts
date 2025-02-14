@@ -1,7 +1,5 @@
 "use client";
 
-import { Copy, Ellipsis } from "lucide-react";
-
 import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
@@ -11,7 +9,7 @@ import {
   Skeleton,
 } from "@torus-ts/ui";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-
+import { Copy, Ellipsis } from "lucide-react";
 import { useGovernance } from "~/context/governance-provider";
 
 export const PopoverInfo = () => {

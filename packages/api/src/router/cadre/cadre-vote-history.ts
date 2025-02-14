@@ -1,10 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-
 import "@torus-ts/db/schema";
-
 import { publicProcedure } from "../../trpc";
-import { cadreVoteHistory } from "@torus-ts/db/schema";
 import { isNull } from "@torus-ts/db";
+import { cadreVoteHistory } from "@torus-ts/db/schema";
 
 export const cadreVoteHistoryRouter = {
   // GET

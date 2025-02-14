@@ -11,7 +11,6 @@ import {
   links,
 } from "@torus-ts/ui";
 import { CircleHelp } from "lucide-react";
-
 import Link from "next/link";
 
 export const tutorialData = [

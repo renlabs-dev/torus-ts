@@ -1,15 +1,16 @@
 "use client";
-import Link from "next/link";
-import { handleCustomAgentApplications } from "~/utils";
-import { CardViewData } from "../card-view-data";
-import { useGovernance } from "~/context/governance-provider";
-import { useSearchParams } from "next/navigation";
-import { api } from "~/trpc/react";
+
 import { CardSkeleton } from "../card-skeleton";
+import { CardViewData } from "../card-view-data";
 import { ListContainer } from "./container-list";
-import { match } from "rustie";
 import type { AgentApplication } from "@torus-ts/subspace";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import { match } from "rustie";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
+import { handleCustomAgentApplications } from "~/utils";
 
 const ListCardsLoadingSkeleton = () => {
   return (

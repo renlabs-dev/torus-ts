@@ -1,12 +1,10 @@
+import { and, eq, isNull } from "@torus-ts/db";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-
-import { and, eq, isNull } from "@torus-ts/db";
-
 import "@torus-ts/db/schema";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { commentReportSchema } from "@torus-ts/db/schema";
 import { COMMENT_REPORT_INSERT_SCHEMA } from "@torus-ts/db/validation";
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 export const commentReportRouter = {
   // GET

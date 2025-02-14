@@ -1,15 +1,3 @@
-import { match } from "rustie";
-import { z } from "zod";
-import type { ApiPromise } from "@polkadot/api";
-import type { AgentApplication } from "@torus-ts/subspace";
-import {
-  acceptApplication,
-  denyApplication,
-  penalizeAgent,
-  removeFromWhitelist,
-} from "@torus-ts/subspace";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
-
 import type { WorkerProps } from "../common";
 import {
   BLOCK_TIME,
@@ -27,6 +15,17 @@ import {
   queryTotalVotesPerApp,
   updatePenalizeAgentVotes,
 } from "../db";
+import type { ApiPromise } from "@polkadot/api";
+import type { AgentApplication } from "@torus-ts/subspace";
+import {
+  acceptApplication,
+  denyApplication,
+  penalizeAgent,
+  removeFromWhitelist,
+} from "@torus-ts/subspace";
+import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { match } from "rustie";
+import { z } from "zod";
 
 const getEnv = validateEnvOrExit({
   TORUS_CURATOR_MNEMONIC: z

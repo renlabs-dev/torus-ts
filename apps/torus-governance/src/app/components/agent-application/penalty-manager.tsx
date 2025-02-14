@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { z } from "zod";
-
+import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
@@ -16,10 +14,10 @@ import {
   PopoverTrigger,
   Textarea,
 } from "@torus-ts/ui";
-
+import { useState } from "react";
+import { z } from "zod";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
 
 const MAX_CONTENT_CHARACTERS = 240;
 

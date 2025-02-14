@@ -1,18 +1,16 @@
-import { z } from "zod";
-
+import type { WorkerProps } from "../common";
+import { getApplications, sleep } from "../common";
+import { parseEnvOrExit } from "../common/env";
+import type { NewNotification } from "../db";
+import * as db from "../db";
+import type { Embed, WebhookPayload } from "../discord";
+import { sendDiscordWebhook } from "../discord";
 import type { AgentApplication, GovernanceItemType } from "@torus-ts/subspace";
 import { processApplicationMetadata } from "@torus-ts/subspace";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
-
-import type { WorkerProps } from "../common";
-import type { NewNotification } from "../db";
-import type { Embed, WebhookPayload } from "../discord";
-import { getApplications, sleep } from "../common";
-import { parseEnvOrExit } from "../common/env";
-import * as db from "../db";
-import { sendDiscordWebhook } from "../discord";
 import { match } from "rustie";
+import { z } from "zod";
 
 const THUMBNAIL_URL = "https://i.imgur.com/6hJKhMu.gif";
 

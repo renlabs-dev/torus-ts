@@ -1,15 +1,15 @@
-import { AgentInfoCard } from "~/app/components/agent-info-card";
-import { api } from "~/trpc/server";
-import { ArrowLeft } from "lucide-react";
-import { Button, Card, Container, Label } from "@torus-ts/ui";
 import { fetchAgentMetadata } from "@torus-ts/subspace";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import BlobImage from "~/app/components/blob-image";
-import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
+import { Button, Card, Container, Label } from "@torus-ts/ui";
 import { MarkdownView } from "@torus-ts/ui/markdown-view";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { AgentInfoCard } from "~/app/components/agent-info-card";
+import BlobImage from "~/app/components/blob-image";
 import { DelegateModuleWeight } from "~/app/components/delegate-module-weight";
+import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
 import { PenaltyList } from "~/app/components/penalties-list";
+import { api } from "~/trpc/server";
 
 export default async function AgentPage({
   params,

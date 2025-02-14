@@ -1,7 +1,7 @@
 import { FilterContent } from "./components/filter-content";
-import { RenderList } from "./components/render-list";
 import { CreateModal } from "./components/modal";
 import { PopoverInfo } from "./components/popover-info";
+import { RenderList } from "./components/render-list";
 import { SidebarInfo } from "./components/sidebar-info";
 import { SidebarLinks } from "./components/sidebar-links";
 

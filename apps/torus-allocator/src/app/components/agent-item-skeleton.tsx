@@ -1,7 +1,7 @@
 "use client";
 
-import { Globe, Cuboid, IdCard } from "lucide-react";
 import { Label, Separator } from "@torus-ts/ui";
+import { Globe, Cuboid, IdCard } from "lucide-react";
 
 export function AgentItemSkeleton() {
   return (

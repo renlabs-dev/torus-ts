@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
+import { z } from "zod";
 
 const NodeEnvSchema = z
   .enum(["development", "production", "test"])

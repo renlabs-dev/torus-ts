@@ -1,10 +1,3 @@
-import { useEffect, useState } from "react";
-
-import { FolderUp, Info } from "lucide-react";
-import type { DropzoneState } from "shadcn-dropzone";
-import Dropzone from "shadcn-dropzone";
-import { useGovernance } from "~/context/governance-provider";
-
 import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
@@ -28,15 +21,19 @@ import {
   Textarea,
   TransactionStatus,
 } from "@torus-ts/ui";
-
 import { smallFilename, strToFile } from "@torus-ts/utils/files";
 import type { CID } from "@torus-ts/utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 import { formatToken, fromNano } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
-import type { PinFileOnPinataResponse } from "~/app/api/files/route";
+import { FolderUp, Info } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import type { DropzoneState } from "shadcn-dropzone";
+import Dropzone from "shadcn-dropzone";
 import { z } from "zod";
+import type { PinFileOnPinataResponse } from "~/app/api/files/route";
+import { useGovernance } from "~/context/governance-provider";
 
 const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();

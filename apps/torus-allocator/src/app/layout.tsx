@@ -1,18 +1,14 @@
 import "../styles/globals.css";
-
-import type { Metadata } from "next";
-
+import { AllocationMenu } from "./components/allocation-menu";
+import { AllocatorHeader } from "./components/allocator-header";
+import { TutorialDialog } from "./components/tutorial-dialog";
+import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer, Layout } from "@torus-ts/ui";
-
-import { TRPCReactProvider } from "~/trpc/react";
-
+import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript, env } from "~/env";
-import { ToastProvider } from "@torus-ts/toast-provider";
-import { AllocatorHeader } from "./components/allocator-header";
-import { AllocationMenu } from "./components/allocation-menu";
-import { TutorialDialog } from "./components/tutorial-dialog";
+import { TRPCReactProvider } from "~/trpc/react";
 
 const APP_NAME = "Allocator";
 

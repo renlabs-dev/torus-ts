@@ -1,8 +1,5 @@
 "use client";
 
-import { Scale, Wallet, Zap } from "lucide-react";
-import Link from "next/link";
-
 import { toast } from "@torus-ts/toast-provider";
 import {
   links,
@@ -15,9 +12,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@torus-ts/ui";
-
-import { ALLOCATOR_ADDRESS } from "~/consts";
+import { Scale, Wallet, Zap } from "lucide-react";
+import Link from "next/link";
 import React from "react";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useTutorialStore } from "~/stores/tutorialStore";
 
 export const tutorialData = {

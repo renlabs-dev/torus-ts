@@ -1,19 +1,3 @@
-import { z } from "zod";
-
-import type { ApiPromise } from "@polkadot/api";
-import { Keyring } from "@polkadot/api";
-import type { KeyringPair } from "@polkadot/keyring/types";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
-
-import { createDb } from "@torus-ts/db/client";
-import type { LastBlock, SS58Address } from "@torus-ts/subspace";
-import {
-  checkSS58,
-  queryKeyStakedBy,
-  queryLastBlock,
-  setChainWeights,
-} from "@torus-ts/subspace";
-
 import { BLOCK_TIME, log, sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
 import type { AgentWeight } from "../db";
@@ -23,6 +7,19 @@ import {
   normalizeWeightsForVote,
   normalizeWeightsToPercent,
 } from "../weights";
+import type { ApiPromise } from "@polkadot/api";
+import { Keyring } from "@polkadot/api";
+import type { KeyringPair } from "@polkadot/keyring/types";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { createDb } from "@torus-ts/db/client";
+import type { LastBlock, SS58Address } from "@torus-ts/subspace";
+import {
+  checkSS58,
+  queryKeyStakedBy,
+  queryLastBlock,
+  setChainWeights,
+} from "@torus-ts/subspace";
+import { z } from "zod";
 
 export const env = parseEnvOrExit(
   z.object({

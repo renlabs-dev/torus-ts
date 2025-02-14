@@ -1,10 +1,10 @@
 "use client";
 
-import type { FC } from "react";
-import type { Mesh } from "three";
-import { Suspense, useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
 import { Bounds } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import type { FC } from "react";
+import { Suspense, useMemo, useRef } from "react";
+import type { Mesh } from "three";
 import * as THREE from "three";
 
 const vertexShader = `

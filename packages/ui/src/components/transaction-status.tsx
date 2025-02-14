@@ -1,9 +1,8 @@
+import { cn, Loading } from "..";
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/solid";
-
-import { cn, Loading } from "..";
 
 export interface TransactionResult {
   finalized: boolean;

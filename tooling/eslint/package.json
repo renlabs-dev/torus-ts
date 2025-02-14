@@ -17,6 +17,7 @@
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
     "@eslint/compat": "^1.1.1",
+    "@ianvs/prettier-plugin-sort-imports": "4.0.0-alpha.0",
     "@next/eslint-plugin-next": "^14.2.5",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.9.0",
