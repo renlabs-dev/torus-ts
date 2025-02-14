@@ -1,7 +1,0 @@
-# set -e
-# echo '\n🤖 Running pre-commit script\n'
-
-# prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown --cache --cache-location .cache/.prettiercache
-# git update-index --again
-
-# echo '\n🚀 Your staged files have been formatted and are now ready to be committed.\n'

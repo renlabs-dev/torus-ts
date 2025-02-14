@@ -4,7 +4,7 @@ Monorepo for the **Torus Network** TypesSript Ecosystem. It's managed with
 [Turborepo](https://turborepo.org) and [pnpm](https://pnpm.io/).
 
 > [!IMPORTANT]  
-> For a more in depth guide on how to use this project, please refer to the [Torus Docs](https://docs.torus.network/apps/intro).
+> For a more in depth guide on how to use this project, please refer to the [Torus Docs](https://docs.torus.network/web-apps/intro/).
 
 ## Project Structure
 
