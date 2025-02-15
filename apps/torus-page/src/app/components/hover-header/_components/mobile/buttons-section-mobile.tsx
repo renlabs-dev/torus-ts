@@ -1,7 +1,7 @@
-import Link from "next/link";
+import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
 import { motion } from "framer-motion";
 import { CircleDotDashed, Diameter } from "lucide-react";
-import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
+import Link from "next/link";
 
 const buttonVariants = {
   hidden: { opacity: 0, y: -15 },
@@ -43,7 +43,7 @@ export function ButtonsSectionMobile() {
         { text: "Wallet", href: links.wallet },
         {
           text: "Blog",
-          href: "https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg",
+          href: links.blog,
         },
       ],
     },

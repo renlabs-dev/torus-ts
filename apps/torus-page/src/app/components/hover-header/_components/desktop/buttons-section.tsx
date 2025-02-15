@@ -1,8 +1,8 @@
-import { motion } from "framer-motion";
 import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
+import { motion } from "framer-motion";
+import { ArrowBigDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowBigDown } from "lucide-react";
 
 const buttonVariants = {
   hidden: { opacity: 0, y: -15 },
@@ -136,10 +136,7 @@ export function ButtonsSection({
         className="absolute mt-20 flex w-full max-w-[43rem] justify-around gap-36"
         style={{ zIndex: isExpanded ? 1 : "auto" }}
       >
-        <CustomButton
-          href="https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg"
-          isHidden={!showStarter}
-        >
+        <CustomButton href={links.blog} isHidden={!showStarter}>
           Blog
         </CustomButton>
         <CustomButton href={links.governance} isHidden={!showNetwork}>
