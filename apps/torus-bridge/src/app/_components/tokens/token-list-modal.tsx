@@ -1,14 +1,13 @@
+import { config } from "../../../consts/config";
+import { useWarpCore } from "../../../hooks/token";
+import { getChainDisplayName } from "../../../utils/chain";
 import type { ChainName, IToken } from "@hyperlane-xyz/sdk";
 import { Modal, SearchIcon } from "@hyperlane-xyz/widgets";
+import { InfoIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-
-import { config } from "../../../consts/config";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { getChainDisplayName } from "../../../utils/chain";
-import { useWarpCore } from "../../../hooks/token";
 import { TextInput } from "~/app/_components/text-field";
 import { TokenIcon } from "~/app/_components/token-icon";
-import { InfoIcon } from "lucide-react";
+import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function TokenListModal({
   isOpen,
@@ -16,13 +15,13 @@ export function TokenListModal({
   onSelect,
   origin,
   destination,
-}: {
+}: Readonly<{
   isOpen: boolean;
   close: () => void;
   onSelect: (token: IToken) => void;
   origin: ChainName;
   destination: ChainName;
-}) {
+}>) {
   const [search, setSearch] = useState("");
 
   const onClose = () => {
@@ -55,10 +54,10 @@ export function TokenListModal({
 function SearchBar({
   search,
   setSearch,
-}: {
+}: Readonly<{
   search: string;
   setSearch: (s: string) => void;
-}) {
+}>) {
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     inputRef.current?.focus();
@@ -89,12 +88,12 @@ export function TokenList({
   destination,
   searchQuery,
   onSelect,
-}: {
+}: Readonly<{
   origin: ChainName;
   destination: ChainName;
   searchQuery: string;
   onSelect: (token: IToken) => void;
-}) {
+}>) {
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 

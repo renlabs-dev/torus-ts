@@ -1,14 +1,13 @@
-import { Button } from "@torus-ts/ui";
-
 import { ProposalExpandedView } from "./_components/proposal-expanded-view";
+import { Button } from "@torus-ts/ui";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProposalView({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ id: string }>;
-}): Promise<JSX.Element> {
+}>): Promise<JSX.Element> {
   const { id } = await params;
 
   if (!id) {

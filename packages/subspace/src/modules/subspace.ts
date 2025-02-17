@@ -1,8 +1,5 @@
-import type { KeyringPair } from "@polkadot/keyring/types";
-
 import type { SS58Address } from "../address";
 import type { Balance } from "../types";
-import type { Api } from "./_common";
 import {
   sb_address,
   sb_balance,
@@ -14,10 +11,12 @@ import {
   sb_string,
   sb_struct,
 } from "../types";
-import type { z } from "zod";
-import type { ApiPromise } from "@polkadot/api";
-import type { Percent } from "@polkadot/types/interfaces";
+import type { Api } from "./_common";
 import { handleDoubleMapEntries, handleMapEntries } from "./_common";
+import type { ApiPromise } from "@polkadot/api";
+import type { KeyringPair } from "@polkadot/keyring/types";
+import type { Percent } from "@polkadot/types/interfaces";
+import type { z } from "zod";
 
 // ==== Balances ====
 

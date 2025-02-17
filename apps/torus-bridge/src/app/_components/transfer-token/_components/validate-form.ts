@@ -4,8 +4,8 @@ import { toWei, errorToString } from "@hyperlane-xyz/utils";
 import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { getTokenByIndex } from "~/hooks/token";
-import type { TransferFormValues } from "~/utils/types";
 import { logger } from "~/utils/logger";
+import type { TransferFormValues } from "~/utils/types";
 
 const insufficientFundsErrMsg = /insufficient.[funds|lamports]/i;
 const emptyAccountErrMsg = /AccountNotFound/i;

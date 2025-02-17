@@ -1,5 +1,5 @@
-import type { FC } from "react";
 import { cn } from ".";
+import type { FC } from "react";
 
 interface NextFont {
   className: string;
@@ -14,7 +14,6 @@ interface LayoutProps {
   children: React.ReactNode;
   font: NextFont;
   className?: string;
-  torusPage?: boolean;
   headScripts?: FC[];
 }
 
@@ -23,14 +22,10 @@ export function Layout({
   font,
   className,
   headScripts,
-}: LayoutProps): JSX.Element {
+}: Readonly<LayoutProps>): JSX.Element {
   return (
     <html lang="en">
-      <head>
-        {headScripts?.map((Script, index) => (
-          <Script key={`head-script-${index}}`} />
-        ))}
-      </head>
+      <head>{headScripts?.map((Script) => <Script key={Script.name} />)}</head>
       <body
         className={cn(
           font.className,

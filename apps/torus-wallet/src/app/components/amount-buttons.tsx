@@ -14,7 +14,7 @@ interface AmountButtonsProps {
   disabled: boolean;
 }
 
-export function AmountButtons(props: AmountButtonsProps) {
+export function AmountButtons(props: Readonly<AmountButtonsProps>) {
   const { availableFunds, setAmount, disabled } = props;
 
   const handleAmountButtonClick = (divisor: bigint) => {

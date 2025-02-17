@@ -4,7 +4,6 @@ import { SpinnerIcon, useAccounts } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui";
 import BigNumber from "bignumber.js";
 import { useFormikContext } from "formik";
-
 import { useFetchMaxAmount } from "~/hooks/use-fetch-max-amount";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { TransferFormValues } from "~/utils/types";
@@ -12,10 +11,10 @@ import type { TransferFormValues } from "~/utils/types";
 export function MaxButton({
   balance,
   disabled,
-}: {
+}: Readonly<{
   balance?: TokenAmount;
   disabled?: boolean;
-}) {
+}>) {
   const { values, setFieldValue } = useFormikContext<TransferFormValues>();
   const { origin, destination, tokenIndex } = values;
   const multiProvider = useMultiProvider();

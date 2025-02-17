@@ -1,6 +1,6 @@
 import { Skeleton } from "@torus-ts/ui";
 import { Coins } from "lucide-react";
-import React, { forwardRef, useState, useImperativeHandle } from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 
 interface FeeLabelProps {
   accountConnected: boolean;

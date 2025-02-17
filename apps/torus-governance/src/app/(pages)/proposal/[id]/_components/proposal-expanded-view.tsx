@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-import { LoaderCircle } from "lucide-react";
-
-import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
-
+import { handleCustomProposal } from "../../../../../utils";
+import { StatusLabel } from "../../../../components/status-label";
 import type { VoteStatus } from "../../../../components/vote-label";
+import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
+import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
+import { LoaderCircle } from "lucide-react";
+import { useMemo } from "react";
 import { CreateComment } from "~/app/components/comments/create-comment";
 import { ViewComment } from "~/app/components/comments/view-comment";
 import { DetailsCard } from "~/app/components/details-card";
@@ -16,9 +17,6 @@ import { RewardLabel } from "~/app/components/proposal/reward-label";
 import { VoterList } from "~/app/components/proposal/voter-list";
 import { VoteData } from "~/app/components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
-import { handleCustomProposal } from "../../../../../utils";
-import { StatusLabel } from "../../../../components/status-label";
-import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
 
 interface CustomContent {
   paramId: number;
@@ -31,8 +29,7 @@ const handleUserVotes = ({
   proposalStatus: ProposalStatus;
   selectedAccountAddress: SS58Address;
 }): VoteStatus => {
-  if (!Object.prototype.hasOwnProperty.call(proposalStatus, "Open"))
-    return "UNVOTED";
+  if (!Object.hasOwn(proposalStatus, "Open")) return "UNVOTED";
 
   if (
     "Open" in proposalStatus &&
@@ -50,7 +47,9 @@ const handleUserVotes = ({
   return "UNVOTED";
 };
 
-export function ProposalExpandedView(props: CustomContent): JSX.Element {
+export function ProposalExpandedView(
+  props: Readonly<CustomContent>,
+): JSX.Element {
   const { paramId } = props;
   const {
     api,

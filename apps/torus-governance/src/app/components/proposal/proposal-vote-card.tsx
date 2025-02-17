@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { TicketX } from "lucide-react";
-import { match } from "rustie";
-
+import { GovernanceStatusNotOpen } from "../governance-status-not-open";
+import type { VoteStatus } from "../vote-label";
+import { VotePowerSettings } from "./vote-power-settings";
+import type {
+  QueryObserverResult,
+  RefetchOptions,
+} from "@tanstack/react-query";
 import type { ProposalStatus, VoteWithStake } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -12,15 +15,10 @@ import {
   ToggleGroupItem,
   TransactionStatus,
 } from "@torus-ts/ui";
-
-import type { VoteStatus } from "../vote-label";
+import { TicketX } from "lucide-react";
+import { useState } from "react";
+import { match } from "rustie";
 import { useGovernance } from "~/context/governance-provider";
-import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import { VotePowerSettings } from "./vote-power-settings";
-import type {
-  QueryObserverResult,
-  RefetchOptions,
-} from "@tanstack/react-query";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
@@ -159,7 +157,9 @@ interface ProposalVoteCardProps {
   ) => Promise<QueryObserverResult<VoteWithStake[], Error>>;
 }
 
-export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
+export function ProposalVoteCard(
+  props: Readonly<ProposalVoteCardProps>,
+): JSX.Element {
   const {
     proposalId,
     voted = "UNVOTED",
@@ -189,10 +189,10 @@ export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
     setVotingStatus(callbackReturn);
   }
 
-  function handleVote(): void {
-    const voteBoolean = vote === "FAVORABLE" ? true : false;
+  async function handleVote(): Promise<void> {
+    const voteBoolean = vote === "FAVORABLE";
     try {
-      void voteProposal({
+      await voteProposal({
         proposalId,
         vote: voteBoolean,
         callback: handleCallback,
@@ -207,14 +207,14 @@ export function ProposalVoteCard(props: ProposalVoteCardProps): JSX.Element {
     }
   }
 
-  function handleRemoveVote(): void {
+  async function handleRemoveVote(): Promise<void> {
     setVotingStatus({
       status: "STARTING",
       finalized: false,
       message: "Starting vote removal",
     });
     try {
-      void removeVoteProposal({
+      await removeVoteProposal({
         proposalId,
         callback: handleCallback,
         refetchHandler,

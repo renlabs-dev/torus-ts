@@ -1,24 +1,23 @@
+import { Button } from "@torus-ts/ui";
 import { useFormikContext } from "formik";
 import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
-
+import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
+import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";
+import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useStore } from "~/utils/store";
 import type { TransferFormValues } from "~/utils/types";
-import { useTokenTransfer } from "~/hooks/use-token-transfer";
-import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";
-import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
-import { Button } from "@torus-ts/ui";
 
 export function ButtonSection({
   isReview,
   isValidating,
   setIsReview,
   resetForm,
-}: {
+}: Readonly<{
   isReview: boolean;
   isValidating: boolean;
   resetForm: () => void;
   setIsReview: (b: boolean) => void;
-}) {
+}>) {
   const { values } = useFormikContext<TransferFormValues>();
   const chainDisplayName = useChainDisplayName(values.destination);
 
@@ -47,7 +46,6 @@ export function ButtonSection({
     } catch (error) {
       console.error(error);
     } finally {
-      // await refetchHandler();
       setTransferLoading(false);
     }
   };
@@ -57,7 +55,6 @@ export function ButtonSection({
       <ConnectAwareSubmitButton
         chainName={values.origin}
         text={isValidating ? "Validating..." : "Continue"}
-        classes="mt-4 px-3 py-1.5"
       />
     );
   }

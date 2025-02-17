@@ -1,12 +1,9 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import { z } from "zod";
-
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { and, eq, isNull } from "@torus-ts/db";
-
-import "@torus-ts/db/schema";
 import { agentReportSchema } from "@torus-ts/db/schema";
 import { AGENT_REPORT_INSERT_SCHEMA } from "@torus-ts/db/validation";
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
+import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
 
 export const agentReportRouter = {
   // GET

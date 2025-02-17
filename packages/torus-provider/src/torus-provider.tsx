@@ -1,12 +1,25 @@
 "use client";
 
+import { sendTransaction } from "./_components/send-transaction";
+import type {
+  AddCustomProposal,
+  AddAgentApplication,
+  AddDaoTreasuryTransferProposal,
+  RegisterAgent,
+  RemoveVote,
+  Stake,
+  Transfer,
+  TransferStake,
+  UpdateDelegatingVotingPower,
+  Vote,
+} from "./_types";
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
   InjectedAccountWithMeta,
   InjectedExtension,
 } from "@polkadot/extension-inject/types";
-import { createContext, useContext, useEffect, useState } from "react";
-import { ApiPromise, WsProvider } from "@polkadot/api";
-
+import type { ISubmittableResult } from "@polkadot/types/types";
 import type {
   Api,
   AgentApplication,
@@ -15,22 +28,7 @@ import type {
 } from "@torus-ts/subspace";
 import { sb_balance } from "@torus-ts/subspace";
 import { toNano } from "@torus-ts/utils/subspace";
-
-import type {
-  AddCustomProposal,
-  AddAgentApplication,
-  addDaoTreasuryTransferProposal,
-  registerAgent,
-  RemoveVote,
-  Stake,
-  Transfer,
-  TransferStake,
-  UpdateDelegatingVotingPower,
-  Vote,
-} from "./_types";
-import { sendTransaction } from "./_components/send-transaction";
-import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { ISubmittableResult } from "@polkadot/types/types";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
@@ -78,11 +76,11 @@ interface TorusContextType {
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
-  registerAgent: (registerAgent: registerAgent) => Promise<void>;
+  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addDaoTreasuryTransferProposal: (
-    proposal: addDaoTreasuryTransferProposal,
+    proposal: AddDaoTreasuryTransferProposal,
   ) => Promise<void>;
   updateDelegatingVotingPower: (
     updateDelegating: UpdateDelegatingVotingPower,
@@ -109,7 +107,7 @@ interface TorusContextType {
     url,
     metadata,
   }: Omit<
-    registerAgent,
+    RegisterAgent,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
 
@@ -145,7 +143,7 @@ export function TorusProvider({
   children,
   wsEndpoint,
   torusCacheUrl,
-}: TorusProviderProps): JSX.Element {
+}: Readonly<TorusProviderProps>): JSX.Element {
   const [api, setApi] = useState<ApiPromise | null>(null);
   const [torusApi, setTorusApi] = useState<TorusApiState>({
     web3Enable: null,
@@ -425,7 +423,7 @@ export function TorusProvider({
     name,
     url,
     metadata,
-  }: Omit<registerAgent, "callback" | "refetchHandler">) => {
+  }: Omit<RegisterAgent, "callback" | "refetchHandler">) => {
     if (!api?.tx.torus0?.registerAgent) return;
 
     return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
@@ -437,7 +435,7 @@ export function TorusProvider({
     url,
     metadata,
     callback,
-  }: registerAgent): Promise<void> {
+  }: RegisterAgent): Promise<void> {
     if (!api?.tx.torus0?.registerAgent) return;
 
     const transaction = api.tx.torus0.registerAgent(
@@ -550,7 +548,7 @@ export function TorusProvider({
     destinationKey,
     data,
     callback,
-  }: addDaoTreasuryTransferProposal): Promise<void> {
+  }: AddDaoTreasuryTransferProposal): Promise<void> {
     if (!api?.tx.governance?.addDaoTreasuryTransferProposal) return;
 
     const transaction = api.tx.governance.addDaoTreasuryTransferProposal(

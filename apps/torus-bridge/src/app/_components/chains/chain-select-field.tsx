@@ -1,18 +1,15 @@
-import { useField } from "formik";
-
-import type { ChainName } from "@hyperlane-xyz/sdk";
-
-import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
-
 import { ChainLogo } from "../chain-logo";
+import type { ChainName } from "@hyperlane-xyz/sdk";
 import { Button, Label } from "@torus-ts/ui";
+import { useField } from "formik";
+import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 
 interface Props {
   name: string;
   label: string;
 }
 
-export function ChainSelectField({ name, label }: Props) {
+export function ChainSelectField({ name, label }: Readonly<Props>) {
   const [field] = useField<ChainName>(name);
 
   const displayName = useChainDisplayName(field.value, true);

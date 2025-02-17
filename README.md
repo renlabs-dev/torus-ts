@@ -4,7 +4,7 @@ Monorepo for the **Torus Network** TypesSript Ecosystem. It's managed with
 [Turborepo](https://turborepo.org) and [pnpm](https://pnpm.io/).
 
 > [!IMPORTANT]  
-> For a more in depth guide on how to use this project, please refer to the [Torus Docs](https://docs.torus.network/apps/intro).
+> For a more in depth guide on how to use this project, please refer to the [Torus Docs](https://docs.torus.network/web-apps/intro/).
 
 ## Project Structure
 
@@ -23,8 +23,10 @@ apps
   |   └─ Landing Page
   |─ torus-allocator
   |   └─ Set weights to Agents
-  └─ torus-wallet
+  |─ torus-wallet
   |   └─ Transactions & Staking
+  └─ torus-bridge
+      └─ Bridge between Base and Torus
 services
   |─ torus-cache
   |   └─ Blockchain data caching service
@@ -58,11 +60,20 @@ tooling
       └─ shared tsconfig you can extend from
 ```
 
+## Prerequisites
+
+- **Node.js** - `20.16.0` or higher.
+- **pnpm** - `9.7.1` or higher.
+- **just** - `20.10.7` or higher, [installation guide](https://github.com/baryshev/just).
+- **Text editor** - We recommend using [VSCode](https://code.visualstudio.com/).
+
 ## Get it running
 
 ```sh
 # Install dependencies
 pnpm install
+# or
+just install
 
 # Configure environment variables
 # There is an `.env.example` in the root directory you can use for reference

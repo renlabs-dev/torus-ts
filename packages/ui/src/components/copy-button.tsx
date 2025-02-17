@@ -1,10 +1,10 @@
 "use client";
 
 import { Button, cn } from "..";
-import { copyToClipboard } from "../utils";
-
-import type { VariantProps } from "class-variance-authority";
 import type { buttonVariants } from "..";
+import { copyToClipboard } from "../utils";
+import type { VariantProps } from "class-variance-authority";
+
 type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 interface CopyButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -16,7 +16,7 @@ interface CopyButtonProps
   asChild?: boolean;
 }
 
-export function CopyButton(props: CopyButtonProps): JSX.Element {
+export function CopyButton(props: Readonly<CopyButtonProps>): JSX.Element {
   const {
     children,
     className,

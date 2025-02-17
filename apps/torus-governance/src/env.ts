@@ -1,6 +1,7 @@
-import { z } from "zod";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { SS58_SCHEMA } from "@torus-ts/subspace";
+import { z } from "zod";
+
 const AUTH_ORIGIN_DEFAULT = "dao.torus.network";
 
 const NodeEnvSchema = z
@@ -29,7 +30,7 @@ export const envSchema = {
   NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
-  TORUS_ALLOCATOR_ADDRESS: SS58_SCHEMA,
+  NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: SS58_SCHEMA,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

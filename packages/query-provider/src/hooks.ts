@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
-
+import type { ApiPromise } from "@polkadot/api";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
-
 import type {
   Api,
   LastBlock,
@@ -11,7 +10,6 @@ import type {
   StakeData,
   VoteWithStake,
 } from "@torus-ts/subspace";
-import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 import {
   fetchCustomMetadata,
   processVotesAndStakes,
@@ -38,11 +36,9 @@ import {
   queryRewardInterval,
   queryWhitelist,
 } from "@torus-ts/subspace";
-
-import type { ApiPromise } from "@polkadot/api";
-import SuperJSON from "superjson";
-
 import type { SS58Address } from "@torus-ts/subspace";
+import type { ListItem, Nullish } from "@torus-ts/utils/typing";
+import SuperJSON from "superjson";
 
 // == Constants ==
 

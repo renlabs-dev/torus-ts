@@ -5,13 +5,13 @@
 
 "use client";
 
-import { cn, Icons } from "@torus-ts/ui";
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { LinesSVG } from "./_components/desktop/lines-svg";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
+import { LinesSVG } from "./_components/desktop/lines-svg";
 import { ButtonsSectionMobile } from "./_components/mobile/buttons-section-mobile";
 import { LinesSVGMobile } from "./_components/mobile/lines-svg-mobile";
+import { cn, Icons } from "@torus-ts/ui";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 const draw = {
   hidden: { pathLength: 0, opacity: 0 },

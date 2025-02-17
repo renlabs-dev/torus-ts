@@ -1,14 +1,14 @@
 "use client";
 
-import { useFormikContext } from "formik";
-import { TextField } from "~/app/_components/text-field";
-import type { TransferFormValues } from "~/utils/types";
 import { MaxButton } from "../_components/max-button";
 import { TokenBalance } from "../_components/token-balance";
-import { useOriginBalance } from "~/hooks/balance/use-origin-balance";
 import { Label } from "@torus-ts/ui";
+import { useFormikContext } from "formik";
+import { TextField } from "~/app/_components/text-field";
+import { useOriginBalance } from "~/hooks/balance/use-origin-balance";
+import type { TransferFormValues } from "~/utils/types";
 
-export function AmountSection({ isReview }: { isReview: boolean }) {
+export function AmountSection({ isReview }: Readonly<{ isReview: boolean }>) {
   const { values } = useFormikContext<TransferFormValues>();
   const { balance } = useOriginBalance(values);
 

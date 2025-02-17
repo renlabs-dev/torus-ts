@@ -1,12 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
-import { api } from "~/trpc/react";
-import { TriangleAlert } from "lucide-react";
 import {
   Button,
   Dialog,
@@ -29,6 +24,11 @@ import {
   SelectValue,
   Textarea,
 } from "@torus-ts/ui";
+import { TriangleAlert } from "lucide-react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { api } from "~/trpc/react";
 
 const reportSchema = z.object({
   reason: z.enum([

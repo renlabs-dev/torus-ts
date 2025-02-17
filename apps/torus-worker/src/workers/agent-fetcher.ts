@@ -1,3 +1,6 @@
+import type { WorkerProps } from "../common";
+import { BLOCK_TIME, isNewBlock, log, sleep } from "../common";
+import { SubspaceAgentToDatabase, upsertAgentData } from "../db";
 import type { SS58Address } from "@torus-ts/subspace";
 import {
   checkSS58,
@@ -5,10 +8,6 @@ import {
   queryLastBlock,
   queryWhitelist,
 } from "@torus-ts/subspace";
-
-import type { WorkerProps } from "../common";
-import { BLOCK_TIME, isNewBlock, log, sleep } from "../common";
-import { SubspaceAgentToDatabase, upsertAgentData } from "../db";
 
 export async function agentFetcherWorker(props: WorkerProps) {
   while (true) {

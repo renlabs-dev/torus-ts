@@ -1,7 +1,6 @@
+import * as schema from "@torus-ts/db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-
-import * as schema from "@torus-ts/db/schema";
 
 /**
  * Cache the database connection in development. This avoids creating a new

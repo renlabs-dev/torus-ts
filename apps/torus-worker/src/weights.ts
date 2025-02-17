@@ -3,7 +3,7 @@
 import { bigintDivision } from "@torus-ts/utils";
 
 /** Related to weights computation */
-
+// TODO: Validate SS58 address
 type UserKey = string;
 
 /**
@@ -161,5 +161,3 @@ function _testFinalWeights() {
   console.log(normalized);
   console.log(normalizedPerc);
 }
-
-// _testFinalWeights();

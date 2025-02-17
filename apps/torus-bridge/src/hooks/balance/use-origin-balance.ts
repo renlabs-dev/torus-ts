@@ -1,8 +1,8 @@
-import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
-import type { TransferFormValues } from "~/utils/types";
 import { useTokenByIndex } from "../token";
 import { useMultiProvider } from "../use-multi-provider";
 import { useBalance } from "./use-balance";
+import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
+import type { TransferFormValues } from "~/utils/types";
 
 export function useOriginBalance({ origin, tokenIndex }: TransferFormValues) {
   const multiProvider = useMultiProvider();

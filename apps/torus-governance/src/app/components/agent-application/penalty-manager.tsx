@@ -1,9 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
@@ -23,10 +21,11 @@ import {
   FormControl,
   FormMessage,
 } from "@torus-ts/ui";
-
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
 
 const MAX_CONTENT_CHARACTERS = 240;
 
@@ -52,10 +51,10 @@ type PenaltyFormData = z.infer<typeof penaltySchema>;
 export function PenaltyManager({
   agentKey,
   status,
-}: {
+}: Readonly<{
   agentKey: SS58Address;
   status: AgentApplication["status"];
-}) {
+}>) {
   const { selectedAccount, isUserCadre } = useGovernance();
 
   const { data: agentList } = api.agent.all.useQuery();

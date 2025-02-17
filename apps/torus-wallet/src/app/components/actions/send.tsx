@@ -1,15 +1,11 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "@torus-ts/toast-provider";
 import { isSS58 } from "@torus-ts/subspace";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
+  Button,
   Card,
   Input,
   TransactionStatus,
@@ -19,22 +15,26 @@ import {
   FormControl,
   FormMessage,
   FormItem,
-  Button,
 } from "@torus-ts/ui";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { computeFeeData } from "~/utils/helpers";
+import { isWithinTransferLimit } from "~/utils/validators";
 import { AmountButtons } from "../amount-buttons";
 import type { FeeLabelHandle } from "../fee-label";
 import { FeeLabel } from "../fee-label";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ALLOCATOR_ADDRESS } from "~/consts";
 import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
 import { ReviewTransactionDialog } from "../review-transaction-dialog";
-import { isWithinTransferLimit } from "~/utils/validators";
-import { computeFeeData } from "~/utils/helpers";
-import { toast } from "@torus-ts/toast-provider";
 
 const FEE_BUFFER_PERCENT = 102n;
 

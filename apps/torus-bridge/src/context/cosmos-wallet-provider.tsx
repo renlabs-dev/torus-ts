@@ -7,13 +7,14 @@ import { cosmoshub } from "@hyperlane-xyz/registry";
 import { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { getCosmosKitChainConfigs } from "@hyperlane-xyz/widgets";
 import "@interchain-ui/react/styles";
-
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import { config } from "~/consts/config";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
-export function CosmosWalletProvider({ children }: PropsWithChildren<unknown>) {
+export function CosmosWalletProvider({
+  children,
+}: Readonly<PropsWithChildren<unknown>>) {
   const chainMetadata = useMultiProvider().metadata;
   const { chains, assets } = useMemo(() => {
     const multiProvider = new MultiProtocolProvider({

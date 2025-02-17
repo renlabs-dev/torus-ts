@@ -7,6 +7,8 @@ import {
   midnightTheme,
 } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
+import { config } from "../consts/config";
+import { useWarpCore } from "../hooks/token";
 import {
   argentWallet,
   coinbaseWallet,
@@ -22,10 +24,6 @@ import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import { createClient, http } from "viem";
 import { WagmiProvider, createConfig } from "wagmi";
-
-import { config } from "../consts/config";
-
-import { useWarpCore } from "../hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 export function initWagmi(multiProvider: MultiProtocolProvider) {
@@ -67,7 +65,9 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
   return { wagmiConfig, chains };
 }
 
-export function EvmWalletProvider({ children }: PropsWithChildren<unknown>) {
+export function EvmWalletProvider({
+  children,
+}: Readonly<PropsWithChildren<unknown>>) {
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 

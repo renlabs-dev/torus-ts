@@ -1,10 +1,9 @@
-import type { ApiPromise } from "@polkadot/api";
-import type { Header } from "@polkadot/types/interfaces";
-import type { IU8a } from "@polkadot/types/types";
-
 import type { Api } from "./modules/_common";
 import type { Blocks } from "./types";
 import { sb_blocks } from "./types";
+import type { ApiPromise } from "@polkadot/api";
+import type { Header } from "@polkadot/types/interfaces";
+import type { IU8a } from "@polkadot/types/types";
 
 export interface LastBlock {
   blockHeader: Header;

@@ -1,18 +1,14 @@
 import "@polkadot/api-augment";
-
-import express from "express";
-import { z } from "zod";
-
-import { ApiPromise, WsProvider } from "@polkadot/api";
-
-import { queryLastBlock } from "@torus-ts/subspace";
-
 import { log } from "./common";
 import { parseEnvOrExit } from "./common/env";
 import { agentFetcherWorker } from "./workers/agent-fetcher";
 import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
 import { processApplicationsWorker } from "./workers/process-dao-applications";
 import { weightAggregatorWorker } from "./workers/weight-aggregator";
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { queryLastBlock } from "@torus-ts/subspace";
+import express from "express";
+import { z } from "zod";
 
 export const env = parseEnvOrExit(
   z.object({

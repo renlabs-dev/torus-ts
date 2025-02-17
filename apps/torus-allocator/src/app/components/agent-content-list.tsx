@@ -1,14 +1,14 @@
 "use client";
 
 import { AgentItem } from "./agent-item";
-import { AgentsTabView } from "./agents-tab-view";
-import { api } from "~/trpc/react";
-import { FilterContent } from "./filter-content";
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { useRouter, useSearchParams } from "next/navigation";
-import { UserWeightInfo } from "./user-weight-info";
 import { AgentItemSkeleton } from "./agent-item-skeleton";
+import { AgentsTabView } from "./agents-tab-view";
+import { FilterContent } from "./filter-content";
 import { CustomPagination } from "./pagination-controls";
+import { UserWeightInfo } from "./user-weight-info";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { api } from "~/trpc/react";
 
 interface Agent {
   id: number;
@@ -86,10 +86,10 @@ export function AgentContentList() {
         itemsPerPage={ITEMS_PER_PAGE}
         search={search}
         viewType={viewType}
-        onPageChange={(page) => {
-          router.push(
-            `?page=${page}${search ? `&search=${search}` : ""}${viewType ? `&view-type=${viewType}` : ""}`,
-          );
+        onPageChange={(page: number) => {
+          const searchParam = search ? "&search=" + search : "";
+          const viewTypeParam = viewType ? "&view-type=" + viewType : "";
+          router.push("?page=" + page + searchParam + viewTypeParam);
         }}
       />
     );

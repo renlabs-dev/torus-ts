@@ -1,18 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useMemo } from "react";
-import Link from "next/link";
-import {
-  Copy,
-  CreditCard,
-  Lock,
-  LockOpen,
-  LogOut,
-  SquareArrowOutUpRight,
-  WalletCards,
-} from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,
@@ -37,6 +24,18 @@ import {
   smallAddress,
   smallWalletName,
 } from "@torus-ts/utils/subspace";
+import {
+  Copy,
+  CreditCard,
+  Lock,
+  LockOpen,
+  LogOut,
+  SquareArrowOutUpRight,
+  WalletCards,
+} from "lucide-react";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { useMemo } from "react";
 
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 

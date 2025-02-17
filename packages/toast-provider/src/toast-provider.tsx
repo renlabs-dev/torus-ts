@@ -1,6 +1,5 @@
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
-
 import { ToastContainer } from "react-toastify";
 
 function ToastProvider({

@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import { ReceiveAction } from "./actions/receive";
 import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
+import { StakingCalculator } from "./actions/staking-calculator";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
-import { ReceiveAction } from "./actions/receive";
-import { StakingCalculator } from "./actions/staking-calculator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import React, { useState } from "react";
 
 const transferButtons = [
   { text: "Send", component: <SendAction /> },
@@ -25,7 +25,7 @@ interface WalletOptionsProps {
   buttons: { text: string; component: JSX.Element }[];
 }
 
-function WalletOptions({ buttons }: WalletOptionsProps): JSX.Element {
+function WalletOptions({ buttons }: Readonly<WalletOptionsProps>): JSX.Element {
   const [currentTab, setCurrentTab] = useState(buttons[0]?.text);
 
   const ActionTabs: React.FC<{ text: string }> = ({ text }) => {

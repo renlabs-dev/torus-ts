@@ -1,3 +1,8 @@
+import { assembleWarpCoreConfig } from "../app/_components/warp-core-config";
+import { config } from "../consts/config";
+import { logger } from "./logger";
+import type { TransferContext } from "./types";
+import { FinalTransferStatuses, TransferStatus } from "./types";
 import type { IRegistry } from "@hyperlane-xyz/registry";
 import { GithubRegistry } from "@hyperlane-xyz/registry";
 import type { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
@@ -6,12 +11,6 @@ import { objFilter } from "@hyperlane-xyz/utils";
 import { toast } from "react-toastify";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { config } from "../consts/config";
-import { logger } from "./logger";
-
-import { assembleWarpCoreConfig } from "../app/_components/warp-core-config";
-import type { TransferContext } from "./types";
-import { FinalTransferStatuses, TransferStatus } from "./types";
 import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
 
 // Increment this when persist state has breaking changes

@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
-
-import { TransferToken } from "../transfer-token";
 import { TransferEVM } from "../transfer-evm";
+import { TransferToken } from "../transfer-token";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
 import { updateSearchParams } from "~/utils/query-params";
 
 const tabs = [
@@ -55,35 +53,33 @@ function WalletOptions() {
   }, [currentTab, router, searchParams]);
 
   return (
-    <>
-      <Tabs
-        value={
-          tabs.find((tab) => tab.params === currentTab)?.params ??
-          defaultTab.params
-        }
-        onValueChange={(value) => handleTabChange(value)}
-        className="flex w-full animate-fade flex-col gap-4"
-      >
-        <TabsList className="grid w-full grid-cols-2">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.text}
-              value={tab.params}
-              onClick={() => handleTabChange(tab.params)}
-            >
-              {tab.text}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {tabs.map((tab) => {
-          return (
-            <TabsContent key={tab.params} value={tab.params}>
-              {tab.component}
-            </TabsContent>
-          );
-        })}
-      </Tabs>
-    </>
+    <Tabs
+      value={
+        tabs.find((tab) => tab.params === currentTab)?.params ??
+        defaultTab.params
+      }
+      onValueChange={(value) => handleTabChange(value)}
+      className="flex w-full animate-fade flex-col gap-4"
+    >
+      <TabsList className="grid w-full grid-cols-2">
+        {tabs.map((tab) => (
+          <TabsTrigger
+            key={tab.text}
+            value={tab.params}
+            onClick={() => handleTabChange(tab.params)}
+          >
+            {tab.text}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {tabs.map((tab) => {
+        return (
+          <TabsContent key={tab.params} value={tab.params}>
+            {tab.component}
+          </TabsContent>
+        );
+      })}
+    </Tabs>
   );
 }
 

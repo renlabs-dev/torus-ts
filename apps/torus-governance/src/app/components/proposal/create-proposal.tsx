@@ -1,10 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
@@ -23,9 +20,12 @@ import {
   FormMessage,
 } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
-import { useGovernance } from "~/context/governance-provider";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useGovernance } from "~/context/governance-provider";
 
 const proposalSchema = z.object({
   title: z.string().min(1, "Title is required"),

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { buildSocials } from "./agent-item";
+import Link from "next/link";
 
 // (property) socials?: {
 //     discord?: string | undefined;
@@ -25,7 +25,7 @@ interface ExpandedViewSocialsProps {
 export function ExpandedViewSocials({
   socials,
   website,
-}: ExpandedViewSocialsProps) {
+}: Readonly<ExpandedViewSocialsProps>) {
   const socialsList = buildSocials(socials ?? {}, website);
   return (
     <div className="flex gap-2">

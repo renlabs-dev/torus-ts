@@ -1,24 +1,23 @@
-import type { IToken } from "@hyperlane-xyz/sdk";
-import { ChevronIcon } from "@hyperlane-xyz/widgets";
-import { useField, useFormikContext } from "formik";
-import { useEffect, useState } from "react";
-
-import type { TransferFormValues } from "../../../utils/types";
-import { TokenListModal } from "./token-list-modal";
 import {
   getIndexForToken,
   getTokenByIndex,
   useWarpCore,
 } from "../../../hooks/token";
-import { TokenIcon } from "~/app/_components/token-icon";
+import type { TransferFormValues } from "../../../utils/types";
+import { TokenListModal } from "./token-list-modal";
+import type { IToken } from "@hyperlane-xyz/sdk";
+import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui";
+import { useField, useFormikContext } from "formik";
+import { useEffect, useState } from "react";
+import { TokenIcon } from "~/app/_components/token-icon";
 
 interface Props {
   name: string;
   disabled?: boolean;
 }
 
-export function TokenSelectField({ name, disabled }: Props) {
+export function TokenSelectField({ name, disabled }: Readonly<Props>) {
   const { values } = useFormikContext<TransferFormValues>();
   const [field, , helpers] = useField<number | undefined>(name);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,12 +81,12 @@ function TokenButton({
   disabled,
   onClick,
   isAutomatic,
-}: {
+}: Readonly<{
   token?: IToken;
   disabled?: boolean;
   onClick?: () => void;
   isAutomatic?: boolean;
-}) {
+}>) {
   return (
     <Button
       type="button"

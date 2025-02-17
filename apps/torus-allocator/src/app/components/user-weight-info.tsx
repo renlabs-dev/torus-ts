@@ -1,5 +1,8 @@
 "use client";
 
+import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
+import type { SS58Address } from "@torus-ts/subspace";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Card,
   Tooltip,
@@ -9,18 +12,15 @@ import {
 } from "@torus-ts/ui";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Info } from "lucide-react";
-import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useMemo } from "react";
-import { useTorus } from "@torus-ts/torus-provider";
-import { ALLOCATOR_ADDRESS } from "~/consts";
-import type { SS58Address } from "@torus-ts/subspace";
+import { env } from "~/env";
+import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { useTutorialStore } from "~/stores/tutorialStore";
 
 export const UserWeightInfo = () => {
   const { selectedAccount, api: torusApi } = useTorus();
   const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
-    useKeyStakedBy(torusApi, ALLOCATOR_ADDRESS);
+    useKeyStakedBy(torusApi, env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"));
   const { delegatedAgents } = useDelegateAgentStore();
   const { openTutorial } = useTutorialStore();
 

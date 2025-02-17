@@ -1,14 +1,13 @@
 "use client";
 
-import MarkdownPreview from "@uiw/react-markdown-preview";
-
 import { cn } from ".";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 
 interface MarkdownViewProps {
   className?: string;
   source: string;
 }
-export function MarkdownView(props: MarkdownViewProps): JSX.Element {
+export function MarkdownView(props: Readonly<MarkdownViewProps>): JSX.Element {
   const { source, className } = props;
   return (
     <MarkdownPreview

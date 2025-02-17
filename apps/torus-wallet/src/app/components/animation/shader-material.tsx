@@ -1,10 +1,10 @@
 "use client";
 
+import fragmentShader from "./shaders/fragment.glsl";
+import vertexShader from "./shaders/vertex.glsl";
+import { useFrame } from "@react-three/fiber";
 import { useRef, useMemo } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
-import vertexShader from "./shaders/vertex.glsl";
-import fragmentShader from "./shaders/fragment.glsl";
 
 export const ShaderMaterial = () => {
   const materialRef = useRef<THREE.ShaderMaterial>(null);

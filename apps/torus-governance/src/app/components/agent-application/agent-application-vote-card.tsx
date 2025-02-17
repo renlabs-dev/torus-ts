@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Delete, TicketX } from "lucide-react";
-
-import { toast } from "@torus-ts/toast-provider";
-import { Button, Card, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
-
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import type { AgentApplication } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
+import { Button, Card, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
+import { Delete, TicketX } from "lucide-react";
+import { useState } from "react";
 import { match } from "rustie";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 

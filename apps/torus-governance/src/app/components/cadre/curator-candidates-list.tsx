@@ -1,6 +1,6 @@
 "use client";
+
 import { toast } from "@torus-ts/toast-provider";
-import { DateTime } from "luxon";
 import {
   Button,
   Card,
@@ -11,11 +11,14 @@ import {
 } from "@torus-ts/ui";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Crown, TicketX } from "lucide-react";
-import { api } from "~/trpc/react";
-import { useGovernance } from "~/context/governance-provider";
+import { DateTime } from "luxon";
 import { useCallback } from "react";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 
 type CandidacyStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "REMOVED";
+
+type VoteType = "ACCEPT" | "REFUSE" | "REMOVE";
 
 interface Candidate {
   userKey: string;
@@ -29,7 +32,7 @@ interface Candidate {
 }
 
 interface VoteAlreadyCastFooterActionsProps {
-  voted: "ACCEPT" | "REFUSE" | "REMOVE";
+  voted: VoteType;
   voteLoading: boolean;
   handleRemoveVote: () => void;
 }
@@ -49,7 +52,7 @@ function VoteAlreadyCastFooterActions({
   voted,
   voteLoading,
   handleRemoveVote,
-}: VoteAlreadyCastFooterActionsProps) {
+}: Readonly<VoteAlreadyCastFooterActionsProps>) {
   const messages: Record<
     "ACCEPT" | "REFUSE" | "REMOVE",
     { text: string; className: string }
@@ -229,12 +232,10 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
       return (
         <>
           <span>
-            In favor
-            <span className="ml-2 text-green-400">{accept}</span>
+            In favor <span className="ml-2 text-green-400">{accept}</span>
           </span>
           <span className="pl-2">
-            <span className="mr-2 text-red-400">{refuse}</span>
-            Against
+            <span className="mr-2 text-red-400">{refuse}</span> Against
           </span>
         </>
       );
@@ -242,8 +243,7 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
 
     return (
       <span>
-        <span className="mr-2 text-red-400">{revoke}</span>
-        Revoke
+        <span className="mr-2 text-red-400">{revoke}</span> Revoke
       </span>
     );
   };

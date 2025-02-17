@@ -2,14 +2,12 @@
 
 // TODO: modularize
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink, loggerLink } from "@trpc/client";
-import { createTRPCReact } from "@trpc/react-query";
-import SuperJSON from "superjson";
-
 import type { AppRouter } from "@torus-ts/api";
 import { createAuthLink, makeAuthenticateUserFn } from "@torus-ts/api/client";
 import { useTorus } from "@torus-ts/torus-provider";
-
+import { httpBatchLink, loggerLink } from "@trpc/client";
+import { createTRPCReact } from "@trpc/react-query";
+import SuperJSON from "superjson";
 import { env } from "~/env";
 
 const createQueryClient = () =>
@@ -17,7 +15,6 @@ const createQueryClient = () =>
     defaultOptions: {
       queries: {
         staleTime: 30 * 1000,
-        // throwOnError: true, // TODO
       },
     },
   });
@@ -36,7 +33,9 @@ const getQueryClient = () => {
 
 export const api = createTRPCReact<AppRouter>();
 
-export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
+export function TRPCReactProvider({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const queryClient = getQueryClient();
 
   const { signHex } = useTorus();

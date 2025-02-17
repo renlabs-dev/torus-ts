@@ -7,41 +7,39 @@ import {
   AlertDialogTrigger,
   Button,
 } from "@torus-ts/ui";
-import Link from "next/link";
-import Image from "next/image";
 import { ArrowBigRightDash, Logs } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function SelectActionDialog() {
   return (
-    <>
-      <AlertDialog>
-        <Button
-          asChild
-          variant="link"
-          className="flex h-5 w-fit items-center gap-2 p-0 text-sm"
-        >
-          <AlertDialogTrigger>
-            <Logs className="h-4 w-4" />
-            Easy transaction selection menu
-          </AlertDialogTrigger>
-        </Button>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Select your desired Action:</AlertDialogTitle>
-          </AlertDialogHeader>
-          {SelectCardList.map((card) => (
-            <SelectCard
-              key={card.href}
-              href={card.href}
-              text={card.text}
-              description={card.description}
-              iconFrom={card.iconFrom}
-              iconTo={card.iconTo}
-            />
-          ))}
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <AlertDialog>
+      <Button
+        asChild
+        variant="link"
+        className="flex h-5 w-fit items-center gap-2 p-0 text-sm"
+      >
+        <AlertDialogTrigger>
+          <Logs className="h-4 w-4" />
+          Easy transaction selection menu
+        </AlertDialogTrigger>
+      </Button>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Select your desired Action:</AlertDialogTitle>
+        </AlertDialogHeader>
+        {SelectCardList.map((card) => (
+          <SelectCard
+            key={card.href}
+            href={card.href}
+            text={card.text}
+            description={card.description}
+            iconFrom={card.iconFrom}
+            iconTo={card.iconTo}
+          />
+        ))}
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -53,7 +51,7 @@ interface SelectCardProps {
   iconTo: string;
 }
 
-export function SelectCard(props: SelectCardProps) {
+export function SelectCard(props: Readonly<SelectCardProps>) {
   return (
     <AlertDialogAction
       asChild

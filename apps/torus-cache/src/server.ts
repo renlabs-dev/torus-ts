@@ -1,11 +1,10 @@
-import type { Express } from "express";
-import { ApiPromise, WsProvider } from "@polkadot/api";
-import cors from "cors";
-import express from "express";
-
 import { env } from "./env";
 import routes from "./routes";
 import { log } from "./utils";
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import cors from "cors";
+import type { Express } from "express";
+import express from "express";
 
 const port = env.PORT;
 const wsEndpoint = env.TORUS_RPC_URL;

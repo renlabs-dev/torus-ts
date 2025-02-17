@@ -1,7 +1,7 @@
 interface SkeletonProps {
   className: string;
 }
-export function Skeleton(props: SkeletonProps): JSX.Element {
+export function Skeleton(props: Readonly<SkeletonProps>): JSX.Element {
   const { className } = props;
   return (
     <span

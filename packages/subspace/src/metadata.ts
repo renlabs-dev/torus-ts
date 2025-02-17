@@ -1,10 +1,9 @@
-import type { ZodSchema } from "zod";
-import { z } from "zod";
-
-import type { Result } from "@torus-ts/utils";
-import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
 import type { AgentMetadata } from "./agent_metadata/agent_metadata";
 import { AGENT_METADATA_SCHEMA } from "./agent_metadata/agent_metadata";
+import type { Result } from "@torus-ts/utils";
+import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
+import type { ZodSchema } from "zod";
+import { z } from "zod";
 
 const CUSTOM_METADATA_SCHEMA = z.object({
   title: z.string().optional(),
@@ -90,12 +89,14 @@ export async function fetchCustomMetadata(
   const cid = r.data;
   const url = buildIpfsGatewayUrl(cid);
 
-  const metadata =
-    kind == "proposal"
-      ? await processProposalMetadata(url, entryId)
-      : kind == "application"
-        ? await processApplicationMetadata(url, entryId)
-        : await processAgentMetadata(url, entryId);
+  let metadata;
+  if (kind === "proposal") {
+    metadata = await processProposalMetadata(url, entryId);
+  } else if (kind === "application") {
+    metadata = await processApplicationMetadata(url, entryId);
+  } else {
+    metadata = await processAgentMetadata(url, entryId);
+  }
 
   return metadata;
 }

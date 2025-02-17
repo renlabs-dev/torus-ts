@@ -1,16 +1,15 @@
-import { assert } from "tsafe";
-import type { Chain, WalletClient } from "viem";
-export { waitForTransactionReceipt } from "@wagmi/core";
-import { encodeFunctionData } from "viem";
-
+import type { SS58Address } from "./address";
 import { hexToU8a, stringToU8a } from "@polkadot/util";
 import {
   blake2AsU8a,
   decodeAddress,
   encodeAddress,
 } from "@polkadot/util-crypto";
+import { assert } from "tsafe";
+import type { Chain, WalletClient } from "viem";
+import { encodeFunctionData } from "viem";
 
-import type { SS58Address } from "./address";
+export { waitForTransactionReceipt } from "@wagmi/core";
 
 const ADDRESS_FORMAT = 42;
 

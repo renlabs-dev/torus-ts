@@ -1,26 +1,26 @@
 "use client";
 
+import { handleCustomAgentApplications } from "../../../../../utils";
+import { LoaderCircle } from "lucide-react";
 import { AgentActivityLabel } from "~/app/components/agent-application/agent-activity-label";
 import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application/agent-application-vote-card";
 import { AgentStatusLabel } from "~/app/components/agent-application/agent-status-label";
-import { api } from "~/trpc/react";
 import { CreateCadreCandidates } from "~/app/components/agent-application/create-cadre-candidates";
+import { PenaltyManager } from "~/app/components/agent-application/penalty-manager";
+import { VoterList } from "~/app/components/agent-application/voter-list";
 import { CreateComment } from "~/app/components/comments/create-comment";
+import { ViewComment } from "~/app/components/comments/view-comment";
 import { DetailsCard } from "~/app/components/details-card";
 import { ExpandedViewContent } from "~/app/components/expanded-view-content";
-import { handleCustomAgentApplications } from "../../../../../utils";
-import { LoaderCircle } from "lucide-react";
-import { PenaltyManager } from "~/app/components/agent-application/penalty-manager";
 import { useGovernance } from "~/context/governance-provider";
-import { ViewComment } from "~/app/components/comments/view-comment";
-import { VoterList } from "~/app/components/agent-application/voter-list";
+import { api } from "~/trpc/react";
 
 interface CustomContent {
   paramId: number;
 }
 
 export function AgentApplicationExpandedView(
-  props: CustomContent,
+  props: Readonly<CustomContent>,
 ): JSX.Element {
   const { paramId } = props;
 

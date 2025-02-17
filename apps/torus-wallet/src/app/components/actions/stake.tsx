@@ -1,19 +1,13 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { checkSS58, isSS58 } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
+  Button,
   Card,
   Input,
-  Button,
   Form,
   FormField,
   FormItem,
@@ -28,16 +22,17 @@ import {
   smallAddress,
   toNano,
 } from "@torus-ts/utils/subspace";
-import { checkSS58, isSS58 } from "@torus-ts/subspace";
-import { useWallet } from "~/context/wallet-provider";
-import { AmountButtons } from "../amount-buttons";
-import { ValidatorsList } from "../validators-list";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { ALLOCATOR_ADDRESS } from "~/consts";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
+import { useWallet } from "~/context/wallet-provider";
 import { computeFeeData } from "~/utils/helpers";
 import {
   doesNotExceedMaxStake,
@@ -45,7 +40,12 @@ import {
   isAmountPositive,
   meetsMinimumStake,
 } from "~/utils/validators";
-import { toast } from "@torus-ts/toast-provider";
+import { AmountButtons } from "../amount-buttons";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
+import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
+import { ReviewTransactionDialog } from "../review-transaction-dialog";
+import { ValidatorsList } from "../validators-list";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;

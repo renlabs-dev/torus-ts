@@ -1,13 +1,11 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import { TRPCError } from "@trpc/server";
-
-import type { AuthReq } from "@torus-ts/utils/auth";
-
 import { createSessionToken } from "../auth";
 import { SIGNED_PAYLOAD_SCHEMA, verifySignedData } from "../auth/sign";
 import { publicProcedure } from "../trpc";
-import { z } from "zod";
+import type { AuthReq } from "@torus-ts/utils/auth";
+import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import * as jwt from "jsonwebtoken";
+import { z } from "zod";
 
 // Maps nonce -> timestamp
 const seenNonces = new Map<string, number>();
@@ -17,13 +15,14 @@ export const authRouter = {
   startSession: publicProcedure
     .input(SIGNED_PAYLOAD_SCHEMA)
     .mutation(async ({ ctx, input }) => {
+      let address;
+      let payload;
       try {
-        var { address, payload } = await verifySignedData(input);
+        ({ address, payload } = await verifySignedData(input));
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          message: `Invalid signed payload: ${err}`,
+          message: `Invalid signed payload: ${String(err)}`,
           cause: err,
         });
       }
@@ -33,8 +32,7 @@ export const authRouter = {
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          message: `Invalid authentication request: ${err}`,
+          message: `Invalid authentication request: ${String(err)}`,
           cause: err,
         });
       }

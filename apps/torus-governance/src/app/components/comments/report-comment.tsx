@@ -1,10 +1,8 @@
 "use client";
 
-import { z } from "zod";
-import { useForm } from "react-hook-form";
+import type { AppRouter } from "@torus-ts/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
-import { X } from "lucide-react";
 import {
   Button,
   Card,
@@ -23,9 +21,11 @@ import {
   FormControl,
   FormMessage,
 } from "@torus-ts/ui";
-import { api } from "~/trpc/react";
 import type { inferProcedureOutput } from "@trpc/server";
-import type { AppRouter } from "@torus-ts/api";
+import { X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { api } from "~/trpc/react";
 
 export type commentReportReason = NonNullable<
   inferProcedureOutput<AppRouter["commentReport"]["byId"]>
@@ -92,9 +92,12 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
+      <button
         className="absolute inset-0 bg-card/30 backdrop-blur-sm"
         onClick={() => setCommentId(null)}
+        onKeyDown={(e) => e.key === "Escape" && setCommentId(null)}
+        aria-label="Close report comment dialog"
+        type="button"
       />
       <Card className="relative h-fit w-full max-w-screen-md animate-fade-in-down text-left text-white">
         <CardHeader className="flex flex-row items-center justify-between gap-3 px-6 pt-6">

@@ -1,16 +1,17 @@
+import { cn } from "..";
 import { LoaderCircle } from "lucide-react";
 
-import { cn } from "..";
-
-export function Loading(props: {
-  className?: string;
-  size?: number | string;
-}): JSX.Element {
+export function Loading(
+  props: Readonly<{
+    className?: string;
+    size?: number | string;
+  }>,
+): JSX.Element {
   const { className, size } = props;
   return (
-    <div className={cn("mr-1 grid place-content-center")} role="status">
+    <output className={cn("mr-1 grid place-content-center")}>
       <LoaderCircle size={size} className={cn(className, "animate-spin")} />
       <span className={cn("sr-only")}>Loading...</span>
-    </div>
+    </output>
   );
 }

@@ -1,8 +1,5 @@
 "use client";
 
-import { Scale, Wallet, Zap } from "lucide-react";
-import Link from "next/link";
-
 import { toast } from "@torus-ts/toast-provider";
 import {
   links,
@@ -15,9 +12,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@torus-ts/ui";
-
-import { ALLOCATOR_ADDRESS } from "~/consts";
+import { Scale, Wallet, Zap } from "lucide-react";
+import Link from "next/link";
 import React from "react";
+import { env } from "~/env";
 import { useTutorialStore } from "~/stores/tutorialStore";
 
 export const tutorialData = {
@@ -49,7 +47,7 @@ export const tutorialData = {
       "Stake your desired amount to determine your voting power.",
       <CopyButton
         key="2.3"
-        copy={ALLOCATOR_ADDRESS}
+        copy={env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS")}
         variant="link"
         className="h-5 p-0 text-sm underline"
         notify={() => toast.success("Copied to clipboard")}

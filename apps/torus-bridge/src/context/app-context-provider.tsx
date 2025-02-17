@@ -1,25 +1,22 @@
 "use client";
 
 import "../styles/globals.css";
-
+import { ReactQueryProvider } from "@torus-ts/query-provider";
+import { ToastProvider } from "@torus-ts/toast-provider";
+import { TorusProvider } from "@torus-ts/torus-provider";
+import { Container, Footer } from "@torus-ts/ui";
+import { WalletHeader } from "~/app/_components/shared/wallet-header";
 import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
 import { EvmWalletProvider } from "~/context/evm-wallet-provider";
-import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
-
-import { ToastProvider } from "@torus-ts/toast-provider";
-import { ReactQueryProvider } from "@torus-ts/query-provider";
-
 import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
-import { TorusProvider } from "@torus-ts/torus-provider";
+import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
 import { env } from "~/env";
-import { WalletHeader } from "~/app/_components/shared/wallet-header";
-import { Container, Footer } from "@torus-ts/ui";
 
 export function AppContextProvider({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   return (
     <ToastProvider>
       <ReactQueryProvider>

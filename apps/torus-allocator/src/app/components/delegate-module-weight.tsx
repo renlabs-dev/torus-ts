@@ -1,11 +1,11 @@
 "use client";
 
+import { toast } from "@torus-ts/toast-provider";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui";
 import { Anvil } from "lucide-react";
-import { toast } from "@torus-ts/toast-provider";
+import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { useTorus } from "@torus-ts/torus-provider";
-import { ALLOCATOR_ADDRESS } from "~/consts";
 
 interface DelegateModuleWeightProps {
   id: number;
@@ -16,7 +16,9 @@ interface DelegateModuleWeightProps {
   className?: string;
 }
 
-export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
+export function DelegateModuleWeight(
+  props: Readonly<DelegateModuleWeightProps>,
+) {
   const { delegatedAgents, addAgent, removeAgent } = useDelegateAgentStore();
 
   const { selectedAccount } = useTorus();
@@ -48,7 +50,7 @@ export function DelegateModuleWeight(props: DelegateModuleWeightProps) {
     <Button
       variant="outline"
       onClick={handleDelegateClick}
-      disabled={props.agentKey === ALLOCATOR_ADDRESS}
+      disabled={props.agentKey === env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS")}
       className={`flex w-fit items-center gap-2 bg-transparent text-white transition duration-200 ${props.className} ${isModuleDelegated ? "border-red-500 text-red-500 hover:bg-red-500/10 hover:text-red-500" : "border-cyan-500 text-cyan-500 hover:bg-cyan-500/10 hover:text-cyan-500"}`}
     >
       <Anvil className={`h-6 w-6`} />

@@ -1,31 +1,8 @@
 "use client";
 
 import type { UseQueryResult } from "@tanstack/react-query";
-import { createContext, useContext, useMemo } from "react";
-
+import type { AppRouter } from "@torus-ts/api";
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
-import type {
-  Agent,
-  AgentApplication,
-  Api,
-  LastBlock,
-  Proposal,
-  SS58Address,
-  StakeData,
-} from "@torus-ts/subspace";
-import type {
-  ApplicationState,
-  InjectedAccountWithMeta,
-  ProposalState,
-} from "@torus-ts/torus-provider";
-import type {
-  AddCustomProposal,
-  AddAgentApplication,
-  addDaoTreasuryTransferProposal,
-  registerAgent,
-  RemoveVote,
-  Vote,
-} from "@torus-ts/torus-provider/types";
 import {
   useAccountsNotDelegatingVoting,
   useCachedStakeOut,
@@ -42,17 +19,38 @@ import {
   useAgents,
   useWhitelist,
 } from "@torus-ts/query-provider/hooks";
-import { useTorus } from "@torus-ts/torus-provider";
-import { Header, WalletDropdown } from "@torus-ts/ui";
-
-import { env } from "~/env";
+import type {
+  Agent,
+  AgentApplication,
+  Api,
+  LastBlock,
+  Proposal,
+  SS58Address,
+  StakeData,
+} from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
-import { api as trpcApi } from "~/trpc/react";
-import type { AppRouter } from "@torus-ts/api";
-import type { inferProcedureOutput } from "@trpc/server";
-import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
+import type {
+  ApplicationState,
+  InjectedAccountWithMeta,
+  ProposalState,
+} from "@torus-ts/torus-provider";
+import { useTorus } from "@torus-ts/torus-provider";
+import type {
+  AddCustomProposal,
+  AddAgentApplication,
+  AddDaoTreasuryTransferProposal,
+  RegisterAgent,
+  RemoveVote,
+  Vote,
+} from "@torus-ts/torus-provider/types";
+import { Header, WalletDropdown } from "@torus-ts/ui";
 import type { TRPCClientErrorLike } from "@trpc/client";
+import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
+import type { inferProcedureOutput } from "@trpc/server";
 import { useSignIn } from "hooks/use-sign-in";
+import { createContext, useContext, useMemo } from "react";
+import { env } from "~/env";
+import { api as trpcApi } from "~/trpc/react";
 
 type CadreCandidates = inferProcedureOutput<AppRouter["cadreCandidate"]["all"]>;
 type CadreList = inferProcedureOutput<AppRouter["cadre"]["all"]>;
@@ -76,7 +74,7 @@ interface GovernanceContextType {
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   addDaoTreasuryTransferProposal: (
-    proposal: addDaoTreasuryTransferProposal,
+    proposal: AddDaoTreasuryTransferProposal,
   ) => Promise<void>;
   agentApplications: UseQueryResult<ApplicationState[], Error>;
   agents: UseQueryResult<Map<SS58Address, Agent>, Error>;
@@ -90,7 +88,7 @@ interface GovernanceContextType {
   lastBlock: UseQueryResult<LastBlock, Error>;
   proposals: UseQueryResult<Proposal[], Error>;
   proposalsWithMeta: ProposalState[] | undefined;
-  registerAgent: (registerAgent: registerAgent) => Promise<void>;
+  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   rewardAllocation: UseQueryResult<bigint, Error>;
   selectedAccount: InjectedAccountWithMeta | null;
@@ -115,9 +113,9 @@ const GovernanceContext = createContext<GovernanceContextType | null>(null);
 
 export function GovernanceProvider({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   // == API Context ==
   const {
     accounts,

@@ -6,11 +6,11 @@ export function TransferProperty({
   name,
   value,
   url,
-}: {
+}: Readonly<{
   name: string;
   value: string;
   url?: string;
-}) {
+}>) {
   return (
     <div>
       <div className="flex items-center justify-between">

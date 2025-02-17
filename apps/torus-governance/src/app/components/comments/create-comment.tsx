@@ -1,22 +1,24 @@
 "use client";
 
-import * as React from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@torus-ts/toast-provider";
-import { Button, Input, Textarea } from "@torus-ts/ui";
-import { formatToken } from "@torus-ts/utils/subspace";
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
 import type { SS58Address } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
 import {
+  Button,
+  Input,
+  Textarea,
   Form,
   FormField,
   FormItem,
   FormControl,
   FormMessage,
 } from "@torus-ts/ui";
+import { formatToken } from "@torus-ts/utils/subspace";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
@@ -42,11 +44,11 @@ export function CreateComment({
   id,
   itemType,
   author,
-}: {
+}: Readonly<{
   id: number;
   itemType: "PROPOSAL" | "AGENT_APPLICATION";
   author?: SS58Address;
-}) {
+}>) {
   const { selectedAccount, accountStakedBalance, isUserCadre } =
     useGovernance();
   const utils = api.useUtils();
