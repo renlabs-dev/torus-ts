@@ -1,3 +1,6 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -11,12 +14,19 @@ import {
   TabsTrigger,
   Textarea,
   TransactionStatus,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
 } from "@torus-ts/ui";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 import { formatToken } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useGovernance } from "~/context/governance-provider";
 
@@ -28,7 +38,12 @@ const agentApplicationSchema = z.object({
     .max(20, "Discord ID is too long"),
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Body is required"),
+  criteriaAgreement: z.boolean().refine((value) => value === true, {
+    message: "You must agree to the requirements",
+  }),
 });
+
+type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
 
 export function CreateAgentApplication(): JSX.Element {
   const {
@@ -40,16 +55,8 @@ export function CreateAgentApplication(): JSX.Element {
     networkConfigs,
   } = useGovernance();
 
-  const [applicationKey, setApplicationKey] = useState("");
-
-  const [discordId, setDiscordId] = useState("");
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [criteriaAgreement, setCriteriaAgreement] = useState(false);
-
-  const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
-
+  const [uploading, setUploading] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -58,11 +65,20 @@ export function CreateAgentApplication(): JSX.Element {
     },
   );
 
-  function handleCallback(TransactionReturn: TransactionResult): void {
-    setTransactionStatus(TransactionReturn);
-  }
+  const form = useForm<AgentApplicationFormData>({
+    resolver: zodResolver(agentApplicationSchema),
+    defaultValues: {
+      applicationKey: "",
+      discordId: "",
+      title: "",
+      body: "",
+      criteriaAgreement: false,
+    },
+  });
 
-  const userHasEnoughtBalance = useCallback(() => {
+  const { control, handleSubmit, setValue, getValues } = form;
+
+  const userHasEnoughBalance = (() => {
     if (
       !selectedAccount ||
       !networkConfigs.data ||
@@ -72,9 +88,8 @@ export function CreateAgentApplication(): JSX.Element {
     ) {
       return null;
     }
-
     return accountFreeBalance.data > networkConfigs.data.agentApplicationCost;
-  }, [selectedAccount, networkConfigs, accountFreeBalance])();
+  })();
 
   const refetchHandler = async () => {
     await agentApplications.refetch();
@@ -97,7 +112,6 @@ export function CreateAgentApplication(): JSX.Element {
         toast.error("Balance is still loading");
         return;
       }
-
       if (!networkConfigs.data) {
         toast.error("Network configs are still loading");
         return;
@@ -107,15 +121,17 @@ export function CreateAgentApplication(): JSX.Element {
 
       if (accountFreeBalance.data > daoApplicationCost) {
         void AddAgentApplication({
-          applicationKey,
+          applicationKey: getValues("applicationKey"),
           IpfsHash: cidToIpfsUri(cid),
           removing: false,
-          callback: handleCallback,
+          callback: (tx) => setTransactionStatus(tx),
           refetchHandler,
         });
       } else {
         toast.error(
-          `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+          `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(
+            accountFreeBalance.data,
+          )}`,
         );
       }
     } catch (e) {
@@ -125,42 +141,24 @@ export function CreateAgentApplication(): JSX.Element {
     }
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
-    event.preventDefault();
+  const onSubmit = async (data: AgentApplicationFormData) => {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
       message: "Starting Agent Application creation...",
     });
 
-    const result = agentApplicationSchema.safeParse({
-      title,
-      body,
-      applicationKey,
-      discordId,
-    });
-
-    if (!result.success) {
-      toast.error(result.error.errors.map((e) => e.message).join(", "));
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Error creating Agent Application",
-      });
-      return;
-    }
-
     const daoData = JSON.stringify({
-      discord_id: discordId,
-      title,
-      body,
+      discord_id: data.discordId,
+      title: data.title,
+      body: data.body,
     });
     const blob = new Blob([daoData], { type: "application/json" });
     const fileToUpload = new File([blob], "dao.json", {
       type: "application/json",
     });
-    void uploadFile(fileToUpload);
-  }
+    await uploadFile(fileToUpload);
+  };
 
   const getButtonSubmitLabel = ({
     uploading,
@@ -178,155 +176,199 @@ export function CreateAgentApplication(): JSX.Element {
     return "Submit Application";
   };
 
-  const isSubmitDisabled =
-    !criteriaAgreement ||
-    uploading ||
-    !userHasEnoughtBalance ||
-    !title ||
-    !body ||
-    !selectedAccount?.address ||
-    !discordId ||
-    !applicationKey;
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <div
-          className="flex flex-col items-center gap-2 sm:flex-row"
-          title="Use your wallet's address if you want your agent/module to use your wallet."
-        >
-          <Input
-            onChange={(e) => setApplicationKey(e.target.value)}
-            placeholder="Agent address (SS58 e.g. 5D5F...EBnt)"
-            className="placeholder:text-sm"
-            type="text"
-            required
-            value={applicationKey}
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <FormField
+            control={control}
+            name="applicationKey"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-2 sm:flex-row">
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="Agent address (SS58 e.g. 5D5F...EBnt)"
+                    className="w-full placeholder:text-sm"
+                    type="text"
+                    required
+                  />
+                </FormControl>
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="!m-0 w-full sm:w-fit"
+                  onClick={() =>
+                    setValue("applicationKey", selectedAccount?.address ?? "")
+                  }
+                >
+                  Paste my address
+                </Button>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <Button
-            variant="outline"
-            type="button"
-            className="w-full sm:w-fit"
-            onClick={() => setApplicationKey(selectedAccount?.address ?? "")}
-          >
-            Paste my address
-          </Button>
+          <FormField
+            control={control}
+            name="discordId"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="Discord ID (17-20 digits)"
+                    type="text"
+                    required
+                    onChange={(e) => {
+                      const value = e.target.value
+                        .replace(/[^0-9]/g, "")
+                        .slice(0, 20);
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-        <Input
-          onChange={(e) =>
-            setDiscordId(e.target.value.replace(/\D/g, "").slice(0, 20))
-          }
-          placeholder="Discord ID (17-20 digits)"
-          minLength={17}
-          maxLength={20}
-          type="text"
-          required
-          value={discordId}
-        />
-      </div>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList
-          className="mt-3"
-          title="Switch between editing and previewing the markdown content"
-        >
-          <TabsTrigger value="edit">Edit Content</TabsTrigger>
-          <TabsTrigger value="preview">Preview Content</TabsTrigger>
-        </TabsList>
-        <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
-          <Input
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Application title"
-            title="Make sure it's sufficiently descriptive!"
-            type="text"
-            required
-            value={title}
-          />
-          <Textarea
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Application body... (Markdown supported, HTML tags are not supported)"
-            title="Make sure your application contains all the information necessary for the Curator DAO to decide on your application!"
-            rows={5}
-            required
-            value={body}
-          />
-        </TabsContent>
-        <TabsContent
-          value="preview"
-          className="rounded-radius mt-0 bg-muted p-4"
-        >
-          {body ? (
-            <MarkdownPreview
-              className="max-h-[40vh] overflow-auto"
-              source={`# ${title}\n${body}`}
-              style={{
-                backgroundColor: "transparent",
-                color: "white",
-              }}
-            />
-          ) : (
-            <Label className="text-sm text-white">
-              Enter title and body to preview here :)
-            </Label>
-          )}
-        </TabsContent>
-      </Tabs>
 
-      <div className="flex items-start gap-2">
-        <span className="text-white">
-          Application fee:{" "}
-          <span className="text-muted-foreground">
-            {formatToken(networkConfigs.data?.agentApplicationCost ?? 0)} TORUS
-          </span>
-        </span>
-      </div>
-
-      <div className="flex items-start gap-2 text-white md:items-center">
-        <Checkbox
-          id="terms"
-          className="mt-1 md:mt-0"
-          required
-          checked={criteriaAgreement}
-          onClick={() => setCriteriaAgreement(!criteriaAgreement)}
-        />
-        <Label htmlFor="terms" className="leading-normal">
-          My application meets all the{" "}
-          <Link
-            className="text-cyan-500 underline"
-            href="https://docs.torus.network/concepts/agent-application"
-            target="_blank"
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList
+            className="mt-3"
+            title="Switch between editing and previewing the markdown content"
           >
-            requirements
-          </Link>{" "}
-          defined.
-        </Label>
-      </div>
+            <TabsTrigger value="edit">Edit Content</TabsTrigger>
+            <TabsTrigger value="preview">Preview Content</TabsTrigger>
+          </TabsList>
+          <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
+            <FormField
+              control={control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Application title"
+                      title="Make sure it's sufficiently descriptive!"
+                      type="text"
+                      required
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="body"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Application body... (Markdown supported, HTML tags are not supported)"
+                      title="Make sure your application contains all the information necessary for the Curator DAO to decide on your application!"
+                      rows={5}
+                      required
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+          <TabsContent
+            value="preview"
+            className="rounded-radius mt-0 bg-muted p-4"
+          >
+            {getValues("body") ? (
+              <MarkdownPreview
+                className="max-h-[40vh] overflow-auto"
+                source={`# ${getValues("title")}\n${getValues("body")}`}
+                style={{
+                  backgroundColor: "transparent",
+                  color: "white",
+                }}
+              />
+            ) : (
+              <Label className="text-sm text-white">
+                Enter title and body to preview here :)
+              </Label>
+            )}
+          </TabsContent>
+        </Tabs>
 
-      <div className="flex items-start gap-2 text-sm text-muted-foreground">
-        <span className="text-sm">
-          Note: The application fee will be deducted from your connected wallet.
-          If your application get accepted the application fee will be refunded.
-        </span>
-      </div>
-      {!userHasEnoughtBalance && selectedAccount?.address && (
-        <span className="text-sm text-red-400">
-          You don't have enough balance to submit an application.
-        </span>
-      )}
-      <Button
-        size="lg"
-        type="submit"
-        variant="default"
-        className="flex items-center gap-2"
-        disabled={isSubmitDisabled}
-      >
-        {getButtonSubmitLabel({ uploading, isAccountConnected })}
-      </Button>
-      {transactionStatus.status && (
-        <TransactionStatus
-          status={transactionStatus.status}
-          message={transactionStatus.message}
-        />
-      )}
-    </form>
+        <div className="flex items-start gap-2">
+          <span className="text-white">
+            Application fee:
+            <span className="text-muted-foreground">
+              {" "}
+              {formatToken(networkConfigs.data?.agentApplicationCost ?? 0)}{" "}
+              TORUS
+            </span>
+          </span>
+        </div>
+
+        <div className="flex items-start gap-2 text-white md:items-center">
+          <FormField
+            control={control}
+            name="criteriaAgreement"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-2">
+                <FormControl>
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel htmlFor="terms" className="!mt-0 leading-normal">
+                  My application meets all the{" "}
+                  <Link
+                    className="text-cyan-500 underline"
+                    href="https://docs.torus.network/concepts/agent-application"
+                    target="_blank"
+                  >
+                    requirements
+                  </Link>{" "}
+                  defined.
+                </FormLabel>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+          <span className="text-sm">
+            Note: The application fee will be deducted from your connected
+            wallet. If your application get accepted the application fee will be
+            refunded.
+          </span>
+        </div>
+        {!userHasEnoughBalance && (
+          <span className="text-sm text-red-400">
+            You don't have enough balance to submit an application.
+          </span>
+        )}
+        <Button
+          size="lg"
+          type="submit"
+          variant="default"
+          className="flex items-center gap-2"
+          disabled={!userHasEnoughBalance || !form.formState.isValid}
+        >
+          {getButtonSubmitLabel({ uploading, isAccountConnected })}
+        </Button>
+        {transactionStatus.status && (
+          <TransactionStatus
+            status={transactionStatus.status}
+            message={transactionStatus.message}
+          />
+        )}
+      </form>
+    </Form>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
@@ -9,7 +10,12 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
-  Label,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
   Select,
   SelectContent,
   SelectGroup,
@@ -19,7 +25,8 @@ import {
   Textarea,
 } from "@torus-ts/ui";
 import { TriangleAlert } from "lucide-react";
-import { useState } from "react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "~/trpc/react";
 
@@ -30,8 +37,11 @@ const reportSchema = z.object({
     "HARASSMENT",
     "HATE_SPEECH",
     "SEXUAL_CONTENT",
-  ] as const),
-  content: z.string().min(10).max(500),
+  ]),
+  content: z
+    .string()
+    .min(10, "Description must be at least 10 characters")
+    .max(500, "Description cannot exceed 500 characters"),
 });
 
 type ReportFormData = z.infer<typeof reportSchema>;
@@ -40,67 +50,46 @@ interface ReportAgentProps {
   agentKey: string;
 }
 
-export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [formData, setFormData] = useState<ReportFormData>({
-    reason: "SPAM",
-    content: "",
-  });
-  const [errors, setErrors] = useState<Partial<ReportFormData>>({});
-
+export function ReportAgent({ agentKey }: ReportAgentProps) {
   const reportAgentMutation = api.agentReport.create.useMutation({
     onSuccess: () => {
-      setModalOpen(false);
-      setFormData({ reason: "SPAM", content: "" });
-      setErrors({});
+      reset();
+      toast.success("Agent reported successfully.");
+    },
+    onError: (error) => {
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again.",
+      );
     },
   });
 
-  function toggleModalMenu() {
-    setModalOpen(!modalOpen);
-  }
+  const form = useForm<ReportFormData>({
+    resolver: zodResolver(reportSchema),
+    defaultValues: {
+      reason: "SPAM",
+      content: "",
+    },
+  });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors },
+  } = form;
 
-  const validateForm = (): boolean => {
-    try {
-      reportSchema.parse(formData);
-      setErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors = error.formErrors
-          .fieldErrors as Partial<ReportFormData>;
-        setErrors(fieldErrors);
-      } else {
-        console.error("Unexpected error during form validation:", error);
-      }
-      return false;
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      reportAgentMutation.mutate({
-        agentKey,
-        reason: formData.reason,
-        content: formData.content,
-      });
-
-      toast.success("Agent reported successfully.");
-    }
+  const onSubmit = (data: ReportFormData) => {
+    reportAgentMutation.mutate({
+      agentKey,
+      reason: data.reason,
+      content: data.content,
+    });
+    toast.success("Agent reported successfully.");
   };
 
   return (
     <Dialog>
       <Button
-        onClick={toggleModalMenu}
         type="button"
         variant="outline"
         asChild
@@ -110,69 +99,76 @@ export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
           <TriangleAlert className="h-4 w-3" /> Report Agent to DAO
         </DialogTrigger>
       </Button>
-
       <DialogContent className="flex w-full flex-col items-start justify-center sm:w-full">
         <DialogTitle>Report Agent</DialogTitle>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex w-full flex-col gap-4 pt-4"
-        >
-          <div>
-            <Label className="mb-2 block text-sm font-bold" htmlFor="reason">
-              Reason
-            </Label>
-            <Select
+        <Form {...form}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex w-full flex-col gap-4 pt-4"
+          >
+            <FormField
+              control={control}
               name="reason"
-              value={formData.reason}
-              onValueChange={(value) =>
-                handleInputChange({
-                  target: { name: "reason", value },
-                } as React.ChangeEvent<HTMLSelectElement>)
-              }
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a reason" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="SPAM">Spam</SelectItem>
-                  <SelectItem value="VIOLENCE">Violence</SelectItem>
-                  <SelectItem value="HARASSMENT">Harassment</SelectItem>
-                  <SelectItem value="HATE_SPEECH">Hate Speech</SelectItem>
-                  <SelectItem value="SEXUAL_CONTENT">Sexual Content</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            {errors.reason && (
-              <p className="mt-1 text-xs text-red-500">{errors.reason}</p>
-            )}
-          </div>
-          <div>
-            <Label className="mb-2 block text-sm font-bold">Description</Label>
-            <Textarea
-              name="content"
-              value={formData.content}
-              onChange={handleInputChange}
-              rows={4}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Reason</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a reason" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="SPAM">Spam</SelectItem>
+                          <SelectItem value="VIOLENCE">Violence</SelectItem>
+                          <SelectItem value="HARASSMENT">Harassment</SelectItem>
+                          <SelectItem value="HATE_SPEECH">
+                            Hate Speech
+                          </SelectItem>
+                          <SelectItem value="SEXUAL_CONTENT">
+                            Sexual Content
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage>{errors.reason?.message}</FormMessage>
+                </FormItem>
+              )}
             />
-            {errors.content && (
-              <p className="mt-1 text-xs text-red-500">{errors.content}</p>
-            )}
-          </div>
-          <DialogFooter className="flex gap-2 sm:space-x-0">
-            <Button asChild variant="destructive">
-              <DialogClose>Cancel</DialogClose>
-            </Button>
-            <Button
-              type="submit"
-              variant="default"
-              disabled={reportAgentMutation.isPending}
-            >
-              {reportAgentMutation.isPending ? "Submitting..." : "Submit"}
-            </Button>
-          </DialogFooter>
-        </form>
+
+            <FormField
+              control={control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      rows={4}
+                      placeholder="Enter description"
+                    />
+                  </FormControl>
+                  <FormMessage>{errors.content?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="flex gap-2 sm:space-x-0">
+              <Button asChild variant="destructive">
+                <DialogClose>Cancel</DialogClose>
+              </Button>
+              <Button
+                type="submit"
+                variant="default"
+                disabled={reportAgentMutation.isPending}
+              >
+                {reportAgentMutation.isPending ? "Submitting..." : "Submit"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

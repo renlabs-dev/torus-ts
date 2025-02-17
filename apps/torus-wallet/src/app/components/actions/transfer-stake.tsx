@@ -1,29 +1,185 @@
 "use client";
 
-import { AmountButtons } from "../amount-buttons";
-import { ValidatorsList } from "../validators-list";
-import { WalletTransactionReview } from "../wallet-review";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { checkSS58, isSS58 } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { Button, Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
-import React, { useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Card,
+  Input,
+  TransactionStatus,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@torus-ts/ui";
+import {
+  formatToken,
+  fromNano,
+  smallAddress,
+  toNano,
+} from "@torus-ts/utils/subspace";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
+import { AmountButtons } from "../amount-buttons";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
+import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
+import { ReviewTransactionDialog } from "../review-transaction-dialog";
+import { ValidatorsList } from "../validators-list";
+
+const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
+const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
 
 export function TransferStakeAction() {
-  const { accountStakedBy, transferStake, selectedAccount } = useWallet();
+  const {
+    accountStakedBy,
+    transferStake,
+    selectedAccount,
+    accountFreeBalance,
+    minAllowedStake,
+    transferStakeTransaction,
+    estimateFee,
+    getExistencialDeposit,
+  } = useWallet();
 
-  const [amount, setAmount] = useState<string>("");
-  const [fromValidator, setFromValidator] = useState<string>("");
-  const [recipient, setRecipient] = useState<string>("");
-  const [inputError, setInputError] = useState<{
-    fromValidator: string | null;
-    recipient: string | null;
-    value: string | null;
-  }>({
-    fromValidator: null,
-    recipient: null,
-    value: null,
+  const minAllowedStakeData =
+    minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
+
+  const existencialDepositValue =
+    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+
+  const maxAmountRef = useRef<string>("");
+  const stakedValidators = useMemo(
+    () => accountStakedBy.data ?? [],
+    [accountStakedBy.data],
+  );
+
+  const transferStakeSchema = z
+    .object({
+      fromValidator: z
+        .string()
+        .nonempty({ message: "From Allocator is required" })
+        .refine(isSS58, { message: "Invalid address" }),
+      toValidator: z
+        .string()
+        .nonempty({ message: "To Allocator is required" })
+        .refine(isSS58, { message: "Invalid address" }),
+      amount: z
+        .string()
+        .nonempty({ message: "Amount is required" })
+        .refine(isAmountPositive, {
+          message: "Amount must be greater than 0",
+        })
+        .refine(
+          (val) =>
+            maxAmountRef.current
+              ? toNano(val) <= toNano(maxAmountRef.current)
+              : true,
+          { message: "Amount exceeds maximum transferable amount" },
+        )
+        .refine((value) => meetsMinimumStake(value, minAllowedStakeData), {
+          message: `You must unstake at least ${formatToken(minAllowedStakeData)} TORUS`,
+        })
+        .refine(
+          () =>
+            (accountFreeBalance.data ?? 0n) -
+              toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
+            existencialDepositValue,
+          {
+            message: `This transaction fee would make your account go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Top up your balance before moving your stake.`,
+          },
+        ),
+    })
+    .refine((data) => data.fromValidator !== data.toValidator, {
+      message: "Recipient cannot be the same as sender",
+      path: ["toValidator"],
+    });
+
+  const form = useForm<z.infer<typeof transferStakeSchema>>({
+    resolver: zodResolver(transferStakeSchema),
+    defaultValues: {
+      fromValidator: "",
+      toValidator: "",
+      amount: "",
+    },
+    mode: "onTouched",
   });
+
+  const {
+    reset,
+    setValue,
+    trigger,
+    getValues,
+    watch,
+    formState: { errors },
+  } = form;
+
+  const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const { unsubscribe } = watch((values, info) => {
+      if (
+        info.name === "fromValidator" &&
+        isSS58(String(values.fromValidator))
+      ) {
+        const validator = stakedValidators.find(
+          (v: { address: string; stake: bigint }) =>
+            v.address === values.fromValidator,
+        );
+        if (validator) {
+          const stakedAmount = fromNano(validator.stake);
+          maxAmountRef.current = stakedAmount;
+        } else {
+          maxAmountRef.current = "";
+        }
+      }
+    });
+    return () => {
+      setValue("amount", "");
+      unsubscribe();
+    };
+  }, [accountStakedBy.data, watch, setValue, stakedValidators]);
+
+  const handleEstimateFee = useCallback(async () => {
+    feeRef.current?.setLoading(true);
+    try {
+      const transaction = transferStakeTransaction({
+        fromValidator: ALLOCATOR_ADDRESS,
+        toValidator: ALLOCATOR_ADDRESS,
+        amount: "0",
+      });
+      if (!transaction) {
+        toast.error("Error creating transaction for estimating fee.");
+        return;
+      }
+      const fee = await estimateFee(transaction);
+      if (fee != null) {
+        feeRef.current?.updateFee(fromNano(fee));
+      } else {
+        feeRef.current?.updateFee(null);
+      }
+    } catch (error) {
+      console.error("Error estimating fee:", error);
+      feeRef.current?.updateFee(null);
+    } finally {
+      feeRef.current?.setLoading(false);
+    }
+  }, [estimateFee, transferStakeTransaction]);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -32,65 +188,16 @@ export function TransferStakeAction() {
       finalized: false,
     },
   );
-
   const [currentView, setCurrentView] = useState<
     "wallet" | "validators" | "stakedValidators"
   >("wallet");
 
-  const [maxAmount, setMaxAmount] = useState<string | null>(null);
-
-  const stakedValidators = accountStakedBy.data ?? [];
-
-  const handleFromValidatorChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const address = e.target.value;
-    setFromValidator(address);
-    setAmount("");
-    setInputError((prev) => ({ ...prev, fromValidator: null, value: null }));
-
-    const validator = stakedValidators.find(
-      (v: { address: string; stake: bigint }) => v.address === address,
-    );
-    if (validator) {
-      const stakedAmount = fromNano(validator.stake);
-      setMaxAmount(stakedAmount);
-    } else {
-      setMaxAmount(null);
-    }
-  };
-
-  const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const recipientAddress = e.target.value;
-    setRecipient(recipientAddress);
-    return setInputError((prev) => ({ ...prev, recipient: null }));
-  };
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value.replace(/[^0-9.]/g, "");
-    const amountNano = toNano(newAmount || "0");
-    const maxAmountNano = toNano(maxAmount ?? "0");
-
-    if (amountNano > maxAmountNano) {
-      setInputError((prev) => ({
-        ...prev,
-        value: "Amount exceeds maximum transferable amount",
-      }));
-    } else {
-      setInputError((prev) => ({ ...prev, value: null }));
-    }
-
-    setAmount(newAmount);
-  };
+  const feeRef = useRef<FeeLabelHandle>(null);
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
     if (callbackReturn.status === "SUCCESS") {
-      setAmount("");
-      setRecipient("");
-      setFromValidator("");
-
-      setInputError({ recipient: null, value: null, fromValidator: null });
+      reset();
     }
   };
 
@@ -98,86 +205,90 @@ export function TransferStakeAction() {
     await accountStakedBy.refetch();
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const isValidInput =
-      amount &&
-      recipient &&
-      fromValidator &&
-      !inputError.value &&
-      !inputError.fromValidator &&
-      !inputError.recipient &&
-      recipient !== fromValidator;
-
-    if (!isValidInput) return;
-
-    void transferStake({
-      fromValidator,
-      toValidator: recipient,
-      amount,
+  const onSubmit = async (values: z.infer<typeof transferStakeSchema>) => {
+    setTransactionStatus({
+      status: "STARTING",
+      finalized: false,
+      message: "Starting transaction...",
+    });
+    await transferStake({
+      fromValidator: values.fromValidator,
+      toValidator: values.toValidator,
+      amount: values.amount,
       callback: handleCallback,
       refetchHandler,
     });
   };
 
-  const handleSelectFromValidator = (validator: { address: string }) => {
-    setFromValidator(validator.address);
-    setCurrentView("wallet");
-    setAmount("");
+  const handleAmountChange = async (newAmount: string) => {
+    setValue("amount", newAmount);
+    await trigger("amount");
+  };
 
+  const handleSelectFromValidator = async (validator: { address: string }) => {
+    setValue("fromValidator", checkSS58(validator.address));
+    setCurrentView("wallet");
     const validatorData = stakedValidators.find(
       (v: { address: string; stake: bigint }) =>
         v.address === validator.address,
     );
     if (validatorData) {
-      const stakedAmount = fromNano(validatorData.stake);
-      setMaxAmount(stakedAmount);
+      maxAmountRef.current = fromNano(validatorData.stake);
     } else {
-      setMaxAmount(null);
+      maxAmountRef.current = "";
     }
+    await trigger("fromValidator");
   };
 
-  const handleSelectToValidator = (validator: { address: string }) => {
-    setRecipient(validator.address);
+  const handleSelectToValidator = async (validator: { address: string }) => {
+    setValue("toValidator", checkSS58(validator.address));
     setCurrentView("wallet");
+    await trigger("toValidator");
   };
 
-  const formRef = useRef<HTMLFormElement>(null);
-  const reviewData = [
-    {
-      label: "From",
-      content: `${fromValidator ? smallAddress(fromValidator, 6) : "From Address"}`,
-    },
-    {
-      label: "To",
-      content: `${recipient ? smallAddress(recipient, 6) : "To Address"}`,
-    },
-    { label: "Amount", content: `${amount ? amount : 0} TORUS` },
-  ];
+  const reviewData = () => {
+    const { fromValidator, toValidator, amount } = getValues();
+    return [
+      {
+        label: "From",
+        content: fromValidator
+          ? smallAddress(fromValidator, 6)
+          : "From Address",
+      },
+      {
+        label: "To",
+        content: toValidator ? smallAddress(toValidator, 6) : "To Address",
+      },
+      {
+        label: "Amount",
+        content: `${amount || 0} TORUS`,
+      },
+    ];
+  };
 
-  useEffect(() => {
-    if (recipient.length > 0 && recipient === fromValidator) {
-      return setInputError((prev) => ({
-        ...prev,
-        recipient: "Recipient cannot be the same as the sender",
-      }));
+  const handleReviewClick = async () => {
+    const isValid = await trigger();
+    if (isValid) {
+      reviewDialogRef.current?.openDialog();
     }
-  }, [fromValidator, recipient]);
+  };
 
   useEffect(() => {
-    setRecipient("");
-    setFromValidator("");
-    setAmount("");
-    setInputError({ recipient: null, value: null, fromValidator: null });
-  }, [selectedAccount?.address]);
+    if (!selectedAccount?.address || currentView !== "wallet") return;
+    void handleEstimateFee();
+  }, [handleEstimateFee, selectedAccount?.address, currentView]);
+
+  useEffect(() => {
+    reset();
+    maxAmountRef.current = "";
+  }, [selectedAccount?.address, reset]);
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
       {(currentView === "validators" || currentView === "stakedValidators") && (
         <ValidatorsList
           listType={currentView === "validators" ? "all" : "staked"}
-          excludeAddress={[fromValidator]}
+          excludeAddress={() => getValues("fromValidator")}
           onSelectValidator={
             currentView === "stakedValidators"
               ? handleSelectFromValidator
@@ -187,127 +298,120 @@ export function TransferStakeAction() {
         />
       )}
       {currentView === "wallet" && (
-        <Card className="w-full animate-fade p-6 md:w-3/5">
-          <form
-            onSubmit={handleSubmit}
-            ref={formRef}
-            className="flex w-full flex-col gap-6"
-          >
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="transfer-from">From Allocator</Label>
-              <div className="flex flex-row gap-2">
-                <Input
-                  id="transfer-from"
-                  type="text"
-                  value={fromValidator}
-                  onChange={handleFromValidatorChange}
-                  placeholder="Full Allocator address"
-                  className="w-full p-2"
-                  disabled={!selectedAccount?.address}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setCurrentView("stakedValidators")}
-                  className="flex w-fit items-center px-6 py-2.5"
-                  disabled={!selectedAccount?.address}
-                >
-                  Staked Allocators
-                </Button>
-              </div>
-              {inputError.fromValidator && (
-                <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                  {inputError.fromValidator}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="transfer-to" className="text-base">
-                To Allocator
-              </Label>
-              <div className="flex flex-row gap-2">
-                <Input
-                  id="transfer-to"
-                  type="text"
-                  value={recipient}
-                  required
-                  onChange={handleRecipientChange}
-                  placeholder="Full Allocator address"
-                  disabled={!selectedAccount?.address}
-                  className="w-full p-2"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!selectedAccount?.address}
-                  onClick={() => setCurrentView("validators")}
-                  className="flex w-fit items-center px-6 py-2.5"
-                >
-                  Allocators
-                </Button>
-              </div>
-              {inputError.recipient && (
-                <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                  {inputError.recipient}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="transfer-amount" className="text-base">
-                Value
-              </Label>
-              <div className="flex w-full flex-col gap-2">
-                <Input
-                  id="transfer-amount"
-                  type="number"
-                  value={amount}
-                  min={0}
-                  step={0.000000001}
-                  required
-                  onChange={handleAmountChange}
-                  placeholder="Amount of TORUS"
-                  className="w-full p-2 disabled:cursor-not-allowed"
-                  disabled={
-                    !fromValidator || !recipient || recipient === fromValidator
-                  }
-                />
-
-                <AmountButtons
-                  setAmount={setAmount}
-                  availableFunds={maxAmount ?? "0"}
-                  disabled={
-                    !fromValidator || !maxAmount || recipient === fromValidator
-                  }
-                />
-              </div>
-              {inputError.value && (
-                <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                  {inputError.value}
-                </span>
-              )}
-            </div>
-
-            {transactionStatus.status && (
-              <TransactionStatus
-                status={transactionStatus.status}
-                message={transactionStatus.message}
+        <Card className="w-full animate-fade p-6">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              ref={formRef}
+              className="flex w-full flex-col gap-6"
+            >
+              <FormField
+                control={form.control}
+                name="fromValidator"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>From Allocator</FormLabel>
+                    <div className="flex flex-row gap-2">
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Full Allocator address"
+                          disabled={!selectedAccount?.address}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={!selectedAccount?.address}
+                        onClick={() => setCurrentView("stakedValidators")}
+                        className="flex w-fit items-center px-6 py-2.5"
+                      >
+                        Staked Allocators
+                      </Button>
+                    </div>
+                    <FormMessage>{errors.fromValidator?.message}</FormMessage>
+                  </FormItem>
+                )}
               />
-            )}
-          </form>
+              <FormField
+                control={form.control}
+                name="toValidator"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>To Allocator</FormLabel>
+                    <div className="flex flex-row gap-2">
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Full Allocator address"
+                          disabled={!selectedAccount?.address}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={!selectedAccount?.address}
+                        onClick={() => setCurrentView("validators")}
+                        className="flex w-fit items-center px-6 py-2.5"
+                      >
+                        Allocators
+                      </Button>
+                    </div>
+                    <FormMessage>{errors.toValidator?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Amount</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder="Amount of TORUS"
+                          disabled={!selectedAccount?.address}
+                        />
+                      </FormControl>
+                      <AmountButtons
+                        setAmount={handleAmountChange}
+                        availableFunds={maxAmountRef.current || "0"}
+                        disabled={
+                          !(toNano(maxAmountRef.current) > 0n) ||
+                          !selectedAccount?.address
+                        }
+                      />
+                    </div>
+                    <FormMessage>{errors.amount?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+
+              <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
+
+              {transactionStatus.status && (
+                <TransactionStatus
+                  status={transactionStatus.status}
+                  message={transactionStatus.message}
+                />
+              )}
+              <Button
+                type="button"
+                onClick={handleReviewClick}
+                disabled={!selectedAccount?.address}
+              >
+                Review Transaction
+              </Button>
+            </form>
+          </Form>
         </Card>
       )}
       {currentView === "wallet" && (
-        <WalletTransactionReview
-          disabled={
-            transactionStatus.status === "PENDING" ||
-            !amount ||
-            !recipient ||
-            !fromValidator ||
-            !!inputError.value ||
-            recipient === fromValidator
-          }
+        <ReviewTransactionDialog
+          ref={reviewDialogRef}
           formRef={formRef}
           reviewContent={reviewData}
         />
