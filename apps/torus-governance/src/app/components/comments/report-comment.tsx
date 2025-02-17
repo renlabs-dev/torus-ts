@@ -1,13 +1,9 @@
 "use client";
 
-import type { inferProcedureOutput } from "@trpc/server";
-import { useState } from "react";
 import { z } from "zod";
-
-import type { AppRouter } from "@torus-ts/api";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
-
-import { api } from "~/trpc/react";
 import { X } from "lucide-react";
 import {
   Button,
@@ -21,16 +17,32 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormMessage,
 } from "@torus-ts/ui";
+import { api } from "~/trpc/react";
+import type { inferProcedureOutput } from "@trpc/server";
+import type { AppRouter } from "@torus-ts/api";
 
 export type commentReportReason = NonNullable<
   inferProcedureOutput<AppRouter["commentReport"]["byId"]>
 >["reason"];
 
-interface ReportFormData {
-  reason: commentReportReason;
-  content: string;
-}
+const reportCommentSchema = z.object({
+  reason: z.enum([
+    "SPAM",
+    "VIOLENCE",
+    "HARASSMENT",
+    "HATE_SPEECH",
+    "SEXUAL_CONTENT",
+  ]),
+  content: z.string().min(1, "Description is required"),
+});
+
+type ReportFormData = z.infer<typeof reportCommentSchema>;
 
 interface ReportCommentProps {
   commentId: number | null;
@@ -38,61 +50,42 @@ interface ReportCommentProps {
 }
 
 export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
-  const [formData, setFormData] = useState<ReportFormData>({
-    reason: "SPAM",
-    content: "",
-  });
+  const {
+    commentReport: { create: createReport },
+  } = api;
 
-  const [errors, setErrors] = useState<Partial<ReportFormData>>({});
-
-  const reportCommentMutation = api.commentReport.create.useMutation({
+  const reportCommentMutation = createReport.useMutation({
     onSuccess: () => {
       setCommentId(null);
-      setFormData({ reason: formData.reason, content: "" });
-      setErrors({});
+      toast.success("Comment reported successfully.");
+    },
+    onError: (error) => {
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again.",
+      );
     },
   });
 
-  const handleInputChange = (type: "reason" | "content", value: string) => {
-    if (type === "reason") {
-      setFormData((prev) => ({
-        ...prev,
-        reason: value as commentReportReason,
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [type]: value }));
+  const form = useForm<ReportFormData>({
+    resolver: zodResolver(reportCommentSchema),
+    defaultValues: {
+      reason: "SPAM",
+      content: "",
+    },
+  });
+
+  const { control, handleSubmit } = form;
+
+  const onSubmit = (data: ReportFormData) => {
+    if (!commentId) {
+      console.error("No comment id found");
+      return;
     }
-  };
-
-  const validateForm = (): boolean => {
-    try {
-      setErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors = error.formErrors
-          .fieldErrors as Partial<ReportFormData>;
-        setErrors(fieldErrors);
-      } else {
-        console.error("Unexpected error during form validation:", error);
-      }
-      return false;
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentId) return console.error("No comment id found");
-
-    if (validateForm()) {
-      reportCommentMutation.mutate({
-        commentId,
-        reason: formData.reason,
-        content: formData.content,
-      });
-
-      toast.success("Comment reported successfully.");
-    }
+    reportCommentMutation.mutate({
+      commentId,
+      reason: data.reason,
+      content: data.content,
+    });
   };
 
   if (!commentId) return null;
@@ -116,71 +109,86 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
           </Button>
         </CardHeader>
         <CardContent className="px-6">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label className="mb-2 block text-sm font-bold">Reason</label>
-              <Select
-                value={formData.reason}
-                onValueChange={(value) => handleInputChange("reason", value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a reason" />
-                </SelectTrigger>
-                <SelectContent className="border-muted">
-                  <SelectGroup>
-                    <SelectItem value="SPAM">Spam</SelectItem>
-                    <SelectItem value="VIOLENCE">Violence</SelectItem>
-                    <SelectItem value="HARASSMENT">Harassment</SelectItem>
-                    <SelectItem value="HATE_SPEECH">Hate speech</SelectItem>
-                    <SelectItem value="SEXUAL_CONTENT">
-                      Sexual content
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {errors.reason && (
-                <p className="mt-1 text-xs text-red-500">{errors.reason}</p>
-              )}
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-bold">
-                Description
-              </label>
-              <Textarea
-                name="content"
-                value={formData.content}
-                onChange={(value) =>
-                  handleInputChange("content", value.target.value)
-                }
-                className="w-full border border-muted bg-card p-2"
-                placeholder="Please provide a detailed description of the issue."
-                rows={4}
-              />
-
-              {errors.content && (
-                <p className="mt-1 text-xs text-red-500">{errors.content}</p>
-              )}
-            </div>
-            <div className="flex w-full justify-end gap-2">
-              <Button
-                type="button"
-                variant="destructive"
-                className="px-4 py-2 text-white transition duration-200"
-                disabled={reportCommentMutation.isPending}
-                onClick={() => setCommentId(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="default"
-                className="px-4 py-2 text-neutral-800 transition duration-200"
-                disabled={reportCommentMutation.isPending}
-              >
-                {reportCommentMutation.isPending ? "Submitting..." : "Submit"}
-              </Button>
-            </div>
-          </form>
+          <Form {...form}>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col gap-4"
+            >
+              <div>
+                <FormField
+                  control={control}
+                  name="reason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a reason" />
+                          </SelectTrigger>
+                          <SelectContent className="border-muted">
+                            <SelectGroup>
+                              <SelectItem value="SPAM">Spam</SelectItem>
+                              <SelectItem value="VIOLENCE">Violence</SelectItem>
+                              <SelectItem value="HARASSMENT">
+                                Harassment
+                              </SelectItem>
+                              <SelectItem value="HATE_SPEECH">
+                                Hate speech
+                              </SelectItem>
+                              <SelectItem value="SEXUAL_CONTENT">
+                                Sexual content
+                              </SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div>
+                <FormField
+                  control={control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Please provide a detailed description of the issue."
+                          rows={4}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex w-full justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="px-4 py-2 text-white transition duration-200"
+                  disabled={reportCommentMutation.isPending}
+                  onClick={() => setCommentId(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="default"
+                  className="px-4 py-2 text-neutral-800 transition duration-200"
+                  disabled={reportCommentMutation.isPending}
+                >
+                  {reportCommentMutation.isPending ? "Submitting..." : "Submit"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
