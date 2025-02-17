@@ -187,8 +187,7 @@ jobs:
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
-      needs.turbo-check.outputs.torus-bridge == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
+      needs.turbo-check.outputs.torus-bridge == 'true'
     uses: ./.github/workflows/dry-run-build-template.yml
     secrets: inherit
     with:
@@ -229,7 +228,6 @@ jobs:
       github.ref_name != 'main' && 
       github.ref_name != 'dev' && 
       github.ref_name != 'cicd' && 
-      needs.pr-check.outputs.pr_exists == 'false' &&
       (needs.turbo-check.outputs.torus-worker == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
       needs.turbo-check.outputs.torus-allocator == 'true')
