@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import * as React from "react";
 import { z } from "zod";
-
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
 import {
   Button,
@@ -11,6 +12,12 @@ import {
   PopoverContent,
   PopoverTrigger,
   Textarea,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
 } from "@torus-ts/ui";
 
 import { useGovernance } from "~/context/governance-provider";
@@ -18,12 +25,24 @@ import { api } from "~/trpc/react";
 
 const MAX_CONTENT_CHARACTERS = 500;
 
-export function CreateCadreCandidates() {
-  const [discordId, setDiscordId] = useState("");
-  const [content, setContent] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [remainingChars, setRemainingChars] = useState(MAX_CONTENT_CHARACTERS);
+const createCadreCandidateSchema = z.object({
+  discordId: z
+    .string()
+    .min(17, "Discord ID must be at least 17 digits")
+    .max(20, "Discord ID must be at most 20 digits")
+    .regex(/^\d+$/, "Discord ID must contain only digits"),
+  content: z
+    .string()
+    .min(10, "Content must be at least 10 characters")
+    .max(
+      MAX_CONTENT_CHARACTERS,
+      `Content must be at most ${MAX_CONTENT_CHARACTERS} characters`,
+    ),
+});
 
+type CreateCadreCandidateFormData = z.infer<typeof createCadreCandidateSchema>;
+
+export function CreateCadreCandidates() {
   const {
     selectedAccount,
     cadreCandidates,
@@ -31,10 +50,21 @@ export function CreateCadreCandidates() {
     isUserCadreCandidate,
   } = useGovernance();
 
+  const form = useForm<CreateCadreCandidateFormData>({
+    resolver: zodResolver(createCadreCandidateSchema),
+    defaultValues: {
+      discordId: "",
+      content: "",
+    },
+  });
+
+  if (isUserCadre || !selectedAccount) {
+    return null;
+  }
+
   const createCadreCandidateMutation = api.cadreCandidate.create.useMutation({
     onSuccess: async () => {
-      setDiscordId("");
-      setContent("");
+      reset();
       await cadreCandidates.refetch();
       toast.success("Curator DAO member request submitted successfully!");
     },
@@ -45,44 +75,26 @@ export function CreateCadreCandidates() {
     },
   });
 
-  if (isUserCadre || !selectedAccount) {
-    return null;
-  }
+  const { handleSubmit, reset, control, watch } = form;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const contentValue = watch("content");
+  const remainingChars = MAX_CONTENT_CHARACTERS - (contentValue.length || 0);
 
+  const onSubmit = (data: CreateCadreCandidateFormData) => {
     if (!selectedAccount.address) {
-      setError("Please connect your wallet to submit a request.");
+      toast.error("Please connect your wallet to submit a request.");
       return;
     }
-
     if (isUserCadreCandidate) {
-      setError(
+      toast.error(
         "You have already submitted a request to be a Curator DAO member.",
       );
       return;
     }
-
-    try {
-      createCadreCandidateMutation.mutate({
-        discordId,
-        content,
-      });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        setError(err.errors[0]?.message ?? "Invalid input");
-      } else {
-        setError("An unexpected error occurred. Please try again.");
-      }
-    }
-  };
-
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setContent(newContent);
-    setRemainingChars(MAX_CONTENT_CHARACTERS - newContent.length);
+    createCadreCandidateMutation.mutate({
+      discordId: data.discordId,
+      content: data.content,
+    });
   };
 
   return (
@@ -99,48 +111,84 @@ export function CreateCadreCandidates() {
           </p>
           <p className="text-sm">Interested in joining? Apply below.</p>
         </div>
-        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
-          <Input
-            type="text"
-            placeholder="Discord ID (17-20 digits)"
-            value={discordId}
-            onChange={(e) =>
-              setDiscordId(e.target.value.replace(/[^0-9]/g, "").slice(0, 20))
-            }
-            minLength={17}
-            maxLength={20}
-            className="w-full bg-gray-600/10 p-3 text-white"
-          />
-          <div className="relative">
-            <Textarea
-              placeholder="Why do you want to join the Curator DAO?"
-              value={content}
-              onChange={handleContentChange}
-              className="h-32 w-full resize-none bg-gray-600/10 p-3 text-white"
-              maxLength={MAX_CONTENT_CHARACTERS}
-            />
-            <span className="absolute bottom-2 right-2 text-sm text-gray-400">
-              {remainingChars} characters left
-            </span>
-          </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button
-            type="submit"
-            variant={"default"}
-            disabled={
-              createCadreCandidateMutation.isPending || !selectedAccount.address
-            }
+        <Form {...form}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="mt-4 flex flex-col gap-4"
           >
-            {createCadreCandidateMutation.isPending
-              ? "Submitting..."
-              : "Submit"}
-          </Button>
-          {!selectedAccount.address && (
-            <p className="text-sm text-yellow-500">
-              Please connect your wallet to submit a request.
-            </p>
-          )}
-        </form>
+            <FormField
+              control={control}
+              name="discordId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Discord ID (17-20 digits)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Discord ID"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value
+                          .replace(/[^0-9]/g, "")
+                          .slice(0, 20);
+                        field.onChange(value);
+                      }}
+                      minLength={17}
+                      maxLength={20}
+                      className="w-full bg-gray-600/10 p-3 text-white"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="content"
+              render={({ field }) => (
+                <FormItem className="relative">
+                  <FormLabel>
+                    Why do you want to join the Curator DAO?
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Textarea
+                        placeholder="Why do you want to join the Curator DAO?"
+                        {...field}
+                        className="h-32 w-full resize-none bg-gray-600/10 p-3 text-white"
+                        maxLength={MAX_CONTENT_CHARACTERS}
+                      />
+                      <span className="absolute bottom-2 right-2 text-sm text-gray-400">
+                        {remainingChars} characters left
+                      </span>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="submit"
+              variant="default"
+              disabled={
+                createCadreCandidateMutation.isPending ||
+                !selectedAccount.address
+              }
+            >
+              {createCadreCandidateMutation.isPending
+                ? "Submitting..."
+                : "Submit"}
+            </Button>
+
+            {!selectedAccount.address && (
+              <p className="text-sm text-yellow-500">
+                Please connect your wallet to submit a request.
+              </p>
+            )}
+          </form>
+        </Form>
       </PopoverContent>
     </Popover>
   );
