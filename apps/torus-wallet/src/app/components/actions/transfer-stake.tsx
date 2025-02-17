@@ -107,7 +107,7 @@ export function TransferStakeAction() {
     })
     .refine((data) => data.fromValidator !== data.toValidator, {
       message: "Recipient cannot be the same as sender",
-      path: ["recipient"],
+      path: ["toValidator"],
     });
 
   const form = useForm<z.infer<typeof transferStakeSchema>>({
