@@ -117,6 +117,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
     updateBalancedPercentage,
     getAgentPercentage,
     setPercentageChange,
+    removeZeroPercentageAgents,
   } = useDelegateAgentStore();
 
   const { selectedAccount } = useTorus();
@@ -161,6 +162,8 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
     }
 
     updateBalancedPercentage(props.agentKey, newPercentage);
+
+    removeZeroPercentageAgents();
   };
 
   return (

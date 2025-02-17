@@ -33,6 +33,7 @@ interface DelegateState {
   setPercentageChange: (isOpen: boolean) => void;
 
   getAgentPercentage: (agentKey: string | SS58Address) => number;
+  removeZeroPercentageAgents: () => void;
 }
 
 export const useDelegateAgentStore = create<DelegateState>()(
@@ -123,6 +124,12 @@ export const useDelegateAgentStore = create<DelegateState>()(
       hasPercentageChange: false,
       setPercentageChange: (hasPercentageChange) =>
         set({ hasPercentageChange }),
+      removeZeroPercentageAgents: () =>
+        set((state) => ({
+          delegatedAgents: state.delegatedAgents.filter(
+            (agent) => agent.percentage > 0,
+          ),
+        })),
     }),
 
     {
