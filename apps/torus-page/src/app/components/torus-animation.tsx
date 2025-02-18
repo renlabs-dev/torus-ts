@@ -109,7 +109,7 @@ const Torus: FC = () => {
   );
 };
 
-export const TorusObject: FC = () => (
+export const TorusAnimation: FC = () => (
   <Canvas dpr={[2, 4]}>
     <Suspense fallback={null}>
       <Bounds fit clip observe margin={1}>
