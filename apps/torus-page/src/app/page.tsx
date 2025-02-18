@@ -1,4 +1,4 @@
-import { TorusObject } from "./components/torus";
+import { TorusAnimation } from "./components/torus-animation";
 import Image from "next/image";
 
 export default function Page(): JSX.Element {
@@ -8,7 +8,7 @@ export default function Page(): JSX.Element {
         className="absolute top-0 h-full w-full animate-fade animate-delay-700"
         style={{ overflow: "hidden" }}
       >
-        <TorusObject />
+        <TorusAnimation />
       </div>
       <div className="z-20 flex min-h-screen w-full animate-fade flex-col items-center justify-center">
         <Image

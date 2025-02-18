@@ -34,11 +34,9 @@ function FooterContent() {
   );
 }
 
-export function Footer({ className }: Readonly<{ className?: string }>) {
+export function Footer() {
   return (
-    <div
-      className={`fixed bottom-0 right-0 z-50 hidden px-4 py-2 animate-delay-700 md:block ${className}`}
-    >
+    <div className="fixed bottom-0 right-0 z-50 hidden px-4 py-2 animate-delay-700 md:block">
       <HoverCard>
         <HoverCardTrigger className="text-sm hover:cursor-pointer hover:underline">
           @torus
