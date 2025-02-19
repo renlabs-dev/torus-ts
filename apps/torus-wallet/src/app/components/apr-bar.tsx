@@ -70,7 +70,7 @@ export function APRBar() {
                         </span>
                         <span className="ml-1 text-white/50">$TORUS</span>
                         <span className="mx-2 text-white/30">|</span>
-                        <span className="text-white/60">NETWORK RATIO </span>
+                        <span className="text-white/60">STAKED RATIO </span>
                         <span className="mx-1 text-white/40">›</span>
                         <span className="font-semibold text-white">
                           {stakedPercentage.toFixed(2)}%

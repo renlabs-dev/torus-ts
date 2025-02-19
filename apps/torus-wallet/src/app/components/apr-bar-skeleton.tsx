@@ -45,7 +45,7 @@ export const APRBarSkeleton = () => {
                     <div className="h-4 w-24 animate-pulse rounded bg-gray-700/30" />
                     <span className="ml-1 text-white/50">$TORUS</span>
                     <span className="mx-2 text-white/30">|</span>
-                    <span className="text-white/60">NETWORK RATIO</span>
+                    <span className="text-white/60">STAKED RATIO</span>
                     <span className="mx-1 text-white/40">›</span>
                     <div className="h-4 w-16 animate-pulse rounded bg-gray-700/30" />
                   </div>
