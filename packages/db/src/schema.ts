@@ -20,6 +20,7 @@ import {
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
 import { number } from "zod";
+import { time } from "console";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 
@@ -205,6 +206,24 @@ export const agentReportSchema = createTable("agent_report", {
 /**
  * A comment made by a user on a Proposal or Agent Application.
  */
+
+
+export const proposalSchema = createTable(
+  "proposal",
+  {
+    id: serial("id").primaryKey(),
+    expirationBlock: integer("expiration_block").notNull(),
+    status: applicationStatus("status").notNull(),
+    proposerKey: ss58Address("proposer_key").notNull(),
+    creationBlock: integer("creation_block").notNull(),
+
+    ...timeFields(),
+
+  },
+  (t) => [],
+);
+
+
 export const governanceItemType = pgEnum("governance_item_type", [
   "PROPOSAL",
   "AGENT_APPLICATION",
