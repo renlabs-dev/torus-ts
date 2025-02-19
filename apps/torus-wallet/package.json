@@ -32,7 +32,7 @@
     "glslify-hex": "^2.1.1",
     "glslify-import": "^3.1.0",
     "install": "^0.13.0",
-    "lucide-react": "^0.454.0",
+    "lucide-react": "catalog:",
     "next": "catalog:",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
