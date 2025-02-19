@@ -1,14 +1,42 @@
 "use client";
 
-import { AmountButtons } from "../amount-buttons";
-import { FeeLabel } from "../fee-label";
-import { WalletTransactionReview } from "../wallet-review";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "@torus-ts/toast-provider";
 import { isSS58 } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { Card, Input, Label, TransactionStatus } from "@torus-ts/ui";
-import { fromNano, smallAddress, toNano } from "@torus-ts/utils/subspace";
-import React, { useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Card,
+  Input,
+  TransactionStatus,
+  Form,
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormItem,
+} from "@torus-ts/ui";
+import { fromNano, toNano } from "@torus-ts/utils/subspace";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { computeFeeData } from "~/utils/helpers";
+import { isWithinTransferLimit } from "~/utils/validators";
+import { AmountButtons } from "../amount-buttons";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
+import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
+import { ReviewTransactionDialog } from "../review-transaction-dialog";
+
+const FEE_BUFFER_PERCENT = 102n;
 
 export function SendAction() {
   const {
@@ -19,19 +47,9 @@ export function SendAction() {
     transferTransaction,
   } = useWallet();
 
-  const [amount, setAmount] = useState<string>("");
-  const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
-  const [isEstimating, setIsEstimating] = useState(false);
-  const [maxAmount, setMaxAmount] = useState<string>("");
-  const [recipient, setRecipient] = useState<string>("");
-
-  const [inputError, setInputError] = useState<{
-    recipient: string | null;
-    value: string | null;
-  }>({
-    recipient: null,
-    value: null,
-  });
+  const feeRef = useRef<FeeLabelHandle>(null);
+  const maxAmountRef = useRef<string>("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -41,101 +59,80 @@ export function SendAction() {
     },
   );
 
-  const handleEstimateFee = async (): Promise<bigint | undefined> => {
-    if (!recipient) {
-      setEstimatedFee(null);
-      setMaxAmount("");
-      return;
-    }
+  const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
 
-    if (!isSS58(recipient)) {
-      setInputError((prev) => ({
-        ...prev,
-        recipient: "Invalid recipient address",
-      }));
-      return;
-    }
+  const sendActionFormSchema = useMemo(() => {
+    return z.object({
+      recipient: z
+        .string()
+        .nonempty({ message: "Recipient address is required" })
+        .refine(isSS58, { message: "Invalid recipient address" }),
+      amount: z
+        .string()
+        .nonempty({ message: "Amount is required" })
+        .refine((amount) => toNano(amount) > 0n, {
+          message: "Amount must be greater than 0",
+        })
+        .refine(
+          (amount) =>
+            isWithinTransferLimit(
+              amount,
+              feeRef.current?.getEstimatedFee() ?? "0",
+              accountFreeBalance.data ?? 0n,
+            ),
+          { message: "Amount exceeds maximum transferable amount" },
+        ),
+    });
+  }, [accountFreeBalance.data]);
 
-    setIsEstimating(true);
+  const form = useForm<z.infer<typeof sendActionFormSchema>>({
+    resolver: zodResolver(sendActionFormSchema),
+    defaultValues: {
+      recipient: "",
+      amount: "",
+    },
+    mode: "onTouched",
+  });
+
+  const { reset, setValue, getValues, trigger } = form;
+
+  const handleEstimateFee = useCallback(async () => {
+    feeRef.current?.setLoading(true);
     try {
-      const transaction = transferTransaction({ to: recipient, amount: "0" });
+      const transaction = transferTransaction({
+        to: ALLOCATOR_ADDRESS,
+        amount: "0",
+      });
       if (!transaction) {
-        setInputError((prev) => ({
-          ...prev,
-          recipient: "Invalid transaction",
-        }));
+        toast.error("Error creating transaction for estimating fee.");
         return;
       }
       const fee = await estimateFee(transaction);
       if (fee != null) {
-        const adjustedFee = (fee * 1005n) / 1000n;
-
-        setEstimatedFee(fromNano(adjustedFee));
-        return adjustedFee;
+        const { feeStr, maxTransferable } = computeFeeData(
+          fee,
+          FEE_BUFFER_PERCENT,
+          accountFreeBalance.data ?? 0n,
+        );
+        feeRef.current?.updateFee(feeStr);
+        maxAmountRef.current = fromNano(maxTransferable);
       } else {
-        setEstimatedFee(null);
-        setMaxAmount("");
+        feeRef.current?.updateFee(null);
+        maxAmountRef.current = "";
       }
     } catch (error) {
       console.error("Error estimating fee:", error);
-      setEstimatedFee(null);
-      setMaxAmount("");
+      feeRef.current?.updateFee(null);
+      feeRef.current?.setLoading(false);
     } finally {
-      setIsEstimating(false);
+      feeRef.current?.setLoading(false);
     }
-  };
-
-  const handleUpdateMaxAmount = (fee: bigint | undefined) => {
-    if (!fee) return;
-    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - fee;
-    const maxAmount = afterFeesBalance > 0 ? afterFeesBalance : 0n;
-
-    setMaxAmount(fromNano(maxAmount));
-    const amountNano = toNano(amount || "0");
-    if (amountNano > maxAmount) {
-      setInputError((prev) => ({
-        ...prev,
-        value: "Amount exceeds maximum transferable amount",
-      }));
-    } else {
-      setInputError((prev) => ({ ...prev, value: null }));
-    }
-  };
-
-  const handleAmountChange = (amount: string) => {
-    const newAmount = amount.replace(/[^0-9.]/g, "");
-
-    const amountNano = toNano(newAmount || "0");
-    const estimatedFeeNano = toNano(estimatedFee ?? "0");
-    const afterFeesBalance = (accountFreeBalance.data ?? 0n) - estimatedFeeNano;
-    const maxAmountNano = afterFeesBalance > 0n ? afterFeesBalance : 0n;
-
-    if (amountNano > maxAmountNano) {
-      setInputError((prev) => ({
-        ...prev,
-        value: "Amount exceeds maximum transferable amount",
-      }));
-    } else {
-      setInputError((prev) => ({ ...prev, value: null }));
-    }
-
-    setAmount(newAmount);
-  };
-
-  const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRecipient(e.target.value);
-    setAmount("");
-    setEstimatedFee(null);
-    setMaxAmount("");
-    setInputError({ recipient: null, value: null });
-  };
+  }, [accountFreeBalance.data, estimateFee, transferTransaction]);
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
     if (callbackReturn.status === "SUCCESS") {
-      setAmount("");
-      setRecipient("");
-      setInputError({ recipient: null, value: null });
+      reset();
     }
   };
 
@@ -143,137 +140,140 @@ export function SendAction() {
     await accountFreeBalance.refetch();
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const isValidInput = amount && recipient && !inputError.value;
-    if (!isValidInput) return;
-
+  const onSubmit = async (values: z.infer<typeof sendActionFormSchema>) => {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
       message: "Starting transaction...",
     });
-
-    void transfer({
-      to: recipient,
-      amount,
+    await transfer({
+      to: values.recipient,
+      amount: values.amount,
       callback: handleCallback,
       refetchHandler,
     });
   };
 
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const reviewData = [
-    {
-      label: "To",
-      content: `${recipient ? smallAddress(recipient, 6) : "Recipient Address"}`,
-    },
-    { label: "Amount", content: `${amount || 0} TORUS` },
-    {
-      label: "Fee",
-      content:
-        amount && selectedAccount?.address ? estimatedFee + " TORUS" : "-",
-    },
-  ];
+  const handleAmountChange = async (amount: string) => {
+    setValue("amount", amount);
+    await trigger("amount");
+  };
 
   useEffect(() => {
-    async function fetchFeeAndMax() {
-      const fee = await handleEstimateFee();
-      handleUpdateMaxAmount(fee);
+    if (!selectedAccount?.address) return;
+    void handleEstimateFee();
+  }, [handleEstimateFee, selectedAccount?.address]);
+
+  useEffect(() => {
+    reset();
+    feeRef.current?.updateFee(null);
+  }, [selectedAccount?.address, reset]);
+
+  const reviewData = () => {
+    const { recipient, amount } = getValues();
+
+    return [
+      {
+        label: "To",
+        content: recipient,
+      },
+      {
+        label: "Amount",
+        content: `${amount} TORUS`,
+      },
+      {
+        label: "Fee",
+        content: `${feeRef.current?.getEstimatedFee()} TORUS`,
+      },
+    ];
+  };
+
+  const handleReviewClick = async () => {
+    const isValid = await trigger();
+    if (isValid) {
+      reviewDialogRef.current?.openDialog();
     }
-
-    void fetchFeeAndMax();
-  }, [recipient]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    setRecipient("");
-    setAmount("");
-    setMaxAmount("");
-    setInputError({ recipient: null, value: null });
-  }, [selectedAccount?.address]);
+  };
 
   return (
     <div className="l flex w-full flex-col gap-4 md:flex-row">
-      <Card className="w-full animate-fade p-6 md:w-3/5">
-        <form
-          onSubmit={handleSubmit}
-          ref={formRef}
-          className="flex w-full flex-col gap-6"
-        >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="send-recipient" className="">
-              To
-            </Label>
-            <Input
-              id="send-recipient"
-              type="text"
-              value={recipient}
-              required
-              onChange={handleRecipientChange}
-              placeholder="Full recipient address"
-              disabled={!selectedAccount?.address || isEstimating}
+      <Card className="w-full animate-fade p-6">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            ref={formRef}
+            className="flex w-full flex-col gap-6"
+          >
+            <FormField
+              control={form.control}
+              name="recipient"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>To</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Full recipient address"
+                      disabled={!selectedAccount?.address}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {inputError.recipient && (
-              <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                {inputError.recipient}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="send-amount" className="text-base">
-              Amount
-            </Label>
-            <div className="flex w-full flex-col gap-2">
-              <Input
-                id="send-amount"
-                type="number"
-                value={amount}
-                max={maxAmount}
-                min={0}
-                step={0.000000000000000001}
-                required
-                onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="Amount of TORUS"
-                className="disabled:cursor-not-allowed"
-                disabled={!recipient || isEstimating}
-              />
-              <AmountButtons
-                setAmount={handleAmountChange}
-                availableFunds={maxAmount}
-                disabled={!recipient || isEstimating}
-              />
-            </div>
-            {inputError.value && (
-              <span className="-mt-1 mb-1 flex text-left text-sm text-red-400">
-                {inputError.value}
-              </span>
-            )}
-          </div>
-
-          <FeeLabel
-            estimatedFee={estimatedFee}
-            isEstimating={isEstimating}
-            accountConnected={!!selectedAccount}
-          />
-
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Amount</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Amount of TORUS"
+                        disabled={!selectedAccount?.address}
+                        type="number"
+                      />
+                    </FormControl>
+                    <AmountButtons
+                      setAmount={async (value) => {
+                        await handleAmountChange(value);
+                      }}
+                      availableFunds={maxAmountRef.current}
+                      disabled={
+                        !(toNano(maxAmountRef.current) > 0n) ||
+                        !selectedAccount?.address
+                      }
+                    />
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          )}
-        </form>
+
+            <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
+
+            {transactionStatus.status && (
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
+              />
+            )}
+
+            <Button
+              type="button"
+              onClick={handleReviewClick}
+              disabled={!selectedAccount?.address}
+            >
+              Review Transaction
+            </Button>
+          </form>
+        </Form>
       </Card>
-      <WalletTransactionReview
-        disabled={
-          transactionStatus.status === "PENDING" ||
-          !amount ||
-          !recipient ||
-          isEstimating ||
-          !!inputError.value
-        }
+
+      <ReviewTransactionDialog
+        ref={reviewDialogRef}
         formRef={formRef}
         reviewContent={reviewData}
       />
