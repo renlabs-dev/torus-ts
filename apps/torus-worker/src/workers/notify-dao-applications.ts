@@ -33,6 +33,7 @@ function isNotifiable(app: ApplicationDB): boolean {
 
 export async function notifyNewApplicationsWorker() {
   await pushApplicationsNotification();
+  await pushCadreNotification();
 }
 
 
@@ -41,14 +42,9 @@ async function pushCadreNotification() {
     (candidate) => candidate.notified === false
   );
   for (const candidate of cadreCandidates) {
-    const notification = {
-      candidate: `${candidate.userKey}`,
-      application_url: `${buildPortalUrl()}cadre-application/${candidate.id}`,
-    };
   
     const discordMessage = buildCadreMessage(
-      notification.discord_uid,
-      notification.application_url,
+      candidate
     );
   
     await sendDiscordWebhook(env.CURATOR_DISCORD_WEBHOOK_URL, discordMessage);

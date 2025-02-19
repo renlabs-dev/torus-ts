@@ -140,6 +140,14 @@ export async function toggleWhitelistNotification(proposal: ApplicationDB) {
   .execute();
 }
 
+export async function toggleCadreNotification(candidate: CadreCandidate) {
+  await db
+  .update(cadreCandidateSchema)
+  .set({ notified: true })
+  .where(eq(cadreCandidateSchema.userKey, candidate.userKey))
+  .execute();
+}
+
 export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
   const result = await db
     .select({
