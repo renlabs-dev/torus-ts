@@ -1,21 +1,16 @@
+import type { Brand } from "./";
+import {
+  BigNumberBrand,
+  BNInput,
+  buildTaggedBigNumberClass,
+} from "./bignumber";
 import { BigNumber } from "bignumber.js";
+import { assert, Equals, Extends, Not } from "tsafe";
 
 export const DECIMALS = 18;
 
 export const DECIMALS_BIG = BigInt(DECIMALS);
 export const DECIMALS_MULTIPLIER = 10n ** DECIMALS_BIG;
-
-// ---- Arbitrary precision decimals ----
-
-export const TorBigNumberCfg = BigNumber.clone({
-  DECIMAL_PLACES: DECIMALS,
-  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // better for financial
-});
-
-export const TorBigNumber = (value: BigNumber.Value) =>
-  new TorBigNumberCfg(value);
-
-export const DECIMALS_BN_MULTIPLIER = TorBigNumber(10).pow(DECIMALS);
 
 // ==== Address ====
 
@@ -39,6 +34,36 @@ export function smallWalletName(address: string, size?: number): string {
 }
 
 // ==== Amounts ====
+
+export type RemAmount = Brand<"RemAmount", bigint>;
+
+// ---- Arbitrary precision decimals ----
+
+/** Configuration for TORUS fixed point number amounts  */
+export const TorBigNumberCfg = BigNumber.clone({
+  DECIMAL_PLACES: DECIMALS,
+  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // better for financial
+});
+
+export const { Type: TorAmount, make: makeTorAmount } =
+  buildTaggedBigNumberClass<"TorAmount">("TorAmount", TorBigNumberCfg);
+
+export type TorAmount = ReturnType<typeof makeTorAmount>;
+
+function _test() {
+  const _x = makeTorAmount(2);
+  const _y = makeTorAmount(3);
+  const _z = _x.plus(_y);
+  type Z = typeof _z;
+
+  // Verify that Z is exactly the TorAmount type
+  assert<Equals<Z, TorAmount>>();
+  // Verify that BigNumber cannot be assigned to Z (TorAmount),
+  // ensuring type safety by preventing raw BigNumber operations.
+  assert<Not<Extends<BigNumber, Z>>>();
+}
+
+export const DECIMALS_BN_MULTIPLIER = makeTorAmount(10).pow(DECIMALS);
 
 // ---- old ----
 
@@ -95,30 +120,31 @@ export function formatToken(nano: number | bigint, decimalPlaces = 2): string {
 // ---- new ----
 
 /**
- * Converts Rens to its standard unit (TORUS) representation.
+ * Converts Rems to its standard unit (TORUS) representation.
  */
-export function fromRen(value: bigint): BigNumber {
-  const val = TorBigNumber(value.toString());
+export function fromRems(value: bigint): TorAmount {
+  const val = makeTorAmount(value);
   return val.div(DECIMALS_BN_MULTIPLIER);
 }
 
 /**
- * Converts standard unit (TORUS) representation value to Rens.
+ * Converts standard unit (TORUS) representation value to Rems.
  */
-export function toRen(amount: BigNumber): bigint {
+export function toRems(amount: TorAmount): bigint {
   return BigInt(amount.times(DECIMALS_BN_MULTIPLIER).toString());
 }
 
 /**
  * Parse a string representing a TORUS token amount.
  */
-export function parseTorusTokens(txt: string): BigNumber {
-  return TorBigNumber(txt);
+export function parseTorusTokens(txt: string): TorAmount {
+  // TODO: improve parsing
+  return makeTorAmount(txt);
 }
 
 /**
  * Convert TORUS token amount into string with given amount of decimal places.
  */
-export function formatTorusToken(value: BigNumber, decimalPlaces = 2) {
+export function formatTorusToken(value: TorAmount, decimalPlaces = 2) {
   return value.toFixed(decimalPlaces);
 }
