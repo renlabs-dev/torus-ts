@@ -1,16 +1,15 @@
-import "../styles/globals.css";
+import { Layout } from "@torus-ts/ui/components/layout";
+import "@torus-ts/ui/globals.css";
 import { Footer } from "./components/footer";
 import { HoverHeader } from "./components/hover-header";
-import { Layout } from "@torus-ts/ui";
+import { Providers } from "./components/providers";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript } from "~/env";
 
-const APP_NAME = "Torus";
-
 export const metadata: Metadata = {
   robots: "all",
-  title: APP_NAME,
+  title: "Torus",
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description: "The thermodynamic god's favorite child.",
 };
@@ -28,9 +27,11 @@ export default function RootLayout({
 }>): JSX.Element {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      <HoverHeader />
-      {children}
-      <Footer />
+      <Providers>
+        <HoverHeader />
+        {children}
+        <Footer />
+      </Providers>
     </Layout>
   );
 }

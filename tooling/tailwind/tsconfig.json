@@ -1,5 +1,0 @@
-{
-  "extends": "@torus-ts/tsconfig/base.json",
-  "include": ["."],
-  "exclude": ["node_modules"]
-}

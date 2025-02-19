@@ -1,14 +1,12 @@
 {
-  "extends": "@torus-ts/tsconfig/internal-package.json",
+  "extends": "@torus-ts/tsconfig/app-next.json",
   "compilerOptions": {
-    "lib": ["ES2022", "dom", "dom.iterable"],
-    "jsx": "preserve",
-    "rootDir": ".",
+    //"outDir": "dist"
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@torus-ts/ui/*": ["./src/*"]
     }
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
 }

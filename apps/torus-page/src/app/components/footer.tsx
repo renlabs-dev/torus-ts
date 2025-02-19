@@ -2,9 +2,9 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-  Icons,
-  links,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/hover-card";
+import { Icons } from "@torus-ts/ui/components/icons";
+import { links } from "@torus-ts/ui/lib/data";
 
 function FooterContent() {
   return (

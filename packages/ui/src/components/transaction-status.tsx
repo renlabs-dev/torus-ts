@@ -1,8 +1,5 @@
 import { cn, Loading } from "..";
-import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/solid";
+import { CircleAlert, CircleCheck } from "lucide-react";
 
 export interface TransactionResult {
   finalized: boolean;
@@ -20,8 +17,8 @@ export function TransactionStatus({
   message,
 }: Readonly<TransactionStatusProps>): JSX.Element {
   const statusConfig = {
-    SUCCESS: { color: "text-cyan-300", Icon: CheckCircleIcon },
-    ERROR: { color: "text-red-300", Icon: ExclamationCircleIcon },
+    SUCCESS: { color: "text-cyan-300", Icon: CircleCheck },
+    ERROR: { color: "text-red-300", Icon: CircleAlert },
     PENDING: { color: "text-white", Icon: null },
     STARTING: { color: "text-white", Icon: null },
   };
