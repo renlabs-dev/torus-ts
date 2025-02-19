@@ -1,6 +1,11 @@
-import { Button, Card, cn, links, ScrollArea } from "@torus-ts/ui";
-import { motion } from "framer-motion";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
+import { links } from "@torus-ts/ui/lib/data";
+import { cn } from "@torus-ts/ui/lib/utils";
+
 import { ArrowBigDown } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 

@@ -4,17 +4,17 @@
   "rsc": true,
   "tsx": true,
   "tailwind": {
-    "config": "tailwind.config.ts",
-    "css": "src/styles/globals.css",
+    "config": "../../packages/ui/tailwind.config.ts",
+    "css": "../../packages/ui/src/styles/globals.css",
     "baseColor": "zinc",
     "cssVariables": true
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@torus-ts/ui/components",
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
     "utils": "@torus-ts/ui/lib/utils",
-    "hooks": "@torus-ts/ui/hooks",
-    "lib": "@torus-ts/ui/lib",
     "ui": "@torus-ts/ui/components"
   }
 }

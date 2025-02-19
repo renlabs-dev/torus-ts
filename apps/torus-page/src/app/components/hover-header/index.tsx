@@ -9,7 +9,8 @@ import { ButtonsSection } from "./_components/desktop/buttons-section";
 import { LinesSVG } from "./_components/desktop/lines-svg";
 import { ButtonsSectionMobile } from "./_components/mobile/buttons-section-mobile";
 import { LinesSVGMobile } from "./_components/mobile/lines-svg-mobile";
-import { cn, Icons } from "@torus-ts/ui";
+import { Icons } from "@torus-ts/ui/components/icons";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 

@@ -11,7 +11,6 @@ catalog:
   "@types/node": ^20.14.15
   "@tailwindcss/typography": "^0.5.15"
   "@next/eslint-plugin-next": ^14.2.5
-  "@heroicons/react": ^2.1.5
   "@t3-oss/env-nextjs": ^0.10.1
   "dotenv-cli": ^7.4.2
   "@polkadot/api": ^14.2.3
@@ -35,6 +34,7 @@ catalog:
   multiformats: ^13.2.3
   tsx: ^4.19.1
   luxon: ^3.5.0
+  lucide-react: ^0.475.0
   # Hyperlane
   viem: ^2.22.1
 

@@ -1,27 +1,26 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+import { fontFamily } from "tailwindcss/defaultTheme";
 
-export default {
+const config = {
   darkMode: ["class"],
-  content: ["src/**/*.{ts,tsx}"],
+  content: [
+    "app/**/*.{ts,tsx}",
+    "src/app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "../../packages/ui/src/components/**/*.{ts,tsx}",
+  ],
   theme: {
     extend: {
-      screens: {
-        xs: "485px",
-        sm: "640px",
-        md: "768px",
-        lg: "1024px",
-        xl: "1280px",
-        "2xl": "1536px",
+      fontFamily: {
+        sans: ["var(--font-sans)", ...fontFamily.sans],
+        mono: ["var(--font-mono)", ...fontFamily.mono],
       },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        radius: "hsl(var(--radius))",
-        active: "hsl(var(--active))",
         background: "hsl(var(--background))",
-        "background-green": "hsl(var(--background-green))",
-        "background-cyan": "hsl(var(--background-cyan))",
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
@@ -52,9 +51,14 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
       },
-      borderColor: {
-        DEFAULT: "hsl(var(--border))",
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
+  plugins: [tailwindcssAnimate],
 } satisfies Config;
+
+export default config;

@@ -1,5 +1,5 @@
-import { cn } from ".";
 import type { FC } from "react";
+import { cn } from "../lib/utils";
 
 interface NextFont {
   className: string;
@@ -24,12 +24,12 @@ export function Layout({
   headScripts,
 }: Readonly<LayoutProps>): JSX.Element {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>{headScripts?.map((Script) => <Script key={Script.name} />)}</head>
       <body
         className={cn(
           font.className,
-          `min-h-screen overflow-auto bg-[#080808] text-white`,
+          `min-h-screen overflow-auto bg-[#080808] text-white antialiased`,
           className,
         )}
       >

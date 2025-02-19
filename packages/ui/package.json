@@ -1,20 +1,8 @@
 {
   "name": "@torus-ts/ui",
-  "version": "0.1.0",
-  "private": true,
-  "license": "MIT",
+  "version": "0.0.0",
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./types": "./src/types/index.ts",
-    "./utils": "./src/utils.ts",
-    "./styles.css": "./dist/index.css",
-    "./footer": "./src/components/footer.tsx",
-    "./markdown-view": "./src/components/markdown-view.tsx",
-    "./data": "./src/data.ts",
-    "./fonts": "./src/fonts.ts",
-    "./components": "./src/components/index.ts"
-  },
+  "private": true,
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
@@ -23,9 +11,7 @@
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "typecheck": "tsc --noEmit"
   },
-  "prettier": "@torus-ts/prettier-config",
   "dependencies": {
-    "@heroicons/react": "catalog:",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -42,7 +28,7 @@
     "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slider": "^1.2.2",
-    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
@@ -51,22 +37,39 @@
     "@torus-ts/utils": "workspace:*",
     "@uiw/react-markdown-preview": "^5.1.1",
     "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "input-otp": "^1.2.4",
-    "lucide-react": "^0.454.0",
+    "lucide-react": "0.456.0",
+    "next-themes": "^0.4.3",
     "react": "catalog:react18",
+    "react-dom": "catalog:react18",
     "react-hook-form": "^7.53.2",
     "recharts": "^2.13.0-alpha.4",
-    "tailwind-merge": "^2.5.2",
-    "zod": "^3.23.8"
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
+    "@turbo/gen": "^2.2.3",
+    "@types/node": "^22.9.0",
     "@types/react": "catalog:react18",
+    "autoprefixer": "^10.4.20",
     "eslint": "catalog:",
+    "postcss": "^8.4.47",
     "prettier": "catalog:",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:"
+  },
+  "exports": {
+    "./globals.css": "./src/styles/globals.css",
+    "./postcss.config": "./postcss.config.mjs",
+    "./tailwind.config": "./tailwind.config.ts",
+    "./lib/*": "./src/lib/*.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./hooks/*": "./src/hooks/*.ts"
   }
 }
