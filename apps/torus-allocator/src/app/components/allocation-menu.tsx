@@ -303,7 +303,7 @@ export function AllocationMenu() {
           <SheetTrigger asChild disabled={!selectedAccount}>
             <Button
               variant="outline"
-              className="w-full border border-primary/80"
+              className="border-primary/80 w-full border"
             >
               {!selectedAccount ? (
                 <LoaderCircle className="animate-spin" />
@@ -345,7 +345,7 @@ export function AllocationMenu() {
                     .map((agent) => (
                       <div
                         key={agent.address} // Use address as the key for more stability
-                        className={`flex flex-col gap-1.5 border-b border-muted-foreground/20 py-4 first:border-t last:border-b-0 ${
+                        className={`border-muted-foreground/20 flex flex-col gap-1.5 border-b py-4 first:border-t last:border-b-0 ${
                           isOverflowing ? "mr-2.5" : "last:!border-b-[1px]"
                         }`}
                       >
