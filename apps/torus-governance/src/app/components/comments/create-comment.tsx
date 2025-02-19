@@ -1,10 +1,21 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
-import { Button } from "@torus-ts/ui";
-import { formatToken, toNano } from "@torus-ts/utils/subspace";
-import { useState } from "react";
+import {
+  Button,
+  Input,
+  Textarea,
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormMessage,
+} from "@torus-ts/ui";
+import { formatToken } from "@torus-ts/utils/subspace";
+import * as React from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
@@ -12,6 +23,22 @@ import { api } from "~/trpc/react";
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
 const MIN_STAKE_REQUIRED = 2000;
+
+const commentSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Please enter a comment")
+    .max(MAX_CHARACTERS, `Comment cannot exceed ${MAX_CHARACTERS} characters`),
+  name: z
+    .string()
+    .max(
+      MAX_NAME_CHARACTERS,
+      `Name cannot exceed ${MAX_NAME_CHARACTERS} characters`,
+    )
+    .optional(),
+});
+
+type CommentFormData = z.infer<typeof commentSchema>;
 
 export function CreateComment({
   id,
@@ -24,43 +51,47 @@ export function CreateComment({
 }>) {
   const { selectedAccount, accountStakedBalance, isUserCadre } =
     useGovernance();
-
-  const [content, setContent] = useState<string>("");
-  const [name, setName] = useState<string>("");
-  const remainingChars = MAX_CHARACTERS - content.length;
-  const userHasEnoughBalance = accountStakedBalance
-    ? accountStakedBalance > toNano(MIN_STAKE_REQUIRED)
-    : false;
-
   const utils = api.useUtils();
-  const CreateComment = api.comment.create.useMutation({
-    onSuccess: () => {
-      setContent("");
+
+  const CreateCommentMutation = api.comment.create.useMutation({
+    onSuccess: async () => {
+      reset();
+      toast.success("Comment submitted successfully!");
+      await utils.comment.byId.invalidate({ proposalId: id });
     },
-    onError: (err) => {
-      if (err instanceof z.ZodError) {
-        toast.error(err.errors[0]?.message ?? "Invalid input");
-      } else {
-        toast.error(err.message);
-      }
+    onError: (error) => {
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again.",
+      );
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<CommentFormData>({
+    resolver: zodResolver(commentSchema),
+    defaultValues: { content: "", name: "" },
+  });
 
+  const { handleSubmit, reset, control, watch } = form;
+
+  const contentValue = watch("content");
+  const remainingChars = MAX_CHARACTERS - (contentValue.length || 0);
+
+  const onSubmit = async (data: CommentFormData) => {
     if (!selectedAccount?.address) {
       toast.error("Please connect your wallet to submit a comment.");
       return;
     }
-
-    if (itemType === "PROPOSAL" && !userHasEnoughBalance) {
-      toast.error(
-        `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
-      );
-      return;
+    if (itemType === "PROPOSAL") {
+      const staked = accountStakedBalance
+        ? Number(formatToken(accountStakedBalance))
+        : 0;
+      if (staked < MIN_STAKE_REQUIRED) {
+        toast.error(
+          `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
+        );
+        return;
+      }
     }
-
     if (
       itemType === "AGENT_APPLICATION" &&
       !isUserCadre &&
@@ -69,16 +100,13 @@ export function CreateComment({
       toast.error("Only Curator DAO members can submit comments in DAO mode.");
       return;
     }
-
     try {
-      await CreateComment.mutateAsync({
-        content,
+      await CreateCommentMutation.mutateAsync({
+        content: data.content,
         itemId: id,
-        itemType: itemType,
-        userName: name || undefined,
+        itemType,
+        userName: data.name ?? undefined,
       });
-      toast.success("Comment submitted successfully!");
-      await utils.comment.byId.invalidate({ proposalId: id });
     } catch (err) {
       if (err instanceof z.ZodError) {
         toast.error(err.errors[0]?.message ?? "Invalid input");
@@ -89,27 +117,32 @@ export function CreateComment({
   };
 
   const isSubmitDisabled = () => {
-    if (CreateComment.isPending || !selectedAccount?.address) return true;
-
+    if (CreateCommentMutation.isPending || !selectedAccount?.address)
+      return true;
     if (itemType === "PROPOSAL") {
-      return (
-        !accountStakedBalance ||
-        Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED
-      );
+      const staked = accountStakedBalance
+        ? Number(formatToken(accountStakedBalance))
+        : 0;
+      return staked < MIN_STAKE_REQUIRED;
     }
-
     return !isUserCadre && author !== selectedAccount.address;
   };
 
   const setOverlay = () => {
     if (!selectedAccount?.address) return true;
-    if (itemType === "PROPOSAL" && !userHasEnoughBalance) return true;
+    if (itemType === "PROPOSAL") {
+      const staked = accountStakedBalance
+        ? Number(formatToken(accountStakedBalance))
+        : 0;
+      if (staked < MIN_STAKE_REQUIRED) return true;
+    }
     if (
       itemType === "AGENT_APPLICATION" &&
       !isUserCadre &&
       author !== selectedAccount.address
-    )
+    ) {
       return true;
+    }
     return false;
   };
 
@@ -119,28 +152,48 @@ export function CreateComment({
         <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
       </div>
       <div className="relative w-full">
-        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
-          <div className="relative">
-            <textarea
-              placeholder="Type your message here..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="rounded-radius h-24 w-full resize-none border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
-              maxLength={MAX_CHARACTERS}
+        <Form {...form}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex w-full flex-col gap-2"
+          >
+            <FormField
+              control={control}
+              name="content"
+              render={({ field }) => (
+                <FormItem className="relative">
+                  <FormControl>
+                    <Textarea
+                      placeholder="Type your message here..."
+                      {...field}
+                      className="rounded-radius h-24 w-full resize-none border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+                      maxLength={MAX_CHARACTERS}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <span className="absolute bottom-3 right-4 text-sm text-muted-foreground">
+                    {remainingChars} characters left
+                  </span>
+                </FormItem>
+              )}
             />
-            <span className="absolute bottom-3 right-4 text-sm text-muted-foreground">
-              {remainingChars} characters left
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Type your name (optional)"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="rounded-radius w-full border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
-              maxLength={MAX_NAME_CHARACTERS}
+            <FormField
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Type your name (optional)"
+                      {...field}
+                      className="rounded-radius w-full border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+                      maxLength={MAX_NAME_CHARACTERS}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <Button
               type="submit"
@@ -148,15 +201,15 @@ export function CreateComment({
               className="py-6 transition"
               disabled={
                 isSubmitDisabled() ||
-                CreateComment.isPending ||
+                CreateCommentMutation.isPending ||
                 !selectedAccount?.address ||
-                content.length === 0
+                !contentValue.length
               }
             >
-              {CreateComment.isPending ? "Posting..." : "Post"}
+              {CreateCommentMutation.isPending ? "Posting..." : "Post"}
             </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
 
         {setOverlay() && (
           <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
@@ -171,7 +224,8 @@ export function CreateComment({
         )}
 
         {selectedAccount?.address &&
-          !userHasEnoughBalance &&
+          accountStakedBalance &&
+          Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED &&
           itemType === "PROPOSAL" && (
             <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
               <p className="mt-2 text-center text-lg">
