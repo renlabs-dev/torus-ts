@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
   Button,
   Input,
