@@ -2,7 +2,6 @@ import { Layout } from "@torus-ts/ui/components/layout";
 import "@torus-ts/ui/globals.css";
 import { Footer } from "./components/footer";
 import { HoverHeader } from "./components/hover-header";
-import { Providers } from "./components/providers";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript } from "~/env";
@@ -27,11 +26,9 @@ export default function RootLayout({
 }>): JSX.Element {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      <Providers>
-        <HoverHeader />
-        {children}
-        <Footer />
-      </Providers>
+      <HoverHeader />
+      {children}
+      <Footer />
     </Layout>
   );
 }
