@@ -1,7 +1,8 @@
 import { TokenBalance } from "../_components/token-balance";
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
 import { toast } from "@torus-ts/toast-provider";
-import { Button, Label } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
+import { Label } from "@torus-ts/ui/components/label";
 import { useFormikContext } from "formik";
 import { TextField } from "~/app/_components/text-field";
 import { useDestinationBalance } from "~/hooks/balance/use-destination-balance";

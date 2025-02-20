@@ -14,8 +14,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  Loading,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/alert-dialog";
+import { Loading } from "@torus-ts/ui/components/loading";
 import { ChevronsRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWarpCore, tryFindToken } from "~/hooks/token";
@@ -143,7 +143,7 @@ export function TransfersDetailsDialog({
           </div>
         </div>
 
-        <div className="rounded-radius flex items-center justify-around border border-border p-2">
+        <div className="rounded-radius border-border flex items-center justify-around border p-2">
           <span className="font-medium tracking-wider">
             {getChainDisplayName(multiProvider, origin, true)}
           </span>

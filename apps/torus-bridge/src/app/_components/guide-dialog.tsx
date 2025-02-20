@@ -1,15 +1,15 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
   DialogTrigger,
-  Button,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  links,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/dialog";
+import { links } from "@torus-ts/ui/lib/data";
 import { CircleHelp } from "lucide-react";
 import Link from "next/link";
 

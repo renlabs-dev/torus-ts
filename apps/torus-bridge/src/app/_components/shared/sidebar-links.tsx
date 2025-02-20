@@ -1,16 +1,16 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
 import {
-  Button,
-  Card,
-  links,
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/select";
+import { links } from "@torus-ts/ui/lib/data";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import React, { Suspense } from "react";

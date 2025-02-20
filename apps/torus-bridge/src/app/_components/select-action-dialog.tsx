@@ -5,8 +5,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  Button,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/alert-dialog";
+import { Button } from "@torus-ts/ui/components/button";
 import { ArrowBigRightDash, Logs } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,13 +55,13 @@ export function SelectCard(props: Readonly<SelectCardProps>) {
   return (
     <AlertDialogAction
       asChild
-      className="border border-border bg-accent/20 px-5 py-10 hover:bg-accent/70"
+      className="border-border bg-accent/20 hover:bg-accent/70 border px-5 py-10"
     >
       <Link href={props.href} className="flex w-full">
         <div className="flex h-fit w-full justify-between gap-2">
           <div className="flex flex-col gap-1">
             <span className="text-base font-bold text-white">{props.text}</span>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               {props.description}
             </span>
           </div>

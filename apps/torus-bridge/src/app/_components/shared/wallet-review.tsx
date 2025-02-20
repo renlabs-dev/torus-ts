@@ -1,5 +1,5 @@
 import { toWei } from "@hyperlane-xyz/utils";
-import { Loading } from "@torus-ts/ui";
+import { Loading } from "@torus-ts/ui/components/loading";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { useFormikContext } from "formik";
 import React from "react";
@@ -33,7 +33,7 @@ export function WalletTransactionReview({
       ) : (
         <>
           {isApproveRequired && (
-            <div className="mb-2 flex flex-col gap-2 border-b border-border pb-2">
+            <div className="border-border mb-2 flex flex-col gap-2 border-b pb-2">
               <ItemText label="Transaction 1" value="Transfer Remote" />
               <div>
                 {originToken?.addressOrDenom && (

@@ -3,7 +3,8 @@
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Card, Skeleton } from "@torus-ts/ui";
+import { Card } from "@torus-ts/ui/components/card";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken } from "@torus-ts/utils/subspace";
 import Image from "next/image";
 import React, { useCallback } from "react";
@@ -128,13 +129,13 @@ export function WalletBalance() {
   ];
 
   return (
-    <div className="min-fit flex flex-col gap-4 xs:flex-row lg:flex-col">
+    <div className="min-fit xs:flex-row flex flex-col gap-4 lg:flex-col">
       {balancesList.map((item) => (
         <Card key={item.label} className="flex w-full flex-col gap-2 px-7 py-5">
           {item.amount == null && <Skeleton className="flex w-1/2 py-3" />}
 
           {item.amount != null && (
-            <p className="flex items-end gap-1 text-muted-foreground">
+            <p className="text-muted-foreground flex items-end gap-1">
               {formatToken(item.amount)}
               <span className="text-sm">TORUS</span>
             </p>

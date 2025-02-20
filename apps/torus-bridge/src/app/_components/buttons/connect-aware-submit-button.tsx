@@ -5,7 +5,7 @@ import {
   useConnectFns,
   useTimeout,
 } from "@hyperlane-xyz/widgets";
-import { Button } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
 import { useFormikContext } from "formik";
 import { useCallback } from "react";
 import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";

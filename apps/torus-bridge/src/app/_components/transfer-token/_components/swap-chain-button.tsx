@@ -1,4 +1,4 @@
-import { Button } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
 import { useFormikContext } from "formik";
 import { ArrowLeftRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
