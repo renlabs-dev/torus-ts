@@ -2,7 +2,8 @@ import { CreateCadreCandidates } from "../agent-application/create-cadre-candida
 import { CuratorCandidatesList } from "../cadre/curator-candidates-list";
 import { ListCardsLoadingSkeleton } from "./cards-skeleton-list";
 import { ListContainer } from "./container-list";
-import { Button, Card } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
 import { useSearchParams } from "next/navigation";
 import { useGovernance } from "~/context/governance-provider";
 

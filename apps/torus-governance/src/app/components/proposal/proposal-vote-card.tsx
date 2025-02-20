@@ -9,12 +9,12 @@ import type {
 } from "@tanstack/react-query";
 import type { ProposalStatus, VoteWithStake } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   ToggleGroup,
   ToggleGroupItem,
-  TransactionStatus,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/toggle-group";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
@@ -24,7 +24,7 @@ const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
 const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
   return (
-    <div className="hidden animate-fade-down animate-delay-700 md:block">
+    <div className="animate-fade-down animate-delay-700 hidden md:block">
       <h3 className="mb-4 text-lg">Cast your vote</h3>
       {props.children}
     </div>

@@ -3,16 +3,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
-  Input,
-  Textarea,
   Form,
   FormField,
   FormItem,
   FormControl,
   FormMessage,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import { Textarea } from "@torus-ts/ui/components/text-area";
 import { formatToken } from "@torus-ts/utils/subspace";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -147,7 +147,7 @@ export function CreateComment({
   };
 
   return (
-    <div className="hidden h-fit min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200 md:flex">
+    <div className="animate-fade-down animate-delay-200 hidden h-fit min-h-max flex-col items-center justify-between text-white md:flex">
       <div className="mb-2 w-full pb-1">
         <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
       </div>
@@ -166,12 +166,12 @@ export function CreateComment({
                     <Textarea
                       placeholder="Type your message here..."
                       {...field}
-                      className="rounded-radius h-24 w-full resize-none border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground h-24 w-full resize-none border p-3 text-white"
                       maxLength={MAX_CHARACTERS}
                     />
                   </FormControl>
                   <FormMessage />
-                  <span className="absolute bottom-3 right-4 text-sm text-muted-foreground">
+                  <span className="text-muted-foreground absolute bottom-3 right-4 text-sm">
                     {remainingChars} characters left
                   </span>
                 </FormItem>
@@ -187,7 +187,7 @@ export function CreateComment({
                       type="text"
                       placeholder="Type your name (optional)"
                       {...field}
-                      className="rounded-radius w-full border border-muted bg-card p-3 text-white placeholder:text-muted-foreground"
+                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground w-full border p-3 text-white"
                       maxLength={MAX_NAME_CHARACTERS}
                     />
                   </FormControl>

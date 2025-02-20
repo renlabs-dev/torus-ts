@@ -3,24 +3,26 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button } from "@torus-ts/ui/components/button";
+import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import {
-  Button,
-  Checkbox,
-  Input,
-  Label,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Textarea,
-  TransactionStatus,
   Form,
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import { Label } from "@torus-ts/ui/components/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
+import { Textarea } from "@torus-ts/ui/components/text-area";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 import { formatToken } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -281,7 +283,7 @@ export function CreateAgentApplication(): JSX.Element {
           </TabsContent>
           <TabsContent
             value="preview"
-            className="rounded-radius mt-0 bg-muted p-4"
+            className="rounded-radius bg-muted mt-0 p-4"
           >
             {getValues("body") ? (
               <MarkdownPreview
@@ -341,7 +343,7 @@ export function CreateAgentApplication(): JSX.Element {
           />
         </div>
 
-        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground flex items-start gap-2 text-sm">
           <span className="text-sm">
             Note: The application fee will be deducted from your connected
             wallet. If your application get accepted the application fee will be

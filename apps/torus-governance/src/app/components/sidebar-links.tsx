@@ -1,15 +1,15 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
 import {
-  Button,
-  Card,
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/select";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -74,7 +74,7 @@ export const Sidebar = () => {
         </SelectContent>
       </Select>
 
-      <div className="hidden max-h-fit w-full min-w-fit animate-fade-up flex-col gap-6 animate-delay-200 lg:flex">
+      <div className="animate-fade-up animate-delay-200 hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">
         <Card className="flex flex-col gap-1.5 p-5">
           {navSidebarOptions.map((view) => {
             return (

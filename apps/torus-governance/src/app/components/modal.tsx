@@ -4,20 +4,22 @@ import { CreateAgentApplication } from "./agent-application/create-agent-applica
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+} from "@torus-ts/ui/components/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/select";
 import { ClipboardPlus } from "lucide-react";
 import { useState } from "react";
 import { useGovernance } from "~/context/governance-provider";
@@ -71,7 +73,7 @@ export function CreateModal() {
           Shape the network
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90%] w-full max-w-[100vw] gap-6 overflow-y-auto border-muted md:w-[80%] md:max-w-screen-xl">
+      <DialogContent className="border-muted max-h-[90%] w-full max-w-[100vw] gap-6 overflow-y-auto md:w-[80%] md:max-w-screen-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Shape the network
@@ -81,11 +83,11 @@ export function CreateModal() {
           value={selectedView}
           onValueChange={(value) => setSelectedView(value as ViewType)}
         >
-          <SelectTrigger className="w-full border-transparent bg-accent p-3 text-white">
+          <SelectTrigger className="bg-accent w-full border-transparent p-3 text-white">
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
 
-          <SelectContent className="w-fit border-muted">
+          <SelectContent className="border-muted w-fit">
             {Object.entries(viewList).map(([view, spec]) => (
               <div key={view}>
                 <SelectItem value={view as ViewType}>{spec.label}</SelectItem>

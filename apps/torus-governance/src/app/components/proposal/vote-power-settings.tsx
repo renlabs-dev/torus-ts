@@ -2,13 +2,13 @@
 
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-  TransactionStatus,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/popover";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { Info } from "lucide-react";
 import { useState } from "react";
 import { useGovernance } from "~/context/governance-provider";
@@ -42,18 +42,18 @@ export function VotePowerSettings(): JSX.Element | null {
 
   return (
     <Popover>
-      <PopoverTrigger className="relative mt-2 flex items-center gap-2 text-muted-foreground hover:text-white hover:underline">
+      <PopoverTrigger className="text-muted-foreground relative mt-2 flex items-center gap-2 hover:text-white hover:underline">
         <Info size={16} />
         <h3>Vote power settings</h3>
         {!isAccountPowerUser && (
           <>
-            <span className="absolute -right-2 top-0.5 h-1.5 w-1.5 rounded-full bg-muted" />
-            <span className="absolute -right-2 top-0.5 h-1.5 w-1.5 animate-ping rounded-full bg-muted-foreground animate-duration-[1500ms]" />
+            <span className="bg-muted absolute -right-2 top-0.5 h-1.5 w-1.5 rounded-full" />
+            <span className="bg-muted-foreground animate-duration-[1500ms] absolute -right-2 top-0.5 h-1.5 w-1.5 animate-ping rounded-full" />
           </>
         )}
       </PopoverTrigger>
-      <PopoverContent className="mb-4 flex max-w-72 flex-col gap-4 border-muted text-muted-foreground">
-        <span className="whitespace-break-spaces text-sm text-muted-foreground">
+      <PopoverContent className="border-muted text-muted-foreground mb-4 flex max-w-72 flex-col gap-4">
+        <span className="text-muted-foreground whitespace-break-spaces text-sm">
           {tooltipText}
         </span>
 

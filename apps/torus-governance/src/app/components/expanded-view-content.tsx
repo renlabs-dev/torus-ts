@@ -1,5 +1,5 @@
-import { Button } from "@torus-ts/ui";
-import { MarkdownView } from "@torus-ts/ui/markdown-view";
+import { Button } from "@torus-ts/ui/components/button";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { MoveDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -36,7 +36,7 @@ export const ExpandedViewContent = (
   }, [body]);
 
   return (
-    <div className={`flex h-fit w-full animate-fade-down flex-col`}>
+    <div className={`animate-fade-down flex h-fit w-full flex-col`}>
       <h2 className="break-words pb-5 text-2xl font-bold text-white">
         {title ?? "Title not found"}
       </h2>
@@ -48,7 +48,7 @@ export const ExpandedViewContent = (
 
         {isOverflowing && (
           <div
-            className={`absolute -bottom-0 flex w-full items-end justify-center ${expandedText ? "h-0 animate-fade" : "h-12 animate-fade"} bg-gradient-to-b from-transparent to-black transition-all duration-100`}
+            className={`absolute -bottom-0 flex w-full items-end justify-center ${expandedText ? "animate-fade h-0" : "animate-fade h-12"} bg-gradient-to-b from-transparent to-black transition-all duration-100`}
           >
             <Button
               className="flex w-32 items-center gap-2 bg-black"

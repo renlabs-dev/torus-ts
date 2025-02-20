@@ -1,5 +1,5 @@
 import type { ProposalStatus } from "@torus-ts/subspace";
-import { Badge } from "@torus-ts/ui";
+import { Badge } from "@torus-ts/ui/components/badge";
 import { match } from "rustie";
 
 interface StatusLabelProps {

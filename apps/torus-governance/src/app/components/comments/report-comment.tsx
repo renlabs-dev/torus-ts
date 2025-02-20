@@ -1,26 +1,26 @@
 "use client";
 
-import type { AppRouter } from "@torus-ts/api";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { AppRouter } from "@torus-ts/api";
 import { toast } from "@torus-ts/toast-provider";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormMessage,
+} from "@torus-ts/ui/components/form";
+import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
-  Form,
-  FormField,
-  FormItem,
-  FormControl,
-  FormMessage,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/select";
+import { Textarea } from "@torus-ts/ui/components/text-area";
 import type { inferProcedureOutput } from "@trpc/server";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -49,7 +49,10 @@ interface ReportCommentProps {
   setCommentId: (id: number | null) => void;
 }
 
-export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
+export function ReportComment({
+  commentId,
+  setCommentId,
+}: Readonly<ReportCommentProps>) {
   const {
     commentReport: { create: createReport },
   } = api;
@@ -93,13 +96,13 @@ export function ReportComment({ commentId, setCommentId }: ReportCommentProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <button
-        className="absolute inset-0 bg-card/30 backdrop-blur-sm"
+        className="bg-card/30 absolute inset-0 backdrop-blur-sm"
         onClick={() => setCommentId(null)}
         onKeyDown={(e) => e.key === "Escape" && setCommentId(null)}
         aria-label="Close report comment dialog"
         type="button"
       />
-      <Card className="relative h-fit w-full max-w-screen-md animate-fade-in-down text-left text-white">
+      <Card className="animate-fade-in-down relative h-fit w-full max-w-screen-md text-left text-white">
         <CardHeader className="flex flex-row items-center justify-between gap-3 px-6 pt-6">
           <h3 className="pl-2 text-xl font-bold leading-6">Report Comment</h3>
           <Button
