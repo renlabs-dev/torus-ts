@@ -4,18 +4,18 @@ import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
+import { Button } from "@torus-ts/ui/components/button";
+import { Input } from "@torus-ts/ui/components/input";
+import { Label } from "@torus-ts/ui/components/label";
 import {
-  Button,
-  cn,
-  Input,
-  Label,
   Sheet,
   SheetContent,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/sheet";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Anvil, LoaderCircle, PieChart, X } from "lucide-react";
 import { useRouter } from "next/navigation";

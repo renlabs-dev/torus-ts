@@ -2,28 +2,32 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@torus-ts/toast-provider";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Dialog,
   DialogClose,
   DialogContent,
   DialogFooter,
   DialogTitle,
   DialogTrigger,
+} from "@torus-ts/ui/components/dialog";
+import {
   Form,
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
+} from "@torus-ts/ui/components/form";
+import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/select";
+import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TriangleAlert } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -50,7 +54,7 @@ interface ReportAgentProps {
   agentKey: string;
 }
 
-export function ReportAgent({ agentKey }: ReportAgentProps) {
+export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
   const reportAgentMutation = api.agentReport.create.useMutation({
     onSuccess: () => {
       reset();

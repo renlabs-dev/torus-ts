@@ -1,6 +1,7 @@
 "use client";
 
-import { Input, Label } from "@torus-ts/ui";
+import { Input } from "@torus-ts/ui/components/input";
+import { Label } from "@torus-ts/ui/components/label";
 import { SearchIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback } from "react";

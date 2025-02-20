@@ -1,14 +1,14 @@
 // File: components/CustomPagination.tsx
 
 import {
-  PaginationItem,
-  PaginationLink,
   Pagination,
   PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
   PaginationPrevious,
   PaginationEllipsis,
-  PaginationNext,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/pagination";
 import React from "react";
 
 interface CustomPaginationProps {

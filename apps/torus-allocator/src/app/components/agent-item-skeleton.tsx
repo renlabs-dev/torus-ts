@@ -1,11 +1,12 @@
 "use client";
 
-import { Label, Separator } from "@torus-ts/ui";
+import { Label } from "@torus-ts/ui/components/label";
+import { Separator } from "@torus-ts/ui/components/separator";
 import { Globe, Cuboid, IdCard } from "lucide-react";
 
 export function AgentItemSkeleton() {
   return (
-    <div className="group relative w-full border bg-background p-6">
+    <div className="bg-background group relative w-full border p-6">
       <div>
         <div className="flex w-full flex-col items-center gap-6 md:flex-row md:gap-3">
           <div className="-sm flex aspect-square h-full w-full animate-pulse items-center justify-center border bg-gray-500/10 shadow-xl md:h-32 md:w-32" />
@@ -44,13 +45,13 @@ export function AgentItemSkeleton() {
         <Separator className="mt-4" />
 
         <div className="mt-4 flex flex-col gap-2">
-          <div className="h-16 bg-background" />
+          <div className="bg-background h-16" />
 
           <div>
             <Label className="absolute ml-2 mt-3 flex animate-pulse items-center gap-1.5 text-xs">
               Loading...
             </Label>
-            <div className="my-2 w-full border bg-primary-foreground">
+            <div className="bg-primary-foreground my-2 w-full border">
               <div
                 className="animate-pulse bg-gray-600 py-3"
                 style={{ width: "60%" }}

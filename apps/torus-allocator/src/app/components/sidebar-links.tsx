@@ -1,15 +1,15 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
 import {
-  Button,
-  Card,
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/select";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

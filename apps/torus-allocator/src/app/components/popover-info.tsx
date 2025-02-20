@@ -3,13 +3,13 @@
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Skeleton,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/popover";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Ellipsis } from "lucide-react";
 import { useMemo } from "react";
@@ -60,7 +60,7 @@ export const PopoverInfo = () => {
               <span className="mb-0.5 text-xs">TORUS</span>
             </span>
           )}
-          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
             Your Weight Power
           </span>
         </div>
@@ -70,7 +70,7 @@ export const PopoverInfo = () => {
           ) : (
             <span>{delegatedAgents.length}</span>
           )}
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Selected Agents:
           </span>
         </div>

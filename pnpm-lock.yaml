@@ -1338,7 +1338,7 @@ importers:
         version: 3.4.2
       type-fest:
         specifier: ^4.33.0
-        version: 4.33.0
+        version: 4.35.0
 
   tooling/eslint:
     dependencies:
@@ -2242,26 +2242,26 @@ packages:
     resolution: {integrity: sha512-Y3IR1cRnOxOCDvMmNiym7XpXQ93iGDDPHx+Zj+NM+rg0fBaShfQLkg+hKPaZCEvg5N/LeCo4+Rj/i3FuJsIQaw==}
     engines: {node: '>=6.9.0'}
 
-  '@chain-registry/client@1.53.77':
-    resolution: {integrity: sha512-Y9FI/bKL5JLGtZoRa3Quurp8YvK/g5QQhSzLp9KbNVkElCXSdEO/BYnN8EQ03UML2JDWdPK2b1uY1t4zOML2lg==}
+  '@chain-registry/client@1.53.78':
+    resolution: {integrity: sha512-xB7i2AXxiOFHt3tTzK8TM9TX4AObcVdHJa12i1zfrUYl1qZh4qfsaJmNEfCaqPplEHiDHCTeqgvqq18GYPeDTg==}
 
   '@chain-registry/cosmostation@1.67.13':
     resolution: {integrity: sha512-J3msIvzVlXC38fSqp5q82bcrGKqX7PC9gflNntp9wIQRZYitelcy3m1/oBBqF+TkGK7uZNbkv95je2BcX/aRrg==}
 
-  '@chain-registry/cosmostation@1.72.129':
-    resolution: {integrity: sha512-O0B6FQkykrD34lMGQocpDptTLU5fsAhkFsQb5mAjnH8+q+UoEdWD4cMcN06OkHRbHObNZKPbMb7jWRsbMot1rg==}
+  '@chain-registry/cosmostation@1.72.130':
+    resolution: {integrity: sha512-Es/XAzKtvRwU7GMW+P7BsY1AOEcouOyZryk+KJvHAlTtjktlTBVmeNUrVxQ0Za7KpPXIWhvTeQOBKBcB2alwCw==}
 
-  '@chain-registry/keplr@1.74.129':
-    resolution: {integrity: sha512-SYGxSS7Qzc/bPiTOntOe/XY/2ZfOh+meLx3yPhDt7abnbdiSz96NXqK0Zy3RjZAc2hpO/xQv0/Uh6icqyYS/yg==}
+  '@chain-registry/keplr@1.74.130':
+    resolution: {integrity: sha512-RDi8Z5WL0zSeQeMiiWlAPPXc8rJBWhGrK0Il/MnNMuInMWK9LbmED+8845tr4C7KiLb8usg/pxmAnzf2BTQUeg==}
 
   '@chain-registry/types@0.46.15':
     resolution: {integrity: sha512-gzf+pkAbEZ7fKuTuwmrEAEcx1K/BNrKuCnB9s+WwSo9Ad/3s+GV5LOXcOOxjjHh9Mrs9kvnxKvzKjOwWu8gDJw==}
 
-  '@chain-registry/types@0.50.77':
-    resolution: {integrity: sha512-+r0QxscS/cYgmxfL2dBi7OecTX5T2zgVpIaz6jxUaJlN6gFM5WYC0wmM0aTdkBJhM4tJYR51pCzFvzB7YQbEWQ==}
+  '@chain-registry/types@0.50.78':
+    resolution: {integrity: sha512-7nGH/x/sVfHFEjTTlKtDpsCNbSWw/4GDdlqe2hnL4EukGvzNzVR0EAUrg2QllOPaksQd3AdZ2HEsd1CNjau9/g==}
 
-  '@chain-registry/utils@1.51.77':
-    resolution: {integrity: sha512-+oRPsdw5B7/63k5ZE2FkArWkvIrFxq9y/Vf3UkJTjFyfGKmvDmpnOMRP2oSbzv61J7szZPY2lj04NpWV5ZvblA==}
+  '@chain-registry/utils@1.51.78':
+    resolution: {integrity: sha512-ltPqd1vPy86t67jBmeCHlyz4L5MFJHlXdrQw4ZotfpJgRs9Ge4GS0YyuHY3uucUtSjEDLkX9yolwmU3yEc7uqQ==}
 
   '@chainlink/contracts-ccip@0.7.6':
     resolution: {integrity: sha512-yNbCBFpLs3R+ALymto9dQYKz3vatnjqYGu1pnMD0i2fHEMthiXe0+otaNCGNht6n8k7ruNaA0DNpz3F+2jHQXw==}
@@ -3183,8 +3183,8 @@ packages:
     resolution: {integrity: sha512-JBxkERygn7Bv/GbN5Rv8Ul6LVknS+5Bp6RgDC/O8gEBU/yeH5Ui5C/OlWrTb6qct7LjjfT6Re2NxB0ln0yYybA==}
     engines: {node: '>=18.18'}
 
-  '@humanwhocodes/retry@0.4.1':
-    resolution: {integrity: sha512-c7hNEllBlenFTHBky65mhq8WD2kbN9Q6gk0bTk8lSBvc554jpXSkST1iePudpt7+A/AQvuHs9EMqjHDXMY1lrA==}
+  '@humanwhocodes/retry@0.4.2':
+    resolution: {integrity: sha512-xeO57FpIu4p1Ri3Jq/EXq4ClRm86dVF2z/+kvFnyqVYRavTZmaFaUBbWCOuuTh0o/g7DSsk6kc2vrS4Vl5oPOQ==}
     engines: {node: '>=18.18'}
 
   '@hyperlane-xyz/cli@7.3.0':
@@ -9518,10 +9518,6 @@ packages:
     resolution: {integrity: sha512-vXm0l45VbcHEVlTCzs8M+s0VeYsB2lnlAaThoLKGXr3bE/VWDOelNUnycUPEhKEaXARL2TEFjBOyUiM6+55KBg==}
     engines: {node: '>= 0.10'}
 
-  hash-base@3.1.0:
-    resolution: {integrity: sha512-1nmYp/rhMDiE7AYkDw+lLwlAzz0AntGIe51F3RfFfEqyQ3feY2eI/NcwC6umIQVOASPMsWJLJScWKSSvzL9IVA==}
-    engines: {node: '>=4'}
-
   hash.js@1.1.7:
     resolution: {integrity: sha512-taOaskGt4z4SOANNseOviYDvjEJinIkRgmp7LbKP2YTTmVxWBl87s/uzK9r+44BclBSp2X7K1hqeNfz9JbBeXA==}
 
@@ -12973,8 +12969,8 @@ packages:
     resolution: {integrity: sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA==}
     engines: {node: '>=10'}
 
-  type-fest@4.33.0:
-    resolution: {integrity: sha512-s6zVrxuyKbbAsSAD5ZPTB77q4YIdRctkTbJ2/Dqlinwz+8ooH2gd+YA7VA6Pa93KML9GockVvoxjZ2vHP+mu8g==}
+  type-fest@4.35.0:
+    resolution: {integrity: sha512-2/AwEFQDFEy30iOLjrvHDIH7e4HEWH+f1Yl1bI5XMqzuoCUqwYCdxachgsgv0og/JdVZUhbfjcJAoHj5L1753A==}
     engines: {node: '>=16'}
 
   type-is@1.6.18:
@@ -15159,10 +15155,10 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
-  '@chain-registry/client@1.53.77':
+  '@chain-registry/client@1.53.78':
     dependencies:
-      '@chain-registry/types': 0.50.77
-      '@chain-registry/utils': 1.51.77
+      '@chain-registry/types': 0.50.78
+      '@chain-registry/utils': 1.51.78
       bfs-path: 1.0.2
       cross-fetch: 3.2.0
     transitivePeerDependencies:
@@ -15171,29 +15167,29 @@ snapshots:
   '@chain-registry/cosmostation@1.67.13':
     dependencies:
       '@chain-registry/types': 0.46.15
-      '@chain-registry/utils': 1.51.77
+      '@chain-registry/utils': 1.51.78
       '@cosmostation/extension-client': 0.1.15
 
-  '@chain-registry/cosmostation@1.72.129':
+  '@chain-registry/cosmostation@1.72.130':
     dependencies:
-      '@chain-registry/types': 0.50.77
-      '@chain-registry/utils': 1.51.77
+      '@chain-registry/types': 0.50.78
+      '@chain-registry/utils': 1.51.78
       '@cosmostation/extension-client': 0.1.15
 
-  '@chain-registry/keplr@1.74.129':
+  '@chain-registry/keplr@1.74.130':
     dependencies:
-      '@chain-registry/types': 0.50.77
+      '@chain-registry/types': 0.50.78
       '@keplr-wallet/cosmos': 0.12.28
       '@keplr-wallet/crypto': 0.12.28
       semver: 7.7.1
 
   '@chain-registry/types@0.46.15': {}
 
-  '@chain-registry/types@0.50.77': {}
+  '@chain-registry/types@0.50.78': {}
 
-  '@chain-registry/utils@1.51.77':
+  '@chain-registry/utils@1.51.78':
     dependencies:
-      '@chain-registry/types': 0.50.77
+      '@chain-registry/types': 0.50.78
       bignumber.js: 9.1.2
       sha.js: 2.4.11
 
@@ -15348,8 +15344,8 @@ snapshots:
 
   '@cosmos-kit/core@2.15.5(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@chain-registry/client': 1.53.77
-      '@chain-registry/keplr': 1.74.129
+      '@chain-registry/client': 1.53.78
+      '@chain-registry/keplr': 1.74.130
       '@chain-registry/types': 0.46.15
       '@cosmjs/amino': 0.32.4
       '@cosmjs/cosmwasm-stargate': 0.32.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -15389,7 +15385,7 @@ snapshots:
 
   '@cosmos-kit/cosmostation-extension@2.15.6(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@chain-registry/cosmostation': 1.72.129
+      '@chain-registry/cosmostation': 1.72.130
       '@cosmjs/amino': 0.32.4
       '@cosmjs/proto-signing': 0.32.4
       '@cosmos-kit/core': 2.15.5(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -15485,7 +15481,7 @@ snapshots:
 
   '@cosmos-kit/keplr-extension@2.14.6(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(starknet@6.23.1)(utf-8-validate@5.0.10)':
     dependencies:
-      '@chain-registry/keplr': 1.74.129
+      '@chain-registry/keplr': 1.74.130
       '@cosmjs/amino': 0.32.4
       '@cosmjs/proto-signing': 0.32.4
       '@cosmos-kit/core': 2.15.5(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -15519,7 +15515,7 @@ snapshots:
 
   '@cosmos-kit/keplr-mobile@2.14.7(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(@walletconnect/sign-client@2.18.1(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@walletconnect/types@2.18.1(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))))(bufferutil@4.0.9)(starknet@6.23.1)(utf-8-validate@5.0.10)':
     dependencies:
-      '@chain-registry/keplr': 1.74.129
+      '@chain-registry/keplr': 1.74.130
       '@cosmjs/amino': 0.32.4
       '@cosmjs/proto-signing': 0.32.4
       '@cosmos-kit/core': 2.15.5(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -15591,7 +15587,7 @@ snapshots:
 
   '@cosmos-kit/leap-extension@2.14.7(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@chain-registry/keplr': 1.74.129
+      '@chain-registry/keplr': 1.74.130
       '@cosmjs/amino': 0.32.4
       '@cosmjs/proto-signing': 0.32.4
       '@cosmos-kit/core': 2.15.5(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -15622,7 +15618,7 @@ snapshots:
 
   '@cosmos-kit/leap-metamask-cosmos-snap@0.14.7(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(cosmjs-types@0.9.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@chain-registry/keplr': 1.74.129
+      '@chain-registry/keplr': 1.74.130
       '@cosmjs/amino': 0.32.4
       '@cosmjs/proto-signing': 0.32.4
       '@cosmos-kit/core': 2.15.5(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -15656,7 +15652,7 @@ snapshots:
 
   '@cosmos-kit/leap-mobile@2.13.7(@cosmjs/amino@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(@walletconnect/types@2.18.1(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))))(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@chain-registry/keplr': 1.74.129
+      '@chain-registry/keplr': 1.74.130
       '@cosmos-kit/core': 2.15.5(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@cosmos-kit/walletconnect': 2.12.5(@cosmjs/amino@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10)))(@walletconnect/types@2.18.1(@react-native-async-storage/async-storage@1.24.0(react-native@0.78.0(@babel/core@7.26.9)(@babel/preset-env@7.26.9(@babel/core@7.26.9))(@types/react@18.2.79)(bufferutil@4.0.9)(react@18.2.0)(utf-8-validate@5.0.10))))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
@@ -16686,7 +16682,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.3.1': {}
 
-  '@humanwhocodes/retry@0.4.1': {}
+  '@humanwhocodes/retry@0.4.2': {}
 
   '@hyperlane-xyz/cli@7.3.0(@axelar-network/axelar-gmp-sdk-solidity@5.10.0)(@chainlink/contracts-ccip@0.7.6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(utf-8-validate@5.0.10))(@ethersproject/abi@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/sinon-chai@4.0.0)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(hardhat-deploy@0.12.4(bufferutil@4.0.9)(utf-8-validate@5.0.10))(solidity-bytes-utils@0.8.3)(typescript@5.7.3)(utf-8-validate@5.0.10)':
     dependencies:
@@ -16764,7 +16760,7 @@ snapshots:
     dependencies:
       '@arbitrum/sdk': 4.0.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@aws-sdk/client-s3': 3.750.0
-      '@chain-registry/types': 0.50.77
+      '@chain-registry/types': 0.50.78
       '@cosmjs/cosmwasm-stargate': 0.32.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@cosmjs/stargate': 0.32.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@ethersproject/abi': 5.7.0
@@ -25240,7 +25236,7 @@ snapshots:
       '@eslint/plugin-kit': 0.2.6
       '@humanfs/node': 0.16.6
       '@humanwhocodes/module-importer': 1.0.1
-      '@humanwhocodes/retry': 0.4.1
+      '@humanwhocodes/retry': 0.4.2
       '@types/estree': 1.0.6
       '@types/json-schema': 7.0.15
       ajv: 6.12.6
@@ -26205,12 +26201,6 @@ snapshots:
   hash-base@3.0.5:
     dependencies:
       inherits: 2.0.4
-      safe-buffer: 5.2.1
-
-  hash-base@3.1.0:
-    dependencies:
-      inherits: 2.0.4
-      readable-stream: 3.6.2
       safe-buffer: 5.2.1
 
   hash.js@1.1.7:
@@ -27318,7 +27308,7 @@ snapshots:
 
   md5.js@1.3.5:
     dependencies:
-      hash-base: 3.1.0
+      hash-base: 3.0.5
       inherits: 2.0.4
       safe-buffer: 5.2.1
 
@@ -29525,7 +29515,7 @@ snapshots:
 
   ripemd160@2.0.2:
     dependencies:
-      hash-base: 3.1.0
+      hash-base: 3.0.5
       inherits: 2.0.4
 
   ripple-address-codec@4.3.1:
@@ -30603,7 +30593,7 @@ snapshots:
 
   type-fest@1.4.0: {}
 
-  type-fest@4.33.0: {}
+  type-fest@4.35.0: {}
 
   type-is@1.6.18:
     dependencies:

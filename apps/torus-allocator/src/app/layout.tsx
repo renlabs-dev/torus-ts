@@ -1,10 +1,11 @@
-import "../styles/globals.css";
+import "@torus-ts/ui/globals.css";
 import { AllocationMenu } from "./components/allocation-menu";
 import { AllocatorHeader } from "./components/allocator-header";
 import { TutorialDialog } from "./components/tutorial-dialog";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Footer, Layout } from "@torus-ts/ui";
+import { Footer } from "@torus-ts/ui/components/footer";
+import { Layout } from "@torus-ts/ui/components/layout";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript, env } from "~/env";

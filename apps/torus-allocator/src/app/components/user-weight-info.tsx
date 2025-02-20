@@ -3,13 +3,13 @@
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
+import { Card } from "@torus-ts/ui/components/card";
 import {
-  Card,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/tooltip";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Info } from "lucide-react";
 import { useMemo } from "react";
@@ -42,7 +42,7 @@ export const UserWeightInfo = () => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <span className="flex items-center gap-1.5 text-nowrap text-sm text-muted-foreground">
+              <span className="text-muted-foreground flex items-center gap-1.5 text-nowrap text-sm">
                 <Info size={16} />
                 Weight Power:
               </span>
@@ -75,7 +75,7 @@ export const UserWeightInfo = () => {
         )}
       </div>
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-nowrap text-muted-foreground">
+        <span className="text-muted-foreground text-nowrap">
           Selected Agents:
         </span>
         {userWeightPower === null ? (

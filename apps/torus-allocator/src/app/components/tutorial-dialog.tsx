@@ -2,8 +2,6 @@
 
 import { toast } from "@torus-ts/toast-provider";
 import {
-  links,
-  CopyButton,
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
@@ -11,7 +9,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/alert-dialog";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { links } from "@torus-ts/ui/lib/data";
 import { Scale, Wallet, Zap } from "lucide-react";
 import Link from "next/link";
 import React from "react";
