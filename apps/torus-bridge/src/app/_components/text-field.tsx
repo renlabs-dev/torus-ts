@@ -1,4 +1,4 @@
-import { Input } from "@torus-ts/ui";
+import { Input } from "@torus-ts/ui/components/input";
 import type { FieldAttributes } from "formik";
 import { Field } from "formik";
 import type { ChangeEvent, InputHTMLAttributes, Ref } from "react";
@@ -8,7 +8,7 @@ export function TextField({ ...props }: FieldAttributes<unknown>) {
   return (
     <Field
       {...props}
-      className="rounded-radius w-full border border-border bg-[#080808] p-[0.3em] pl-2"
+      className="rounded-radius border-border w-full border bg-[#080808] p-[0.3em] pl-2"
     />
   );
 }

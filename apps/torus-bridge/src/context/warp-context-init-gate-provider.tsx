@@ -1,7 +1,7 @@
 "use client";
 
 import { useTimeout } from "@hyperlane-xyz/widgets";
-import { Loading } from "@torus-ts/ui";
+import { Loading } from "@torus-ts/ui/components/loading";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 import { useReadyMultiProvider } from "~/hooks/use-ready-multi-provider";

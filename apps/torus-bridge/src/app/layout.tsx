@@ -1,5 +1,5 @@
-import "../styles/globals.css";
-import { Layout } from "@torus-ts/ui";
+import "@torus-ts/ui/globals.css";
+import { Layout } from "@torus-ts/ui/components/layout";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { AppContextProvider } from "~/context/app-context-provider";

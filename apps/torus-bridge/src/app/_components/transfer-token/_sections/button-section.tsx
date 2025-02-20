@@ -1,4 +1,4 @@
-import { Button } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
 import { useFormikContext } from "formik";
 import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";

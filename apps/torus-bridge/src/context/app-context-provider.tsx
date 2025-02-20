@@ -1,10 +1,11 @@
 "use client";
 
-import "../styles/globals.css";
+import "@torus-ts/ui/globals.css";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Container, Footer } from "@torus-ts/ui";
+import { Container } from "@torus-ts/ui/components/container";
+import { Footer } from "@torus-ts/ui/components/footer";
 import { WalletHeader } from "~/app/_components/shared/wallet-header";
 import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
 import { EvmWalletProvider } from "~/context/evm-wallet-provider";

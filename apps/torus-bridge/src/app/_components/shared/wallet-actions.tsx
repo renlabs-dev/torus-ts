@@ -2,7 +2,12 @@
 
 import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { updateSearchParams } from "~/utils/query-params";
@@ -59,7 +64,7 @@ function WalletOptions() {
         defaultTab.params
       }
       onValueChange={(value) => handleTabChange(value)}
-      className="flex w-full animate-fade flex-col gap-4"
+      className="animate-fade flex w-full flex-col gap-4"
     >
       <TabsList className="grid w-full grid-cols-2">
         {tabs.map((tab) => (
@@ -86,7 +91,6 @@ function WalletOptions() {
 export function WalletActions() {
   const searchParams = useSearchParams();
 
-  // const view = searchParams.get("view") as "wallet" | "bridge" | null;
   const view = searchParams.get("view") as "wallet" | null;
 
   const routeComponents = {

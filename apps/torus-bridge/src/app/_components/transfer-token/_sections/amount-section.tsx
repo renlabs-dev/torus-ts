@@ -2,7 +2,7 @@
 
 import { MaxButton } from "../_components/max-button";
 import { TokenBalance } from "../_components/token-balance";
-import { Label } from "@torus-ts/ui";
+import { Label } from "@torus-ts/ui/components/label";
 import { useFormikContext } from "formik";
 import { TextField } from "~/app/_components/text-field";
 import { useOriginBalance } from "~/hooks/balance/use-origin-balance";

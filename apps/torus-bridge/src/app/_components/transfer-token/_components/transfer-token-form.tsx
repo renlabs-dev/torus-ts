@@ -8,7 +8,12 @@ import { SelectChainSection } from "../_sections/select-chain-section";
 import { TokenSection } from "../_sections/token-section";
 import { validateForm } from "./validate-form";
 import { useAccounts } from "@hyperlane-xyz/widgets";
-import { Card, CardContent, CardFooter, CardHeader } from "@torus-ts/ui";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@torus-ts/ui/components/card";
 import { Formik, Form } from "formik";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -101,7 +106,7 @@ export function TransferTokenForm() {
       {({ isValidating, resetForm }) => (
         <Form className="flex flex-col">
           <div className="flex w-full flex-col gap-4 md:flex-row">
-            <Card className="flex w-full animate-fade flex-col gap-4 p-6 md:w-3/5">
+            <Card className="animate-fade flex w-full flex-col gap-4 p-6 md:w-3/5">
               <SelectChainSection isReview={isReview} />
               <div className="mt-3.5 flex items-end justify-between space-x-4">
                 <TokenSection isReview={isReview} />
@@ -109,7 +114,7 @@ export function TransferTokenForm() {
               </div>
               <RecipientSection isReview={isReview} />
             </Card>
-            <Card className="flex w-full animate-fade flex-col justify-between p-6 md:w-2/5">
+            <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
               <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
               <CardContent className="p-0">
                 <WalletTransactionReview isReview={isReview} />

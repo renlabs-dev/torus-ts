@@ -1,4 +1,3 @@
-// import createJiti from "jiti";
 import { fileURLToPath } from "url";
 
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
@@ -7,8 +6,6 @@ import { fileURLToPath } from "url";
 
 /** @type {import("next").NextConfig} */
 const config = {
-  reactStrictMode: true,
-
   transpilePackages: [
     "@torus-ts/api",
     "@torus-ts/db",
@@ -19,8 +16,6 @@ const config = {
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-
-  reactStrictMode: true,
 
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {

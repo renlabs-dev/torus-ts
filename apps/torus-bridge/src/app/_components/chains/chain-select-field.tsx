@@ -1,6 +1,7 @@
 import { ChainLogo } from "../chain-logo";
 import type { ChainName } from "@hyperlane-xyz/sdk";
-import { Button, Label } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
+import { Label } from "@torus-ts/ui/components/label";
 import { useField } from "formik";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 
@@ -21,7 +22,7 @@ export function ChainSelectField({ name, label }: Readonly<Props>) {
         size="lg"
         variant="outline"
         disabled={true}
-        className="flex w-full items-center justify-between p-0 hover:cursor-default hover:bg-background disabled:opacity-100"
+        className="hover:bg-background flex w-full items-center justify-between p-0 hover:cursor-default disabled:opacity-100"
       >
         <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
           <ChainLogo chainName={field.value} size={28} />

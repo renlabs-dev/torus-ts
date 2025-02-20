@@ -10,16 +10,16 @@ import type { SS58Address } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-  Input,
-  Label,
-  TransactionStatus,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/card";
+import { Input } from "@torus-ts/ui/components/input";
+import { Label } from "@torus-ts/ui/components/label";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { smallAddress, toNano } from "@torus-ts/utils/subspace";
 import { ArrowLeftRight } from "lucide-react";
 import Image from "next/image";
@@ -269,7 +269,7 @@ export function TransferEVM() {
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
-      <Card className="flex w-full animate-fade flex-col gap-4 space-y-4 p-6 md:w-3/5">
+      <Card className="animate-fade flex w-full flex-col gap-4 space-y-4 p-6 md:w-3/5">
         <div className="space-y-4">
           <div className="flex items-end gap-2">
             <div className="w-full">
@@ -340,7 +340,7 @@ export function TransferEVM() {
           </div>
         )}
       </Card>
-      <Card className="flex w-full animate-fade flex-col justify-between p-6 md:w-2/5">
+      <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
         <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
         <CardContent className="space-y-2 p-0 text-sm">
           <div className="flex items-center justify-between">
@@ -413,7 +413,7 @@ function ChainField({ label, chainName }: Readonly<ChainFieldProps>) {
         size="lg"
         variant="outline"
         disabled={true}
-        className="flex w-full items-center justify-between p-2 px-0 hover:cursor-default hover:bg-background disabled:opacity-100"
+        className="hover:bg-background flex w-full items-center justify-between p-2 px-0 hover:cursor-default disabled:opacity-100"
       >
         <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
           <Image

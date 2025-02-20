@@ -1,4 +1,4 @@
-import { Label } from "@torus-ts/ui";
+import { Label } from "@torus-ts/ui/components/label";
 import { TokenSelectField } from "~/app/_components/tokens/token-select-field";
 
 export function TokenSection({ isReview }: Readonly<{ isReview: boolean }>) {
