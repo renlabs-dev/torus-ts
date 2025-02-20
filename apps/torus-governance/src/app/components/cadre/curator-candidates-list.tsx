@@ -1,14 +1,14 @@
 "use client";
 
 import { toast } from "@torus-ts/toast-provider";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-  CopyButton,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/card";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Crown, TicketX } from "lucide-react";
 import { DateTime } from "luxon";
@@ -74,7 +74,7 @@ function VoteAlreadyCastFooterActions({
   const { text, className } = messages[voted];
 
   return (
-    <Card className="flex w-full animate-fade flex-col items-center justify-center p-4">
+    <Card className="animate-fade flex w-full flex-col items-center justify-center p-4">
       <span className={className}>{text}</span>
       <Button
         variant="link"
@@ -101,7 +101,7 @@ const UserHasNotVotedFooterActions = (props: {
 }) => {
   const { handleVote } = props;
   return (
-    <div className="flex w-full animate-fade gap-4">
+    <div className="animate-fade flex w-full gap-4">
       <Button
         onClick={() => handleVote("REFUSE")}
         variant="destructive"
@@ -124,7 +124,7 @@ const CandidateAlreadyAcceptedFooterActions = (props: {
 }) => {
   const { handleVote } = props;
   return (
-    <div className="flex w-full animate-fade gap-4">
+    <div className="animate-fade flex w-full gap-4">
       <Button
         onClick={() => handleVote("REMOVE")}
         variant="destructive"
@@ -259,7 +259,7 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
               </h3>
 
               <span
-                className={`items-center rounded-full bg-muted-foreground/5 px-1.5 py-0.5 ${handleStatusColors(curatorCandidate.candidacyStatus)} text-xs font-medium ring-1 ring-inset`}
+                className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5 ${handleStatusColors(curatorCandidate.candidacyStatus)} text-xs font-medium ring-1 ring-inset`}
               >
                 {curatorCandidate.candidacyStatus}
               </span>
@@ -268,7 +268,7 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
               copy={curatorCandidate.userKey}
               variant={"link"}
               notify={() => toast.success("Copied to clipboard")}
-              className="h-5 items-center p-0 text-sm text-muted-foreground hover:text-white"
+              className="text-muted-foreground h-5 items-center p-0 text-sm hover:text-white"
             >
               <Crown size={10} />
               {smallAddress(curatorCandidate.userKey, 10)}
@@ -287,7 +287,7 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
         </CardContent>
 
         <CardFooter className="mt-auto flex flex-col gap-4">
-          <div className="flex w-full gap-2 divide-x divide-white/10 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex w-full gap-2 divide-x divide-white/10 text-sm">
             {renderVotesCount()}
           </div>
 

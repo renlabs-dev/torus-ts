@@ -1,4 +1,4 @@
-import { Card } from "@torus-ts/ui";
+import { Card } from "@torus-ts/ui/components/card";
 
 type GovernanceStatus = "ACCEPTED" | "REFUSED" | "REMOVED" | "EXPIRED";
 interface GovernanceStatusNotOpenProps {

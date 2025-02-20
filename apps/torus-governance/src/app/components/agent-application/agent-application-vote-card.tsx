@@ -3,7 +3,12 @@
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import type { AgentApplication } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
-import { Button, Card, ToggleGroup, ToggleGroupItem } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@torus-ts/ui/components/toggle-group";
 import { Delete, TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";

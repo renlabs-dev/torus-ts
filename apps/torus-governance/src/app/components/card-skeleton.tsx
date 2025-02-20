@@ -1,4 +1,5 @@
-import { Card, CardContent, CardHeader, Skeleton } from "@torus-ts/ui";
+import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
 export function CardSkeleton(): JSX.Element {
   return (

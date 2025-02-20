@@ -1,13 +1,13 @@
 "use client";
 
 import { toast } from "@torus-ts/toast-provider";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Skeleton,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/popover";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Copy, Ellipsis } from "lucide-react";
 import { useGovernance } from "~/context/governance-provider";
@@ -40,7 +40,7 @@ export const PopoverInfo = () => {
           <Ellipsis size={16} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="mr-5 flex w-fit flex-col gap-6 border-muted bg-background px-4 py-4">
+      <PopoverContent className="border-muted bg-background mr-5 flex w-fit flex-col gap-6 px-4 py-4">
         <div>
           {daoTreasuryBalance.data === undefined ? (
             <Skeleton className="flex w-1/3 py-3" />
@@ -69,7 +69,7 @@ export const PopoverInfo = () => {
               </button>
             </span>
           )}
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             DAO treasury address
           </span>
         </div>
@@ -82,7 +82,7 @@ export const PopoverInfo = () => {
               <span className="mb-0.5 text-xs">TORUS</span>
             </p>
           )}
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Next DAO incentives payout
           </span>
         </div>
@@ -94,7 +94,7 @@ export const PopoverInfo = () => {
               (cadreListData?.length ?? 0)
             )}
           </p>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Curator DAO Members
           </span>
         </div>
@@ -107,7 +107,7 @@ export const PopoverInfo = () => {
               Math.floor((cadreListData?.length ?? 0) / 2 + 1) // TODO: move logic out of component
             )}
           </p>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Curator DAO Vote threshold
           </span>
         </div>

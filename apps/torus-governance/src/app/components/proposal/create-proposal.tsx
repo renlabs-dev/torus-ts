@@ -1,24 +1,26 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { toast } from "@torus-ts/toast-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
-  Input,
-  Label,
+  Form,
+  FormField,
+  FormItem,
+  FormMessage,
+  FormControl,
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import { Label } from "@torus-ts/ui/components/label";
+import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-  Textarea,
-  TransactionStatus,
-  Form,
-  FormField,
-  FormItem,
-  FormControl,
-  FormMessage,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/tabs";
+import { Textarea } from "@torus-ts/ui/components/text-area";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { formatToken } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useRouter } from "next/navigation";
@@ -230,7 +232,7 @@ export function CreateProposal(): JSX.Element {
           </span>
         </div>
 
-        <div className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground flex flex-col items-start gap-2 text-sm">
           <span>
             Note: The proposal cost will be deducted from your connected wallet.
           </span>

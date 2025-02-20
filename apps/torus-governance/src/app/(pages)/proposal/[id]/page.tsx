@@ -1,5 +1,5 @@
 import { ProposalExpandedView } from "./_components/proposal-expanded-view";
-import { Button } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -23,7 +23,7 @@ export default async function ProposalView({
       >
         <Link
           href="/?view=proposals"
-          className="flex animate-fade-left items-center text-white transition duration-200"
+          className="animate-fade-left flex items-center text-white transition duration-200"
         >
           <ArrowLeft className="h-5 w-5" />
           Go back to agents list

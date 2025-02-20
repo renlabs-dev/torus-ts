@@ -1,4 +1,4 @@
-import { Badge } from "@torus-ts/ui";
+import { Badge } from "@torus-ts/ui/components/badge";
 
 export function AgentActivityLabel(): JSX.Element {
   return (

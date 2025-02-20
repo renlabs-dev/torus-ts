@@ -15,7 +15,12 @@ import type {
   ProposalStatus,
   SS58Address,
 } from "@torus-ts/subspace";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 import { getExpirationTime } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Clock, Crown } from "lucide-react";
@@ -50,16 +55,16 @@ export function CardViewData(props: Readonly<ProposalCardProps>): JSX.Element {
 
   const isProposalOpen = proposalStatus && "Open" in proposalStatus;
   return (
-    <Card className="w-full animate-fade-down p-4 transition duration-500 hover:bg-accent lg:p-6">
+    <Card className="animate-fade-down hover:bg-accent w-full p-4 transition duration-500 lg:p-6">
       <CardHeader className="flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0 md:flex-col-reverse xl:flex-row">
         <div className="flex w-fit flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-5">
-          <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">
+          <span className="text-muted-foreground line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm">
             <Crown size={14} />
             {smallAddress(author)}
           </span>
 
           {expirationBlock && (
-            <span className="line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm text-muted-foreground">
+            <span className="text-muted-foreground line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm">
               <Clock size={14} />
               {currentBlock && currentBlock < expirationBlock
                 ? "Ends"

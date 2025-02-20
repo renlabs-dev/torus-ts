@@ -3,19 +3,17 @@
 import { ListContainer } from "./container-list";
 import type { AppRouter } from "@torus-ts/api";
 import { toast } from "@torus-ts/toast-provider";
+import { Badge } from "@torus-ts/ui/components/badge";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CopyButton,
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-  links,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/dialog";
+import { links } from "@torus-ts/ui/lib/data";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import { ArrowRight, Coins } from "lucide-react";

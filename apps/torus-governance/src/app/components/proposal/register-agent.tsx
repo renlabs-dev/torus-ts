@@ -13,22 +13,26 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-  AllocatorAgentItem,
-  Button,
-  Input,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Textarea,
-  TransactionStatus,
+} from "@torus-ts/ui/components/alert";
+import { AllocatorAgentItem } from "@torus-ts/ui/components/allocator-agent-item";
+import { Button } from "@torus-ts/ui/components/button";
+import {
   Form,
   FormField,
   FormItem,
   FormControl,
   FormMessage,
   FormLabel,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
+import { Textarea } from "@torus-ts/ui/components/text-area";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { smallFilename, strToFile } from "@torus-ts/utils/files";
 import type { CID } from "@torus-ts/utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
@@ -382,7 +386,7 @@ export function RegisterAgent(): JSX.Element {
 
           <TabsContent
             value="agent-info"
-            className="flex animate-fade flex-col gap-4"
+            className="animate-fade flex flex-col gap-4"
           >
             <FormField
               control={control}
@@ -447,7 +451,7 @@ export function RegisterAgent(): JSX.Element {
                 <FormItem className="flex flex-col">
                   <FormLabel>
                     Short Description{" "}
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       (Max {AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters)
                     </span>
                   </FormLabel>
@@ -474,7 +478,7 @@ export function RegisterAgent(): JSX.Element {
 
           <TabsContent
             value="about"
-            className="flex animate-fade flex-col gap-4"
+            className="animate-fade flex flex-col gap-4"
           >
             <FormField
               control={control}
@@ -522,7 +526,7 @@ export function RegisterAgent(): JSX.Element {
 
           <TabsContent
             value="socials"
-            className="flex animate-fade flex-col gap-4"
+            className="animate-fade flex flex-col gap-4"
           >
             <FormField
               control={control}
@@ -727,7 +731,7 @@ export function RegisterAgent(): JSX.Element {
 
           <TabsContent
             value="register"
-            className="flex animate-fade flex-col gap-4"
+            className="animate-fade flex flex-col gap-4"
           >
             <div className="flex flex-col gap-4 lg:flex-row">
               <div className="flex w-fit flex-col gap-2 lg:w-1/2">

@@ -4,15 +4,13 @@ import { ReportComment } from "./report-comment";
 import type { AppRouter } from "@torus-ts/api";
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Skeleton,
   ToggleGroup,
   ToggleGroupItem,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/toggle-group";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import {
@@ -63,7 +61,7 @@ const commentSorters: {
 
 const LoadingComments = () => {
   return (
-    <Card className="relative flex w-full animate-fade-down flex-col gap-2 p-2 pb-4 animate-delay-700">
+    <Card className="animate-fade-down animate-delay-700 relative flex w-full flex-col gap-2 p-2 pb-4">
       <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
         <span className="flex items-center gap-2">
           <Skeleton className="h-5 w-24" />
@@ -272,7 +270,7 @@ export function ViewComment({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex h-full min-h-max animate-fade-down flex-col items-center justify-between text-white animate-delay-200">
+      <div className="animate-fade-down animate-delay-200 flex h-full min-h-max flex-col items-center justify-between text-white">
         <CommentsHeader
           sortBy={sortBy}
           isLoading={isLoading}
@@ -304,11 +302,11 @@ export function ViewComment({
                 <CardHeader className="flex flex-row justify-between px-2 py-1 pb-2">
                   <div className="flex-start flex flex-row items-center gap-1.5 md:flex-row">
                     {comment.userName && (
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-center text-sm">
+                      <span className="bg-accent rounded-full px-2 py-0.5 text-center text-sm">
                         {comment.userName}
                       </span>
                     )}
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       {smallAddress(comment.userKey, 3)}
                     </span>
                   </div>
@@ -351,7 +349,7 @@ export function ViewComment({
             );
           })}
           <span
-            className={`fixed bottom-0 flex w-full items-end justify-center ${isAtBottom ? "h-0 animate-fade" : "h-8 animate-fade"} bg-gradient-to-b from-transparent to-background transition-all duration-75 delay-none`}
+            className={`fixed bottom-0 flex w-full items-end justify-center ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background delay-none bg-gradient-to-b from-transparent transition-all duration-75`}
           />
         </div>
       </div>

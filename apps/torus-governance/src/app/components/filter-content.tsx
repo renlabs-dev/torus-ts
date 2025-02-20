@@ -1,7 +1,7 @@
 "use client";
 
+import { Input } from "@torus-ts/ui/components/input";
 import {
-  Input,
   Select,
   SelectContent,
   SelectGroup,
@@ -9,7 +9,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/select";
 import { SearchIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect } from "react";
@@ -45,7 +45,7 @@ export const SearchBar = () => {
   };
 
   return (
-    <div className="rounded-radius flex w-full items-center justify-center border bg-card pl-3 lg:w-3/5">
+    <div className="rounded-radius bg-card flex w-full items-center justify-center border pl-3 lg:w-3/5">
       <SearchIcon
         size={16}
         className={`${!isInitialized && "cursor-not-allowed opacity-50"} animate-ease-in-out`}
@@ -54,7 +54,7 @@ export const SearchBar = () => {
         disabled={!isInitialized}
         onChange={handleSearchChange}
         placeholder="Search"
-        className="border-none animate-ease-in-out focus-visible:ring-0"
+        className="animate-ease-in-out border-none focus-visible:ring-0"
       />
     </div>
   );
@@ -105,7 +105,7 @@ const WhitelistFilter = () => {
       disabled={!isInitialized}
       value={paramsStatus ?? "all"}
     >
-      <SelectTrigger className="w-full bg-card outline-none lg:w-[180px]">
+      <SelectTrigger className="bg-card w-full outline-none lg:w-[180px]">
         <SelectValue placeholder="Select a status" />
       </SelectTrigger>
       <SelectContent>

@@ -1,4 +1,4 @@
-import { Badge } from "@torus-ts/ui";
+import { Badge } from "@torus-ts/ui/components/badge";
 
 export type VoteStatus = "FAVORABLE" | "AGAINST" | "UNVOTED";
 

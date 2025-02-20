@@ -1,5 +1,5 @@
 import type { ProposalStatus } from "@torus-ts/subspace";
-import { Skeleton } from "@torus-ts/ui";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { calcProposalFavorablePercent } from "~/utils";
 
 export const VotePercentageBar = (props: {
@@ -26,9 +26,9 @@ export const VotePercentageBar = (props: {
   const againstPercent = 100 - favorablePercent;
 
   return (
-    <div className="relative h-8 w-full overflow-hidden rounded-full border border-border bg-primary-foreground">
+    <div className="border-border bg-primary-foreground relative h-8 w-full overflow-hidden rounded-full border">
       <div
-        className="h-full rounded-full rounded-r-none bg-accent"
+        className="bg-accent h-full rounded-full rounded-r-none"
         style={{ width: `${favorablePercent}%` }}
       />
       <div className="absolute inset-0 flex items-center justify-between px-3 text-sm">

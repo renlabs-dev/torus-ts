@@ -1,7 +1,8 @@
 "use client";
 
 import { toast } from "@torus-ts/toast-provider";
-import { Card, Skeleton } from "@torus-ts/ui";
+import { Card } from "@torus-ts/ui/components/card";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Copy } from "lucide-react";
 import { useGovernance } from "~/context/governance-provider";
@@ -28,7 +29,7 @@ export const SidebarInfo = () => {
   }
 
   return (
-    <Card className="hidden animate-fade-up flex-col gap-6 px-7 py-5 animate-delay-[400ms] lg:flex">
+    <Card className="animate-fade-up animate-delay-[400ms] hidden flex-col gap-6 px-7 py-5 lg:flex">
       <div>
         {daoTreasuryBalance.data === undefined ? (
           <Skeleton className="flex w-1/3 py-3" />
@@ -38,7 +39,7 @@ export const SidebarInfo = () => {
             <span className="mb-0.5 text-xs">TORUS</span>
           </p>
         )}
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           DAO treasury funds
         </span>
       </div>
@@ -56,7 +57,7 @@ export const SidebarInfo = () => {
             </button>
           </span>
         )}
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           DAO treasury address
         </span>
       </div>
@@ -69,7 +70,7 @@ export const SidebarInfo = () => {
             <span className="mb-0.5 text-xs">TORUS</span>
           </p>
         )}
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Next DAO incentives payout
         </span>
       </div>
@@ -81,7 +82,7 @@ export const SidebarInfo = () => {
             (cadreListData?.length ?? 0)
           )}
         </p>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Curator DAO Members
         </span>
       </div>
@@ -94,7 +95,7 @@ export const SidebarInfo = () => {
             Math.floor((cadreListData?.length ?? 0) / 2 + 1) // TODO: move logic out of component
           )}
         </p>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           {" "}
           Curator DAO Vote threshold
         </span>
