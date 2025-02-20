@@ -1,6 +1,7 @@
 import { toast } from "@torus-ts/toast-provider";
-import { Button, Card } from "@torus-ts/ui";
-import { copyToClipboard } from "@torus-ts/ui/utils";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
+import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { useWallet } from "~/context/wallet-provider";
 

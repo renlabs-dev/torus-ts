@@ -1,21 +1,27 @@
 "use client";
 
+import { AmountButtons } from "../amount-buttons";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
+import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
+import { ReviewTransactionDialog } from "../review-transaction-dialog";
+import { ValidatorsList } from "../validators-list";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58, isSS58 } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
 import {
-  Button,
-  Card,
-  Input,
   Form,
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
-  TransactionStatus,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import {
   formatToken,
   fromNano,
@@ -40,12 +46,6 @@ import {
   isAmountPositive,
   meetsMinimumStake,
 } from "~/utils/validators";
-import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
-import { ValidatorsList } from "../validators-list";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
@@ -260,7 +260,7 @@ export function StakeAction() {
           onBack={() => setCurrentView("wallet")}
         />
       ) : (
-        <Card className="w-full animate-fade p-6">
+        <Card className="animate-fade w-full p-6">
           <Form {...form}>
             <form
               ref={formRef}

@@ -1,4 +1,4 @@
-import { Skeleton } from "@torus-ts/ui";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { Coins } from "lucide-react";
 import React, { forwardRef, useImperativeHandle, useState } from "react";
 
@@ -39,7 +39,7 @@ export const FeeLabel = forwardRef<FeeLabelHandle, FeeLabelProps>(
 
     if (!accountConnected && estimatedFee === null) {
       return (
-        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span className="text-muted-foreground flex items-center gap-2 text-sm">
           <Coins size={16} />
           Connect wallet to estimate fee
         </span>
@@ -48,7 +48,7 @@ export const FeeLabel = forwardRef<FeeLabelHandle, FeeLabelProps>(
 
     if (estimatedFee === null) {
       return (
-        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span className="text-muted-foreground flex items-center gap-2 text-sm">
           <Coins size={16} />
           Add recipient to estimate fee
         </span>
@@ -56,7 +56,7 @@ export const FeeLabel = forwardRef<FeeLabelHandle, FeeLabelProps>(
     }
 
     return (
-      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+      <span className="text-muted-foreground flex items-center gap-2 text-sm">
         <Coins size={16} />
         Estimated fee: {estimatedFee} TORUS
       </span>
