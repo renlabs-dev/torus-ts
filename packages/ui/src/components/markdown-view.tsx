@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from ".";
+import { cn } from "../lib/utils";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
 interface MarkdownViewProps {

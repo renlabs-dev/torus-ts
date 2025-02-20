@@ -41,7 +41,7 @@
     "events": "^3.3.0",
     "formik": "^2.4.6",
     "framer-motion": "^11.15.0",
-    "lucide-react": "^0.454.0",
+    "lucide-react": "catalog:",
     "net": "^1.0.2",
     "next": "catalog:",
     "pino-pretty": "^7.0.0",

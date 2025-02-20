@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, Card, CopyButton, Icons, Label } from "./";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import {
   Anvil,
@@ -12,6 +11,11 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Icons } from "./icons";
+import { Card } from "./card";
+import { Label } from "./label";
+import { CopyButton } from "./copy-button";
+import { Button } from "./button";
 
 interface AgentCardProps {
   agentKey: string;
@@ -69,10 +73,7 @@ export function buildSocials(
   for (const kind of SOCIALS_ORDER) {
     const val = kind === "website" ? website : socials[kind];
     if (!val) continue;
-    result.push({
-      ...SOCIALS_VALUES[kind],
-      href: val,
-    });
+    result.push({ ...SOCIALS_VALUES[kind], href: val });
   }
   return result;
 }
@@ -163,9 +164,7 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
           <div className="rounded-radius my-2 w-full bg-primary-foreground">
             <div
               className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
-              style={{
-                width: `10%`,
-              }}
+              style={{ width: `10%` }}
             />
           </div>
         </div>

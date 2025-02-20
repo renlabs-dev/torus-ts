@@ -1,4 +1,4 @@
-import { cn } from "..";
+import { cn } from "../lib/utils";
 
 const serverId = "941362322000203776";
 const uri = `https://discord.com/api/guilds/${serverId}/widget.json`;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 "use client";
 
-import { cn } from ".";
+import { cn } from "../lib/utils";
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
@@ -10,10 +10,7 @@ const THEMES = { light: "", dark: ".dark" } as const;
 
 export type ChartConfig = Record<
   string,
-  {
-    label?: React.ReactNode;
-    icon?: React.ComponentType;
-  } & (
+  { label?: React.ReactNode; icon?: React.ComponentType } & (
     | { color?: string; theme?: never }
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
   )
@@ -308,9 +305,7 @@ const ChartLegendContent = React.forwardRef<
               ) : (
                 <div
                   className="h-2 w-2 shrink-0 rounded-[2px]"
-                  style={{
-                    backgroundColor: item.color,
-                  }}
+                  style={{ backgroundColor: item.color }}
                 />
               )}
               {itemConfig?.label}

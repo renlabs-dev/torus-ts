@@ -1,9 +1,9 @@
 "use client";
 
-import { cn } from "./";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import * as React from "react";
+import { cn } from "../lib/utils";
 
 const Accordion = AccordionPrimitive.Root;
 
@@ -45,7 +45,7 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
     {...props}
   >
     <div className={cn("pb-4 pt-0", className)}>{children}</div>
