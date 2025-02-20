@@ -1,7 +1,8 @@
 "use client";
 
 import { RewardIntervalProgress } from "./reward-interval-progress";
-import { Card, Skeleton } from "@torus-ts/ui";
+import { Card } from "@torus-ts/ui/components/card";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Lock, Unlock } from "lucide-react";
 import React, { useCallback } from "react";
@@ -56,7 +57,7 @@ export function WalletBalance() {
   ];
 
   return (
-    <div className="min-fit flex flex-col gap-4 xs:flex-row lg:flex-col">
+    <div className="min-fit xs:flex-row flex flex-col gap-4 lg:flex-col">
       {balancesList.map((balance) => (
         <Card
           key={balance.label}

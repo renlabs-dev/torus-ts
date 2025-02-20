@@ -2,7 +2,8 @@
 
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Card, Input } from "@torus-ts/ui";
+import { Card } from "@torus-ts/ui/components/card";
+import { Input } from "@torus-ts/ui/components/input";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { ArrowUpRight, Calculator, Leaf } from "lucide-react";
 import { DateTime } from "luxon";
@@ -51,8 +52,8 @@ const GrowthTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   const growthRate = (gains / data.initial) * 100;
 
   return (
-    <div className="border bg-background/95 p-3 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <p className="text-sm text-muted-foreground">{formatMonth(data.date)}</p>
+    <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border p-3 shadow-xl backdrop-blur">
+      <p className="text-muted-foreground text-sm">{formatMonth(data.date)}</p>
       <p className="text-lg font-bold">
         {Math.floor(data.projected).toLocaleString()} TORUS
       </p>
@@ -127,10 +128,10 @@ export const StakingCalculator: React.FC = () => {
     <Card className="mx-auto mb-16 w-full p-6">
       <div className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center md:gap-0">
         <div className="flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-muted-foreground" />
+          <Calculator className="text-muted-foreground h-5 w-5" />
           <h3 className="font-medium">Yield Projections</h3>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Projected{" "}
           <span className="font-semibold text-violet-500">
             {projectedApr.toFixed(1)}% APR
@@ -146,18 +147,18 @@ export const StakingCalculator: React.FC = () => {
           className="max-w-[200px] border-b-0 border-l-0 border-r border-t-0"
           placeholder="Enter TORUS amount"
         />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           You can edit the amount to see how it affects your projected growth
         </p>
       </div>
-      <div className="mb-6 grid grid-cols-1 gap-4 bg-muted/50 px-4 py-2 md:grid-cols-4">
+      <div className="bg-muted/50 mb-6 grid grid-cols-1 gap-4 px-4 py-2 md:grid-cols-4">
         {[3, 6, 12, 24].map((months) => {
           const estimated = calculateProjectedGrowth(initialAmount, months);
           const profit = estimated - initialAmount;
           const percentGain = (profit / initialAmount) * 100;
           return (
             <div key={months} className="space-y-1.5">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {months}m forecast
               </p>
               <div className="flex gap-2">
@@ -224,7 +225,7 @@ export const StakingCalculator: React.FC = () => {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex items-center justify-between bg-muted/50 p-4">
+      <div className="bg-muted/50 flex items-center justify-between p-4">
         <div className="flex items-center gap-1 space-y-1">
           <p className="font-medium">
             Projected {FORECAST_MONTHS}-Month Value:{" "}

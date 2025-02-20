@@ -1,10 +1,10 @@
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Button,
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/card";
 import React from "react";
 
 interface WalletTransactionReviewProps {
@@ -27,7 +27,7 @@ export function WalletTransactionReview(
   } = props;
 
   return (
-    <Card className="flex w-full animate-fade flex-col justify-between p-6 md:w-2/5">
+    <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
       <CardHeader className="px-0 pt-0">{title}</CardHeader>
       <CardContent className="p-0">
         <div className="flex flex-col gap-2">
@@ -35,7 +35,7 @@ export function WalletTransactionReview(
             return (
               <span className="flex w-full justify-between" key={content.label}>
                 {content.label}:
-                <span className="text-right text-muted-foreground">
+                <span className="text-muted-foreground text-right">
                   {content.content}
                 </span>
               </span>

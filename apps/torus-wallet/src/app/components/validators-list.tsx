@@ -1,11 +1,12 @@
 "use client";
 
-import { Button, Card, CardContent, CardHeader } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useWallet } from "~/context/wallet-provider";
 import { ALLOCATOR_ADDRESS } from "~/consts";
+import { useWallet } from "~/context/wallet-provider";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";
@@ -21,7 +22,7 @@ interface Validator {
   stake?: bigint;
 }
 
-export function ValidatorsList(props: ValidatorsListProps) {
+export function ValidatorsList(props: Readonly<ValidatorsListProps>) {
   const { excludeAddress, listType, onBack, onSelectValidator } = props;
   const { accountStakedBy } = useWallet();
 
@@ -57,12 +58,12 @@ export function ValidatorsList(props: ValidatorsListProps) {
   const currentList = getValidatorsList();
 
   return (
-    <Card className="flex w-full animate-fade flex-col justify-between p-6">
+    <Card className="animate-fade flex w-full flex-col justify-between p-6">
       <CardHeader className="flex flex-col gap-2 px-0 pt-0">
-        <h3 className="text-lg font-semibold text-primary">
+        <h3 className="text-primary text-lg font-semibold">
           Select a Allocator
         </h3>
-        <p className="pb-2 text-muted-foreground">
+        <p className="text-muted-foreground pb-2">
           Once you select a allocator, it will automatically fill the field with
           their address. View all validators list{" "}
           <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@torus-ts/ui";
+import { Card } from "@torus-ts/ui/components/card";
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useWallet } from "~/context/wallet-provider";
@@ -57,7 +57,7 @@ export function RewardIntervalProgress() {
   if (timeLeft === null) return null;
 
   return (
-    <Card className="flex w-full animate-fade flex-col gap-2 p-6">
+    <Card className="animate-fade flex w-full flex-col gap-2 p-6">
       <span className="text-white">
         {String(time.minutes).padStart(2, "0")}:
         {String(time.seconds).padStart(2, "0")}

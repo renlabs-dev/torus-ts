@@ -6,7 +6,12 @@ import { StakeAction } from "./actions/stake";
 import { StakingCalculator } from "./actions/staking-calculator";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
 import React, { useState } from "react";
 
 const transferButtons = [
@@ -40,7 +45,7 @@ function WalletOptions({ buttons }: Readonly<WalletOptionsProps>): JSX.Element {
     <Tabs
       defaultValue={buttons[0]?.text}
       value={currentTab}
-      className="flex w-full animate-fade flex-col gap-4"
+      className="animate-fade flex w-full flex-col gap-4"
     >
       <TabsList
         className="grid w-full"

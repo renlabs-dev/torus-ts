@@ -1,4 +1,4 @@
-import { Button } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
 const buttonAmounts = [

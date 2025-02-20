@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import { toast } from "@torus-ts/toast-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -7,8 +7,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@torus-ts/ui";
-import { toast } from "@torus-ts/toast-provider";
+} from "@torus-ts/ui/components/alert-dialog";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 
 export interface ReviewTransactionDialogHandle {
   openDialog: () => void;
@@ -53,7 +53,7 @@ export const ReviewTransactionDialog = forwardRef<
                   key={content.label}
                 >
                   {content.label}:
-                  <span className="break-all text-left text-muted-foreground md:text-right">
+                  <span className="text-muted-foreground break-all text-left md:text-right">
                     {content.content}
                   </span>
                 </span>

@@ -1,4 +1,4 @@
-import "../styles/globals.css";
+import "@torus-ts/ui/globals.css";
 import ClientHeroSection from "./components/animation/client-hero-section";
 import { APRBar } from "./components/apr-bar";
 import { SidebarLinks } from "./components/sidebar-links";
@@ -7,7 +7,9 @@ import { WalletHeader } from "./components/wallet-header";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Container, Footer, Layout } from "@torus-ts/ui/components";
+import { Container } from "@torus-ts/ui/components/container";
+import { Footer } from "@torus-ts/ui/components/footer";
+import { Layout } from "@torus-ts/ui/components/layout";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { WalletProvider } from "~/context/wallet-provider";
@@ -49,7 +51,7 @@ export default function RootLayout({
               <Container>
                 <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
                   <div className="flex w-full max-w-screen-xl flex-col justify-around gap-6 lg:mt-[10vh] lg:flex-row">
-                    <div className="flex w-full animate-fade flex-col gap-4 lg:max-w-[320px]">
+                    <div className="animate-fade flex w-full flex-col gap-4 lg:max-w-[320px]">
                       <SidebarLinks />
                       <WalletBalance />
                     </div>

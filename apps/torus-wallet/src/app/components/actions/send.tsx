@@ -1,21 +1,26 @@
 "use client";
 
+import { AmountButtons } from "../amount-buttons";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
+import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
+import { ReviewTransactionDialog } from "../review-transaction-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@torus-ts/toast-provider";
 import { isSS58 } from "@torus-ts/subspace";
+import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
 import {
-  Button,
-  Card,
-  Input,
-  TransactionStatus,
   Form,
   FormField,
   FormLabel,
   FormControl,
   FormMessage,
   FormItem,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import React, {
   useCallback,
@@ -30,11 +35,6 @@ import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
 import { computeFeeData } from "~/utils/helpers";
 import { isWithinTransferLimit } from "~/utils/validators";
-import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
 
 const FEE_BUFFER_PERCENT = 102n;
 
@@ -197,7 +197,7 @@ export function SendAction() {
 
   return (
     <div className="l flex w-full flex-col gap-4 md:flex-row">
-      <Card className="w-full animate-fade p-6">
+      <Card className="animate-fade w-full p-6">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
