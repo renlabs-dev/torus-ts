@@ -1,25 +1,6 @@
 "use client";
 
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-  cn,
-  CopyButton,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  links,
-  NoWalletExtensionDisplay,
-  ScrollArea,
-} from "@torus-ts/ui";
-import {
   formatToken,
   smallAddress,
   smallWalletName,
@@ -36,16 +17,34 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./dropdown-menu";
+import { CopyButton } from "./copy-button";
+
+import { links } from "../lib/data";
+import { cn } from "../lib/utils";
+import { NoWalletExtensionDisplay } from "./no-wallet-extension-display";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./accordion";
+import { ScrollArea } from "./scroll-area";
 
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 
 export interface InjectedAccountWithMeta {
   address: string;
-  meta: {
-    genesisHash?: string | null;
-    name?: string;
-    source: string;
-  };
+  meta: { genesisHash?: string | null; name?: string; source: string };
   type?: KeypairType;
 }
 
@@ -212,7 +211,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
-    <div className="flex w-fit animate-fade-down justify-end py-1">
+    <div className="animate-fade-down flex w-fit justify-end py-1">
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
           <button

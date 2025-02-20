@@ -1,9 +1,8 @@
 "use client";
 
-import { Button, cn } from "..";
-import type { buttonVariants } from "..";
-import { copyToClipboard } from "../utils";
 import type { VariantProps } from "class-variance-authority";
+import { cn, copyToClipboard } from "../lib/utils";
+import { Button, buttonVariants } from "./button";
 
 type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 interface CopyButtonProps

@@ -1,5 +1,6 @@
-import { cn, Loading } from "..";
 import { CircleAlert, CircleCheck } from "lucide-react";
+import { cn } from "../lib/utils";
+import { Loading } from "./loading";
 
 export interface TransactionResult {
   finalized: boolean;

@@ -1,4 +1,4 @@
-import { cn } from "../index";
+import { cn } from "../lib/utils";
 import type { ButtonProps } from "./button";
 import { buttonVariants } from "./button";
 import {
@@ -38,9 +38,7 @@ const PaginationItem = React.forwardRef<
 ));
 PaginationItem.displayName = "PaginationItem";
 
-type PaginationLinkProps = {
-  isActive?: boolean;
-} & Pick<ButtonProps, "size"> &
+type PaginationLinkProps = { isActive?: boolean } & Pick<ButtonProps, "size"> &
   React.ComponentProps<"a">;
 
 const PaginationLink = ({
@@ -52,10 +50,7 @@ const PaginationLink = ({
   <a
     aria-current={isActive ? "page" : undefined}
     className={cn(
-      buttonVariants({
-        variant: isActive ? "default" : "ghost",
-        size,
-      }),
+      buttonVariants({ variant: isActive ? "default" : "ghost", size }),
       className,
     )}
     {...props}
