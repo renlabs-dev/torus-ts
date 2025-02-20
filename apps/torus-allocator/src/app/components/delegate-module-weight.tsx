@@ -2,7 +2,7 @@
 
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Button } from "@torus-ts/ui";
+import { Button } from "@torus-ts/ui/components/button";
 import { Anvil } from "lucide-react";
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";

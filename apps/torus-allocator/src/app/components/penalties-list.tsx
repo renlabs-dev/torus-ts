@@ -2,8 +2,9 @@
 
 import type { AppRouter } from "@torus-ts/api";
 import { toast } from "@torus-ts/toast-provider";
-import { Button, Card, CardTitle } from "@torus-ts/ui";
-import { copyToClipboard } from "@torus-ts/ui/utils";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardTitle } from "@torus-ts/ui/components/card";
+import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import { useLayoutEffect, useState } from "react";
@@ -61,7 +62,7 @@ export function PenaltyList(props: Readonly<VoterListProps>): JSX.Element {
           <Button
             variant="outline"
             key={cadreKey}
-            className="flex w-full animate-fade-down items-center justify-between border-muted bg-card px-4 py-6 animate-delay-500 hover:cursor-pointer hover:bg-accent hover:text-muted-foreground"
+            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent hover:text-muted-foreground flex w-full items-center justify-between px-4 py-6 hover:cursor-pointer"
             onClick={() => handleCopyAddress(cadreKey)}
           >
             {smallAddress(cadreKey)}
@@ -69,7 +70,7 @@ export function PenaltyList(props: Readonly<VoterListProps>): JSX.Element {
           </Button>
         ))}
         <span
-          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "h-0 animate-fade" : "h-8 animate-fade"} bg-gradient-to-b from-transparent to-background transition-all duration-100`}
+          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background bg-gradient-to-b from-transparent transition-all duration-100`}
         />
       </div>
     </Card>

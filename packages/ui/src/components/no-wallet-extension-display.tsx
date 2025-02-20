@@ -1,4 +1,4 @@
-import { links } from "../data";
+import { links } from "../lib/data";
 
 export function NoWalletExtensionDisplay() {
   return (

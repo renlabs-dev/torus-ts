@@ -1,6 +1,9 @@
 import { fetchAgentMetadata } from "@torus-ts/subspace";
-import { Button, Card, Container, Label } from "@torus-ts/ui";
-import { MarkdownView } from "@torus-ts/ui/markdown-view";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card } from "@torus-ts/ui/components/card";
+import { Container } from "@torus-ts/ui/components/container";
+import { Label } from "@torus-ts/ui/components/label";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -66,7 +69,7 @@ export default async function AgentPage({
         >
           <Link
             href="/"
-            className="mb-4 flex animate-fade-left items-center text-white transition duration-200"
+            className="animate-fade-left mb-4 flex items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
             Go back to agents list
@@ -74,7 +77,7 @@ export default async function AgentPage({
         </Button>
 
         <div className="mb-12 flex flex-col gap-6 md:flex-row">
-          <div className="mb-12 flex animate-fade-down flex-col gap-6 animate-delay-500 md:w-2/3">
+          <div className="animate-fade-down animate-delay-500 mb-12 flex flex-col gap-6 md:w-2/3">
             <Card className="mb-6 flex flex-col gap-6 md:flex-row">
               {icon && <BlobImage blob={icon} alt="My Blob Image" />}
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
@@ -90,7 +93,7 @@ export default async function AgentPage({
 
             <MarkdownView source={metadata.description} />
           </div>
-          <div className="flex animate-fade-down flex-col gap-6 animate-delay-500 md:w-1/3">
+          <div className="animate-fade-down animate-delay-500 flex flex-col gap-6 md:w-1/3">
             <AgentInfoCard agent={mdl} />
             <Card className="flex items-center justify-between p-6">
               <p>Agent Links:</p>
@@ -110,7 +113,7 @@ export default async function AgentPage({
                 </span>{" "}
                 Current Network Allocation
               </Label>
-              <div className="rounded-radius my-2 w-full bg-primary-foreground">
+              <div className="rounded-radius bg-primary-foreground my-2 w-full">
                 <div
                   className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
                   style={{

@@ -2,17 +2,17 @@
 
 import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
+import { Badge } from "@torus-ts/ui/components/badge";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
-  Badge,
-  CopyButton,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-  Icons,
-  Label,
-  Separator,
-  Slider,
-} from "@torus-ts/ui";
+} from "@torus-ts/ui/components/hover-card";
+import { Icons } from "@torus-ts/ui/components/icons";
+import { Label } from "@torus-ts/ui/components/label";
+import { Separator } from "@torus-ts/ui/components/separator";
+import { Slider } from "@torus-ts/ui/components/slider";
 import type { Nullish } from "@torus-ts/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import {
@@ -167,9 +167,9 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
   };
 
   return (
-    <div className="group relative border bg-background p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:bg-accent hover:shadow-2xl">
+    <div className="bg-background hover:bg-accent group relative border p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        <span className="flex animate-pulse items-center gap-1 rounded-full bg-background bg-opacity-75 px-3 py-1 text-xs">
+        <span className="bg-background flex animate-pulse items-center gap-1 rounded-full bg-opacity-75 px-3 py-1 text-xs">
           <ChevronsLeft size={16} />
           Click to expand <ChevronsRight size={16} />
         </span>
@@ -253,7 +253,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
                 variant="link"
                 copy={props.agentKey}
                 notify={() => toast.success("Copied to clipboard")}
-                className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+                className={`text-foreground-muted hover:text-muted-foreground flex items-center gap-1.5 px-0 hover:no-underline`}
               >
                 <IdCard size={14} />
                 <span className="hidden text-xs md:block">

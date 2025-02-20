@@ -1,6 +1,6 @@
 "use client";
 
-import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui";
+import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback } from "react";
 

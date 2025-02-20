@@ -2,7 +2,8 @@
 
 import { ReportAgent } from "./report-agent";
 import { toast } from "@torus-ts/toast-provider";
-import { CopyButton, Card, CardTitle, CardContent } from "@torus-ts/ui";
+import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
@@ -13,7 +14,7 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
       label: "Agent Key",
       value: (
         <CopyButton
-          className="h-fit p-0 hover:text-muted-foreground"
+          className="hover:text-muted-foreground h-fit p-0"
           variant="link"
           copy={agent.key}
           notify={() => toast.success("Copied to clipboard")}
@@ -33,7 +34,7 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
       label: "API Endpoint",
       value: agent.apiUrl ? (
         <CopyButton
-          className="h-fit p-0 hover:text-muted-foreground"
+          className="hover:text-muted-foreground h-fit p-0"
           variant="link"
           copy={agent.apiUrl}
           notify={() => toast.success("Copied to clipboard")}
