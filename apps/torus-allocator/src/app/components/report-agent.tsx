@@ -94,10 +94,6 @@ export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
       reason: data.reason,
       content: data.content,
     });
-    toast({
-      title: "Success!",
-      description: "Agent reported successfully.",
-    });
   };
 
   return (
