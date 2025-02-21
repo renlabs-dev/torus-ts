@@ -17,7 +17,6 @@ import {
 import { clusterApiUrl } from "@solana/web3.js";
 import type { PropsWithChildren } from "react";
 import { useCallback, useMemo } from "react";
-import { toast } from "react-toastify";
 import { logger } from "~/utils/logger";
 
 export function SolanaWalletProvider({
@@ -42,7 +41,6 @@ export function SolanaWalletProvider({
 
   const onError = useCallback((error: WalletError) => {
     logger.error("Error initializing Solana wallet provider", error);
-    toast.error("Error preparing Solana wallet");
   }, []);
 
   return (

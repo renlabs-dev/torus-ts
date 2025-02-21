@@ -1,12 +1,13 @@
 import type { TokenAmount } from "@hyperlane-xyz/sdk";
 import type { Address } from "@hyperlane-xyz/utils";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useEffect, useRef } from "react";
-import { toast } from "react-toastify";
 
 export function useRecipientBalanceWatcher(
   recipient?: Address,
   balance?: TokenAmount,
 ) {
+  const { toast } = useToast();
   // A crude way to detect transfer completions by triggering
   // toast on recipient balance increase. This is not ideal because it
   // could confuse unrelated balance changes for message delivery
@@ -26,9 +27,13 @@ export function useRecipientBalanceWatcher(
       balance.token.equals(prevRecipientBalance.current.balance.token) &&
       balance.amount > prevRecipientBalance.current.balance.amount
     ) {
-      toast.success("Recipient has received funds, transfer complete!");
+      toast({
+        title: "Success!",
+        description: `Transfer completed to ${recipient}`,
+      });
     }
 
     prevRecipientBalance.current = { balance, recipient: recipient };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [balance, recipient, prevRecipientBalance]);
 }

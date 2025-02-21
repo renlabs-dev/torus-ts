@@ -17,8 +17,7 @@ import {
   useTransactionFns,
 } from "@hyperlane-xyz/widgets";
 import { useCallback, useState } from "react";
-import { toast } from "react-toastify";
-import { toastTxSuccess } from "~/app/_components/toast/tx-success-toast";
+import { ToastTxSuccess } from "~/app/_components/toast/tx-success-toast";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
@@ -181,7 +180,7 @@ async function executeTransfer({
       txReceipt = await confirm();
       const description = toTitleCase(tx.category);
       logger.debug(`${description} transaction confirmed, hash:`, hash);
-      toastTxSuccess(`${description} transaction sent!`, hash, origin);
+      ToastTxSuccess(`${description} transaction sent!`, hash, origin);
       hashes.push(hash);
     }
 

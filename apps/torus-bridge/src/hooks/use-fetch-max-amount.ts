@@ -10,7 +10,6 @@ import type { ProtocolType } from "@hyperlane-xyz/utils";
 import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 interface FetchMaxParams {
@@ -56,10 +55,7 @@ async function fetchMaxAmount(
     return maxAmount;
   } catch (error) {
     logger.warn("Error fetching fee quotes for max amount", error);
-    const chainName = multiProvider.tryGetChainMetadata(origin)?.displayName;
-    toast.warn(
-      `Cannot simulate transfer, ${chainName} native balance may be insufficient.`,
-    );
+
     return undefined;
   }
 }
