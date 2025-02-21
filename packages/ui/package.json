@@ -55,7 +55,7 @@
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@turbo/gen": "^2.2.3",
+    "@turbo/gen": "^2.3.3",
     "@types/node": "^22.9.0",
     "@types/react": "catalog:react18",
     "autoprefixer": "^10.4.20",
