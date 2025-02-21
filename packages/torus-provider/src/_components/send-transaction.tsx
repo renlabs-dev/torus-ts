@@ -12,7 +12,7 @@ import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
-import { toast } from "react-toastify";
+import { toast } from "@torus-ts/ui/hooks/use-toast";
 
 interface SendTransactionProps {
   api: ApiPromise | null;
@@ -23,6 +23,7 @@ interface SendTransactionProps {
   callback?: (result: TransactionResult) => void;
   refetchHandler?: () => Promise<void>;
   wsEndpoint: string;
+  toast: typeof toast;
 }
 
 async function getMetadataProof(api: ApiPromise) {
@@ -60,7 +61,6 @@ export async function sendTransaction({
     console.error("Missing required parameters");
     return;
   }
-  const toastId = `${selectedAccount.address}:${transactionType}`;
 
   try {
     const injector = await torusApi.web3FromAddress(selectedAccount.address);
@@ -114,19 +114,14 @@ export async function sendTransaction({
             message: "Transaction included in the blockchain!",
           });
 
-          toast.loading(
-            renderWaitingForValidation(
+          toast({
+            title: "Loading...",
+            description: renderWaitingForValidation(
               result.status.asInBlock.toHex(),
               wsEndpoint,
             ),
-            {
-              toastId,
-              type: "default",
-              autoClose: false,
-              closeOnClick: false,
-            },
-          );
-
+            duration: Infinity,
+          });
           setTimeout(() => {
             callback?.({
               status: null,
@@ -146,18 +141,13 @@ export async function sendTransaction({
           }
 
           if (success) {
-            toast.update(toastId, {
-              render: renderSuccessfulyFinalized(
+            toast({
+              title: "Success!",
+              description: renderSuccessfulyFinalized(
                 transactionType,
                 hash,
                 wsEndpoint,
               ),
-              type: "success",
-              isLoading: false,
-              autoClose: 10000,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
             });
           } else if (failed) {
             const [dispatchError] = failed.event.data as unknown as [
@@ -171,14 +161,9 @@ export async function sendTransaction({
               msg = `${transactionType} failed: ${error.name}`;
             }
 
-            toast.update(toastId, {
-              render: renderFinalizedWithError(msg, hash, wsEndpoint),
-              type: "error",
-              isLoading: false,
-              autoClose: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
+            toast({
+              title: "Error",
+              description: renderFinalizedWithError(msg, hash, wsEndpoint),
             });
           }
         }
@@ -186,6 +171,9 @@ export async function sendTransaction({
     );
   } catch (err) {
     console.error("Transaction error:", err);
-    toast.error(err instanceof Error ? err.message : "Transaction failed");
+    toast({
+      title: "Error",
+      description: err instanceof Error ? err.message : "Transaction failed",
+    });
   }
 }
