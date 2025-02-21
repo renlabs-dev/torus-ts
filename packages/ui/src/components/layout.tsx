@@ -33,7 +33,7 @@ export function Layout({
           className,
         )}
       >
-        <div className={cn("mx-auto")}>{children}</div>
+        <main className={cn("mx-auto")}>{children}</main>
       </body>
     </html>
   );
