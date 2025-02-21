@@ -9,7 +9,6 @@ export default function Clock() {
   useEffect(() => {
     const timerID = setInterval(() => tick(), 1000);
     return () => clearInterval(timerID);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const tick = useCallback(() => {
@@ -28,7 +27,6 @@ export default function Clock() {
 
   const dateTimeString = useMemo(
     () => date.toLocaleString("en-GB", options as Intl.DateTimeFormatOptions),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [date],
   );
 

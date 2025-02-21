@@ -2,7 +2,8 @@
 
 import type { VariantProps } from "class-variance-authority";
 import { cn, copyToClipboard } from "../lib/utils";
-import { Button, buttonVariants } from "./button";
+import type { buttonVariants } from "./button";
+import { Button } from "./button";
 import { useToast } from "../hooks/use-toast";
 
 type ButtonVariantProps = VariantProps<typeof buttonVariants>;
