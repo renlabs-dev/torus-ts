@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Popover,
@@ -8,6 +7,7 @@ import {
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Copy, Ellipsis } from "lucide-react";
 import { useGovernance } from "~/context/governance-provider";
@@ -19,6 +19,7 @@ export const PopoverInfo = () => {
     daoTreasuryAddress,
     cadreList,
   } = useGovernance();
+  const { toast } = useToast();
 
   const { data: cadreListData, isFetching: isFetchingCadreList } = cadreList;
 
@@ -26,10 +27,16 @@ export const PopoverInfo = () => {
     navigator.clipboard
       .writeText(value)
       .then(() => {
-        toast.success("Treasury address copied to clipboard");
+        toast({
+          title: "SUCCCESS.",
+          description: "Treasury address copied to clipboard.",
+        });
       })
       .catch(() => {
-        toast.error("Failed to copy treasury address");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to copy treasury address.",
+        });
       });
   }
 

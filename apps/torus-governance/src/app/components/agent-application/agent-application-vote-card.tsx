@@ -2,13 +2,13 @@
 
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import type { AgentApplication } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { Delete, TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
@@ -175,11 +175,16 @@ export function AgentApplicationVoteTypeCard(props: {
     applicationId,
   });
 
+  const { toast } = useToast();
+
   const userVote = votes?.find((v) => v.userKey === selectedAccount?.address);
 
   const createVoteMutation = api.agentApplicationVote.create.useMutation({
     onSuccess: async () => {
-      toast.success("Vote submitted successfully!");
+      toast({
+        title: "Success!",
+        description: "Vote submitted successfully!",
+      });
       await Promise.all([
         utils.agentApplicationVote.byApplicationId.invalidate({
           applicationId,
@@ -190,12 +195,18 @@ export function AgentApplicationVoteTypeCard(props: {
       ]);
     },
     onError: (error) => {
-      toast.error(`Error submitting vote: ${error.message}`);
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: `Error submitting vote: ${error.message}`,
+      });
     },
   });
   const deleteVoteMutation = api.agentApplicationVote.delete.useMutation({
     onSuccess: async () => {
-      toast.success("Vote removed successfully!");
+      toast({
+        title: "Success!",
+        description: "Vote removed successfully!",
+      });
       await Promise.all([
         utils.agentApplicationVote.byApplicationId.invalidate({
           applicationId,
@@ -206,7 +217,10 @@ export function AgentApplicationVoteTypeCard(props: {
       ]);
     },
     onError: (error) => {
-      toast.error(`Error removing vote: ${error.message}`);
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: `Error removing vote: ${error.message}`,
+      });
     },
   });
 
@@ -215,14 +229,16 @@ export function AgentApplicationVoteTypeCard(props: {
 
   const ensureConnected = (): boolean => {
     if (!selectedAccount?.address) {
-      toast.error("Please connect your wallet.");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Please connect your wallet.",
+      });
       return false;
     }
     return true;
   };
   const ensureisUserCadre = (): boolean => {
     if (!isUserCadre) {
-      toast.error("Only Curator DAO members can perform this action.");
       return false;
     }
     return true;
@@ -240,7 +256,10 @@ export function AgentApplicationVoteTypeCard(props: {
 
   const handleVote = () => {
     if (vote === "UNVOTED") {
-      toast.error("Please select a valid vote option.");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Please select a valid vote option.",
+      });
       return;
     }
     handleVoteAction(vote);

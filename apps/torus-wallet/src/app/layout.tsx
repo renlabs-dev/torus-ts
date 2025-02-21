@@ -5,11 +5,11 @@ import { SidebarLinks } from "./components/sidebar-links";
 import { WalletBalance } from "./components/wallet-balance";
 import { WalletHeader } from "./components/wallet-header";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
-import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { Toaster } from "@torus-ts/ui/components/toaster";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { WalletProvider } from "~/context/wallet-provider";
@@ -38,31 +38,30 @@ export default function RootLayout({
 }>): JSX.Element {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      <ToastProvider>
-        <TorusProvider
-          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-        >
-          <ReactQueryProvider>
-            <WalletProvider>
-              <WalletHeader />
-              <APRBar />
-              <ClientHeroSection />
-              <Container>
-                <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
-                  <div className="flex w-full max-w-screen-xl flex-col justify-around gap-6 lg:mt-[10vh] lg:flex-row">
-                    <div className="animate-fade flex w-full flex-col gap-4 lg:max-w-[320px]">
-                      <SidebarLinks />
-                      <WalletBalance />
-                    </div>
-                    {children}
+      <TorusProvider
+        wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+        torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+      >
+        <ReactQueryProvider>
+          <WalletProvider>
+            <WalletHeader />
+            <APRBar />
+            <ClientHeroSection />
+            <Container>
+              <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
+                <div className="flex w-full max-w-screen-xl flex-col justify-around gap-6 lg:mt-[10vh] lg:flex-row">
+                  <div className="animate-fade flex w-full flex-col gap-4 lg:max-w-[320px]">
+                    <SidebarLinks />
+                    <WalletBalance />
                   </div>
-                </main>
-              </Container>
-            </WalletProvider>
-          </ReactQueryProvider>
-        </TorusProvider>
-      </ToastProvider>
+                  {children}
+                </div>
+              </main>
+            </Container>
+            <Toaster />
+          </WalletProvider>
+        </ReactQueryProvider>
+      </TorusProvider>
       <Footer />
     </Layout>
   );

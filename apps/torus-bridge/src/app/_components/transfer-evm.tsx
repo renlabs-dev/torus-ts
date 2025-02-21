@@ -7,7 +7,6 @@ import {
   waitForTransactionReceipt,
 } from "@torus-ts/subspace";
 import type { SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
@@ -20,6 +19,7 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { smallAddress, toNano } from "@torus-ts/utils/subspace";
 import { ArrowLeftRight } from "lucide-react";
 import Image from "next/image";
@@ -71,6 +71,7 @@ export function TransferEVM() {
   const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
   const { switchChain } = useSwitchChain();
+  const { toast } = useToast();
 
   const evmSS58Addr = userInputEthAddr
     ? convertH160ToSS58(userInputEthAddr)
@@ -125,19 +126,27 @@ export function TransferEVM() {
       chain == null ||
       selectedAccount == null
     ) {
-      toast.error("Invalid state for withdrawal");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Invalid state for withdrawal.",
+      });
       return;
     }
     // Check if user is on the correct chain
     if (chain.id !== torusEvmChainId) {
       try {
         switchChain({ chainId: torusEvmChainId });
-        toast.info(
-          "You were connected to the wrong network, we switched you to Torus. Please try to withdraw again",
-        );
+        toast({
+          title:
+            "You were connected to the wrong network, we switched you to Torus.",
+          description: "Please try to withdraw again",
+        });
         return;
       } catch {
-        toast.error("Failed to switch network");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to switch network.",
+        });
         return;
       }
     }
@@ -160,24 +169,17 @@ export function TransferEVM() {
         finalized: true,
       });
 
-      toast.loading(renderWaitingForValidation(txHash), {
-        toastId: txHash,
-        type: "default",
-        autoClose: false,
-        closeOnClick: false,
+      toast({
+        title: "Loading...",
+        description: renderWaitingForValidation(txHash),
       });
       await waitForTransactionReceipt(wagmiConfig, {
         hash: txHash,
         confirmations: 2,
       });
-      toast.update(txHash, {
-        render: renderSuccessfulyFinalized(txHash),
-        type: "success",
-        isLoading: false,
-        autoClose: 10000,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
+      toast({
+        title: "Success!",
+        description: renderSuccessfulyFinalized(txHash),
       });
 
       setAmount("");
@@ -202,7 +204,10 @@ export function TransferEVM() {
     if (address) {
       setUserInputEthAddr(address);
     } else {
-      toast.warn("No account found. Is your wallet connected?");
+      toast({
+        title: "No account found.",
+        description: "Is your wallet connected?",
+      });
     }
   };
 

@@ -1,4 +1,3 @@
-import { toast } from "@torus-ts/toast-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,6 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@torus-ts/ui/components/alert-dialog";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import React, { forwardRef, useImperativeHandle, useState } from "react";
 
 export interface ReviewTransactionDialogHandle {
@@ -41,6 +41,7 @@ export const ReviewTransactionDialog = forwardRef<
     }));
 
     const review = reviewContent();
+    const { toast } = useToast();
     return (
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
@@ -71,7 +72,10 @@ export const ReviewTransactionDialog = forwardRef<
                   setOpen(false);
                 } catch (error) {
                   setOpen(false);
-                  toast.error(`Form submission failed: ${String(error)}`);
+                  toast({
+                    title: "Form submission failed:",
+                    description: String(error),
+                  });
                 }
               }}
             >

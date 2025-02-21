@@ -5,7 +5,6 @@ import {
   useFreeBalance,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Header } from "@torus-ts/ui/components/header";
 import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown";
@@ -42,7 +41,6 @@ export function WalletHeader() {
           handleLogout={handleLogout}
           handleGetWallets={handleGetWallets}
           handleSelectWallet={handleSelectWallet}
-          notifyCopy={() => toast.success("Copied to clipboard")}
         />
       }
     />

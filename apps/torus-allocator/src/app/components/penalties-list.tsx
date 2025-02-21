@@ -1,9 +1,9 @@
 "use client";
 
 import type { AppRouter } from "@torus-ts/api";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardTitle } from "@torus-ts/ui/components/card";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
@@ -19,6 +19,8 @@ interface VoterListProps {
 
 export function PenaltyList(props: Readonly<VoterListProps>): JSX.Element {
   const { penalties } = props;
+
+  const { toast } = useToast();
 
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(
@@ -46,7 +48,10 @@ export function PenaltyList(props: Readonly<VoterListProps>): JSX.Element {
 
   const handleCopyAddress = async (address: string) => {
     await copyToClipboard(address);
-    toast.success("Address copied to clipboard");
+    toast({
+      title: "Success!",
+      description: "Address copied to clipboard.",
+    });
   };
 
   return (

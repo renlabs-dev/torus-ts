@@ -28,7 +28,6 @@ import type {
   SS58Address,
   StakeData,
 } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import type {
   ApplicationState,
   InjectedAccountWithMeta,
@@ -290,7 +289,6 @@ export function GovernanceProvider({
             handleLogout={handleLogout}
             handleGetWallets={handleGetWallets}
             handleSelectWallet={handleSelectWallet}
-            notifyCopy={() => toast.success("Copied to clipboard")}
           />
         }
       />

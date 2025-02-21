@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -13,6 +12,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken } from "@torus-ts/utils/subspace";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -52,17 +52,23 @@ export function CreateComment({
   const { selectedAccount, accountStakedBalance, isUserCadre } =
     useGovernance();
   const utils = api.useUtils();
+  const { toast } = useToast();
 
   const CreateCommentMutation = api.comment.create.useMutation({
     onSuccess: async () => {
       reset();
-      toast.success("Comment submitted successfully!");
+      toast({
+        title: "Success!",
+        description: "Comment submitted successfully!",
+      });
       await utils.comment.byId.invalidate({ proposalId: id });
     },
     onError: (error) => {
-      toast.error(
-        error.message || "An unexpected error occurred. Please try again.",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
     },
   });
 
@@ -78,7 +84,10 @@ export function CreateComment({
 
   const onSubmit = async (data: CommentFormData) => {
     if (!selectedAccount?.address) {
-      toast.error("Please connect your wallet to submit a comment.");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Please connect your wallet to submit a comment.",
+      });
       return;
     }
     if (itemType === "PROPOSAL") {
@@ -86,9 +95,10 @@ export function CreateComment({
         ? Number(formatToken(accountStakedBalance))
         : 0;
       if (staked < MIN_STAKE_REQUIRED) {
-        toast.error(
-          `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
-        );
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
+        });
         return;
       }
     }
@@ -97,7 +107,11 @@ export function CreateComment({
       !isUserCadre &&
       author !== selectedAccount.address
     ) {
-      toast.error("Only Curator DAO members can submit comments in DAO mode.");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          "Only Curator DAO members can submit comments in DAO mode.",
+      });
       return;
     }
     try {
@@ -109,9 +123,15 @@ export function CreateComment({
       });
     } catch (err) {
       if (err instanceof z.ZodError) {
-        toast.error(err.errors[0]?.message ?? "Invalid input");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: err.errors[0]?.message ?? "Invalid input",
+        });
       } else {
-        toast.error("An unexpected error occurred. Please try again.");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "An unexpected error occurred. Please try again.",
+        });
       }
     }
   };

@@ -61,18 +61,10 @@ interface WalletFunctionsProps {
   handleLogout: () => void;
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
-  notifyCopy: () => void;
 }
 
 const WalletFunctions = (props: WalletFunctionsProps) => {
-  const {
-    balance,
-    children,
-    handleLogout,
-    selectedAccount,
-    stakeOut,
-    notifyCopy,
-  } = props;
+  const { balance, children, handleLogout, selectedAccount, stakeOut } = props;
 
   const userStakeWeight = useMemo(() => {
     if (stakeOut != null && selectedAccount != null) {
@@ -95,7 +87,6 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
           copy={selectedAccount?.address ?? ""}
           className={cn("h-fit p-0 text-muted-foreground hover:text-white")}
           variant="ghost"
-          notify={notifyCopy}
         >
           <Copy size={17} />
         </CopyButton>
@@ -155,7 +146,6 @@ interface WalletDropdownProps {
   handleSelectWallet: (accountAddress: InjectedAccountWithMeta) => void;
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
-  notifyCopy: () => void;
   shouldDisplayText?: boolean;
 }
 
@@ -169,7 +159,6 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     handleSelectWallet,
     selectedAccount,
     stakeOut,
-    notifyCopy,
     shouldDisplayText,
   } = props;
 
@@ -233,7 +222,6 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
               handleLogout={handleLogout}
               selectedAccount={selectedAccount}
               stakeOut={stakeOut}
-              notifyCopy={notifyCopy}
             >
               <Accordion type="single" collapsible className={cn("m-0 w-full")}>
                 <AccordionItem

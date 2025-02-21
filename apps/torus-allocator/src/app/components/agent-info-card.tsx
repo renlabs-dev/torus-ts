@@ -1,7 +1,6 @@
 "use client";
 
 import { ReportAgent } from "./report-agent";
-import { toast } from "@torus-ts/toast-provider";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { smallAddress } from "@torus-ts/utils/subspace";
@@ -17,7 +16,6 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
           className="hover:text-muted-foreground h-fit p-0"
           variant="link"
           copy={agent.key}
-          notify={() => toast.success("Copied to clipboard")}
         >
           {smallAddress(agent.key, 6)}
           <Copy />
@@ -37,7 +35,6 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
           className="hover:text-muted-foreground h-fit p-0"
           variant="link"
           copy={agent.apiUrl}
-          notify={() => toast.success("Copied to clipboard")}
         >
           Copy URL
           <Copy />

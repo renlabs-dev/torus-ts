@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -25,6 +24,7 @@ import {
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
 import { Textarea } from "@torus-ts/ui/components/text-area";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -60,6 +60,7 @@ export function PenaltyManager({
   status: AgentApplication["status"];
 }>) {
   const { selectedAccount, isUserCadre } = useGovernance();
+  const { toast } = useToast();
 
   const { data: agentList } = api.agent.all.useQuery();
   const { data: penaltiesByAgentKey, refetch: refetchPenalties } =
@@ -71,12 +72,17 @@ export function PenaltyManager({
     onSuccess: () => {
       reset();
       void refetchPenalties();
-      toast.success("Penalty applied successfully!");
+      toast({
+        title: "Success!",
+        description: "Penalty applied successfully!",
+      });
     },
     onError: (error) => {
-      toast.error(
-        error.message || "An unexpected error occurred. Please try again.",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
     },
   });
 
@@ -84,12 +90,17 @@ export function PenaltyManager({
     onSuccess: () => {
       reset();
       void refetchPenalties();
-      toast.success("Penalty deleted successfully!");
+      toast({
+        title: "Success!",
+        description: "Penalty deleted successfully!",
+      });
     },
     onError: (error) => {
-      toast.error(
-        error.message || "An unexpected error occurred. Please try again.",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
     },
   });
 
@@ -139,7 +150,10 @@ export function PenaltyManager({
 
   const onSubmit = (data: PenaltyFormData) => {
     if (!selectedAccount?.address) {
-      toast.error("Please connect your wallet to apply a penalty.");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Please connect your wallet to apply a penalty.",
+      });
       return;
     }
     createPenaltyMutation.mutate({

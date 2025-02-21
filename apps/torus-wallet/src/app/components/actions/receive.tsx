@@ -1,15 +1,19 @@
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { useWallet } from "~/context/wallet-provider";
 
 export function ReceiveAction() {
   const { selectedAccount } = useWallet();
+  const { toast } = useToast();
   const handleCopyAddress = async (address: string) => {
     await copyToClipboard(address);
-    toast.success("Address copied to clipboard");
+    toast({
+      title: "Success!",
+      description: "Address Copied to clipboard",
+    });
   };
   return (
     <Card className="flex flex-col items-center justify-center gap-4 p-6">

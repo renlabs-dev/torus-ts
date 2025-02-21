@@ -173,7 +173,7 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
           <Button
             type="button"
             variant="outline"
-            className={`flex w-fit items-center gap-2 border-cyan-500 bg-transparent text-cyan-500 text-white transition duration-200 hover:bg-cyan-500/10 hover:text-cyan-500`}
+            className={`flex w-fit items-center gap-2 border-cyan-500 bg-transparent text-cyan-500 transition duration-200 hover:bg-cyan-500/10 hover:text-cyan-500`}
           >
             <ChartPie className={`h-6 w-6`} />
             Allocate

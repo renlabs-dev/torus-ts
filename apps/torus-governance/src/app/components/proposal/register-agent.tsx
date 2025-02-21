@@ -6,7 +6,6 @@ import {
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
   checkSS58,
 } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -33,6 +32,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { smallFilename, strToFile } from "@torus-ts/utils/files";
 import type { CID } from "@torus-ts/utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
@@ -101,6 +101,7 @@ export function RegisterAgent(): JSX.Element {
     lastBlock,
     whitelist,
   } = useGovernance();
+  const { toast } = useToast();
   const { registerAgentTransaction, estimateFee, selectedAccount } = useTorus();
   const { data: whitelistedApplications, isFetching: isFetchingWhitelist } =
     whitelist;
@@ -145,18 +146,25 @@ export function RegisterAgent(): JSX.Element {
         url: "Estimating fee",
       });
       if (!transaction) {
-        toast.error("Error estimating fee");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Error estimating fee.",
+        });
         return;
       }
       const fee = await estimateFee(transaction);
       if (fee == null) {
-        toast.error("Error estimating fee");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Error estimating fee.",
+        });
         return;
       }
       const adjustedFee = (fee * 101n) / 100n;
       setEstimatedFee(adjustedFee);
     }
     void fetchFee();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estimateFee, registerAgentTransaction, selectedAccount]);
 
   const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
@@ -217,9 +225,12 @@ export function RegisterAgent(): JSX.Element {
       };
       const validatedMetadata = AGENT_METADATA_SCHEMA.safeParse(metadata);
       if (!validatedMetadata.success) {
-        toast.error(
-          validatedMetadata.error.errors.map((e) => e.message).join(", "),
-        );
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: validatedMetadata.error.errors
+            .map((e) => e.message)
+            .join(", "),
+        });
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
@@ -234,16 +245,20 @@ export function RegisterAgent(): JSX.Element {
       return cid;
     } catch (e) {
       setUploading(false);
-      toast.error(e instanceof Error ? e.message : "Error uploading agent");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: e instanceof Error ? e.message : "Error uploading agent",
+      });
       return null;
     }
   }
 
   async function onSubmit(data: RegisterAgentFormData): Promise<void> {
     if (!userHasEnoughBalance) {
-      toast.error(
-        `Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`,
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: `Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`,
+      });
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -254,7 +269,10 @@ export function RegisterAgent(): JSX.Element {
 
     const parsedAgentKey = checkSS58(data.agentKey);
     if (isFetchingWhitelist) {
-      toast.error("Whitelist is still loading. Please try again later.");
+      toast({
+        title: "Whitelist is still loading.",
+        description: "Please try again later.",
+      });
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -263,9 +281,10 @@ export function RegisterAgent(): JSX.Element {
       return;
     }
     if (!whitelistedApplications?.includes(parsedAgentKey)) {
-      toast.error(
-        "Agent not whitelisted. Whitelist required for registration.",
-      );
+      toast({
+        title: "Agent not whitelisted.",
+        description: "Whitelist required for registration.",
+      });
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -274,9 +293,10 @@ export function RegisterAgent(): JSX.Element {
       return;
     }
     if (agents.data?.has(parsedAgentKey)) {
-      toast.error(
-        "Agent already registered. Make sure you are using the correct address.",
-      );
+      toast({
+        title: "Agent already registered.",
+        description: "Make sure you are using the correct address.",
+      });
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -294,9 +314,12 @@ export function RegisterAgent(): JSX.Element {
           : data.agentApiUrl,
       );
     if (!parsedAgentApiUrl.success) {
-      toast.error(
-        parsedAgentApiUrl.error.errors.map((e) => e.message).join(", "),
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: parsedAgentApiUrl.error.errors
+          .map((e) => e.message)
+          .join(", "),
+      });
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
