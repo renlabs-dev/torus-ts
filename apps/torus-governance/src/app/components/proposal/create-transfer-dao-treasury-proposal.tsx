@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -22,6 +21,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken, toNano } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useRouter } from "next/navigation";
@@ -50,6 +50,8 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
     addDaoTreasuryTransferProposal,
     selectedAccount,
   } = useGovernance();
+
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
   const [uploading, setUploading] = useState(false);
@@ -98,12 +100,18 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
       setUploading(false);
 
       if (!ipfs.IpfsHash || ipfs.IpfsHash === "undefined") {
-        toast.error("Error uploading transfer dao treasury proposal");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Error uploading transfer dao treasury proposal",
+        });
         return;
       }
 
       if (!accountFreeBalance.data) {
-        toast.error("Balance is still loading");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Balance is still loading",
+        });
         return;
       }
 
@@ -117,11 +125,13 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
           callback: (tx) => setTransactionStatus(tx),
         });
       } else {
-        toast.error(
-          `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(
             accountFreeBalance.data,
           )}`,
-        );
+          duration: 10000,
+        });
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
@@ -132,11 +142,13 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
       router.refresh();
     } catch (e) {
       setUploading(false);
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : "Error uploading transfer dao treasury proposal",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          e instanceof Error
+            ? e.message
+            : "Error uploading transfer dao treasury proposal",
+      });
     }
   }
 

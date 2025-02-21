@@ -1,8 +1,8 @@
 "use client";
 
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { Anvil } from "lucide-react";
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
@@ -22,6 +22,7 @@ export function DelegateModuleWeight(
   const { delegatedAgents, addAgent, removeAgent } = useDelegateAgentStore();
 
   const { selectedAccount } = useTorus();
+  const { toast } = useToast();
 
   const isModuleDelegated = delegatedAgents.some(
     (m) => m.address === props.agentKey,
@@ -29,13 +30,19 @@ export function DelegateModuleWeight(
 
   const handleDelegateClick = () => {
     if (!selectedAccount?.address) {
-      toast.error("Connect Wallet to allocate to this agent.");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Connect Wallet to allocate to this agent.",
+      });
       return;
     }
     if (isModuleDelegated) {
       removeAgent(props.agentKey);
     } else {
-      toast.success("Agent added, open allocation menu to set percentages.");
+      toast({
+        title: "Success!",
+        description: "Agent added, open allocation menu to set percentages.",
+      });
       addAgent({
         id: props.id,
         name: props.name,

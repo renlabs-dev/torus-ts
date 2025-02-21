@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -18,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
 import { Textarea } from "@torus-ts/ui/components/text-area";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -50,6 +50,7 @@ export function CreateCadreCandidates() {
     isUserCadre,
     isUserCadreCandidate,
   } = useGovernance();
+  const { toast } = useToast();
 
   const form = useForm<CreateCadreCandidateFormData>({
     resolver: zodResolver(createCadreCandidateSchema),
@@ -67,12 +68,17 @@ export function CreateCadreCandidates() {
     onSuccess: async () => {
       reset();
       await cadreCandidates.refetch();
-      toast.success("Curator DAO member request submitted successfully!");
+      toast({
+        title: "Success!",
+        description: "Curator DAO member request submitted successfully!",
+      });
     },
     onError: (error) => {
-      toast.error(
-        error.message || "An unexpected error occurred. Please try again.",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
     },
   });
 
@@ -83,13 +89,18 @@ export function CreateCadreCandidates() {
 
   const onSubmit = (data: CreateCadreCandidateFormData) => {
     if (!selectedAccount.address) {
-      toast.error("Please connect your wallet to submit a request.");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Please connect your wallet to submit a request.",
+      });
       return;
     }
     if (isUserCadreCandidate) {
-      toast.error(
-        "You have already submitted a request to be a Curator DAO member.",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          "You have already submitted a request to be a Curator DAO member.",
+      });
       return;
     }
     createCadreCandidateMutation.mutate({

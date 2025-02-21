@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
@@ -252,7 +251,6 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
               <CopyButton
                 variant="link"
                 copy={props.agentKey}
-                notify={() => toast.success("Copied to clipboard")}
                 className={`text-foreground-muted hover:text-muted-foreground flex items-center gap-1.5 px-0 hover:no-underline`}
               >
                 <IdCard size={14} />

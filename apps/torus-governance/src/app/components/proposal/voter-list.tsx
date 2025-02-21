@@ -1,9 +1,9 @@
 "use client";
 
 import type { VoteWithStake } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { useLayoutEffect, useState } from "react";
@@ -20,6 +20,8 @@ export function VoterList(props: Readonly<VoterListProps>): JSX.Element {
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(
     null,
   );
+
+  const { toast } = useToast();
 
   useLayoutEffect(() => {
     if (!containerNode) {
@@ -79,7 +81,10 @@ export function VoterList(props: Readonly<VoterListProps>): JSX.Element {
 
   const handleCopyAddress = async (address: string) => {
     await copyToClipboard(address);
-    toast.success("Address copied to clipboard");
+    toast({
+      title: "Success!",
+      description: "Address copied to clipboard.",
+    });
   };
 
   return (

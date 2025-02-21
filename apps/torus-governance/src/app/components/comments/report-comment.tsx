@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AppRouter } from "@torus-ts/api";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
@@ -21,6 +20,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { Textarea } from "@torus-ts/ui/components/text-area";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { inferProcedureOutput } from "@trpc/server";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -57,15 +57,22 @@ export function ReportComment({
     commentReport: { create: createReport },
   } = api;
 
+  const { toast } = useToast();
+
   const reportCommentMutation = createReport.useMutation({
     onSuccess: () => {
       setCommentId(null);
-      toast.success("Comment reported successfully.");
+      toast({
+        title: "Success!",
+        description: "Comment reported successfully.",
+      });
     },
     onError: (error) => {
-      toast.error(
-        error.message || "An unexpected error occurred. Please try again.",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
     },
   });
 

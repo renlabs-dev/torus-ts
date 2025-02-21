@@ -26,7 +26,7 @@ const CustomButton: React.FC<ButtonProps> = ({ href, children }) => (
     variant="outline"
     size="lg"
     asChild
-    className="h-10 w-28 bg-background"
+    className="bg-background h-10 w-28"
   >
     <Link href={href} target="_blank">
       {children}
@@ -78,13 +78,13 @@ export function ButtonsSectionMobile() {
         custom={5}
         className="absolute bottom-[3.8em] flex w-full max-w-[42rem] items-center justify-around gap-[12.5em]"
       >
-        <div className="full flex h-12 w-12 items-center justify-center rounded-full bg-border">
+        <div className="full bg-border flex h-12 w-12 items-center justify-center rounded-full">
           <CircleDotDashed className="h-6 w-6" />
         </div>
         <div className="absolute top-8">
           <CustomButton href="https://discord.gg/torus">Join</CustomButton>
         </div>
-        <div className="full flex h-12 w-12 items-center justify-center rounded-full bg-border">
+        <div className="full bg-border flex h-12 w-12 items-center justify-center rounded-full">
           <Diameter className="h-6 w-6" />
         </div>
       </motion.div>

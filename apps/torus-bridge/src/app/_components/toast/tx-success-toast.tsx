@@ -1,10 +1,13 @@
 import type { ChainName } from "@hyperlane-xyz/sdk";
-import { toast } from "react-toastify";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
-export function toastTxSuccess(msg: string, txHash: string, chain: ChainName) {
-  toast.success(<TxSuccessToast msg={msg} txHash={txHash} chain={chain} />, {
-    autoClose: 12000,
+export function ToastTxSuccess(msg: string, txHash: string, chain: ChainName) {
+  const { toast } = useToast();
+  toast({
+    title: "Success!",
+    description: <TxSuccessToast msg={msg} txHash={txHash} chain={chain} />,
+    duration: 12000,
   });
 }
 

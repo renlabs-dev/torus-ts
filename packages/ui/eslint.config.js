@@ -1,4 +1,9 @@
-import { config } from "@torus-ts/eslint-config/react-internal";
+import baseConfig from "@torus-ts/eslint-config/base";
 
-/** @type {import("eslint").Linter.Config} */
-export default config;
+/** @type {import('typescript-eslint').Config} */
+export default [
+  {
+    ignores: [],
+  },
+  ...baseConfig,
+];

@@ -16,9 +16,9 @@ import {
   useActiveChains,
   useTransactionFns,
 } from "@hyperlane-xyz/widgets";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useState } from "react";
-import { toast } from "react-toastify";
-import { toastTxSuccess } from "~/app/_components/toast/tx-success-toast";
+import { ToastTxSuccess } from "~/app/_components/toast/tx-success-toast";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
@@ -38,6 +38,7 @@ export function useTokenTransfer(onDone?: () => void) {
   const activeAccounts = useAccounts(multiProvider);
   const activeChains = useActiveChains(multiProvider);
   const transactionFns = useTransactionFns(multiProvider);
+  const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,6 +56,7 @@ export function useTokenTransfer(onDone?: () => void) {
         updateTransferStatus,
         setIsLoading,
         onDone,
+        toast,
       }),
     [
       warpCore,
@@ -66,6 +68,7 @@ export function useTokenTransfer(onDone?: () => void) {
       addTransfer,
       updateTransferStatus,
       onDone,
+      toast,
     ],
   );
 
@@ -86,6 +89,7 @@ async function executeTransfer({
   updateTransferStatus,
   setIsLoading,
   onDone,
+  toast,
 }: {
   warpCore: WarpCore;
   values: TransferFormValues;
@@ -97,6 +101,7 @@ async function executeTransfer({
   updateTransferStatus: AppState["updateTransferStatus"];
   setIsLoading: (b: boolean) => void;
   onDone?: () => void;
+  toast: ReturnType<typeof useToast>["toast"];
 }) {
   logger.debug("Preparing transfer transaction(s)");
   setIsLoading(true);
@@ -134,7 +139,10 @@ async function executeTransfer({
         destination,
       });
     if (!isCollateralSufficient) {
-      toast.error("Insufficient collateral on destination for transfer");
+      toast({
+        title: "Insufficient collateral on destination for transfer",
+        description: "Insufficient collateral on destination for transfer",
+      });
       throw new Error("Insufficient destination collateral");
     }
 
@@ -181,7 +189,7 @@ async function executeTransfer({
       txReceipt = await confirm();
       const description = toTitleCase(tx.category);
       logger.debug(`${description} transaction confirmed, hash:`, hash);
-      toastTxSuccess(`${description} transaction sent!`, hash, origin);
+      ToastTxSuccess(`${description} transaction sent!`, hash, origin);
       hashes.push(hash);
     }
 
@@ -204,18 +212,30 @@ async function executeTransfer({
 
     if (errorDetails.includes(CHAIN_MISMATCH_ERROR)) {
       // Wagmi switchNetwork call helps prevent this but isn't foolproof
-      toast.error("Wallet must be connected to origin chain");
+      toast({
+        title: "Wallet must be connected to origin chain",
+        description: "Wallet must be connected to origin chain",
+      });
     } else if (
       errorDetails.includes(TRANSFER_TIMEOUT_ERROR1) ||
       errorDetails.includes(TRANSFER_TIMEOUT_ERROR2)
     ) {
-      toast.error(
-        `Transaction timed out, ${getChainDisplayName(multiProvider, origin)} may be busy. Please try again.`,
-      );
+      toast({
+        title: `Transaction timed out, ${getChainDisplayName(
+          multiProvider,
+          origin,
+        )} may be busy. Please try again.`,
+        description: `Transaction timed out, ${getChainDisplayName(
+          multiProvider,
+          origin,
+        )} may be busy. Please try again.`,
+      });
     } else {
-      toast.error(
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      );
+      toast({
+        title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+        description:
+          errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      });
     }
   }
 

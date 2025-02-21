@@ -1,5 +1,4 @@
 import type { Blocks, SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { Card, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { getCreationTime, getExpirationTime } from "@torus-ts/utils";
@@ -41,7 +40,6 @@ export const DetailsCard = (props: DetailsCardProps) => {
           <CopyButton
             copy={author}
             variant="link"
-            notify={() => toast.success("Copied to clipboard")}
             className="hover:text-muted-foreground h-fit p-0"
           >
             <span>{smallAddress(author)}</span>
@@ -54,7 +52,6 @@ export const DetailsCard = (props: DetailsCardProps) => {
             <CopyButton
               copy={agentKey}
               variant="link"
-              notify={() => toast.success("Copied to clipboard")}
               className="hover:text-muted-foreground h-fit p-0"
             >
               <span>{smallAddress(agentKey)}</span>

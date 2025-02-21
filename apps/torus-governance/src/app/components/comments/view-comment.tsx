@@ -2,7 +2,6 @@
 
 import { ReportComment } from "./report-comment";
 import type { AppRouter } from "@torus-ts/api";
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
@@ -11,6 +10,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import {
@@ -200,17 +200,25 @@ export function ViewComment({
     },
   });
 
+  const { toast } = useToast();
+
   const handleVote = useCallback(
     async (commentId: number, reactionType: CommentInteractionReactionType) => {
       if (!selectedAccount?.address) {
-        toast.error("Please connect your wallet to vote");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Please connect your wallet to vote",
+        });
         return;
       }
 
       try {
         const commentExists = comments?.some((c) => c.id === commentId);
         if (!commentExists) {
-          toast.error("Comment not found");
+          toast({
+            title: "Uh oh! Something went wrong.",
+            description: "Comment not found",
+          });
           return;
         }
 
@@ -224,11 +232,14 @@ export function ViewComment({
         }
       } catch (err) {
         console.error("Error voting:", err);
-        toast.error(
-          "There was an error processing your vote. Please try again.",
-        );
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description:
+            "There was an error processing your vote. Please try again.",
+        });
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       selectedAccount?.address,
       comments,
@@ -262,7 +273,10 @@ export function ViewComment({
   }, [containerNode]);
 
   if (error) {
-    toast.error("Failed to load comments. Please try again later.");
+    toast({
+      title: "Uh oh! Something went wrong.",
+      description: "Failed to load comments. Please try again later.",
+    });
     return <div>Error loading comments</div>;
   }
 

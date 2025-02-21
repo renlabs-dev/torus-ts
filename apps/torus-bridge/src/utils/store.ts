@@ -8,7 +8,6 @@ import { GithubRegistry } from "@hyperlane-xyz/registry";
 import type { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
 import { MultiProtocolProvider, WarpCore } from "@hyperlane-xyz/sdk";
 import { objFilter } from "@hyperlane-xyz/utils";
-import { toast } from "react-toastify";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
@@ -195,9 +194,6 @@ async function initWarpContext(
     const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
     return { registry, chainMetadata, multiProvider, warpCore };
   } catch (error) {
-    toast.error(
-      "Error initializing warp context. Please check connection status and configs.",
-    );
     logger.error("Error initializing warp context", error);
     return {
       registry,

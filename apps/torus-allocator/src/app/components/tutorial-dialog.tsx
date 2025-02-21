@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from "@torus-ts/toast-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,7 +49,6 @@ export const tutorialData = {
         copy={env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS")}
         variant="link"
         className="h-5 p-0 text-sm underline"
-        notify={() => toast.success("Copied to clipboard")}
       >
         Click to copy the Allocator address.
       </CopyButton>,

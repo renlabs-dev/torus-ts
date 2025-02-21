@@ -2,10 +2,10 @@ import "@torus-ts/ui/globals.css";
 import { AllocationMenu } from "./components/allocation-menu";
 import { AllocatorHeader } from "./components/allocator-header";
 import { TutorialDialog } from "./components/tutorial-dialog";
-import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { Toaster } from "@torus-ts/ui/components/toaster";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript, env } from "~/env";
@@ -38,20 +38,19 @@ export default function RootLayout({
       headScripts={[EnvScript]}
       className="bg-[url(/background.svg)]"
     >
-      <ToastProvider>
-        <TorusProvider
-          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-        >
-          <TRPCReactProvider>
-            <AllocatorHeader torusCacheUrl={torusCacheUrl} />
-            <TutorialDialog />
-            <AllocationMenu />
-            {children}
-            <Footer />
-          </TRPCReactProvider>
-        </TorusProvider>
-      </ToastProvider>
+      <TorusProvider
+        wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+        torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+      >
+        <TRPCReactProvider>
+          <AllocatorHeader torusCacheUrl={torusCacheUrl} />
+          <TutorialDialog />
+          <AllocationMenu />
+          {children}
+          <Toaster />
+          <Footer />
+        </TRPCReactProvider>
+      </TorusProvider>
     </Layout>
   );
 }

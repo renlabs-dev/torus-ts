@@ -23,7 +23,6 @@
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/utils": "workspace:*",
-    "@torus-ts/toast-provider": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",

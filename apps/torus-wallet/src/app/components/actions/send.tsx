@@ -7,7 +7,6 @@ import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog
 import { ReviewTransactionDialog } from "../review-transaction-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isSS58 } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
@@ -21,6 +20,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import React, {
   useCallback,
@@ -46,6 +46,7 @@ export function SendAction() {
     selectedAccount,
     transferTransaction,
   } = useWallet();
+  const { toast } = useToast();
 
   const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
@@ -104,7 +105,10 @@ export function SendAction() {
         amount: "0",
       });
       if (!transaction) {
-        toast.error("Error creating transaction for estimating fee.");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Error creating transaction for estimating fee.",
+        });
         return;
       }
       const fee = await estimateFee(transaction);

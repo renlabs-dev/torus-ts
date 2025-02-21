@@ -8,7 +8,6 @@ import { ReviewTransactionDialog } from "../review-transaction-dialog";
 import { ValidatorsList } from "../validators-list";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58, isSS58 } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
@@ -22,6 +21,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import {
   formatToken,
   fromNano,
@@ -55,6 +55,7 @@ export function TransferStakeAction() {
     estimateFee,
     getExistencialDeposit,
   } = useWallet();
+  const { toast } = useToast();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
@@ -164,7 +165,10 @@ export function TransferStakeAction() {
         amount: "0",
       });
       if (!transaction) {
-        toast.error("Error creating transaction for estimating fee.");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Error creating transaction for estimating fee.",
+        });
         return;
       }
       const fee = await estimateFee(transaction);

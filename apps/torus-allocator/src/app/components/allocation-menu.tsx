@@ -2,7 +2,6 @@
 
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
-import { toast } from "@torus-ts/toast-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
@@ -15,6 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@torus-ts/ui/components/sheet";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Anvil, LoaderCircle, PieChart, X } from "lucide-react";
@@ -37,6 +37,7 @@ export function AllocationMenu() {
     hasPercentageChange,
     setPercentageChange,
   } = useDelegateAgentStore();
+  const { toast } = useToast();
 
   const { selectedAccount, api: torusApi } = useTorus();
   const accountStakedBy = useKeyStakedBy(
@@ -132,17 +133,28 @@ export function AllocationMenu() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedAccount?.address || totalPercentage !== 100) {
-      toast.error(
-        "Please connect your wallet and ensure total percentage is 100%",
-      );
+    if (!selectedAccount?.address) {
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Please connect your wallet.",
+      });
+      return;
+    }
+
+    if (totalPercentage !== 100) {
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Ensure total percentage is 100%",
+      });
       return;
     }
 
     if (Number(userStakeWeight) < 50) {
-      toast.error(
-        "You must have at least 50 TORUS staked to allocate to agents",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          "You must have at least 50 TORUS staked to allocate to agents",
+      });
       return;
     }
 
@@ -158,9 +170,11 @@ export function AllocationMenu() {
     );
 
     if (filteredTotalPercentage !== 100) {
-      toast.error(
-        "Total percentage must be 100% after removing agents with 0%",
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          "Total percentage must be 100% after removing agents with 0%",
+      });
       return;
     }
 
@@ -200,7 +214,10 @@ export function AllocationMenu() {
       setIsSubmitting(false);
       setPercentageChange(false);
 
-      toast.success("Allocation submitted successfully");
+      toast({
+        title: "Success!",
+        description: "Allocation submitted.",
+      });
     } catch (error) {
       console.error("Error submitting data:", error);
       setIsSubmitting(false);

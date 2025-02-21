@@ -27,6 +27,7 @@ import type {
   CustomMetadataState,
 } from "@torus-ts/subspace";
 import { sb_balance } from "@torus-ts/subspace";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { toNano } from "@torus-ts/utils/subspace";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -158,6 +159,8 @@ export function TorusProvider({
   >([]);
   const [selectedAccount, setSelectedAccount] =
     useState<InjectedAccountWithMeta | null>(null);
+
+  const { toast } = useToast();
 
   // == Initialize Polkadot ==
 
@@ -312,6 +315,7 @@ export function TorusProvider({
       transactionType: "Staking",
       refetchHandler,
       wsEndpoint,
+      toast,
     });
   }
 
@@ -341,6 +345,7 @@ export function TorusProvider({
       transactionType: "Unstaking",
       refetchHandler,
       wsEndpoint,
+      toast,
     });
   }
 
@@ -373,6 +378,7 @@ export function TorusProvider({
       transactionType: "Transfer",
       refetchHandler,
       wsEndpoint,
+      toast,
     });
   }
 
@@ -413,6 +419,7 @@ export function TorusProvider({
       transactionType: "Transfer Stake",
       refetchHandler,
       wsEndpoint,
+      toast,
     });
   }
 
@@ -453,6 +460,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Register Agent",
       wsEndpoint,
+      toast,
     });
   }
 
@@ -476,6 +484,7 @@ export function TorusProvider({
       transactionType: "Vote Proposal",
       wsEndpoint,
       refetchHandler,
+      toast,
     });
   }
 
@@ -496,6 +505,7 @@ export function TorusProvider({
       transactionType: "Remove Vote",
       wsEndpoint,
       refetchHandler,
+      toast,
     });
   }
 
@@ -514,6 +524,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Create Custom Proposal",
       wsEndpoint,
+      toast,
     });
   }
 
@@ -540,6 +551,7 @@ export function TorusProvider({
       transactionType: "Create Dao Application",
       wsEndpoint,
       refetchHandler,
+      toast,
     });
   }
 
@@ -564,6 +576,7 @@ export function TorusProvider({
       transaction,
       transactionType: "Transfer Dao Treasury Proposal",
       wsEndpoint,
+      toast,
     });
   }
 
@@ -617,6 +630,7 @@ export function TorusProvider({
       transactionType: "Update Delegating Voting Power",
       wsEndpoint,
       refetchHandler,
+      toast,
     });
   }
   return (

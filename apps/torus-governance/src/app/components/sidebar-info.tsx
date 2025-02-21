@@ -1,8 +1,8 @@
 "use client";
 
-import { toast } from "@torus-ts/toast-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Copy } from "lucide-react";
 import { useGovernance } from "~/context/governance-provider";
@@ -14,6 +14,7 @@ export const SidebarInfo = () => {
     daoTreasuryBalance,
     cadreList,
   } = useGovernance();
+  const { toast } = useToast();
 
   const { data: cadreListData, isFetching: isFetchingCadreList } = cadreList;
 
@@ -21,10 +22,16 @@ export const SidebarInfo = () => {
     navigator.clipboard
       .writeText(value)
       .then(() => {
-        toast.success("Treasury address copied to clipboard");
+        toast({
+          title: "Copied!",
+          description: "Treasury address copied to clipboard.",
+        });
       })
       .catch(() => {
-        toast.error("Failed to copy treasury address");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to copy treasury address.",
+        });
       });
   }
 

@@ -2,7 +2,9 @@
 
 import type { VariantProps } from "class-variance-authority";
 import { cn, copyToClipboard } from "../lib/utils";
-import { Button, buttonVariants } from "./button";
+import type { buttonVariants } from "./button";
+import { Button } from "./button";
+import { useToast } from "../hooks/use-toast";
 
 type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 interface CopyButtonProps
@@ -11,7 +13,6 @@ interface CopyButtonProps
   children: React.ReactNode | string;
   className?: string;
   variant?: ButtonVariantProps["variant"];
-  notify?: () => void;
   asChild?: boolean;
 }
 
@@ -22,13 +23,16 @@ export function CopyButton(props: Readonly<CopyButtonProps>): JSX.Element {
     variant,
     copy,
     asChild = false,
-    notify,
     ...rest
   } = props;
+  const { toast } = useToast();
 
   const handleClick = async (copy: string) => {
     await copyToClipboard(copy);
-    if (notify) return notify();
+    toast({
+      title: "Success!",
+      description: "Copied to clipboard",
+    });
   };
 
   return (

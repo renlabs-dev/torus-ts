@@ -1,8 +1,8 @@
 import { TokenBalance } from "../_components/token-balance";
 import { useAccountAddressForChain } from "@hyperlane-xyz/widgets";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useFormikContext } from "formik";
 import { TextField } from "~/app/_components/text-field";
 import { useDestinationBalance } from "~/hooks/balance/use-destination-balance";
@@ -42,13 +42,15 @@ function SelfButton({ disabled }: Readonly<{ disabled?: boolean }>) {
   const multiProvider = useMultiProvider();
   const chainDisplayName = useChainDisplayName(values.destination);
   const address = useAccountAddressForChain(multiProvider, values.destination);
+  const { toast } = useToast();
   const onClick = () => {
     if (disabled) return;
     if (address) void setFieldValue("recipient", address);
     else
-      toast.warn(
-        `No account found for for chain ${chainDisplayName}, is your wallet connected?`,
-      );
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: `No account found for for chain ${chainDisplayName}, is your wallet connected?`,
+      });
   };
   return (
     <Button

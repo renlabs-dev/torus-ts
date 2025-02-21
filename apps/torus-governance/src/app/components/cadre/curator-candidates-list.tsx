@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -267,7 +266,6 @@ export const CuratorCandidatesList = (props: CuratorCandidateCardProps) => {
             <CopyButton
               copy={curatorCandidate.userKey}
               variant={"link"}
-              notify={() => toast.success("Copied to clipboard")}
               className="text-muted-foreground h-5 items-center p-0 text-sm hover:text-white"
             >
               <Crown size={10} />

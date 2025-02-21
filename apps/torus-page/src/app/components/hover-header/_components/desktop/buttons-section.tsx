@@ -3,7 +3,6 @@ import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { links } from "@torus-ts/ui/lib/data";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { ArrowBigDown } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -47,7 +46,7 @@ function CustomButton({ href, children, isHidden }: Readonly<ButtonProps>) {
       variant="outline"
       size="lg"
       asChild
-      className={`w-28 animate-fade-down bg-background animate-delay-300`}
+      className={`animate-fade-down bg-background animate-delay-300 w-28`}
     >
       <Link href={href} target="_blank">
         {children}
@@ -97,7 +96,7 @@ export function ButtonsSection({
         className="absolute bottom-[5.2em] flex w-full max-w-[38.5rem] items-center justify-around"
       >
         <Button
-          className="rounded-full bg-accent hover:bg-background disabled:opacity-100"
+          className="bg-accent hover:bg-background rounded-full disabled:opacity-100"
           onClick={onStarterClick}
           variant="outline"
         >
@@ -105,7 +104,7 @@ export function ButtonsSection({
         </Button>
         <CustomButton href="https://discord.gg/torus">Join</CustomButton>
         <Button
-          className="rounded-full bg-accent hover:bg-background disabled:opacity-100"
+          className="bg-accent hover:bg-background rounded-full disabled:opacity-100"
           onClick={onNetworkClick}
           variant="outline"
         >

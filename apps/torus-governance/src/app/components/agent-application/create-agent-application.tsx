@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@torus-ts/toast-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -23,6 +22,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 import { formatToken } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -56,6 +56,7 @@ export function CreateAgentApplication(): JSX.Element {
     selectedAccount,
     networkConfigs,
   } = useGovernance();
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
   const [uploading, setUploading] = useState(false);
@@ -111,11 +112,13 @@ export function CreateAgentApplication(): JSX.Element {
       setUploading(false);
 
       if (!accountFreeBalance.data) {
-        toast.error("Balance is still loading");
         return;
       }
       if (!networkConfigs.data) {
-        toast.error("Network configs are still loading");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Network configs are still loading.",
+        });
         return;
       }
 
@@ -130,16 +133,20 @@ export function CreateAgentApplication(): JSX.Element {
           refetchHandler,
         });
       } else {
-        toast.error(
-          `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(
             accountFreeBalance.data,
           )}`,
-        );
+        });
       }
     } catch (e) {
       setUploading(false);
       console.error(e);
-      toast.error("Error uploading Agent Application");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Error uploading Agent Application",
+      });
     }
   }
 

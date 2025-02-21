@@ -2,7 +2,6 @@
 
 import { ListContainer } from "./container-list";
 import type { AppRouter } from "@torus-ts/api";
-import { toast } from "@torus-ts/toast-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
@@ -195,7 +194,6 @@ const AgentPenaltiesCard = (props: {
           <CopyButton
             copy={content.key}
             variant="link"
-            notify={() => toast.success("Copied to clipboard")}
             className="text-muted-foreground mt-0.5 h-5 items-center p-0 text-sm hover:text-white"
           >
             {smallAddress(content.key, 6)}
@@ -251,7 +249,6 @@ const PenaltiesList = (props: { penalties?: PenaltyList }) => {
                   <CopyButton
                     copy={penalty.cadreKey}
                     variant="link"
-                    notify={() => toast.success("Copied to clipboard")}
                     className="text-muted-foreground h-5 items-center p-0 text-sm hover:text-white"
                   >
                     {smallAddress(penalty.cadreKey, 10)}

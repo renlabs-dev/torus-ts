@@ -87,7 +87,7 @@ const easeOutExpo = (x: number): number =>
   x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
 
 const ClientHeroSection = () => (
-  <section className="absolute -z-30 h-screen w-screen animate-fade animate-delay-700">
+  <section className="animate-fade animate-delay-700 absolute -z-30 h-screen w-screen">
     <section className="h-screen w-screen opacity-20">
       <Canvas camera={{ position: [0, 0, 2.5], fov: 70 }}>
         <AnimatedIcosahedron />

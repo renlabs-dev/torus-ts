@@ -1,9 +1,9 @@
 import "@torus-ts/ui/globals.css";
-import { ToastProvider } from "@torus-ts/toast-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { Toaster } from "@torus-ts/ui/components/toaster";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { GovernanceProvider } from "~/context/governance-provider";
@@ -37,12 +37,11 @@ export default function RootLayout({
         torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
       >
         <TRPCReactProvider>
-          <ToastProvider>
-            <GovernanceProvider>
-              <Container>{children}</Container>
-              <Footer />
-            </GovernanceProvider>
-          </ToastProvider>
+          <GovernanceProvider>
+            <Container>{children}</Container>
+            <Footer />
+            <Toaster />
+          </GovernanceProvider>
         </TRPCReactProvider>
       </TorusProvider>
     </Layout>

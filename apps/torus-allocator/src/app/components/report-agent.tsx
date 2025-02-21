@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@torus-ts/toast-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
@@ -28,6 +27,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { Textarea } from "@torus-ts/ui/components/text-area";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { TriangleAlert } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -55,15 +55,21 @@ interface ReportAgentProps {
 }
 
 export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
+  const { toast } = useToast();
+
   const reportAgentMutation = api.agentReport.create.useMutation({
     onSuccess: () => {
       reset();
-      toast.success("Agent reported successfully.");
+      toast({
+        title: "Success!",
+        description: "Agent reported successfully.",
+      });
     },
     onError: (error) => {
-      toast.error(
-        error.message || "An unexpected error occurred. Please try again.",
-      );
+      toast({
+        title: "An unexpected error occurred.",
+        description: error.message,
+      });
     },
   });
 
@@ -88,7 +94,6 @@ export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
       reason: data.reason,
       content: data.content,
     });
-    toast.success("Agent reported successfully.");
   };
 
   return (

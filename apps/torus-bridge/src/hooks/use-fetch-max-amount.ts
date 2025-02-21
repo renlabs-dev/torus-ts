@@ -10,7 +10,7 @@ import type { ProtocolType } from "@hyperlane-xyz/utils";
 import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "react-toastify";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
 interface FetchMaxParams {
@@ -23,10 +23,11 @@ interface FetchMaxParams {
 export function useFetchMaxAmount() {
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
+  const { toast } = useToast();
 
   const mutation = useMutation({
     mutationFn: (params: FetchMaxParams) =>
-      fetchMaxAmount(multiProvider, warpCore, params),
+      fetchMaxAmount(multiProvider, warpCore, params, toast),
   });
 
   return {
@@ -39,6 +40,7 @@ async function fetchMaxAmount(
   multiProvider: MultiProtocolProvider,
   warpCore: WarpCore,
   { accounts, balance, destination, origin }: FetchMaxParams,
+  toast: ReturnType<typeof useToast>["toast"],
 ) {
   try {
     const { address, publicKey } = getAccountAddressAndPubKey(
@@ -56,10 +58,13 @@ async function fetchMaxAmount(
     return maxAmount;
   } catch (error) {
     logger.warn("Error fetching fee quotes for max amount", error);
-    const chainName = multiProvider.tryGetChainMetadata(origin)?.displayName;
-    toast.warn(
-      `Cannot simulate transfer, ${chainName} native balance may be insufficient.`,
-    );
+    toast({
+      title: "Error calculating maximum transfer amount",
+      description:
+        error instanceof Error
+          ? error.message
+          : "Unable to calculate max amount",
+    });
     return undefined;
   }
 }
