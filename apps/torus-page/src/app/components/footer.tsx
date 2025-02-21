@@ -9,7 +9,7 @@ import { links } from "@torus-ts/ui/lib/data";
 function FooterContent() {
   return (
     <div className="flex justify-between space-x-4">
-      <div className="h-fit w-fit rounded-full bg-accent p-1.5">
+      <div className="bg-accent h-fit w-fit rounded-full p-1.5">
         <Icons.Logo className="m-1 h-5 w-5" />
       </div>
       <div className="space-y-1">
@@ -36,7 +36,7 @@ function FooterContent() {
 
 export function Footer() {
   return (
-    <div className="fixed bottom-0 right-0 z-50 hidden px-4 py-2 animate-delay-700 md:block">
+    <div className="animate-delay-700 fixed bottom-0 right-0 z-50 hidden px-4 py-2 md:block">
       <HoverCard>
         <HoverCardTrigger className="text-sm hover:cursor-pointer hover:underline">
           @torus

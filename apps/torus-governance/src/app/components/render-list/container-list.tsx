@@ -22,7 +22,7 @@ export const ListContainer = (props: {
   return (
     <div
       ref={contentRef}
-      className={`max-h-[calc(100svh-280px)] animate-fade-down overflow-y-auto lg:max-h-[calc(100svh-220px)] ${props.className}`}
+      className={`animate-fade-down max-h-[calc(100svh-280px)] overflow-y-auto lg:max-h-[calc(100svh-220px)] ${props.className}`}
     >
       <div
         className={`flex flex-col-reverse gap-4 ${isOverflowing ? "pr-1 md:pr-2" : ""}`}

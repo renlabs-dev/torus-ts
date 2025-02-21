@@ -131,7 +131,7 @@ export function HoverHeader() {
       <div
         ref={contentRef}
         className={cn(
-          "fixed left-0 right-0 top-0 z-50 mt-4 flex w-full animate-fade-down flex-col items-center pb-6 pt-2 md:justify-center",
+          "animate-fade-down fixed left-0 right-0 top-0 z-50 mt-4 flex w-full flex-col items-center pb-6 pt-2 md:justify-center",
         )}
       >
         <motion.button
@@ -149,7 +149,7 @@ export function HoverHeader() {
         >
           <Icons.Logo className="relative z-10 h-10 w-10" />
           <motion.div
-            className="absolute inset-0 rounded-2xl bg-primary/15 blur-md"
+            className="bg-primary/15 absolute inset-0 rounded-2xl blur-md"
             animate="pulse"
             variants={glowVariants}
             custom={calculateGlowSize(cursorPosition.x, cursorPosition.y) / 1.2}

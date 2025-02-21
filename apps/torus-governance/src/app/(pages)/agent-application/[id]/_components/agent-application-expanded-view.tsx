@@ -88,11 +88,11 @@ export function AgentApplicationExpandedView(
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <div className="flex w-full animate-fade-down flex-row items-center gap-2">
+      <div className="animate-fade-down flex w-full flex-row items-center gap-2">
         <AgentStatusLabel status={content.status} />
         {isAgentRegistered && <AgentActivityLabel />}
       </div>
-      <div className="flex w-full animate-fade-down justify-between gap-10">
+      <div className="animate-fade-down flex w-full justify-between gap-10">
         <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
 
