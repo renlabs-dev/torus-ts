@@ -82,18 +82,18 @@ jobs:
       app_name: torus-allocator
       skip_build: ${{ inputs.skip_build || false }}
 
-  torus-bridge:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-bridge == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-      skip_build: ${{ inputs.skip_build || false }}
+  # torus-bridge:
+  #   needs: turbo-check
+  #   if: |
+  #     inputs.skip_build ||
+  #     contains(github.event.head_commit.message, 'skip build') ||
+  #     (needs.turbo-check.outputs.torus-bridge == 'true' &&
+  #     (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+  #   uses: ./.github/workflows/app-deployment-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
+  #     skip_build: ${{ inputs.skip_build || false }}
 
   torus-cache:
     needs: turbo-check
@@ -181,17 +181,17 @@ jobs:
     with:
       app_name: torus-allocator
 
-  torus-bridge-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
-      needs.turbo-check.outputs.torus-bridge == 'true'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
+  # torus-bridge-dry-run:
+  #   needs: [turbo-check, pr-check]
+  #   if: |
+  #     github.ref_name != 'main' &&
+  #     github.ref_name != 'dev' &&
+  #     github.ref_name != 'cicd' &&
+  #     needs.turbo-check.outputs.torus-bridge == 'true'
+  #   uses: ./.github/workflows/dry-run-build-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
 
   torus-cache-dry-run:
     needs: [turbo-check, pr-check]
