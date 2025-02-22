@@ -163,7 +163,7 @@ const PenaltyLabel = ({
   if (penaltyLength >= penaltyThreshold) {
     return (
       <span className="text-xs text-red-400">
-        Penalties {penaltyFactor}% | {penaltyThreshold}
+        Penalties: {penaltyThreshold} | Consensus: {penaltyFactor}%
       </span>
     );
   }
