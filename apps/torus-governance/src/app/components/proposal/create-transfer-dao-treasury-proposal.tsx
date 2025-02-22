@@ -96,10 +96,10 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
         method: "POST",
         body: data,
       });
-      const ipfs = (await res.json()) as { IpfsHash: string };
+      const ipfs = (await res.json()) as { cid: string };
       setUploading(false);
 
-      if (!ipfs.IpfsHash || ipfs.IpfsHash === "undefined") {
+      if (!ipfs.cid || ipfs.cid === "undefined") {
         toast({
           title: "Uh oh! Something went wrong.",
           description: "Error uploading transfer dao treasury proposal",
@@ -121,7 +121,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
         void addDaoTreasuryTransferProposal({
           value: getValues("value"),
           destinationKey: getValues("destinationKey"),
-          data: `ipfs://${ipfs.IpfsHash}`,
+          data: `ipfs://${ipfs.cid}`,
           callback: (tx) => setTransactionStatus(tx),
         });
       } else {

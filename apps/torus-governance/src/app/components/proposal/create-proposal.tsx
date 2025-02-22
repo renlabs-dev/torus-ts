@@ -89,13 +89,18 @@ export function CreateProposal(): JSX.Element {
         method: "POST",
         body: data,
       });
-      const ipfs = (await res.json()) as { IpfsHash: string };
+      const ipfs = (await res.json()) as { cid: string };
       setUploading(false);
 
-      if (!ipfs.IpfsHash || ipfs.IpfsHash === "undefined") {
+      if (!ipfs.cid || ipfs.cid === "undefined") {
         toast({
           title: "Uh oh! Something went wrong.",
           description: "Error uploading proposal",
+        });
+        setTransactionStatus({
+          status: "ERROR",
+          finalized: true,
+          message: "Error uploading proposal to IPFS",
         });
         return;
       }
@@ -112,7 +117,7 @@ export function CreateProposal(): JSX.Element {
 
       if (Number(accountFreeBalance.data) > proposalCost) {
         void addCustomProposal({
-          IpfsHash: `ipfs://${ipfs.IpfsHash}`,
+          IpfsHash: `ipfs://${ipfs.cid}`,
           callback: (tx) => setTransactionStatus(tx),
         });
       } else {
@@ -136,6 +141,11 @@ export function CreateProposal(): JSX.Element {
         title: "Uh oh! Something went wrong.",
         description:
           e instanceof Error ? e.message : "Error uploading proposal",
+      });
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Insufficient balance",
       });
     }
   }
