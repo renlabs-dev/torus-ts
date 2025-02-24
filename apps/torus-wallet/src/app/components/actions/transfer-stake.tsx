@@ -183,6 +183,7 @@ export function TransferStakeAction() {
     } finally {
       feeRef.current?.setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estimateFee, transferStakeTransaction]);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -351,15 +352,6 @@ export function TransferStakeAction() {
                           disabled={!selectedAccount?.address}
                         />
                       </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={!selectedAccount?.address}
-                        onClick={() => setCurrentView("validators")}
-                        className="flex w-fit items-center px-6 py-2.5"
-                      >
-                        Allocators
-                      </Button>
                     </div>
                     <FormMessage>{errors.toValidator?.message}</FormMessage>
                   </FormItem>
