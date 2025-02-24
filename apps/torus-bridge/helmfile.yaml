@@ -9,7 +9,7 @@ environments:
       - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-torus-bridge
       - ingressHost: bridge.testnet.torus.network
-      - chainEnv: testnet
+      - chainEnv: mainnet
   prod:
     values:
       - ../../helm/values.yaml
