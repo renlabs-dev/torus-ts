@@ -7,6 +7,7 @@ on:
     branches:
       - main
       - dev
+      - feature/migrations
     paths:
       - "packages/db/**"
       - ".github/workflows/migrations.yml"
@@ -42,12 +43,12 @@ jobs:
 
       - name: pnpm install
         run: pnpm install
-        working-directory: packages/db
+
+      - name: drizzle-kit check
+        run: pnpm exec drizzle-kit check
 
       - name: drizzle-kit generate
         run: pnpm exec drizzle-kit generate
-        working-directory: packages/db
 
       - name: drizzle-kit migrate
         run: pnpm exec drizzle-kit migrate
-        working-directory: packages/db
