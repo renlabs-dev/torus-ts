@@ -14,8 +14,10 @@ gen-types name: (dump-metadata name)
 install:
   pnpm install
 
-
 fix: lint-fix format-fix
+
+ls:
+    for dir in ./apps/*; do [ -f "$dir/package.json" ] && name=$(jq -r '.name' "$dir/package.json") && echo "$name"; done
 
 build:
   pnpm exec ./scripts/dev-helper with-env turbo run build
