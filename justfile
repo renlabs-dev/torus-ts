@@ -17,7 +17,7 @@ install:
 fix: lint-fix format-fix
 
 ls:
-    for dir in ./apps/*; do [ -f "$dir/package.json" ] && name=$(jq -r '.name' "$dir/package.json") && echo "$name"; done
+  pnpm exec turbo ls
 
 build:
   pnpm exec ./scripts/dev-helper with-env turbo run build
