@@ -83,7 +83,6 @@ export const useDelegateAgentStore = create<DelegateState>()(
               parseFloat((agent.percentage / totalPercentage).toFixed(4)) *
                 precisionFactor,
             );
-            console.log("roundedPercentage: ", roundedPercentage);
             agent.percentage = roundedPercentage / 100;
           });
           return { delegatedAgents: agents };
