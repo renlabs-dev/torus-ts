@@ -13,6 +13,7 @@ import {
   log,
   sleep,
   getApplications,
+  getProposals,
   agentApplicationToApplication,
 } from "../common";
 import type { NewApplication } from "../db";
@@ -61,6 +62,20 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: upserting ${dbApplications.length} applications`);
   await upsertWhitelistApplication(dbApplications);
   log(`Block ${lastBlock.blockNumber}: applications upserted`);
+}
+
+
+export async function runProposalsFetch(lastBlock: LastBlock) {
+  log(`Block ${lastBlock.blockNumber}: running proposals fetch`);
+  const proposals = await getProposals(lastBlock.apiAtBlock, (_) => true);
+  const proposalsMap = new Map(Object.entries(proposals));
+  const dbProposals: NewProposal[] = [];
+  proposalsMap.forEach((value, _) => {
+    dbProposals.push(agentProposalToProposal(value));
+  });
+  log(`Block ${lastBlock.blockNumber}: upserting ${dbProposals.length} proposals`);
+  await upsertWhitelistProposal(dbProposals);
+  log(`Block ${lastBlock.blockNumber}: proposals upserted`);
 }
 
 export async function agentFetcherWorker(props: WorkerProps) {

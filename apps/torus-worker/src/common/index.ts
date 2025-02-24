@@ -1,3 +1,7 @@
+
+import type { AgentApplication, Api, LastBlock, Proposal } from "@torus-ts/subspace";
+import { queryAgentApplications, queryLastBlock, queryProposals} from "@torus-ts/subspace";
+
 import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
@@ -20,8 +24,6 @@ import {
   queryCadreCandidates,
 } from "../db";
 import type { ApiPromise } from "@polkadot/api";
-import type { AgentApplication, LastBlock, Api } from "@torus-ts/subspace";
-import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
 import { match } from "rustie";
 
 export interface WorkerProps {
@@ -127,6 +129,24 @@ export async function getApplications(
         return hashmap;
       },
       {} as Record<number, AgentApplication>,
+    );
+  return applications_map;
+}
+
+
+export async function getProposals(
+  api: Api,
+  filterFn: (app: Proposal) => boolean,
+) {
+  const application_entries = await queryProposals(api);
+  const pending_daos = application_entries.filter(filterFn);
+  const applications_map: Record<number, Proposal> =
+    pending_daos.reduce(
+      (hashmap, proposal) => {
+        hashmap[proposal.id] = proposal;
+        return hashmap;
+      },
+      {} as Record<number, Proposal>,
     );
   return applications_map;
 }

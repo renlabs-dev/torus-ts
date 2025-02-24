@@ -896,6 +896,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@torus-ts/utils':
+        specifier: workspace:*
+        version: link:../utils
       drizzle-orm:
         specifier: ^0.38.2
         version: 0.38.4(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0)

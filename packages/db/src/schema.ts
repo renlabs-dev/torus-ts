@@ -216,11 +216,12 @@ export const proposalSchema = createTable(
     status: applicationStatus("status").notNull(),
     proposerKey: ss58Address("proposer_key").notNull(),
     creationBlock: integer("creation_block").notNull(),
-
+    metadataUri: text("metadata_uri").notNull(),
+    proposalCost: numeric("proposal_cost").notNull(),
+    notified: boolean("notified").notNull().default(false),
     ...timeFields(),
 
   },
-  (t) => [],
 );
 
 
