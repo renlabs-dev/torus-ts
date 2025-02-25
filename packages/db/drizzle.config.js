@@ -1,11 +1,13 @@
-if (!process.env.POSTGRES_URL) {
-  throw new Error("Missing POSTGRES_URL");
-}
+import { z } from "zod";
 
-const nonPoolingUrl = process.env.POSTGRES_URL.replace(":6543", ":5432");
+const envSchema = z.object({
+  POSTGRES_URL: z.string().nonempty({ message: "Missing POSTGRES_URL" }),
+});
+
+const env = envSchema.parse(process.env);
 
 export default {
   schema: "./src/schema.ts",
   dialect: "postgresql",
-  dbCredentials: { url: nonPoolingUrl },
+  dbCredentials: { url: env.POSTGRES_URL },
 };

@@ -18,7 +18,7 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - 5432:5432
+      - 1337:1337
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
@@ -46,7 +46,7 @@ services:
         - APP_NAME=torus-worker
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
-      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - POSTGRES_URL=postgres://postgres:password@postgres:1337/torus-ts-db
       - PORT=8000
     ports:
       - 3012:8000
@@ -60,7 +60,7 @@ services:
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
       - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
-      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - POSTGRES_URL=postgres://postgres:password@postgres:1337/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
     ports:
@@ -84,7 +84,7 @@ services:
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
       - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
-      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - POSTGRES_URL=postgres://postgres:password@postgres:1337/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
     ports:
@@ -99,7 +99,7 @@ services:
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=ws://subspace:9951
       - NEXT_PUBLIC_TORUS_CACHE_URL=http://FIXME
-      - POSTGRES_URL=postgres://postgres:password@postgres:5432/torus-ts-db
+      - POSTGRES_URL=postgres://postgres:password@postgres:1337/torus-ts-db
       - JWT_SECRET=12345678
     ports:
       - 3024:8000

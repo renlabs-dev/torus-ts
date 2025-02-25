@@ -14,8 +14,10 @@ gen-types name: (dump-metadata name)
 install:
   pnpm install
 
-
 fix: lint-fix format-fix
+
+ls:
+  pnpm exec turbo ls
 
 build:
   pnpm exec ./scripts/dev-helper with-env turbo run build
