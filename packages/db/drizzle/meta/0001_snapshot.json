@@ -1,6 +1,6 @@
 {
-  "id": "e1d8f8e1-3e86-496d-86b3-c6d21cb4221b",
-  "prevId": "cb7f2ff0-6d13-4fe9-acc6-20b71831b74a",
+  "id": "8ca12329-26c8-44df-b7ba-27d4e7e223d9",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -312,12 +312,12 @@
         },
         "discord_id": {
           "name": "discord_id",
-          "type": "varchar(18)",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
         },
-        "candidacyStatus": {
-          "name": "candidacyStatus",
+        "candidacy_status": {
+          "name": "candidacy_status",
           "type": "candidacy_status",
           "typeSchema": "public",
           "primaryKey": false,
@@ -365,7 +365,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "discord_id_check": {
+          "name": "discord_id_check",
+          "value": "LENGTH(\"cadre_candidate\".\"discord_id\") BETWEEN 17 AND 20 "
+        }
+      },
       "isRLSEnabled": false
     },
     "public.cadre": {
@@ -386,7 +391,7 @@
         },
         "discord_id": {
           "name": "discord_id",
-          "type": "varchar(18)",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
         },
@@ -425,7 +430,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "discord_id_check": {
+          "name": "discord_id_check",
+          "value": "LENGTH(\"cadre\".\"discord_id\") BETWEEN 17 AND 20 "
+        }
+      },
       "isRLSEnabled": false
     },
     "public.cadre_vote_history": {

@@ -1,1 +1,0 @@
-DROP TYPE "public"."cadre_vote_type";
