@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import { CustomButton } from "../custom-button";
 import { ANIMATIONS, CONTENT } from "../data";
 import { Card } from "@torus-ts/ui/components/card";
@@ -15,17 +13,16 @@ export function ButtonsSectionMobile() {
     {
       delay: 11,
       className: "flex flex-col gap-6",
-      buttons: mobileButtons[0]!,
+      buttons: mobileButtons[0] ?? [],
     },
     {
       delay: 11,
       className: "flex flex-col gap-6",
-      buttons: mobileButtons[1]!,
+      buttons: mobileButtons[1] ?? [],
     },
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-  const joinButton = mobileButtons[2]?.[0]!;
+  const joinButton = mobileButtons[2]?.[0] ?? { text: "Join", href: "#" };
 
   return (
     <motion.div
