@@ -62,7 +62,7 @@ export const CONTENT = {
       { text: "Bridge", href: links.bridge },
       {
         text: "Blog",
-        href: "https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg",
+        href: links.blog,
       },
     ],
     network: [
@@ -70,7 +70,7 @@ export const CONTENT = {
       { text: "Allocator", href: links.allocator },
       { text: "DAO", href: links.governance },
     ],
-    common: [{ text: "Join", href: "https://discord.gg/torus" }],
+    common: [{ text: "Join", href: links.discord }],
   },
   mobileButtons: [
     [
@@ -78,7 +78,7 @@ export const CONTENT = {
       { text: "Wallet", href: links.wallet },
       {
         text: "Blog",
-        href: "https://mirror.xyz/0xF251922dcda31Bd4686485Be9A185a1B7807428E/NXi_M6QjhrEOtEkuWCbeEGR7UaYft0x2Kv5uOD4V6Bg",
+        href: links.blog,
       },
     ],
     [
@@ -86,6 +86,6 @@ export const CONTENT = {
       { text: "Allocator", href: links.allocator },
       { text: "Docs", href: links.docs },
     ],
-    [{ text: "Join", href: "https://discord.gg/torus" }],
+    [{ text: "Join", href: links.discord }],
   ],
 };
