@@ -1,21 +1,5 @@
+import { ANIMATIONS } from "../data";
 import { motion } from "framer-motion";
-
-const draw = {
-  hidden: { pathLength: 0, opacity: 0 },
-  visible: (custom: number) => ({
-    pathLength: 1,
-    opacity: 1,
-    transition: {
-      pathLength: {
-        type: "spring",
-        duration: 1.5,
-        bounce: 0,
-        delay: custom * 0.5,
-      },
-      opacity: { duration: 0.01, delay: custom * 0.5 },
-    },
-  }),
-};
 
 export function LinesSVGMobile() {
   return (
@@ -36,7 +20,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={0}
       />
       <motion.path
@@ -45,7 +29,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={0}
       />
       <motion.line
@@ -56,10 +40,9 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={1}
       />
-
       {/* Left group of lines */}
       <motion.path
         d="M240 140 H355 Q365 140 365 150 V500"
@@ -67,7 +50,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={1.2}
       />
       {/* Right group of lines */}
@@ -77,7 +60,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={1.2}
       />
     </motion.svg>
