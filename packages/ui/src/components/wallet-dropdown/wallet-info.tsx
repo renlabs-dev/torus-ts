@@ -6,12 +6,12 @@ import {
   smallWalletName,
 } from "@torus-ts/utils/subspace";
 import { Copy, Lock, LockOpen, Wallet } from "lucide-react";
-import { CopyButton } from "../copy-button";
-import { DropdownMenuLabel, DropdownMenuSeparator } from "../dropdown-menu";
+import { useMemo } from "react";
 
 import { cn } from "../../lib/utils";
+import { CopyButton } from "../copy-button";
+import { DropdownMenuLabel, DropdownMenuSeparator } from "../dropdown-menu";
 import { InjectedAccountWithMeta, StakeOutData } from "./wallet-dropdown";
-import { useMemo } from "react";
 
 interface WalletInfoProps {
   selectedAccount: InjectedAccountWithMeta;
@@ -21,7 +21,7 @@ interface WalletInfoProps {
 
 export const WalletInfo = ({
   selectedAccount,
-  balance,
+  balance = 0n,
   stakeOut,
 }: WalletInfoProps) => {
   const userStakeWeight = useMemo(
@@ -30,14 +30,14 @@ export const WalletInfo = ({
   );
 
   const userTotal = useMemo(
-    () => userStakeWeight + (balance ?? 0n),
+    () => userStakeWeight + balance,
     [userStakeWeight, balance],
   );
 
   const walletBalances = [
     {
       label: "Balance",
-      value: formatToken(balance ?? 0n),
+      value: formatToken(balance),
       icon: <LockOpen size={17} />,
     },
     {
@@ -60,7 +60,9 @@ export const WalletInfo = ({
     <>
       <DropdownMenuLabel className={cn("flex items-center justify-between")}>
         <div className={cn("flex flex-col gap-1")}>
-          <span>{smallWalletName(selectedAccount.meta.name!, 15)}</span>
+          <span className="text-sm">
+            {smallWalletName(selectedAccount.meta.name!, 15)}
+          </span>
           <span className={cn("text-xs text-muted-foreground")}>
             {smallAddress(selectedAccount.address)}
           </span>
