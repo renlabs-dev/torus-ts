@@ -2,10 +2,10 @@
 
 import { LogOut, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
-import { DropdownMenuItem, DropdownMenuSeparator } from "./dropdown-menu";
+import { DropdownMenuItem, DropdownMenuSeparator } from "../dropdown-menu";
 
-import { links } from "../lib/data";
-import { cn } from "../lib/utils";
+import { links } from "../../lib/data";
+import { cn } from "../../lib/utils";
 
 interface WalletActionsProps {
   handleLogout: () => void;

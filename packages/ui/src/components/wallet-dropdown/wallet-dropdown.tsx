@@ -6,9 +6,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
+} from "../dropdown-menu";
 
-import { cn } from "../lib/utils";
+import { cn } from "../../lib/utils";
 import { WalletActions } from "./wallet-actions";
 import { WalletInfo } from "./wallet-info";
 import { WalletLabel } from "./wallet-label";
@@ -115,7 +115,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
               <WalletInfo
                 selectedAccount={selectedAccount}
                 balance={balance}
-                stackOut={stakeOut}
+                stakeOut={stakeOut}
               />
               <WalletSwitch
                 accounts={accounts}

@@ -6,16 +6,16 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-} from "./dropdown-menu";
+} from "../dropdown-menu";
 
-import { cn } from "../lib/utils";
+import { cn } from "../../lib/utils";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "./accordion";
-import { NoWalletExtensionDisplay } from "./no-wallet-extension-display";
+} from "../accordion";
+import { NoWalletExtensionDisplay } from "../no-wallet-extension-display";
 
 import { InjectedAccountWithMeta } from "./wallet-dropdown";
 

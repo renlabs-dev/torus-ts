@@ -7,7 +7,7 @@ import {
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Header } from "@torus-ts/ui/components/header";
-import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown";
+import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-dropdown";
 import { env } from "~/env";
 
 export function WalletHeader() {
