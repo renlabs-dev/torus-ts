@@ -34,9 +34,31 @@ import { env } from "~/env";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
 
-const DEFAULT_MODE = "bridge";
-
 export function TransferEVM() {
+  const searchParams = useSearchParams();
+  const currentMode = useMemo(() => {
+    return searchParams.get("mode") as "bridge" | "withdraw" | null;
+  }, [searchParams]);
+
+  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
+  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
+
+  const getChainValues = getChainValuesOnEnv(
+    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
+  );
+
+  const { chainId: torusEvmChainId } = getChainValues("torus");
+  const { address: evmAddress } = wagmi.useAccount();
+
+  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
+  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
+
+  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
+    wagmi.useBalance({
+      address: evmAddress,
+      chainId: torusEvmChainId,
+    });
+
   const [amount, setAmount] = useState<string>("");
   const [userInputEthAddr, setUserInputEthAddr] = useState<string>("");
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -47,21 +69,14 @@ export function TransferEVM() {
     },
   );
 
-  const searchParams = useSearchParams();
   const router = useRouter();
   const multiProvider = useMultiProvider();
-
-  const currentMode = useMemo(() => {
-    return (
-      (searchParams.get("mode") as "bridge" | "withdraw" | null) ?? DEFAULT_MODE
-    );
-  }, [searchParams]);
 
   const toggleMode = () => {
     const newQuery = updateSearchParams(searchParams, {
       from: null,
       to: null,
-      mode: currentMode === "bridge" ? "withdraw" : "bridge",
+      mode: currentMode === "bridge" ? "withdraw" : "bfgetChainValuesridge",
     });
     router.push(`/?${newQuery}`);
   };
@@ -211,25 +226,6 @@ export function TransferEVM() {
     }
   };
 
-  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
-  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
-
-  const getChainValues = getChainValuesOnEnv(
-    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
-  );
-
-  const { chainId: torusEvmChainId } = getChainValues("torus");
-  const { address: evmAddress } = wagmi.useAccount();
-
-  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
-  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
-
-  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
-    wagmi.useBalance({
-      address: evmAddress,
-      chainId: torusEvmChainId,
-    });
-
   const accountFreeBalance = useFreeBalance(
     api,
     selectedAccount?.address as SS58Address,
@@ -252,22 +248,17 @@ export function TransferEVM() {
 
   const handleMaxClick = useCallback(() => {
     if (currentMode === "bridge") {
-      let maxBalance = userAccountFreeBalance();
-      if (maxBalance !== null) {
-        maxBalance = maxBalance - 1n * BigInt(1e18);
-        const maxBalanceString = (Number(maxBalance) / 1e18).toFixed(18);
+      const maxBalance = userAccountFreeBalance();
+      if (maxBalance === null) return;
 
-        setAmount(maxBalanceString.replace(/\.?0+$/, ""));
-      }
+      const adjusted = maxBalance - 1n * BigInt(1e18);
+      const maxBalanceString = (Number(adjusted) / 1e18).toFixed(18);
+      setAmount(maxBalanceString.replace(/\.?0+$/, ""));
     } else {
-      if (!torusEvmBalance) {
-        console.error("Torus EVM balance is null");
-        return;
-      }
+      if (!torusEvmBalance) return;
 
       const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
       const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
-
       setAmount(maxBalanceString.replace(/\.?0+$/, ""));
     }
   }, [currentMode, userAccountFreeBalance, torusEvmBalance]);
