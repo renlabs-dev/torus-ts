@@ -52,6 +52,9 @@ check-all:
 test filter="*":
   pnpm exec turbo run test -F "{{filter}}"
 
+test *args:
+  pnpm exec turbo run test -- {{args}}
+
 create-package:
   pnpm turbo gen init
 
