@@ -1,11 +1,8 @@
 import type { Brand } from "./";
-import {
-  BigNumberBrand,
-  BNInput,
-  buildTaggedBigNumberClass,
-} from "./bignumber";
+import { buildTaggedBigNumberClass } from "./bignumber";
 import { BigNumber } from "bignumber.js";
-import { assert, Equals, Extends, Not } from "tsafe";
+import type { Equals, Extends, Not } from "tsafe";
+import { assert } from "tsafe";
 
 export const DECIMALS = 18;
 

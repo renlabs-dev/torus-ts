@@ -7,6 +7,9 @@ export type BNInput = BigNumber.Value;
 
 type RoundingMode = BigNumber.RoundingMode;
 
+// Symbol used as a brand to make brands nominal types
+export const BN_BRAND_TAG_KEY = Symbol("BigNumberBrandTag");
+
 type IfEquals<X, Y, A, B> = IsEqual<X, Y> extends true ? A : B;
 
 type ReplaceBNInput<T, N> = IfEquals<T, BNInput, N, T>;
@@ -46,6 +49,14 @@ function _test() {
       (n: BigNumberBrand<"X">, base?: number) => BigNumberBrand<"X">
     >
   >();
+
+  // Test that different branded types are not compatible
+  type TokenAmount = BigNumberBrand<"TokenAmount">;
+  type USDValue = BigNumberBrand<"USDValue">;
+
+  // This should fail the assertion check because they are different brands
+  // @ts-expect-error - These types should be incompatible
+  assert<Equals<TokenAmount, USDValue>>();
 }
 
 type BigNumberCtr = BigNumber.Constructor;
@@ -54,13 +65,17 @@ export const buildTaggedBigNumberClass = <Tag extends string>(
   tag: Tag,
   bigNumberCtr: BigNumberCtr,
 ) => {
-  // TODO: try to remove need for sub-classing
+  // Create a CustomBigNumberBrand class that extends BigNumberBrand with the specific tag
   class CustomBigNumberBrand extends BigNumberBrand<Tag> {
     static readonly _tag: Tag = tag;
   }
 
-  const make = (value: BigNumber.Value | bigint) =>
-    CustomBigNumberBrand.from<Tag>(value, bigNumberCtr);
+  /**
+   * Creates an instance of the branded BigNumber
+   */
+  const make = (value: BigNumber.Value | bigint): BigNumberBrand<Tag> => {
+    return CustomBigNumberBrand.from<Tag>(value, bigNumberCtr);
+  };
 
   return {
     Type: CustomBigNumberBrand,
@@ -79,6 +94,9 @@ export class BigNumberBrand<Tag extends string>
   implements TransformBigNumberMethods<BigNumber, BigNumberBrand<Tag>>
 {
   static readonly _tag: string;
+
+  // Using a phantom property ensures nominal typing at the TypeScript level
+  readonly __tag?: Tag;
 
   constructor(
     public readonly value: BigNumber,
