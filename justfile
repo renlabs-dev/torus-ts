@@ -49,6 +49,9 @@ lint-ws:
 check-all:
   pnpm exec turbo run typecheck lint format
 
+test *args:
+  pnpm exec turbo run test -- {{args}}
+
 create-package:
   pnpm turbo gen init
 

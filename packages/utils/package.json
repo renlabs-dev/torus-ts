@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:verbose": "vitest run --reporter verbose",
+    "test:watch": "vitest"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./auth": "./src/auth.ts",
@@ -27,7 +32,8 @@
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/luxon": "^3.4.2",
-    "type-fest": "^4.33.0"
+    "type-fest": "^4.33.0",
+    "vitest": "catalog:"
   },
   "compilerOptions": {
     "module": "ESNext",
