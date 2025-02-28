@@ -23,6 +23,7 @@ import {
   cadreCandidateSchema,
   candidacyStatusValues,
   whitelistApplicationSchema,
+  proposalSchema,
 } from "@torus-ts/db/schema";
 import type {
   Agent as TorusAgent,
@@ -38,6 +39,7 @@ export type NewVote = typeof cadreVoteSchema.$inferInsert;
 export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
+export type NewProposal = typeof proposalSchema.$inferInsert;
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
 export type ApplicationDB = typeof whitelistApplicationSchema.$inferSelect;
@@ -87,6 +89,26 @@ export async function upsertWhitelistApplication(applications: NewApplication[])
     })
     .execute();
 }
+
+
+export async function upsertWhitelistProposal(proposals: NewProposal[]) {
+  await db
+    .insert(proposalSchema)
+    .values(
+      proposals.map((a) => ({
+        expirationBlock: a.expirationBlock,
+        status: a.status,
+        proposerKey: a.proposerKey,
+        creationBlock: a.creationBlock,
+        metadataUri: a.metadataUri,
+        proposalCost: a.proposalCost,
+        
+      })),
+    )
+    .onConflictDoUpdate({ target: [proposalSchema.proposerKey], set: { status: proposalSchema.status } })
+    .execute();
+}
+
 
 export async function upsertAgentData(agents: Agent[]) {
   await db

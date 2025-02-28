@@ -15,11 +15,13 @@ import {
   getApplications,
   getProposals,
   agentApplicationToApplication,
+  agentProposalToProposal,
 } from "../common";
-import type { NewApplication } from "../db";
+import type { NewApplication, NewProposal } from "../db";
 import {
   SubspaceAgentToDatabase,
   upsertAgentData,
+  upsertWhitelistProposal,
   upsertWhitelistApplication,
 } from "../db";
 
