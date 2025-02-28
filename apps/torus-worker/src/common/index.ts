@@ -6,6 +6,7 @@ import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
   NewApplication,
+  NewProposal,
   ApplicationDB,
   CadreCandidate,
 } from "../db";
@@ -93,6 +94,28 @@ export function agentApplicationToApplication(
     ...agentApplication,
     cost: agentApplication.cost.toString(),
     status: mappedStatus,
+  };
+}
+
+
+export function agentProposalToProposal(
+  proposal: Proposal,
+): NewProposal {
+  const status = match(proposal.status)({
+    Open: () => applicationStatusValues.OPEN,
+    Accepted: () => applicationStatusValues.ACCEPTED,
+    Expired: () => applicationStatusValues.EXPIRED,
+    Refused: () => applicationStatusValues.REJECTED,
+  });
+  return {
+    id: proposal.id,
+    expirationBlock: proposal.expirationBlock,
+    status: status,
+    proposerKey: proposal.proposer,
+    creationBlock: proposal.creationBlock,
+    metadataUri: proposal.metadata,
+    proposalCost: proposal.proposalCost.toString(),
+    notified: false, // Default value as specified in schema
   };
 }
 
