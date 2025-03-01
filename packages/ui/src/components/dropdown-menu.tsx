@@ -2,12 +2,10 @@
 
 import { cn } from "../lib/utils";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  // DotFilledIcon,
-} from "@radix-ui/react-icons";
+import { CheckIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import * as React from "react";
+import { CopyButton } from "./copy-button";
+import { Copy } from "lucide-react";
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -122,8 +120,10 @@ DropdownMenuCheckboxItem.displayName =
 
 const DropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem> & {
+    showCopy?: boolean;
+  }
+>(({ className, children, showCopy = false, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
@@ -134,9 +134,20 @@ const DropdownMenuRadioItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <CheckIcon className="h-4 w-4 fill-current" />
+        {props.disabled && <CheckIcon className="h-4 w-4 fill-current" />}
       </DropdownMenuPrimitive.ItemIndicator>
+
+      {showCopy && !props.disabled && (
+        <CopyButton
+          copy={props.value}
+          className={cn("h-fit p-0 text-muted-foreground hover:text-white")}
+          variant="ghost"
+        >
+          <Copy size={17} />
+        </CopyButton>
+      )}
     </span>
+
     {children}
   </DropdownMenuPrimitive.RadioItem>
 ));
