@@ -39,9 +39,31 @@ import { env } from "~/env";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
 
-const DEFAULT_MODE = "bridge";
-
 export function TransferEVM() {
+  const searchParams = useSearchParams();
+  const currentMode = useMemo(() => {
+    return searchParams.get("mode") as "bridge" | "withdraw" | null;
+  }, [searchParams]);
+
+  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
+  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
+
+  const getChainValues = getChainValuesOnEnv(
+    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
+  );
+
+  const { chainId: torusEvmChainId } = getChainValues("torus");
+  const { address: evmAddress } = wagmi.useAccount();
+
+  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
+  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
+
+  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
+    wagmi.useBalance({
+      address: evmAddress,
+      chainId: torusEvmChainId,
+    });
+
   const [amount, setAmount] = useState<string>("");
   const [userInputEthAddr, setUserInputEthAddr] = useState<string>("");
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -52,7 +74,6 @@ export function TransferEVM() {
     },
   );
 
-  const searchParams = useSearchParams();
   const router = useRouter();
   const multiProvider = useMultiProvider();
   const { toast } = useToast();
