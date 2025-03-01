@@ -15,19 +15,24 @@ const BALANCE_ICONS = {
 };
 
 export function WalletBalance() {
-  const { accountFreeBalance, accountStakedBalance, isAccountConnected } =
-    useWallet();
+  const {
+    accountFreeBalance,
+    accountStakedBalance,
+    isAccountConnected,
+    isInitialized,
+  } = useWallet();
 
   const getBalance = useMemo(() => {
-    const free = isAccountConnected ? accountFreeBalance.data : 0n;
-    const staked = isAccountConnected ? accountStakedBalance : 0n;
+    const free = accountFreeBalance.data ?? 0n;
+    const staked = accountStakedBalance ?? 0n;
+    const total = free + staked;
 
     return {
       free,
       staked,
-      total: (free ?? 0n) + (staked ?? 0n),
+      total,
     };
-  }, [accountFreeBalance, accountStakedBalance]);
+  }, [accountFreeBalance.data, accountStakedBalance]);
 
   const balances = [
     {
@@ -51,11 +56,13 @@ export function WalletBalance() {
       : []),
   ];
 
+  const isLoading = !isInitialized || !isAccountConnected;
+
   return (
     <div className="xs:flex-row flex min-h-fit flex-col gap-4 lg:flex-col">
       {balances.map(({ amount, icon, label }) => (
         <Card key={label} className="flex w-full flex-col gap-2 px-7 py-5">
-          {typeof amount === "bigint" ? (
+          {!isLoading ? (
             <p className="text-muted-foreground flex items-end gap-1">
               {formatToken(amount)}
               <span className="mb-0.5 text-xs">TORUS</span>
