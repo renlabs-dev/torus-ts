@@ -77,16 +77,18 @@ export const WalletSwitch = ({
                     )}
                   >
                     <span className="flex w-full items-center justify-between">
-                      <span className="truncate">
+                      <span className="truncate text-sm">
                         {smallWalletName(
                           account.meta.name ?? "Unnamed Wallet",
-                          10,
+                          15,
                         )}
                       </span>
-                      <span className="font-mono">{`${formatToken(totalBalance(account))} TORUS`}</span>
+                      <span className={cn("text-xs text-muted-foreground")}>
+                        {`${formatToken(totalBalance(account))}`}
+                      </span>
                     </span>
                     <span className={cn("text-xs text-muted-foreground")}>
-                      {smallAddress(account.address, 13)}
+                      {smallAddress(account.address, 16)}
                     </span>
                   </span>
                 </div>

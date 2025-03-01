@@ -104,7 +104,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className={cn("mt-0.5 w-64 border border-muted")}
+          className={cn("mt-0.5 w-72 border border-muted")}
         >
           {selectedAccount && (
             <>
