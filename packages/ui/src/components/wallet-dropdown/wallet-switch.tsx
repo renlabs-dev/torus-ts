@@ -65,6 +65,7 @@ export const WalletSwitch = ({
                 key={account.address}
                 value={account.address}
                 disabled={selectedAccount.address === account.address}
+                showCopy={selectedAccount.address !== account.address}
                 className={cn(
                   `${selectedAccount.address === account.address && "bg-active"} rounded-radius`,
                 )}
@@ -79,10 +80,10 @@ export const WalletSwitch = ({
                       <span className="truncate">
                         {smallWalletName(account.meta.name!, 10)}
                       </span>
-                      <span className="font-mono">{`${formatToken(totalBalance(account))}`}</span>
+                      <span className="font-mono">{`${formatToken(totalBalance(account))} TORUS`}</span>
                     </span>
                     <span className={cn("text-xs text-muted-foreground")}>
-                      {smallAddress(account.address)}
+                      {smallAddress(account.address, 13)}
                     </span>
                   </span>
                 </div>
