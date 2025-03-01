@@ -12,8 +12,8 @@ import { cn } from "../../lib/utils";
 import { WalletActions } from "./wallet-actions";
 import { WalletInfo } from "./wallet-info";
 import { WalletLabel } from "./wallet-label";
-import { WalletSelect } from "./wallet-select";
 import { WalletSwitch } from "./wallet-switch";
+import { WalletSelect } from "./wallet-select";
 
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 
@@ -63,18 +63,11 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   const handleWalletSelection = (accountAddress: string) => {
-    const accountExists = accounts?.find(
+    const account = accounts?.find(
       (account) => account.address === accountAddress,
-    );
-    if (!accountExists) {
-      console.error("Account not found");
-      return;
-    }
-    if (selectedAccount && selectedAccount.address === accountExists.address) {
-      console.log("Account already selected");
-      return;
-    }
-    handleSelectWallet(accountExists);
+    )!;
+
+    handleSelectWallet(account);
   };
 
   const getTotalBalance = (
