@@ -5,7 +5,7 @@ import {
   smallAddress,
   smallWalletName,
 } from "@torus-ts/utils/subspace";
-import { Copy, Lock, LockOpen, Wallet } from "lucide-react";
+import { Copy, Lock, LockOpen, Scale } from "lucide-react";
 import { useMemo } from "react";
 
 import { cn } from "../../lib/utils";
@@ -50,7 +50,7 @@ export const WalletInfo = ({
           {
             label: "Total",
             value: formatToken(userTotal),
-            icon: <Wallet size={17} />,
+            icon: <Scale size={17} />,
           },
         ]
       : []),
