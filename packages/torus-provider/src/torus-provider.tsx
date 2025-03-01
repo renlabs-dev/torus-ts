@@ -204,13 +204,13 @@ export function TorusProvider({
 
           return {
             ...account,
-            freeBalance: balance.free.toBigInt() ?? 0n,
+            freeBalance: balance.free.toBigInt(),
           };
         }),
       );
 
       return accountsWithFreeBalance;
-    } catch (error) {
+    } catch {
       return undefined;
     }
   }
