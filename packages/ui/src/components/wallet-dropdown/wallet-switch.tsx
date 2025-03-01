@@ -78,7 +78,10 @@ export const WalletSwitch = ({
                   >
                     <span className="flex w-full items-center justify-between">
                       <span className="truncate">
-                        {smallWalletName(account.meta.name ?? "", 10)}
+                        {smallWalletName(
+                          account.meta.name ?? "Unnamed Wallet",
+                          10,
+                        )}
                       </span>
                       <span className="font-mono">{`${formatToken(totalBalance(account))} TORUS`}</span>
                     </span>

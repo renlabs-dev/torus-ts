@@ -67,7 +67,7 @@ export const WalletSelect = ({
                     "flex flex-col items-start justify-start gap-1",
                   )}
                 >
-                  <span>{account.meta.name}</span>
+                  <span>{account.meta.name ?? "Unnamed Wallet"}</span>
                   <span className={cn("text-xs text-muted-foreground")}>
                     {smallAddress(account.address)}
                   </span>
