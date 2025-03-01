@@ -61,10 +61,10 @@ export const WalletInfo = ({
       <DropdownMenuLabel className={cn("flex items-center justify-between")}>
         <div className={cn("flex flex-col gap-1")}>
           <span className="text-sm">
-            {smallWalletName(selectedAccount.meta.name ?? "Unnamed Wallet", 28)}
+            {smallWalletName(selectedAccount.meta.name ?? "Unnamed Wallet", 25)}
           </span>
           <span className={cn("text-xs text-muted-foreground")}>
-            {smallAddress(selectedAccount.address)}
+            {smallAddress(selectedAccount.address, 15)}
           </span>
         </div>
         <CopyButton
