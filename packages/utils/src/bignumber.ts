@@ -61,6 +61,49 @@ function _test() {
 
 type BigNumberCtr = BigNumber.Constructor;
 
+/**
+ * Creates a tagged BigNumber class with nominal typing for type-safe numeric operations.
+ * 
+ * This function provides a way to create distinct BigNumber types that are incompatible
+ * with each other at the type level, preventing accidental mixing of different numeric
+ * domains (e.g., preventing adding token amounts to USD values).
+ *
+ * @template Tag - A string literal type used to uniquely identify this branded BigNumber type
+ * @param tag - The tag string value used to identify this branded BigNumber type
+ * @param bigNumberCtr - The BigNumber constructor to use, which can be configured for
+ *                       specific precision and rounding behavior
+ * 
+ * @returns An object with two properties:
+ *   - Type: The branded BigNumber class
+ *   - make: A factory function to create instances of the branded BigNumber
+ * 
+ * @example
+ * // Create a type-safe BigNumber for token amounts with banker's rounding
+ * const TokenConfig = BigNumber.clone({
+ *   DECIMAL_PLACES: 18,
+ *   ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // Banker's rounding for financial calculations
+ * });
+ * const { Type: TokenAmount, make: makeTokenAmount } = 
+ *   buildTaggedBigNumberClass("TokenAmount", TokenConfig);
+ * 
+ * // Create a different type for USD values with different precision
+ * const USDConfig = BigNumber.clone({
+ *   DECIMAL_PLACES: 2,
+ *   ROUNDING_MODE: BigNumber.ROUND_HALF_UP,
+ * });
+ * const { Type: USDValue, make: makeUSDValue } = 
+ *   buildTaggedBigNumberClass("USDValue", USDConfig);
+ * 
+ * // These values cannot be mixed at compile time
+ * const tokens = makeTokenAmount(100);
+ * const dollars = makeUSDValue(50);
+ * 
+ * // This would be a type error:
+ * // tokens.plus(dollars);
+ * 
+ * // But operations within the same type are allowed:
+ * const moreTokens = tokens.plus(makeTokenAmount(50));
+ */
 export const buildTaggedBigNumberClass = <Tag extends string>(
   tag: Tag,
   bigNumberCtr: BigNumberCtr,
@@ -72,6 +115,9 @@ export const buildTaggedBigNumberClass = <Tag extends string>(
 
   /**
    * Creates an instance of the branded BigNumber
+   * 
+   * @param value - The numeric value (number, string, or bigint) to wrap
+   * @returns A branded BigNumber instance with the specified tag
    */
   const make = (value: BigNumber.Value | bigint): BigNumberBrand<Tag> => {
     return CustomBigNumberBrand.from<Tag>(value, bigNumberCtr);

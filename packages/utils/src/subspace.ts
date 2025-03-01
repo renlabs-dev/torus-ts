@@ -36,10 +36,27 @@ export type RemAmount = Brand<"RemAmount", bigint>;
 
 // ---- Arbitrary precision decimals ----
 
-/** Configuration for TORUS fixed point number amounts  */
+/** 
+ * Configuration for TORUS fixed point number amounts with banker's rounding.
+ * 
+ * We use ROUND_HALF_EVEN (banker's rounding) which is preferred for financial calculations
+ * because it minimizes cumulative rounding errors when working with large sets of values.
+ * 
+ * Banker's rounding works as follows:
+ * - Values less than half-way round down (1.4 → 1)
+ * - Values greater than half-way round up (1.6 → 2)
+ * - Values exactly half-way round to the nearest even number:
+ *   - 1.5 rounds to 2 (nearest even number)
+ *   - 2.5 rounds to 2 (nearest even number)
+ *   - 3.5 rounds to 4 (nearest even number)
+ *   - 4.5 rounds to 4 (nearest even number)
+ * 
+ * This approach distributes rounding errors evenly (up and down) compared to always
+ * rounding up or down, which prevents bias when summing large sets of values.
+ */
 export const TorBigNumberCfg = BigNumber.clone({
   DECIMAL_PLACES: DECIMALS,
-  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // better for financial
+  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // Banker's rounding for financial calculations
 });
 
 export const { Type: TorAmount, make: makeTorAmount } =

@@ -222,6 +222,7 @@ describe("TorAmount", () => {
     // The sum of 10 should still be 0
     expect(sumRems.toString()).toBe("0");
   });
+  
 
   it("should format token amounts correctly", () => {
     // Test formatToken function with various inputs using bigint literals
