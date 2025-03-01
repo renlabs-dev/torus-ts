@@ -62,10 +62,12 @@ function _test() {
 
 export const DECIMALS_BN_MULTIPLIER = makeTorAmount(10).pow(DECIMALS);
 
-// ---- old ----
+// ---- DEPRECATED ----
 
 /**
+ * @deprecated
  * Converts a value in Nanos to its standard unit representation.
+ *
  * @param nanoValue - The value in nano units.
  * @param roundingDecimals - Number of decimal places to round to.
  * @returns The value in standard units as a string
@@ -88,7 +90,9 @@ export function fromNano(
 }
 
 /**
+ * @deprecated
  * Converts a standard unit value to Nanos.
+ *
  * @param standardValue - The value in standard units (as a number or string)
  * @returns The value in nano units as a bigint
  */
@@ -114,7 +118,7 @@ export function formatToken(nano: number | bigint, decimalPlaces = 2): string {
   return `${formattedIntegerPart}.${roundedFractionalPart}`;
 }
 
-// ---- new ----
+// ---- NEW ----
 
 /**
  * Converts Rems to its standard unit (TORUS) representation.
@@ -135,7 +139,7 @@ export function toRems(amount: TorAmount): bigint {
  * Parse a string representing a TORUS token amount.
  */
 export function parseTorusTokens(txt: string): TorAmount {
-  // TODO: improve parsing
+  // TODO: improve parsing?
   return makeTorAmount(txt);
 }
 
