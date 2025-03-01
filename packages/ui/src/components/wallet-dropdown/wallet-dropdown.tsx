@@ -65,19 +65,22 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   const handleWalletSelection = (accountAddress: string) => {
     const account = accounts?.find(
       (account) => account.address === accountAddress,
-    )!;
+    );
 
-    handleSelectWallet(account);
+    if (account) handleSelectWallet(account);
   };
 
   const getTotalBalance = (
-    balance: bigint | null | undefined,
-    stake?: bigint | null | undefined,
+    balance: bigint | null,
+    stake?: bigint | null,
   ): bigint => (balance ?? 0n) + (stake ?? 0n);
 
   const totalBalance = useMemo(
     () => (account: InjectedAccountWithMeta) =>
-      getTotalBalance(account?.freeBalance, stakeOut?.perAddr[account.address]),
+      getTotalBalance(
+        account.freeBalance ?? 0n,
+        stakeOut?.perAddr[account.address],
+      ),
     [stakeOut],
   );
 
