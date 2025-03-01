@@ -2,12 +2,12 @@
 
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { CreditCard } from "lucide-react";
+
 import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
 } from "../dropdown-menu";
-
 import { cn } from "../../lib/utils";
 import {
   Accordion,
@@ -16,8 +16,7 @@ import {
   AccordionTrigger,
 } from "../accordion";
 import { NoWalletExtensionDisplay } from "../no-wallet-extension-display";
-
-import { InjectedAccountWithMeta } from "./wallet-dropdown";
+import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface WalletSelectProps {
   accounts: InjectedAccountWithMeta[] | undefined;

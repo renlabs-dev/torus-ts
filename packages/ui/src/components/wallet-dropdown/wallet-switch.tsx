@@ -20,7 +20,7 @@ import {
   AccordionTrigger,
 } from "../accordion";
 import { ScrollArea } from "../scroll-area";
-import { InjectedAccountWithMeta } from "./wallet-dropdown";
+import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface WalletSwitchProps {
   accounts: InjectedAccountWithMeta[] | undefined;
@@ -78,7 +78,7 @@ export const WalletSwitch = ({
                   >
                     <span className="flex w-full items-center justify-between">
                       <span className="truncate">
-                        {smallWalletName(account.meta.name!, 10)}
+                        {smallWalletName(account.meta.name ?? "", 10)}
                       </span>
                       <span className="font-mono">{`${formatToken(totalBalance(account))} TORUS`}</span>
                     </span>

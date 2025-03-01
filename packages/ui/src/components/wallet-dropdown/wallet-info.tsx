@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import { cn } from "../../lib/utils";
 import { CopyButton } from "../copy-button";
 import { DropdownMenuLabel, DropdownMenuSeparator } from "../dropdown-menu";
-import { InjectedAccountWithMeta, StakeOutData } from "./wallet-dropdown";
+import type { InjectedAccountWithMeta, StakeOutData } from "./wallet-dropdown";
 
 interface WalletInfoProps {
   selectedAccount: InjectedAccountWithMeta;
@@ -61,7 +61,7 @@ export const WalletInfo = ({
       <DropdownMenuLabel className={cn("flex items-center justify-between")}>
         <div className={cn("flex flex-col gap-1")}>
           <span className="text-sm">
-            {smallWalletName(selectedAccount.meta.name!, 15)}
+            {smallWalletName(selectedAccount.meta.name ?? "", 15)}
           </span>
           <span className={cn("text-xs text-muted-foreground")}>
             {smallAddress(selectedAccount.address)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { smallAddress, smallWalletName } from "@torus-ts/utils/subspace";
-import { InjectedAccountWithMeta } from "./wallet-dropdown";
+import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface WalletLabelProps {
   selectedAccount: InjectedAccountWithMeta | null;
@@ -22,7 +22,7 @@ export const WalletLabel = ({
     return `Torus (${smallAddress(address, 6)})`;
   }
 
-  if (meta?.name) {
+  if (meta.name) {
     return `${smallWalletName(meta.name, 15)} | ${smallAddress(address, 3)}`;
   }
 
