@@ -1,6 +1,19 @@
+import { z } from "zod";
+
+const chainEnvSchema = z.enum(["mainnet", "testnet"]).optional();
+
 const getChainEnvPrefix = () => {
-  const chainEnv = process.env.NEXT_PUBLIC_CHAIN_ENV;
-  return chainEnv ? `${chainEnv}.` : "";
+  const chainEnvResult = chainEnvSchema.safeParse(
+    process.env.NEXT_PUBLIC_TORUS_CHAIN_ENV,
+  );
+
+  if (!chainEnvResult.success) {
+    throw new Error(
+      "Environment variable NEXT_PUBLIC_TORUS_CHAIN_ENV must be set to either 'mainnet' or 'testnet'",
+    );
+  }
+
+  return chainEnvResult.data === "mainnet" ? "" : `.${chainEnvResult.data}.`;
 };
 
 const createTorusUrl = (subdomain: string) =>
