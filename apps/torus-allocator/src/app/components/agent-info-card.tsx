@@ -10,7 +10,11 @@ import { useAgentUsdCalculation } from "./agent-card-usd";
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
   // Calculated values from "torus-ts/apps/torus-allocator/src/app/components/agent-card-usd.tsx"
-  const { tokensPerWeek, usdValue } = useAgentUsdCalculation(agent);
+  const { tokensPerWeek, usdValue, isLoading, isError } = useAgentUsdCalculation(agent)
+
+  // Error SAFE - If the data is not loaded, display a loading state
+  const displayTokensPerWeek = isLoading ? <Loader /> : isError ? "Error loading data" : tokensPerWeek;
+  const displayUsdValue = isLoading ? <Loader /> : isError ? "Error loading data" : usdValue;
 
   const dataGroups = [
     {
@@ -53,11 +57,11 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
     // },
     { 
       label: "Weekly Rewards",
-      value: tokensPerWeek, 
+      value: displayTokensPerWeek, 
     },
     {
       label: "Weekly Rewards(USD)",
-      value: usdValue,
+      value: displayUsdValue,
     },
   ];
 
