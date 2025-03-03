@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const chainEnvSchema = z.enum(["mainnet", "testnet"]).optional();
+const chainEnvSchema = z.enum(["mainnet", "testnet"]);
 
 const getChainEnvPrefix = () => {
   const chainEnvResult = chainEnvSchema.safeParse(
