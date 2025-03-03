@@ -13,11 +13,11 @@ const getChainEnvPrefix = () => {
     );
   }
 
-  return chainEnvResult.data === "mainnet" ? "" : `.${chainEnvResult.data}.`;
+  return chainEnvResult.data === "mainnet" ? "" : `${chainEnvResult.data}.`;
 };
 
 const createTorusUrl = (subdomain: string) =>
-  `https://${getChainEnvPrefix()}${subdomain}.torus.network`;
+  `https://${subdomain}.${getChainEnvPrefix()}torus.network`;
 
 export const links = {
   about: "/about",
