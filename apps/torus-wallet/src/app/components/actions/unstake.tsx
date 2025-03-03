@@ -185,6 +185,7 @@ export function UnstakeAction() {
     } finally {
       feeRef.current?.setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estimateFee, removeStakeTransaction]);
 
   useEffect(() => {
