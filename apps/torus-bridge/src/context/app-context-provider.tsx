@@ -1,6 +1,5 @@
 "use client";
 
-import "@torus-ts/ui/globals.css";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
