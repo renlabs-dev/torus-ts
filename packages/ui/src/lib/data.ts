@@ -1,6 +1,13 @@
+const getChainEnvPrefix = () => {
+  const chainEnv = process.env.NEXT_PUBLIC_CHAIN_ENV;
+  return chainEnv ? `${chainEnv}.` : "";
+};
+
+const createTorusUrl = (subdomain: string) =>
+  `https://${getChainEnvPrefix()}${subdomain}.torus.network`;
+
 export const links = {
   about: "/about",
-
   docs: "https://docs.torus.network/",
   cadre: "/cadre",
 
@@ -18,13 +25,12 @@ export const links = {
 
   torex_explorer: "https://torex.rs/",
 
-  // TODO: use correct chain env suffix depending on the chain env
-  explorer: "https://explorer.torus.network/",
-  governance: "https://dao.torus.network/",
-  allocator: "https://allocator.torus.network/",
-  landing_page: "https://torus.network/",
-  wallet: "https://wallet.torus.network/",
-  bridge: "https://bridge.torus.network/",
+  explorer: createTorusUrl("explorer"),
+  governance: createTorusUrl("dao"),
+  allocator: createTorusUrl("allocator"),
+  landing_page: createTorusUrl("torus"),
+  wallet: createTorusUrl("wallet"),
+  bridge: createTorusUrl("bridge"),
 
   setup_a_wallet: "https://docs.torus.network/installation/setup-wallet",
 };
