@@ -1,4 +1,4 @@
 /packages/subspace/src/interfaces/
-/packages/db/drizzle/
+/packages/db/drizzle/*
 !/packages/subspace/src/interfaces/definitions.ts
 !/packages/subspace/src/interfaces/README.md
