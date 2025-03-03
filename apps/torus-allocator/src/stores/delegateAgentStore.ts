@@ -9,6 +9,8 @@ interface DelegatedAgent {
   percentage: number;
   metadataUri: string | null;
   registrationBlock: number | null;
+  totalStaked: number | null;
+  totalStakers: number | null;
 }
 
 interface DelegateState {

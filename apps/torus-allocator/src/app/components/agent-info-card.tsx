@@ -6,8 +6,12 @@ import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
+import { useAgentUsdCalculation } from "./agent-card-usd";
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
+  // Calculated values from "torus-ts/apps/torus-allocator/src/app/components/agent-card-usd.tsx"
+  const { tokensPerWeek, usdValue } = useAgentUsdCalculation(agent);
+
   const dataGroups = [
     {
       label: "Agent Key",
@@ -22,11 +26,11 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
         </CopyButton>
       ),
     },
-    { label: "Name", value: agent.name ?? "N/A" },
+    { label: "Name", value: agent.name ?? "Loading" },
     { label: "At Block", value: agent.atBlock },
     {
       label: "Registration Block",
-      value: agent.registrationBlock ?? "N/A",
+      value: agent.registrationBlock ?? "Loading",
     },
     {
       label: "API Endpoint",
@@ -43,12 +47,18 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
         "N/A"
       ),
     },
-    {
-      label: "Weight Factor",
-      value: agent.weightFactor ?? "N/A",
+    // {
+    //   label: "Weight Factor",
+    //   value: agent.weightFactor ?? "N/A",
+    // },
+    { 
+      label: "Weekly Rewards",
+      value: tokensPerWeek, 
     },
-    // { label: "Total Allocation", value: formatToken(agent.totalStaked ?? 0) },
-    // { label: "Total Allocated users", value: agent.totalStakers ?? 0 },
+    {
+      label: "Weekly Rewards (in USD)",
+      value: usdValue,
+    },
   ];
 
   return (

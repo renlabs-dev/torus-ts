@@ -33,8 +33,11 @@ import {
   queryTotalStake,
   queryRecyclingPercentage,
   queryIncentivesRatio,
+  queryBlockEmission,
   queryRewardInterval,
   queryWhitelist,
+  sb_balance,
+  sb_bigint,
 } from "@torus-ts/subspace";
 import type { SS58Address } from "@torus-ts/subspace";
 import type { ListItem, Nullish } from "@torus-ts/utils/typing";
@@ -282,6 +285,16 @@ export function useIncentivesRatio(api: Api | Nullish) {
   });
 }
 
+export function useBlockEmission(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["block_emission"],
+    enabled: api != null,
+    queryFn: () => queryBlockEmission(api!),
+    staleTime: STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 // export function useStakeFrom(
 //   torusCacheUrl: string,
 // ): UseQueryResult<StakeData, Error> {
@@ -400,5 +413,29 @@ export function useCustomMetadata<T extends BaseProposal | BaseDao>(
       });
       return outputs;
     },
+  });
+}
+
+// == External API Module ==
+
+// Coingecko
+export interface CoingeckoResponse {
+  torus: {
+    usd: number;
+  };
+}
+
+// Returns the USD value of Torus Coin
+export function useGetTorusPrice() {
+  return useQuery<number, Error>({
+    queryKey: ["torus-price"],
+    queryFn: async () => {
+      const response = await fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=torus&vs_currencies=usd",
+      );
+      const data = (await response.json()) as CoingeckoResponse;
+      return data.torus.usd;
+    },
+    retry: 1,
   });
 }

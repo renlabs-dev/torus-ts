@@ -189,6 +189,12 @@ export async function queryIncentivesRatio(api: Api): Promise<Percent> {
   return incentivesRatio;
 }
 
+export function queryBlockEmission(api: Api): bigint {
+  const q = api.consts.emission0.blockEmission;
+  const emission = sb_bigint.parse(q);
+  return emission;
+}
+
 // ==== Agents ====
 
 // type Query = Api["query"];
