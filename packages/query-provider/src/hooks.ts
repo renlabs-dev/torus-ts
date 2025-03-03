@@ -36,8 +36,6 @@ import {
   queryBlockEmission,
   queryRewardInterval,
   queryWhitelist,
-  sb_balance,
-  sb_bigint,
 } from "@torus-ts/subspace";
 import type { SS58Address } from "@torus-ts/subspace";
 import type { ListItem, Nullish } from "@torus-ts/utils/typing";
