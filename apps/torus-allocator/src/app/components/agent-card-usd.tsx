@@ -46,7 +46,7 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
     // Percent Computed Weight
     const percComputedWeight = computedWeightedAgents?.percComputedWeight
     
-    // Emission * Incentive % * Agent Weight - Penalty Factor
+    // (Emission * %Incentive) * (%Agent Weight * (1 - Penalty Factor))
     return (weeklyEmissionTokens * percIncentivesRatio) * (percComputedWeight * (1 - weightPenaltyFactor))
   }, [emission, incentivesRatio, computedWeightedAgents?.percComputedWeight, agent.weightFactor]);
 
