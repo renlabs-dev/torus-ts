@@ -382,7 +382,7 @@ export async function getUserWeightMap(): Promise<
   for (const entry of result) {
     const { userKey, agentKey, weight } = entry;
     const userWeightMap = getOrSetDefault(weightMap, userKey, () => new Map());
-    userWeightMap.set(agentKey, BigInt(weight));
+    userWeightMap.set(agentKey, BigInt(Math.round(weight)));
   }
   return weightMap;
 }
