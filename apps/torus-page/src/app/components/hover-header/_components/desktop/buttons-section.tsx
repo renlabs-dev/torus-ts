@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { ArrowBigDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
+
 interface ButtonsSectionProps {
   isExpanded: boolean;
   showStarter: boolean;
