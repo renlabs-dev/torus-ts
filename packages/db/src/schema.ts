@@ -98,7 +98,7 @@ export const userAgentWeightSchema = createTable(
       .notNull()
       .references(() => agentSchema.key),
 
-    weight: integer("weight").default(0).notNull(),
+    weight: real("weight").default(0).notNull(),
 
     ...timeFields(),
   },
