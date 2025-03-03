@@ -7,7 +7,7 @@ import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { WalletHeader } from "~/app/_components/shared/wallet-header";
-// import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
+import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
 import { EvmWalletProvider } from "~/context/evm-wallet-provider";
 import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
 import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
@@ -27,12 +27,12 @@ export function AppContextProvider({
         <WarpContextInitGateProvider>
           <EvmWalletProvider>
             <SolanaWalletProvider>
-              {/* <CosmosWalletProvider> */}
-              <WalletHeader />
-              <Container>{children}</Container>
-              <Toaster />
-              <Footer />
-              {/* </CosmosWalletProvider> */}
+              <CosmosWalletProvider>
+                <WalletHeader />
+                <Container>{children}</Container>
+                <Toaster />
+                <Footer />
+              </CosmosWalletProvider>
             </SolanaWalletProvider>
           </EvmWalletProvider>
         </WarpContextInitGateProvider>
