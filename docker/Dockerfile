@@ -29,6 +29,15 @@ RUN turbo prune ${APP_NAME} --docker
 FROM base AS builder
 ARG APP_NAME
 
+ARG TURBO_API
+ENV TURBO_API=$TURBO_API
+
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
 WORKDIR /app
 
 COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
