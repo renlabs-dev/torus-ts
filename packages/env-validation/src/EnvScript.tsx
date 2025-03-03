@@ -40,10 +40,6 @@ export const ZodEnvScript: FC<ZodEnvScriptProps> = ({
 }) => {
   noStore();
 
-  console.info(
-    `ZodEnvScript rendering with skipValidation=${skipValidation}] keys=${Object.keys(schema).join(",")}`,
-  );
-
   if (!skipValidation) {
     const objSchema = z.object(schema);
     const result = objSchema.safeParse(process.env);
