@@ -6,6 +6,7 @@ import { fromNano } from "@torus-ts/utils/subspace";
 import { useMemo } from "react";
 import { api as extAPI } from "~/trpc/react";
 import type { Agent } from "~/utils/types";
+import { BLOCK_TIME_SECONDS, ONE_WEEK } from "@torus-ts/subspace";
 
 interface AgentUsdCalculationResult {
   tokensPerWeek: number;
@@ -26,13 +27,9 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
   const tokensPerWeek = useMemo(() => {
     if (!emission || !incentivesRatio || !computedWeightedAgents?.computedWeight) return 0;
     
-    // Constants - TODO MAKE A FILE ONLY FOR CONSTANTS
     // Calculations
-    // 24(Hours) * 60(Minutes) = 1440(Minutes)
-    // 1440(Minutes) * 60(Seconds) = 86400(Seconds)
-    // 86400(Seconds) / 7(Days) = 525600(Seconds)
-    // 525600(Seconds) / 8 (Average block time) = 75600(Blocks)
-    const BLOCKS_PER_WEEK = 75600; // Approx. 7 days of blocks at 8 second block time
+    // 525600(1 Week in seconds) / 8 (Average block time) = 75600(Blocks)
+    const BLOCKS_PER_WEEK = ONE_WEEK / BLOCK_TIME_SECONDS; 
     
     // Get weight penalty factor
     const weightPenaltyFactor = agent.weightFactor ?? 1; // Default to 1 if not available
@@ -50,7 +47,7 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
     const percComputedWeight = computedWeightedAgents?.percComputedWeight
     
     // Emission * Incentive % * Agent Weight - Penalty Factor
-    return ((weeklyEmissionTokens * percIncentivesRatio) * percComputedWeight) * (1 - weightPenaltyFactor)
+    return (weeklyEmissionTokens * percIncentivesRatio) * (percComputedWeight * (1 - weightPenaltyFactor))
   }, [emission, incentivesRatio, computedWeightedAgents?.percComputedWeight, agent.weightFactor]);
 
   // Calculate USD value of weekly tokens

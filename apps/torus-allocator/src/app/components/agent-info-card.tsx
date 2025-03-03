@@ -56,7 +56,7 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
       value: tokensPerWeek, 
     },
     {
-      label: "Weekly Rewards (in USD)",
+      label: "Weekly Rewards(USD)",
       value: usdValue,
     },
   ];

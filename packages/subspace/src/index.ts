@@ -14,6 +14,9 @@ export * from "./modules/governance";
 // == EVM ==
 export * from "./evm";
 
+// == Constants ==
+export * from "./constants";
+
 // == Cached Queries ==
 export * from "./cached-queries";
 
