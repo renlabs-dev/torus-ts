@@ -1,5 +1,6 @@
 "use client";
 
+import { useIsSsr } from "@hyperlane-xyz/widgets";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
@@ -17,6 +18,11 @@ export function AppContextProvider({
 }: Readonly<{
   children: React.ReactNode;
 }>): JSX.Element {
+  const isSsr = useIsSsr();
+  if (isSsr) {
+    return <div></div>;
+  }
+
   return (
     <ReactQueryProvider>
       <TorusProvider
