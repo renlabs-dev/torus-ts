@@ -200,7 +200,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   };
 
   return (
-    <div className="animate-fade-down flex w-fit justify-end py-1">
+    <div className="flex w-fit animate-fade-down justify-end py-1">
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
           <button

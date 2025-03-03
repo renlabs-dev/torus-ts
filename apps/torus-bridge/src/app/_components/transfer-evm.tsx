@@ -34,31 +34,9 @@ import { env } from "~/env";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
 
+const DEFAULT_MODE = "bridge";
+
 export function TransferEVM() {
-  const searchParams = useSearchParams();
-  const currentMode = useMemo(() => {
-    return searchParams.get("mode") as "bridge" | "withdraw" | null;
-  }, [searchParams]);
-
-  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
-  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
-
-  const getChainValues = getChainValuesOnEnv(
-    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
-  );
-
-  const { chainId: torusEvmChainId } = getChainValues("torus");
-  const { address: evmAddress } = wagmi.useAccount();
-
-  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
-  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
-
-  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
-    wagmi.useBalance({
-      address: evmAddress,
-      chainId: torusEvmChainId,
-    });
-
   const [amount, setAmount] = useState<string>("");
   const [userInputEthAddr, setUserInputEthAddr] = useState<string>("");
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -69,14 +47,21 @@ export function TransferEVM() {
     },
   );
 
+  const searchParams = useSearchParams();
   const router = useRouter();
   const multiProvider = useMultiProvider();
+
+  const currentMode = useMemo(() => {
+    return (
+      (searchParams.get("mode") as "bridge" | "withdraw" | null) ?? DEFAULT_MODE
+    );
+  }, [searchParams]);
 
   const toggleMode = () => {
     const newQuery = updateSearchParams(searchParams, {
       from: null,
       to: null,
-      mode: currentMode === "bridge" ? "withdraw" : "bfgetChainValuesridge",
+      mode: currentMode === "bridge" ? "withdraw" : "bridge",
     });
     router.push(`/?${newQuery}`);
   };
@@ -143,7 +128,7 @@ export function TransferEVM() {
     ) {
       toast({
         title: "Uh oh! Something went wrong.",
-        description: "Invalid state for withdrawal.",
+        description: "Please try again later.",
       });
       return;
     }
@@ -152,9 +137,9 @@ export function TransferEVM() {
       try {
         switchChain({ chainId: torusEvmChainId });
         toast({
-          title:
-            "You were connected to the wrong network, we switched you to Torus.",
-          description: "Please try to withdraw again",
+          title: "Wait, you were connected to the wrong network.",
+          description:
+            "We switched you to Torus. Please try to withdraw again.",
         });
         return;
       } catch {
@@ -220,11 +205,32 @@ export function TransferEVM() {
       setUserInputEthAddr(address);
     } else {
       toast({
-        title: "No account found.",
-        description: "Is your wallet connected?",
+        title: "Uh oh! Something went wrong.",
+        description: "No account found. Is your wallet connected?",
       });
     }
   };
+
+  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
+  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
+
+  const getChainValues = getChainValuesOnEnv(
+    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
+  );
+
+  const { chainId: torusEvmChainId } = getChainValues("torus");
+  const { address: evmAddress } = wagmi.useAccount();
+
+  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
+  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
+
+  // const { chain: torusEvmChain } = torusEvmClient;
+
+  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
+    wagmi.useBalance({
+      address: evmAddress,
+      chainId: torusEvmChainId,
+    });
 
   const accountFreeBalance = useFreeBalance(
     api,
@@ -248,18 +254,21 @@ export function TransferEVM() {
 
   const handleMaxClick = useCallback(() => {
     if (currentMode === "bridge") {
-      const maxBalance = userAccountFreeBalance();
-      if (maxBalance === null) return;
+      let maxBalance = userAccountFreeBalance();
+      if (maxBalance !== null) {
+        maxBalance = maxBalance - 1n * BigInt(1e18);
+        const maxBalanceString = (Number(maxBalance) / 1e18).toFixed(18);
 
-      const adjusted = maxBalance - 1n * BigInt(1e18);
-      const maxBalanceString = (Number(adjusted) / 1e18).toFixed(18);
-      setAmount(maxBalanceString.replace(/\.?0+$/, ""));
+        setAmount(maxBalanceString.replace(/\.?0+$/, ""));
+      }
     } else {
-      if (!torusEvmBalance) return;
+      // withdraw mode
+      if (torusEvmBalance?.value) {
+        const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
+        const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
 
-      const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
-      const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
-      setAmount(maxBalanceString.replace(/\.?0+$/, ""));
+        setAmount(maxBalanceString.replace(/\.?0+$/, ""));
+      }
     }
   }, [currentMode, userAccountFreeBalance, torusEvmBalance]);
 
@@ -269,13 +278,13 @@ export function TransferEVM() {
         <div className="space-y-4">
           <div className="flex items-end gap-2">
             <div className="w-full">
-              <ChainField label="From" chainName={fromChain} />
+              <ChainField name="from" label="From" chainName={fromChain} />
             </div>
             <div className="flex flex-1 flex-col items-center">
               <SwapActionButton onClick={toggleMode} />
             </div>
             <div className="w-full">
-              <ChainField label="To" chainName={toChain} />
+              <ChainField name="to" label="To" chainName={toChain} />
             </div>
           </div>
         </div>
@@ -396,11 +405,12 @@ export function TransferEVM() {
 }
 
 interface ChainFieldProps {
+  name: string;
   label: string;
   chainName: string;
 }
 
-function ChainField({ label, chainName }: Readonly<ChainFieldProps>) {
+function ChainField({ label, chainName }: ChainFieldProps) {
   const isTorusEVM = chainName === "Torus EVM";
   return (
     <div className="flex w-full flex-col gap-2">
@@ -429,7 +439,7 @@ function ChainField({ label, chainName }: Readonly<ChainFieldProps>) {
   );
 }
 
-function SwapActionButton({ onClick }: Readonly<{ onClick: () => void }>) {
+function SwapActionButton({ onClick }: { onClick: () => void }) {
   return (
     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onClick}>
       <ArrowLeftRight className="h-4 w-4" />
