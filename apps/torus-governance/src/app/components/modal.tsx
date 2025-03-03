@@ -4,6 +4,12 @@ import { CreateAgentApplication } from "./agent-application/create-agent-applica
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
+import { useTorus } from "@torus-ts/torus-provider";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
@@ -56,6 +62,7 @@ const viewList: Record<ViewType, ViewSpec> = {
   },
 };
 export function CreateModal() {
+  const { isAccountConnected } = useTorus();
   const { isInitialized } = useGovernance();
   const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");
 
@@ -79,6 +86,16 @@ export function CreateModal() {
             Shape the network
           </DialogTitle>
         </DialogHeader>
+
+        {!isAccountConnected && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Wallet Required</AlertTitle>
+            <AlertDescription>
+              Please connect a wallet to submit an application
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Select
           value={selectedView}
           onValueChange={(value) => setSelectedView(value as ViewType)}

@@ -6,10 +6,10 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
@@ -69,6 +69,7 @@ export function CreateAgentApplication(): JSX.Element {
   );
 
   const form = useForm<AgentApplicationFormData>({
+    disabled: !isAccountConnected,
     resolver: zodResolver(agentApplicationSchema),
     defaultValues: {
       applicationKey: "",
