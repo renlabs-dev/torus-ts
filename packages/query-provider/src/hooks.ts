@@ -438,7 +438,7 @@ export function useGetTorusPrice() {
         
         const data = (await response.json()) as CoingeckoResponse;
         
-        if (!data.torus || typeof data.torus.usd !== 'number') {
+        if (typeof data.torus.usd !== 'number') {
           throw new Error('Invalid response format from Coingecko API');
         }
         
