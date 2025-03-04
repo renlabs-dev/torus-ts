@@ -167,7 +167,6 @@ async function postAgentAggregation(
       };
     })
     .filter((module) => module !== null);
-
   if (dbModuleWeights.length > 0) {
     await insertAgentWeight(dbModuleWeights);
   } else {

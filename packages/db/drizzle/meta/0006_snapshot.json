@@ -1,5 +1,5 @@
 {
-  "id": "8ca12329-26c8-44df-b7ba-27d4e7e223d9",
+  "id": "d2cf93f6-bddd-4ee6-858a-bc66eae20cf0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1135,7 +1135,7 @@
         },
         "weight": {
           "name": "weight",
-          "type": "integer",
+          "type": "real",
           "primaryKey": false,
           "notNull": true,
           "default": 0
