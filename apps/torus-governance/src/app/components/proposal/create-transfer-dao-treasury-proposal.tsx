@@ -64,6 +64,7 @@ export function CreateTransferDaoTreasuryProposal(): JSX.Element {
   );
 
   const form = useForm<TransferDaoTreasuryProposalFormData>({
+    disabled: !isAccountConnected,
     resolver: zodResolver(transferDaoTreasuryProposalSchema),
     defaultValues: {
       destinationKey: "",

@@ -58,6 +58,7 @@ export function CreateProposal(): JSX.Element {
   );
 
   const form = useForm<ProposalFormData>({
+    disabled: !isAccountConnected,
     resolver: zodResolver(proposalSchema),
     defaultValues: {
       title: "",
