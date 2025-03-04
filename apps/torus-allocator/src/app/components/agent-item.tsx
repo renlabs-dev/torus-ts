@@ -36,6 +36,8 @@ interface AgentCardProps {
   registrationBlock?: number | null;
   isDelegated?: boolean;
   globalWeightPerc?: number;
+  totalStaked: number;  
+  totalStakers: number; 
 }
 
 interface SocialItem {
@@ -157,7 +159,10 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
         address: props.agentKey,
         metadataUri: props.metadataUri,
         registrationBlock: props.registrationBlock ?? null,
+        totalStaked: props.totalStaked,
+        totalStakers: props.totalStakers
       });
+
     }
 
     updateBalancedPercentage(props.agentKey, newPercentage);

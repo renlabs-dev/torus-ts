@@ -9,9 +9,12 @@ import type { Agent } from "~/utils/types";
 import { BLOCK_TIME_SECONDS, ONE_WEEK } from "@torus-ts/subspace";
 
 interface AgentUsdCalculationResult {
+  isLoading: boolean;
+  isError: boolean;
   tokensPerWeek: number;
   usdValue: string;
 }
+
 
 export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult {
   const { api } = useTorus();
@@ -44,11 +47,12 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
     const percIncentivesRatio = Number(incentivesRatio)/100;
 
     // Percent Computed Weight
-    const percComputedWeight = computedWeightedAgents?.percComputedWeight
+    const percComputedWeight = computedWeightedAgents.percComputedWeight
     
     // Emission * %Incentive * %Agent Weight * (1 - Penalty Factor)
     return weeklyEmissionTokens * percIncentivesRatio * percComputedWeight * (1 - weightPenaltyFactor);
   }, [emission, incentivesRatio, computedWeightedAgents?.percComputedWeight, computedWeightedAgents?.computedWeight, agent.weightFactor]);
+
 
 
   // Calculate USD value of weekly tokens
@@ -61,5 +65,7 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
   return {
     tokensPerWeek,
     usdValue,
+    isLoading: false,
+    isError: false
   };
 }
