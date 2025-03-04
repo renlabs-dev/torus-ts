@@ -46,15 +46,15 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
     // Percent Computed Weight
     const percComputedWeight = computedWeightedAgents?.percComputedWeight
     
-    // (Emission * %Incentive) * (%Agent Weight * (1 - Penalty Factor))
-    return (weeklyEmissionTokens * percIncentivesRatio) * (percComputedWeight * (1 - weightPenaltyFactor))
-  }, [emission, incentivesRatio, computedWeightedAgents?.percComputedWeight, agent.weightFactor]);
+    // Emission * %Incentive * %Agent Weight * (1 - Penalty Factor)
+    return weeklyEmissionTokens * percIncentivesRatio * percComputedWeight * (1 - weightPenaltyFactor);
+  }, [emission, incentivesRatio, computedWeightedAgents?.percComputedWeight, computedWeightedAgents?.computedWeight, agent.weightFactor]);
+
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
     if (!torusPrice || tokensPerWeek === 0) return "Loading";
-    
-    const usdValue = tokensPerWeek * torusPrice;
+    const usdValue = tokensPerWeek * Number(torusPrice);
     return `$${usdValue.toFixed(2)}`;
   }, [tokensPerWeek, torusPrice]);
 
