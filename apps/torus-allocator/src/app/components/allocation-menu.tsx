@@ -207,6 +207,8 @@ export function AllocationMenu() {
         percentage: agent.user_agent_weight.weight,
         registrationBlock: agent.agent.registrationBlock,
         metadataUri: agent.agent.metadataUri,
+        totalStakers: agent.agent.totalStakers ?? 0,
+        totalStaked: agent.agent.totalStaked,
       }));
 
       setDelegatedAgentsFromDB(formattedModules ?? []);
@@ -282,6 +284,8 @@ export function AllocationMenu() {
         percentage: agent.user_agent_weight.weight,
         registrationBlock: agent.agent.registrationBlock,
         metadataUri: agent.agent.metadataUri,
+        totalStakers: agent.agent.totalStakers ?? 0,
+        totalStaked: agent.agent.totalStaked,
       }));
       setDelegatedAgentsFromDB(formattedModules);
     }

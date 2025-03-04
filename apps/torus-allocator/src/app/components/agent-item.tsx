@@ -36,7 +36,7 @@ interface AgentCardProps {
   registrationBlock?: number | null;
   isDelegated?: boolean;
   globalWeightPerc?: number;
-  totalStaked: number;  
+  totalStaked: bigint | null;  
   totalStakers: number; 
 }
 

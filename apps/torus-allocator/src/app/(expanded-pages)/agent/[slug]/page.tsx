@@ -129,6 +129,8 @@ export default async function AgentPage({
                 agentKey={mdl.key}
                 metadataUri={mdl.metadataUri}
                 registrationBlock={mdl.registrationBlock}
+                totalStaked={mdl.totalStaked ?? 0n}
+                totalStakers={mdl.totalStakers ?? 0}
                 className="w-full"
               />
             </div>

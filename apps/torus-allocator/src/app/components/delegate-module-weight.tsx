@@ -14,6 +14,8 @@ interface DelegateModuleWeightProps {
   metadataUri: string | null;
   registrationBlock: number | null;
   className?: string;
+  totalStaked: bigint | null;
+  totalStakers: number;
 }
 
 export function DelegateModuleWeight(
@@ -49,6 +51,8 @@ export function DelegateModuleWeight(
         address: props.agentKey,
         metadataUri: props.metadataUri,
         registrationBlock: props.registrationBlock,
+        totalStaked: props.totalStaked,
+        totalStakers: props.totalStakers,
       });
     }
   };
