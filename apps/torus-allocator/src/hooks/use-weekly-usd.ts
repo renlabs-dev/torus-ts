@@ -21,13 +21,42 @@ export function useWeeklyUsdCalculation(
   agent: Agent,
 ): AgentUsdCalculationResult {
   const { api } = useTorus();
-  const { data: emission } = useBlockEmission(api);
-  const { data: incentivesRatio } = useIncentivesRatio(api);
-  const { data: torusPrice } = useGetTorusPrice();
+  // Queries the emission
+  const {
+    data: emission,
+    isLoading: isEmissionLoading,
+    isError: isEmissionError,
+  } = useBlockEmission(api);
+  // Queries the Incentives Ratio
+  const {
+    data: incentivesRatio,
+    isLoading: isIncentivesLoading,
+    isError: isIncentivesError,
+  } = useIncentivesRatio(api);
+  // Queries the Torus dolar Brice from Coingecko
+  const {
+    data: torusPrice,
+    isLoading: isTorusPriceLoading,
+    isError: isTorusPriceError,
+  } = useGetTorusPrice();
+  // Queries the computed weight of the agent
+  const {
+    data: computedWeightedAgents,
+    isLoading: isComputedWeightLoading,
+    isError: isComputedWeightError,
+  } = extAPI.computedAgentWeight.byAgentKey.useQuery({ agentKey: agent.key });
 
-  // Get the agent weight with the agent key
-  const { data: computedWeightedAgents } =
-    extAPI.computedAgentWeight.byAgentKey.useQuery({ agentKey: agent.key });
+  // Loads all queries at once, and if any of them are wrong, the whole result is wrong
+  const isLoading =
+    isEmissionLoading ||
+    isIncentivesLoading ||
+    isTorusPriceLoading ||
+    isComputedWeightLoading;
+  const isError =
+    isEmissionError ||
+    isIncentivesError ||
+    isTorusPriceError ||
+    isComputedWeightError;
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
@@ -38,28 +67,20 @@ export function useWeeklyUsdCalculation(
     )
       return 0;
 
-    // Calculations
-    // 525600(1 Week in seconds) / 8 (Average block time) = 75600(Blocks)
+    // Blocks per week calculation
     const BLOCKS_PER_WEEK = ONE_WEEK / BLOCK_TIME_SECONDS;
-
-    // Get weight penalty factor
     const weightPenaltyFactor = agent.weightFactor ?? 1; // Default to 1 if not available
 
-    // Calculate weekly emission in NANOs
-    const weeklyEmissionNanos = emission * BigInt(BLOCKS_PER_WEEK);
+    // Calculate weekly emission in NANOs and convert to tokens
+    const weeklyEmission = Number(fromNano(emission)) * BLOCKS_PER_WEEK;
 
-    // Convert to standard units using fromNano utility
-    const weeklyEmissionTokens = Number(fromNano(weeklyEmissionNanos));
-
-    // Incentives Ratio are from 1 to 100, gotta divide to 100
+    // Calculate ratios
     const percIncentivesRatio = Number(incentivesRatio) / 100;
-
-    // Percent Computed Weight
     const percComputedWeight = computedWeightedAgents.percComputedWeight;
 
     // Emission * %Incentive * %Agent Weight * (1 - Penalty Factor)
     return (
-      weeklyEmissionTokens *
+      weeklyEmission *
       percIncentivesRatio *
       percComputedWeight *
       (1 - weightPenaltyFactor)
@@ -74,15 +95,15 @@ export function useWeeklyUsdCalculation(
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
-    if (!torusPrice || tokensPerWeek === 0) return "Loading";
-    const usdValue = tokensPerWeek * Number(torusPrice);
-    return `$${usdValue.toFixed(2)}`;
+    if (!torusPrice) return "Loading";
+    const calculatedValue = tokensPerWeek * Number(torusPrice);
+    return `$${calculatedValue.toFixed(2)}`;
   }, [tokensPerWeek, torusPrice]);
 
   return {
     tokensPerWeek,
     usdValue,
-    isLoading: false,
-    isError: false,
+    isLoading,
+    isError,
   };
 }
