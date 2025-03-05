@@ -20,10 +20,7 @@ interface Agent {
   registrationBlock: number | null;
   globalWeightPerc?: number;
   // globalWeightStaked: number;
-  totalStaked: bigint | null;
-  totalStakers: number;
 }
-
 
 const filterAgentsBySearch = (agents: Agent[], searchTerm: string | null) => {
   if (!searchTerm) return agents;
@@ -67,12 +64,8 @@ export function AgentContentList() {
         percentage: delegated?.percentage ?? 0,
         registrationBlock: agent.registrationBlock,
         globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
-        totalStaked: agent.totalStaked,
-        totalStakers: agent.totalStakers ?? 0,
       };
     });
-
-
 
     return filterAgentsBySearch(agentsList, searchTerm);
   };
@@ -115,9 +108,7 @@ export function AgentContentList() {
         isDelegated={agent.isDelegated}
         percentage={agent.percentage}
         globalWeightPerc={agent.globalWeightPerc}
-        totalStaked={agent.totalStaked}
-        totalStakers={agent.totalStakers}
-    />
+      />
     ));
   };
 
@@ -162,8 +153,6 @@ export function AgentContentList() {
         percentage: agent.percentage,
         registrationBlock: agent.registrationBlock,
         globalWeightPerc: globalWeight?.percComputedWeight ?? 0,
-        totalStaked: agent.totalStaked,
-        totalStakers: agent.totalStakers ?? 0,
       };
     });
 

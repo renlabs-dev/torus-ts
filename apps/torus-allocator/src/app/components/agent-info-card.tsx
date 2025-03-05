@@ -1,22 +1,33 @@
 "use client";
 
+import { useWeeklyUsdCalculation } from "../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { Loading } from "@torus-ts/ui/components/loading";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
-import { useAgentUsdCalculation } from "./agent-card-usd";
-import { Loading } from "@torus-ts/ui/components/loading";
-
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
-  // Calculated values from "torus-ts/apps/torus-allocator/src/app/components/agent-card-usd.tsx"
-  const { tokensPerWeek, usdValue, isLoading, isError } = useAgentUsdCalculation(agent)
+  const { tokensPerWeek, usdValue, isLoading, isError } =
+    useWeeklyUsdCalculation(agent);
 
   // Error SAFE - If the data is not loaded, display a loading state
-  const displayTokensPerWeek = isLoading ? <Loading /> : isError ? "Error loading data" : tokensPerWeek;
-  const displayUsdValue = isLoading ? <Loading /> : isError ? "Error loading data" : usdValue;
+  const displayTokensPerWeek = isLoading ? (
+    <Loading />
+  ) : isError ? (
+    "Error loading data"
+  ) : (
+    tokensPerWeek
+  );
+  const displayUsdValue = isLoading ? (
+    <Loading />
+  ) : isError ? (
+    "Error loading data"
+  ) : (
+    usdValue
+  );
 
   const dataGroups = [
     {
@@ -57,9 +68,9 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
     //   label: "Weight Factor",
     //   value: agent.weightFactor ?? "N/A",
     // },
-    { 
+    {
       label: "Weekly Rewards",
-      value: displayTokensPerWeek, 
+      value: displayTokensPerWeek,
     },
     {
       label: "Weekly Rewards(USD)",

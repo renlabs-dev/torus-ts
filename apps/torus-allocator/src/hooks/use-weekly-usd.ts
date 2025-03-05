@@ -1,12 +1,14 @@
-"use client";
-
-import { useBlockEmission, useGetTorusPrice, useIncentivesRatio } from "@torus-ts/query-provider/hooks";
+import {
+  useBlockEmission,
+  useGetTorusPrice,
+  useIncentivesRatio,
+} from "@torus-ts/query-provider/hooks";
+import { ONE_WEEK, BLOCK_TIME_SECONDS } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { fromNano } from "@torus-ts/utils/subspace";
 import { useMemo } from "react";
 import { api as extAPI } from "~/trpc/react";
 import type { Agent } from "~/utils/types";
-import { BLOCK_TIME_SECONDS, ONE_WEEK } from "@torus-ts/subspace";
 
 interface AgentUsdCalculationResult {
   isLoading: boolean;
@@ -15,8 +17,9 @@ interface AgentUsdCalculationResult {
   usdValue: string;
 }
 
-
-export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult {
+export function useWeeklyUsdCalculation(
+  agent: Agent,
+): AgentUsdCalculationResult {
   const { api } = useTorus();
   const { data: emission } = useBlockEmission(api);
   const { data: incentivesRatio } = useIncentivesRatio(api);
@@ -28,32 +31,46 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
-    if (!emission || !incentivesRatio || !computedWeightedAgents?.computedWeight) return 0;
-    
+    if (
+      !emission ||
+      !incentivesRatio ||
+      !computedWeightedAgents?.computedWeight
+    )
+      return 0;
+
     // Calculations
     // 525600(1 Week in seconds) / 8 (Average block time) = 75600(Blocks)
-    const BLOCKS_PER_WEEK = ONE_WEEK / BLOCK_TIME_SECONDS; 
-    
+    const BLOCKS_PER_WEEK = ONE_WEEK / BLOCK_TIME_SECONDS;
+
     // Get weight penalty factor
     const weightPenaltyFactor = agent.weightFactor ?? 1; // Default to 1 if not available
-    
+
     // Calculate weekly emission in NANOs
     const weeklyEmissionNanos = emission * BigInt(BLOCKS_PER_WEEK);
-    
+
     // Convert to standard units using fromNano utility
     const weeklyEmissionTokens = Number(fromNano(weeklyEmissionNanos));
 
     // Incentives Ratio are from 1 to 100, gotta divide to 100
-    const percIncentivesRatio = Number(incentivesRatio)/100;
+    const percIncentivesRatio = Number(incentivesRatio) / 100;
 
     // Percent Computed Weight
-    const percComputedWeight = computedWeightedAgents.percComputedWeight
-    
+    const percComputedWeight = computedWeightedAgents.percComputedWeight;
+
     // Emission * %Incentive * %Agent Weight * (1 - Penalty Factor)
-    return weeklyEmissionTokens * percIncentivesRatio * percComputedWeight * (1 - weightPenaltyFactor);
-  }, [emission, incentivesRatio, computedWeightedAgents?.percComputedWeight, computedWeightedAgents?.computedWeight, agent.weightFactor]);
-
-
+    return (
+      weeklyEmissionTokens *
+      percIncentivesRatio *
+      percComputedWeight *
+      (1 - weightPenaltyFactor)
+    );
+  }, [
+    emission,
+    incentivesRatio,
+    computedWeightedAgents?.percComputedWeight,
+    computedWeightedAgents?.computedWeight,
+    agent.weightFactor,
+  ]);
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
@@ -66,6 +83,6 @@ export function useAgentUsdCalculation(agent: Agent): AgentUsdCalculationResult 
     tokensPerWeek,
     usdValue,
     isLoading: false,
-    isError: false
+    isError: false,
   };
 }
