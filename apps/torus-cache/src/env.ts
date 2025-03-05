@@ -1,6 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+// TODO: replace with validateEnvOrExit
 export const env = createEnv({
   shared: {
     NODE_ENV: z
