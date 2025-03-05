@@ -19,8 +19,6 @@ import {
 } from "drizzle-orm/pg-core";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
-import { number } from "zod";
-import { time } from "console";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 
@@ -207,23 +205,17 @@ export const agentReportSchema = createTable("agent_report", {
  * A comment made by a user on a Proposal or Agent Application.
  */
 
-
-export const proposalSchema = createTable(
-  "proposal",
-  {
-    id: serial("id").primaryKey(),
-    expirationBlock: integer("expiration_block").notNull(),
-    status: applicationStatus("status").notNull(),
-    proposerKey: ss58Address("proposer_key").notNull(),
-    creationBlock: integer("creation_block").notNull(),
-    metadataUri: text("metadata_uri").notNull(),
-    proposalCost: numeric("proposal_cost").notNull(),
-    notified: boolean("notified").notNull().default(false),
-    ...timeFields(),
-
-  },
-);
-
+export const proposalSchema = createTable("proposal", {
+  id: serial("id").primaryKey(),
+  expirationBlock: integer("expiration_block").notNull(),
+  status: applicationStatus("status").notNull(),
+  proposerKey: ss58Address("proposer_key").notNull(),
+  creationBlock: integer("creation_block").notNull(),
+  metadataUri: text("metadata_uri").notNull(),
+  proposalCost: numeric("proposal_cost").notNull(),
+  notified: boolean("notified").notNull().default(false),
+  ...timeFields(),
+});
 
 export const governanceItemType = pgEnum("governance_item_type", [
   "PROPOSAL",
