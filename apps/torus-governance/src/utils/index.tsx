@@ -121,6 +121,10 @@ export const handleCustomProposal = (
     TransferDaoTreasury(): ProposalCardFields {
       return handleCustomProposalData(proposal.id, proposal.customData ?? null);
     },
+    Emission(): ProposalCardFields {
+      // TODO fix it:
+      return handleCustomProposalData(proposal.id, proposal.customData ?? null);
+    },
   });
 
 export function calcProposalFavorablePercent(
