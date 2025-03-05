@@ -40,11 +40,6 @@ ENV TURBO_TOKEN=$TURBO_TOKEN
 
 WORKDIR /app
 
-RUN apt update \
-    && apt install --assume-yes --no-install-recommends \
-        build-essential \
-        python3
-
 COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Install dependencies using only package.json files to reduce changes
