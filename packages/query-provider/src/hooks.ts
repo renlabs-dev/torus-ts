@@ -428,23 +428,24 @@ export function useGetTorusPrice() {
   return useQuery<number, Error>({
     queryKey: ["torus-price"],
     queryFn: async () => {
-      const url = "https://api.coingecko.com/api/v3/simple/price?ids=torus&vs_currencies=usd";
+      const url =
+        "https://api.coingecko.com/api/v3/simple/price?ids=torus&vs_currencies=usd";
       try {
         const response = await fetch(url);
-        
+
         if (!response.ok) {
           throw new Error(`Coingecko API error: ${response.status}`);
         }
-        
+
         const data = (await response.json()) as CoingeckoResponse;
-        
-        if (typeof data.torus.usd !== 'number') {
-          throw new Error('Invalid response format from Coingecko API');
+
+        if (typeof data.torus.usd !== "number") {
+          throw new Error("Invalid response format from Coingecko API");
         }
-        
+
         return data.torus.usd;
       } catch (error) {
-        console.error('Error fetching Torus price:', error);
+        console.error("Error fetching Torus price:", error);
         throw error;
       }
     },
