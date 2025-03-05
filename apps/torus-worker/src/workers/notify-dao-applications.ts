@@ -1,66 +1,98 @@
-import type { AgentApplication, GovernanceItemType } from "@torus-ts/subspace";
+import {
+  getApplicationsDB,
+  sleep,
+  getCadreCandidates,
+  getProposalsDB,
+} from "../common";
+import type { ApplicationDB } from "../db";
+import * as db from "../db";
+import type { Embed, WebhookPayload } from "../discord";
+import { sendDiscordWebhook } from "../discord";
 import { processApplicationMetadata } from "@torus-ts/subspace";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
+import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { z } from "zod";
 
-import type { WorkerProps } from "../common";
-import type { ApplicationDB } from "../db";
-import type { Embed, WebhookPayload } from "../discord";
-import { getApplicationsDB, sleep, getCadreCandidates } from "../common";
-import { parseEnvOrExit } from "../common/env";
-import * as db from "../db";
-import { sendDiscordWebhook } from "../discord";
-import {z} from "zod";
-const THUMBNAIL_URL = "https://i.imgur.com/6hJKhMu.gif";
+const THUMBNAIL_URL = "https://i.imgur.com/pHJKJys.png";
 
-export const env = parseEnvOrExit(
-  z.object({
-    CURATOR_DISCORD_WEBHOOK_URL: z.string().min(1),
-    NEXT_PUBLIC_TORUS_CHAIN_ENV: z.string().min(1),
-  }),
-)(process.env);
-
+const getEnv = validateEnvOrExit({
+  CURATOR_DISCORD_WEBHOOK_URL: z.string().min(1),
+  NEXT_PUBLIC_TORUS_CHAIN_ENV: z.string().min(1),
+  NOTIFICATIONS_START_BLOCK: z
+    .number()
+    .optional(),
+});
 const HOUR = 60 * 60 * 1000;
 
 function isNotifiable(app: ApplicationDB): boolean {
   // TODO: type guard here
   return (
-    app.notified === false &&
-    app.createdAt.getTime() >= Date.now() - 1 * HOUR
+    app.notified === false && app.createdAt.getTime() >= Date.now() - 1 * HOUR
   );
 }
-
 
 export async function notifyNewApplicationsWorker() {
-  await pushApplicationsNotification();
-  await pushCadreNotification();
+  const env = getEnv(process.env);
+  const startingBlock = env.NOTIFICATIONS_START_BLOCK ?? 350_000;
+  const buildUrl = () => buildPortalUrl(env.NEXT_PUBLIC_TORUS_CHAIN_ENV);
+  await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+  await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+  await pushProposalsNotification(
+    env.CURATOR_DISCORD_WEBHOOK_URL, startingBlock, buildUrl
+  );
 }
 
-
-async function pushCadreNotification() {
+async function pushCadreNotification(discordWebhook: string, buildUrl: () => string) {
   const cadreCandidates = await getCadreCandidates(
-    (candidate) => candidate.notified === false
+    (candidate) => candidate.notified === false,
   );
+  const candidatesUrl = `${buildUrl()}?view=dao-portal`;
   for (const candidate of cadreCandidates) {
-  
-    const discordMessage = buildCadreMessage(
-      candidate
-    );
-  
-    await sendDiscordWebhook(env.CURATOR_DISCORD_WEBHOOK_URL, discordMessage);
-  
+    const discordMessage = buildCadreMessage(candidate, candidatesUrl);
+
+    await sendDiscordWebhook(discordWebhook, discordMessage);
+
     await db.toggleCadreNotification(candidate);
     await sleep(1_000);
   }
 }
 
+async function pushProposalsNotification(
+  discordWebhook: string, 
+  startingBlock: number,
+  buildPortalUrl: () => string
+) {
+  const proposals = await getProposalsDB((app) => app.notified === false);
+  // to avoid notifying proposals that expired before the deploy of worker
+  for (const proposal of proposals) {
+    const proposalURL = `${buildPortalUrl()}proposal/${proposal.id}`;
+    const proposalMessage = buildProposalMessage(proposal, proposalURL);
+    if (proposal.expirationBlock >= startingBlock) {
+      console.log(`Notifying proposal ${proposal.id}`);
+      console.log(`Expire block ${proposal.expirationBlock}`);
+      await sendDiscordWebhook(
+        discordWebhook,
+        proposalMessage,
+      );
+    } else {
+      console.log(`Proposal ${proposal.id} is too old`);
+    }
+    // await db.toggleProposalNotification(proposal);
+    await sleep(1_000);
+  }
+}
 
-function buildPortalUrl(){
-  const urlQualifier = env.NEXT_PUBLIC_TORUS_CHAIN_ENV === "testnet" ? "testnet." : "";
+function buildPortalUrl(environment: string) {
+  const urlQualifier =
+  environment === "testnet" ? "testnet." : "";
   return `https://dao.${urlQualifier}torus.network/`;
 }
 
-async function pushApplicationsNotification() {
+async function pushApplicationsNotification(
+  discordWebhook: string, 
+  buildPortalUrl: () => string
+) {
   const applications = await getApplicationsDB(isNotifiable);
   for (const proposal of applications) {
     const r = parseIpfsUri(proposal.data);
@@ -69,7 +101,7 @@ async function pushApplicationsNotification() {
       console.warn(`Failed to parse ${proposal.id} cid`);
       return;
     }
-  
+
     const url = buildIpfsGatewayUrl(cid);
     const metadata = await processApplicationMetadata(url, proposal.id);
     const resolved_metadata = flattenResult(metadata);
@@ -77,54 +109,59 @@ async function pushApplicationsNotification() {
       console.warn(`Failed to get metadata on proposal ${proposal.id}`);
       return;
     }
-    
+
     const notification = {
       discord_uid: `${resolved_metadata.discord_id}`,
       app_id: `${proposal.id}`,
       application_url: `${buildPortalUrl()}/agent-application/${proposal.id}`,
     };
-  
+
     const discordMessage = buildApplicationMessage(
       notification.discord_uid,
       proposal,
       notification.application_url,
     );
-  
-    await sendDiscordWebhook(env.CURATOR_DISCORD_WEBHOOK_URL, discordMessage);
-  
+
+    await sendDiscordWebhook(discordWebhook, discordMessage);
+
     await db.toggleWhitelistNotification(proposal);
     await sleep(1_000);
   }
 }
 
+function generateBaseEmbedParams(objectName: string) {
+  const embedParamsMap = {
+    OPEN: {
+      title: `New Pending ${objectName}`,
+      description: `A new ${objectName} has been submitted`,
+      color: 0xffde00, // Yellow
+    },
+    ACCEPTED: {
+      title: `Accepted ${objectName}`,
+      description: `A ${objectName} has been accepted`,
+      color: 0x00ff00, // Green
+    },
+    REJECTED: {
+      title: `Rejected ${objectName}`,
+      description: `A ${objectName} has been rejected`,
+      color: 0xff0000, // Red
+    },
+    EXPIRED: {
+      title: `EXPIRED ${objectName}`,
+      description: `A ${objectName} has expired`,
+      color: 0xff0000, // Red
+    },
+  };
+
+  return embedParamsMap;
+}
 
 function buildApplicationMessage(
   discordId: string,
   proposal: ApplicationDB,
   applicationUrl: string,
 ) {
-  const embedParamsMap = {
-    OPEN: {
-      title: "New Pending whitelist Application",
-      description: "A new whitelist application has been submitted",
-      color: 0xFFDE00, // Yellow
-    },
-    ACCEPTED: {
-      title: "Accepted whitelist Application",
-      description: "A whitelist application has been accepted",
-      color: 0x00ff00, // Green
-    },
-    REJECTED: {
-      title: "Rejected whitelist Application",
-      description: "A whitelist application has been rejected",
-      color: 0xff0000, // Red
-    },
-    EXPIRED: {
-      title: "EXPIRED whitelist Application",
-      description: "A whitelist application has expired",
-      color: 0xff0000, // Red
-    },
-  };
+  const embedParamsMap = generateBaseEmbedParams("Whitelist");
   const embedParams = embedParamsMap[proposal.status];
   const embed: Embed = {
     title: embedParams.title,
@@ -153,12 +190,12 @@ function buildApplicationMessage(
   return payload;
 }
 
-function buildCadreMessage(candidate: db.CadreCandidate) {
+function buildCadreMessage(candidate: db.CadreCandidate, candidatesUrl: string) {
   const embedParamsMap = {
     PENDING: {
       title: "New council candidate",
       description: "A new cadre application has been submitted",
-      color: 0xFFDE00, // Yellow
+      color: 0xffde00, // Yellow
     },
     ACCEPTED: {
       title: "Accepted a candidate",
@@ -174,10 +211,10 @@ function buildCadreMessage(candidate: db.CadreCandidate) {
       title: "Removed a candidate",
       description: "A council member has been removed. Shame on him booo",
       color: 0xff0000, // Red
-  }};
+    },
+  };
   const embedParams = embedParamsMap[candidate.candidacyStatus];
-  
-  const candidatesUrl = `${buildPortalUrl()}?view=dao-portal`;
+
   const embed: Embed = {
     title: embedParams.title,
     description: embedParams.description,
@@ -192,6 +229,46 @@ function buildCadreMessage(candidate: db.CadreCandidate) {
       text: "Please review and discuss the application on our website.",
     },
     // timestamp: new Date().toISOString(),
+  };
+
+  const payload: WebhookPayload = {
+    content: "",
+    username: "ComDAO",
+    avatar_url: "https://example.com/avatar.png",
+    embeds: [embed],
+  };
+
+  return payload;
+}
+
+function buildProposalMessage(
+  application: db.NewProposal,
+  proposalURL: string,
+) {
+  const embedParamsMap = generateBaseEmbedParams("Proposal");
+  const embedParams = embedParamsMap[application.status];
+
+  const fields = [
+    { name: "Proposer", value: application.proposerKey },
+    { name: "Proposal ID", value: `${String(application.id)}` },
+  ];
+
+  if (application.status !== "EXPIRED") {
+    fields.push({ name: "Proposal URL", value: proposalURL });
+  }
+
+  let footer = { text: "" };
+  if (application.status !== "EXPIRED") {
+    footer = { text: "Please vote on our website." };
+  }
+
+  const embed: Embed = {
+    title: embedParams.title,
+    description: embedParams.description,
+    color: embedParams.color,
+    fields: fields,
+    thumbnail: { url: THUMBNAIL_URL },
+    footer: footer,
   };
 
   const payload: WebhookPayload = {

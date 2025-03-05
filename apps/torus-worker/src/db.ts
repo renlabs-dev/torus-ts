@@ -59,7 +59,9 @@ export async function insertAgentWeight(weights: AgentWeight[]) {
     .execute();
 }
 
-export async function upsertWhitelistApplication(applications: NewApplication[]) {
+export async function upsertWhitelistApplication(
+  applications: NewApplication[],
+) {
   await db
     .insert(whitelistApplicationSchema)
     .values(
@@ -82,8 +84,7 @@ export async function upsertWhitelistApplication(applications: NewApplication[])
     .execute();
 }
 
-
-export async function upsertWhitelistProposal(proposals: NewProposal[]) {
+export async function upsertProposal(proposals: NewProposal[]) {
   await db
     .insert(proposalSchema)
     .values(
@@ -94,13 +95,14 @@ export async function upsertWhitelistProposal(proposals: NewProposal[]) {
         creationBlock: a.creationBlock,
         metadataUri: a.metadataUri,
         proposalCost: a.proposalCost,
-        
       })),
     )
-    .onConflictDoUpdate({ target: [proposalSchema.proposerKey], set: { status: proposalSchema.status } })
+    .onConflictDoUpdate({
+      target: [proposalSchema.id],
+      set: { status: proposalSchema.status, notified: false },
+    })
     .execute();
 }
-
 
 export async function upsertAgentData(agents: Agent[]) {
   await db
@@ -156,18 +158,26 @@ export async function vote(new_vote: NewVote) {
 
 export async function toggleWhitelistNotification(proposal: ApplicationDB) {
   await db
-  .update(whitelistApplicationSchema)
-  .set({ notified: true })
-  .where(eq(whitelistApplicationSchema.id, (proposal.id)))
-  .execute();
+    .update(whitelistApplicationSchema)
+    .set({ notified: true })
+    .where(eq(whitelistApplicationSchema.id, proposal.id))
+    .execute();
 }
 
 export async function toggleCadreNotification(candidate: CadreCandidate) {
   await db
-  .update(cadreCandidateSchema)
-  .set({ notified: true })
-  .where(eq(cadreCandidateSchema.userKey, candidate.userKey))
-  .execute();
+    .update(cadreCandidateSchema)
+    .set({ notified: true })
+    .where(eq(cadreCandidateSchema.userKey, candidate.userKey))
+    .execute();
+}
+
+export async function toggleProposalNotification(proposal: NewProposal) {
+  await db
+    .update(proposalSchema)
+    .set({ notified: true })
+    .where(eq(proposalSchema.proposerKey, proposal.proposerKey))
+    .execute();
 }
 
 export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
@@ -192,21 +202,25 @@ export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
   }));
 }
 
-
 export async function queryAgentApplicationsDB(): Promise<ApplicationDB[]> {
   const result = await db
     .select()
     .from(whitelistApplicationSchema)
-    .where(
-      and(
-        isNull(whitelistApplicationSchema.deletedAt),
-      ))
+    .where(and(isNull(whitelistApplicationSchema.deletedAt)))
     .execute();
 
   return result;
 }
 
+export async function queryProposalsDB(): Promise<NewProposal[]> {
+  const result = await db
+    .select()
+    .from(proposalSchema)
+    .where(and(isNull(proposalSchema.deletedAt)))
+    .execute();
 
+  return result;
+}
 
 export async function getCadreDiscord(cadreKey: SS58Address) {
   const result = await db
@@ -226,16 +240,13 @@ export async function getCadreDiscord(cadreKey: SS58Address) {
   return result.pop()?.discordId;
 }
 
-
-export async function queryCadreCandidates(){
+export async function queryCadreCandidates() {
   const result = await db
-  .select()
-  .from(cadreCandidateSchema)
-  .where(isNull(cadreCandidateSchema.deletedAt))
-  return result
+    .select()
+    .from(cadreCandidateSchema)
+    .where(isNull(cadreCandidateSchema.deletedAt));
+  return result;
 }
-
-
 
 export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
   const result = await db
@@ -306,9 +317,9 @@ export async function removeCadreMember(userKey: SS58Address) {
     await tx.delete(cadreSchema).where(eq(cadreSchema.userKey, userKey));
     await tx
       .update(cadreCandidateSchema)
-      .set({ 
+      .set({
         candidacyStatus: candidacyStatusValues.REMOVED,
-        notified: false, 
+        notified: false,
       })
       .where(eq(cadreCandidateSchema.userKey, userKey));
   });

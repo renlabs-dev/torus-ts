@@ -1,11 +1,3 @@
-import type { LastBlock, SS58Address } from "@torus-ts/subspace";
-import {
-  checkSS58,
-  queryAgents,
-  queryLastBlock,
-  queryWhitelist,
-} from "@torus-ts/subspace";
-
 import type { WorkerProps } from "../common";
 import {
   BLOCK_TIME,
@@ -21,9 +13,16 @@ import type { NewApplication, NewProposal } from "../db";
 import {
   SubspaceAgentToDatabase,
   upsertAgentData,
-  upsertWhitelistProposal,
+  upsertProposal,
   upsertWhitelistApplication,
 } from "../db";
+import type { LastBlock, SS58Address } from "@torus-ts/subspace";
+import {
+  checkSS58,
+  queryAgents,
+  queryLastBlock,
+  queryWhitelist,
+} from "@torus-ts/subspace";
 
 export async function runAgentFetch(lastBlock: LastBlock) {
   const currentTime = new Date();
@@ -61,11 +60,12 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
   applicationsMap.forEach((value, _) => {
     dbApplications.push(agentApplicationToApplication(value));
   });
-  log(`Block ${lastBlock.blockNumber}: upserting ${dbApplications.length} applications`);
+  log(
+    `Block ${lastBlock.blockNumber}: upserting ${dbApplications.length} applications`,
+  );
   await upsertWhitelistApplication(dbApplications);
   log(`Block ${lastBlock.blockNumber}: applications upserted`);
 }
-
 
 export async function runProposalsFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: running proposals fetch`);
@@ -75,8 +75,10 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
   proposalsMap.forEach((value, _) => {
     dbProposals.push(agentProposalToProposal(value));
   });
-  log(`Block ${lastBlock.blockNumber}: upserting ${dbProposals.length} proposals`);
-  await upsertWhitelistProposal(dbProposals);
+  log(
+    `Block ${lastBlock.blockNumber}: upserting ${dbProposals.length} proposals`,
+  );
+  await upsertProposal(dbProposals);
   log(`Block ${lastBlock.blockNumber}: proposals upserted`);
 }
 
@@ -95,6 +97,7 @@ export async function agentFetcherWorker(props: WorkerProps) {
 
       await runAgentFetch(lastBlock);
       await runApplicationsFetch(lastBlock);
+      await runProposalsFetch(lastBlock);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
       await sleep(BLOCK_TIME);

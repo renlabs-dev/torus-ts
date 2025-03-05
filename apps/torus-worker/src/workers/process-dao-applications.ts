@@ -1,4 +1,3 @@
-
 import type { WorkerProps } from "../common";
 import {
   BLOCK_TIME,
@@ -36,6 +35,7 @@ const getEnv = validateEnvOrExit({
 });
 
 export async function processApplicationsWorker(props: WorkerProps) {
+  const env = getEnv(process.env);
   while (true) {
     try {
       const lastBlock = await sleepUntilNewBlock(props);
@@ -50,7 +50,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
       );
 
       const vote_threshold = await getCadreThreshold();
-      const mnemonic = getEnv(process.env).TORUS_CURATOR_MNEMONIC;
+      const mnemonic = env.TORUS_CURATOR_MNEMONIC;
       await processAllVotes(
         props.api,
         mnemonic,

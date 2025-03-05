@@ -1,7 +1,3 @@
-
-import type { AgentApplication, Api, LastBlock, Proposal } from "@torus-ts/subspace";
-import { queryAgentApplications, queryLastBlock, queryProposals} from "@torus-ts/subspace";
-
 import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
@@ -10,8 +6,6 @@ import type {
   ApplicationDB,
   CadreCandidate,
 } from "../db";
-import { applicationStatusValues } from "@torus-ts/db/schema";
-
 import {
   queryTotalVotesPerApp,
   countCadreKeys,
@@ -23,8 +17,21 @@ import {
   refuseCadreApplication,
   queryAgentApplicationsDB,
   queryCadreCandidates,
+  queryProposalsDB,
 } from "../db";
 import type { ApiPromise } from "@polkadot/api";
+import { applicationStatusValues } from "@torus-ts/db/schema";
+import type {
+  AgentApplication,
+  Api,
+  LastBlock,
+  Proposal,
+} from "@torus-ts/subspace";
+import {
+  queryAgentApplications,
+  queryLastBlock,
+  queryProposals,
+} from "@torus-ts/subspace";
 import { match } from "rustie";
 
 export interface WorkerProps {
@@ -97,10 +104,7 @@ export function agentApplicationToApplication(
   };
 }
 
-
-export function agentProposalToProposal(
-  proposal: Proposal,
-): NewProposal {
+export function agentProposalToProposal(proposal: Proposal): NewProposal {
   const status = match(proposal.status)({
     Open: () => applicationStatusValues.OPEN,
     Accepted: () => applicationStatusValues.ACCEPTED,
@@ -156,32 +160,39 @@ export async function getApplications(
   return applications_map;
 }
 
-
 export async function getProposals(
   api: Api,
   filterFn: (app: Proposal) => boolean,
 ) {
   const application_entries = await queryProposals(api);
   const pending_daos = application_entries.filter(filterFn);
-  const applications_map: Record<number, Proposal> =
-    pending_daos.reduce(
-      (hashmap, proposal) => {
-        hashmap[proposal.id] = proposal;
-        return hashmap;
-      },
-      {} as Record<number, Proposal>,
-    );
+  const applications_map: Record<number, Proposal> = pending_daos.reduce(
+    (hashmap, proposal) => {
+      hashmap[proposal.id] = proposal;
+      return hashmap;
+    },
+    {} as Record<number, Proposal>,
+  );
   return applications_map;
 }
 
-export async function getApplicationsDB(filterFn: (app: ApplicationDB) => boolean) {
+export async function getProposalsDB(filterFn: (app: NewProposal) => boolean) {
+  const proposals = await queryProposalsDB();
+  const pending_daos = proposals.filter(filterFn);
+  return pending_daos;
+}
+
+export async function getApplicationsDB(
+  filterFn: (app: ApplicationDB) => boolean,
+) {
   const applications = await queryAgentApplicationsDB();
   const pending_daos = applications.filter(filterFn);
   return pending_daos;
 }
 
-
-export async function getCadreCandidates(filterFn: (app: CadreCandidate) => boolean) {
+export async function getCadreCandidates(
+  filterFn: (app: CadreCandidate) => boolean,
+) {
   const cadreCandidates = await queryCadreCandidates();
   return cadreCandidates.filter(filterFn);
 }
