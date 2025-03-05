@@ -8,7 +8,6 @@ interface ProposalTypeLabelProps {
 
 export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
   const { proposalType } = props;
-  // TODO: fix it
   return match(proposalType)({
     GlobalCustom() {
       return (
