@@ -53,20 +53,11 @@ export function useWeeklyUsdCalculation(
     isTorusPriceLoading ||
     isComputedWeightLoading;
 
-  console.log("Emission Loading", isEmissionLoading);
-  console.log("Incentives Loading", isIncentivesLoading);
-  console.log("Torus Price Loading", isTorusPriceLoading);
-  console.log("Computed Weight Loading", isComputedWeightLoading);
   const isError =
     isEmissionError ||
     isIncentivesError ||
     isTorusPriceError ||
     isComputedWeightError;
-
-  console.log("Emission Error", isEmissionError);
-  console.log("Incentives Error", isIncentivesError);
-  console.log("Torus Price Error", isTorusPriceError);
-  console.log("Computed Weight Error", isComputedWeightError);
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
@@ -105,7 +96,7 @@ export function useWeeklyUsdCalculation(
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
-    if (!torusPrice) return "$0.00";
+    if (!torusPrice) return "-";
     const calculatedValue = tokensPerWeek * Number(torusPrice);
     return `$${calculatedValue.toFixed(2)}`;
   }, [tokensPerWeek, torusPrice]);

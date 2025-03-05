@@ -16,14 +16,14 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
   const displayTokensPerWeek = isLoading ? (
     <p className="animate-pulse text-sm">Loading...</p>
   ) : isError ? (
-    "Error loading data"
+    "-"
   ) : (
     tokensPerWeek
   );
   const displayUsdValue = isLoading ? (
     <p className="animate-pulse text-sm">Loading...</p>
   ) : isError ? (
-    "Error loading data"
+    "-"
   ) : (
     usdValue
   );
