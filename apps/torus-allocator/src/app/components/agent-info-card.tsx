@@ -4,7 +4,6 @@ import { useWeeklyUsdCalculation } from "../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { Loading } from "@torus-ts/ui/components/loading";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
@@ -15,14 +14,14 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
 
   // Error SAFE - If the data is not loaded, display a loading state
   const displayTokensPerWeek = isLoading ? (
-    <Loading />
+    <p className="animate-pulse text-sm">Loading...</p>
   ) : isError ? (
     "Error loading data"
   ) : (
     tokensPerWeek
   );
   const displayUsdValue = isLoading ? (
-    <Loading />
+    <p className="animate-pulse text-sm">Loading...</p>
   ) : isError ? (
     "Error loading data"
   ) : (
