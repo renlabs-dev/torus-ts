@@ -44,7 +44,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
       return (
         <Badge
           variant="solid"
-          className="bg-teal-500/10 text-teal-500 hover:bg-teal-500/10"
+          className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/10"
         >
           Transfer DAO Treasury
         </Badge>

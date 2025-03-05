@@ -108,6 +108,17 @@ function handleProposalParams(
   };
 }
 
+function handleProposalEmission(
+  proposalId: number,
+  emission: Record<string, unknown>,
+): ProposalCardFields {
+  const title = `Emission proposal #${proposalId}`;
+  return {
+    title,
+    body: paramsToMarkdown(emission),
+  };
+}
+
 export const handleCustomProposal = (
   proposal: ProposalState,
 ): ProposalCardFields =>
@@ -121,9 +132,8 @@ export const handleCustomProposal = (
     TransferDaoTreasury(): ProposalCardFields {
       return handleCustomProposalData(proposal.id, proposal.customData ?? null);
     },
-    Emission(): ProposalCardFields {
-      // TODO fix it:
-      return handleCustomProposalData(proposal.id, proposal.customData ?? null);
+    Emission(params): ProposalCardFields {
+      return handleProposalEmission(proposal.id, params);
     },
   });
 
