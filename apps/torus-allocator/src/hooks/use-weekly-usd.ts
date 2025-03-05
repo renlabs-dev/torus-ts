@@ -95,6 +95,7 @@ export function useWeeklyUsdCalculation(
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
+    if (!torusPrice) return "$0.00";
     const calculatedValue = tokensPerWeek * Number(torusPrice);
     return `$${calculatedValue.toFixed(2)}`;
   }, [tokensPerWeek, torusPrice]);
