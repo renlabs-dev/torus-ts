@@ -9,9 +9,9 @@ import * as db from "../db";
 import type { Embed, WebhookPayload } from "../discord";
 import { sendDiscordWebhook } from "../discord";
 import { processApplicationMetadata } from "@torus-ts/subspace";
+import { validateEnvOrExit } from "@torus-ts/utils/env";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
 import { z } from "zod";
 
 const THUMBNAIL_URL = "https://i.imgur.com/pHJKJys.png";
@@ -19,9 +19,7 @@ const THUMBNAIL_URL = "https://i.imgur.com/pHJKJys.png";
 const getEnv = validateEnvOrExit({
   CURATOR_DISCORD_WEBHOOK_URL: z.string().min(1),
   NEXT_PUBLIC_TORUS_CHAIN_ENV: z.string().min(1),
-  NOTIFICATIONS_START_BLOCK: z
-    .number()
-    .optional(),
+  NOTIFICATIONS_START_BLOCK: z.number().optional(),
 });
 const HOUR = 60 * 60 * 1000;
 
@@ -39,11 +37,16 @@ export async function notifyNewApplicationsWorker() {
   await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
   await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
   await pushProposalsNotification(
-    env.CURATOR_DISCORD_WEBHOOK_URL, startingBlock, buildUrl
+    env.CURATOR_DISCORD_WEBHOOK_URL,
+    startingBlock,
+    buildUrl,
   );
 }
 
-async function pushCadreNotification(discordWebhook: string, buildUrl: () => string) {
+async function pushCadreNotification(
+  discordWebhook: string,
+  buildUrl: () => string,
+) {
   const cadreCandidates = await getCadreCandidates(
     (candidate) => candidate.notified === false,
   );
@@ -59,9 +62,9 @@ async function pushCadreNotification(discordWebhook: string, buildUrl: () => str
 }
 
 async function pushProposalsNotification(
-  discordWebhook: string, 
+  discordWebhook: string,
   startingBlock: number,
-  buildPortalUrl: () => string
+  buildPortalUrl: () => string,
 ) {
   const proposals = await getProposalsDB((app) => app.notified === false);
   // to avoid notifying proposals that expired before the deploy of worker
@@ -71,10 +74,7 @@ async function pushProposalsNotification(
     if (proposal.expirationBlock >= startingBlock) {
       console.log(`Notifying proposal ${proposal.id}`);
       console.log(`Expire block ${proposal.expirationBlock}`);
-      await sendDiscordWebhook(
-        discordWebhook,
-        proposalMessage,
-      );
+      await sendDiscordWebhook(discordWebhook, proposalMessage);
     } else {
       console.log(`Proposal ${proposal.id} is too old`);
     }
@@ -84,14 +84,13 @@ async function pushProposalsNotification(
 }
 
 function buildPortalUrl(environment: string) {
-  const urlQualifier =
-  environment === "testnet" ? "testnet." : "";
+  const urlQualifier = environment === "testnet" ? "testnet." : "";
   return `https://dao.${urlQualifier}torus.network/`;
 }
 
 async function pushApplicationsNotification(
-  discordWebhook: string, 
-  buildPortalUrl: () => string
+  discordWebhook: string,
+  buildPortalUrl: () => string,
 ) {
   const applications = await getApplicationsDB(isNotifiable);
   for (const proposal of applications) {
@@ -190,7 +189,10 @@ function buildApplicationMessage(
   return payload;
 }
 
-function buildCadreMessage(candidate: db.CadreCandidate, candidatesUrl: string) {
+function buildCadreMessage(
+  candidate: db.CadreCandidate,
+  candidatesUrl: string,
+) {
   const embedParamsMap = {
     PENDING: {
       title: "New council candidate",
