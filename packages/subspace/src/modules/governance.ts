@@ -226,7 +226,6 @@ export async function queryAgentApplications(
   return daos;
 }
 
-
 // == Dao Treasury ==
 
 export type DaoTreasuryAddress = z.infer<typeof sb_address>;
