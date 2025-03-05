@@ -106,7 +106,7 @@ export const userAgentWeightSchema = createTable(
 );
 
 /**
- * Aggregates the weight allocations of each user for each agent.
+ * Aggregates the weight allocations of all users for each agent.
  */
 export const computedAgentWeightSchema = createTable("computed_agent_weight", {
   id: serial("id").primaryKey(),

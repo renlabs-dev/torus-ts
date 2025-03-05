@@ -1,5 +1,6 @@
 "use client";
 
+import { useWeeklyUsdCalculation } from "../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
@@ -8,6 +9,25 @@ import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
+  const { tokensPerWeek, usdValue, isLoading, isError } =
+    useWeeklyUsdCalculation(agent);
+
+  // Error SAFE - If the data is not loaded, display a loading state
+  const displayTokensPerWeek = isLoading ? (
+    <p className="animate-pulse text-sm">Loading...</p>
+  ) : isError ? (
+    "-"
+  ) : (
+    tokensPerWeek
+  );
+  const displayUsdValue = isLoading ? (
+    <p className="animate-pulse text-sm">Loading...</p>
+  ) : isError ? (
+    "-"
+  ) : (
+    usdValue
+  );
+
   const dataGroups = [
     {
       label: "Agent Key",
@@ -22,11 +42,11 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
         </CopyButton>
       ),
     },
-    { label: "Name", value: agent.name ?? "N/A" },
+    { label: "Name", value: agent.name ?? "Loading" },
     { label: "At Block", value: agent.atBlock },
     {
       label: "Registration Block",
-      value: agent.registrationBlock ?? "N/A",
+      value: agent.registrationBlock ?? "Loading",
     },
     {
       label: "API Endpoint",
@@ -43,12 +63,18 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
         "N/A"
       ),
     },
+    // {
+    //   label: "Weight Factor",
+    //   value: agent.weightFactor ?? "N/A",
+    // },
     {
-      label: "Weight Factor",
-      value: agent.weightFactor ?? "N/A",
+      label: "Weekly Rewards",
+      value: displayTokensPerWeek,
     },
-    // { label: "Total Allocation", value: formatToken(agent.totalStaked ?? 0) },
-    // { label: "Total Allocated users", value: agent.totalStakers ?? 0 },
+    {
+      label: "Weekly Rewards(USD)",
+      value: displayUsdValue,
+    },
   ];
 
   return (
