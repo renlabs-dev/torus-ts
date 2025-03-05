@@ -8,7 +8,6 @@ interface ProposalTypeLabelProps {
 
 export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
   const { proposalType } = props;
-  // TODO: fix it
   return match(proposalType)({
     GlobalCustom() {
       return (
@@ -46,7 +45,7 @@ export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
           variant="solid"
           className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/10"
         >
-          Transfer DAO Treasury
+          Emission
         </Badge>
       );
     },
