@@ -92,7 +92,8 @@ export const ListAgents = () => {
   const { data: agentsWithPenalties, isFetching } =
     api.agent.allWithAggregatedPenalties.useQuery();
 
-  const penaltyThreshold = Math.sqrt(cadreListData?.length ?? 0) + 1;
+  const penaltyThreshold =
+    Math.round(Math.sqrt(cadreListData?.length ?? 0)) + 1;
 
   const [penaltiesDialog, setPenaltiesDialog] =
     useState<DialogPenaltiesState | null>(null);
