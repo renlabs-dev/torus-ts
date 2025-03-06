@@ -13,6 +13,8 @@ const config = {
     "@torus-ts/env-validation",
   ],
 
+  productionBrowserSourceMaps: true,
+
   reactStrictMode: true,
 
   /** We already do linting and typechecking as separate tasks in CI */

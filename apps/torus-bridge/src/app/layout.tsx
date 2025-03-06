@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Torus Base Bridge",
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description:
-    "Simple, secure, and easy-to-use wallet for the torus ecosystem.",
+    "Simple, secure, and easy-to-use wallet for the Torus ecosystem.",
 };
 
 export const firaMono = FiraMono({
