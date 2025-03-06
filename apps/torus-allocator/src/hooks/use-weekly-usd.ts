@@ -1,11 +1,9 @@
 import {
-  useBlockEmission,
   useGetTorusPrice,
-  useIncentivesRatio,
+  // useBlockEmission,
+  // useIncentivesRatio,
 } from "@torus-ts/query-provider/hooks";
-import { ONE_WEEK, BLOCK_TIME_SECONDS } from "@torus-ts/subspace";
-import { useTorus } from "@torus-ts/torus-provider";
-import { fromNano } from "@torus-ts/utils/subspace";
+import { CONSTANTS } from "@torus-ts/subspace";
 import { useMemo } from "react";
 import { api as extAPI } from "~/trpc/react";
 import type { Agent } from "~/utils/types";
@@ -14,25 +12,14 @@ interface AgentUsdCalculationResult {
   isLoading: boolean;
   isError: boolean;
   tokensPerWeek: number;
-  usdValue: string;
+  usdValue: number;
+  displayTokensPerWeek: string;
+  displayUsdValue: string;
 }
 
 export function useWeeklyUsdCalculation(
   agent: Agent,
 ): AgentUsdCalculationResult {
-  const { api } = useTorus();
-  // Queries the emission
-  const {
-    data: emission,
-    isLoading: isEmissionLoading,
-    isError: isEmissionError,
-  } = useBlockEmission(api);
-  // Queries the Incentives Ratio
-  const {
-    data: incentivesRatio,
-    isLoading: isIncentivesLoading,
-    isError: isIncentivesError,
-  } = useIncentivesRatio(api);
   // Queries the Torus dolar Brice from Coingecko
   const {
     data: torusPrice,
@@ -47,48 +34,34 @@ export function useWeeklyUsdCalculation(
   } = extAPI.computedAgentWeight.byAgentKey.useQuery({ agentKey: agent.key });
 
   // Loads all queries at once, and if any of them are wrong, the whole result is wrong
-  const isLoading =
-    isEmissionLoading ||
-    isIncentivesLoading ||
-    isTorusPriceLoading ||
-    isComputedWeightLoading;
-
-  const isError =
-    isEmissionError ||
-    isIncentivesError ||
-    isTorusPriceError ||
-    isComputedWeightError;
+  const isLoading = isTorusPriceLoading || isComputedWeightLoading;
+  const isError = isTorusPriceError || isComputedWeightError;
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
-    if (
-      !emission ||
-      !incentivesRatio ||
-      !computedWeightedAgents?.computedWeight
-    )
-      return 0;
+    if (!computedWeightedAgents?.computedWeight) return 0;
 
     // Blocks per week calculation
-    const BLOCKS_PER_WEEK = ONE_WEEK / BLOCK_TIME_SECONDS;
+    const BLOCKS_PER_WEEK =
+      CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
+
+    // Weight Factor is the penalty factor
     const weightPenaltyFactor = agent.weightFactor ?? 1; // Default to 1 if not available
 
     // Calculate weekly emission in NANOs and convert to tokens
-    const weeklyEmission = Number(fromNano(emission)) * BLOCKS_PER_WEEK;
+    const weeklyEmission = CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
 
-    // Calculate ratios
-    const percIncentivesRatio = Number(incentivesRatio) / 100;
+    // Computed Weight but the percentage
     const percComputedWeight = computedWeightedAgents.percComputedWeight;
 
     // Emission * %Incentive * %Agent Weight * (1 - Penalty Factor)
     return (
       weeklyEmission *
-      percIncentivesRatio *
+      CONSTANTS.ECONOMY.DEFAULT_INCENTIVES_RATIO *
       percComputedWeight *
       (1 - weightPenaltyFactor)
     );
   }, [
-    emission,
-    incentivesRatio,
     computedWeightedAgents?.percComputedWeight,
     computedWeightedAgents?.computedWeight,
     agent.weightFactor,
@@ -96,15 +69,31 @@ export function useWeeklyUsdCalculation(
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
-    if (!torusPrice) return "-";
-    const calculatedValue = tokensPerWeek * Number(torusPrice);
-    return `$${calculatedValue.toFixed(2)}`;
+    if (!torusPrice) return 0;
+    return tokensPerWeek * torusPrice;
   }, [tokensPerWeek, torusPrice]);
+
+  // EXAMPLE: 5000000.00000 will be displayed: 5,000,000.00 TORUS
+  const displayTokensPerWeek =
+    tokensPerWeek.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + " TORUS";
+
+  // EXAMPLE: 50000.0000 will be displayed: $50,000.00
+  const displayUsdValue = usdValue.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   return {
     tokensPerWeek,
     usdValue,
     isLoading,
     isError,
+    displayTokensPerWeek,
+    displayUsdValue,
   };
 }
