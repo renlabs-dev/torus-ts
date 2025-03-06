@@ -4,10 +4,13 @@ import {
   BNInput,
   buildTaggedBigNumberClass,
 } from "./bignumber";
+import { CONSTANTS } from "@torus-ts/subspace";
 import { BigNumber } from "bignumber.js";
 import { assert, Equals, Extends, Not } from "tsafe";
 
-export const DECIMALS = 18;
+// TODO - EDIT NOW, SEND TO CONSTANTS
+// export const DECIMALS = CONSTANTS.EMISSION.DECIMALS;
+export const DECIMALS = CONSTANTS.EMISSION.DECIMALS;
 
 export const DECIMALS_BIG = BigInt(DECIMALS);
 export const DECIMALS_MULTIPLIER = 10n ** DECIMALS_BIG;
