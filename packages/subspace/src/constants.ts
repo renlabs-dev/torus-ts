@@ -54,6 +54,8 @@ export interface ConstantsType {
   };
 }
 
+const BLOCK_TIME_SECONDS = 8;
+
 /**
  * Global constants object for better organization and maintainability.
  */
@@ -72,17 +74,18 @@ export const CONSTANTS = {
     ONE_WEEK: 60 * 60 * 24 * 7,
 
     /** Average time (in seconds) for a new block to be produced */
-    BLOCK_TIME_SECONDS: 8,
+    // Every time someone updates this information, you must update the following: BLOCK_TIME_MILLISECONDS and LAST_BLOCK_STALE_TIME
+    BLOCK_TIME_SECONDS: BLOCK_TIME_SECONDS,
 
     /** Average block time in milliseconds */
-    BLOCK_TIME_MILLISECONDS: 8 * 1000,
+    BLOCK_TIME_MILLISECONDS: BLOCK_TIME_SECONDS * 1000,
 
     /**
      * Time to consider the last block query stale.
      * Originally calculated as `block_time / 2` (4s), but changed to full block time (8s)
      * for user experience improvements.
      */
-    LAST_BLOCK_STALE_TIME: 8 * 1000,
+    LAST_BLOCK_STALE_TIME: BLOCK_TIME_SECONDS * 1000,
 
     /**
      * Time to consider proposals query state stale.
