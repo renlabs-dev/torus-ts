@@ -3,15 +3,18 @@
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
 import { links } from "@torus-ts/ui/lib/data";
 import { CircleHelp } from "lucide-react";
 import Link from "next/link";
+import { env } from "~/env";
+
+const apiLinks = links(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 export const tutorialData = [
   <Button
@@ -47,7 +50,7 @@ export const tutorialData = [
   <p key="docs">
     More information on our{" "}
     <Button asChild variant="link" className="h-5 p-0 text-cyan-500">
-      <Link target="_blank" href={links.docs}>
+      <Link target="_blank" href={apiLinks.docs}>
         Docs
       </Link>
     </Button>

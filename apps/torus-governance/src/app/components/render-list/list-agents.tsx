@@ -21,7 +21,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { useGovernance } from "~/context/governance-provider";
+import { env } from "~/env";
 import { api } from "~/trpc/react";
+
+const apiLinks = links(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 const EmissionHealthFactorBadge = ({
   penaltyFactor,
@@ -222,7 +225,7 @@ const AgentPenaltiesCard = (props: {
         <Button asChild variant="outline">
           <Link
             target="_blank"
-            href={`${links.allocator}/agent/${content.key}`}
+            href={`${apiLinks.allocator}/agent/${content.key}`}
           >
             <span className="text-sm">See on Allocator</span>
             <ArrowRight size={12} />

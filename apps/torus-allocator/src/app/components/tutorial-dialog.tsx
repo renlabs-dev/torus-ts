@@ -17,6 +17,8 @@ import React from "react";
 import { env } from "~/env";
 import { useTutorialStore } from "~/stores/tutorialStore";
 
+const apiLinks = links(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+
 export const tutorialData = {
   "1": {
     icon: <Wallet className="h-5 w-5" />,
@@ -24,7 +26,10 @@ export const tutorialData = {
     steps: [
       <p key="1.1">
         Follow our{" "}
-        <Link href={links.setup_a_wallet} className="text-cyan-500 underline">
+        <Link
+          href={apiLinks.setup_a_wallet}
+          className="text-cyan-500 underline"
+        >
           wallet setup guide
         </Link>{" "}
         to install and configure your wallet.
@@ -38,7 +43,7 @@ export const tutorialData = {
     steps: [
       <p key="2.1">
         Open the{" "}
-        <Link href={links.wallet} className="text-cyan-500 underline">
+        <Link href={apiLinks.wallet} className="text-cyan-500 underline">
           Wallet App
         </Link>
         .
