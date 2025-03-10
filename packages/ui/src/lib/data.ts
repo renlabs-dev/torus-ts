@@ -14,7 +14,6 @@ export const chainEnvSchema = z
 export type ChainEnv = z.infer<typeof chainEnvSchema>;
 
 const getChainEnvPrefix = (chainEnv: ChainEnv) => {
-  console.log("process.env.NODE_ENV", process.env.NODE_ENV);
   const chainEnvResult = chainEnvSchema.safeParse(chainEnv);
 
   if (!chainEnvResult.success) {
