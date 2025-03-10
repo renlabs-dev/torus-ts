@@ -9,7 +9,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  AlertDialogOverlay,
 } from "@torus-ts/ui/components/alert-dialog";
 import { Button } from "@torus-ts/ui/components/button";
 import {
