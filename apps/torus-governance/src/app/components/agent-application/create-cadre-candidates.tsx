@@ -1,5 +1,6 @@
 "use client";
 
+import DiscordAuthButton from "../discord-auth-button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -131,24 +132,11 @@ export function CreateCadreCandidates() {
             <FormField
               control={control}
               name="discordId"
-              render={({ field }) => (
+              render={({ _field }) => (
                 <FormItem>
-                  <FormLabel>Discord ID (17-20 digits)</FormLabel>
+                  <FormLabel>Discord Verification</FormLabel>
                   <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Discord ID"
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value
-                          .replace(/[^0-9]/g, "")
-                          .slice(0, 20);
-                        field.onChange(value);
-                      }}
-                      minLength={17}
-                      maxLength={20}
-                      className="w-full bg-gray-600/10 p-3 text-white"
-                    />
+                    <DiscordAuthButton />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

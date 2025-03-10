@@ -1,4 +1,5 @@
 import "@torus-ts/ui/globals.css";
+import AuthProvider from "./providers/auth-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
@@ -38,9 +39,11 @@ export default function RootLayout({
       >
         <TRPCReactProvider>
           <GovernanceProvider>
-            <Container>{children}</Container>
-            <Footer />
-            <Toaster />
+            <AuthProvider>
+              <Container>{children}</Container>
+              <Footer />
+              <Toaster />
+            </AuthProvider>
           </GovernanceProvider>
         </TRPCReactProvider>
       </TorusProvider>
