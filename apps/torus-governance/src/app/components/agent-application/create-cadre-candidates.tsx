@@ -1,6 +1,6 @@
 "use client";
 
-import DiscordAuthButton from "../discord-auth-button";
+import DiscordLogin from "../discord-auth-button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -11,7 +11,6 @@ import {
   FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { Input } from "@torus-ts/ui/components/input";
 import {
   Popover,
   PopoverContent,
@@ -52,6 +51,7 @@ export function CreateCadreCandidates() {
     isUserCadreCandidate,
   } = useGovernance();
   const { toast } = useToast();
+  const [discordId, setDiscordId] = React.useState<string | null>(null);
 
   const form = useForm<CreateCadreCandidateFormData>({
     resolver: zodResolver(createCadreCandidateSchema),
@@ -61,13 +61,20 @@ export function CreateCadreCandidates() {
     },
   });
 
+  // Set the discordId in the form when it changes
+  React.useEffect(() => {
+    if (discordId) {
+      form.setValue("discordId", discordId);
+    }
+  }, [discordId, form]);
+
   if (isUserCadre || !selectedAccount) {
     return null;
   }
 
   const createCadreCandidateMutation = api.cadreCandidate.create.useMutation({
     onSuccess: async () => {
-      reset();
+      form.reset();
       await cadreCandidates.refetch();
       toast({
         title: "Success!",
@@ -83,7 +90,7 @@ export function CreateCadreCandidates() {
     },
   });
 
-  const { handleSubmit, reset, control, watch } = form;
+  const { handleSubmit, control, watch } = form;
 
   const contentValue = watch("content");
   const remainingChars = MAX_CONTENT_CHARACTERS - (contentValue.length || 0);
@@ -132,11 +139,18 @@ export function CreateCadreCandidates() {
             <FormField
               control={control}
               name="discordId"
-              render={({ _field }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Discord Verification</FormLabel>
                   <FormControl>
-                    <DiscordAuthButton />
+                    <DiscordLogin
+                      onAuthChange={(id) => {
+                        setDiscordId(id);
+                        if (id) {
+                          field.onChange(id);
+                        }
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -174,7 +188,8 @@ export function CreateCadreCandidates() {
               variant="default"
               disabled={
                 createCadreCandidateMutation.isPending ||
-                !selectedAccount.address
+                !selectedAccount.address ||
+                !discordId
               }
             >
               {createCadreCandidateMutation.isPending
@@ -185,6 +200,12 @@ export function CreateCadreCandidates() {
             {!selectedAccount.address && (
               <p className="text-sm text-yellow-500">
                 Please connect your wallet to submit a request.
+              </p>
+            )}
+
+            {!discordId && selectedAccount.address && (
+              <p className="text-sm text-yellow-500">
+                Please connect your Discord account to continue.
               </p>
             )}
           </form>

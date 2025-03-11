@@ -23,9 +23,9 @@ export const envSchema = {
   PORT: z.string(),
 
   // Discord Authentication
-  DISCORD_CLIENT_ID: z.string(),
-  DISCORD_CLIENT_SECRET: z.string(),
-  DISCORD_REDIRECT_URI: z.string().url(), // Base URL of your application
+  DISCORD_CLIENT_ID: z.string().min(1),
+  DISCORD_CLIENT_SECRET: z.string().min(1),
+  DISCORD_REDIRECT_URL: z.string().url(),
 
   /**
    * Specify your client-side environment variables schema here.
