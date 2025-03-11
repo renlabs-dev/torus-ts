@@ -39,7 +39,7 @@ export default function RootLayout({
         <TRPCReactProvider>
           <GovernanceProvider>
             <Container>{children}</Container>
-            <Footer />
+            <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
             <Toaster />
           </GovernanceProvider>
         </TRPCReactProvider>
