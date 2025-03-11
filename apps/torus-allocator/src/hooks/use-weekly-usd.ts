@@ -84,7 +84,7 @@ export function useWeeklyUsdCalculation(
       weeklyEmission *
       percIncentivesRatio *
       percComputedWeight *
-      (1 - weightPenaltyFactor)
+      (1 - weightPenaltyFactor / 100)
     );
   }, [
     emission,

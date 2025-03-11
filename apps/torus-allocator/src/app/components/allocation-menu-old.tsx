@@ -17,14 +17,14 @@ import {
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-import { Anvil, LoaderCircle, PieChart, X } from "lucide-react";
+import { LoaderCircle, PieChart, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { api } from "~/trpc/react";
 
-export function AllocationMenu() {
+export function AllocationMenuOld() {
   const {
     delegatedAgents,
     getTotalPercentage,
@@ -301,45 +301,39 @@ export function AllocationMenu() {
 
   return (
     <Sheet>
-      <div className="fixed bottom-4 right-3 z-[50] flex w-fit flex-col items-center justify-end marker:flex md:bottom-14">
-        <Label
-          className={cn("mb-2 animate-pulse text-end text-sm", {
-            "text-red-500": submitStatus.message === "You have unsaved changes",
-            "text-cyan-500": submitStatus.message === "All changes saved!",
-            "text-green-500": submitStatus.message === "All changes saved!",
-            "text-amber-500": ![
-              "You have unsaved changes",
-              "All changes saved!",
-            ].includes(submitStatus.message),
-          })}
-        >
-          {submitStatus.message !== "All changes saved!" &&
-            submitStatus.message}
-        </Label>
-        <div className="flex items-center gap-2">
-          <SheetTrigger asChild disabled={!selectedAccount}>
-            <Button
-              variant="outline"
-              className="border-primary/80 w-full border"
-            >
-              {!selectedAccount ? (
-                <LoaderCircle className="animate-spin" />
-              ) : (
-                <PieChart />
-              )}
-              Allocation Menu
-            </Button>
-          </SheetTrigger>
-          <Button
-            variant="outline"
-            onClick={handleSubmit}
-            disabled={submitStatus.disabled}
-            className={`w-full border ${submitStatus.message === "All changes saved!" ? "border-green-500 bg-[#14252A] text-green-500 hover:bg-green-500/20 hover:text-green-500" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 hover:text-yellow-500"}`}
-            title={submitStatus.disabled ? submitStatus.message : ""}
+      <div className="fixed bottom-12 z-[50] flex w-full flex-col items-center justify-end marker:flex md:bottom-14">
+        <div className="bg-accent flex items-center gap-3 rounded-full border p-3">
+          <Label
+            className={cn("animate-pulse text-end text-sm", {
+              "text-red-500":
+                submitStatus.message === "You have unsaved changes",
+              "text-cyan-500": submitStatus.message === "All changes saved!",
+              "text-green-500": submitStatus.message === "All changes saved!",
+              "text-amber-500": ![
+                "You have unsaved changes",
+                "All changes saved!",
+              ].includes(submitStatus.message),
+            })}
           >
-            <Anvil />
-            {isSubmitting ? "Submitting Allocation" : "Submit Allocation"}
-          </Button>
+            {submitStatus.message !== "All changes saved!" &&
+              submitStatus.message}
+          </Label>
+          <div className="flex items-center gap-2">
+            <SheetTrigger asChild disabled={!selectedAccount}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full rounded-full border border-cyan-500 bg-cyan-500/10 px-2 text-cyan-500"
+              >
+                {!selectedAccount ? (
+                  <LoaderCircle className="animate-spin" />
+                ) : (
+                  <PieChart />
+                )}
+                Allocation Menu
+              </Button>
+            </SheetTrigger>
+          </div>
         </div>
       </div>
 
