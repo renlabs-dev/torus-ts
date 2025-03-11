@@ -61,10 +61,20 @@ interface WalletFunctionsProps {
   handleLogout: () => void;
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
+  torusChainEnv: string;
 }
 
 const WalletFunctions = (props: WalletFunctionsProps) => {
-  const { balance, children, handleLogout, selectedAccount, stakeOut } = props;
+  const {
+    balance,
+    children,
+    handleLogout,
+    selectedAccount,
+    stakeOut,
+    torusChainEnv,
+  } = props;
+
+  const apiLinks = links(torusChainEnv);
 
   const userStakeWeight = useMemo(() => {
     if (stakeOut != null && selectedAccount != null) {
@@ -119,7 +129,7 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
       <DropdownMenuSeparator />
       <DropdownMenuItem className={cn("cursor-pointer")}>
         <Link
-          href={links.wallet}
+          href={apiLinks.wallet}
           target="_blank"
           className={cn("flex items-center gap-2")}
         >
@@ -147,6 +157,7 @@ interface WalletDropdownProps {
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
   shouldDisplayText?: boolean;
+  torusChainEnv: string;
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {
@@ -160,6 +171,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     selectedAccount,
     stakeOut,
     shouldDisplayText,
+    torusChainEnv,
   } = props;
 
   const handleGetAccounts = async () => {
@@ -222,6 +234,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
               handleLogout={handleLogout}
               selectedAccount={selectedAccount}
               stakeOut={stakeOut}
+              torusChainEnv={torusChainEnv}
             >
               <Accordion type="single" collapsible className={cn("m-0 w-full")}>
                 <AccordionItem
@@ -334,7 +347,9 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                         </div>
                       </DropdownMenuRadioItem>
                     ))}
-                    {accounts?.length === 0 && <NoWalletExtensionDisplay />}
+                    {accounts?.length === 0 && (
+                      <NoWalletExtensionDisplay torusChainEnv={torusChainEnv} />
+                    )}
                   </DropdownMenuRadioGroup>
                 </AccordionContent>
               </AccordionItem>
