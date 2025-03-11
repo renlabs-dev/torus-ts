@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
-import { links } from "@torus-ts/ui/lib/data";
+import { getLinks } from "@torus-ts/ui/lib/data";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import { ArrowRight, Coins } from "lucide-react";
@@ -24,7 +24,7 @@ import { useGovernance } from "~/context/governance-provider";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 
-const apiLinks = links(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 const EmissionHealthFactorBadge = ({
   penaltyFactor,
@@ -225,7 +225,7 @@ const AgentPenaltiesCard = (props: {
         <Button asChild variant="outline">
           <Link
             target="_blank"
-            href={`${apiLinks.allocator}/agent/${content.key}`}
+            href={`${links.allocator}/agent/${content.key}`}
           >
             <span className="text-sm">See on Allocator</span>
             <ArrowRight size={12} />

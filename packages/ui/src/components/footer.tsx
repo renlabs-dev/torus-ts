@@ -24,27 +24,27 @@ interface FooterProps {
 }
 
 export function Footer({ torusChainEnv }: FooterProps) {
-  const apiLinks = links(torusChainEnv);
+  const links = links(torusChainEnv);
 
   const _socialList = [
     {
       name: "Discord",
-      href: apiLinks.discord,
+      href: links.discord,
       icon: <Icons.Discord className="h-6 w-6 md:h-3 md:w-3" />,
     },
     {
       name: "X",
-      href: apiLinks.x,
+      href: links.x,
       icon: <Icons.X className="h-6 w-6 md:h-3 md:w-3" />,
     },
     {
       name: "GitHub",
-      href: apiLinks.github,
+      href: links.github,
       icon: <Icons.Github className="h-6 w-6 md:h-3 md:w-3" />,
     },
     {
       name: "Telegram",
-      href: apiLinks.telegram,
+      href: links.telegram,
       icon: <Icons.Telegram className="h-6 w-6 md:h-3 md:w-3" />,
     },
   ];
@@ -53,37 +53,37 @@ export function Footer({ torusChainEnv }: FooterProps) {
     {
       icon: <Globe className="h-3 w-3" />,
       name: "Home",
-      href: apiLinks.landing_page,
+      href: links.landing_page,
     },
     {
       icon: <Scale className="h-3 w-3" />,
       name: "DAO",
-      href: apiLinks.governance,
+      href: links.governance,
     },
     {
       icon: <ArrowLeftRight className="h-3 w-3" />,
       name: "Bridge",
-      href: apiLinks.bridge,
+      href: links.bridge,
     },
     {
       icon: <WalletCards className="h-3 w-3" />,
       name: "Wallet",
-      href: apiLinks.wallet,
+      href: links.wallet,
     },
     {
       icon: <BookMarked className="h-3 w-3" />,
       name: "Docs",
-      href: apiLinks.docs,
+      href: links.docs,
     },
     {
       icon: <Anvil className="h-3 w-3" />,
       name: "Allocator",
-      href: apiLinks.allocator,
+      href: links.allocator,
     },
     {
       icon: <Telescope className="h-3 w-3" />,
       name: "Explorer",
-      href: apiLinks.torex_explorer,
+      href: links.torex_explorer,
     },
   ];
 
@@ -113,7 +113,7 @@ export function Footer({ torusChainEnv }: FooterProps) {
             <span className="hidden xl:inline">
               Protocol core development by{" "}
             </span>
-            <a href={apiLinks.ren_labs} className="underline" target="_blank">
+            <a href={links.ren_labs} className="underline" target="_blank">
               @renlabs
             </a>
           </FooterItem>

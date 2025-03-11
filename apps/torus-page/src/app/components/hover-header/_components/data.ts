@@ -1,7 +1,7 @@
-import { links } from "@torus-ts/ui/lib/data";
+import { getLinks } from "@torus-ts/ui/lib/data";
 import { env } from "~/env";
 
-const apiLinks = links(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 export const ANIMATIONS = {
   DRAW: {
@@ -61,34 +61,34 @@ export const CONTENT = {
   ],
   desktopButtons: {
     starter: [
-      { text: "Wallet", href: apiLinks.wallet },
-      { text: "Bridge", href: apiLinks.bridge },
+      { text: "Wallet", href: links.wallet },
+      { text: "Bridge", href: links.bridge },
       {
         text: "Blog",
-        href: apiLinks.blog,
+        href: links.blog,
       },
     ],
     network: [
-      { text: "Docs", href: apiLinks.docs },
-      { text: "Allocator", href: apiLinks.allocator },
-      { text: "DAO", href: apiLinks.governance },
+      { text: "Docs", href: links.docs },
+      { text: "Allocator", href: links.allocator },
+      { text: "DAO", href: links.governance },
     ],
-    common: [{ text: "Join", href: apiLinks.discord }],
+    common: [{ text: "Join", href: links.discord }],
   },
   mobileButtons: [
     [
-      { text: "Bridge", href: apiLinks.bridge },
-      { text: "Wallet", href: apiLinks.wallet },
+      { text: "Bridge", href: links.bridge },
+      { text: "Wallet", href: links.wallet },
       {
         text: "Blog",
-        href: apiLinks.blog,
+        href: links.blog,
       },
     ],
     [
-      { text: "DAO", href: apiLinks.governance },
-      { text: "Allocator", href: apiLinks.allocator },
-      { text: "Docs", href: apiLinks.docs },
+      { text: "DAO", href: links.governance },
+      { text: "Allocator", href: links.allocator },
+      { text: "Docs", href: links.docs },
     ],
-    [{ text: "Join", href: apiLinks.discord }],
+    [{ text: "Join", href: links.discord }],
   ],
 };

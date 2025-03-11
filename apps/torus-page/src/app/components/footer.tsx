@@ -4,10 +4,10 @@ import {
   HoverCardTrigger,
 } from "@torus-ts/ui/components/hover-card";
 import { Icons } from "@torus-ts/ui/components/icons";
-import { links } from "@torus-ts/ui/lib/data";
+import { getLinks } from "@torus-ts/ui/lib/data";
 import { env } from "~/env";
 
-const apiLinks = links(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 function FooterContent() {
   return (
@@ -19,7 +19,7 @@ function FooterContent() {
         <h4 className="text-sm font-semibold">Torus Network</h4>
         <p className="text-sm">
           Protocol core development by{" "}
-          <a href={apiLinks.ren_labs} className="underline" target="_blank">
+          <a href={links.ren_labs} className="underline" target="_blank">
             RENLABS.
           </a>
         </p>
@@ -55,22 +55,22 @@ export function Footer() {
 const _socialList = [
   {
     name: "Discord",
-    href: apiLinks.discord,
+    href: links.discord,
     icon: <Icons.Discord className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
   {
     name: "X",
-    href: apiLinks.x,
+    href: links.x,
     icon: <Icons.X className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
   {
     name: "GitHub",
-    href: apiLinks.github,
+    href: links.github,
     icon: <Icons.Github className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
   {
     name: "Telegram",
-    href: apiLinks.telegram,
+    href: links.telegram,
     icon: <Icons.Telegram className="h-6 w-6 md:h-3.5 md:w-3.5" />,
   },
 ];

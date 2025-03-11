@@ -10,16 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { links } from "@torus-ts/ui/lib/data";
+import { getLinks } from "@torus-ts/ui/lib/data";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { env } from "~/env";
 
-const apiLinks = links(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 const navSidebarOptions = [
-  { title: "Wallet", href: apiLinks.wallet },
+  { title: "Wallet", href: links.wallet },
   { title: "Base Bridge", href: "/" },
 ] as const;
 

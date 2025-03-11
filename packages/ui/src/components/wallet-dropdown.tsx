@@ -74,7 +74,7 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
     torusChainEnv,
   } = props;
 
-  const apiLinks = links(torusChainEnv);
+  const links = links(torusChainEnv);
 
   const userStakeWeight = useMemo(() => {
     if (stakeOut != null && selectedAccount != null) {
@@ -129,7 +129,7 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
       <DropdownMenuSeparator />
       <DropdownMenuItem className={cn("cursor-pointer")}>
         <Link
-          href={apiLinks.wallet}
+          href={links.wallet}
           target="_blank"
           className={cn("flex items-center gap-2")}
         >
