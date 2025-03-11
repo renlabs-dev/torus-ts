@@ -289,6 +289,7 @@ export function GovernanceProvider({
             handleLogout={handleLogout}
             handleGetWallets={handleGetWallets}
             handleSelectWallet={handleSelectWallet}
+            torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")}
           />
         }
       />
