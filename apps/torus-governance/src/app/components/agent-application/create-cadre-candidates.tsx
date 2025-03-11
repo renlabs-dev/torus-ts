@@ -75,14 +75,12 @@ export function CreateCadreCandidates() {
     mode: "onChange",
   });
 
-  // Set the discordId in the cadreForm when it changes
+  // Set the discordId in the form when it changes
   React.useEffect(() => {
     if (discordId) {
-      cadreForm.setValue("discordId", discordId);
-      // Trigger validation to update the form state
-      void cadreForm.trigger("discordId");
+      form.setValue("discordId", discordId);
     }
-  }, [discordId, cadreForm]);
+  }, [discordId, form]);
 
   if (isUserCadre || !selectedAccount) {
     return null;

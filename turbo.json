@@ -62,10 +62,14 @@
     "DISCORD_CLIENT_ID",
     "DISCORD_CLIENT_SECRET",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "DISCORD_REDIRECT_URL",
 =======
     "DISCORD_REDIRECT_URI",
 >>>>>>> 701128fe (add discord login button)
+=======
+    "DISCORD_REDIRECT_URL",
+>>>>>>> c750affa (console.log)
     "NEXT_PUBLIC_TORUS_RPC_URL",
     "NEXT_PUBLIC_TORUS_CACHE_URL",
     "NEXT_PUBLIC_CHAIN_ENV"
