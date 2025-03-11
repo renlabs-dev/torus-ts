@@ -29,7 +29,7 @@ import {
 } from "./dropdown-menu";
 import { CopyButton } from "./copy-button";
 
-import { links } from "../lib/data";
+import { getLinks } from "../lib/data";
 import { cn } from "../lib/utils";
 import { NoWalletExtensionDisplay } from "./no-wallet-extension-display";
 import {
@@ -74,7 +74,7 @@ const WalletFunctions = (props: WalletFunctionsProps) => {
     torusChainEnv,
   } = props;
 
-  const links = links(torusChainEnv);
+  const links = getLinks(torusChainEnv);
 
   const userStakeWeight = useMemo(() => {
     if (stakeOut != null && selectedAccount != null) {

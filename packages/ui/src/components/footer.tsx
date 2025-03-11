@@ -8,7 +8,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { links } from "../lib/data";
+import { getLinks } from "../lib/data";
 import { Icons } from "./icons";
 
 const Clock = dynamic(() => import("./clock"), {
@@ -24,7 +24,7 @@ interface FooterProps {
 }
 
 export function Footer({ torusChainEnv }: FooterProps) {
-  const links = links(torusChainEnv);
+  const links = getLinks(torusChainEnv);
 
   const _socialList = [
     {

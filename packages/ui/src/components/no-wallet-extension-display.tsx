@@ -1,4 +1,4 @@
-import { links } from "../lib/data";
+import { getLinks } from "../lib/data";
 
 interface NoWalletExtensionDisplayProps {
   torusChainEnv: string;
@@ -7,6 +7,8 @@ interface NoWalletExtensionDisplayProps {
 export function NoWalletExtensionDisplay({
   torusChainEnv,
 }: NoWalletExtensionDisplayProps) {
+  const links = getLinks(torusChainEnv);
+
   return (
     <div className="flex h-full flex-col gap-3 p-3 text-sm">
       <div className="flex max-w-80 flex-col gap-4">
@@ -21,7 +23,7 @@ export function NoWalletExtensionDisplay({
 
         <a
           className="text-blue-600"
-          href={links(torusChainEnv).setup_a_wallet}
+          href={links.setup_a_wallet}
           rel="noreferrer"
           target="_blank"
         >
