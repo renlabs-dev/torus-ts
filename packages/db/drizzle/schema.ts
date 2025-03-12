@@ -158,9 +158,9 @@ export const comment = pgTable(
   (table) => [
     index().using(
       "btree",
-      table.itemType.asc().nullsLast().op("int4_ops"),
-      table.itemId.asc().nullsLast().op("enum_ops"),
-      table.userKey.asc().nullsLast().op("enum_ops"),
+      table.itemType.asc().nullsLast().op("enum_ops"),
+      table.itemId.asc().nullsLast().op("int4_ops"),
+      table.userKey.asc().nullsLast().op("text_ops"),
     ),
   ],
 );
@@ -183,8 +183,8 @@ export const commentInteraction = pgTable(
   (table) => [
     index().using(
       "btree",
-      table.userKey.asc().nullsLast().op("int4_ops"),
-      table.commentId.asc().nullsLast().op("text_ops"),
+      table.userKey.asc().nullsLast().op("text_ops"),
+      table.commentId.asc().nullsLast().op("int4_ops"),
     ),
     foreignKey({
       columns: [table.commentId],
