@@ -1,11 +1,10 @@
 "use client";
 
+import { CONSTANTS } from "@torus-ts/subspace";
 import { Card } from "@torus-ts/ui/components/card";
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useWallet } from "~/context/wallet-provider";
-
-const BLOCK_TIME = 8;
 
 export function RewardIntervalProgress() {
   const { lastBlock, rewardInterval } = useWallet();
@@ -26,7 +25,8 @@ export function RewardIntervalProgress() {
       const currentBlock = Number(lastBlock.data.blockNumber);
       const blocksIntoInterval = currentBlock % interval;
       const blocksUntilNext = interval - blocksIntoInterval;
-      const secondsUntilNext = blocksUntilNext * BLOCK_TIME;
+      const secondsUntilNext =
+        blocksUntilNext * CONSTANTS.TIME.BLOCK_TIME_SECONDS;
 
       setTimeLeft(secondsUntilNext);
     };

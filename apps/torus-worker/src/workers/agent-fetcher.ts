@@ -1,5 +1,5 @@
 import type { WorkerProps } from "../common";
-import { BLOCK_TIME, isNewBlock, log, sleep } from "../common";
+import { isNewBlock, log, sleep } from "../common";
 import { SubspaceAgentToDatabase, upsertAgentData } from "../db";
 import type { SS58Address } from "@torus-ts/subspace";
 import {
@@ -8,6 +8,7 @@ import {
   queryLastBlock,
   queryWhitelist,
 } from "@torus-ts/subspace";
+import { CONSTANTS } from "@torus-ts/subspace";
 
 export async function agentFetcherWorker(props: WorkerProps) {
   while (true) {
@@ -17,7 +18,7 @@ export async function agentFetcherWorker(props: WorkerProps) {
 
       // Check if the last queried block is a new block
       if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
-        await sleep(BLOCK_TIME);
+        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
         continue;
       }
       props.lastBlock = lastBlock;
@@ -48,7 +49,7 @@ export async function agentFetcherWorker(props: WorkerProps) {
       );
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
-      await sleep(BLOCK_TIME);
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
     }
   }
 }
