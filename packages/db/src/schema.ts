@@ -114,8 +114,8 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
 
   agentKey: ss58Address("agent_key")
     .notNull()
-    .references(() => agentSchema.key),
-
+    .references(() => agentSchema.key)
+    .unique(),
   // Aggregated weight allocations measured in Rems
   computedWeight: numeric("computed_weight").notNull(),
   // Normalized aggregated allocations (100% sum)
