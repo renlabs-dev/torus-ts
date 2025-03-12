@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
-import { links } from "@torus-ts/ui/lib/data";
+import { getLinks } from "@torus-ts/ui/lib/data";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import { ArrowRight, Coins } from "lucide-react";
@@ -21,7 +21,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { useGovernance } from "~/context/governance-provider";
+import { env } from "~/env";
 import { api } from "~/trpc/react";
+
+const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 const EmissionHealthFactorBadge = ({
   penaltyFactor,
