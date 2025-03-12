@@ -4,9 +4,3 @@ deployment:
 
   podLabels:
     app: torus-page
-
-    NEXT_PUBLIC_TORUS_CHAIN_ENV:
-      valueFrom:
-        configMapKeyRef:
-          name: '{{ template "application.name" . }}-config'
-          key: torus_chain_env
