@@ -131,6 +131,9 @@ export function Footer({ torusChainEnv }: FooterProps) {
           <FooterItem>
             <Clock />
           </FooterItem>
+          {torusChainEnv !== "mainnet" && (
+            <FooterItem>{torusChainEnv}</FooterItem>
+          )}
         </div>
       </div>
     </div>
