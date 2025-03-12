@@ -4,7 +4,6 @@ import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
-import { SheetFooter } from "@torus-ts/ui/components/sheet";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { useRouter } from "next/navigation";
@@ -95,18 +94,10 @@ export function AllocationActions() {
     );
 
   const handleSubmit = async () => {
-    if (!selectedAccount?.address) {
+    if (totalPercentage > 100) {
       toast({
         title: "Uh oh! Something went wrong.",
-        description: "Please connect your wallet.",
-      });
-      return;
-    }
-
-    if (totalPercentage !== 100) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Ensure total percentage is 100%",
+        description: "Ensure total percentage is less than 100%",
       });
       return;
     }
@@ -120,25 +111,14 @@ export function AllocationActions() {
       return;
     }
 
+    if (!selectedAccount?.address) {
+      return;
+    }
+
     // Filter out agents with 0 percentage
     const filteredAgents = delegatedAgents.filter(
       (agent) => agent.percentage !== 0,
     );
-
-    // Recalculate total percentage after filtering
-    const filteredTotalPercentage = filteredAgents.reduce(
-      (sum, agent) => sum + agent.percentage,
-      0,
-    );
-
-    if (filteredTotalPercentage !== 100) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          "Total percentage must be 100% after removing agents with 0%",
-      });
-      return;
-    }
 
     try {
       // Delete existing user agent data
@@ -200,7 +180,7 @@ export function AllocationActions() {
   };
 
   return (
-    <SheetFooter className="flex min-h-fit gap-4 sm:flex-col sm:space-x-0">
+    <div className="flex min-h-fit w-full gap-4 sm:flex-col sm:space-x-0">
       {/* <StatusLabel status={submitStatus} /> */} Submit Status
       <div className="mt-auto flex w-full flex-col gap-2">
         <div className="flex flex-row gap-2">
@@ -226,12 +206,12 @@ export function AllocationActions() {
           onClick={handleSubmit}
           variant="outline"
           className="w-full"
-          // disabled={submitStatus.disabled}
+          disabled={!selectedAccount?.address}
           title="Submit Agents"
         >
           {isSubmitting ? "Submitting..." : "Submit Agents"}
         </Button>
       </div>
-    </SheetFooter>
+    </div>
   );
 }

@@ -2,12 +2,13 @@
 
 import { AgentList } from "./components/agent-list";
 import { AllocationActions } from "./components/allocation-actions";
+import { AllocationSheetTrigger } from "./components/allocation-sheet-trigger";
 import { getSubmitStatus } from "./components/get-submit-status";
-import { MenuTrigger } from "./components/menu-trigger";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
@@ -15,7 +16,7 @@ import { useEffect, useState } from "react";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { api } from "~/trpc/react";
 
-export function AllocationMenu() {
+export function AllocationSheet() {
   const {
     hasPercentageChange,
     hasUnsavedChanges,
@@ -78,7 +79,7 @@ export function AllocationMenu() {
 
   return (
     <Sheet>
-      <MenuTrigger
+      <AllocationSheetTrigger
         selectedAccount={selectedAccount?.address}
         submitStatus={submitStatus}
       />
@@ -86,8 +87,12 @@ export function AllocationMenu() {
         <SheetHeader>
           <SheetTitle>Allocation Menu</SheetTitle>
         </SheetHeader>
+
         <AgentList />
-        <AllocationActions />
+
+        <SheetFooter>
+          <AllocationActions />
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

@@ -34,8 +34,7 @@ export function AgentList() {
   };
 
   return (
-    <ScrollArea className="max-h-[calc(100vh-270px)] rounded-md border p-3">
-      {/* TODO: Scroll Area */}
+    <ScrollArea className="max-h-[calc(100vh-270px)] pr-3">
       <div className="flex flex-col gap-2">
         {delegatedAgents.length ? (
           delegatedAgents

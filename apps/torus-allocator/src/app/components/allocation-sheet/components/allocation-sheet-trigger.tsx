@@ -10,7 +10,7 @@ interface MenuTriggerProps {
   };
 }
 
-export function MenuTrigger(props: MenuTriggerProps) {
+export function AllocationSheetTrigger(props: MenuTriggerProps) {
   return (
     <div className="fixed bottom-12 z-[50] flex w-full flex-col items-center justify-end marker:flex md:bottom-14">
       <div className="bg-accent flex items-center gap-3 rounded-full border p-3">

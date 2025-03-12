@@ -1,5 +1,5 @@
 import "@torus-ts/ui/globals.css";
-import { AllocationMenu } from "./components/allocation-menu";
+import { AllocationSheet } from "./components/allocation-sheet";
 import { AllocatorHeader } from "./components/allocator-header";
 import { TutorialDialog } from "./components/tutorial-dialog";
 import { TorusProvider } from "@torus-ts/torus-provider";
@@ -45,7 +45,7 @@ export default function RootLayout({
         <TRPCReactProvider>
           <AllocatorHeader torusCacheUrl={torusCacheUrl} />
           <TutorialDialog />
-          <AllocationMenu />
+          <AllocationSheet />
           {children}
           <Toaster />
           <Footer />
