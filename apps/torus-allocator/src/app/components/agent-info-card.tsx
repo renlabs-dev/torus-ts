@@ -9,23 +9,23 @@ import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
-  const { tokensPerWeek, usdValue, isLoading, isError } =
+  const { isLoading, isError, displayTokensPerWeek, displayUsdValue } =
     useWeeklyUsdCalculation(agent);
 
   // Error SAFE - If the data is not loaded, display a loading state
-  const displayTokensPerWeek = isLoading ? (
+  const showTokensPerWeek = isLoading ? (
     <p className="animate-pulse text-sm">Loading...</p>
   ) : isError ? (
     "-"
   ) : (
-    tokensPerWeek
+    displayTokensPerWeek
   );
-  const displayUsdValue = isLoading ? (
+  const showUsdValue = isLoading ? (
     <p className="animate-pulse text-sm">Loading...</p>
   ) : isError ? (
     "-"
   ) : (
-    usdValue
+    displayUsdValue
   );
 
   const dataGroups = [
@@ -69,11 +69,11 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
     // },
     {
       label: "Weekly Rewards",
-      value: displayTokensPerWeek,
+      value: showTokensPerWeek,
     },
     {
       label: "Weekly Rewards(USD)",
-      value: displayUsdValue,
+      value: showUsdValue,
     },
   ];
 

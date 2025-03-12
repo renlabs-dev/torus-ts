@@ -1,4 +1,4 @@
-import { BLOCK_TIME, log, sleep } from "../common";
+import { log, sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
 import type { AgentWeight } from "../db";
 import { getUserWeightMap, upsertAgentWeight } from "../db";
@@ -12,6 +12,7 @@ import { Keyring } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { createDb } from "@torus-ts/db/client";
+import { CONSTANTS } from "@torus-ts/subspace";
 import type { LastBlock, SS58Address } from "@torus-ts/subspace";
 import {
   checkSS58,
@@ -45,7 +46,7 @@ export async function weightAggregatorWorker(api: ApiPromise) {
         lastBlock.blockNumber <= knownLastBlock.blockNumber
       ) {
         log(`Block ${lastBlock.blockNumber} already processed, skipping`);
-        await sleep(BLOCK_TIME / 2);
+        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 2);
         continue;
       }
       knownLastBlock = lastBlock;
@@ -55,10 +56,10 @@ export async function weightAggregatorWorker(api: ApiPromise) {
       await weightAggregatorTask(api, keypair, lastBlock.blockNumber);
 
       // We aim to run this task every ~5 minutes (8 seconds block * 38)
-      await sleep(BLOCK_TIME * 37);
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS * 37);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
-      await sleep(BLOCK_TIME);
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
     }
   }
 }
