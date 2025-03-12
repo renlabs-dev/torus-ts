@@ -299,6 +299,22 @@ export const commentReportSchema = createTable("comment_report", {
 // ---- Cadre ----
 
 const DISCORD_ID_LENGTH = 20;
+
+// Auxiliary table to store discord information
+
+/**
+ * Discord information of a user
+ */
+export const userDiscordInfo = createTable("user_discord_info", {
+  id: serial("id").primaryKey(),
+  discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+    .notNull()
+    .references(() => cadreSchema.discordId),
+  userName: text("user_name").notNull(),
+  avatarUrl: text("avatar_url"),
+  ...timeFields(),
+});
+
 /**
  * A groups of users that can vote on Applications.
  */
