@@ -19,12 +19,12 @@ const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
   },
   WALLET: {
     message: "Please connect your wallet",
-    color: "text-red-500",
+    color: "text-white",
     disabled: true,
   },
   PERCENTAGE: {
     message: "Percentage must be 100% or less",
-    color: "text-white",
+    color: "text-red-500",
     disabled: true,
   },
   SUBMITTING: {

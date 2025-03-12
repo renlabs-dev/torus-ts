@@ -190,8 +190,7 @@ export function AllocationActions(props: MenuTriggerProps) {
   };
 
   return (
-    <div className="flex min-h-fit w-full gap-4 sm:flex-col sm:space-x-0">
-      <StatusLabel status={props.submitStatus} />
+    <div className="flex min-h-fit w-full items-center gap-4 sm:flex-col sm:space-x-0">
       <div className="mt-auto flex w-full flex-col gap-2">
         <div className="flex flex-row gap-2">
           <Button
@@ -222,6 +221,7 @@ export function AllocationActions(props: MenuTriggerProps) {
           {isSubmitting ? "Submitting..." : "Submit Agents"}
         </Button>
       </div>
+      <StatusLabel status={props.submitStatus} />
     </div>
   );
 }
