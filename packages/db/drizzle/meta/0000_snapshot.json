@@ -1,11 +1,11 @@
 {
-  "id": "d2cf93f6-bddd-4ee6-858a-bc66eae20cf0",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.agent_application_vote": {
-      "name": "agent_application_vote",
+    "public.cadre_candidate": {
+      "name": "cadre_candidate",
       "schema": "",
       "columns": {
         "id": {
@@ -14,14 +14,99 @@
           "primaryKey": true,
           "notNull": true
         },
-        "application_id": {
-          "name": "application_id",
-          "type": "integer",
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
           "primaryKey": false,
+          "notNull": true
+        },
+        "discord_id": {
+          "name": "discord_id",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidacy_status": {
+          "name": "candidacy_status",
+          "type": "candidacy_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notified": {
+          "name": "notified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cadre_candidate_user_key_unique": {
+          "columns": [
+            "user_key"
+          ],
+          "nullsNotDistinct": false,
+          "name": "cadre_candidate_user_key_unique"
+        }
+      },
+      "checkConstraints": {
+        "discord_id_check": {
+          "name": "discord_id_check",
+          "value": "(length((discord_id)::text) >= 17) AND (length((discord_id)::text) <= 20)"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.cadre_vote": {
+      "name": "cadre_vote",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
           "notNull": true
         },
         "user_key": {
           "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "applicant_key": {
+          "name": "applicant_key",
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": true
@@ -51,16 +136,30 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "agent_application_vote_user_key_cadre_user_key_fk": {
-          "name": "agent_application_vote_user_key_cadre_user_key_fk",
-          "tableFrom": "agent_application_vote",
+        "cadre_vote_applicant_key_cadre_candidate_user_key_fk": {
+          "name": "cadre_vote_applicant_key_cadre_candidate_user_key_fk",
+          "tableFrom": "cadre_vote",
+          "tableTo": "cadre_candidate",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "applicant_key"
+          ],
+          "columnsTo": [
+            "user_key"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cadre_vote_user_key_cadre_user_key_fk": {
+          "name": "cadre_vote_user_key_cadre_user_key_fk",
+          "tableFrom": "cadre_vote",
           "tableTo": "cadre",
+          "schemaTo": "public",
           "columnsFrom": [
             "user_key"
           ],
@@ -73,96 +172,17 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "agent_application_vote_application_id_user_key_unique": {
-          "name": "agent_application_vote_application_id_user_key_unique",
-          "nullsNotDistinct": false,
+        "cadre_vote_user_key_applicant_key_unique": {
           "columns": [
-            "application_id",
-            "user_key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.agent_report": {
-      "name": "agent_report",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_key": {
-          "name": "user_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "agent_key": {
-          "name": "agent_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "report_reason",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "null"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "agent_report_agent_key_agent_key_fk": {
-          "name": "agent_report_agent_key_agent_key_fk",
-          "tableFrom": "agent_report",
-          "tableTo": "agent",
-          "columnsFrom": [
-            "agent_key"
+            "user_key",
+            "applicant_key"
           ],
-          "columnsTo": [
-            "key"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "nullsNotDistinct": false,
+          "name": "cadre_vote_user_key_applicant_key_unique"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
+      "policies": {},
       "isRLSEnabled": false
     },
     "public.agent": {
@@ -253,8 +273,7 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {
@@ -263,9 +282,10 @@
           "columns": [
             {
               "expression": "key",
-              "isExpression": false,
               "asc": true,
-              "nulls": "last"
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
             }
           ],
           "isUnique": false,
@@ -278,422 +298,20 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "agent_key_unique": {
-          "name": "agent_key_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "key"
-          ]
+          ],
+          "nullsNotDistinct": false,
+          "name": "agent_key_unique"
         }
       },
-      "policies": {},
       "checkConstraints": {
         "percent_check": {
           "name": "percent_check",
-          "value": "\"agent\".\"weight_factor\" >= 0 and \"agent\".\"weight_factor\" <= 100"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.cadre_candidate": {
-      "name": "cadre_candidate",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_key": {
-          "name": "user_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "discord_id": {
-          "name": "discord_id",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "candidacy_status": {
-          "name": "candidacy_status",
-          "type": "candidacy_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'PENDING'"
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "null"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "cadre_candidate_user_key_unique": {
-          "name": "cadre_candidate_user_key_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_key"
-          ]
+          "value": "(weight_factor >= 0) AND (weight_factor <= 100)"
         }
       },
       "policies": {},
-      "checkConstraints": {
-        "discord_id_check": {
-          "name": "discord_id_check",
-          "value": "LENGTH(\"cadre_candidate\".\"discord_id\") BETWEEN 17 AND 20 "
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.cadre": {
-      "name": "cadre",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_key": {
-          "name": "user_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "discord_id": {
-          "name": "discord_id",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "null"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "cadre_user_key_unique": {
-          "name": "cadre_user_key_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "discord_id_check": {
-          "name": "discord_id_check",
-          "value": "LENGTH(\"cadre\".\"discord_id\") BETWEEN 17 AND 20 "
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.cadre_vote_history": {
-      "name": "cadre_vote_history",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_key": {
-          "name": "user_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "applicant_key": {
-          "name": "applicant_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "vote": {
-          "name": "vote",
-          "type": "agent_application_vote_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "null"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.cadre_vote": {
-      "name": "cadre_vote",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_key": {
-          "name": "user_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "applicant_key": {
-          "name": "applicant_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "vote": {
-          "name": "vote",
-          "type": "agent_application_vote_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "null"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "cadre_vote_user_key_cadre_user_key_fk": {
-          "name": "cadre_vote_user_key_cadre_user_key_fk",
-          "tableFrom": "cadre_vote",
-          "tableTo": "cadre",
-          "columnsFrom": [
-            "user_key"
-          ],
-          "columnsTo": [
-            "user_key"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "cadre_vote_applicant_key_cadre_candidate_user_key_fk": {
-          "name": "cadre_vote_applicant_key_cadre_candidate_user_key_fk",
-          "tableFrom": "cadre_vote",
-          "tableTo": "cadre_candidate",
-          "columnsFrom": [
-            "applicant_key"
-          ],
-          "columnsTo": [
-            "user_key"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "cadre_vote_user_key_applicant_key_unique": {
-          "name": "cadre_vote_user_key_applicant_key_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_key",
-            "applicant_key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.comment_interaction": {
-      "name": "comment_interaction",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_key": {
-          "name": "user_key",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "comment_id": {
-          "name": "comment_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reaction_type": {
-          "name": "reaction_type",
-          "type": "reaction_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "null"
-        }
-      },
-      "indexes": {
-        "comment_interaction_user_key_comment_id_index": {
-          "name": "comment_interaction_user_key_comment_id_index",
-          "columns": [
-            {
-              "expression": "user_key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "comment_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "comment_interaction_comment_id_comment_id_fk": {
-          "name": "comment_interaction_comment_id_comment_id_fk",
-          "tableFrom": "comment_interaction",
-          "tableTo": "comment",
-          "columnsFrom": [
-            "comment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "comment_interaction_user_key_comment_id_unique": {
-          "name": "comment_interaction_user_key_comment_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_key",
-            "comment_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.comment_report": {
@@ -749,8 +367,7 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {},
@@ -759,6 +376,7 @@
           "name": "comment_report_comment_id_comment_id_fk",
           "tableFrom": "comment_report",
           "tableTo": "comment",
+          "schemaTo": "public",
           "columnsFrom": [
             "comment_id"
           ],
@@ -771,8 +389,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
+      "policies": {},
       "isRLSEnabled": false
     },
     "public.comment": {
@@ -834,8 +452,7 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {
@@ -844,21 +461,24 @@
           "columns": [
             {
               "expression": "item_type",
-              "isExpression": false,
               "asc": true,
-              "nulls": "last"
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
             },
             {
               "expression": "item_id",
-              "isExpression": false,
               "asc": true,
-              "nulls": "last"
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
             },
             {
               "expression": "user_key",
-              "isExpression": false,
               "asc": true,
-              "nulls": "last"
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
             }
           ],
           "isUnique": false,
@@ -870,8 +490,172 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.comment_interaction": {
+      "name": "comment_interaction",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment_id": {
+          "name": "comment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reaction_type": {
+          "name": "reaction_type",
+          "type": "reaction_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "comment_interaction_user_key_comment_id_index": {
+          "name": "comment_interaction_user_key_comment_id_index",
+          "columns": [
+            {
+              "expression": "user_key",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "comment_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "comment_interaction_comment_id_comment_id_fk": {
+          "name": "comment_interaction_comment_id_comment_id_fk",
+          "tableFrom": "comment_interaction",
+          "tableTo": "comment",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "comment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "comment_interaction_user_key_comment_id_unique": {
+          "columns": [
+            "user_key",
+            "comment_id"
+          ],
+          "nullsNotDistinct": false,
+          "name": "comment_interaction_user_key_comment_id_unique"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.cadre_vote_history": {
+      "name": "cadre_vote_history",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "applicant_key": {
+          "name": "applicant_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vote": {
+          "name": "vote",
+          "type": "agent_application_vote_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
       "isRLSEnabled": false
     },
     "public.computed_agent_weight": {
@@ -926,8 +710,7 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {},
@@ -936,6 +719,94 @@
           "name": "computed_agent_weight_agent_key_agent_key_fk",
           "tableFrom": "computed_agent_weight",
           "tableTo": "agent",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "agent_key"
+          ],
+          "columnsTo": [
+            "key"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "computed_agent_weight_agent_key_unique": {
+          "columns": [
+            "agent_key"
+          ],
+          "nullsNotDistinct": false,
+          "name": "computed_agent_weight_agent_key_unique"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.agent_report": {
+      "name": "agent_report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agent_key": {
+          "name": "agent_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "report_reason",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "agent_report_agent_key_agent_key_fk": {
+          "name": "agent_report_agent_key_agent_key_fk",
+          "tableFrom": "agent_report",
+          "tableTo": "agent",
+          "schemaTo": "public",
           "columnsFrom": [
             "agent_key"
           ],
@@ -948,8 +819,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
+      "policies": {},
       "isRLSEnabled": false
     },
     "public.governance_notification": {
@@ -1000,16 +871,188 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.user_agent_weight": {
+      "name": "user_agent_weight",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agent_key": {
+          "name": "agent_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weight": {
+          "name": "weight",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_agent_weight_agent_key_agent_key_fk": {
+          "name": "user_agent_weight_agent_key_agent_key_fk",
+          "tableFrom": "user_agent_weight",
+          "tableTo": "agent",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "agent_key"
+          ],
+          "columnsTo": [
+            "key"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_agent_weight_user_key_agent_key_unique": {
+          "columns": [
+            "user_key",
+            "agent_key"
+          ],
+          "nullsNotDistinct": false,
+          "name": "user_agent_weight_user_key_agent_key_unique"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.whitelist_application": {
+      "name": "whitelist_application",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payer_key": {
+          "name": "payer_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cost": {
+          "name": "cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "application_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notified": {
+          "name": "notified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "whitelist_application_user_key_unique": {
+          "columns": [
+            "user_key"
+          ],
+          "nullsNotDistinct": false,
+          "name": "whitelist_application_user_key_unique"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
       "isRLSEnabled": false
     },
     "public.penalize_agent_votes": {
@@ -1071,8 +1114,7 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1081,6 +1123,7 @@
           "name": "penalize_agent_votes_cadre_key_cadre_user_key_fk",
           "tableFrom": "penalize_agent_votes",
           "tableTo": "cadre",
+          "schemaTo": "public",
           "columnsFrom": [
             "cadre_key"
           ],
@@ -1094,25 +1137,25 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "penalize_agent_votes_agent_key_cadre_key_unique": {
-          "name": "penalize_agent_votes_agent_key_cadre_key_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "agent_key",
             "cadre_key"
-          ]
+          ],
+          "nullsNotDistinct": false,
+          "name": "penalize_agent_votes_agent_key_cadre_key_unique"
         }
       },
-      "policies": {},
       "checkConstraints": {
         "percent_check": {
           "name": "percent_check",
-          "value": "\"penalize_agent_votes\".\"penalty_factor\" >= 0 and \"penalize_agent_votes\".\"penalty_factor\" <= 100"
+          "value": "(penalty_factor >= 0) AND (penalty_factor <= 100)"
         }
       },
+      "policies": {},
       "isRLSEnabled": false
     },
-    "public.user_agent_weight": {
-      "name": "user_agent_weight",
+    "public.cadre": {
+      "name": "cadre",
       "schema": "",
       "columns": {
         "id": {
@@ -1127,18 +1170,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "agent_key": {
-          "name": "agent_key",
-          "type": "varchar(256)",
+        "discord_id": {
+          "name": "discord_id",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
-        },
-        "weight": {
-          "name": "weight",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
         },
         "created_at": {
           "name": "created_at",
@@ -1158,96 +1194,33 @@
           "name": "deleted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "null"
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "user_agent_weight_agent_key_agent_key_fk": {
-          "name": "user_agent_weight_agent_key_agent_key_fk",
-          "tableFrom": "user_agent_weight",
-          "tableTo": "agent",
-          "columnsFrom": [
-            "agent_key"
-          ],
-          "columnsTo": [
-            "key"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "user_agent_weight_user_key_agent_key_unique": {
-          "name": "user_agent_weight_user_key_agent_key_unique",
-          "nullsNotDistinct": false,
+        "cadre_user_key_unique": {
           "columns": [
-            "user_key",
-            "agent_key"
-          ]
+            "user_key"
+          ],
+          "nullsNotDistinct": false,
+          "name": "cadre_user_key_unique"
+        }
+      },
+      "checkConstraints": {
+        "discord_id_check": {
+          "name": "discord_id_check",
+          "value": "(length((discord_id)::text) >= 17) AND (length((discord_id)::text) <= 20)"
         }
       },
       "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
-    }
-  },
-  "enums": {
-    "public.agent_application_vote_type": {
-      "name": "agent_application_vote_type",
-      "schema": "public",
-      "values": [
-        "ACCEPT",
-        "REFUSE",
-        "REMOVE"
-      ]
     },
-    "public.candidacy_status": {
-      "name": "candidacy_status",
-      "schema": "public",
-      "values": [
-        "PENDING",
-        "ACCEPTED",
-        "REJECTED",
-        "REMOVED"
-      ]
-    },
-    "public.governance_item_type": {
-      "name": "governance_item_type",
-      "schema": "public",
-      "values": [
-        "PROPOSAL",
-        "AGENT_APPLICATION"
-      ]
-    },
-    "public.reaction_type": {
-      "name": "reaction_type",
-      "schema": "public",
-      "values": [
-        "LIKE",
-        "DISLIKE"
-      ]
-    },
-    "public.report_reason": {
-      "name": "report_reason",
-      "schema": "public",
-      "values": [
-        "SPAM",
-        "VIOLENCE",
-        "HARASSMENT",
-        "HATE_SPEECH",
-        "SEXUAL_CONTENT"
-      ]
-    }
-  },
-  "schemas": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "views": {
-    "public.comment_digest": {
+    "public.agent_application_vote": {
+      "name": "agent_application_vote",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
@@ -1255,15 +1228,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "item_type": {
-          "name": "item_type",
-          "type": "governance_item_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "item_id": {
-          "name": "item_id",
+        "application_id": {
+          "name": "application_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -1273,6 +1239,158 @@
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": true
+        },
+        "vote": {
+          "name": "vote",
+          "type": "agent_application_vote_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "agent_application_vote_user_key_cadre_user_key_fk": {
+          "name": "agent_application_vote_user_key_cadre_user_key_fk",
+          "tableFrom": "agent_application_vote",
+          "tableTo": "cadre",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "user_key"
+          ],
+          "columnsTo": [
+            "user_key"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agent_application_vote_application_id_user_key_unique": {
+          "columns": [
+            "application_id",
+            "user_key"
+          ],
+          "nullsNotDistinct": false,
+          "name": "agent_application_vote_application_id_user_key_unique"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.agent_application_vote_type": {
+      "name": "agent_application_vote_type",
+      "values": [
+        "ACCEPT",
+        "REFUSE",
+        "REMOVE"
+      ],
+      "schema": "public"
+    },
+    "public.application_status": {
+      "name": "application_status",
+      "values": [
+        "OPEN",
+        "ACCEPTED",
+        "REJECTED",
+        "EXPIRED"
+      ],
+      "schema": "public"
+    },
+    "public.candidacy_status": {
+      "name": "candidacy_status",
+      "values": [
+        "PENDING",
+        "ACCEPTED",
+        "REJECTED",
+        "REMOVED"
+      ],
+      "schema": "public"
+    },
+    "public.governance_item_type": {
+      "name": "governance_item_type",
+      "values": [
+        "PROPOSAL",
+        "AGENT_APPLICATION"
+      ],
+      "schema": "public"
+    },
+    "public.reaction_type": {
+      "name": "reaction_type",
+      "values": [
+        "LIKE",
+        "DISLIKE"
+      ],
+      "schema": "public"
+    },
+    "public.report_reason": {
+      "name": "report_reason",
+      "values": [
+        "SPAM",
+        "VIOLENCE",
+        "HARASSMENT",
+        "HATE_SPEECH",
+        "SEXUAL_CONTENT"
+      ],
+      "schema": "public"
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {
+    "public.comment_digest": {
+      "name": "comment_digest",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_type": {
+          "name": "item_type",
+          "type": "governance_item_type",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false
         },
         "user_name": {
           "name": "user_name",
@@ -1284,26 +1402,38 @@
           "name": "content",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": false
+        },
+        "likes": {
+          "name": "likes",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dislikes": {
+          "name": "dislikes",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
         }
       },
-      "definition": "select \"comment\".\"id\", \"comment\".\"item_type\", \"comment\".\"item_id\", \"comment\".\"user_key\", \"comment\".\"user_name\", \"comment\".\"content\", \"comment\".\"created_at\", sum(CASE WHEN \"comment_interaction\".\"reaction_type\" = 'LIKE' THEN 1 ELSE 0 END) as \"likes\", sum(CASE WHEN \"comment_interaction\".\"reaction_type\" = 'DISLIKE' THEN 1 ELSE 0 END) as \"dislikes\" from \"comment\" left join \"comment_interaction\" on \"comment\".\"id\" = \"comment_interaction\".\"comment_id\" where \"comment\".\"deleted_at\" is null group by \"comment\".\"id\", \"comment\".\"item_type\", \"comment\".\"item_id\", \"comment\".\"user_key\", \"comment\".\"content\", \"comment\".\"created_at\" order by \"comment\".\"created_at\" asc",
-      "name": "comment_digest",
-      "schema": "public",
       "isExisting": false,
+      "definition": "SELECT comment.id, comment.item_type, comment.item_id, comment.user_key, comment.user_name, comment.content, comment.created_at, sum( CASE WHEN comment_interaction.reaction_type = 'LIKE'::reaction_type THEN 1 ELSE 0 END) AS likes, sum( CASE WHEN comment_interaction.reaction_type = 'DISLIKE'::reaction_type THEN 1 ELSE 0 END) AS dislikes FROM comment LEFT JOIN comment_interaction ON comment.id = comment_interaction.comment_id WHERE comment.deleted_at IS NULL GROUP BY comment.id, comment.item_type, comment.item_id, comment.user_key, comment.content, comment.created_at ORDER BY comment.created_at",
       "materialized": true
     }
   },
   "_meta": {
-    "columns": {},
     "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
     "tables": {}
   }
 }
