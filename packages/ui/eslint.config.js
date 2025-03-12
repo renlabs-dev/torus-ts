@@ -1,5 +1,4 @@
 import baseConfig, { restrictEnvAccess } from "@torus-ts/eslint-config/base";
-import nextjsConfig from "@torus-ts/eslint-config/nextjs";
 import reactConfig from "@torus-ts/eslint-config/react";
 import tseslint from "typescript-eslint";
 
@@ -10,7 +9,6 @@ export default [
   },
   ...baseConfig,
   ...reactConfig,
-  ...nextjsConfig,
   ...restrictEnvAccess,
   ...tseslint.config({
     files: ["src/**/*.{js,ts,tsx}"],
