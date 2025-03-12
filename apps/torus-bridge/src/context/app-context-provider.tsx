@@ -36,7 +36,7 @@ export function AppContextProvider({
                 <WalletHeader />
                 <Container>{children}</Container>
                 <Toaster />
-                <Footer />
+                <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
               </CosmosWalletProvider>
             </SolanaWalletProvider>
           </EvmWalletProvider>
