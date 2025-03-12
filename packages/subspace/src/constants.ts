@@ -103,10 +103,10 @@ export const CONSTANTS = {
      */
     STAKE_STALE_TIME: 5 * 60 * 1000, // 5 minutes (arbitrary)
   },
-
   EMISSION: {
     /** Decimals of the emission token */
     DECIMALS: 18,
+
     /** Halving interval in REM units */
     REM_HALVING_INTERVAL: 144000000000000000000000000n,
 
@@ -130,7 +130,6 @@ export const CONSTANTS = {
     BLOCK_EMISSION: 5.925925926,
     // Value converted from REM: 5.925925925925925925
   },
-
   WEIGHTS: {
     /** Minimum allowed weights (u16 type) */
     DEFAULT_MIN_ALLOWED_WEIGHTS: 1,
@@ -138,7 +137,6 @@ export const CONSTANTS = {
     /** Maximum allowed weights (u16 type) */
     DEFAULT_MAX_ALLOWED_WEIGHTS: 420,
   },
-
   ECONOMY: {
     /** Default percentage for emission recycling */
     DEFAULT_EMISSION_RECYCLING_PERCENTAGE: 1,
