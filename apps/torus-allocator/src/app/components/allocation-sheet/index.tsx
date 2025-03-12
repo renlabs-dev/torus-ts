@@ -14,6 +14,7 @@ import {
 } from "@torus-ts/ui/components/sheet";
 import { useEffect, useState } from "react";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import useSubmitStore from "~/stores/submitStore";
 import { api } from "~/trpc/react";
 
 export function AllocationSheet() {
@@ -26,7 +27,7 @@ export function AllocationSheet() {
 
   const { selectedAccount } = useTorus();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isSubmitting } = useSubmitStore();
 
   const { data: userAgentWeight, error: agentError } =
     api.userAgentWeight.byUserKey.useQuery(
@@ -77,8 +78,6 @@ export function AllocationSheet() {
     hasPercentageChange,
   });
 
-  console.log("submitStatus", submitStatus);
-
   return (
     <Sheet>
       <AllocationSheetTrigger
@@ -93,7 +92,7 @@ export function AllocationSheet() {
         <AgentList />
 
         <SheetFooter>
-          <AllocationActions />
+          <AllocationActions submitStatus={submitStatus} />
         </SheetFooter>
       </SheetContent>
     </Sheet>

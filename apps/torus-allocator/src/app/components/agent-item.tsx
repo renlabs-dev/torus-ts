@@ -193,7 +193,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
 
           <div className="mt-1 flex h-full w-full flex-col justify-between gap-3">
             <div className="flex w-full items-center justify-between gap-4">
-              <div className="relative z-50 flex gap-2">
+              <div className="relative z-40 flex gap-2">
                 {socialsList.map((social) => (
                   <a
                     key={social.name}

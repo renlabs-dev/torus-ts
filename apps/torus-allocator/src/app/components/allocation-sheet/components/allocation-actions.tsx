@@ -1,5 +1,7 @@
 "use client";
 
+import type { StatusConfig } from "./get-submit-status";
+import { StatusLabel } from "./status-label";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -7,12 +9,17 @@ import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import useSubmitStore from "~/stores/submitStore";
 import { api } from "~/trpc/react";
 
-export function AllocationActions() {
+interface MenuTriggerProps {
+  submitStatus: StatusConfig;
+}
+
+export function AllocationActions(props: MenuTriggerProps) {
   const {
     delegatedAgents,
     updatePercentage,
@@ -26,11 +33,11 @@ export function AllocationActions() {
   const { toast } = useToast();
   const { selectedAccount, api: torusApi } = useTorus();
 
+  const { isSubmitting, setSubmitting } = useSubmitStore();
+
   const totalPercentage = getTotalPercentage();
 
   const hasItemsToClear = delegatedAgents.length > 0;
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleAutoCompletePercentage() {
     const items = delegatedAgents;
@@ -68,7 +75,6 @@ export function AllocationActions() {
   }, [accountStakedBy, selectedAccount?.address]);
 
   // TODO: Refactor submit logic
-
   const createManyUserAgentData = api.userAgentWeight.createMany.useMutation({
     onSuccess: () => {
       router.refresh();
@@ -121,6 +127,7 @@ export function AllocationActions() {
     );
 
     try {
+      setSubmitting(true);
       // Delete existing user agent data
       await deleteUserAgentData.mutateAsync({
         userKey: selectedAccount.address,
@@ -157,8 +164,10 @@ export function AllocationActions() {
         title: "Success!",
         description: "Allocation submitted.",
       });
+      setSubmitting(false);
     } catch (error) {
       console.error("Error submitting data:", error);
+      setSubmitting(false);
     }
   };
 
@@ -173,15 +182,16 @@ export function AllocationActions() {
       });
       setDelegatedAgentsFromDB([]);
 
-      // await refetchUserAgentWeight();
+      await refetchUserAgentWeight();
     } catch (error) {
       console.error("Error removing weight:", error);
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="flex min-h-fit w-full gap-4 sm:flex-col sm:space-x-0">
-      {/* <StatusLabel status={submitStatus} /> */} Submit Status
+      <StatusLabel status={props.submitStatus} />
       <div className="mt-auto flex w-full flex-col gap-2">
         <div className="flex flex-row gap-2">
           <Button
@@ -206,7 +216,7 @@ export function AllocationActions() {
           onClick={handleSubmit}
           variant="outline"
           className="w-full"
-          disabled={!selectedAccount?.address}
+          disabled={props.submitStatus.disabled}
           title="Submit Agents"
         >
           {isSubmitting ? "Submitting..." : "Submit Agents"}

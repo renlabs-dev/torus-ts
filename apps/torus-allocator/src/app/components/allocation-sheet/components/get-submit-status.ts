@@ -23,8 +23,8 @@ const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
     disabled: true,
   },
   PERCENTAGE: {
-    message: "Total percentage must be 100% or less",
-    color: "text-red-500",
+    message: "Percentage must be 100% or less",
+    color: "text-white",
     disabled: true,
   },
   SUBMITTING: {
