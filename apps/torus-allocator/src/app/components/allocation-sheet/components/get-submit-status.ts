@@ -1,4 +1,12 @@
-export const STATUS_CONFIG = {
+type StatusKey = "UNSAVED" | "SAVED" | "WALLET" | "PERCENTAGE" | "SUBMITTING";
+
+export interface StatusConfig {
+  message: string;
+  color: string;
+  disabled: boolean;
+}
+
+const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
   UNSAVED: {
     message: "You have unsaved changes",
     color: "text-amber-500",
@@ -15,7 +23,7 @@ export const STATUS_CONFIG = {
     disabled: true,
   },
   PERCENTAGE: {
-    message: "Total percentage must be 100%",
+    message: "Total percentage must be 100% or less",
     color: "text-red-500",
     disabled: true,
   },
@@ -26,50 +34,24 @@ export const STATUS_CONFIG = {
   },
 };
 
-interface GetSubmitStatusProps {
-  selectedAccount: string | undefined;
+interface SubmitStatusProps {
+  selectedAccount?: string;
   totalPercentage: number;
   isSubmitting: boolean;
-  hasUnsavedChanges: () => boolean;
+  hasUnsavedChanges: boolean;
   hasPercentageChange: boolean;
 }
 
-export function getSubmitStatus(props: GetSubmitStatusProps): {
-  disabled: boolean;
-  message: string;
-  status: (typeof STATUS_CONFIG)[keyof typeof STATUS_CONFIG];
-} {
-  if (!props.selectedAccount) {
-    return {
-      disabled: STATUS_CONFIG.WALLET.disabled,
-      message: STATUS_CONFIG.WALLET.message,
-      status: STATUS_CONFIG.WALLET,
-    };
-  }
-  if (props.totalPercentage !== 100) {
-    return {
-      disabled: STATUS_CONFIG.PERCENTAGE.disabled,
-      message: STATUS_CONFIG.PERCENTAGE.message,
-      status: STATUS_CONFIG.PERCENTAGE,
-    };
-  }
-  if (props.isSubmitting) {
-    return {
-      disabled: STATUS_CONFIG.SUBMITTING.disabled,
-      message: STATUS_CONFIG.SUBMITTING.message,
-      status: STATUS_CONFIG.SUBMITTING,
-    };
-  }
-  if (props.hasUnsavedChanges() || props.hasPercentageChange) {
-    return {
-      disabled: STATUS_CONFIG.UNSAVED.disabled,
-      message: STATUS_CONFIG.UNSAVED.message,
-      status: STATUS_CONFIG.UNSAVED,
-    };
-  }
-  return {
-    disabled: STATUS_CONFIG.SAVED.disabled,
-    message: STATUS_CONFIG.SAVED.message,
-    status: STATUS_CONFIG.SAVED,
-  };
+export function getSubmitStatus({
+  selectedAccount,
+  totalPercentage,
+  isSubmitting,
+  hasUnsavedChanges,
+  hasPercentageChange,
+}: SubmitStatusProps): StatusConfig {
+  if (!selectedAccount) return STATUS_CONFIG.WALLET;
+  if (totalPercentage > 100.1) return STATUS_CONFIG.PERCENTAGE;
+  if (isSubmitting) return STATUS_CONFIG.SUBMITTING;
+  if (hasUnsavedChanges || hasPercentageChange) return STATUS_CONFIG.UNSAVED;
+  return STATUS_CONFIG.SAVED;
 }

@@ -19,8 +19,8 @@ export function AgentList() {
   const handleInputBlur = (agentKey: string | SS58Address) => {
     const value = tempInputs[agentKey];
     if (value !== undefined) {
-      const percentage = Math.min(Math.max(Number(value), 0), 100);
-      updatePercentage(agentKey, percentage);
+      const percentage = Math.min(Math.max(parseFloat(value), 0), 100);
+      updatePercentage(agentKey, Number(percentage.toFixed(2)));
       setTempInputs((prev) => ({ ...prev, [agentKey]: undefined }));
     }
   };
@@ -29,7 +29,16 @@ export function AgentList() {
     agentKey: string | SS58Address,
     value: string,
   ) => {
-    const sanitizedValue = value.replace(/[^\d.]/g, "");
+    let sanitizedValue = value
+      .replace(/[^\d.]/g, "")
+      .replace(/(\..*)\./g, "$1");
+
+    const parts = sanitizedValue.split(".");
+    if (parts[1] && parts[1].length > 2) {
+      parts[1] = parts[1].slice(0, 2);
+      sanitizedValue = parts.join(".");
+    }
+
     setTempInputs((prev) => ({ ...prev, [agentKey]: sanitizedValue }));
   };
 
@@ -59,6 +68,8 @@ export function AgentList() {
                     >
                       <Input
                         type="text"
+                        inputMode="decimal"
+                        step="0.01"
                         value={
                           tempInputs[agent.address] ??
                           getAgentPercentage(agent.address)
@@ -67,10 +78,8 @@ export function AgentList() {
                           handlePercentageChange(agent.address, e.target.value)
                         }
                         onBlur={() => handleInputBlur(agent.address)}
-                        maxLength={3}
                         className="w-12 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
                       />
-
                       <span className="text-muted-foreground">%</span>
                     </Label>
                     <Button

@@ -28,14 +28,6 @@ export function AllocationSheet() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submitStatus = getSubmitStatus({
-    selectedAccount: selectedAccount?.address,
-    totalPercentage: getTotalPercentage(),
-    isSubmitting,
-    hasUnsavedChanges,
-    hasPercentageChange,
-  });
-
   const { data: userAgentWeight, error: agentError } =
     api.userAgentWeight.byUserKey.useQuery(
       { userKey: selectedAccount?.address ?? "" },
@@ -76,6 +68,16 @@ export function AllocationSheet() {
     selectedAccount,
     hasInitialized,
   ]);
+
+  const submitStatus = getSubmitStatus({
+    selectedAccount: selectedAccount?.address,
+    totalPercentage: getTotalPercentage(),
+    isSubmitting,
+    hasUnsavedChanges: hasUnsavedChanges(),
+    hasPercentageChange,
+  });
+
+  console.log("submitStatus", submitStatus);
 
   return (
     <Sheet>
