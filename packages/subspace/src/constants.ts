@@ -58,6 +58,7 @@ export interface ConstantsType {
 
 const BLOCK_TIME_SECONDS = 8;
 
+<<<<<<< HEAD
 /**
  * Global constants object for better organization and maintainability.
  */
@@ -156,3 +157,8 @@ export const CONSTANTS = {
     INCENTIVES_RATIO: 0.3,
   },
 };
+=======
+// - Chain--
+//TODO GET THESE VALUES FROM CHAIN
+export const BLOCK_TIME_SECONDS = 8;
+>>>>>>> 512d09c323c4a18b1f232413ab8ea8a2068a39e8

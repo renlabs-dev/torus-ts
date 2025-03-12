@@ -43,6 +43,10 @@
     },
     "push": {
       "cache": false
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
     }
   },
   "globalEnv": [

@@ -1,7 +1,7 @@
 import { log, sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
 import type { AgentWeight } from "../db";
-import { getUserWeightMap, insertAgentWeight } from "../db";
+import { getUserWeightMap, upsertAgentWeight } from "../db";
 import {
   calcFinalWeights,
   normalizeWeightsForVote,
@@ -169,7 +169,7 @@ async function postAgentAggregation(
     })
     .filter((module) => module !== null);
   if (dbModuleWeights.length > 0) {
-    await insertAgentWeight(dbModuleWeights);
+    await upsertAgentWeight(dbModuleWeights);
   } else {
     console.warn("No weights to insert");
   }

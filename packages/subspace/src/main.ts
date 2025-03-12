@@ -46,4 +46,6 @@ console.log(r.toFixed(2));
 
 debugger;
 
+api.consts.emission0.blockEmission.toBigInt();
+
 process.exit(0);
