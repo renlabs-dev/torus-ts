@@ -7,9 +7,32 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import { getLinks } from "@torus-ts/ui/lib/data";
 import { env } from "~/env";
 
-const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
-
 function FooterContent() {
+  const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+
+  const _socialList = [
+    {
+      name: "Discord",
+      href: links.discord,
+      icon: <Icons.Discord className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+    },
+    {
+      name: "X",
+      href: links.x,
+      icon: <Icons.X className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+    },
+    {
+      name: "GitHub",
+      href: links.github,
+      icon: <Icons.Github className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+    },
+    {
+      name: "Telegram",
+      href: links.telegram,
+      icon: <Icons.Telegram className="h-6 w-6 md:h-3.5 md:w-3.5" />,
+    },
+  ];
+
   return (
     <div className="flex justify-between space-x-4">
       <div className="bg-accent h-fit w-fit rounded-full p-1.5">
@@ -51,26 +74,3 @@ export function Footer() {
     </div>
   );
 }
-
-const _socialList = [
-  {
-    name: "Discord",
-    href: links.discord,
-    icon: <Icons.Discord className="h-6 w-6 md:h-3.5 md:w-3.5" />,
-  },
-  {
-    name: "X",
-    href: links.x,
-    icon: <Icons.X className="h-6 w-6 md:h-3.5 md:w-3.5" />,
-  },
-  {
-    name: "GitHub",
-    href: links.github,
-    icon: <Icons.Github className="h-6 w-6 md:h-3.5 md:w-3.5" />,
-  },
-  {
-    name: "Telegram",
-    href: links.telegram,
-    icon: <Icons.Telegram className="h-6 w-6 md:h-3.5 md:w-3.5" />,
-  },
-];
