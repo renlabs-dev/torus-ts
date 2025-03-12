@@ -54,12 +54,15 @@ export function useWeeklyUsdCalculation(
     // Computed Weight but the percentage
     const percComputedWeight = computedWeightedAgents.percComputedWeight;
 
+    // Penalty factor but the percentage
+    const percWeightPenaltyFactor = weightPenaltyFactor / 100;
+
     // Emission * %Incentive * %Agent Weight * (1 - Penalty Factor)
     return (
       weeklyEmission *
-      CONSTANTS.ECONOMY.DEFAULT_INCENTIVES_RATIO *
+      CONSTANTS.ECONOMY.INCENTIVES_RATIO *
       percComputedWeight *
-      (1 - weightPenaltyFactor)
+      (1 - percWeightPenaltyFactor)
     );
   }, [
     computedWeightedAgents?.percComputedWeight,

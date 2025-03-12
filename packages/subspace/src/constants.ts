@@ -27,12 +27,12 @@ export interface ConstantsType {
   EMISSION: {
     // Decimals of the emission token
     DECIMALS: number;
-    // Nano halving interval
-    NANO_HALVING_INTERVAL: bigint;
-    // Nano max supply
-    NANO_MAX_SUPPLY: bigint;
-    // Nano block emission
-    NANO_BLOCK_EMISSION: bigint;
+    // REM halving interval
+    REM_HALVING_INTERVAL: bigint;
+    // REM max supply
+    REM_MAX_SUPPLY: bigint;
+    // REM block emission
+    REM_BLOCK_EMISSION: bigint;
     // Halving interval
     HALVING_INTERVAL: number;
     // Max supply
@@ -49,8 +49,10 @@ export interface ConstantsType {
   ECONOMY: {
     // Default emission recycling percentage is set to 1 (100%)
     DEFAULT_EMISSION_RECYCLING_PERCENTAGE: number;
-    // Default incentives ratio is set to 0.3 (30%)
+    // Default incentives ratio is set to 0.5 (50%)
     DEFAULT_INCENTIVES_RATIO: number;
+    // Incentives Ratio is a dynamic value that is calculated from DEFAULT_INCENTIVES_RATIO, current is 0.3 (30%)
+    INCENTIVES_RATIO: number;
   };
 }
 
@@ -105,26 +107,28 @@ export const CONSTANTS = {
   EMISSION: {
     /** Decimals of the emission token */
     DECIMALS: 18,
-    /** Halving interval in nano units */
-    NANO_HALVING_INTERVAL: 144000000000000000000000000n,
+    /** Halving interval in REM units */
+    REM_HALVING_INTERVAL: 144000000000000000000000000n,
 
-    /** Maximum token supply in nano units */
-    NANO_MAX_SUPPLY: 144000000000000000000000000n,
+    /** Maximum token supply in REM units */
+    REM_MAX_SUPPLY: 144000000000000000000000000n,
 
-    /** Block emission rate in nano units */
-    NANO_BLOCK_EMISSION: 5925925925925925925n,
+    /** Block emission rate in REM units */
+    REM_BLOCK_EMISSION: 5925925925925925925n,
 
-    /** Halving interval converted from nano units to a readable number */
+    /** Halving interval converted from REM units to a readable number */
     HALVING_INTERVAL: 144000000.0,
-    // Value converted from nano: 144000000.000000000000000000
+    // Value converted from REM: 144000000.000000000000000000
 
-    /** Maximum supply converted from nano units to a readable number */
+    /** Maximum supply converted from REM units to a readable number */
     MAX_SUPPLY: 144000000.0,
-    // Value converted from nano: 144000000.000000000000000000
+    // Value converted from REM: 144000000.000000000000000000
 
-    /** Block emission rate converted from nano units to a readable number */
+    /** Block emission rate converted from REM units to a readable number */
+    // This value will be dynamic in the future and should not be hardcoded when it is
+    // TODO in the future
     BLOCK_EMISSION: 5.925925926,
-    // Value converted from nano: 5.925925925925925925
+    // Value converted from REM: 5.925925925925925925
   },
 
   WEIGHTS: {
@@ -141,9 +145,16 @@ export const CONSTANTS = {
 
     /**
      * Default incentives ratio.
-     * This value is known to behave strangely as the chain provides 0.5,
-     * but querying shows 0.3.
+     * This value is provided by the chain,
      */
-    DEFAULT_INCENTIVES_RATIO: 0.3,
+    DEFAULT_INCENTIVES_RATIO: 0.5,
+
+    /**
+     * This value is dynamic and calculated from DEFAULT_INCENTIVES_RATIO,
+     * the chain's incentive ratio
+     */
+    // This value is dynamic and should not be hardcoded
+    // TODO : Change in the future
+    INCENTIVES_RATIO: 0.3,
   },
 };
