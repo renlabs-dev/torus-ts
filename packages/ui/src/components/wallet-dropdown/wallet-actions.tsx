@@ -28,7 +28,7 @@ export const WalletActions = ({
           className={cn("flex items-center gap-2")}
         >
           <SquareArrowOutUpRight size={17} />
-          Wallet Actions
+          Wallet
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem className={cn("cursor-pointer")} onClick={handleLogout}>
