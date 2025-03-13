@@ -1,13 +1,7 @@
 "use client";
 
-import { smallAddress } from "@torus-ts/utils/subspace";
 import { CreditCard } from "lucide-react";
 
-import {
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-} from "../dropdown-menu";
 import { cn } from "../../lib/utils";
 import {
   Accordion,
@@ -15,10 +9,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../accordion";
+import {
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+} from "../dropdown-menu";
 import { NoWalletExtensionDisplay } from "../no-wallet-extension-display";
-import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 import { ScrollArea } from "../scroll-area";
 import { WalletAccountDetails } from "./wallet-account-details";
+import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface WalletSelectProps {
   accounts: InjectedAccountWithMeta[] | undefined;
