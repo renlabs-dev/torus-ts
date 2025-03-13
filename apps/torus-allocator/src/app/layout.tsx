@@ -1,7 +1,7 @@
 import "@torus-ts/ui/globals.css";
-import { AllocationSheet } from "./components/allocation-sheet";
-import { AllocatorHeader } from "./components/allocator-header";
-import { TutorialDialog } from "./components/tutorial-dialog";
+import { AllocationSheet } from "./_components/allocation-sheet";
+import { AllocatorHeader } from "./_components/allocator-header";
+import { TutorialDialog } from "./_components/tutorial-dialog";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";

@@ -1,4 +1,4 @@
-import { AgentContentList } from "../components/agent-content-list";
+import { AgentContentList } from "../_components/agent-content-list";
 import { Suspense } from "react";
 
 export default function Page() {
