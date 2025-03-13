@@ -15,12 +15,7 @@ const BALANCE_ICONS = {
 };
 
 export function WalletBalance() {
-  const {
-    accountFreeBalance,
-    accountStakedBalance,
-    isAccountConnected,
-    isInitialized,
-  } = useWallet();
+  const { accountFreeBalance, accountStakedBalance } = useWallet();
 
   const getBalance = useMemo(() => {
     const free = accountFreeBalance.data ?? 0n;
