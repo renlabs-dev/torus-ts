@@ -56,7 +56,7 @@ export function WalletBalance() {
       : []),
   ];
 
-  const isLoading = !isInitialized || !isAccountConnected;
+  const isLoading = accountFreeBalance.isLoading;
 
   return (
     <div className="xs:flex-row flex min-h-fit flex-col gap-4 lg:flex-col">
