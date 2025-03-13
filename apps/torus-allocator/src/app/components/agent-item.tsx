@@ -166,7 +166,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
   };
 
   return (
-    <div className="bg-background hover:bg-accent group relative border p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
+    <div className="to-background group relative border bg-gradient-to-tr from-zinc-900 p-6 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
         <span className="bg-background flex animate-pulse items-center gap-1 rounded-full bg-opacity-75 px-3 py-1 text-xs">
           <ChevronsLeft size={16} />
