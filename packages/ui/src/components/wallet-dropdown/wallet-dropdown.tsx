@@ -41,6 +41,7 @@ interface WalletDropdownProps {
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: StakeOutData | undefined;
   shouldDisplayText?: boolean;
+  torusChainEnv: string;
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {
@@ -54,6 +55,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     selectedAccount,
     stakeOut,
     shouldDisplayText,
+    torusChainEnv,
   } = props;
 
   const handleGetAccounts = async () => {
@@ -85,7 +87,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
   );
 
   return (
-    <div className="animate-fade-down flex w-fit justify-end py-1">
+    <div className="flex w-fit animate-fade-down justify-end py-1">
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
           <button
@@ -120,7 +122,10 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
                 handleWalletSelection={handleWalletSelection}
                 totalBalance={totalBalance}
               />
-              <WalletActions handleLogout={handleLogout} />
+              <WalletActions
+                handleLogout={handleLogout}
+                torusChainEnv={torusChainEnv}
+              />
             </>
           )}
           {!selectedAccount?.address && (
