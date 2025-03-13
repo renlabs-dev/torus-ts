@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1
+# check=skip=SecretsUsedInArgOrEnv
+
 ARG APP_NAME
 
 # ======== base layer ======== #
@@ -54,7 +57,7 @@ RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
 FROM base AS runner
 ARG APP_NAME
 
-LABEL org.opencontainers.image.source https://github.com/renlabs-dev/torus-ts
+LABEL org.opencontainers.image.source=https://github.com/renlabs-dev/torus-ts
 
 ENV PORT=8000
 

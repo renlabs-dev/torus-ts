@@ -98,7 +98,7 @@ export const userAgentWeightSchema = createTable(
       .notNull()
       .references(() => agentSchema.key),
 
-    weight: integer("weight").default(0).notNull(),
+    weight: real("weight").default(0).notNull(),
 
     ...timeFields(),
   },
@@ -106,7 +106,7 @@ export const userAgentWeightSchema = createTable(
 );
 
 /**
- * Aggregates the weight allocations of each user for each agent.
+ * Aggregates the weight allocations of all users for each agent.
  */
 export const computedAgentWeightSchema = createTable("computed_agent_weight", {
   id: serial("id").primaryKey(),
@@ -114,8 +114,8 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
 
   agentKey: ss58Address("agent_key")
     .notNull()
-    .references(() => agentSchema.key),
-
+    .references(() => agentSchema.key)
+    .unique(),
   // Aggregated weight allocations measured in Rems
   computedWeight: numeric("computed_weight").notNull(),
   // Normalized aggregated allocations (100% sum)

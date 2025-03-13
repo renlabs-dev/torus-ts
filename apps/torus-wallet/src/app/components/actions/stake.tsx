@@ -173,6 +173,7 @@ export function StakeAction() {
     } finally {
       feeRef.current?.setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     accountFreeBalance.data,
     addStakeTransaction,

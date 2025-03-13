@@ -33,45 +33,16 @@ import {
   queryTotalStake,
   queryRecyclingPercentage,
   queryIncentivesRatio,
+  queryBlockEmission,
   queryRewardInterval,
   queryWhitelist,
 } from "@torus-ts/subspace";
 import type { SS58Address } from "@torus-ts/subspace";
+import { CONSTANTS } from "@torus-ts/subspace";
 import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 import SuperJSON from "superjson";
 
-// == Constants ==
-
 // -- Subspace refresh times --
-
-// TODO: these values should be passed as parameters in the functions passed by the apps (env).
-
-/**
- * Time to consider last block query un-fresh. Half block time is the expected
- * time for a new block at a random point in time, so:
- *
- * block_time / 2  ==  8 seconds / 2  ==  4 seconds
- *
- * The comment logic from above makes total sense but the user gets heavily
- * impacted by the 4 seconds stale time, thus changing it to block time for some
- * tests.
- */
-export const LAST_BLOCK_STALE_TIME = 1000 * 8;
-
-/**
- * Time to consider proposals query state un-fresh. They don't change a lot,
- * only when a new proposal is created and people should be able to see new
- * proposals fast enough.
- */
-export const PROPOSALS_STALE_TIME = 1000 * 60; // 1 minute (arbitrary)
-
-/**
- * Time to consider stake query state un-fresh. They also don't change a lot,
- * only when people move their stake / delegation. That changes the way votes
- * are computed, but only very marginally for a given typical stake change, with
- * a small chance of a relevant difference in displayed state.
- */
-export const STAKE_STALE_TIME = 1000 * 60 * 5; // 5 minutes (arbitrary)
 
 // == Chain ==
 
@@ -82,7 +53,7 @@ export function useLastBlock(
     queryKey: ["last_block"],
     enabled: api != null,
     queryFn: () => queryLastBlock(api! as ApiPromise),
-    staleTime: LAST_BLOCK_STALE_TIME,
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -94,7 +65,7 @@ export function useTotalIssuance(api: Api | Nullish) {
     queryKey: ["total_issuance"],
     enabled: api != null,
     queryFn: () => queryTotalIssuance(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -109,7 +80,7 @@ export function useFreeBalance(
     queryKey: ["free_balance", address],
     enabled: api != null && address != null,
     queryFn: () => queryFreeBalance(api!, address!),
-    staleTime: LAST_BLOCK_STALE_TIME,
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -121,7 +92,7 @@ export function useTreasuryEmissionFee(
     queryKey: ["treasury_emission_fee"],
     enabled: api != null,
     queryFn: () => queryTreasuryEmissionFee(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -131,7 +102,7 @@ export function useMinAllowedStake(api: Api | Nullish) {
     queryKey: ["min_allowed_stake"],
     enabled: api != null,
     queryFn: () => queryMinAllowedStake(api!),
-    staleTime: LAST_BLOCK_STALE_TIME,
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -145,7 +116,7 @@ export function useProposals(
     queryKey: ["proposals"],
     enabled: api != null,
     queryFn: () => queryProposals(api!),
-    staleTime: PROPOSALS_STALE_TIME,
+    staleTime: CONSTANTS.TIME.PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -155,7 +126,7 @@ export function useAgentApplications(api: Api | Nullish) {
     queryKey: ["daos"],
     enabled: api != null,
     queryFn: () => queryAgentApplications(api!),
-    staleTime: PROPOSALS_STALE_TIME,
+    staleTime: CONSTANTS.TIME.PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -165,7 +136,7 @@ export function useWhitelist(api: Api | Nullish) {
     queryKey: ["whitelist"],
     enabled: api != null,
     queryFn: () => queryWhitelist(api!),
-    staleTime: PROPOSALS_STALE_TIME,
+    staleTime: CONSTANTS.TIME.PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -175,7 +146,7 @@ export function useAgents(api: Api | Nullish) {
     queryKey: ["agents"],
     enabled: api != null,
     queryFn: () => queryAgents(api!),
-    staleTime: PROPOSALS_STALE_TIME,
+    staleTime: CONSTANTS.TIME.PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -187,7 +158,7 @@ export function useDaoTreasuryAddress(
     queryKey: ["dao_treasury"],
     enabled: api != null,
     queryFn: () => queryDaoTreasuryAddress(api!),
-    staleTime: PROPOSALS_STALE_TIME,
+    staleTime: CONSTANTS.TIME.PROPOSALS_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -199,7 +170,7 @@ export function useAccountsNotDelegatingVoting(
     queryKey: ["not_delegating_voting_power"],
     enabled: api != null,
     queryFn: () => queryAccountsNotDelegatingVotingPower(api!),
-    staleTime: LAST_BLOCK_STALE_TIME,
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -209,7 +180,7 @@ export function useUnrewardedProposals(api: Api | Nullish) {
     queryKey: ["unrewarded_proposals"],
     enabled: api != null,
     queryFn: () => queryUnrewardedProposals(api!),
-    staleTime: LAST_BLOCK_STALE_TIME,
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -219,7 +190,7 @@ export function useRewardAllocation(api: Api | Nullish) {
     queryKey: ["reward_allocation"],
     enabled: api != null,
     queryFn: () => queryRewardAllocation(api!),
-    staleTime: LAST_BLOCK_STALE_TIME,
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -231,7 +202,7 @@ export function useTotalStake(api: Api | Nullish) {
     queryKey: ["total_stake"],
     enabled: api != null,
     queryFn: () => queryTotalStake(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -241,7 +212,7 @@ export function useRewardInterval(api: Api | Nullish) {
     queryKey: ["reward_interval"],
     enabled: api != null,
     queryFn: () => queryRewardInterval(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -254,7 +225,7 @@ export function useCachedStakeOut(
   return useQuery({
     queryKey: ["stake_out"],
     queryFn: () => queryCachedStakeOut(torusCacheUrl),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
     // throwOnError: false, // TODO
   });
@@ -267,7 +238,7 @@ export function useRecyclingPercentage(api: Api | Nullish) {
     queryKey: ["recycling_percentage"],
     enabled: api != null,
     queryFn: () => queryRecyclingPercentage(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -277,7 +248,17 @@ export function useIncentivesRatio(api: Api | Nullish) {
     queryKey: ["incentives_ratio"],
     enabled: api != null,
     queryFn: () => queryIncentivesRatio(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useBlockEmission(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["block_emission"],
+    enabled: api != null,
+    queryFn: () => queryBlockEmission(api!),
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -304,7 +285,7 @@ export function useProcessVotesAndStakes(
     enabled: api != null,
     queryFn: () =>
       processVotesAndStakes(api!, torusCacheUrl, votesFor, votesAgainst),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -317,7 +298,7 @@ export function useKeyStakingTo(
     queryKey: ["user_total_staked", address],
     enabled: api != null && address != null,
     queryFn: () => queryKeyStakingTo(api!, address! as SS58Address),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -330,7 +311,7 @@ export function useKeyStakedBy(
     queryKey: ["user_total_staked", address],
     enabled: api != null && address != null,
     queryFn: () => queryKeyStakedBy(api!, address! as SS58Address),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -340,7 +321,7 @@ export function useBurnValue(api: Api | Nullish) {
     queryKey: ["burn_value"],
     enabled: api != null,
     queryFn: () => queryBurnValue(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -350,7 +331,7 @@ export function useGlobalConfig(api: Api | Nullish) {
     queryKey: ["network_global_config"],
     enabled: api != null,
     queryFn: () => queryGlobalGovernanceConfig(api!),
-    staleTime: STAKE_STALE_TIME,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
@@ -400,5 +381,44 @@ export function useCustomMetadata<T extends BaseProposal | BaseDao>(
       });
       return outputs;
     },
+  });
+}
+
+// == External API Module ==
+
+// Coingecko
+export interface CoingeckoResponse {
+  torus: {
+    usd: number;
+  };
+}
+
+// Returns the USD value of Torus Coin
+export function useGetTorusPrice() {
+  return useQuery<number, Error>({
+    queryKey: ["torus-price"],
+    queryFn: async () => {
+      const url =
+        "https://api.coingecko.com/api/v3/simple/price?ids=torus&vs_currencies=usd";
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`Coingecko API error: ${response.status}`);
+        }
+
+        const data = (await response.json()) as CoingeckoResponse;
+
+        if (typeof data.torus.usd !== "number") {
+          throw new Error("Invalid response format from Coingecko API");
+        }
+
+        return data.torus.usd;
+      } catch (error) {
+        console.error("Error fetching Torus price:", error);
+        throw error;
+      }
+    },
+    retry: 1,
   });
 }

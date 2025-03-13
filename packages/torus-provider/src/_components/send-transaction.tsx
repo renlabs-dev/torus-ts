@@ -12,6 +12,7 @@ import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
+import { CONSTANTS } from "@torus-ts/subspace";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
 
 interface SendTransactionProps {
@@ -32,7 +33,7 @@ async function getMetadataProof(api: ApiPromise) {
 
   const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), {
     base58Prefix: api.consts.system.ss58Prefix.toNumber(),
-    decimals: 18,
+    decimals: CONSTANTS.EMISSION.DECIMALS,
     specName: specName.toString(),
     specVersion: specVersion.toNumber(),
     tokenSymbol: "TORUS",

@@ -39,7 +39,7 @@ export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export async function insertAgentWeight(weights: AgentWeight[]) {
+export async function upsertAgentWeight(weights: AgentWeight[]) {
   await db
     .insert(computedAgentWeightSchema)
     .values(
@@ -50,6 +50,14 @@ export async function insertAgentWeight(weights: AgentWeight[]) {
         percComputedWeight: w.percComputedWeight,
       })),
     )
+    .onConflictDoUpdate({
+      target: [computedAgentWeightSchema.agentKey],
+      set: buildConflictUpdateColumns(computedAgentWeightSchema, [
+        "atBlock",
+        "computedWeight",
+        "percComputedWeight",
+      ]),
+    })
     .execute();
 }
 
@@ -382,7 +390,7 @@ export async function getUserWeightMap(): Promise<
   for (const entry of result) {
     const { userKey, agentKey, weight } = entry;
     const userWeightMap = getOrSetDefault(weightMap, userKey, () => new Map());
-    userWeightMap.set(agentKey, BigInt(weight));
+    userWeightMap.set(agentKey, BigInt(Math.round(weight)));
   }
   return weightMap;
 }

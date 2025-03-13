@@ -25,9 +25,14 @@ import { ArrowLeftRight } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { CSSProperties } from "react";
-import { useCallback, useMemo, useState } from "react";
-import { useAccount, useWalletClient, useSwitchChain } from "wagmi";
-import * as wagmi from "wagmi";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import {
+  useAccount,
+  useWalletClient,
+  useSwitchChain,
+  useBalance,
+  useClient,
+} from "wagmi";
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";
@@ -50,6 +55,33 @@ export function TransferEVM() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const multiProvider = useMultiProvider();
+  const { toast } = useToast();
+
+  const { transfer, selectedAccount, isInitialized, isAccountConnected, api } =
+    useTorus();
+  const { data: walletClient } = useWalletClient();
+  const { chain, address } = useAccount();
+  const { switchChain } = useSwitchChain();
+
+  const getChainValues = getChainValuesOnEnv(
+    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
+  );
+  const { chainId: torusEvmChainId } = getChainValues("torus");
+
+  const { address: evmAddress } = useAccount();
+  const torusEvmClient = useClient({ chainId: torusEvmChainId });
+
+  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } = useBalance(
+    {
+      address: evmAddress,
+      chainId: torusEvmChainId,
+    },
+  );
+
+  const accountFreeBalance = useFreeBalance(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
 
   const currentMode = useMemo(() => {
     return (
@@ -57,45 +89,50 @@ export function TransferEVM() {
     );
   }, [searchParams]);
 
-  const toggleMode = () => {
-    const newQuery = updateSearchParams(searchParams, {
-      from: null,
-      to: null,
-      mode: currentMode === "bridge" ? "withdraw" : "bridge",
-    });
-    router.push(`/?${newQuery}`);
-  };
-
-  const { transfer, selectedAccount, isInitialized, isAccountConnected, api } =
-    useTorus();
-  const { data: walletClient } = useWalletClient();
-  const { chain, address } = useAccount();
-  const { switchChain } = useSwitchChain();
-  const { toast } = useToast();
-
-  const evmSS58Addr = userInputEthAddr
-    ? convertH160ToSS58(userInputEthAddr)
-    : "";
-  const amountRems = amount ? toNano(parseFloat(amount)) : BigInt(0);
-
-  const handleCallback = (callbackReturn: TransactionResult) => {
-    setTransactionStatus(callbackReturn);
-    if (callbackReturn.status === "SUCCESS") {
-      setAmount("");
-      setUserInputEthAddr("");
-    }
-  };
-
   const { wagmiConfig } = useMemo(
     () => initWagmi(multiProvider),
     [multiProvider],
   );
 
-  const refetchHandler = async () => {
-    await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
-  };
+  const evmSS58Addr = useMemo(
+    () => (userInputEthAddr ? convertH160ToSS58(userInputEthAddr) : ""),
+    [userInputEthAddr],
+  );
 
-  async function handleBridge() {
+  const amountRems = useMemo(
+    () => (amount ? toNano(parseFloat(amount)) : BigInt(0)),
+    [amount],
+  );
+
+  const userAccountFreeBalance = useCallback(() => {
+    if (
+      !isInitialized ||
+      !isAccountConnected ||
+      accountFreeBalance.isRefetching
+    )
+      return null;
+    return accountFreeBalance.data ?? 0n;
+  }, [accountFreeBalance, isAccountConnected, isInitialized]);
+
+  useEffect(() => {
+    if (!torusEvmClient) {
+      console.error("Torus EVM client not found");
+    }
+  }, [torusEvmClient]);
+
+  const refetchHandler = useCallback(async () => {
+    await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
+  }, [refetchTorusEvmBalance, accountFreeBalance]);
+
+  const handleCallback = useCallback((callbackReturn: TransactionResult) => {
+    setTransactionStatus(callbackReturn);
+    if (callbackReturn.status === "SUCCESS") {
+      setAmount("");
+      setUserInputEthAddr("");
+    }
+  }, []);
+
+  const handleBridge = useCallback(async () => {
     if (!amount || !evmSS58Addr) return;
     setTransactionStatus({
       status: "PENDING",
@@ -117,9 +154,9 @@ export function TransferEVM() {
         finalized: true,
       });
     }
-  }
+  }, [amount, evmSS58Addr, transfer, refetchHandler, handleCallback]);
 
-  async function handleWithdraw() {
+  const handleWithdraw = useCallback(async () => {
     if (
       !amount ||
       walletClient == null ||
@@ -128,18 +165,17 @@ export function TransferEVM() {
     ) {
       toast({
         title: "Uh oh! Something went wrong.",
-        description: "Invalid state for withdrawal.",
+        description: "Please try again later.",
       });
       return;
     }
-    // Check if user is on the correct chain
     if (chain.id !== torusEvmChainId) {
       try {
         switchChain({ chainId: torusEvmChainId });
         toast({
-          title:
-            "You were connected to the wrong network, we switched you to Torus.",
-          description: "Please try to withdraw again",
+          title: "Wait, you were connected to the wrong network.",
+          description:
+            "We switched you to Torus. Please try to withdraw again.",
         });
         return;
       } catch {
@@ -198,57 +234,29 @@ export function TransferEVM() {
         finalized: false,
       });
     }
-  }
+  }, [
+    amount,
+    walletClient,
+    chain,
+    selectedAccount,
+    torusEvmChainId,
+    switchChain,
+    amountRems,
+    refetchHandler,
+    wagmiConfig,
+    toast,
+  ]);
 
-  const handleSelfClick = () => {
+  const handleSelfClick = useCallback(() => {
     if (address) {
       setUserInputEthAddr(address);
     } else {
       toast({
-        title: "No account found.",
-        description: "Is your wallet connected?",
+        title: "Uh oh! Something went wrong.",
+        description: "No account found. Is your wallet connected?",
       });
     }
-  };
-
-  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
-  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
-
-  const getChainValues = getChainValuesOnEnv(
-    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
-  );
-
-  const { chainId: torusEvmChainId } = getChainValues("torus");
-  const { address: evmAddress } = wagmi.useAccount();
-
-  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
-  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
-
-  const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } =
-    wagmi.useBalance({
-      address: evmAddress,
-      chainId: torusEvmChainId,
-    });
-
-  const accountFreeBalance = useFreeBalance(
-    api,
-    selectedAccount?.address as SS58Address,
-  );
-
-  const userAccountFreeBalance = useCallback(() => {
-    if (
-      !isInitialized ||
-      !isAccountConnected ||
-      accountFreeBalance.isRefetching
-    )
-      return null;
-
-    if (accountFreeBalance.data != null) {
-      return accountFreeBalance.data;
-    }
-
-    return 0n;
-  }, [accountFreeBalance, isAccountConnected, isInitialized]);
+  }, [address, toast]);
 
   const handleMaxClick = useCallback(() => {
     if (currentMode === "bridge") {
@@ -256,21 +264,28 @@ export function TransferEVM() {
       if (maxBalance !== null) {
         maxBalance = maxBalance - 1n * BigInt(1e18);
         const maxBalanceString = (Number(maxBalance) / 1e18).toFixed(18);
-
         setAmount(maxBalanceString.replace(/\.?0+$/, ""));
       }
     } else {
-      if (!torusEvmBalance) {
-        console.error("Torus EVM balance is null");
-        return;
+      if (torusEvmBalance?.value) {
+        const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
+        const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
+        setAmount(maxBalanceString.replace(/\.?0+$/, ""));
       }
-
-      const paddedAmount = torusEvmBalance.value - 1n * BigInt(1e16);
-      const maxBalanceString = (Number(paddedAmount) / 1e18).toFixed(18);
-
-      setAmount(maxBalanceString.replace(/\.?0+$/, ""));
     }
   }, [currentMode, userAccountFreeBalance, torusEvmBalance]);
+
+  const toggleMode = useCallback(() => {
+    const newQuery = updateSearchParams(searchParams, {
+      from: null,
+      to: null,
+      mode: currentMode === "bridge" ? "withdraw" : "bridge",
+    });
+    router.push(`/?${newQuery}`);
+  }, [currentMode, router, searchParams]);
+
+  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
+  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -278,13 +293,13 @@ export function TransferEVM() {
         <div className="space-y-4">
           <div className="flex items-end gap-2">
             <div className="w-full">
-              <ChainField label="From" chainName={fromChain} />
+              <ChainField name="from" label="From" chainName={fromChain} />
             </div>
             <div className="flex flex-1 flex-col items-center">
               <SwapActionButton onClick={toggleMode} />
             </div>
             <div className="w-full">
-              <ChainField label="To" chainName={toChain} />
+              <ChainField name="to" label="To" chainName={toChain} />
             </div>
           </div>
         </div>
@@ -405,11 +420,12 @@ export function TransferEVM() {
 }
 
 interface ChainFieldProps {
+  name: string;
   label: string;
   chainName: string;
 }
 
-function ChainField({ label, chainName }: Readonly<ChainFieldProps>) {
+function ChainField({ label, chainName }: ChainFieldProps) {
   const isTorusEVM = chainName === "Torus EVM";
   return (
     <div className="flex w-full flex-col gap-2">
@@ -438,7 +454,7 @@ function ChainField({ label, chainName }: Readonly<ChainFieldProps>) {
   );
 }
 
-function SwapActionButton({ onClick }: Readonly<{ onClick: () => void }>) {
+function SwapActionButton({ onClick }: { onClick: () => void }) {
   return (
     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onClick}>
       <ArrowLeftRight className="h-4 w-4" />

@@ -1,4 +1,7 @@
 import "@torus-ts/ui/globals.css";
+import "@rainbow-me/rainbowkit/styles.css";
+import "@interchain-ui/react/styles";
+import "@solana/wallet-adapter-react-ui/styles.css";
 import { Layout } from "@torus-ts/ui/components/layout";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
@@ -10,7 +13,7 @@ export const metadata: Metadata = {
   title: "Torus Base Bridge",
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description:
-    "Simple, secure, and easy-to-use wallet for the torus ecosystem.",
+    "Simple, secure, and easy-to-use wallet for the Torus ecosystem.",
 };
 
 export const firaMono = FiraMono({

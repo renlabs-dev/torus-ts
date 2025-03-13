@@ -2,6 +2,7 @@ import { publicProcedure } from "../../trpc";
 import { eq, max, and, isNull } from "@torus-ts/db";
 import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
 
 export const computedAgentWeightRouter = {
   // GET
@@ -31,4 +32,14 @@ export const computedAgentWeightRouter = {
         ),
       );
   }),
+  byAgentKey: publicProcedure
+    .input(z.object({ agentKey: z.string() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.computedAgentWeightSchema.findFirst({
+        where: and(
+          eq(computedAgentWeightSchema.agentKey, input.agentKey),
+          isNull(computedAgentWeightSchema.deletedAt),
+        ),
+      });
+    }),
 } satisfies TRPCRouterRecord;

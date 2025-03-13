@@ -1,21 +1,5 @@
+import { ANIMATIONS } from "../data";
 import { motion } from "framer-motion";
-
-const draw = {
-  hidden: { pathLength: 0, opacity: 0 },
-  visible: (custom: number) => ({
-    pathLength: 1,
-    opacity: 1,
-    transition: {
-      pathLength: {
-        type: "spring",
-        duration: 1.5,
-        bounce: 0,
-        delay: custom * 0.5,
-      },
-      opacity: { duration: 0.01, delay: custom * 0.5 },
-    },
-  }),
-};
 
 export function LinesSVG({
   showStarter,
@@ -42,7 +26,7 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={0}
       />
       <motion.path
@@ -51,7 +35,7 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={0}
       />
       <motion.line
@@ -62,7 +46,7 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={1}
       />
       <motion.line
@@ -74,10 +58,9 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={draw}
+        variants={ANIMATIONS.DRAW}
         custom={-1}
       />
-
       {/* Left group of lines */}
       {showStarter && (
         <>
@@ -87,7 +70,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={draw}
+            variants={ANIMATIONS.DRAW}
             custom={0}
           />
           <motion.path
@@ -96,7 +79,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={draw}
+            variants={ANIMATIONS.DRAW}
             custom={0}
           />
           <motion.line
@@ -107,12 +90,11 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={draw}
+            variants={ANIMATIONS.DRAW}
             custom={0}
           />
         </>
       )}
-
       {/* Right group of lines */}
       {showNetwork && (
         <>
@@ -122,7 +104,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={draw}
+            variants={ANIMATIONS.DRAW}
             custom={0}
           />
           <motion.path
@@ -131,7 +113,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={draw}
+            variants={ANIMATIONS.DRAW}
             custom={0}
           />
           <motion.line
@@ -142,7 +124,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={draw}
+            variants={ANIMATIONS.DRAW}
             custom={0.5}
           />
         </>

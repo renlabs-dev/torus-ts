@@ -1,3 +1,5 @@
+"use client";
+
 import { GasPrice } from "@cosmjs/stargate";
 import { wallets as cosmostationWallets } from "@cosmos-kit/cosmostation";
 import { wallets as keplrWallets } from "@cosmos-kit/keplr";
@@ -6,7 +8,6 @@ import { ChainProvider } from "@cosmos-kit/react";
 import { cosmoshub } from "@hyperlane-xyz/registry";
 import { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { getCosmosKitChainConfigs } from "@hyperlane-xyz/widgets";
-import "@interchain-ui/react/styles";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import { config } from "~/consts/config";

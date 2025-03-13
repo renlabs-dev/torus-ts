@@ -1,3 +1,5 @@
+import { config } from "../consts/config";
+import { useWarpCore } from "../hooks/token";
 import type { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import { getWagmiChainConfigs } from "@hyperlane-xyz/widgets";
@@ -6,9 +8,6 @@ import {
   connectorsForWallets,
   midnightTheme,
 } from "@rainbow-me/rainbowkit";
-import "@rainbow-me/rainbowkit/styles.css";
-import { config } from "../consts/config";
-import { useWarpCore } from "../hooks/token";
 import {
   argentWallet,
   coinbaseWallet,

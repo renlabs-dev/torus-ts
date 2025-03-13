@@ -62,7 +62,7 @@ export default function RootLayout({
           </WalletProvider>
         </ReactQueryProvider>
       </TorusProvider>
-      <Footer />
+      <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
     </Layout>
   );
 }

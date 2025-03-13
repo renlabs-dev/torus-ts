@@ -131,6 +131,7 @@ export function SendAction() {
     } finally {
       feeRef.current?.setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountFreeBalance.data, estimateFee, transferTransaction]);
 
   const handleCallback = (callbackReturn: TransactionResult) => {

@@ -117,6 +117,7 @@ export function RegisterAgent(): JSX.Element {
   );
 
   const form = useForm<RegisterAgentFormData>({
+    disabled: !isAccountConnected,
     resolver: zodResolver(registerAgentSchema),
     defaultValues: {
       agentKey: "",

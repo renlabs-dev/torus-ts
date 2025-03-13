@@ -18,6 +18,7 @@ import {
   sb_string,
   sb_struct,
   sb_to_primitive,
+  sb_percent,
 } from "../types";
 import type { Api } from "./_common";
 import { handleMapValues } from "./_common";
@@ -38,6 +39,11 @@ export const PROPOSAL_DATA_SCHEMA = sb_enum({
   TransferDaoTreasury: sb_struct({
     account: sb_address,
     amount: sb_bigint,
+  }),
+  Emission: sb_struct({
+    recyclingPercentage: sb_percent,
+    treasuryPercentage: sb_percent,
+    incentivesRatio: sb_percent,
   }),
 });
 

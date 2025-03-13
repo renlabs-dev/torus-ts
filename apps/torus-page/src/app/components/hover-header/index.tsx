@@ -1,10 +1,6 @@
-// For anyone viewing this component im sorry
-// this is the biggest gambiarra i wrote in my life
-// the boss asked for it and i had to deliver in no time
-// i hope you understand
-
 "use client";
 
+import { ANIMATIONS } from "./_components/data";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
 import { LinesSVG } from "./_components/desktop/lines-svg";
 import { ButtonsSectionMobile } from "./_components/mobile/buttons-section-mobile";
@@ -13,23 +9,6 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-
-const draw = {
-  hidden: { pathLength: 0, opacity: 0 },
-  visible: (custom: number) => ({
-    pathLength: 1,
-    opacity: 1,
-    transition: {
-      pathLength: {
-        type: "spring",
-        duration: 1.5,
-        bounce: 0,
-        delay: custom * 0.5,
-      },
-      opacity: { duration: 0.01, delay: custom * 0.5 },
-    },
-  }),
-};
 
 export function HoverHeader() {
   const [isVisible, setIsVisible] = useState(false);
@@ -177,7 +156,7 @@ export function HoverHeader() {
                 fill="#09090B"
                 stroke="#27272a"
                 strokeWidth="2"
-                variants={draw}
+                variants={ANIMATIONS.DRAW}
               />
             </motion.svg>
           )}

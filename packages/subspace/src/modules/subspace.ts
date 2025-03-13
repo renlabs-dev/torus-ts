@@ -189,6 +189,12 @@ export async function queryIncentivesRatio(api: Api): Promise<Percent> {
   return incentivesRatio;
 }
 
+export function queryBlockEmission(api: Api): bigint {
+  const q = api.consts.emission0.blockEmission;
+  const emission = sb_bigint.parse(q);
+  return emission;
+}
+
 // ==== Agents ====
 
 // type Query = Api["query"];
@@ -216,7 +222,6 @@ export type Agent = z.infer<typeof AGENT_SCHEMA>;
 
 export async function queryAgents(api: Api) {
   const q = await api.query.torus0.agents.entries();
-  // TODO: This is trowing errors
   const [agents, errs] = handleMapEntries(q, sb_address, sb_some(AGENT_SCHEMA));
   for (const err of errs) {
     console.error("ERROR:", err);

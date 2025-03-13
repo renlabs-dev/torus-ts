@@ -1,6 +1,6 @@
 "use client";
 
-import "@torus-ts/ui/globals.css";
+import { useIsSsr } from "@hyperlane-xyz/widgets";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
@@ -18,6 +18,11 @@ export function AppContextProvider({
 }: Readonly<{
   children: React.ReactNode;
 }>): JSX.Element {
+  const isSsr = useIsSsr();
+  if (isSsr) {
+    return <div></div>;
+  }
+
   return (
     <ReactQueryProvider>
       <TorusProvider
@@ -31,7 +36,7 @@ export function AppContextProvider({
                 <WalletHeader />
                 <Container>{children}</Container>
                 <Toaster />
-                <Footer />
+                <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
               </CosmosWalletProvider>
             </SolanaWalletProvider>
           </EvmWalletProvider>

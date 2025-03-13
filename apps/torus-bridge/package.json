@@ -65,6 +65,7 @@
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
     "jiti": "catalog:",
+    "next-transpile-modules": "^10.0.1",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
