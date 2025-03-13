@@ -22,6 +22,8 @@ import {
   penalizeAgentVotesSchema,
   cadreCandidateSchema,
   candidacyStatusValues,
+  whitelistApplicationSchema,
+  proposalSchema,
 } from "@torus-ts/db/schema";
 import type {
   Agent as TorusAgent,
@@ -37,7 +39,12 @@ export type NewVote = typeof cadreVoteSchema.$inferInsert;
 export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
+export type NewProposal = typeof proposalSchema.$inferInsert;
+
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
+export type ApplicationDB = typeof whitelistApplicationSchema.$inferSelect;
+export type CadreCandidate = typeof cadreCandidateSchema.$inferSelect;
 
 export async function upsertAgentWeight(weights: AgentWeight[]) {
   await db
@@ -57,6 +64,52 @@ export async function upsertAgentWeight(weights: AgentWeight[]) {
         "computedWeight",
         "percComputedWeight",
       ]),
+    })
+    .execute();
+}
+
+export async function upsertWhitelistApplication(
+  applications: NewApplication[],
+) {
+  await db
+    .insert(whitelistApplicationSchema)
+    .values(
+      applications.map((a) => ({
+        agentKey: a.agentKey,
+        payerKey: a.payerKey,
+        status: a.status,
+        expiresAt: a.expiresAt,
+        cost: a.cost,
+        data: a.data,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [whitelistApplicationSchema.agentKey],
+      set: buildConflictUpdateColumns(whitelistApplicationSchema, [
+        "status",
+        "notified",
+      ]),
+    })
+    .execute();
+}
+
+export async function upsertProposal(proposals: NewProposal[]) {
+  await db
+    .insert(proposalSchema)
+    .values(
+      proposals.map((a) => ({
+        expirationBlock: a.expirationBlock,
+        status: a.status,
+        proposerKey: a.proposerKey,
+        creationBlock: a.creationBlock,
+        metadataUri: a.metadataUri,
+        proposalCost: a.proposalCost,
+        proposalID: a.proposalID,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [proposalSchema.proposalID],
+      set: { status: proposalSchema.status, notified: false },
     })
     .execute();
 }
@@ -113,8 +166,28 @@ export async function vote(new_vote: NewVote) {
   await db.insert(cadreVoteSchema).values(new_vote);
 }
 
-export async function addSeenProposal(proposal: NewNotification) {
-  await db.insert(governanceNotificationSchema).values(proposal);
+export async function toggleWhitelistNotification(proposal: ApplicationDB) {
+  await db
+    .update(whitelistApplicationSchema)
+    .set({ notified: true })
+    .where(eq(whitelistApplicationSchema.id, proposal.id))
+    .execute();
+}
+
+export async function toggleCadreNotification(candidate: CadreCandidate) {
+  await db
+    .update(cadreCandidateSchema)
+    .set({ notified: true })
+    .where(eq(cadreCandidateSchema.userKey, candidate.userKey))
+    .execute();
+}
+
+export async function toggleProposalNotification(proposal: NewProposal) {
+  await db
+    .update(proposalSchema)
+    .set({ notified: true })
+    .where(eq(proposalSchema.proposalID, proposal.proposalID))
+    .execute();
 }
 
 export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
@@ -139,6 +212,26 @@ export async function queryTotalVotesPerApp(): Promise<VotesByNumericId[]> {
   }));
 }
 
+export async function queryAgentApplicationsDB(): Promise<ApplicationDB[]> {
+  const result = await db
+    .select()
+    .from(whitelistApplicationSchema)
+    .where(and(isNull(whitelistApplicationSchema.deletedAt)))
+    .execute();
+
+  return result;
+}
+
+export async function queryProposalsDB(): Promise<NewProposal[]> {
+  const result = await db
+    .select()
+    .from(proposalSchema)
+    .where(and(isNull(proposalSchema.deletedAt)))
+    .execute();
+
+  return result;
+}
+
 export async function getCadreDiscord(cadreKey: SS58Address) {
   const result = await db
     .select({
@@ -155,6 +248,14 @@ export async function getCadreDiscord(cadreKey: SS58Address) {
     .execute();
 
   return result.pop()?.discordId;
+}
+
+export async function queryCadreCandidates() {
+  const result = await db
+    .select()
+    .from(cadreCandidateSchema)
+    .where(isNull(cadreCandidateSchema.deletedAt));
+  return result;
 }
 
 export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
@@ -212,6 +313,7 @@ export async function addCadreMember(userKey: SS58Address, discordId: string) {
       .update(cadreCandidateSchema)
       .set({
         candidacyStatus: candidacyStatusValues.ACCEPTED,
+        notified: false,
       })
       .where(eq(cadreCandidateSchema.userKey, userKey));
 
@@ -225,7 +327,10 @@ export async function removeCadreMember(userKey: SS58Address) {
     await tx.delete(cadreSchema).where(eq(cadreSchema.userKey, userKey));
     await tx
       .update(cadreCandidateSchema)
-      .set({ candidacyStatus: candidacyStatusValues.REMOVED })
+      .set({
+        candidacyStatus: candidacyStatusValues.REMOVED,
+        notified: false,
+      })
       .where(eq(cadreCandidateSchema.userKey, userKey));
   });
 }
@@ -234,7 +339,7 @@ export async function refuseCadreApplication(userKey: SS58Address) {
   await db.transaction(async (tx) => {
     await tx
       .update(cadreCandidateSchema)
-      .set({ candidacyStatus: candidacyStatusValues.REJECTED })
+      .set({ candidacyStatus: candidacyStatusValues.REJECTED, notified: false })
       .where(eq(cadreCandidateSchema.userKey, userKey));
 
     await archiveCadreVotes(userKey, tx);
