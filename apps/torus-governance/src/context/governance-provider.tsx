@@ -43,7 +43,7 @@ import type {
   Vote,
 } from "@torus-ts/torus-provider/types";
 import { Header } from "@torus-ts/ui/components/header";
-import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown";
+import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-dropdown";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
 import type { inferProcedureOutput } from "@trpc/server";
