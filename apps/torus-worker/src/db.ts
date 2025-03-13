@@ -40,6 +40,7 @@ export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type NewProposal = typeof proposalSchema.$inferInsert;
+
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
 export type ApplicationDB = typeof whitelistApplicationSchema.$inferSelect;
@@ -103,10 +104,11 @@ export async function upsertProposal(proposals: NewProposal[]) {
         creationBlock: a.creationBlock,
         metadataUri: a.metadataUri,
         proposalCost: a.proposalCost,
+        proposalID: a.proposalID,
       })),
     )
     .onConflictDoUpdate({
-      target: [proposalSchema.id],
+      target: [proposalSchema.proposalID],
       set: { status: proposalSchema.status, notified: false },
     })
     .execute();
@@ -184,7 +186,7 @@ export async function toggleProposalNotification(proposal: NewProposal) {
   await db
     .update(proposalSchema)
     .set({ notified: true })
-    .where(eq(proposalSchema.proposerKey, proposal.proposerKey))
+    .where(eq(proposalSchema.proposalID, proposal.proposalID))
     .execute();
 }
 

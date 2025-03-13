@@ -112,7 +112,7 @@ export function agentProposalToProposal(proposal: Proposal): NewProposal {
     Refused: () => applicationStatusValues.REJECTED,
   });
   return {
-    id: proposal.id,
+    proposalID: proposal.id,
     expirationBlock: proposal.expirationBlock,
     status: status,
     proposerKey: proposal.proposer,

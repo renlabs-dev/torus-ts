@@ -214,6 +214,7 @@ export const proposalSchema = createTable("proposal", {
   metadataUri: text("metadata_uri").notNull(),
   proposalCost: numeric("proposal_cost").notNull(),
   notified: boolean("notified").notNull().default(false),
+  proposalID: integer("proposal_id").notNull().unique(),
   ...timeFields(),
 });
 

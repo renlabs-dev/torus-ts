@@ -199,8 +199,8 @@ ALTER TABLE "agent_report" ADD CONSTRAINT "agent_report_agent_key_agent_key_fk" 
 ALTER TABLE "user_agent_weight" ADD CONSTRAINT "user_agent_weight_agent_key_agent_key_fk" FOREIGN KEY ("agent_key") REFERENCES "public"."agent"("key") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "penalize_agent_votes" ADD CONSTRAINT "penalize_agent_votes_cadre_key_cadre_user_key_fk" FOREIGN KEY ("cadre_key") REFERENCES "public"."cadre"("user_key") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agent_application_vote" ADD CONSTRAINT "agent_application_vote_user_key_cadre_user_key_fk" FOREIGN KEY ("user_key") REFERENCES "public"."cadre"("user_key") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "key_index" ON "agent" USING btree ("key" text_ops);--> statement-breakpoint
-CREATE INDEX "comment_item_type_item_id_user_key_index" ON "comment" USING btree ("item_type" int4_ops,"item_id" enum_ops,"user_key" enum_ops);--> statement-breakpoint
-CREATE INDEX "comment_interaction_user_key_comment_id_index" ON "comment_interaction" USING btree ("user_key" int4_ops,"comment_id" text_ops);--> statement-breakpoint
+CREATE INDEX "key_index" ON "agent" USING btree ("key");--> statement-breakpoint
+CREATE INDEX "comment_item_type_item_id_user_key_index" ON "comment" USING btree ("item_type","item_id","user_key");--> statement-breakpoint
+CREATE INDEX "comment_interaction_user_key_comment_id_index" ON "comment_interaction" USING btree ("user_key","comment_id");--> statement-breakpoint
 CREATE MATERIALIZED VIEW "public"."comment_digest" AS (SELECT comment.id, comment.item_type, comment.item_id, comment.user_key, comment.user_name, comment.content, comment.created_at, sum( CASE WHEN comment_interaction.reaction_type = 'LIKE'::reaction_type THEN 1 ELSE 0 END) AS likes, sum( CASE WHEN comment_interaction.reaction_type = 'DISLIKE'::reaction_type THEN 1 ELSE 0 END) AS dislikes FROM comment LEFT JOIN comment_interaction ON comment.id = comment_interaction.comment_id WHERE comment.deleted_at IS NULL GROUP BY comment.id, comment.item_type, comment.item_id, comment.user_key, comment.content, comment.created_at ORDER BY comment.created_at);
 */
