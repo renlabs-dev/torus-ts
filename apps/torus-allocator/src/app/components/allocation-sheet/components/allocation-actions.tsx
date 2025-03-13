@@ -226,7 +226,7 @@ export function AllocationActions(props: MenuTriggerProps) {
           onClick={handleSubmit}
           variant="outline"
           className="w-full"
-          disabled={props.submitStatus.disabled}
+          disabled={props.submitStatus.disabled || totalPercentage === 0}
           title="Submit Agents"
         >
           {isSubmitting ? "Submitting..." : "Submit Agents"}

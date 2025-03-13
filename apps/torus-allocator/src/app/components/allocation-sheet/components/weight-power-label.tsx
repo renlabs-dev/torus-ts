@@ -58,17 +58,7 @@ export function WeightPowerLabel() {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      {userWeightPower === null ? (
-        <div className="flex items-center">
-          <span className="animate-pulse text-gray-400">00.00</span>
-          <span className="ml-0.5 text-xs">TORUS</span>
-        </div>
-      ) : (
-        <span>
-          {userWeightPower}
-          <span className="ml-0.5 text-xs">TORUS</span>
-        </span>
-      )}
+      {userWeightPower ?? <span className="animate-pulse">00,00.00</span>} TORUS
     </Label>
   );
 }

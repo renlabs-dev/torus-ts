@@ -1,4 +1,10 @@
-type StatusKey = "UNSAVED" | "SAVED" | "WALLET" | "PERCENTAGE" | "SUBMITTING";
+type StatusKey =
+  | "UNSAVED"
+  | "SAVED"
+  | "WALLET"
+  | "PERCENTAGE"
+  | "ZERO_PERCENTAGE"
+  | "SUBMITTING";
 
 export interface StatusConfig {
   message: string;
@@ -7,8 +13,13 @@ export interface StatusConfig {
 }
 
 const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
+  ZERO_PERCENTAGE: {
+    message: "Select an agent to allocate",
+    color: "text-white",
+    disabled: true,
+  },
   UNSAVED: {
-    message: "You have agent unsaved changes.",
+    message: "You have agent unsaved changes",
     color: "text-amber-500",
     disabled: false,
   },
@@ -18,12 +29,12 @@ const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
     disabled: false,
   },
   WALLET: {
-    message: "Please connect your Torus wallet.",
+    message: "Please connect your Torus wallet",
     color: "text-white",
     disabled: true,
   },
   PERCENTAGE: {
-    message: "Percentage must be 100% or less.",
+    message: "Percentage must be 100% or less",
     color: "text-red-500",
     disabled: true,
   },
@@ -50,7 +61,8 @@ export function getSubmitStatus({
   hasPercentageChange,
 }: SubmitStatusProps): StatusConfig {
   if (!selectedAccount) return STATUS_CONFIG.WALLET;
-  if (totalPercentage > 100.1) return STATUS_CONFIG.PERCENTAGE;
+  if (totalPercentage === 0) return STATUS_CONFIG.ZERO_PERCENTAGE;
+  if (totalPercentage > 100) return STATUS_CONFIG.PERCENTAGE;
   if (isSubmitting) return STATUS_CONFIG.SUBMITTING;
   if (hasUnsavedChanges || hasPercentageChange) return STATUS_CONFIG.UNSAVED;
   return STATUS_CONFIG.SAVED;
