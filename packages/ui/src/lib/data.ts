@@ -1,36 +1,62 @@
-const getChainEnvPrefix = () => {
-  const chainEnv = process.env.NEXT_PUBLIC_CHAIN_ENV;
-  return chainEnv ? `${chainEnv}.` : "";
+import { z } from "zod";
+
+export const chainEnvSchema = z
+  .string()
+  .min(3, { message: "Value must be at least 3 characters long" })
+  .transform((value) => value.toLowerCase())
+  .refine(
+    (value) => value === "mainnet" || value === "testnet" || value.length > 0,
+    {
+      message: "Value must be 'mainnet', 'testnet' or a non-empty string",
+    },
+  );
+
+export type ChainEnv = z.infer<typeof chainEnvSchema>;
+
+const getChainEnvPrefix = (chainEnv: ChainEnv) => {
+  const chainEnvResult = chainEnvSchema.safeParse(chainEnv);
+
+  if (!chainEnvResult.success) {
+    throw new Error(chainEnvResult.error.message);
+  }
+
+  const chainEnvPrefix = chainEnvResult.data;
+
+  return chainEnvPrefix === "mainnet" ? "" : `${chainEnvPrefix}.`;
 };
 
-const createTorusUrl = (subdomain: string) =>
-  `https://${getChainEnvPrefix()}${subdomain}.torus.network`;
+const createTorusUrl = (chainEnv: ChainEnv) => (subdomain: string) =>
+  `https://${subdomain}.${getChainEnvPrefix(chainEnv)}torus.network`;
 
-export const links = {
-  about: "/about",
-  docs: "https://docs.torus.network/",
-  cadre: "/cadre",
+export const getLinks = (chainEnv: ChainEnv) => {
+  const createUrl = createTorusUrl(chainEnv);
 
-  blog: "https://x.com/torus_network/articles",
-  discord: "https://discord.gg/torus",
-  github: "https://github.com/renlabs-dev",
-  telegram: "https://t.me/torusnetwork",
-  x: "https://twitter.com/torus_network",
+  return {
+    about: "/about",
+    docs: "https://docs.torus.network/",
+    cadre: "/cadre",
 
-  ren_labs: "https://renlabs.dev/",
+    blog: "https://x.com/torus_network/articles",
+    discord: "https://discord.gg/torus",
+    github: "https://github.com/renlabs-dev",
+    telegram: "https://t.me/torusnetwork",
+    x: "https://twitter.com/torus_network",
 
-  hyperlane_gasDocs:
-    "https://docs.hyperlane.xyz/docs/reference/hooks/interchain-gas",
-  hyperlane_explorer: "https://explorer.hyperlane.xyz",
+    ren_labs: "https://renlabs.dev/",
 
-  torex_explorer: "https://torex.rs/",
+    hyperlane_gasDocs:
+      "https://docs.hyperlane.xyz/docs/reference/hooks/interchain-gas",
+    hyperlane_explorer: "https://explorer.hyperlane.xyz",
 
-  explorer: createTorusUrl("explorer"),
-  governance: createTorusUrl("dao"),
-  allocator: createTorusUrl("allocator"),
-  landing_page: createTorusUrl("torus"),
-  wallet: createTorusUrl("wallet"),
-  bridge: createTorusUrl("bridge"),
+    torex_explorer: "https://torex.rs/",
 
-  setup_a_wallet: "https://docs.torus.network/installation/setup-wallet",
+    explorer: createUrl("explorer"),
+    governance: createUrl("dao"),
+    allocator: createUrl("allocator"),
+    landing_page: createUrl("torus"),
+    wallet: createUrl("wallet"),
+    bridge: createUrl("bridge"),
+
+    setup_a_wallet: "https://docs.torus.network/installation/setup-wallet",
+  };
 };

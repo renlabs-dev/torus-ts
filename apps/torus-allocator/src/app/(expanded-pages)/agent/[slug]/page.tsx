@@ -7,11 +7,11 @@ import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AgentInfoCard } from "~/app/components/agent-info-card";
-import BlobImage from "~/app/components/blob-image";
-import { DelegateModuleWeight } from "~/app/components/delegate-module-weight";
-import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
-import { PenaltyList } from "~/app/components/penalties-list";
+import { AgentInfoCard } from "~/app/_components/agent-info-card";
+import BlobImage from "~/app/_components/blob-image";
+import { DelegateModuleWeight } from "~/app/_components/delegate-module-weight";
+import { ExpandedViewSocials } from "~/app/_components/expanded-view-socials";
+import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 
 export default async function AgentPage({

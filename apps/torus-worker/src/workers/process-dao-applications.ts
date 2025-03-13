@@ -1,6 +1,5 @@
 import type { WorkerProps } from "../common";
 import {
-  BLOCK_TIME,
   getApplications,
   log,
   processCadreVotes,
@@ -25,6 +24,7 @@ import {
   penalizeAgent,
   removeFromWhitelist,
 } from "@torus-ts/subspace";
+import { CONSTANTS } from "@torus-ts/subspace";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
 import { z } from "zod";
 
@@ -68,7 +68,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
       await processPenalty(props.api, mnemonic, factors);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
-      await sleep(BLOCK_TIME);
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
     }
   }
 }

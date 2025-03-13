@@ -1,4 +1,4 @@
-import { AgentBanner } from "../components/agent-banner";
+import { AgentBanner } from "../_components/agent-banner";
 
 export default function RootLayout({
   children,

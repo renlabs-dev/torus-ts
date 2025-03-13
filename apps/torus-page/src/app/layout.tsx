@@ -1,7 +1,7 @@
 import { Layout } from "@torus-ts/ui/components/layout";
 import "@torus-ts/ui/globals.css";
-import { Footer } from "./components/footer";
-import { HoverHeader } from "./components/hover-header";
+import { Footer } from "./_components/footer";
+import { HoverHeader } from "./_components/hover-header";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript } from "~/env";

@@ -31,6 +31,7 @@ import {
   queryAgentApplications,
   queryLastBlock,
   queryProposals,
+  CONSTANTS,
 } from "@torus-ts/subspace";
 import { match } from "rustie";
 
@@ -42,8 +43,8 @@ export interface WorkerProps {
 
 // -- Constants -- //
 
-export const BLOCK_TIME = 8000;
-export const APPLICATION_EXPIRATION_TIME = 75600; // 7 days in blocks
+export const APPLICATION_EXPIRATION_TIME =
+  CONSTANTS.TIME.BLOCK_TIME_SECONDS * CONSTANTS.TIME.ONE_WEEK; // 7 days in blocks
 
 // -- Functions -- //
 
@@ -70,7 +71,7 @@ export async function sleepUntilNewBlock(props: WorkerProps) {
     try {
       const lastBlock = await queryLastBlock(props.api);
       if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
-        await sleep(BLOCK_TIME);
+        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
       } else {
         return lastBlock;
       }
