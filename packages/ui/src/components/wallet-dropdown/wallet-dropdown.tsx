@@ -133,6 +133,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
               accounts={accounts}
               handleGetWallets={handleGetWallets}
               handleWalletSelection={handleWalletSelection}
+              torusChainEnv={torusChainEnv}
             />
           )}
         </DropdownMenuContent>

@@ -22,12 +22,14 @@ interface WalletSelectProps {
   accounts: InjectedAccountWithMeta[] | undefined;
   handleGetWallets: () => Promise<void>;
   handleWalletSelection: (accountAddress: string) => void;
+  torusChainEnv: string;
 }
 
 export const WalletSelect = ({
   accounts,
   handleGetWallets,
   handleWalletSelection,
+  torusChainEnv,
 }: WalletSelectProps) => (
   <Accordion
     type="single"
@@ -75,7 +77,9 @@ export const WalletSelect = ({
               </div>
             </DropdownMenuRadioItem>
           ))}
-          {accounts?.length === 0 && <NoWalletExtensionDisplay />}
+          {accounts?.length === 0 && (
+            <NoWalletExtensionDisplay torusChainEnv={torusChainEnv} />
+          )}
         </DropdownMenuRadioGroup>
       </AccordionContent>
     </AccordionItem>
