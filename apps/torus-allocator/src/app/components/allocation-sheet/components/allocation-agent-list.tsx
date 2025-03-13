@@ -1,49 +1,17 @@
-import type { SS58Address } from "@torus-ts/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { X } from "lucide-react";
-import { useState } from "react";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
-export function AgentList() {
-  const { delegatedAgents, updatePercentage, getAgentPercentage, removeAgent } =
+export function AllocationAgentList() {
+  const { delegatedAgents, getAgentPercentage, removeAgent, updatePercentage } =
     useDelegateAgentStore();
 
-  const [tempInputs, setTempInputs] = useState<
-    Record<string, string | undefined>
-  >({});
-
-  const handleInputBlur = (agentKey: string | SS58Address) => {
-    const value = tempInputs[agentKey];
-    if (value !== undefined) {
-      const percentage = Math.min(Math.max(parseFloat(value), 0), 100);
-      updatePercentage(agentKey, Number(percentage.toFixed(2)));
-      setTempInputs((prev) => ({ ...prev, [agentKey]: undefined }));
-    }
-  };
-
-  const handlePercentageChange = (
-    agentKey: string | SS58Address,
-    value: string,
-  ) => {
-    let sanitizedValue = value
-      .replace(/[^\d.]/g, "")
-      .replace(/(\..*)\./g, "$1");
-
-    const parts = sanitizedValue.split(".");
-    if (parts[1] && parts[1].length > 2) {
-      parts[1] = parts[1].slice(0, 2);
-      sanitizedValue = parts.join(".");
-    }
-
-    setTempInputs((prev) => ({ ...prev, [agentKey]: sanitizedValue }));
-  };
-
   return (
-    <ScrollArea className="max-h-[calc(100vh-270px)] pr-3">
+    <ScrollArea className="max-h-[calc(100vh-100px)] pr-3">
       <div className="flex flex-col gap-2">
         {delegatedAgents.length ? (
           delegatedAgents
@@ -55,7 +23,6 @@ export function AgentList() {
                 className={`border-muted-foreground/20 flex flex-col gap-1.5 border-b py-4 first:border-t last:border-b-0`}
               >
                 <span className="font-medium">{agent.name}</span>
-
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400">
                     {smallAddress(agent.address, 6)}
@@ -70,14 +37,13 @@ export function AgentList() {
                         type="text"
                         inputMode="decimal"
                         step="0.01"
-                        value={
-                          tempInputs[agent.address] ??
-                          getAgentPercentage(agent.address)
-                        }
+                        value={getAgentPercentage(agent.address)}
                         onChange={(e) =>
-                          handlePercentageChange(agent.address, e.target.value)
+                          updatePercentage(
+                            agent.address,
+                            Number(e.target.value) || 0,
+                          )
                         }
-                        onBlur={() => handleInputBlur(agent.address)}
                         className="w-12 border-x-0 border-y px-0 py-0 focus-visible:ring-0"
                       />
                       <span className="text-muted-foreground">%</span>

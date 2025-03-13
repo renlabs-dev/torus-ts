@@ -8,27 +8,27 @@ export interface StatusConfig {
 
 const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
   UNSAVED: {
-    message: "You have unsaved changes",
+    message: "You have agent unsaved changes.",
     color: "text-amber-500",
     disabled: false,
   },
   SAVED: {
-    message: "All changes saved!",
+    message: "All Agent Allocations saved!",
     color: "text-green-500",
     disabled: false,
   },
   WALLET: {
-    message: "Please connect your wallet",
+    message: "Please connect your Torus wallet.",
     color: "text-white",
     disabled: true,
   },
   PERCENTAGE: {
-    message: "Percentage must be 100% or less",
+    message: "Percentage must be 100% or less.",
     color: "text-red-500",
     disabled: true,
   },
   SUBMITTING: {
-    message: "Submitting...",
+    message: "Submitting Agent Allocations...",
     color: "text-blue-500",
     disabled: true,
   },

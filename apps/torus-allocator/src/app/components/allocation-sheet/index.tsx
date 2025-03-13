@@ -1,7 +1,7 @@
 "use client";
 
-import { AgentList } from "./components/agent-list";
 import { AllocationActions } from "./components/allocation-actions";
+import { AllocationAgentList } from "./components/allocation-agent-list";
 import { AllocationSheetTrigger } from "./components/allocation-sheet-trigger";
 import { getSubmitStatus } from "./components/get-submit-status";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -89,7 +89,7 @@ export function AllocationSheet() {
           <SheetTitle>Allocation Menu</SheetTitle>
         </SheetHeader>
 
-        <AgentList />
+        <AllocationAgentList />
 
         <SheetFooter>
           <AllocationActions submitStatus={submitStatus} />

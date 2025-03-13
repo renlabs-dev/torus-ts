@@ -6,6 +6,7 @@ import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
+import { Label } from "@torus-ts/ui/components/label";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { useRouter } from "next/navigation";
@@ -22,7 +23,7 @@ interface MenuTriggerProps {
 export function AllocationActions(props: MenuTriggerProps) {
   const {
     delegatedAgents,
-    updatePercentage,
+    updateBalancedPercentage,
     getTotalPercentage,
     setPercentageChange,
     updateOriginalAgents,
@@ -53,7 +54,7 @@ export function AllocationActions(props: MenuTriggerProps) {
     items.forEach((item, index) => {
       const newPercentage =
         item.percentage + percentagePerItem + (index < extraPercentage ? 1 : 0);
-      updatePercentage(item.address, newPercentage);
+      updateBalancedPercentage(item.address, newPercentage);
     });
   }
 
@@ -160,10 +161,6 @@ export function AllocationActions(props: MenuTriggerProps) {
 
       setPercentageChange(false);
 
-      toast({
-        title: "Success!",
-        description: "Allocation submitted.",
-      });
       setSubmitting(false);
     } catch (error) {
       console.error("Error submitting data:", error);
@@ -189,9 +186,23 @@ export function AllocationActions(props: MenuTriggerProps) {
     }
   };
 
+  const delegatedAgentsPercentage = Math.round(
+    delegatedAgents.reduce((sum, agent) => sum + agent.percentage, 0),
+  );
+
   return (
     <div className="flex min-h-fit w-full items-center gap-4 sm:flex-col sm:space-x-0">
       <div className="mt-auto flex w-full flex-col gap-2">
+        <div className="border-border flex w-full items-center justify-between gap-2 border-t py-6">
+          <Label>
+            <span className="text-muted-foreground">Agents: </span>
+            {delegatedAgents.length}
+          </Label>
+          <Label>
+            <span className="text-muted-foreground">Allocation: </span>
+            {delegatedAgentsPercentage}%
+          </Label>
+        </div>
         <div className="flex flex-row gap-2">
           <Button
             onClick={handleAutoCompletePercentage}
