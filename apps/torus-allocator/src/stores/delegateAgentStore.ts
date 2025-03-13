@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { SS58Address } from "@torus-ts/subspace";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -71,22 +72,33 @@ export const useDelegateAgentStore = create<DelegateState>()(
           if (!agents[agentIndex]) {
             return { delegatedAgents: agents };
           }
+
           agents[agentIndex].percentage = newPercentage;
 
           const totalPercentage = agents.reduce(
             (sum, agent) => sum + agent.percentage,
             0,
           );
-          agents.forEach((agent) => {
-            const precisionFactor = 10000;
-            const roundedPercentage = Math.round(
-              parseFloat((agent.percentage / totalPercentage).toFixed(4)) *
-                precisionFactor,
-            );
-            agent.percentage = roundedPercentage / 100;
-          });
+
+          let remainingPercentage = 100;
+
+          for (let i = 0; i < agents.length - 1; i++) {
+            const normalizedPercentage =
+              Math.round(
+                (agents[i]!.percentage / totalPercentage) * 100 * 100,
+              ) / 100;
+            agents[i]!.percentage = normalizedPercentage;
+            remainingPercentage -= normalizedPercentage;
+          }
+
+          if (agents.length > 0) {
+            agents[agents.length - 1]!.percentage =
+              Math.round(remainingPercentage * 100) / 100;
+          }
+
           return { delegatedAgents: agents };
         }),
+
       getTotalPercentage: () => {
         return get().delegatedAgents.reduce(
           (sum, agent) => sum + agent.percentage,

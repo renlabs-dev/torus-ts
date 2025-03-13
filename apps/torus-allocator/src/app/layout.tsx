@@ -1,5 +1,5 @@
 import "@torus-ts/ui/globals.css";
-import { AllocationMenu } from "./components/allocation-menu";
+import { AllocationSheet } from "./components/allocation-sheet";
 import { AllocatorHeader } from "./components/allocator-header";
 import { TutorialDialog } from "./components/tutorial-dialog";
 import { TorusProvider } from "@torus-ts/torus-provider";
@@ -33,11 +33,7 @@ export default function RootLayout({
 }>) {
   const torusCacheUrl = env("NEXT_PUBLIC_TORUS_CACHE_URL");
   return (
-    <Layout
-      font={firaMono}
-      headScripts={[EnvScript]}
-      className="bg-[url(/background.svg)]"
-    >
+    <Layout font={firaMono} headScripts={[EnvScript]}>
       <TorusProvider
         wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
         torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
@@ -45,7 +41,7 @@ export default function RootLayout({
         <TRPCReactProvider>
           <AllocatorHeader torusCacheUrl={torusCacheUrl} />
           <TutorialDialog />
-          <AllocationMenu />
+          <AllocationSheet />
           {children}
           <Toaster />
           <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />

@@ -5,7 +5,6 @@ import { AgentItemSkeleton } from "./agent-item-skeleton";
 import { AgentsTabView } from "./agents-tab-view";
 import { FilterContent } from "./filter-content";
 import { CustomPagination } from "./pagination-controls";
-import { UserWeightInfo } from "./user-weight-info";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { api } from "~/trpc/react";
@@ -212,7 +211,6 @@ export function AgentContentList() {
               : delegatedAgents.length === 0)
           }
         />
-        <UserWeightInfo />
         <AgentsTabView />
       </div>
 
