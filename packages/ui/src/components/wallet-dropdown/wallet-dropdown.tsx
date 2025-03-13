@@ -81,7 +81,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     () => (account: InjectedAccountWithMeta) =>
       getTotalBalance(
         account.freeBalance ?? 0n,
-        stakeOut?.perAddr[account.address],
+        stakeOut?.perAddr ? (stakeOut.perAddr[account.address] ?? 0n) : 0n,
       ),
     [stakeOut],
   );
@@ -133,6 +133,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
               accounts={accounts}
               handleGetWallets={handleGetWallets}
               handleWalletSelection={handleWalletSelection}
+              totalBalance={totalBalance}
               torusChainEnv={torusChainEnv}
             />
           )}

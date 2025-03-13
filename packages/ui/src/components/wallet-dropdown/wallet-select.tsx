@@ -17,12 +17,15 @@ import {
 } from "../accordion";
 import { NoWalletExtensionDisplay } from "../no-wallet-extension-display";
 import type { InjectedAccountWithMeta } from "./wallet-dropdown";
+import { ScrollArea } from "../scroll-area";
+import { WalletAccountDetails } from "./wallet-account-details";
 
 interface WalletSelectProps {
   accounts: InjectedAccountWithMeta[] | undefined;
   handleGetWallets: () => Promise<void>;
   handleWalletSelection: (accountAddress: string) => void;
   torusChainEnv: string;
+  totalBalance: (account: InjectedAccountWithMeta) => bigint;
 }
 
 export const WalletSelect = ({
@@ -30,6 +33,7 @@ export const WalletSelect = ({
   handleGetWallets,
   handleWalletSelection,
   torusChainEnv,
+  totalBalance,
 }: WalletSelectProps) => (
   <Accordion
     type="single"
@@ -54,33 +58,28 @@ export const WalletSelect = ({
       </AccordionTrigger>
       <AccordionContent className={cn("pb-0")}>
         <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup
-          value={""}
-          onValueChange={handleWalletSelection}
-        >
-          {accounts?.map((account) => (
-            <DropdownMenuRadioItem
-              key={account.address}
-              value={account.address}
-            >
-              <div className={cn("flex flex-col items-center gap-2")}>
-                <span
-                  className={cn(
-                    "flex flex-col items-start justify-start gap-1",
-                  )}
-                >
-                  <span>{account.meta.name ?? "Unnamed Wallet"}</span>
-                  <span className={cn("text-xs text-muted-foreground")}>
-                    {smallAddress(account.address)}
-                  </span>
-                </span>
-              </div>
-            </DropdownMenuRadioItem>
-          ))}
-          {accounts?.length === 0 && (
-            <NoWalletExtensionDisplay torusChainEnv={torusChainEnv} />
-          )}
-        </DropdownMenuRadioGroup>
+        <ScrollArea className={cn("max-h-48 overflow-y-auto")}>
+          <DropdownMenuRadioGroup
+            value={""}
+            onValueChange={handleWalletSelection}
+          >
+            {accounts?.map((account) => (
+              <DropdownMenuRadioItem
+                key={account.address}
+                value={account.address}
+                className={cn("rounded-radius")}
+              >
+                <WalletAccountDetails
+                  account={account}
+                  totalBalance={totalBalance}
+                />
+              </DropdownMenuRadioItem>
+            ))}
+            {accounts?.length === 0 && (
+              <NoWalletExtensionDisplay torusChainEnv={torusChainEnv} />
+            )}
+          </DropdownMenuRadioGroup>
+        </ScrollArea>
       </AccordionContent>
     </AccordionItem>
   </Accordion>
