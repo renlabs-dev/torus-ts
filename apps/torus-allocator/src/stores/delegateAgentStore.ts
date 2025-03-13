@@ -106,7 +106,28 @@ export const useDelegateAgentStore = create<DelegateState>()(
         );
       },
       setDelegatedAgentsFromDB: (agents) =>
-        set(() => ({ delegatedAgents: agents, originalAgents: agents })),
+        set((state) => {
+          const existingAgents = state.delegatedAgents;
+          const updatedAgents = agents.map((agent) => {
+            const existingAgent = existingAgents.find(
+              (ea) => ea.address === agent.address,
+            );
+            return existingAgent ?? agent;
+          });
+
+          // Add any agents that exist in the current state but not in the DB data
+          existingAgents.forEach((agent) => {
+            if (!updatedAgents.some((ua) => ua.address === agent.address)) {
+              updatedAgents.push(agent);
+            }
+          });
+
+          return {
+            delegatedAgents: updatedAgents,
+            originalAgents: agents, // Keep the original agents as they were in the DB
+          };
+        }),
+
       updateOriginalAgents: () =>
         set((state) => ({ originalAgents: [...state.delegatedAgents] })),
       hasUnsavedChanges: () => {
