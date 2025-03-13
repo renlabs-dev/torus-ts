@@ -124,6 +124,32 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
   ...timeFields(),
 });
 
+export const applicationStatus = pgEnum("application_status", [
+  "OPEN",
+  "ACCEPTED",
+  "REJECTED",
+  "EXPIRED",
+]);
+export const applicationStatusValues = extract_pgenum_values(applicationStatus);
+assert<
+  Equals<
+    keyof typeof applicationStatusValues,
+    "OPEN" | "ACCEPTED" | "REJECTED" | "EXPIRED"
+  >
+>();
+export const whitelistApplicationSchema = createTable("whitelist_application", {
+  id: serial("id").primaryKey(),
+
+  agentKey: ss58Address("user_key").notNull().unique(),
+  payerKey: ss58Address("payer_key").notNull(),
+  data: text("data").notNull(),
+  cost: numeric("cost").notNull(),
+  expiresAt: integer("expires_at").notNull(), // block
+  status: applicationStatus("status").notNull(),
+  notified: boolean("notified").notNull().default(false), // offchain
+  ...timeFields(),
+});
+
 export const penalizeAgentVotesSchema = createTable(
   "penalize_agent_votes",
   {
@@ -178,6 +204,20 @@ export const agentReportSchema = createTable("agent_report", {
 /**
  * A comment made by a user on a Proposal or Agent Application.
  */
+
+export const proposalSchema = createTable("proposal", {
+  id: serial("id").primaryKey(),
+  expirationBlock: integer("expiration_block").notNull(),
+  status: applicationStatus("status").notNull(),
+  proposerKey: ss58Address("proposer_key").notNull(),
+  creationBlock: integer("creation_block").notNull(),
+  metadataUri: text("metadata_uri").notNull(),
+  proposalCost: numeric("proposal_cost").notNull(),
+  notified: boolean("notified").notNull().default(false),
+  proposalID: integer("proposal_id").notNull().unique(),
+  ...timeFields(),
+});
+
 export const governanceItemType = pgEnum("governance_item_type", [
   "PROPOSAL",
   "AGENT_APPLICATION",
@@ -325,6 +365,7 @@ export const candidacyStatus = pgEnum("candidacy_status", [
 ]);
 export const candidacyStatusValues = extract_pgenum_values(candidacyStatus);
 
+// TODO: test autoupdate on the notified field
 export const cadreCandidateSchema = createTable(
   "cadre_candidate",
   {
@@ -336,6 +377,7 @@ export const cadreCandidateSchema = createTable(
       .notNull()
       .default(candidacyStatusValues.PENDING),
     content: text("content").notNull(),
+    notified: boolean("notified").notNull().default(false),
 
     ...timeFields(),
   },

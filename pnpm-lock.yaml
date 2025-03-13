@@ -900,11 +900,11 @@ importers:
   packages/db:
     dependencies:
       drizzle-orm:
-        specifier: ^0.38.2
-        version: 0.38.4(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0)
+        specifier: ^0.40.0
+        version: 0.40.0(gel@2.0.1)(postgres@3.4.5)
       drizzle-zod:
         specifier: ^0.6.0
-        version: 0.6.1(drizzle-orm@0.38.4(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0))(zod@3.24.2)
+        version: 0.6.1(drizzle-orm@0.40.0(gel@2.0.1)(postgres@3.4.5))(zod@3.24.2)
       postgres:
         specifier: ^3.4.4
         version: 3.4.5
@@ -8747,8 +8747,8 @@ packages:
     resolution: {integrity: sha512-l6dMSE100u7sDaTbLczibrQZjA35jLsHNqIV+jmhNVO3O8jzM6kywMOmV9uOz9ZVSCMPQhAZEFjL/qDPVrqpUA==}
     hasBin: true
 
-  drizzle-orm@0.38.4:
-    resolution: {integrity: sha512-s7/5BpLKO+WJRHspvpqTydxFob8i1vo2rEx4pY6TGY7QSMuUfWUuzaY0DIpXCkgHOo37BaFC+SJQb99dDUXT3Q==}
+  drizzle-orm@0.40.0:
+    resolution: {integrity: sha512-7ptk/HQiMSrEZHnAsSlBESXWj52VwgMmyTEfoNmpNN2ZXpcz13LwHfXTIghsAEud7Z5UJhDOp8U07ujcqme7wg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -8763,20 +8763,19 @@ packages:
       '@tidbcloud/serverless': '*'
       '@types/better-sqlite3': '*'
       '@types/pg': '*'
-      '@types/react': '>=18'
       '@types/sql.js': '*'
       '@vercel/postgres': '>=0.8.0'
       '@xata.io/client': '*'
       better-sqlite3: '>=7'
       bun-types: '*'
       expo-sqlite: '>=14.0.0'
+      gel: '>=2'
       knex: '*'
       kysely: '*'
       mysql2: '>=2'
       pg: '>=8'
       postgres: '>=3'
       prisma: '*'
-      react: '>=18'
       sql.js: '>=1'
       sqlite3: '>=5'
     peerDependenciesMeta:
@@ -8806,8 +8805,6 @@ packages:
         optional: true
       '@types/pg':
         optional: true
-      '@types/react':
-        optional: true
       '@types/sql.js':
         optional: true
       '@vercel/postgres':
@@ -8820,6 +8817,8 @@ packages:
         optional: true
       expo-sqlite:
         optional: true
+      gel:
+        optional: true
       knex:
         optional: true
       kysely:
@@ -8831,8 +8830,6 @@ packages:
       postgres:
         optional: true
       prisma:
-        optional: true
-      react:
         optional: true
       sql.js:
         optional: true
@@ -25357,15 +25354,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.4(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0):
+  drizzle-orm@0.40.0(gel@2.0.1)(postgres@3.4.5):
     optionalDependencies:
-      '@types/react': 18.2.79
+      gel: 2.0.1
       postgres: 3.4.5
-      react: 18.2.0
 
-  drizzle-zod@0.6.1(drizzle-orm@0.38.4(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0))(zod@3.24.2):
+  drizzle-zod@0.6.1(drizzle-orm@0.40.0(gel@2.0.1)(postgres@3.4.5))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.38.4(@types/react@18.2.79)(postgres@3.4.5)(react@18.2.0)
+      drizzle-orm: 0.40.0(gel@2.0.1)(postgres@3.4.5)
       zod: 3.24.2
 
   dunder-proto@1.0.1:

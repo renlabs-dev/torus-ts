@@ -1,0 +1,1 @@
+ALTER TABLE "proposal" ADD CONSTRAINT "proposal_proposal_id_unique" UNIQUE("proposal_id");
