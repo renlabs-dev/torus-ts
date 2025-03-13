@@ -1,10 +1,6 @@
 import type {
   VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
-  NewApplication,
-  NewProposal,
-  ApplicationDB,
-  CadreCandidate,
 } from "../db";
 import {
   queryTotalVotesPerApp,
@@ -15,24 +11,11 @@ import {
   removeCadreMember,
   getCadreDiscord,
   refuseCadreApplication,
-  queryAgentApplicationsDB,
-  queryCadreCandidates,
-  queryProposalsDB,
 } from "../db";
 import type { ApiPromise } from "@polkadot/api";
-import { applicationStatusValues } from "@torus-ts/db/schema";
-import type {
-  AgentApplication,
-  Api,
-  LastBlock,
-  Proposal,
-} from "@torus-ts/subspace";
-import {
-  queryAgentApplications,
-  queryLastBlock,
-  queryProposals,
-  CONSTANTS,
-} from "@torus-ts/subspace";
+import type { AgentApplication, LastBlock } from "@torus-ts/subspace";
+import { queryAgentApplications, queryLastBlock } from "@torus-ts/subspace";
+import { CONSTANTS } from "@torus-ts/subspace";
 import { match } from "rustie";
 
 export interface WorkerProps {
@@ -83,69 +66,15 @@ export async function sleepUntilNewBlock(props: WorkerProps) {
 
 // -- DAO Applications -- //
 
-type ApplicationVoteStatus = "open" | "accepted" | "locked";
-
-// TODO: cursed function. Should refactor everywhere to just use Application
-export function agentApplicationToApplication(
-  agentApplication: AgentApplication,
-): NewApplication {
-  const mappedStatus = match(agentApplication.status)({
-    Open: () => applicationStatusValues.OPEN,
-    Resolved: ({ accepted }) =>
-      accepted
-        ? applicationStatusValues.ACCEPTED
-        : applicationStatusValues.REJECTED,
-    Expired: () => applicationStatusValues.REJECTED,
-  });
-
-  return {
-    ...agentApplication,
-    cost: agentApplication.cost.toString(),
-    status: mappedStatus,
-  };
-}
-
-export function agentProposalToProposal(proposal: Proposal): NewProposal {
-  const status = match(proposal.status)({
-    Open: () => applicationStatusValues.OPEN,
-    Accepted: () => applicationStatusValues.ACCEPTED,
-    Expired: () => applicationStatusValues.EXPIRED,
-    Refused: () => applicationStatusValues.REJECTED,
-  });
-  return {
-    proposalID: proposal.id,
-    expirationBlock: proposal.expirationBlock,
-    status: status,
-    proposerKey: proposal.proposer,
-    creationBlock: proposal.creationBlock,
-    metadataUri: proposal.metadata,
-    proposalCost: proposal.proposalCost.toString(),
-    notified: false, // Default value as specified in schema
-  };
-}
-
-export const getApplicationVoteStatus = (
-  app: AgentApplication,
-): ApplicationVoteStatus =>
-  match(app.status)({
-    Open: () => "open",
-    Resolved: ({ accepted }) => (accepted ? "accepted" : "locked"),
-    Expired: () => "locked",
-  });
-
-export const applicationIsPending = (app: AgentApplication) =>
-  getApplicationVoteStatus(app) != "locked";
-
-export const applicationIsOpen = (app: AgentApplication) =>
+const applicationIsOpen = (app: AgentApplication) =>
   match(app.status)({
     Open: () => true,
     Resolved: ({ accepted }) => accepted,
     Expired: () => false,
   });
 
-// TODO: refactor to return using the db type
 export async function getApplications(
-  api: Api,
+  api: ApiPromise,
   filterFn: (app: AgentApplication) => boolean,
 ) {
   const application_entries = await queryAgentApplications(api);
@@ -159,43 +88,6 @@ export async function getApplications(
       {} as Record<number, AgentApplication>,
     );
   return applications_map;
-}
-
-export async function getProposals(
-  api: Api,
-  filterFn: (app: Proposal) => boolean,
-) {
-  const application_entries = await queryProposals(api);
-  const pending_daos = application_entries.filter(filterFn);
-  const applications_map: Record<number, Proposal> = pending_daos.reduce(
-    (hashmap, proposal) => {
-      hashmap[proposal.id] = proposal;
-      return hashmap;
-    },
-    {} as Record<number, Proposal>,
-  );
-  return applications_map;
-}
-
-export async function getProposalsDB(filterFn: (app: NewProposal) => boolean) {
-  const proposals = await queryProposalsDB();
-  const pending_daos = proposals.filter(filterFn);
-  return pending_daos;
-}
-
-export async function getApplicationsDB(
-  filterFn: (app: ApplicationDB) => boolean,
-) {
-  const applications = await queryAgentApplicationsDB();
-  const pending_daos = applications.filter(filterFn);
-  return pending_daos;
-}
-
-export async function getCadreCandidates(
-  filterFn: (app: CadreCandidate) => boolean,
-) {
-  const cadreCandidates = await queryCadreCandidates();
-  return cadreCandidates.filter(filterFn);
 }
 
 export async function getVotesOnPending(
