@@ -203,7 +203,11 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * The application is not in a pending state.
        **/
-      ApplicationNotOpen: AugmentedError<ApiType>;
+      ApplicationNotPending: AugmentedError<ApiType>;
+      /**
+       * The application data is too small or empty.
+       **/
+      ApplicationTooSmall: AugmentedError<ApiType>;
       /**
        * Failed to convert the given value to a balance.
        **/
@@ -221,9 +225,21 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InternalError: AugmentedError<ApiType>;
       /**
+       * The penalty percentage provided does not meet the maximum requirement
+       **/
+      InvalidAgentPenaltyPercentage: AugmentedError<ApiType>;
+      /**
+       * The application data is invalid or malformed.
+       **/
+      InvalidApplication: AugmentedError<ApiType>;
+      /**
        * The application data provided does not meet the length requirement
        **/
       InvalidApplicationDataLength: AugmentedError<ApiType>;
+      /**
+       * The application data is too large, exceeding the maximum allowed size.
+       **/
+      InvalidApplicationSize: AugmentedError<ApiType>;
       /**
        * Invalid value given when transforming a u64 into T::Currency.
        **/
