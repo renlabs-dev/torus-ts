@@ -18,10 +18,10 @@ import {
   FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
+import { Icons } from "@torus-ts/ui/components/icons";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useDiscordInfoForm } from "hooks/use-discord-info";
-import { useSession } from "next-auth/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -84,23 +84,6 @@ export function CreateCadreCandidates() {
     }
   }, [discordId, cadreForm]);
 
-  const { data: session } = useSession();
-  React.useEffect(() => {
-    if (session?.expires) {
-      const intervalId = setInterval(() => {
-        const expiryTime = new Date(session.expires).getTime();
-        const now = Date.now();
-        const remainingSecs = Math.max(
-          0,
-          Math.floor((expiryTime - now) / 1000),
-        );
-        console.log(`Session expires in: ${remainingSecs} seconds`);
-      }, 1000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [session]);
-
   if (isUserCadre || !selectedAccount) {
     return null;
   }
@@ -151,7 +134,6 @@ export function CreateCadreCandidates() {
   const remainingChars = MAX_CONTENT_CHARACTERS - (contentValue.length || 0);
 
   const onSubmit = (data: CreateCadreCandidateFormData) => {
-    console.log("Session during submission:", session);
     if (!selectedAccount.address) {
       toast({
         title: "Uh oh! Something went wrong.",
@@ -185,25 +167,16 @@ export function CreateCadreCandidates() {
     console.log("Preventing form submission");
   };
 
-  // Paper airplane/send icon for submit button
-  const SendIcon = () => (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="mr-2"
-    >
-      <path
-        d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  const handleDisableState = () => {
+    return (
+      createCadreCandidateMutation.isPending ||
+      isSaving ||
+      !selectedAccount.address ||
+      !discordId ||
+      !isValid ||
+      contentValue.length < 10
+    );
+  };
 
   return (
     <AlertDialog open={dialogOpen}>
@@ -290,25 +263,11 @@ export function CreateCadreCandidates() {
                 type="submit"
                 variant="outline"
                 className={`flex w-full items-center justify-center border border-blue-500 bg-blue-500/20 py-5 text-sm font-semibold text-blue-500 hover:bg-blue-700 ${
-                  createCadreCandidateMutation.isPending ||
-                  isSaving ||
-                  !selectedAccount.address ||
-                  !discordId ||
-                  !isValid ||
-                  contentValue.length < 10
-                    ? "cursor-not-allowed opacity-50"
-                    : ""
+                  handleDisableState() ? "cursor-not-allowed opacity-50" : ""
                 }`}
-                disabled={
-                  createCadreCandidateMutation.isPending ||
-                  isSaving ||
-                  !selectedAccount.address ||
-                  !discordId ||
-                  !isValid ||
-                  contentValue.length < 10
-                }
+                disabled={handleDisableState()}
               >
-                <SendIcon />
+                <Icons.PaperPlaneSend />
                 {createCadreCandidateMutation.isPending
                   ? "Waiting for Signature..."
                   : isSaving
@@ -317,7 +276,7 @@ export function CreateCadreCandidates() {
               </Button>
               {!discordId && selectedAccount.address && (
                 <p className="-mt-3 text-sm text-yellow-500">
-                  Please connect your Discord account to continue.
+                  Please validate your Discord account to continue.
                 </p>
               )}
             </form>
