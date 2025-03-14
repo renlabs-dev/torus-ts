@@ -1,5 +1,4 @@
 import { buildZodEnvScript } from "@torus-ts/env-validation";
-import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
 
 const NodeEnvSchema = z
@@ -19,7 +18,6 @@ export const envSchema = {
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
    */
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
-  NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

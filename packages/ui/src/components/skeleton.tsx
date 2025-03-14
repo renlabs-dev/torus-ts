@@ -1,13 +1,11 @@
-import { cn } from "@torus-ts/ui/lib/utils"
-
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="skeleton"
-      className={cn("bg-accent animate-pulse rounded-md", className)}
-      {...props}
-    />
-  )
+interface SkeletonProps {
+  className: string;
 }
-
-export { Skeleton }
+export function Skeleton(props: Readonly<SkeletonProps>): JSX.Element {
+  const { className } = props;
+  return (
+    <span
+      className={`rounded-radius animate-pulse bg-primary/10 ${className}`}
+    />
+  );
+}

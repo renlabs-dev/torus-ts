@@ -168,7 +168,6 @@ export function TorusProvider({
     const { web3Accounts, web3Enable, web3FromAddress } = await import(
       "@polkadot/extension-dapp"
     );
-
     setTorusApi({
       web3Enable,
       web3Accounts,
@@ -189,28 +188,14 @@ export function TorusProvider({
   }, [wsEndpoint]);
 
   async function getWallets(): Promise<InjectedAccountWithMeta[] | undefined> {
-    if (!torusApi.web3Enable || !torusApi.web3Accounts || !api) return;
-
+    if (!torusApi.web3Enable || !torusApi.web3Accounts) return;
     await torusApi.web3Enable("Torus Network");
 
     try {
-      const accounts = await torusApi.web3Accounts();
-
-      const accountsWithFreeBalance = await Promise.all(
-        accounts.map(async (account) => {
-          const { data: balance } = await api.query.system.account(
-            account.address,
-          );
-
-          return {
-            ...account,
-            freeBalance: balance.free.toBigInt(),
-          };
-        }),
-      );
-
-      return accountsWithFreeBalance;
-    } catch {
+      const response = await torusApi.web3Accounts();
+      return response;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
       return undefined;
     }
   }

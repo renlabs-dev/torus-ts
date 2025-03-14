@@ -45,7 +45,7 @@ export function assembleWarpCoreConfig(): WarpCoreConfig {
       if (!o || !acc) return acc;
       for (const key of Object.keys(o)) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        acc[key] = (acc[key] ?? []).concat(o[key] ?? []);
+        acc[key] = (acc[key] || []).concat(o[key] || []);
       }
       return acc;
     },

@@ -68,7 +68,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       blockEmission: u128 & AugmentedConst<ApiType>;
       defaultEmissionRecyclingPercentage: Percent & AugmentedConst<ApiType>;
-      defaultIncentivesRatio: Percent & AugmentedConst<ApiType>;
       defaultMaxAllowedWeights: u16 & AugmentedConst<ApiType>;
       defaultMinAllowedWeights: u16 & AugmentedConst<ApiType>;
       /**
@@ -204,7 +203,6 @@ declare module '@polkadot/api-base/types/consts' {
       defaultAdjustmentAlpha: u64 & AugmentedConst<ApiType>;
       defaultDividendsParticipationWeight: Percent & AugmentedConst<ApiType>;
       defaultImmunityPeriod: u16 & AugmentedConst<ApiType>;
-      defaultMaxAgentUrlLength: u16 & AugmentedConst<ApiType>;
       defaultMaxAllowedAgents: u16 & AugmentedConst<ApiType>;
       defaultMaxAllowedValidators: u16 & AugmentedConst<ApiType>;
       defaultMaxBurn: u128 & AugmentedConst<ApiType>;
@@ -227,7 +225,7 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxAgentNameLengthConstraint: u32 & AugmentedConst<ApiType>;
       /**
-       * This is needed on agent::Agent to set the `url` field BoundedVec max length.
+       * This is needed on agent::Agent to set the `address` field BoundedVec max length.
        **/
       maxAgentUrlLengthConstraint: u32 & AugmentedConst<ApiType>;
       /**

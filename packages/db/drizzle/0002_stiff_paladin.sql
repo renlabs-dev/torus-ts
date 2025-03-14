@@ -1,1 +1,0 @@
-ALTER TABLE "proposal" ADD COLUMN "proposal_id" integer NOT NULL;

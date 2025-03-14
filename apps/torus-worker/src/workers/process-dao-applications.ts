@@ -6,8 +6,6 @@ import {
   getCadreVotes,
   sleep,
   sleepUntilNewBlock,
-  applicationIsPending,
-  getApplicationVoteStatus,
 } from "../common";
 import type { VotesByNumericId } from "../db";
 import {
@@ -26,6 +24,7 @@ import {
 } from "@torus-ts/subspace";
 import { CONSTANTS } from "@torus-ts/subspace";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { match } from "rustie";
 import { z } from "zod";
 
 const getEnv = validateEnvOrExit({
@@ -33,9 +32,21 @@ const getEnv = validateEnvOrExit({
     .string()
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
 });
+type ApplicationVoteStatus = "open" | "accepted" | "locked";
+
+const getApplicationVoteStatus = (
+  app: AgentApplication,
+): ApplicationVoteStatus =>
+  match(app.status)({
+    Open: () => "open",
+    Resolved: ({ accepted }) => (accepted ? "accepted" : "locked"),
+    Expired: () => "locked",
+  });
+
+const applicationIsPending = (app: AgentApplication) =>
+  getApplicationVoteStatus(app) != "locked";
 
 export async function processApplicationsWorker(props: WorkerProps) {
-  const env = getEnv(process.env);
   while (true) {
     try {
       const lastBlock = await sleepUntilNewBlock(props);
@@ -50,7 +61,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
       );
 
       const vote_threshold = await getCadreThreshold();
-      const mnemonic = env.TORUS_CURATOR_MNEMONIC;
+      const mnemonic = getEnv(process.env).TORUS_CURATOR_MNEMONIC;
       await processAllVotes(
         props.api,
         mnemonic,

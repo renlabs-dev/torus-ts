@@ -41,11 +41,9 @@ export default function RootLayout({
           <GovernanceProvider>
             <DiscordAuthProvider>
               <Container>{children}</Container>
+              <Footer />
               <Toaster />
             </DiscordAuthProvider>
-            <Container>{children}</Container>
-            <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-            <Toaster />
           </GovernanceProvider>
         </TRPCReactProvider>
       </TorusProvider>

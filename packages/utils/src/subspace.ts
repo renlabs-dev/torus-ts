@@ -1,8 +1,11 @@
 import type { Brand } from "./";
-import { buildTaggedBigNumberClass } from "./bignumber";
+import {
+  BigNumberBrand,
+  BNInput,
+  buildTaggedBigNumberClass,
+} from "./bignumber";
 import { BigNumber } from "bignumber.js";
-import type { Equals, Extends, Not } from "tsafe";
-import { assert } from "tsafe";
+import { assert, Equals, Extends, Not } from "tsafe";
 
 export const DECIMALS = 18;
 
@@ -36,27 +39,10 @@ export type RemAmount = Brand<"RemAmount", bigint>;
 
 // ---- Arbitrary precision decimals ----
 
-/** 
- * Configuration for TORUS fixed point number amounts with banker's rounding.
- * 
- * We use ROUND_HALF_EVEN (banker's rounding) which is preferred for financial calculations
- * because it minimizes cumulative rounding errors when working with large sets of values.
- * 
- * Banker's rounding works as follows:
- * - Values less than half-way round down (1.4 → 1)
- * - Values greater than half-way round up (1.6 → 2)
- * - Values exactly half-way round to the nearest even number:
- *   - 1.5 rounds to 2 (nearest even number)
- *   - 2.5 rounds to 2 (nearest even number)
- *   - 3.5 rounds to 4 (nearest even number)
- *   - 4.5 rounds to 4 (nearest even number)
- * 
- * This approach distributes rounding errors evenly (up and down) compared to always
- * rounding up or down, which prevents bias when summing large sets of values.
- */
+/** Configuration for TORUS fixed point number amounts  */
 export const TorBigNumberCfg = BigNumber.clone({
   DECIMAL_PLACES: DECIMALS,
-  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // Banker's rounding for financial calculations
+  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN, // better for financial
 });
 
 export const { Type: TorAmount, make: makeTorAmount } =
@@ -79,12 +65,10 @@ function _test() {
 
 export const DECIMALS_BN_MULTIPLIER = makeTorAmount(10).pow(DECIMALS);
 
-// ---- DEPRECATED ----
+// ---- old ----
 
 /**
- * @deprecated
  * Converts a value in Nanos to its standard unit representation.
- *
  * @param nanoValue - The value in nano units.
  * @param roundingDecimals - Number of decimal places to round to.
  * @returns The value in standard units as a string
@@ -107,9 +91,7 @@ export function fromNano(
 }
 
 /**
- * @deprecated
  * Converts a standard unit value to Nanos.
- *
  * @param standardValue - The value in standard units (as a number or string)
  * @returns The value in nano units as a bigint
  */
@@ -135,7 +117,7 @@ export function formatToken(nano: number | bigint, decimalPlaces = 2): string {
   return `${formattedIntegerPart}.${roundedFractionalPart}`;
 }
 
-// ---- NEW ----
+// ---- new ----
 
 /**
  * Converts Rems to its standard unit (TORUS) representation.
@@ -156,7 +138,7 @@ export function toRems(amount: TorAmount): bigint {
  * Parse a string representing a TORUS token amount.
  */
 export function parseTorusTokens(txt: string): TorAmount {
-  // TODO: improve parsing?
+  // TODO: improve parsing
   return makeTorAmount(txt);
 }
 

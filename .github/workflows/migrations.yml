@@ -47,5 +47,8 @@ jobs:
       - name: drizzle-kit check
         run: pnpm exec drizzle-kit check
 
-      # - name: drizzle-kit migrate
-      #   run: pnpm exec drizzle-kit migrate
+      - name: drizzle-kit generate
+        run: pnpm exec drizzle-kit generate
+
+      - name: drizzle-kit migrate
+        run: pnpm exec drizzle-kit migrate

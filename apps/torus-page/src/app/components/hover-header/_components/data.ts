@@ -1,7 +1,4 @@
-import { getLinks } from "@torus-ts/ui/lib/data";
-import { env } from "~/env";
-
-const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+import { links } from "@torus-ts/ui/lib/data";
 
 export const ANIMATIONS = {
   DRAW: {

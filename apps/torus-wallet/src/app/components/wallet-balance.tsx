@@ -4,69 +4,77 @@ import { RewardIntervalProgress } from "./reward-interval-progress";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken } from "@torus-ts/utils/subspace";
-import { Lock, Scale, Unlock } from "lucide-react";
-import { useMemo } from "react";
+import { Lock, Unlock } from "lucide-react";
+import React, { useCallback } from "react";
 import { useWallet } from "~/context/wallet-provider";
 
-const BALANCE_ICONS = {
-  free: <Lock size={16} />,
-  staked: <Unlock size={16} />,
-  total: <Scale size={16} />,
-};
-
 export function WalletBalance() {
-  const { accountFreeBalance, accountStakedBalance } = useWallet();
+  const {
+    accountFreeBalance,
+    accountStakedBalance,
+    isAccountConnected,
+    isInitialized,
+    stakeOut,
+  } = useWallet();
 
-  const getBalance = useMemo(() => {
-    const free = accountFreeBalance.data ?? 0n;
-    const staked = accountStakedBalance ?? 0n;
-    const total = free + staked;
+  const userStakeWeight = useCallback(() => {
+    if (!isInitialized || !isAccountConnected || stakeOut.isRefetching)
+      return null;
 
-    return {
-      free,
-      staked,
-      total,
-    };
-  }, [accountFreeBalance.data, accountStakedBalance]);
+    if (accountStakedBalance != null) {
+      return accountStakedBalance;
+    }
 
-  const balances = [
+    return 0n;
+  }, [accountStakedBalance, isAccountConnected, isInitialized, stakeOut]);
+
+  const userAccountFreeBalance = useCallback(() => {
+    if (
+      !isInitialized ||
+      !isAccountConnected ||
+      accountFreeBalance.isRefetching
+    )
+      return null;
+
+    if (accountFreeBalance.data != null) {
+      return accountFreeBalance.data;
+    }
+
+    return 0n;
+  }, [accountFreeBalance, isAccountConnected, isInitialized]);
+
+  const balancesList = [
     {
+      amount: userAccountFreeBalance(),
       label: "Free Balance",
-      amount: getBalance.free,
-      icon: BALANCE_ICONS.free,
+      icon: <Lock size={16} />,
     },
     {
+      amount: userStakeWeight(),
       label: "Staked Balance",
-      amount: getBalance.staked,
-      icon: BALANCE_ICONS.staked,
+      icon: <Unlock size={16} />,
     },
-    ...(getBalance.total > 0n
-      ? [
-          {
-            label: "Total Balance",
-            amount: getBalance.total,
-            icon: BALANCE_ICONS.total,
-          },
-        ]
-      : []),
   ];
 
-  const isLoading = accountFreeBalance.isLoading;
-
   return (
-    <div className="xs:flex-row flex min-h-fit flex-col gap-4 lg:flex-col">
-      {balances.map(({ amount, icon, label }) => (
-        <Card key={label} className="flex w-full flex-col gap-2 px-7 py-5">
-          {!isLoading ? (
-            <p className="text-muted-foreground flex items-end gap-1">
-              {formatToken(amount)}
+    <div className="min-fit xs:flex-row flex flex-col gap-4 lg:flex-col">
+      {balancesList.map((balance) => (
+        <Card
+          key={balance.label}
+          className="flex w-full flex-col gap-2 px-7 py-5"
+        >
+          {typeof balance.amount === "bigint" && (
+            <p className="text-muted-fofreground flex items-end gap-1">
+              {formatToken(balance.amount)}
               <span className="mb-0.5 text-xs">TORUS</span>
             </p>
-          ) : (
-            <Skeleton className="w-1/2 py-3" />
           )}
-          <span className="flex items-center gap-2 text-sm">
-            {icon} {label}
+          {typeof balance.amount !== "bigint" && (
+            <Skeleton className="flex w-1/2 py-3" />
+          )}
+
+          <span className="text-sx flex items-center gap-2">
+            {balance.icon} {balance.label}
           </span>
         </Card>
       ))}

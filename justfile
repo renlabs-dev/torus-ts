@@ -34,8 +34,8 @@ typecheck:
 format:
   pnpm exec turbo run format --continue
 
-format-fix filter="*":
-  pnpm exec turbo run format-fix --continue -F "{{filter}}"
+format-fix:
+  pnpm exec turbo run format-fix --continue
 
 lint:
   pnpm exec turbo run lint --continue
@@ -47,10 +47,7 @@ lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
 
 check-all:
-  pnpm exec turbo run typecheck lint
-
-test filter="*":
-  pnpm exec turbo run test -F "{{filter}}"
+  pnpm exec turbo run typecheck lint format
 
 create-package:
   pnpm turbo gen init

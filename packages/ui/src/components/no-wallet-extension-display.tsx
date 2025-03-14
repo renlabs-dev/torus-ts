@@ -1,14 +1,6 @@
-import { getLinks } from "../lib/data";
+import { links } from "../lib/data";
 
-interface NoWalletExtensionDisplayProps {
-  torusChainEnv: string;
-}
-
-export function NoWalletExtensionDisplay({
-  torusChainEnv,
-}: NoWalletExtensionDisplayProps) {
-  const links = getLinks(torusChainEnv);
-
+export function NoWalletExtensionDisplay() {
   return (
     <div className="flex h-full flex-col gap-3 p-3 text-sm">
       <div className="flex max-w-80 flex-col gap-4">
