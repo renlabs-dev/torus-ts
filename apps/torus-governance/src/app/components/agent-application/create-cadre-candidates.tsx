@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogOverlay,
 } from "@torus-ts/ui/components/alert-dialog";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -178,14 +179,14 @@ export function CreateCadreCandidates() {
     );
   };
 
+  function handleOpenChange(open: boolean) {
+    setDialogOpen(open);
+  }
+
   return (
-    <AlertDialog open={dialogOpen}>
+    <AlertDialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="secondary"
-          className="animate-fade-down"
-          onClick={() => setDialogOpen(true)}
-        >
+        <Button variant="secondary" className="animate-fade-down">
           Apply to be a curator DAO member.
         </Button>
       </AlertDialogTrigger>
