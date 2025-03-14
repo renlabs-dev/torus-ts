@@ -300,21 +300,6 @@ export const commentReportSchema = createTable("comment_report", {
 
 const DISCORD_ID_LENGTH = 20;
 
-// Auxiliary table to store discord information
-
-/**
- * Discord information of a user
- */
-export const userDiscordInfo = createTable("user_discord_info", {
-  id: serial("id").primaryKey(),
-  discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
-    .notNull()
-    .references(() => cadreSchema.discordId),
-  userName: text("user_name").notNull(),
-  avatarUrl: text("avatar_url"),
-  ...timeFields(),
-});
-
 /**
  * A groups of users that can vote on Applications.
  */
@@ -322,9 +307,11 @@ export const cadreSchema = createTable(
   "cadre",
   {
     id: serial("id").primaryKey(),
-
     userKey: ss58Address("user_key").notNull().unique(),
-    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+      .references(() => userDiscordInfoSchema.discordId)
+      .notNull()
+      .unique(),
 
     ...timeFields(),
   },
@@ -341,13 +328,37 @@ export const candidacyStatus = pgEnum("candidacy_status", [
 ]);
 export const candidacyStatusValues = extract_pgenum_values(candidacyStatus);
 
+// Auxiliary table to store discord information
+
+/**
+ * Discord information of a user
+ */
+export const userDiscordInfoSchema = createTable(
+  "user_discord_info",
+  {
+    id: serial("id").primaryKey(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+      .notNull()
+      .unique(),
+    userName: text("user_name").notNull(),
+    avatarUrl: text("avatar_url"),
+    ...timeFields(),
+  },
+  (t) => [
+    check("discord_id_check", sql`LENGTH(${t.discordId}) BETWEEN 17 AND 20 `),
+  ],
+);
+
 export const cadreCandidateSchema = createTable(
   "cadre_candidate",
   {
     id: serial("id").primaryKey(),
 
     userKey: ss58Address("user_key").notNull().unique(),
-    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+      .references(() => userDiscordInfoSchema.discordId)
+      .notNull()
+      .unique(),
     candidacyStatus: candidacyStatus("candidacy_status")
       .notNull()
       .default(candidacyStatusValues.PENDING),

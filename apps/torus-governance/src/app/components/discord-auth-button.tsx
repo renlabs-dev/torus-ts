@@ -5,7 +5,12 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
 
 interface DiscordLoginProps {
-  onAuthChange?: (discordId: string | null) => void;
+  onAuthChange?: (
+    discordId: string | null,
+    userName: string | null,
+    avatarUrl: string | null,
+  ) => void;
+  onButtonClick?: () => void;
 }
 
 interface ExtendedUser {
@@ -15,37 +20,52 @@ interface ExtendedUser {
   discordId?: string;
 }
 
-export default function DiscordLogin({ onAuthChange }: DiscordLoginProps) {
+export default function DiscordLogin({
+  onAuthChange,
+  onButtonClick,
+}: DiscordLoginProps) {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
   const user = session?.user as ExtendedUser | undefined;
   const discordId = user?.discordId;
+  const userName = user?.name;
+  const avatarUrl = user?.image;
 
   useEffect(() => {
     if (onAuthChange) {
-      onAuthChange(discordId ?? null);
+      onAuthChange(discordId ?? null, userName ?? null, avatarUrl ?? null);
     }
-  }, [discordId, onAuthChange]);
+  }, [discordId, userName, avatarUrl, onAuthChange]);
 
-  const handleSignIn = async () => {
-    console.log("Initiating Discord sign in");
+  const handleSignIn = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    onButtonClick?.();
     try {
-      await signIn("discord", {
-        callbackUrl: window.location.href,
-        redirect: true,
-      });
+      await signIn("discord", { redirect: true });
     } catch (error) {
       console.error("Error signing in with Discord:", error);
     }
   };
 
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    onButtonClick?.();
+    await signOut({ redirect: false });
+  };
+
   if (isLoading) {
-    return <Button disabled>Loading...</Button>;
+    return (
+      <Button type="button" disabled>
+        Loading...
+      </Button>
+    );
   }
 
   if (session && discordId) {
     return (
-      <div className="flex items-center gap-3 rounded bg-gray-600/20 p-3">
+      <div className="flex items-center gap-3 bg-gray-600/20 p-3">
         {user.image && (
           <>
             <div className="flex flex-col">
@@ -55,9 +75,10 @@ export default function DiscordLogin({ onAuthChange }: DiscordLoginProps) {
               <span className="text-xs text-gray-400">ID: {discordId}</span>
             </div>
             <Button
+              type="button"
               variant="destructive"
               className="ml-auto"
-              onClick={() => signOut({ redirect: false })}
+              onClick={handleSignOut}
             >
               Disconnect
             </Button>
@@ -69,6 +90,7 @@ export default function DiscordLogin({ onAuthChange }: DiscordLoginProps) {
 
   return (
     <Button
+      type="button"
       variant="outline"
       className="w-full bg-[#5865F2] text-white hover:bg-[#4752c4]"
       onClick={handleSignIn}
