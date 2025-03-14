@@ -310,7 +310,7 @@ export function CreateCadreCandidates() {
               >
                 <SendIcon />
                 {createCadreCandidateMutation.isPending
-                  ? "Submitting Application..."
+                  ? "Waiting for Signature..."
                   : isSaving
                     ? "Saving Discord info..."
                     : "Submit Application"}

@@ -17,9 +17,15 @@ export const authConfig: NextAuthOptions = {
   callbacks: {
     jwt({ token, account, profile }) {
       if (account?.provider === "discord" && profile) {
-        const discordProfile = profile as { id: string };
-        token.discordId = discordProfile.id;
+        if (
+          typeof profile === "object" &&
+          "id" in profile &&
+          typeof profile.id === "string"
+        ) {
+          token.discordId = profile.id;
+        }
       }
+
       return token;
     },
     session({ session, token }) {
