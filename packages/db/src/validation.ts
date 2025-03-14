@@ -8,6 +8,7 @@ import {
   agentApplicationVoteSchema,
   userAgentWeightSchema,
   penalizeAgentVotesSchema,
+  userDiscordInfoSchema,
 } from "./schema";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -94,6 +95,14 @@ export const PENALTY_INSERT_SCHEMA = createInsertSchema(
 ).omit({
   id: true,
   cadreKey: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+export const USER_DISCORD_INFO_INSERT_SCHEMA = createInsertSchema(
+  userDiscordInfoSchema,
+).omit({
+  id: true,
   updatedAt: true,
   createdAt: true,
   deletedAt: true,

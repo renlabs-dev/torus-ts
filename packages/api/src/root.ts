@@ -8,6 +8,7 @@ import { cadreRouter } from "./router/cadre/cadre";
 import { cadreCandidateRouter } from "./router/cadre/cadre-candidate";
 import { cadreVoteRouter } from "./router/cadre/cadre-vote";
 import { cadreVoteHistoryRouter } from "./router/cadre/cadre-vote-history";
+import { discordInfoRouter } from "./router/cadre/discord-info";
 import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
@@ -35,6 +36,9 @@ export const appRouter = createTRPCRouter({
   commentReport: commentReportRouter,
   commentInteraction: commentInteractionRouter,
   penalty: penaltyRouter,
+
+  // Discord Auth
+  discordInfo: discordInfoRouter,
 });
 
 export type AppRouter = typeof appRouter;

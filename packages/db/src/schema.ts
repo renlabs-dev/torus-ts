@@ -348,7 +348,10 @@ export const cadreSchema = createTable(
     id: serial("id").primaryKey(),
 
     userKey: ss58Address("user_key").notNull().unique(),
-    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+      .references(() => userDiscordInfoSchema.discordId)
+      .notNull()
+      .unique(),
 
     ...timeFields(),
   },
@@ -372,7 +375,10 @@ export const cadreCandidateSchema = createTable(
     id: serial("id").primaryKey(),
 
     userKey: ss58Address("user_key").notNull().unique(),
-    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH }).notNull(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+      .references(() => userDiscordInfoSchema.discordId)
+      .notNull()
+      .unique(),
     candidacyStatus: candidacyStatus("candidacy_status")
       .notNull()
       .default(candidacyStatusValues.PENDING),
@@ -391,6 +397,25 @@ export const applicationVoteType = pgEnum("agent_application_vote_type", [
   "REFUSE",
   "REMOVE",
 ]);
+
+/**
+ * This table stores the Discord information for cadre candidates.
+ */
+export const userDiscordInfoSchema = createTable(
+  "user_discord_info",
+  {
+    id: serial("id").primaryKey(),
+    discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+      .notNull()
+      .unique(),
+    userName: text("user_name").notNull(),
+    avatarUrl: text("avatar_url"),
+    ...timeFields(),
+  },
+  (t) => [
+    check("discord_id_check", sql`LENGTH(${t.discordId}) BETWEEN 17 AND 20 `),
+  ],
+);
 
 /**
  * This table stores votes on Cadre Candidates.
