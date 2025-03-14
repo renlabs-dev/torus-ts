@@ -43,7 +43,7 @@ import type {
   Vote,
 } from "@torus-ts/torus-provider/types";
 import { Header } from "@torus-ts/ui/components/header";
-import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown";
+import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-dropdown";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
 import type { inferProcedureOutput } from "@trpc/server";
@@ -289,6 +289,7 @@ export function GovernanceProvider({
             handleLogout={handleLogout}
             handleGetWallets={handleGetWallets}
             handleSelectWallet={handleSelectWallet}
+            torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")}
           />
         }
       />

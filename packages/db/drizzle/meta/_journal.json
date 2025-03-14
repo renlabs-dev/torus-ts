@@ -3,10 +3,24 @@
   "dialect": "postgresql",
   "entries": [
     {
-      "idx": 6,
+      "idx": 2,
       "version": "7",
-      "when": 1741037623768,
-      "tag": "0006_even_network",
+      "when": 1741806173064,
+      "tag": "0001_supreme_venus",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1741888657381,
+      "tag": "0002_stiff_paladin",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1741889641698,
+      "tag": "0004_lovely_jocasta",
       "breakpoints": true
     }
   ]

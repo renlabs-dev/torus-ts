@@ -1,5 +1,4 @@
-import { AgentContentList } from "../components/agent-content-list";
-import { PopoverInfo } from "../components/popover-info";
+import { AgentContentList } from "../_components/agent-content-list";
 import { Suspense } from "react";
 
 export default function Page() {
@@ -8,7 +7,6 @@ export default function Page() {
       <div className="mx-auto w-full max-w-screen-xl px-4">
         <main className="mx-auto min-w-full py-10 text-white">
           <div className="flex w-full flex-col justify-around gap-3 md:gap-6">
-            <PopoverInfo />
             <div className="flex w-full flex-col">
               <Suspense fallback={<div>Loading...</div>}>
                 <AgentContentList />

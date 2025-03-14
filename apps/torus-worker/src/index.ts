@@ -44,11 +44,7 @@ async function main() {
     },
     // TODO: rename "dao-notifier" worker arg
     "dao-notifier": async () => {
-      await notifyNewApplicationsWorker({
-        lastBlock,
-        api,
-        lastBlockNumber,
-      });
+      await notifyNewApplicationsWorker();
     },
     // TODO: rename "module-fetcher" worker arg to "agent-fetcher"
     "module-fetcher": async () => {

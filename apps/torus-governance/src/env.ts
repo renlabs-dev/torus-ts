@@ -1,5 +1,6 @@
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { SS58_SCHEMA } from "@torus-ts/subspace";
+import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
 
 const AUTH_ORIGIN_DEFAULT = "dao.torus.network";
@@ -37,6 +38,7 @@ export const envSchema = {
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
   NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: SS58_SCHEMA,
+  NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

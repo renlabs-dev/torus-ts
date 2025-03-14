@@ -1,4 +1,4 @@
-import { TorusAnimation } from "./components/torus-animation";
+import { TorusAnimation } from "./_components/torus-animation";
 import Image from "next/image";
 
 export default function Page(): JSX.Element {
