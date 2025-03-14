@@ -15,11 +15,15 @@ export const cadreCandidateRouter = {
   create: authenticatedProcedure
     .input(CADRE_CANDIDATE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const userKey = ctx.sessionData!.userKey;
-      await ctx.db
+      const [insertedCandidate] = await ctx.db
         .insert(cadreCandidateSchema)
-        .values({ ...input, userKey: userKey })
+        .values({ ...input, userKey })
         .execute();
+      if (insertedCandidate) {
+        throw new Error("Failed to create candidate");
+      }
+
+      return insertedCandidate;
     }),
 } satisfies TRPCRouterRecord;

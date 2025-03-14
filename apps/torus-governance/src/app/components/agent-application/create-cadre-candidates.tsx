@@ -18,10 +18,17 @@ import {
   FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
+<<<<<<< HEAD
 import { Icons } from "@torus-ts/ui/components/icons";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useDiscordInfoForm } from "hooks/use-discord-info";
+=======
+import { Textarea } from "@torus-ts/ui/components/text-area";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { useDiscordInfoForm } from "hooks/use-discord-info";
+import { useSession } from "next-auth/react";
+>>>>>>> 22c415ac (almost done)
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -75,12 +82,31 @@ export function CreateCadreCandidates() {
     mode: "onChange",
   });
 
-  // Set the discordId in the form when it changes
+  // Set the discordId in the cadreForm when it changes
   React.useEffect(() => {
     if (discordId) {
-      form.setValue("discordId", discordId);
+      cadreForm.setValue("discordId", discordId);
+      // Trigger validation to update the form state
+      void cadreForm.trigger("discordId");
     }
-  }, [discordId, form]);
+  }, [discordId, cadreForm]);
+
+  const { data: session } = useSession();
+  React.useEffect(() => {
+    if (session?.expires) {
+      const intervalId = setInterval(() => {
+        const expiryTime = new Date(session.expires).getTime();
+        const now = Date.now();
+        const remainingSecs = Math.max(
+          0,
+          Math.floor((expiryTime - now) / 1000),
+        );
+        console.log(`Session expires in: ${remainingSecs} seconds`);
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [session]);
 
   if (isUserCadre || !selectedAccount) {
     return null;
@@ -132,6 +158,7 @@ export function CreateCadreCandidates() {
   const remainingChars = MAX_CONTENT_CHARACTERS - (contentValue.length || 0);
 
   const onSubmit = (data: CreateCadreCandidateFormData) => {
+    console.log("Session during submission:", session);
     if (!selectedAccount.address) {
       toast({
         title: "Uh oh! Something went wrong.",
@@ -165,6 +192,7 @@ export function CreateCadreCandidates() {
     console.log("Preventing form submission");
   };
 
+<<<<<<< HEAD
   const handleDisableState = () => {
     return (
       createCadreCandidateMutation.isPending ||
@@ -184,6 +212,36 @@ export function CreateCadreCandidates() {
     <AlertDialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
         <Button variant="secondary" className="animate-fade-down">
+=======
+  // Paper airplane/send icon for submit button
+  const SendIcon = () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="mr-2"
+    >
+      <path
+        d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
+  return (
+    <AlertDialog open={dialogOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="secondary"
+          className="animate-fade-down"
+          onClick={() => setDialogOpen(true)}
+        >
+>>>>>>> 22c415ac (almost done)
           Apply to be a curator DAO member.
         </Button>
       </AlertDialogTrigger>
@@ -261,6 +319,7 @@ export function CreateCadreCandidates() {
                 type="submit"
                 variant="outline"
                 className={`flex w-full items-center justify-center border border-blue-500 bg-blue-500/20 py-5 text-sm font-semibold text-blue-500 hover:bg-blue-700 ${
+<<<<<<< HEAD
                   handleDisableState() ? "cursor-not-allowed opacity-50" : ""
                 }`}
                 disabled={handleDisableState()}
@@ -268,13 +327,40 @@ export function CreateCadreCandidates() {
                 <Icons.PaperPlaneSend />
                 {createCadreCandidateMutation.isPending
                   ? "Waiting for Signature..."
+=======
+                  createCadreCandidateMutation.isPending ||
+                  isSaving ||
+                  !selectedAccount.address ||
+                  !discordId ||
+                  !isValid ||
+                  contentValue.length < 10
+                    ? "cursor-not-allowed opacity-50"
+                    : ""
+                }`}
+                disabled={
+                  createCadreCandidateMutation.isPending ||
+                  isSaving ||
+                  !selectedAccount.address ||
+                  !discordId ||
+                  !isValid ||
+                  contentValue.length < 10
+                }
+              >
+                <SendIcon />
+                {createCadreCandidateMutation.isPending
+                  ? "Submitting Application..."
+>>>>>>> 22c415ac (almost done)
                   : isSaving
                     ? "Saving Discord info..."
                     : "Submit Application"}
               </Button>
               {!discordId && selectedAccount.address && (
                 <p className="-mt-3 text-sm text-yellow-500">
+<<<<<<< HEAD
                   Please validate your Discord account to continue.
+=======
+                  Please connect your Discord account to continue.
+>>>>>>> 22c415ac (almost done)
                 </p>
               )}
             </form>
