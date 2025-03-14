@@ -206,7 +206,7 @@ export function AllocationActions(props: MenuTriggerProps) {
         <div className="flex flex-row gap-2">
           <Button
             onClick={handleAutoCompletePercentage}
-            className="w-1/2"
+            className="w-1/2 border-purple-500 bg-purple-500/20 font-bold text-purple-500 hover:bg-purple-500/30 hover:text-purple-500"
             disabled={totalPercentage === 100 || delegatedAgents.length === 0}
             variant="outline"
           >
@@ -215,7 +215,7 @@ export function AllocationActions(props: MenuTriggerProps) {
 
           <Button
             onClick={handleRemoveAllWeight}
-            className="w-1/2"
+            className="w-1/2 border-red-500 bg-red-500/20 font-bold text-red-500 hover:bg-red-500/30 hover:text-red-500"
             disabled={!hasItemsToClear}
             variant="outline"
           >
@@ -225,7 +225,7 @@ export function AllocationActions(props: MenuTriggerProps) {
         <Button
           onClick={handleSubmit}
           variant="outline"
-          className="w-full"
+          className="w-full border-green-500 bg-green-500/20 font-bold text-green-500 hover:bg-green-500/30 hover:text-green-500"
           disabled={props.submitStatus.disabled || totalPercentage === 0}
           title="Submit Agents"
         >
