@@ -1,6 +1,6 @@
 import "@torus-ts/ui/globals.css";
 import ClientHeroSection from "./components/animation/client-hero-section";
-import { APRBar } from "./components/apr-bar";
+import { APRBar } from "./components/apr-bar/apr-bar";
 import { SidebarLinks } from "./components/sidebar-links";
 import { WalletBalance } from "./components/wallet-balance";
 import { WalletHeader } from "./components/wallet-header";
