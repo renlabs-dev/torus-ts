@@ -21,6 +21,7 @@ import {
 import { Icons } from "@torus-ts/ui/components/icons";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { useDiscordInfoForm } from "hooks/use-discord-info";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -33,12 +34,11 @@ const MAX_CONTENT_CHARACTERS = 500;
 const createCadreCandidateSchema = z.object({
   discordId: z
     .string()
-    .min(17)
-    .max(20)
-    .regex(/^\d+$/, "Discord ID must contain only digits"),
+    .min(17, "Please validate your Discord Account to continue.")
+    .max(20),
   content: z
     .string()
-    .min(10, "Content must be at least 10 characters")
+    .min(10, "Content must be at least 10 characters.")
     .max(
       MAX_CONTENT_CHARACTERS,
       `Content must be at most ${MAX_CONTENT_CHARACTERS} characters`,
@@ -60,7 +60,7 @@ export function CreateCadreCandidates() {
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
-  const { saveDiscordInfo, isSaving } = useDiscordInfoForm(
+  const { saveDiscordInfo } = useDiscordInfoForm(
     discordId,
     userName,
     avatarUrl,
@@ -107,7 +107,7 @@ export function CreateCadreCandidates() {
           title: "Success!",
           description: "Curator DAO member request submitted successfully!",
         });
-        setDialogOpen(false); // Close the dialog on success
+        setDialogOpen(false);
       } catch (error) {
         toast({
           title: "Uh oh! Something went wrong.",
@@ -126,7 +126,7 @@ export function CreateCadreCandidates() {
     },
   });
 
-  const { handleSubmit, control, watch, formState } = cadreForm;
+  const { handleSubmit, control, watch, formState, getValues } = cadreForm;
   const { isValid } = formState;
 
   const contentValue = watch("content");
@@ -166,16 +166,13 @@ export function CreateCadreCandidates() {
     console.log("Preventing form submission");
   };
 
-  const handleDisableState = () => {
+  function handleDisableState() {
     return (
       createCadreCandidateMutation.isPending ||
-      isSaving ||
-      !selectedAccount.address ||
-      !discordId ||
-      !isValid ||
-      contentValue.length < 10
+      getValues("content").length < 10 ||
+      !discordId
     );
-  };
+  }
 
   function handleOpenChange(open: boolean) {
     setDialogOpen(open);
@@ -261,23 +258,16 @@ export function CreateCadreCandidates() {
               <Button
                 type="submit"
                 variant="outline"
-                className={`flex w-full items-center justify-center border border-blue-500 bg-blue-500/20 py-5 text-sm font-semibold text-blue-500 hover:bg-blue-700 ${
-                  handleDisableState() ? "cursor-not-allowed opacity-50" : ""
-                }`}
-                disabled={handleDisableState()}
+                className={cn(
+                  "flex w-full items-center justify-center border border-blue-500 bg-blue-500/20 py-5 text-sm font-semibold text-blue-500 hover:bg-blue-600/20 hover:text-blue-400",
+                  handleDisableState() ? "cursor-not-allowed opacity-50" : "",
+                )}
               >
                 <Icons.PaperPlaneSend />
                 {createCadreCandidateMutation.isPending
                   ? "Waiting for Signature..."
-                  : isSaving
-                    ? "Saving Discord info..."
-                    : "Submit Application"}
+                  : "Submit Application"}
               </Button>
-              {!discordId && selectedAccount.address && (
-                <p className="-mt-3 text-sm text-yellow-500">
-                  Please validate your Discord account to continue.
-                </p>
-              )}
             </form>
           </Form>
         </div>
