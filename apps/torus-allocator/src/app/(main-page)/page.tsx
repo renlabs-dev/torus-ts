@@ -1,20 +1,22 @@
-import { AgentContentList } from "../_components/agent-content-list";
-import { Suspense } from "react";
+import { AgentItemCard } from "../_components/agent-item-card";
+import { api } from "~/trpc/server";
 
-export default function Page() {
+export default async function Page() {
+  const agents = await api.agent.all();
+
   return (
-    <main className="flex flex-col items-center justify-center border-t pb-12">
-      <div className="mx-auto w-full max-w-screen-xl px-4">
-        <main className="mx-auto min-w-full py-10 text-white">
-          <div className="flex w-full flex-col justify-around gap-3 md:gap-6">
-            <div className="flex w-full flex-col">
-              <Suspense fallback={<div>Loading...</div>}>
-                <AgentContentList />
-              </Suspense>
-            </div>
-          </div>
-        </main>
-      </div>
-    </main>
+    <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+      {agents.length === 0 ? <p>No agents found.</p> : null}
+      {agents.map((agent) => (
+        <AgentItemCard
+          id={agent.id}
+          key={agent.id}
+          name={agent.name ?? "<MISSING_NAME>"}
+          agentKey={agent.key}
+          metadataUri={agent.metadataUri}
+          registrationBlock={agent.registrationBlock}
+        />
+      ))}
+    </div>
   );
 }

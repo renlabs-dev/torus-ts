@@ -27,17 +27,6 @@ import { useEffect, useState } from "react";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
-interface AgentCardProps {
-  id: number;
-  name: string;
-  agentKey: string;
-  metadataUri: string | null;
-  percentage?: number | null;
-  registrationBlock?: number | null;
-  isDelegated?: boolean;
-  globalWeightPerc?: number;
-}
-
 interface SocialItem {
   name: string;
   href: string;
@@ -105,6 +94,14 @@ const useBlobUrl = (blob: Blob | Nullish) => {
 
   return url;
 };
+
+interface AgentCardProps {
+  id: number;
+  name: string;
+  agentKey: string;
+  metadataUri: string | null;
+  registrationBlock?: number | null;
+}
 
 export function AgentItem(props: Readonly<AgentCardProps>) {
   const { agentKey, metadataUri } = props;
@@ -224,7 +221,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
                     className={`flex items-center gap-1.5 text-xs font-semibold`}
                   >
                     <Globe size={14} />
-                    {Math.round((props.globalWeightPerc ?? 0) * 100)}%
+                    {Math.round(0 * 100)}%
                   </Label>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
@@ -273,7 +270,7 @@ export function AgentItem(props: Readonly<AgentCardProps>) {
           <div className="mt-4">
             <Label className="absolute mb-3 flex items-center gap-1.5 text-xs font-semibold">
               Your current allocation:{" "}
-              <span className="text-cyan-500">{props.percentage}%</span>
+              <span className="text-cyan-500">{2}%</span>
             </Label>
 
             <Slider
