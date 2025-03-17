@@ -42,7 +42,7 @@ export function useDiscordInfoForm(
         toast({
           title: "Uh oh! Something went wrong.",
           description:
-            err.message ?? "An unexpected error occurred. Please try again.",
+            err.message || "An unexpected error occurred. Please try again.",
         });
       },
     });
