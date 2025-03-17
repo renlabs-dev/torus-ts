@@ -1,7 +1,7 @@
 "use client";
 
 import DiscordLogin from "../discord-auth-button";
-import { zodResolver } from "@hookform/resolvers/zod";
+import type { AppRouter } from "@torus-ts/api";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -22,30 +22,19 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
+import type { inferProcedureInput } from "@trpc/server";
 import { useDiscordInfoForm } from "hooks/use-discord-info";
+import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
 const MAX_CONTENT_CHARACTERS = 500;
-// == Manage Cadre Candidate Schema ==
-const createCadreCandidateSchema = z.object({
-  discordId: z
-    .string()
-    .min(17, "Please validate your Discord Account to continue.")
-    .max(20),
-  content: z
-    .string()
-    .min(10, "Content must be at least 10 characters.")
-    .max(
-      MAX_CONTENT_CHARACTERS,
-      `Content must be at most ${MAX_CONTENT_CHARACTERS} characters`,
-    ),
-});
 
-type CreateCadreCandidateFormData = z.infer<typeof createCadreCandidateSchema>;
+type CreateCadreCandidateFormData = NonNullable<
+  inferProcedureInput<AppRouter["cadreCandidate"]["create"]>
+>;
 
 export function CreateCadreCandidates() {
   const {
@@ -58,7 +47,6 @@ export function CreateCadreCandidates() {
   const [discordId, setDiscordId] = React.useState<string | null>(null);
   const [userName, setUserName] = React.useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const { saveDiscordInfo } = useDiscordInfoForm(
     discordId,
@@ -67,13 +55,33 @@ export function CreateCadreCandidates() {
   );
 
   const cadreForm = useForm<CreateCadreCandidateFormData>({
-    resolver: zodResolver(createCadreCandidateSchema),
     defaultValues: {
       discordId: "",
       content: "",
     },
     mode: "onChange",
   });
+
+  // == Handle the dialog state ==
+  const searchParams = useSearchParams();
+
+  const [dialogOpen, setDialogOpen] = React.useState(
+    searchParams.get("dialog") === "curator-apply",
+  );
+
+  React.useEffect(() => {
+    if (dialogOpen) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("dialog", "curator-apply");
+      window.history.pushState({}, "", url);
+    } else {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("dialog");
+      window.history.pushState({}, "", url);
+    }
+  }, [dialogOpen]);
+
+  // =================================
 
   // Set the discordId in the cadreForm when it changes
   React.useEffect(() => {
@@ -133,6 +141,9 @@ export function CreateCadreCandidates() {
   const remainingChars = MAX_CONTENT_CHARACTERS - (contentValue.length || 0);
 
   const onSubmit = (data: CreateCadreCandidateFormData) => {
+    if (!validateAndSubmit()) {
+      return;
+    }
     if (!selectedAccount.address) {
       toast({
         title: "Uh oh! Something went wrong.",
@@ -163,7 +174,9 @@ export function CreateCadreCandidates() {
 
   // Function to prevent form submission when clicking Discord buttons
   const preventFormSubmission = () => {
-    console.log("Preventing form submission");
+    const url = new URL(window.location.href);
+    url.searchParams.set("dialog", "curator-apply");
+    window.history.pushState({}, "", url);
   };
 
   function handleDisableState() {
@@ -176,6 +189,29 @@ export function CreateCadreCandidates() {
 
   function handleOpenChange(open: boolean) {
     setDialogOpen(open);
+  }
+
+  // == Handle errors when you either
+  // 1. Do not login your discord account
+  // 2. Did not type in the content
+  function validateAndSubmit(): boolean {
+    if (!discordId) {
+      cadreForm.setError("discordId", {
+        type: "manual",
+        message: "Please log in with Discord first",
+      });
+      return false;
+    }
+
+    // Check for content length
+    if (getValues("content").length < 10) {
+      cadreForm.setError("content", {
+        type: "manual",
+        message: "Content must be at least 10 characters",
+      });
+      return false;
+    }
+    return true;
   }
 
   return (
@@ -256,14 +292,19 @@ export function CreateCadreCandidates() {
               />
 
               <Button
-                type="submit"
+                type="button"
+                onClick={() => {
+                  if (validateAndSubmit()) {
+                    void handleSubmit(onSubmit)();
+                  }
+                }}
                 variant="outline"
                 className={cn(
                   "flex w-full items-center justify-center border border-blue-500 bg-blue-500/20 py-5 text-sm font-semibold text-blue-500 hover:bg-blue-600/20 hover:text-blue-400",
                   handleDisableState() ? "cursor-not-allowed opacity-50" : "",
                 )}
               >
-                <Icons.PaperPlaneSend />
+                <Icons.Send />
                 {createCadreCandidateMutation.isPending
                   ? "Waiting for Signature..."
                   : "Submit Application"}
