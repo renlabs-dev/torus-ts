@@ -1,5 +1,6 @@
 "use client";
 
+import { SkeletonAgentCardFooter } from "./agent-card-skeleton-loader";
 import { useTorus } from "@torus-ts/torus-provider";
 import { CardFooter } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
@@ -23,7 +24,7 @@ export function AgentCardFooter(props: Readonly<AgentCardFooterProps>) {
     setPercentageChange,
     removeZeroPercentageAgents,
   } = useDelegateAgentStore();
-  const { selectedAccount } = useTorus();
+  const { selectedAccount, isInitialized } = useTorus();
 
   const currentPercentage = getAgentPercentage(props.agentKey);
 
@@ -55,17 +56,22 @@ export function AgentCardFooter(props: Readonly<AgentCardFooterProps>) {
     removeZeroPercentageAgents();
   };
 
+  if (!isInitialized) {
+    return <SkeletonAgentCardFooter />;
+  }
+
   return (
     <CardFooter className="mt-4 flex justify-between">
       <Label className="absolute mb-3 flex items-center gap-1.5 pb-1 text-xs font-semibold">
-        Your current allocation: <span className="text-cyan-500">{4}%</span>
+        Your current allocation:{" "}
+        <span className="text-cyan-500">{currentPercentage}%</span>
       </Label>
 
       <Slider
         value={[currentPercentage]}
         onValueChange={handlePercentageChange}
         max={100}
-        step={1}
+        step={0.1}
         className="relative z-30 mt-6 py-1"
         disabled={!selectedAccount?.address}
       />

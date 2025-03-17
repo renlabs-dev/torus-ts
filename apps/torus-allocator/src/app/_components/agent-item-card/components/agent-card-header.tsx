@@ -1,4 +1,8 @@
+"use client";
+
+import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
 import { buildSocials, SocialsInfo } from "./socials-info";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
@@ -9,6 +13,8 @@ import {
 } from "@torus-ts/ui/components/hover-card";
 import { Icons } from "@torus-ts/ui/components/icons";
 import { Label } from "@torus-ts/ui/components/label";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Cuboid, Globe, IdCard } from "lucide-react";
 import Image from "next/image";
@@ -21,12 +27,15 @@ interface AgentCardHeaderProps {
   agentKey: string;
   metadataUri: string | null;
   registrationBlock: number | null;
+  networkAllocation: number | undefined;
 }
 
 export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
+  const { isInitialized } = useTorus();
   const { originalAgents, delegatedAgents } = useDelegateAgentStore();
 
-  const { data: metadataResult } = useQueryAgentMetadata(props.metadataUri);
+  const { data: metadataResult, isLoading: isMetadataLoading } =
+    useQueryAgentMetadata(props.metadataUri);
 
   const metadata = metadataResult?.metadata;
   const socialsList = buildSocials(metadata?.socials ?? {}, metadata?.website);
@@ -43,6 +52,10 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
   const isAgentSelected = originalAgents.some(
     (a) => a.address === props.agentKey,
   );
+
+  if (isMetadataLoading) {
+    return <SkeletonAgentCardHeader />;
+  }
 
   return (
     <CardHeader>
@@ -66,11 +79,20 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
         <div className="mt-1 flex h-full w-full flex-col justify-between gap-3">
           <div className="flex w-full items-center justify-between gap-4">
             <SocialsInfo socials={socialsList} />
-            <Badge
-              className={`${isAgentSelected ? "border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10" : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/10"} ${isAgentDelegated ? "visible" : "invisible"}`}
-            >
-              {!isAgentSelected ? "Selected" : "Delegated"}
-            </Badge>
+            {isInitialized ? (
+              <Badge
+                className={cn(
+                  isAgentSelected
+                    ? "border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10"
+                    : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/10",
+                  isAgentDelegated ? "visible" : "invisible",
+                )}
+              >
+                {!isAgentSelected ? "Selected" : "Delegated"}
+              </Badge>
+            ) : (
+              <Skeleton className="h-6 w-24 rounded-full" />
+            )}
           </div>
           <h2
             className={`w-fit text-ellipsis text-base font-semibold md:max-w-fit`}
@@ -84,7 +106,9 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
                   className={`flex items-center gap-1.5 text-xs font-semibold`}
                 >
                   <Globe size={14} />
-                  {Math.round(2 * 100)}%
+                  {props.networkAllocation !== undefined
+                    ? `${Math.round(props.networkAllocation * 100)}%`
+                    : "0%"}
                 </Label>
               </HoverCardTrigger>
               <HoverCardContent className="w-80">
@@ -111,7 +135,7 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
             <CopyButton
               variant="link"
               copy={props.agentKey}
-              className={`text-foreground-muted hover:text-muted-foreground flex items-center gap-1.5 px-0 hover:no-underline`}
+              className={`text-foreground-muted hover:text-muted-foreground flex items-center gap-1.5 px-0 font-bold hover:no-underline`}
             >
               <IdCard size={14} />
               <span className="text-xs">{smallAddress(props.agentKey, 4)}</span>
