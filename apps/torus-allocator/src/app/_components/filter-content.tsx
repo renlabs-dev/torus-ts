@@ -1,65 +1,45 @@
-"use client";
-
+import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { SearchIcon } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback } from "react";
 
 interface FilterProps {
-  disabled: boolean;
+  defaultValue: string;
 }
 
-export const Filter = (props: FilterProps) => {
-  const { disabled } = props;
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams],
-  );
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const search = e.target.value;
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (!search) {
-      params.delete("search");
-      return router.push(`/?${params.toString()}`);
-    }
-
-    const query = createQueryString("search", search);
-
-    router.push(`/?${query}`);
-  };
-
+export const Filter = ({ defaultValue = "" }: FilterProps) => {
   return (
-    <Label
-      htmlFor="search-bar"
-      className="rounded-radius flex w-full items-center justify-center border pl-3"
-    >
-      <SearchIcon size={16} />
-      <Input
-        id="search-bar"
-        disabled={disabled}
-        onChange={handleSearchChange}
-        placeholder="Search"
-        className="border-none focus-visible:ring-0"
-      />
-    </Label>
-  );
-};
+    <form action="/" method="get" className="w-full">
+      <div className="flex w-full items-center gap-2">
+        <Label
+          htmlFor="search-bar"
+          className="rounded-radius flex w-full max-w-sm flex-1 items-center justify-center border pl-3"
+        >
+          <SearchIcon size={16} className="text-muted-foreground" />
+          <Input
+            id="search-bar"
+            name="search"
+            placeholder="Search agents by name or key"
+            className="border-none focus-visible:ring-0"
+            defaultValue={defaultValue}
+          />
+          <input type="hidden" name="page" value="1" />
+        </Label>
 
-export const FilterContent = (props: FilterProps) => {
-  return (
-    <Suspense>
-      <Filter disabled={props.disabled} />
-    </Suspense>
+        <Button type="submit" variant="outline" className="py-[1.3em]">
+          Search
+        </Button>
+
+        {defaultValue && (
+          <div className="text-sm">
+            Showing results for:{" "}
+            <span className="font-semibold">{defaultValue}</span>
+            <a href="/" className="ml-2 text-blue-500 hover:underline">
+              Clear
+            </a>
+          </div>
+        )}
+      </div>
+    </form>
   );
 };

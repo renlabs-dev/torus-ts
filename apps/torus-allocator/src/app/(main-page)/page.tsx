@@ -1,4 +1,5 @@
 import { AgentItemCard } from "../_components/agent-item-card";
+import { Filter } from "../_components/filter-content";
 import { PaginationNav } from "../_components/pagination-nav";
 import { api } from "~/trpc/server";
 
@@ -51,8 +52,13 @@ export default function Page({
 }) {
   const pageParam = searchParams.page;
   const page = pageParam ? parseInt(pageParam) : 1;
-
   const search = searchParams.search ?? null;
 
-  return <FetchAgentItemCards page={page} search={search} />;
+  return (
+    <div className="flex flex-col space-y-6">
+      <Filter defaultValue={search ?? ""} />
+
+      <FetchAgentItemCards page={page} search={search} />
+    </div>
+  );
 }
