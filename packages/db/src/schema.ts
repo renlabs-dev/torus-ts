@@ -349,7 +349,6 @@ export const cadreSchema = createTable(
 
     userKey: ss58Address("user_key").notNull().unique(),
     discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
-      .references(() => userDiscordInfoSchema.discordId)
       .notNull()
       .unique(),
 
@@ -376,7 +375,6 @@ export const cadreCandidateSchema = createTable(
 
     userKey: ss58Address("user_key").notNull().unique(),
     discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
-      .references(() => userDiscordInfoSchema.discordId)
       .notNull()
       .unique(),
     candidacyStatus: candidacyStatus("candidacy_status")

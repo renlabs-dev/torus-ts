@@ -22,6 +22,20 @@
       "when": 1741889641698,
       "tag": "0004_lovely_jocasta",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1742321166225,
+      "tag": "0006_living_raider",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1742321231572,
+      "tag": "0007_seed-discord",
+      "breakpoints": true
     }
   ]
 }
