@@ -39,12 +39,12 @@ deployment:
     # OAuth environment variables
     DISCORD_REDIRECT_URL:
       valueFrom:
-        secretKeyRef:
+        configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: discord_redirect_url
     NEXT_AUTH_URL:
       valueFrom:
-        secretKeyRef:
+        configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: next_auth_url
 
