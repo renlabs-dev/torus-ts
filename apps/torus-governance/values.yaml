@@ -6,18 +6,49 @@ deployment:
     app: torus-governance
 
   env:
+    # SECRET KEYS
     JWT_SECRET:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: jwt_secret
+    DISCORD_CLIENT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: discord_client_secret
+    NEXTAUTH_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: nextauth_secret
+
+    # DISCORD
+    DISCORD_CLIENT_ID:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: discord_client_id
+
+    #  URLS
     POSTGRES_URL:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: torus_webapps_db_url
+    NEXT_AUTH_URL:
+      valueFrom:
+        secretKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_auth_url
+    DISCORD_REDIRECT_URL:
+      valueFrom:
+        secretKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: discord_redirect_url
+
+    # PUBLIC ADDRESSES
     NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS:
       valueFrom:
         configMapKeyRef:
-          name: '{{ template "application.name" . }}-config'
           key: torus_allocator_address

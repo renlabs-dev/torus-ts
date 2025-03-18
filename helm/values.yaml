@@ -36,6 +36,33 @@ deployment:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: pinata_jwt
 
+    # OAuth environment variables
+    DISCORD_CLIENT_ID:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: discord_client_id
+    DISCORD_CLIENT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: discord_client_secret
+    DISCORD_REDIRECT_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: discord_redirect_url
+    NEXTAUTH_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: nextauth_url
+    NEXTAUTH_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: nextauth_secret
+
   startupProbe:
     enabled: true
     failureThreshold: 30
@@ -107,3 +134,6 @@ configMap:
       next_public_cache_provider_url: "{{ .Values.cacheUrl }}"
       next_public_chain_env: "{{ .Values.chainEnv }}"
       torus_allocator_address: "5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"
+      # OAuth config variables
+      discord_redirect_url: "https://{{ .Values.ingress.host }}/?view=dao-portal"
+      nextauth_url: "https://{{ .Values.ingress.host }}"
