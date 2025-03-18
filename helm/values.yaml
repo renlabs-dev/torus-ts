@@ -37,31 +37,16 @@ deployment:
           key: pinata_jwt
 
     # OAuth environment variables
-    DISCORD_CLIENT_ID:
-      valueFrom:
-        secretKeyRef:
-          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: discord_client_id
-    DISCORD_CLIENT_SECRET:
-      valueFrom:
-        secretKeyRef:
-          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: discord_client_secret
     DISCORD_REDIRECT_URL:
       valueFrom:
-        configMapKeyRef:
+        secretKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: discord_redirect_url
-    NEXTAUTH_URL:
-      valueFrom:
-        configMapKeyRef:
-          name: '{{ template "application.name" . }}-config'
-          key: nextauth_url
-    NEXTAUTH_SECRET:
+    NEXT_AUTH_URL:
       valueFrom:
         secretKeyRef:
-          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: nextauth_secret
+          name: '{{ template "application.name" . }}-config'
+          key: next_auth_url
 
   startupProbe:
     enabled: true
