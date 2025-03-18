@@ -27,7 +27,7 @@ interface AgentCardHeaderProps {
   agentKey: string;
   metadataUri: string | null;
   registrationBlock: number | null;
-  networkAllocation: number | undefined;
+  networkAllocation: number | null;
 }
 
 export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
@@ -106,7 +106,7 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
                   className={`flex items-center gap-1.5 text-xs font-semibold`}
                 >
                   <Globe size={14} />
-                  {props.networkAllocation !== undefined
+                  {props.networkAllocation !== null
                     ? `${Math.round(props.networkAllocation * 100)}%`
                     : "0%"}
                 </Label>

@@ -30,6 +30,7 @@ async function FetchAgentItemCards({
             agentKey={agent.key}
             metadataUri={agent.metadataUri}
             registrationBlock={agent.registrationBlock}
+            networkAllocation={agent.percComputedWeight}
           />
         ))}
       </div>

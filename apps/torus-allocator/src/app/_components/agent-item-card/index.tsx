@@ -4,7 +4,6 @@ import { AgentCardHeader } from "./components/agent-card-header";
 import { CardHoverEffect } from "./components/card-hover-effect";
 import { Card } from "@torus-ts/ui/components/card";
 import Link from "next/link";
-import { api } from "~/trpc/server";
 
 interface AgentCardProps {
   id: number;
@@ -12,20 +11,15 @@ interface AgentCardProps {
   agentKey: string;
   metadataUri: string | null;
   registrationBlock: number | null;
+  networkAllocation: number | null;
 }
-export async function AgentItemCard(props: Readonly<AgentCardProps>) {
-  const computedAgentWeight = await api.computedAgentWeight.byAgentKey({
-    agentKey: props.agentKey,
-  });
 
+export function AgentItemCard(props: Readonly<AgentCardProps>) {
   return (
     <Card className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
       <CardHoverEffect />
 
-      <AgentCardHeader
-        {...props}
-        networkAllocation={computedAgentWeight?.percComputedWeight}
-      />
+      <AgentCardHeader {...props} networkAllocation={props.networkAllocation} />
       <AgentCardContent metadataUri={props.metadataUri} />
       <AgentCardFooter {...props} />
 

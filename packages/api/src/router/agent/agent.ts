@@ -1,6 +1,10 @@
 import { publicProcedure } from "../../trpc";
 import { eq, and, max, isNull, inArray, sql } from "@torus-ts/db";
-import { agentSchema, penalizeAgentVotesSchema } from "@torus-ts/db/schema";
+import {
+  agentSchema,
+  penalizeAgentVotesSchema,
+  computedAgentWeightSchema,
+} from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
@@ -26,6 +30,13 @@ export const agentRouter = {
       const { page, limit, search } = input;
       const offset = (page - 1) * limit;
 
+      const lastBlockQuery = ctx.db
+        .select({ value: max(computedAgentWeightSchema.atBlock) })
+        .from(computedAgentWeightSchema);
+
+      const lastBlockResult = await lastBlockQuery;
+      const lastBlock = lastBlockResult[0]?.value;
+
       let whereClause = and(
         eq(agentSchema.isWhitelisted, true),
         isNull(agentSchema.deletedAt),
@@ -38,12 +49,37 @@ export const agentRouter = {
         );
       }
 
-      const agents = await ctx.db.query.agentSchema.findMany({
-        where: whereClause,
-        limit: limit,
-        offset: offset,
-        orderBy: [sql`${agentSchema.id} asc`],
-      });
+      const agents = await ctx.db
+        .select({
+          id: agentSchema.id,
+          name: agentSchema.name,
+          key: agentSchema.key,
+          metadataUri: agentSchema.metadataUri,
+          apiUrl: agentSchema.apiUrl,
+          registrationBlock: agentSchema.registrationBlock,
+          isWhitelisted: agentSchema.isWhitelisted,
+          atBlock: agentSchema.atBlock,
+          percComputedWeight: computedAgentWeightSchema.percComputedWeight,
+          computedWeight: computedAgentWeightSchema.computedWeight,
+        })
+        .from(agentSchema)
+        .leftJoin(
+          computedAgentWeightSchema,
+          and(
+            eq(agentSchema.key, computedAgentWeightSchema.agentKey),
+            lastBlock
+              ? eq(computedAgentWeightSchema.atBlock, lastBlock)
+              : sql`1=1`,
+            isNull(computedAgentWeightSchema.deletedAt),
+          ),
+        )
+        .where(whereClause)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(
+          sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`,
+        );
+
       const countResult = await ctx.db
         .select({ count: sql`count(*)` })
         .from(agentSchema)
