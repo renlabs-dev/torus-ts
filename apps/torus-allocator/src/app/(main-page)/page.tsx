@@ -1,6 +1,7 @@
 import { AgentItemCard } from "../_components/agent-item-card";
 import { Filter } from "../_components/filter-content";
 import { PaginationNav } from "../_components/pagination-nav";
+import { ViewSelector } from "../_components/view-selector";
 import { api } from "~/trpc/server";
 
 const ITEMS_PER_PAGE = 9;
@@ -55,7 +56,10 @@ export default async function Page(props: {
 
   return (
     <div className="flex flex-col space-y-6">
-      <Filter defaultValue={search ?? ""} />
+      <div className="flex w-full items-center justify-between gap-4">
+        <Filter defaultValue={search ?? ""} />
+        <ViewSelector />
+      </div>
 
       <FetchAgentItemCards page={page} search={search} />
     </div>
