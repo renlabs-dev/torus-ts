@@ -31,7 +31,7 @@ async function FetchAgentItemCards({
             agentKey={agent.key}
             metadataUri={agent.metadataUri}
             registrationBlock={agent.registrationBlock}
-            networkAllocation={agent.percComputedWeight}
+            globalWeightPerc={agent.percComputedWeight}
           />
         ))}
       </div>
@@ -45,11 +45,10 @@ async function FetchAgentItemCards({
   );
 }
 
-export default function Page({
-  searchParams,
-}: {
-  searchParams: { page?: string; search?: string };
+export default async function Page(props: {
+  searchParams: Promise<{ page?: string; search?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const pageParam = searchParams.page;
   const page = pageParam ? parseInt(pageParam) : 1;
   const search = searchParams.search ?? null;
