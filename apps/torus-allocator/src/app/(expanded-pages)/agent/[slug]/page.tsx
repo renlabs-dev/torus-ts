@@ -69,7 +69,7 @@ export default async function AgentPage({
         >
           <Link
             href="/"
-            className="animate-fade-left mb-4 flex items-center text-white transition duration-200"
+            className="mb-4 flex items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
             Go back to agents list
@@ -77,11 +77,11 @@ export default async function AgentPage({
         </Button>
 
         <div className="mb-12 flex flex-col gap-6 md:flex-row">
-          <div className="animate-fade-down animate-delay-500 mb-12 flex flex-col gap-6 md:w-2/3">
+          <div className="mb-12 flex flex-col gap-6 md:w-2/3">
             <Card className="mb-6 flex flex-col gap-6 md:flex-row">
               {icon && <BlobImage blob={icon} alt="My Blob Image" />}
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
-                <h1 className="animate-fade-right text-start text-3xl font-semibold">
+                <h1 className="text-start text-3xl font-semibold">
                   {mdl.name}
                 </h1>
 
@@ -93,7 +93,7 @@ export default async function AgentPage({
 
             <MarkdownView source={metadata.description} />
           </div>
-          <div className="animate-fade-down animate-delay-500 flex flex-col gap-6 md:w-1/3">
+          <div className="flex flex-col gap-6 md:w-1/3">
             <AgentInfoCard agent={mdl} />
             <Card className="flex items-center justify-between p-6">
               <p>Agent Links:</p>
