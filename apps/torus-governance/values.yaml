@@ -36,16 +36,6 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: torus_webapps_db_url
-    NEXT_AUTH_URL:
-      valueFrom:
-        secretKeyRef:
-          name: '{{ template "application.name" . }}-config'
-          key: next_auth_url
-    DISCORD_REDIRECT_URL:
-      valueFrom:
-        secretKeyRef:
-          name: '{{ template "application.name" . }}-config'
-          key: discord_redirect_url
 
     # PUBLIC ADDRESSES
     NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS:
