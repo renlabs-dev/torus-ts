@@ -1,4 +1,4 @@
-// File: components/CustomPagination.tsx
+"use client";
 
 import {
   Pagination,
@@ -9,13 +9,14 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@torus-ts/ui/components/pagination";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 interface CustomPaginationProps {
   currentPage: number;
   totalItems: number;
   itemsPerPage: number;
-  search: string | null;
+  search: string | null | undefined;
   viewType: string | null;
   onPageChange: (page: number) => void;
 }
@@ -28,6 +29,7 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
   viewType,
   onPageChange,
 }) => {
+  const router = useRouter();
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   if (totalPages <= 1) return null; // Don't show pagination if only one page
@@ -51,7 +53,14 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
 
   const handlePageClick = (page: number) => (e: React.MouseEvent) => {
     e.preventDefault();
-    onPageChange(page);
+
+    // If we're in server-side rendering mode (onPageChange is a noop function)
+    if (onPageChange.toString() === "() => {}") {
+      router.push(getPageUrl(page));
+    } else {
+      // For client-side pagination
+      onPageChange(page);
+    }
   };
 
   const pages = [];
@@ -73,12 +82,14 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
   return (
     <Pagination className="my-10">
       <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href={getPageUrl(currentPage - 1)}
-            onClick={handlePageClick(currentPage - 1)}
-          />
-        </PaginationItem>
+        {currentPage > 1 && (
+          <PaginationItem>
+            <PaginationPrevious
+              href={getPageUrl(currentPage - 1)}
+              onClick={handlePageClick(currentPage - 1)}
+            />
+          </PaginationItem>
+        )}
 
         {startPage > 1 && (
           <>
@@ -111,12 +122,14 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
           </>
         )}
 
-        <PaginationItem>
-          <PaginationNext
-            href={getPageUrl(currentPage + 1)}
-            onClick={handlePageClick(currentPage + 1)}
-          />
-        </PaginationItem>
+        {currentPage < totalPages && (
+          <PaginationItem>
+            <PaginationNext
+              href={getPageUrl(currentPage + 1)}
+              onClick={handlePageClick(currentPage + 1)}
+            />
+          </PaginationItem>
+        )}
       </PaginationContent>
     </Pagination>
   );

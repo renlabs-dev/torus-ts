@@ -1,5 +1,5 @@
 import { publicProcedure } from "../../trpc";
-import { eq, and, max, isNull, inArray } from "@torus-ts/db";
+import { eq, and, max, isNull, inArray, sql } from "@torus-ts/db";
 import { agentSchema, penalizeAgentVotesSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
@@ -14,6 +14,55 @@ export const agentRouter = {
       ),
     });
   }),
+  paginated: publicProcedure
+    .input(
+      z.object({
+        page: z.number().int().positive().default(1),
+        limit: z.number().int().positive().default(9),
+        search: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { page, limit, search } = input;
+      const offset = (page - 1) * limit;
+
+      let whereClause = and(
+        eq(agentSchema.isWhitelisted, true),
+        isNull(agentSchema.deletedAt),
+      );
+
+      if (search) {
+        whereClause = and(
+          whereClause,
+          sql`(${agentSchema.name} ILIKE ${`%${search}%`} OR ${agentSchema.key} ILIKE ${`%${search}%`})`,
+        );
+      }
+
+      const agents = await ctx.db.query.agentSchema.findMany({
+        where: whereClause,
+        limit: limit,
+        offset: offset,
+        orderBy: [sql`${agentSchema.id} asc`],
+      });
+      const countResult = await ctx.db
+        .select({ count: sql`count(*)` })
+        .from(agentSchema)
+        .where(whereClause);
+
+      const totalCount = Number(countResult[0]?.count ?? 0);
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        agents,
+        pagination: {
+          totalCount,
+          totalPages,
+          currentPage: page,
+          pageSize: limit,
+          hasMore: page < totalPages,
+        },
+      };
+    }),
   byId: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => {
