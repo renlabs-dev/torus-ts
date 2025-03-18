@@ -1,5 +1,3 @@
-import React from 'react';
-import Link from 'next/link';
 import {
   Pagination,
   PaginationContent,
@@ -9,6 +7,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@torus-ts/ui/components/pagination";
+import React from "react";
 
 interface PaginationNavProps {
   currentPage: number;
@@ -16,8 +15,12 @@ interface PaginationNavProps {
   search: string | null | undefined;
 }
 
-export function PaginationNav({ currentPage, totalPages, search }: PaginationNavProps) {
-  if (totalPages <= 1) return null; // Don't show pagination if only one page
+export function PaginationNav({
+  currentPage,
+  totalPages,
+  search,
+}: PaginationNavProps) {
+  if (totalPages <= 1) return null;
 
   const maxVisiblePages = 3;
   const halfVisible = Math.floor(maxVisiblePages / 2);
@@ -42,7 +45,7 @@ export function PaginationNav({ currentPage, totalPages, search }: PaginationNav
         <PaginationLink href={getPageUrl(i)} isActive={currentPage === i}>
           {i}
         </PaginationLink>
-      </PaginationItem>
+      </PaginationItem>,
     );
   }
 

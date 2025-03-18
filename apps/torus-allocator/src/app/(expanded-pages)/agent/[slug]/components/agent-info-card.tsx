@@ -1,6 +1,6 @@
 "use client";
 
-import { useWeeklyUsdCalculation } from "../../hooks/use-weekly-usd";
+import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";

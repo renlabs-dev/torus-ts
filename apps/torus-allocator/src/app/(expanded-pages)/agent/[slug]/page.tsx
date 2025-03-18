@@ -1,3 +1,4 @@
+import { AgentInfoCard } from "./components/agent-info-card";
 import { fetchAgentMetadata } from "@torus-ts/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
@@ -7,10 +8,9 @@ import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AgentInfoCard } from "~/app/_components/agent-info-card";
+import { ExpandedViewSocials } from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
 import BlobImage from "~/app/_components/blob-image";
 import { DelegateModuleWeight } from "~/app/_components/delegate-module-weight";
-import { ExpandedViewSocials } from "~/app/_components/expanded-view-socials";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 
