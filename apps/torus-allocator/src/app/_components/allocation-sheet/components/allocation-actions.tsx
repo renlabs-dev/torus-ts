@@ -206,16 +206,16 @@ export function AllocationActions(props: MenuTriggerProps) {
         <div className="flex flex-row gap-2">
           <Button
             onClick={handleAutoCompletePercentage}
-            className="w-1/2 border-purple-500 bg-purple-500/20 font-bold text-purple-500 hover:bg-purple-500/30 hover:text-purple-500"
+            className="w-1/2 border-teal-500 bg-teal-500/20 font-bold text-teal-500 hover:bg-teal-500/30 hover:text-teal-500"
             disabled={totalPercentage === 100 || delegatedAgents.length === 0}
             variant="outline"
           >
-            Complete 100%
+            Complete to 100%
           </Button>
 
           <Button
             onClick={handleRemoveAllWeight}
-            className="w-1/2 border-red-500 bg-red-500/20 font-bold text-red-500 hover:bg-red-500/30 hover:text-red-500"
+            className="w-1/2 border-rose-500 bg-rose-500/20 font-bold text-rose-500 hover:bg-rose-500/30 hover:text-rose-500"
             disabled={!hasItemsToClear}
             variant="outline"
           >

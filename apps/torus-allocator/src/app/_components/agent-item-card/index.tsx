@@ -4,7 +4,6 @@ import { AgentCardHeader } from "./components/agent-card-header";
 import { CardHoverEffect } from "./components/card-hover-effect";
 import { Card } from "@torus-ts/ui/components/card";
 import Link from "next/link";
-import { Suspense } from "react";
 import { api } from "~/trpc/server";
 
 interface AgentCardProps {
@@ -23,15 +22,13 @@ export async function AgentItemCard(props: Readonly<AgentCardProps>) {
     <Card className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
       <CardHoverEffect />
 
-      <Suspense fallback={<div>Loading bitches</div>}>
-        <AgentCardHeader
-          {...props}
-          networkAllocation={computedAgentWeight?.percComputedWeight}
-        />
-      </Suspense>
-
+      <AgentCardHeader
+        {...props}
+        networkAllocation={computedAgentWeight?.percComputedWeight}
+      />
       <AgentCardContent metadataUri={props.metadataUri} />
       <AgentCardFooter {...props} />
+
       <Link href={`agent/${props.agentKey}`} className="absolute inset-0">
         <span className="sr-only">Click to view agent details</span>
       </Link>

@@ -14,18 +14,6 @@ export const agentRouter = {
       ),
     });
   }),
-  allPaginated: publicProcedure
-    .input(z.object({ limit: z.number(), offset: z.number() }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.agentSchema.findMany({
-        limit: input.offset,
-        offset: input.limit,
-        where: and(
-          eq(agentSchema.isWhitelisted, true),
-          isNull(agentSchema.deletedAt),
-        ),
-      });
-    }),
   byId: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => {
