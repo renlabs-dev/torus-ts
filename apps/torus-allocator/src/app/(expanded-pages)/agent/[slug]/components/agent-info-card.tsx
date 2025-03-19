@@ -47,10 +47,10 @@ export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
     },
     { label: "Name", value: agent.name ?? "Loading" },
     { label: "At Block", value: agent.atBlock },
-    {
-      label: "Registration Block",
-      value: agent.registrationBlock ?? "Loading",
-    },
+    // {
+    //   label: "Registration Block",
+    //   value: agent.registrationBlock ?? "Loading",
+    // },
     {
       label: "API Endpoint",
       value: agent.apiUrl ? (
