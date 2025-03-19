@@ -28,6 +28,7 @@
     "@uiw/react-markdown-preview": "^5.1.1",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "next-auth": "^4.24.11",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
     "rustie": "catalog:",

@@ -107,3 +107,6 @@ configMap:
       next_public_cache_provider_url: "{{ .Values.cacheUrl }}"
       next_public_chain_env: "{{ .Values.chainEnv }}"
       torus_allocator_address: "5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"
+      # OAuth config variables
+      discord_redirect_url: "https://{{ .Values.ingressHost }}/?view=dao-portal"
+      nextauth_url: "https://{{ .Values.ingressHost }}"

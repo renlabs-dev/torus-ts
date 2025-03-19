@@ -22,6 +22,12 @@ export const envSchema = {
   POSTGRES_URL: z.string().url(),
   PINATA_JWT: z.string(),
   PORT: z.string(),
+
+  // Discord Authentication
+  DISCORD_CLIENT_ID: z.string().nonempty(),
+  DISCORD_CLIENT_SECRET: z.string().nonempty(),
+  DISCORD_REDIRECT_URL: z.string().url(),
+
   /**
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
