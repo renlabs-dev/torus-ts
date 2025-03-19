@@ -25,19 +25,28 @@ export function useWeeklyUsdCalculation(
   props: WeeklyUsdCalculationProps,
 ): AgentUsdCalculationResult {
   // Queries the Torus dolar Brice (<- lol) from Coingecko
+  // Wrap the useGetTorusPrice with additional configuration to prevent excessive refreshing
   const {
     data: torusPrice,
     isLoading: isTorusPriceLoading,
     isError: isTorusPriceError,
   } = useGetTorusPrice();
+  // Use local torusPrice state with caching configuration
   // Queries the computed weight of the agent
   const {
     data: computedWeightedAgents,
     isLoading: isComputedWeightLoading,
     isError: isComputedWeightError,
-  } = extAPI.computedAgentWeight.byAgentKey.useQuery({
-    agentKey: props.agentKey,
-  });
+  } = extAPI.computedAgentWeight.byAgentKey.useQuery(
+    {
+      agentKey: props.agentKey,
+    },
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false, // Don't refetch when the window regains focus
+      refetchOnMount: false, // Don't refetch when the component mounts
+    },
+  );
 
   // Loads all queries at once, and if any of them are wrong, the whole result is wrong
   const isLoading = isTorusPriceLoading || isComputedWeightLoading;

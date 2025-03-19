@@ -9,7 +9,7 @@ import Link from "next/link";
 export default function AgentLoading() {
   return (
     <Container>
-      <div className="mx-auto pb-16 text-white">
+      <div className="animate-fade-up mx-auto pb-16 text-white">
         <Link
           href="/"
           className="animate-fade-left mb-4 flex w-fit items-center gap-1.5 text-white transition duration-200"

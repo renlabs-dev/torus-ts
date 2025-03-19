@@ -58,7 +58,7 @@ export default async function Page(props: {
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row">
-        <Filter defaultValue={search ?? ""} />
+        <Filter defaultValue={search ?? ""} isClientSide={false} />
         <ViewSelector />
       </div>
 

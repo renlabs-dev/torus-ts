@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Pagination,
   PaginationContent,
@@ -7,6 +9,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@torus-ts/ui/components/pagination";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 interface PaginationNavProps {
@@ -20,6 +23,8 @@ export function PaginationNav({
   totalPages,
   search,
 }: PaginationNavProps) {
+  const router = useRouter();
+
   if (totalPages <= 1) return null;
 
   const maxVisiblePages = 3;
@@ -34,15 +39,24 @@ export function PaginationNav({
 
   const getPageUrl = (page: number) => {
     let url = `?page=${page}`;
-    if (search) url += `&search=${search}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
     return url;
+  };
+
+  const handlePageChange = (page: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push(getPageUrl(page));
   };
 
   const pages = [];
   for (let i = startPage; i <= endPage; i++) {
     pages.push(
       <PaginationItem key={i}>
-        <PaginationLink href={getPageUrl(i)} isActive={currentPage === i}>
+        <PaginationLink
+          href={getPageUrl(i)}
+          isActive={currentPage === i}
+          onClick={(e) => handlePageChange(i, e)}
+        >
           {i}
         </PaginationLink>
       </PaginationItem>,
@@ -54,14 +68,22 @@ export function PaginationNav({
       <PaginationContent>
         {currentPage > 1 && (
           <PaginationItem>
-            <PaginationPrevious href={getPageUrl(currentPage - 1)} />
+            <PaginationPrevious
+              href={getPageUrl(currentPage - 1)}
+              onClick={(e) => handlePageChange(currentPage - 1, e)}
+            />
           </PaginationItem>
         )}
 
         {startPage > 1 && (
           <>
             <PaginationItem>
-              <PaginationLink href={getPageUrl(1)}>1</PaginationLink>
+              <PaginationLink
+                href={getPageUrl(1)}
+                onClick={(e) => handlePageChange(1, e)}
+              >
+                1
+              </PaginationLink>
             </PaginationItem>
             {startPage > 2 && (
               <PaginationItem>
@@ -81,7 +103,10 @@ export function PaginationNav({
               </PaginationItem>
             )}
             <PaginationItem>
-              <PaginationLink href={getPageUrl(totalPages)}>
+              <PaginationLink
+                href={getPageUrl(totalPages)}
+                onClick={(e) => handlePageChange(totalPages, e)}
+              >
                 {totalPages}
               </PaginationLink>
             </PaginationItem>
@@ -90,7 +115,10 @@ export function PaginationNav({
 
         {currentPage < totalPages && (
           <PaginationItem>
-            <PaginationNext href={getPageUrl(currentPage + 1)} />
+            <PaginationNext
+              href={getPageUrl(currentPage + 1)}
+              onClick={(e) => handlePageChange(currentPage + 1, e)}
+            />
           </PaginationItem>
         )}
       </PaginationContent>
