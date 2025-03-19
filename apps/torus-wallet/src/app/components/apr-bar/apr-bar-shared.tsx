@@ -1,5 +1,3 @@
-"use client";
-
 interface AppBarLabelProps {
   children: React.ReactNode;
 }
