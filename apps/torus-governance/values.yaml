@@ -41,11 +41,11 @@ deployment:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: discord_redirect_url
-    NEXT_AUTH_URL:
+    NEXTAUTH_URL:
       valueFrom:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
-          key: next_auth_url
+          key: nextauth_url
 
     # PUBLIC ADDRESSES
     NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS:
