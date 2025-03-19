@@ -31,6 +31,7 @@ async function FetchAgentItemCards({
             name={agent.name ?? "<MISSING_NAME>"}
             agentKey={agent.key}
             metadataUri={agent.metadataUri}
+            weightFactor={agent.weightFactor}
             registrationBlock={agent.registrationBlock}
             globalWeightPerc={agent.percComputedWeight}
           />
@@ -56,7 +57,7 @@ export default async function Page(props: {
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex w-full items-center justify-between gap-4">
+      <div className="flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row">
         <Filter defaultValue={search ?? ""} />
         <ViewSelector />
       </div>

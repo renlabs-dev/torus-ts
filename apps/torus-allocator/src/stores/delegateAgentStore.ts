@@ -10,6 +10,8 @@ interface DelegatedAgent {
   percentage: number;
   metadataUri: string | null;
   registrationBlock: number | null;
+  globalWeightPerc: number | null;
+  weightFactor: number | null;
 }
 
 interface DelegateState {

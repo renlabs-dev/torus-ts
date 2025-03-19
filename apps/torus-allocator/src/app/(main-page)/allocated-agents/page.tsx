@@ -41,7 +41,7 @@ export default function AllocatedAgentsPage() {
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex w-full items-center justify-between gap-4">
+      <div className="flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row">
         <Filter isClientSide={true} onClientSearch={handleSearch} />
         <ViewSelector />
       </div>
@@ -61,6 +61,7 @@ export default function AllocatedAgentsPage() {
               metadataUri={agent.metadataUri}
               registrationBlock={agent.registrationBlock}
               globalWeightPerc={2}
+              weightFactor={2}
             />
           ))}
         </div>

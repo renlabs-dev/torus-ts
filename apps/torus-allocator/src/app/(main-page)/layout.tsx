@@ -1,4 +1,5 @@
 import { AgentBanner } from "../_components/agent-banner";
+import { Container } from "@torus-ts/ui/components/container";
 
 export default function RootLayout({
   children,
@@ -6,17 +7,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-full w-full pt-12">
+    <div className="h-full w-full pb-28 pt-12">
       <AgentBanner />
-      <main className="flex flex-col items-center border-t pb-12">
-        <div className="container px-4">
-          <main className="py-10 text-white">
-            <div className="flex flex-col gap-3 md:gap-6">
-              <div className="flex flex-col">{children}</div>
-            </div>
-          </main>
-        </div>
-      </main>
+      <Container>
+        <div className="-mt-16 flex flex-col">{children}</div>
+      </Container>
     </div>
   );
 }

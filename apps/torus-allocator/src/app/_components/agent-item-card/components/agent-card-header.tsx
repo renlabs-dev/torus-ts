@@ -5,7 +5,6 @@ import { buildSocials, SocialsInfo } from "./socials-info";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { CardHeader } from "@torus-ts/ui/components/card";
-import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
   HoverCard,
   HoverCardContent,
@@ -15,11 +14,11 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import { Label } from "@torus-ts/ui/components/label";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { smallAddress } from "@torus-ts/utils/subspace";
-import { Cuboid, Globe, IdCard } from "lucide-react";
+import { Award, Globe } from "lucide-react";
 import Image from "next/image";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
+import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 interface AgentCardHeaderProps {
@@ -28,11 +27,17 @@ interface AgentCardHeaderProps {
   metadataUri: string | null;
   registrationBlock: number | null;
   globalWeightPerc: number | null;
+  weightFactor: number | null;
 }
 
 export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
   const { isInitialized } = useTorus();
   const { originalAgents, delegatedAgents } = useDelegateAgentStore();
+
+  const { isLoading, displayTokensPerWeek } = useWeeklyUsdCalculation({
+    agentKey: props.agentKey,
+    weightFactor: props.weightFactor,
+  });
 
   const { data: metadataResult, isLoading: isMetadataLoading } =
     useQueryAgentMetadata(props.metadataUri);
@@ -75,7 +80,6 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
             <Icons.Logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
           </div>
         )}
-
         <div className="mt-1 flex h-full w-full flex-col justify-between gap-3">
           <div className="flex w-full items-center justify-between gap-4">
             <SocialsInfo socials={socialsList} />
@@ -99,7 +103,7 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
           >
             {title}
           </h2>
-          <div className="relative z-30 flex items-center justify-between">
+          <div className="relative z-30 flex items-center justify-start gap-3">
             <HoverCard>
               <HoverCardTrigger>
                 <Label
@@ -121,25 +125,16 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
             <HoverCard>
               <HoverCardTrigger>
                 <Label
-                  className={`flex items-center gap-1.5 text-xs font-semibold`}
+                  className={`flex items-center gap-1 text-xs font-semibold`}
                 >
-                  <Cuboid size={16} />
-                  {props.registrationBlock}
+                  <Award size={16} />
+                  {isLoading ? "00.00 TORUS" : displayTokensPerWeek}
                 </Label>
               </HoverCardTrigger>
               <HoverCardContent className="w-80">
-                <p className="text-sm">Registration Block of this agent.</p>
+                <p className="text-sm">Tokens per week.</p>
               </HoverCardContent>
             </HoverCard>
-
-            <CopyButton
-              variant="link"
-              copy={props.agentKey}
-              className={`text-foreground-muted hover:text-muted-foreground flex items-center gap-1.5 px-0 font-bold hover:no-underline`}
-            >
-              <IdCard size={14} />
-              <span className="text-xs">{smallAddress(props.agentKey, 4)}</span>
-            </CopyButton>
           </div>
         </div>
       </div>

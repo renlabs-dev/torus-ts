@@ -70,25 +70,27 @@ export const Filter = ({
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="flex w-full items-center gap-2">
-        <Label
-          htmlFor="search-bar"
-          className="rounded-radius flex w-full max-w-sm flex-1 items-center justify-center border pl-3"
-        >
-          <SearchIcon size={16} className="text-muted-foreground" />
-          <Input
-            id="search-bar"
-            name="search"
-            placeholder="Search agents by name or key"
-            className="border-none focus-visible:ring-0"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-          />
-        </Label>
+      <div className="flex w-full flex-col items-center gap-2 md:flex-row">
+        <div className="flex w-full gap-2">
+          <Label
+            htmlFor="search-bar"
+            className="rounded-radius flex w-full max-w-sm flex-1 items-center justify-center border pl-3"
+          >
+            <SearchIcon size={16} className="text-muted-foreground" />
+            <Input
+              id="search-bar"
+              name="search"
+              placeholder="Search agents by name or key"
+              className="border-none focus-visible:ring-0"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+          </Label>
 
-        <Button type="submit" variant="outline" className="py-[1.3em]">
-          Search
-        </Button>
+          <Button type="submit" variant="outline" className="py-[1.3em]">
+            Search
+          </Button>
+        </div>
 
         {showSearchInfo && (
           <div className="text-sm">

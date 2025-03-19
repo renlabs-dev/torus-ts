@@ -59,6 +59,7 @@ export const agentRouter = {
           registrationBlock: agentSchema.registrationBlock,
           isWhitelisted: agentSchema.isWhitelisted,
           atBlock: agentSchema.atBlock,
+          weightFactor: agentSchema.weightFactor,
           percComputedWeight: computedAgentWeightSchema.percComputedWeight,
           computedWeight: computedAgentWeightSchema.computedWeight,
         })

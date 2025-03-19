@@ -191,7 +191,7 @@ export function AllocationActions(props: MenuTriggerProps) {
   );
 
   return (
-    <div className="flex min-h-fit w-full items-center gap-4 sm:flex-col sm:space-x-0">
+    <div className="flex min-h-fit w-full flex-col items-center gap-4 sm:space-x-0">
       <div className="mt-auto flex w-full flex-col gap-2">
         <div className="border-border flex w-full items-center justify-between gap-2 border-t py-6">
           <Label>

@@ -28,9 +28,9 @@ export function ViewSelector() {
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex w-full items-center md:w-fit">
       <Select value={currentView} onValueChange={handleViewChange}>
-        <SelectTrigger className="w-[210px]">
+        <SelectTrigger className="min-w-full md:w-[210px]">
           <SelectValue placeholder="Select view" />
         </SelectTrigger>
         <SelectContent>

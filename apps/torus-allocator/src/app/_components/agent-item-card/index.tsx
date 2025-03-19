@@ -12,6 +12,7 @@ interface AgentCardProps {
   metadataUri: string | null;
   registrationBlock: number | null;
   globalWeightPerc: number | null;
+  weightFactor: number | null;
 }
 
 export function AgentItemCard(props: Readonly<AgentCardProps>) {
@@ -19,7 +20,7 @@ export function AgentItemCard(props: Readonly<AgentCardProps>) {
     <Card className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
       <CardHoverEffect />
 
-      <AgentCardHeader {...props} globalWeightPerc={props.globalWeightPerc} />
+      <AgentCardHeader {...props} />
       <AgentCardContent metadataUri={props.metadataUri} />
       <AgentCardFooter {...props} />
 

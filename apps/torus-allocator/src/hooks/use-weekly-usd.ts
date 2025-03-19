@@ -6,7 +6,6 @@ import {
 import { CONSTANTS } from "@torus-ts/subspace";
 import { useMemo } from "react";
 import { api as extAPI } from "~/trpc/react";
-import type { Agent } from "~/utils/types";
 
 interface AgentUsdCalculationResult {
   isLoading: boolean;
@@ -17,10 +16,15 @@ interface AgentUsdCalculationResult {
   displayUsdValue: string;
 }
 
+interface WeeklyUsdCalculationProps {
+  agentKey: string;
+  weightFactor: number | null;
+}
+
 export function useWeeklyUsdCalculation(
-  agent: Agent,
+  props: WeeklyUsdCalculationProps,
 ): AgentUsdCalculationResult {
-  // Queries the Torus dolar Brice from Coingecko
+  // Queries the Torus dolar Brice (<- lol) from Coingecko
   const {
     data: torusPrice,
     isLoading: isTorusPriceLoading,
@@ -31,7 +35,9 @@ export function useWeeklyUsdCalculation(
     data: computedWeightedAgents,
     isLoading: isComputedWeightLoading,
     isError: isComputedWeightError,
-  } = extAPI.computedAgentWeight.byAgentKey.useQuery({ agentKey: agent.key });
+  } = extAPI.computedAgentWeight.byAgentKey.useQuery({
+    agentKey: props.agentKey,
+  });
 
   // Loads all queries at once, and if any of them are wrong, the whole result is wrong
   const isLoading = isTorusPriceLoading || isComputedWeightLoading;
@@ -46,7 +52,7 @@ export function useWeeklyUsdCalculation(
       CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
 
     // Weight Factor is the penalty factor
-    const weightPenaltyFactor = agent.weightFactor ?? 1; // Default to 1 if not available
+    const weightPenaltyFactor = props.weightFactor ?? 1; // Default to 1 if not available
 
     // Calculate weekly emission in NANOs and convert to tokens
     const weeklyEmission = CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
@@ -67,7 +73,7 @@ export function useWeeklyUsdCalculation(
   }, [
     computedWeightedAgents?.percComputedWeight,
     computedWeightedAgents?.computedWeight,
-    agent.weightFactor,
+    props.weightFactor,
   ]);
 
   // Calculate USD value of weekly tokens
