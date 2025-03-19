@@ -1,5 +1,4 @@
 import "@torus-ts/ui/globals.css";
-import ClientHeroSection from "./components/animation/client-hero-section";
 import { APRBar } from "./components/apr-bar/apr-bar";
 import { SidebarLinks } from "./components/sidebar-links";
 import { WalletBalance } from "./components/wallet-balance";
@@ -46,7 +45,6 @@ export default function RootLayout({
           <WalletProvider>
             <WalletHeader />
             <APRBar />
-            <ClientHeroSection />
             <Container>
               <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
                 <div className="flex w-full max-w-screen-xl flex-col justify-around gap-6 lg:mt-[10vh] lg:flex-row">
