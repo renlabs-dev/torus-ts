@@ -82,26 +82,26 @@ export const SidebarInfo = () => {
         </span>
       </div>
       <div>
-        <p>
+        <span>
           {isFetchingCadreList ? (
             <Skeleton className="flex w-1/5 py-3" />
           ) : (
             (cadreListData?.length ?? 0)
           )}
-        </p>
+        </span>
         <span className="text-muted-foreground text-sm">
           Curator DAO Members
         </span>
       </div>
 
       <div>
-        <p>
+        <span>
           {isFetchingCadreList ? (
             <Skeleton className="flex w-1/5 py-3" />
           ) : (
             Math.floor((cadreListData?.length ?? 0) / 2 + 1) // TODO: move logic out of component
           )}
-        </p>
+        </span>
         <span className="text-muted-foreground text-sm">
           {" "}
           Curator DAO Vote threshold
