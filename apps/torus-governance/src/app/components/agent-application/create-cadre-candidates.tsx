@@ -2,15 +2,15 @@
 
 import DiscordLogin from "../discord-auth-button";
 import type { AppRouter } from "@torus-ts/api";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@torus-ts/ui/components/alert-dialog";
 import { Button } from "@torus-ts/ui/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@torus-ts/ui/components/dialog";
 import {
   Form,
   FormField,
@@ -215,24 +215,24 @@ export function CreateCadreCandidates() {
   }
 
   return (
-    <AlertDialog open={dialogOpen} onOpenChange={handleOpenChange}>
-      <AlertDialogTrigger asChild>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
         <Button variant="secondary" className="animate-fade-down">
           Apply to be a curator DAO member.
         </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-xl border border-[#262631] bg-[#0E0E11] p-6 text-center font-mono text-white">
+      </DialogTrigger>
+      <DialogContent className="max-w-xl border border-[#262631] bg-[#0E0E11] p-6 text-center font-mono text-white">
         <div className="p-6">
-          <AlertDialogHeader className="mb-6 font-mono">
-            <AlertDialogTitle className="pb-2 font-mono text-2xl font-bold">
+          <DialogHeader className="mb-6 font-mono">
+            <DialogTitle className="pb-2 font-mono text-2xl font-bold">
               Apply to be a Curator DAO Member
-            </AlertDialogTitle>
-            <AlertDialogDescription className="mt-2 font-mono text-base text-gray-400">
+            </DialogTitle>
+            <DialogDescription className="mt-2 font-mono text-base text-gray-400">
               The Curator DAO member is a fundamental part of the ecosystem, it
               can do actions like vote on whitelist applications and can set
               penalties to agents.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+            </DialogDescription>
+          </DialogHeader>
 
           <Form {...cadreForm}>
             <form
@@ -312,7 +312,7 @@ export function CreateCadreCandidates() {
             </form>
           </Form>
         </div>
-      </AlertDialogContent>
-    </AlertDialog>
+      </DialogContent>
+    </Dialog>
   );
 }
