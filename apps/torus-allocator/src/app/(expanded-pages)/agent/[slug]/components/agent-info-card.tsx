@@ -1,6 +1,6 @@
 "use client";
 
-import { useWeeklyUsdCalculation } from "../../hooks/use-weekly-usd";
+import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
@@ -10,7 +10,10 @@ import type { Agent } from "~/utils/types";
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
   const { isLoading, isError, displayTokensPerWeek, displayUsdValue } =
-    useWeeklyUsdCalculation(agent);
+    useWeeklyUsdCalculation({
+      agentKey: agent.key,
+      weightFactor: agent.weightFactor,
+    });
 
   // Error SAFE - If the data is not loaded, display a loading state
   const showTokensPerWeek = isLoading ? (

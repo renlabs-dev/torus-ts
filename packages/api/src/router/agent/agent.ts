@@ -1,6 +1,10 @@
 import { publicProcedure } from "../../trpc";
-import { eq, and, max, isNull, inArray } from "@torus-ts/db";
-import { agentSchema, penalizeAgentVotesSchema } from "@torus-ts/db/schema";
+import { eq, and, max, isNull, inArray, sql } from "@torus-ts/db";
+import {
+  agentSchema,
+  penalizeAgentVotesSchema,
+  computedAgentWeightSchema,
+} from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
@@ -14,17 +18,87 @@ export const agentRouter = {
       ),
     });
   }),
-  allPaginated: publicProcedure
-    .input(z.object({ limit: z.number(), offset: z.number() }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.agentSchema.findMany({
-        limit: input.offset,
-        offset: input.limit,
-        where: and(
-          eq(agentSchema.isWhitelisted, true),
-          isNull(agentSchema.deletedAt),
-        ),
-      });
+  paginated: publicProcedure
+    .input(
+      z.object({
+        page: z.number().int().positive().default(1),
+        limit: z.number().int().positive().default(9),
+        search: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { page, limit, search } = input;
+      const offset = (page - 1) * limit;
+
+      const lastBlockQuery = ctx.db
+        .select({ value: max(computedAgentWeightSchema.atBlock) })
+        .from(computedAgentWeightSchema);
+
+      const lastBlockResult = await lastBlockQuery;
+      const lastBlock = lastBlockResult[0]?.value;
+
+      let whereClause = and(
+        eq(agentSchema.isWhitelisted, true),
+        isNull(agentSchema.deletedAt),
+      );
+
+      if (search) {
+        whereClause = and(
+          whereClause,
+          sql`(${agentSchema.name} ILIKE ${`%${search}%`} OR ${agentSchema.key} ILIKE ${`%${search}%`})`,
+        );
+      }
+
+      const agents = await ctx.db
+        .select({
+          id: agentSchema.id,
+          name: agentSchema.name,
+          key: agentSchema.key,
+          metadataUri: agentSchema.metadataUri,
+          apiUrl: agentSchema.apiUrl,
+          registrationBlock: agentSchema.registrationBlock,
+          isWhitelisted: agentSchema.isWhitelisted,
+          atBlock: agentSchema.atBlock,
+          weightFactor: agentSchema.weightFactor,
+          percComputedWeight: computedAgentWeightSchema.percComputedWeight,
+          computedWeight: computedAgentWeightSchema.computedWeight,
+        })
+        .from(agentSchema)
+        .leftJoin(
+          computedAgentWeightSchema,
+          and(
+            eq(agentSchema.key, computedAgentWeightSchema.agentKey),
+            lastBlock
+              ? eq(computedAgentWeightSchema.atBlock, lastBlock)
+              : sql`1=1`,
+            isNull(computedAgentWeightSchema.deletedAt),
+          ),
+        )
+        .where(whereClause)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(
+          sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`,
+        );
+
+      const countResult = await ctx.db
+        .select({ count: sql`count(*)` })
+        .from(agentSchema)
+        .where(whereClause);
+
+      const totalCount = Number(countResult[0]?.count ?? 0);
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        agents,
+        pagination: {
+          totalCount,
+          totalPages,
+          currentPage: page,
+          pageSize: limit,
+          hasMore: page < totalPages,
+        },
+      };
     }),
   byId: publicProcedure
     .input(z.object({ id: z.number() }))

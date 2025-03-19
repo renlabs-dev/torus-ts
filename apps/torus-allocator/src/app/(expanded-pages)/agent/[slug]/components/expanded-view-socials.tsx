@@ -1,16 +1,5 @@
-"use client";
-
-import { buildSocials } from "./agent-item";
 import Link from "next/link";
-
-// (property) socials?: {
-//     discord?: string | undefined;
-//     github?: string | undefined;
-//     telegram?: string | undefined;
-//     twitter?: string | undefined;
-// } | undefined
-
-//  website?: string | undefined
+import { buildSocials } from "~/app/_components/agent-item-card/components/socials-info";
 
 interface ExpandedViewSocialsProps {
   socials?: {
@@ -34,7 +23,7 @@ export function ExpandedViewSocials({
           <Link
             key={social.name}
             href={social.href}
-            className="flex flex-row items-center gap-1 text-gray-200"
+            className="flex h-5 w-5 flex-row items-center gap-1 text-gray-200"
           >
             {social.icon}
           </Link>
