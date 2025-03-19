@@ -42,14 +42,16 @@ export function AllocationSheet() {
 
   useEffect(() => {
     if (!hasInitialized && selectedAccount?.address && userAgentWeight) {
-      const formattedModules = userAgentWeight.map((agent) => ({
-        id: agent.user_agent_weight.id,
-        address: agent.user_agent_weight.agentKey,
-        title: agent.agent.name ?? "",
-        name: agent.agent.name ?? "",
-        percentage: agent.user_agent_weight.weight,
-        registrationBlock: agent.agent.registrationBlock,
-        metadataUri: agent.agent.metadataUri,
+      const formattedModules = userAgentWeight.map((data) => ({
+        id: data.user_agent_weight.id,
+        address: data.user_agent_weight.agentKey,
+        title: data.agent.name ?? "<MISSING_NAME>",
+        name: data.agent.name ?? "<MISSING_NAME>",
+        percentage: data.user_agent_weight.weight,
+        registrationBlock: data.agent.registrationBlock,
+        metadataUri: data.agent.metadataUri,
+        percComputedWeight: data.computed_agent_weight?.percComputedWeight ?? 0,
+        weightFactor: data.agent.weightFactor,
       }));
 
       setDelegatedAgentsFromDB(formattedModules);

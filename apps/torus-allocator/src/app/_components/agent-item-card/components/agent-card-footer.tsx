@@ -13,6 +13,8 @@ interface AgentCardFooterProps {
   agentKey: string;
   metadataUri: string | null;
   registrationBlock: number | null;
+  percComputedWeight: number | null;
+  weightFactor: number | null;
 }
 
 export function AgentCardFooter(props: Readonly<AgentCardFooterProps>) {
@@ -48,6 +50,8 @@ export function AgentCardFooter(props: Readonly<AgentCardFooterProps>) {
         address: props.agentKey,
         metadataUri: props.metadataUri,
         registrationBlock: props.registrationBlock ?? null,
+        percComputedWeight: props.percComputedWeight ?? null,
+        weightFactor: props.weightFactor ?? null,
       });
     }
 

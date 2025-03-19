@@ -10,7 +10,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExpandedViewSocials } from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
 import BlobImage from "~/app/_components/blob-image";
-import { DelegateModuleWeight } from "~/app/_components/delegate-module-weight";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 
@@ -122,16 +121,7 @@ export default async function AgentPage({
                 />
               </div>
             </Card>
-            <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
-              <DelegateModuleWeight
-                id={mdl.id}
-                name={mdl.name ?? "Missing Agent Name"}
-                agentKey={mdl.key}
-                metadataUri={mdl.metadataUri}
-                registrationBlock={mdl.registrationBlock}
-                className="w-full"
-              />
-            </div>
+
             {mdl.weightFactor !== null &&
               mdl.weightFactor > 0 &&
               penalties.length > 0 && <PenaltyList penalties={penalties} />}

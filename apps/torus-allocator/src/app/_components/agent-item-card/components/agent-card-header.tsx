@@ -26,7 +26,7 @@ interface AgentCardHeaderProps {
   agentKey: string;
   metadataUri: string | null;
   registrationBlock: number | null;
-  globalWeightPerc: number | null;
+  percComputedWeight: number | null;
   weightFactor: number | null;
 }
 
@@ -110,8 +110,8 @@ export function AgentCardHeader(props: Readonly<AgentCardHeaderProps>) {
                   className={`flex items-center gap-1.5 text-xs font-semibold`}
                 >
                   <Globe size={14} />
-                  {props.globalWeightPerc !== null
-                    ? `${Math.round(props.globalWeightPerc * 100)}%`
+                  {props.percComputedWeight !== null
+                    ? `${Math.round(props.percComputedWeight * 100)}%`
                     : "0%"}
                 </Label>
               </HoverCardTrigger>

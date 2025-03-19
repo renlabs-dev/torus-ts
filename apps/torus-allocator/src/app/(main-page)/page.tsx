@@ -33,7 +33,7 @@ async function FetchAgentItemCards({
             metadataUri={agent.metadataUri}
             weightFactor={agent.weightFactor}
             registrationBlock={agent.registrationBlock}
-            globalWeightPerc={agent.percComputedWeight}
+            percComputedWeight={agent.percComputedWeight}
           />
         ))}
       </div>

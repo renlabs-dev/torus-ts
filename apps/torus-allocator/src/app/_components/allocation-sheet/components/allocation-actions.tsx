@@ -26,7 +26,7 @@ export function AllocationActions(props: MenuTriggerProps) {
     updateBalancedPercentage,
     getTotalPercentage,
     setPercentageChange,
-    updateOriginalAgents,
+
     setDelegatedAgentsFromDB,
   } = useDelegateAgentStore();
 
@@ -143,8 +143,6 @@ export function AllocationActions(props: MenuTriggerProps) {
       // Submit new user agent data in a single call
       await createManyUserAgentData.mutateAsync(agentsData);
 
-      updateOriginalAgents();
-
       const { data: refetchedData } = await refetchUserAgentWeight();
 
       const formattedModules = refetchedData?.map((agent) => ({
@@ -155,6 +153,9 @@ export function AllocationActions(props: MenuTriggerProps) {
         percentage: agent.user_agent_weight.weight,
         registrationBlock: agent.agent.registrationBlock,
         metadataUri: agent.agent.metadataUri,
+        percComputedWeight:
+          agent.computed_agent_weight?.percComputedWeight ?? 0,
+        weightFactor: agent.agent.weightFactor,
       }));
 
       setDelegatedAgentsFromDB(formattedModules ?? []);

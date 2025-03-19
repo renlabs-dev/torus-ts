@@ -3,14 +3,14 @@ import type { SS58Address } from "@torus-ts/subspace";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface DelegatedAgent {
+export interface DelegatedAgent {
   id: number;
   name: string;
   address: string;
   percentage: number;
   metadataUri: string | null;
   registrationBlock: number | null;
-  globalWeightPerc: number | null;
+  percComputedWeight: number | null;
   weightFactor: number | null;
 }
 
@@ -30,7 +30,6 @@ interface DelegateState {
   getTotalPercentage: () => number;
   setDelegatedAgentsFromDB: (agents: DelegatedAgent[]) => void;
   hasUnsavedChanges: () => boolean;
-  updateOriginalAgents: () => void;
 
   hasPercentageChange: boolean;
   setPercentageChange: (isOpen: boolean) => void;
@@ -117,21 +116,12 @@ export const useDelegateAgentStore = create<DelegateState>()(
             return existingAgent ?? agent;
           });
 
-          // Add any agents that exist in the current state but not in the DB data
-          existingAgents.forEach((agent) => {
-            if (!updatedAgents.some((ua) => ua.address === agent.address)) {
-              updatedAgents.push(agent);
-            }
-          });
-
           return {
             delegatedAgents: updatedAgents,
             originalAgents: agents, // Keep the original agents as they were in the DB
           };
         }),
 
-      updateOriginalAgents: () =>
-        set((state) => ({ originalAgents: [...state.delegatedAgents] })),
       hasUnsavedChanges: () => {
         const state = get();
         if (state.delegatedAgents.length !== state.originalAgents.length) {

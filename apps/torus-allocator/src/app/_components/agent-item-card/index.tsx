@@ -11,7 +11,7 @@ interface AgentCardProps {
   agentKey: string;
   metadataUri: string | null;
   registrationBlock: number | null;
-  globalWeightPerc: number | null;
+  percComputedWeight: number | null;
   weightFactor: number | null;
 }
 

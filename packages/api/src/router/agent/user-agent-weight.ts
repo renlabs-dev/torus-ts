@@ -1,7 +1,7 @@
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { eq, isNull, and } from "@torus-ts/db";
+import { eq, isNull, and, max } from "@torus-ts/db";
 import type { DB } from "@torus-ts/db/client";
-import { agentSchema, userAgentWeightSchema } from "@torus-ts/db/schema";
+import { agentSchema, userAgentWeightSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import type { SS58Address } from "@torus-ts/subspace";
 import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-ts/subspace";
@@ -101,14 +101,32 @@ export const userAgentWeightRouter = {
   byUserKey: publicProcedure
     .input(z.object({ userKey: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Query agent table joining it with user user_agent_allocation table and
+      // Query agent table joining it with user user_agent_allocation table and computed_weights
       // filtering by userKey
+      
+      // First get the latest block
+      const lastBlock = ctx.db
+        .select({ value: max(computedAgentWeightSchema.atBlock) })
+        .from(computedAgentWeightSchema);
+        
       return await ctx.db
-        .select()
+        .select({
+          agent: agentSchema,
+          user_agent_weight: userAgentWeightSchema,
+          computed_agent_weight: computedAgentWeightSchema,
+        })
         .from(agentSchema)
         .innerJoin(
           userAgentWeightSchema,
           eq(agentSchema.key, userAgentWeightSchema.agentKey),
+        )
+        .leftJoin(
+          computedAgentWeightSchema,
+          and(
+            eq(agentSchema.key, computedAgentWeightSchema.agentKey),
+            eq(computedAgentWeightSchema.atBlock, lastBlock),
+            isNull(computedAgentWeightSchema.deletedAt),
+          ),
         )
         .where(
           and(

@@ -60,8 +60,8 @@ export default function AllocatedAgentsPage() {
               agentKey={agent.address}
               metadataUri={agent.metadataUri}
               registrationBlock={agent.registrationBlock}
-              globalWeightPerc={2}
-              weightFactor={2}
+              percComputedWeight={agent.percComputedWeight}
+              weightFactor={agent.weightFactor}
             />
           ))}
         </div>
