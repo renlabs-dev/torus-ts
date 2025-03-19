@@ -126,6 +126,15 @@ export function CreateCadreCandidates() {
       }
     },
     onError: (error) => {
+      if (error.message.includes("cadre_candidate_discord_id_unique")) {
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description:
+            "You have already applied to be a Curator DAO member with this Discord Account.",
+        });
+        return;
+      }
+
       toast({
         title: "Uh oh! Something went wrong.",
         description:
