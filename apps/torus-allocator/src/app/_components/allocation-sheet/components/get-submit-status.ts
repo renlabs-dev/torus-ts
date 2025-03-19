@@ -19,12 +19,12 @@ const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
     disabled: true,
   },
   UNSAVED: {
-    message: "You have agent unsaved changes",
+    message: "You have unsaved changes",
     color: "text-amber-500",
     disabled: false,
   },
   SAVED: {
-    message: "All Agent Allocations saved!",
+    message: "All Allocations saved!",
     color: "text-green-500",
     disabled: false,
   },
@@ -39,7 +39,7 @@ const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
     disabled: true,
   },
   SUBMITTING: {
-    message: "Submitting Agent Allocations...",
+    message: "Submitting Allocations...",
     color: "text-blue-500",
     disabled: true,
   },

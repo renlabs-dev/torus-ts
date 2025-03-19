@@ -60,7 +60,7 @@ export function AllocationAgentList() {
               </div>
             ))
         ) : (
-          <p>Select a agent to allocate through the agents page.</p>
+          <p>Select an agent to allocate through the agents page.</p>
         )}
       </div>
     </ScrollArea>
