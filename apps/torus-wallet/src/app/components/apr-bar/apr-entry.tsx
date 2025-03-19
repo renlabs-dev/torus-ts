@@ -8,7 +8,7 @@ export function APREntry({ apr, totalStake, stakedPercentage }: APRData) {
   return (
     <div className="flex items-center font-mono text-sm tracking-tight">
       <div className="flex items-center">
-        <AppBarDataGroup label="APR" value={`${apr?.toFixed(2)}%`} />
+        <AppBarDataGroup label="APR" value={`${apr.toFixed(2)}%`} />
         <AppBarSeparator />
         <AppBarDataGroup
           label="TOTAL STAKED"
