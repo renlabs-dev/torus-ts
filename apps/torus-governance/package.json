@@ -26,6 +26,7 @@
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
     "@uiw/react-markdown-preview": "^5.1.1",
+    "@next/third-parties": "catalog:",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-auth": "^4.24.11",

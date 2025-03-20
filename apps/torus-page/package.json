@@ -19,6 +19,7 @@
     "@torus-ts/ui": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@types/three": "^0.165.0",
+    "@next/third-parties": "catalog:",
     "lucide-react": "catalog:",
     "motion": "^11.15.0",
     "next": "catalog:",
