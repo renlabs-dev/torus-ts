@@ -113,23 +113,6 @@ jobs:
       - id: commit
         uses: prompt/actions-commit-hash@v3
 
-      - name: Craft App info
-        run: |
-          SUFIX="-${{ inputs.app_name }}"
-          MAX_REF_LENGTH=$((50 - ${#SUFIX}))  # Subtract sufix length from 50
-
-          export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
-
-          if [ ${#SANITIZED_REF} -gt $MAX_REF_LENGTH ]; then
-            SANITIZED_REF="${SANITIZED_REF:0:$MAX_REF_LENGTH}"
-          fi
-
-          SANITIZED_REF=$(echo "$SANITIZED_REF" | sed 's/-*$//')
-          echo "RELEASE_NAME=${SANITIZED_REF}${SUFIX}" >> $GITHUB_ENV
-
-          echo "APP_URL=${SANITIZED_REF}.${{ inputs.app_name }}.torus.network" >> $GITHUB_ENV
-          echo "CACHE_URL=https://${SANITIZED_REF}.torus-cache.torus.network" >> $GITHUB_ENV
-
       - name: Install shared resources
         run: |
           helm template torus-dev-aux \
@@ -143,23 +126,23 @@ jobs:
         run: |
           helmfile sync -e dev \
           --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
-          --state-values-set ingressHost=${{ env.APP_URL }} \
-          --state-values-set cacheUrl=${{ env.CACHE_URL }} \
-          --state-values-set releaseName=${{ env.RELEASE_NAME }} \
-          --state-values-set releasePrefix=${{ env.RELEASE_NAME }}
+          --state-values-set cacheUrl=https://pr-${{ github.event.number }}.torus-cache.torus.network"
+          --state-values-set ingressHost=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network \
+          --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
+          --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
 
       - name: Wait for App URL
         if: ${{ inputs.hasURL }}
         uses: iFaxity/wait-on-action@v1.2.1
         with:
-          resource: https://${{ env.APP_URL }}${{ inputs.healthCheckPath }}
+          resource: https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network${{ inputs.healthCheckPath }}
 
       - name: Comment PR
         if: ${{ inputs.hasURL }}
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
-            🚀 **${{ inputs.app_name }}** Preview deployment will be available at: https://${{ env.APP_URL }}
+            🚀 **${{ inputs.app_name }}** Preview deployment will be available at: https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network
           comment-tag: ${{ inputs.app_name }}-preview-url
 
   destroy:
@@ -180,23 +163,9 @@ jobs:
       - name: Setup Kubernetes authentication
         run: /apps/k8s_auth_w_approle_sa.sh
 
-      - name: Craft App info
-        run: |
-          SUFIX="-${{ inputs.app_name }}"
-          MAX_REF_LENGTH=$((50 - ${#SUFIX}))  # Subtract sufix length from 50
-
-          export SANITIZED_REF=$(echo "${{ github.event.pull_request.head.ref }}" | tr '/' '-')
-
-          if [ ${#SANITIZED_REF} -gt $MAX_REF_LENGTH ]; then
-            SANITIZED_REF="${SANITIZED_REF:0:$MAX_REF_LENGTH}"
-          fi
-
-          SANITIZED_REF=$(echo "$SANITIZED_REF" | sed 's/-*$//')
-          echo "RELEASE_NAME=${SANITIZED_REF}${SUFIX}" >> $GITHUB_ENV
-
       - name: Destroy PR preview app deployment
         working-directory: apps/${{ inputs.app_name }}
         run: |
           helmfile destroy -e dev \
-          --state-values-set releaseName=${{ env.RELEASE_NAME }} \
-          --state-values-set releasePrefix=${{ env.RELEASE_NAME }}
+          --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
+          --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
