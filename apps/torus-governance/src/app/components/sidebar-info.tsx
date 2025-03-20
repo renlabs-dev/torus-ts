@@ -81,7 +81,7 @@ export const SidebarInfo = () => {
           Next DAO incentives payout
         </span>
       </div>
-      <div>
+      <div className="flex flex-col">
         <span>
           {isFetchingCadreList ? (
             <Skeleton className="flex w-1/5 py-3" />
@@ -94,7 +94,7 @@ export const SidebarInfo = () => {
         </span>
       </div>
 
-      <div>
+      <div className="flex flex-col">
         <span>
           {isFetchingCadreList ? (
             <Skeleton className="flex w-1/5 py-3" />
