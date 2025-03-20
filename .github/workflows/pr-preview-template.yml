@@ -126,7 +126,7 @@ jobs:
         run: |
           helmfile sync -e dev \
           --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
-          --state-values-set cacheUrl="https://pr-${{ github.event.number }}.torus-cache.torus.network"
+          --state-values-set cacheUrl="https://pr-${{ github.event.number }}.torus-cache.torus.network" \
           --state-values-set ingressHost=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network \
           --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
