@@ -3,7 +3,7 @@
 import { Bounds } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import type { FC } from "react";
-import { Suspense, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import type { Mesh } from "three";
 import * as THREE from "three";
 
@@ -95,9 +95,9 @@ const Torus: FC = () => {
     [uniforms],
   );
 
-  useFrame(() => {
+  useFrame((state, delta) => {
     if (torusRef.current) {
-      uniforms.time.value += 0.05;
+      uniforms.time.value += 0.1 * 60 * delta;
     }
   });
 
@@ -111,10 +111,8 @@ const Torus: FC = () => {
 
 export const TorusAnimation: FC = () => (
   <Canvas dpr={[2, 4]}>
-    <Suspense fallback={null}>
-      <Bounds fit clip observe margin={1}>
-        <Torus />
-      </Bounds>
-    </Suspense>
+    <Bounds fit clip observe margin={1}>
+      <Torus />
+    </Bounds>
   </Canvas>
 );
