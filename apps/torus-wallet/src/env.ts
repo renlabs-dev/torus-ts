@@ -21,6 +21,7 @@ export const envSchema = {
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
   NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
+  NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: z.string().default("5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"),
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {
