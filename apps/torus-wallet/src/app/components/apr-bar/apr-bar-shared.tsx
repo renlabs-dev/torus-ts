@@ -39,9 +39,14 @@ export function AppBarDataGroup({ label, value, unit, isLoading, fallback }: App
     <>
       <AppBarLabel>{label}</AppBarLabel>
       <AppBarArrow />
-      {!isLoading && <AppBarValue>{value}</AppBarValue>}
-      {!isLoading && unit && <span className="ml-1 text-white/50">{unit}</span>}
-      {isLoading && fallback}
+      {isLoading ? (
+        fallback
+      ) : (
+        <>
+          <AppBarValue>{value}</AppBarValue>
+          {unit && <span className="ml-1 text-white/50">{unit}</span>}
+        </>
+      )}
     </>
   );
 }

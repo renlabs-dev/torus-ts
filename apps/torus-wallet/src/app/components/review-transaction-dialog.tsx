@@ -14,11 +14,30 @@ export interface ReviewTransactionDialogHandle {
   openDialog: () => void;
 }
 
+interface ReviewContent {
+  label: string;
+  content: string | React.ReactNode;
+}
+
 interface ReviewTransactionDialogProps {
   formRef: React.RefObject<HTMLFormElement>;
-  reviewContent: () => { label: string; content: string | React.ReactNode }[];
+  reviewContent: () => ReviewContent[];
   triggerTitle?: string;
   title?: string;
+}
+
+function RenderReviewItem({ item }: { item: ReviewContent; }) {
+  return (
+    <span
+      className="flex w-full flex-col items-start md:flex-row md:justify-between"
+      key={item.label}
+    >
+      {item.label}:
+      <span className="text-muted-foreground break-all text-left md:text-right">
+        {item.content}
+      </span>
+    </span>
+  );
 }
 
 export const ReviewTransactionDialog = forwardRef<
@@ -34,51 +53,44 @@ export const ReviewTransactionDialog = forwardRef<
     },
     ref,
   ) => {
-    const [open, setOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const { toast } = useToast();
 
     useImperativeHandle(ref, () => ({
-      openDialog: () => setOpen(true),
+      openDialog: () => setIsOpen(true),
     }));
 
-    const review = reviewContent();
-    const { toast } = useToast();
+    const handleSubmit = () => {
+      try {
+        formRef.current?.requestSubmit();
+        setIsOpen(false);
+      } catch (error) {
+        setIsOpen(false);
+        toast({
+          title: "Form submission failed:",
+          description: String(error),
+        });
+      }
+    };
+
+    const reviewItems = reviewContent();
+
     return (
-      <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{title}</AlertDialogTitle>
             <div className="flex flex-col gap-2">
-              {review.map((content) => (
-                <span
-                  className="flex w-full flex-col items-start md:flex-row md:justify-between"
-                  key={content.label}
-                >
-                  {content.label}:
-                  <span className="text-muted-foreground break-all text-left md:text-right">
-                    {content.content}
-                  </span>
-                </span>
+              {reviewItems.map((item) => (
+                <RenderReviewItem key={item.label} item={item} />
               ))}
             </div>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setOpen(false)}>
+            <AlertDialogCancel onClick={() => setIsOpen(false)}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                try {
-                  formRef.current?.requestSubmit();
-                  setOpen(false);
-                } catch (error) {
-                  setOpen(false);
-                  toast({
-                    title: "Form submission failed:",
-                    description: String(error),
-                  });
-                }
-              }}
-            >
+            <AlertDialogAction onClick={handleSubmit}>
               {triggerTitle}
             </AlertDialogAction>
           </AlertDialogFooter>
