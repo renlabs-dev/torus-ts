@@ -82,6 +82,7 @@ export function useWeeklyUsdCalculation(
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
+    if (isLoading || isError) return 0;
     if (!computedWeightedAgents?.computedWeight) return 0;
 
     // Blocks per week calculation
@@ -95,7 +96,7 @@ export function useWeeklyUsdCalculation(
     const fullWeeklyEmission =
       CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
 
-    // Converts the reciclyn rate to percentage
+    // Converts the recycling rate to percentage
     const percReciclyngRate =
       (recyclingPercentage != null ? Number(recyclingPercentage) : 0) / 100;
 
@@ -129,24 +130,31 @@ export function useWeeklyUsdCalculation(
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
-    if (!torusPrice) return 0;
+    if (isLoading || isError || !torusPrice) return 0;
     return tokensPerWeek * torusPrice;
-  }, [tokensPerWeek, torusPrice]);
+  }, [isLoading, isError, tokensPerWeek, torusPrice]);
 
   // EXAMPLE: 5000000.00000 will be displayed: 5,000,000.00 TORUS
-  const displayTokensPerWeek =
-    tokensPerWeek.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) + " TORUS";
+  const displayTokensPerWeek = useMemo(() => {
+    if (isLoading || isError) return "0.00 TORUS";
+    return (
+      tokensPerWeek.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }) + " TORUS"
+    );
+  }, [isLoading, isError, tokensPerWeek]);
 
   // EXAMPLE: 50000.0000 will be displayed: $50,000.00
-  const displayUsdValue = usdValue.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const displayUsdValue = useMemo(() => {
+    if (isLoading || isError) return "$0.00";
+    return usdValue.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }, [isLoading, isError, usdValue]);
 
   return {
     tokensPerWeek,
