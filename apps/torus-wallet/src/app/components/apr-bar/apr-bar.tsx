@@ -1,11 +1,7 @@
 "use client";
 
 import { APRBarBase } from "./apr-bar-base";
-import {
-  AppBarDataGroup,
-  AppBarSeparator,
-  SkeletonValue,
-} from "./apr-bar-shared";
+import { AppBarDataGroup, AppBarSeparator } from "./apr-bar-shared";
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { Fragment, useMemo } from "react";
@@ -70,7 +66,6 @@ export function APRBar() {
                       value={info.value}
                       unit={info.unit}
                       isLoading={isLoading}
-                      fallback={<SkeletonValue width="w-16" />}
                     />
                     {index < infos.length - 1 && <AppBarSeparator />}
                   </Fragment>

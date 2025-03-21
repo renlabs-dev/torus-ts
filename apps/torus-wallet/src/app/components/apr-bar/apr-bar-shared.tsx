@@ -14,10 +14,6 @@ interface AppBarDataGroupProps {
   fallback?: React.ReactNode;
 }
 
-interface SkeletonValueProps {
-  width: string;
-}
-
 export function AppBarLabel({ children }: AppBarLabelProps) {
   return <span className="text-white/60">{children}</span>;
 }
@@ -34,13 +30,19 @@ export function AppBarValue({ children }: AppBarValueProps) {
   return <span className="font-semibold text-white">{children}</span>;
 }
 
-export function AppBarDataGroup({ label, value, unit, isLoading, fallback }: AppBarDataGroupProps) {
+export function AppBarSkeletonValue() {
+  return (
+    <div className={`h-4 w-16 animate-pulse rounded bg-gray-700/30`} />
+  );
+}
+
+export function AppBarDataGroup({ label, value, unit, isLoading }: AppBarDataGroupProps) {
   return (
     <>
       <AppBarLabel>{label}</AppBarLabel>
       <AppBarArrow />
       {isLoading ? (
-        fallback
+        <AppBarSkeletonValue />
       ) : (
         <>
           <AppBarValue>{value}</AppBarValue>
@@ -48,11 +50,5 @@ export function AppBarDataGroup({ label, value, unit, isLoading, fallback }: App
         </>
       )}
     </>
-  );
-}
-
-export function SkeletonValue({ width }: SkeletonValueProps) {
-  return (
-    <div className={`h-4 ${width} animate-pulse rounded bg-gray-700/30`} />
   );
 }
