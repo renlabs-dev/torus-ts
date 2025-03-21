@@ -1,9 +1,12 @@
 import {
   useGetTorusPrice,
+  useRecyclingPercentage,
+  useTreasuryEmissionFee,
   // useBlockEmission,
   // useIncentivesRatio,
 } from "@torus-ts/query-provider/hooks";
 import { CONSTANTS } from "@torus-ts/subspace";
+import { useTorus } from "@torus-ts/torus-provider";
 import { useMemo } from "react";
 import { api as extAPI } from "~/trpc/react";
 
@@ -48,12 +51,38 @@ export function useWeeklyUsdCalculation(
     },
   );
 
+  const { api } = useTorus();
+
+  // Gets the information of Recycling Percentage
+  const {
+    data: recyclingPercentage,
+    isLoading: isRecyclingPercentageLoading,
+    isError: isRecyclingPercentageError,
+  } = useRecyclingPercentage(api);
+
+  // Gets the information of Treasury Emission Fee
+  const {
+    data: treasuryEmissionFee,
+    isLoading: isTreasuryEmissionFeeLoading,
+    isError: isTreasuryEmissionFeeError,
+  } = useTreasuryEmissionFee(api);
+
   // Loads all queries at once, and if any of them are wrong, the whole result is wrong
-  const isLoading = isTorusPriceLoading || isComputedWeightLoading;
-  const isError = isTorusPriceError || isComputedWeightError;
+  const isLoading =
+    isTorusPriceLoading ||
+    isComputedWeightLoading ||
+    isRecyclingPercentageLoading ||
+    isTreasuryEmissionFeeLoading;
+
+  const isError =
+    isTorusPriceError ||
+    isComputedWeightError ||
+    isRecyclingPercentageError ||
+    isTreasuryEmissionFeeError;
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
+    if (isLoading || isError) return 0;
     if (!computedWeightedAgents?.computedWeight) return 0;
 
     // Blocks per week calculation
@@ -63,8 +92,20 @@ export function useWeeklyUsdCalculation(
     // Weight Factor is the penalty factor
     const weightPenaltyFactor = props.weightFactor ?? 1; // Default to 1 if not available
 
-    // Calculate weekly emission in NANOs and convert to tokens
-    const weeklyEmission = CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
+    // Calculate weekly emission in REMs and convert to tokens
+    const fullWeeklyEmission =
+      CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
+
+    // Converts the recycling rate to percentage
+    const percReciclyngRate =
+      (recyclingPercentage != null ? Number(recyclingPercentage) : 0) / 100;
+
+    // Converts the treasury emission fee to percentage
+    const percTreasuryEmissionFee =
+      (treasuryEmissionFee != null ? Number(treasuryEmissionFee) : 0) / 100;
+
+    const weeklyEmission =
+      fullWeeklyEmission * (1 - (percReciclyngRate + percTreasuryEmissionFee));
 
     // Computed Weight but the percentage
     const percComputedWeight = computedWeightedAgents.percComputedWeight;
@@ -80,6 +121,10 @@ export function useWeeklyUsdCalculation(
       (1 - percWeightPenaltyFactor)
     );
   }, [
+    isError,
+    isLoading,
+    recyclingPercentage,
+    treasuryEmissionFee,
     computedWeightedAgents?.percComputedWeight,
     computedWeightedAgents?.computedWeight,
     props.weightFactor,
@@ -87,24 +132,31 @@ export function useWeeklyUsdCalculation(
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
-    if (!torusPrice) return 0;
+    if (isLoading || isError || !torusPrice) return 0;
     return tokensPerWeek * torusPrice;
-  }, [tokensPerWeek, torusPrice]);
+  }, [isLoading, isError, tokensPerWeek, torusPrice]);
 
   // EXAMPLE: 5000000.00000 will be displayed: 5,000,000.00 TORUS
-  const displayTokensPerWeek =
-    tokensPerWeek.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) + " TORUS";
+  const displayTokensPerWeek = useMemo(() => {
+    if (isLoading || isError) return "0.00 TORUS";
+    return (
+      tokensPerWeek.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }) + " TORUS"
+    );
+  }, [isLoading, isError, tokensPerWeek]);
 
   // EXAMPLE: 50000.0000 will be displayed: $50,000.00
-  const displayUsdValue = usdValue.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const displayUsdValue = useMemo(() => {
+    if (isLoading || isError) return "$0.00";
+    return usdValue.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }, [isLoading, isError, usdValue]);
 
   return {
     tokensPerWeek,
