@@ -25,6 +25,7 @@
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
+    "@next/third-parties": "catalog:",
     "framer-motion": "^11.15.0",
     "glsl-noise": "^0.0.0",
     "glsl-rotate": "^2.0.0",

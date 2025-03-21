@@ -2,6 +2,7 @@ import { Layout } from "@torus-ts/ui/components/layout";
 import "@torus-ts/ui/globals.css";
 import { Footer } from "./_components/footer";
 import { HoverHeader } from "./_components/hover-header";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { EnvScript } from "~/env";
@@ -29,6 +30,7 @@ export default function RootLayout({
       <HoverHeader />
       {children}
       <Footer />
+      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
     </Layout>
   );
 }

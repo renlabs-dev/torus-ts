@@ -29,6 +29,7 @@
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
+    "@next/third-parties": "catalog:",
     "lucide-react": "catalog:",
     "maath": "^0.10.8",
     "multiformats": "catalog:",
