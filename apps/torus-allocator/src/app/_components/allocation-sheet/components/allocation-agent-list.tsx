@@ -1,55 +1,14 @@
-import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { X } from "lucide-react";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { api } from "~/trpc/react";
 
 export function AllocationAgentList() {
   const { delegatedAgents, getAgentPercentage, removeAgent, updatePercentage } =
     useDelegateAgentStore();
-
-  const { selectedAccount } = useTorus();
-  const { toast } = useToast();
-
-  const deleteOneAgentData = api.userAgentWeight.deleteOne.useMutation({
-    onSuccess: () => {
-      console.log("Agent allocation deleted successfully");
-    },
-    onError: (error) => {
-      console.error("Error deleting agent allocation:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete agent allocation. Please try again.",
-      });
-    },
-  });
-
-  const { refetch: refetchUserAgentWeight } =
-    api.userAgentWeight.byUserKey.useQuery(
-      { userKey: selectedAccount?.address ?? "" },
-      { enabled: !!selectedAccount?.address },
-    );
-
-  async function handleRemoveAgent(agentAddress: string) {
-    removeAgent(agentAddress);
-
-    if (selectedAccount?.address) {
-      try {
-        await deleteOneAgentData.mutateAsync({
-          agentKey: agentAddress,
-        });
-
-        await refetchUserAgentWeight();
-      } catch (error) {
-        console.error("Failed to delete agent allocation:", error);
-      }
-    }
-  }
 
   return (
     <ScrollArea className="max-h-[calc(100vh-100px)] pr-3">
@@ -92,7 +51,7 @@ export function AllocationAgentList() {
                     <Button
                       size="icon"
                       variant="outline"
-                      onClick={() => handleRemoveAgent(agent.address)}
+                      onClick={() => removeAgent(agent.address)}
                     >
                       <X className="h-5 w-5" />
                     </Button>
