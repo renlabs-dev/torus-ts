@@ -79,10 +79,12 @@ export function useWeeklyUsdCalculation(
       CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
 
     // Converts the reciclyn rate to percentage
-    const percReciclyngRate = Number(recyclingPercentage) / 100;
+    const percReciclyngRate =
+      (recyclingPercentage != null ? Number(recyclingPercentage) : 0) / 100;
 
     // Converts the treasury emission fee to percentage
-    const percTreasuryEmissionFee = Number(treasuryEmissionFee) / 100;
+    const percTreasuryEmissionFee =
+      (treasuryEmissionFee != null ? Number(treasuryEmissionFee) : 0) / 100;
 
     const weeklyEmission =
       fullWeeklyEmission * (1 - (percReciclyngRate + percTreasuryEmissionFee));
