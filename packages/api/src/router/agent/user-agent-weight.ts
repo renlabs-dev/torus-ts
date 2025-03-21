@@ -1,11 +1,7 @@
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { eq, isNull, and, max } from "@torus-ts/db";
 import type { DB } from "@torus-ts/db/client";
-import {
-  agentSchema,
-  userAgentWeightSchema,
-  computedAgentWeightSchema,
-} from "@torus-ts/db/schema";
+import { agentSchema, userAgentWeightSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import type { SS58Address } from "@torus-ts/subspace";
 import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-ts/subspace";
@@ -107,12 +103,12 @@ export const userAgentWeightRouter = {
     .query(async ({ ctx, input }) => {
       // Query agent table joining it with user user_agent_allocation table and computed_weights
       // filtering by userKey
-
+      
       // First get the latest block
       const lastBlock = ctx.db
         .select({ value: max(computedAgentWeightSchema.atBlock) })
         .from(computedAgentWeightSchema);
-
+        
       return await ctx.db
         .select({
           agent: agentSchema,
@@ -242,19 +238,5 @@ export const userAgentWeightRouter = {
       await ctx.db
         .delete(userAgentWeightSchema)
         .where(eq(userAgentWeightSchema.userKey, userKey));
-    }),
-  deleteOne: authenticatedProcedure
-    .input(z.object({ agentKey: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
-      await ctx.db
-        .delete(userAgentWeightSchema)
-        .where(
-          and(
-            eq(userAgentWeightSchema.userKey, userKey),
-            eq(userAgentWeightSchema.agentKey, input.agentKey),
-          ),
-        );
     }),
 } satisfies TRPCRouterRecord;
