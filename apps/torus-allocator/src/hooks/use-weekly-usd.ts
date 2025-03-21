@@ -121,6 +121,8 @@ export function useWeeklyUsdCalculation(
       (1 - percWeightPenaltyFactor)
     );
   }, [
+    isError,
+    isLoading,
     recyclingPercentage,
     treasuryEmissionFee,
     computedWeightedAgents?.percComputedWeight,
