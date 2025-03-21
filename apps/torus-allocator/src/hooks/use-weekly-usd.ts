@@ -2,8 +2,7 @@ import {
   useGetTorusPrice,
   useRecyclingPercentage,
   useTreasuryEmissionFee,
-  // useBlockEmission,
-  // useIncentivesRatio,
+  useIncentivesRatio,
 } from "@torus-ts/query-provider/hooks";
 import { CONSTANTS } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -67,66 +66,75 @@ export function useWeeklyUsdCalculation(
     isError: isTreasuryEmissionFeeError,
   } = useTreasuryEmissionFee(api);
 
+  // Gets the information of Incentives Ratio
+  const {
+    data: incentivesRatio,
+    isLoading: isIncentivesRatioLoading,
+    isError: isIncentivesRatioError,
+  } = useIncentivesRatio(api);
+
   // Loads all queries at once, and if any of them are wrong, the whole result is wrong
   const isLoading =
     isTorusPriceLoading ||
     isComputedWeightLoading ||
     isRecyclingPercentageLoading ||
-    isTreasuryEmissionFeeLoading;
+    isTreasuryEmissionFeeLoading ||
+    isIncentivesRatioLoading;
 
   const isError =
     isTorusPriceError ||
     isComputedWeightError ||
     isRecyclingPercentageError ||
-    isTreasuryEmissionFeeError;
+    isTreasuryEmissionFeeError ||
+    isIncentivesRatioError;
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
-    if (isLoading || isError) return 0;
-    if (!computedWeightedAgents?.computedWeight) return 0;
+    // Early return conditions
+    if (isLoading || isError || !computedWeightedAgents?.computedWeight)
+      return 0;
 
-    // Blocks per week calculation
+    // Constants and input parameters (keeping percentage values)
+    console.log("computedWeightedAgents", computedWeightedAgents);
     const BLOCKS_PER_WEEK =
       CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
-
-    // Weight Factor is the penalty factor
-    const weightPenaltyFactor = props.weightFactor ?? 1; // Default to 1 if not available
-
-    // Calculate weekly emission in REMs and convert to tokens
     const fullWeeklyEmission =
       CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
 
-    // Converts the recycling rate to percentage
-    const percReciclyngRate =
-      (recyclingPercentage != null ? Number(recyclingPercentage) : 0) / 100;
+    // Parse values, providing defaults if null/undefined
+    const incentivesRatioValue = Number(incentivesRatio) || 100;
+    const recyclingRateValue = Number(recyclingPercentage) || 0;
+    const treasuryFeeValue = Number(treasuryEmissionFee) || 1;
+    const weightPenaltyValue = props.weightFactor ?? 1;
+    const agentWeightValue = computedWeightedAgents.percComputedWeight * 100; // Assuming this is already decimal
 
-    // Converts the treasury emission fee to percentage
-    const percTreasuryEmissionFee =
-      (treasuryEmissionFee != null ? Number(treasuryEmissionFee) : 0) / 100;
+    // Calculate emission percentage accounting for recycling
+    const emissionRemainderPercent = 100 - recyclingRateValue;
 
-    const weeklyEmission =
-      fullWeeklyEmission * (1 - (percReciclyngRate + percTreasuryEmissionFee));
+    // Calculate the treasury fee amount
+    const treasuryFeeAmount =
+      (emissionRemainderPercent * treasuryFeeValue) / 100;
 
-    // Computed Weight but the percentage
-    const percComputedWeight = computedWeightedAgents.percComputedWeight;
+    // Calculate the effective emission percentage
+    const effectiveEmissionPercent =
+      emissionRemainderPercent - treasuryFeeAmount;
 
-    // Penalty factor but the percentage
-    const percWeightPenaltyFactor = weightPenaltyFactor / 100;
+    const effectiveEmissionAmount =
+      (effectiveEmissionPercent / 100) * fullWeeklyEmission;
 
-    // Emission * %Incentive * %Agent Weight * (1 - Penalty Factor)
     return (
-      weeklyEmission *
-      CONSTANTS.ECONOMY.INCENTIVES_RATIO *
-      percComputedWeight *
-      (1 - percWeightPenaltyFactor)
+      effectiveEmissionAmount *
+      (incentivesRatioValue / 100) *
+      (agentWeightValue / 100) *
+      (1 - weightPenaltyValue / 100)
     );
   }, [
-    isError,
     isLoading,
+    isError,
+    computedWeightedAgents,
+    incentivesRatio,
     recyclingPercentage,
     treasuryEmissionFee,
-    computedWeightedAgents?.percComputedWeight,
-    computedWeightedAgents?.computedWeight,
     props.weightFactor,
   ]);
 
