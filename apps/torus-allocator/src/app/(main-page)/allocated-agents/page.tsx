@@ -22,7 +22,7 @@ export default function AllocatedAgentsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {delegatedAgents.map((agent) => (
             <AgentItemCard
               id={agent.id}

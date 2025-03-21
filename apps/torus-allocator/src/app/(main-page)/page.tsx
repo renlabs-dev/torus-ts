@@ -23,7 +23,7 @@ async function FetchAgentItemCards({
 
   return (
     <div className="flex w-full flex-col">
-      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {agents.map((agent) => (
           <AgentItemCard
             id={agent.id}
