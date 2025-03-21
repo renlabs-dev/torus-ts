@@ -620,9 +620,6 @@ importers:
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      framer-motion:
-        specifier: ^11.15.0
-        version: 11.18.2(@emotion/is-prop-valid@1.3.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       install:
         specifier: ^0.13.0
         version: 0.13.0

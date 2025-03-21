@@ -25,7 +25,6 @@
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
-    "framer-motion": "^11.15.0",
     "install": "^0.13.0",
     "lucide-react": "catalog:",
     "next": "catalog:",
