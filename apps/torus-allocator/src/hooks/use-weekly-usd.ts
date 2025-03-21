@@ -54,14 +54,31 @@ export function useWeeklyUsdCalculation(
   const { api } = useTorus();
 
   // Gets the information of Recycling Percentage
-  const { data: recyclingPercentage } = useRecyclingPercentage(api);
+  const {
+    data: recyclingPercentage,
+    isLoading: isRecyclingPercentageLoading,
+    isError: isRecyclingPercentageError,
+  } = useRecyclingPercentage(api);
 
   // Gets the information of Treasury Emission Fee
-  const { data: treasuryEmissionFee } = useTreasuryEmissionFee(api);
+  const {
+    data: treasuryEmissionFee,
+    isLoading: isTreasuryEmissionFeeLoading,
+    isError: isTreasuryEmissionFeeError,
+  } = useTreasuryEmissionFee(api);
 
   // Loads all queries at once, and if any of them are wrong, the whole result is wrong
-  const isLoading = isTorusPriceLoading || isComputedWeightLoading;
-  const isError = isTorusPriceError || isComputedWeightError;
+  const isLoading =
+    isTorusPriceLoading ||
+    isComputedWeightLoading ||
+    isRecyclingPercentageLoading ||
+    isTreasuryEmissionFeeLoading;
+
+  const isError =
+    isTorusPriceError ||
+    isComputedWeightError ||
+    isRecyclingPercentageError ||
+    isTreasuryEmissionFeeError;
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
