@@ -19,8 +19,5 @@ export function handleCandidacyState(
   if (candidate.candidacyStatus === "REJECTED") {
     return <div>Your candidacy was rejected.</div>;
   }
-  if (candidate.candidacyStatus === "ACCEPTED") {
-    return HandleRemoveDaoMember(userKey, revoke);
-  }
-  return <div>Loading...</div>;
+  return HandleRemoveDaoMember(userKey, revoke);
 }
