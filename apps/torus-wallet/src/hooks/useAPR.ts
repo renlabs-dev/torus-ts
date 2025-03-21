@@ -90,11 +90,11 @@ export function useAPR(): APRResult {
   return {
     apr,
     isLoading:
-      totalStakeQuery.isLoading ||
-      totalIssuanceQuery.isLoading ||
-      recyclingPercentageQuery.isLoading ||
-      treasuryEmissionFeeQuery.isLoading ||
-      incentivesRatioQuery.isLoading,
+      totalStakeQuery.isPending ||
+      totalIssuanceQuery.isPending ||
+      recyclingPercentageQuery.isPending ||
+      treasuryEmissionFeeQuery.isPending ||
+      incentivesRatioQuery.isPending,
     isError:
       totalStakeQuery.isError ||
       totalIssuanceQuery.isError ||

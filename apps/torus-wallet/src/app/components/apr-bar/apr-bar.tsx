@@ -1,46 +1,82 @@
 "use client";
 
 import { APRBarBase } from "./apr-bar-base";
-import { APRBarSkeleton } from "./apr-bar-skeleton";
-import { APREntry } from "./apr-entry";
-import { useMemo } from "react";
+import {
+  AppBarDataGroup,
+  AppBarSeparator,
+  SkeletonValue,
+} from "./apr-bar-shared";
+import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
+import { formatToken } from "@torus-ts/utils/subspace";
+import { Fragment, useMemo } from "react";
 import { useAPR } from "~/hooks/useAPR";
 
 export interface APRData {
   apr: number;
-  totalStake: bigint | undefined;
+  totalStake: bigint;
   stakedPercentage: number;
+  usdPrice: number;
 }
 
 export function APRBar() {
   const { apr, isLoading, totalStake, totalIssuance } = useAPR();
+  const { data: usdPrice } = useGetTorusPrice();
 
-  const calculateStakedPercentage = useMemo(() => {
-    return (): number => {
-      const totalSupply = Number(totalStake ?? 0n) + Number(totalIssuance);
-
-      return totalStake && totalSupply
-        ? (Number(totalStake) * 100) / totalSupply
-        : 0;
-    };
+  const stakedPercentage = useMemo(() => {
+    const totalSupply = Number(totalStake ?? 0n) + Number(totalIssuance);
+    return totalStake && totalSupply
+      ? (Number(totalStake) * 100) / totalSupply
+      : 0;
   }, [totalStake, totalIssuance]);
 
-  if (isLoading) {
-    return <APRBarSkeleton />;
-  }
-
-  const aprData = {
-    apr: apr ?? 0,
-    totalStake: totalStake ?? 0n,
-    stakedPercentage: calculateStakedPercentage(),
-  };
+  const infos = useMemo(
+    () => [
+      {
+        label: "APR",
+        value: `${apr?.toFixed(2) ?? 0}%`,
+      },
+      {
+        label: "TOTAL STAKED",
+        value: formatToken(totalStake ?? 0n),
+        unit: "$TORUS",
+      },
+      {
+        label: "STAKED RATIO",
+        value: `${stakedPercentage.toFixed(2)}%`,
+      },
+      {
+        label: "USD PRICE",
+        value: `$${usdPrice?.toFixed(4) ?? 0}`,
+        unit: "USD",
+      },
+    ],
+    [apr, totalStake, stakedPercentage, usdPrice],
+  );
 
   return (
     <APRBarBase>
       {[0, 1].map((setIndex) => (
         <div key={setIndex} className="flex gap-32">
           {Array.from({ length: 5 }).map((_, index) => (
-            <APREntry key={`${setIndex}-${index}`} {...aprData} />
+            <div
+              className="flex items-center font-mono text-sm tracking-tight"
+              key={`${setIndex}-${index}`}
+            >
+              <div className="flex items-center">
+                {infos.map((info, index) => (
+                  <Fragment key={index}>
+                    <AppBarDataGroup
+                      label={info.label}
+                      value={info.value}
+                      unit={info.unit}
+                      isLoading={isLoading}
+                      fallback={<SkeletonValue width="w-16" />}
+                    />
+                    {index < infos.length - 1 && <AppBarSeparator />}
+                  </Fragment>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ))}
