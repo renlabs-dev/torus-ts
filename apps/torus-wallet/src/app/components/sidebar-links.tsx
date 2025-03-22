@@ -111,7 +111,9 @@ export const SidebarLinks = () => {
       <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">
         <Card className="flex flex-col gap-1.5 p-5">
           {NAVIGATION_LINKS.map(navLinkProps => (
-            <NavButton {...navLinkProps} />
+            <NavButton
+              key={navLinkProps.value}
+              {...navLinkProps} />
           ))}
         </Card>
       </div>
