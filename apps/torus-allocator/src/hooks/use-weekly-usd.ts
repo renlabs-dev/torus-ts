@@ -79,7 +79,8 @@ export function useWeeklyUsdCalculation(
     isComputedWeightLoading ||
     isRecyclingPercentageLoading ||
     isTreasuryEmissionFeeLoading ||
-    isIncentivesRatioLoading;
+    isIncentivesRatioLoading ||
+    computedWeightedAgents === undefined;
 
   const isError =
     isTorusPriceError ||
@@ -91,11 +92,10 @@ export function useWeeklyUsdCalculation(
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
     // Early return conditions
-    if (isLoading || isError || !computedWeightedAgents?.computedWeight)
+    if (isLoading || isError || !computedWeightedAgents.computedWeight)
       return 0;
 
     // Constants and input parameters (keeping percentage values)
-    console.log("computedWeightedAgents", computedWeightedAgents);
     const BLOCKS_PER_WEEK =
       CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
     const fullWeeklyEmission =
