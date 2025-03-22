@@ -9,7 +9,7 @@ export default {
       animation: {
         slide: "slide 2.5s linear infinite",
         marquee: "marquee 80s linear infinite",
-        "fade-up": "fade-up 0.5s ease-out",
+        "fade-up": "fade-up 0.8s ease-out",
       },
       keyframes: {
         slide: {
@@ -21,7 +21,7 @@ export default {
           "100%": { transform: "translateX(-50%)" },
         },
         "fade-up": {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "0%": { opacity: "0", transform: "translateY(30px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
