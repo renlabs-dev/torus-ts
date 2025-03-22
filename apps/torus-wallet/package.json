@@ -21,7 +21,6 @@
     "@torus-ts/subspace": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
-    "install": "^0.13.0",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "react": "catalog:react18",
