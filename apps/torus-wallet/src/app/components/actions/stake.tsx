@@ -37,8 +37,8 @@ import React, {
 } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { env } from "~/env";
 import { computeFeeData } from "~/utils/helpers";
 import {
   doesNotExceedMaxStake,
@@ -141,7 +141,7 @@ export function StakeAction() {
     feeRef.current?.setLoading(true);
     try {
       const transaction = addStakeTransaction({
-        validator: ALLOCATOR_ADDRESS,
+        validator: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "1",
       });
       if (!transaction) {

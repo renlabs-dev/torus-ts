@@ -37,8 +37,8 @@ import React, {
 } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { env } from "~/env";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
 
 interface StakedValidator {
@@ -89,7 +89,7 @@ export function UnstakeAction() {
           .refine(
             () =>
               (accountFreeBalance.data ?? 0n) -
-                toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
+              toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
               existencialDepositValue,
             {
               message: `This transaction fee would make your account go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Top up your balance before unstaking.`,
@@ -163,7 +163,7 @@ export function UnstakeAction() {
     feeRef.current?.setLoading(true);
     try {
       const transaction = removeStakeTransaction({
-        validator: ALLOCATOR_ADDRESS,
+        validator: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "0",
       });
       if (!transaction) {

@@ -31,8 +31,8 @@ import React, {
 } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { env } from "~/env";
 import { computeFeeData } from "~/utils/helpers";
 import { isWithinTransferLimit } from "~/utils/validators";
 
@@ -101,7 +101,7 @@ export function SendAction() {
     feeRef.current?.setLoading(true);
     try {
       const transaction = transferTransaction({
-        to: ALLOCATOR_ADDRESS,
+        to: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "0",
       });
       if (!transaction) {

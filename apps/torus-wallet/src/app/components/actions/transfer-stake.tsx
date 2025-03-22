@@ -37,8 +37,8 @@ import React, {
 } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { env } from "~/env";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
@@ -98,7 +98,7 @@ export function TransferStakeAction() {
         .refine(
           () =>
             (accountFreeBalance.data ?? 0n) -
-              toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
+            toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
             existencialDepositValue,
           {
             message: `This transaction fee would make your account go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Top up your balance before moving your stake.`,
@@ -160,8 +160,8 @@ export function TransferStakeAction() {
     feeRef.current?.setLoading(true);
     try {
       const transaction = transferStakeTransaction({
-        fromValidator: ALLOCATOR_ADDRESS,
-        toValidator: ALLOCATOR_ADDRESS,
+        fromValidator: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
+        toValidator: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "0",
       });
       if (!transaction) {
