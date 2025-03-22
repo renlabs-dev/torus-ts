@@ -11,6 +11,7 @@ import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import { Crown } from "lucide-react";
 import { DateTime } from "luxon";
+import Image from "next/image";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
@@ -27,7 +28,7 @@ export function ToVoteCandidateCard({ candidate }: CandidateCardProps) {
 
   const {
     userName: userNames = "empty",
-    avatarUrl = "https://cdn.discordapp.com/embed/avatars/4.png",
+    avatarUrl,
     discordId: discordIds = "",
     userKey = "",
     createdAt: dateCreated = new Date("01-01-01"),
@@ -86,66 +87,129 @@ export function ToVoteCandidateCard({ candidate }: CandidateCardProps) {
     });
   };
 
-  const { accept, refuse, revoke } = computedVotes();
+  const { accept, refuse } = computedVotes();
+
+  function handleInFavorAgainstText(vote: string): JSX.Element {
+    const votedText =
+      vote === "ACCEPT" ? (
+        <>
+          (You voted&nbsp;
+          <span className="text-green-500">In&nbsp;Favor</span>)&nbsp;
+        </>
+      ) : vote === "REFUSE" ? (
+        <>
+          (You voted&nbsp;
+          <span className="text-red-500">Against</span>)&nbsp;
+        </>
+      ) : (
+        ""
+      );
+
+    return (
+      <Label className="flex flex-wrap items-center justify-center gap-2 text-xs">
+        <div className="justify-starttext-nowrap flex text-gray-500">
+          {votedText}
+          <div className="flex gap-2">
+            <span className="text-red-500">{refuse}</span>
+            Against |&nbsp;
+          </div>
+          <div className="flex gap-2">
+            <span className="text-green-500">{accept}</span>
+            In Favor
+          </div>
+        </div>
+      </Label>
+    );
+  }
+
+  function handleVoteState(): JSX.Element {
+    if (currentWalletVote?.applicantKey === userKey) {
+      const vote = currentWalletVote.vote;
+      if (vote === "ACCEPT" || vote === "REFUSE") {
+        const revokeVoteButton = (
+          <div className="flex flex-row flex-wrap gap-4">
+            {handleInFavorAgainstText(vote)}
+            <Label className="flex items-center justify-center gap-2 text-xs">
+              <Button
+                onClick={() => handleRemoveVote()}
+                variant="outline"
+                title="Reject"
+              >
+                Revoke Vote
+              </Button>
+            </Label>
+          </div>
+        );
+        return revokeVoteButton;
+      }
+    }
+    const toVoteButton = (
+      <div className="flex flex-row flex-wrap gap-4">
+        {handleInFavorAgainstText("")}
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            onClick={() => handleVote("REFUSE")}
+            variant="outline"
+            className="border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500"
+            title="Reject"
+          >
+            Refuse
+          </Button>
+          <Button
+            onClick={() => handleVote("ACCEPT")}
+            variant="outline"
+            className="border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30 hover:text-green-500"
+            title="Approve"
+          >
+            Accept
+          </Button>
+        </div>
+      </div>
+    );
+    return toVoteButton;
+  }
 
   return (
-    <Card className="flex flex-col border border-gray-800 bg-[#0E0E11] p-4">
-      <CardHeader className="flex-row justify-between gap-2 p-0 text-xs">
-        <div>
-          <img src={avatarUrl} alt={`${userNames}'s avatar`} />
-        </div>
-        <div className="flex w-full flex-col justify-center gap-1">
-          <Label className="">
-            {userNames} (#{discordIds})
-          </Label>
-          <div className="flex gap-2 font-bold text-gray-500">
-            <CopyButton
-              copy={userKey}
-              variant={"link"}
-              className="text-muted-foreground h-5 items-center p-0 text-xs hover:text-gray-300"
-            >
-              <Crown />
-              {smallAddress(userKey, 10)}
-            </CopyButton>
+    <Card className="md:text-md flex flex-col border border-gray-800 bg-[#0E0E11] p-7 text-xs sm:text-sm lg:text-base">
+      <CardHeader className="flex-row flex-wrap justify-between gap-3 p-0 text-xs">
+        <div className="flex flex-row flex-wrap gap-4">
+          <Image
+            width={50}
+            height={50}
+            src={avatarUrl ?? "https://cdn.discordapp.com/embed/avatars/4.png"}
+            alt={`${userNames}'s avatar`}
+          />
+          <div className="flex flex-col justify-center gap-1">
+            <Label className="">
+              {userNames} (#{discordIds})
+            </Label>
+            <div className="flex gap-2 font-bold text-gray-500">
+              <CopyButton
+                copy={userKey}
+                variant={"link"}
+                className="text-muted-foreground h-5 items-center p-0 text-xs hover:text-gray-300"
+              >
+                <Crown />
+                {smallAddress(userKey, 10)}
+              </CopyButton>
 
-            <div className="flex items-center gap-1">
-              <Icons.Calendar />
-              <Label className="text-xs">
-                {DateTime.fromJSDate(dateCreated).toLocaleString(
-                  DateTime.DATE_SHORT,
-                )}
-              </Label>
+              <div className="flex items-center gap-1">
+                <Icons.Calendar />
+                <Label className="text-xs">
+                  {DateTime.fromJSDate(dateCreated).toLocaleString(
+                    DateTime.DATE_SHORT,
+                  )}
+                </Label>
+              </div>
             </div>
           </div>
         </div>
-
-        <div className="flex w-full flex-row">
-          <Label className="flex w-full items-center justify-center gap-2 text-xs">
-            <span className="text-red-500">{refuse}</span>
-            Against |<span className="text-green-500">{accept}</span> In Favor
-          </Label>
-          <Label className="flex w-full items-center justify-center gap-2">
-            <Button
-              onClick={() => handleVote("REFUSE")}
-              variant="outline"
-              className="w-full border-red-500 bg-red-500/20 font-bold text-red-500 hover:bg-red-500/30 hover:text-red-500"
-              title="Reject"
-            >
-              Refuse
-            </Button>
-            <Button
-              onClick={() => handleVote("ACCEPT")}
-              variant="outline"
-              className="w-full border-green-500 bg-green-500/20 font-bold text-green-500 hover:bg-green-500/30 hover:text-green-500"
-              title="Approve"
-            >
-              Accept
-            </Button>
-          </Label>
-        </div>
+        {handleVoteState()}
       </CardHeader>
       <Separator className="my-4" />
-      <CardContent className="flex text-left">{contentValue}</CardContent>
+      <CardContent className="flex p-0 text-left text-gray-200/80">
+        {contentValue}
+      </CardContent>
     </Card>
   );
 }
