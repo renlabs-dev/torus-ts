@@ -12,7 +12,6 @@ import { and, eq } from "drizzle-orm";
 export const cadreCandidateRouter = {
   // GET
   all: publicProcedure.query(({ ctx }) => {
-    console.log("oi");
     return ctx.db.query.cadreCandidateSchema.findMany({
       where: isNull(cadreCandidateSchema.deletedAt),
     });
