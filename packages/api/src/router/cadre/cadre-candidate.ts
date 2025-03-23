@@ -12,7 +12,6 @@ import { and, eq } from "drizzle-orm";
 export const cadreCandidateRouter = {
   // GET
   all: publicProcedure.query(({ ctx }) => {
-    console.log("oi");
     return ctx.db.query.cadreCandidateSchema.findMany({
       where: isNull(cadreCandidateSchema.deletedAt),
     });
@@ -21,7 +20,6 @@ export const cadreCandidateRouter = {
     const discordSchema = userDiscordInfoSchema;
     const candidateSchema = cadreCandidateSchema;
 
-    console.log("Executing allWithDiscord query");
     const candidates = await ctx.db
       .select({
         // Discord info
