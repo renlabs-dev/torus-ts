@@ -14,12 +14,12 @@ import { useGovernance } from "~/context/governance-provider";
 
 // Define the possible status values
 type StatusType =
-  | "DAO MEMBERS"
-  | "ACCEPTED"
-  | "REJECTED"
-  | "PENDING"
-  | "REMOVED"
-  | "ALL";
+  | "DAO Members"
+  | "Accepted"
+  | "Rejected"
+  | "Pending"
+  | "Removed"
+  | "All";
 type ViewType = "agent-applications" | "dao-portal";
 
 const statusOptions: StatusType[] = [
