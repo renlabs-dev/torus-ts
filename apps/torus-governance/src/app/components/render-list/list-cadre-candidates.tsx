@@ -1,5 +1,5 @@
 import { CreateCadreCandidates } from "../agent-application/create-cadre-candidates";
-import { ToVoteCadreCandidatesList } from "../cadre/curator-candidates-list";
+import { CadreCandidatesList } from "../cadre/components/cadre-candidates-list";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { useGovernance } from "~/context/governance-provider";
@@ -66,5 +66,5 @@ export const CadreCandidate = () => {
       </Card>
     );
 
-  if (isUserCadre && isUserAuthenticated) return <ToVoteCadreCandidatesList />;
+  if (isUserCadre && isUserAuthenticated) return <CadreCandidatesList />;
 };
