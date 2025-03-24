@@ -2,14 +2,13 @@
 
 import type { CandidateCardProps } from "../index";
 import { computedVotes } from "./computed-votes";
-// import { handleVoteState } from "./handle-pending-vote-state";
 import { handleCandidacyState } from "./handle-candidacy-state";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { Icons } from "@torus-ts/ui/components/icons";
 import { Label } from "@torus-ts/ui/components/label";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import { Crown } from "lucide-react";
+import { Calendar1 } from "lucide-react";
 import { DateTime } from "luxon";
 import Image from "next/image";
 import { api } from "~/trpc/react";
@@ -56,7 +55,7 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
             </CopyButton>
 
             <div className="flex items-center gap-1">
-              <Icons.Calendar />
+              <Calendar1 width={14} height={14} />
               <Label className="text-xs">
                 {DateTime.fromJSDate(dateCreated).toLocaleString(
                   DateTime.DATE_SHORT,

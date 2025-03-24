@@ -1,6 +1,6 @@
 import { Label } from "@torus-ts/ui/components/label";
 
-export function handleInFavorAgainstText(
+export function handleVoteLabel(
   vote: string,
   accept: number,
   refuse: number,
@@ -22,7 +22,7 @@ export function handleInFavorAgainstText(
 
   return (
     <Label className="flex flex-wrap items-center justify-center gap-2 text-xs">
-      <div className="justify-starttext-nowrap flex text-gray-500">
+      <div className="flex justify-start text-nowrap text-gray-500">
         {votedText}
         <div className="flex gap-2">
           <span className="text-red-500">{refuse}</span>

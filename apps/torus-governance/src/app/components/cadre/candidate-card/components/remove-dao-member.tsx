@@ -7,22 +7,29 @@ import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
 export function HandleRemoveDaoMember(
-  memberKey: string,
+  userKey: string,
   revoke: number,
 ): JSX.Element {
   const { selectedAccount } = useGovernance();
 
   const { data: curatorVotes, refetch: refetchCuratorVotes } =
     api.cadreVote.byId.useQuery({
-      applicantKey: memberKey,
+      applicantKey: userKey,
     });
 
   const createCadreVote = api.cadreVote.create.useMutation({
     onSuccess: () => refetchCuratorVotes(),
+    onError: (error) => {
+      console.error("Error submitting data:", error);
+    },
   });
 
   const deleteCadreVote = api.cadreVote.delete.useMutation({
     onSuccess: () => refetchCuratorVotes(),
+
+    onError: (error) => {
+      console.error("Error deleting data:", error);
+    },
   });
 
   const currentWalletVote = curatorVotes?.find(
@@ -32,15 +39,13 @@ export function HandleRemoveDaoMember(
   const handleVote = async (vote: "REMOVE") => {
     await createCadreVote.mutateAsync({
       vote,
-      applicantKey: memberKey,
+      applicantKey: userKey,
     });
   };
 
-  const handleRemoveVote = async () => {
-    await deleteCadreVote.mutateAsync({
-      applicantKey: memberKey,
-    });
-  };
+  async function handleRemoveVote() {
+    await deleteCadreVote.mutateAsync({ applicantKey: userKey });
+  }
 
   const voteCount = (
     <>
@@ -58,15 +63,12 @@ export function HandleRemoveDaoMember(
         </Label>
         <Button
           variant="outline"
-          onClick={handleRemoveVote}
+          onClick={() => handleRemoveVote()}
           type="button"
+          className="flex w-full sm:w-auto"
           disabled={createCadreVote.isPending}
         >
-          <span>
-            {createCadreVote.isPending
-              ? "Waiting for Signature..."
-              : "Remove Vote"}
-          </span>
+          {createCadreVote.isPending ? "Awaiting Signature" : "Remove Vote"}
         </Button>
       </div>
     );
@@ -80,11 +82,10 @@ export function HandleRemoveDaoMember(
       <Button
         onClick={() => handleVote("REMOVE")}
         variant="destructive"
+        className="flex w-full sm:w-auto"
         disabled={createCadreVote.isPending}
       >
-        {createCadreVote.isPending
-          ? "Waiting for Signature..."
-          : "Remove Member"}
+        {createCadreVote.isPending ? "Awaiting Signature" : "Remove Member"}
       </Button>
     </div>
   );

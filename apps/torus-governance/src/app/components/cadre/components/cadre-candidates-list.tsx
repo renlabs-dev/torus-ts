@@ -9,13 +9,19 @@ export function CadreCandidatesList(): JSX.Element {
   const searchParams = useSearchParams();
   const currentStatus = searchParams.get("status") ?? "pending";
 
+  // Verifies candidates current status
+  const currentStatusIsPending =
+    currentStatus === "pending"
+      ? "Check back later to review and vote on new applicants to the Curator DAO."
+      : "Try changing your filter selection to see other candidates.";
+
   // Get all candidates with Discord information
   const { data: candidatesWithDiscord = [] } =
     api.cadreCandidate.allWithDiscord.useQuery();
 
   // Filter candidates based on status
   const filteredCandidates = candidatesWithDiscord.filter((candidate) => {
-    if (currentStatus === "all") return true;
+    if (currentStatus === "pending") return true;
 
     switch (currentStatus.toLowerCase()) {
       case "dao members":
@@ -44,11 +50,7 @@ export function CadreCandidatesList(): JSX.Element {
           <h3 className="text-xl font-semibold">
             There is no match for the selected filter.
           </h3>
-          <p className="text-gray-400">
-            {currentStatus === "all"
-              ? "Check back later to review and vote on new applicants to the Curator DAO."
-              : "Try changing your filter selection to see other candidates."}
-          </p>
+          <p className="text-gray-400">{currentStatusIsPending}</p>
         </Card>
       )}
     </div>

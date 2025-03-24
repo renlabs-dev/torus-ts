@@ -1,8 +1,7 @@
 "use client";
 
-import { handleInFavorAgainstText } from "./handle-infavor-against-text";
+import { handleVoteLabel } from "./handle-vote-label";
 import { Button } from "@torus-ts/ui/components/button";
-import { Label } from "@torus-ts/ui/components/label";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
@@ -20,10 +19,16 @@ export function HandlePendingVoteState(
 
   const createCadreVote = api.cadreVote.create.useMutation({
     onSuccess: () => refetchCuratorVotes(),
+    onError: (error) => {
+      console.error("Error submitting data:", error);
+    },
   });
 
   const deleteCadreVote = api.cadreVote.delete.useMutation({
     onSuccess: () => refetchCuratorVotes(),
+    onError: (error) => {
+      console.error("Error deleting data:", error);
+    },
   });
 
   const currentWalletVote = curatorVotes?.find(
@@ -46,55 +51,54 @@ export function HandlePendingVoteState(
   if (currentWalletVote?.applicantKey === userKey) {
     const vote = currentWalletVote.vote;
     if (vote === "ACCEPT" || vote === "REFUSE") {
-      const revokeVoteButton = (
+      return (
         <div className="flex flex-row flex-wrap gap-4">
-          {handleInFavorAgainstText(vote, accept, refuse)}
-          <Label className="flex items-center justify-center gap-2 text-xs">
+          {handleVoteLabel(vote, accept, refuse)}
+          <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
             <Button
               onClick={() => handleRemoveVote()}
               variant="outline"
+              className="flex w-full sm:w-auto"
               title="Reject"
             >
               {deleteCadreVote.isPending === true
-                ? "Waiting for Signature..."
+                ? "Awaiting Signature"
                 : "Revoke Vote"}
             </Button>
-          </Label>
+          </div>
         </div>
       );
-      return revokeVoteButton;
     }
   }
-  const toVoteButton = (
+  return (
     <div className="flex flex-row flex-wrap gap-4">
-      {handleInFavorAgainstText("", accept, refuse)}
-      <div className="flex items-center justify-center gap-2">
+      {handleVoteLabel("", accept, refuse)}
+      <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
         <Button
           onClick={() => handleVote("REFUSE")}
           variant="outline"
-          className="border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500"
+          className="flex w-full border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500 sm:w-auto"
           title="Reject"
           disabled={createCadreVote.isPending}
         >
           {createCadreVote.isPending &&
           createCadreVote.variables.vote === "REFUSE"
-            ? "Waiting for Signature..."
+            ? "Awaiting Signature"
             : "Refuse"}
         </Button>
         <Button
           onClick={() => handleVote("ACCEPT")}
           variant="outline"
-          className="border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30 hover:text-green-500"
+          className="flex w-full border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30 hover:text-green-500 sm:w-auto"
           title="Approve"
           disabled={createCadreVote.isPending}
         >
           {createCadreVote.isPending &&
           createCadreVote.variables.vote === "ACCEPT"
-            ? "Waiting for Signature..."
+            ? "Awaiting Signature"
             : "Accept"}
         </Button>
       </div>
     </div>
   );
-  return toVoteButton;
 }

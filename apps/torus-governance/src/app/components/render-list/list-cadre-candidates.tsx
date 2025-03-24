@@ -66,7 +66,5 @@ export const CadreCandidate = () => {
       </Card>
     );
 
-  // if ()
-
   if (isUserCadre && isUserAuthenticated) return <CadreCandidatesList />;
 };

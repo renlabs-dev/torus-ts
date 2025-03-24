@@ -127,23 +127,4 @@ export const Icons = {
       <path d="m21.854 2.147-10.94 10.939" />
     </svg>
   ),
-  Calendar: (props: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="12"
-      height="13"
-      viewBox="0 0 12 13"
-      fill="none"
-      stroke="#A1A1AA"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M5.5 7.5H6V9.5" />
-      <path d="M8 1.5V3.5" />
-      <path d="M1.5 5.5H10.5" />
-      <path d="M4 1.5V3.5" />
-      <path d="M9.5 2.5H2.5C1.94772 2.5 1.5 2.94772 1.5 3.5V10.5C1.5 11.0523 1.94772 11.5 2.5 11.5H9.5C10.0523 11.5 10.5 11.0523 10.5 10.5V3.5C10.5 2.94772 10.0523 2.5 9.5 2.5Z" />
-    </svg>
-  ),
 };

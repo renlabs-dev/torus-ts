@@ -315,7 +315,7 @@ export function CreateCadreCandidates() {
               >
                 <Icons.Send />
                 {createCadreCandidateMutation.isPending
-                  ? "Waiting for Signature..."
+                  ? "Awaiting Signature"
                   : "Submit Application"}
               </Button>
             </form>

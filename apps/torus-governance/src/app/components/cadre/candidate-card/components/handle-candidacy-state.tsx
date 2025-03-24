@@ -8,16 +8,15 @@ export function handleCandidacyState(
   accept: number,
   refuse: number,
   revoke: number,
-  // removeVotes: number = 0, // Make it optional with a default value
 ): JSX.Element {
   if (candidate.candidacyStatus === "PENDING") {
     return HandlePendingVoteState(userKey, accept, refuse);
   }
   if (candidate.candidacyStatus === "REMOVED") {
-    return <div>Your candidacy was removed.</div>;
+    return <div>This member was removed.</div>;
   }
   if (candidate.candidacyStatus === "REJECTED") {
-    return <div>Your candidacy was rejected.</div>;
+    return <div>This candidate was rejected.</div>;
   }
   return HandleRemoveDaoMember(userKey, revoke);
 }
