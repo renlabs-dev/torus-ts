@@ -44,7 +44,6 @@ export function useWeeklyUsdCalculation(
       agentKey: props.agentKey,
     },
     {
-      staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false, // Don't refetch when the window regains focus
       refetchOnMount: false, // Don't refetch when the component mounts
     },
