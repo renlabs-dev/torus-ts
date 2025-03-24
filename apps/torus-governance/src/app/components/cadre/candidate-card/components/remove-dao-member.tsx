@@ -6,16 +6,27 @@ import React from "react";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
+interface HandleRemoveDaoMemberProps {
+  userKey: string;
+  revoke: number;
+}
+
 export function HandleRemoveDaoMember(
-  userKey: string,
-  revoke: number,
+  props: HandleRemoveDaoMemberProps,
 ): JSX.Element {
   const { selectedAccount } = useGovernance();
 
   const { data: curatorVotes, refetch: refetchCuratorVotes } =
     api.cadreVote.byId.useQuery({
-      applicantKey: userKey,
+      applicantKey: props.userKey,
     });
+
+  const handleVote = async (vote: "REMOVE") => {
+    await createCadreVote.mutateAsync({
+      vote,
+      applicantKey: props.userKey,
+    });
+  };
 
   const createCadreVote = api.cadreVote.create.useMutation({
     onSuccess: () => refetchCuratorVotes(),
@@ -36,20 +47,13 @@ export function HandleRemoveDaoMember(
     (vote) => vote.userKey === selectedAccount?.address,
   );
 
-  const handleVote = async (vote: "REMOVE") => {
-    await createCadreVote.mutateAsync({
-      vote,
-      applicantKey: userKey,
-    });
-  };
-
   async function handleRemoveVote() {
-    await deleteCadreVote.mutateAsync({ applicantKey: userKey });
+    await deleteCadreVote.mutateAsync({ applicantKey: props.userKey });
   }
 
   const voteCount = (
     <>
-      Remove vote count: <span className="text-red-500">{revoke}</span>
+      Remove vote count: <span className="text-red-500">{props.revoke}</span>
     </>
   );
 
@@ -66,9 +70,9 @@ export function HandleRemoveDaoMember(
           onClick={() => handleRemoveVote()}
           type="button"
           className="flex w-full sm:w-auto"
-          disabled={createCadreVote.isPending}
+          disabled={deleteCadreVote.isPending}
         >
-          {createCadreVote.isPending ? "Please Sign" : "Remove Vote"}
+          {deleteCadreVote.isPending ? "Please Sign" : "Remove Vote"}
         </Button>
       </div>
     );

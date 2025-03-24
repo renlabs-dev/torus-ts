@@ -1,12 +1,12 @@
 "use client";
 
 import type { CandidateCardProps } from "../index";
-import { computedVotes } from "./computed-votes";
 import { HandleCandidacyState } from "./handle-candidacy-state";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Label } from "@torus-ts/ui/components/label";
 import { smallAddress } from "@torus-ts/utils/subspace";
+import { useComputedCandidateVotes } from "hooks/use-computed-candidate-votes";
 import { Crown } from "lucide-react";
 import { Calendar1 } from "lucide-react";
 import { DateTime } from "luxon";
@@ -15,21 +15,32 @@ import { api } from "~/trpc/react";
 
 export function CandidateCardHeader({ candidate }: CandidateCardProps) {
   const {
-    userName: userNames = "empty",
+    userName,
     avatarUrl,
-    discordId: discordIds = "",
-    userKey = "",
-    createdAt: dateCreated = new Date("01-01-01"),
-    candidacyStatus = "REMOVED",
+    discordId,
+    userKey,
+    createdAt,
+    candidacyStatus,
   } = candidate;
 
   const { data: curatorVoteHistory } = api.cadreVoteHistory.all.useQuery();
 
-  const { accept, refuse, revoke } = computedVotes(
+  const computedVotesProps = {
     candidacyStatus,
     userKey,
     curatorVoteHistory,
-  );
+  };
+
+  const { accept, refuse, revoke } =
+    useComputedCandidateVotes(computedVotesProps);
+
+  const candidacyStateProps = {
+    candidate,
+    userKey,
+    accept,
+    refuse,
+    revoke,
+  };
 
   return (
     <CardHeader className="flex-row flex-wrap justify-between gap-3 p-0 text-xs">
@@ -38,12 +49,19 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
           width={50}
           height={50}
           src={avatarUrl ?? "https://cdn.discordapp.com/embed/avatars/4.png"}
-          alt={`${userNames}'s avatar`}
+          alt={`${userName}'s avatar`}
         />
         <div className="flex flex-col justify-center gap-1">
-          <Label className="">
-            {userNames} (#{discordIds})
-          </Label>
+          <div className="flex gap-2 font-bold text-gray-200">
+            <Label className="">{userName ?? "User not found"}</Label>
+            <CopyButton
+              copy={discordId}
+              variant={"link"}
+              className="text-muted-foreground h-5 items-center p-0 text-xs hover:text-gray-300"
+            >
+              (#{smallAddress(discordId, 5)})
+            </CopyButton>
+          </div>
           <div className="flex gap-2 font-bold text-gray-500">
             <CopyButton
               copy={userKey}
@@ -57,7 +75,7 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
             <div className="flex items-center gap-1">
               <Calendar1 width={14} height={14} />
               <Label className="text-xs">
-                {DateTime.fromJSDate(dateCreated).toLocaleString(
+                {DateTime.fromJSDate(createdAt).toLocaleString(
                   DateTime.DATE_SHORT,
                 )}
               </Label>
@@ -65,7 +83,7 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
           </div>
         </div>
       </div>
-      {HandleCandidacyState(candidate, userKey, accept, refuse, revoke)}
+      {HandleCandidacyState(candidacyStateProps)}
     </CardHeader>
   );
 }

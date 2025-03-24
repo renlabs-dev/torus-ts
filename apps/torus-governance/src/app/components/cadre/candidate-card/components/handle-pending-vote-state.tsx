@@ -2,25 +2,47 @@
 
 import { HandleVoteLabel } from "./handle-vote-label";
 import { Button } from "@torus-ts/ui/components/button";
+import { toast } from "@torus-ts/ui/hooks/use-toast";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
+interface HandlePendingVoteStateProps {
+  userKey: string;
+  accept: number;
+  refuse: number;
+}
+
 export function HandlePendingVoteState(
-  userKey: string,
-  accept: number,
-  refuse: number,
+  props: HandlePendingVoteStateProps,
 ): JSX.Element {
   const { selectedAccount } = useGovernance();
 
   const { data: curatorVotes, refetch: refetchCuratorVotes } =
     api.cadreVote.byId.useQuery({
-      applicantKey: userKey,
+      applicantKey: props.userKey,
     });
+
+  const handleVote = async (vote: "ACCEPT" | "REFUSE" | "REMOVE") => {
+    await createCadreVote.mutateAsync({
+      vote,
+      applicantKey: props.userKey,
+    });
+  };
+
+  const handleRemoveVote = async () => {
+    await deleteCadreVote.mutateAsync({
+      applicantKey: props.userKey,
+    });
+  };
 
   const createCadreVote = api.cadreVote.create.useMutation({
     onSuccess: () => refetchCuratorVotes(),
     onError: (error) => {
       console.error("Error submitting data:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to submit your vote. Please try again.",
+      });
     },
   });
 
@@ -28,6 +50,10 @@ export function HandlePendingVoteState(
     onSuccess: () => refetchCuratorVotes(),
     onError: (error) => {
       console.error("Error deleting data:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to revoke your vote. Please try again.",
+      });
     },
   });
 
@@ -35,25 +61,18 @@ export function HandlePendingVoteState(
     (vote) => vote.userKey === selectedAccount?.address,
   );
 
-  const handleVote = async (vote: "ACCEPT" | "REFUSE" | "REMOVE") => {
-    await createCadreVote.mutateAsync({
-      vote,
-      applicantKey: userKey,
-    });
+  const pendingVoteStateProps = {
+    vote: currentWalletVote?.vote ?? "",
+    accept: props.accept,
+    refuse: props.refuse,
   };
 
-  const handleRemoveVote = async () => {
-    await deleteCadreVote.mutateAsync({
-      applicantKey: userKey,
-    });
-  };
-
-  if (currentWalletVote?.applicantKey === userKey) {
+  if (currentWalletVote?.applicantKey === props.userKey) {
     const vote = currentWalletVote.vote;
     if (vote === "ACCEPT" || vote === "REFUSE") {
       return (
         <div className="flex flex-row flex-wrap gap-4">
-          {HandleVoteLabel(vote, accept, refuse)}
+          {HandleVoteLabel(pendingVoteStateProps)}
           <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
             <Button
               onClick={() => handleRemoveVote()}
@@ -72,7 +91,7 @@ export function HandlePendingVoteState(
   }
   return (
     <div className="flex flex-row flex-wrap gap-4">
-      {HandleVoteLabel("", accept, refuse)}
+      {HandleVoteLabel(pendingVoteStateProps)}
       <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
         <Button
           onClick={() => handleVote("REFUSE")}

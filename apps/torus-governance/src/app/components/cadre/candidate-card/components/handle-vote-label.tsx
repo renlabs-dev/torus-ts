@@ -1,17 +1,19 @@
 import { Label } from "@torus-ts/ui/components/label";
 
-export function HandleVoteLabel(
-  vote: string,
-  accept: number,
-  refuse: number,
-): JSX.Element {
+interface HandleVoteLabelProps {
+  vote: string;
+  accept: number;
+  refuse: number;
+}
+
+export function HandleVoteLabel(props: HandleVoteLabelProps): JSX.Element {
   const votedText =
-    vote === "ACCEPT" ? (
+    props.vote === "ACCEPT" ? (
       <>
         (You voted&nbsp;
         <span className="text-green-500">In&nbsp;Favor</span>)&nbsp;
       </>
-    ) : vote === "REFUSE" ? (
+    ) : props.vote === "REFUSE" ? (
       <>
         (You voted&nbsp;
         <span className="text-red-500">Against</span>)&nbsp;
@@ -25,11 +27,11 @@ export function HandleVoteLabel(
       <div className="flex justify-start text-nowrap text-gray-500">
         {votedText}
         <div className="flex gap-2">
-          <span className="text-red-500">{refuse}</span>
+          <span className="text-red-500">{props.refuse}</span>
           Against |&nbsp;
         </div>
         <div className="flex gap-2">
-          <span className="text-green-500">{accept}</span>
+          <span className="text-green-500">{props.accept}</span>
           In Favor
         </div>
       </div>

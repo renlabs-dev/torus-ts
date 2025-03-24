@@ -1,4 +1,4 @@
-import type { CuratorVoteHistory } from "../index";
+import type { CuratorVoteHistory } from "../src/app/components/cadre/candidate-card/index";
 import { api } from "~/trpc/react";
 
 export interface ComputedVotes {
@@ -7,17 +7,21 @@ export interface ComputedVotes {
   revoke: number;
 }
 
-export function computedVotes(
-  candidacyStatus: string,
-  userKey: string,
-  curatorVoteHistory: CuratorVoteHistory | undefined,
+interface ComputedVotesProps {
+  candidacyStatus: string;
+  userKey: string;
+  curatorVoteHistory: CuratorVoteHistory | undefined;
+}
+
+export function useComputedCandidateVotes(
+  props: ComputedVotesProps,
 ): ComputedVotes {
   const { data: curatorVotes } = api.cadreVote.byId.useQuery({
-    applicantKey: userKey,
+    applicantKey: props.userKey,
   });
 
   // Votes for candidacy
-  if (candidacyStatus === "PENDING") {
+  if (props.candidacyStatus === "PENDING") {
     const votes = curatorVotes ?? [];
     return {
       accept: votes.filter((v) => v.vote === "ACCEPT").length,
@@ -27,9 +31,11 @@ export function computedVotes(
   }
   // Here are the votes to remove the user from the DAO
   // The value that must be considered if you want to check for the "remove from dao" votes is the "revoke" value
-  if (candidacyStatus === "ACCEPTED") {
+  if (props.candidacyStatus === "ACCEPTED") {
     const votes =
-      curatorVoteHistory?.filter((v) => v.applicantKey === userKey) ?? [];
+      props.curatorVoteHistory?.filter(
+        (v) => v.applicantKey === props.userKey,
+      ) ?? [];
 
     return {
       accept: votes.filter((v) => v.vote === "ACCEPT").length,

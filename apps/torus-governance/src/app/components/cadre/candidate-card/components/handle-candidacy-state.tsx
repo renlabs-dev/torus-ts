@@ -2,21 +2,36 @@ import type { CandidateCardProps } from "../index";
 import { HandlePendingVoteState } from "./handle-pending-vote-state";
 import { HandleRemoveDaoMember } from "./remove-dao-member";
 
+interface HandleCandidacyStateProps {
+  candidate: CandidateCardProps["candidate"];
+  userKey: string;
+  accept: number;
+  refuse: number;
+  revoke: number;
+}
+
 export function HandleCandidacyState(
-  candidate: CandidateCardProps["candidate"],
-  userKey: string,
-  accept: number,
-  refuse: number,
-  revoke: number,
+  props: HandleCandidacyStateProps,
 ): JSX.Element {
-  if (candidate.candidacyStatus === "PENDING") {
-    return HandlePendingVoteState(userKey, accept, refuse);
+  const pendingVoteStateProps = {
+    userKey: props.userKey,
+    accept: props.accept,
+    refuse: props.refuse,
+  };
+
+  const removeDaoMemberProps = {
+    userKey: props.userKey,
+    revoke: props.revoke,
+  };
+
+  if (props.candidate.candidacyStatus === "PENDING") {
+    return HandlePendingVoteState(pendingVoteStateProps);
   }
-  if (candidate.candidacyStatus === "REMOVED") {
+  if (props.candidate.candidacyStatus === "REMOVED") {
     return <div>This member was removed.</div>;
   }
-  if (candidate.candidacyStatus === "REJECTED") {
+  if (props.candidate.candidacyStatus === "REJECTED") {
     return <div>This candidate was rejected.</div>;
   }
-  return HandleRemoveDaoMember(userKey, revoke);
+  return HandleRemoveDaoMember(removeDaoMemberProps);
 }
