@@ -1,3 +1,4 @@
+import FilterDaoContent from "./components/cadre/components/dao-members-candidates-filter";
 import { FilterContent } from "./components/filter-content";
 import { CreateModal } from "./components/modal";
 import { PopoverInfo } from "./components/popover-info";
@@ -18,6 +19,7 @@ export default function HomePage(): JSX.Element {
       <div className="flex w-full flex-col gap-4">
         <div className="flex w-full flex-col justify-between gap-3 lg:flex-row">
           <FilterContent />
+          <FilterDaoContent />
           <CreateModal />
         </div>
         <RenderList />
