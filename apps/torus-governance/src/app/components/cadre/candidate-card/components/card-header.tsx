@@ -2,7 +2,8 @@
 
 import type { CandidateCardProps } from "../index";
 import { computedVotes } from "./computed-votes";
-import { handleVoteState } from "./handle-vote-state";
+// import { handleVoteState } from "./handle-pending-vote-state";
+import { handleCandidacyState } from "./handle-candidacy-state";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Icons } from "@torus-ts/ui/components/icons";
@@ -25,7 +26,7 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
 
   const { data: curatorVoteHistory } = api.cadreVoteHistory.all.useQuery();
 
-  const { accept, refuse } = computedVotes(
+  const { accept, refuse, revoke } = computedVotes(
     candidacyStatus,
     userKey,
     curatorVoteHistory,
@@ -65,7 +66,7 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
           </div>
         </div>
       </div>
-      {handleVoteState(userKey, accept, refuse)}
+      {handleCandidacyState(candidate, userKey, accept, refuse, revoke)}
     </CardHeader>
   );
 }

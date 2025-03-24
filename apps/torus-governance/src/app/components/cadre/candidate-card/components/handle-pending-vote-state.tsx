@@ -6,12 +6,11 @@ import { Label } from "@torus-ts/ui/components/label";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
-export function handleVoteState(
+export function HandlePendingVoteState(
   userKey: string,
   accept: number,
   refuse: number,
 ): JSX.Element {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { selectedAccount } = useGovernance();
 
   const { data: curatorVotes, refetch: refetchCuratorVotes } =
@@ -56,7 +55,9 @@ export function handleVoteState(
               variant="outline"
               title="Reject"
             >
-              Revoke Vote
+              {deleteCadreVote.isPending === true
+                ? "Waiting for Signature..."
+                : "Revoke Vote"}
             </Button>
           </Label>
         </div>
@@ -73,16 +74,24 @@ export function handleVoteState(
           variant="outline"
           className="border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500"
           title="Reject"
+          disabled={createCadreVote.isPending}
         >
-          Refuse
+          {createCadreVote.isPending &&
+          createCadreVote.variables.vote === "REFUSE"
+            ? "Waiting for Signature..."
+            : "Refuse"}
         </Button>
         <Button
           onClick={() => handleVote("ACCEPT")}
           variant="outline"
           className="border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30 hover:text-green-500"
           title="Approve"
+          disabled={createCadreVote.isPending}
         >
-          Accept
+          {createCadreVote.isPending &&
+          createCadreVote.variables.vote === "ACCEPT"
+            ? "Waiting for Signature..."
+            : "Accept"}
         </Button>
       </div>
     </div>

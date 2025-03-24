@@ -13,20 +13,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useGovernance } from "~/context/governance-provider";
 
 // Define the possible status values
-type StatusType =
-  | "DAO Members"
-  | "Accepted"
-  | "Rejected"
-  | "Pending"
-  | "Removed"
-  | "All";
+type StatusType = "Pending" | "DAO Members" | "Rejected" | "Removed";
 type ViewType = "agent-applications" | "dao-portal";
 
 const statusOptions: StatusType[] = [
-  "All",
-  "DAO Members",
   "Pending",
-  "Accepted",
+  "DAO Members",
   "Rejected",
   "Removed",
 ];
@@ -36,7 +28,7 @@ const FilterDaoContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentView = searchParams.get("view") as ViewType | null;
-  const currentStatus = searchParams.get("status") ?? "all";
+  const currentStatus = searchParams.get("status") ?? "pending";
 
   const { isUserCadre } = useGovernance();
 
@@ -45,14 +37,16 @@ const FilterDaoContent = () => {
 
   if (!shouldShowFilter) return null;
 
+  // Find the matching status option for display
+  const displayStatus =
+    statusOptions.find(
+      (status) => status.toLowerCase() === currentStatus.toLowerCase(),
+    ) ?? "Pending";
+
   const handleStatusChange = (newStatus: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (newStatus.toLowerCase() === "all") {
-      params.delete("status");
-    } else {
-      params.set("status", newStatus.toLowerCase());
-    }
+    params.set("status", newStatus.toLowerCase());
 
     router.push(`/?${params.toString()}`);
   };
@@ -64,13 +58,15 @@ const FilterDaoContent = () => {
       value={currentStatus}
     >
       <SelectTrigger className="bg-card rounded-radius w-full border p-3 outline-none lg:w-[180px]">
-        <SelectValue placeholder="Filter by status" />
+        <SelectValue placeholder="Filter by status">
+          {displayStatus}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           {statusOptions.map((status) => (
             <SelectItem key={status} value={status.toLowerCase()}>
-              <SelectLabel> {status} </SelectLabel>
+              <SelectLabel>{status}</SelectLabel>
             </SelectItem>
           ))}
         </SelectGroup>

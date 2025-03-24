@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 
 export function CadreCandidatesList(): JSX.Element {
   const searchParams = useSearchParams();
-  const currentStatus = searchParams.get("status") ?? "all";
+  const currentStatus = searchParams.get("status") ?? "pending";
 
   // Get all candidates with Discord information
   const { data: candidatesWithDiscord = [] } =
@@ -38,12 +38,11 @@ export function CadreCandidatesList(): JSX.Element {
       {filteredCandidates.map((candidate) => (
         <CandidateCard key={candidate.discordId} candidate={candidate} />
       ))}
-
       {/* If no candidates are found, display a message */}
       {filteredCandidates.length === 0 && (
         <Card className="flex flex-col items-center justify-center p-8 text-center">
           <h3 className="text-xl font-semibold">
-            There it is no match for the selected filter.
+            There is no match for the selected filter.
           </h3>
           <p className="text-gray-400">
             {currentStatus === "all"
