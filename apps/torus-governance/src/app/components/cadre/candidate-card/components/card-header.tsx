@@ -83,7 +83,7 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
           </div>
         </div>
       </div>
-      {HandleCandidacyState(candidacyStateProps)}
+      <HandleCandidacyState {...candidacyStateProps} />
     </CardHeader>
   );
 }

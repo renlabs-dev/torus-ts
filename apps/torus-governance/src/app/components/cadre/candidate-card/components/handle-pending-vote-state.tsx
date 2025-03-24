@@ -72,7 +72,7 @@ export function HandlePendingVoteState(
     if (vote === "ACCEPT" || vote === "REFUSE") {
       return (
         <div className="flex flex-row flex-wrap gap-4">
-          {HandleVoteLabel(pendingVoteStateProps)}
+          <HandleVoteLabel {...pendingVoteStateProps} />
           <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
             <Button
               onClick={() => handleRemoveVote()}
@@ -91,7 +91,7 @@ export function HandlePendingVoteState(
   }
   return (
     <div className="flex flex-row flex-wrap gap-4">
-      {HandleVoteLabel(pendingVoteStateProps)}
+      <HandleVoteLabel {...pendingVoteStateProps} />
       <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
         <Button
           onClick={() => handleVote("REFUSE")}

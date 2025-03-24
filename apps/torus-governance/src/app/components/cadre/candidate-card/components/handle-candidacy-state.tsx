@@ -25,7 +25,7 @@ export function HandleCandidacyState(
   };
 
   if (props.candidate.candidacyStatus === "PENDING") {
-    return HandlePendingVoteState(pendingVoteStateProps);
+    return <HandlePendingVoteState {...pendingVoteStateProps} />;
   }
   if (props.candidate.candidacyStatus === "REMOVED") {
     return <div>This member was removed.</div>;
@@ -33,5 +33,5 @@ export function HandleCandidacyState(
   if (props.candidate.candidacyStatus === "REJECTED") {
     return <div>This candidate was rejected.</div>;
   }
-  return HandleRemoveDaoMember(removeDaoMemberProps);
+  return <HandleRemoveDaoMember {...removeDaoMemberProps} />;
 }
