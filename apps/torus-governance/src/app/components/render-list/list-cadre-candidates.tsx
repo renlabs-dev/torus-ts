@@ -1,13 +1,10 @@
 import { CreateCadreCandidates } from "../agent-application/create-cadre-candidates";
-import { CuratorCandidatesList } from "../cadre/curator-candidates-list";
-import { ListCardsLoadingSkeleton } from "./cards-skeleton-list";
-import { ListContainer } from "./container-list";
+import { CadreCandidatesList } from "../cadre/components/cadre-candidates-list";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
-import { useSearchParams } from "next/navigation";
 import { useGovernance } from "~/context/governance-provider";
 
-export const ListCadreCandidates = () => {
+export const CadreCandidate = () => {
   const {
     selectedAccount,
     isUserAuthenticated,
@@ -70,34 +67,4 @@ export const ListCadreCandidates = () => {
     );
 
   if (isUserCadre && isUserAuthenticated) return <CadreCandidatesList />;
-};
-
-export const CadreCandidatesList = () => {
-  const { cadreCandidates } = useGovernance();
-
-  const { data: cadreCandidatesList, isFetching: isFetchingCadreCandidates } =
-    cadreCandidates;
-  const searchParams = useSearchParams();
-
-  if (!cadreCandidatesList && isFetchingCadreCandidates)
-    return <ListCardsLoadingSkeleton />;
-
-  if (!cadreCandidatesList) return <p>No Curator DAO candidates found.</p>;
-
-  const filteredCadreCandidates = cadreCandidatesList.map((candidate) => {
-    const search = searchParams.get("search")?.toLocaleLowerCase();
-    if (
-      search &&
-      !candidate.content.toLocaleLowerCase().includes(search) &&
-      !candidate.discordId.toLocaleLowerCase().includes(search) &&
-      !candidate.userKey.toLocaleLowerCase().includes(search)
-    ) {
-      return;
-    }
-
-    return (
-      <CuratorCandidatesList key={candidate.id} curatorCandidate={candidate} />
-    );
-  });
-  return <ListContainer>{filteredCadreCandidates}</ListContainer>;
 };
