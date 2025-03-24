@@ -48,7 +48,7 @@ export const FeeLabel = forwardRef<FeeLabelHandle, FeeLabelProps>(
       return <FeeMessage>Add recipient to estimate fee</FeeMessage>;
     }
 
-    return <FeeMessage>Estimated fee: {estimatedFee} TORUS</FeeMessage>;
+    return <FeeMessage>Estimated fee: {estimatedFee} TORUS</FeeMessage>
   }
 );
 

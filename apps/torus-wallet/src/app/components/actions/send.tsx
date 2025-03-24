@@ -1,5 +1,6 @@
 "use client";
 
+import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { AmountButtons } from "../amount-buttons";
 import type { FeeLabelHandle } from "../fee-label";
 import { FeeLabel } from "../fee-label";
@@ -25,7 +26,6 @@ import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import React, {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -33,10 +33,33 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
-import { computeFeeData } from "~/utils/helpers";
+import { computeFeeData, convertToTorus, convertToUSD } from "~/utils/helpers";
 import { isWithinTransferLimit } from "~/utils/validators";
 
 const FEE_BUFFER_PERCENT = 102n;
+
+const createSendActionFormSchema = (accountFreeBalance: bigint | null, feeRef: React.RefObject<FeeLabelHandle>) =>
+  z.object({
+    recipient: z
+      .string()
+      .nonempty({ message: "Recipient address is required" })
+      .refine(isSS58, { message: "Invalid recipient address" }),
+    amount: z
+      .string()
+      .nonempty({ message: "Amount is required" })
+      .refine((amount) => toNano(amount) > 0n, {
+        message: "Amount must be greater than 0",
+      })
+      .refine(
+        (amount) =>
+          isWithinTransferLimit(
+            amount,
+            feeRef.current?.getEstimatedFee() ?? "0",
+            accountFreeBalance ?? 0n,
+          ),
+        { message: "Amount exceeds maximum transferable amount" },
+      ),
+  });
 
 export function SendAction() {
   const {
@@ -47,44 +70,23 @@ export function SendAction() {
     transferTransaction,
   } = useWallet();
   const { toast } = useToast();
+  const { data: usdPrice } = useGetTorusPrice();
 
   const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
   const formRef = useRef<HTMLFormElement>(null);
-
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
-    {
-      status: null,
-      message: null,
-      finalized: false,
-    },
-  );
-
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
 
-  const sendActionFormSchema = useMemo(() => {
-    return z.object({
-      recipient: z
-        .string()
-        .nonempty({ message: "Recipient address is required" })
-        .refine(isSS58, { message: "Invalid recipient address" }),
-      amount: z
-        .string()
-        .nonempty({ message: "Amount is required" })
-        .refine((amount) => toNano(amount) > 0n, {
-          message: "Amount must be greater than 0",
-        })
-        .refine(
-          (amount) =>
-            isWithinTransferLimit(
-              amount,
-              feeRef.current?.getEstimatedFee() ?? "0",
-              accountFreeBalance.data ?? 0n,
-            ),
-          { message: "Amount exceeds maximum transferable amount" },
-        ),
-    });
-  }, [accountFreeBalance.data]);
+  const [inputType, setInputType] = useState<'TORUS' | 'USD'>("TORUS");
+  const [displayAmount, setDisplayAmount] = useState<string>("");
+
+  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>({
+    status: null,
+    message: null,
+    finalized: false,
+  });
+
+  const sendActionFormSchema = createSendActionFormSchema(accountFreeBalance.data ?? null, feeRef);
 
   const form = useForm<z.infer<typeof sendActionFormSchema>>({
     resolver: zodResolver(sendActionFormSchema),
@@ -95,7 +97,7 @@ export function SendAction() {
     mode: "onTouched",
   });
 
-  const { reset, setValue, getValues, trigger } = form;
+  const { reset, setValue, getValues, trigger, watch } = form;
 
   const handleEstimateFee = useCallback(async () => {
     feeRef.current?.setLoading(true);
@@ -104,6 +106,7 @@ export function SendAction() {
         to: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "0",
       });
+
       if (!transaction) {
         toast({
           title: "Uh oh! Something went wrong.",
@@ -111,6 +114,7 @@ export function SendAction() {
         });
         return;
       }
+
       const fee = await estimateFee(transaction);
       if (fee != null) {
         const { feeStr, maxTransferable } = computeFeeData(
@@ -127,17 +131,45 @@ export function SendAction() {
     } catch (error) {
       console.error("Error estimating fee:", error);
       feeRef.current?.updateFee(null);
-      feeRef.current?.setLoading(false);
     } finally {
       feeRef.current?.setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accountFreeBalance.data, estimateFee, transferTransaction]);
+  }, [accountFreeBalance.data, estimateFee, transferTransaction, toast]);
+
+  const handleAmountChange = async (amount: string) => {
+    if (inputType === 'USD') {
+      const torusAmount = convertToTorus(amount, usdPrice);
+      setValue("amount", torusAmount);
+      setDisplayAmount(amount);
+    } else {
+      const usdAmount = convertToUSD(amount, usdPrice);
+      setValue("amount", amount);
+      setDisplayAmount(usdAmount);
+    }
+    await trigger("amount");
+  };
+
+  const handleCurrencySwitch = () => {
+    const currentAmount = watch("amount");
+
+    if (inputType === 'TORUS') {
+      const usdAmount = convertToUSD(currentAmount, usdPrice);
+      setDisplayAmount(usdAmount);
+      setInputType('USD');
+      setValue("amount", convertToTorus(usdAmount, usdPrice));
+    } else {
+      const torusAmount = convertToTorus(displayAmount, usdPrice);
+      setDisplayAmount(convertToUSD(torusAmount, usdPrice));
+      setInputType('TORUS');
+      setValue("amount", torusAmount);
+    }
+  };
 
   const handleCallback = (callbackReturn: TransactionResult) => {
     setTransactionStatus(callbackReturn);
     if (callbackReturn.status === "SUCCESS") {
       reset();
+      setDisplayAmount("");
     }
   };
 
@@ -159,11 +191,6 @@ export function SendAction() {
     });
   };
 
-  const handleAmountChange = async (amount: string) => {
-    setValue("amount", amount);
-    await trigger("amount");
-  };
-
   useEffect(() => {
     if (!selectedAccount?.address) return;
     void handleEstimateFee();
@@ -171,25 +198,16 @@ export function SendAction() {
 
   useEffect(() => {
     reset();
+    setDisplayAmount("");
     feeRef.current?.updateFee(null);
   }, [selectedAccount?.address, reset]);
 
   const reviewData = () => {
     const { recipient, amount } = getValues();
-
     return [
-      {
-        label: "To",
-        content: recipient,
-      },
-      {
-        label: "Amount",
-        content: `${amount} TORUS`,
-      },
-      {
-        label: "Fee",
-        content: `${feeRef.current?.getEstimatedFee()} TORUS`,
-      },
+      { label: "To", content: recipient },
+      { label: "Amount", content: `${amount} TORUS` },
+      { label: "Fee", content: `${feeRef.current?.getEstimatedFee()} TORUS` },
     ];
   };
 
@@ -214,11 +232,11 @@ export function SendAction() {
               name="recipient"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>To</FormLabel>
+                  <FormLabel>Receiver address</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Full recipient address"
+                      placeholder={`eg. 5CoS1L...2tCACxf4n`}
                       disabled={!selectedAccount?.address}
                     />
                   </FormControl>
@@ -226,36 +244,68 @@ export function SendAction() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Amount</FormLabel>
-                  <div className="flex items-center gap-2">
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Amount of TORUS"
-                        disabled={!selectedAccount?.address}
-                        type="number"
+            <div className="flex flex-col md:flex-row gap-4">
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col w-full md:w-1/2">
+                    <FormLabel>Amount to send ({inputType})</FormLabel>
+                    <div className="flex flex-col gap-2">
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={inputType === 'TORUS' ? field.value : displayAmount}
+                          onChange={(e) => handleAmountChange(e.target.value)}
+                          placeholder={`Amount of ${inputType}`}
+                          disabled={!selectedAccount?.address}
+                          type="number"
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+
+                      <AmountButtons
+                        setAmount={handleAmountChange}
+                        availableFunds={maxAmountRef.current}
+                        disabled={!(toNano(maxAmountRef.current) > 0n) || !selectedAccount?.address}
+                        inputType={inputType}
+                        usdPrice={usdPrice}
                       />
-                    </FormControl>
-                    <AmountButtons
-                      setAmount={async (value) => {
-                        await handleAmountChange(value);
-                      }}
-                      availableFunds={maxAmountRef.current}
-                      disabled={
-                        !(toNano(maxAmountRef.current) > 0n) ||
-                        !selectedAccount?.address
-                      }
-                    />
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex flex-row md:flex-col justify-center items-center lg:-mt-6">
+                <Button
+                  className="text-3xl border-none bg-transparent font-normal"
+                  type="button"
+                  variant="outline"
+                  onClick={handleCurrencySwitch}
+                >
+                  ⇄
+                </Button>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="amount"
+                render={() => (
+                  <FormItem className="flex flex-col w-full md:w-1/2 justify-center lg:-mt-5">
+                    <div className="flex flex-col gap-2">
+                      <FormControl>
+                        <Input
+                          value={inputType === 'TORUS' ? displayAmount : form.watch("amount")}
+                          disabled={true}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
 
@@ -271,7 +321,7 @@ export function SendAction() {
               onClick={handleReviewClick}
               disabled={!selectedAccount?.address}
             >
-              Review Transaction
+              Review & Submit Send Transaction
             </Button>
           </form>
         </Form>

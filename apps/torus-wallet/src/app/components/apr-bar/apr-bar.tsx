@@ -43,7 +43,6 @@ export function APRBar() {
       {
         label: "USD PRICE",
         value: `$${usdPrice?.toFixed(4) ?? 0}`,
-        unit: "USD",
       },
     ],
     [apr, totalStake, stakedPercentage, usdPrice],
