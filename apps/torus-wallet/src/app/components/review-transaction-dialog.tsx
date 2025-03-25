@@ -20,7 +20,7 @@ interface ReviewContent {
 }
 
 interface ReviewTransactionDialogProps {
-  formRef: React.RefObject<HTMLFormElement>;
+  formRef: React.RefObject<HTMLFormElement | null>;
   reviewContent: () => ReviewContent[];
   triggerTitle?: string;
   title?: string;

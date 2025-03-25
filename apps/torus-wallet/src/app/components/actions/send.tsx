@@ -35,7 +35,7 @@ const FEE_BUFFER_PERCENT = 102n;
 
 const createSendActionFormSchema = (
   accountFreeBalance: bigint | null,
-  feeRef: React.RefObject<FeeLabelHandle>,
+  feeRef: React.RefObject<FeeLabelHandle | null>,
 ) =>
   z.object({
     recipient: z
@@ -52,7 +52,7 @@ const createSendActionFormSchema = (
         (amount) =>
           isWithinTransferLimit(
             amount,
-            feeRef.current.getEstimatedFee() ?? "0",
+            feeRef.current?.getEstimatedFee() ?? "0",
             accountFreeBalance ?? 0n,
           ),
         { message: "Amount exceeds maximum transferable amount" },
@@ -88,7 +88,7 @@ export function SendAction() {
 
   const sendActionFormSchema = createSendActionFormSchema(
     accountFreeBalance.data ?? null,
-    feeRef as React.RefObject<FeeLabelHandle>,
+    feeRef,
   );
 
   const form = useForm<z.infer<typeof sendActionFormSchema>>({
@@ -341,7 +341,7 @@ export function SendAction() {
 
       <ReviewTransactionDialog
         ref={reviewDialogRef}
-        formRef={formRef as React.RefObject<HTMLFormElement>}
+        formRef={formRef}
         reviewContent={reviewData}
       />
     </div>
