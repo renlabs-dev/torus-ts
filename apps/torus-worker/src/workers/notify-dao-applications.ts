@@ -8,6 +8,7 @@ import {
   getCadreCandidates,
   getProposalsDB,
   sleep,
+  log,
 } from "../common";
 import type { ApplicationDB } from "../db";
 import * as db from "../db";
@@ -34,13 +35,18 @@ export async function notifyNewApplicationsWorker() {
   const env = getEnv(process.env);
   const startingBlock = env.NOTIFICATIONS_START_BLOCK ?? 350_000;
   const buildUrl = () => buildPortalUrl(env.NEXT_PUBLIC_TORUS_CHAIN_ENV);
-  await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
-  await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
-  await pushProposalsNotification(
-    env.CURATOR_DISCORD_WEBHOOK_URL,
-    startingBlock,
-    buildUrl,
-  );
+  while(true){
+    // We could execute the functions in parallel, but it's not necessary
+    // and it's better for the logging to execute then serially
+    await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+    await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+    await pushProposalsNotification(
+      env.CURATOR_DISCORD_WEBHOOK_URL,
+      startingBlock,
+      buildUrl,
+    );
+    await sleep(1_000);
+  }
 }
 
 async function pushCadreNotification(
@@ -72,13 +78,13 @@ async function pushProposalsNotification(
     const proposalURL = `${buildPortalUrl()}proposal/${proposal.id}`;
     const proposalMessage = buildProposalMessage(proposal, proposalURL);
     if (proposal.expirationBlock >= startingBlock) {
-      console.log(`Notifying proposal ${proposal.id}`);
-      console.log(`Expire block ${proposal.expirationBlock}`);
+      log(`Notifying proposal ${proposal.id}`);
+      log(`Expire block ${proposal.expirationBlock}`);
       await sendDiscordWebhook(discordWebhook, proposalMessage);
     } else {
-      console.log(`Proposal ${proposal.id} is too old`);
+      log(`Proposal ${proposal.id} is too old`);
     }
-    // await db.toggleProposalNotification(proposal);
+    await db.toggleProposalNotification(proposal);
     await sleep(1_000);
   }
 }
@@ -97,7 +103,7 @@ async function pushApplicationsNotification(
     const r = parseIpfsUri(proposal.data);
     const cid = flattenResult(r);
     if (cid === null) {
-      console.warn(`Failed to parse ${proposal.id} cid`);
+      log(`Failed to parse ${proposal.id} cid`);
       return;
     }
 
@@ -105,7 +111,7 @@ async function pushApplicationsNotification(
     const metadata = await processApplicationMetadata(url, proposal.id);
     const resolved_metadata = flattenResult(metadata);
     if (resolved_metadata === null) {
-      console.warn(`Failed to get metadata on proposal ${proposal.id}`);
+      log(`Failed to get metadata on proposal ${proposal.id}`);
       return;
     }
 
