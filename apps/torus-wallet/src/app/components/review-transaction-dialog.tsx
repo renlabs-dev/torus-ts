@@ -15,7 +15,7 @@ export interface ReviewTransactionDialogHandle {
 }
 
 interface ReviewTransactionDialogProps {
-  formRef: React.RefObject<HTMLFormElement | null>;
+  formRef: React.RefObject<HTMLFormElement>;
   reviewContent: () => { label: string; content: string | React.ReactNode }[];
   triggerTitle?: string;
   title?: string;
