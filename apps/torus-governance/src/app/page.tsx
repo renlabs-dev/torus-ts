@@ -1,10 +1,10 @@
-import FilterDaoContent from "./components/cadre/components/dao-members-candidates-filter";
-import { FilterContent } from "./components/filter-content";
-import { CreateModal } from "./components/modal";
-import { PopoverInfo } from "./components/popover-info";
-import { RenderList } from "./components/render-list";
-import { SidebarInfo } from "./components/sidebar-info";
-import { SidebarLinks } from "./components/sidebar-links";
+import FilterDaoContent from "./_components/cadre/components/dao-members-candidates-filter";
+import { FilterContent } from "./_components/filter-content";
+import { CreateModal } from "./_components/modal";
+import { PopoverInfo } from "./_components/popover-info";
+import { RenderList } from "./_components/render-list";
+import { SidebarInfo } from "./_components/sidebar-info";
+import { SidebarLinks } from "./_components/sidebar-links";
 
 export default function HomePage() {
   return (
