@@ -20,18 +20,13 @@ interface ReviewContent {
 }
 
 interface ReviewTransactionDialogProps {
-<<<<<<< HEAD
   formRef: React.RefObject<HTMLFormElement>;
   reviewContent: () => ReviewContent[];
-=======
-  formRef: React.RefObject<HTMLFormElement | null>;
-  reviewContent: () => { label: string; content: string | React.ReactNode }[];
->>>>>>> dev
   triggerTitle?: string;
   title?: string;
 }
 
-function RenderReviewItem({ item }: { item: ReviewContent; }) {
+function RenderReviewItem({ item }: { item: ReviewContent }) {
   return (
     <span
       className="flex w-full flex-col items-start md:flex-row md:justify-between"
