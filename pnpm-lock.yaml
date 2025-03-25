@@ -677,6 +677,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.54.2(react@19.0.0))
+      '@next/third-parties':
+        specifier: 'catalog:'
+        version: 15.2.4(next@15.2.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.67.3(react@19.0.0)
