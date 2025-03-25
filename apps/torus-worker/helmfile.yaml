@@ -59,21 +59,21 @@ releases:
               memory: 280Mi
               cpu: 0.25
 
-  # - name: "{{ .Values.releasePrefix }}-dao-notifier"
-  #   namespace: "{{ .Values.namespace }}"
-  #   chart: renlabs/application
-  #   values:
-  #     - ../../helm/values.yaml.gotmpl
-  #     - deployment:
-  #         containerName: dao-notifier
-  #         args: ["dao-notifier"]
-  #         resources:
-  #           limits:
-  #             memory: 256Mi
-  #             cpu: 0.3
-  #           requests:
-  #             memory: 180Mi
-  #             cpu: 0.02
+  - name: "{{ .Values.releasePrefix }}-dao-notifier"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - deployment:
+          containerName: dao-notifier
+          args: ["dao-notifier"]
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 0.3
+            requests:
+              memory: 180Mi
+              cpu: 0.02
 
   - name: "{{ .Values.releasePrefix }}-weight-aggregator"
     namespace: "{{ .Values.namespace }}"
