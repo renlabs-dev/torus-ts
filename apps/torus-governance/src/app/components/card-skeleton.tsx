@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
-export function CardSkeleton(): JSX.Element {
+export function CardSkeleton() {
   return (
     <Card className="p-6">
       <CardHeader className="flex flex-col-reverse items-start justify-between space-y-0 px-0 pb-5 pt-0 xl:flex-row">

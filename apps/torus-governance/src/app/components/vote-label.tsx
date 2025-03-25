@@ -6,7 +6,7 @@ interface VoteLabelProps {
   vote: VoteStatus;
 }
 
-export function VoteLabel(props: VoteLabelProps): JSX.Element {
+export function VoteLabel(props: VoteLabelProps) {
   const { vote } = props;
 
   const votingStatus = {

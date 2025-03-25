@@ -19,9 +19,7 @@ interface CustomContent {
   paramId: number;
 }
 
-export function AgentApplicationExpandedView(
-  props: Readonly<CustomContent>,
-): JSX.Element {
+export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
   const { paramId } = props;
 
   const { agentApplicationsWithMeta, agentApplications, lastBlock } =

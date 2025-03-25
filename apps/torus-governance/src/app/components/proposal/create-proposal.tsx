@@ -36,7 +36,7 @@ const proposalSchema = z.object({
 
 type ProposalFormData = z.infer<typeof proposalSchema>;
 
-export function CreateProposal(): JSX.Element {
+export function CreateProposal() {
   const router = useRouter();
   const {
     isAccountConnected,

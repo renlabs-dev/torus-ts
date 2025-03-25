@@ -6,7 +6,7 @@ import { RenderList } from "./components/render-list";
 import { SidebarInfo } from "./components/sidebar-info";
 import { SidebarLinks } from "./components/sidebar-links";
 
-export default function HomePage(): JSX.Element {
+export default function HomePage() {
   return (
     <main className="animate-fade-down mb-6 flex w-full flex-col gap-4 lg:flex-row">
       <div className="flex w-full flex-col gap-4 lg:w-2/5 lg:max-w-[320px]">

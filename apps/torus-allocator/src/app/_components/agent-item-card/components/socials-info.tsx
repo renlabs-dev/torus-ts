@@ -51,10 +51,9 @@ export function SocialsInfo({
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
         >
-          {React.cloneElement(icon as React.ReactElement, {
-            className: "h-5 w-5 md:h-4 md:w-4",
-            color: "gray",
-          })}
+          <span className="h-5 w-5 md:h-4 md:w-4 text-gray-500">
+            {icon}
+          </span>
         </a>
       ))}
     </div>

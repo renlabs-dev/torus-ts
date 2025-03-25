@@ -10,9 +10,7 @@ interface HandleCandidacyStateProps {
   revoke: number;
 }
 
-export function HandleCandidacyState(
-  props: HandleCandidacyStateProps,
-): JSX.Element {
+export function HandleCandidacyState(props: HandleCandidacyStateProps) {
   const pendingVoteStateProps = {
     userKey: props.userKey,
     accept: props.accept,

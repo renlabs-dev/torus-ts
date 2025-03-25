@@ -142,9 +142,7 @@ export const agentRouter = {
 
     const penaltiesByAgent = penalties.reduce(
       (acc, penalty) => {
-        if (!acc[penalty.agentKey]) {
-          acc[penalty.agentKey] = [];
-        }
+        acc[penalty.agentKey] ??= [];
         acc[penalty.agentKey]?.push(penalty);
         return acc;
       },

@@ -8,10 +8,7 @@ interface BlobImageProps {
   alt?: string;
 }
 
-const BlobImage = ({
-  blob,
-  alt = "Agent Icon",
-}: BlobImageProps): JSX.Element => {
+const BlobImage = ({ blob, alt = "Agent Icon" }: BlobImageProps) => {
   const [imageSrc, setImageSrc] = useState("");
 
   useEffect(() => {

@@ -12,9 +12,7 @@ interface HandlePendingVoteStateProps {
   refuse: number;
 }
 
-export function HandlePendingVoteState(
-  props: HandlePendingVoteStateProps,
-): JSX.Element {
+export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
   const { selectedAccount } = useGovernance();
 
   const { data: curatorVotes, refetch: refetchCuratorVotes } =

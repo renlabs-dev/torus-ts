@@ -38,7 +38,7 @@ export type CommentInteractionReactionType = NonNullable<
 type SorterTypes = "newest" | "oldest" | "mostLikes";
 
 const commentSorters: {
-  icon: JSX.Element;
+  icon: React.ReactNode;
   sortBy: SorterTypes;
   description: string;
 }[] = [

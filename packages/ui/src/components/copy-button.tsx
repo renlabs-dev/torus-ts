@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import type { VariantProps } from "class-variance-authority";
 import { useCallback } from "react";
 import { useToast } from "../hooks/use-toast";
@@ -25,7 +26,7 @@ export function CopyButton({
   copy,
   asChild = false,
   ...rest
-}: Readonly<CopyButtonProps>): JSX.Element {
+}: Readonly<CopyButtonProps>) {
   const { toast } = useToast();
 
   const handleCopy = useCallback(async () => {

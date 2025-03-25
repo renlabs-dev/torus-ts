@@ -41,7 +41,7 @@ type TransferDaoTreasuryProposalFormData = z.infer<
   typeof transferDaoTreasuryProposalSchema
 >;
 
-export function CreateTransferDaoTreasuryProposal(): JSX.Element {
+export function CreateTransferDaoTreasuryProposal() {
   const router = useRouter();
   const {
     networkConfigs,

@@ -2,8 +2,8 @@ import type { IRegistry } from "@hyperlane-xyz/registry";
 import type { IToken } from "@hyperlane-xyz/sdk";
 import { isHttpsUrl, isRelativeUrl } from "@hyperlane-xyz/utils";
 import { Circle } from "@hyperlane-xyz/widgets";
-import { useState } from "react";
 import { useStore } from "~/utils/store";
+import { useState } from "react";
 
 interface Props {
   token?: IToken | null;
@@ -26,7 +26,6 @@ export function TokenIcon({ token, size = 32 }: Readonly<Props>) {
   return (
     <Circle size={size} bgColorSeed={bgColorSeed} title={title}>
       {imageSrc && !fallbackToText ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           alt="Token Logo"
           src={imageSrc}
