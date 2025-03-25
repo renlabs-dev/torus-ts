@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "//": "@torus-network/sdk needs to be builded and imported indirectly,",
-  "//": "otherwise dependant packages may typecheck it's sources and cause",
-  "//": "conflict in the generated/augmented types",
   "exports": {
     ".": {
       "default": "./dist/index.js",
