@@ -82,18 +82,18 @@ jobs:
       app_name: torus-allocator
       skip_build: ${{ inputs.skip_build || false }}
 
-  # torus-bridge:
-  #   needs: turbo-check
-  #   if: |
-  #     inputs.skip_build ||
-  #     contains(github.event.head_commit.message, 'skip build') ||
-  #     (needs.turbo-check.outputs.torus-bridge == 'true' &&
-  #     (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-  #   uses: ./.github/workflows/app-deployment-template.yml
-  #   secrets: inherit
-  #   with:
-  #     app_name: torus-bridge
-  #     skip_build: ${{ inputs.skip_build || false }}
+  torus-bridge:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-bridge == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+      skip_build: ${{ inputs.skip_build || false }}
 
   torus-cache:
     needs: turbo-check
@@ -346,4 +346,25 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-wallet
+      delete: true
+
+  torus-bridge-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.torus-bridge == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+
+  torus-bridge-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
       delete: true
