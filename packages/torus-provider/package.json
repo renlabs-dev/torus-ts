@@ -24,8 +24,8 @@
     "@polkadot/types": "catalog:",
     "@polkadot/extension-inject": "catalog:",
     "@polkadot-api/merkleize-metadata": "^1.1.13",
-    "react": "catalog:react18",
-    "react-dom": "catalog:react18"
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
@@ -36,8 +36,8 @@
     "prettier": "catalog:",
     "typescript": "catalog:",
     "@types/node": "catalog:",
-    "@types/react": "catalog:react18",
-    "@types/react-dom": "catalog:react18"
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19"
   },
   "prettier": "@torus-ts/prettier-config"
 }
