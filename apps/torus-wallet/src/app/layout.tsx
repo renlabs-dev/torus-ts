@@ -1,3 +1,4 @@
+import * as React from "react";
 import "@torus-ts/ui/globals.css";
 import ClientHeroSection from "./components/animation/client-hero-section";
 import { APRBar } from "./components/apr-bar";
@@ -36,7 +37,7 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): JSX.Element {
+}>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <TorusProvider
