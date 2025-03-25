@@ -24,7 +24,7 @@
   "dependencies": {
     "@polkadot/api": "catalog:",
     "@t3-oss/env-core": "^0.11.1",
-    "@torus-ts/subspace": "workspace:*",
+    "@torus-network/sdk": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "superjson": "2.2.1",

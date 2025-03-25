@@ -7,38 +7,38 @@ import type {
   Api,
   LastBlock,
   Proposal,
+  SS58Address,
   StakeData,
   VoteWithStake,
-} from "@torus-ts/subspace";
+} from "@torus-network/sdk";
 import {
+  CONSTANTS,
   fetchCustomMetadata,
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
-  queryCachedStakeOut,
   queryAgentApplications,
+  queryAgents,
+  queryBlockEmission,
+  queryBurnValue,
+  queryCachedStakeOut,
   queryDaoTreasuryAddress,
   queryFreeBalance,
+  queryGlobalGovernanceConfig,
+  queryIncentivesRatio,
   queryKeyStakedBy,
   queryKeyStakingTo,
   queryLastBlock,
-  queryProposals,
-  queryRewardAllocation,
-  queryUnrewardedProposals,
-  queryGlobalGovernanceConfig,
-  queryBurnValue,
-  queryAgents,
   queryMinAllowedStake,
-  queryTotalIssuance,
-  queryTreasuryEmissionFee,
-  queryTotalStake,
+  queryProposals,
   queryRecyclingPercentage,
-  queryIncentivesRatio,
-  queryBlockEmission,
+  queryRewardAllocation,
   queryRewardInterval,
+  queryTotalIssuance,
+  queryTotalStake,
+  queryTreasuryEmissionFee,
+  queryUnrewardedProposals,
   queryWhitelist,
-} from "@torus-ts/subspace";
-import type { SS58Address } from "@torus-ts/subspace";
-import { CONSTANTS } from "@torus-ts/subspace";
+} from "@torus-network/sdk";
 import type { ListItem, Nullish } from "@torus-ts/utils/typing";
 import SuperJSON from "superjson";
 

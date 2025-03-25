@@ -20,7 +20,7 @@
     "@tanstack/react-query": "catalog:"
   },
   "dependencies": {
-    "@torus-ts/subspace": "workspace:*",
+    "@torus-network/sdk": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "next": "catalog:",
     "react": "catalog:react19",

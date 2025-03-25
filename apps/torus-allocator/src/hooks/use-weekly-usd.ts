@@ -1,13 +1,13 @@
+import { CONSTANTS } from "@torus-network/sdk";
 import {
   useGetTorusPrice,
+  useIncentivesRatio,
   useRecyclingPercentage,
   useTreasuryEmissionFee,
-  useIncentivesRatio,
 } from "@torus-ts/query-provider/hooks";
-import { CONSTANTS } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
-import { useMemo } from "react";
 import { api as extAPI } from "~/trpc/react";
+import { useMemo } from "react";
 
 interface AgentUsdCalculationResult {
   isLoading: boolean;

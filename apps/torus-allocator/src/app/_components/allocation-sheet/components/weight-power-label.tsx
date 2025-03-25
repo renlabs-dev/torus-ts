@@ -1,5 +1,5 @@
+import { checkSS58 } from "@torus-network/sdk";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
-import { checkSS58 } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Label } from "@torus-ts/ui/components/label";
 import {
@@ -9,10 +9,10 @@ import {
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 import { formatToken } from "@torus-ts/utils/subspace";
-import { Info } from "lucide-react";
-import { useMemo } from "react";
 import { env } from "~/env";
 import { useTutorialStore } from "~/stores/tutorialStore";
+import { Info } from "lucide-react";
+import { useMemo } from "react";
 
 export function WeightPowerLabel() {
   const { openTutorial } = useTutorialStore();

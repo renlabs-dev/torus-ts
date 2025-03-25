@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { AgentApplication, SS58Address } from "@torus-ts/subspace";
+import type { AgentApplication, SS58Address } from "@torus-network/sdk";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -11,10 +11,10 @@ import {
 } from "@torus-ts/ui/components/card";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
@@ -25,11 +25,11 @@ import {
 } from "@torus-ts/ui/components/popover";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
 
 const MAX_CONTENT_CHARACTERS = 240;
 

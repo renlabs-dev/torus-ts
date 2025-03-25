@@ -19,7 +19,7 @@
   "dependencies": {
     "@polkadot/extension-dapp": "catalog:",
     "@torus-ts/utils": "workspace:*",
-    "@torus-ts/subspace": "workspace:*",
+    "@torus-network/sdk": "workspace:*",
     "@polkadot/api": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/extension-inject": "catalog:",

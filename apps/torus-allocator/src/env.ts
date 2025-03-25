@@ -1,5 +1,5 @@
+import { SS58_SCHEMA } from "@torus-network/sdk";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
-import { SS58_SCHEMA } from "@torus-ts/subspace";
 import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
 

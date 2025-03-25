@@ -1,10 +1,10 @@
 "use client";
 
-import { CONSTANTS } from "@torus-ts/subspace";
+import { CONSTANTS } from "@torus-network/sdk";
 import { Card } from "@torus-ts/ui/components/card";
+import { useWallet } from "~/context/wallet-provider";
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useWallet } from "~/context/wallet-provider";
 
 export function RewardIntervalProgress() {
   const { lastBlock, rewardInterval } = useWallet();

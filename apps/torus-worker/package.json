@@ -24,7 +24,7 @@
     "axios": "^1.7.7",
     "@polkadot/api": "catalog:",
     "@torus-ts/db": "workspace:*",
-    "@torus-ts/subspace": "workspace:*",
+    "@torus-network/sdk": "workspace:*",
     "@torus-ts/utils": "workspace:*",
     "express": "^4.19.2",
     "rustie": "catalog:",

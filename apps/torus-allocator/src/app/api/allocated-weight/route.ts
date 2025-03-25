@@ -1,8 +1,8 @@
-import type { SS58Address } from "@torus-ts/subspace";
+import type { SS58Address } from "@torus-network/sdk";
+import { api } from "~/trpc/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import SuperJSON from "superjson";
-import { api } from "~/trpc/server";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
