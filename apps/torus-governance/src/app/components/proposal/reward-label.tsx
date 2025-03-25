@@ -9,7 +9,7 @@ interface RewardLabelProps {
   className?: string;
 }
 
-export function RewardLabel(props: Readonly<RewardLabelProps>): JSX.Element {
+export function RewardLabel(props: Readonly<RewardLabelProps>) {
   const { result, proposalId, className = "" } = props;
   const { unrewardedProposals } = useGovernance();
 

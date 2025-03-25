@@ -6,7 +6,7 @@ interface StatusLabelProps {
   status: ProposalStatus;
 }
 
-export function StatusLabel(props: StatusLabelProps): JSX.Element {
+export function StatusLabel(props: StatusLabelProps) {
   const { status } = props;
 
   return match(status)({

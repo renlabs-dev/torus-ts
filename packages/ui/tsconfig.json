@@ -5,7 +5,8 @@
     "baseUrl": ".",
     "paths": {
       "@torus-ts/ui/*": ["./src/*"]
-    }
+    },
+    "jsx": "react-jsx"
   },
   "include": ["."],
   "exclude": ["node_modules", "dist"]

@@ -7,7 +7,7 @@ import WalletActions from "./_components/shared/wallet-actions";
 import { WalletBalance } from "./_components/shared/wallet-balance";
 import { TransferDetails } from "./_components/transfer-details";
 
-export default function HomePage(): JSX.Element {
+export default function HomePage() {
   return (
     <main className="mx-auto flex min-w-full flex-col items-start gap-3 text-white lg:mt-[calc(20vh-64px)]">
       <TransferDetails />

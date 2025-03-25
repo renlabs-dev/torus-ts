@@ -1,7 +1,8 @@
+import * as React from "react";
 import { TorusAnimation } from "./_components/torus-animation";
 import Image from "next/image";
 
-export default function Page(): JSX.Element {
+export default function Page() {
   return (
     <main className="-z-40">
       <div

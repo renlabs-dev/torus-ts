@@ -7,7 +7,7 @@ export default async function ProposalView({
   params,
 }: Readonly<{
   params: Promise<{ id: string }>;
-}>): Promise<JSX.Element> {
+}>) {
   const { id } = await params;
 
   if (!id) {

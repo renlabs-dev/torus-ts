@@ -115,7 +115,7 @@ export function GovernanceProvider({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): JSX.Element {
+}>) {
   // == API Context ==
   const {
     accounts,

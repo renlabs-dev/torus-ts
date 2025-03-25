@@ -6,7 +6,7 @@ interface StatusLabelProps {
   status: AgentApplication["status"];
 }
 
-export function AgentStatusLabel(props: StatusLabelProps): JSX.Element {
+export function AgentStatusLabel(props: StatusLabelProps) {
   const { status } = props;
 
   return match(status)({

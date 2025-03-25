@@ -1,6 +1,6 @@
 import { Badge } from "@torus-ts/ui/components/badge";
 
-export function AgentActivityLabel(): JSX.Element {
+export function AgentActivityLabel() {
   return (
     <Badge
       variant="solid"

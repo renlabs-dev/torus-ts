@@ -38,7 +38,7 @@ type ViewType =
 
 interface ViewSpec {
   label: string;
-  component: JSX.Element;
+  component: React.ReactNode;
   separatorAfter?: boolean;
 }
 

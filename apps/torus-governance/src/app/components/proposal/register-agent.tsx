@@ -91,7 +91,7 @@ const parseUrl = (url: string): string => {
 type RegisterAgentFormData = z.infer<typeof registerAgentSchema>;
 type TabsViews = "agent-info" | "about" | "socials" | "register";
 
-export function RegisterAgent(): JSX.Element {
+export function RegisterAgent() {
   const {
     isAccountConnected,
     registerAgent,

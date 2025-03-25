@@ -17,7 +17,7 @@ export function AppContextProvider({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): JSX.Element {
+}>) {
   const isSsr = useIsSsr();
   if (isSsr) {
     return <div></div>;

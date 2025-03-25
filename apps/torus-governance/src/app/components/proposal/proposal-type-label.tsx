@@ -6,7 +6,7 @@ interface ProposalTypeLabelProps {
   proposalType: ProposalData;
 }
 
-export function ProposalTypeLabel(props: ProposalTypeLabelProps): JSX.Element {
+export function ProposalTypeLabel(props: ProposalTypeLabelProps) {
   const { proposalType } = props;
   return match(proposalType)({
     GlobalCustom() {

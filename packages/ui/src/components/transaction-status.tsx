@@ -1,3 +1,4 @@
+import * as React from "react";
 import { CircleAlert, CircleCheck } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Loading } from "./loading";
@@ -16,7 +17,7 @@ interface TransactionStatusProps {
 export function TransactionStatus({
   status,
   message,
-}: Readonly<TransactionStatusProps>): JSX.Element {
+}: Readonly<TransactionStatusProps>) {
   const statusConfig = {
     SUCCESS: { color: "text-cyan-300", Icon: CircleCheck },
     ERROR: { color: "text-red-300", Icon: CircleAlert },

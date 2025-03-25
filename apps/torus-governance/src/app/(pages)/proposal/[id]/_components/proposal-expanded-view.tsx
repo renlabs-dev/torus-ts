@@ -47,9 +47,7 @@ const handleUserVotes = ({
   return "UNVOTED";
 };
 
-export function ProposalExpandedView(
-  props: Readonly<CustomContent>,
-): JSX.Element {
+export function ProposalExpandedView(props: Readonly<CustomContent>) {
   const { paramId } = props;
   const {
     api,

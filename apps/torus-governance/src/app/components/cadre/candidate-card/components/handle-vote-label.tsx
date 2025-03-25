@@ -6,7 +6,7 @@ interface HandleVoteLabelProps {
   refuse: number;
 }
 
-export function HandleVoteLabel(props: HandleVoteLabelProps): JSX.Element {
+export function HandleVoteLabel(props: HandleVoteLabelProps) {
   const votedText =
     props.vote === "ACCEPT" ? (
       <>

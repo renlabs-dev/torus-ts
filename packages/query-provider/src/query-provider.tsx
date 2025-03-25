@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const createQueryClient = (): QueryClient =>
@@ -16,9 +17,7 @@ function getQueryClient(): QueryClient {
     return createQueryClient();
   }
   // Browser: use singleton pattern to keep the same query client
-  if (!clientQueryClientSingleton) {
-    clientQueryClientSingleton = createQueryClient();
-  }
+  clientQueryClientSingleton ??= createQueryClient();
   return clientQueryClientSingleton;
 }
 
@@ -26,7 +25,7 @@ export function ReactQueryProvider(
   props: Readonly<{
     children: React.ReactNode;
   }>,
-): JSX.Element {
+) {
   const queryClient = getQueryClient();
 
   return (

@@ -17,7 +17,7 @@ interface VoterListProps {
   penalties: PenaltyList;
 }
 
-export function PenaltyList(props: Readonly<VoterListProps>): JSX.Element {
+export function PenaltyList(props: Readonly<VoterListProps>) {
   const { penalties } = props;
 
   const { toast } = useToast();

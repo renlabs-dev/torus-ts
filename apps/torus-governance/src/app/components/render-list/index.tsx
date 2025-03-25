@@ -28,7 +28,7 @@ const ListCardsLoadingSkeleton = () => {
 
 const validViews = navSidebarOptions.map(({ href }) => href);
 
-const VIEW_MODE_COMPONENTS: Record<GovernanceViewMode, JSX.Element> = {
+const VIEW_MODE_COMPONENTS: Record<GovernanceViewMode, React.ReactNode> = {
   proposals: <ListProposals />,
   "agent-applications": <ListAgentApplications />,
   "dao-portal": <CadreCandidate />,

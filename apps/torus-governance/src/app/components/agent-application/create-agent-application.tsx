@@ -47,7 +47,7 @@ const agentApplicationSchema = z.object({
 
 type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
 
-export function CreateAgentApplication(): JSX.Element {
+export function CreateAgentApplication() {
   const {
     isAccountConnected,
     AddAgentApplication,

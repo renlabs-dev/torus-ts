@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Layout } from "@torus-ts/ui/components/layout";
 import "@torus-ts/ui/globals.css";
 import { Footer } from "./_components/footer";
@@ -24,7 +25,7 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): JSX.Element {
+}>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <HoverHeader />

@@ -63,9 +63,7 @@ async function getNormalizedUserAgentWeights(
       if (targetAgentKey && agentKey !== targetAgentKey) {
         return acc;
       }
-      if (!acc[userKey]) {
-        acc[userKey] = {};
-      }
+      acc[userKey] ??= {};
       acc[userKey][agentKey] = weight;
       return acc;
     },
