@@ -62,7 +62,7 @@ export const ReviewTransactionDialog = forwardRef<
 
     const handleSubmit = () => {
       try {
-        formRef.current?.requestSubmit();
+        formRef.current.requestSubmit();
         setIsOpen(false);
       } catch (error) {
         setIsOpen(false);
