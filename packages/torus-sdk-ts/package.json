@@ -1,7 +1,9 @@
 {
   "name": "@torus-network/sdk",
-  "version": "0.0.0",
-  "private": true,
+  "description": "Torus Network JS SDK",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
   "type": "module",
   "exports": {
     ".": {
@@ -13,6 +15,10 @@
       "types": "./dist/types/index.d.ts"
     }
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf .turbo node_modules",
@@ -41,10 +47,5 @@
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "tsx": "catalog:"
-  },
-  "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "esModuleInterop": true
   }
 }
