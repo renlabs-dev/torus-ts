@@ -23,12 +23,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useWallet } from "~/context/wallet-provider";
@@ -38,7 +33,10 @@ import { isWithinTransferLimit } from "~/utils/validators";
 
 const FEE_BUFFER_PERCENT = 102n;
 
-const createSendActionFormSchema = (accountFreeBalance: bigint | null, feeRef: React.RefObject<FeeLabelHandle>) =>
+const createSendActionFormSchema = (
+  accountFreeBalance: bigint | null,
+  feeRef: React.RefObject<FeeLabelHandle>,
+) =>
   z.object({
     recipient: z
       .string()
@@ -54,7 +52,7 @@ const createSendActionFormSchema = (accountFreeBalance: bigint | null, feeRef: R
         (amount) =>
           isWithinTransferLimit(
             amount,
-            feeRef.current?.getEstimatedFee() ?? "0",
+            feeRef.current.getEstimatedFee() ?? "0",
             accountFreeBalance ?? 0n,
           ),
         { message: "Amount exceeds maximum transferable amount" },
@@ -77,16 +75,21 @@ export function SendAction() {
   const formRef = useRef<HTMLFormElement>(null);
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
 
-  const [inputType, setInputType] = useState<'TORUS' | 'USD'>("TORUS");
+  const [inputType, setInputType] = useState<"TORUS" | "USD">("TORUS");
   const [displayAmount, setDisplayAmount] = useState<string>("");
 
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>({
-    status: null,
-    message: null,
-    finalized: false,
-  });
+  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
+    {
+      status: null,
+      message: null,
+      finalized: false,
+    },
+  );
 
-  const sendActionFormSchema = createSendActionFormSchema(accountFreeBalance.data ?? null, feeRef);
+  const sendActionFormSchema = createSendActionFormSchema(
+    accountFreeBalance.data ?? null,
+    feeRef as React.RefObject<FeeLabelHandle>,
+  );
 
   const form = useForm<z.infer<typeof sendActionFormSchema>>({
     resolver: zodResolver(sendActionFormSchema),
@@ -137,7 +140,7 @@ export function SendAction() {
   }, [accountFreeBalance.data, estimateFee, transferTransaction, toast]);
 
   const handleAmountChange = async (amount: string) => {
-    if (inputType === 'USD') {
+    if (inputType === "USD") {
       const torusAmount = convertToTorus(amount, usdPrice);
       setValue("amount", torusAmount);
       setDisplayAmount(amount);
@@ -152,15 +155,15 @@ export function SendAction() {
   const handleCurrencySwitch = () => {
     const currentAmount = watch("amount");
 
-    if (inputType === 'TORUS') {
+    if (inputType === "TORUS") {
       const usdAmount = convertToUSD(currentAmount, usdPrice);
       setDisplayAmount(usdAmount);
-      setInputType('USD');
+      setInputType("USD");
       setValue("amount", convertToTorus(usdAmount, usdPrice));
     } else {
       const torusAmount = convertToTorus(displayAmount, usdPrice);
       setDisplayAmount(convertToUSD(torusAmount, usdPrice));
-      setInputType('TORUS');
+      setInputType("TORUS");
       setValue("amount", torusAmount);
     }
   };
@@ -255,7 +258,9 @@ export function SendAction() {
                       <FormControl>
                         <Input
                           {...field}
-                          value={inputType === 'TORUS' ? field.value : displayAmount}
+                          value={
+                            inputType === "TORUS" ? field.value : displayAmount
+                          }
                           onChange={(e) => handleAmountChange(e.target.value)}
                           placeholder={`Amount of ${inputType}`}
                           disabled={!selectedAccount?.address}
@@ -268,7 +273,10 @@ export function SendAction() {
                       <AmountButtons
                         setAmount={handleAmountChange}
                         availableFunds={maxAmountRef.current}
-                        disabled={!(toNano(maxAmountRef.current) > 0n) || !selectedAccount?.address}
+                        disabled={
+                          !(toNano(maxAmountRef.current) > 0n) ||
+                          !selectedAccount?.address
+                        }
                         inputType={inputType}
                         usdPrice={usdPrice}
                       />
@@ -296,7 +304,11 @@ export function SendAction() {
                     <div className="flex flex-col gap-2">
                       <FormControl>
                         <Input
-                          value={inputType === 'TORUS' ? displayAmount : form.watch("amount")}
+                          value={
+                            inputType === "TORUS"
+                              ? displayAmount
+                              : form.watch("amount")
+                          }
                           disabled={true}
                         />
                       </FormControl>
@@ -329,7 +341,7 @@ export function SendAction() {
 
       <ReviewTransactionDialog
         ref={reviewDialogRef}
-        formRef={formRef}
+        formRef={formRef as React.RefObject<HTMLFormElement>}
         reviewContent={reviewData}
       />
     </div>
