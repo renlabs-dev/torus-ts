@@ -34,7 +34,6 @@
     "@polkadot/util-crypto": "catalog:",
     "@torus-ts/utils": "workspace:*",
     "@wagmi/core": "2.16.3",
-    "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "superjson": "2.2.1",
