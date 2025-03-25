@@ -1113,9 +1113,6 @@ importers:
       '@wagmi/core':
         specifier: 2.16.3
         version: 2.16.3(@tanstack/query-core@5.69.0)(@types/react@19.0.12)(immer@10.1.1)(react@19.0.0)(typescript@5.8.2)(use-sync-external-store@1.4.0(react@19.0.0))(viem@2.23.15(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.24.2))
-      luxon:
-        specifier: 'catalog:'
-        version: 3.5.0
       multiformats:
         specifier: 'catalog:'
         version: 13.3.2
