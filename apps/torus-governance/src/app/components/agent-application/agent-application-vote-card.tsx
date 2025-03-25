@@ -19,7 +19,7 @@ type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
 const voteOptions: WhitelistVoteType[] = ["ACCEPT", "REFUSE"];
 
-const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
+const CardBarebones = (props: { children: React.ReactNode }) => {
   return (
     <div className="animate-fade-down">
       <div className="pb-6 pl-0">
@@ -34,11 +34,11 @@ const AlreadyVotedCardContent = (props: {
   voted: WhitelistVoteType | "REMOVE";
   voteLoading: boolean;
   handleRemoveVote: () => void;
-}): JSX.Element => {
+}) => {
   const { voted, handleRemoveVote, voteLoading } = props;
 
-  const getVotedText = (voted: WhitelistVoteType | "REMOVE"): JSX.Element => {
-    const voteStatusText: Record<WhitelistVoteType | "REMOVE", JSX.Element> = {
+  const getVotedText = (voted: WhitelistVoteType | "REMOVE") => {
+    const voteStatusText: Record<WhitelistVoteType | "REMOVE", React.ReactNode> = {
       ACCEPT: (
         <span className="text-green-400">You already voted in favor.</span>
       ),
@@ -83,7 +83,7 @@ const VoteCardFunctionsContent = (props: {
   isUserCadre: boolean;
   handleVote: () => void;
   setVote: (vote: WhitelistVoteType | "UNVOTED") => void;
-}): JSX.Element => {
+}) => {
   const {
     vote,
     voteLoading,

@@ -9,11 +9,11 @@ import {
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useGovernance } from "~/context/governance-provider";
 import { Info } from "lucide-react";
 import { useState } from "react";
-import { useGovernance } from "~/context/governance-provider";
 
-export function VotePowerSettings(): JSX.Element | null {
+export function VotePowerSettings() {
   const { updateDelegatingVotingPower } = useTorus();
   const { accountsNotDelegatingVoting, isAccountPowerUser } = useGovernance();
 

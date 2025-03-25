@@ -22,7 +22,7 @@ import { useGovernance } from "~/context/governance-provider";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
 
-const CardBarebones = (props: { children: JSX.Element }): JSX.Element => {
+const CardBarebones = (props: { children: React.ReactNode }) => {
   return (
     <div className="animate-fade-down animate-delay-700 hidden md:block">
       <h3 className="mb-4 text-lg">Cast your vote</h3>
@@ -35,10 +35,10 @@ const AlreadyVotedCardContent = (props: {
   voted: VoteStatus;
   votingStatus: TransactionResult;
   handleRemoveVote: () => void;
-}): JSX.Element => {
+}) => {
   const { voted, votingStatus, handleRemoveVote } = props;
 
-  const getVotedText = (voted: VoteStatus): JSX.Element => {
+  const getVotedText = (voted: VoteStatus) => {
     if (voted === "FAVORABLE") {
       return <span className="text-green-400">You already voted in favor</span>;
     }
@@ -73,7 +73,7 @@ const VoteCardFunctionsContent = (props: {
   isPowerUser: boolean;
   handleVote: () => void;
   setVote: (vote: VoteStatus) => void;
-}): JSX.Element => {
+}) => {
   const {
     handleVote,
     setVote,
@@ -157,9 +157,7 @@ interface ProposalVoteCardProps {
   ) => Promise<QueryObserverResult<VoteWithStake[], Error>>;
 }
 
-export function ProposalVoteCard(
-  props: Readonly<ProposalVoteCardProps>,
-): JSX.Element {
+export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
   const {
     proposalId,
     voted = "UNVOTED",

@@ -1,3 +1,5 @@
+// React is needed for JSX even if not directly referenced
+import * as React from "react";
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
 import { updateMetadata } from "../utils/metadata";

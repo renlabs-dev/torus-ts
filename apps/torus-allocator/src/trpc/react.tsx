@@ -24,9 +24,7 @@ const getQueryClient = () => {
   if (typeof window === "undefined") {
     return createQueryClient();
   } else {
-    if (!clientQueryClientSingleton) {
-      clientQueryClientSingleton = createQueryClient();
-    }
+    clientQueryClientSingleton ??= createQueryClient();
     return clientQueryClientSingleton;
   }
 };

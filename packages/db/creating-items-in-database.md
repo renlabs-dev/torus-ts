@@ -76,7 +76,7 @@ export const appRouter = createTRPCRouter({
 We create the main page component in `apps/torus-allocator/src/app/page.tsx`.
 
 ```typescript
-export default function Page(): JSX.Element {
+export default function Page() {
   return <CrudShowcase />;
 }
 

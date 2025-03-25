@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { FC } from "react";
 import { cn } from "../lib/utils";
 
@@ -22,7 +23,7 @@ export function Layout({
   font,
   className,
   headScripts,
-}: Readonly<LayoutProps>): JSX.Element {
+}: Readonly<LayoutProps>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>{headScripts?.map((Script) => <Script key={Script.name} />)}</head>

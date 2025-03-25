@@ -11,9 +11,7 @@ interface HandleRemoveDaoMemberProps {
   revoke: number;
 }
 
-export function HandleRemoveDaoMember(
-  props: HandleRemoveDaoMemberProps,
-): JSX.Element {
+export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
   const { selectedAccount } = useGovernance();
 
   const { data: curatorVotes, refetch: refetchCuratorVotes } =

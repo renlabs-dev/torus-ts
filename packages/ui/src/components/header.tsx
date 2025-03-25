@@ -1,3 +1,4 @@
+import * as React from "react";
 import { cn } from "../lib/utils";
 import { Icons } from "./icons";
 import Link from "next/link";
@@ -7,7 +8,7 @@ interface HeaderProps {
   wallet?: React.ReactNode;
 }
 
-export function Header(props: Readonly<HeaderProps>): JSX.Element {
+export function Header(props: Readonly<HeaderProps>) {
   return (
     <header
       className={cn(

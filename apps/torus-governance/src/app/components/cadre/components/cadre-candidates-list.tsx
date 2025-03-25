@@ -5,7 +5,7 @@ import { Card } from "@torus-ts/ui/components/card";
 import { useSearchParams } from "next/navigation";
 import { api } from "~/trpc/react";
 
-export function CadreCandidatesList(): JSX.Element {
+export function CadreCandidatesList() {
   const searchParams = useSearchParams();
   const currentStatus = searchParams.get("status") ?? "pending";
 

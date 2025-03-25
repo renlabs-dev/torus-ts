@@ -1,3 +1,4 @@
+import * as React from "react";
 import { cn } from "../lib/utils";
 
 const serverId = "941362322000203776";
@@ -23,7 +24,7 @@ try {
   console.error("Failed to fetch Discord widget data:", error);
 }
 
-export function handleDescription(description: string | null): JSX.Element {
+export function handleDescription(description: string | null) {
   if (!presenceCount && !description) return <p>loading...</p>;
   if (!description) {
     return (

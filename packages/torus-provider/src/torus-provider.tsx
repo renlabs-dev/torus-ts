@@ -29,6 +29,7 @@ import type {
 import { sb_balance } from "@torus-ts/subspace";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { toNano } from "@torus-ts/utils/subspace";
+import * as React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
@@ -144,7 +145,7 @@ export function TorusProvider({
   children,
   wsEndpoint,
   torusCacheUrl,
-}: Readonly<TorusProviderProps>): JSX.Element {
+}: Readonly<TorusProviderProps>) {
   const [api, setApi] = useState<ApiPromise | null>(null);
   const [torusApi, setTorusApi] = useState<TorusApiState>({
     web3Enable: null,

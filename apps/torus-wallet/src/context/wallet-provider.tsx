@@ -94,11 +94,7 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
-export function WalletProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+export function WalletProvider({ children }: { children: React.ReactNode }) {
   // == API Context ==
   const {
     accounts,

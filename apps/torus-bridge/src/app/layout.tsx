@@ -26,7 +26,7 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): JSX.Element {
+}>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <AppContextProvider>{children}</AppContextProvider>

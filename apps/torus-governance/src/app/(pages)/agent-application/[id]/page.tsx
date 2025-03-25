@@ -7,7 +7,7 @@ export default async function AgentApplicationView({
   params,
 }: Readonly<{
   params: Promise<{ id: string }>;
-}>): Promise<JSX.Element> {
+}>) {
   const { id } = await params;
 
   if (!id) {

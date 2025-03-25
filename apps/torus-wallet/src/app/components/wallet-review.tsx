@@ -47,7 +47,7 @@ export function WalletTransactionReview(
         <Button
           className="flex w-full place-self-end"
           disabled={disabled}
-          onClick={() => formRef.current?.requestSubmit()}
+          onClick={() => formRef.current.requestSubmit()}
         >
           {triggerTitle}
         </Button>

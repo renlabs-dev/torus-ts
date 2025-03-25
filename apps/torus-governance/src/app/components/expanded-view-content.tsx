@@ -8,9 +8,7 @@ interface ExpandedViewContentProps {
   body: string | null;
 }
 
-export const ExpandedViewContent = (
-  props: ExpandedViewContentProps,
-): JSX.Element => {
+export const ExpandedViewContent = (props: ExpandedViewContentProps) => {
   const { body, title } = props;
   const contentRef = useRef<HTMLDivElement>(null);
   const [expandedText, setExpandedText] = useState(false);

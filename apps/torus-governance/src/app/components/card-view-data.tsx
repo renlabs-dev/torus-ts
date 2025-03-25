@@ -39,7 +39,7 @@ export interface ProposalCardProps {
   agentVoted?: AgentApplicationVoteType;
 }
 
-export function CardViewData(props: Readonly<ProposalCardProps>): JSX.Element {
+export function CardViewData(props: Readonly<ProposalCardProps>) {
   const {
     voted,
     agentVoted,
