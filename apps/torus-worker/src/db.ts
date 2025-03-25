@@ -1,36 +1,36 @@
+import type {
+  GovernanceItemType,
+  SS58Address,
+  Agent as TorusAgent,
+} from "@torus-network/sdk";
+import { checkSS58 } from "@torus-network/sdk";
 import type { SQL, Table } from "@torus-ts/db";
 import {
   and,
   eq,
   getTableColumns,
-  isNull,
-  sql,
   gte,
   inArray,
+  isNull,
   not,
+  sql,
 } from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
   agentApplicationVoteSchema,
   agentSchema,
+  cadreCandidateSchema,
   cadreSchema,
-  cadreVoteSchema,
   cadreVoteHistory,
+  cadreVoteSchema,
+  candidacyStatusValues,
   computedAgentWeightSchema,
   governanceNotificationSchema,
-  userAgentWeightSchema,
   penalizeAgentVotesSchema,
-  cadreCandidateSchema,
-  candidacyStatusValues,
-  whitelistApplicationSchema,
   proposalSchema,
+  userAgentWeightSchema,
+  whitelistApplicationSchema,
 } from "@torus-ts/db/schema";
-import type {
-  Agent as TorusAgent,
-  GovernanceItemType,
-  SS58Address,
-} from "@torus-ts/subspace";
-import { checkSS58 } from "@torus-ts/subspace";
 import { getOrSetDefault } from "@torus-ts/utils/collections";
 
 const db = createDb();

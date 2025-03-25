@@ -1,22 +1,16 @@
 "use client";
 
-import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
-import { ValidatorsList } from "../validators-list";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { checkSS58, isSS58 } from "@torus-ts/subspace";
+import { checkSS58, isSS58 } from "@torus-network/sdk";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
@@ -28,6 +22,9 @@ import {
   smallAddress,
   toNano,
 } from "@torus-ts/utils/subspace";
+import { ALLOCATOR_ADDRESS } from "~/consts";
+import { useWallet } from "~/context/wallet-provider";
+import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
 import React, {
   useCallback,
   useEffect,
@@ -37,9 +34,12 @@ import React, {
 } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ALLOCATOR_ADDRESS } from "~/consts";
-import { useWallet } from "~/context/wallet-provider";
-import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
+import { AmountButtons } from "../amount-buttons";
+import type { FeeLabelHandle } from "../fee-label";
+import { FeeLabel } from "../fee-label";
+import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
+import { ReviewTransactionDialog } from "../review-transaction-dialog";
+import { ValidatorsList } from "../validators-list";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;

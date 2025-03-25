@@ -1,4 +1,4 @@
-import { STAKE_DATA_SCHEMA } from "@torus-ts/subspace";
+import { STAKE_DATA_SCHEMA } from "@torus-network/sdk";
 import fetch from "node-fetch";
 import SuperJSON from "superjson";
 

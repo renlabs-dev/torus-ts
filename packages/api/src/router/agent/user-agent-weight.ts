@@ -1,13 +1,17 @@
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { eq, isNull, and, max } from "@torus-ts/db";
+import type { SS58Address } from "@torus-network/sdk";
+import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-network/sdk";
+import { and, eq, isNull, max } from "@torus-ts/db";
 import type { DB } from "@torus-ts/db/client";
-import { agentSchema, userAgentWeightSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
+import {
+  agentSchema,
+  computedAgentWeightSchema,
+  userAgentWeightSchema,
+} from "@torus-ts/db/schema";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
-import type { SS58Address } from "@torus-ts/subspace";
-import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-ts/subspace";
 import { typed_non_null_entries } from "@torus-ts/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 async function getUserAgentWeights(
   db: DB,
@@ -101,12 +105,12 @@ export const userAgentWeightRouter = {
     .query(async ({ ctx, input }) => {
       // Query agent table joining it with user user_agent_allocation table and computed_weights
       // filtering by userKey
-      
+
       // First get the latest block
       const lastBlock = ctx.db
         .select({ value: max(computedAgentWeightSchema.atBlock) })
         .from(computedAgentWeightSchema);
-        
+
       return await ctx.db
         .select({
           agent: agentSchema,

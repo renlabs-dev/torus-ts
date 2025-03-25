@@ -1,18 +1,18 @@
+import { processApplicationMetadata } from "@torus-network/sdk";
+import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
+import { flattenResult } from "@torus-ts/utils/typing";
+import { z } from "zod";
 import {
   getApplicationsDB,
-  sleep,
   getCadreCandidates,
   getProposalsDB,
+  sleep,
 } from "../common";
 import type { ApplicationDB } from "../db";
 import * as db from "../db";
 import type { Embed, WebhookPayload } from "../discord";
 import { sendDiscordWebhook } from "../discord";
-import { processApplicationMetadata } from "@torus-ts/subspace";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
-import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
-import { flattenResult } from "@torus-ts/utils/typing";
-import { z } from "zod";
 
 const THUMBNAIL_URL = "https://i.imgur.com/pHJKJys.png";
 

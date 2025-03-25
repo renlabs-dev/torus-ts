@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchAgentMetadata } from "@torus-ts/subspace";
+import { fetchAgentMetadata } from "@torus-network/sdk";
 import { isIpfsUri } from "@torus-ts/utils/ipfs";
 import { assert } from "tsafe";
 

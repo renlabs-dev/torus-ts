@@ -1,6 +1,6 @@
 import { hexToString, stringToHex } from "@polkadot/util";
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto";
-import { checkSS58 } from "@torus-ts/subspace";
+import { checkSS58 } from "@torus-network/sdk";
 import { AUTH_REQ_SCHEMA } from "@torus-ts/utils/auth";
 import { z } from "zod";
 

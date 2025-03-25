@@ -1,7 +1,7 @@
 "use client";
 
+import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
 import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
-import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
 import { CreateComment } from "~/app/_components/comments/create-comment";
 import { ViewComment } from "~/app/_components/comments/view-comment";
 import { DetailsCard } from "~/app/_components/details-card";

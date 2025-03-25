@@ -4,7 +4,7 @@
     "noEmit": false,
     "emitDeclarationOnly": false,
     "paths": {
-      "@torus-ts/subspace/*": ["./src/*"],
+      "@torus-network/sdk/*": ["./src/*"],
       "@polkadot/api/augment": ["./src/interfaces/augment-api.ts"],
       "@polkadot/types/augment": ["./src/interfaces/augment-types.ts"]
     }

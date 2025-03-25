@@ -1,7 +1,0 @@
-check:
-	pnpm run typecheck
-	pnpm run lint
-
-gen-types net_name:
-	pnpm exec tsx ../../node_modules/.bin/polkadot-types-from-defs --package @torus-ts/subspace/interfaces --input ./src/interfaces --endpoint ../../data/metadata/{{ net_name }}.json
-	pnpm exec tsx ../../node_modules/.bin/polkadot-types-from-chain --package @torus-ts/subspace/interfaces --endpoint ../../data/metadata/{{ net_name }}.json --output ./src/interfaces

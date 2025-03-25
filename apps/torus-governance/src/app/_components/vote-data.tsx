@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@torus-ts/subspace";
+import type { ProposalStatus } from "@torus-network/sdk";
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
 import {
   calcProposalFavorablePercent,

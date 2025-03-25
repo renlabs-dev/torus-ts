@@ -3,20 +3,20 @@
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
 import type { UseQueryResult } from "@tanstack/react-query";
+import type {
+  Balance,
+  LastBlock,
+  SS58Address,
+  StakeData,
+} from "@torus-network/sdk";
 import {
   useCachedStakeOut,
   useFreeBalance,
   useKeyStakingTo,
-  useMinAllowedStake,
   useLastBlock,
+  useMinAllowedStake,
   useRewardInterval,
 } from "@torus-ts/query-provider/hooks";
-import type {
-  Balance,
-  SS58Address,
-  StakeData,
-  LastBlock,
-} from "@torus-ts/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import type {
@@ -24,8 +24,8 @@ import type {
   Transfer,
   TransferStake,
 } from "@torus-ts/torus-provider/types";
-import { createContext, useContext } from "react";
 import { env } from "~/env";
+import { createContext, useContext } from "react";
 
 type TransactionExtrinsicPromise =
   | SubmittableExtrinsic<"promise", ISubmittableResult>

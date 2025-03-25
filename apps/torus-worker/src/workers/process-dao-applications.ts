@@ -1,13 +1,24 @@
+import type { ApiPromise } from "@polkadot/api";
+import type { AgentApplication } from "@torus-network/sdk";
+import {
+  acceptApplication,
+  CONSTANTS,
+  denyApplication,
+  penalizeAgent,
+  removeFromWhitelist,
+} from "@torus-network/sdk";
+import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {
+  applicationIsPending,
   getApplications,
+  getApplicationVoteStatus,
+  getCadreVotes,
   log,
   processCadreVotes,
-  getCadreVotes,
   sleep,
   sleepUntilNewBlock,
-  applicationIsPending,
-  getApplicationVoteStatus,
 } from "../common";
 import type { VotesByNumericId } from "../db";
 import {
@@ -16,17 +27,6 @@ import {
   queryTotalVotesPerApp,
   updatePenalizeAgentVotes,
 } from "../db";
-import type { ApiPromise } from "@polkadot/api";
-import type { AgentApplication } from "@torus-ts/subspace";
-import {
-  acceptApplication,
-  denyApplication,
-  penalizeAgent,
-  removeFromWhitelist,
-} from "@torus-ts/subspace";
-import { CONSTANTS } from "@torus-ts/subspace";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
-import { z } from "zod";
 
 const getEnv = validateEnvOrExit({
   TORUS_CURATOR_MNEMONIC: z

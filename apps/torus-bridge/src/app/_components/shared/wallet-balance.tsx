@@ -1,17 +1,17 @@
 "use client";
 
+import type { SS58Address } from "@torus-network/sdk";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
-import type { SS58Address } from "@torus-ts/subspace";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken } from "@torus-ts/utils/subspace";
+import { getChainValuesOnEnv } from "~/config";
+import { env } from "~/env";
 import Image from "next/image";
 import React, { useCallback } from "react";
 import { erc20Abi } from "viem";
 import * as wagmi from "wagmi";
-import { getChainValuesOnEnv } from "~/config";
-import { env } from "~/env";
 
 const TORUS_NETWORK_NAME: string = {
   mainnet: "Torus",

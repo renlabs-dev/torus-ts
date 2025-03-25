@@ -1,9 +1,27 @@
 "use client";
 
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
+import type {
+  InjectedAccountWithMeta,
+  InjectedExtension,
+} from "@polkadot/extension-inject/types";
+import type { ISubmittableResult } from "@polkadot/types/types";
+import type {
+  AgentApplication,
+  Api,
+  CustomMetadataState,
+  Proposal,
+} from "@torus-network/sdk";
+import { sb_balance } from "@torus-network/sdk";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { toNano } from "@torus-ts/utils/subspace";
+import * as React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { sendTransaction } from "./_components/send-transaction";
 import type {
-  AddCustomProposal,
   AddAgentApplication,
+  AddCustomProposal,
   AddDaoTreasuryTransferProposal,
   RegisterAgent,
   RemoveVote,
@@ -13,24 +31,6 @@ import type {
   UpdateDelegatingVotingPower,
   Vote,
 } from "./_types";
-import { ApiPromise, WsProvider } from "@polkadot/api";
-import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type {
-  InjectedAccountWithMeta,
-  InjectedExtension,
-} from "@polkadot/extension-inject/types";
-import type { ISubmittableResult } from "@polkadot/types/types";
-import type {
-  Api,
-  AgentApplication,
-  Proposal,
-  CustomMetadataState,
-} from "@torus-ts/subspace";
-import { sb_balance } from "@torus-ts/subspace";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { toNano } from "@torus-ts/utils/subspace";
-import * as React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 

@@ -1,13 +1,13 @@
-import { setup } from "./server";
-import { log, sleep } from "./utils";
 import type { ApiPromise } from "@polkadot/api";
-import type { LastBlock, StakeData } from "@torus-ts/subspace";
+import type { LastBlock, StakeData } from "@torus-network/sdk";
 import {
   queryLastBlock,
   queryStakeIn,
   queryStakeOut,
-} from "@torus-ts/subspace";
+} from "@torus-network/sdk";
 import SuperJSON from "superjson";
+import { setup } from "./server";
+import { log, sleep } from "./utils";
 
 const UPDATE_INTERVAL = 1000;
 

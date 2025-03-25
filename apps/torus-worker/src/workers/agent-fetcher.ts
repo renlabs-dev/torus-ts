@@ -1,12 +1,20 @@
+import type { LastBlock, SS58Address } from "@torus-network/sdk";
+import {
+  checkSS58,
+  CONSTANTS,
+  queryAgents,
+  queryLastBlock,
+  queryWhitelist,
+} from "@torus-network/sdk";
 import type { WorkerProps } from "../common";
 import {
+  agentApplicationToApplication,
+  agentProposalToProposal,
+  getApplications,
+  getProposals,
   isNewBlock,
   log,
   sleep,
-  getApplications,
-  getProposals,
-  agentApplicationToApplication,
-  agentProposalToProposal,
 } from "../common";
 import type { NewApplication, NewProposal } from "../db";
 import {
@@ -15,14 +23,6 @@ import {
   upsertProposal,
   upsertWhitelistApplication,
 } from "../db";
-import type { LastBlock, SS58Address } from "@torus-ts/subspace";
-import {
-  checkSS58,
-  queryAgents,
-  queryLastBlock,
-  queryWhitelist,
-} from "@torus-ts/subspace";
-import { CONSTANTS } from "@torus-ts/subspace";
 
 export async function runAgentFetch(lastBlock: LastBlock) {
   const currentTime = new Date();
