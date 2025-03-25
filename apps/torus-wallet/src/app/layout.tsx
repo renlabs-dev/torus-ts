@@ -3,6 +3,7 @@ import { APRBar } from "./components/apr-bar/apr-bar";
 import { SidebarLinks } from "./components/sidebar-links";
 import { WalletBalance } from "./components/wallet-balance";
 import { WalletHeader } from "./components/wallet-header";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
@@ -61,6 +62,7 @@ export default function RootLayout({
         </ReactQueryProvider>
       </TorusProvider>
       <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
     </Layout>
   );
 }

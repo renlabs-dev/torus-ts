@@ -1,3 +1,4 @@
+import { AgentInfoCard } from "./components/agent-info-card";
 import { fetchAgentMetadata } from "@torus-ts/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
@@ -7,11 +8,9 @@ import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AgentInfoCard } from "~/app/components/agent-info-card";
-import BlobImage from "~/app/components/blob-image";
-import { DelegateModuleWeight } from "~/app/components/delegate-module-weight";
-import { ExpandedViewSocials } from "~/app/components/expanded-view-socials";
-import { PenaltyList } from "~/app/components/penalties-list";
+import { ExpandedViewSocials } from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
+import BlobImage from "~/app/_components/blob-image";
+import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 
 export default async function AgentPage({
@@ -69,7 +68,7 @@ export default async function AgentPage({
         >
           <Link
             href="/"
-            className="animate-fade-left mb-4 flex items-center text-white transition duration-200"
+            className="mb-4 flex items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
             Go back to agents list
@@ -77,11 +76,11 @@ export default async function AgentPage({
         </Button>
 
         <div className="mb-12 flex flex-col gap-6 md:flex-row">
-          <div className="animate-fade-down animate-delay-500 mb-12 flex flex-col gap-6 md:w-2/3">
+          <div className="mb-12 flex flex-col gap-6 md:w-2/3">
             <Card className="mb-6 flex flex-col gap-6 md:flex-row">
               {icon && <BlobImage blob={icon} alt="My Blob Image" />}
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
-                <h1 className="animate-fade-right text-start text-3xl font-semibold">
+                <h1 className="text-start text-3xl font-semibold">
                   {mdl.name}
                 </h1>
 
@@ -93,7 +92,7 @@ export default async function AgentPage({
 
             <MarkdownView source={metadata.description} />
           </div>
-          <div className="animate-fade-down animate-delay-500 flex flex-col gap-6 md:w-1/3">
+          <div className="flex flex-col gap-6 md:w-1/3">
             <AgentInfoCard agent={mdl} />
             <Card className="flex items-center justify-between p-6">
               <p>Agent Links:</p>
@@ -122,16 +121,7 @@ export default async function AgentPage({
                 />
               </div>
             </Card>
-            <div className="relative z-30 flex w-full flex-col gap-2 md:flex-row">
-              <DelegateModuleWeight
-                id={mdl.id}
-                name={mdl.name ?? "Missing Agent Name"}
-                agentKey={mdl.key}
-                metadataUri={mdl.metadataUri}
-                registrationBlock={mdl.registrationBlock}
-                className="w-full"
-              />
-            </div>
+
             {mdl.weightFactor !== null &&
               mdl.weightFactor > 0 &&
               penalties.length > 0 && <PenaltyList penalties={penalties} />}

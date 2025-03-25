@@ -1,4 +1,6 @@
 import "@torus-ts/ui/globals.css";
+import DiscordAuthProvider from "./providers/auth-provider";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
@@ -38,12 +40,15 @@ export default function RootLayout({
       >
         <TRPCReactProvider>
           <GovernanceProvider>
-            <Container>{children}</Container>
-            <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-            <Toaster />
+            <DiscordAuthProvider>
+              <Container>{children}</Container>
+              <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+              <Toaster />
+            </DiscordAuthProvider>
           </GovernanceProvider>
         </TRPCReactProvider>
       </TorusProvider>
+      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
     </Layout>
   );
 }

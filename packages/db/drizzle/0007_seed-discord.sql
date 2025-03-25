@@ -1,0 +1,3 @@
+-- Custom SQL migration file, put your code below! -
+INSERT INTO "user_discord_info" ("discord_id", "user_name", "avatar_url") VALUES('353453210389839872', 'kingu0', 'https://cdn.discordapp.com/avatars/353453210389839872/fdc15fcefb3ce48121156dd1a94f5583.png');
+INSERT INTO "user_discord_info" ("discord_id", "user_name", "avatar_url") VALUES('240844942639890433', 'steinerkelvin', 'https://cdn.discordapp.com/avatars/240844942639890433/a_ec888ddd47fa1bbdc8e33e06dcce034b.gif');
