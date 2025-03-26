@@ -1,11 +1,11 @@
 "use client";
 
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
-import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
+import { AmountButtons } from "../../components/amount-buttons";
+import type { FeeLabelHandle } from "../../components/fee-label";
+import { FeeLabel } from "../../components/fee-label";
+import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
+import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isSS58 } from "@torus-ts/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";

@@ -1,11 +1,5 @@
-import WalletActions from "./components/wallet-actions";
-import { WalletSkeletonLoader } from "./components/wallet-skeleton-loader";
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return (
-    <Suspense fallback={<WalletSkeletonLoader />}>
-      <WalletActions route="transfer" />
-    </Suspense>
-  );
+  redirect("/transfers");
 }
