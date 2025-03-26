@@ -1,11 +1,5 @@
 "use client";
 
-import { AmountButtons } from "../../components/amount-buttons";
-import type { FeeLabelHandle } from "../../components/fee-label";
-import { FeeLabel } from "../../components/fee-label";
-import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
-import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
-import { ValidatorsList } from "../../components/validators-list";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58, isSS58 } from "@torus-network/sdk";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
@@ -28,13 +22,7 @@ import {
   smallAddress,
   toNano,
 } from "@torus-ts/utils/subspace";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useWallet } from "~/context/wallet-provider";
@@ -46,21 +34,12 @@ import {
   isAmountPositive,
   meetsMinimumStake,
 } from "~/utils/validators";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
-import { ValidatorsList } from "../validators-list";
+import { AmountButtons } from "../../components/amount-buttons";
+import type { FeeLabelHandle } from "../../components/fee-label";
+import { FeeLabel } from "../../components/fee-label";
+import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
+import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
+import { ValidatorsList } from "../../components/validators-list";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
