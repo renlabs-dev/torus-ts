@@ -1,7 +1,6 @@
 "use client";
 
-import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import type { AgentApplication } from "@torus-ts/subspace";
+import type { AgentApplication } from "@torus-network/sdk";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -9,11 +8,12 @@ import {
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 import { Delete, TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
+import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
@@ -38,7 +38,10 @@ const AlreadyVotedCardContent = (props: {
   const { voted, handleRemoveVote, voteLoading } = props;
 
   const getVotedText = (voted: WhitelistVoteType | "REMOVE") => {
-    const voteStatusText: Record<WhitelistVoteType | "REMOVE", React.ReactNode> = {
+    const voteStatusText: Record<
+      WhitelistVoteType | "REMOVE",
+      React.ReactNode
+    > = {
       ACCEPT: (
         <span className="text-green-400">You already voted in favor.</span>
       ),

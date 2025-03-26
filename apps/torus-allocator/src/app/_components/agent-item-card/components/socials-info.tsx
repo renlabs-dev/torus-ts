@@ -4,15 +4,31 @@ import React from "react";
 
 type SocialKind = "website" | "discord" | "twitter" | "github" | "telegram";
 
+// TODO: Remove code repetition
 const SOCIALS_CONFIG: Record<
   SocialKind,
   { name: string; icon: React.ReactNode }
 > = {
-  website: { name: "Website", icon: <Globe /> },
-  discord: { name: "Discord", icon: <Icons.Discord /> },
-  twitter: { name: "X", icon: <Icons.X /> },
-  github: { name: "GitHub", icon: <Icons.Github /> },
-  telegram: { name: "Telegram", icon: <Icons.Telegram /> },
+  website: {
+    name: "Website",
+    icon: <Globe className="h-5 w-5 md:h-4 md:w-4" color="#6b7280" />,
+  },
+  discord: {
+    name: "Discord",
+    icon: <Icons.Discord className="h-5 w-5 md:h-4 md:w-4" color="#6b7280" />,
+  },
+  twitter: {
+    name: "X",
+    icon: <Icons.X className="h-5 w-5 md:h-4 md:w-4" color="#6b7280" />,
+  },
+  github: {
+    name: "GitHub",
+    icon: <Icons.Github className="h-5 w-5 md:h-4 md:w-4" color="#6b7280" />,
+  },
+  telegram: {
+    name: "Telegram",
+    icon: <Icons.Telegram className="h-5 w-5 md:h-4 md:w-4" color="#6b7280" />,
+  },
 };
 
 const SOCIALS_ORDER: SocialKind[] = [
@@ -51,9 +67,7 @@ export function SocialsInfo({
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
         >
-          <span className="h-5 w-5 md:h-4 md:w-4 text-gray-500">
-            {icon}
-          </span>
+          <span className="h-5 w-5 text-gray-500 md:h-4 md:w-4">{icon}</span>
         </a>
       ))}
     </div>

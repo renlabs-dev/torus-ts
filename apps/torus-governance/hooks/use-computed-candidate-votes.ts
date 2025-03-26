@@ -1,5 +1,5 @@
-import type { CuratorVoteHistory } from "../src/app/components/cadre/candidate-card/index";
 import { api } from "~/trpc/react";
+import type { CuratorVoteHistory } from "../src/app/_components/cadre/candidate-card/index";
 
 export interface ComputedVotes {
   accept: number;

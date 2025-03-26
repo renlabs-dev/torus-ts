@@ -1,24 +1,6 @@
 "use client";
 
 import type { UseQueryResult } from "@tanstack/react-query";
-import type { AppRouter } from "@torus-ts/api";
-import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
-import {
-  useAccountsNotDelegatingVoting,
-  useCachedStakeOut,
-  useCustomMetadata,
-  useAgentApplications,
-  useDaoTreasuryAddress,
-  useFreeBalance,
-  useLastBlock,
-  useProposals,
-  useRewardAllocation,
-  useUnrewardedProposals,
-  useGlobalConfig,
-  useBurnValue,
-  useAgents,
-  useWhitelist,
-} from "@torus-ts/query-provider/hooks";
 import type {
   Agent,
   AgentApplication,
@@ -27,7 +9,25 @@ import type {
   Proposal,
   SS58Address,
   StakeData,
-} from "@torus-ts/subspace";
+} from "@torus-network/sdk";
+import type { AppRouter } from "@torus-ts/api";
+import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
+import {
+  useAccountsNotDelegatingVoting,
+  useAgentApplications,
+  useAgents,
+  useBurnValue,
+  useCachedStakeOut,
+  useCustomMetadata,
+  useDaoTreasuryAddress,
+  useFreeBalance,
+  useGlobalConfig,
+  useLastBlock,
+  useProposals,
+  useRewardAllocation,
+  useUnrewardedProposals,
+  useWhitelist,
+} from "@torus-ts/query-provider/hooks";
 import type {
   ApplicationState,
   InjectedAccountWithMeta,
@@ -35,8 +35,8 @@ import type {
 } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import type {
-  AddCustomProposal,
   AddAgentApplication,
+  AddCustomProposal,
   AddDaoTreasuryTransferProposal,
   RegisterAgent,
   RemoveVote,
@@ -47,10 +47,10 @@ import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-d
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
 import type { inferProcedureOutput } from "@trpc/server";
-import { useSignIn } from "hooks/use-sign-in";
-import { createContext, useContext, useMemo } from "react";
 import { env } from "~/env";
 import { api as trpcApi } from "~/trpc/react";
+import { useSignIn } from "hooks/use-sign-in";
+import { createContext, useContext, useMemo } from "react";
 
 type CadreCandidates = inferProcedureOutput<AppRouter["cadreCandidate"]["all"]>;
 type CadreList = inferProcedureOutput<AppRouter["cadre"]["all"]>;

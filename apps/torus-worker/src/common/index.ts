@@ -1,39 +1,39 @@
-import type {
-  VotesByNumericId as VoteById,
-  VotesByKey as VoteByKey,
-  NewApplication,
-  NewProposal,
-  ApplicationDB,
-  CadreCandidate,
-} from "../db";
-import {
-  queryTotalVotesPerApp,
-  countCadreKeys,
-  pendingPenalizations,
-  addCadreMember,
-  queryTotalVotesPerCadre,
-  removeCadreMember,
-  getCadreDiscord,
-  refuseCadreApplication,
-  queryAgentApplicationsDB,
-  queryCadreCandidates,
-  queryProposalsDB,
-} from "../db";
 import type { ApiPromise } from "@polkadot/api";
-import { applicationStatusValues } from "@torus-ts/db/schema";
 import type {
   AgentApplication,
   Api,
   LastBlock,
   Proposal,
-} from "@torus-ts/subspace";
+} from "@torus-network/sdk";
 import {
+  CONSTANTS,
   queryAgentApplications,
   queryLastBlock,
   queryProposals,
-  CONSTANTS,
-} from "@torus-ts/subspace";
+} from "@torus-network/sdk";
+import { applicationStatusValues } from "@torus-ts/db/schema";
 import { match } from "rustie";
+import type {
+  ApplicationDB,
+  CadreCandidate,
+  NewApplication,
+  NewProposal,
+  VotesByNumericId as VoteById,
+  VotesByKey as VoteByKey,
+} from "../db";
+import {
+  addCadreMember,
+  countCadreKeys,
+  getCadreDiscord,
+  pendingPenalizations,
+  queryAgentApplicationsDB,
+  queryCadreCandidates,
+  queryProposalsDB,
+  queryTotalVotesPerApp,
+  queryTotalVotesPerCadre,
+  refuseCadreApplication,
+  removeCadreMember,
+} from "../db";
 
 export interface WorkerProps {
   lastBlockNumber: number;

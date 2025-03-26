@@ -1,12 +1,12 @@
+import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
+import { useGovernance } from "~/context/governance-provider";
+import { handleCustomProposal } from "~/utils";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { CardSkeleton } from "../card-skeleton";
 import { CardViewData } from "../card-view-data";
 import type { VoteStatus } from "../vote-label";
 import { ListContainer } from "./container-list";
-import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useGovernance } from "~/context/governance-provider";
-import { handleCustomProposal } from "~/utils";
 
 const ListCardsLoadingSkeleton = () => {
   return (

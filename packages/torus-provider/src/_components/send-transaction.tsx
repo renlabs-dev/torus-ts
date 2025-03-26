@@ -1,21 +1,21 @@
 // React is needed for JSX even if not directly referenced
-import * as React from "react";
-import type { TransactionResult } from "../_types";
-import type { TorusApiState } from "../torus-provider";
-import { updateMetadata } from "../utils/metadata";
-import {
-  renderSuccessfulyFinalized,
-  renderFinalizedWithError,
-  renderWaitingForValidation,
-} from "./toast-content-handler";
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata";
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
-import { CONSTANTS } from "@torus-ts/subspace";
+import { CONSTANTS } from "@torus-network/sdk";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
+import * as React from "react";
+import type { TransactionResult } from "../_types";
+import type { TorusApiState } from "../torus-provider";
+import { updateMetadata } from "../utils/metadata";
+import {
+  renderFinalizedWithError,
+  renderSuccessfulyFinalized,
+  renderWaitingForValidation,
+} from "./toast-content-handler";
 
 interface SendTransactionProps {
   api: ApiPromise | null;

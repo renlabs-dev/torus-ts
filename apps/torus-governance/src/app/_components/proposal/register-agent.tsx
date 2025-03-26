@@ -5,7 +5,7 @@ import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
   checkSS58,
-} from "@torus-ts/subspace";
+} from "@torus-network/sdk";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -17,11 +17,11 @@ import { AllocatorAgentItem } from "@torus-ts/ui/components/allocator-agent-item
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
-  FormControl,
-  FormMessage,
   FormLabel,
+  FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import {
@@ -38,15 +38,15 @@ import type { CID } from "@torus-ts/utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
 import { formatToken, fromNano } from "@torus-ts/utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import type { PinFileOnPinataResponse } from "~/app/api/files/route";
+import { useGovernance } from "~/context/governance-provider";
 import { FolderUp, Info } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
 import { z } from "zod";
-import type { PinFileOnPinataResponse } from "~/app/api/files/route";
-import { useGovernance } from "~/context/governance-provider";
 
 const registerAgentSchema = z.object({
   agentKey: z.string().min(1, "Agent address is required"),

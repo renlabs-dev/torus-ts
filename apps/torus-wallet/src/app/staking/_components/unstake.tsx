@@ -1,22 +1,16 @@
 "use client";
 
-import { AmountButtons } from "../../components/amount-buttons";
-import type { FeeLabelHandle } from "../../components/fee-label";
-import { FeeLabel } from "../../components/fee-label";
-import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
-import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
-import { ValidatorsList } from "../../components/validators-list";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { checkSS58, isSS58 } from "@torus-ts/subspace";
+import { checkSS58, isSS58 } from "@torus-network/sdk";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
@@ -28,18 +22,18 @@ import {
   smallAddress,
   toNano,
 } from "@torus-ts/utils/subspace";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
+import { AmountButtons } from "../../components/amount-buttons";
+import type { FeeLabelHandle } from "../../components/fee-label";
+import { FeeLabel } from "../../components/fee-label";
+import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
+import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
+import { ValidatorsList } from "../../components/validators-list";
 
 interface StakedValidator {
   address: string;
@@ -89,7 +83,7 @@ export function UnstakeAction() {
           .refine(
             () =>
               (accountFreeBalance.data ?? 0n) -
-              toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
+                toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
               existencialDepositValue,
             {
               message: `This transaction fee would make your account go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Top up your balance before unstaking.`,

@@ -1,22 +1,22 @@
 "use client";
 
-import { handleCustomProposal } from "../../../../../utils";
-import { StatusLabel } from "../../../../components/status-label";
-import type { VoteStatus } from "../../../../components/vote-label";
+import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
 import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
-import type { ProposalStatus, SS58Address } from "@torus-ts/subspace";
+import { CreateComment } from "~/app/_components/comments/create-comment";
+import { ViewComment } from "~/app/_components/comments/view-comment";
+import { DetailsCard } from "~/app/_components/details-card";
+import { ExpandedViewContent } from "~/app/_components/expanded-view-content";
+import { ProposalTypeLabel } from "~/app/_components/proposal/proposal-type-label";
+import { ProposalVoteCard } from "~/app/_components/proposal/proposal-vote-card";
+import { RewardLabel } from "~/app/_components/proposal/reward-label";
+import { VoterList } from "~/app/_components/proposal/voter-list";
+import { VoteData } from "~/app/_components/vote-data";
+import { useGovernance } from "~/context/governance-provider";
 import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
-import { CreateComment } from "~/app/components/comments/create-comment";
-import { ViewComment } from "~/app/components/comments/view-comment";
-import { DetailsCard } from "~/app/components/details-card";
-import { ExpandedViewContent } from "~/app/components/expanded-view-content";
-import { ProposalTypeLabel } from "~/app/components/proposal/proposal-type-label";
-import { ProposalVoteCard } from "~/app/components/proposal/proposal-vote-card";
-import { RewardLabel } from "~/app/components/proposal/reward-label";
-import { VoterList } from "~/app/components/proposal/voter-list";
-import { VoteData } from "~/app/components/vote-data";
-import { useGovernance } from "~/context/governance-provider";
+import { StatusLabel } from "../../../../_components/status-label";
+import type { VoteStatus } from "../../../../_components/vote-label";
+import { handleCustomProposal } from "../../../../../utils";
 
 interface CustomContent {
   paramId: number;

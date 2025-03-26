@@ -1,4 +1,4 @@
-import type { ProposalData } from "@torus-ts/subspace";
+import type { ProposalData } from "@torus-network/sdk";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { match } from "rustie";
 

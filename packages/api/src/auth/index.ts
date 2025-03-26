@@ -1,4 +1,4 @@
-import { SS58_SCHEMA } from "@torus-ts/subspace";
+import { SS58_SCHEMA } from "@torus-network/sdk";
 import * as jwt from "jsonwebtoken";
 import { z } from "zod";
 

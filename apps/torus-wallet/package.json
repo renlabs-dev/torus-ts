@@ -18,7 +18,7 @@
     "@tanstack/react-query": "catalog:",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
-    "@torus-ts/subspace": "workspace:*",
+    "@torus-network/sdk": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@next/third-parties": "catalog:",
     "@torus-ts/ui": "workspace:*",

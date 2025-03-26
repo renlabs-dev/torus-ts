@@ -1,19 +1,19 @@
 "use client";
 
-import { handleCustomAgentApplications } from "../../../../../utils";
-import { LoaderCircle } from "lucide-react";
-import { AgentActivityLabel } from "~/app/components/agent-application/agent-activity-label";
-import { AgentApplicationVoteTypeCard } from "~/app/components/agent-application/agent-application-vote-card";
-import { AgentStatusLabel } from "~/app/components/agent-application/agent-status-label";
-import { CreateCadreCandidates } from "~/app/components/agent-application/create-cadre-candidates";
-import { PenaltyManager } from "~/app/components/agent-application/penalty-manager";
-import { VoterList } from "~/app/components/agent-application/voter-list";
-import { CreateComment } from "~/app/components/comments/create-comment";
-import { ViewComment } from "~/app/components/comments/view-comment";
-import { DetailsCard } from "~/app/components/details-card";
-import { ExpandedViewContent } from "~/app/components/expanded-view-content";
+import { AgentActivityLabel } from "~/app/_components/agent-application/agent-activity-label";
+import { AgentApplicationVoteTypeCard } from "~/app/_components/agent-application/agent-application-vote-card";
+import { AgentStatusLabel } from "~/app/_components/agent-application/agent-status-label";
+import { CreateCadreCandidates } from "~/app/_components/agent-application/create-cadre-candidates";
+import { PenaltyManager } from "~/app/_components/agent-application/penalty-manager";
+import { VoterList } from "~/app/_components/agent-application/voter-list";
+import { CreateComment } from "~/app/_components/comments/create-comment";
+import { ViewComment } from "~/app/_components/comments/view-comment";
+import { DetailsCard } from "~/app/_components/details-card";
+import { ExpandedViewContent } from "~/app/_components/expanded-view-content";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import { LoaderCircle } from "lucide-react";
+import { handleCustomAgentApplications } from "../../../../../utils";
 
 interface CustomContent {
   paramId: number;

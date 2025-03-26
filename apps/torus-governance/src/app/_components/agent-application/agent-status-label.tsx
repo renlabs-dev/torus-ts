@@ -1,4 +1,4 @@
-import type { AgentApplication } from "@torus-ts/subspace";
+import type { AgentApplication } from "@torus-network/sdk";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { match } from "rustie";
 
