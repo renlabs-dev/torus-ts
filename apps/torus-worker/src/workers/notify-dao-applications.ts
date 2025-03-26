@@ -38,13 +38,17 @@ export async function notifyNewApplicationsWorker() {
   while(true){
     // We could execute the functions in parallel, but it's not necessary
     // and it's better for the logging to execute then serially
-    await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
-    await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
-    await pushProposalsNotification(
-      env.CURATOR_DISCORD_WEBHOOK_URL,
-      startingBlock,
-      buildUrl,
-    );
+    try {
+      await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+      await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+      await pushProposalsNotification(
+        env.CURATOR_DISCORD_WEBHOOK_URL,
+        startingBlock,
+        buildUrl,
+      );
+    } catch (error) {
+      log(`Error in notification cycle: ${error instanceof Error ? error.message : String(error)}`);
+    }
     await sleep(1_000);
   }
 }
