@@ -1,5 +1,4 @@
 import { Card } from "@torus-ts/ui/components/card";
-import React from "react";
 
 export function WalletSkeletonLoader() {
   return (

@@ -8,7 +8,7 @@ import {
   AlertDialogTitle,
 } from "@torus-ts/ui/components/alert-dialog";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 
 export interface ReviewTransactionDialogHandle {
   openDialog: () => void;
