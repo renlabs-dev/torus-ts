@@ -7,7 +7,7 @@ import { FeeLabel } from "../../components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isSS58 } from "@torus-ts/subspace";
+import { isSS58 } from "@torus-network/sdk";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";

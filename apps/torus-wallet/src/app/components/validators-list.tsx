@@ -1,8 +1,8 @@
 "use client";
 
 import type { UseQueryResult } from "@tanstack/react-query";
-import type { Balance, SS58Address } from "@torus-ts/subspace";
-import { checkSS58 } from "@torus-ts/subspace";
+import type { Balance, SS58Address } from "@torus-network/sdk";
+import { checkSS58 } from "@torus-network/sdk";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
@@ -39,7 +39,7 @@ function getDefaultValidators() {
     {
       name: "Torus Allocator",
       description: "Allocator of the Torus Allocator platform.",
-      address: checkSS58(env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"))
+      address: checkSS58(env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS")),
     },
   ];
 }
@@ -47,9 +47,7 @@ function getDefaultValidators() {
 function ValidatorListHeader() {
   return (
     <CardHeader className="flex flex-col gap-2 px-0 pt-0">
-      <h3 className="text-primary text-lg font-semibold">
-        Select a Allocator
-      </h3>
+      <h3 className="text-primary text-lg font-semibold">Select a Allocator</h3>
       <p className="text-muted-foreground pb-2">
         Once you select a allocator, it will automatically fill the field with
         their address. View all validators list{" "}
@@ -73,7 +71,8 @@ function ValidatorItem({ validator, onSelect }: ValidatorItemProps) {
       key={validator.address}
       variant="outline"
       onClick={() => onSelect(validator.address)}
-      className="flex h-fit w-full flex-col items-center font-semibold lg:flex-row lg:justify-between"
+      className="flex h-fit w-full flex-col items-center font-semibold lg:flex-row
+        lg:justify-between"
     >
       <span className="text-pretty">
         {validator.name && `${validator.name.toLocaleUpperCase()} / `}
@@ -91,22 +90,32 @@ function BackButton({ onBack }: BackButtonProps) {
     <Button
       onClick={onBack}
       variant="secondary"
-      className="mt-6 flex w-full items-center justify-center text-nowrap px-4 py-2.5 font-semibold"
+      className="mt-6 flex w-full items-center justify-center text-nowrap px-4 py-2.5
+        font-semibold"
     >
       <ChevronLeft className="h-6 w-6" /> Back to Field Options
     </Button>
   );
 }
 
-function useValidatorsList(listType: "all" | "staked", accountStakedBy: UseQueryResult<{
-  address: SS58Address;
-  stake: Balance;
-}[], Error>, excludedAddress: string) {
+function useValidatorsList(
+  listType: "all" | "staked",
+  accountStakedBy: UseQueryResult<
+    {
+      address: SS58Address;
+      stake: Balance;
+    }[],
+    Error
+  >,
+  excludedAddress: string,
+) {
   const getStakedValidators = (): Validator[] => {
     if (!accountStakedBy.data) return [];
 
     return accountStakedBy.data
-      .filter((validatorAddress) => excludedAddress !== validatorAddress.address)
+      .filter(
+        (validatorAddress) => excludedAddress !== validatorAddress.address,
+      )
       .map((item) => ({
         name: ``,
         description: `Staked amount: ${formatToken(Number(item.stake))}`,
@@ -117,7 +126,7 @@ function useValidatorsList(listType: "all" | "staked", accountStakedBy: UseQuery
 
   const getAllValidators = (): Validator[] => {
     return getDefaultValidators().filter(
-      (validatorAddress) => excludedAddress !== validatorAddress.address
+      (validatorAddress) => excludedAddress !== validatorAddress.address,
     );
   };
 
@@ -129,7 +138,11 @@ export function ValidatorsList(props: Readonly<ValidatorsListProps>) {
   const { accountStakedBy } = useWallet();
   const excludedAddress = excludeAddress ? excludeAddress() : "";
 
-  const validators = useValidatorsList(listType, accountStakedBy, excludedAddress);
+  const validators = useValidatorsList(
+    listType,
+    accountStakedBy,
+    excludedAddress,
+  );
 
   const handleValidatorSelect = (address: string) => {
     onSelectValidator({ address });
