@@ -7,30 +7,22 @@ import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import "@torus-ts/ui/globals.css";
 import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
 import * as React from "react";
 import { WalletProvider } from "~/context/wallet-provider";
 import { EnvScript, env } from "~/env";
+import { firaMono } from "~/utils/fonts";
 import { APRBar } from "./components/apr-bar/apr-bar";
 import { SidebarLinks } from "./components/sidebar-links";
 import { WalletBalance } from "./components/wallet-balance";
 import { WalletHeader } from "./components/wallet-header";
 
-const APP_NAME = "Torus Wallet";
-
 export const metadata: Metadata = {
   robots: "all",
-  title: APP_NAME,
+  title: "Torus Wallet",
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description:
     "Simple, secure, and easy-to-use wallet for the torus ecosystem.",
 };
-
-const firaMono = FiraMono({
-  subsets: ["latin"],
-  display: "swap",
-  weight: "400",
-});
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -80,7 +72,7 @@ export default function RootLayout({
         <Toaster />
       </Providers>
       <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+      <GoogleAnalytics gaId={env("NEXT_PUBLIC_TORUS_GA_ID")} />
     </Layout>
   );
 }
