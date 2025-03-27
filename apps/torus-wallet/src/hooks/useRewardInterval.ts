@@ -52,11 +52,10 @@ export function useRewardIntervalProgress() {
 
   const minutes = String(time.minutes).padStart(2, "0");
   const seconds = String(time.seconds).padStart(2, "0");
-  const full = `${minutes}:${seconds}`;
 
   return {
-    minutes: String(time.minutes).padStart(2, "0"),
-    seconds: String(time.seconds).padStart(2, "0"),
+    minutes,
+    seconds,
     full: `${time.minutes}:${time.seconds}`,
   };
 }
