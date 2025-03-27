@@ -1,6 +1,5 @@
 "use client";
 
-import { RewardIntervalProgress } from "./reward-interval-progress";
 import { Card } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
@@ -73,9 +72,8 @@ export function WalletBalance() {
   const getBalance = useMemo(() => {
     const free = accountFreeBalance.data ?? 0n;
     const staked = accountStakedBalance ?? 0n;
-    const total = free + staked;
 
-    return { free, staked, total };
+    return { free, staked };
   }, [accountFreeBalance.data, accountStakedBalance]);
 
   const balances = [
@@ -89,21 +87,12 @@ export function WalletBalance() {
       amount: getBalance.staked,
       icon: BALANCE_ICONS.staked,
     },
-    ...(getBalance.total > 0n
-      ? [
-          {
-            label: "Total Balance",
-            amount: getBalance.total,
-            icon: BALANCE_ICONS.total,
-          },
-        ]
-      : []),
   ];
 
   const isLoading = accountFreeBalance.isLoading;
 
   return (
-    <div className="xs:flex-row flex min-h-fit flex-col gap-4 lg:flex-col">
+    <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
       <Card key={useId()} className="flex w-full flex-col gap-6 px-7 py-5">
         {selectedAccount?.address && (
           <WalletHeader address={selectedAccount.address} />
@@ -120,7 +109,6 @@ export function WalletBalance() {
           ))}
         </div>
       </Card>
-      <RewardIntervalProgress />
     </div>
   );
 }
