@@ -16,6 +16,56 @@ const BALANCE_ICONS = {
   total: <Scale size={16} />,
 };
 
+interface BalanceItemProps {
+  amount: bigint;
+  icon: React.ReactNode;
+  label: string;
+  isLoading: boolean;
+}
+
+interface WalletHeaderProps {
+  address: string;
+}
+
+function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
+  return (
+    <div key={label} className="flex flex-col">
+      {!isLoading ? (
+        <p className="text-muted-foreground flex items-end gap-2 text-white font-bold">
+          {formatToken(amount)}
+          <span>TOR</span>
+        </p>
+      ) : (
+        <Skeleton className="w-1/2 py-3" />
+      )}
+      <span className="flex items-center gap-2 text-sm text-[#A1A1AA]">
+        {icon} {label}
+      </span>
+    </div>
+  );
+}
+
+function WalletHeader({ address }: WalletHeaderProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <Image
+        src="/wallet-info-logo.svg"
+        alt="Wallet Info Logo"
+        width={24}
+        height={24}
+      />
+      <CopyButton
+        className="h-fit p-0 text-muted-foreground hover:text-white"
+        variant="ghost"
+        copy={address}
+      >
+        {smallAddress(address, 12)}
+        <Copy />
+      </CopyButton>
+    </div>
+  );
+}
+
 export function WalletBalance() {
   const { accountFreeBalance, accountStakedBalance, selectedAccount } =
     useWallet();
@@ -25,11 +75,7 @@ export function WalletBalance() {
     const staked = accountStakedBalance ?? 0n;
     const total = free + staked;
 
-    return {
-      free,
-      staked,
-      total,
-    };
+    return { free, staked, total };
   }, [accountFreeBalance.data, accountStakedBalance]);
 
   const balances = [
@@ -58,42 +104,21 @@ export function WalletBalance() {
 
   return (
     <div className="xs:flex-row flex min-h-fit flex-col gap-4 lg:flex-col">
-      <Card key={useId()} className="flex w-full flex-col gap-2 px-7 py-5">
+      <Card key={useId()} className="flex w-full flex-col gap-6 px-7 py-5">
         {selectedAccount?.address && (
-          <div className="flex gap-3 items-center mb-4">
-            <Image
-              src="/wallet-info-logo.svg"
-              alt="Wallet Info Logo"
-              width={24}
-              height={24}
-            />
-
-            <CopyButton
-              className="hover:text-muted-foreground h-fit p-0 text-sm"
-              variant="link"
-              copy={selectedAccount.address}
-            >
-              {smallAddress(selectedAccount.address, 12)}
-              <Copy />
-            </CopyButton>
-          </div>
+          <WalletHeader address={selectedAccount.address} />
         )}
-
-        {balances.map(({ amount, icon, label }) => (
-          <div key={label} className="flex flex-col mb-4">
-            {!isLoading ? (
-              <p className="text-muted-foreground flex items-end gap-3 text-white font-bold mb-2">
-                {formatToken(amount)}
-                <span>TOR</span>
-              </p>
-            ) : (
-              <Skeleton className="w-1/2 py-3" />
-            )}
-            <span className="flex items-center gap-2 text-sm text-[#A1A1AA]">
-              {icon} {label}
-            </span>
-          </div>
-        ))}
+        <div className="flex flex-col gap-6">
+          {balances.map((balance) => (
+            <BalanceItem
+              key={balance.label}
+              amount={balance.amount}
+              icon={balance.icon}
+              label={balance.label}
+              isLoading={isLoading}
+            />
+          ))}
+        </div>
       </Card>
       <RewardIntervalProgress />
     </div>
