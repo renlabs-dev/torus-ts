@@ -30,7 +30,7 @@ interface MobileSelectProps {
 type NavButtonProps = NavLink;
 
 const NAVIGATION_LINKS: NavLink[] = [
-  { path: "/", label: "Wallet", value: "wallet" },
+  { path: "/transfers", label: "Wallet", value: "wallet" },
   { path: "/staking", label: "Staking", value: "staking" },
   { path: "bridge", label: "Bridge", value: "bridge" },
 ];
@@ -52,7 +52,7 @@ const useNavigation = () => {
     isActive,
     getPath,
     getDefaultValue,
-    bridgeLink
+    bridgeLink,
   };
 };
 
@@ -64,7 +64,8 @@ function NavButton({ path, label, value }: NavButtonProps) {
       key={value}
       asChild
       variant="ghost"
-      className={`w-full justify-between gap-4 border-none ${isActive(path) ? "bg-accent" : ""} px-3 text-base`}
+      className={`w-full justify-between gap-4 border-none ${isActive(path) ? "bg-accent" : ""}
+        px-3 text-base`}
     >
       <Link href={value === "bridge" ? bridgeLink : path}>
         {label}
@@ -110,10 +111,8 @@ export const SidebarLinks = () => {
 
       <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">
         <Card className="flex flex-col gap-1.5 p-5">
-          {NAVIGATION_LINKS.map(navLinkProps => (
-            <NavButton
-              key={navLinkProps.value}
-              {...navLinkProps} />
+          {NAVIGATION_LINKS.map((navLinkProps) => (
+            <NavButton key={navLinkProps.value} {...navLinkProps} />
           ))}
         </Card>
       </div>
