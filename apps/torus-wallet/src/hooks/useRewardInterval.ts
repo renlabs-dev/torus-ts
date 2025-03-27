@@ -1,12 +1,8 @@
-"use client";
-
 import { CONSTANTS } from "@torus-network/sdk";
-import { Card } from "@torus-ts/ui/components/card";
-import { useWallet } from "~/context/wallet-provider";
-import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useWallet } from "~/context/wallet-provider";
 
-export function RewardIntervalProgress() {
+export function useRewardIntervalProgress() {
   const { lastBlock, rewardInterval } = useWallet();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [time, setTime] = useState({ minutes: 0, seconds: 0 });
@@ -54,18 +50,13 @@ export function RewardIntervalProgress() {
     setTime({ minutes, seconds });
   }, [timeLeft]);
 
-  if (timeLeft === null) return null;
+  const minutes = String(time.minutes).padStart(2, "0");
+  const seconds = String(time.seconds).padStart(2, "0");
+  const full = `${minutes}:${seconds}`;
 
-  return (
-    <Card className="animate-fade flex w-full flex-col gap-2 p-6">
-      <span className="text-white">
-        {String(time.minutes).padStart(2, "0")}:
-        {String(time.seconds).padStart(2, "0")}
-      </span>{" "}
-      <div className="items flex items-center gap-2">
-        <Clock size={16} />
-        Next reward payout
-      </div>
-    </Card>
-  );
+  return {
+    minutes: String(time.minutes).padStart(2, "0"),
+    seconds: String(time.seconds).padStart(2, "0"),
+    full: `${time.minutes}:${time.seconds}`,
+  };
 }
