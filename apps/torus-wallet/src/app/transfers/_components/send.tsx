@@ -1,28 +1,24 @@
 "use client";
 
-import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
-import { AmountButtons } from "../../components/amount-buttons";
-import type { FeeLabelHandle } from "../../components/fee-label";
-import { FeeLabel } from "../../components/fee-label";
-import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
-import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isSS58 } from "@torus-network/sdk";
+import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
   Form,
-  FormField,
-  FormLabel,
   FormControl,
-  FormMessage,
+  FormField,
   FormItem,
+  FormLabel,
+  FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
+import { ArrowLeftRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,6 +26,11 @@ import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 import { computeFeeData, convertToTorus, convertToUSD } from "~/utils/helpers";
 import { isWithinTransferLimit } from "~/utils/validators";
+import { AmountButtons } from "../../components/amount-buttons";
+import type { FeeLabelHandle } from "../../components/fee-label";
+import { FeeLabel } from "../../components/fee-label";
+import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
+import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
 
 const FEE_BUFFER_PERCENT = 102n;
 
@@ -265,6 +266,7 @@ export function SendAction() {
                           placeholder={`Amount of ${inputType}`}
                           disabled={!selectedAccount?.address}
                           type="number"
+                          label={inputType === "TORUS" ? "TOR" : "USD"}
                         />
                       </FormControl>
 
@@ -287,12 +289,12 @@ export function SendAction() {
 
               <div className="flex flex-row md:flex-col justify-center items-center lg:-mt-6">
                 <Button
-                  className="text-3xl border-none bg-transparent font-normal"
+                  className="text-3xl border-none bg-transparent font-normal text-[#A1A1AA]"
                   type="button"
                   variant="outline"
                   onClick={handleCurrencySwitch}
                 >
-                  ⇄
+                  <ArrowLeftRight size={16} />
                 </Button>
               </div>
 
@@ -310,6 +312,7 @@ export function SendAction() {
                               : form.watch("amount")
                           }
                           disabled={true}
+                          label={inputType !== "TORUS" ? "TOR" : "USD"}
                         />
                       </FormControl>
                     </div>
@@ -330,6 +333,7 @@ export function SendAction() {
 
             <Button
               type="button"
+              variant="outline"
               onClick={handleReviewClick}
               disabled={!selectedAccount?.address}
             >
