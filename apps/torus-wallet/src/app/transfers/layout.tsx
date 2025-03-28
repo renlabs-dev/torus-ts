@@ -8,13 +8,13 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { ReceiveAction } from "~/app/transfers/_components/receive";
-import { SendAction } from "~/app/transfers/_components/send";
+import { Send } from "~/app/transfers/_components/send";
 import { WalletSkeletonLoader } from "~/app/components/wallet-skeleton-loader";
 
 type TabType = "send" | "receive";
 
 const tabs = [
-  { text: "Send", value: "send", component: <SendAction /> },
+  { text: "Send", value: "send", component: <Send /> },
   { text: "Receive", value: "receive", component: <ReceiveAction /> },
 ];
 
