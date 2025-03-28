@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

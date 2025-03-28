@@ -10,7 +10,7 @@ const config = {
     "@torus-ts/api",
     "@torus-ts/db",
     "@torus-ts/ui",
-    "@torus-ts/utils",
+    "@torus-network/torus-utils",
     "@torus-ts/env-validation",
   ],
 

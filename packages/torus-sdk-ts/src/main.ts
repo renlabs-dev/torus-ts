@@ -4,8 +4,8 @@
 import "@polkadot/api/augment";
 import { queryMinAllowedStake } from "./modules/subspace";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
-import { parseTorusTokens } from "@torus-ts/utils/subspace";
+import { IPFS_URI_SCHEMA } from "@torus-network/torus-utils/ipfs";
+import { parseTorusTokens } from "@torus-network/torus-utils/subspace";
 
 // $ pnpm exec tsx src/main.ts
 

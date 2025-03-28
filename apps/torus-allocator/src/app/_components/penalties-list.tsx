@@ -5,7 +5,7 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardTitle } from "@torus-ts/ui/components/card";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import { useLayoutEffect, useState } from "react";
 

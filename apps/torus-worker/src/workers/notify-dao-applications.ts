@@ -1,7 +1,7 @@
 import { processApplicationMetadata } from "@torus-network/sdk";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
-import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
-import { flattenResult } from "@torus-ts/utils/typing";
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
+import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-network/torus-utils/ipfs";
+import { flattenResult } from "@torus-network/torus-utils/typing";
 import { z } from "zod";
 import {
   getApplicationsDB,

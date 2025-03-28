@@ -5,7 +5,7 @@ import {
   formatToken,
   smallAddress,
   smallWalletName,
-} from "@torus-ts/utils/subspace";
+} from "@torus-network/torus-utils/subspace";
 import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface AccountDetailsProps {

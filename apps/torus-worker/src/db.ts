@@ -31,7 +31,7 @@ import {
   userAgentWeightSchema,
   whitelistApplicationSchema,
 } from "@torus-ts/db/schema";
-import { getOrSetDefault } from "@torus-ts/utils/collections";
+import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 
 const db = createDb();
 
