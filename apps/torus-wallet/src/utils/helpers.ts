@@ -34,6 +34,22 @@ export function computeFeeData(
   return { feeStr, maxTransferable };
 }
 
+function isCurrencyInputValid(torusAmount: string, usdPrice: number): boolean {
+  const parsedAmount = parseFloat(torusAmount);
+
+  if (
+    isNaN(parsedAmount) ||
+    isNaN(usdPrice) ||
+    usdPrice <= 0 ||
+    parsedAmount < 0
+  ) {
+    console.warn("Invalid input:", { torusAmount, usdPrice });
+    return false;
+  }
+
+  return true;
+}
+
 export function convertTORUSToUSD(
   torusAmount: string,
   usdPrice: number,
@@ -41,7 +57,9 @@ export function convertTORUSToUSD(
   const parsedAmount = parseFloat(torusAmount);
   const formattedUsdPrice = usdPrice.toFixed(4);
 
-  if (isNaN(parsedAmount) || !usdPrice) return "0";
+  if (!isCurrencyInputValid(torusAmount, usdPrice)) {
+    return "0";
+  }
 
   return (
     Math.floor(parsedAmount * parseFloat(formattedUsdPrice) * 10000) / 10000
@@ -51,7 +69,9 @@ export function convertTORUSToUSD(
 export function convertUSDToTorus(usdAmount: string, usdPrice: number): string {
   const parsedAmount = parseFloat(usdAmount);
 
-  if (isNaN(parsedAmount) || !usdPrice) return "0";
+  if (!isCurrencyInputValid(usdAmount, usdPrice)) {
+    return "0";
+  }
 
   return (Math.floor((parsedAmount / usdPrice) * 10000) / 10000).toString();
 }
