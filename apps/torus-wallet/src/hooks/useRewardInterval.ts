@@ -56,6 +56,6 @@ export function useRewardIntervalProgress() {
   return {
     minutes,
     seconds,
-    full: `${time.minutes}:${time.seconds}`,
+    full: `${minutes}:${seconds}`,
   };
 }

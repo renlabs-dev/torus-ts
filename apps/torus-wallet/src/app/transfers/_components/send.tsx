@@ -24,7 +24,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
-import { computeFeeData, convertToTorus, convertToUSD } from "~/utils/helpers";
+import {
+  computeFeeData,
+  convertUSDToTorus,
+  convertTORUSToUSD,
+} from "~/utils/helpers";
 import { isWithinTransferLimit } from "~/utils/validators";
 import { AmountButtons } from "../../components/amount-buttons";
 import type { FeeLabelHandle } from "../../components/fee-label";
@@ -69,7 +73,7 @@ export function SendAction() {
     transferTransaction,
   } = useWallet();
   const { toast } = useToast();
-  const { data: usdPrice } = useGetTorusPrice();
+  const { data: usdPrice = 0 } = useGetTorusPrice();
 
   const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
@@ -142,11 +146,11 @@ export function SendAction() {
 
   const handleAmountChange = async (amount: string) => {
     if (inputType === "USD") {
-      const torusAmount = convertToTorus(amount, usdPrice);
+      const torusAmount = convertUSDToTorus(amount, usdPrice);
       setValue("amount", torusAmount);
       setDisplayAmount(amount);
     } else {
-      const usdAmount = convertToUSD(amount, usdPrice);
+      const usdAmount = convertTORUSToUSD(amount, usdPrice);
       setValue("amount", amount);
       setDisplayAmount(usdAmount);
     }
@@ -157,13 +161,13 @@ export function SendAction() {
     const currentAmount = watch("amount");
 
     if (inputType === "TORUS") {
-      const usdAmount = convertToUSD(currentAmount, usdPrice);
+      const usdAmount = convertTORUSToUSD(currentAmount, usdPrice);
       setDisplayAmount(usdAmount);
       setInputType("USD");
-      setValue("amount", convertToTorus(usdAmount, usdPrice));
+      setValue("amount", convertUSDToTorus(usdAmount, usdPrice));
     } else {
-      const torusAmount = convertToTorus(displayAmount, usdPrice);
-      setDisplayAmount(convertToUSD(torusAmount, usdPrice));
+      const torusAmount = convertUSDToTorus(displayAmount, usdPrice);
+      setDisplayAmount(convertTORUSToUSD(torusAmount, usdPrice));
       setInputType("TORUS");
       setValue("amount", torusAmount);
     }

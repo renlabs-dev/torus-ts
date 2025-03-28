@@ -1,6 +1,6 @@
 import { Button } from "@torus-ts/ui/components/button";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
-import { convertToUSD } from "~/utils/helpers";
+import { convertTORUSToUSD } from "~/utils/helpers";
 
 const buttonAmounts = [
   { label: "1/4", value: 4n },
@@ -20,14 +20,20 @@ interface AmountButtonsProps {
 }
 
 export function AmountButtons(props: Readonly<AmountButtonsProps>) {
-  const { availableFunds, setAmount, disabled, inputType = "TORUS", usdPrice } = props;
+  const {
+    availableFunds,
+    setAmount,
+    disabled,
+    inputType = "TORUS",
+    usdPrice,
+  } = props;
 
   const handleAmountButtonClick = (divisor: bigint) => {
     const parsedFunds = toNano(availableFunds);
     const torusAmount = fromNano(parsedFunds / divisor);
 
     if (inputType === "USD" && usdPrice) {
-      const usdAmount = convertToUSD(torusAmount, usdPrice);
+      const usdAmount = convertTORUSToUSD(torusAmount, usdPrice);
       setAmount(usdAmount);
     } else {
       setAmount(torusAmount);

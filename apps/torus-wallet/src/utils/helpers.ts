@@ -34,27 +34,19 @@ export function computeFeeData(
   return { feeStr, maxTransferable };
 }
 
-/**
- * Converts a Torus amount to USD value.
- * @param torusAmount - The amount in Torus as a string
- * @param usdPrice - Optional USD price of Torus
- * @returns The USD value as a string, rounded to 4 decimal places
- */
-export function convertToUSD(torusAmount: string, usdPrice?: number): string {
+export function convertTORUSToUSD(
+  torusAmount: string,
+  usdPrice: number,
+): string {
   const parsedAmount = parseFloat(torusAmount);
-  if (isNaN(parsedAmount) || usdPrice === undefined) return "0";
   const formattedUsdPrice = usdPrice.toFixed(4);
-  return (Math.floor(parsedAmount * parseFloat(formattedUsdPrice) * 10000) / 10000).toString();
+
+  return (
+    Math.floor(parsedAmount * parseFloat(formattedUsdPrice) * 10000) / 10000
+  ).toString();
 }
 
-/**
- * Converts a USD amount to Torus value.
- * @param usdAmount - The amount in USD as a string
- * @param usdPrice - Optional USD price of Torus
- * @returns The Torus value as a string, rounded to 4 decimal places
- */
-export function convertToTorus(usdAmount: string, usdPrice?: number): string {
+export function convertUSDToTorus(usdAmount: string, usdPrice: number): string {
   const parsedAmount = parseFloat(usdAmount);
-  if (isNaN(parsedAmount) || !usdPrice) return "0";
-  return (Math.floor(parsedAmount / usdPrice * 10000) / 10000).toString();
+  return (Math.floor((parsedAmount / usdPrice) * 10000) / 10000).toString();
 }
