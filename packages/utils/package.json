@@ -1,7 +1,7 @@
 {
   "name": "@torus-ts/utils",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
   "type": "module",
   "scripts": {
     "test": "vitest run",
@@ -11,7 +11,12 @@
     "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "exports": {
     ".": "./src/index.ts",
