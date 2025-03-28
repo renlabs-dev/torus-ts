@@ -1,6 +1,6 @@
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { Coins } from "lucide-react";
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 
 interface FeeLabelProps {
   accountConnected: boolean;
@@ -12,23 +12,26 @@ export interface FeeLabelHandle {
   getEstimatedFee: () => string | null;
 }
 
+function FeeMessage({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-muted-foreground flex items-center gap-2 text-sm">
+      <Coins size={16} />
+      {children}
+    </span>
+  );
+}
+
 export const FeeLabel = forwardRef<FeeLabelHandle, FeeLabelProps>(
   ({ accountConnected }, ref) => {
     const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     useImperativeHandle(
       ref,
       () => ({
-        updateFee(newFee: string | null) {
-          setEstimatedFee(newFee);
-        },
-        setLoading(loading: boolean) {
-          setIsLoading(loading);
-        },
-        getEstimatedFee() {
-          return estimatedFee;
-        },
+        updateFee: setEstimatedFee,
+        setLoading: setIsLoading,
+        getEstimatedFee: () => estimatedFee,
       }),
       [estimatedFee],
     );
@@ -37,30 +40,15 @@ export const FeeLabel = forwardRef<FeeLabelHandle, FeeLabelProps>(
       return <Skeleton className="h-5 w-64" />;
     }
 
-    if (!accountConnected && estimatedFee === null) {
-      return (
-        <span className="text-muted-foreground flex items-center gap-2 text-sm">
-          <Coins size={16} />
-          Connect wallet to estimate fee
-        </span>
-      );
+    if (!accountConnected && !estimatedFee) {
+      return <FeeMessage>Connect wallet to estimate fee</FeeMessage>;
     }
 
-    if (estimatedFee === null) {
-      return (
-        <span className="text-muted-foreground flex items-center gap-2 text-sm">
-          <Coins size={16} />
-          Add recipient to estimate fee
-        </span>
-      );
+    if (!estimatedFee) {
+      return <FeeMessage>Add recipient to estimate fee</FeeMessage>;
     }
 
-    return (
-      <span className="text-muted-foreground flex items-center gap-2 text-sm">
-        <Coins size={16} />
-        Estimated fee: {estimatedFee} TORUS
-      </span>
-    );
+    return <FeeMessage>Estimated fee: {estimatedFee} TORUS</FeeMessage>;
   },
 );
 

@@ -33,3 +33,45 @@ export function computeFeeData(
   const maxTransferable = calculateMaxTransferable(freeBalance, adjustedFee);
   return { feeStr, maxTransferable };
 }
+
+function isCurrencyInputValid(torusAmount: string, usdPrice: number): boolean {
+  const parsedAmount = parseFloat(torusAmount);
+
+  if (
+    isNaN(parsedAmount) ||
+    isNaN(usdPrice) ||
+    usdPrice <= 0 ||
+    parsedAmount < 0
+  ) {
+    console.warn("Invalid input:", { torusAmount, usdPrice });
+    return false;
+  }
+
+  return true;
+}
+
+export function convertTORUSToUSD(
+  torusAmount: string,
+  usdPrice: number,
+): string {
+  const parsedAmount = parseFloat(torusAmount);
+  const formattedUsdPrice = usdPrice.toFixed(4);
+
+  if (!isCurrencyInputValid(torusAmount, usdPrice)) {
+    return "0";
+  }
+
+  return (
+    Math.floor(parsedAmount * parseFloat(formattedUsdPrice) * 10000) / 10000
+  ).toString();
+}
+
+export function convertUSDToTorus(usdAmount: string, usdPrice: number): string {
+  const parsedAmount = parseFloat(usdAmount);
+
+  if (!isCurrencyInputValid(usdAmount, usdPrice)) {
+    return "0";
+  }
+
+  return (Math.floor((parsedAmount / usdPrice) * 10000) / 10000).toString();
+}

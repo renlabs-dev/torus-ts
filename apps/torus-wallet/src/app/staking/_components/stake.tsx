@@ -22,8 +22,11 @@ import {
   smallAddress,
   toNano,
 } from "@torus-ts/utils/subspace";
-import { ALLOCATOR_ADDRESS } from "~/consts";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { useWallet } from "~/context/wallet-provider";
+import { env } from "~/env";
 import { computeFeeData } from "~/utils/helpers";
 import {
   doesNotExceedMaxStake,
@@ -31,21 +34,12 @@ import {
   isAmountPositive,
   meetsMinimumStake,
 } from "~/utils/validators";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
-import { ValidatorsList } from "../validators-list";
+import { AmountButtons } from "../../components/amount-buttons";
+import type { FeeLabelHandle } from "../../components/fee-label";
+import { FeeLabel } from "../../components/fee-label";
+import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
+import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
+import { ValidatorsList } from "../../components/validators-list";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
@@ -141,7 +135,7 @@ export function StakeAction() {
     feeRef.current?.setLoading(true);
     try {
       const transaction = addStakeTransaction({
-        validator: ALLOCATOR_ADDRESS,
+        validator: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "1",
       });
       if (!transaction) {

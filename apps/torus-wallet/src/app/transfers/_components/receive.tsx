@@ -8,13 +8,16 @@ import { useWallet } from "~/context/wallet-provider";
 export function ReceiveAction() {
   const { selectedAccount } = useWallet();
   const { toast } = useToast();
+
   const handleCopyAddress = async (address: string) => {
     await copyToClipboard(address);
+
     toast({
       title: "Success!",
       description: "Address Copied to clipboard",
     });
   };
+
   return (
     <Card className="flex flex-col items-center justify-center gap-4 p-6">
       <p>To receive TORUS, share your address with the sender.</p>

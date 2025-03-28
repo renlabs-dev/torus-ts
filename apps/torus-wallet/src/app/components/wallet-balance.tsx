@@ -1,11 +1,12 @@
 "use client";
 
-import { RewardIntervalProgress } from "./reward-interval-progress";
 import { Card } from "@torus-ts/ui/components/card";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { formatToken } from "@torus-ts/utils/subspace";
-import { Lock, Scale, Unlock } from "lucide-react";
-import { useMemo } from "react";
+import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+import { Lock, Scale, Unlock, Copy } from "lucide-react";
+import Image from "next/image";
+import { useMemo, useId } from "react";
 import { useWallet } from "~/context/wallet-provider";
 
 const BALANCE_ICONS = {
@@ -14,19 +15,66 @@ const BALANCE_ICONS = {
   total: <Scale size={16} />,
 };
 
+interface BalanceItemProps {
+  amount: bigint;
+  icon: React.ReactNode;
+  label: string;
+  isLoading: boolean;
+}
+
+interface WalletHeaderProps {
+  address: string;
+}
+
+function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
+  return (
+    <div key={label} className="flex flex-col">
+      {!isLoading ? (
+        <p className="text-muted-foreground flex items-end gap-2 text-white font-bold">
+          {formatToken(amount)}
+          <span>TOR</span>
+        </p>
+      ) : (
+        <Skeleton className="w-1/2 py-3" />
+      )}
+      <span className="flex items-center gap-2 text-sm text-[#A1A1AA]">
+        {icon} {label}
+      </span>
+    </div>
+  );
+}
+
+function WalletHeader({ address }: WalletHeaderProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <Image
+        src="/wallet-info-logo.svg"
+        alt="Wallet Info Logo"
+        width={24}
+        height={24}
+      />
+      <CopyButton
+        className="h-fit p-0 text-muted-foreground hover:text-white"
+        variant="ghost"
+        copy={address}
+      >
+        <span className="lg:hidden">{smallAddress(address, 6)}</span>
+        <span className="hidden lg:block">{smallAddress(address, 12)}</span>
+        <Copy />
+      </CopyButton>
+    </div>
+  );
+}
+
 export function WalletBalance() {
-  const { accountFreeBalance, accountStakedBalance } = useWallet();
+  const { accountFreeBalance, accountStakedBalance, selectedAccount } =
+    useWallet();
 
   const getBalance = useMemo(() => {
     const free = accountFreeBalance.data ?? 0n;
     const staked = accountStakedBalance ?? 0n;
-    const total = free + staked;
 
-    return {
-      free,
-      staked,
-      total,
-    };
+    return { free, staked };
   }, [accountFreeBalance.data, accountStakedBalance]);
 
   const balances = [
@@ -40,37 +88,28 @@ export function WalletBalance() {
       amount: getBalance.staked,
       icon: BALANCE_ICONS.staked,
     },
-    ...(getBalance.total > 0n
-      ? [
-          {
-            label: "Total Balance",
-            amount: getBalance.total,
-            icon: BALANCE_ICONS.total,
-          },
-        ]
-      : []),
   ];
 
   const isLoading = accountFreeBalance.isLoading;
 
   return (
-    <div className="xs:flex-row flex min-h-fit flex-col gap-4 lg:flex-col">
-      {balances.map(({ amount, icon, label }) => (
-        <Card key={label} className="flex w-full flex-col gap-2 px-7 py-5">
-          {!isLoading ? (
-            <p className="text-muted-foreground flex items-end gap-1">
-              {formatToken(amount)}
-              <span className="mb-0.5 text-xs">TORUS</span>
-            </p>
-          ) : (
-            <Skeleton className="w-1/2 py-3" />
-          )}
-          <span className="flex items-center gap-2 text-sm">
-            {icon} {label}
-          </span>
-        </Card>
-      ))}
-      <RewardIntervalProgress />
+    <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
+      <Card key={useId()} className="flex w-full flex-col gap-24 px-7 py-5">
+        {selectedAccount?.address && (
+          <WalletHeader address={selectedAccount.address} />
+        )}
+        <div className="flex flex-col gap-6">
+          {balances.map((balance) => (
+            <BalanceItem
+              key={balance.label}
+              amount={balance.amount}
+              icon={balance.icon}
+              label={balance.label}
+              isLoading={isLoading}
+            />
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }

@@ -22,24 +22,18 @@ import {
   smallAddress,
   toNano,
 } from "@torus-ts/utils/subspace";
-import { ALLOCATOR_ADDRESS } from "~/consts";
-import { useWallet } from "~/context/wallet-provider";
-import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { AmountButtons } from "../amount-buttons";
-import type { FeeLabelHandle } from "../fee-label";
-import { FeeLabel } from "../fee-label";
-import type { ReviewTransactionDialogHandle } from "../review-transaction-dialog";
-import { ReviewTransactionDialog } from "../review-transaction-dialog";
-import { ValidatorsList } from "../validators-list";
+import { useWallet } from "~/context/wallet-provider";
+import { env } from "~/env";
+import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
+import { AmountButtons } from "../../components/amount-buttons";
+import type { FeeLabelHandle } from "../../components/fee-label";
+import { FeeLabel } from "../../components/fee-label";
+import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
+import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
+import { ValidatorsList } from "../../components/validators-list";
 
 interface StakedValidator {
   address: string;
@@ -163,7 +157,7 @@ export function UnstakeAction() {
     feeRef.current?.setLoading(true);
     try {
       const transaction = removeStakeTransaction({
-        validator: ALLOCATOR_ADDRESS,
+        validator: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "0",
       });
       if (!transaction) {
