@@ -229,7 +229,7 @@ export function Send() {
                   usdPrice={usdPrice}
                   disabled={!selectedAccount?.address}
                   availableFunds={maxAmountRef.current}
-                  onAmountChange={handleAmountChange}
+                  onAmountChangeAction={handleAmountChange}
                 />
               </FormControl>
               <FormMessage />

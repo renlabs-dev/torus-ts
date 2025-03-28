@@ -12,14 +12,14 @@ interface CurrencySwapProps {
   usdPrice: number;
   disabled?: boolean;
   availableFunds: string;
-  onAmountChange: (torusAmount: string) => void;
+  onAmountChangeAction: (torusAmount: string) => void;
 }
 
 export function CurrencySwap({
   usdPrice,
   disabled = false,
   availableFunds,
-  onAmountChange,
+  onAmountChangeAction,
 }: CurrencySwapProps) {
   const [inputType, setInputType] = useState<"TORUS" | "USD">("TORUS");
   const [inputAmount, setInputAmount] = useState<string>("");
@@ -32,14 +32,14 @@ export function CurrencySwap({
       if (inputType === "USD") {
         const torusAmount = convertUSDToTorus(value, usdPrice);
         setDisplayAmount(torusAmount);
-        onAmountChange(torusAmount);
+        onAmountChangeAction(torusAmount);
       } else {
         const usdAmount = convertTORUSToUSD(value, usdPrice);
         setDisplayAmount(usdAmount);
-        onAmountChange(value);
+        onAmountChangeAction(value);
       }
     },
-    [inputType, usdPrice, onAmountChange],
+    [inputType, usdPrice, onAmountChangeAction],
   );
 
   const handleCurrencySwitch = useCallback(() => {
@@ -54,8 +54,8 @@ export function CurrencySwap({
     setDisplayAmount(
       isTorus ? inputAmount : convertTORUSToUSD(newAmount, usdPrice),
     );
-    onAmountChange(isTorus ? inputAmount : newAmount);
-  }, [inputType, inputAmount, usdPrice, onAmountChange]);
+    onAmountChangeAction(isTorus ? inputAmount : newAmount);
+  }, [inputType, inputAmount, usdPrice, onAmountChangeAction]);
 
   return (
     <div className="flex flex-col gap-2">
