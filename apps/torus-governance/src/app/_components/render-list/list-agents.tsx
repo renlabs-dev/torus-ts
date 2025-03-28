@@ -1,6 +1,5 @@
 "use client";
 
-import { ListContainer } from "./container-list";
 import type { AppRouter } from "@torus-ts/api";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
@@ -15,14 +14,14 @@ import {
 import { getLinks } from "@torus-ts/ui/lib/data";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
+import { useGovernance } from "~/context/governance-provider";
+import { env } from "~/env";
+import { api } from "~/trpc/react";
 import { ArrowRight, Coins } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { useGovernance } from "~/context/governance-provider";
-import { env } from "~/env";
-import { api } from "~/trpc/react";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
@@ -122,23 +121,22 @@ export const ListAgents = () => {
   if (isFetching) return <p>Loading...</p>;
   if (!agentsWithPenalties) return <p>No agents found.</p>;
   if (agentsWithPenalties.length === 0 || content.length === 0)
-    return <p>No agents found</p>;
+    return <p className="animate-fade-down duration-500">No agents found</p>;
 
   return (
     <>
-      <ListContainer>
-        {content.map((agent) => (
-          <AgentPenaltiesCard
-            key={agent.key}
-            content={agent}
-            penaltyThreshold={penaltyThreshold}
-            setPenaltiesDialog={(content) => {
-              setPenaltiesDialog(content);
-              hiddenTriggerRef.current?.click();
-            }}
-          />
-        ))}
-      </ListContainer>
+      {content.map((agent) => (
+        <AgentPenaltiesCard
+          key={agent.key}
+          content={agent}
+          penaltyThreshold={penaltyThreshold}
+          setPenaltiesDialog={(content) => {
+            setPenaltiesDialog(content);
+            hiddenTriggerRef.current?.click();
+          }}
+        />
+      ))}
+
       <Dialog>
         <DialogTrigger ref={hiddenTriggerRef} className="hidden" />
         <DialogContent className="w-full max-w-[80vw]">
@@ -243,7 +241,7 @@ const PenaltiesList = (props: { penalties?: PenaltyList }) => {
   if (!penalties || penalties.length === 0) return <p>No penalties found</p>;
 
   return (
-    <ListContainer>
+    <>
       {penalties.map((penalty) => (
         <Card key={penalty.cadreKey}>
           <li className="relative flex h-full flex-col">
@@ -283,6 +281,6 @@ const PenaltiesList = (props: { penalties?: PenaltyList }) => {
           </li>
         </Card>
       ))}
-    </ListContainer>
+    </>
   );
 };

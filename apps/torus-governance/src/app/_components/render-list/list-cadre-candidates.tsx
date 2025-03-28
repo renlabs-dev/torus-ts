@@ -1,8 +1,10 @@
-import { CreateCadreCandidates } from "../agent-application/create-cadre-candidates";
-import { CadreCandidatesList } from "../cadre/components/cadre-candidates-list";
+"use client";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { useGovernance } from "~/context/governance-provider";
+import { CreateCadreCandidates } from "../agent-application/create-cadre-candidates";
+import { CadreCandidatesList } from "../cadre/components/cadre-candidates-list";
 
 export const CadreCandidate = () => {
   const {
