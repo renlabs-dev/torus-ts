@@ -1,6 +1,6 @@
 "use client";
 
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import {
   Anvil,
   ArrowRight,

@@ -11,7 +11,7 @@ import {
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import {
   ChevronsDown,

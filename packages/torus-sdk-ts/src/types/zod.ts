@@ -12,7 +12,7 @@ import {
   Struct,
 } from "@polkadot/types";
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import type { Option } from "@torus-ts/utils";
+import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";

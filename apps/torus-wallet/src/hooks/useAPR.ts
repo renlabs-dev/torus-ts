@@ -6,7 +6,7 @@ import {
   useIncentivesRatio,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { toNano } from "@torus-ts/utils/subspace";
+import { toNano } from "@torus-network/torus-utils/subspace";
 import { useMemo } from "react";
 
 const BLOCKS_IN_DAY = 10_800n;

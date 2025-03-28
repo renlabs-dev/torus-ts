@@ -4,7 +4,7 @@ import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
 

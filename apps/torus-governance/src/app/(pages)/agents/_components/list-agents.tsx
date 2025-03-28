@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
 import { getLinks } from "@torus-ts/ui/lib/data";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
