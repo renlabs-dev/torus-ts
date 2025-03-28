@@ -16,7 +16,7 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { fromNano, toNano } from "@torus-ts/utils/subspace";
+import { fromNano, toNano } from "@torus-network/torus-utils/subspace";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
 import { computeFeeData } from "~/utils/helpers";

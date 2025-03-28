@@ -23,8 +23,8 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import Link from "next/link";
 import { useState } from "react";

@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@polkadot/extension-dapp": "catalog:",
-    "@torus-ts/utils": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "@torus-network/sdk": "workspace:*",
     "@polkadot/api": "catalog:",
     "@polkadot/types": "catalog:",

@@ -21,7 +21,7 @@ import {
   fromNano,
   smallAddress,
   toNano,
-} from "@torus-ts/utils/subspace";
+} from "@torus-network/torus-utils/subspace";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";

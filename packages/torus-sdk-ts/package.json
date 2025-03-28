@@ -1,7 +1,7 @@
 {
   "name": "@torus-network/sdk",
   "description": "Torus Network JS SDK",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "license": "MIT",
   "type": "module",
@@ -35,7 +35,7 @@
     "@polkadot/api": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/util-crypto": "catalog:",
-    "@torus-ts/utils": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "@wagmi/core": "2.16.3",
     "multiformats": "catalog:",
     "rustie": "catalog:",

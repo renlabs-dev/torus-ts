@@ -8,7 +8,7 @@ import {
   userAgentWeightSchema,
 } from "@torus-ts/db/schema";
 import { USER_AGENT_WEIGHT_INSERT_SCHEMA } from "@torus-ts/db/validation";
-import { typed_non_null_entries } from "@torus-ts/utils";
+import { typed_non_null_entries } from "@torus-network/torus-utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";

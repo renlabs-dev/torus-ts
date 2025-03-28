@@ -8,7 +8,7 @@ import {
   removeFromWhitelist,
   queryAgents,
 } from "@torus-network/sdk";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {
