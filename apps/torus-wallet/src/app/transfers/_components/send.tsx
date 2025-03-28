@@ -45,6 +45,9 @@ const createSendFormSchema = (
     amount: z
       .string()
       .nonempty({ message: "Amount is required" })
+      .refine((amount) => /^\d+(\.\d+)?$/.test(amount), {
+        message: "Amount must be a valid number",
+      })
       .refine((amount) => toNano(amount) > 0n, {
         message: "Amount must be greater than 0",
       })

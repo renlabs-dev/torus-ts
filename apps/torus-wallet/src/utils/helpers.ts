@@ -41,6 +41,8 @@ export function convertTORUSToUSD(
   const parsedAmount = parseFloat(torusAmount);
   const formattedUsdPrice = usdPrice.toFixed(4);
 
+  if (isNaN(parsedAmount) || !usdPrice) return "0";
+
   return (
     Math.floor(parsedAmount * parseFloat(formattedUsdPrice) * 10000) / 10000
   ).toString();
@@ -48,5 +50,8 @@ export function convertTORUSToUSD(
 
 export function convertUSDToTorus(usdAmount: string, usdPrice: number): string {
   const parsedAmount = parseFloat(usdAmount);
+
+  if (isNaN(parsedAmount) || !usdPrice) return "0";
+
   return (Math.floor((parsedAmount / usdPrice) * 10000) / 10000).toString();
 }
