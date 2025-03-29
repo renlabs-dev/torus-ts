@@ -18,10 +18,28 @@ import { WalletHeader } from "./components/wallet-header";
 
 export const metadata: Metadata = {
   robots: "all",
-  title: "Torus Wallet",
-  icons: [{ rel: "icon", url: "favicon.ico" }],
+  title: "Torus Wallet - Secure Digital Asset Management",
+  icons: [
+    { rel: "icon", url: "favicon.ico" },
+    { rel: "apple-touch-icon", sizes: "180x180", url: "/apple-touch-icon.png" },
+  ],
   description:
-    "Simple, secure, and easy-to-use wallet for the torus ecosystem.",
+    "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
+  keywords: ["crypto wallet", "torus", "blockchain", "digital assets", "web3"],
+  openGraph: {
+    title: "Torus Wallet - Secure Digital Asset Management",
+    description:
+      "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence.",
+    type: "website",
+    siteName: "Torus Wallet",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Torus Wallet",
+    description: "Secure Digital Asset Management in the Torus Ecosystem",
+  },
+  viewport: "width=device-width, initial-scale=1",
+  themeColor: "#333333",
 };
 
 interface ProvidersProps {
@@ -66,6 +84,7 @@ export default function RootLayout({
                 <WalletBalance />
               </div>
               {children}
+              <div className="mb-20 lg:hidden" />
             </div>
           </main>
         </Container>

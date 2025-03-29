@@ -25,6 +25,7 @@ interface NavLink {
 interface MobileSelectProps {
   onValueChange: (value: string) => void;
   defaultValue: string;
+  pathname: string;
 }
 
 type NavButtonProps = NavLink;
@@ -45,14 +46,20 @@ const useNavigation = () => {
   const getPath = (value: string): string =>
     value === "bridge" ? bridgeLink : `/${value === "wallet" ? "" : value}`;
 
-  const getDefaultValue = (): string =>
-    pathname === "/" ? "wallet" : pathname.slice(1);
+  const getDefaultValue = (): string => {
+    if (pathname === "/") return "wallet";
+    if (pathname === "/transfers") return "wallet";
+    if (pathname === "/staking") return "staking";
+    if (pathname.includes("bridge")) return "bridge";
+    return pathname.slice(1);
+  };
 
   return {
     isActive,
     getPath,
     getDefaultValue,
     bridgeLink,
+    pathname,
   };
 };
 
@@ -75,16 +82,24 @@ function NavButton({ path, label, value }: NavButtonProps) {
   );
 }
 
-function MobileSelect({ onValueChange, defaultValue }: MobileSelectProps) {
+function MobileSelect({
+  onValueChange,
+  defaultValue,
+  pathname,
+}: MobileSelectProps) {
   return (
     <Select onValueChange={onValueChange} defaultValue={defaultValue}>
-      <SelectTrigger className="w-full lg:hidden">
+      <SelectTrigger className="w-full lg:hidden my-4">
         <SelectValue placeholder="Select a view" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          {NAVIGATION_LINKS.map(({ value, label }) => (
-            <SelectItem key={value} value={value}>
+          {NAVIGATION_LINKS.map(({ value, label, path }) => (
+            <SelectItem
+              key={value}
+              value={value}
+              className={pathname === path ? "bg-accent" : ""}
+            >
               {label}
             </SelectItem>
           ))}
@@ -96,7 +111,7 @@ function MobileSelect({ onValueChange, defaultValue }: MobileSelectProps) {
 
 export const SidebarLinks = () => {
   const router = useRouter();
-  const { getPath, getDefaultValue } = useNavigation();
+  const { getPath, getDefaultValue, pathname } = useNavigation();
 
   const handleSelectChange = (value: string): void => {
     router.push(getPath(value));
@@ -107,6 +122,7 @@ export const SidebarLinks = () => {
       <MobileSelect
         onValueChange={handleSelectChange}
         defaultValue={getDefaultValue()}
+        pathname={pathname}
       />
 
       <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">

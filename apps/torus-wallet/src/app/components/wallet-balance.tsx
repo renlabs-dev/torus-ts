@@ -58,8 +58,7 @@ function WalletHeader({ address }: WalletHeaderProps) {
         variant="ghost"
         copy={address}
       >
-        <span className="lg:hidden">{smallAddress(address, 6)}</span>
-        <span className="hidden lg:block">{smallAddress(address, 12)}</span>
+        {smallAddress(address, 12)}
         <Copy />
       </CopyButton>
     </div>

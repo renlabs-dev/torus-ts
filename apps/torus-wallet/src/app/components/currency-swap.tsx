@@ -58,9 +58,9 @@ export function CurrencySwap({
   }, [inputType, inputAmount, usdPrice, onAmountChangeAction]);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-row items-center gap-4">
-        <div className="flex flex-col w-full md:w-1/2">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex flex-col w-full sm:w-1/2">
           <Input
             value={inputAmount}
             onChange={(e) => handleAmountChange(e.target.value)}
@@ -70,7 +70,7 @@ export function CurrencySwap({
             label={inputType === "TORUS" ? "TOR" : "USD"}
           />
         </div>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center py-2 sm:py-0">
           <Button
             className="text-3xl border-none bg-transparent font-normal text-[#A1A1AA]"
             type="button"
@@ -81,9 +81,10 @@ export function CurrencySwap({
             <ArrowLeftRight size={16} />
           </Button>
         </div>
-        <div className="flex flex-col w-full md:w-1/2">
+        <div className="flex flex-col w-full sm:w-1/2">
           <Input
             value={displayAmount}
+            placeholder={`Amount of ${inputType === "TORUS" ? "USD" : "TOR"}`}
             disabled={true}
             label={inputType === "TORUS" ? "USD" : "TOR"}
           />
