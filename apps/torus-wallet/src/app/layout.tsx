@@ -37,8 +37,6 @@ export const metadata: Metadata = {
     title: "Torus Wallet",
     description: "Secure Digital Asset Management in the Torus Ecosystem",
   },
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#333333",
 };
 
 interface ProvidersProps {
