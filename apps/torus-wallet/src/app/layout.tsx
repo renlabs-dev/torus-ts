@@ -7,7 +7,6 @@ import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import "@torus-ts/ui/globals.css";
 import type { Metadata } from "next";
-import * as React from "react";
 import { WalletProvider } from "~/context/wallet-provider";
 import { EnvScript, env } from "~/env";
 import { firaMono } from "~/utils/fonts";
