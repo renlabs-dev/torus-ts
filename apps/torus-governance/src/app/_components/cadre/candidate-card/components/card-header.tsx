@@ -1,17 +1,16 @@
 "use client";
 
-import type { CandidateCardProps } from "../index";
-import { HandleCandidacyState } from "./handle-candidacy-state";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Label } from "@torus-ts/ui/components/label";
 import { smallAddress } from "@torus-ts/utils/subspace";
+import { api } from "~/trpc/react";
 import { useComputedCandidateVotes } from "hooks/use-computed-candidate-votes";
-import { Crown } from "lucide-react";
-import { Calendar1 } from "lucide-react";
+import { Calendar1, Crown } from "lucide-react";
 import { DateTime } from "luxon";
 import Image from "next/image";
-import { api } from "~/trpc/react";
+import type { CandidateCardProps } from "../index";
+import { HandleCandidacyState } from "./handle-candidacy-state";
 
 export function CandidateCardHeader({ candidate }: CandidateCardProps) {
   const {
