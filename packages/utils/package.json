@@ -22,11 +22,13 @@
     "./collections": "./src/collections.ts",
     "./env": "./src/env.ts",
     "./files": "./src/files.ts",
-    "./bignumber": "./src/bignumber.ts"
+    "./bignumber": "./src/bignumber.ts",
+    "./try-catch": "./src/try-catch.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",
     "bignumber.js": "^9.1.2",
+    "go-go-try": "^5.0.0",
     "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
