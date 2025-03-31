@@ -76,7 +76,7 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
           <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
             <Button
               onClick={() => handleRemoveVote()}
-              variant="outline"
+              variant="destructive"
               className="flex w-full sm:w-auto"
               title="Reject"
             >
