@@ -65,23 +65,34 @@ interface DialogPenaltiesState {
 function processAgent({
   agent,
   search,
+  statusFilter,
+  penaltyThreshold,
 }: {
   agent: AgentWithAggregatedPenalties[number];
   search: string | null;
+  statusFilter: string | null;
+  penaltyThreshold: number;
 }): AgentWithAggregatedPenalties[number] | null {
-  if (!search) {
-    return agent;
+  // Handle search filtering
+  if (search) {
+    const searchLower = search.toLocaleLowerCase();
+    const agentKeyLower = agent.key.toLocaleLowerCase();
+    const agentNameLower = (agent.name ?? "").toLocaleLowerCase();
+
+    if (
+      !agentNameLower.includes(searchLower) &&
+      !agentKeyLower.includes(searchLower)
+    ) {
+      return null;
+    }
   }
 
-  const searchLower = search.toLocaleLowerCase();
-  const agentKeyLower = agent.key.toLocaleLowerCase();
-  const agentNameLower = (agent.name ?? "").toLocaleLowerCase();
-
-  if (
-    !agentNameLower.includes(searchLower) &&
-    !agentKeyLower.includes(searchLower)
-  ) {
-    return null;
+  // Handle status filtering
+  if (statusFilter && statusFilter !== "all") {
+    const isPenalized = agent.penalties.length >= penaltyThreshold;
+    
+    if (statusFilter === "healthy" && isPenalized) return null;
+    if (statusFilter === "penalized" && !isPenalized) return null;
   }
 
   return agent;
@@ -105,16 +116,22 @@ export const ListAgents = () => {
     if (!agentsWithPenalties) return [];
 
     const search = searchParams.get("search")?.toLocaleLowerCase() ?? null;
+    const statusFilter = searchParams.get("status");
 
     const filteredAgents = agentsWithPenalties
-      .map((agent) => processAgent({ agent, search }))
+      .map((agent) => processAgent({ 
+        agent, 
+        search, 
+        statusFilter,
+        penaltyThreshold 
+      }))
       .filter(
         (agent): agent is AgentWithAggregatedPenalties[number] =>
           agent !== null,
       );
 
     return filteredAgents;
-  }, [agentsWithPenalties, searchParams]);
+  }, [agentsWithPenalties, searchParams, penaltyThreshold]);
 
   if (isFetching) return <p>Loading...</p>;
   if (!agentsWithPenalties) return <p>No agents found.</p>;

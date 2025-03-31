@@ -54,7 +54,7 @@ export function ViewSelector({
   };
 
   return (
-    <div className="flex w-full items-center md:w-fit">
+    <div className="animate-fade-down animate-delay-200 flex w-full items-center md:w-fit">
       <Select value={status} onValueChange={handleStatusChange}>
         <SelectTrigger className="min-w-full md:w-[240px]">
           <SelectValue placeholder="Select candidate status" />

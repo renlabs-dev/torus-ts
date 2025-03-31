@@ -56,6 +56,7 @@ export const ListProposals = () => {
     if (!proposalsWithMeta) return [];
 
     const search = searchParams.get("search")?.toLowerCase();
+    const statusFilter = searchParams.get("status");
 
     return proposalsWithMeta
       .map((proposal) => {
@@ -70,6 +71,18 @@ export const ListProposals = () => {
           proposal.proposer.toLowerCase().includes(search);
 
         if (!matchesSearch) return null;
+
+        // Handle status filtering
+        if (statusFilter && statusFilter !== "all") {
+          const statusLower = statusFilter.toLowerCase();
+          // Check if proposal status matches the filter
+          const proposalStatusKey = Object.keys(proposal.status)[0]?.toLowerCase();
+          
+          if (statusLower === "active" && proposalStatusKey !== "open") return null;
+          if (statusLower === "accepted" && proposalStatusKey !== "accepted") return null;
+          if (statusLower === "rejected" && proposalStatusKey !== "rejected") return null;
+          if (statusLower === "expired" && proposalStatusKey !== "expired") return null;
+        }
 
         const voted = getUserVoteStatus(
           proposal.status,
