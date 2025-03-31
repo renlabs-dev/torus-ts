@@ -125,16 +125,16 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
 });
 
 export const applicationStatus = pgEnum("application_status", [
-  "OPEN",
-  "ACCEPTED",
-  "REJECTED",
-  "EXPIRED",
+  "Open",
+  "Accepted",
+  "Rejected",
+  "Expired",
 ]);
 export const applicationStatusValues = extract_pgenum_values(applicationStatus);
 assert<
   Equals<
     keyof typeof applicationStatusValues,
-    "OPEN" | "ACCEPTED" | "REJECTED" | "EXPIRED"
+    "Open" | "Accepted" | "Rejected" | "Expired" 
   >
 >();
 export const whitelistApplicationSchema = createTable("whitelist_application", {

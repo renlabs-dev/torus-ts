@@ -94,6 +94,7 @@ export async function upsertWhitelistApplication(
 }
 
 export async function upsertProposal(proposals: NewProposal[]) {
+  if (proposals.length === 0) return;
   await db
     .insert(proposalSchema)
     .values(
