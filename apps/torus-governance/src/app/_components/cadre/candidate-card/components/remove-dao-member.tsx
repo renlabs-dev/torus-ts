@@ -71,7 +71,7 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
           onClick={() => handleRemoveVote()}
           type="button"
           className="flex w-full sm:w-auto"
-          disabled={deleteCadreVote.isPending}
+          disabled={deleteCadreVote.isPending || !props.isUserCadre}
         >
           {deleteCadreVote.isPending ? "Please Sign" : "Remove Vote"}
         </Button>
@@ -88,7 +88,7 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
         onClick={() => handleVote("REMOVE")}
         variant="destructive"
         className="flex w-full sm:w-auto"
-        disabled={createCadreVote.isPending}
+        disabled={createCadreVote.isPending || !props.isUserCadre}
       >
         {createCadreVote.isPending ? "Please Sign" : "Remove Member"}
       </Button>

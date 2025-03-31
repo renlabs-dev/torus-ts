@@ -228,7 +228,7 @@ export function CreateCadreCandidates() {
           Apply to be a curator DAO member.
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl border border-[#262631] bg-[#0E0E11] p-6 text-center font-mono text-white">
+      <DialogContent className="max-w-xl border text-center font-mono">
         <div className="p-6">
           <DialogHeader className="mb-6 font-mono">
             <DialogTitle className="pb-2 font-mono text-2xl font-bold">
@@ -279,7 +279,7 @@ export function CreateCadreCandidates() {
                         <Textarea
                           placeholder="Why do you want to join the Curator DAO?"
                           {...field}
-                          className="h-32 w-full resize-none border border-gray-700 bg-gray-800/30 p-4 text-white"
+                          className="h-32 w-full resize-none"
                           maxLength={MAX_CONTENT_CHARACTERS}
                         />
                         <span
