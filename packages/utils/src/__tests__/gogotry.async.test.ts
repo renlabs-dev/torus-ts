@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { tryAsync, tryAsyncRawError } from "../gogotry/async-operations";
+import {
+  tryAsync,
+  tryAsyncRawError,
+} from "../error_handler/gogotry/async-operations";
 
 describe("gogotry async functions", () => {
   // Mock successful async function
@@ -57,7 +60,9 @@ describe("gogotry async functions", () => {
       const [error, result] = await tryAsyncRawError(failingAsyncFn());
 
       expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe("async error");
+      if (error instanceof Error) {
+        expect(error.message).toBe("sync error");
+      }
       expect(result).toBeUndefined();
     });
   });

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { trySync, trySyncRawError } from "../gogotry/sync-operations";
+import {
+  trySync,
+  trySyncRawError,
+} from "../error_handler/gogotry/sync-operations";
 
 describe("gogotry sync functions", () => {
   // Mock successful sync function
@@ -35,7 +38,10 @@ describe("gogotry sync functions", () => {
     });
 
     it("should handle JSON parsing errors", () => {
-      const [error, result] = trySync(() => JSON.parse("{invalid json}"));
+      const [error, result] = trySync<Record<string, unknown>>(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        () => JSON.parse("{invalid json}"),
+      );
 
       expect(error).not.toBeUndefined();
       expect(result).toBeUndefined();
@@ -54,7 +60,9 @@ describe("gogotry sync functions", () => {
       const [error, result] = trySyncRawError(failingSyncFn);
 
       expect(error).toBeInstanceOf(Error);
-      expect(error?.message).toBe("sync error");
+      if (error instanceof Error) {
+        expect(error.message).toBe("sync error");
+      }
       expect(result).toBeUndefined();
     });
   });

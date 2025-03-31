@@ -1,9 +1,15 @@
-import { trySync, trySyncRawError } from "../../try-catch.js";
+import { trySync, trySyncRawError } from "../../../try-catch";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples
 
 // Utility functions for sync operations examples
+
+interface UserData {
+  name: string;
+  age: number;
+}
+
 export const syncUtils = {
   parseJSON: (jsonString: string): unknown => {
     return JSON.parse(jsonString);
@@ -17,7 +23,8 @@ export const syncUtils = {
   },
 
   processUser: (userData: string): { name: string; age: number } => {
-    const parsed = JSON.parse(userData);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const parsed: UserData = JSON.parse(userData);
 
     if (!parsed.name || !parsed.age) {
       throw new Error("Invalid user data: missing required fields");
