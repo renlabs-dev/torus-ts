@@ -72,7 +72,7 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
           className="flex w-full sm:w-auto"
           disabled={deleteCadreVote.isPending || !props.isUserCadre}
         >
-          {deleteCadreVote.isPending ? "Please Sign" : "Revoke vote to"}
+          {deleteCadreVote.isPending ? "Please Sign" : "Revoke vote to remove"}
         </Button>
       </div>
     );
