@@ -5,7 +5,7 @@ import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import Image from "next/image";

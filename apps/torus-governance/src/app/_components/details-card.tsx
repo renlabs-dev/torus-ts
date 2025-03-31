@@ -1,8 +1,8 @@
 import type { Blocks, SS58Address } from "@torus-network/sdk";
 import { Card, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { getCreationTime, getExpirationTime } from "@torus-ts/utils";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { getCreationTime, getExpirationTime } from "@torus-network/torus-utils";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Copy } from "lucide-react";
 
 interface DetailsCardProps {

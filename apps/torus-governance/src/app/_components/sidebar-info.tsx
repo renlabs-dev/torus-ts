@@ -3,7 +3,7 @@
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
 import { Copy } from "lucide-react";
 import { useGovernance } from "~/context/governance-provider";
 

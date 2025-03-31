@@ -1,6 +1,6 @@
 import { toWei } from "@hyperlane-xyz/utils";
 import { Loading } from "@torus-ts/ui/components/loading";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { useFormikContext } from "formik";
 import React from "react";
 import { useWarpCore, getTokenByIndex } from "~/hooks/token";

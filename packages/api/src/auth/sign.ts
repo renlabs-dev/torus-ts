@@ -1,7 +1,7 @@
 import { hexToString, stringToHex } from "@polkadot/util";
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto";
 import { checkSS58 } from "@torus-network/sdk";
-import { AUTH_REQ_SCHEMA } from "@torus-ts/utils/auth";
+import { AUTH_REQ_SCHEMA } from "@torus-network/torus-utils/auth";
 import { z } from "zod";
 
 export const SIGNED_PAYLOAD_SCHEMA = z.object({

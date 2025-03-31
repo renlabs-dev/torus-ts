@@ -27,7 +27,7 @@
     "@polkadot/util-crypto": "catalog:",
     "@torus-ts/db": "workspace:*",
     "@torus-network/sdk": "workspace:*",
-    "@torus-ts/utils": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "jsonwebtoken": "^9.0.2",

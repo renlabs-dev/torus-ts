@@ -1,5 +1,5 @@
 import { decodeAddress } from "@polkadot/util-crypto";
-import type { Brand } from "@torus-ts/utils";
+import type { Brand } from "@torus-network/torus-utils";
 import { z } from "zod";
 
 export type SS58Address = Brand<"SS58Address", string>;

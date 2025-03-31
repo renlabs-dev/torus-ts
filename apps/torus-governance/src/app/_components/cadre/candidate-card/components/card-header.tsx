@@ -5,7 +5,7 @@ import { HandleCandidacyState } from "./handle-candidacy-state";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Label } from "@torus-ts/ui/components/label";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { useComputedCandidateVotes } from "hooks/use-computed-candidate-votes";
 import { Crown } from "lucide-react";
 import { Calendar1 } from "lucide-react";

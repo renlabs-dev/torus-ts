@@ -15,7 +15,7 @@ import type {
 } from "@torus-network/sdk";
 import { sb_balance } from "@torus-network/sdk";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { toNano } from "@torus-ts/utils/subspace";
+import { toNano } from "@torus-network/torus-utils/subspace";
 import * as React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { sendTransaction } from "./_components/send-transaction";

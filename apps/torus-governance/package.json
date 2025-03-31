@@ -21,7 +21,7 @@
     "@torus-network/sdk": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
-    "@torus-ts/utils": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",

@@ -33,10 +33,10 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { smallFilename, strToFile } from "@torus-ts/utils/files";
-import type { CID } from "@torus-ts/utils/ipfs";
-import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
-import { formatToken, fromNano } from "@torus-ts/utils/subspace";
+import { smallFilename, strToFile } from "@torus-network/torus-utils/files";
+import type { CID } from "@torus-network/torus-utils/ipfs";
+import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
+import { formatToken, fromNano } from "@torus-network/torus-utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 import { useGovernance } from "~/context/governance-provider";

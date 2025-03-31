@@ -12,8 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
-import { getExpirationTime } from "@torus-ts/utils";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { getExpirationTime } from "@torus-network/torus-utils";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Clock, Crown } from "lucide-react";
 import { AgentActivityLabel } from "./agent-application/agent-activity-label";
 import { AgentApplicationVoteLabel } from "./agent-application/agent-application-vote-label";

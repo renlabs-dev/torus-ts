@@ -6,7 +6,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import useSubmitStore from "~/stores/submitStore";

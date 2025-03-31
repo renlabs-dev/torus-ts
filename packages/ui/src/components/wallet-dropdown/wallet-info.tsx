@@ -4,7 +4,7 @@ import {
   formatToken,
   smallAddress,
   smallWalletName,
-} from "@torus-ts/utils/subspace";
+} from "@torus-network/torus-utils/subspace";
 import { Copy, Lock, LockOpen, Scale } from "lucide-react";
 import { useMemo } from "react";
 

@@ -3,7 +3,7 @@
 import { RewardIntervalProgress } from "./reward-interval-progress";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { Lock, Scale, Unlock } from "lucide-react";
 import { useMemo } from "react";
 import { useWallet } from "~/context/wallet-provider";
