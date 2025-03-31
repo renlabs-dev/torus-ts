@@ -72,7 +72,7 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
           className="flex w-full sm:w-auto"
           disabled={deleteCadreVote.isPending || !props.isUserCadre}
         >
-          {deleteCadreVote.isPending ? "Please Sign" : "Revoke vote to remove"}
+          {deleteCadreVote.isPending ? "Please Sign" : "Revoke vote to"}
         </Button>
       </div>
     );
@@ -80,9 +80,6 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <Label className="flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500">
-        {voteCount}
-      </Label>
       <Button
         onClick={() => handleVote("REMOVE")}
         variant="destructive"
