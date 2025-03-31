@@ -1,3 +1,4 @@
+import { CreateCadreCandidates } from "~/app/_components/agent-application/create-cadre-candidates";
 import { CandidateCard } from "~/app/_components/cadre/candidate-card";
 import { api } from "~/trpc/server";
 import type { CandidacyStatus } from "~/utils/types";
@@ -17,8 +18,10 @@ export default async function DaoPortalPage(props: {
 
   return (
     <div className="flex w-full flex-col pb-10">
-      <ViewSelector currentStatus={status ?? "PENDING"} />
-
+      <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
+        <CreateCadreCandidates />
+        <ViewSelector currentStatus={status ?? "PENDING"} />
+      </div>
       {candidates.length === 0 ? (
         <div className="mt-4 text-center text-gray-500">
           No candidates with status: {status}

@@ -3,6 +3,7 @@
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { api } from "~/trpc/react";
 import { HandleVoteLabel } from "./handle-vote-label";
 
@@ -91,13 +92,18 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
   return (
     <div className="flex flex-row flex-wrap gap-4">
       <HandleVoteLabel {...pendingVoteStateProps} />
-      <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
+      <div
+        className={cn(
+          "flex w-full items-center justify-center gap-2 sm:w-auto",
+          !props.isUserCadre && "cursor-not-allowed opacity-50",
+        )}
+      >
         <Button
           onClick={() => handleVote("REFUSE")}
           variant="outline"
           className="flex w-full border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500 sm:w-auto"
           title="Reject"
-          disabled={createCadreVote.isPending}
+          disabled={createCadreVote.isPending || !props.isUserCadre}
         >
           {createCadreVote.isPending &&
           createCadreVote.variables.vote === "REFUSE"
@@ -109,7 +115,7 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
           variant="outline"
           className="flex w-full border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30 hover:text-green-500 sm:w-auto"
           title="Approve"
-          disabled={createCadreVote.isPending}
+          disabled={createCadreVote.isPending || !props.isUserCadre}
         >
           {createCadreVote.isPending &&
           createCadreVote.variables.vote === "ACCEPT"
