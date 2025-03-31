@@ -1,6 +1,5 @@
 "use client";
 
-import DiscordLogin from "../discord-auth-button";
 import type { AppRouter } from "@torus-ts/api";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -13,9 +12,9 @@ import {
 } from "@torus-ts/ui/components/dialog";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
-  FormControl,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Icons } from "@torus-ts/ui/components/icons";
@@ -23,12 +22,13 @@ import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 import type { inferProcedureInput } from "@trpc/server";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
 import { useDiscordInfoForm } from "hooks/use-discord-info";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
+import DiscordLogin from "../discord-auth-button";
 
 const MAX_CONTENT_CHARACTERS = 500;
 
@@ -37,12 +37,14 @@ type CreateCadreCandidateFormData = NonNullable<
 >;
 
 export function CreateCadreCandidates() {
-  const {
-    selectedAccount,
-    cadreCandidates,
-    isUserCadre,
-    isUserCadreCandidate,
-  } = useGovernance();
+  const { selectedAccount } = useGovernance();
+
+  const cadreCandidates = api.cadreCandidate.all.useQuery();
+
+  const isUserCadreCandidate = !!cadreCandidates.data?.find(
+    (user) => user.userKey === selectedAccount?.address,
+  );
+
   const { toast } = useToast();
   const [discordId, setDiscordId] = React.useState<string | null>(null);
   const [userName, setUserName] = React.useState<string | null>(null);
@@ -90,10 +92,6 @@ export function CreateCadreCandidates() {
       void cadreForm.trigger("discordId");
     }
   }, [discordId, cadreForm]);
-
-  if (isUserCadre || !selectedAccount) {
-    return null;
-  }
 
   const createCadreCandidateMutation = api.cadreCandidate.create.useMutation({
     onSuccess: async () => {
@@ -153,7 +151,7 @@ export function CreateCadreCandidates() {
     if (!validateAndSubmit()) {
       return;
     }
-    if (!selectedAccount.address) {
+    if (!selectedAccount?.address) {
       toast({
         title: "Uh oh! Something went wrong.",
         description: "Please connect your wallet to submit a request.",
@@ -230,7 +228,7 @@ export function CreateCadreCandidates() {
           Apply to be a curator DAO member.
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl border border-[#262631] bg-[#0E0E11] p-6 text-center font-mono text-white">
+      <DialogContent className="max-w-xl border text-center font-mono">
         <div className="p-6">
           <DialogHeader className="mb-6 font-mono">
             <DialogTitle className="pb-2 font-mono text-2xl font-bold">
@@ -281,7 +279,7 @@ export function CreateCadreCandidates() {
                         <Textarea
                           placeholder="Why do you want to join the Curator DAO?"
                           {...field}
-                          className="h-32 w-full resize-none border border-gray-700 bg-gray-800/30 p-4 text-white"
+                          className="h-32 w-full resize-none"
                           maxLength={MAX_CONTENT_CHARACTERS}
                         />
                         <span

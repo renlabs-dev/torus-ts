@@ -10,7 +10,6 @@ import { useMemo } from "react";
 import { match } from "rustie";
 import { CardSkeleton } from "../card-skeleton";
 import { CardViewData } from "../card-view-data";
-import { ListContainer } from "./container-list";
 
 const ListCardsLoadingSkeleton = () => {
   return (
@@ -62,6 +61,7 @@ export const ListAgentApplications = () => {
 
     const search = searchParams.get("search")?.toLowerCase();
     const statusFilter = searchParams.get("whitelist-status")?.toLowerCase();
+    const typeFilter = searchParams.get("type")?.toLowerCase();
 
     return agentApplicationsWithMeta
       .map((app) => {
@@ -73,18 +73,27 @@ export const ListAgentApplications = () => {
         if (!body) return null;
 
         const status = fromStatusToView(app.status);
+        
+        // Determine application type from title or custom data
+        const applicationType = title?.toLowerCase().includes("module") ? "module" : "agent";
 
-        const matchesSearch = search
-          ? // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            title?.toLowerCase().includes(search) ||
-            body.toLowerCase().includes(search) ||
-            app.payerKey.toLowerCase().includes(search) ||
-            app.agentKey.toLowerCase().includes(search)
-          : true;
+        // Handle search filtering
+        const matchesSearch =
+          !search ||
+          (title?.toLowerCase() ?? "").includes(search) ||
+          body.toLowerCase().includes(search) ||
+          app.payerKey.toLowerCase().includes(search) ||
+          app.agentKey.toLowerCase().includes(search);
 
-        const matchesStatus = statusFilter === "all" || status === statusFilter;
+        // Handle status filtering - show all if no filter specified
+        const matchesStatus =
+          !statusFilter || statusFilter === "all" || status === statusFilter;
+          
+        // Handle type filtering - show all if no filter specified
+        const matchesType =
+          !typeFilter || typeFilter === "all" || applicationType === typeFilter;
 
-        if (!matchesSearch || !matchesStatus) return null;
+        if (!matchesSearch || !matchesStatus || !matchesType) return null;
 
         const isActiveAgent = activeAgents?.some(
           (agent) => agent.key === app.agentKey,
@@ -123,12 +132,5 @@ export const ListAgentApplications = () => {
     );
   }
 
-  return (
-    <ListContainer
-      smallesHeight={320}
-      className="max-h-[calc(100svh-320px)] md:max-h-[calc(100svh-425px)]"
-    >
-      {filteredAgentApplications}
-    </ListContainer>
-  );
+  return filteredAgentApplications;
 };

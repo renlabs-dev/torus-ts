@@ -1,12 +1,14 @@
+"use client";
+
 import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomProposal } from "~/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { CardSkeleton } from "../card-skeleton";
 import { CardViewData } from "../card-view-data";
 import type { VoteStatus } from "../vote-label";
-import { ListContainer } from "./container-list";
 
 const ListCardsLoadingSkeleton = () => {
   return (
@@ -48,49 +50,69 @@ export const ListProposals = () => {
   const currentBlock = lastBlock.data?.blockNumber;
   const searchParams = useSearchParams();
 
-  const isLoadingProposals = () => {
-    if (!proposalsWithMeta || proposals.isPending || !isInitialized)
-      return true;
-    return false;
-  };
+  const isLoading = !proposalsWithMeta || proposals.isPending || !isInitialized;
 
-  const filteredProposals = proposalsWithMeta?.map((proposal) => {
-    const { title, invalid, body } = handleCustomProposal(proposal);
-    if (invalid || (!title && !body)) return;
+  const filteredProposals = useMemo(() => {
+    if (!proposalsWithMeta) return [];
 
     const search = searchParams.get("search")?.toLowerCase();
-    if (
-      search &&
-      !title?.toLowerCase().includes(search) &&
-      !body?.toLowerCase().includes(search) &&
-      !proposal.proposer.toLowerCase().includes(search)
-    ) {
-      return;
-    }
+    const statusFilter = searchParams.get("status");
 
-    const voted = getUserVoteStatus(
-      proposal.status,
-      selectedAccount?.address as SS58Address,
-    );
+    return proposalsWithMeta
+      .map((proposal) => {
+        const { title, invalid, body } = handleCustomProposal(proposal);
+        if (invalid || (!title && !body)) return null;
 
+        // Handle search filtering - if no search query, show all
+        const matchesSearch =
+          !search ||
+          (title?.toLowerCase() ?? "").includes(search) ||
+          (body?.toLowerCase() ?? "").includes(search) ||
+          proposal.proposer.toLowerCase().includes(search);
+
+        if (!matchesSearch) return null;
+
+        // Handle status filtering
+        if (statusFilter && statusFilter !== "all") {
+          const statusLower = statusFilter.toLowerCase();
+          // Check if proposal status matches the filter
+          const proposalStatusKey = Object.keys(proposal.status)[0]?.toLowerCase();
+          
+          if (statusLower === "active" && proposalStatusKey !== "open") return null;
+          if (statusLower === "accepted" && proposalStatusKey !== "accepted") return null;
+          if (statusLower === "rejected" && proposalStatusKey !== "rejected") return null;
+          if (statusLower === "expired" && proposalStatusKey !== "expired") return null;
+        }
+
+        const voted = getUserVoteStatus(
+          proposal.status,
+          selectedAccount?.address as SS58Address,
+        );
+
+        return (
+          <Link href={`/proposal/${proposal.id}`} key={proposal.id} prefetch>
+            <CardViewData
+              title={title}
+              author={proposal.proposer}
+              voted={voted}
+              proposalType={proposal.data}
+              proposalStatus={proposal.status}
+              expirationBlock={proposal.expirationBlock}
+              currentBlock={currentBlock}
+            />
+          </Link>
+        );
+      })
+      .filter(Boolean);
+  }, [proposalsWithMeta, searchParams, selectedAccount, currentBlock]);
+
+  if (isLoading) return <ListCardsLoadingSkeleton />;
+
+  if (filteredProposals.length === 0) {
     return (
-      <Link href={`/proposal/${proposal.id}`} key={proposal.id} prefetch>
-        <CardViewData
-          title={title}
-          author={proposal.proposer}
-          voted={voted}
-          proposalType={proposal.data}
-          proposalStatus={proposal.status}
-          expirationBlock={proposal.expirationBlock}
-          currentBlock={currentBlock}
-        />
-      </Link>
+      <p className="animate-fade-down duration-500">No proposals found.</p>
     );
-  });
+  }
 
-  if (isLoadingProposals()) return <ListCardsLoadingSkeleton />;
-
-  if (!filteredProposals) return <p>No proposals found.</p>;
-
-  return <ListContainer>{filteredProposals}</ListContainer>;
+  return filteredProposals;
 };
