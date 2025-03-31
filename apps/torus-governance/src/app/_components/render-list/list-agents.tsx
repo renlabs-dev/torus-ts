@@ -14,7 +14,6 @@ import {
 import { getLinks } from "@torus-ts/ui/lib/data";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
-import { useGovernance } from "~/context/governance-provider";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 import { ArrowRight, Coins } from "lucide-react";
@@ -89,8 +88,7 @@ function processAgent({
 }
 
 export const ListAgents = () => {
-  const { cadreList } = useGovernance();
-  const { data: cadreListData } = cadreList;
+  const { data: cadreListData } = api.cadre.all.useQuery();
   const { data: agentsWithPenalties, isFetching } =
     api.agent.allWithAggregatedPenalties.useQuery();
 

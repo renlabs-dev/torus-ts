@@ -1,14 +1,17 @@
 "use client";
 
+import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
-import React from "react";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import React from "react";
 
 interface HandleRemoveDaoMemberProps {
   userKey: string;
   revoke: number;
+  selectedAccount: InjectedAccountWithMeta | null;
+  isUserCadre: boolean;
 }
 
 export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
@@ -59,7 +62,7 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
   if (currentWalletVote?.vote === "REMOVE") {
     return (
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500">
+        <Label className="flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500">
           <span className="text-red-500">(You voted to remove)</span>
           {voteCount}
         </Label>
@@ -78,7 +81,7 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <Label className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500">
+      <Label className="flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500">
         {voteCount}
       </Label>
       <Button

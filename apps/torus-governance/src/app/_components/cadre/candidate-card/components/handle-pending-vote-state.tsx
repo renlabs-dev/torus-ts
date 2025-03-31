@@ -1,20 +1,20 @@
 "use client";
 
-import { HandleVoteLabel } from "./handle-vote-label";
+import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
-import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import { HandleVoteLabel } from "./handle-vote-label";
 
 interface HandlePendingVoteStateProps {
   userKey: string;
   accept: number;
   refuse: number;
+  isUserCadre: boolean;
+  selectedAccount: InjectedAccountWithMeta | null;
 }
 
 export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
-  const { selectedAccount } = useGovernance();
-
   const { data: curatorVotes, refetch: refetchCuratorVotes } =
     api.cadreVote.byId.useQuery({
       applicantKey: props.userKey,
@@ -56,7 +56,7 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
   });
 
   const currentWalletVote = curatorVotes?.find(
-    (vote) => vote.userKey === selectedAccount?.address,
+    (vote) => vote.userKey === props.selectedAccount?.address,
   );
 
   const pendingVoteStateProps = {
@@ -67,6 +67,7 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
 
   if (currentWalletVote?.applicantKey === props.userKey) {
     const vote = currentWalletVote.vote;
+    const voteLabel = vote === "ACCEPT" ? "in Favor" : "Against";
     if (vote === "ACCEPT" || vote === "REFUSE") {
       return (
         <div className="flex flex-row flex-wrap gap-4">
@@ -80,7 +81,7 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
             >
               {deleteCadreVote.isPending === true
                 ? "Please Sign"
-                : "Revoke Vote"}
+                : `Revoke Vote ${voteLabel}`}
             </Button>
           </div>
         </div>

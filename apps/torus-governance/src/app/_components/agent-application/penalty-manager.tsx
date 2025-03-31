@@ -59,8 +59,13 @@ export function PenaltyManager({
   agentKey: SS58Address;
   status: AgentApplication["status"];
 }>) {
-  const { selectedAccount, isUserCadre } = useGovernance();
+  const { selectedAccount } = useGovernance();
   const { toast } = useToast();
+
+  const cadreList = api.cadre.all.useQuery();
+  const isUserCadre = !!cadreList.data?.find(
+    (cadre) => cadre.userKey === selectedAccount?.address,
+  );
 
   const { data: agentList } = api.agent.all.useQuery();
   const { data: penaltiesByAgentKey, refetch: refetchPenalties } =

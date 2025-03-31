@@ -9,19 +9,17 @@ import {
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-import { Copy, Ellipsis } from "lucide-react";
 import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
+import { Copy, Ellipsis } from "lucide-react";
 
 export const PopoverInfo = () => {
-  const {
-    rewardAllocation,
-    daoTreasuryBalance,
-    daoTreasuryAddress,
-    cadreList,
-  } = useGovernance();
+  const { rewardAllocation, daoTreasuryBalance, daoTreasuryAddress } =
+    useGovernance();
   const { toast } = useToast();
 
-  const { data: cadreListData, isFetching: isFetchingCadreList } = cadreList;
+  const { data: cadreListData, isLoading: isFetchingCadreList } =
+    api.cadre.all.useQuery();
 
   function handleCopyClick(value: string): void {
     navigator.clipboard

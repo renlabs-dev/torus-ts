@@ -13,8 +13,8 @@ export type CuratorVoteHistory = NonNullable<
 >;
 
 interface ComputedVotesProps {
-  candidacyStatus: string;
   userKey: string;
+  candidacyStatus: string;
   curatorVoteHistory: CuratorVoteHistory | undefined;
 }
 
