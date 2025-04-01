@@ -15,12 +15,12 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@next/third-parties": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@torus-network/sdk": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
-    "@torus-network/sdk": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
-    "@next/third-parties": "catalog:",
     "@torus-ts/ui": "workspace:*",
     "lucide-react": "catalog:",
     "next": "catalog:",
@@ -41,7 +41,6 @@
     "@types/react-dom": "catalog:react19",
     "jiti": "catalog:",
     "postcss": "catalog:",
-    "raw-loader": "^4.0.2",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

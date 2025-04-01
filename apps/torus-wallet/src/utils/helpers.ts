@@ -53,6 +53,7 @@ function isCurrencyInputValid(torusAmount: string, usdPrice: number): boolean {
 export function convertTORUSToUSD(
   torusAmount: string,
   usdPrice: number,
+  hasMaskDecimal: boolean = true,
 ): string {
   const parsedAmount = parseFloat(torusAmount);
   const formattedUsdPrice = usdPrice.toFixed(4);
@@ -61,9 +62,11 @@ export function convertTORUSToUSD(
     return "0";
   }
 
-  return (
-    Math.floor(parsedAmount * parseFloat(formattedUsdPrice) * 10000) / 10000
-  ).toString();
+  const result = parsedAmount * parseFloat(formattedUsdPrice);
+
+  return hasMaskDecimal
+    ? (Math.floor(result * 10000) / 10000).toString()
+    : result.toString();
 }
 
 export function convertUSDToTorus(usdAmount: string, usdPrice: number): string {
