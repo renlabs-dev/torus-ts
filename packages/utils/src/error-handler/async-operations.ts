@@ -7,7 +7,7 @@ import { goTry, goTryRaw } from "go-go-try";
  * @param asyncOperation Any asynchronous function or Promise-returning object method
  * @returns A tuple with [error message or undefined, data or undefined]
  */
-export async function tryAsync<T>(
+async function tryAsync<T>(
   asyncOperation: Promise<T> | (() => Promise<T>),
 ): Promise<readonly [string | undefined, T | undefined]> {
   // If asyncOperation is a function, call it to get the Promise
@@ -24,7 +24,7 @@ export async function tryAsync<T>(
  * @param asyncOperation Any asynchronous function or Promise-returning object method
  * @returns A tuple with [error object or undefined, data or undefined]
  */
-export async function tryAsyncRawError<E = unknown, T = unknown>(
+async function tryAsyncRawError<E = unknown, T = unknown>(
   asyncOperation: Promise<T> | (() => Promise<T>),
 ): Promise<readonly [E | undefined, T | undefined]> {
   // If asyncOperation is a function, call it to get the Promise
@@ -32,5 +32,27 @@ export async function tryAsyncRawError<E = unknown, T = unknown>(
     typeof asyncOperation === "function" ? asyncOperation() : asyncOperation;
 
   // Use goTryRaw to get the raw error object
-  return await goTryRaw<E, T>(promise);
+  const [error, result] = await goTryRaw<E, T>(promise);
+
+  // Clean up the stack trace if there is an error
+  if (error instanceof Error && error.stack) {
+    // Filter out lines related to error handling implementation
+    const filteredStack = error.stack
+      .split("\n")
+      .filter(
+        (line) =>
+          !line.includes("tryAsyncRawError") &&
+          !line.includes("tryAsyncLoggingRaw") &&
+          !line.includes("goTryRaw") &&
+          !line.includes("goTry"),
+      )
+      .join("\n");
+
+    error.stack = filteredStack;
+  }
+
+  return Object.freeze([error, result]);
 }
+
+// All exportable functions
+export { tryAsync, tryAsyncRawError };

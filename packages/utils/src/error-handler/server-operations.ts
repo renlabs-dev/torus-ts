@@ -1,12 +1,11 @@
-// error_handler/toast/server-operations.ts
-import { tryAsync } from "../gogotry/async-operations";
-import { trySync } from "../gogotry/sync-operations";
+import { tryAsync, tryAsyncRawError } from "./async-operations";
+import { trySync, trySyncRawError } from "./sync-operations";
 
 // Define log levels
-export type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
+type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
 
 // Options for server-side error handling
-export interface ServerErrorOptions {
+interface ServerErrorOptions {
   level?: LogLevel;
   context?: Record<string, unknown>;
   service?: string;
@@ -26,11 +25,30 @@ const defaultOptions: ServerErrorOptions = {
  * @param options Logging configuration options
  * @returns A tuple with [error or undefined, result or undefined]
  */
-export async function tryAsyncLogging<T>(
+async function tryAsyncLogging<T>(
   asyncOperation: Promise<T> | (() => Promise<T>),
   options: ServerErrorOptions = {},
 ): Promise<readonly [string | undefined, T | undefined]> {
   const [error, result] = await tryAsync(asyncOperation);
+
+  if (error) {
+    logServerError(error, options);
+  }
+
+  return Object.freeze([error, result]);
+}
+
+/**
+ * Handles server-side async operations with logging, returning the raw error
+ * @param asyncOperation The async operation to execute
+ * @param options Logging configuration options
+ * @returns A tuple with [raw error or undefined, result or undefined]
+ */
+async function tryAsyncLoggingRaw<E = unknown, T = unknown>(
+  asyncOperation: Promise<T> | (() => Promise<T>),
+  options: ServerErrorOptions = {},
+): Promise<readonly [E | undefined, T | undefined]> {
+  const [error, result] = await tryAsyncRawError<E, T>(asyncOperation);
 
   if (error) {
     logServerError(error, options);
@@ -45,7 +63,7 @@ export async function tryAsyncLogging<T>(
  * @param options Logging configuration options
  * @returns A tuple with [error or undefined, result or undefined]
  */
-export function trySyncLogging<T>(
+function trySyncLogging<T>(
   syncOperation: () => T,
   options: ServerErrorOptions = {},
 ): readonly [string | undefined, T | undefined] {
@@ -59,11 +77,30 @@ export function trySyncLogging<T>(
 }
 
 /**
+ * Handles server-side sync operations with logging, returning the raw error
+ * @param syncOperation The sync operation to execute
+ * @param options Logging configuration options
+ * @returns A tuple with [raw error or undefined, result or undefined]
+ */
+function trySyncLoggingRaw<E = unknown, T = unknown>(
+  syncOperation: () => T,
+  options: ServerErrorOptions = {},
+): readonly [E | undefined, T | undefined] {
+  const [error, result] = trySyncRawError<E, T>(syncOperation);
+
+  if (error) {
+    logServerError(error, options);
+  }
+
+  return Object.freeze([error, result]);
+}
+
+/**
  * Logs an error on the server with formatting
  * @param error The error to log
  * @param options Logging configuration options
  */
-export function logServerError(
+function logServerError(
   error: unknown,
   options: ServerErrorOptions = {},
 ): void {
@@ -97,7 +134,7 @@ export function logServerError(
  * @param error The error to format
  * @param options Formatting options
  */
-export function formatError(
+function formatError(
   error: unknown,
   options: ServerErrorOptions,
 ): Record<string, unknown> {
@@ -129,3 +166,15 @@ export function formatError(
 
   return formattedError;
 }
+
+// All exportable functions
+export {
+  tryAsyncLogging,
+  tryAsyncLoggingRaw,
+  trySyncLogging,
+  trySyncLoggingRaw,
+  logServerError,
+};
+
+// All exportable types
+export type { LogLevel, ServerErrorOptions };

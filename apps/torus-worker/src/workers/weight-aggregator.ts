@@ -11,6 +11,7 @@ import {
 } from "@torus-network/sdk";
 import type { LastBlock, SS58Address } from "@torus-network/sdk";
 import { createDb } from "@torus-ts/db/client";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
 import { z } from "zod";
 import { log, sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
@@ -32,33 +33,59 @@ export const env = parseEnvOrExit(
 export const db = createDb();
 
 export async function weightAggregatorWorker(api: ApiPromise) {
-  await cryptoWaitReady();
+  const [error] = await tryAsyncLoggingRaw(cryptoWaitReady());
+  if (error) {
+    console.error(`Failed to wait for crypto: ${JSON.stringify(error)}`);
+    return;
+  }
   const keyring = new Keyring({ type: "sr25519" });
   const keypair = keyring.addFromUri(env.TORUS_ALLOCATOR_MNEMONIC);
 
   let knownLastBlock: LastBlock | null = null;
 
   while (true) {
-    try {
-      const lastBlock = await queryLastBlock(api);
+    const [error] = await tryAsyncLoggingRaw(async () => {
+      const [lastBlockError, lastBlock] = await tryAsyncLoggingRaw(
+        queryLastBlock(api),
+      );
+      if (lastBlockError) {
+        log(`Error querying last block: ${JSON.stringify(lastBlockError)}`);
+        return;
+      }
+
+      if (!lastBlock) {
+        log(`No last block found`);
+        return;
+      }
+
       if (
         knownLastBlock != null &&
         lastBlock.blockNumber <= knownLastBlock.blockNumber
       ) {
         log(`Block ${lastBlock.blockNumber} already processed, skipping`);
         await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 2);
-        continue;
+        return;
       }
       knownLastBlock = lastBlock;
 
       log(`Block ${lastBlock.blockNumber}: processing`);
 
-      await weightAggregatorTask(api, keypair, lastBlock.blockNumber);
+      const [taskError] = await tryAsyncLoggingRaw(
+        weightAggregatorTask(api, keypair, lastBlock.blockNumber),
+      );
+      if (taskError) {
+        log(
+          `Error in weight aggregator task: ${taskError instanceof Error ? taskError.message : JSON.stringify(taskError)}`,
+        );
+        return;
+      }
 
       // We aim to run this task every ~5 minutes (8 seconds block * 38)
       await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS * 37);
-    } catch (e) {
-      log("UNEXPECTED ERROR: ", e);
+    });
+
+    if (error) {
+      log("UNEXPECTED ERROR: ", error);
       await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
     }
   }
@@ -74,17 +101,35 @@ export async function weightAggregatorTask(
   lastBlock: number,
 ) {
   const allocatorAddress = checkSS58(keypair.address);
-  const stakeOnCommunityValidator = await queryKeyStakedBy(
-    api,
-    allocatorAddress,
+
+  const [stakeError, stakeOnCommunityValidator] = await tryAsyncLoggingRaw(
+    queryKeyStakedBy(api, allocatorAddress),
   );
+
+  if (stakeError) {
+    log(
+      `Error querying key staked by: ${stakeError instanceof Error ? stakeError.message : JSON.stringify(stakeError)}`,
+    );
+    return;
+  }
+  if (!stakeOnCommunityValidator) {
+    log(`No stake on community validator found`);
+    return;
+  }
+
   log("Committing agent weights...");
-  await postAgentAggregation(
-    stakeOnCommunityValidator,
-    api,
-    keypair,
-    lastBlock,
+
+  const [aggregationError] = await tryAsyncLoggingRaw(
+    postAgentAggregation(stakeOnCommunityValidator, api, keypair, lastBlock),
   );
+
+  if (aggregationError) {
+    log(
+      `Error in post agent aggregation: ${aggregationError instanceof Error ? aggregationError.message : JSON.stringify(aggregationError)}`,
+    );
+    return;
+  }
+
   log("Committed agent weights.");
 }
 
@@ -125,15 +170,22 @@ async function doVote(
   voteMap: Map<string, number>,
 ) {
   const weights = buildNetworkVote(voteMap);
-  try {
-    console.log(`keypair: ${keypair.address}`);
-    const setWeightsTx = await setChainWeights(api, keypair, weights);
-    console.log(`Set weights tx: ${setWeightsTx.toString()}`);
-  } catch (err) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    console.error(`Failed to set weights on chain: ${err}`);
+  console.log(`keypair: ${keypair.address}`);
+
+  const [error, setWeightsTx] = await tryAsyncLoggingRaw(
+    setChainWeights(api, keypair, weights),
+  );
+
+  if (error) {
+    console.error(`Failed to set weights on chain: ${JSON.stringify(error)}`);
     return;
   }
+  if (!setWeightsTx) {
+    log(`No set weights tx found`);
+    return;
+  }
+
+  console.log(`Set weights tx: ${setWeightsTx.toString()}`);
 }
 
 async function postAgentAggregation(
@@ -142,17 +194,29 @@ async function postAgentAggregation(
   keypair: KeyringPair,
   lastBlock: number,
 ) {
-  const moduleWeightMap = await getUserWeightMap();
+  const [mapError, moduleWeightMap] =
+    await tryAsyncLoggingRaw(getUserWeightMap());
+  if (mapError) {
+    console.error(`Failed to get user weight map: ${JSON.stringify(mapError)}`);
+    return;
+  }
+  if (!moduleWeightMap) {
+    console.error(`No module weight map found`);
+    return;
+  }
+
   // gambiarra to remove the allocator from the weights
   moduleWeightMap.forEach((innerMap, _) => {
     if (innerMap.has(keypair.address)) {
       innerMap.delete(keypair.address);
     }
   });
+
   const { stakeWeights, normalizedWeights, percWeights } = getNormalizedWeights(
     stakeOnCommunityValidator,
     moduleWeightMap,
   );
+
   const dbModuleWeights: AgentWeight[] = Array.from(stakeWeights)
     .map(([agentKey, stakeWeight]): AgentWeight | null => {
       const percWeight = percWeights.get(agentKey);
@@ -168,8 +232,17 @@ async function postAgentAggregation(
       };
     })
     .filter((module) => module !== null);
+
   if (dbModuleWeights.length > 0) {
-    await upsertAgentWeight(dbModuleWeights);
+    const [upsertError] = await tryAsyncLoggingRaw(
+      upsertAgentWeight(dbModuleWeights),
+    );
+    if (upsertError) {
+      console.error(
+        `Failed to upsert agent weights: ${JSON.stringify(upsertError)}`,
+      );
+      return;
+    }
   } else {
     console.warn("No weights to insert");
   }

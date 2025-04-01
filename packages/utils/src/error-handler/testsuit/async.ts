@@ -1,4 +1,4 @@
-import { tryAsync, tryAsyncRawError } from "../../../try-catch";
+import { tryAsync, tryAsyncRawError } from "../async-operations";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples

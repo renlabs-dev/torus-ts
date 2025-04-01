@@ -1,4 +1,4 @@
-import { trySync, trySyncRawError } from "../../../try-catch";
+import { trySync, trySyncRawError } from "../sync-operations";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples

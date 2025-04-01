@@ -1,6 +1,7 @@
 import "@polkadot/api-augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { queryLastBlock } from "@torus-network/sdk";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
 import express from "express";
 import { z } from "zod";
 import { log } from "./common";
@@ -22,15 +23,53 @@ async function setup(): Promise<ApiPromise> {
   log("Connecting to ", wsEndpoint);
 
   const provider = new WsProvider(wsEndpoint);
-  const api = await ApiPromise.create({ provider });
+  const [apiError, api] = await tryAsyncLoggingRaw(
+    ApiPromise.create({ provider }),
+  );
+
+  if (apiError) {
+    log(
+      `Error creating API connection: ${apiError instanceof Error ? apiError.message : JSON.stringify(apiError)}`,
+    );
+    throw new Error("Failed to create API connection");
+  }
+
+  if (!api) {
+    log("Failed to create API connection");
+    throw new Error("Failed to create API connection");
+  }
 
   return api;
 }
 
 async function main() {
-  const api = await setup();
+  const [setupError, api] = await tryAsyncLoggingRaw(setup());
+
+  if (setupError) {
+    log(
+      `Error setting up API: ${setupError instanceof Error ? setupError.message : JSON.stringify(setupError)}`,
+    );
+    process.exit(1);
+  }
+  if (!api) {
+    log("Failed to set up API");
+    process.exit(1);
+  }
+
   const lastBlockNumber = -1;
-  const lastBlock = await queryLastBlock(api);
+  const [blockError, lastBlock] = await tryAsyncLoggingRaw(queryLastBlock(api));
+
+  if (blockError) {
+    log(
+      `Error querying last block: ${blockError instanceof Error ? blockError.message : JSON.stringify(blockError)}`,
+    );
+    process.exit(1);
+  }
+
+  if (!lastBlock) {
+    log("Failed to query last block");
+    process.exit(1);
+  }
 
   const workerTypes: Record<string, () => Promise<void>> = {
     // TODO: rename "dao" worker arg

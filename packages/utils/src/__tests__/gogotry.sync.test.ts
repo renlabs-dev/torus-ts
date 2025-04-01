@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  trySync,
-  trySyncRawError,
-} from "../error_handler/gogotry/sync-operations";
+import { trySync, trySyncRawError } from "../error-handler/sync-operations";
 
 describe("gogotry sync functions", () => {
   // Mock successful sync function

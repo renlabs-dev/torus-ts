@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  tryAsync,
-  tryAsyncRawError,
-} from "../error_handler/gogotry/async-operations";
+import { tryAsync, tryAsyncRawError } from "../error-handler/async-operations";
 
 describe("gogotry async functions", () => {
   // Mock successful async function

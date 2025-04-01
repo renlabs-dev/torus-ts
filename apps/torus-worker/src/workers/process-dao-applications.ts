@@ -8,6 +8,7 @@ import {
   removeFromWhitelist,
 } from "@torus-network/sdk";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
 import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {
@@ -37,19 +38,55 @@ const getEnv = validateEnvOrExit({
 export async function processApplicationsWorker(props: WorkerProps) {
   const env = getEnv(process.env);
   while (true) {
-    try {
+    const [error] = await tryAsyncLoggingRaw(async () => {
       const lastBlock = await sleepUntilNewBlock(props);
       props.lastBlock = lastBlock;
       log(`Block ${props.lastBlock.blockNumber}: processing`);
 
-      const apps_map = await getApplications(props.api, applicationIsPending);
-
-      const votes_on_pending = await getVotesOnPending(
-        apps_map,
-        lastBlock.blockNumber,
+      const [appsError, apps_map] = await tryAsyncLoggingRaw(
+        getApplications(props.api, applicationIsPending),
       );
+      if (appsError) {
+        log(
+          `Error fetching applications: ${appsError instanceof Error ? appsError.message : JSON.stringify(appsError)}`,
+        );
+        return;
+      }
 
-      const vote_threshold = await getCadreThreshold();
+      if (!apps_map) {
+        log(`No applications found`);
+        return;
+      }
+
+      const [votesError, votes_on_pending] = await tryAsyncLoggingRaw(
+        getVotesOnPending(apps_map, lastBlock.blockNumber),
+      );
+      if (votesError) {
+        log(
+          `Error fetching votes: ${votesError instanceof Error ? votesError.message : JSON.stringify(votesError)}`,
+        );
+        return;
+      }
+
+      if (!votes_on_pending) {
+        log(`No votes found`);
+        return;
+      }
+
+      const [thresholdError, vote_threshold] =
+        await tryAsyncLoggingRaw(getCadreThreshold());
+      if (thresholdError) {
+        log(
+          `Error getting threshold: ${thresholdError instanceof Error ? thresholdError.message : JSON.stringify(thresholdError)}`,
+        );
+        return;
+      }
+
+      if (!vote_threshold) {
+        log(`No vote threshold found`);
+        return;
+      }
+
       const mnemonic = env.TORUS_CURATOR_MNEMONIC;
       await processAllVotes(
         props.api,
@@ -58,16 +95,59 @@ export async function processApplicationsWorker(props: WorkerProps) {
         vote_threshold,
         apps_map,
       );
-      const cadreVotes = await getCadreVotes();
+
+      const [cadreVotesError, cadreVotes] =
+        await tryAsyncLoggingRaw(getCadreVotes());
+      if (cadreVotesError) {
+        log(
+          `Error getting cadre votes: ${cadreVotesError instanceof Error ? cadreVotesError.message : JSON.stringify(cadreVotesError)}`,
+        );
+        return;
+      }
+
+      if (!cadreVotes) {
+        log(`No cadre votes found`);
+        return;
+      }
+
       await processCadreVotes(cadreVotes, vote_threshold);
       console.log("threshold: ", vote_threshold);
 
-      const penaltyVoteThreshold = await getPenaltyThreshold();
+      const [penaltyThresholdError, penaltyVoteThreshold] =
+        await tryAsyncLoggingRaw(getPenaltyThreshold());
+      if (penaltyThresholdError) {
+        log(
+          `Error getting penalty threshold: ${penaltyThresholdError instanceof Error ? penaltyThresholdError.message : JSON.stringify(penaltyThresholdError)}`,
+        );
+        return;
+      }
       console.log("penalty threshold: ", penaltyVoteThreshold);
-      const factors = await getPenaltyFactors(penaltyVoteThreshold);
+
+      if (!penaltyVoteThreshold) {
+        log(`No penalty vote threshold found`);
+        return;
+      }
+
+      const [factorsError, factors] = await tryAsyncLoggingRaw(
+        getPenaltyFactors(penaltyVoteThreshold),
+      );
+      if (factorsError) {
+        log(
+          `Error getting penalty factors: ${factorsError instanceof Error ? factorsError.message : JSON.stringify(factorsError)}`,
+        );
+        return;
+      }
+
+      if (!factors) {
+        log(`No penalty factors found`);
+        return;
+      }
+
       await processPenalty(props.api, mnemonic, factors);
-    } catch (e) {
-      log("UNEXPECTED ERROR: ", e);
+    });
+
+    if (error) {
+      log("UNEXPECTED ERROR: ", error);
       await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
     }
   }
@@ -116,11 +196,43 @@ export async function processVotesOnProposal(
   if (appVoteStatus == "open") {
     if (acceptVotes >= vote_threshold) {
       log(`Accepting proposal ${appId} ${app.agentKey}`);
-      const res = await acceptApplication(api, appId, mnemonic);
+
+      const [acceptError, res] = await tryAsyncLoggingRaw(
+        acceptApplication(api, appId, mnemonic),
+      );
+
+      if (acceptError) {
+        log(
+          `Error accepting application ${appId}: ${acceptError instanceof Error ? acceptError.message : JSON.stringify(acceptError)}`,
+        );
+        return;
+      }
+
+      if (!res) {
+        log(`No response from acceptApplication`);
+        return;
+      }
+
       console.log("acceptApplication executed:", res.toHuman());
     } else if (refuseVotes >= vote_threshold) {
       log(`Refusing proposal ${appId}`);
-      const res = await denyApplication(api, appId, mnemonic);
+
+      const [denyError, res] = await tryAsyncLoggingRaw(
+        denyApplication(api, appId, mnemonic),
+      );
+
+      if (denyError) {
+        log(
+          `Error denying application ${appId}: ${denyError instanceof Error ? denyError.message : JSON.stringify(denyError)}`,
+        );
+        return;
+      }
+
+      if (!res) {
+        log(`No response from denyApplication`);
+        return;
+      }
+
       console.log("denyApplication executed:", res.toHuman());
     }
   } else if (
@@ -131,11 +243,22 @@ export async function processVotesOnProposal(
     log(`Removing proposal ${appId}`);
     // Note: if chain is updated to include revoking logic, this should be
     // `revokeApplication` instead of `removeFromWhitelist`
-    const res = await removeFromWhitelist(
-      api,
-      applications_map[appId].agentKey,
-      mnemonic,
+
+    const [removeError, res] = await tryAsyncLoggingRaw(
+      removeFromWhitelist(api, applications_map[appId].agentKey, mnemonic),
     );
+
+    if (removeError) {
+      log(
+        `Error removing from whitelist for application ${appId}: ${removeError instanceof Error ? removeError.message : JSON.stringify(removeError)}`,
+      );
+      return;
+    }
+    if (!res) {
+      log(`No response from removeFromWhitelist`);
+      return;
+    }
+
     console.log("removeFromWhitelist executed:", res.toHuman());
   }
 }
@@ -179,11 +302,33 @@ export async function processPenalty(
   }[],
 ) {
   console.log("Penalties to apply: ", penaltiesToApply);
+
   for (const penalty of penaltiesToApply) {
     const { agentKey, nthBiggestPenaltyFactor } = penalty;
-    await penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic);
+
+    const [penaltyError] = await tryAsyncLoggingRaw(
+      penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic),
+    );
+
+    if (penaltyError) {
+      log(
+        `Error penalizing agent ${agentKey}: ${penaltyError instanceof Error ? penaltyError.message : JSON.stringify(penaltyError)}`,
+      );
+      continue;
+    }
   }
+
   const penalizedKeys = penaltiesToApply.map((item) => item.agentKey);
-  await updatePenalizeAgentVotes(penalizedKeys);
+
+  const [updateError] = await tryAsyncLoggingRaw(
+    updatePenalizeAgentVotes(penalizedKeys),
+  );
+  if (updateError) {
+    log(
+      `Error updating penalize agent votes: ${updateError instanceof Error ? updateError.message : JSON.stringify(updateError)}`,
+    );
+    return;
+  }
+
   console.log("Penalties applied");
 }
