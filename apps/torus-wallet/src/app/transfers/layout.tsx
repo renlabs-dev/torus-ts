@@ -23,7 +23,7 @@ export default function TransfersLayout() {
 
   return (
     <Suspense fallback={<WalletSkeletonLoader />}>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto">
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as TabType)}

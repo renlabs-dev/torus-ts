@@ -93,7 +93,7 @@ export function WalletBalance() {
 
   return (
     <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
-      <Card key={useId()} className="flex w-full flex-col gap-24 px-7 py-5">
+      <Card key={useId()} className="flex w-full flex-col gap-14 px-7 py-5">
         {selectedAccount?.address && (
           <WalletHeader address={selectedAccount.address} />
         )}

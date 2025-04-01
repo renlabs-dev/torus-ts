@@ -179,21 +179,15 @@ export function Send() {
     feeRef.current?.updateFee(null);
   }, [selectedAccount?.address, reset]);
 
-  const reviewData = () => {
-    const { recipient, amount } = getValues();
-    return [
-      { label: "To", content: recipient },
-      { label: "Amount", content: `${amount} TORUS` },
-      { label: "Fee", content: `${feeRef.current?.getEstimatedFee()} TORUS` },
-    ];
-  };
-
   const handleReviewClick = async () => {
     const isValid = await trigger();
+
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }
   };
+
+  const { recipient, amount } = getValues();
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -259,7 +253,11 @@ export function Send() {
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         formRef={formRef}
-        reviewContent={reviewData}
+        usdPrice={usdPrice}
+        from={selectedAccount?.address}
+        to={recipient}
+        amount={amount}
+        fee={feeRef.current?.getEstimatedFee() ?? "0"}
       />
     </div>
   );

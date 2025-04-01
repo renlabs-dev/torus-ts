@@ -6,96 +6,127 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogDescription,
 } from "@torus-ts/ui/components/alert-dialog";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState, useMemo } from "react";
+import { convertTORUSToUSD } from "~/utils/helpers";
 
 export interface ReviewTransactionDialogHandle {
   openDialog: () => void;
 }
 
-interface ReviewContent {
+interface TransactionDetail {
   label: string;
-  content: string | React.ReactNode;
+  value: string | undefined;
+  currency?: string;
+  description?: string;
 }
 
 interface ReviewTransactionDialogProps {
   formRef: React.RefObject<HTMLFormElement | null>;
-  reviewContent: () => ReviewContent[];
-  triggerTitle?: string;
-  title?: string;
+  usdPrice: number;
+  from: string | undefined;
+  to: string | undefined;
+  amount: string;
+  fee: string | undefined;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
 }
 
-function RenderReviewItem({ item }: { item: ReviewContent }) {
+function TransactionDetailRow({ detail }: { detail: TransactionDetail }) {
   return (
-    <span
-      className="flex w-full flex-col items-start md:flex-row md:justify-between"
-      key={item.label}
-    >
-      {item.label}:
-      <span className="text-muted-foreground break-all text-left md:text-right">
-        {item.content}
+    <div className="flex items-center justify-between py-2">
+      <span className="text-gray-600">{detail.label}:</span>
+      <span className="font-medium">
+        {`${detail.value} ${detail.currency ?? ""}`}
       </span>
-    </span>
+    </div>
   );
 }
 
 export const ReviewTransactionDialog = forwardRef<
   ReviewTransactionDialogHandle,
   ReviewTransactionDialogProps
->(
-  (
-    {
-      formRef,
-      reviewContent,
-      triggerTitle = "Start transaction",
-      title = "Review transaction",
-    },
-    ref,
-  ) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const { toast } = useToast();
+>(({ formRef, usdPrice, from, to, amount, fee, onSuccess, onError }, ref) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-    useImperativeHandle(ref, () => ({
-      openDialog: () => setIsOpen(true),
-    }));
+  useImperativeHandle(ref, () => ({
+    openDialog: () => setIsOpen(true),
+  }));
 
-    const handleSubmit = () => {
-      try {
-        formRef.current?.requestSubmit();
-        setIsOpen(false);
-      } catch (error) {
-        setIsOpen(false);
-        toast({
-          title: "Form submission failed:",
-          description: String(error),
-        });
-      }
-    };
+  const handleSubmit = () => {
+    try {
+      setIsSubmitting(true);
+      formRef.current?.requestSubmit();
+      setIsOpen(false);
+      toast({
+        title: "Success!",
+        description: "Transaction submitted successfully",
+      });
+      onSuccess?.();
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+      onError?.(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    const reviewItems = reviewContent();
+  const details = useMemo(() => {
+    const amountUSD = convertTORUSToUSD(amount, usdPrice);
+    const feeUSD = convertTORUSToUSD(fee ?? "0", usdPrice, false);
 
-    return (
-      <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
-            <div className="flex flex-col gap-2">
-              {reviewItems.map((item) => (
-                <RenderReviewItem key={item.label} item={item} />
+    const transactionDetails: TransactionDetail[] = [
+      { label: "From", value: from },
+      { label: "To", value: to },
+      { label: "Amount", value: amount, currency: "TORUS" },
+      { label: "Amount (USD)", value: amountUSD, currency: "$" },
+      { label: "Network Fee", value: fee, currency: "TORUS" },
+      { label: "Network Fee (USD)", value: feeUSD, currency: "$" },
+    ];
+
+    return transactionDetails;
+  }, [amount, fee, from, to, usdPrice]);
+
+  return (
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-xl font-bold">
+            Review Transaction
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-4">
+            <div className="rounded-lg">
+              {details.map((detail, index) => (
+                <TransactionDetailRow key={index} detail={detail} />
               ))}
             </div>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsOpen(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleSubmit}>
-              {triggerTitle}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  },
-);
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="gap-3">
+          <AlertDialogCancel
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="w-full sm:w-auto"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Processing..." : "Confirm Transaction"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+});
