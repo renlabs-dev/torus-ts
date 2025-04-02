@@ -23,7 +23,7 @@ interface BalanceItemProps {
 }
 
 interface WalletHeaderProps {
-  address: string;
+  address: string | undefined;
 }
 
 function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
@@ -47,20 +47,26 @@ function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
 function WalletHeader({ address }: WalletHeaderProps) {
   return (
     <div className="flex items-center gap-3">
-      <Image
-        src="/wallet-info-logo.svg"
-        alt="Wallet Info Logo"
-        width={24}
-        height={24}
-      />
-      <CopyButton
-        className="h-fit p-0 text-muted-foreground hover:text-white"
-        variant="ghost"
-        copy={address}
-      >
-        {smallAddress(address, 12)}
-        <Copy />
-      </CopyButton>
+      <div className="w-6 h-6 flex-shrink-0">
+        <Image
+          src="/wallet-info-logo.svg"
+          alt="Wallet Info Logo"
+          width={24}
+          height={24}
+        />
+      </div>
+      {address ? (
+        <CopyButton
+          className="h-fit p-0 text-muted-foreground hover:text-white"
+          variant="ghost"
+          copy={address}
+        >
+          {smallAddress(address, 12)}
+          <Copy />
+        </CopyButton>
+      ) : (
+        <span className="text-muted-foreground">Connect Wallet</span>
+      )}
     </div>
   );
 }
@@ -94,9 +100,7 @@ export function WalletBalance() {
   return (
     <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
       <Card key={useId()} className="flex w-full flex-col gap-14 px-7 py-5">
-        {selectedAccount?.address && (
-          <WalletHeader address={selectedAccount.address} />
-        )}
+        <WalletHeader address={selectedAccount?.address} />
         <div className="flex flex-col gap-6">
           {balances.map((balance) => (
             <BalanceItem

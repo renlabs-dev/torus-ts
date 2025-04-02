@@ -47,11 +47,14 @@ const useNavigation = () => {
     value === "bridge" ? bridgeLink : `/${value === "wallet" ? "" : value}`;
 
   const getDefaultValue = (): string => {
-    if (pathname === "/") return "wallet";
-    if (pathname === "/transfers") return "wallet";
-    if (pathname === "/staking") return "staking";
+    const pathMap: Record<string, string> = {
+      "/": "wallet",
+      "/transfers": "wallet",
+      "/staking": "staking",
+    };
+
     if (pathname.includes("bridge")) return "bridge";
-    return pathname.slice(1);
+    return pathMap[pathname] ?? pathname.slice(1);
   };
 
   return {
