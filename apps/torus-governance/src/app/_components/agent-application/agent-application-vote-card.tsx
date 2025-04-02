@@ -169,7 +169,13 @@ export function AgentApplicationVoteTypeCard(props: {
   applicationId: number;
 }) {
   const { applicationId, applicationStatus } = props;
-  const { isAccountConnected, selectedAccount, isUserCadre } = useGovernance();
+  const { isAccountConnected, selectedAccount } = useGovernance();
+
+  const cadreList = api.cadre.all.useQuery();
+
+  const isUserCadre = !!cadreList.data?.find(
+    (cadre) => cadre.userKey === selectedAccount?.address,
+  );
 
   const [vote, setVote] = useState<WhitelistVoteType | "UNVOTED">("UNVOTED");
 

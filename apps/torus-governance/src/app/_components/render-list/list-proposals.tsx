@@ -1,28 +1,32 @@
+"use client";
+
 import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomProposal } from "~/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { CardSkeleton } from "../card-skeleton";
 import { CardViewData } from "../card-view-data";
 import type { VoteStatus } from "../vote-label";
-import { ListContainer } from "./container-list";
 
 const ListCardsLoadingSkeleton = () => {
+  const delayValues = [200, 500, 700];
+
   return (
     <div className="w-full space-y-4">
-      <div className="animate-fade-up animate-delay-200">
-        <CardSkeleton />
-      </div>
-      <div className="animate-fade-up animate-delay-500">
-        <CardSkeleton />
-      </div>
-      <div className="animate-fade-up animate-delay-700">
-        <CardSkeleton />
-      </div>
+      {delayValues.map((delay) => (
+        <div key={delay} className={`animate-fade-up animate-delay-${delay}`}>
+          <CardSkeleton />
+        </div>
+      ))}
     </div>
   );
 };
+
+const EmptyState = () => (
+  <p className="animate-fade-down duration-500">No proposals found.</p>
+);
 
 function getUserVoteStatus(
   proposalStatus: ProposalStatus,
@@ -31,6 +35,7 @@ function getUserVoteStatus(
   if (!("Open" in proposalStatus)) return "UNVOTED";
 
   const { votesFor, votesAgainst } = proposalStatus.Open;
+
   if (votesFor.includes(selectedAccountAddress)) return "FAVORABLE";
   if (votesAgainst.includes(selectedAccountAddress)) return "AGAINST";
 
@@ -45,52 +50,73 @@ export const ListProposals = () => {
     isInitialized,
     proposals,
   } = useGovernance();
+
   const currentBlock = lastBlock.data?.blockNumber;
   const searchParams = useSearchParams();
 
-  const isLoadingProposals = () => {
-    if (!proposalsWithMeta || proposals.isPending || !isInitialized)
-      return true;
-    return false;
-  };
+  const isLoading = !proposalsWithMeta || proposals.isPending || !isInitialized;
 
-  const filteredProposals = proposalsWithMeta?.map((proposal) => {
-    const { title, invalid, body } = handleCustomProposal(proposal);
-    if (invalid || (!title && !body)) return;
+  const filteredProposals = useMemo(() => {
+    if (!proposalsWithMeta) return [];
 
     const search = searchParams.get("search")?.toLowerCase();
-    if (
-      search &&
-      !title?.toLowerCase().includes(search) &&
-      !body?.toLowerCase().includes(search) &&
-      !proposal.proposer.toLowerCase().includes(search)
-    ) {
-      return;
-    }
+    const statusFilter = searchParams.get("status");
 
-    const voted = getUserVoteStatus(
-      proposal.status,
-      selectedAccount?.address as SS58Address,
-    );
+    return proposalsWithMeta
+      .reverse()
+      .map((proposal) => {
+        const { title, invalid, body } = handleCustomProposal(proposal);
 
-    return (
-      <Link href={`/proposal/${proposal.id}`} key={proposal.id} prefetch>
-        <CardViewData
-          title={title}
-          author={proposal.proposer}
-          voted={voted}
-          proposalType={proposal.data}
-          proposalStatus={proposal.status}
-          expirationBlock={proposal.expirationBlock}
-          currentBlock={currentBlock}
-        />
-      </Link>
-    );
-  });
+        if (invalid || (!title && !body)) return null;
 
-  if (isLoadingProposals()) return <ListCardsLoadingSkeleton />;
+        const matchesSearch =
+          !search ||
+          (title?.toLowerCase() ?? "").includes(search) ||
+          (body?.toLowerCase() ?? "").includes(search) ||
+          proposal.proposer.toLowerCase().includes(search);
 
-  if (!filteredProposals) return <p>No proposals found.</p>;
+        if (!matchesSearch) return null;
 
-  return <ListContainer>{filteredProposals}</ListContainer>;
+        if (statusFilter && statusFilter !== "all") {
+          const statusLower = statusFilter.toLowerCase();
+          const proposalStatusKey = Object.keys(
+            proposal.status,
+          )[0]?.toLowerCase();
+
+          if (statusLower === "active" && proposalStatusKey !== "open")
+            return null;
+          if (statusLower === "accepted" && proposalStatusKey !== "accepted")
+            return null;
+          if (statusLower === "rejected" && proposalStatusKey !== "rejected")
+            return null;
+          if (statusLower === "expired" && proposalStatusKey !== "expired")
+            return null;
+        }
+
+        const voted = getUserVoteStatus(
+          proposal.status,
+          selectedAccount?.address as SS58Address,
+        );
+
+        return (
+          <Link href={`/proposal/${proposal.id}`} key={proposal.id} prefetch>
+            <CardViewData
+              title={title}
+              author={proposal.proposer}
+              voted={voted}
+              proposalType={proposal.data}
+              proposalStatus={proposal.status}
+              expirationBlock={proposal.expirationBlock}
+              currentBlock={currentBlock}
+            />
+          </Link>
+        );
+      })
+      .filter(Boolean); // Remove null values
+  }, [proposalsWithMeta, searchParams, selectedAccount, currentBlock]);
+
+  if (isLoading) return <ListCardsLoadingSkeleton />;
+  if (filteredProposals.length === 0) return <EmptyState />;
+
+  return filteredProposals;
 };

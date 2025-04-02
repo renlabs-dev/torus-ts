@@ -1,4 +1,4 @@
-import type { LastBlock, SS58Address } from "@torus-network/sdk";
+import type { LastBlock, Proposal, SS58Address } from "@torus-network/sdk";
 import {
   checkSS58,
   CONSTANTS,
@@ -13,12 +13,15 @@ import {
   agentProposalToProposal,
   getApplications,
   getProposals,
+  getProposalStatus,
   isNewBlock,
   log,
+  normalizeApplicationValue,
   sleep,
 } from "../common";
 import type { NewApplication, NewProposal } from "../db";
 import {
+  queryProposalsDB,
   SubspaceAgentToDatabase,
   upsertAgentData,
   upsertProposal,
@@ -176,69 +179,54 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: applications upserted`);
 }
 
-/**
- * Fetches and processes proposals data for a given block
- * @param lastBlock The latest block data
- */
 export async function runProposalsFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: running proposals fetch`);
 
-  // ==========================
-  // ===== Error Handling =====
-  // ==========================
-  let retries = defaultRetries;
-  let proposals;
-  let lastError: unknown;
-
-  while (retries > 0) {
-    const [proposalsError, proposalsResult] = await tryAsyncLoggingRaw(
-      getProposals(lastBlock.apiAtBlock, (_) => true),
-    );
-
-    if (!proposalsError) {
-      proposals = proposalsResult;
-      break;
-    }
-
-    lastError = proposalsError;
-    log(
-      `Error: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
-    );
-    retries--;
-    await sleep(retryDelay);
+  const [queryProposalsError, dbSuccess] =
+    await tryAsyncLoggingRaw(queryProposalsDB());
+  if (queryProposalsError) {
+    log("Error fetching proposals from db");
+    return;
   }
-
-  if (retries === 0 && lastError) {
-    log("Failed to fetch proposals after multiple attempts");
+  if (!dbSuccess) {
+    log("No proposals found in db");
     return;
   }
 
+  const savedProposalsMap = new Map(
+    dbSuccess.map((proposal) => [proposal.proposalID, proposal]),
+  );
+
+  const isProposalToInsert = (a: Proposal) => {
+    const existingProposal = savedProposalsMap.get(a.id);
+    const isNewProposal = !existingProposal;
+    const hasStatusChanged =
+      !isNewProposal &&
+      getProposalStatus(a) !==
+        normalizeApplicationValue(existingProposal.status);
+    return isNewProposal || hasStatusChanged;
+  };
+
+  const [getProposalsError, proposals] = await tryAsyncLoggingRaw(
+    getProposals(lastBlock.apiAtBlock, isProposalToInsert),
+  );
+  if (getProposalsError) {
+    log("Error fetching proposals from api");
+    return;
+  }
   if (!proposals) {
-    log("Proposals is undefined");
+    log("No proposals found in api");
     return;
   }
-  // ==========================
-
   const proposalsMap = new Map(Object.entries(proposals));
   const dbProposals: NewProposal[] = [];
   proposalsMap.forEach((value, _) => {
     dbProposals.push(agentProposalToProposal(value));
   });
-
   log(
     `Block ${lastBlock.blockNumber}: upserting ${dbProposals.length} proposals`,
   );
-
-  // Error Handling for database operation
-  const [upsertError] = await tryAsyncLoggingRaw(upsertProposal(dbProposals));
-
-  if (upsertError) {
-    log(
-      `Error upserting proposals: ${upsertError instanceof Error ? (upsertError.stack ?? upsertError.message) : JSON.stringify(upsertError)}`,
-    );
-    return;
-  }
-
+  await upsertProposal(dbProposals);
   log(`Block ${lastBlock.blockNumber}: proposals upserted`);
 }
 

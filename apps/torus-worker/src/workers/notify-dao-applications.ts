@@ -9,6 +9,7 @@ import {
   getCadreCandidates,
   getProposalsDB,
   log,
+  normalizeApplicationValue,
   sleep,
 } from "../common";
 import type { ApplicationDB } from "../db";
@@ -501,13 +502,14 @@ function buildCadreMessage(
  * @param proposalURL URL to the proposal
  * @returns Webhook payload for Discord
  */
+
 function buildProposalMessage(
   application: db.NewProposal,
   proposalURL: string,
 ) {
   const embedParamsMap = generateBaseEmbedParams("Proposal");
-  const embedParams = embedParamsMap[application.status];
-
+  const embedParams =
+    embedParamsMap[normalizeApplicationValue(application.status)];
   const fields = [
     { name: "Proposer", value: application.proposerKey },
     { name: "Proposal ID", value: `${String(application.id)}` },

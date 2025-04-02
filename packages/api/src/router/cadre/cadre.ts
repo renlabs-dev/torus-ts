@@ -1,7 +1,7 @@
-import { publicProcedure } from "../../trpc";
 import { isNull } from "@torus-ts/db";
 import { cadreSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { publicProcedure } from "../../trpc";
 
 export const cadreRouter = {
   all: publicProcedure.query(({ ctx }) => {

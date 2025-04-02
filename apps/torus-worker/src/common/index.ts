@@ -103,12 +103,12 @@ export function agentApplicationToApplication(
   agentApplication: AgentApplication,
 ): NewApplication {
   const mappedStatus = match(agentApplication.status)({
-    Open: () => applicationStatusValues.OPEN,
+    Open: () => applicationStatusValues.Open,
     Resolved: ({ accepted }) =>
       accepted
-        ? applicationStatusValues.ACCEPTED
-        : applicationStatusValues.REJECTED,
-    Expired: () => applicationStatusValues.REJECTED,
+        ? applicationStatusValues.Accepted
+        : applicationStatusValues.Rejected,
+    Expired: () => applicationStatusValues.Rejected,
   });
 
   return {
@@ -120,10 +120,10 @@ export function agentApplicationToApplication(
 
 export function agentProposalToProposal(proposal: Proposal): NewProposal {
   const status = match(proposal.status)({
-    Open: () => applicationStatusValues.OPEN,
-    Accepted: () => applicationStatusValues.ACCEPTED,
-    Expired: () => applicationStatusValues.EXPIRED,
-    Refused: () => applicationStatusValues.REJECTED,
+    Open: () => applicationStatusValues.Open,
+    Accepted: () => applicationStatusValues.Accepted,
+    Expired: () => applicationStatusValues.Expired,
+    Refused: () => applicationStatusValues.Rejected,
   });
   return {
     proposalID: proposal.id,
@@ -135,6 +135,39 @@ export function agentProposalToProposal(proposal: Proposal): NewProposal {
     proposalCost: proposal.proposalCost.toString(),
     notified: false, // Default value as specified in schema
   };
+}
+
+/*
+  We need this for now because before we used to have the enum 
+  // as all upper case on the db. We changed it, because it didnt match the
+  // values that came from the network and we want parity of this sort of thing
+  the maximum that we can
+*/
+export function normalizeApplicationValue(
+  value: string,
+): keyof typeof applicationStatusValues {
+  switch (value.toLowerCase()) {
+    case "open":
+      return "Open";
+    case "accepted":
+      return "Accepted";
+    case "rejected":
+      return "Rejected";
+    case "expired":
+      return "Expired";
+    default:
+      throw new Error(`Invalid value ${value} for application status`);
+  }
+}
+
+export function getProposalStatus(proposal: Proposal) {
+  const status = match(proposal.status)({
+    Open: () => applicationStatusValues.Open,
+    Accepted: () => applicationStatusValues.Accepted,
+    Expired: () => applicationStatusValues.Expired,
+    Refused: () => applicationStatusValues.Rejected,
+  });
+  return status;
 }
 
 export const getApplicationVoteStatus = (
@@ -192,7 +225,7 @@ export async function getProposals(
   api: Api,
   filterFn: (app: Proposal) => boolean,
 ) {
-  const [error, application_entries] = await tryAsyncLoggingRaw(
+  const [error, proposals_entries] = await tryAsyncLoggingRaw(
     queryProposals(api),
   );
 
@@ -203,20 +236,20 @@ export async function getProposals(
     return;
   }
 
-  if (!application_entries) {
+  if (!proposals_entries) {
     log("No proposals found");
     return;
   }
 
-  const pending_daos = application_entries.filter(filterFn);
-  const applications_map: Record<number, Proposal> = pending_daos.reduce(
+  const desired_proposals = proposals_entries.filter(filterFn);
+  const proposals_map: Record<number, Proposal> = desired_proposals.reduce(
     (hashmap, proposal) => {
       hashmap[proposal.id] = proposal;
       return hashmap;
     },
     {} as Record<number, Proposal>,
   );
-  return applications_map;
+  return proposals_map;
 }
 
 export async function getProposalsDB(filterFn: (app: NewProposal) => boolean) {

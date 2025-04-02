@@ -1,5 +1,6 @@
+import type { AppRouter } from "@torus-ts/api";
+import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
-import type { CuratorVoteHistory } from "../src/app/_components/cadre/candidate-card/index";
 
 export interface ComputedVotes {
   accept: number;
@@ -7,9 +8,13 @@ export interface ComputedVotes {
   revoke: number;
 }
 
+export type CuratorVoteHistory = NonNullable<
+  inferProcedureOutput<AppRouter["cadreVoteHistory"]["all"]>
+>;
+
 interface ComputedVotesProps {
-  candidacyStatus: string;
   userKey: string;
+  candidacyStatus: string;
   curatorVoteHistory: CuratorVoteHistory | undefined;
 }
 

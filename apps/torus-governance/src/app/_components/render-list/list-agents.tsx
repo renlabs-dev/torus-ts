@@ -1,6 +1,5 @@
 "use client";
 
-import { ListContainer } from "./container-list";
 import type { AppRouter } from "@torus-ts/api";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
@@ -15,14 +14,24 @@ import {
 import { getLinks } from "@torus-ts/ui/lib/data";
 import { smallAddress } from "@torus-ts/utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
+import { env } from "~/env";
+import { api } from "~/trpc/react";
 import { ArrowRight, Coins } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { useGovernance } from "~/context/governance-provider";
-import { env } from "~/env";
-import { api } from "~/trpc/react";
+
+type AgentWithAggregatedPenalties = NonNullable<
+  inferProcedureOutput<AppRouter["agent"]["allWithAggregatedPenalties"]>
+>;
+
+type PenaltyList = AgentWithAggregatedPenalties[number]["penalties"];
+
+interface DialogPenaltiesState {
+  penalties: PenaltyList;
+  agentName: string;
+}
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
@@ -48,109 +57,10 @@ const EmissionHealthFactorBadge = ({
   );
 };
 
-const handleStatusColors = (executed: boolean) =>
-  executed
+const getPenaltyStatusColors = (executed: boolean): string => {
+  return executed
     ? "text-red-400 ring-red-400/20"
     : "text-yellow-400 ring-yellow-400/20";
-
-type AgentWithAggregatedPenalties = NonNullable<
-  inferProcedureOutput<AppRouter["agent"]["allWithAggregatedPenalties"]>
->;
-
-type PenaltyList = AgentWithAggregatedPenalties[number]["penalties"];
-
-interface DialogPenaltiesState {
-  penalties: PenaltyList;
-  agentName: string;
-}
-
-function processAgent({
-  agent,
-  search,
-}: {
-  agent: AgentWithAggregatedPenalties[number];
-  search: string | null;
-}): AgentWithAggregatedPenalties[number] | null {
-  if (!search) {
-    return agent;
-  }
-
-  const searchLower = search.toLocaleLowerCase();
-  const agentKeyLower = agent.key.toLocaleLowerCase();
-  const agentNameLower = (agent.name ?? "").toLocaleLowerCase();
-
-  if (
-    !agentNameLower.includes(searchLower) &&
-    !agentKeyLower.includes(searchLower)
-  ) {
-    return null;
-  }
-
-  return agent;
-}
-
-export const ListAgents = () => {
-  const { cadreList } = useGovernance();
-  const { data: cadreListData } = cadreList;
-  const { data: agentsWithPenalties, isFetching } =
-    api.agent.allWithAggregatedPenalties.useQuery();
-
-  const penaltyThreshold =
-    Math.round(Math.sqrt(cadreListData?.length ?? 0)) + 1;
-
-  const [penaltiesDialog, setPenaltiesDialog] =
-    useState<DialogPenaltiesState | null>(null);
-  const hiddenTriggerRef = useRef<HTMLButtonElement>(null);
-
-  const searchParams = useSearchParams();
-
-  const content = useMemo(() => {
-    if (!agentsWithPenalties) return [];
-
-    const search = searchParams.get("search")?.toLocaleLowerCase() ?? null;
-
-    const filteredAgents = agentsWithPenalties
-      .map((agent) => processAgent({ agent, search }))
-      .filter(
-        (agent): agent is AgentWithAggregatedPenalties[number] =>
-          agent !== null,
-      );
-
-    return filteredAgents;
-  }, [agentsWithPenalties, searchParams]);
-
-  if (isFetching) return <p>Loading...</p>;
-  if (!agentsWithPenalties) return <p>No agents found.</p>;
-  if (agentsWithPenalties.length === 0 || content.length === 0)
-    return <p>No agents found</p>;
-
-  return (
-    <>
-      <ListContainer>
-        {content.map((agent) => (
-          <AgentPenaltiesCard
-            key={agent.key}
-            content={agent}
-            penaltyThreshold={penaltyThreshold}
-            setPenaltiesDialog={(content) => {
-              setPenaltiesDialog(content);
-              hiddenTriggerRef.current?.click();
-            }}
-          />
-        ))}
-      </ListContainer>
-      <Dialog>
-        <DialogTrigger ref={hiddenTriggerRef} className="hidden" />
-        <DialogContent className="w-full max-w-[80vw]">
-          <DialogTitle>
-            Penalties
-            {penaltiesDialog?.agentName && ` for ${penaltiesDialog.agentName}`}
-          </DialogTitle>
-          <PenaltiesList penalties={penaltiesDialog?.penalties} />
-        </DialogContent>
-      </Dialog>
-    </>
-  );
 };
 
 const PenaltyLabel = ({
@@ -179,13 +89,49 @@ const PenaltyLabel = ({
   );
 };
 
-const AgentPenaltiesCard = (props: {
+function filterAgent({
+  agent,
+  search,
+  statusFilter,
+  penaltyThreshold,
+}: {
+  agent: AgentWithAggregatedPenalties[number];
+  search: string | null;
+  statusFilter: string | null;
+  penaltyThreshold: number;
+}): AgentWithAggregatedPenalties[number] | null {
+  if (search) {
+    const searchLower = search.toLocaleLowerCase();
+    const agentKeyLower = agent.key.toLocaleLowerCase();
+    const agentNameLower = (agent.name ?? "").toLocaleLowerCase();
+
+    if (
+      !agentNameLower.includes(searchLower) &&
+      !agentKeyLower.includes(searchLower)
+    ) {
+      return null;
+    }
+  }
+
+  if (statusFilter && statusFilter !== "all") {
+    const isPenalized = agent.penalties.length >= penaltyThreshold;
+
+    if (statusFilter === "healthy" && isPenalized) return null;
+    if (statusFilter === "penalized" && !isPenalized) return null;
+  }
+
+  return agent;
+}
+
+const AgentPenaltiesCard = ({
+  content,
+  setPenaltiesDialog,
+  penaltyThreshold,
+}: {
   content: AgentWithAggregatedPenalties[number];
   setPenaltiesDialog: (content: DialogPenaltiesState) => void;
   penaltyThreshold: number;
 }) => {
-  const { content, setPenaltiesDialog, penaltyThreshold } = props;
-
   const penaltiesDialogContent = {
     agentName: content.name ?? "",
     penalties: content.penalties,
@@ -237,13 +183,11 @@ const AgentPenaltiesCard = (props: {
   );
 };
 
-const PenaltiesList = (props: { penalties?: PenaltyList }) => {
-  const { penalties } = props;
-
+const PenaltiesList = ({ penalties }: { penalties?: PenaltyList }) => {
   if (!penalties || penalties.length === 0) return <p>No penalties found</p>;
 
   return (
-    <ListContainer>
+    <>
       {penalties.map((penalty) => (
         <Card key={penalty.cadreKey}>
           <li className="relative flex h-full flex-col">
@@ -258,7 +202,7 @@ const PenaltiesList = (props: { penalties?: PenaltyList }) => {
                     {smallAddress(penalty.cadreKey, 10)}
                   </CopyButton>
                   <span
-                    className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5 ${handleStatusColors(
+                    className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5 ${getPenaltyStatusColors(
                       penalty.executed,
                     )} text-xs font-medium ring-1 ring-inset`}
                   >
@@ -283,6 +227,83 @@ const PenaltiesList = (props: { penalties?: PenaltyList }) => {
           </li>
         </Card>
       ))}
-    </ListContainer>
+    </>
+  );
+};
+
+const LoadingState = () => <p>Loading...</p>;
+
+const EmptyState = () => (
+  <p className="animate-fade-down duration-500">No agents found</p>
+);
+
+export const ListAgents = () => {
+  const { data: cadreListData } = api.cadre.all.useQuery();
+  const { data: agentsWithPenalties, isFetching } =
+    api.agent.allWithAggregatedPenalties.useQuery();
+
+  // Calculate the penalty threshold based on the square root of cadre list length
+  const penaltyThreshold =
+    Math.round(Math.sqrt(cadreListData?.length ?? 0)) + 1;
+
+  // State for managing the penalties dialog
+  const [penaltiesDialog, setPenaltiesDialog] =
+    useState<DialogPenaltiesState | null>(null);
+  const hiddenTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const searchParams = useSearchParams();
+
+  // Filter agents based on search parameters
+  const filteredAgents = useMemo(() => {
+    if (!agentsWithPenalties) return [];
+
+    const search = searchParams.get("search")?.toLocaleLowerCase() ?? null;
+    const statusFilter = searchParams.get("status");
+
+    return agentsWithPenalties
+      .map((agent) =>
+        filterAgent({
+          agent,
+          search,
+          statusFilter,
+          penaltyThreshold,
+        }),
+      )
+      .filter(
+        (agent): agent is AgentWithAggregatedPenalties[number] =>
+          agent !== null,
+      );
+  }, [agentsWithPenalties, searchParams, penaltyThreshold]);
+
+  if (isFetching) return <LoadingState />;
+  if (!agentsWithPenalties) return <EmptyState />;
+  if (agentsWithPenalties.length === 0 || filteredAgents.length === 0)
+    return <EmptyState />;
+
+  return (
+    <>
+      {filteredAgents.map((agent) => (
+        <AgentPenaltiesCard
+          key={agent.key}
+          content={agent}
+          penaltyThreshold={penaltyThreshold}
+          setPenaltiesDialog={(content) => {
+            setPenaltiesDialog(content);
+            hiddenTriggerRef.current?.click();
+          }}
+        />
+      ))}
+
+      <Dialog>
+        <DialogTrigger ref={hiddenTriggerRef} className="hidden" />
+        <DialogContent className="w-full max-w-[80vw]">
+          <DialogTitle>
+            Penalties
+            {penaltiesDialog?.agentName && ` for ${penaltiesDialog.agentName}`}
+          </DialogTitle>
+          <PenaltiesList penalties={penaltiesDialog?.penalties} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

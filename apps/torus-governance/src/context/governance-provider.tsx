@@ -10,7 +10,6 @@ import type {
   SS58Address,
   StakeData,
 } from "@torus-network/sdk";
-import type { AppRouter } from "@torus-ts/api";
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import {
   useAccountsNotDelegatingVoting,
@@ -44,16 +43,9 @@ import type {
 } from "@torus-ts/torus-provider/types";
 import { Header } from "@torus-ts/ui/components/header";
 import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-dropdown";
-import type { TRPCClientErrorLike } from "@trpc/client";
-import type { UseTRPCQueryResult } from "@trpc/react-query/shared";
-import type { inferProcedureOutput } from "@trpc/server";
 import { env } from "~/env";
-import { api as trpcApi } from "~/trpc/react";
 import { useSignIn } from "hooks/use-sign-in";
 import { createContext, useContext, useMemo } from "react";
-
-type CadreCandidates = inferProcedureOutput<AppRouter["cadreCandidate"]["all"]>;
-type CadreList = inferProcedureOutput<AppRouter["cadre"]["all"]>;
 
 interface GovernanceContextType {
   accountFreeBalance: UseQueryResult<bigint, Error>;
@@ -97,13 +89,6 @@ interface GovernanceContextType {
   unrewardedProposals: UseQueryResult<number[], Error>;
   voteProposal: (vote: Vote) => Promise<void>;
   burnAmount: UseQueryResult<bigint, Error>;
-  isUserCadre: boolean;
-  isUserCadreCandidate: boolean;
-  cadreCandidates: UseTRPCQueryResult<
-    CadreCandidates,
-    TRPCClientErrorLike<AppRouter>
-  >;
-  cadreList: UseTRPCQueryResult<CadreList, TRPCClientErrorLike<AppRouter>>;
   authenticateUser: () => Promise<void>;
   isUserAuthenticated: boolean | null;
   whitelist: UseQueryResult<SS58Address[], Error>;
@@ -158,17 +143,6 @@ export function GovernanceProvider({
     }
     return false;
   }, [selectedAccount, accountsNotDelegatingVoting]);
-
-  const cadreList = trpcApi.cadre.all.useQuery();
-  const isUserCadre = !!cadreList.data?.find(
-    (cadre) => cadre.userKey === selectedAccount?.address,
-  );
-
-  const cadreCandidates = trpcApi.cadreCandidate.all.useQuery();
-
-  const isUserCadreCandidate = !!cadreCandidates.data?.find(
-    (user) => user.userKey === selectedAccount?.address,
-  );
 
   const { isUserAuthenticated, authenticateUser } = useSignIn();
   // == Subspace ==
@@ -252,16 +226,12 @@ export function GovernanceProvider({
         api,
         authenticateUser,
         burnAmount,
-        cadreCandidates,
-        cadreList,
         daoTreasuryAddress,
         daoTreasuryBalance,
         isAccountConnected,
         isAccountPowerUser,
         isInitialized,
         isUserAuthenticated,
-        isUserCadre,
-        isUserCadreCandidate,
         lastBlock,
         networkConfigs,
         proposals,

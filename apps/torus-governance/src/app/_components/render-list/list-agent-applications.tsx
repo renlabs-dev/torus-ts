@@ -10,12 +10,13 @@ import { useMemo } from "react";
 import { match } from "rustie";
 import { CardSkeleton } from "../card-skeleton";
 import { CardViewData } from "../card-view-data";
-import { ListContainer } from "./container-list";
 
 const ListCardsLoadingSkeleton = () => {
+  const delayValues = [200, 500, 700];
+
   return (
     <div className="w-full space-y-4">
-      {[200, 500, 700].map((delay) => (
+      {delayValues.map((delay) => (
         <div key={delay} className={`animate-fade-up animate-delay-${delay}`}>
           <CardSkeleton />
         </div>
@@ -24,13 +25,23 @@ const ListCardsLoadingSkeleton = () => {
   );
 };
 
-const fromStatusToView = (status: AgentApplication["status"]) => {
+const mapStatusToView = (status: AgentApplication["status"]): string => {
   return match(status)({
     Open: () => "active",
     Resolved: ({ accepted }) => (accepted ? "accepted" : "refused"),
     Expired: () => "expired",
   });
 };
+
+const EmptyState = () => (
+  <p className="animate-fade-down duration-500">
+    No agent/module applications found.
+  </p>
+);
+
+const ErrorState = ({ message }: { message: string }) => (
+  <p>Error loading agent data: {message}</p>
+);
 
 export const ListAgentApplications = () => {
   const {
@@ -39,7 +50,9 @@ export const ListAgentApplications = () => {
     agentApplications,
     selectedAccount,
   } = useGovernance();
+
   const searchParams = useSearchParams();
+
   const {
     data: activeAgents,
     isLoading: isLoadingActiveAgents,
@@ -64,6 +77,7 @@ export const ListAgentApplications = () => {
     const statusFilter = searchParams.get("whitelist-status")?.toLowerCase();
 
     return agentApplicationsWithMeta
+      .reverse()
       .map((app) => {
         const { title, body } = handleCustomAgentApplications(
           app.id,
@@ -72,17 +86,17 @@ export const ListAgentApplications = () => {
 
         if (!body) return null;
 
-        const status = fromStatusToView(app.status);
+        const status = mapStatusToView(app.status);
 
-        const matchesSearch = search
-          ? // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            title?.toLowerCase().includes(search) ||
-            body.toLowerCase().includes(search) ||
-            app.payerKey.toLowerCase().includes(search) ||
-            app.agentKey.toLowerCase().includes(search)
-          : true;
+        const matchesSearch =
+          !search ||
+          (title?.toLowerCase() ?? "").includes(search) ||
+          body.toLowerCase().includes(search) ||
+          app.payerKey.toLowerCase().includes(search) ||
+          app.agentKey.toLowerCase().includes(search);
 
-        const matchesStatus = statusFilter === "all" || status === statusFilter;
+        const matchesStatus =
+          !statusFilter || statusFilter === "all" || status === statusFilter;
 
         if (!matchesSearch || !matchesStatus) return null;
 
@@ -110,25 +124,9 @@ export const ListAgentApplications = () => {
   }, [agentApplicationsWithMeta, searchParams, activeAgents, votesPerUserKey]);
 
   if (isLoading) return <ListCardsLoadingSkeleton />;
+  if (activeAgentsError)
+    return <ErrorState message={activeAgentsError.message} />;
+  if (filteredAgentApplications.length === 0) return <EmptyState />;
 
-  if (activeAgentsError) {
-    return <p>Error loading agent data: {activeAgentsError.message}</p>;
-  }
-
-  if (filteredAgentApplications.length === 0) {
-    return (
-      <p className="animate-fade-down duration-500">
-        No agent/module applications found.
-      </p>
-    );
-  }
-
-  return (
-    <ListContainer
-      smallesHeight={320}
-      className="max-h-[calc(100svh-320px)] md:max-h-[calc(100svh-425px)]"
-    >
-      {filteredAgentApplications}
-    </ListContainer>
-  );
+  return filteredAgentApplications;
 };

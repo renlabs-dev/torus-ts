@@ -49,10 +49,14 @@ export function CreateComment({
   itemType: "PROPOSAL" | "AGENT_APPLICATION";
   author?: SS58Address;
 }>) {
-  const { selectedAccount, accountStakedBalance, isUserCadre } =
-    useGovernance();
+  const { selectedAccount, accountStakedBalance } = useGovernance();
   const utils = api.useUtils();
   const { toast } = useToast();
+
+  const cadreList = api.cadre.all.useQuery();
+  const isUserCadre = !!cadreList.data?.find(
+    (cadre) => cadre.userKey === selectedAccount?.address,
+  );
 
   const CreateCommentMutation = api.comment.create.useMutation({
     onSuccess: async () => {
