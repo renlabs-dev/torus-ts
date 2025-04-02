@@ -16,13 +16,8 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import {
-  formatToken,
-  fromNano,
-  smallAddress,
-  toNano,
-} from "@torus-ts/utils/subspace";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatToken, fromNano, toNano } from "@torus-ts/utils/subspace";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useWallet } from "~/context/wallet-provider";
@@ -46,6 +41,48 @@ const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
 const FEE_BUFFER_PERCENT = 225n;
 
+const createStakeActionFormSchema = (
+  minAllowedStakeData: bigint,
+  existencialDepositValue: bigint,
+  accountFreeBalance: bigint,
+  feeRef: React.RefObject<FeeLabelHandle>,
+) =>
+  z.object({
+    recipient: z
+      .string()
+      .nonempty({ message: "Allocator address is required" })
+      .refine(isSS58, { message: "Invalid allocator address" }),
+    amount: z
+      .string()
+      .nonempty({ message: "Stake amount is required" })
+      .refine(isAmountPositive, { message: "Amount must be greater than 0" })
+      .refine((value) => meetsMinimumStake(value, minAllowedStakeData), {
+        message: `You must stake at least ${formatToken(minAllowedStakeData)} TORUS`,
+      })
+      .refine(
+        (value) =>
+          isAboveExistentialDeposit(
+            value,
+            feeRef.current.getEstimatedFee() ?? "0",
+            accountFreeBalance,
+            existencialDepositValue,
+          ),
+        {
+          message: `This amount would go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Reduce the stake or top up your balance.`,
+        },
+      )
+      .refine(
+        (value) =>
+          doesNotExceedMaxStake(
+            value,
+            feeRef.current.getEstimatedFee() ?? "0",
+            accountFreeBalance,
+            existencialDepositValue,
+          ),
+        { message: "Amount exceeds maximum stakable balance" },
+      ),
+  });
+
 export function StakeAction() {
   const {
     addStake,
@@ -65,59 +102,12 @@ export function StakeAction() {
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
   const existencialDepositValue =
     getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+  const freeBalance = accountFreeBalance.data ?? 0n;
 
   const feeRef = useRef<FeeLabelHandle>(null);
-
   const maxAmountRef = useRef<string>("");
-
-  const stakeActionFormSchema = useMemo(() => {
-    return z.object({
-      recipient: z
-        .string()
-        .nonempty({ message: "Allocator address is required" })
-        .refine(isSS58, { message: "Invalid allocator address" }),
-      amount: z
-        .string()
-        .nonempty({ message: "Stake amount is required" })
-        .refine(isAmountPositive, { message: "Amount must be greater than 0" })
-        .refine((value) => meetsMinimumStake(value, minAllowedStakeData), {
-          message: `You must stake at least ${formatToken(minAllowedStakeData)} TORUS`,
-        })
-        .refine(
-          (value) =>
-            isAboveExistentialDeposit(
-              value,
-              feeRef.current?.getEstimatedFee() ?? "0",
-              accountFreeBalance.data ?? 0n,
-              existencialDepositValue,
-            ),
-          {
-            message: `This amount would go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Reduce the stake or top up your balance.`,
-          },
-        )
-        .refine(
-          (value) =>
-            doesNotExceedMaxStake(
-              value,
-              feeRef.current?.getEstimatedFee() ?? "0",
-              accountFreeBalance.data ?? 0n,
-              existencialDepositValue,
-            ),
-          { message: "Amount exceeds maximum stakable balance" },
-        ),
-    });
-  }, [accountFreeBalance.data, minAllowedStakeData, existencialDepositValue]);
-
-  const form = useForm<z.infer<typeof stakeActionFormSchema>>({
-    resolver: zodResolver(stakeActionFormSchema),
-    defaultValues: {
-      recipient: "",
-      amount: "",
-    },
-    mode: "onTouched",
-  });
-
-  const { reset, setValue, trigger, getValues } = form;
+  const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -130,8 +120,23 @@ export function StakeAction() {
     "wallet",
   );
 
-  const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  const stakeActionFormSchema = createStakeActionFormSchema(
+    minAllowedStakeData,
+    existencialDepositValue,
+    freeBalance,
+    feeRef as React.RefObject<FeeLabelHandle>,
+  );
+
+  const form = useForm<z.infer<typeof stakeActionFormSchema>>({
+    resolver: zodResolver(stakeActionFormSchema),
+    defaultValues: {
+      recipient: "",
+      amount: "",
+    },
+    mode: "onTouched",
+  });
+
+  const { reset, setValue, trigger, getValues } = form;
 
   const handleEstimateFee = useCallback(async () => {
     feeRef.current?.setLoading(true);
@@ -140,6 +145,7 @@ export function StakeAction() {
         validator: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "1",
       });
+
       if (!transaction) {
         toast({
           title: "Uh oh! Something went wrong.",
@@ -147,12 +153,13 @@ export function StakeAction() {
         });
         return;
       }
+
       const fee = await estimateFee(transaction);
       if (fee != null) {
         const { feeStr, maxTransferable } = computeFeeData(
           fee,
           FEE_BUFFER_PERCENT,
-          accountFreeBalance.data ?? 0n,
+          freeBalance,
         );
         feeRef.current?.updateFee(feeStr);
         maxAmountRef.current = fromNano(
@@ -169,12 +176,12 @@ export function StakeAction() {
     } finally {
       feeRef.current?.setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    accountFreeBalance.data,
     addStakeTransaction,
     estimateFee,
     existencialDepositValue,
+    freeBalance,
+    toast,
   ]);
 
   useEffect(() => {
@@ -187,7 +194,7 @@ export function StakeAction() {
     feeRef.current?.updateFee(null);
   }, [selectedAccount?.address, reset]);
 
-  const refetchHandler = async () => {
+  const refetchData = async () => {
     await Promise.all([
       stakeOut.refetch(),
       accountStakedBy.refetch(),
@@ -195,9 +202,9 @@ export function StakeAction() {
     ]);
   };
 
-  const handleCallback = (callbackReturn: TransactionResult) => {
-    setTransactionStatus(callbackReturn);
-    if (callbackReturn.status === "SUCCESS") {
+  const handleTransactionCallback = (result: TransactionResult) => {
+    setTransactionStatus(result);
+    if (result.status === "SUCCESS") {
       reset();
     }
   };
@@ -208,11 +215,12 @@ export function StakeAction() {
       finalized: false,
       message: "Starting transaction...",
     });
+
     await addStake({
       validator: values.recipient,
       amount: values.amount,
-      callback: handleCallback,
-      refetchHandler,
+      callback: handleTransactionCallback,
+      refetchHandler: refetchData,
     });
   };
 
@@ -227,30 +235,99 @@ export function StakeAction() {
     await trigger("recipient");
   };
 
-  const reviewData = () => {
-    const { recipient, amount } = getValues();
-    return [
-      {
-        label: "To",
-        content: recipient ? smallAddress(recipient, 6) : "Allocator Address",
-      },
-      {
-        label: "Amount",
-        content: `${amount || 0} TORUS`,
-      },
-      {
-        label: "Fee",
-        content: `${feeRef.current?.getEstimatedFee() ?? "-"} TORUS`,
-      },
-    ];
-  };
-
   const handleReviewClick = async () => {
     const isValid = await trigger();
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }
   };
+
+  const renderForm = () => (
+    <Card className="animate-fade w-full p-6">
+      <Form {...form}>
+        <form
+          ref={formRef}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex w-full flex-col gap-6"
+        >
+          <FormField
+            control={form.control}
+            name="recipient"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Allocator Address</FormLabel>
+                <div className="flex flex-row gap-2">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Full Allocator address"
+                      disabled={!selectedAccount?.address}
+                    />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!selectedAccount?.address}
+                    onClick={() => setCurrentView("validators")}
+                    className="flex w-fit items-center px-6 py-2.5"
+                  >
+                    Allocators
+                  </Button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Amount</FormLabel>
+                <div className="flex items-center gap-2">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      placeholder="Amount of TORUS"
+                      min={fromNano(minAllowedStakeData)}
+                      step="0.000000000000000001"
+                      disabled={!selectedAccount?.address}
+                    />
+                  </FormControl>
+                  <AmountButtons
+                    setAmount={handleAmountChange}
+                    availableFunds={maxAmountRef.current}
+                    disabled={
+                      !(toNano(maxAmountRef.current) > 0n) ||
+                      !selectedAccount?.address
+                    }
+                  />
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
+
+          {transactionStatus.status && (
+            <TransactionStatus
+              status={transactionStatus.status}
+              message={transactionStatus.message}
+            />
+          )}
+          <Button
+            type="button"
+            onClick={handleReviewClick}
+            disabled={!selectedAccount?.address}
+          >
+            Review Transaction
+          </Button>
+        </form>
+      </Form>
+    </Card>
+  );
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -261,94 +338,8 @@ export function StakeAction() {
           onBack={() => setCurrentView("wallet")}
         />
       ) : (
-        <Card className="animate-fade w-full p-6">
-          <Form {...form}>
-            <form
-              ref={formRef}
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="flex w-full flex-col gap-6"
-            >
-              <FormField
-                control={form.control}
-                name="recipient"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Allocator Address</FormLabel>
-                    <div className="flex flex-row gap-2">
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Full Allocator address"
-                          disabled={!selectedAccount?.address}
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={!selectedAccount?.address}
-                        onClick={() => setCurrentView("validators")}
-                        className="flex w-fit items-center px-6 py-2.5"
-                      >
-                        Allocators
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Amount</FormLabel>
-                    <div className="flex items-center gap-2">
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="number"
-                          placeholder="Amount of TORUS"
-                          min={fromNano(minAllowedStakeData)}
-                          step="0.000000000000000001"
-                          disabled={!selectedAccount?.address}
-                        />
-                      </FormControl>
-                      <AmountButtons
-                        setAmount={async (value) => {
-                          await handleAmountChange(value);
-                        }}
-                        availableFunds={maxAmountRef.current}
-                        disabled={
-                          !(toNano(maxAmountRef.current) > 0n) ||
-                          !selectedAccount?.address
-                        }
-                      />
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
-
-              {transactionStatus.status && (
-                <TransactionStatus
-                  status={transactionStatus.status}
-                  message={transactionStatus.message}
-                />
-              )}
-              <Button
-                type="button"
-                onClick={handleReviewClick}
-                disabled={!selectedAccount?.address}
-              >
-                Review Transaction
-              </Button>
-            </form>
-          </Form>
-        </Card>
+        renderForm()
       )}
-
       {currentView !== "validators" && (
         <ReviewTransactionDialog
           ref={reviewDialogRef}

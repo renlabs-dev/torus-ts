@@ -21,11 +21,11 @@ export function Receive() {
 
   return (
     <Card
-      className="flex flex-col items-center justify-center gap-4 p-6 shadow-md hover:shadow-lg
+      className="flex flex-col items-start justify-center gap-4 p-6 shadow-md hover:shadow-lg
         transition-shadow duration-300"
     >
       <h3 className="text-lg font-semibold">Receive TORUS</h3>
-      <p className="text-center text-muted-foreground">
+      <p className="text-left text-muted-foreground">
         Share your address with the sender to receive TORUS.
       </p>
 
