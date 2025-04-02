@@ -11,20 +11,22 @@ import { CardViewData } from "../card-view-data";
 import type { VoteStatus } from "../vote-label";
 
 const ListCardsLoadingSkeleton = () => {
+  const delayValues = [200, 500, 700];
+
   return (
     <div className="w-full space-y-4">
-      <div className="animate-fade-up animate-delay-200">
-        <CardSkeleton />
-      </div>
-      <div className="animate-fade-up animate-delay-500">
-        <CardSkeleton />
-      </div>
-      <div className="animate-fade-up animate-delay-700">
-        <CardSkeleton />
-      </div>
+      {delayValues.map((delay) => (
+        <div key={delay} className={`animate-fade-up animate-delay-${delay}`}>
+          <CardSkeleton />
+        </div>
+      ))}
     </div>
   );
 };
+
+const EmptyState = () => (
+  <p className="animate-fade-down duration-500">No proposals found.</p>
+);
 
 function getUserVoteStatus(
   proposalStatus: ProposalStatus,
@@ -33,6 +35,7 @@ function getUserVoteStatus(
   if (!("Open" in proposalStatus)) return "UNVOTED";
 
   const { votesFor, votesAgainst } = proposalStatus.Open;
+
   if (votesFor.includes(selectedAccountAddress)) return "FAVORABLE";
   if (votesAgainst.includes(selectedAccountAddress)) return "AGAINST";
 
@@ -47,6 +50,7 @@ export const ListProposals = () => {
     isInitialized,
     proposals,
   } = useGovernance();
+
   const currentBlock = lastBlock.data?.blockNumber;
   const searchParams = useSearchParams();
 
@@ -59,11 +63,12 @@ export const ListProposals = () => {
     const statusFilter = searchParams.get("status");
 
     return proposalsWithMeta
+      .reverse()
       .map((proposal) => {
         const { title, invalid, body } = handleCustomProposal(proposal);
+
         if (invalid || (!title && !body)) return null;
 
-        // Handle search filtering - if no search query, show all
         const matchesSearch =
           !search ||
           (title?.toLowerCase() ?? "").includes(search) ||
@@ -72,16 +77,20 @@ export const ListProposals = () => {
 
         if (!matchesSearch) return null;
 
-        // Handle status filtering
         if (statusFilter && statusFilter !== "all") {
           const statusLower = statusFilter.toLowerCase();
-          // Check if proposal status matches the filter
-          const proposalStatusKey = Object.keys(proposal.status)[0]?.toLowerCase();
-          
-          if (statusLower === "active" && proposalStatusKey !== "open") return null;
-          if (statusLower === "accepted" && proposalStatusKey !== "accepted") return null;
-          if (statusLower === "rejected" && proposalStatusKey !== "rejected") return null;
-          if (statusLower === "expired" && proposalStatusKey !== "expired") return null;
+          const proposalStatusKey = Object.keys(
+            proposal.status,
+          )[0]?.toLowerCase();
+
+          if (statusLower === "active" && proposalStatusKey !== "open")
+            return null;
+          if (statusLower === "accepted" && proposalStatusKey !== "accepted")
+            return null;
+          if (statusLower === "rejected" && proposalStatusKey !== "rejected")
+            return null;
+          if (statusLower === "expired" && proposalStatusKey !== "expired")
+            return null;
         }
 
         const voted = getUserVoteStatus(
@@ -103,16 +112,11 @@ export const ListProposals = () => {
           </Link>
         );
       })
-      .filter(Boolean);
+      .filter(Boolean); // Remove null values
   }, [proposalsWithMeta, searchParams, selectedAccount, currentBlock]);
 
   if (isLoading) return <ListCardsLoadingSkeleton />;
-
-  if (filteredProposals.length === 0) {
-    return (
-      <p className="animate-fade-down duration-500">No proposals found.</p>
-    );
-  }
+  if (filteredProposals.length === 0) return <EmptyState />;
 
   return filteredProposals;
 };
