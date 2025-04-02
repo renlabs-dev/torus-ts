@@ -97,7 +97,7 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
           
           {/* Vote Percentage Bar */}
           <div className="mt-4">
-            <AgentApplicationVotePercentageBar applicationId={content.id} />
+            <AgentApplicationVotePercentageBar applicationId={content.id} status={content.status} />
           </div>
 
           {/* Mobile Details Section */}

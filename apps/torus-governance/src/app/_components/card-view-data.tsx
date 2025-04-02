@@ -39,6 +39,7 @@ export interface ProposalCardProps {
   voted?: VoteStatus;
   agentVoted?: AgentApplicationVoteType;
   agentApplicationId?: number;
+  whitelistStatus: string;
 }
 
 export function CardViewData(props: Readonly<ProposalCardProps>) {
@@ -54,6 +55,7 @@ export function CardViewData(props: Readonly<ProposalCardProps>) {
     agentApplicationStatus,
     activeAgent,
     agentApplicationId,
+    whitelistStatus,
   } = props;
 
   const isProposalOpen = proposalStatus && "Open" in proposalStatus;
@@ -104,6 +106,7 @@ export function CardViewData(props: Readonly<ProposalCardProps>) {
         {agentApplicationId && (
           <AgentApplicationVotePercentageBar
             applicationId={agentApplicationId}
+            whitelistStatus={whitelistStatus}
           />
         )}
       </CardContent>

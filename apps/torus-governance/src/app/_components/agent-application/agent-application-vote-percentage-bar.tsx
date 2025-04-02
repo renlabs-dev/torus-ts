@@ -1,10 +1,12 @@
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { api } from "~/trpc/react";
 
 export const AgentApplicationVotePercentageBar = (props: {
   applicationId: number;
+  whitelistStatus: string;
 }) => {
-  const { applicationId } = props;
+  const { applicationId, whitelistStatus } = props;
 
   const { data: votesList, isLoading: votesLoading } =
     api.agentApplicationVote.byApplicationId.useQuery({
@@ -47,31 +49,43 @@ export const AgentApplicationVotePercentageBar = (props: {
   const favorableWidth = (favorableVotes / totalCadreMembers) * 100;
   const againstWidth = (againstVotes / totalCadreMembers) * 100;
   const thresholdPercent = (threshold / totalCadreMembers) * 100;
+  console.log(whitelistStatus);
 
   return (
-    <div className="relative w-full">
+    <div
+      className={cn(
+        "relative w-full",
+        whitelistStatus !== "active" && "opacity-60",
+      )}
+    >
       <div className="border-border bg-primary-foreground relative h-8 w-full overflow-hidden rounded-full border">
         {/* Favorable votes section */}
         <div
-          className="border-border h-full rounded-full rounded-r-none border-r bg-white/30"
+          className="h-full rounded-full rounded-r-none bg-white/30"
           style={{ width: `${favorableWidth}%` }}
         />
 
         {/* Against votes section - right aligned */}
         <div
-          className="border-border absolute right-0 top-0 h-full rounded-full rounded-l-none border-l bg-stone-900"
+          className="absolute right-0 top-0 h-full rounded-full rounded-l-none bg-white/20"
           style={{ width: `${againstWidth}%` }}
         />
 
         {/* Threshold line */}
         <div
-          className="absolute bottom-0 top-0 z-10 w-0.5 bg-green-500"
+          className={cn(
+            "absolute bottom-0 top-0 z-10 w-0.5 bg-green-600",
+            whitelistStatus !== "active" ? "hidden" : "block",
+          )}
           style={{ left: `${thresholdPercent}%` }}
         />
 
         {/* Threshold line */}
         <div
-          className="absolute bottom-0 top-0 z-10 w-0.5 bg-red-500"
+          className={cn(
+            "absolute bottom-0 top-0 z-10 w-0.5 bg-red-600",
+            whitelistStatus !== "active" ? "hidden" : "block",
+          )}
           style={{ right: `${thresholdPercent}%` }}
         />
 
