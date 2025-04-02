@@ -34,6 +34,7 @@ import { FeeLabel } from "../../components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../components/review-transaction-dialog";
 import { ValidatorsList } from "../../components/validators-list";
+import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 
 const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
@@ -50,6 +51,7 @@ export function TransferStakeAction() {
     getExistencialDeposit,
   } = useWallet();
   const { toast } = useToast();
+  const { data: usdPrice = 0 } = useGetTorusPrice();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
@@ -403,7 +405,11 @@ export function TransferStakeAction() {
         <ReviewTransactionDialog
           ref={reviewDialogRef}
           formRef={formRef}
-          reviewContent={reviewData}
+          usdPrice={usdPrice}
+          from={selectedAccount?.address}
+          to={getValues().toValidator}
+          amount={getValues().amount}
+          fee={feeRef.current?.getEstimatedFee() ?? "0"}
         />
       )}
     </div>
