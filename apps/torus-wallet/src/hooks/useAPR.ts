@@ -21,65 +21,134 @@ interface APRResult {
   totalIssuance: unknown;
 }
 
+/**
+ * Calculate the Annual Percentage Rate (APR)
+ */
+function calculateAPR(
+  totalStake: bigint,
+  totalFreeBalance: bigint,
+  recyclingRate: number,
+  treasuryFee: number,
+  incentivesRatio: number,
+): number | null {
+  // Calculate total supply and halving count
+  const totalSupply = totalStake + totalFreeBalance;
+  const halvingCount = Number(totalSupply / HALVING_INTERVAL);
+
+  // Calculate emission with recycling
+  const currentEmission = calculateEmissionRate(halvingCount, recyclingRate);
+
+  // Calculate yearly rewards
+  const yearlyRewards = calculateYearlyRewards(
+    currentEmission,
+    incentivesRatio,
+    treasuryFee,
+  );
+
+  // Calculate APR
+  const stakingAmount = totalStake === 0n ? totalFreeBalance : totalStake;
+  if (stakingAmount === 0n) return null;
+
+  const aprNumerator = yearlyRewards * 100n;
+  return Number(aprNumerator / stakingAmount);
+}
+
+/**
+ * Calculate emission rate with recycling applied
+ */
+function calculateEmissionRate(
+  halvingCount: number,
+  recyclingRate: number,
+): bigint {
+  const baseEmission = BLOCK_EMISSION >> BigInt(halvingCount);
+  const notRecycled = 1.0 - recyclingRate;
+  return (baseEmission * BigInt(Math.floor(notRecycled * 100))) / 100n;
+}
+
+/**
+ * Calculate yearly rewards with incentives and treasury fee applied
+ */
+function calculateYearlyRewards(
+  currentEmission: bigint,
+  incentivesRatio: number,
+  treasuryFee: number,
+): bigint {
+  const stakeRewardsRatio = 1 - incentivesRatio;
+  const dailyRewards =
+    (BLOCKS_IN_DAY *
+      currentEmission *
+      BigInt(Math.floor(stakeRewardsRatio * 100))) /
+    100n;
+  const yearlyRewards = dailyRewards * 365n;
+  return (yearlyRewards * BigInt(Math.floor((1 - treasuryFee) * 100))) / 100n;
+}
+
 export function useAPR(): APRResult {
   const { api } = useTorus();
+
   const totalStakeQuery = useTotalStake(api);
   const totalIssuanceQuery = useTotalIssuance(api);
   const recyclingPercentageQuery = useRecyclingPercentage(api);
   const treasuryEmissionFeeQuery = useTreasuryEmissionFee(api);
   const incentivesRatioQuery = useIncentivesRatio(api);
 
+  const queries = useMemo(
+    () => [
+      totalStakeQuery,
+      totalIssuanceQuery,
+      recyclingPercentageQuery,
+      treasuryEmissionFeeQuery,
+      incentivesRatioQuery,
+    ],
+    [
+      totalStakeQuery,
+      totalIssuanceQuery,
+      recyclingPercentageQuery,
+      treasuryEmissionFeeQuery,
+      incentivesRatioQuery,
+    ],
+  );
+
+  const isAnyLoading = useMemo(
+    () => queries.some((query) => query.isPending),
+    [queries],
+  );
+
+  const isAnyError = useMemo(
+    () => queries.some((query) => query.isError),
+    [queries],
+  );
+
+  const isDataComplete = useMemo(
+    () => queries.every((query) => !!query.data),
+    [queries],
+  );
+
   const apr = useMemo(() => {
-    // Check if all data is available
-    if (
-      !totalStakeQuery.data ||
-      !totalIssuanceQuery.data ||
-      !recyclingPercentageQuery.data ||
-      !treasuryEmissionFeeQuery.data ||
-      !incentivesRatioQuery.data
-    ) {
-      return null;
-    }
+    if (!isDataComplete) return null;
 
     try {
-      const totalStake = BigInt(totalStakeQuery.data.toString());
-      const totalFreeBalance = BigInt(totalIssuanceQuery.data.toString());
+      const totalStake = BigInt(totalStakeQuery.data?.toString() ?? "0");
+      const totalFreeBalance = BigInt(
+        totalIssuanceQuery.data?.toString() ?? "0",
+      );
       const recyclingRate = Number(recyclingPercentageQuery.data) / 100;
       const treasuryFee = Number(treasuryEmissionFeeQuery.data) / 100;
       const incentivesRatio = Number(incentivesRatioQuery.data) / 100;
 
-      // Calculate total supply and halving count
-      const totalSupply = totalStake + totalFreeBalance;
-      const halvingCount = Number(totalSupply / HALVING_INTERVAL);
-
-      // Calculate emission with recycling rate
-      let currentEmission = BLOCK_EMISSION >> BigInt(halvingCount);
-      const notRecycled = 1.0 - recyclingRate;
-      currentEmission =
-        (currentEmission * BigInt(Math.floor(notRecycled * 100))) / 100n;
-
-      // Calculate rewards with incentives ratio
-      const stakeRewardsRatio = 1 - incentivesRatio;
-      const dailyRewards =
-        (BLOCKS_IN_DAY *
-          currentEmission *
-          BigInt(Math.floor(stakeRewardsRatio * 100))) /
-        100n;
-      const yearlyRewards = dailyRewards * 365n;
-      const rewardsAfterTreasuryFee =
-        (yearlyRewards * BigInt(Math.floor((1 - treasuryFee) * 100))) / 100n;
-
-      // Calculate APR
-      const stakingAmount = totalStake === 0n ? totalFreeBalance : totalStake;
-      if (stakingAmount === 0n) return null;
-
-      const aprNumerator = rewardsAfterTreasuryFee * 100n;
-      return Number(aprNumerator / stakingAmount);
+      return calculateAPR(
+        totalStake,
+        totalFreeBalance,
+        recyclingRate,
+        treasuryFee,
+        incentivesRatio,
+      );
     } catch (error) {
       console.error("Error calculating APR:", error);
       return null;
     }
   }, [
+    isDataComplete,
     totalStakeQuery.data,
     totalIssuanceQuery.data,
     recyclingPercentageQuery.data,
@@ -89,18 +158,8 @@ export function useAPR(): APRResult {
 
   return {
     apr,
-    isLoading:
-      totalStakeQuery.isPending ||
-      totalIssuanceQuery.isPending ||
-      recyclingPercentageQuery.isPending ||
-      treasuryEmissionFeeQuery.isPending ||
-      incentivesRatioQuery.isPending,
-    isError:
-      totalStakeQuery.isError ||
-      totalIssuanceQuery.isError ||
-      recyclingPercentageQuery.isError ||
-      treasuryEmissionFeeQuery.isError ||
-      incentivesRatioQuery.isError,
+    isLoading: isAnyLoading,
+    isError: isAnyError,
     totalStake: totalStakeQuery.data,
     totalIssuance: totalIssuanceQuery.data,
   };
