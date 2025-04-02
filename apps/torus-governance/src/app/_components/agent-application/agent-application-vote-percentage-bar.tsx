@@ -59,7 +59,7 @@ export const AgentApplicationVotePercentageBar = (props: {
 
         {/* Against votes section - right aligned */}
         <div
-          className="border-border absolute right-0 top-0 h-full rounded-full rounded-l-none border-l bg-black/30"
+          className="border-border absolute right-0 top-0 h-full rounded-full rounded-l-none border-l bg-stone-900"
           style={{ width: `${againstWidth}%` }}
         />
 
