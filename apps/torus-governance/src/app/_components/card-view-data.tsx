@@ -39,7 +39,7 @@ export interface ProposalCardProps {
   voted?: VoteStatus;
   agentVoted?: AgentApplicationVoteType;
   agentApplicationId?: number;
-  whitelistStatus: string;
+  whitelistStatus?: string;
 }
 
 export function CardViewData(props: Readonly<ProposalCardProps>) {

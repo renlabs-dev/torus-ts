@@ -4,7 +4,7 @@ import { api } from "~/trpc/react";
 
 export const AgentApplicationVotePercentageBar = (props: {
   applicationId: number;
-  whitelistStatus: string;
+  whitelistStatus?: string;
 }) => {
   const { applicationId, whitelistStatus } = props;
 
@@ -49,7 +49,6 @@ export const AgentApplicationVotePercentageBar = (props: {
   const favorableWidth = (favorableVotes / totalCadreMembers) * 100;
   const againstWidth = (againstVotes / totalCadreMembers) * 100;
   const thresholdPercent = (threshold / totalCadreMembers) * 100;
-  console.log(whitelistStatus);
 
   return (
     <div
