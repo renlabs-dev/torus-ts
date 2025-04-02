@@ -58,7 +58,7 @@ describe("gogotry async functions", () => {
 
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toBe("sync error");
+        expect(error.message).toBe("async error");
       }
       expect(result).toBeUndefined();
     });

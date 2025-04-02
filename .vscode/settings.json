@@ -71,6 +71,7 @@
     "daos",
     "datetime",
     "dotenv",
+    "gogotry",
     "heroicons",
     "hyperlane",
     "ipfs",

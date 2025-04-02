@@ -29,13 +29,14 @@ async function tryAsyncLogging<T>(
   asyncOperation: Promise<T> | (() => Promise<T>),
   options: ServerErrorOptions = {},
 ): Promise<readonly [string | undefined, T | undefined]> {
-  const [error, result] = await tryAsync(asyncOperation);
+  const result = await tryAsync(asyncOperation);
+  const [error, _value] = result;
 
   if (error) {
     logServerError(error, options);
   }
 
-  return Object.freeze([error, result]);
+  return result;
 }
 
 /**
@@ -48,13 +49,12 @@ async function tryAsyncLoggingRaw<E = unknown, T = unknown>(
   asyncOperation: Promise<T> | (() => Promise<T>),
   options: ServerErrorOptions = {},
 ): Promise<readonly [E | undefined, T | undefined]> {
-  const [error, result] = await tryAsyncRawError<E, T>(asyncOperation);
-
+  const result = await tryAsyncRawError<E, T>(asyncOperation);
+  const [error, _value] = result;
   if (error) {
     logServerError(error, options);
   }
-
-  return Object.freeze([error, result]);
+  return result;
 }
 
 /**
@@ -67,13 +67,14 @@ function trySyncLogging<T>(
   syncOperation: () => T,
   options: ServerErrorOptions = {},
 ): readonly [string | undefined, T | undefined] {
-  const [error, result] = trySync(syncOperation);
+  const result = trySync(syncOperation);
+  const [error, _value] = result;
 
   if (error) {
     logServerError(error, options);
   }
 
-  return Object.freeze([error, result]);
+  return result;
 }
 
 /**
@@ -86,13 +87,14 @@ function trySyncLoggingRaw<E = unknown, T = unknown>(
   syncOperation: () => T,
   options: ServerErrorOptions = {},
 ): readonly [E | undefined, T | undefined] {
-  const [error, result] = trySyncRawError<E, T>(syncOperation);
+  const result = trySyncRawError<E, T>(syncOperation);
+  const [error, _value] = result;
 
   if (error) {
     logServerError(error, options);
   }
 
-  return Object.freeze([error, result]);
+  return result;
 }
 
 /**

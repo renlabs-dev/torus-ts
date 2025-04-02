@@ -64,13 +64,14 @@ async function tryAsyncToast<T>(
   asyncOperation: Promise<T> | (() => Promise<T>),
   options: ClientErrorOptions = {},
 ): Promise<readonly [string | undefined, T | undefined]> {
-  const [error, result] = await tryAsync(asyncOperation);
+  const result = await tryAsync(asyncOperation);
+  const [error, _value] = result;
 
   if (error) {
     showErrorToast(error, options);
   }
 
-  return Object.freeze([error, result]);
+  return result;
 }
 
 /**
@@ -83,13 +84,14 @@ async function tryAsyncToastRaw<E = unknown, T = unknown>(
   asyncOperation: Promise<T> | (() => Promise<T>),
   options: ClientErrorOptions = {},
 ): Promise<readonly [E | undefined, T | undefined]> {
-  const [error, result] = await tryAsyncRawError<E, T>(asyncOperation);
+  const result = await tryAsyncRawError<E, T>(asyncOperation);
+  const [error, _value] = result;
 
   if (error) {
     showErrorToast(error instanceof Error ? error : String(error), options);
   }
 
-  return Object.freeze([error, result]);
+  return result;
 }
 
 /**
@@ -102,13 +104,14 @@ function trySyncToast<T>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
 ): readonly [string | undefined, T | undefined] {
-  const [error, result] = trySync(syncOperation);
+  const result = trySync(syncOperation);
+  const [error, _value] = result;
 
   if (error) {
     showErrorToast(error, options);
   }
 
-  return Object.freeze([error, result]);
+  return result;
 }
 
 /**
@@ -121,13 +124,14 @@ function trySyncToastRaw<E = unknown, T = unknown>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
 ): readonly [E | undefined, T | undefined] {
-  const [error, result] = trySyncRawError<E, T>(syncOperation);
+  const result = trySyncRawError<E, T>(syncOperation);
+  const [error, _value] = result;
 
   if (error) {
     showErrorToast(error instanceof Error ? error : String(error), options);
   }
 
-  return Object.freeze([error, result]);
+  return result;
 }
 
 // All exportable functions
