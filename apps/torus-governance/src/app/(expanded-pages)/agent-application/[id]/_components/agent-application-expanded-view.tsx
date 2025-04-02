@@ -1,6 +1,7 @@
 "use client";
 
 import { AgentActivityLabel } from "~/app/_components/agent-application/agent-activity-label";
+import { AgentApplicationVotePercentageBar } from "~/app/_components/agent-application/agent-application-vote-percentage-bar";
 import { AgentApplicationVoteTypeCard } from "~/app/_components/agent-application/agent-application-vote-card";
 import { AgentStatusLabel } from "~/app/_components/agent-application/agent-status-label";
 import { CreateCadreCandidates } from "~/app/_components/agent-application/create-cadre-candidates";
@@ -93,6 +94,11 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
       <div className="animate-fade-down flex w-full justify-between gap-10">
         <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
+          
+          {/* Vote Percentage Bar */}
+          <div className="mt-4">
+            <AgentApplicationVotePercentageBar applicationId={content.id} />
+          </div>
 
           {/* Mobile Details Section */}
           <div className="flex w-full flex-col gap-6 transition-all md:hidden">

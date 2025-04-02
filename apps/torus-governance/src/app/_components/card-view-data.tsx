@@ -18,6 +18,7 @@ import { Clock, Crown } from "lucide-react";
 import { AgentActivityLabel } from "./agent-application/agent-activity-label";
 import { AgentApplicationVoteLabel } from "./agent-application/agent-application-vote-label";
 import type { AgentApplicationVoteType } from "./agent-application/agent-application-vote-label";
+import { AgentApplicationVotePercentageBar } from "./agent-application/agent-application-vote-percentage-bar";
 import { AgentStatusLabel } from "./agent-application/agent-status-label";
 import { ProposalTypeLabel } from "./proposal/proposal-type-label";
 import { StatusLabel } from "./status-label";
@@ -37,6 +38,7 @@ export interface ProposalCardProps {
   title: string | null;
   voted?: VoteStatus;
   agentVoted?: AgentApplicationVoteType;
+  agentApplicationId?: number;
 }
 
 export function CardViewData(props: Readonly<ProposalCardProps>) {
@@ -51,6 +53,7 @@ export function CardViewData(props: Readonly<ProposalCardProps>) {
     currentBlock,
     agentApplicationStatus,
     activeAgent,
+    agentApplicationId,
   } = props;
 
   const isProposalOpen = proposalStatus && "Open" in proposalStatus;
@@ -96,6 +99,12 @@ export function CardViewData(props: Readonly<ProposalCardProps>) {
 
         {isProposalOpen && (
           <VotePercentageBar proposalStatus={proposalStatus} />
+        )}
+
+        {agentApplicationId && (
+          <AgentApplicationVotePercentageBar
+            applicationId={agentApplicationId}
+          />
         )}
       </CardContent>
     </Card>
