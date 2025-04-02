@@ -47,21 +47,21 @@ function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
 function WalletHeader({ address }: WalletHeaderProps) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-6 h-6 flex-shrink-0">
+      <div className="w-8 h-8 flex-shrink-0">
         <Image
           src="/wallet-info-logo.svg"
           alt="Wallet Info Logo"
-          width={24}
-          height={24}
+          width={32}
+          height={32}
         />
       </div>
       {address ? (
         <CopyButton
-          className="h-fit p-0 text-muted-foreground hover:text-white"
+          className="h-fit p-0 text-muted-foreground hover:text-white !text-base"
           variant="ghost"
           copy={address}
         >
-          {smallAddress(address, 12)}
+          {smallAddress(address, 9)}
           <Copy />
         </CopyButton>
       ) : (
@@ -99,7 +99,7 @@ export function WalletBalance() {
 
   return (
     <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
-      <Card key={useId()} className="flex w-full flex-col gap-14 px-7 py-5">
+      <Card key={useId()} className="flex w-full flex-col gap-12 px-7 py-5">
         <WalletHeader address={selectedAccount?.address} />
         <div className="flex flex-col gap-6">
           {balances.map((balance) => (

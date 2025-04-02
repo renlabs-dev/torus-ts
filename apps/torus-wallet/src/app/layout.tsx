@@ -73,7 +73,7 @@ export default function RootLayout({
         <Container>
           <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
             <div
-              className="flex w-full max-w-screen-xl flex-col justify-around gap-6 lg:mt-[10vh]
+              className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh]
                 lg:flex-row"
             >
               <div className="animate-fade flex w-full flex-col gap-4 lg:max-w-[320px]">
