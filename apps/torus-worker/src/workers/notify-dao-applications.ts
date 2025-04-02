@@ -374,22 +374,22 @@ async function pushApplicationsNotification(
  */
 function generateBaseEmbedParams(objectName: string) {
   const embedParamsMap = {
-    OPEN: {
+    Open: {
       title: `New Pending ${objectName}`,
       description: `A new ${objectName} has been submitted`,
       color: 0xffde00, // Yellow
     },
-    ACCEPTED: {
+    Accepted: {
       title: `Accepted ${objectName}`,
       description: `A ${objectName} has been accepted`,
       color: 0x00ff00, // Green
     },
-    REJECTED: {
+    Rejected: {
       title: `Rejected ${objectName}`,
       description: `A ${objectName} has been rejected`,
       color: 0xff0000, // Red
     },
-    EXPIRED: {
+    Expired: {
       title: `EXPIRED ${objectName}`,
       description: `A ${objectName} has expired`,
       color: 0xff0000, // Red
@@ -515,12 +515,12 @@ function buildProposalMessage(
     { name: "Proposal ID", value: `${String(application.id)}` },
   ];
 
-  if (application.status !== "EXPIRED") {
+  if (application.status !== "Expired") {
     fields.push({ name: "Proposal URL", value: proposalURL });
   }
 
   let footer = { text: "" };
-  if (application.status !== "EXPIRED") {
+  if (application.status !== "Expired") {
     footer = { text: "Please vote on our website." };
   }
 

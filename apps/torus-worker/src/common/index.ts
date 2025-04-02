@@ -103,12 +103,12 @@ export function agentApplicationToApplication(
   agentApplication: AgentApplication,
 ): NewApplication {
   const mappedStatus = match(agentApplication.status)({
-    Open: () => applicationStatusValues.OPEN,
+    Open: () => applicationStatusValues.Open,
     Resolved: ({ accepted }) =>
       accepted
-        ? applicationStatusValues.ACCEPTED
-        : applicationStatusValues.REJECTED,
-    Expired: () => applicationStatusValues.REJECTED,
+        ? applicationStatusValues.Accepted
+        : applicationStatusValues.Rejected,
+    Expired: () => applicationStatusValues.Rejected,
   });
 
   return {
@@ -120,10 +120,10 @@ export function agentApplicationToApplication(
 
 export function agentProposalToProposal(proposal: Proposal): NewProposal {
   const status = match(proposal.status)({
-    Open: () => applicationStatusValues.OPEN,
-    Accepted: () => applicationStatusValues.ACCEPTED,
-    Expired: () => applicationStatusValues.EXPIRED,
-    Refused: () => applicationStatusValues.REJECTED,
+    Open: () => applicationStatusValues.Open,
+    Accepted: () => applicationStatusValues.Accepted,
+    Expired: () => applicationStatusValues.Expired,
+    Refused: () => applicationStatusValues.Rejected,
   });
   return {
     proposalID: proposal.id,
@@ -148,13 +148,13 @@ export function normalizeApplicationValue(
 ): keyof typeof applicationStatusValues {
   switch (value.toLowerCase()) {
     case "open":
-      return "OPEN";
+      return "Open";
     case "accepted":
-      return "ACCEPTED";
+      return "Accepted";
     case "rejected":
-      return "REJECTED";
+      return "Rejected";
     case "expired":
-      return "EXPIRED";
+      return "Expired";
     default:
       throw new Error(`Invalid value ${value} for application status`);
   }
@@ -162,10 +162,10 @@ export function normalizeApplicationValue(
 
 export function getProposalStatus(proposal: Proposal) {
   const status = match(proposal.status)({
-    Open: () => applicationStatusValues.OPEN,
-    Accepted: () => applicationStatusValues.ACCEPTED,
-    Expired: () => applicationStatusValues.EXPIRED,
-    Refused: () => applicationStatusValues.REJECTED,
+    Open: () => applicationStatusValues.Open,
+    Accepted: () => applicationStatusValues.Accepted,
+    Expired: () => applicationStatusValues.Expired,
+    Refused: () => applicationStatusValues.Rejected,
   });
   return status;
 }
