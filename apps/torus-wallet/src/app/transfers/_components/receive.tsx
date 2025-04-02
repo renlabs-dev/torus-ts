@@ -3,9 +3,10 @@ import { Card } from "@torus-ts/ui/components/card";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-ts/utils/subspace";
+import { Copy } from "lucide-react";
 import { useWallet } from "~/context/wallet-provider";
 
-export function ReceiveAction() {
+export function Receive() {
   const { selectedAccount } = useWallet();
   const { toast } = useToast();
 
@@ -19,25 +20,43 @@ export function ReceiveAction() {
   };
 
   return (
-    <Card className="flex flex-col items-center justify-center gap-4 p-6">
-      <p>To receive TORUS, share your address with the sender.</p>
+    <Card
+      className="flex flex-col items-center justify-center gap-4 p-6 shadow-md hover:shadow-lg
+        transition-shadow duration-300"
+    >
+      <h3 className="text-lg font-semibold">Receive TORUS</h3>
+      <p className="text-center text-muted-foreground">
+        Share your address with the sender to receive TORUS.
+      </p>
+
       {selectedAccount?.address ? (
-        <div className="flex flex-col items-center justify-center gap-2">
-          <span className="text-muted-foreground">
+        <div className="flex flex-col items-center justify-center gap-3 w-full mt-2">
+          <div className="p-3 bg-muted rounded-md w-full text-center break-all">
+            <code>{selectedAccount.address}</code>
+          </div>
+          <div className="flex gap-2 w-full">
+            <Button
+              variant="outline"
+              onClick={() => handleCopyAddress(selectedAccount.address)}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Copy size={16} />
+              Copy Address
+            </Button>
+          </div>
+          <span className="text-xs text-muted-foreground">
             Connected account: {smallAddress(selectedAccount.address)}
           </span>
-          <Button
-            variant="outline"
-            onClick={() => handleCopyAddress(selectedAccount.address)}
-            className="btn btn-primary"
-          >
-            Copy Wallet Address
-          </Button>
         </div>
       ) : (
-        <span className="text-muted-foreground">
-          Connect your wallet to view your address
-        </span>
+        <div
+          className="flex flex-col items-center justify-center p-4 border border-dashed rounded-md
+            border-muted-foreground w-full"
+        >
+          <span className="text-muted-foreground">
+            Connect your wallet to view your address
+          </span>
+        </div>
       )}
     </Card>
   );

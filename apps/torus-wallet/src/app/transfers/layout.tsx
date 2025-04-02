@@ -7,7 +7,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { ReceiveAction } from "~/app/transfers/_components/receive";
+import { Receive } from "~/app/transfers/_components/receive";
 import { Send } from "~/app/transfers/_components/send";
 import { WalletSkeletonLoader } from "~/app/components/wallet-skeleton-loader";
 
@@ -15,7 +15,7 @@ type TabType = "send" | "receive";
 
 const tabs = [
   { text: "Send", value: "send", component: <Send /> },
-  { text: "Receive", value: "receive", component: <ReceiveAction /> },
+  { text: "Receive", value: "receive", component: <Receive /> },
 ];
 
 export default function TransfersLayout() {
