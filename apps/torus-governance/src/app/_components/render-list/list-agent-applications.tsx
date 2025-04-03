@@ -116,6 +116,8 @@ export const ListAgentApplications = () => {
               agentApplicationStatus={app.status}
               activeAgent={isActiveAgent}
               agentVoted={userVoted?.vote}
+              agentApplicationId={app.id}
+              whitelistStatus={status}
             />
           </Link>
         );

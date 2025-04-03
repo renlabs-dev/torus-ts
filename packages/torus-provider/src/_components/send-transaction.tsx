@@ -1,4 +1,3 @@
-// React is needed for JSX even if not directly referenced
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata";
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
@@ -7,6 +6,8 @@ import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { CONSTANTS } from "@torus-network/sdk";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
+// React is needed for JSX even if not directly referenced
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as React from "react";
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
