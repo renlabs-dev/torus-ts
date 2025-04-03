@@ -9,7 +9,7 @@ import {
 import { Suspense, useState } from "react";
 import { WalletSkeletonLoader } from "~/app/components/wallet-skeleton-loader";
 import { StakeAction } from "./_components/stake";
-import { StakingCalculator } from "./_components/staking-calculator";
+import { StakingCalculator } from "./_components/staking-calculator/staking-calculator";
 import { TransferStakeAction } from "./_components/transfer-stake";
 import { UnstakeAction } from "./_components/unstake";
 
