@@ -1,6 +1,7 @@
 import { isSS58 } from "@torus-network/sdk";
 import { formatToken } from "@torus-ts/utils/subspace";
 import { z } from "zod";
+import type { RefObject } from "react";
 import {
   doesNotExceedMaxStake,
   isAboveExistentialDeposit,
@@ -13,7 +14,7 @@ export const createStakeActionFormSchema = (
   minAllowedStakeData: bigint,
   existencialDepositValue: bigint,
   accountFreeBalance: bigint,
-  feeRef: React.RefObject<FeeLabelHandle>,
+  feeRef: RefObject<FeeLabelHandle>,
 ) =>
   z.object({
     recipient: z

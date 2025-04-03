@@ -1,6 +1,7 @@
 import { isSS58 } from "@torus-network/sdk";
 import { formatToken, toNano } from "@torus-ts/utils/subspace";
 import { z } from "zod";
+import type { RefObject } from "react";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
 import type { FeeLabelHandle } from "../../../components/fee-label";
 
@@ -8,7 +9,7 @@ export const createUnstakeFormSchema = (
   minAllowedStakeData: bigint,
   existencialDepositValue: bigint,
   accountFreeBalance: bigint,
-  feeRef: React.RefObject<FeeLabelHandle | null>,
+  feeRef: RefObject<FeeLabelHandle | null>,
   stakedAmount: bigint | null,
 ) =>
   z

@@ -1,6 +1,7 @@
 import type { Stake } from "@torus-ts/torus-provider/types";
 import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
 import { fromNano } from "@torus-ts/utils/subspace";
+import type { RefObject } from "react";
 import type {
   ISubmittableResult,
   SubmittableExtrinsic,
@@ -11,8 +12,8 @@ import type { FeeLabelHandle } from "../../../components/fee-label";
 import { FEE_BUFFER_PERCENT } from "./stake";
 
 export interface StakeFeeHandlerParams {
-  feeRef: React.RefObject<FeeLabelHandle | null>;
-  maxAmountRef: React.RefObject<string>;
+  feeRef: RefObject<FeeLabelHandle | null>;
+  maxAmountRef: RefObject<string>;
   addStakeTransaction: ({
     validator,
     amount,
