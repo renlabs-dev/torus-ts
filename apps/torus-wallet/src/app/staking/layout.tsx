@@ -8,16 +8,16 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { Suspense, useState } from "react";
 import { WalletSkeletonLoader } from "~/app/components/wallet-skeleton-loader";
-import { StakeAction } from "./_components/stake";
 import { StakingCalculator } from "./_components/staking-calculator/staking-calculator";
 import { TransferStakeAction } from "./_components/transfer-stake";
-import { UnstakeAction } from "./_components/unstake";
+import { Stake } from "./_components/stake/stake";
+import { Unstake } from "./_components/unstake";
 
 type TabType = "stake" | "unstake" | "move" | "apy";
 
 const tabs = [
-  { text: "Stake", value: "stake", component: <StakeAction /> },
-  { text: "Unstake", value: "unstake", component: <UnstakeAction /> },
+  { text: "Stake", value: "stake", component: <Stake /> },
+  { text: "Unstake", value: "unstake", component: <Unstake /> },
   { text: "Move", value: "move", component: <TransferStakeAction /> },
   { text: "APY Forecast", value: "apy", component: <StakingCalculator /> },
 ];
