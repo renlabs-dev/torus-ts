@@ -1,8 +1,7 @@
 import { CID } from "multiformats/cid";
 import { z } from "zod";
-
 import { assert_error } from "./";
-import type { Result } from "./typing";
+import type { OldResult } from "./typing";
 
 export { CID } from "multiformats/cid";
 
@@ -66,7 +65,7 @@ export interface CustomDataError {
 /**
  * @deprecated Use IPFS_URI_SCHEMA instead.
  */
-export function parseIpfsUri(uri: string): Result<CID, CustomDataError> {
+export function parseIpfsUri(uri: string): OldResult<CID, CustomDataError> {
   const ipfsPrefix = "ipfs://";
   const validated = URL_SCHEMA.safeParse(uri);
   try {

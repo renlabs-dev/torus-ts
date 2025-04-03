@@ -1,4 +1,4 @@
-import { trySync, trySyncRawError } from "../sync-operations";
+import { trySyncRaw, trySyncStr } from "../../try-catch";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples
@@ -45,7 +45,7 @@ export const syncUtils = {
 export function exampleSuccessfulCalculation(): void {
   console.log("\n--- Example: Successful Calculation ---");
 
-  const [error, result] = trySync(() => syncUtils.divideNumbers(10, 2));
+  const [error, result] = trySyncStr(() => syncUtils.divideNumbers(10, 2));
 
   if (error !== undefined) {
     console.error("Unexpected error:", error);
@@ -58,7 +58,7 @@ export function exampleSuccessfulCalculation(): void {
 export function exampleDivisionByZero(): void {
   console.log("\n--- Example: Division by Zero ---");
 
-  const [error, result] = trySync(() => syncUtils.divideNumbers(10, 0));
+  const [error, result] = trySyncStr(() => syncUtils.divideNumbers(10, 0));
 
   if (error !== undefined) {
     console.error("Error:", error);
@@ -72,7 +72,7 @@ export function exampleValidJSON(): void {
   console.log("\n--- Example: Valid JSON Parsing ---");
 
   const validJSON = '{"name": "John", "age": 30}';
-  const [error, userData] = trySync(() => syncUtils.processUser(validJSON));
+  const [error, userData] = trySyncStr(() => syncUtils.processUser(validJSON));
 
   if (error !== undefined) {
     console.error("Unexpected error:", error);
@@ -86,7 +86,9 @@ export function exampleInvalidJSON(): void {
   console.log("\n--- Example: Invalid JSON ---");
 
   const invalidJSON = '{name: "John", age: 30}'; // Missing quotes around name
-  const [error, userData] = trySync(() => syncUtils.processUser(invalidJSON));
+  const [error, userData] = trySyncStr(() =>
+    syncUtils.processUser(invalidJSON),
+  );
 
   if (error !== undefined) {
     console.error("Error:", error);
@@ -100,7 +102,7 @@ export function exampleWithRawError(): void {
   console.log("\n--- Example: With Raw Error ---");
 
   const invalidJSON = "{{}"; // Malformed JSON
-  const [error, result] = trySyncRawError<Error>(() =>
+  const [error, result] = trySyncRaw<Error>(() =>
     syncUtils.parseJSON(invalidJSON),
   );
 

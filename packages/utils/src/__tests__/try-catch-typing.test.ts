@@ -1,14 +1,26 @@
+import { parse } from "multiformats/link";
+import { assert } from "tsafe";
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { tryAsync, tryAsyncRawError } from "../async-operations";
-import { trySync, trySyncRawError } from "../sync-operations";
+import { z } from "zod";
+import { makeErr, makeErrFrom, makeOk } from "../result";
+import type { Result } from "../result";
+import {
+  ensureError,
+  tryAsync,
+  tryAsyncRaw,
+  tryAsyncStr,
+  trySyncRaw,
+  trySyncStr,
+} from "../try-catch";
 
 const coinFlip = () => !Math.round(Math.random());
+const asyncCoinFlip = () => Promise.resolve(!Math.round(Math.random()));
 
 describe("Error handling functions result type inference", () => {
   class CustomError extends Error {}
 
   const makeSyncResult = () =>
-    trySync<number>(() => {
+    trySyncStr<number>(() => {
       if (coinFlip()) {
         throw new CustomError("fubá");
       }
@@ -16,28 +28,33 @@ describe("Error handling functions result type inference", () => {
     });
 
   const makeAsyncResult = () =>
-    tryAsync<number>(async () => {
-      if (coinFlip()) {
-        throw new CustomError("fubá");
-      }
-      return await Promise.resolve(42);
-    });
+    tryAsyncStr<number>(
+      (async () => {
+        if (coinFlip()) {
+          throw new CustomError("fubá");
+        }
+        return await Promise.resolve(42);
+      })(),
+    );
 
   const makeSyncRawResult = () =>
-    trySyncRawError<CustomError, number>(() => {
+    trySyncRaw<number, CustomError>(() => {
       if (coinFlip()) {
         throw new CustomError("fubá");
       }
       return 42;
-    });
+    }, ensureError);
 
   const makeAsyncRawResult = () =>
-    tryAsyncRawError<CustomError, number>(async () => {
-      if (coinFlip()) {
-        throw new CustomError("fubá");
-      }
-      return await Promise.resolve(42);
-    });
+    tryAsyncRaw<number, CustomError>(
+      (async () => {
+        if (coinFlip()) {
+          throw new CustomError("fubá");
+        }
+        return await Promise.resolve(42);
+      })(),
+      ensureError,
+    );
 
   describe("trySync", () => {
     it("should infer the value type if the error is checked", () => {
@@ -165,5 +182,87 @@ describe("Error handling functions result type inference", () => {
         expectTypeOf(err).toEqualTypeOf<CustomError>();
       }
     });
+  });
+});
+
+describe("We should be able to bubble up errors type-safely in raw error handling", () => {
+  it("should bubble up errors", async () => {
+    class ResNotAvailable extends Error {
+      constructor(public name: string) {
+        super(`Resource ${name} not available`);
+      }
+    }
+
+    class InternalError<T> extends Error {
+      constructor(public reason: T) {
+        super(`Internal error: ${String(reason)}`);
+      }
+    }
+
+    /** We don't know if this function can throw and error. It's from an
+     * external library, and it's typing doesn't indicate that it can fail.
+     */
+    async function blackBox(): Promise<number> {
+      const d = (await asyncCoinFlip()) ? 2 : 0;
+      return 1 / d;
+    }
+
+    /** Some resource */
+    class Res {
+      async use(): Promise<Result<number, InternalError<unknown>>> {
+        // TODO: replace with `tryAsyncRaw`
+        const result = await tryAsync(blackBox());
+        const [err, val] = result;
+        if (err !== undefined) {
+          return makeErrFrom(InternalError)(err);
+        }
+        return makeOk(val + 10);
+      }
+    }
+
+    // Function that gets some resource like DB connection
+    function getDb(): Promise<Result<Res, ResNotAvailable>> {
+      const result = tryAsyncRaw(
+        (async () => {
+          if (coinFlip()) {
+            throw new ResNotAvailable("fubá");
+          }
+          return await Promise.resolve(new Res());
+        })(),
+        (e) => z.instanceof(ResNotAvailable).parse(e),
+      );
+      return result;
+    }
+
+    const doSomething = async (): Promise<
+      Result<number, ResNotAvailable | InternalError<unknown>>
+    > => {
+      const [err, res] = await getDb();
+      if (err) {
+        return makeErr(err);
+      }
+      const [err2, val] = await res.use();
+      if (err2) {
+        return makeErr(err2);
+      }
+      return makeOk(val + 3);
+    };
+
+    async function run() {
+      const [err, val] = await doSomething();
+      if (err) {
+        if (err instanceof ResNotAvailable) {
+          console.log(err.name);
+        } else if (err instanceof InternalError) {
+          console.log(err.reason);
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          assert(err == null);
+        }
+      }
+      console.log(val);
+    }
+
+    await run();
   });
 });

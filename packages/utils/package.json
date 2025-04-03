@@ -23,7 +23,8 @@
     "./env": "./src/env.ts",
     "./files": "./src/files.ts",
     "./bignumber": "./src/bignumber.ts",
-    "./error-handler/*": "./src/error-handler/*.ts"
+    "./error-helpers/*": "./src/error-helpers/*.ts",
+    "./tru-catch": "./src/tru-catch.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",

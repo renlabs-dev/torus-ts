@@ -1,4 +1,4 @@
-import { tryAsync, tryAsyncRawError } from "../async-operations";
+import { tryAsyncRaw, tryAsyncStr } from "../../try-catch";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples
@@ -41,7 +41,7 @@ export const apiClient = {
 export async function exampleSuccessfulFetch(): Promise<void> {
   console.log("\n--- Example: Successful User Fetch ---");
 
-  const [error, userData] = await tryAsync(apiClient.fetchUserData(1));
+  const [error, userData] = await tryAsyncStr(apiClient.fetchUserData(1));
 
   if (error !== undefined) {
     console.error("Unexpected error:", error);
@@ -54,7 +54,7 @@ export async function exampleSuccessfulFetch(): Promise<void> {
 export async function exampleFailedFetch(): Promise<void> {
   console.log("\n--- Example: Failed User Fetch (Invalid ID) ---");
 
-  const [error, userData] = await tryAsync(apiClient.fetchUserData(-1));
+  const [error, userData] = await tryAsyncStr(apiClient.fetchUserData(-1));
 
   if (error !== undefined) {
     console.error("Error:", error);
@@ -72,7 +72,7 @@ export async function exampleCreateAgents(): Promise<void> {
     { id: 2, name: "Agent 2" },
   ];
 
-  const [error, result] = await tryAsync(
+  const [error, result] = await tryAsyncStr(
     apiClient.createManyUserAgentData(agents),
   );
 
@@ -87,10 +87,9 @@ export async function exampleCreateAgents(): Promise<void> {
 export async function exampleWithRawError(): Promise<void> {
   console.log("\n--- Example: With Raw Error Object ---");
 
-  const [error, result] = await tryAsyncRawError<
-    Error,
-    Record<string, unknown>
-  >(apiClient.fetchUserData(-1));
+  const [error, result] = await tryAsyncRaw<Error, Record<string, unknown>>(
+    apiClient.fetchUserData(-1),
+  );
 
   if (error !== undefined) {
     console.error("Error object:", error);
@@ -105,7 +104,7 @@ export async function exampleWithRawError(): Promise<void> {
 export async function exampleWithAsyncFunction(): Promise<void> {
   console.log("\n--- Example: With Async Function ---");
 
-  const [error, data] = await tryAsync(async () => {
+  const [error, data] = await tryAsyncStr(async () => {
     const response = await apiClient.fetchUserData(2);
     return {
       ...response,

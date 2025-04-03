@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { tryAsync, tryAsyncRawError } from "./async-operations";
-import { trySync, trySyncRawError } from "./sync-operations";
+import { tryAsyncRaw, tryAsyncStr, trySync, trySyncStr } from "../try-catch";
 
 // Toast Options to construct the toast function
 interface ToastOptions {
@@ -64,7 +63,7 @@ async function tryAsyncToast<T>(
   asyncOperation: Promise<T> | (() => Promise<T>),
   options: ClientErrorOptions = {},
 ): Promise<readonly [string | undefined, T | undefined]> {
-  const result = await tryAsync(asyncOperation);
+  const result = await tryAsyncStr(asyncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -84,7 +83,7 @@ async function tryAsyncToastRaw<E = unknown, T = unknown>(
   asyncOperation: Promise<T> | (() => Promise<T>),
   options: ClientErrorOptions = {},
 ): Promise<readonly [E | undefined, T | undefined]> {
-  const result = await tryAsyncRawError<E, T>(asyncOperation);
+  const result = await tryAsyncRaw<E, T>(asyncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -104,7 +103,7 @@ function trySyncToast<T>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
 ): readonly [string | undefined, T | undefined] {
-  const result = trySync(syncOperation);
+  const result = trySyncStr(syncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -124,7 +123,7 @@ function trySyncToastRaw<E = unknown, T = unknown>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
 ): readonly [E | undefined, T | undefined] {
-  const result = trySyncRawError<E, T>(syncOperation);
+  const result = trySync<E, T>(syncOperation);
   const [error, _value] = result;
 
   if (error) {

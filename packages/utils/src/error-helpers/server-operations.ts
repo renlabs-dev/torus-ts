@@ -1,5 +1,4 @@
-import { tryAsync, tryAsyncRawError } from "./async-operations";
-import { trySync, trySyncRawError } from "./sync-operations";
+import { tryAsyncRaw, tryAsyncStr, trySyncRaw, trySyncStr } from "../try-catch";
 
 // Define log levels
 type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
@@ -26,10 +25,10 @@ const defaultOptions: ServerErrorOptions = {
  * @returns A tuple with [error or undefined, result or undefined]
  */
 async function tryAsyncLogging<T>(
-  asyncOperation: Promise<T> | (() => Promise<T>),
+  asyncOperation: Promise<T>,
   options: ServerErrorOptions = {},
 ): Promise<readonly [string | undefined, T | undefined]> {
-  const result = await tryAsync(asyncOperation);
+  const result = await tryAsyncStr(asyncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -46,10 +45,10 @@ async function tryAsyncLogging<T>(
  * @returns A tuple with [raw error or undefined, result or undefined]
  */
 async function tryAsyncLoggingRaw<E = unknown, T = unknown>(
-  asyncOperation: Promise<T> | (() => Promise<T>),
+  asyncOperation: Promise<T>,
   options: ServerErrorOptions = {},
 ): Promise<readonly [E | undefined, T | undefined]> {
-  const result = await tryAsyncRawError<E, T>(asyncOperation);
+  const result = await tryAsyncRaw<E, T>(asyncOperation);
   const [error, _value] = result;
   if (error) {
     logServerError(error, options);
@@ -67,7 +66,7 @@ function trySyncLogging<T>(
   syncOperation: () => T,
   options: ServerErrorOptions = {},
 ): readonly [string | undefined, T | undefined] {
-  const result = trySync(syncOperation);
+  const result = trySyncStr(syncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -87,7 +86,7 @@ function trySyncLoggingRaw<E = unknown, T = unknown>(
   syncOperation: () => T,
   options: ServerErrorOptions = {},
 ): readonly [E | undefined, T | undefined] {
-  const result = trySyncRawError<E, T>(syncOperation);
+  const result = trySyncRaw<E, T>(syncOperation);
   const [error, _value] = result;
 
   if (error) {
