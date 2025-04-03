@@ -11,7 +11,7 @@ import { WalletSkeletonLoader } from "~/app/components/wallet-skeleton-loader";
 import { StakingCalculator } from "./_components/staking-calculator/staking-calculator";
 import { TransferStakeAction } from "./_components/transfer-stake";
 import { Stake } from "./_components/stake/stake";
-import { Unstake } from "./_components/unstake";
+import { Unstake } from "./_components/unstake/unstake";
 
 type TabType = "stake" | "unstake" | "move" | "apy";
 
