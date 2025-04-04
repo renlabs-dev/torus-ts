@@ -26,7 +26,7 @@
  */
 
 import { CONSTANTS } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 
 // Helper to log output
 function log(message: string, ...args: unknown[]): void {
@@ -50,11 +50,11 @@ async function withRetry<T>(
   while (retries > 0) {
     log(`${label}: Attempt ${maxRetries - retries + 1}/${maxRetries}`);
 
-    const [error, result] = await tryAsyncLoggingRaw<unknown, T>(operation());
+    const [error, result] = await tryAsyncLoggingRaw<T>(operation());
 
     if (!error) {
       log(`${label}: Success after ${maxRetries - retries + 1} attempts`);
-      return result as T;
+      return result;
     }
 
     lastError = error;
@@ -82,41 +82,51 @@ async function simulateAgentFetcherErrors(scenario: string): Promise<void> {
     case "fetch":
       // Simulate whitelist/agents fetch errors
       log("Simulating whitelist query error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to query whitelist: Node is not synced");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to query whitelist: Node is not synced");
+        })(),
+      );
 
       log("Simulating agents query error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to query agents: Node connection dropped");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to query agents: Node connection dropped");
+        })(),
+      );
       break;
 
     case "process":
       // Simulate processing errors
       log("Simulating agent data processing error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error(
-          "Failed to process agent data: Invalid agent structure",
-        );
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error(
+            "Failed to process agent data: Invalid agent structure",
+          );
+        })(),
+      );
       break;
 
     case "database":
       // Simulate database errors
       log("Simulating agent data upsert error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error(
-          "Failed to upsert agent data: Database connection failed",
-        );
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error(
+            "Failed to upsert agent data: Database connection failed",
+          );
+        })(),
+      );
 
       log("Simulating application upsert error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error(
-          "Failed to upsert application: Unique constraint violation",
-        );
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error(
+            "Failed to upsert application: Unique constraint violation",
+          );
+        })(),
+      );
       break;
 
     case "all":
@@ -141,35 +151,47 @@ async function simulateDaoApplicationsErrors(scenario: string): Promise<void> {
     case "fetch":
       // Simulate fetch errors
       log("Simulating applications query error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to query applications: Database timeout");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to query applications: Database timeout");
+        })(),
+      );
       break;
 
     case "process":
       // Simulate processing errors
       log("Simulating application metadata processing error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to process metadata: Invalid IPFS URI format");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error(
+            "Failed to process metadata: Invalid IPFS URI format",
+          );
+        })(),
+      );
       break;
 
     case "notification":
       // Simulate webhook errors
       log("Simulating Discord webhook error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to send Discord webhook: Rate limit exceeded");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error(
+            "Failed to send Discord webhook: Rate limit exceeded",
+          );
+        })(),
+      );
       break;
 
     case "database":
       // Simulate database errors
       log("Simulating notification toggle error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error(
-          "Failed to toggle notification status: Transaction failed",
-        );
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error(
+            "Failed to toggle notification status: Transaction failed",
+          );
+        })(),
+      );
       break;
 
     case "all":
@@ -195,17 +217,21 @@ async function simulateProcessDaoErrors(scenario: string): Promise<void> {
     case "fetch":
       // Simulate fetch errors
       log("Simulating votes query error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to query votes: Database connection lost");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to query votes: Database connection lost");
+        })(),
+      );
       break;
 
     case "process":
       // Simulate vote processing errors
       log("Simulating vote processing error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to process votes: Invalid vote structure");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to process votes: Invalid vote structure");
+        })(),
+      );
 
       // Simulate a retry scenario
       log("Simulating vote processing with retry");
@@ -232,9 +258,13 @@ async function simulateProcessDaoErrors(scenario: string): Promise<void> {
     case "database":
       // Simulate database errors
       log("Simulating vote update error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to update vote: Database constraint violation");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error(
+            "Failed to update vote: Database constraint violation",
+          );
+        })(),
+      );
       break;
 
     case "all":
@@ -259,30 +289,38 @@ async function simulateWeightAggregatorErrors(scenario: string): Promise<void> {
     case "fetch":
       // Simulate fetch errors
       log("Simulating last block query error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to query last block: Node connection error");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to query last block: Node connection error");
+        })(),
+      );
 
       log("Simulating stakes query error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to query stakes: Invalid validator key");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to query stakes: Invalid validator key");
+        })(),
+      );
       break;
 
     case "process":
       // Simulate weight calculation errors
       log("Simulating weight calculation error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to calculate weights: Division by zero");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to calculate weights: Division by zero");
+        })(),
+      );
       break;
 
     case "database":
       // Simulate database errors
       log("Simulating weight upsert error");
-      await tryAsyncLoggingRaw(async () => {
-        throw new Error("Failed to upsert weights: Database timeout");
-      });
+      await tryAsyncLoggingRaw(
+        (async () => {
+          throw new Error("Failed to upsert weights: Database timeout");
+        })(),
+      );
       break;
 
     case "all":

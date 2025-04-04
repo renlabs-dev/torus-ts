@@ -3,7 +3,7 @@ import { trySync, trySyncStr } from "../try-catch";
 
 // TODO: test `trySyncRaw`
 
-describe("gogotry sync functions", () => {
+describe("try sync functions", () => {
   // Mock successful sync function
   const successfulSyncFn = () => {
     return "success";

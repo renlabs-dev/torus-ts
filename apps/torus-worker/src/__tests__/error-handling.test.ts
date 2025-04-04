@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await */
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock dependencies

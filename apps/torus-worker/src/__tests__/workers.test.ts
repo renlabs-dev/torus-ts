@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/require-await */
 import type { LastBlock } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as agentFetcher from "../workers/agent-fetcher";
 
@@ -79,9 +79,11 @@ describe("Worker module tests", () => {
 
       // Setup a test function that simulates success
       const testSuccessFunction = async () => {
-        const [error] = await tryAsyncLoggingRaw(async () => {
-          await agentFetcher.runAgentFetch(mockLastBlock);
-        });
+        const [error] = await tryAsyncLoggingRaw(
+          (async () => {
+            await agentFetcher.runAgentFetch(mockLastBlock);
+          })(),
+        );
         return error;
       };
 
@@ -100,13 +102,15 @@ describe("Worker module tests", () => {
         let lastError: unknown;
 
         while (retries > 0) {
-          const [error, result] = await tryAsyncLoggingRaw(async () => {
-            // Simulate first two calls failing
-            if (retries > 1) {
-              throw new Error("Network error");
-            }
-            return "success";
-          });
+          const [error, result] = await tryAsyncLoggingRaw(
+            (async () => {
+              // Simulate first two calls failing
+              if (retries > 1) {
+                throw new Error("Network error");
+              }
+              return "success";
+            })(),
+          );
 
           if (!error) {
             return result;
@@ -129,10 +133,12 @@ describe("Worker module tests", () => {
     it("should handle notification failures gracefully", async () => {
       // Create a test function that wraps notification logic
       const testNotificationError = async () => {
-        const [error] = await tryAsyncLoggingRaw(async () => {
-          // Simulate discord webhook failure
-          throw new Error("Discord webhook failed");
-        });
+        const [error] = await tryAsyncLoggingRaw(
+          (async () => {
+            // Simulate discord webhook failure
+            throw new Error("Discord webhook failed");
+          })(),
+        );
 
         return error;
       };
@@ -149,10 +155,12 @@ describe("Worker module tests", () => {
     it("should handle vote processing errors", async () => {
       // Create a test function that wraps vote processing logic
       const testVoteProcessingError = async () => {
-        const [error] = await tryAsyncLoggingRaw(async () => {
-          // Simulate vote processing failure
-          throw new Error("Vote processing failed");
-        });
+        const [error] = await tryAsyncLoggingRaw(
+          (async () => {
+            // Simulate vote processing failure
+            throw new Error("Vote processing failed");
+          })(),
+        );
 
         return error;
       };
@@ -169,10 +177,12 @@ describe("Worker module tests", () => {
     it("should handle weight calculation errors", async () => {
       // Create a test function that wraps weight calculation logic
       const testWeightCalculationError = async () => {
-        const [error] = await tryAsyncLoggingRaw(async () => {
-          // Simulate weight calculation failure
-          throw new Error("Weight calculation failed");
-        });
+        const [error] = await tryAsyncLoggingRaw(
+          (async () => {
+            // Simulate weight calculation failure
+            throw new Error("Weight calculation failed");
+          })(),
+        );
 
         return error;
       };

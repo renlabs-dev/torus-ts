@@ -23,7 +23,7 @@
  */
 
 import { CONSTANTS } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 
 // Helper to log output
 function log(message: string, ...args: unknown[]): void {
@@ -159,9 +159,7 @@ async function simulateRetryMechanism(): Promise<void> {
 
   while (retries > 0) {
     log(`Retries remaining: ${retries}`);
-    const [error, successResult] = await tryAsyncLoggingRaw<Error, string>(
-      retryFn(),
-    );
+    const [error, successResult] = await tryAsyncLoggingRaw<string>(retryFn());
 
     if (!error) {
       result = successResult;

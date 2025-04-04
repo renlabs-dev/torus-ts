@@ -3,7 +3,7 @@ import { tryAsync, tryAsyncStr } from "../try-catch";
 
 // TODO: test `tryAsyncRaw`
 
-describe("gogotry async functions", () => {
+describe("try async functions", () => {
   // Mock successful async function
   const successfulAsyncFn = () => {
     return Promise.resolve("success");
