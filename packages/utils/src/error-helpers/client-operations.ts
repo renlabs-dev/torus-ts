@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { tryAsyncRaw, tryAsyncStr, trySync, trySyncStr } from "../try-catch";
+import type { Result } from "../result";
+import { tryAsync, tryAsyncStr, trySync, trySyncStr } from "../try-catch";
 
 // Toast Options to construct the toast function
 interface ToastOptions {
@@ -59,10 +60,10 @@ function showErrorToast(
  * @param options Toast configuration options
  * @returns A tuple with [error or undefined, result or undefined]
  */
-async function tryAsyncToast<T>(
-  asyncOperation: Promise<T> | (() => Promise<T>),
+export async function tryAsyncToast<T>(
+  asyncOperation: PromiseLike<T>,
   options: ClientErrorOptions = {},
-): Promise<readonly [string | undefined, T | undefined]> {
+): Promise<Result<T, string>> {
   const result = await tryAsyncStr(asyncOperation);
   const [error, _value] = result;
 
@@ -79,11 +80,11 @@ async function tryAsyncToast<T>(
  * @param options Toast configuration options
  * @returns A tuple with [raw error or undefined, result or undefined]
  */
-async function tryAsyncToastRaw<E = unknown, T = unknown>(
-  asyncOperation: Promise<T> | (() => Promise<T>),
+export async function tryAsyncToastRaw<T = unknown>(
+  asyncOperation: PromiseLike<T>,
   options: ClientErrorOptions = {},
-): Promise<readonly [E | undefined, T | undefined]> {
-  const result = await tryAsyncRaw<E, T>(asyncOperation);
+): Promise<Result<T, Error>> {
+  const result = await tryAsync<T>(asyncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -99,10 +100,10 @@ async function tryAsyncToastRaw<E = unknown, T = unknown>(
  * @param options Toast configuration options
  * @returns A tuple with [error or undefined, result or undefined]
  */
-function trySyncToast<T>(
+export function trySyncToast<T>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
-): readonly [string | undefined, T | undefined] {
+): Result<T, string> {
   const result = trySyncStr(syncOperation);
   const [error, _value] = result;
 
@@ -119,11 +120,11 @@ function trySyncToast<T>(
  * @param options Toast configuration options
  * @returns A tuple with [raw error or undefined, result or undefined]
  */
-function trySyncToastRaw<E = unknown, T = unknown>(
+export function trySyncToastRaw<T = unknown>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
-): readonly [E | undefined, T | undefined] {
-  const result = trySync<E, T>(syncOperation);
+): Result<T, Error> {
+  const result = trySync<T>(syncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -132,15 +133,3 @@ function trySyncToastRaw<E = unknown, T = unknown>(
 
   return result;
 }
-
-// All exportable functions
-export {
-  tryAsyncToast,
-  tryAsyncToastRaw,
-  trySyncToast,
-  trySyncToastRaw,
-  showErrorToast,
-};
-
-// All exportable types
-export type { ClientErrorOptions, ToastFunction, ToastOptions };

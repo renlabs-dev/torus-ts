@@ -6,7 +6,7 @@ import {
   queryLastBlock,
   queryWhitelist,
 } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import type { WorkerProps } from "../common";
 import {
   agentApplicationToApplication,
@@ -47,13 +47,19 @@ export async function runAgentFetch(lastBlock: LastBlock) {
   // ===== Error Handling =====
   // ==========================
   let retries = defaultRetries;
-  let whitelist: Set<string>;
-  let agentsMap;
+  let whitelist: Set<string> | undefined;
+  let agentsMapSet;
   let lastError: unknown;
 
   // Retry loop for fetching whitelist and agents data
   while (retries > 0) {
-    const [whitelistError, whitelistArray] = await tryAsyncLoggingRaw(
+    if (lastError) {
+      log(
+        `Error: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
+      );
+    }
+
+    const [whitelistError, whitelistResult] = await tryAsyncLoggingRaw(
       queryWhitelist(api),
     );
     const [agentsError, agentsResult] = await tryAsyncLoggingRaw(
@@ -61,32 +67,29 @@ export async function runAgentFetch(lastBlock: LastBlock) {
     );
 
     if (!whitelistError && !agentsError) {
-      whitelist = new Set(whitelistArray);
-      agentsMap = agentsResult;
+      agentsMapSet = agentsResult;
+      whitelist = new Set(whitelistResult);
       break;
+    } else {
+      lastError = whitelistError ?? agentsError;
+      retries--;
+      await sleep(retryDelay);
     }
-
-    lastError = whitelistError ?? agentsError;
-    log(
-      `Error: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
-    );
-    retries--;
-    await sleep(retryDelay);
   }
 
   if (retries === 0 && lastError) {
-    log("Failed to fetch data after multiple attempts");
+    log("Failed to fetch agent data after multiple attempts");
     return;
   }
 
-  if (!agentsMap) {
-    log("AgentsMap is undefined");
+  if (!whitelist || !agentsMapSet) {
+    log("Whitelist or agents data is undefined");
     return;
   }
+
   // ==========================
-
   const isWhitelisted = (addr: SS58Address) => whitelist.has(addr);
-  const agents = [...agentsMap.values()];
+  const agents = [...agentsMapSet.values()];
   const agentsData = agents.map((agent) =>
     SubspaceAgentToDatabase(
       agent,
@@ -97,7 +100,9 @@ export async function runAgentFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: upserting ${agents.length} agents`);
 
   // Error handling for database operation
-  const [upsertError] = await tryAsyncLoggingRaw(upsertAgentData(agentsData));
+  const [upsertError, _upsertSuccess] = await tryAsyncLoggingRaw(
+    upsertAgentData(agentsData),
+  );
 
   if (upsertError) {
     log(
@@ -137,7 +142,7 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
 
     lastError = applicationsError;
     log(
-      `Error: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
+      `Error fetching applications: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
     );
     retries--;
     await sleep(retryDelay);
@@ -163,33 +168,27 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
   log(
     `Block ${lastBlock.blockNumber}: upserting ${dbApplications.length} applications`,
   );
-
   // Error handling for database operation
   const [upsertError] = await tryAsyncLoggingRaw(
     upsertWhitelistApplication(dbApplications),
   );
-
   if (upsertError) {
     log(
       `Error upserting applications: ${upsertError instanceof Error ? (upsertError.stack ?? upsertError.message) : JSON.stringify(upsertError)}`,
     );
     return;
   }
-
   log(`Block ${lastBlock.blockNumber}: applications upserted`);
 }
-
 export async function runProposalsFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: running proposals fetch`);
 
   const [queryProposalsError, dbSuccess] =
     await tryAsyncLoggingRaw(queryProposalsDB());
   if (queryProposalsError) {
-    log("Error fetching proposals from db");
-    return;
-  }
-  if (!dbSuccess) {
-    log("No proposals found in db");
+    log(
+      `Error fetching proposals from db: ${queryProposalsError instanceof Error ? (queryProposalsError.stack ?? queryProposalsError.message) : JSON.stringify(queryProposalsError)}`,
+    );
     return;
   }
 
@@ -207,13 +206,36 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
     return isNewProposal || hasStatusChanged;
   };
 
-  const [getProposalsError, proposals] = await tryAsyncLoggingRaw(
-    getProposals(lastBlock.apiAtBlock, isProposalToInsert),
-  );
-  if (getProposalsError) {
-    log("Error fetching proposals from api");
+  // ==========================
+  // ===== Error Handling =====
+  // ==========================
+  let retries = defaultRetries;
+  let proposals;
+  let lastError: unknown;
+
+  while (retries > 0) {
+    const [getProposalsError, proposalsResult] = await tryAsyncLoggingRaw(
+      getProposals(lastBlock.apiAtBlock, isProposalToInsert),
+    );
+
+    if (!getProposalsError) {
+      proposals = proposalsResult;
+      break;
+    }
+
+    lastError = getProposalsError;
+    log(
+      `Error fetching proposals from api: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
+    );
+    retries--;
+    await sleep(retryDelay);
+  }
+
+  if (retries === 0 && lastError) {
+    log("Failed to fetch proposals after multiple attempts");
     return;
   }
+
   if (!proposals) {
     log("No proposals found in api");
     return;
@@ -226,7 +248,13 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
   log(
     `Block ${lastBlock.blockNumber}: upserting ${dbProposals.length} proposals`,
   );
-  await upsertProposal(dbProposals);
+  const [upsertError] = await tryAsyncLoggingRaw(upsertProposal(dbProposals));
+  if (upsertError) {
+    log(
+      `Error upserting proposals: ${upsertError instanceof Error ? (upsertError.stack ?? upsertError.message) : JSON.stringify(upsertError)}`,
+    );
+    return;
+  }
   log(`Block ${lastBlock.blockNumber}: proposals upserted`);
 }
 
@@ -236,40 +264,34 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
  */
 export async function agentFetcherWorker(props: WorkerProps) {
   while (true) {
-    const [error] = await tryAsyncLoggingRaw(async () => {
-      // Get latest block information
-      const [blockError, lastBlock] = await tryAsyncLoggingRaw(() =>
-        queryLastBlock(props.api),
-      );
-
-      if (blockError) {
-        log(
-          `Error fetching last block: ${blockError instanceof Error ? (blockError.stack ?? blockError.message) : JSON.stringify(blockError)}`,
+    const [error] = await tryAsyncLoggingRaw(
+      (async () => {
+        // Get latest block information
+        const [blockError, lastBlock] = await tryAsyncLoggingRaw(
+          queryLastBlock(props.api),
         );
-        await sleep(retryDelay);
-        return;
-      }
+        if (blockError) {
+          log(
+            `Error fetching last block: ${blockError instanceof Error ? (blockError.stack ?? blockError.message) : JSON.stringify(blockError)}`,
+          );
+          await sleep(retryDelay);
+          return;
+        }
+        // Check if the last queried block is a new block
+        if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
+          await sleep(retryDelay);
+          return;
+        }
 
-      if (!lastBlock) {
-        log("Last block information is undefined");
-        await sleep(retryDelay);
-        return;
-      }
+        props.lastBlock = lastBlock;
+        log(`Block ${lastBlock.blockNumber}: processing`);
 
-      // Check if the last queried block is a new block
-      if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
-        await sleep(retryDelay);
-        return;
-      }
-
-      props.lastBlock = lastBlock;
-      log(`Block ${lastBlock.blockNumber}: processing`);
-
-      // Run all data fetching and processing operations
-      await runAgentFetch(lastBlock);
-      await runApplicationsFetch(lastBlock);
-      await runProposalsFetch(lastBlock);
-    });
+        // Run all data fetching and processing operations
+        await runAgentFetch(lastBlock);
+        await runApplicationsFetch(lastBlock);
+        await runProposalsFetch(lastBlock);
+      })(),
+    );
 
     if (error) {
       log("UNEXPECTED ERROR: ", error);

@@ -11,7 +11,7 @@ import {
 } from "@torus-network/sdk";
 import type { LastBlock, SS58Address } from "@torus-network/sdk";
 import { createDb } from "@torus-ts/db/client";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import { z } from "zod";
 import { log, sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
@@ -44,45 +44,43 @@ export async function weightAggregatorWorker(api: ApiPromise) {
   let knownLastBlock: LastBlock | null = null;
 
   while (true) {
-    const [error] = await tryAsyncLoggingRaw(async () => {
-      const [lastBlockError, lastBlock] = await tryAsyncLoggingRaw(
-        queryLastBlock(api),
-      );
-      if (lastBlockError) {
-        log(`Error querying last block: ${JSON.stringify(lastBlockError)}`);
-        return;
-      }
-
-      if (!lastBlock) {
-        log(`No last block found`);
-        return;
-      }
-
-      if (
-        knownLastBlock != null &&
-        lastBlock.blockNumber <= knownLastBlock.blockNumber
-      ) {
-        log(`Block ${lastBlock.blockNumber} already processed, skipping`);
-        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 2);
-        return;
-      }
-      knownLastBlock = lastBlock;
-
-      log(`Block ${lastBlock.blockNumber}: processing`);
-
-      const [taskError] = await tryAsyncLoggingRaw(
-        weightAggregatorTask(api, keypair, lastBlock.blockNumber),
-      );
-      if (taskError) {
-        log(
-          `Error in weight aggregator task: ${taskError instanceof Error ? taskError.message : JSON.stringify(taskError)}`,
+    const [error] = await tryAsyncLoggingRaw(
+      (async () => {
+        const [lastBlockError, lastBlock] = await tryAsyncLoggingRaw(
+          queryLastBlock(api),
         );
-        return;
-      }
+        if (lastBlockError) {
+          log(`Error querying last block: ${JSON.stringify(lastBlockError)}`);
+          return;
+        }
 
-      // We aim to run this task every ~5 minutes (8 seconds block * 38)
-      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS * 37);
-    });
+        if (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          knownLastBlock !== null &&
+          lastBlock.blockNumber <= knownLastBlock
+        ) {
+          log(`Block ${lastBlock.blockNumber} already processed, skipping`);
+          await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 2);
+          return;
+        }
+        knownLastBlock = lastBlock;
+
+        log(`Block ${lastBlock.blockNumber}: processing`);
+
+        const [taskError] = await tryAsyncLoggingRaw(
+          weightAggregatorTask(api, keypair, lastBlock.blockNumber),
+        );
+        if (taskError) {
+          log(
+            `Error in weight aggregator task: ${taskError instanceof Error ? taskError.message : JSON.stringify(taskError)}`,
+          );
+          return;
+        }
+
+        // We aim to run this task every ~5 minutes (8 seconds block * 38)
+        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS * 37);
+      })(),
+    );
 
     if (error) {
       log("UNEXPECTED ERROR: ", error);
@@ -112,11 +110,6 @@ export async function weightAggregatorTask(
     );
     return;
   }
-  if (!stakeOnCommunityValidator) {
-    log(`No stake on community validator found`);
-    return;
-  }
-
   log("Committing agent weights...");
 
   const [aggregationError] = await tryAsyncLoggingRaw(
@@ -180,11 +173,6 @@ async function doVote(
     console.error(`Failed to set weights on chain: ${JSON.stringify(error)}`);
     return;
   }
-  if (!setWeightsTx) {
-    log(`No set weights tx found`);
-    return;
-  }
-
   console.log(`Set weights tx: ${setWeightsTx.toString()}`);
 }
 
@@ -200,11 +188,6 @@ async function postAgentAggregation(
     console.error(`Failed to get user weight map: ${JSON.stringify(mapError)}`);
     return;
   }
-  if (!moduleWeightMap) {
-    console.error(`No module weight map found`);
-    return;
-  }
-
   // gambiarra to remove the allocator from the weights
   moduleWeightMap.forEach((innerMap, _) => {
     if (innerMap.has(keypair.address)) {

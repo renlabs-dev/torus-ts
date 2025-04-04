@@ -1,4 +1,4 @@
-import { tryAsyncRaw, tryAsyncStr } from "../../try-catch";
+import { tryAsync, tryAsyncStr } from "../../try-catch";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples
@@ -79,7 +79,7 @@ export async function exampleCreateAgents(): Promise<void> {
   if (error !== undefined) {
     console.error("Failed to create agents:", error);
   } else {
-    console.log(`Successfully created ${result?.count} agents`);
+    console.log(`Successfully created ${result.count} agents`);
   }
 }
 
@@ -87,7 +87,7 @@ export async function exampleCreateAgents(): Promise<void> {
 export async function exampleWithRawError(): Promise<void> {
   console.log("\n--- Example: With Raw Error Object ---");
 
-  const [error, result] = await tryAsyncRaw<Error, Record<string, unknown>>(
+  const [error, result] = await tryAsync<Record<string, unknown>>(
     apiClient.fetchUserData(-1),
   );
 
@@ -104,13 +104,15 @@ export async function exampleWithRawError(): Promise<void> {
 export async function exampleWithAsyncFunction(): Promise<void> {
   console.log("\n--- Example: With Async Function ---");
 
-  const [error, data] = await tryAsyncStr(async () => {
-    const response = await apiClient.fetchUserData(2);
-    return {
-      ...response,
-      lastLogin: new Date().toISOString(),
-    };
-  });
+  const [error, data] = await tryAsyncStr(
+    (async () => {
+      const response = await apiClient.fetchUserData(2);
+      return {
+        ...response,
+        lastLogin: new Date().toISOString(),
+      };
+    })(),
+  );
 
   if (error !== undefined) {
     console.error("Error:", error);

@@ -8,64 +8,65 @@ import {
   vi,
 } from "vitest";
 import {
-  tryAsyncLogging,
-  tryAsyncLoggingRaw,
-  trySyncLogging,
-  trySyncLoggingRaw,
-} from "../server-operations";
+  tryAsyncToast,
+  tryAsyncToastRaw,
+  trySyncToast,
+  trySyncToastRaw,
+} from "../error-helpers/client-operations";
 
 const coinFlip = () => !Math.round(Math.random());
 
-describe("Server error handling functions result type inference", () => {
+describe("Client error handling functions result type inference", () => {
   class CustomError extends Error {}
 
-  // Mock the console methods to prevent logs during tests
+  // Mock the console.error method to prevent logs during tests
   beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => ({}));
-    vi.spyOn(console, "debug").mockImplementation(() => ({}));
-    vi.spyOn(console, "info").mockImplementation(() => ({}));
-    vi.spyOn(console, "warn").mockImplementation(() => ({}));
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  const makeSyncLoggingResult = () =>
-    trySyncLogging<number>(() => {
+  const makeSyncToastResult = () =>
+    trySyncToast<number>(() => {
       if (coinFlip()) {
         throw new CustomError("fubá");
       }
       return 42;
     });
 
-  const makeAsyncLoggingResult = () =>
-    tryAsyncLogging<number>(async () => {
-      if (coinFlip()) {
-        throw new CustomError("fubá");
-      }
-      return await Promise.resolve(42);
-    });
+  const makeAsyncToastResult = () =>
+    tryAsyncToast<number>(
+      (async () => {
+        if (coinFlip()) {
+          throw new CustomError("fubá");
+        }
+        return await Promise.resolve(42);
+      })(),
+    );
 
-  const makeSyncLoggingRawResult = () =>
-    trySyncLoggingRaw<CustomError, number>(() => {
+  const makeSyncToastRawResult = () =>
+    trySyncToastRaw<number>(() => {
       if (coinFlip()) {
         throw new CustomError("fubá");
       }
       return 42;
     });
 
-  const makeAsyncLoggingRawResult = () =>
-    tryAsyncLoggingRaw<CustomError, number>(async () => {
-      if (coinFlip()) {
-        throw new CustomError("fubá");
-      }
-      return await Promise.resolve(42);
-    });
+  const makeAsyncToastRawResult = () =>
+    tryAsyncToastRaw<number>(
+      (async () => {
+        if (coinFlip()) {
+          throw new CustomError("fubá");
+        }
+        return await Promise.resolve(42);
+      })(),
+    );
 
-  describe("trySyncLogging", () => {
+  describe("trySyncToast", () => {
     it("should infer the value type if the error is checked", () => {
-      const result = makeSyncLoggingResult();
+      const result = makeSyncToastResult();
 
       const [err, val] = result;
 
@@ -85,9 +86,9 @@ describe("Server error handling functions result type inference", () => {
     });
   });
 
-  describe("tryAsyncLogging", () => {
+  describe("tryAsyncToast", () => {
     it("should infer the value type if the error is checked", async () => {
-      const result = makeAsyncLoggingResult();
+      const result = makeAsyncToastResult();
 
       const [err, val] = await result;
 
@@ -107,9 +108,9 @@ describe("Server error handling functions result type inference", () => {
     });
   });
 
-  describe("trySyncLoggingRaw", () => {
+  describe("trySyncToastRaw", () => {
     it("should infer the value type if the error is checked", () => {
-      const result = makeSyncLoggingRawResult();
+      const result = makeSyncToastRawResult();
 
       const [err, val] = result;
 
@@ -129,7 +130,7 @@ describe("Server error handling functions result type inference", () => {
     });
 
     it("should infer the type of the error if value is checked", () => {
-      const result = makeSyncLoggingRawResult();
+      const result = makeSyncToastRawResult();
 
       const [err, val] = result;
 
@@ -149,9 +150,9 @@ describe("Server error handling functions result type inference", () => {
     });
   });
 
-  describe("tryAsyncLoggingRaw", () => {
+  describe("tryAsyncToastRaw", () => {
     it("should infer the value type if the error is checked", async () => {
-      const result = makeAsyncLoggingRawResult();
+      const result = makeAsyncToastRawResult();
 
       const [err, val] = await result;
 
@@ -171,7 +172,7 @@ describe("Server error handling functions result type inference", () => {
     });
 
     it("should infer the type of the error if value is checked", async () => {
-      const result = makeAsyncLoggingRawResult();
+      const result = makeAsyncToastRawResult();
 
       const [err, val] = await result;
 

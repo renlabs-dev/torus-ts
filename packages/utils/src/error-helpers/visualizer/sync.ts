@@ -1,4 +1,4 @@
-import { trySyncRaw, trySyncStr } from "../../try-catch";
+import { trySync, trySyncStr } from "../../try-catch";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples
@@ -102,9 +102,7 @@ export function exampleWithRawError(): void {
   console.log("\n--- Example: With Raw Error ---");
 
   const invalidJSON = "{{}"; // Malformed JSON
-  const [error, result] = trySyncRaw<Error>(() =>
-    syncUtils.parseJSON(invalidJSON),
-  );
+  const [error, result] = trySync(() => syncUtils.parseJSON(invalidJSON));
 
   if (error !== undefined) {
     console.error("Error object:", error);

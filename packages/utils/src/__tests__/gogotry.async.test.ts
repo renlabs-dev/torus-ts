@@ -30,9 +30,11 @@ describe("gogotry async functions", () => {
     });
 
     it("should handle function that returns a promise", async () => {
-      const [error, result] = await tryAsyncStr(() => {
-        return Promise.resolve("promise result");
-      });
+      const [error, result] = await tryAsyncStr(
+        (() => {
+          return Promise.resolve("promise result");
+        })(),
+      );
 
       expect(error).toBeUndefined();
       expect(result).toBe("promise result");

@@ -1,6 +1,6 @@
 import { processApplicationMetadata } from "@torus-network/sdk";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
 import { flattenResult } from "@torus-ts/utils/typing";
 import { z } from "zod";
@@ -49,18 +49,20 @@ export async function notifyNewApplicationsWorker() {
 
   while (true) {
     // We execute functions serially for better logging
-    const [error] = await tryAsyncLoggingRaw(async () => {
-      await pushApplicationsNotification(
-        env.CURATOR_DISCORD_WEBHOOK_URL,
-        buildUrl,
-      );
-      await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
-      await pushProposalsNotification(
-        env.CURATOR_DISCORD_WEBHOOK_URL,
-        startingBlock,
-        buildUrl,
-      );
-    });
+    const [error] = await tryAsyncLoggingRaw(
+      (async () => {
+        await pushApplicationsNotification(
+          env.CURATOR_DISCORD_WEBHOOK_URL,
+          buildUrl,
+        );
+        await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+        await pushProposalsNotification(
+          env.CURATOR_DISCORD_WEBHOOK_URL,
+          startingBlock,
+          buildUrl,
+        );
+      })(),
+    );
 
     if (error) {
       log(
@@ -313,11 +315,6 @@ async function pushApplicationsNotification(
       log(
         `Error processing application metadata for ${proposal.id}: ${metadataError instanceof Error ? (metadataError.stack ?? metadataError.message) : JSON.stringify(metadataError)}`,
       );
-      continue;
-    }
-
-    if (!metadata) {
-      log(`No metadata found for application ${proposal.id}`);
       continue;
     }
 

@@ -2,15 +2,10 @@
 
 import BigNumber from "bignumber.js";
 import { buildTaggedBigNumberClass } from "./bignumber";
-import { runAsyncExamples } from "./error-helpers/testsuit/async";
-import { runSyncExamples } from "./error-helpers/testsuit/sync";
-// To manually test the async and sync error handling from the go-go-try, you must use any of the following:
-// the tryAsync and trySync functions from the go-go-try package (https://github.com/torusresearch/go-go-try)
-// the tryAsyncRawError and trySyncRawError functions from the go-go-try package (https://github.com/torusresearch/go-go-try)
+import { runAsyncExamples } from "./error-helpers/visualizer/async";
+import { runSyncExamples } from "./error-helpers/visualizer/sync";
 
 // $ pnpm exec tsx src/main.ts
-
-import { tryAsyncRaw, tryAsyncStr, trySyncRaw, trySyncStr } from "./try-catch";
 
 // Example of creating a tagged BigNumber class
 const MyBigNumber = buildTaggedBigNumberClass("MyBigNumber", BigNumber);

@@ -1,22 +1,8 @@
-import { tryAsyncRaw, tryAsyncStr, trySyncRaw, trySyncStr } from "../try-catch";
+import type { Result } from "../result";
+import { tryAsync, tryAsyncStr, trySync, trySyncStr } from "../try-catch";
 
 // Define log levels
 type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
-
-// Options for server-side error handling
-interface ServerErrorOptions {
-  level?: LogLevel;
-  context?: Record<string, unknown>;
-  service?: string;
-  stack?: boolean;
-}
-
-// Default server options
-const defaultOptions: ServerErrorOptions = {
-  level: "error",
-  service: "api",
-  stack: true,
-};
 
 /**
  * Handles server-side async operations with logging
@@ -24,10 +10,10 @@ const defaultOptions: ServerErrorOptions = {
  * @param options Logging configuration options
  * @returns A tuple with [error or undefined, result or undefined]
  */
-async function tryAsyncLogging<T>(
-  asyncOperation: Promise<T>,
-  options: ServerErrorOptions = {},
-): Promise<readonly [string | undefined, T | undefined]> {
+export async function tryAsyncLogging<T>(
+  asyncOperation: PromiseLike<T>,
+  options: LogLevel = "error",
+): Promise<Result<T, string>> {
   const result = await tryAsyncStr(asyncOperation);
   const [error, _value] = result;
 
@@ -44,11 +30,11 @@ async function tryAsyncLogging<T>(
  * @param options Logging configuration options
  * @returns A tuple with [raw error or undefined, result or undefined]
  */
-async function tryAsyncLoggingRaw<E = unknown, T = unknown>(
-  asyncOperation: Promise<T>,
-  options: ServerErrorOptions = {},
-): Promise<readonly [E | undefined, T | undefined]> {
-  const result = await tryAsyncRaw<E, T>(asyncOperation);
+export async function tryAsyncLoggingRaw<T = unknown>(
+  asyncOperation: PromiseLike<T>,
+  options: LogLevel = "error",
+): Promise<Result<T, Error>> {
+  const result = await tryAsync<T>(asyncOperation);
   const [error, _value] = result;
   if (error) {
     logServerError(error, options);
@@ -62,10 +48,10 @@ async function tryAsyncLoggingRaw<E = unknown, T = unknown>(
  * @param options Logging configuration options
  * @returns A tuple with [error or undefined, result or undefined]
  */
-function trySyncLogging<T>(
+export function trySyncLogging<T>(
   syncOperation: () => T,
-  options: ServerErrorOptions = {},
-): readonly [string | undefined, T | undefined] {
+  options: LogLevel = "error",
+): Result<T, string> {
   const result = trySyncStr(syncOperation);
   const [error, _value] = result;
 
@@ -82,11 +68,11 @@ function trySyncLogging<T>(
  * @param options Logging configuration options
  * @returns A tuple with [raw error or undefined, result or undefined]
  */
-function trySyncLoggingRaw<E = unknown, T = unknown>(
+export function trySyncLoggingRaw<T = unknown>(
   syncOperation: () => T,
-  options: ServerErrorOptions = {},
-): readonly [E | undefined, T | undefined] {
-  const result = trySyncRaw<E, T>(syncOperation);
+  options: LogLevel = "error",
+): Result<T, Error> {
+  const result = trySync<T>(syncOperation);
   const [error, _value] = result;
 
   if (error) {
@@ -101,16 +87,11 @@ function trySyncLoggingRaw<E = unknown, T = unknown>(
  * @param error The error to log
  * @param options Logging configuration options
  */
-function logServerError(
-  error: unknown,
-  options: ServerErrorOptions = {},
-): void {
-  const opts = { ...defaultOptions, ...options };
-
-  const formattedError = formatError(error, opts);
+function logServerError(error: unknown, options: LogLevel = "error"): void {
+  const formattedError = formatError(error, { level: options });
 
   // Log with the appropriate level
-  switch (opts.level) {
+  switch (options) {
     case "debug":
       console.debug(JSON.stringify(formattedError));
       break;
@@ -135,9 +116,14 @@ function logServerError(
  * @param error The error to format
  * @param options Formatting options
  */
-function formatError(
+export function formatError(
   error: unknown,
-  options: ServerErrorOptions,
+  options: {
+    level?: LogLevel;
+    service?: string;
+    context?: Record<string, unknown>;
+    stack?: boolean;
+  } = { level: "error" },
 ): Record<string, unknown> {
   let formattedError: Record<string, unknown> = {
     message: "Unknown error",
@@ -167,15 +153,3 @@ function formatError(
 
   return formattedError;
 }
-
-// All exportable functions
-export {
-  tryAsyncLogging,
-  tryAsyncLoggingRaw,
-  trySyncLogging,
-  trySyncLoggingRaw,
-  logServerError,
-};
-
-// All exportable types
-export type { LogLevel, ServerErrorOptions };

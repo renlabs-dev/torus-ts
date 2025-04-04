@@ -24,12 +24,11 @@
     "./files": "./src/files.ts",
     "./bignumber": "./src/bignumber.ts",
     "./error-helpers/*": "./src/error-helpers/*.ts",
-    "./tru-catch": "./src/tru-catch.ts"
+    "./try-catch": "./src/try-catch.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",
     "bignumber.js": "^9.1.2",
-    "go-go-try": "^5.0.0",
     "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",

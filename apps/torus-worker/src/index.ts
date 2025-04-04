@@ -1,7 +1,7 @@
 import "@polkadot/api-augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { queryLastBlock } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-handler/server-operations";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import express from "express";
 import { z } from "zod";
 import { log } from "./common";
@@ -34,11 +34,6 @@ async function setup(): Promise<ApiPromise> {
     throw new Error("Failed to create API connection");
   }
 
-  if (!api) {
-    log("Failed to create API connection");
-    throw new Error("Failed to create API connection");
-  }
-
   return api;
 }
 
@@ -51,10 +46,6 @@ async function main() {
     );
     process.exit(1);
   }
-  if (!api) {
-    log("Failed to set up API");
-    process.exit(1);
-  }
 
   const lastBlockNumber = -1;
   const [blockError, lastBlock] = await tryAsyncLoggingRaw(queryLastBlock(api));
@@ -63,11 +54,6 @@ async function main() {
     log(
       `Error querying last block: ${blockError instanceof Error ? blockError.message : JSON.stringify(blockError)}`,
     );
-    process.exit(1);
-  }
-
-  if (!lastBlock) {
-    log("Failed to query last block");
     process.exit(1);
   }
 
