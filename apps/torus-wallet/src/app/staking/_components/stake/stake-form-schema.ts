@@ -8,7 +8,7 @@ import {
   isAmountPositive,
   meetsMinimumStake,
 } from "~/utils/validators";
-import type { FeeLabelHandle } from "../../../components/fee-label";
+import type { FeeLabelHandle } from "../../../_components/fee-label";
 
 export const createStakeActionFormSchema = (
   minAllowedStakeData: bigint,

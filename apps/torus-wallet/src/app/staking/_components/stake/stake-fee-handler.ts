@@ -8,7 +8,7 @@ import type {
   TransactionExtrinsicPromise,
 } from "~/context/wallet-provider";
 import { computeFeeData } from "~/utils/helpers";
-import type { FeeLabelHandle } from "../../../components/fee-label";
+import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FEE_BUFFER_PERCENT } from "./stake";
 
 export interface StakeFeeHandlerParams {

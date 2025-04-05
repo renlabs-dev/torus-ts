@@ -3,7 +3,7 @@ import type { ISubmittableResult } from "@polkadot/types/types";
 import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
 import { fromNano } from "@torus-ts/utils/subspace";
 import type { RefObject } from "react";
-import type { FeeLabelHandle } from "~/app/components/fee-label";
+import type { FeeLabelHandle } from "~/app/_components/fee-label";
 
 interface HandleEstimateFeeProps {
   feeRef: RefObject<FeeLabelHandle | null>;

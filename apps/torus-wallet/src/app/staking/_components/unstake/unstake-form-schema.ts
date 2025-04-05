@@ -3,7 +3,7 @@ import { formatToken, toNano } from "@torus-ts/utils/subspace";
 import { z } from "zod";
 import type { RefObject } from "react";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
-import type { FeeLabelHandle } from "../../../components/fee-label";
+import type { FeeLabelHandle } from "../../../_components/fee-label";
 
 export const createUnstakeFormSchema = (
   minAllowedStakeData: bigint,
