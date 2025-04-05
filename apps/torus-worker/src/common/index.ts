@@ -12,6 +12,7 @@ import {
   queryProposals,
 } from "@torus-network/sdk";
 import { applicationStatusValues } from "@torus-ts/db/schema";
+import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import { match } from "rustie";
 import type {
   ApplicationDB,
@@ -68,15 +69,21 @@ export function sleep(ms: number) {
 
 export async function sleepUntilNewBlock(props: WorkerProps) {
   while (true) {
-    try {
-      const lastBlock = await queryLastBlock(props.api);
-      if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
-        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
-      } else {
-        return lastBlock;
-      }
-    } catch (e) {
-      log("UNEXPECTED ERROR: ", e);
+    const [error, lastBlock] = await tryAsyncLoggingRaw(
+      queryLastBlock(props.api),
+    );
+
+    if (error) {
+      log(
+        `Error querying last block: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+      );
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
+      continue;
+    }
+    if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
+    } else {
+      return lastBlock;
     }
   }
 }
@@ -130,7 +137,9 @@ export function agentProposalToProposal(proposal: Proposal): NewProposal {
   // values that came from the network and we want parity of this sort of thing
   the maximum that we can
 */
-export function normalizeApplicationValue(value: string): keyof typeof applicationStatusValues {
+export function normalizeApplicationValue(
+  value: string,
+): keyof typeof applicationStatusValues {
   switch (value.toLowerCase()) {
     case "open":
       return "Open";
@@ -145,7 +154,6 @@ export function normalizeApplicationValue(value: string): keyof typeof applicati
   }
 }
 
-
 export function getProposalStatus(proposal: Proposal) {
   const status = match(proposal.status)({
     Open: () => applicationStatusValues.Open,
@@ -155,8 +163,6 @@ export function getProposalStatus(proposal: Proposal) {
   });
   return status;
 }
-
-
 
 export const getApplicationVoteStatus = (
   app: AgentApplication,
@@ -181,8 +187,18 @@ export const applicationIsOpen = (app: AgentApplication) =>
 export async function getApplications(
   api: Api,
   filterFn: (app: AgentApplication) => boolean,
-) {
-  const application_entries = await queryAgentApplications(api);
+): Promise<Record<number, AgentApplication> | undefined> {
+  const [error, application_entries] = await tryAsyncLoggingRaw(
+    queryAgentApplications(api),
+  );
+
+  if (error) {
+    log(
+      `Error querying agent applications: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return undefined;
+  }
+
   const pending_daos = application_entries.filter(filterFn);
   const applications_map: Record<number, AgentApplication> =
     pending_daos.reduce(
@@ -198,8 +214,18 @@ export async function getApplications(
 export async function getProposals(
   api: Api,
   filterFn: (app: Proposal) => boolean,
-) {
-  const proposals_entries = await queryProposals(api);
+): Promise<Record<number, Proposal> | undefined> {
+  const [error, proposals_entries] = await tryAsyncLoggingRaw(
+    queryProposals(api),
+  );
+
+  if (error) {
+    log(
+      `Error querying proposals: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return undefined;
+  }
+
   const desired_proposals = proposals_entries.filter(filterFn);
   const proposals_map: Record<number, Proposal> = desired_proposals.reduce(
     (hashmap, proposal) => {
@@ -211,16 +237,35 @@ export async function getProposals(
   return proposals_map;
 }
 
-export async function getProposalsDB(filterFn: (app: NewProposal) => boolean) {
-  const proposals = await queryProposalsDB();
+export async function getProposalsDB(
+  filterFn: (app: NewProposal) => boolean,
+): Promise<NewProposal[] | undefined> {
+  const [error, proposals] = await tryAsyncLoggingRaw(queryProposalsDB());
+
+  if (error) {
+    log(
+      `Error querying proposals from DB: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return undefined;
+  }
   const pending_daos = proposals.filter(filterFn);
   return pending_daos;
 }
 
 export async function getApplicationsDB(
   filterFn: (app: ApplicationDB) => boolean,
-) {
-  const applications = await queryAgentApplicationsDB();
+): Promise<ApplicationDB[] | undefined> {
+  const [error, applications] = await tryAsyncLoggingRaw(
+    queryAgentApplicationsDB(),
+  );
+
+  if (error) {
+    log(
+      `Error querying agent applications from DB: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return undefined;
+  }
+
   const pending_daos = applications.filter(filterFn);
   return pending_daos;
 }
@@ -228,7 +273,17 @@ export async function getApplicationsDB(
 export async function getCadreCandidates(
   filterFn: (app: CadreCandidate) => boolean,
 ) {
-  const cadreCandidates = await queryCadreCandidates();
+  const [error, cadreCandidates] = await tryAsyncLoggingRaw(
+    queryCadreCandidates(),
+  );
+
+  if (error) {
+    log(
+      `Error querying cadre candidates: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return [];
+  }
+
   return cadreCandidates.filter(filterFn);
 }
 
@@ -236,7 +291,15 @@ export async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
   last_block_number: number,
 ): Promise<VoteById[]> {
-  const votes = await queryTotalVotesPerApp();
+  const [error, votes] = await tryAsyncLoggingRaw(queryTotalVotesPerApp());
+
+  if (error) {
+    log(
+      `Error querying total votes per app: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return [];
+  }
+
   const votes_on_pending = votes.filter((vote) => {
     const app = applications_map[vote.appId];
     if (app == null) return false;
@@ -246,20 +309,47 @@ export async function getVotesOnPending(
 }
 
 export async function getCadreVotes(): Promise<VoteByKey[]> {
-  const votes = await queryTotalVotesPerCadre();
+  const [error, votes] = await tryAsyncLoggingRaw(queryTotalVotesPerCadre());
+
+  if (error) {
+    log(
+      `Error querying total votes per cadre: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return [];
+  }
+
   return votes;
 }
 
-export async function getCadreThreshold() {
-  const keys = await countCadreKeys();
+export async function getCadreThreshold(): Promise<number | undefined> {
+  const [error, keys] = await tryAsyncLoggingRaw(countCadreKeys());
+
+  if (error) {
+    log(
+      `Error counting cadre keys: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return undefined;
+  }
+  if (!keys) {
+    log("No cadre keys found");
+    return undefined;
+  }
+
   return Math.floor(keys / 2) + 1;
 }
 
 export async function getPenaltyFactors(cadreThreshold: number) {
-  const penalizations = await pendingPenalizations(
-    cadreThreshold,
-    Math.max(cadreThreshold - 1, 1),
+  const [error, penalizations] = await tryAsyncLoggingRaw(
+    pendingPenalizations(cadreThreshold, Math.max(cadreThreshold - 1, 1)),
   );
+
+  if (error) {
+    log(
+      `Error getting pending penalizations: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    );
+    return [];
+  }
+
   return penalizations;
 }
 
@@ -276,24 +366,61 @@ export async function processCadreVotes(
         refuseVotes,
         removeVotes,
       } = vote_info;
+
       if (acceptVotes >= vote_threshold) {
         console.log("Adding cadre member:", applicatorKey);
-        const cadreDiscord = await getCadreDiscord(applicatorKey);
+
+        const [discordError, cadreDiscord] = await tryAsyncLoggingRaw(
+          getCadreDiscord(applicatorKey),
+        );
+
+        if (discordError) {
+          log(
+            `Error getting cadre discord for ${applicatorKey}: ${discordError instanceof Error ? (discordError.stack ?? discordError.message) : JSON.stringify(discordError)}`,
+          );
+          return;
+        }
+
         if (cadreDiscord == null) {
-          throw new Error(
-            "No discord account found for cadre member: " + applicatorKey,
+          log(`No discord account found for cadre member: ${applicatorKey}`);
+          return;
+        }
+
+        const [addError] = await tryAsyncLoggingRaw(
+          addCadreMember(applicatorKey, cadreDiscord),
+        );
+        if (addError) {
+          log(
+            `Error adding cadre member ${applicatorKey}: ${addError instanceof Error ? (addError.stack ?? addError.message) : JSON.stringify(addError)}`,
           );
         }
-        await addCadreMember(applicatorKey, cadreDiscord);
       } else if (refuseVotes >= vote_threshold) {
         console.log("Refusing cadre application:", applicatorKey);
-        await refuseCadreApplication(applicatorKey);
+
+        const [refuseError] = await tryAsyncLoggingRaw(
+          refuseCadreApplication(applicatorKey),
+        );
+        if (refuseError) {
+          log(
+            `Error refusing cadre application ${applicatorKey}: ${refuseError instanceof Error ? (refuseError.stack ?? refuseError.message) : JSON.stringify(refuseError)}`,
+          );
+        }
       } else if (removeVotes >= vote_threshold) {
         console.log("Removing cadre member:", applicatorKey);
-        await removeCadreMember(applicatorKey);
+
+        const [removeError] = await tryAsyncLoggingRaw(
+          removeCadreMember(applicatorKey),
+        );
+        if (removeError) {
+          log(
+            `Error removing cadre member ${applicatorKey}: ${removeError instanceof Error ? (removeError.stack ?? removeError.message) : JSON.stringify(removeError)}`,
+          );
+        }
       }
     }),
   ).catch((error) =>
-    console.log(`Failed to process vote for reason: ${error}`),
+    log(
+      `Failed to process vote for reason: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
+    ),
   );
 }

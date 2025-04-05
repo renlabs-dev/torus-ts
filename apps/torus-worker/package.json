@@ -17,6 +17,7 @@
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "start": "node ./dist/index.js",
     "start:local": "pnpm with-env pnpm start",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "with-env": "dotenv -e ../../.env --"
   },
