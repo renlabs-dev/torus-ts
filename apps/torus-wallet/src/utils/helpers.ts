@@ -43,7 +43,6 @@ function isCurrencyInputValid(torusAmount: string, usdPrice: number): boolean {
     usdPrice <= 0 ||
     parsedAmount < 0
   ) {
-    console.warn("Invalid input:", { torusAmount, usdPrice });
     return false;
   }
 
@@ -59,7 +58,7 @@ export function convertTORUSToUSD(
   const formattedUsdPrice = usdPrice.toFixed(4);
 
   if (!isCurrencyInputValid(torusAmount, usdPrice)) {
-    return "0";
+    return "";
   }
 
   const result = parsedAmount * parseFloat(formattedUsdPrice);
@@ -73,7 +72,7 @@ export function convertUSDToTorus(usdAmount: string, usdPrice: number): string {
   const parsedAmount = parseFloat(usdAmount);
 
   if (!isCurrencyInputValid(usdAmount, usdPrice)) {
-    return "0";
+    return "";
   }
 
   return (Math.floor((parsedAmount / usdPrice) * 10000) / 10000).toString();
