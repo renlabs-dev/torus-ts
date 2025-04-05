@@ -19,19 +19,14 @@ export interface TabItem {
 interface TabLayoutProps {
   tabs: TabItem[];
   defaultTab: string;
-  containerClassName?: string;
 }
 
-export function TabLayout({
-  tabs,
-  defaultTab,
-  containerClassName = "container mx-auto p-4",
-}: TabLayoutProps) {
+export function TabLayout({ tabs, defaultTab }: TabLayoutProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   return (
     <Suspense fallback={<WalletSkeletonLoader />}>
-      <div className={containerClassName}>
+      <div className="container mx-auto">
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value)}

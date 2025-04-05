@@ -10,10 +10,10 @@ import type { Metadata } from "next";
 import { WalletProvider } from "~/context/wallet-provider";
 import { EnvScript, env } from "~/env";
 import { firaMono } from "~/utils/fonts";
-import { APRBar } from "./components/apr-bar/apr-bar";
-import { SidebarLinks } from "./components/sidebar-links";
-import { WalletBalance } from "./components/wallet-balance";
-import { WalletHeader } from "./components/wallet-header";
+import { APRBar } from "./_components/apr-bar/apr-bar";
+import { SidebarLinks } from "./_components/sidebar-links";
+import { WalletBalance } from "./_components/wallet-balance";
+import { WalletHeader } from "./_components/wallet-header";
 
 export const metadata: Metadata = {
   robots: "all",

@@ -11,11 +11,5 @@ const tabs: TabItem[] = [
 ];
 
 export default function TransfersLayout() {
-  return (
-    <TabLayout
-      tabs={tabs}
-      defaultTab="send"
-      containerClassName="container mx-auto"
-    />
-  );
+  return <TabLayout tabs={tabs} defaultTab="send" />;
 }

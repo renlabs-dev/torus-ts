@@ -17,9 +17,9 @@ import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { toNano } from "@torus-ts/utils/subspace";
 import type { RefObject } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { AmountButtons } from "../../../components/amount-buttons";
-import { FeeLabel } from "../../../components/fee-label";
-import type { FeeLabelHandle } from "../../../components/fee-label";
+import { AmountButtons } from "../../../_components/amount-buttons";
+import { FeeLabel } from "../../../_components/fee-label";
+import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 
 interface UnstakeFormProps {
