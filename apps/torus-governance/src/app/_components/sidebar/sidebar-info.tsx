@@ -1,12 +1,36 @@
 "use client";
 
-import { Card } from "@torus-ts/ui/components/card";
-import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import { Copy } from "lucide-react";
+import { SidebarInfoDesktop } from "./sidebar-info-desktop";
+import { SidebarInfoMobile } from "./sidebar-info-mobile";
+
+export interface SidebarDataProps {
+  treasuryBalance: {
+    value: string;
+    isLoading: boolean;
+  };
+  treasuryAddress: {
+    value: string;
+    formattedValue: string;
+    isLoading: boolean;
+  };
+  incentivesPayout: {
+    value: string;
+    isLoading: boolean;
+  };
+  cadreMembers: {
+    value: number;
+    isLoading: boolean;
+  };
+  voteThreshold: {
+    value: number;
+    isLoading: boolean;
+  };
+  handleCopyClick: (value: string) => void;
+}
 
 export const SidebarInfo = () => {
   const { rewardAllocation, daoTreasuryAddress, daoTreasuryBalance } =
@@ -33,82 +57,74 @@ export const SidebarInfo = () => {
       });
   }
 
+  // Safe access with type checking for treasury balance
+  const treasuryBalanceIsLoading =
+    daoTreasuryBalance.data === undefined || daoTreasuryBalance.error !== null;
+
+  const formattedDaoTreasuryBalance =
+    !treasuryBalanceIsLoading && daoTreasuryBalance.data
+      ? formatToken(daoTreasuryBalance.data)
+      : "";
+
+  // Safe access with type checking for treasury address
+  const treasuryAddressIsLoading =
+    daoTreasuryAddress.data === undefined || daoTreasuryAddress.error !== null;
+
+  const rawTreasuryAddress =
+    !treasuryAddressIsLoading && daoTreasuryAddress.data
+      ? daoTreasuryAddress.data
+      : "";
+
+  const formattedDaoTreasuryAddress = rawTreasuryAddress
+    ? smallAddress(rawTreasuryAddress)
+    : "";
+
+  // Safe access with type checking for reward allocation
+  const rewardAllocationIsLoading =
+    rewardAllocation.data === undefined || rewardAllocation.error !== null;
+
+  const formattedRewardAllocation =
+    !rewardAllocationIsLoading && rewardAllocation.data
+      ? formatToken(rewardAllocation.data)
+      : "";
+
+  const cadreCount =
+    isFetchingCadreList || !cadreListData ? 0 : cadreListData.length;
+
+  const voteThreshold =
+    isFetchingCadreList || !cadreListData
+      ? 0
+      : Math.floor(cadreListData.length / 2 + 1);
+
+  const sidebarData = {
+    treasuryBalance: {
+      value: formattedDaoTreasuryBalance,
+      isLoading: treasuryBalanceIsLoading,
+    },
+    treasuryAddress: {
+      value: rawTreasuryAddress,
+      formattedValue: formattedDaoTreasuryAddress,
+      isLoading: treasuryAddressIsLoading,
+    },
+    incentivesPayout: {
+      value: formattedRewardAllocation,
+      isLoading: rewardAllocationIsLoading,
+    },
+    cadreMembers: {
+      value: cadreCount,
+      isLoading: isFetchingCadreList,
+    },
+    voteThreshold: {
+      value: voteThreshold,
+      isLoading: isFetchingCadreList,
+    },
+    handleCopyClick,
+  };
+
   return (
     <>
-      <Card className="animate-fade-up animate-delay-[400ms] hidden flex-col gap-6 px-7 py-5 lg:flex">
-        <div>
-          {daoTreasuryBalance.data === undefined ? (
-            <Skeleton className="flex w-1/3 py-3" />
-          ) : (
-            <p className="flex items-end gap-1 text-base">
-              {formatToken(daoTreasuryBalance.data)}
-              <span className="mb-0.5 text-xs">TORUS</span>
-            </p>
-          )}
-          <span className="text-muted-foreground text-sm">
-            DAO treasury funds
-          </span>
-        </div>
-        <div>
-          {daoTreasuryAddress.data === undefined ? (
-            <Skeleton className="flex w-3/4 py-3" />
-          ) : (
-            <span className="flex gap-3">
-              {smallAddress(daoTreasuryAddress.data)}
-              <button onClick={() => handleCopyClick(daoTreasuryAddress.data)}>
-                <Copy
-                  size={16}
-                  className="text-muted-foreground hover:text-white"
-                />
-              </button>
-            </span>
-          )}
-          <span className="text-muted-foreground text-sm">
-            DAO treasury address
-          </span>
-        </div>
-        <div className="flex flex-col">
-          {rewardAllocation.data === undefined ? (
-            <Skeleton className="flex w-1/3 py-3" />
-          ) : (
-            <p className="flex items-end gap-1 text-base">
-              {formatToken(rewardAllocation.data)}
-              <span className="mb-0.5 text-xs">TORUS</span>
-            </p>
-          )}
-          <span className="text-muted-foreground text-sm">
-            Next DAO incentives payout
-          </span>
-        </div>
-      </Card>
-      <Card className="animate-fade-up animate-delay-[400ms] hidden flex-col gap-6 px-7 py-5 lg:flex">
-        <div className="flex flex-col">
-          <span>
-            {isFetchingCadreList ? (
-              <Skeleton className="flex w-1/5 py-3" />
-            ) : (
-              (cadreListData?.length ?? 0)
-            )}
-          </span>
-          <span className="text-muted-foreground text-sm">
-            Curator DAO Members
-          </span>
-        </div>
-
-        <div className="flex flex-col">
-          <span>
-            {isFetchingCadreList ? (
-              <Skeleton className="flex w-1/5 py-3" />
-            ) : (
-              Math.floor((cadreListData?.length ?? 0) / 2 + 1) // TODO: move logic out of component
-            )}
-          </span>
-          <span className="text-muted-foreground text-sm">
-            {" "}
-            Curator DAO Vote threshold
-          </span>
-        </div>
-      </Card>
+      <SidebarInfoDesktop data={sidebarData} />
+      <SidebarInfoMobile data={sidebarData} />
     </>
   );
 };
