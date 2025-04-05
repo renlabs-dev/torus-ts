@@ -1,9 +1,5 @@
 "use client";
 
-import { CreateAgentApplication } from "./agent-application/create-agent-application";
-import { CreateProposal } from "./proposal/create-proposal";
-import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
-import { RegisterAgent } from "./proposal/register-agent";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Alert,
@@ -26,9 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { useGovernance } from "~/context/governance-provider";
 import { ClipboardPlus } from "lucide-react";
 import { useState } from "react";
-import { useGovernance } from "~/context/governance-provider";
+import { CreateAgentApplication } from "./agent-application/create-agent-application";
+import { CreateProposal } from "./proposal/create-proposal";
+import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
+import { RegisterAgent } from "./proposal/register-agent";
 
 type ViewType =
   | "whitelist-agent"
@@ -61,7 +61,7 @@ const viewList: Record<ViewType, ViewSpec> = {
     component: <CreateTransferDaoTreasuryProposal />,
   },
 };
-export function CreateModal() {
+export function ShapeNetworkModal() {
   const { isAccountConnected } = useTorus();
   const { isInitialized } = useGovernance();
   const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");

@@ -6,9 +6,9 @@ import { handleCustomProposal } from "~/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { CardSkeleton } from "../card-skeleton";
-import { CardViewData } from "../card-view-data";
-import type { VoteStatus } from "../vote-label";
+import { CardSkeleton } from "../../../_components/card-skeleton";
+import { CardViewData } from "../../../_components/card-view-data";
+import type { VoteStatus } from "../../../_components/vote-label";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700];

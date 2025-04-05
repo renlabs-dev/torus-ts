@@ -1,8 +1,8 @@
 "use client";
 
-import { PopoverInfo } from "../_components/popover-info";
-import { SidebarInfo } from "../_components/sidebar-info";
-import { SidebarNav } from "../_components/sidebar-nav";
+import { PopoverInfo } from "../_components/sidebar/popover-info";
+import { SidebarInfo } from "../_components/sidebar/sidebar-info";
+import { SidebarNav } from "../_components/sidebar/sidebar-nav";
 
 export default function PagesLayout({
   children,

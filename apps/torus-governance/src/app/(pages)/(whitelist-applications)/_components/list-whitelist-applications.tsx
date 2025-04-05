@@ -8,8 +8,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { match } from "rustie";
-import { CardSkeleton } from "../card-skeleton";
-import { CardViewData } from "../card-view-data";
+import { CardSkeleton } from "../../../_components/card-skeleton";
+import { CardViewData } from "../../../_components/card-view-data";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700];
@@ -43,7 +43,7 @@ const ErrorState = ({ message }: { message: string }) => (
   <p>Error loading agent data: {message}</p>
 );
 
-export const ListAgentApplications = () => {
+export const ListWhitelistApplications = () => {
   const {
     agentApplicationsWithMeta,
     isInitialized,
