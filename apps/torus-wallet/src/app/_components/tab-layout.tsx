@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, Suspense, useState } from "react";
+import type { ReactNode } from "react";
+import { Suspense, useState } from "react";
 import {
   Tabs,
   TabsContent,
