@@ -8,8 +8,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { match } from "rustie";
-import { CardSkeleton } from "../../../_components/card-skeleton";
-import { CardViewData } from "../../../_components/card-view-data";
+import { CardSkeleton } from "../../../_components/dao-content-card/card-skeleton";
+import { CardViewData } from "../../../_components/dao-content-card/card-view-data";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700];

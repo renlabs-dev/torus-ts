@@ -14,8 +14,8 @@ import { VoteData } from "~/app/_components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
 import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
+import type { VoteStatus } from "../../../../_components/dao-content-card/vote-label";
 import { StatusLabel } from "../../../../_components/status-label";
-import type { VoteStatus } from "../../../../_components/vote-label";
 import { handleCustomProposal } from "../../../../../utils";
 
 interface CustomContent {

@@ -16,8 +16,8 @@ import { useGovernance } from "~/context/governance-provider";
 import { TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
+import type { VoteStatus } from "../dao-content-card/vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import type { VoteStatus } from "../vote-label";
 import { VotePowerSettings } from "./vote-power-settings";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];
