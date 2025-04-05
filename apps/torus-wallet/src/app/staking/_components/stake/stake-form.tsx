@@ -14,6 +14,7 @@ import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import { AllocatorSelector } from "../../../_components/allocator-selector";
 import { AmountButtons } from "../../../_components/amount-buttons";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
@@ -26,7 +27,7 @@ interface StakeFormProps {
   feeRef: React.RefObject<FeeLabelHandle | null>;
   minAllowedStakeData: bigint;
   transactionStatus: TransactionResult;
-  onSetCurrentView: (view: "wallet" | "validators") => void;
+  handleSelectValidator: (validator: { address: string }) => Promise<void>;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
   onSubmit: (values: StakeFormValues) => Promise<void>;
@@ -39,7 +40,7 @@ export function StakeForm({
   feeRef,
   minAllowedStakeData,
   transactionStatus,
-  onSetCurrentView,
+  handleSelectValidator,
   onReviewClick,
   handleAmountChange,
   onSubmit,
@@ -60,24 +61,15 @@ export function StakeForm({
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Allocator Address</FormLabel>
-                <div className="flex flex-row gap-2">
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Full Allocator address"
-                      disabled={!selectedAccount?.address}
-                    />
-                  </FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
+                <FormControl>
+                  <AllocatorSelector
+                    value={field.value}
+                    onSelect={handleSelectValidator}
+                    listType="all"
+                    placeholder="Select an allocator"
                     disabled={!selectedAccount?.address}
-                    onClick={() => onSetCurrentView("validators")}
-                    className="flex w-fit items-center px-6 py-2.5"
-                  >
-                    Allocators
-                  </Button>
-                </div>
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

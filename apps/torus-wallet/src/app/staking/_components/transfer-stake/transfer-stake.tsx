@@ -188,43 +188,29 @@ export function TransferStake() {
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
-      {(currentView === "validators" || currentView === "stakedValidators") && (
-        <ValidatorsList
-          listType={currentView === "validators" ? "all" : "staked"}
-          excludeAddress={() => getValues("fromValidator")}
-          onSelectValidator={
-            currentView === "stakedValidators"
-              ? handleSelectFromValidator
-              : handleSelectToValidator
-          }
-          onBack={() => setCurrentView("wallet")}
-        />
-      )}
-      {currentView === "wallet" && (
-        <TransferStakeForm
-          form={form}
-          selectedAccount={selectedAccount}
-          maxAmountRef={maxAmountRef}
-          feeRef={feeRef}
-          transactionStatus={transactionStatus}
-          onSetCurrentView={setCurrentView}
-          onReviewClick={handleReviewClick}
-          handleAmountChange={handleAmountChange}
-          onSubmit={onSubmit}
-          formRef={formRef}
-        />
-      )}
-      {currentView === "wallet" && (
-        <ReviewTransactionDialog
-          ref={reviewDialogRef}
-          formRef={formRef}
-          usdPrice={usdPrice}
-          from={selectedAccount?.address}
-          to={getValues().toValidator}
-          amount={getValues().amount}
-          fee={feeRef.current?.getEstimatedFee() ?? "0"}
-        />
-      )}
+      <TransferStakeForm
+        form={form}
+        selectedAccount={selectedAccount}
+        maxAmountRef={maxAmountRef}
+        feeRef={feeRef}
+        transactionStatus={transactionStatus}
+        handleSelectFromValidator={handleSelectFromValidator}
+        handleSelectToValidator={handleSelectToValidator}
+        onReviewClick={handleReviewClick}
+        handleAmountChange={handleAmountChange}
+        onSubmit={onSubmit}
+        formRef={formRef}
+        fromValidatorValue={getValues("fromValidator")}
+      />
+      <ReviewTransactionDialog
+        ref={reviewDialogRef}
+        formRef={formRef}
+        usdPrice={usdPrice}
+        from={selectedAccount?.address}
+        to={getValues().toValidator}
+        amount={getValues().amount}
+        fee={feeRef.current?.getEstimatedFee() ?? "0"}
+      />
     </div>
   );
 }

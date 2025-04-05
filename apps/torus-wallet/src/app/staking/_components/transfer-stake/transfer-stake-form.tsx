@@ -17,6 +17,7 @@ import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { toNano } from "@torus-ts/utils/subspace";
 import type { RefObject } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import { AllocatorSelector } from "../../../_components/allocator-selector";
 import { AmountButtons } from "../../../_components/amount-buttons";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
@@ -28,13 +29,13 @@ interface TransferStakeFormProps {
   maxAmountRef: RefObject<string>;
   feeRef: RefObject<FeeLabelHandle | null>;
   transactionStatus: TransactionResult;
-  onSetCurrentView: (
-    view: "wallet" | "validators" | "stakedValidators",
-  ) => void;
+  handleSelectFromValidator: (validator: { address: string }) => Promise<void>;
+  handleSelectToValidator: (validator: { address: string }) => Promise<void>;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (amount: string) => Promise<void>;
   onSubmit: (values: TransferStakeFormValues) => Promise<void>;
   formRef: RefObject<HTMLFormElement | null>;
+  fromValidatorValue: string;
 }
 
 export function TransferStakeForm({
@@ -43,11 +44,13 @@ export function TransferStakeForm({
   maxAmountRef,
   feeRef,
   transactionStatus,
-  onSetCurrentView,
+  handleSelectFromValidator,
+  handleSelectToValidator,
   onReviewClick,
   handleAmountChange,
   onSubmit,
   formRef,
+  fromValidatorValue,
 }: TransferStakeFormProps) {
   return (
     <Card className="animate-fade w-full p-6">
@@ -63,24 +66,15 @@ export function TransferStakeForm({
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>From Allocator</FormLabel>
-                <div className="flex flex-row gap-2">
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Full Allocator address"
-                      disabled={!selectedAccount?.address}
-                    />
-                  </FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
+                <FormControl>
+                  <AllocatorSelector
+                    value={field.value}
+                    onSelect={handleSelectFromValidator}
+                    listType="staked"
+                    placeholder="Select a staked allocator"
                     disabled={!selectedAccount?.address}
-                    onClick={() => onSetCurrentView("stakedValidators")}
-                    className="flex w-fit items-center px-6 py-2.5"
-                  >
-                    Staked Allocators
-                  </Button>
-                </div>
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -91,24 +85,16 @@ export function TransferStakeForm({
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>To Allocator</FormLabel>
-                <div className="flex flex-row gap-2">
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Full Allocator address"
-                      disabled={!selectedAccount?.address}
-                    />
-                  </FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
+                <FormControl>
+                  <AllocatorSelector
+                    value={field.value}
+                    onSelect={handleSelectToValidator}
+                    listType="all"
+                    placeholder="Select an allocator"
+                    excludeAddress={fromValidatorValue}
                     disabled={!selectedAccount?.address}
-                    onClick={() => onSetCurrentView("validators")}
-                    className="flex w-fit items-center px-6 py-2.5"
-                  >
-                    Select Allocator
-                  </Button>
-                </div>
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

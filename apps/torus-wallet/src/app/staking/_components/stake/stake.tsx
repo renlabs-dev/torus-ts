@@ -155,37 +155,27 @@ export function Stake() {
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
-      {currentView === "validators" ? (
-        <ValidatorsList
-          listType="all"
-          onSelectValidator={handleSelectValidator}
-          onBack={() => setCurrentView("wallet")}
-        />
-      ) : (
-        <StakeForm
-          form={form}
-          selectedAccount={selectedAccount}
-          maxAmountRef={maxAmountRef}
-          feeRef={feeRef}
-          minAllowedStakeData={minAllowedStakeData}
-          transactionStatus={transactionStatus}
-          onSetCurrentView={setCurrentView}
-          onReviewClick={handleReviewClick}
-          handleAmountChange={handleAmountChange}
-          onSubmit={onSubmit}
-        />
-      )}
-      {currentView !== "validators" && (
-        <ReviewTransactionDialog
-          ref={reviewDialogRef}
-          formRef={{ current: null }}
-          usdPrice={usdPrice}
-          from={selectedAccount?.address}
-          to={getValues().recipient}
-          amount={getValues().amount}
-          fee={feeRef.current?.getEstimatedFee() ?? "0"}
-        />
-      )}
+      <StakeForm
+        form={form}
+        selectedAccount={selectedAccount}
+        maxAmountRef={maxAmountRef}
+        feeRef={feeRef}
+        minAllowedStakeData={minAllowedStakeData}
+        transactionStatus={transactionStatus}
+        handleSelectValidator={handleSelectValidator}
+        onReviewClick={handleReviewClick}
+        handleAmountChange={handleAmountChange}
+        onSubmit={onSubmit}
+      />
+      <ReviewTransactionDialog
+        ref={reviewDialogRef}
+        formRef={{ current: null }}
+        usdPrice={usdPrice}
+        from={selectedAccount?.address}
+        to={getValues().recipient}
+        amount={getValues().amount}
+        fee={feeRef.current?.getEstimatedFee() ?? "0"}
+      />
     </div>
   );
 }

@@ -170,37 +170,27 @@ export function Unstake() {
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
-      {currentView === "stakedValidators" ? (
-        <ValidatorsList
-          listType="staked"
-          onSelectValidator={handleSelectValidator}
-          onBack={() => setCurrentView("wallet")}
-        />
-      ) : (
-        <UnstakeForm
-          form={form}
-          selectedAccount={selectedAccount}
-          maxAmountRef={maxAmountRef}
-          feeRef={feeRef}
-          transactionStatus={transactionStatus}
-          onSetCurrentView={setCurrentView}
-          onReviewClick={handleReviewClick}
-          handleAmountChange={handleAmountChange}
-          onSubmit={onSubmit}
-          formRef={formRef}
-        />
-      )}
-      {currentView !== "stakedValidators" && (
-        <ReviewTransactionDialog
-          ref={reviewDialogRef}
-          formRef={formRef}
-          usdPrice={usdPrice}
-          from={selectedAccount?.address}
-          to={getValues().validator}
-          amount={getValues().amount}
-          fee={feeRef.current?.getEstimatedFee() ?? "0"}
-        />
-      )}
+      <UnstakeForm
+        form={form}
+        selectedAccount={selectedAccount}
+        maxAmountRef={maxAmountRef}
+        feeRef={feeRef}
+        transactionStatus={transactionStatus}
+        handleSelectValidator={handleSelectValidator}
+        onReviewClick={handleReviewClick}
+        handleAmountChange={handleAmountChange}
+        onSubmit={onSubmit}
+        formRef={formRef}
+      />
+      <ReviewTransactionDialog
+        ref={reviewDialogRef}
+        formRef={formRef}
+        usdPrice={usdPrice}
+        from={selectedAccount?.address}
+        to={getValues().validator}
+        amount={getValues().amount}
+        fee={feeRef.current?.getEstimatedFee() ?? "0"}
+      />
     </div>
   );
 }
