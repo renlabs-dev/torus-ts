@@ -1,14 +1,14 @@
 "use client";
 
 import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
+import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
+import type { VoteStatus } from "~/app/_components/dao-card/components/vote-label";
+import { ProposalCard } from "~/app/(pages)/proposals/_components/proposal-card";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomProposal } from "~/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { CardSkeleton } from "../../../_components/dao-content-card/card-skeleton";
-import { CardViewData } from "../../../_components/dao-content-card/card-view-data";
-import type { VoteStatus } from "../../../_components/dao-content-card/vote-label";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700];
@@ -100,7 +100,7 @@ export const ListProposals = () => {
 
         return (
           <Link href={`/proposal/${proposal.id}`} key={proposal.id} prefetch>
-            <CardViewData
+            <ProposalCard
               title={title}
               author={proposal.proposer}
               voted={voted}

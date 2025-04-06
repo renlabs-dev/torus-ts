@@ -1,6 +1,8 @@
 "use client";
 
 import type { AgentApplication } from "@torus-network/sdk";
+import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
+import { AgentApplicationCard } from "~/app/(pages)/(whitelist-applications)/_components/agent-application-card";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { handleCustomAgentApplications } from "~/utils";
@@ -8,8 +10,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { match } from "rustie";
-import { CardSkeleton } from "../../../_components/dao-content-card/card-skeleton";
-import { CardViewData } from "../../../_components/dao-content-card/card-view-data";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700];
@@ -110,7 +110,7 @@ export const ListWhitelistApplications = () => {
 
         return (
           <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
-            <CardViewData
+            <AgentApplicationCard
               title={title}
               author={app.payerKey}
               agentApplicationStatus={app.status}

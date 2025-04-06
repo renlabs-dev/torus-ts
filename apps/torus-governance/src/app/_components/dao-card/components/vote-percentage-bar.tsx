@@ -3,7 +3,6 @@ import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { calcProposalFavorablePercent } from "~/utils";
 
 export const VotePercentageBar = (props: {
-  // favorablePercent: number | null | undefined;
   proposalStatus: ProposalStatus;
 }) => {
   const { proposalStatus } = props;
