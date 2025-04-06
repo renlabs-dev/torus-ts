@@ -16,7 +16,7 @@ import { useGovernance } from "~/context/governance-provider";
 import { TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
-import type { VoteStatus } from "../dao-content-card/vote-label";
+import type { VoteStatus } from "../dao-card/components/vote-label";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { VotePowerSettings } from "./vote-power-settings";
 

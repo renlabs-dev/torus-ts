@@ -4,6 +4,7 @@ import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
 import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
 import { CreateComment } from "~/app/_components/comments/create-comment";
 import { ViewComment } from "~/app/_components/comments/view-comment";
+import type { VoteStatus } from "~/app/_components/dao-card/components/vote-label";
 import { DetailsCard } from "~/app/_components/details-card";
 import { ExpandedViewContent } from "~/app/_components/expanded-view-content";
 import { ProposalTypeLabel } from "~/app/_components/proposal/proposal-type-label";
@@ -14,7 +15,6 @@ import { VoteData } from "~/app/_components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
 import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
-import type { VoteStatus } from "../../../../_components/dao-content-card/vote-label";
 import { StatusLabel } from "../../../../_components/status-label";
 import { handleCustomProposal } from "../../../../../utils";
 
