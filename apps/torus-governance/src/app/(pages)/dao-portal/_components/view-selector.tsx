@@ -12,10 +12,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const statusOptions = [
-  { label: "Active Candidates", value: "PENDING" },
-  { label: "DAO Curator Members", value: "ACCEPTED" },
-  { label: "Rejected from DAO Curator", value: "REJECTED" },
-  { label: "Removed from DAO Curator", value: "REMOVED" },
+  { label: "Candidates", value: "PENDING" },
+  { label: "DAO Members", value: "ACCEPTED" },
+  { label: "Rejected", value: "REJECTED" },
+  { label: "Removed", value: "REMOVED" },
 ];
 
 export function ViewSelector({
