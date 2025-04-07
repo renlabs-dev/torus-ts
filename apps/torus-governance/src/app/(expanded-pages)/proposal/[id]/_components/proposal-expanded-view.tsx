@@ -4,7 +4,6 @@ import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
 import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
 import { CreateComment } from "~/app/_components/comments/create-comment";
 import { ViewComment } from "~/app/_components/comments/view-comment";
-import type { VoteStatus } from "~/app/_components/dao-card/components/vote-label";
 import { DetailsCard } from "~/app/_components/details-card";
 import { ExpandedViewContent } from "~/app/_components/expanded-view-content";
 import { ProposalTypeLabel } from "~/app/_components/proposal/proposal-type-label";
@@ -13,9 +12,10 @@ import { RewardLabel } from "~/app/_components/proposal/reward-label";
 import { VoterList } from "~/app/_components/proposal/voter-list";
 import { VoteData } from "~/app/_components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
+import type { VoteStatus } from "~/utils/types";
 import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
-import { StatusLabel } from "../../../../_components/status-label";
+import { ProposalStatusLabel } from "../../../../_components/proposal/proposal-status-label";
 import { handleCustomProposal } from "../../../../../utils";
 
 interface CustomContent {
@@ -137,7 +137,7 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-row items-center gap-2">
         <ProposalTypeLabel proposalType={content.data} />
-        <StatusLabel status={content.status} />
+        <ProposalStatusLabel status={content.status} />
         <RewardLabel proposalId={content.id} result={content.status} />
       </div>
       <div className="flex w-full gap-10">

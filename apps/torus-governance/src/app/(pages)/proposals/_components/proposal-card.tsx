@@ -5,14 +5,14 @@ import type {
   ProposalStatus,
   SS58Address,
 } from "@torus-network/sdk";
+import type { VoteStatus } from "~/utils/types";
 import { AuthorInfo } from "../../../_components/dao-card/components/author-info";
 import { ExpirationInfo } from "../../../_components/dao-card/components/expiration-info";
-import type { VoteStatus } from "../../../_components/dao-card/components/vote-label";
-import { VoteLabel } from "../../../_components/dao-card/components/vote-label";
 import { VotePercentageBar } from "../../../_components/dao-card/components/vote-percentage-bar";
 import { DaoCard } from "../../../_components/dao-card/index";
+import { ProposalStatusLabel } from "../../../_components/proposal/proposal-status-label";
 import { ProposalTypeLabel } from "../../../_components/proposal/proposal-type-label";
-import { StatusLabel } from "../../../_components/status-label";
+import { ProposalVoteLabel } from "../../../_components/proposal/proposal-vote-label";
 
 export interface ProposalCardProps {
   title: string | null;
@@ -38,9 +38,9 @@ export function ProposalCard({
   // Generate top-right content (status labels)
   const topRightContent = (
     <>
-      {voted && <VoteLabel vote={voted} />}
+      {voted && <ProposalVoteLabel vote={voted} />}
+      {proposalStatus && <ProposalStatusLabel status={proposalStatus} />}
       {proposalType && <ProposalTypeLabel proposalType={proposalType} />}
-      {proposalStatus && <StatusLabel status={proposalStatus} />}
     </>
   );
 
