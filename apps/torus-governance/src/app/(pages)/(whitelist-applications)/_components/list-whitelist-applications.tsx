@@ -70,9 +70,11 @@ export const ListWhitelistApplications = () => {
 
     const search = searchParams.get("search")?.toLowerCase();
     const statusFilter = searchParams.get("whitelist-status")?.toLowerCase();
+    
+    // Create a stable copy in reverse order
+    const reversedApplications = [...agentApplicationsWithMeta].reverse();
 
-    return agentApplicationsWithMeta
-      .reverse()
+    return reversedApplications
       .map((app) => {
         const { title, body } = handleCustomAgentApplications(
           app.id,
