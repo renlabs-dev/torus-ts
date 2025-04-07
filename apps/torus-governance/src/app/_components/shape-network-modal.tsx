@@ -104,7 +104,7 @@ export function ShapeNetworkModal() {
         </DialogHeader>
 
         {!isAccountConnected && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive">
             <AlertTitle>Wallet Required</AlertTitle>
             <AlertDescription>
               Please connect a wallet to submit an application
