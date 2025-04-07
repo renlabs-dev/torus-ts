@@ -8,7 +8,7 @@ import type {
 import type { VoteStatus } from "~/utils/types";
 import { AuthorInfo } from "../../../_components/dao-card/components/author-info";
 import { ExpirationInfo } from "../../../_components/dao-card/components/expiration-info";
-import { VotePercentageBar } from "../../../_components/dao-card/components/vote-percentage-bar";
+import { ProposalVotePercentageBar } from "../../../_components/dao-card/components/proposal-vote-percentage-bar";
 import { DaoCard } from "../../../_components/dao-card/index";
 import { ProposalStatusLabel } from "../../../_components/proposal/proposal-status-label";
 import { ProposalTypeLabel } from "../../../_components/proposal/proposal-type-label";
@@ -63,7 +63,9 @@ export function ProposalCard({
       topRightContent={topRightContent}
       metaContent={metaContent}
     >
-      {isProposalOpen && <VotePercentageBar proposalStatus={proposalStatus} />}
+      {isProposalOpen && (
+        <ProposalVotePercentageBar proposalStatus={proposalStatus} />
+      )}
     </DaoCard>
   );
 }

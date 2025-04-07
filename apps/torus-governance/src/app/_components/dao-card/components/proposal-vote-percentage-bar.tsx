@@ -2,7 +2,7 @@ import type { ProposalStatus } from "@torus-network/sdk";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { calcProposalFavorablePercent } from "~/utils";
 
-export const VotePercentageBar = (props: {
+export const ProposalVotePercentageBar = (props: {
   proposalStatus: ProposalStatus;
 }) => {
   const { proposalStatus } = props;
