@@ -96,7 +96,7 @@ export function ShapeNetworkModal() {
           Shape the network
         </Button>
       </DialogTrigger>
-      <DialogContent className="border-muted max-h-[90%] w-full max-w-[100vw] gap-6 overflow-y-auto md:w-[80%] md:max-w-screen-xl">
+      <DialogContent className="border-muted max-h-[80%] w-full max-w-[100vw] gap-6 overflow-y-auto md:w-[80%] md:max-w-screen-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Shape the network
@@ -107,7 +107,7 @@ export function ShapeNetworkModal() {
           <Alert variant="destructive">
             <AlertTitle>Wallet Required</AlertTitle>
             <AlertDescription>
-              Please connect a wallet to submit an application
+              Please connect a wallet to {viewList[selectedView].label}
             </AlertDescription>
           </Alert>
         )}
