@@ -1,19 +1,13 @@
 "use client";
 
-import { Badge } from "@torus-ts/ui/components/badge";
-import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
-import { Label } from "@torus-ts/ui/components/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@torus-ts/ui/components/popover";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@torus-ts/ui/components/radio-group";
-import { FilterIcon, X } from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui/components/select";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -89,8 +83,6 @@ export function FilterContent({
     searchParams.get(statusParamName) ?? defaultStatus,
   );
 
-  const [open, setOpen] = useState(false);
-
   const createQueryString = useCallback(
     (params: Record<string, string | null>) => {
       const newParams = new URLSearchParams(searchParams.toString());
@@ -129,69 +121,27 @@ export function FilterContent({
     updateFilters();
   }, [search, selectedStatus, updateFilters]);
 
-  const hasFilters = selectedStatus !== defaultStatus;
-
-  const activeFiltersCount = selectedStatus !== defaultStatus ? 1 : 0;
-
   return (
-    <div className="flex w-full flex-col gap-3">
-      <div className="flex w-full gap-2">
-        <Input
-          placeholder={searchPlaceholder}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-2/3"
-        />
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="relative">
-              <FilterIcon size={18} />
-              {activeFiltersCount > 0 && (
-                <span className="bg-primary text-primary-foreground absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px]">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <RadioGroup
-              value={selectedStatus}
-              onValueChange={setSelectedStatus}
-              className="grid grid-cols-2 gap-2"
-            >
-              {filterOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value={option.value}
-                    id={`status-${option.value}`}
-                  />
-                  <Label htmlFor={`status-${option.value}`}>
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </PopoverContent>
-        </Popover>
-        {hasFilters && (
-          <div className="hidden flex-nowrap gap-2 sm:flex">
-            {selectedStatus !== defaultStatus && (
-              <Badge className="flex items-center gap-1 text-nowrap">
-                Status:{" "}
-                {
-                  filterOptions.find((opt) => opt.value === selectedStatus)
-                    ?.label
-                }
-                <X
-                  size={14}
-                  className="cursor-pointer"
-                  onClick={() => setSelectedStatus(defaultStatus)}
-                />
-              </Badge>
-            )}
-          </div>
-        )}
-      </div>
+    <div className="flex w-full gap-3">
+      <Input
+        placeholder={searchPlaceholder}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full"
+      />
+
+      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+        <SelectTrigger className="w-[140px]">
+          <SelectValue placeholder="Status" />
+        </SelectTrigger>
+        <SelectContent>
+          {filterOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

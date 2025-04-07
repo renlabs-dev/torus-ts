@@ -57,6 +57,15 @@ export const AgentApplicationVotePercentageBar = (props: {
         whitelistStatus !== "active" && "opacity-60",
       )}
     >
+      {whitelistStatus === "active" && (
+        <div
+          className="absolute -top-[0.20em] z-20 h-[2.43em] w-0.5 translate-x-1/2 rounded-full bg-white"
+          style={{
+            left: `${thresholdPercent}%`,
+          }}
+        />
+      )}
+
       <div className="border-border bg-primary-foreground relative h-8 w-full overflow-hidden rounded-full border">
         {/* Favorable votes section */}
         <div
@@ -68,24 +77,6 @@ export const AgentApplicationVotePercentageBar = (props: {
         <div
           className="absolute right-0 top-0 h-full rounded-full rounded-l-none bg-white/20"
           style={{ width: `${againstWidth}%` }}
-        />
-
-        {/* Threshold line */}
-        <div
-          className={cn(
-            "absolute bottom-0 top-0 z-10 w-0.5 bg-green-600",
-            whitelistStatus !== "active" ? "hidden" : "block",
-          )}
-          style={{ left: `${thresholdPercent}%` }}
-        />
-
-        {/* Threshold line */}
-        <div
-          className={cn(
-            "absolute bottom-0 top-0 z-10 w-0.5 bg-red-600",
-            whitelistStatus !== "active" ? "hidden" : "block",
-          )}
-          style={{ right: `${thresholdPercent}%` }}
         />
 
         <div className="absolute inset-0 flex items-center justify-between px-3 text-sm">

@@ -1,6 +1,8 @@
 "use client";
 
 import type { AgentApplication } from "@torus-network/sdk";
+import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
+import { AgentApplicationCard } from "~/app/(pages)/(whitelist-applications)/_components/agent-application-card";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { handleCustomAgentApplications } from "~/utils";
@@ -8,11 +10,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { match } from "rustie";
-import { CardSkeleton } from "../../../_components/card-skeleton";
-import { CardViewData } from "../../../_components/card-view-data";
 
 const ListCardsLoadingSkeleton = () => {
-  const delayValues = [200, 500, 700];
+  const delayValues = [200, 500, 700, 1000];
 
   return (
     <div className="w-full space-y-4">
@@ -49,15 +49,10 @@ export const ListWhitelistApplications = () => {
     isInitialized,
     agentApplications,
     selectedAccount,
+    agents
   } = useGovernance();
 
   const searchParams = useSearchParams();
-
-  const {
-    data: activeAgents,
-    isLoading: isLoadingActiveAgents,
-    error: activeAgentsError,
-  } = api.agent.all.useQuery();
 
   const { data: votesPerUserKey } = api.agentApplicationVote.byUserKey.useQuery(
     { userKey: selectedAccount?.address ?? "" },
@@ -68,7 +63,7 @@ export const ListWhitelistApplications = () => {
     !agentApplicationsWithMeta ||
     agentApplications.isPending ||
     !isInitialized ||
-    isLoadingActiveAgents;
+    agents.isPending;
 
   const filteredAgentApplications = useMemo(() => {
     if (!agentApplicationsWithMeta) return [];
@@ -100,9 +95,7 @@ export const ListWhitelistApplications = () => {
 
         if (!matchesSearch || !matchesStatus) return null;
 
-        const isActiveAgent = activeAgents?.some(
-          (agent) => agent.key === app.agentKey,
-        );
+        const isActiveAgent = agents.data?.has(app.agentKey);
 
         const userVoted = votesPerUserKey?.find(
           (vote) => vote.applicationId === app.id,
@@ -110,7 +103,7 @@ export const ListWhitelistApplications = () => {
 
         return (
           <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
-            <CardViewData
+            <AgentApplicationCard
               title={title}
               author={app.payerKey}
               agentApplicationStatus={app.status}
@@ -123,11 +116,11 @@ export const ListWhitelistApplications = () => {
         );
       })
       .filter(Boolean);
-  }, [agentApplicationsWithMeta, searchParams, activeAgents, votesPerUserKey]);
+  }, [agentApplicationsWithMeta, searchParams, agents.data, votesPerUserKey]);
 
   if (isLoading) return <ListCardsLoadingSkeleton />;
-  if (activeAgentsError)
-    return <ErrorState message={activeAgentsError.message} />;
+  if (agents.error)
+    return <ErrorState message={agents.error.message} />;
   if (filteredAgentApplications.length === 0) return <EmptyState />;
 
   return filteredAgentApplications;

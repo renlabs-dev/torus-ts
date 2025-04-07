@@ -6,3 +6,5 @@ export type Candidate = NonNullable<
 >[number];
 
 export type CandidacyStatus = Candidate["candidacyStatus"];
+
+export type VoteStatus = "FAVORABLE" | "AGAINST" | "UNVOTED";
