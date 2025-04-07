@@ -2,17 +2,16 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58 } from "@torus-network/sdk";
-import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
-import { ValidatorsList } from "../../../_components/validators-list";
 import { handleEstimateFee } from "./stake-fee-handler";
 import { StakeForm } from "./stake-form";
 import type { StakeFormValues } from "./stake-form-schema";
@@ -35,7 +34,7 @@ export function Stake() {
     minAllowedStake,
   } = useWallet();
   const { toast } = useToast();
-  const { data: usdPrice = 0 } = useGetTorusPrice();
+  const { usdPrice } = useUsdPrice();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;

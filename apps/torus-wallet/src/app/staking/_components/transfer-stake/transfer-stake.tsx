@@ -2,18 +2,17 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58, isSS58 } from "@torus-network/sdk";
-import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { fromNano } from "@torus-ts/utils/subspace";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
-import { ValidatorsList } from "../../../_components/validators-list";
 import { handleEstimateFee } from "./transfer-stake-fee-handler";
 import { TransferStakeForm } from "./transfer-stake-form";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
@@ -34,7 +33,7 @@ export function TransferStake() {
     getExistencialDeposit,
   } = useWallet();
   const { toast } = useToast();
-  const { data: usdPrice = 0 } = useGetTorusPrice();
+  const { usdPrice } = useUsdPrice();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;

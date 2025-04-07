@@ -7,6 +7,7 @@ import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import "@torus-ts/ui/globals.css";
 import type { Metadata } from "next";
+import { UsdPriceProvider } from "~/context/usd-price-provider";
 import { WalletProvider } from "~/context/wallet-provider";
 import { EnvScript, env } from "~/env";
 import { firaMono } from "~/utils/fonts";
@@ -52,7 +53,9 @@ const Providers: React.FC<ProvidersProps> = ({
 }) => (
   <TorusProvider wsEndpoint={wsEndpoint} torusCacheUrl={torusCacheUrl}>
     <ReactQueryProvider>
-      <WalletProvider>{children}</WalletProvider>
+      <WalletProvider>
+        <UsdPriceProvider>{children}</UsdPriceProvider>
+      </WalletProvider>
     </ReactQueryProvider>
   </TorusProvider>
 );

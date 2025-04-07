@@ -1,11 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 import type { ReviewTransactionDialogHandle } from "~/app/_components/review-transaction-dialog";
@@ -25,7 +25,9 @@ export function Send() {
     transferTransaction,
   } = useWallet();
   const { toast } = useToast();
-  const { data: usdPrice = 0 } = useGetTorusPrice();
+  const { usdPrice } = useUsdPrice();
+
+  console.log("usdPrice", usdPrice);
 
   const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
