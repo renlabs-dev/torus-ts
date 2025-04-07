@@ -4,6 +4,7 @@ import type { AppRouter } from "@torus-ts/api";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
+import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
   Dialog,
@@ -234,7 +235,7 @@ const PenaltiesList = ({ penalties }: { penalties?: PenaltyList }) => {
 const LoadingState = () => <p>Loading...</p>;
 
 const EmptyState = () => (
-  <p className="animate-fade-down duration-500">No agents found</p>
+  <ContentNotFound message="No Agents matching the search criteria were found." />
 );
 
 export const ListAgents = () => {

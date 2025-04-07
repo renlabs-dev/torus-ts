@@ -1,6 +1,7 @@
 "use client";
 
 import type { AgentApplication } from "@torus-network/sdk";
+import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
 import { AgentApplicationCard } from "~/app/(pages)/(whitelist-applications)/_components/agent-application-card";
 import { useGovernance } from "~/context/governance-provider";
@@ -34,9 +35,7 @@ const mapStatusToView = (status: AgentApplication["status"]): string => {
 };
 
 const EmptyState = () => (
-  <p className="animate-fade-down duration-500">
-    No agent/module applications found.
-  </p>
+  <ContentNotFound message="No Whitelist Applications matching the search criteria were found." />
 );
 
 const ErrorState = ({ message }: { message: string }) => (
@@ -49,7 +48,7 @@ export const ListWhitelistApplications = () => {
     isInitialized,
     agentApplications,
     selectedAccount,
-    agents
+    agents,
   } = useGovernance();
 
   const searchParams = useSearchParams();
@@ -70,7 +69,7 @@ export const ListWhitelistApplications = () => {
 
     const search = searchParams.get("search")?.toLowerCase();
     const statusFilter = searchParams.get("whitelist-status")?.toLowerCase();
-    
+
     // Create a stable copy in reverse order
     const reversedApplications = [...agentApplicationsWithMeta].reverse();
 
@@ -121,8 +120,7 @@ export const ListWhitelistApplications = () => {
   }, [agentApplicationsWithMeta, searchParams, agents.data, votesPerUserKey]);
 
   if (isLoading) return <ListCardsLoadingSkeleton />;
-  if (agents.error)
-    return <ErrorState message={agents.error.message} />;
+  if (agents.error) return <ErrorState message={agents.error.message} />;
   if (filteredAgentApplications.length === 0) return <EmptyState />;
 
   return filteredAgentApplications;
