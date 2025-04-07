@@ -16,6 +16,7 @@ export type Ok<T> = readonly [empty, NonEmpty<T>];
 export type Err<E> = readonly [NonEmpty<E>, empty];
 
 export type Result<T, E> = Ok<T> | Err<E>;
+export type AsyncResult<T, E> = Promise<Result<T, E>>;
 
 export const makeOk = <T>(value: T): Ok<T> => Object.freeze([empty, value]);
 export const makeErr = <E>(value: E): Err<E> => Object.freeze([value, empty]);
@@ -33,79 +34,113 @@ export const isErr = <T, E>(result: Result<T, E>): result is Err<E> =>
 export const isOk = <T, E>(result: Result<T, E>): result is Ok<T> =>
   result[1] === empty;
 
-const match = <T, E, U>(
-  result: Result<T, E>,
-  matchers: { Ok: (value: T) => U; Err: (value: E) => U },
-): U => {
-  const [err, value] = result;
-  if (err !== empty) {
-    return matchers.Err(err);
+export class ResultObj<T, E> {
+  constructor(public value: Result<T, E>) {}
+  static Ok<T, E>(val: T): ResultObj<T, E> {
+    return new ResultObj(makeOk(val) as Result<T, E>);
   }
-  assert(value !== empty);
-  return matchers.Ok(value);
-};
-
-const map = <T, E, U>(
-  result: Result<T, E>,
-  f: (value: T) => NonEmpty<U>,
-): Result<U, E> => {
-  const [err, value] = result;
-  if (err !== empty) {
-    return makeErr(err);
+  static Err<T, E>(val: E): ResultObj<T, E> {
+    return new ResultObj(makeErr(val) as Result<T, E>);
   }
-  assert(value !== empty);
-  return makeOk(f(value));
-};
+  static from<T, E>(result: Result<T, E>): ResultObj<T, E> {
+    return new ResultObj(result);
+  }
 
-const mapErr = <T, E, U>(
-  result: Result<T, E>,
-  f: (value: E) => U,
-): Result<T, U> => {
-  const [err, value] = result;
-  if (err !== empty) return makeErr(f(err));
-  assert(value !== empty);
-  return makeOk(value);
-};
+  match<U>(matchers: { Ok: (value: T) => U; Err: (value: E) => U }): U {
+    const [err, value] = this.value;
+    if (err !== empty) {
+      return matchers.Err(err);
+    }
+    assert(value !== empty);
+    return matchers.Ok(value);
+  }
 
-// ==== Proxy wrapper ====
+  map<U>(f: (value: T) => NonEmpty<U>): ResultObj<U, E> {
+    const [err, value] = this.value;
+    if (err !== empty) {
+      return ResultObj.Err(err);
+    }
+    assert(value !== empty);
+    return ResultObj.Ok(f(value));
+  }
 
-// TODO: test proxy wrapper properly
+  mapErr<U>(f: (value: E) => U): ResultObj<T, U> {
+    const [err, value] = this.value;
+    if (err !== empty) return ResultObj.Err(f(err));
+    assert(value !== empty);
+    return ResultObj.Ok(value);
+  }
 
-export interface ResultI<T, E> {
-  match<U>(matchers: { Ok: (value: T) => U; Err: (value: E) => U }): U;
-  map<U>(f: (value: T) => U): ResultI<U, E>;
-  mapErr<U>(f: (value: E) => U): ResultI<T, U>;
+  andThen<U, E2>(f: (value: T) => ResultObj<U, E2>): ResultObj<U, E | E2> {
+    const [err, value] = this.value;
+    if (err !== empty) return ResultObj.Err(err);
+    assert(value !== empty);
+    return f(value);
+  }
 }
 
-// TODO: build type helper to check this against `ResultI` etc
-const resultMethods = {
-  isOk,
-  isErr,
-  match,
-  map,
-  mapErr,
-};
+export const from = ResultObj.from.bind(ResultObj);
 
-/* Proxy wrapper to add methods to Result tuples */
+function _test() {
+  const res1 = makeOk(1);
+  const res2 = makeErr("ono");
+  const rests = [res1, res2];
 
-export const wrappedOk = <T, E>(value: T): ResultI<T, E> =>
-  from<T, E>(makeOk(value));
+  for (const res of rests) {
+    console.log(res);
+    from(res)
+      .andThen((x) => from(makeOk(x + 1)))
+      .match({
+        Ok: (x) => x + 3,
+        Err: (_e) => NaN,
+      });
+  }
+}
 
-export const wrappedErr = <T, E>(value: E): ResultI<T, E> =>
-  from<T, E>(makeErr(value));
+// // ==== Proxy wrapper ====
 
-export const from = <T, E>(result: Result<T, E>): ResultI<T, E> => {
-  const proxyHandler = {
-    get: (target: Result<T, E>, prop: string | symbol) => {
-      if (prop in resultMethods) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return Reflect.get(resultMethods, prop, target);
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return Reflect.get(target, prop);
-    },
-  };
+// // TODO: test proxy wrapper properly
 
-  return new Proxy(result, proxyHandler) as unknown as Result<T, E> &
-    ResultI<T, E>;
-};
+// export interface ResultI<T, E> {
+//   match<U>(matchers: { Ok: (value: T) => U; Err: (value: E) => U }): U;
+//   map<U>(f: (value: T) => U): ResultI<U, E>;
+//   mapErr<U>(f: (value: E) => U): ResultI<T, U>;
+//   andThen<U, E2>(f: (value: T) => ResultI<U, E>): ResultI<U, E | E2>;
+// }
+
+// export interface AsyncResultI<T, E> {
+//   // TODO
+// }
+
+// // TODO: build type helper to check this against `ResultI` etc
+// const resultMethods = {
+//   isOk,
+//   isErr,
+//   match,
+//   map,
+//   mapErr,
+// };
+
+// /* Proxy wrapper to add methods to Result tuples */
+
+// export const wrappedOk = <T, E>(value: T): ResultI<T, E> =>
+//   from<T, E>(makeOk(value));
+
+// export const wrappedErr = <T, E>(value: E): ResultI<T, E> =>
+//   from<T, E>(makeErr(value));
+
+// export const from = <T, E>(result: Result<T, E>): ResultI<T, E> => {
+//   const proxyHandler = {
+//     get: (target: Result<T, E>, prop: string | symbol) => {
+//       if (prop in resultMethods) {
+//         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+//         return Reflect.get(resultMethods, prop, target);
+//       }
+//       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+//       return Reflect.get(target, prop);
+//     },
+//   };
+
+//   return new Proxy(result, proxyHandler) as unknown as Result<T, E> &
+//     ResultI<T, E>;
+// };
