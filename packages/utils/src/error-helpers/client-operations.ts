@@ -37,7 +37,9 @@ function showErrorToast(
   if (typeof error === "string") {
     errorMessage = error;
   } else if (error instanceof Error) {
-    errorMessage = error.message;
+    errorMessage = error.message || "An unknown error occurred.";
+  } else if (typeof error === "object" && Object.keys(error).length === 0) {
+    errorMessage = "An unknown error occurred.";
   } else {
     errorMessage = String(error);
   }
@@ -87,8 +89,20 @@ export async function tryAsyncToastRaw<T = unknown>(
   const result = await tryAsync<T>(asyncOperation);
   const [error, _value] = result;
 
+  // if (error) {
+  //   showErrorToast(error instanceof Error ? error : String(error), options);
+
+  // }
   if (error) {
-    showErrorToast(error instanceof Error ? error : String(error), options);
+    console.error("Raw error in tryAsyncToast:", error);
+    console.error("Error details:", {
+      message: error.message,
+      cause: error.cause,
+      // data: error.data,
+      // shape: error.shape,
+      // meta: error.meta,
+      name: error.name,
+    });
   }
 
   return result;

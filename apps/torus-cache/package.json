@@ -28,6 +28,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "superjson": "2.2.1",
+    "@torus-ts/utils": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

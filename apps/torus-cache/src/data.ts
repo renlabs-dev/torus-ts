@@ -5,6 +5,7 @@ import {
   queryStakeIn,
   queryStakeOut,
 } from "@torus-network/sdk";
+import { tryAsyncLogging } from "@torus-ts/utils/error-helpers/server-operations";
 import SuperJSON from "superjson";
 import { setup } from "./server";
 import { log, sleep } from "./utils";
@@ -51,49 +52,98 @@ export function getStakeFromDataStringified() {
   return stakeFromDataStringified.data;
 }
 
-const updateStakeFrom = async (api: ApiPromise, lastBlock: LastBlock) => {
-  try {
-    const stakeFrom = await queryStakeIn(api);
-    stakeFromData = {
-      total: stakeFrom.total,
-      perAddr: Object.fromEntries(stakeFrom.perAddr),
-      atBlock: BigInt(lastBlock.blockNumber),
-      atTime: new Date(),
-    };
-    log(`StakeFrom data updated for block ${lastBlock.blockNumber}`);
-  } catch (error) {
+/**
+ * Updates the stake data from the chain
+ * @param api API instance for blockchain queries
+ * @param lastBlock Latest block information
+ */
+export const updateStakeFrom = async (
+  api: ApiPromise,
+  lastBlock: LastBlock,
+) => {
+  const [error, stakeForm] = await tryAsyncLogging(queryStakeIn(api));
+  if (error !== undefined) {
     log(
       `Error updating StakeFrom data for block ${lastBlock.blockNumber}:`,
       error,
     );
+    return;
   }
+  stakeFromData = {
+    total: stakeForm.total,
+    perAddr: Object.fromEntries(stakeForm.perAddr),
+    atBlock: BigInt(lastBlock.blockNumber),
+    atTime: new Date(),
+  };
+  log(`StakeFrom data updated for block ${lastBlock.blockNumber}`);
 };
 
-const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
-  try {
-    const stakeOut = await queryStakeOut(api);
-    stakeOutData = {
-      total: stakeOut.total,
-      perAddr: Object.fromEntries(stakeOut.perAddr),
-      atBlock: BigInt(lastBlock.blockNumber),
-      atTime: new Date(),
-    };
-    log(`StakeOut data updated for block ${lastBlock.blockNumber}`);
-  } catch (error) {
+/**
+ * Updates staking data for outgoing stake allocations from the blockchain
+ *
+ * Queries the current stake-out information from the blockchain and updates
+ * the local stakeOutData object with the total stake, per-address breakdown,
+ * and current block/time information.
+ *
+ * @param api - Polkadot API instance used to query blockchain data
+ * @param lastBlock - Latest block information including block number
+ * @returns Promise that resolves when the operation completes
+ */
+export const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
+  const [error, stakeOut] = await tryAsyncLogging(queryStakeOut(api));
+  if (error !== undefined) {
     log(
-      `Error updating StakeOut data for block ${lastBlock.blockNumber}:`,
+      `Error updating StakeIn data for block ${lastBlock.blockNumber}:`,
       error,
     );
+    return;
   }
+  stakeOutData = {
+    total: stakeOut.total,
+    perAddr: Object.fromEntries(stakeOut.perAddr),
+    atBlock: BigInt(lastBlock.blockNumber),
+    atTime: new Date(),
+  };
+  log(`StakeOut data updated for block ${lastBlock.blockNumber}`);
 };
 
+/**
+ * Continuously monitors and updates stake data from the blockchain.
+ *
+ * This function runs an infinite loop that:
+ * 1. Establishes a connection to the blockchain API
+ * 2. Queries for new blocks
+ * 3. Updates stakeFrom and stakeOut data when new blocks are found
+ * 4. Handles errors at each step with appropriate retry strategies
+ *
+ * The function implements robust error handling with different recovery paths:
+ * - API setup failures: Retries after a delay
+ * - Block query failures: Reestablishes API connection
+ * - Stake update failures: Logs errors but continues operation
+ *
+ * The function avoids processing the same block twice by tracking the last
+ * processed block number in the stakeFromData and stakeOutData objects.
+ */
 export async function updateStakeDataLoop() {
-  try {
-    let lastBlock: LastBlock;
-    const api = await setup();
-
+  while (true) {
+    const [setupError, api] = await tryAsyncLogging(setup());
+    if (setupError !== undefined) {
+      log(
+        "Error setting up API: ",
+        setupError,
+        `retrying in  ${UPDATE_INTERVAL / 1000}s`,
+      );
+      await sleep(UPDATE_INTERVAL);
+      continue;
+    }
     while (true) {
-      lastBlock = await queryLastBlock(api);
+      const [queryError, lastBlock] = await tryAsyncLogging(
+        queryLastBlock(api),
+      );
+      if (queryError !== undefined) {
+        log("Error querying last block: ", queryError, `restarting connection`);
+        break;
+      }
       if (
         lastBlock.blockNumber <=
         Math.max(Number(stakeFromData.atBlock), Number(stakeOutData.atBlock))
@@ -102,22 +152,39 @@ export async function updateStakeDataLoop() {
         await sleep(UPDATE_INTERVAL);
         continue;
       }
-
       log(`Block ${lastBlock.blockNumber}: processing`);
 
-      await Promise.allSettled([
-        updateStakeFrom(api, lastBlock),
-        updateStakeOut(api, lastBlock),
-      ]);
-
-      log(`Data updated for block ${lastBlock.blockNumber}`);
+      const [promiseError, endResult] = await tryAsyncLogging(
+        Promise.allSettled([
+          updateStakeFrom(api, lastBlock),
+          updateStakeOut(api, lastBlock),
+        ]),
+      );
+      if (promiseError !== undefined) {
+        log(`Error executing Promise.allSettled: ${promiseError}`);
+      }
+      if (endResult !== undefined) {
+        const stakeFromResult = endResult[0];
+        const stakeOutResult = endResult[1];
+        if (stakeFromResult.status === "rejected") {
+          log(`Error updating stakeFrom: ${stakeFromResult.reason}`);
+        }
+        if (stakeOutResult.status === "rejected") {
+          log(`Error updating stakeOut: ${stakeOutResult.reason}`);
+        }
+        if (
+          stakeFromResult.status === "fulfilled" &&
+          stakeOutResult.status === "fulfilled"
+        ) {
+          log(`Data updated for block ${lastBlock.blockNumber}`);
+        } else {
+          log(`Partial data update for block ${lastBlock.blockNumber}`);
+        }
+        await sleep(UPDATE_INTERVAL);
+      }
+      log(`Restarting connection in 5 seconds`);
+      await sleep(5000);
     }
-  } catch (e) {
-    log("UNEXPECTED ERROR: ", e);
-    log("Restarting loop in 5 seconds");
-    await sleep(5000);
-    updateStakeDataLoop().catch(console.error);
   }
 }
-
-export { stakeFromData, stakeOutData };
+export { stakeOutData, stakeFromData };
