@@ -41,7 +41,7 @@ export function AgentStatusLabel(props: StatusLabelProps) {
       return (
         <Badge
           variant="solid"
-          className="bg-yellow-500/20 text-yellow-500 hover:bg-gray-500/10"
+          className="bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/10"
         >
           Expired
         </Badge>
