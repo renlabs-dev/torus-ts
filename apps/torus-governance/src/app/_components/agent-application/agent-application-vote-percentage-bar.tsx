@@ -59,7 +59,7 @@ export const AgentApplicationVotePercentageBar = (props: {
     >
       {whitelistStatus === "active" && (
         <div
-          className="absolute -top-1 z-20 h-10 w-0.5 translate-x-1/2 rounded-full bg-white"
+          className="absolute -top-[0.20em] z-20 h-[2.43em] w-0.5 translate-x-1/2 rounded-full bg-white"
           style={{
             left: `${thresholdPercent}%`,
           }}
