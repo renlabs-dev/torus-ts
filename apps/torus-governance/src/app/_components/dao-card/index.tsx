@@ -27,7 +27,7 @@ export function DaoCard({
 }: Readonly<DaoCardProps>) {
   return (
     <Card
-      className={`animate-fade-down hover:bg-accent w-full p-4 transition duration-500 lg:p-6`}
+      className={`animate-fade hover:bg-accent w-full p-4 transition duration-500 lg:p-6`}
     >
       <CardHeader className="flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0 md:flex-col-reverse xl:flex-row">
         {metaContent && (

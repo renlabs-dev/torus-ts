@@ -14,9 +14,9 @@ export function AgentStatusLabel(props: StatusLabelProps) {
       return (
         <Badge
           variant="solid"
-          className="bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/10"
+          className="bg-zinc-600 text-white hover:bg-zinc-700/80"
         >
-          Active
+          Open
         </Badge>
       );
     },
@@ -24,7 +24,7 @@ export function AgentStatusLabel(props: StatusLabelProps) {
       return accepted ? (
         <Badge
           variant="solid"
-          className="bg-green-500/10 text-green-500 hover:bg-green-500/10"
+          className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10"
         >
           Accepted
         </Badge>
@@ -41,7 +41,7 @@ export function AgentStatusLabel(props: StatusLabelProps) {
       return (
         <Badge
           variant="solid"
-          className="bg-gray-500/10 text-gray-500 hover:bg-gray-500/10"
+          className="bg-yellow-500/20 text-yellow-500 hover:bg-gray-500/10"
         >
           Expired
         </Badge>

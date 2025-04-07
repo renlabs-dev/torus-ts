@@ -19,7 +19,7 @@ export const AgentApplicationVoteLabel = (props: {
     ACCEPT: (
       <Badge
         variant="solid"
-        className="bg-green-500/10 text-green-500 hover:bg-green-500/10"
+        className="bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/10"
       >
         Favorable
       </Badge>
@@ -27,7 +27,7 @@ export const AgentApplicationVoteLabel = (props: {
     REFUSE: (
       <Badge
         variant="solid"
-        className="bg-red-500/10 text-red-500 hover:bg-red-500/10"
+        className="bg-red-500/20 text-red-500 hover:bg-red-500/10"
       >
         Against
       </Badge>
@@ -35,7 +35,7 @@ export const AgentApplicationVoteLabel = (props: {
     REMOVE: (
       <Badge
         variant="solid"
-        className="bg-red-500/10 text-red-500 hover:bg-red-500/10"
+        className="bg-pink-500/20 text-pink-500 hover:bg-pink-500/10"
       >
         Revoke
       </Badge>
