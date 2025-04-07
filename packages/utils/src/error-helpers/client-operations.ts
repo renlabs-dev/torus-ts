@@ -84,23 +84,15 @@ export async function tryAsyncToast<T>(
  */
 export async function tryAsyncToastRaw<T = unknown>(
   asyncOperation: PromiseLike<T>,
-  options: ClientErrorOptions = {},
 ): Promise<Result<T, Error>> {
   const result = await tryAsync<T>(asyncOperation);
   const [error, _value] = result;
 
-  // if (error) {
-  //   showErrorToast(error instanceof Error ? error : String(error), options);
-
-  // }
   if (error) {
     console.error("Raw error in tryAsyncToast:", error);
     console.error("Error details:", {
       message: error.message,
       cause: error.cause,
-      // data: error.data,
-      // shape: error.shape,
-      // meta: error.meta,
       name: error.name,
     });
   }
