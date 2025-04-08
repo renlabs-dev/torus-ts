@@ -14,10 +14,12 @@ export const createSendFormSchema = (
   z.object({
     recipient: z
       .string()
+      .trim()
       .nonempty({ message: "Recipient address is required" })
       .refine(isSS58, { message: "Invalid recipient address" }),
     amount: z
       .string()
+      .trim()
       .nonempty({ message: "Amount is required" })
       .refine((amount) => /^\d+(\.\d+)?$/.test(amount), {
         message: "Amount must be a valid number",
@@ -26,12 +28,19 @@ export const createSendFormSchema = (
         message: "Amount must be greater than 0",
       })
       .refine(
-        (amount) =>
-          isWithinTransferLimit(
-            amount,
-            feeRef.current?.getEstimatedFee() ?? "0",
-            accountFreeBalance ?? 0n,
-          ),
-        { message: "Amount exceeds maximum transferable amount" },
+        (amount) => {
+          const estimatedFee = feeRef.current?.getEstimatedFee();
+
+          if (estimatedFee === undefined || estimatedFee === null) {
+            return false;
+          }
+
+          const balance = accountFreeBalance ?? 0n;
+          return isWithinTransferLimit(amount, estimatedFee, balance);
+        },
+        {
+          message:
+            "Fee estimation is in progress or amount exceeds maximum transferable amount",
+        },
       ),
   });
