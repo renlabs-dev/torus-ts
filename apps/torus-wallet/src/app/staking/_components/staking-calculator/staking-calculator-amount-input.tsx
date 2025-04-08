@@ -5,10 +5,17 @@ interface StakingCalculatorAmountInputProps {
   setCustomAmount: (value: string) => void;
 }
 
-function StakingCalculatorAmountInput({ customAmount, setCustomAmount }: StakingCalculatorAmountInputProps) {
+export function StakingCalculatorAmountInput({
+  customAmount,
+  setCustomAmount,
+}: StakingCalculatorAmountInputProps) {
   return (
     <div className="mb-4 flex items-center justify-between gap-4 border bg-[#080808] pr-4">
       <Input
+        min="0"
+        step="any"
+        aria-label="Staking amount in TORUS"
+        id="staking-amount"
         type="number"
         value={customAmount}
         onChange={(e) => setCustomAmount(e.target.value)}
@@ -21,5 +28,3 @@ function StakingCalculatorAmountInput({ customAmount, setCustomAmount }: Staking
     </div>
   );
 }
-
-export { StakingCalculatorAmountInput };
