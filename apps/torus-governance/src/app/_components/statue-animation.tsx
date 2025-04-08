@@ -6,8 +6,7 @@ import { easing } from "maath";
 import { RoundedPlaneGeometry } from "maath/geometry";
 import type { JSX, ReactNode } from "react";
 import React, { useRef } from "react";
-import type { Group, SpotLight } from "three";
-import * as THREE from "three";
+import type * as THREE from "three";
 import type { GLTF } from "three-stdlib";
 
 extend({ RoundedPlaneGeometry });
@@ -22,6 +21,7 @@ export function StatueAnimation() {
   return (
     <Canvas
       shadows="basic"
+      // eventSource={document.getElementById("root")}
       eventPrefix="client"
       camera={{ position: [0, 1.5, 14], fov: 45 }}
     >
@@ -42,47 +42,39 @@ export function StatueAnimation() {
 
 type GLTFResult = GLTF & {
   nodes: {
-    Node_3: THREE.Mesh;
+    Object_4: THREE.Mesh;
   };
   materials: {
-    ["Scene_-_Root"]: THREE.MeshStandardMaterial;
+    ["75-18_LOD1_u1_v1"]: THREE.MeshBasicMaterial;
   };
   animations: unknown[];
 };
 
 function Model(props: JSX.IntrinsicElements["group"]) {
-  const group = useRef<Group>(null);
-  const light = useRef<SpotLight>(null);
-  const { nodes } = useGLTF("/graces-draco.glb") as unknown as GLTFResult;
-
-  const meshLambertMaterial = new THREE.MeshLambertMaterial({
-    color: "#404044",
-  });
+  const group = useRef<THREE.Group>(null);
+  const light = useRef<THREE.SpotLight>(null);
+  const { nodes } = useGLTF("/statue.glb") as unknown as GLTFResult;
 
   useFrame((state, delta) => {
-    if (group.current) {
-      easing.dampE(
-        group.current.rotation,
-        [0, -state.pointer.x * (Math.PI / 10), 0],
-        1.5,
-        delta,
-      );
-      easing.damp3(
-        group.current.position,
-        [0, -5.5, 1 - Math.abs(state.pointer.x)],
-        1,
-        delta,
-      );
-    }
-
-    if (light.current) {
-      easing.damp3(
-        light.current.position,
-        [state.pointer.x * 12, 0, 8 + state.pointer.y * 4],
-        0.2,
-        delta,
-      );
-    }
+    if (!group.current || !light.current) return;
+    easing.dampE(
+      group.current.rotation,
+      [0, -state.pointer.x * (Math.PI / 10), 0],
+      1.5,
+      delta,
+    );
+    easing.damp3(
+      group.current.position,
+      [0, -5.5, 1 - Math.abs(state.pointer.x)],
+      1,
+      delta,
+    );
+    easing.damp3(
+      light.current.position,
+      [state.pointer.x * 12, 0, 8 + state.pointer.y * 4],
+      0.2,
+      delta,
+    );
   });
 
   return (
@@ -90,28 +82,25 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       <mesh
         castShadow
         receiveShadow
-        // material={materials["Scene_-_Root"]}
-        material={meshLambertMaterial}
-        geometry={nodes.Node_3.geometry}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={0.2}
+        geometry={nodes.Object_4.geometry}
+        scale={0.9}
         dispose={null}
-      />
-      <Annotation position={[1.75, 3, 2.5]}>
-        Thalia <span style={{ fontSize: "1.5em" }}>🌗</span>
-      </Annotation>
-      <Annotation position={[-4.5, 3.6, -3]}>
-        Euphrosyne <span style={{ fontSize: "1.5em" }}>🌖</span>
-      </Annotation>
-      <Annotation position={[1.5, 8, -3]}>
-        <span style={{ fontSize: "1.5em" }}>🌕</span> Aglaia
-      </Annotation>
+      >
+        <meshLambertMaterial
+          color="#404044"
+          // emissive={0x404044}
+        />
+      </mesh>
+
+      <Annotation position={[1.75, 3, 2.5]}>Proposals</Annotation>
+      <Annotation position={[-4.5, 3.6, -3]}>Whitelist Applications</Annotation>
+      <Annotation position={[1.5, 8, -3]}>DAO Portal</Annotation>
       <spotLight
         angle={0.5}
         penumbra={0.5}
         ref={light}
         castShadow
-        intensity={10}
+        intensity={10000}
         shadow-mapSize={1024}
         shadow-bias={-0.001}
       >
@@ -123,8 +112,6 @@ function Model(props: JSX.IntrinsicElements["group"]) {
     </group>
   );
 }
-
-useGLTF.preload("/graces-draco.glb");
 
 function Annotation({ children, ...props }: AnnotationProps) {
   return (
