@@ -27,7 +27,7 @@ const getChainEnvPrefix = (chainEnv: ChainEnv) => {
 
 const createTorusUrl = (chainEnv: ChainEnv) => (subdomain: string) =>
   subdomain === "torus"
-    ? `https://testnet.torus.network/`
+    ? `https://${getChainEnvPrefix(chainEnv)}torus.network`
     : `https://${subdomain}.${getChainEnvPrefix(chainEnv)}torus.network`;
 
 export const getLinks = (chainEnv: ChainEnv) => {
