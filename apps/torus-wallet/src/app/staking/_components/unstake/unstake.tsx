@@ -172,6 +172,8 @@ export function Unstake() {
       <UnstakeForm
         form={form}
         selectedAccount={selectedAccount}
+        usdPrice={usdPrice}
+        minAllowedStakeData={minAllowedStakeData}
         maxAmountRef={maxAmountRef}
         feeRef={feeRef}
         transactionStatus={transactionStatus}
@@ -184,7 +186,6 @@ export function Unstake() {
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         formRef={formRef}
-        usdPrice={usdPrice}
         from={selectedAccount?.address}
         to={getValues().validator}
         amount={getValues().amount}

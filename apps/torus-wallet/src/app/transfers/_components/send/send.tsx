@@ -16,6 +16,8 @@ import { handleEstimateFee } from "./send-fee-handler";
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
 
+export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
+
 export function Send() {
   const {
     estimateFee,
@@ -23,11 +25,14 @@ export function Send() {
     transfer,
     selectedAccount,
     transferTransaction,
+    minAllowedStake,
   } = useWallet();
+
   const { toast } = useToast();
   const { usdPrice } = useUsdPrice();
 
-  console.log("usdPrice", usdPrice);
+  const minAllowedStakeData =
+    minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
 
   const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
@@ -131,12 +136,11 @@ export function Send() {
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
         onSubmit={onSubmit}
+        minAllowedStakeData={minAllowedStakeData}
       />
-
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         formRef={{ current: null }}
-        usdPrice={usdPrice}
         from={selectedAccount?.address}
         to={recipient}
         amount={amount}

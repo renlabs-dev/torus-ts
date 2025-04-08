@@ -5,7 +5,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Button } from "@torus-ts/ui/components/button";
 import { ArrowLeftRight } from "lucide-react";
 import { convertUSDToTorus, convertTORUSToUSD } from "~/utils/helpers";
-import { toNano } from "@torus-ts/utils/subspace";
+import { toNano, fromNano } from "@torus-ts/utils/subspace";
 import { AmountButtons } from "./amount-buttons";
 
 interface CurrencySwapProps {
@@ -13,6 +13,7 @@ interface CurrencySwapProps {
   disabled?: boolean;
   availableFunds: string;
   onAmountChangeAction: (torusAmount: string) => void;
+  minAllowedStakeData: bigint;
 }
 
 export function CurrencySwap({
@@ -20,6 +21,7 @@ export function CurrencySwap({
   disabled = false,
   availableFunds,
   onAmountChangeAction,
+  minAllowedStakeData,
 }: CurrencySwapProps) {
   const [inputType, setInputType] = useState<"TORUS" | "USD">("TORUS");
   const [inputAmount, setInputAmount] = useState<string>("");
@@ -68,6 +70,7 @@ export function CurrencySwap({
             disabled={disabled}
             type="number"
             label={inputType === "TORUS" ? "TOR" : "USD"}
+            min={fromNano(minAllowedStakeData)}
           />
         </div>
         <div className="flex items-center justify-center py-2 sm:py-0">

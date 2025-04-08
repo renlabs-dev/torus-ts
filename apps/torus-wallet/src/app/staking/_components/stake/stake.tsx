@@ -38,8 +38,10 @@ export function Stake() {
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
+
   const existencialDepositValue =
     getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const feeRef = useRef<FeeLabelHandle>(null);
@@ -157,9 +159,10 @@ export function Stake() {
       <StakeForm
         form={form}
         selectedAccount={selectedAccount}
+        usdPrice={usdPrice}
+        minAllowedStakeData={minAllowedStakeData}
         maxAmountRef={maxAmountRef}
         feeRef={feeRef}
-        minAllowedStakeData={minAllowedStakeData}
         transactionStatus={transactionStatus}
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
@@ -169,7 +172,6 @@ export function Stake() {
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         formRef={{ current: null }}
-        usdPrice={usdPrice}
         from={selectedAccount?.address}
         to={getValues().recipient}
         amount={getValues().amount}

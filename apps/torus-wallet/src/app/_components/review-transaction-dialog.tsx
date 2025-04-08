@@ -6,10 +6,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogDescription,
 } from "@torus-ts/ui/components/alert-dialog";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { forwardRef, useImperativeHandle, useState, useMemo } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
+import { useUsdPrice } from "~/context/usd-price-provider";
 import { convertTORUSToUSD } from "~/utils/helpers";
 
 export interface ReviewTransactionDialogHandle {
@@ -25,7 +25,6 @@ interface TransactionDetail {
 
 interface ReviewTransactionDialogProps {
   formRef: React.RefObject<HTMLFormElement | null>;
-  usdPrice: number;
   from: string | undefined;
   to: string | undefined;
   amount: string;
@@ -48,9 +47,10 @@ function TransactionDetailRow({ detail }: { detail: TransactionDetail }) {
 export const ReviewTransactionDialog = forwardRef<
   ReviewTransactionDialogHandle,
   ReviewTransactionDialogProps
->(({ formRef, usdPrice, from, to, amount, fee, onSuccess, onError }, ref) => {
+>(({ formRef, from, to, amount, fee, onSuccess, onError }, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { usdPrice } = useUsdPrice();
   const { toast } = useToast();
 
   useImperativeHandle(ref, () => ({
@@ -103,13 +103,13 @@ export const ReviewTransactionDialog = forwardRef<
           <AlertDialogTitle className="text-xl font-bold">
             Review Transaction
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-4">
+          <div className="space-y-4">
             <div className="rounded-lg">
               {details.map((detail, index) => (
                 <TransactionDetailRow key={index} detail={detail} />
               ))}
             </div>
-          </AlertDialogDescription>
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-3">
           <AlertDialogCancel

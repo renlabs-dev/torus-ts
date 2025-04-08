@@ -190,6 +190,7 @@ export function TransferStake() {
       <TransferStakeForm
         form={form}
         selectedAccount={selectedAccount}
+        usdPrice={usdPrice}
         maxAmountRef={maxAmountRef}
         feeRef={feeRef}
         transactionStatus={transactionStatus}
@@ -204,7 +205,6 @@ export function TransferStake() {
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         formRef={formRef}
-        usdPrice={usdPrice}
         from={selectedAccount?.address}
         to={getValues().toValidator}
         amount={getValues().amount}

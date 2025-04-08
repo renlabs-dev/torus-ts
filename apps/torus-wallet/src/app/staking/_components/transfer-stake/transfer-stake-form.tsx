@@ -12,13 +12,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-import { toNano } from "@torus-ts/utils/subspace";
 import type { RefObject } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
-import { AmountButtons } from "../../../_components/amount-buttons";
+import { CurrencySwap } from "../../../_components/currency-swap";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
@@ -36,6 +34,7 @@ interface TransferStakeFormProps {
   onSubmit: (values: TransferStakeFormValues) => Promise<void>;
   formRef: RefObject<HTMLFormElement | null>;
   fromValidatorValue: string;
+  usdPrice: number;
 }
 
 export function TransferStakeForm({
@@ -51,6 +50,7 @@ export function TransferStakeForm({
   onSubmit,
   formRef,
   fromValidatorValue,
+  usdPrice,
 }: TransferStakeFormProps) {
   return (
     <Card className="animate-fade w-full p-6">
@@ -99,30 +99,21 @@ export function TransferStakeForm({
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="amount"
-            render={({ field }) => (
+            render={() => (
               <FormItem className="flex flex-col">
                 <FormLabel>Amount</FormLabel>
-                <div className="flex items-center gap-2">
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="number"
-                      placeholder="Amount of TORUS"
-                      disabled={!selectedAccount?.address}
-                    />
-                  </FormControl>
-                  <AmountButtons
-                    setAmount={handleAmountChange}
+                <FormControl>
+                  <CurrencySwap
+                    usdPrice={usdPrice}
+                    disabled={!selectedAccount?.address}
                     availableFunds={maxAmountRef.current || "0"}
-                    disabled={
-                      !(toNano(maxAmountRef.current) > 0n) ||
-                      !selectedAccount?.address
-                    }
+                    onAmountChangeAction={handleAmountChange}
                   />
-                </div>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

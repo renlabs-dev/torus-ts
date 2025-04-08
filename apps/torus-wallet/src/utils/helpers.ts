@@ -55,11 +55,12 @@ export function convertTORUSToUSD(
   hasMaskDecimal: boolean = true,
 ): string {
   const parsedAmount = parseFloat(torusAmount);
-  const formattedUsdPrice = usdPrice.toFixed(4);
 
   if (!isCurrencyInputValid(torusAmount, usdPrice)) {
     return "";
   }
+
+  const formattedUsdPrice = usdPrice.toFixed(4);
 
   const result = parsedAmount * parseFloat(formattedUsdPrice);
 

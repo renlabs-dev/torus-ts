@@ -29,6 +29,7 @@ interface SendFormProps {
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
   onSubmit: (values: SendFormValues) => Promise<void>;
+  minAllowedStakeData: bigint;
 }
 
 export function SendForm({
@@ -41,6 +42,7 @@ export function SendForm({
   onReviewClick,
   handleAmountChange,
   onSubmit,
+  minAllowedStakeData,
 }: SendFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -70,18 +72,25 @@ export function SendForm({
             )}
           />
 
-          <FormItem className="flex flex-col">
-            <FormLabel>Amount to send</FormLabel>
-            <FormControl>
-              <CurrencySwap
-                usdPrice={usdPrice}
-                disabled={!selectedAccount?.address}
-                availableFunds={maxAmountRef.current}
-                onAmountChangeAction={handleAmountChange}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          <FormField
+            control={form.control}
+            name="amount"
+            render={() => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Amount to send</FormLabel>
+                <FormControl>
+                  <CurrencySwap
+                    usdPrice={usdPrice}
+                    disabled={!selectedAccount?.address}
+                    availableFunds={maxAmountRef.current}
+                    onAmountChangeAction={handleAmountChange}
+                    minAllowedStakeData={minAllowedStakeData}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
 

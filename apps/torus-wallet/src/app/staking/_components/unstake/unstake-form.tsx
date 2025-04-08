@@ -12,13 +12,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-import { toNano } from "@torus-ts/utils/subspace";
 import type { RefObject } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
-import { AmountButtons } from "../../../_components/amount-buttons";
+import { CurrencySwap } from "../../../_components/currency-swap";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { UnstakeFormValues } from "./unstake-form-schema";
@@ -34,6 +32,8 @@ interface UnstakeFormProps {
   handleAmountChange: (amount: string) => Promise<void>;
   onSubmit: (values: UnstakeFormValues) => Promise<void>;
   formRef: React.RefObject<HTMLFormElement | null>;
+  usdPrice: number;
+  minAllowedStakeData: bigint;
 }
 
 export function UnstakeForm({
@@ -47,6 +47,8 @@ export function UnstakeForm({
   handleAmountChange,
   onSubmit,
   formRef,
+  usdPrice,
+  minAllowedStakeData,
 }: UnstakeFormProps) {
   return (
     <Card className="animate-fade w-full p-6">
@@ -75,32 +77,22 @@ export function UnstakeForm({
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="amount"
-            render={({ field }) => (
+            render={() => (
               <FormItem className="flex flex-col">
                 <FormLabel>Amount</FormLabel>
-                <div className="flex items-center gap-2">
-                  <FormControl className="flex items-center gap-2">
-                    <Input
-                      {...field}
-                      type="number"
-                      placeholder="Amount to unstake"
-                      min="0"
-                      step="0.000000000000000001"
-                      disabled={!selectedAccount?.address}
-                    />
-                  </FormControl>
-                  <AmountButtons
-                    setAmount={async (value) => await handleAmountChange(value)}
-                    availableFunds={maxAmountRef.current}
-                    disabled={
-                      !(toNano(maxAmountRef.current) > 0n) ||
-                      !selectedAccount?.address
-                    }
+                <FormControl>
+                  <CurrencySwap
+                    usdPrice={usdPrice}
+                    disabled={!selectedAccount?.address}
+                    availableFunds={maxAmountRef.current || "0"}
+                    onAmountChangeAction={handleAmountChange}
+                    minAllowedStakeData={minAllowedStakeData}
                   />
-                </div>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
