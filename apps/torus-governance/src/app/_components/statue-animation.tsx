@@ -7,7 +7,7 @@ import { RoundedPlaneGeometry } from "maath/geometry";
 import type { JSX, ReactNode } from "react";
 import React, { useRef } from "react";
 import type { Group, SpotLight } from "three";
-import type * as THREE from "three";
+import * as THREE from "three";
 import type { GLTF } from "three-stdlib";
 
 extend({ RoundedPlaneGeometry });
@@ -20,25 +20,23 @@ interface AnnotationProps {
 
 export function StatueAnimation() {
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
-      <Canvas
-        shadows="basic"
-        eventPrefix="client"
-        camera={{ position: [0, 1.5, 14], fov: 45 }}
-      >
-        <fog attach="fog" args={["black", 0, 20]} />
-        <pointLight position={[10, -10, -20]} intensity={10} />
-        <pointLight position={[-10, -10, -20]} intensity={10} />
-        <Model position={[0, -5.5, 3]} rotation={[0, -0.2, 0]} />
-        <SoftShadows samples={3} />
-        <CameraControls
-          minPolarAngle={0}
-          maxPolarAngle={Math.PI / 2}
-          minAzimuthAngle={-Math.PI / 2}
-          maxAzimuthAngle={Math.PI / 2}
-        />
-      </Canvas>
-    </div>
+    <Canvas
+      shadows="basic"
+      eventPrefix="client"
+      camera={{ position: [0, 1.5, 14], fov: 45 }}
+    >
+      <fog attach="fog" args={["black", 0, 20]} />
+      <pointLight position={[10, -10, -20]} intensity={10} />
+      <pointLight position={[-10, -10, -20]} intensity={10} />
+      <Model position={[0, -5.5, 3]} rotation={[0, -0.2, 0]} />
+      <SoftShadows samples={3} />
+      <CameraControls
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI / 2}
+        minAzimuthAngle={-Math.PI / 2}
+        maxAzimuthAngle={Math.PI / 2}
+      />
+    </Canvas>
   );
 }
 
@@ -55,9 +53,11 @@ type GLTFResult = GLTF & {
 function Model(props: JSX.IntrinsicElements["group"]) {
   const group = useRef<Group>(null);
   const light = useRef<SpotLight>(null);
-  const { nodes, materials } = useGLTF(
-    "/graces-draco.glb",
-  ) as unknown as GLTFResult;
+  const { nodes } = useGLTF("/graces-draco.glb") as unknown as GLTFResult;
+
+  const meshLambertMaterial = new THREE.MeshLambertMaterial({
+    color: "#404044",
+  });
 
   useFrame((state, delta) => {
     if (group.current) {
@@ -90,14 +90,13 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       <mesh
         castShadow
         receiveShadow
-        material={materials["Scene_-_Root"]}
+        // material={materials["Scene_-_Root"]}
+        material={meshLambertMaterial}
         geometry={nodes.Node_3.geometry}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={0.2}
         dispose={null}
-      >
-        <meshLambertMaterial color="#404044" />
-      </mesh>
+      />
       <Annotation position={[1.75, 3, 2.5]}>
         Thalia <span style={{ fontSize: "1.5em" }}>🌗</span>
       </Annotation>
@@ -125,7 +124,7 @@ function Model(props: JSX.IntrinsicElements["group"]) {
   );
 }
 
-useGLTF.preload("/x-transformed.glb");
+useGLTF.preload("/graces-draco.glb");
 
 function Annotation({ children, ...props }: AnnotationProps) {
   return (
