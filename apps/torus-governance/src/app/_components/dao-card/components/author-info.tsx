@@ -1,7 +1,7 @@
 "use client";
 
 import type { SS58Address } from "@torus-network/sdk";
-import { smallAddress } from "@torus-ts/utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Crown } from "lucide-react";
 
 interface AuthorInfoProps {

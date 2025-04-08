@@ -1,7 +1,7 @@
 "use client";
 
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { SidebarInfoDesktop } from "./sidebar-info-desktop";
