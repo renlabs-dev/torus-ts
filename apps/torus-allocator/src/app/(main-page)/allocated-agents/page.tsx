@@ -1,9 +1,9 @@
 "use client";
 
-import { AgentItemCard } from "../../_components/agent-item-card";
-import { Filter } from "../../_components/filter-content";
 import { ViewSelector } from "~/app/_components/view-selector";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { AgentItemCard } from "../../_components/agent-item-card";
+import { Filter } from "../../_components/filter-content";
 
 export default function AllocatedAgentsPage() {
   const { delegatedAgents } = useDelegateAgentStore();

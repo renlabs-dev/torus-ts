@@ -1,7 +1,7 @@
 import { errorToString } from "@hyperlane-xyz/utils";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useEffect } from "react";
 import { logger } from "~/utils/logger";
+import { useEffect } from "react";
 
 export function useToastError(error: unknown, errorMsg?: string) {
   const { toast } = useToast();

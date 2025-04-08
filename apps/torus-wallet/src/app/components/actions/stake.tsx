@@ -2,6 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58, isSS58 } from "@torus-network/sdk";
+import {
+  formatToken,
+  fromNano,
+  smallAddress,
+  toNano,
+} from "@torus-network/torus-utils/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
@@ -16,12 +22,6 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import {
-  formatToken,
-  fromNano,
-  smallAddress,
-  toNano,
-} from "@torus-network/torus-utils/subspace";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
 import { computeFeeData } from "~/utils/helpers";

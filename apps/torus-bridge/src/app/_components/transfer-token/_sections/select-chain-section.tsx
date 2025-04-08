@@ -1,7 +1,7 @@
 "use client";
 
-import { ChainSelectField } from "../../chains/chain-select-field";
 import { SwapChainsButton } from "../_components/swap-chain-button";
+import { ChainSelectField } from "../../chains/chain-select-field";
 
 export function SelectChainSection({
   isReview,

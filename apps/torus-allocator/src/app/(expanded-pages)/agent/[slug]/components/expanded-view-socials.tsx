@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { buildSocials } from "~/app/_components/agent-item-card/components/socials-info";
+import Link from "next/link";
 
 interface ExpandedViewSocialsProps {
   socials?: {

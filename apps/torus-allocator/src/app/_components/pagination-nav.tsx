@@ -3,11 +3,11 @@
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-  PaginationEllipsis,
 } from "@torus-ts/ui/components/pagination";
 import { useRouter } from "next/navigation";
 import React from "react";

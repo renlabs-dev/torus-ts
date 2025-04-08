@@ -1,7 +1,5 @@
 "use client";
 
-import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
-import { buildSocials, SocialsInfo } from "./socials-info";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { CardHeader } from "@torus-ts/ui/components/card";
@@ -14,12 +12,14 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import { Label } from "@torus-ts/ui/components/label";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { Award, Globe } from "lucide-react";
-import Image from "next/image";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { Award, Globe } from "lucide-react";
+import Image from "next/image";
+import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
+import { buildSocials, SocialsInfo } from "./socials-info";
 
 interface AgentCardHeaderProps {
   name: string;

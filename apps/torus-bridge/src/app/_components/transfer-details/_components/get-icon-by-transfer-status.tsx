@@ -1,5 +1,5 @@
-import { MailCheck, CircleCheckBig, Ban } from "lucide-react";
 import { TransferStatus } from "~/utils/types";
+import { Ban, CircleCheckBig, MailCheck } from "lucide-react";
 
 export function getIconByTransferStatus(status: TransferStatus) {
   switch (status) {

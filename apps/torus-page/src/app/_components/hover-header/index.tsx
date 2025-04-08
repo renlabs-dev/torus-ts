@@ -1,14 +1,14 @@
 "use client";
 
+import { Icons } from "@torus-ts/ui/components/icons";
+import { cn } from "@torus-ts/ui/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { ANIMATIONS } from "./_components/data";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
 import { LinesSVG } from "./_components/desktop/lines-svg";
 import { ButtonsSectionMobile } from "./_components/mobile/buttons-section-mobile";
 import { LinesSVGMobile } from "./_components/mobile/lines-svg-mobile";
-import { Icons } from "@torus-ts/ui/components/icons";
-import { cn } from "@torus-ts/ui/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
 
 export function HoverHeader() {
   const [isVisible, setIsVisible] = useState(false);

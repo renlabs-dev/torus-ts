@@ -1,6 +1,6 @@
+import { env } from "~/env";
 import type { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-import { env } from "~/env";
 
 export const authConfig: NextAuthOptions = {
   providers: [

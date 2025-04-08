@@ -12,9 +12,9 @@ const config = {
     "../../packages/ui/src/components/**/*.{ts,tsx}",
   ],
   safelist: [
-    'bg-button-background',
-    'border-button-border',
-    'bg-field-background',
+    "bg-button-background",
+    "border-button-border",
+    "bg-field-background",
   ],
   theme: {
     extend: {

@@ -1,6 +1,3 @@
-import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
-import { getTransferStatusLabel } from "./get-transfer-status-label";
-import { TransferProperty } from "./transfer-property";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
   useAccountForChain,
@@ -16,9 +13,7 @@ import {
   AlertDialogTitle,
 } from "@torus-ts/ui/components/alert-dialog";
 import { Loading } from "@torus-ts/ui/components/loading";
-import { ChevronsRight } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useWarpCore, tryFindToken } from "~/hooks/token";
+import { tryFindToken, useWarpCore } from "~/hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { getChainDisplayName, hasPermissionlessChain } from "~/utils/chain";
 import { logger } from "~/utils/logger";
@@ -29,6 +24,11 @@ import {
 } from "~/utils/transfer";
 import type { TransferContext } from "~/utils/types";
 import { TransferStatus } from "~/utils/types";
+import { ChevronsRight } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
+import { getTransferStatusLabel } from "./get-transfer-status-label";
+import { TransferProperty } from "./transfer-property";
 
 export function TransfersDetailsDialog({
   isOpen,
