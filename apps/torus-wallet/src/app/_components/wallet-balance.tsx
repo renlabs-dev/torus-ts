@@ -62,7 +62,8 @@ function WalletHeader({ address }: WalletHeaderProps) {
           copy={address}
         >
           {smallAddress(address, 9)}
-          <Copy />
+          <Copy aria-hidden="true" className="ml-1" />
+          <span className="sr-only">Copy address</span>
         </CopyButton>
       ) : (
         <span className="text-muted-foreground">Connect Wallet</span>
