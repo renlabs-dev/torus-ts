@@ -1,27 +1,20 @@
 "use client";
 
-import { CameraControls, Html, SoftShadows, useGLTF } from "@react-three/drei";
+import { CameraControls, SoftShadows, useGLTF } from "@react-three/drei";
 import { Canvas, extend, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import { RoundedPlaneGeometry } from "maath/geometry";
-import type { JSX, ReactNode } from "react";
+import type { JSX } from "react";
 import React, { useRef } from "react";
 import type * as THREE from "three";
 import type { GLTF } from "three-stdlib";
 
 extend({ RoundedPlaneGeometry });
 
-interface AnnotationProps {
-  children: ReactNode;
-  position: [number, number, number];
-  [key: string]: unknown;
-}
-
 export function StatueAnimation() {
   return (
     <Canvas
       shadows="basic"
-      // eventSource={document.getElementById("root")}
       eventPrefix="client"
       camera={{ position: [0, 1.5, 14], fov: 45 }}
     >
@@ -82,25 +75,17 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.Object_4.geometry}
-        scale={0.9}
         dispose={null}
+        geometry={nodes.Object_4.geometry}
       >
-        <meshLambertMaterial
-          color="#404044"
-          // emissive={0x404044}
-        />
+        <meshLambertMaterial color="#404044" />
       </mesh>
-
-      <Annotation position={[1.75, 3, 2.5]}>Proposals</Annotation>
-      <Annotation position={[-4.5, 3.6, -3]}>Whitelist Applications</Annotation>
-      <Annotation position={[1.5, 8, -3]}>DAO Portal</Annotation>
       <spotLight
         angle={0.5}
         penumbra={0.5}
         ref={light}
         castShadow
-        intensity={10000}
+        intensity={10}
         shadow-mapSize={1024}
         shadow-bias={-0.001}
       >
@@ -110,25 +95,5 @@ function Model(props: JSX.IntrinsicElements["group"]) {
         />
       </spotLight>
     </group>
-  );
-}
-
-function Annotation({ children, ...props }: AnnotationProps) {
-  return (
-    <Html
-      {...props}
-      transform
-      occlude="blending"
-      geometry={
-        /** The geometry is optional, it allows you to use any shape.
-         *  By default it would be a plane. We need round edges here ...
-         @ts-expect-error - roundedPlaneGeometry is extended but TypeScript doesn't recognize it */
-        <roundedPlaneGeometry args={[1.66, 0.47, 0.24]} />
-      }
-    >
-      <div className="annotation" onClick={() => console.log(".")}>
-        {children}
-      </div>
-    </Html>
   );
 }
