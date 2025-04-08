@@ -1,8 +1,8 @@
+import { api } from "~/trpc/server";
 import { AgentItemCard } from "../_components/agent-item-card";
 import { Filter } from "../_components/filter-content";
 import { PaginationNav } from "../_components/pagination-nav";
 import { ViewSelector } from "../_components/view-selector";
-import { api } from "~/trpc/server";
 
 const ITEMS_PER_PAGE = 9;
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -23,14 +25,12 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
-import { formatToken } from "@torus-network/torus-utils/subspace";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import { useGovernance } from "~/context/governance-provider";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useGovernance } from "~/context/governance-provider";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),

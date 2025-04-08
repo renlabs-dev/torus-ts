@@ -1,3 +1,4 @@
+import { Router } from "express";
 import {
   getStakeFromDataStringified,
   getStakeOutDataStringified,
@@ -5,7 +6,6 @@ import {
   stakeOutData,
 } from "./data";
 import { waitFor } from "./utils";
-import { Router } from "express";
 
 const router: Router = Router();
 

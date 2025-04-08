@@ -4,6 +4,7 @@ import type {
   Agent as TorusAgent,
 } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
+import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import type { SQL, Table } from "@torus-ts/db";
 import {
   and,
@@ -31,7 +32,6 @@ import {
   userAgentWeightSchema,
   whitelistApplicationSchema,
 } from "@torus-ts/db/schema";
-import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 
 const db = createDb();
 
@@ -382,7 +382,7 @@ export async function pendingPenalizations(threshold: number, n: number) {
   const agentsWithUnexecutedVotes = db
     .select({ agentKey: penalizeAgentVotesSchema.agentKey })
     .from(penalizeAgentVotesSchema)
-    .where(not(penalizeAgentVotesSchema.executed))
+    .where(not(penalizeAgentVotesSchema.executed));
 
   const result = await db
     .with(agentsWithUnexecutedVotes.as("agents_with_unexecuted_votes"))
@@ -405,7 +405,7 @@ export async function pendingPenalizations(threshold: number, n: number) {
     )
     .groupBy(penalizeAgentVotesSchema.agentKey)
     .having(gte(sql`count(*)`, threshold));
-  
+
   const castedResult = result.map((row) => ({
     agentKey: checkSS58(row.agentKey),
     nthBiggestPenaltyFactor: row.nthBiggestPenaltyFactor,
@@ -426,7 +426,6 @@ export async function getAgentKeysWithPenalties() {
 
   return result;
 }
-
 
 export async function updatePenalizeAgentVotes(agentKeys: string[]) {
   await db

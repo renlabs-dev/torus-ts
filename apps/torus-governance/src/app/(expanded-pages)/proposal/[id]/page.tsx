@@ -1,7 +1,7 @@
-import { ProposalExpandedView } from "./_components/proposal-expanded-view";
 import { Button } from "@torus-ts/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { ProposalExpandedView } from "./_components/proposal-expanded-view";
 
 export default async function ProposalView({
   params,

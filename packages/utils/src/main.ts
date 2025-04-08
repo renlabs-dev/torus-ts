@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { buildTaggedBigNumberClass } from "./bignumber";
 import BigNumber from "bignumber.js";
+import { buildTaggedBigNumberClass } from "./bignumber";
 
 // Example of creating a tagged BigNumber class
 const MyBigNumber = buildTaggedBigNumberClass("MyBigNumber", BigNumber);

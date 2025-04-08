@@ -1,10 +1,10 @@
 "use client";
 
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { useLayoutEffect, useState } from "react";
 
 interface VoterListProps {

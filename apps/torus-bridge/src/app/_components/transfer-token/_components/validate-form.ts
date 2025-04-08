@@ -1,6 +1,6 @@
 import type { WarpCore } from "@hyperlane-xyz/sdk";
 import type { ProtocolType } from "@hyperlane-xyz/utils";
-import { toWei, errorToString } from "@hyperlane-xyz/utils";
+import { errorToString, toWei } from "@hyperlane-xyz/utils";
 import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { getTokenByIndex } from "~/hooks/token";

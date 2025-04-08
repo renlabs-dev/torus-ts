@@ -14,9 +14,9 @@ import {
   // TrustWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
+import { logger } from "~/utils/logger";
 import type { PropsWithChildren } from "react";
 import { useCallback, useMemo } from "react";
-import { logger } from "~/utils/logger";
 
 export function SolanaWalletProvider({
   children,

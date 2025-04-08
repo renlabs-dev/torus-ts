@@ -1,6 +1,5 @@
 import { CID } from "multiformats/cid";
 import { z } from "zod";
-
 import { assert_error } from "./";
 import type { Result } from "./typing";
 

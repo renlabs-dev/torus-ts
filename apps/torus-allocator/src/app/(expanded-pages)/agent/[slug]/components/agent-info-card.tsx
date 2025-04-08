@@ -1,12 +1,12 @@
 "use client";
 
-import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
-import { ReportAgent } from "./report-agent";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
-import { Copy } from "lucide-react";
 import type { Agent } from "~/utils/types";
+import { Copy } from "lucide-react";
+import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
+import { ReportAgent } from "./report-agent";
 
 export function AgentInfoCard({ agent }: Readonly<{ agent: Agent }>) {
   const { isLoading, isError, displayTokensPerWeek, displayUsdValue } =

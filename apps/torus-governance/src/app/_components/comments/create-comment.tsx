@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { SS58Address } from "@torus-network/sdk";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -13,7 +14,6 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { formatToken } from "@torus-network/torus-utils/subspace";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import * as React from "react";

@@ -1,15 +1,18 @@
 import { processApplicationMetadata } from "@torus-network/sdk";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
-import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-network/torus-utils/ipfs";
+import {
+  buildIpfsGatewayUrl,
+  parseIpfsUri,
+} from "@torus-network/torus-utils/ipfs";
 import { flattenResult } from "@torus-network/torus-utils/typing";
 import { z } from "zod";
 import {
   getApplicationsDB,
   getCadreCandidates,
   getProposalsDB,
-  sleep,
   log,
   normalizeApplicationValue,
+  sleep,
 } from "../common";
 import type { ApplicationDB } from "../db";
 import * as db from "../db";
@@ -36,11 +39,14 @@ export async function notifyNewApplicationsWorker() {
   const env = getEnv(process.env);
   const startingBlock = env.NOTIFICATIONS_START_BLOCK ?? 350_000;
   const buildUrl = () => buildPortalUrl(env.NEXT_PUBLIC_TORUS_CHAIN_ENV);
-  while(true){
+  while (true) {
     // We could execute the functions in parallel, but it's not necessary
     // and it's better for the logging to execute then serially
     try {
-      await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+      await pushApplicationsNotification(
+        env.CURATOR_DISCORD_WEBHOOK_URL,
+        buildUrl,
+      );
       await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
       await pushProposalsNotification(
         env.CURATOR_DISCORD_WEBHOOK_URL,
@@ -48,7 +54,9 @@ export async function notifyNewApplicationsWorker() {
         buildUrl,
       );
     } catch (error) {
-      log(`Error in notification cycle: ${error instanceof Error ? error.message : String(error)}`);
+      log(
+        `Error in notification cycle: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     await sleep(1_000);
   }
@@ -254,13 +262,13 @@ function buildCadreMessage(
   return payload;
 }
 
-
 function buildProposalMessage(
   application: db.NewProposal,
   proposalURL: string,
 ) {
   const embedParamsMap = generateBaseEmbedParams("Proposal");
-  const embedParams = embedParamsMap[normalizeApplicationValue(application.status)];
+  const embedParams =
+    embedParamsMap[normalizeApplicationValue(application.status)];
   const fields = [
     { name: "Proposer", value: application.proposerKey },
     { name: "Proposal ID", value: `${String(application.id)}` },

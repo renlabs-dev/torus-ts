@@ -1,6 +1,6 @@
 "use client";
 
-import { ReportComment } from "./report-comment";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import type { AppRouter } from "@torus-ts/api";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
@@ -11,8 +11,8 @@ import {
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
 import type { inferProcedureOutput } from "@trpc/server";
+import { api } from "~/trpc/react";
 import {
   ChevronsDown,
   ChevronsUp,
@@ -28,7 +28,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { api } from "~/trpc/react";
+import { ReportComment } from "./report-comment";
 
 //  "LIKE" | "DISLIKE"
 export type CommentInteractionReactionType = NonNullable<

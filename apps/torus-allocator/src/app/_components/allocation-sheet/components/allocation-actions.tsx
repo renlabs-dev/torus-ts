@@ -1,12 +1,12 @@
 "use client";
 
 import type { SS58Address } from "@torus-network/sdk";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { formatToken } from "@torus-network/torus-utils/subspace";
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import useSubmitStore from "~/stores/submitStore";

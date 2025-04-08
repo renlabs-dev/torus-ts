@@ -10,9 +10,9 @@ import {
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
 import { getLinks } from "@torus-ts/ui/lib/data";
+import { env } from "~/env";
 import { CircleHelp } from "lucide-react";
 import Link from "next/link";
-import { env } from "~/env";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 

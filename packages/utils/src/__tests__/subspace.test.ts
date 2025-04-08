@@ -1,12 +1,12 @@
+import BigNumber from "bignumber.js";
+import { describe, expect, it } from "vitest";
 import {
-  makeTorAmount,
   DECIMALS,
   formatToken,
   fromRems,
+  makeTorAmount,
   toRems,
 } from "../subspace";
-import BigNumber from "bignumber.js";
-import { describe, it, expect } from "vitest";
 
 describe("TorAmount", () => {
   it("should correctly apply ROUND_HALF_EVEN (banker's rounding)", () => {
@@ -222,7 +222,6 @@ describe("TorAmount", () => {
     // The sum of 10 should still be 0
     expect(sumRems.toString()).toBe("0");
   });
-  
 
   it("should format token amounts correctly", () => {
     // Test formatToken function with various inputs using bigint literals

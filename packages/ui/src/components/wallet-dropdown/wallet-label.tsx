@@ -1,6 +1,9 @@
 "use client";
 
-import { smallAddress, smallWalletName } from "@torus-network/torus-utils/subspace";
+import {
+  smallAddress,
+  smallWalletName,
+} from "@torus-network/torus-utils/subspace";
 import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface WalletLabelProps {

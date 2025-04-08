@@ -1,7 +1,7 @@
-import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
-import { useEffect, useRef, useState } from "react";
 import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
+import { useEffect, useRef, useState } from "react";
+import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
 
 export function TransferDetails() {
   const didMountRef = useRef(false);

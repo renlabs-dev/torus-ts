@@ -1,12 +1,12 @@
 "use client";
 
-import { useTorus } from "@torus-ts/torus-provider";
 import { createAuthReqData } from "@torus-network/torus-utils/auth";
+import { useTorus } from "@torus-ts/torus-provider";
+import { env } from "~/env";
+import { api } from "~/trpc/react";
 import { useSearchParams } from "next/navigation";
 import { signData } from "node_modules/@torus-ts/api/src/auth/sign";
 import { useEffect, useState } from "react";
-import { env } from "~/env";
-import { api } from "~/trpc/react";
 
 export const useSignIn = () => {
   const { signHex, selectedAccount } = useTorus();
