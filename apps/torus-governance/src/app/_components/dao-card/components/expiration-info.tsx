@@ -1,6 +1,6 @@
 "use client";
 
-import { getExpirationTime } from "@torus-ts/utils";
+import { getExpirationTime } from "@torus-network/torus-utils";
 import { Clock } from "lucide-react";
 
 interface ExpirationInfoProps {
