@@ -33,7 +33,7 @@ type NavButtonProps = NavLink;
 const NAVIGATION_LINKS: NavLink[] = [
   { path: "/transfers", label: "Wallet", value: "wallet" },
   { path: "/staking", label: "Staking", value: "staking" },
-  { path: "bridge", label: "Bridge", value: "bridge" },
+  { path: "/bridge", label: "Bridge", value: "bridge" },
 ];
 
 const useNavigation = () => {

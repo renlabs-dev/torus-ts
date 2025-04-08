@@ -6,7 +6,7 @@ import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
 import { Lock, Scale, Unlock, Copy } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useId } from "react";
+import { useMemo } from "react";
 import { useWallet } from "~/context/wallet-provider";
 
 const BALANCE_ICONS = {
