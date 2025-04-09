@@ -1,4 +1,5 @@
-import { assert } from "tsafe";
+import { assert, Equals } from "tsafe";
+import { observeType } from "./typing";
 
 // === Empty placeholder ===
 
@@ -8,7 +9,7 @@ import { assert } from "tsafe";
 
 export const empty = undefined;
 export type empty = typeof empty;
-type NonEmpty<T> = T;
+export type NonEmpty<T> = T;
 
 // === Result types ===
 
@@ -16,7 +17,6 @@ export type Ok<T> = readonly [empty, NonEmpty<T>];
 export type Err<E> = readonly [NonEmpty<E>, empty];
 
 export type Result<T, E> = Ok<T> | Err<E>;
-export type AsyncResult<T, E> = Promise<Result<T, E>>;
 
 export const makeOk = <T>(value: T): Ok<T> => Object.freeze([empty, value]);
 export const makeErr = <E>(value: E): Err<E> => Object.freeze([value, empty]);
@@ -33,9 +33,28 @@ export const isErr = <T, E>(result: Result<T, E>): result is Err<E> =>
 
 export const isOk = <T, E>(result: Result<T, E>): result is Ok<T> =>
   result[1] === empty;
-
 export class ResultObj<T, E> {
   constructor(public value: Result<T, E>) {}
+
+  get [0](): E | undefined {
+    return this.value[0];
+  }
+  get [1](): T | undefined {
+    return this.value[1];
+  }
+  [Symbol.iterator](): Iterator<E | T | undefined> {
+    let index = 0;
+    return {
+      next: (): IteratorResult<E | T | undefined> => {
+        if (index < 2) {
+          return { value: this.value[index++], done: false };
+        } else {
+          return { value: undefined, done: true };
+        }
+      },
+    };
+  }
+
   static Ok<T, E>(val: T): ResultObj<T, E> {
     return new ResultObj(makeOk(val) as Result<T, E>);
   }
@@ -88,15 +107,29 @@ function _test() {
 
   for (const res of rests) {
     console.log(res);
+
     from(res)
       .andThen((x) => from(makeOk(x + 1)))
       .match({
         Ok: (x) => x + 3,
         Err: (_e) => NaN,
       });
+
+    const obj = from(res);
+    // const [err, val] = obj;
+    // if (err !== empty) {
+    //   tsafe<Equals<typeof err, string>>();
+    //   // observeType(val);
+    //   continue;
+    // }
+    // tsafe<Equals<typeof val, number>>();
+    // // observeType(val);
   }
 }
 
+function tsafe<T>() {
+  throw new Error("Function not implemented.");
+}
 // // ==== Proxy wrapper ====
 
 // // TODO: test proxy wrapper properly

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import type { Result } from "../result";
+import type { AsyncResultObj } from "../async-result";
+import { ResultObj } from "../result";
 import { tryAsync, tryAsyncStr, trySync, trySyncStr } from "../try-catch";
 
 // Toast Options to construct the toast function
@@ -60,56 +61,65 @@ function showErrorToast(
  * Handles client-side async operations with toast notifications
  * @param asyncOperation The async operation to execute
  * @param options Toast configuration options
- * @returns A tuple with [error or undefined, result or undefined]
+ * @returns An AsyncResultObj with result or string error
  */
-export async function tryAsyncToast<T>(
+export function tryAsyncToast<T>(
   asyncOperation: PromiseLike<T>,
   options: ClientErrorOptions = {},
-): Promise<Result<T, string>> {
-  const result = await tryAsyncStr(asyncOperation);
-  const [error, _value] = result;
+): AsyncResultObj<T, string> {
+  const resultObj = tryAsyncStr(asyncOperation);
 
-  if (error) {
-    showErrorToast(error, options);
-  }
+  // Use match to show toast for errors
+  void resultObj.match({
+    Ok: () => {
+      // Success case
+    },
+    Err: (error) => showErrorToast(error, options),
+  });
 
-  return result;
+  return resultObj;
 }
 
 /**
  * Handles client-side async operations with toast notifications, returning the raw error
  * @param asyncOperation The async operation to execute
- * @param options Toast configuration options
- * @returns A tuple with [raw error or undefined, result or undefined]
+ * @returns An AsyncResultObj with result or Error
  */
-export async function tryAsyncToastRaw<T = unknown>(
+export function tryAsyncToastRaw<T = unknown>(
   asyncOperation: PromiseLike<T>,
-): Promise<Result<T, Error>> {
-  const result = await tryAsync<T>(asyncOperation);
-  const [error, _value] = result;
+  options: ClientErrorOptions = {},
+): AsyncResultObj<T, Error> {
+  const resultObj = tryAsync<T>(asyncOperation);
 
-  if (error) {
-    console.error("Raw error in tryAsyncToast:", error);
-    console.error("Error details:", {
-      message: error.message,
-      cause: error.cause,
-      name: error.name,
-    });
-  }
+  // Use match to show toast for errors
+  void resultObj.match({
+    Ok: () => {
+      //success case
+    },
+    Err: (error) => {
+      console.error("Raw error in tryAsyncToast:", error);
+      console.error("Error details:", {
+        message: error.message,
+        cause: error.cause,
+        name: error.name,
+      });
+      showErrorToast(error, options);
+    },
+  });
 
-  return result;
+  return resultObj;
 }
 
 /**
  * Handles client-side sync operations with toast notifications
  * @param syncOperation The sync operation to execute
  * @param options Toast configuration options
- * @returns A tuple with [error or undefined, result or undefined]
+ * @returns A ResultObj with result or string error
  */
 export function trySyncToast<T>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
-): Result<T, string> {
+): ResultObj<T, string> {
   const result = trySyncStr(syncOperation);
   const [error, _value] = result;
 
@@ -117,19 +127,19 @@ export function trySyncToast<T>(
     showErrorToast(error, options);
   }
 
-  return result;
+  return ResultObj.from(result);
 }
 
 /**
  * Handles client-side sync operations with toast notifications, returning the raw error
  * @param syncOperation The sync operation to execute
  * @param options Toast configuration options
- * @returns A tuple with [raw error or undefined, result or undefined]
+ * @returns A ResultObj with result or Error
  */
 export function trySyncToastRaw<T = unknown>(
   syncOperation: () => T,
   options: ClientErrorOptions = {},
-): Result<T, Error> {
+): ResultObj<T, Error> {
   const result = trySync<T>(syncOperation);
   const [error, _value] = result;
 
@@ -137,5 +147,5 @@ export function trySyncToastRaw<T = unknown>(
     showErrorToast(error instanceof Error ? error : String(error), options);
   }
 
-  return result;
+  return ResultObj.from(result);
 }

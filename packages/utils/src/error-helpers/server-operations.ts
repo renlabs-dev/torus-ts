@@ -1,5 +1,22 @@
-import type { Result } from "../result";
-import { tryAsync, tryAsyncStr, trySync, trySyncStr } from "../try-catch";
+import { AsyncResultObj } from "../async-result";
+import { ResultObj } from "../result";
+import {
+  tryAsync,
+  tryAsyncAllExtended,
+  tryAsyncStr,
+  trySync,
+  trySyncStr,
+  unwrapAsyncResult,
+} from "../try-catch";
+
+function log(...args: unknown[]) {
+  const [first, ...rest] = args;
+  console.log(`[${new Date().toISOString()}] ${String(first)}`, ...rest);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 // Define log levels
 type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
@@ -8,50 +25,56 @@ type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
  * Handles server-side async operations with logging
  * @param asyncOperation The async operation to execute
  * @param options Logging configuration options
- * @returns A tuple with [error or undefined, result or undefined]
+ * @returns An AsyncResultObj with result or string error
  */
-export async function tryAsyncLogging<T>(
+export function tryAsyncLogging<T>(
   asyncOperation: PromiseLike<T>,
   options: LogLevel = "error",
-): Promise<Result<T, string>> {
-  const result = await tryAsyncStr(asyncOperation);
-  const [error, _value] = result;
+): AsyncResultObj<T, string> {
+  const resultObj = tryAsyncStr(asyncOperation);
 
-  if (error) {
-    logServerError(error, options);
-  }
+  void resultObj.match({
+    Ok: () => {
+      // success case
+    },
+    Err: (error) => logServerError(error, options),
+  });
 
-  return result;
+  return resultObj;
 }
 
 /**
  * Handles server-side async operations with logging, returning the raw error
  * @param asyncOperation The async operation to execute
  * @param options Logging configuration options
- * @returns A tuple with [raw error or undefined, result or undefined]
+ * @returns An AsyncResultObj with result or Error
  */
-export async function tryAsyncLoggingRaw<T = unknown>(
+export function tryAsyncLoggingRaw<T = unknown>(
   asyncOperation: PromiseLike<T>,
   options: LogLevel = "error",
-): Promise<Result<T, Error>> {
-  const result = await tryAsync<T>(asyncOperation);
-  const [error, _value] = result;
-  if (error) {
-    logServerError(error, options);
-  }
-  return result;
+): AsyncResultObj<T, Error> {
+  const resultObj = tryAsync<T>(asyncOperation);
+
+  void resultObj.match({
+    Ok: () => {
+      // success case
+    },
+    Err: (error) => logServerError(error, options),
+  });
+
+  return resultObj;
 }
 
 /**
  * Handles server-side sync operations with logging
  * @param syncOperation The sync operation to execute
  * @param options Logging configuration options
- * @returns A tuple with [error or undefined, result or undefined]
+ * @returns A ResultObj with result or string error
  */
 export function trySyncLogging<T>(
   syncOperation: () => T,
   options: LogLevel = "error",
-): Result<T, string> {
+): ResultObj<T, string> {
   const result = trySyncStr(syncOperation);
   const [error, _value] = result;
 
@@ -59,19 +82,19 @@ export function trySyncLogging<T>(
     logServerError(error, options);
   }
 
-  return result;
+  return ResultObj.from(result);
 }
 
 /**
  * Handles server-side sync operations with logging, returning the raw error
  * @param syncOperation The sync operation to execute
  * @param options Logging configuration options
- * @returns A tuple with [raw error or undefined, result or undefined]
+ * @returns An AsyncResultObj with result or Error
  */
 export function trySyncLoggingRaw<T = unknown>(
   syncOperation: () => T,
   options: LogLevel = "error",
-): Result<T, Error> {
+): ResultObj<T, Error> {
   const result = trySync<T>(syncOperation);
   const [error, _value] = result;
 
@@ -79,14 +102,86 @@ export function trySyncLoggingRaw<T = unknown>(
     logServerError(error, options);
   }
 
-  return result;
+  // Convert Result to AsyncResultObj
+  return ResultObj.from(result);
 }
 
 /**
- * Logs an error on the server with formatting
- * @param error The error to log
- * @param options Logging configuration options
+ * Execute multiple async operations with logging, returning a tuple format
+ * @param operations Array of async operations to execute in parallel
+ * @param logLevel Optional log level for errors (defaults to "error")
+ * @returns A tuple with [Error | undefined, T | undefined]
  */
+export async function tryAsyncAllWithLogging<T extends unknown[]>(
+  operations: { [K in keyof T]: () => Promise<T[K]> },
+  logLevel: LogLevel = "error",
+): Promise<[Error | undefined, T | undefined]> {
+  // Use the existing tryAsyncAllExtended function
+  const resultObj = await tryAsyncAllExtended<T>(operations);
+
+  // Check for errors and log them
+  await resultObj.match({
+    Ok: () => {
+      // Success case
+    },
+    Err: (error) => logServerError(error, logLevel),
+  });
+
+  // Unwrap to tuple format using existing helper
+  return unwrapAsyncResult(resultObj);
+}
+
+/**
+ * Execute multiple async operations with logging and retries
+ * @param operations Array of async operations to execute in parallel
+ * @param options Configuration options for retries and logging
+ * @returns A tuple with [Error | undefined, T | undefined]
+ */
+export async function tryAsyncAllWithRetries<T extends unknown[]>(
+  operations: { [K in keyof T]: () => Promise<T[K]> },
+  options: {
+    retries?: number;
+    delay?: number;
+    logLevel?: LogLevel;
+  } = {},
+): Promise<AsyncResultObj<T, Error>> {
+  const retries = options.retries ?? 3;
+  const delay = options.delay ?? 1000;
+  const logLevel = options.logLevel ?? "error";
+
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt < retries; attempt++) {
+    if (lastError) {
+      log(`Retry ${attempt + 1}/${retries} after error: ${lastError.message}`);
+      await sleep(delay);
+    }
+
+    // Use tryAsyncAllExtended which returns AsyncResultObj
+    const resultObj = await tryAsyncAllExtended<T>(operations);
+
+    // Check if we have an error
+    const hasError = await resultObj.match({
+      Ok: () => false,
+      Err: (error) => {
+        lastError = error;
+        logServerError(error, logLevel);
+        return true;
+      },
+    });
+
+    if (!hasError) {
+      // No error, return the result
+      // return unwrapAsyncResult(resultObj);
+      return resultObj;
+    }
+  }
+
+  // All retries failed
+  return AsyncResultObj.Err(lastError) as unknown as AsyncResultObj<T, Error>;
+}
+
+// Helper function for logging errors
 function logServerError(error: unknown, options: LogLevel = "error"): void {
   const formattedError = formatError(error, { level: options });
 
@@ -111,11 +206,7 @@ function logServerError(error: unknown, options: LogLevel = "error"): void {
   }
 }
 
-/**
- * Formats an error into a standardized structure
- * @param error The error to format
- * @param options Formatting options
- */
+// Format error for logging
 export function formatError(
   error: unknown,
   options: {
@@ -125,6 +216,7 @@ export function formatError(
     stack?: boolean;
   } = { level: "error" },
 ): Record<string, unknown> {
+  // Implementation remains the same
   let formattedError: Record<string, unknown> = {
     message: "Unknown error",
     timestamp: new Date().toISOString(),
