@@ -73,14 +73,29 @@ function calculateYearlyRewards(
   incentivesRatio: number,
   treasuryFee: number,
 ): bigint {
-  const stakeRewardsRatio = 1 - incentivesRatio;
-  const dailyRewards =
-    (BLOCKS_IN_DAY *
-      currentEmission *
-      BigInt(Math.floor(stakeRewardsRatio * 100))) /
-    100n;
-  const yearlyRewards = dailyRewards * 365n;
-  return (yearlyRewards * BigInt(Math.floor((1 - treasuryFee) * 100))) / 100n;
+  const PRECISION = 10n ** 18n; // 10^18 for high precision
+
+  // Convert ratios to bigint with precision
+  const incentivesRatioScaled = BigInt(
+    Math.round(incentivesRatio * Number(PRECISION)),
+  );
+  const treasuryFeeScaled = BigInt(Math.round(treasuryFee * Number(PRECISION)));
+
+  // Calculate stake rewards ratio (1 - incentivesRatio)
+  const stakeRewardsRatioScaled = PRECISION - incentivesRatioScaled;
+
+  // Daily rewards: (blocks * emission * stakeRewardsRatio)
+  const dailyRewardsScaled =
+    (BLOCKS_IN_DAY * currentEmission * stakeRewardsRatioScaled) / PRECISION;
+
+  // Yearly rewards: daily * 365
+  const yearlyRewardsScaled = dailyRewardsScaled * 365n;
+
+  // Apply treasury fee: (1 - treasuryFee)
+  const finalRewardsScaled =
+    (yearlyRewardsScaled * (PRECISION - treasuryFeeScaled)) / PRECISION;
+
+  return finalRewardsScaled;
 }
 
 export function useAPR(): APRResult {
