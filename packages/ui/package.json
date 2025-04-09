@@ -36,7 +36,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.3",
     "@tanstack/react-table": "^8.20.5",
-    "@torus-ts/utils": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "@uiw/react-markdown-preview": "^5.1.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

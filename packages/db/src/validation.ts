@@ -1,16 +1,16 @@
+import { createInsertSchema } from "drizzle-zod";
 import {
+  agentApplicationVoteSchema,
+  agentReportSchema,
   cadreCandidateSchema,
   cadreVoteSchema,
   commentInteractionSchema,
   commentReportSchema,
-  agentReportSchema,
   commentSchema,
-  agentApplicationVoteSchema,
-  userAgentWeightSchema,
   penalizeAgentVotesSchema,
+  userAgentWeightSchema,
   userDiscordInfoSchema,
 } from "./schema";
-import { createInsertSchema } from "drizzle-zod";
 
 export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
   agentReportSchema,

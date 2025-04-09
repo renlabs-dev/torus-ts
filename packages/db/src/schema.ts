@@ -1,24 +1,24 @@
-import { extract_pgenum_values } from "./utils";
-import { asc, eq, sql, isNull, sum } from "drizzle-orm";
+import { asc, eq, isNull, sql, sum } from "drizzle-orm";
 import {
-  bigint as drizzleBigint,
   boolean,
+  check,
+  bigint as drizzleBigint,
+  timestamp as drizzleTimestamp,
   index,
   integer,
+  numeric,
   pgEnum,
   pgMaterializedView,
   pgTableCreator,
+  real,
   serial,
   text,
-  timestamp as drizzleTimestamp,
   unique,
   varchar,
-  real,
-  check,
-  numeric,
 } from "drizzle-orm/pg-core";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
+import { extract_pgenum_values } from "./utils";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 
@@ -134,7 +134,7 @@ export const applicationStatusValues = extract_pgenum_values(applicationStatus);
 assert<
   Equals<
     keyof typeof applicationStatusValues,
-    "Open" | "Accepted" | "Rejected" | "Expired" 
+    "Open" | "Accepted" | "Rejected" | "Expired"
   >
 >();
 export const whitelistApplicationSchema = createTable("whitelist_application", {

@@ -1,12 +1,12 @@
 import { toWei } from "@hyperlane-xyz/utils";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Loading } from "@torus-ts/ui/components/loading";
-import { smallAddress } from "@torus-ts/utils/subspace";
-import { useFormikContext } from "formik";
-import React from "react";
-import { useWarpCore, getTokenByIndex } from "~/hooks/token";
+import { getTokenByIndex, useWarpCore } from "~/hooks/token";
 import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";
 import { useFeeQuotes } from "~/hooks/use-fee-quotes";
 import type { TransferFormValues } from "~/utils/types";
+import { useFormikContext } from "formik";
+import React from "react";
 
 export function WalletTransactionReview({
   isReview,

@@ -1,9 +1,9 @@
 "use client";
 
-import { SkeletonAgentCardContent } from "./agent-card-skeleton-loader";
 import { CardContent } from "@torus-ts/ui/components/card";
 import { Separator } from "@torus-ts/ui/components/separator";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
+import { SkeletonAgentCardContent } from "./agent-card-skeleton-loader";
 
 interface AgentCardContentProps {
   metadataUri: string | null;

@@ -1,13 +1,13 @@
-import { config } from "../../../consts/config";
-import { useWarpCore } from "../../../hooks/token";
-import { getChainDisplayName } from "../../../utils/chain";
 import type { ChainName, IToken } from "@hyperlane-xyz/sdk";
 import { Modal, SearchIcon } from "@hyperlane-xyz/widgets";
-import { InfoIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { TextInput } from "~/app/_components/text-field";
 import { TokenIcon } from "~/app/_components/token-icon";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { InfoIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { config } from "../../../consts/config";
+import { useWarpCore } from "../../../hooks/token";
+import { getChainDisplayName } from "../../../utils/chain";
 
 export function TokenListModal({
   isOpen,

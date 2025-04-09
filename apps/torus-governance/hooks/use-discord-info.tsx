@@ -1,9 +1,9 @@
 import type { AppRouter } from "@torus-ts/api";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { inferProcedureInput } from "@trpc/server";
+import { api } from "~/trpc/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { api } from "~/trpc/react";
 
 type DiscordInfoFormData = NonNullable<
   inferProcedureInput<AppRouter["discordInfo"]["create"]>

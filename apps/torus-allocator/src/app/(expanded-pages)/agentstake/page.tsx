@@ -1,6 +1,6 @@
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
-import { formatToken } from "@torus-ts/utils/subspace";
 import { api } from "~/trpc/server";
 
 export default async function UserAgentPage({

@@ -1,9 +1,9 @@
 import { Button } from "@torus-ts/ui/components/button";
+import { updateSearchParams } from "~/utils/query-params";
+import type { TransferFormValues } from "~/utils/types";
 import { useFormikContext } from "formik";
 import { ArrowLeftRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { updateSearchParams } from "~/utils/query-params";
-import type { TransferFormValues } from "~/utils/types";
 
 export function SwapChainsButton({
   disabled,

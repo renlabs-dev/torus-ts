@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAgentMetadata } from "@torus-network/sdk";
-import { isIpfsUri } from "@torus-ts/utils/ipfs";
+import { isIpfsUri } from "@torus-network/torus-utils/ipfs";
 import { assert } from "tsafe";
 
 /** Default stale time */

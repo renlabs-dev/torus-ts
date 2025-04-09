@@ -1,8 +1,8 @@
-import type { CID } from "@torus-ts/utils/ipfs";
-import { PINATA_PIN_FILE_RESULT } from "@torus-ts/utils/ipfs";
+import type { CID } from "@torus-network/torus-utils/ipfs";
+import { PINATA_PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
+import { env } from "~/env";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { env } from "~/env";
 
 export function config(): { api: { bodyParser: false } } {
   return {

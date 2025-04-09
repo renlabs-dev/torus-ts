@@ -1,12 +1,12 @@
-import { publicProcedure } from "../../trpc";
-import { eq, and, max, isNull, inArray, sql } from "@torus-ts/db";
+import { and, eq, inArray, isNull, max, sql } from "@torus-ts/db";
 import {
   agentSchema,
-  penalizeAgentVotesSchema,
   computedAgentWeightSchema,
+  penalizeAgentVotesSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
+import { publicProcedure } from "../../trpc";
 
 export const agentRouter = {
   // GET

@@ -1,9 +1,9 @@
 "use client";
 
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Label } from "@torus-ts/ui/components/label";
-import { smallAddress } from "@torus-ts/utils/subspace";
 import { api } from "~/trpc/react";
 import { useComputedCandidateVotes } from "hooks/use-computed-candidate-votes";
 import { Calendar1, KeyRound } from "lucide-react";

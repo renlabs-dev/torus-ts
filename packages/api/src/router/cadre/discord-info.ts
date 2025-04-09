@@ -1,7 +1,7 @@
-import { authenticatedProcedure } from "../../trpc";
 import { userDiscordInfoSchema } from "@torus-ts/db/schema";
 import { USER_DISCORD_INFO_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { authenticatedProcedure } from "../../trpc";
 
 export const discordInfoRouter = {
   create: authenticatedProcedure

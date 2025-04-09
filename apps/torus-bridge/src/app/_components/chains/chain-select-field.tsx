@@ -1,9 +1,9 @@
-import { ChainLogo } from "../chain-logo";
 import type { ChainName } from "@hyperlane-xyz/sdk";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
-import { useField } from "formik";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
+import { useField } from "formik";
+import { ChainLogo } from "../chain-logo";
 
 interface Props {
   name: string;

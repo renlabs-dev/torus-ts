@@ -1,10 +1,5 @@
 import * as React from "react";
 import "@torus-ts/ui/globals.css";
-import ClientHeroSection from "./components/animation/client-hero-section";
-import { APRBar } from "./components/apr-bar";
-import { SidebarLinks } from "./components/sidebar-links";
-import { WalletBalance } from "./components/wallet-balance";
-import { WalletHeader } from "./components/wallet-header";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
@@ -12,10 +7,15 @@ import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+import { WalletProvider } from "~/context/wallet-provider";
+import { env, EnvScript } from "~/env";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
-import { WalletProvider } from "~/context/wallet-provider";
-import { EnvScript, env } from "~/env";
+import ClientHeroSection from "./components/animation/client-hero-section";
+import { APRBar } from "./components/apr-bar";
+import { SidebarLinks } from "./components/sidebar-links";
+import { WalletBalance } from "./components/wallet-balance";
+import { WalletHeader } from "./components/wallet-header";
 
 const APP_NAME = "Torus Wallet";
 

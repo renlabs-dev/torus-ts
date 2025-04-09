@@ -7,8 +7,8 @@ import { createAuthLink, makeAuthenticateUserFn } from "@torus-ts/api/client";
 import { useTorus } from "@torus-ts/torus-provider";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-import SuperJSON from "superjson";
 import { env } from "~/env";
+import SuperJSON from "superjson";
 
 const createQueryClient = () =>
   new QueryClient({

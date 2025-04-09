@@ -1,6 +1,6 @@
 "use client";
 
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { useAPR } from "~/hooks/useAPR";
 import { motion } from "framer-motion";
 import { APRBarSkeleton } from "./apr-bar-skeleton";

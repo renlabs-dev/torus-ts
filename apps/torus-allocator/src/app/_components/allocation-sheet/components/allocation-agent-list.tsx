@@ -1,8 +1,8 @@
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-import { smallAddress } from "@torus-ts/utils/subspace";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { X } from "lucide-react";
 

@@ -1,12 +1,12 @@
-import * as React from "react";
 import { Layout } from "@torus-ts/ui/components/layout";
+import * as React from "react";
 import "@torus-ts/ui/globals.css";
-import { Footer } from "./_components/footer";
-import { HoverHeader } from "./_components/hover-header";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { EnvScript } from "~/env";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
-import { EnvScript } from "~/env";
+import { Footer } from "./_components/footer";
+import { HoverHeader } from "./_components/hover-header";
 
 export const metadata: Metadata = {
   robots: "all",

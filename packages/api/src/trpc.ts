@@ -10,8 +10,8 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { SS58Address } from "@torus-network/sdk";
 import { setup } from "@torus-network/sdk";
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { createDb } from "@torus-ts/db/client";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { assert } from "tsafe";

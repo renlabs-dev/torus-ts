@@ -130,7 +130,9 @@ export function agentProposalToProposal(proposal: Proposal): NewProposal {
   // values that came from the network and we want parity of this sort of thing
   the maximum that we can
 */
-export function normalizeApplicationValue(value: string): keyof typeof applicationStatusValues {
+export function normalizeApplicationValue(
+  value: string,
+): keyof typeof applicationStatusValues {
   switch (value.toLowerCase()) {
     case "open":
       return "Open";
@@ -145,7 +147,6 @@ export function normalizeApplicationValue(value: string): keyof typeof applicati
   }
 }
 
-
 export function getProposalStatus(proposal: Proposal) {
   const status = match(proposal.status)({
     Open: () => applicationStatusValues.Open,
@@ -155,8 +156,6 @@ export function getProposalStatus(proposal: Proposal) {
   });
   return status;
 }
-
-
 
 export const getApplicationVoteStatus = (
   app: AgentApplication,

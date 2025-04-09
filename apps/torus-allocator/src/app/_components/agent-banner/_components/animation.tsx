@@ -3,13 +3,13 @@
 // @ts-nocheck
 
 import {
+  Cloud,
+  Clouds,
   Image,
   ScrollControls,
+  Sparkles,
   useScroll,
   useTexture,
-  Sparkles,
-  Clouds,
-  Cloud,
 } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { easing } from "maath";

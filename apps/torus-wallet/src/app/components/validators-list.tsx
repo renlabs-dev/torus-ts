@@ -1,12 +1,12 @@
 "use client";
 
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { ALLOCATOR_ADDRESS } from "~/consts";
 import { useWallet } from "~/context/wallet-provider";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 interface ValidatorsListProps {
   listType: "all" | "staked";

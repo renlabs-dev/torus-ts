@@ -1,8 +1,8 @@
-import type { Brand } from "./";
-import { buildTaggedBigNumberClass } from "./bignumber";
 import { BigNumber } from "bignumber.js";
 import type { Equals, Extends, Not } from "tsafe";
 import { assert } from "tsafe";
+import type { Brand } from "./";
+import { buildTaggedBigNumberClass } from "./bignumber";
 
 export const DECIMALS = 18;
 
@@ -36,12 +36,12 @@ export type RemAmount = Brand<"RemAmount", bigint>;
 
 // ---- Arbitrary precision decimals ----
 
-/** 
+/**
  * Configuration for TORUS fixed point number amounts with banker's rounding.
- * 
+ *
  * We use ROUND_HALF_EVEN (banker's rounding) which is preferred for financial calculations
  * because it minimizes cumulative rounding errors when working with large sets of values.
- * 
+ *
  * Banker's rounding works as follows:
  * - Values less than half-way round down (1.4 → 1)
  * - Values greater than half-way round up (1.6 → 2)
@@ -50,7 +50,7 @@ export type RemAmount = Brand<"RemAmount", bigint>;
  *   - 2.5 rounds to 2 (nearest even number)
  *   - 3.5 rounds to 4 (nearest even number)
  *   - 4.5 rounds to 4 (nearest even number)
- * 
+ *
  * This approach distributes rounding errors evenly (up and down) compared to always
  * rounding up or down, which prevents bias when summing large sets of values.
  */

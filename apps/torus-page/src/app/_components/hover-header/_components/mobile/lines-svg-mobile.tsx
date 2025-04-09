@@ -1,5 +1,5 @@
-import { ANIMATIONS } from "../data";
 import { motion } from "framer-motion";
+import { ANIMATIONS } from "../data";
 
 export function LinesSVGMobile() {
   return (

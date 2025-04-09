@@ -1,10 +1,10 @@
 "use client";
 
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Input } from "@torus-ts/ui/components/input";
-import { formatToken } from "@torus-ts/utils/subspace";
 import { env } from "~/env";
 import { useAPR } from "~/hooks/useAPR";
 import { ArrowUpRight, Calculator, Leaf } from "lucide-react";
