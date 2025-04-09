@@ -141,7 +141,6 @@ export function Send() {
         transactionStatus={transactionStatus}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
-        onSubmit={onSubmit}
         minAllowedStakeData={minAllowedStakeData}
       />
       <ReviewTransactionDialog

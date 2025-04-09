@@ -28,7 +28,6 @@ interface StakeFormProps {
   handleSelectValidator: (validator: { address: string }) => Promise<void>;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
-  onSubmit: (values: StakeFormValues) => Promise<void>;
   usdPrice: number;
 }
 
@@ -42,7 +41,6 @@ export function StakeForm({
   handleSelectValidator,
   onReviewClick,
   handleAmountChange,
-  onSubmit,
   usdPrice,
 }: StakeFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -50,11 +48,7 @@ export function StakeForm({
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form
-          ref={formRef}
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex w-full flex-col gap-6"
-        >
+        <form ref={formRef} className="flex w-full flex-col gap-6">
           <FormField
             control={form.control}
             name="recipient"
@@ -78,11 +72,12 @@ export function StakeForm({
           <FormField
             control={form.control}
             name="amount"
-            render={() => (
+            render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
                   <CurrencySwap
+                    amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxAmountRef.current}

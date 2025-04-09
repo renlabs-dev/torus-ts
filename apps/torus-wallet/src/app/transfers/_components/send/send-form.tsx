@@ -28,7 +28,6 @@ interface SendFormProps {
   transactionStatus: TransactionResult;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
-  onSubmit: (values: SendFormValues) => Promise<void>;
   minAllowedStakeData: bigint;
 }
 
@@ -41,7 +40,6 @@ export function SendForm({
   transactionStatus,
   onReviewClick,
   handleAmountChange,
-  onSubmit,
   minAllowedStakeData,
 }: SendFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -49,11 +47,7 @@ export function SendForm({
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          ref={formRef}
-          className="flex w-full flex-col gap-6"
-        >
+        <form ref={formRef} className="flex w-full flex-col gap-6">
           <FormField
             control={form.control}
             name="recipient"

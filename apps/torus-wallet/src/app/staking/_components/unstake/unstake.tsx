@@ -167,6 +167,11 @@ export function Unstake() {
     }
   };
 
+  const onConfirm = () => {
+    const values = getValues();
+    void onSubmit(values);
+  };
+
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
       <UnstakeForm
@@ -180,16 +185,15 @@ export function Unstake() {
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
-        onSubmit={onSubmit}
         formRef={formRef}
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}
-        formRef={formRef}
         from={selectedAccount?.address}
         to={getValues().validator}
         amount={getValues().amount}
         fee={feeRef.current?.getEstimatedFee() ?? "0"}
+        onConfirm={onConfirm}
       />
     </div>
   );

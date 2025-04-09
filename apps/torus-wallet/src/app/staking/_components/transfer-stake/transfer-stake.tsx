@@ -185,6 +185,11 @@ export function TransferStake() {
     }
   };
 
+  const onConfirm = () => {
+    const values = getValues();
+    void onSubmit(values);
+  };
+
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
       <TransferStakeForm
@@ -198,17 +203,16 @@ export function TransferStake() {
         handleSelectToValidator={handleSelectToValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
-        onSubmit={onSubmit}
         formRef={formRef}
         fromValidatorValue={getValues("fromValidator")}
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}
-        formRef={formRef}
         from={selectedAccount?.address}
         to={getValues().toValidator}
         amount={getValues().amount}
         fee={feeRef.current?.getEstimatedFee() ?? "0"}
+        onConfirm={onConfirm}
       />
     </div>
   );

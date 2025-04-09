@@ -31,7 +31,6 @@ interface TransferStakeFormProps {
   handleSelectToValidator: (validator: { address: string }) => Promise<void>;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (amount: string) => Promise<void>;
-  onSubmit: (values: TransferStakeFormValues) => Promise<void>;
   formRef: RefObject<HTMLFormElement | null>;
   fromValidatorValue: string;
   usdPrice: number;
@@ -47,7 +46,6 @@ export function TransferStakeForm({
   handleSelectToValidator,
   onReviewClick,
   handleAmountChange,
-  onSubmit,
   formRef,
   fromValidatorValue,
   usdPrice,
@@ -55,11 +53,7 @@ export function TransferStakeForm({
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          ref={formRef}
-          className="flex w-full flex-col gap-6"
-        >
+        <form ref={formRef} className="flex w-full flex-col gap-6">
           <FormField
             control={form.control}
             name="fromValidator"

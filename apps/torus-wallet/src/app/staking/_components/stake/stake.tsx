@@ -154,6 +154,11 @@ export function Stake() {
     }
   };
 
+  const onConfirm = () => {
+    const values = getValues();
+    void onSubmit(values);
+  };
+
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
       <StakeForm
@@ -167,15 +172,14 @@ export function Stake() {
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
-        onSubmit={onSubmit}
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}
-        formRef={{ current: null }}
         from={selectedAccount?.address}
         to={getValues().recipient}
         amount={getValues().amount}
         fee={feeRef.current?.getEstimatedFee() ?? "0"}
+        onConfirm={onConfirm}
       />
     </div>
   );
