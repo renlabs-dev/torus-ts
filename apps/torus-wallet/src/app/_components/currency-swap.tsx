@@ -9,7 +9,7 @@ import { convertTORUSToUSD, convertUSDToTorus } from "~/utils/helpers";
 import { AmountButtons } from "./amount-buttons";
 
 interface CurrencySwapProps {
-  amount: bigint;
+  amount: string;
   usdPrice: number;
   disabled?: boolean;
   availableFunds: string;
