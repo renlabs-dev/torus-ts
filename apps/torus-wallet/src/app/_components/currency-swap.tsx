@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { Input } from "@torus-ts/ui/components/input";
 import { Button } from "@torus-ts/ui/components/button";
+import { Input } from "@torus-ts/ui/components/input";
+import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import { ArrowLeftRight } from "lucide-react";
-import { convertUSDToTorus, convertTORUSToUSD } from "~/utils/helpers";
-import { toNano, fromNano } from "@torus-ts/utils/subspace";
+import { useCallback, useEffect, useState } from "react";
+import { convertTORUSToUSD, convertUSDToTorus } from "~/utils/helpers";
 import { AmountButtons } from "./amount-buttons";
 
 interface CurrencySwapProps {
+  amount: bigint;
   usdPrice: number;
   disabled?: boolean;
   availableFunds: string;
@@ -17,6 +18,7 @@ interface CurrencySwapProps {
 }
 
 export function CurrencySwap({
+  amount,
   usdPrice,
   disabled = false,
   availableFunds,
@@ -26,6 +28,14 @@ export function CurrencySwap({
   const [inputType, setInputType] = useState<"TORUS" | "USD">("TORUS");
   const [inputAmount, setInputAmount] = useState<string>("");
   const [displayAmount, setDisplayAmount] = useState<string>("");
+
+  useEffect(() => {
+    if (!amount) {
+      setInputType("TORUS");
+      setInputAmount("");
+      setDisplayAmount("");
+    }
+  }, [amount]);
 
   const handleAmountChange = useCallback(
     (value: string) => {
@@ -46,17 +56,24 @@ export function CurrencySwap({
 
   const handleCurrencySwitch = useCallback(() => {
     const isTorus = inputType === "TORUS";
-    const newAmount = isTorus
-      ? convertTORUSToUSD(inputAmount, usdPrice)
+
+    const currentTorusAmount = isTorus
+      ? inputAmount
       : convertUSDToTorus(inputAmount, usdPrice);
 
-    setInputType(isTorus ? "USD" : "TORUS");
-    setInputAmount(newAmount);
+    const newInputAmount = isTorus
+      ? convertTORUSToUSD(inputAmount, usdPrice)
+      : currentTorusAmount;
 
-    setDisplayAmount(
-      isTorus ? inputAmount : convertTORUSToUSD(newAmount, usdPrice),
-    );
-    onAmountChangeAction(isTorus ? inputAmount : newAmount);
+    const newDisplayAmount = isTorus
+      ? currentTorusAmount
+      : convertTORUSToUSD(currentTorusAmount, usdPrice);
+
+    setInputType(isTorus ? "USD" : "TORUS");
+    setInputAmount(newInputAmount);
+    setDisplayAmount(newDisplayAmount);
+
+    onAmountChangeAction(currentTorusAmount);
   }, [inputType, inputAmount, usdPrice, onAmountChangeAction]);
 
   return (

@@ -24,11 +24,11 @@ interface TransactionDetail {
 }
 
 interface ReviewTransactionDialogProps {
-  formRef: React.RefObject<HTMLFormElement | null>;
   from: string | undefined;
   to: string | undefined;
   amount: string;
   fee: string | undefined;
+  onConfirm: () => void;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
@@ -47,7 +47,7 @@ function TransactionDetailRow({ detail }: { detail: TransactionDetail }) {
 export const ReviewTransactionDialog = forwardRef<
   ReviewTransactionDialogHandle,
   ReviewTransactionDialogProps
->(({ formRef, from, to, amount, fee, onSuccess, onError }, ref) => {
+>(({ from, to, amount, fee, onConfirm, onSuccess, onError }, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { usdPrice } = useUsdPrice();
@@ -60,8 +60,8 @@ export const ReviewTransactionDialog = forwardRef<
   const handleSubmit = () => {
     try {
       setIsSubmitting(true);
-      formRef.current?.requestSubmit();
       setIsOpen(false);
+      onConfirm();
       toast({
         title: "Success!",
         description: "Transaction submitted successfully",

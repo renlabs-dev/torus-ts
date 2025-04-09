@@ -69,6 +69,7 @@ export const handleEstimateFee = async ({
   } catch (error) {
     console.error("Error estimating fee:", error);
     feeRef.current?.updateFee(null);
+    maxAmountRef.current = "";
   } finally {
     feeRef.current?.setLoading(false);
   }

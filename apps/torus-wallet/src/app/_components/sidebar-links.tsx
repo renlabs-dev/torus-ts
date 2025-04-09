@@ -41,7 +41,7 @@ const useNavigation = () => {
   const bridgeLink = getLinks(chainEnv).bridge;
   const pathname = usePathname();
 
-  const isActive = (path: string): boolean => pathname === path;
+  const isActive = (path: string): boolean => pathname.startsWith(path);
 
   const getPath = (value: string): string =>
     value === "bridge" ? bridgeLink : `/${value === "wallet" ? "" : value}`;

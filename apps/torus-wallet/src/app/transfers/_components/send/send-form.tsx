@@ -11,8 +11,8 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-import { useRef } from "react";
 import type { RefObject } from "react";
+import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { CurrencySwap } from "~/app/_components/currency-swap";
 import type { FeeLabelHandle } from "~/app/_components/fee-label";
@@ -75,11 +75,12 @@ export function SendForm({
           <FormField
             control={form.control}
             name="amount"
-            render={() => (
+            render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Amount to send</FormLabel>
                 <FormControl>
                   <CurrencySwap
+                    amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxAmountRef.current}

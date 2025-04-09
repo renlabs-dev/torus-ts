@@ -96,6 +96,7 @@ export function Send() {
       finalized: false,
       message: "Starting transaction...",
     });
+
     await transfer({
       to: values.recipient,
       amount: values.amount,
@@ -122,6 +123,11 @@ export function Send() {
     }
   };
 
+  const handleConfirmTransaction = () => {
+    const values = getValues();
+    void onSubmit(values);
+  };
+
   const { recipient, amount } = getValues();
 
   return (
@@ -140,11 +146,11 @@ export function Send() {
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}
-        formRef={{ current: null }}
         from={selectedAccount?.address}
         to={recipient}
         amount={amount}
         fee={feeRef.current?.getEstimatedFee() ?? "0"}
+        onConfirm={handleConfirmTransaction}
       />
     </div>
   );
