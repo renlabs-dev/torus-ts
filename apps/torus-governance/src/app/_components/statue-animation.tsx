@@ -6,6 +6,7 @@ import {
   Clouds,
   Html,
   SoftShadows,
+  Stars,
   useGLTF,
 } from "@react-three/drei";
 import { Canvas, extend, useFrame } from "@react-three/fiber";
@@ -88,19 +89,35 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       >
         <meshLambertMaterial color="#404044" />
       </mesh>
-      <Annotation position={[0.5, -1, 1]}>Whitelist Applications</Annotation>
-      <Annotation position={[-2.4, 1.6, 0.6]}>DAO Portal</Annotation>
-      <Annotation position={[1.5, 2, 0.1]}>Proposals</Annotation>
+      <Annotation position={[0.5, -0.7, 1]}>Whitelist Applications</Annotation>
+      <Annotation position={[-1.6, 1, 0.7]}>DAO Portal</Annotation>
+      <Annotation position={[1.2, 1.9, 0]}>Proposals</Annotation>
       <Clouds material={THREE.MeshBasicMaterial}>
-        <Cloud seed={2} scale={2} volume={5} color="#575757" fade={100} />
+        <Cloud
+          seed={2}
+          scale={2}
+          volume={5}
+          color="#575757"
+          fade={100}
+          speed={0.2}
+        />
       </Clouds>
+      <Stars
+        radius={200}
+        depth={50}
+        count={1000}
+        factor={4}
+        saturation={0}
+        fade
+        speed={1}
+      />
 
       <spotLight
         angle={0.6}
         penumbra={0.5}
         ref={light}
         castShadow
-        intensity={1800}
+        intensity={2000}
         shadow-mapSize={1024}
         shadow-bias={-0.0008}
       >
@@ -122,11 +139,11 @@ interface AnnotationProps {
 
 function Annotation({ children, position }: AnnotationProps) {
   return (
-    <Html position={position} transform>
+    <Html className="scale-75" position={position} transform>
       <Button
         size="sm"
         variant="outline"
-        className="px-2 text-xs opacity-60"
+        className="px-2 text-xs opacity-70"
         onClick={() => console.log(".")}
       >
         {children}
