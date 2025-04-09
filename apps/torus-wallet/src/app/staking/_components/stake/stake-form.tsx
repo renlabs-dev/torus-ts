@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import type { BrandTag } from "@torus-ts/utils";
 import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
@@ -25,7 +26,9 @@ interface StakeFormProps {
   maxAmountRef: React.RefObject<string>;
   feeRef: React.RefObject<FeeLabelHandle | null>;
   transactionStatus: TransactionResult;
-  handleSelectValidator: (validator: { address: string }) => Promise<void>;
+  handleSelectValidator: (
+    address: BrandTag<"SS58Address"> & string,
+  ) => Promise<void>;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
   usdPrice: number;

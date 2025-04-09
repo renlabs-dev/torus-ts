@@ -16,6 +16,7 @@ import { handleEstimateFee } from "./stake-fee-handler";
 import { StakeForm } from "./stake-form";
 import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
+import type { BrandTag } from "@torus-ts/utils";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
@@ -141,8 +142,10 @@ export function Stake() {
     await trigger("amount");
   };
 
-  const handleSelectValidator = async (validator: { address: string }) => {
-    setValue("recipient", checkSS58(validator.address));
+  const handleSelectValidator = async (
+    address: BrandTag<"SS58Address"> & string,
+  ) => {
+    setValue("recipient", address);
     setCurrentView("wallet");
     await trigger("recipient");
   };

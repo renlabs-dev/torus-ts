@@ -1,12 +1,9 @@
 "use client";
 
-import { checkSS58 } from "@torus-network/sdk";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { Balance, SS58Address } from "@torus-network/sdk";
-import { smallAddress } from "@torus-ts/utils/subspace";
-import { useState } from "react";
-import { useWallet } from "~/context/wallet-provider";
-import { env } from "~/env";
+import { checkSS58 } from "@torus-network/sdk";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Command,
   CommandEmpty,
@@ -20,9 +17,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
-import { Button } from "@torus-ts/ui/components/button";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { cn } from "@torus-ts/ui/lib/utils";
+import type { BrandTag } from "@torus-ts/utils";
+import { CheckIcon, ChevronsUpDownIcon, PlusCircleIcon } from "lucide-react";
+import { useState } from "react";
+import { useWallet } from "~/context/wallet-provider";
+import { env } from "~/env";
 
 interface Validator {
   name: string;
@@ -43,7 +43,7 @@ function getDefaultValidators() {
 
 interface AllocatorSelectorProps {
   value: string;
-  onSelect: (allocator: { address: string; stake?: string }) => void;
+  onSelect: (address: BrandTag<"SS58Address"> & string) => void;
   listType: "all" | "staked";
   placeholder?: string;
   excludeAddress?: string;
@@ -110,18 +110,35 @@ export function AllocatorSelector({
       validator.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const selectedValidator = validators.find(
-    (validator) => validator.address === value,
-  );
+  // Updated to handle custom addresses that aren't in the validators list
+  const selectedValidator =
+    validators.find((validator) => validator.address === value) ||
+    (value
+      ? {
+          name: "Custom Allocator",
+          description: "Custom allocator address",
+          address: value,
+        }
+      : undefined);
 
-  const handleSelect = (allocator: Validator) => {
-    onSelect({
-      address: allocator.address,
-      stake: allocator.stake?.toString(),
-    });
+  const handleSelect = (address: BrandTag<"SS58Address"> & string) => {
+    onSelect(address);
     setOpen(false);
     setSearchTerm("");
   };
+
+  const handleAddCustomAllocator = () => {
+    handleSelect(searchTerm.trim() as BrandTag<"SS58Address"> & string);
+  };
+
+  const showCustomOption =
+    searchTerm.trim().length > 0 &&
+    !validators.some(
+      (v) => v.address.toLowerCase() === searchTerm.toLowerCase(),
+    ) &&
+    !filteredValidators.some(
+      (v) => v.address.toLowerCase() === searchTerm.toLowerCase(),
+    );
 
   return (
     <>
@@ -141,9 +158,7 @@ export function AllocatorSelector({
             disabled={disabled}
           >
             {selectedValidator ? (
-              <span className="truncate">
-                {`${selectedValidator.name} (${smallAddress(selectedValidator.address, 8)})`}
-              </span>
+              <span className="truncate">{selectedValidator.address}</span>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
@@ -153,48 +168,80 @@ export function AllocatorSelector({
         <PopoverContent className="p-0 w-[450px] z-50 border rounded-lg">
           <Command className="rounded-lg border shadow-md max-h-[80vh]">
             <CommandInput
-              placeholder="Search allocator..."
+              placeholder="Search allocator or enter address..."
               className="h-12"
               value={searchTerm}
               onValueChange={setSearchTerm}
             />
             <CommandList className="max-h-[60vh] overflow-auto">
-              <CommandEmpty>No allocator found.</CommandEmpty>
-              <CommandGroup heading="Available Allocators">
-                {filteredValidators.map((validator) => (
+              {filteredValidators.length === 0 && !showCustomOption && (
+                <CommandEmpty>No allocator found.</CommandEmpty>
+              )}
+
+              {showCustomOption && (
+                <CommandGroup heading="Custom Allocator">
                   <CommandItem
-                    key={validator.address}
-                    value={validator.address}
-                    onSelect={() => handleSelect(validator)}
-                    className="py-3"
+                    value={searchTerm}
+                    onSelect={handleAddCustomAllocator}
+                    className="py-3 bg-muted/50"
                   >
                     <div className="flex items-center w-full gap-2">
+                      <PlusCircleIcon className="h-4 w-4 mr-1" />
                       <div className="flex flex-col">
-                        <span className="font-medium">{validator.name}</span>
+                        <span className="font-medium">Custom Allocator</span>
                         <span className="text-xs text-muted-foreground">
-                          {validator.address}
+                          {searchTerm}
                         </span>
                         <span className="italic text-muted-foreground text-[0.7rem]">
-                          {validator.description}
+                          Add custom allocator address
                         </span>
                       </div>
-                      <CheckIcon
-                        className={cn(
-                          "mx-auto h-4 w-4",
-                          value === validator.address
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
-                      {validator.stake && (
-                        <span className="ml-auto text-xs text-muted-foreground">
-                          Stake: {Number(validator.stake)}
-                        </span>
-                      )}
                     </div>
                   </CommandItem>
-                ))}
-              </CommandGroup>
+                </CommandGroup>
+              )}
+
+              {filteredValidators.length > 0 && (
+                <CommandGroup heading="Available Allocators">
+                  {filteredValidators.map((validator) => (
+                    <CommandItem
+                      key={validator.address}
+                      value={validator.address}
+                      onSelect={() =>
+                        handleSelect(
+                          validator.address as BrandTag<"SS58Address"> & string,
+                        )
+                      }
+                      className="py-3"
+                    >
+                      <div className="flex items-center w-full gap-2">
+                        <div className="flex flex-col">
+                          <span className="font-medium">{validator.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {validator.address}
+                          </span>
+                          <span className="italic text-muted-foreground text-[0.7rem]">
+                            {validator.description}
+                          </span>
+                        </div>
+                        <CheckIcon
+                          className={cn(
+                            "mx-auto h-4 w-4",
+                            value === validator.address
+                              ? "opacity-100"
+                              : "opacity-0",
+                          )}
+                        />
+                        {validator.stake && (
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            Stake: {Number(validator.stake)}
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
