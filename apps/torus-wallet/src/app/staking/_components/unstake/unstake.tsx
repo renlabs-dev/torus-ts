@@ -17,6 +17,7 @@ import { handleEstimateFee } from "./unstake-fee-handler";
 import { UnstakeForm } from "./unstake-form";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 import { createUnstakeFormSchema } from "./unstake-form-schema";
+import { BrandTag } from "@torus-ts/utils";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
@@ -154,8 +155,10 @@ export function Unstake() {
     await trigger("amount");
   };
 
-  const handleSelectValidator = async (validator: { address: string }) => {
-    setValue("validator", checkSS58(validator.address));
+  const handleSelectValidator = async (
+    address: BrandTag<"SS58Address"> & string,
+  ) => {
+    setValue("validator", address);
     setCurrentView("wallet");
     await trigger("validator");
   };

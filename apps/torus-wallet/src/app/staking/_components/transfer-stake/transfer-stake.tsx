@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58, isSS58 } from "@torus-network/sdk";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import type { BrandTag } from "@torus-ts/utils";
 import { fromNano } from "@torus-ts/utils/subspace";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -157,12 +158,14 @@ export function TransferStake() {
     await trigger("amount");
   };
 
-  const handleSelectFromValidator = async (validator: { address: string }) => {
-    setValue("fromValidator", checkSS58(validator.address));
+  const handleSelectFromValidator = async (
+    address: BrandTag<"SS58Address"> & string,
+  ) => {
+    setValue("fromValidator", address);
     setCurrentView("wallet");
     const validatorData = stakedValidators.find(
-      (v: { address: string; stake: bigint }) =>
-        v.address === validator.address,
+      (v: { address: BrandTag<"SS58Address"> & string; stake: bigint }) =>
+        v.address === address,
     );
     if (validatorData) {
       maxAmountRef.current = fromNano(validatorData.stake);
@@ -172,8 +175,10 @@ export function TransferStake() {
     await trigger("fromValidator");
   };
 
-  const handleSelectToValidator = async (validator: { address: string }) => {
-    setValue("toValidator", checkSS58(validator.address));
+  const handleSelectToValidator = async (
+    address: BrandTag<"SS58Address"> & string,
+  ) => {
+    setValue("toValidator", address);
     setCurrentView("wallet");
     await trigger("toValidator");
   };
