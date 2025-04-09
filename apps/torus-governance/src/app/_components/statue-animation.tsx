@@ -1,12 +1,20 @@
 "use client";
 
-import { CameraControls, SoftShadows, useGLTF } from "@react-three/drei";
+import {
+  CameraControls,
+  Cloud,
+  Clouds,
+  SoftShadows,
+  useGLTF,
+  useHelper,
+} from "@react-three/drei";
 import { Canvas, extend, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import { RoundedPlaneGeometry } from "maath/geometry";
 import type { JSX } from "react";
 import React, { useRef } from "react";
-import type * as THREE from "three";
+import * as THREE from "three";
+import { SpotLightHelper } from "three";
 import type { GLTF } from "three-stdlib";
 
 extend({ RoundedPlaneGeometry });
@@ -16,12 +24,13 @@ export function StatueAnimation() {
     <Canvas
       shadows="basic"
       eventPrefix="client"
-      camera={{ position: [0, 1.5, 14], fov: 45 }}
+      camera={{ position: [0, 1.5, 14], fov: 40 }}
     >
       <fog attach="fog" args={["black", 0, 20]} />
       <pointLight position={[10, -10, -20]} intensity={10} />
       <pointLight position={[-10, -10, -20]} intensity={10} />
-      <Model position={[0, -5.5, 3]} rotation={[0, -0.2, 0]} />
+      <Model position={[0, -2.5, 3]} rotation={[0, -0.2, 0]} />
+
       <SoftShadows samples={3} />
       <CameraControls
         minPolarAngle={0}
@@ -35,18 +44,35 @@ export function StatueAnimation() {
 
 type GLTFResult = GLTF & {
   nodes: {
-    Object_4: THREE.Mesh;
+    themis: THREE.Mesh;
   };
-  materials: {
-    ["75-18_LOD1_u1_v1"]: THREE.MeshBasicMaterial;
-  };
-  animations: unknown[];
 };
 
 function Model(props: JSX.IntrinsicElements["group"]) {
-  const group = useRef<THREE.Group>(null);
-  const light = useRef<THREE.SpotLight>(null);
-  const { nodes } = useGLTF("/statue.glb") as unknown as GLTFResult;
+  const group = useRef<THREE.Group | null>(null);
+  const light = useRef<THREE.SpotLight | null>(null);
+  const { nodes } = useGLTF("/themis.glb") as unknown as GLTFResult;
+
+  function LightWithHelper() {
+    useHelper(light, SpotLightHelper, "orange");
+
+    return (
+      <spotLight
+        angle={0.6}
+        penumbra={1}
+        ref={light}
+        castShadow
+        intensity={1600}
+        shadow-mapSize={1024}
+        shadow-bias={-0.001}
+      >
+        <orthographicCamera
+          attach="shadow-camera"
+          args={[-10, 10, -10, 10, 0.1, 50]}
+        />
+      </spotLight>
+    );
+  }
 
   useFrame((state, delta) => {
     if (!group.current || !light.current) return;
@@ -58,7 +84,7 @@ function Model(props: JSX.IntrinsicElements["group"]) {
     );
     easing.damp3(
       group.current.position,
-      [0, -5.5, 1 - Math.abs(state.pointer.x)],
+      [0, -1.5, Math.abs(state.pointer.x)],
       1,
       delta,
     );
@@ -75,25 +101,21 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       <mesh
         castShadow
         receiveShadow
+        scale={0.06}
         dispose={null}
-        geometry={nodes.Object_4.geometry}
+        geometry={nodes.themis.geometry}
+        position={[0.409, -0.06, -1.618]}
+        rotation={[Math.PI / 2, 0, -0.4]}
       >
         <meshLambertMaterial color="#404044" />
       </mesh>
-      <spotLight
-        angle={0.5}
-        penumbra={0.5}
-        ref={light}
-        castShadow
-        intensity={10}
-        shadow-mapSize={1024}
-        shadow-bias={-0.001}
-      >
-        <orthographicCamera
-          attach="shadow-camera"
-          args={[-10, 10, -10, 10, 0.1, 50]}
-        />
-      </spotLight>
+      <Clouds material={THREE.MeshBasicMaterial}>
+        <Cloud seed={2} scale={2} volume={5} color="#575757" fade={100} />
+      </Clouds>
+
+      <LightWithHelper />
     </group>
   );
 }
+
+useGLTF.preload("/themis.glb");
