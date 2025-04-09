@@ -53,7 +53,10 @@ const useNavigation = () => {
       "/staking": "staking",
     };
 
-    if (pathname.includes("bridge")) return "bridge";
+    if (pathname === "/bridge" || pathname.startsWith(bridgeLink)) {
+      return "bridge";
+    }
+
     return pathMap[pathname] ?? pathname.slice(1);
   };
 
@@ -92,7 +95,10 @@ function MobileSelect({
 }: MobileSelectProps) {
   return (
     <Select onValueChange={onValueChange} defaultValue={defaultValue}>
-      <SelectTrigger className="w-full lg:hidden my-4">
+      <SelectTrigger
+        className="w-full lg:hidden my-4"
+        aria-label="Navigation options"
+      >
         <SelectValue placeholder="Select a view" />
       </SelectTrigger>
       <SelectContent>

@@ -132,6 +132,7 @@ export function useAPR(): APRResult {
       const totalFreeBalance = BigInt(
         totalIssuanceQuery.data?.toString() ?? "0",
       );
+
       const recyclingRate = Number(recyclingPercentageQuery.data) / 100;
       const treasuryFee = Number(treasuryEmissionFeeQuery.data) / 100;
       const incentivesRatio = Number(incentivesRatioQuery.data) / 100;
