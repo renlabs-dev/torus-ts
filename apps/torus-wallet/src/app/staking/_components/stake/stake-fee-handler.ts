@@ -1,6 +1,6 @@
 import type { Stake } from "@torus-ts/torus-provider/types";
 import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
-import { fromNano } from "@torus-network/torus-utils";
+import { fromNano } from "@torus-network/torus-utils/subspace";
 import type { RefObject } from "react";
 import type {
   ISubmittableResult,

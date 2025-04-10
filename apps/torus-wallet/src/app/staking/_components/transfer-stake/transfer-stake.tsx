@@ -2,10 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58, isSS58 } from "@torus-network/sdk";
+import { fromNano } from "@torus-network/torus-utils/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { BrandTag } from "@torus-ts/utils";
-import { fromNano } from "@torus-network/torus-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUsdPrice } from "~/context/usd-price-provider";
@@ -205,10 +205,10 @@ export function TransferStake() {
         maxAmountRef={maxAmountRef}
         feeRef={feeRef}
         transactionStatus={transactionStatus}
-        handleSelectFromValidator={handleSelectFromValidator}
-        handleSelectToValidator={handleSelectToValidator}
-        onReviewClick={handleReviewClick}
-        handleAmountChange={handleAmountChange}
+        handleSelectFromValidatorAction={handleSelectFromValidator}
+        handleSelectToValidatorAction={handleSelectToValidator}
+        onReviewClickAction={handleReviewClick}
+        handleAmountChangeAction={handleAmountChange}
         formRef={formRef}
         fromValidatorValue={getValues("fromValidator")}
         minAllowedStakeData={minAllowedStakeData}
