@@ -31,7 +31,7 @@ export function StatueAnimation() {
       <fog attach="fog" args={["black", 0, 20]} />
       <pointLight position={[10, -10, -20]} intensity={10} />
       <pointLight position={[-10, -10, -20]} intensity={10} />
-      <Model position={[0, -2.5, 3]} rotation={[0, -0.2, 0]} />
+      <Model position={[1, -2.5, 3]} rotation={[0, -0.2, 0]} />
 
       <SoftShadows samples={3} />
       <CameraControls
@@ -56,6 +56,8 @@ function Model(props: JSX.IntrinsicElements["group"]) {
   const light = useRef<THREE.SpotLight | null>(null);
   const { nodes } = useGLTF("/themis.glb") as unknown as GLTFResult;
 
+  const isMobile = window.innerWidth < 768;
+
   useFrame((state, delta) => {
     if (!group.current || !light.current) return;
     easing.dampE(
@@ -66,7 +68,7 @@ function Model(props: JSX.IntrinsicElements["group"]) {
     );
     easing.damp3(
       group.current.position,
-      [0, -1.5, 1 - Math.abs(state.pointer.x)],
+      [1, -1.5, 1 - Math.abs(state.pointer.x)],
       1,
       delta,
     );
@@ -91,14 +93,18 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       >
         <meshLambertMaterial color="#404044" />
       </mesh>
-      <Annotation position={[1.1, 1.9, 0]} path="/proposals" text="Proposals" />
       <Annotation
-        position={[1.1, 0.65, 0.7]}
-        path="/dao-portal"
-        text="DAO Portal"
+        position={[isMobile ? 0.8 : 1.3, 1.7, 0.2]}
+        path="/proposals"
+        text="Proposals"
       />
       <Annotation
-        position={[0.6, -0.7, 1]}
+        position={[isMobile ? 0.48 : 1.02, 0.65, 0.7]}
+        path="/dao-portal"
+        text="DAO Dashboard"
+      />
+      <Annotation
+        position={[isMobile ? -0.2 : 0.4, -0.5, 1]}
         path="/whitelist-applications"
         text="Whitelist Applications"
       />
@@ -154,7 +160,7 @@ function Annotation({ text, position, path }: AnnotationProps) {
       <Button
         size="sm"
         variant="outline"
-        className="px-2 text-xs opacity-70"
+        className="bg-button-background/60 px-2 text-xs"
         asChild
       >
         <Link href={path}>{text}</Link>
