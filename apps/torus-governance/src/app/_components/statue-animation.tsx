@@ -91,7 +91,7 @@ function Model(props: JSX.IntrinsicElements["group"]) {
         position={[0.409, -0.06, -1.618]}
         rotation={[Math.PI / 2, 0, -0.25]}
       >
-        <meshLambertMaterial color="#404044" />
+        <meshLambertMaterial color="#505055" />
       </mesh>
       <Annotation
         position={[isMobile ? 0.8 : 1.3, 1.7, 0.5]}
@@ -119,9 +119,9 @@ function Model(props: JSX.IntrinsicElements["group"]) {
         />
       </Clouds>
       <Stars
-        radius={200}
+        radius={100}
         depth={50}
-        count={1000}
+        count={1400}
         factor={4}
         saturation={0}
         fade
