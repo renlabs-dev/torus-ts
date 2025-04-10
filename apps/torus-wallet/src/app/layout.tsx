@@ -17,7 +17,7 @@ import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
 
 export const metadata: Metadata = {
-  robots: "all",
+  robots: "index, follow",
   title: "Torus Wallet - Secure Digital Asset Management",
   icons: [
     { rel: "icon", url: "favicon.ico" },
@@ -26,17 +26,36 @@ export const metadata: Metadata = {
   description:
     "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
   keywords: ["crypto wallet", "torus", "blockchain", "digital assets", "web3"],
+  metadataBase: new URL(
+    env("NODE_ENV") === "production"
+      ? "https://wallet.torus.network"
+      : "https://wallet.testnet.torus.network",
+  ),
   openGraph: {
     title: "Torus Wallet - Secure Digital Asset Management",
     description:
       "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence.",
     type: "website",
     siteName: "Torus Wallet",
+    locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Torus Wallet",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Torus Wallet",
     description: "Secure Digital Asset Management in the Torus Ecosystem",
+    creator: "@torus_network",
+    images: ["/og-image.png"],
+  },
+  alternates: {
+    canonical: "/",
   },
 };
 
