@@ -79,19 +79,28 @@ export function TransferTokenForm() {
 
   useEffect(() => {
     if (!fromParam || !toParam) {
-      const query = updateSearchParams(searchParams, {
-        from: initialValues.origin,
-        to: initialValues.destination,
-      });
-      router.push("/?" + query);
+      // Store original values to prevent loops
+      const originVal = initialValues.origin;
+      const destVal = initialValues.destination;
+
+      // Only update if we have valid values
+      if (originVal && destVal) {
+        const query = updateSearchParams(searchParams, {
+          from: originVal,
+          to: destVal,
+        });
+
+        // Use replace instead of push to avoid adding to history stack
+        router.replace("/?" + query);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    // Only depend on the fromParam and toParam from URL, not the initialValues
     fromParam,
-    initialValues.destination,
-    initialValues.origin,
+    toParam,
     router,
     searchParams,
-    toParam,
   ]);
 
   return (

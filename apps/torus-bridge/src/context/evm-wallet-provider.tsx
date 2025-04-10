@@ -71,19 +71,34 @@ export function EvmWalletProvider({
   const warpCore = useWarpCore();
 
   const { wagmiConfig } = useMemo(
-    () => initWagmi(multiProvider),
+    () => {
+      // Only initialize if multiProvider has chains loaded
+      if (!multiProvider.getKnownChainNames().length) {
+        return { wagmiConfig: null };
+      }
+      return initWagmi(multiProvider);
+    },
     [multiProvider],
   );
 
   const initialChain = useMemo(() => {
+    if (!warpCore.tokens.length) return undefined;
+    
     const tokens = warpCore.tokens;
     const firstEvmToken = tokens.find(
       (token) => token.protocol === ProtocolType.Ethereum,
     );
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-    return multiProvider.tryGetChainMetadata(firstEvmToken?.chainName!)
-      ?.chainId as number;
+    
+    if (!firstEvmToken?.chainName) return undefined;
+    
+    const chainMetadata = multiProvider.tryGetChainMetadata(firstEvmToken.chainName);
+    return chainMetadata?.chainId as number | undefined;
   }, [multiProvider, warpCore]);
+
+  // If we don't have a valid wagmiConfig yet, just render children without the provider
+  if (!wagmiConfig) {
+    return <>{children}</>;
+  }
 
   return (
     <WagmiProvider config={wagmiConfig}>

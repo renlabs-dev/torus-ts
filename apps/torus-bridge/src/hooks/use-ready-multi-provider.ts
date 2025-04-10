@@ -1,10 +1,16 @@
-// Ensures that the multiProvider has been populated during the onRehydrateStorage hook above,
+// Ensures that the multiProvider has been populated during the onRehydrateStorage hook
+// otherwise returns undefined
 
+import { useMemo } from "react";
 import { useMultiProvider } from "./use-multi-provider";
 
-// otherwise returns undefined
 export function useReadyMultiProvider() {
   const multiProvider = useMultiProvider();
-  if (!multiProvider.getKnownChainNames().length) return undefined;
-  return multiProvider;
+  
+  // Use useMemo to ensure we don't cause unnecessary re-renders
+  return useMemo(() => {
+    const chainNames = multiProvider.getKnownChainNames();
+    if (!chainNames.length) return undefined;
+    return multiProvider;
+  }, [multiProvider]);
 }
