@@ -21393,6 +21393,11 @@ packages:
     peerDependencies:
       three: ">=0.128.0"
 
+  three-stdlib@2.35.15:
+    resolution: {integrity: sha512-2XbhiOV7jVCchUoWxTmsj5dNhTe8eYb58Nyrfoa2F2yL+6h/+2VRaU2gENljRW1d/P1mk4/uwNzbdkKWV3hwzw==}
+    peerDependencies:
+      three: '>=0.128.0'
+
   three@0.164.1:
     resolution:
       {
