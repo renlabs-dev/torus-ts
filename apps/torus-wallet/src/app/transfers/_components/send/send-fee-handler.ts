@@ -1,5 +1,5 @@
 import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
-import { fromNano } from "@torus-ts/utils/subspace";
+import { fromNano } from "@torus-network/torus-utils/subspace";
 import type { RefObject } from "react";
 import type {
   ISubmittableResult,

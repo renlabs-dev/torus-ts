@@ -3,7 +3,7 @@
 import { Card } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
 import { Lock, Scale, Unlock, Copy } from "lucide-react";
 import Image from "next/image";
 import { useMemo } from "react";

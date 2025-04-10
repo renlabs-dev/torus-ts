@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { checkSS58 } from "@torus-network/sdk";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { fromNano } from "@torus-ts/utils/subspace";
+import { fromNano } from "@torus-network/torus-utils/subspace";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUsdPrice } from "~/context/usd-price-provider";

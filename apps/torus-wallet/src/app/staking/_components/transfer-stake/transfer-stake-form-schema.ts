@@ -1,5 +1,5 @@
 import { isSS58 } from "@torus-network/sdk";
-import { formatToken, toNano } from "@torus-ts/utils/subspace";
+import { formatToken, toNano } from "@torus-network/torus-utils/subspace";
 import { z } from "zod";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
 import type { FeeLabelHandle } from "../../../_components/fee-label";

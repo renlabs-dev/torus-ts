@@ -1,5 +1,5 @@
 import { isSS58 } from "@torus-network/sdk";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { z } from "zod";
 import type { RefObject } from "react";
 import {

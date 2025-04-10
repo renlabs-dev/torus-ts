@@ -2,11 +2,11 @@
 
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
-import { fromNano, toNano } from "@torus-ts/utils/subspace";
 import { ArrowLeftRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { convertTORUSToUSD, convertUSDToTorus } from "~/utils/helpers";
 import { AmountButtons } from "./amount-buttons";
+import { fromNano, toNano } from "@torus-network/torus-utils/subspace";
 
 interface CurrencySwapProps {
   amount: string;

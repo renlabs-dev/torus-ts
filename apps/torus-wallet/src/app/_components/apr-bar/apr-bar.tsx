@@ -3,7 +3,7 @@
 import { APRBarBase } from "./apr-bar-base";
 import { AppBarDataGroup, AppBarSeparator } from "./apr-bar-shared";
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { Fragment, useMemo } from "react";
 import { useAPR } from "~/hooks/useAPR";
 import { useRewardIntervalProgress } from "~/hooks/useRewardInterval";
