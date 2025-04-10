@@ -1,59 +1,8 @@
-import type { AsyncResultObj } from "../async-result";
 import { ResultObj } from "../result";
-import { tryAsync, tryAsyncStr, trySync, trySyncStr } from "../try-catch";
+import { trySync, trySyncStr } from "../try-catch";
 
 // Define log levels
 type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
-
-/**
- * Handles server-side async operations with logging
- *
- * @deprecated
- *
- * @param asyncOperation The async operation to execute
- * @param options Logging configuration options
- * @returns An AsyncResultObj with result or string error
- */
-export function tryAsyncLoggingStr<T>(
-  asyncOperation: PromiseLike<T>,
-  options: LogLevel = "error",
-): AsyncResultObj<T, string> {
-  const resultObj = tryAsyncStr(asyncOperation);
-
-  void resultObj.match({
-    Ok: () => {
-      // success case
-    },
-    Err: (error) => logServerError(error, options),
-  });
-
-  return resultObj;
-}
-
-/**
- * Handles server-side async operations with logging, returning the raw error
- *
- * @deprecated
- *
- * @param asyncOperation The async operation to execute
- * @param options Logging configuration options
- * @returns An AsyncResultObj with result or Error
- */
-export function tryAsyncLogging<T = unknown>(
-  asyncOperation: PromiseLike<T>,
-  options: LogLevel = "error",
-): AsyncResultObj<T, Error> {
-  const resultObj = tryAsync<T>(asyncOperation);
-
-  void resultObj.match({
-    Ok: () => {
-      // success case
-    },
-    Err: (error) => logServerError(error, options),
-  });
-
-  return resultObj;
-}
 
 /**
  * Handles server-side sync operations with logging

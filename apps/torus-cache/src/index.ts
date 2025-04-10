@@ -1,9 +1,9 @@
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import { updateStakeDataLoop } from "./data";
 import { app, port, setup } from "./server";
 
 async function startServer() {
-  const [setupError, _setupSuccess] = await tryAsyncLoggingRaw(setup());
+  const [setupError, _setupSuccess] = await tryAsync(setup());
   if (setupError !== undefined) {
     console.error("Error setting up server: ", setupError);
     process.exit(1);

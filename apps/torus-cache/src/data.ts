@@ -5,7 +5,7 @@ import {
   queryStakeIn,
   queryStakeOut,
 } from "@torus-network/sdk";
-import { tryAsyncLogging } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import SuperJSON from "superjson";
 import { setup } from "./server";
 import { log, sleep } from "./utils";
@@ -61,7 +61,7 @@ export const updateStakeFrom = async (
   api: ApiPromise,
   lastBlock: LastBlock,
 ) => {
-  const [error, stakeForm] = await tryAsyncLogging(queryStakeIn(api));
+  const [error, stakeForm] = await tryAsync(queryStakeIn(api));
   if (error !== undefined) {
     log(
       `Error updating StakeFrom data for block ${lastBlock.blockNumber}:`,
@@ -90,7 +90,7 @@ export const updateStakeFrom = async (
  * @returns Promise that resolves when the operation completes
  */
 export const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
-  const [error, stakeOut] = await tryAsyncLogging(queryStakeOut(api));
+  const [error, stakeOut] = await tryAsync(queryStakeOut(api));
   if (error !== undefined) {
     log(
       `Error updating StakeIn data for block ${lastBlock.blockNumber}:`,
@@ -126,7 +126,7 @@ export const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
  */
 export async function updateStakeDataLoop() {
   while (true) {
-    const [setupError, api] = await tryAsyncLogging(setup());
+    const [setupError, api] = await tryAsync(setup());
     if (setupError !== undefined) {
       log(
         "Error setting up API: ",
@@ -137,9 +137,7 @@ export async function updateStakeDataLoop() {
       continue;
     }
     while (true) {
-      const [queryError, lastBlock] = await tryAsyncLogging(
-        queryLastBlock(api),
-      );
+      const [queryError, lastBlock] = await tryAsync(queryLastBlock(api));
       if (queryError !== undefined) {
         log("Error querying last block: ", queryError, `restarting connection`);
         break;
@@ -154,7 +152,7 @@ export async function updateStakeDataLoop() {
       }
       log(`Block ${lastBlock.blockNumber}: processing`);
 
-      const [promiseError, endResult] = await tryAsyncLogging(
+      const [promiseError, endResult] = await tryAsync(
         Promise.allSettled([
           updateStakeFrom(api, lastBlock),
           updateStakeOut(api, lastBlock),

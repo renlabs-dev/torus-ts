@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { tryAsyncLogging } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import cors from "cors";
 import type { Express } from "express";
 import express from "express";
@@ -12,7 +12,7 @@ const wsEndpoint = env.TORUS_RPC_URL;
 
 async function setup(): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint);
-  const [error, api] = await tryAsyncLogging(ApiPromise.create({ provider }));
+  const [error, api] = await tryAsync(ApiPromise.create({ provider }));
   if (error !== undefined) {
     log("Error creating API: ", error);
     process.exit(1);
