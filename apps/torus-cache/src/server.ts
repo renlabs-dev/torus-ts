@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { tryAsync } from "@torus-ts/utils/try-catch";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import cors from "cors";
 import type { Express } from "express";
 import express from "express";

@@ -1,4 +1,4 @@
-import { tryAsync } from "@torus-ts/utils/try-catch";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { updateStakeDataLoop } from "./data";
 import { app, port, setup } from "./server";
 

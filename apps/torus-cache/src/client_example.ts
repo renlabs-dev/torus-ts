@@ -1,5 +1,5 @@
 import { STAKE_DATA_SCHEMA } from "@torus-network/sdk";
-import { tryAsync, trySync } from "@torus-ts/utils/try-catch";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import fetch from "node-fetch";
 import SuperJSON from "superjson";
 
