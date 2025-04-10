@@ -48,7 +48,7 @@ export function generateMetadata({
       locale: "en_US",
       images: [
         {
-          url: "/og-image.jpg",
+          url: "/og.webp",
           width: 1200,
           height: 630,
           alt: "Torus Wallet",
@@ -60,7 +60,7 @@ export function generateMetadata({
       title: twitterTitle,
       description: twitterDescription,
       creator: "@torus_network",
-      images: ["/og-image.jpg"],
+      images: ["/og.webp"],
     },
     alternates: {
       canonical,
