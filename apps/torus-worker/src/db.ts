@@ -4,6 +4,7 @@ import type {
   Agent as TorusAgent,
 } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
+import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import type { SQL, Table } from "@torus-ts/db";
 import {
   and,
@@ -31,7 +32,6 @@ import {
   userAgentWeightSchema,
   whitelistApplicationSchema,
 } from "@torus-ts/db/schema";
-import { getOrSetDefault } from "@torus-ts/utils/collections";
 
 const db = createDb();
 
@@ -94,6 +94,7 @@ export async function upsertWhitelistApplication(
 }
 
 export async function upsertProposal(proposals: NewProposal[]) {
+  if (proposals.length === 0) return;
   await db
     .insert(proposalSchema)
     .values(
@@ -378,15 +379,13 @@ export async function countCadreKeys(): Promise<number> {
 }
 
 export async function pendingPenalizations(threshold: number, n: number) {
-  const subquery = db
+  const agentsWithUnexecutedVotes = db
     .select({ agentKey: penalizeAgentVotesSchema.agentKey })
     .from(penalizeAgentVotesSchema)
-    .where(not(penalizeAgentVotesSchema.executed))
-    .groupBy(penalizeAgentVotesSchema.agentKey)
-    .having(gte(sql`count(*)`, threshold));
+    .where(not(penalizeAgentVotesSchema.executed));
 
   const result = await db
-    .with(subquery.as("subquery"))
+    .with(agentsWithUnexecutedVotes.as("agents_with_unexecuted_votes"))
     .select({
       agentKey: penalizeAgentVotesSchema.agentKey,
       nthBiggestPenaltyFactor: sql`
@@ -394,8 +393,7 @@ export async function pendingPenalizations(threshold: number, n: number) {
           SELECT penalty_factor
           FROM ${penalizeAgentVotesSchema} as inner_p
           WHERE 
-            inner_p.agent_key = ${penalizeAgentVotesSchema.agentKey} AND
-            NOT inner_p.executed
+            inner_p.agent_key = ${penalizeAgentVotesSchema.agentKey}
           ORDER BY penalty_factor DESC
           LIMIT 1 OFFSET ${n - 1}
         )
@@ -403,12 +401,28 @@ export async function pendingPenalizations(threshold: number, n: number) {
     })
     .from(penalizeAgentVotesSchema)
     .where(
-      and(
-        not(penalizeAgentVotesSchema.executed),
-        sql`${penalizeAgentVotesSchema.agentKey} in (select "agent_key" from subquery)`,
-      ),
+      sql`${penalizeAgentVotesSchema.agentKey} in (select "agent_key" from agents_with_unexecuted_votes)`,
     )
-    .groupBy(penalizeAgentVotesSchema.agentKey);
+    .groupBy(penalizeAgentVotesSchema.agentKey)
+    .having(gte(sql`count(*)`, threshold));
+
+  const castedResult = result.map((row) => ({
+    agentKey: checkSS58(row.agentKey),
+    nthBiggestPenaltyFactor: row.nthBiggestPenaltyFactor,
+  }));
+  return castedResult;
+}
+
+export async function getAgentKeysWithPenalties() {
+  const result = await db
+    .select({
+      agentKey: penalizeAgentVotesSchema.agentKey,
+      count: sql`count(*)`.as<number>(),
+    })
+    .from(penalizeAgentVotesSchema)
+    .where(not(penalizeAgentVotesSchema.executed))
+    .groupBy(penalizeAgentVotesSchema.agentKey)
+    .execute();
 
   return result;
 }

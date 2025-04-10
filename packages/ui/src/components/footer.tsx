@@ -110,7 +110,7 @@ export function Footer({ torusChainEnv }: FooterProps) {
         </div>
         <div className="flex items-center gap-2 text-sm">
           <FooterItem>
-            <span className="hidden xl:inline">
+            <span className="hidden 2xl:inline">
               Protocol core development by{" "}
             </span>
             <a href={links.ren_labs} className="underline" target="_blank">

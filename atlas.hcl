@@ -7,12 +7,15 @@ data "external_schema" "drizzle" {
 }
 
 env "local" {
-dev = "docker://postgres/17/dev?search_path=public"
+dev = "docker://postgres/16/dev"
 schema {
     src = data.external_schema.drizzle.url
 }
 migration {
     dir = "file://atlas/migrations"
 }
+vars = {
+        search_path = "public"
+    }
 exclude = ["drizzle"]
 }

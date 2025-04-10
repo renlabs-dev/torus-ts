@@ -4,7 +4,7 @@
 
 import { warpRouteConfigs } from "@hyperlane-xyz/registry";
 import type { WarpCoreConfig } from "@hyperlane-xyz/sdk";
-import { WarpCoreConfigSchema, validateZodResult } from "@hyperlane-xyz/sdk";
+import { validateZodResult, WarpCoreConfigSchema } from "@hyperlane-xyz/sdk";
 import { objFilter, objMerge } from "@hyperlane-xyz/utils";
 import { warpRouteWhitelist } from "~/consts/warp-route-whitelist";
 import { WarpRoutesTs } from "~/consts/warp-routes";

@@ -11,6 +11,11 @@ const config = {
     "components/**/*.{ts,tsx}",
     "../../packages/ui/src/components/**/*.{ts,tsx}",
   ],
+  safelist: [
+    "bg-button-background",
+    "border-button-border",
+    "bg-field-background",
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -23,6 +28,14 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        dark: "hsl(var(--dark))",
+        button: {
+          background: "hsl(var(--button-background))",
+          border: "hsl(var(--button-border))",
+        },
+        field: {
+          background: "hsl(var(--field-background))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

@@ -13,11 +13,11 @@ import {
 } from "@torus-ts/ui/components/toggle-group";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useGovernance } from "~/context/governance-provider";
+import type { VoteStatus } from "~/utils/types";
 import { TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import type { VoteStatus } from "../vote-label";
 import { VotePowerSettings } from "./vote-power-settings";
 
 const voteOptions: Omit<VoteStatus[], "UNVOTED"> = ["FAVORABLE", "AGAINST"];

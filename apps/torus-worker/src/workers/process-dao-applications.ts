@@ -1,13 +1,14 @@
 import type { ApiPromise } from "@polkadot/api";
-import type { AgentApplication } from "@torus-network/sdk";
+import type { AgentApplication, SS58Address } from "@torus-network/sdk";
 import {
   acceptApplication,
   CONSTANTS,
   denyApplication,
   penalizeAgent,
+  queryAgents,
   removeFromWhitelist,
 } from "@torus-network/sdk";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {
@@ -23,6 +24,7 @@ import {
 import type { VotesByNumericId } from "../db";
 import {
   countCadreKeys,
+  getAgentKeysWithPenalties,
   pendingPenalizations,
   queryTotalVotesPerApp,
   updatePenalizeAgentVotes,
@@ -65,6 +67,11 @@ export async function processApplicationsWorker(props: WorkerProps) {
       const penaltyVoteThreshold = await getPenaltyThreshold();
       console.log("penalty threshold: ", penaltyVoteThreshold);
       const factors = await getPenaltyFactors(penaltyVoteThreshold);
+      const keysResetToPenaltyZero = await getKeysToReset(
+        props.api,
+        penaltyVoteThreshold,
+      );
+      factors.push(...keysResetToPenaltyZero);
       await processPenalty(props.api, mnemonic, factors);
     } catch (e) {
       log("UNEXPECTED ERROR: ", e);
@@ -166,24 +173,74 @@ export async function getPenaltyThreshold() {
 
 export async function getPenaltyFactors(cadreThreshold: number) {
   const nth_factor = Math.max(cadreThreshold - 1, 1);
+
   const penalizations = await pendingPenalizations(cadreThreshold, nth_factor);
   return penalizations;
+}
+
+async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
+  const agentPenaltyVotes = await getAgentKeysWithPenalties();
+
+  const voteCountByAgentKey = new Map(
+    agentPenaltyVotes.map(({ agentKey, count }) => [agentKey, count]),
+  );
+
+  const agentsMap = await queryAgents(api);
+
+  const keysToResetPenalty: {
+    agentKey: SS58Address;
+    nthBiggestPenaltyFactor: number;
+  }[] = [];
+
+  for (const [agentKey, agent] of agentsMap) {
+    const hasCurrentPenalty = agent.weightPenaltyFactor > 0;
+    const voteCount = voteCountByAgentKey.get(agentKey) ?? 0;
+
+    if (hasCurrentPenalty && voteCount < penaltyThreshold) {
+      log(
+        `Agent ${agentKey} penalty votes (${voteCount}) below threshold (${penaltyThreshold})`,
+      );
+      keysToResetPenalty.push({
+        agentKey: agentKey,
+        nthBiggestPenaltyFactor: 0,
+      });
+    }
+  }
+
+  return keysToResetPenalty;
 }
 
 export async function processPenalty(
   api: ApiPromise,
   mnemonic: string,
   penaltiesToApply: {
-    agentKey: string;
+    agentKey: SS58Address;
     nthBiggestPenaltyFactor: number;
   }[],
 ) {
   console.log("Penalties to apply: ", penaltiesToApply);
+
+  const agentsMap = await queryAgents(api);
+
+  const allProcessedKeys: SS58Address[] = [];
+
   for (const penalty of penaltiesToApply) {
     const { agentKey, nthBiggestPenaltyFactor } = penalty;
-    await penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic);
+    const agent = agentsMap.get(agentKey);
+
+    if (agent && nthBiggestPenaltyFactor !== agent.weightPenaltyFactor) {
+      await penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic);
+      log(
+        `Applied penalty factor ${nthBiggestPenaltyFactor} to agent ${agentKey}`,
+      );
+      allProcessedKeys.push(agentKey);
+    }
   }
-  const penalizedKeys = penaltiesToApply.map((item) => item.agentKey);
-  await updatePenalizeAgentVotes(penalizedKeys);
-  console.log("Penalties applied");
+
+  if (allProcessedKeys.length > 0) {
+    await updatePenalizeAgentVotes(allProcessedKeys);
+    console.log(`Penalties updated for ${allProcessedKeys.length} agents`);
+  } else {
+    console.log("No penalties required updates");
+  }
 }

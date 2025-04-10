@@ -1,4 +1,4 @@
-import type { LastBlock, SS58Address } from "@torus-network/sdk";
+import type { LastBlock, Proposal, SS58Address } from "@torus-network/sdk";
 import {
   checkSS58,
   CONSTANTS,
@@ -12,12 +12,15 @@ import {
   agentProposalToProposal,
   getApplications,
   getProposals,
+  getProposalStatus,
   isNewBlock,
   log,
+  normalizeApplicationValue,
   sleep,
 } from "../common";
 import type { NewApplication, NewProposal } from "../db";
 import {
+  queryProposalsDB,
   SubspaceAgentToDatabase,
   upsertAgentData,
   upsertProposal,
@@ -69,7 +72,27 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
 
 export async function runProposalsFetch(lastBlock: LastBlock) {
   log(`Block ${lastBlock.blockNumber}: running proposals fetch`);
-  const proposals = await getProposals(lastBlock.apiAtBlock, (_) => true);
+  const savedProposalsMap = new Map(
+    (await queryProposalsDB()).map((proposal) => [
+      proposal.proposalID,
+      proposal,
+    ]),
+  );
+
+  const isProposalToInsert = (a: Proposal) => {
+    const existingProposal = savedProposalsMap.get(a.id);
+    const isNewProposal = !existingProposal;
+    const hasStatusChanged =
+      !isNewProposal &&
+      getProposalStatus(a) !==
+        normalizeApplicationValue(existingProposal.status);
+    return isNewProposal || hasStatusChanged;
+  };
+
+  const proposals = await getProposals(
+    lastBlock.apiAtBlock,
+    isProposalToInsert,
+  );
   const proposalsMap = new Map(Object.entries(proposals));
   const dbProposals: NewProposal[] = [];
   proposalsMap.forEach((value, _) => {

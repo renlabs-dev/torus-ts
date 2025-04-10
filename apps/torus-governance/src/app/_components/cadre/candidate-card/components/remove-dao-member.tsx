@@ -1,14 +1,17 @@
 "use client";
 
+import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
-import React from "react";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import React from "react";
 
 interface HandleRemoveDaoMemberProps {
   userKey: string;
   revoke: number;
+  selectedAccount: InjectedAccountWithMeta | null;
+  isUserCadre: boolean;
 }
 
 export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
@@ -59,8 +62,7 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
   if (currentWalletVote?.vote === "REMOVE") {
     return (
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500">
-          <span className="text-red-500">(You voted to remove)</span>
+        <Label className="flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500">
           {voteCount}
         </Label>
         <Button
@@ -68,9 +70,9 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
           onClick={() => handleRemoveVote()}
           type="button"
           className="flex w-full sm:w-auto"
-          disabled={deleteCadreVote.isPending}
+          disabled={deleteCadreVote.isPending || !props.isUserCadre}
         >
-          {deleteCadreVote.isPending ? "Please Sign" : "Remove Vote"}
+          {deleteCadreVote.isPending ? "Please Sign" : "Revoke vote to remove"}
         </Button>
       </div>
     );
@@ -78,14 +80,11 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <Label className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500">
-        {voteCount}
-      </Label>
       <Button
         onClick={() => handleVote("REMOVE")}
         variant="destructive"
         className="flex w-full sm:w-auto"
-        disabled={createCadreVote.isPending}
+        disabled={createCadreVote.isPending || !props.isUserCadre}
       >
         {createCadreVote.isPending ? "Please Sign" : "Remove Member"}
       </Button>

@@ -4,128 +4,144 @@ import { Input } from "@torus-ts/ui/components/input";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { SearchIcon } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect } from "react";
-import { useGovernance } from "~/context/governance-provider";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-export const SearchBar = () => {
-  const { isInitialized } = useGovernance();
-  const searchParams = useSearchParams();
+interface FilterOption {
+  label: string;
+  value: string;
+}
+
+interface FilterContentProps {
+  statusOptions?: FilterOption[];
+  typeOptions?: FilterOption[];
+  defaultStatus?: string;
+  defaultType?: string;
+  placeholder?: string;
+  statusParamName?: string;
+}
+
+const defaultAgentStatusOptions: FilterOption[] = [
+  { label: "All", value: "all" },
+  { label: "Healthy", value: "healthy" },
+  { label: "Penalized", value: "penalized" },
+];
+
+const defaultProposalStatusOptions: FilterOption[] = [
+  { label: "All", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Accepted", value: "accepted" },
+  { label: "Rejected", value: "rejected" },
+  { label: "Expired", value: "expired" },
+];
+
+const defaultApplicationStatusOptions: FilterOption[] = [
+  { label: "All", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Accepted", value: "accepted" },
+  { label: "Refused", value: "refused" },
+  { label: "Expired", value: "expired" },
+];
+
+export function FilterContent({
+  statusOptions,
+  defaultStatus = "all",
+  placeholder,
+  statusParamName = "status",
+}: FilterContentProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+
+  // Determine which filter options to use based on the current page
+  const { filterOptions, searchPlaceholder } = useMemo(() => {
+    if (pathname.includes("/proposals")) {
+      return {
+        filterOptions: statusOptions ?? defaultProposalStatusOptions,
+        searchPlaceholder: placeholder ?? "Search proposals...",
+      };
+    } else if (pathname.includes("/agents")) {
+      return {
+        filterOptions: statusOptions ?? defaultAgentStatusOptions,
+        searchPlaceholder: placeholder ?? "Search agents...",
+      };
+    } else {
+      // Default for agent applications or other pages
+      return {
+        filterOptions: statusOptions ?? defaultApplicationStatusOptions,
+        searchPlaceholder: placeholder ?? "Search applications...",
+      };
+    }
+  }, [pathname, statusOptions, placeholder]);
+
+  const [selectedStatus, setSelectedStatus] = useState(
+    searchParams.get(statusParamName) ?? defaultStatus,
+  );
 
   const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(name, value);
+    (params: Record<string, string | null>) => {
+      const newParams = new URLSearchParams(searchParams.toString());
 
-      return params.toString();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value === null) {
+          newParams.delete(key);
+        } else {
+          newParams.set(key, value);
+        }
+      });
+
+      return newParams.toString();
     },
     [searchParams],
   );
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const search = e.target.value;
-    const params = new URLSearchParams(searchParams.toString());
+  const updateFilters = useCallback(() => {
+    const query = createQueryString({
+      search: search || null,
+      [statusParamName]:
+        selectedStatus === defaultStatus ? null : selectedStatus,
+    });
 
-    if (!search) {
-      params.delete("search");
-      return router.push(`/?${params.toString()}`);
-    }
-
-    const query = createQueryString("search", search);
-
-    router.push(`/?${query}`);
-  };
-
-  return (
-    <div className="rounded-radius bg-card flex w-full items-center justify-center border pl-3 lg:w-3/5">
-      <SearchIcon
-        size={16}
-        className={`${!isInitialized && "cursor-not-allowed opacity-50"} animate-ease-in-out`}
-      />
-      <Input
-        disabled={!isInitialized}
-        onChange={handleSearchChange}
-        placeholder="Search"
-        className="animate-ease-in-out border-none focus-visible:ring-0"
-      />
-    </div>
-  );
-};
-
-const whitelistStatus = ["All", "Active", "Accepted", "Refused", "Expired"];
-
-const WhitelistFilter = () => {
-  const { isInitialized } = useGovernance();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const isWhitelistApplication =
-    searchParams.get("view") === "agent-applications";
-
-  const paramsStatus = searchParams.get("whitelist-status");
+    router.push(`?${query}`);
+  }, [
+    search,
+    selectedStatus,
+    router,
+    createQueryString,
+    defaultStatus,
+    statusParamName,
+  ]);
 
   useEffect(() => {
-    if (!isWhitelistApplication) return;
-
-    const params = new URLSearchParams(searchParams.toString());
-    const isValidStatus = whitelistStatus
-      .map((s) => s.toLowerCase())
-      .includes(paramsStatus?.toLowerCase() ?? "");
-
-    if (!isValidStatus) {
-      params.set("whitelist-status", "all");
-      router.replace(`/?${params.toString()}`);
-    }
-  }, [paramsStatus, router, searchParams, isWhitelistApplication]);
-
-  if (!isWhitelistApplication) return;
-
-  const handleSelectWhitelistStatus = (selectedValue: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (selectedValue === "all") {
-      params.delete("whitelist-status");
-    } else {
-      params.set("whitelist-status", selectedValue);
-    }
-
-    router.push(`/?${params.toString()}`);
-  };
+    updateFilters();
+  }, [search, selectedStatus, updateFilters]);
 
   return (
-    <Select
-      onValueChange={handleSelectWhitelistStatus}
-      disabled={!isInitialized}
-      value={paramsStatus ?? "all"}
-    >
-      <SelectTrigger className="bg-card w-full outline-none lg:w-[180px]">
-        <SelectValue placeholder="Select a status" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {whitelistStatus.map((status) => (
-            <SelectItem key={status} value={status.toLocaleLowerCase()}>
-              <SelectLabel>{status}</SelectLabel>
+    <div className="flex w-full gap-3">
+      <Input
+        placeholder={searchPlaceholder}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full"
+      />
+
+      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+        <SelectTrigger className="w-[140px]">
+          <SelectValue placeholder="Status" />
+        </SelectTrigger>
+        <SelectContent>
+          {filterOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
             </SelectItem>
           ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+        </SelectContent>
+      </Select>
+    </div>
   );
-};
-
-export const FilterContent = () => {
-  return (
-    <Suspense>
-      <SearchBar />
-      <WhitelistFilter />
-    </Suspense>
-  );
-};
+}

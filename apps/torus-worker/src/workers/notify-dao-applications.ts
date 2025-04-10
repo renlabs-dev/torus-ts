@@ -1,14 +1,18 @@
 import { processApplicationMetadata } from "@torus-network/sdk";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
-import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
-import { flattenResult } from "@torus-ts/utils/typing";
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
+import {
+  buildIpfsGatewayUrl,
+  parseIpfsUri,
+} from "@torus-network/torus-utils/ipfs";
+import { flattenResult } from "@torus-network/torus-utils/typing";
 import { z } from "zod";
 import {
   getApplicationsDB,
   getCadreCandidates,
   getProposalsDB,
-  sleep,
   log,
+  normalizeApplicationValue,
+  sleep,
 } from "../common";
 import type { ApplicationDB } from "../db";
 import * as db from "../db";
@@ -35,11 +39,14 @@ export async function notifyNewApplicationsWorker() {
   const env = getEnv(process.env);
   const startingBlock = env.NOTIFICATIONS_START_BLOCK ?? 350_000;
   const buildUrl = () => buildPortalUrl(env.NEXT_PUBLIC_TORUS_CHAIN_ENV);
-  while(true){
+  while (true) {
     // We could execute the functions in parallel, but it's not necessary
     // and it's better for the logging to execute then serially
     try {
-      await pushApplicationsNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
+      await pushApplicationsNotification(
+        env.CURATOR_DISCORD_WEBHOOK_URL,
+        buildUrl,
+      );
       await pushCadreNotification(env.CURATOR_DISCORD_WEBHOOK_URL, buildUrl);
       await pushProposalsNotification(
         env.CURATOR_DISCORD_WEBHOOK_URL,
@@ -47,7 +54,9 @@ export async function notifyNewApplicationsWorker() {
         buildUrl,
       );
     } catch (error) {
-      log(`Error in notification cycle: ${error instanceof Error ? error.message : String(error)}`);
+      log(
+        `Error in notification cycle: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     await sleep(1_000);
   }
@@ -140,22 +149,22 @@ async function pushApplicationsNotification(
 
 function generateBaseEmbedParams(objectName: string) {
   const embedParamsMap = {
-    OPEN: {
+    Open: {
       title: `New Pending ${objectName}`,
       description: `A new ${objectName} has been submitted`,
       color: 0xffde00, // Yellow
     },
-    ACCEPTED: {
+    Accepted: {
       title: `Accepted ${objectName}`,
       description: `A ${objectName} has been accepted`,
       color: 0x00ff00, // Green
     },
-    REJECTED: {
+    Rejected: {
       title: `Rejected ${objectName}`,
       description: `A ${objectName} has been rejected`,
       color: 0xff0000, // Red
     },
-    EXPIRED: {
+    Expired: {
       title: `EXPIRED ${objectName}`,
       description: `A ${objectName} has expired`,
       color: 0xff0000, // Red
@@ -258,19 +267,19 @@ function buildProposalMessage(
   proposalURL: string,
 ) {
   const embedParamsMap = generateBaseEmbedParams("Proposal");
-  const embedParams = embedParamsMap[application.status];
-
+  const embedParams =
+    embedParamsMap[normalizeApplicationValue(application.status)];
   const fields = [
     { name: "Proposer", value: application.proposerKey },
     { name: "Proposal ID", value: `${String(application.id)}` },
   ];
 
-  if (application.status !== "EXPIRED") {
+  if (application.status !== "Expired") {
     fields.push({ name: "Proposal URL", value: proposalURL });
   }
 
   let footer = { text: "" };
-  if (application.status !== "EXPIRED") {
+  if (application.status !== "Expired") {
     footer = { text: "Please vote on our website." };
   }
 

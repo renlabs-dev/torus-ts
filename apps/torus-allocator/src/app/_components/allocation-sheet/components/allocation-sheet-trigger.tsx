@@ -1,10 +1,10 @@
+import { Button } from "@torus-ts/ui/components/button";
+import { SheetTrigger } from "@torus-ts/ui/components/sheet";
+import { LoaderCircle, PieChart } from "lucide-react";
 import type { StatusConfig } from "./get-submit-status";
 import { SelectedAgentsLabel } from "./selected-agents-label";
 import { StatusLabel } from "./status-label";
 import { WeightPowerLabel } from "./weight-power-label";
-import { Button } from "@torus-ts/ui/components/button";
-import { SheetTrigger } from "@torus-ts/ui/components/sheet";
-import { LoaderCircle, PieChart } from "lucide-react";
 
 interface MenuTriggerProps {
   selectedAccount: string | undefined;

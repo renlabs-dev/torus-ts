@@ -4,9 +4,9 @@ export function AgentActivityLabel() {
   return (
     <Badge
       variant="solid"
-      className="bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/10"
+      className="bg-violet-500/20 text-violet-500 hover:bg-violet-500/10"
     >
-      Agent
+      Whitelisted
     </Badge>
   );
 }

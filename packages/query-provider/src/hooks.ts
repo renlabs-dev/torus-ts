@@ -42,7 +42,7 @@ import {
   queryUnrewardedProposals,
   queryWhitelist,
 } from "@torus-network/sdk";
-import type { ListItem, Nullish } from "@torus-ts/utils/typing";
+import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
 import SuperJSON from "superjson";
 
 // -- Subspace refresh times --

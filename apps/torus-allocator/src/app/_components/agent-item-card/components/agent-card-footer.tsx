@@ -1,11 +1,11 @@
 "use client";
 
-import { SkeletonAgentCardFooter } from "./agent-card-skeleton-loader";
 import { useTorus } from "@torus-ts/torus-provider";
 import { CardFooter } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
 import { Slider } from "@torus-ts/ui/components/slider";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { SkeletonAgentCardFooter } from "./agent-card-skeleton-loader";
 
 interface AgentCardFooterProps {
   id: number;

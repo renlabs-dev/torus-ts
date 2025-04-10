@@ -8,10 +8,10 @@ import { ChainProvider } from "@cosmos-kit/react";
 import { cosmoshub } from "@hyperlane-xyz/registry";
 import { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { getCosmosKitChainConfigs } from "@hyperlane-xyz/widgets";
-import type { PropsWithChildren } from "react";
-import { useMemo } from "react";
 import { config } from "~/consts/config";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import type { PropsWithChildren } from "react";
+import { useMemo } from "react";
 
 export function CosmosWalletProvider({
   children,

@@ -1,4 +1,4 @@
-import { fromNano } from "@torus-ts/utils/subspace";
+import { fromNano } from "@torus-network/torus-utils/subspace";
 
 /**
  * Returns the fee adjusted by the provided buffer percent.

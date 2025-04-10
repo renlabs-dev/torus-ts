@@ -2,11 +2,11 @@ import type { TokenAmount } from "@hyperlane-xyz/sdk";
 import { isNullish } from "@hyperlane-xyz/utils";
 import { SpinnerIcon, useAccounts } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui/components/button";
-import BigNumber from "bignumber.js";
-import { useFormikContext } from "formik";
 import { useFetchMaxAmount } from "~/hooks/use-fetch-max-amount";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { TransferFormValues } from "~/utils/types";
+import BigNumber from "bignumber.js";
+import { useFormikContext } from "formik";
 
 export function MaxButton({
   balance,
