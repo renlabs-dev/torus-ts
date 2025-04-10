@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-import type { BrandTag } from "@torus-ts/utils";
+
 import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
@@ -18,6 +18,7 @@ import { CurrencySwap } from "../../../_components/currency-swap";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { StakeFormValues } from "./stake-form-schema";
+import type { BrandTag } from "@torus-network/torus-utils";
 
 interface StakeFormProps {
   form: UseFormReturn<StakeFormValues>;

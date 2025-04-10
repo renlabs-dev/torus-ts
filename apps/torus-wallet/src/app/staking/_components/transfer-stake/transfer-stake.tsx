@@ -5,7 +5,7 @@ import { checkSS58, isSS58 } from "@torus-network/sdk";
 import { fromNano } from "@torus-network/torus-utils/subspace";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import type { BrandTag } from "@torus-ts/utils";
+import type { BrandTag } from "@torus-network/torus-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUsdPrice } from "~/context/usd-price-provider";

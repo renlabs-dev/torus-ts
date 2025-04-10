@@ -20,6 +20,7 @@ import { CurrencySwap } from "../../../_components/currency-swap";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { UnstakeFormValues } from "./unstake-form-schema";
+import type { BrandTag } from "@torus-network/torus-utils";
 
 interface UnstakeFormProps {
   form: UseFormReturn<UnstakeFormValues>;
@@ -27,7 +28,7 @@ interface UnstakeFormProps {
   maxAmountRef: RefObject<string>;
   feeRef: RefObject<FeeLabelHandle | null>;
   transactionStatus: TransactionResult;
-  handleSelectValidator: (validator: { address: string }) => Promise<void>;
+  handleSelectValidator: (address: BrandTag<"SS58Address"> & string) => void;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (amount: string) => Promise<void>;
   formRef: React.RefObject<HTMLFormElement | null>;

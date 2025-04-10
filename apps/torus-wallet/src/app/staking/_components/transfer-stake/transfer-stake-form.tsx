@@ -20,7 +20,7 @@ import { CurrencySwap } from "../../../_components/currency-swap";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
-import type { BrandTag } from "@torus-ts/utils";
+import type { BrandTag } from "@torus-network/torus-utils";
 
 interface TransferStakeFormProps {
   form: UseFormReturn<TransferStakeFormValues>;
