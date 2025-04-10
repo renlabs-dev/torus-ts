@@ -94,12 +94,12 @@ function Model(props: JSX.IntrinsicElements["group"]) {
         <meshLambertMaterial color="#404044" />
       </mesh>
       <Annotation
-        position={[isMobile ? 0.8 : 1.3, 1.7, 0.2]}
+        position={[isMobile ? 0.8 : 1.3, 1.7, 0.5]}
         path="/proposals"
         text="Proposals"
       />
       <Annotation
-        position={[isMobile ? 0.48 : 1.02, 0.65, 0.7]}
+        position={[isMobile ? 0.48 : 1.02, 0.62, 0.7]}
         path="/dao-portal"
         text="DAO Dashboard"
       />
@@ -159,8 +159,7 @@ function Annotation({ text, position, path }: AnnotationProps) {
     <Html className="scale-75" position={position} transform>
       <Button
         size="sm"
-        variant="outline"
-        className="bg-button-background/60 px-2 text-xs"
+        className="bg-white/5 px-2 text-xs text-white hover:bg-white/15"
         asChild
       >
         <Link href={path}>{text}</Link>
