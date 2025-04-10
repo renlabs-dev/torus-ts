@@ -3,7 +3,7 @@
 import type { AgentApplication } from "@torus-network/sdk";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
-import { AgentApplicationCard } from "~/app/(pages)/(whitelist-applications)/_components/agent-application-card";
+import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { handleCustomAgentApplications } from "~/utils";
