@@ -12,7 +12,7 @@ import {
   queryProposals,
 } from "@torus-network/sdk";
 import { applicationStatusValues } from "@torus-ts/db/schema";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import { match } from "rustie";
 import type {
   ApplicationDB,
@@ -35,64 +35,75 @@ import {
   refuseCadreApplication,
   removeCadreMember,
 } from "../db";
+import { createLogger } from "./log";
 
+/**
+ * @deprecated
+ */
 export interface WorkerProps {
   lastBlockNumber: number;
   lastBlock: LastBlock;
   api: ApiPromise;
 }
 
-// -- Constants -- //
+const log = createLogger({ name: "common-index" });
+
+// ---- Constants ----
 
 export const APPLICATION_EXPIRATION_TIME =
   CONSTANTS.TIME.BLOCK_TIME_SECONDS * CONSTANTS.TIME.ONE_WEEK; // 7 days in blocks
 
-// -- Functions -- //
+// ---- Helpers ----
 
-export function log(...args: unknown[]) {
-  const [first, ...rest] = args;
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.log(`[${new Date().toISOString()}] ${first}`, ...rest);
-}
-
-export function isNewBlock(savedBlock: number, queriedBlock: number) {
-  if (savedBlock === queriedBlock) {
-    log(`Block ${queriedBlock} already processed, skipping`);
-    return false;
-  }
-  return true;
-}
-
+/**
+ * Creates a promise that resolves after the specified duration
+ *
+ * @param ms - The time to sleep in milliseconds
+ * @returns A promise that resolves after the specified delay
+ */
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Waits until a new block is available on the blockchain
+ *
+ * @param props - Worker properties containing API connection and last block info
+ * @returns The new block data once available
+ */
 export async function sleepUntilNewBlock(props: WorkerProps) {
   while (true) {
-    const [error, lastBlock] = await tryAsyncLoggingRaw(
+    const [queryLastBlockError, currentBlock] = await tryAsync(
       queryLastBlock(props.api),
     );
-
-    if (error) {
-      log(
-        `Error querying last block: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-      );
+    if (queryLastBlockError !== undefined) {
+      log.error(queryLastBlockError);
       await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
       continue;
     }
-    if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
+
+    const blockNumber = currentBlock.blockNumber;
+    if (props.lastBlock.blockNumber === blockNumber) {
+      log.info(`Block ${blockNumber} already processed, skipping`);
       await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
     } else {
-      return lastBlock;
+      return currentBlock;
     }
   }
 }
 
-// -- DAO Applications -- //
+// ---- DAO Applications ----
+
+// TODO: refactor out
 
 type ApplicationVoteStatus = "open" | "accepted" | "locked";
 
-// TODO: cursed function. Should refactor everywhere to just use Application
+/**
+ * Converts an agent application from the blockchain format to database format
+ *
+ * @param agentApplication - The agent application data from blockchain
+ * @returns A database-compatible application object
+ */
 export function agentApplicationToApplication(
   agentApplication: AgentApplication,
 ): NewApplication {
@@ -112,6 +123,12 @@ export function agentApplicationToApplication(
   };
 }
 
+/**
+ * Converts a proposal from blockchain format to database format
+ *
+ * @param proposal - The proposal data from blockchain
+ * @returns A database-compatible proposal object
+ */
 export function agentProposalToProposal(proposal: Proposal): NewProposal {
   const status = match(proposal.status)({
     Open: () => applicationStatusValues.Open,
@@ -131,12 +148,12 @@ export function agentProposalToProposal(proposal: Proposal): NewProposal {
   };
 }
 
-/*
-  We need this for now because before we used to have the enum 
-  // as all upper case on the db. We changed it, because it didnt match the
-  // values that came from the network and we want parity of this sort of thing
-  the maximum that we can
-*/
+/**
+ * Normalizes application status values for consistency between database and blockchain
+ *
+ * @param value - The application status value to normalize
+ * @returns The normalized application status value
+ */
 export function normalizeApplicationValue(
   value: string,
 ): keyof typeof applicationStatusValues {
@@ -154,6 +171,12 @@ export function normalizeApplicationValue(
   }
 }
 
+/**
+ * Gets the status of a proposal in the normalized format
+ *
+ * @param proposal - The proposal to get the status for
+ * @returns The normalized proposal status
+ */
 export function getProposalStatus(proposal: Proposal) {
   const status = match(proposal.status)({
     Open: () => applicationStatusValues.Open,
@@ -164,6 +187,12 @@ export function getProposalStatus(proposal: Proposal) {
   return status;
 }
 
+/**
+ * Determines the vote status of an application
+ *
+ * @param app - The agent application to check
+ * @returns The vote status (open, accepted, or locked)
+ */
 export const getApplicationVoteStatus = (
   app: AgentApplication,
 ): ApplicationVoteStatus =>
@@ -173,9 +202,21 @@ export const getApplicationVoteStatus = (
     Expired: () => "locked",
   });
 
+/**
+ * Checks if an application is in a pending state (not locked)
+ *
+ * @param app - The application to check
+ * @returns True if the application is pending, false otherwise
+ */
 export const applicationIsPending = (app: AgentApplication) =>
   getApplicationVoteStatus(app) != "locked";
 
+/**
+ * Checks if an application is in an open state
+ *
+ * @param app - The application to check
+ * @returns True if the application is open, false otherwise
+ */
 export const applicationIsOpen = (app: AgentApplication) =>
   match(app.status)({
     Open: () => true,
@@ -183,20 +224,23 @@ export const applicationIsOpen = (app: AgentApplication) =>
     Expired: () => false,
   });
 
-// TODO: refactor to return using the db type
+/**
+ * Fetches applications from the blockchain that match the given filter
+ *
+ * @param api - The blockchain API instance
+ * @param filterFn - Function to filter applications
+ * @returns A map of application IDs to application objects
+ */
 export async function getApplications(
   api: Api,
   filterFn: (app: AgentApplication) => boolean,
-): Promise<Record<number, AgentApplication> | undefined> {
-  const [error, application_entries] = await tryAsyncLoggingRaw(
+) {
+  const [queryApplicationsError, application_entries] = await tryAsync(
     queryAgentApplications(api),
   );
-
-  if (error) {
-    log(
-      `Error querying agent applications: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
-    return undefined;
+  if (queryApplicationsError !== undefined) {
+    log.error(queryApplicationsError);
+    return {};
   }
 
   const pending_daos = application_entries.filter(filterFn);
@@ -211,19 +255,23 @@ export async function getApplications(
   return applications_map;
 }
 
+/**
+ * Fetches proposals from the blockchain that match the given filter
+ *
+ * @param api - The blockchain API instance
+ * @param filterFn - Function to filter proposals
+ * @returns A map of proposal IDs to proposal objects
+ */
 export async function getProposals(
   api: Api,
   filterFn: (app: Proposal) => boolean,
-): Promise<Record<number, Proposal> | undefined> {
-  const [error, proposals_entries] = await tryAsyncLoggingRaw(
+) {
+  const [queryProposalsError, proposals_entries] = await tryAsync(
     queryProposals(api),
   );
-
-  if (error) {
-    log(
-      `Error querying proposals: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
-    return undefined;
+  if (queryProposalsError !== undefined) {
+    log.error(queryProposalsError);
+    return {};
   }
 
   const desired_proposals = proposals_entries.filter(filterFn);
@@ -237,66 +285,78 @@ export async function getProposals(
   return proposals_map;
 }
 
-export async function getProposalsDB(
-  filterFn: (app: NewProposal) => boolean,
-): Promise<NewProposal[] | undefined> {
-  const [error, proposals] = await tryAsyncLoggingRaw(queryProposalsDB());
-
-  if (error) {
-    log(
-      `Error querying proposals from DB: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
-    return undefined;
+/**
+ * Retrieves proposals from the database that match the given filter
+ *
+ * @param filterFn - Function to filter proposals
+ * @returns An array of filtered proposals
+ */
+export async function getProposalsDB(filterFn: (app: NewProposal) => boolean) {
+  const [queryProposalsDBError, proposals] = await tryAsync(queryProposalsDB());
+  if (queryProposalsDBError !== undefined) {
+    log.error(queryProposalsDBError);
+    return [];
   }
+
   const pending_daos = proposals.filter(filterFn);
   return pending_daos;
 }
 
+/**
+ * Retrieves applications from the database that match the given filter
+ *
+ * @param filterFn - Function to filter applications
+ * @returns An array of filtered applications
+ */
 export async function getApplicationsDB(
   filterFn: (app: ApplicationDB) => boolean,
-): Promise<ApplicationDB[] | undefined> {
-  const [error, applications] = await tryAsyncLoggingRaw(
+) {
+  const [queryApplicationsDBError, applications] = await tryAsync(
     queryAgentApplicationsDB(),
   );
-
-  if (error) {
-    log(
-      `Error querying agent applications from DB: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
-    return undefined;
+  if (queryApplicationsDBError !== undefined) {
+    log.error(queryApplicationsDBError);
+    return [];
   }
 
   const pending_daos = applications.filter(filterFn);
   return pending_daos;
 }
 
+/**
+ * Retrieves cadre candidates from the database that match the given filter
+ *
+ * @param filterFn - Function to filter cadre candidates
+ * @returns An array of filtered cadre candidates
+ */
 export async function getCadreCandidates(
   filterFn: (app: CadreCandidate) => boolean,
 ) {
-  const [error, cadreCandidates] = await tryAsyncLoggingRaw(
+  const [queryCadreCandidatesError, cadreCandidates] = await tryAsync(
     queryCadreCandidates(),
   );
-
-  if (error) {
-    log(
-      `Error querying cadre candidates: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
+  if (queryCadreCandidatesError !== undefined) {
+    log.error(queryCadreCandidatesError);
     return [];
   }
 
   return cadreCandidates.filter(filterFn);
 }
 
+/**
+ * Retrieves votes on pending applications
+ *
+ * @param applications_map - Map of application IDs to application objects
+ * @param last_block_number - The last processed block number
+ * @returns An array of votes on pending applications
+ */
 export async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
   last_block_number: number,
 ): Promise<VoteById[]> {
-  const [error, votes] = await tryAsyncLoggingRaw(queryTotalVotesPerApp());
-
-  if (error) {
-    log(
-      `Error querying total votes per app: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
+  const [queryVotesError, votes] = await tryAsync(queryTotalVotesPerApp());
+  if (queryVotesError !== undefined) {
+    log.error(queryVotesError);
     return [];
   }
 
@@ -308,119 +368,118 @@ export async function getVotesOnPending(
   return votes_on_pending;
 }
 
+/**
+ * Retrieves votes for cadre members
+ *
+ * @returns An array of votes by cadre key
+ */
 export async function getCadreVotes(): Promise<VoteByKey[]> {
-  const [error, votes] = await tryAsyncLoggingRaw(queryTotalVotesPerCadre());
-
-  if (error) {
-    log(
-      `Error querying total votes per cadre: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
+  const [queryVotesError, votes] = await tryAsync(queryTotalVotesPerCadre());
+  if (queryVotesError !== undefined) {
+    log.error(queryVotesError);
     return [];
   }
 
   return votes;
 }
 
-export async function getCadreThreshold(): Promise<number | undefined> {
-  const [error, keys] = await tryAsyncLoggingRaw(countCadreKeys());
-
-  if (error) {
-    log(
-      `Error counting cadre keys: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
-    return undefined;
-  }
-  if (!keys) {
-    log("No cadre keys found");
-    return undefined;
+/**
+ * Calculates the threshold needed for cadre voting decisions
+ *
+ * @returns The threshold value for cadre voting
+ */
+export async function getCadreThreshold() {
+  const [countKeysError, keys] = await tryAsync(countCadreKeys());
+  if (countKeysError !== undefined) {
+    log.error(countKeysError);
+    return 1; // Default to 1 if there's an error
   }
 
   return Math.floor(keys / 2) + 1;
 }
 
+/**
+ * Retrieves penalty factors for cadre members
+ *
+ * @param cadreThreshold - The threshold value for cadre voting
+ * @returns The penalty factors
+ */
 export async function getPenaltyFactors(cadreThreshold: number) {
-  const [error, penalizations] = await tryAsyncLoggingRaw(
+  const [pendingPenalizationsError, penalizations] = await tryAsync(
     pendingPenalizations(cadreThreshold, Math.max(cadreThreshold - 1, 1)),
   );
-
-  if (error) {
-    log(
-      `Error getting pending penalizations: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    );
+  if (pendingPenalizationsError !== undefined) {
+    log.error(pendingPenalizationsError);
     return [];
   }
 
   return penalizations;
 }
 
-// TODO: abstract common logic and merge with processVotesOnProposal
+/**
+ * Processes votes for cadre members based on voting thresholds
+ *
+ * @param votes - The votes to process
+ * @param vote_threshold - The threshold required for vote actions
+ */
 export async function processCadreVotes(
   votes: VoteByKey[],
   vote_threshold: number,
 ) {
-  await Promise.all(
-    votes.map(async (vote_info) => {
-      const {
-        appId: applicatorKey,
-        acceptVotes,
-        refuseVotes,
-        removeVotes,
-      } = vote_info;
+  const processVotesPromises = votes.map(async (vote_info) => {
+    const {
+      appId: applicatorKey,
+      acceptVotes,
+      refuseVotes,
+      removeVotes,
+    } = vote_info;
 
-      if (acceptVotes >= vote_threshold) {
-        console.log("Adding cadre member:", applicatorKey);
-
-        const [discordError, cadreDiscord] = await tryAsyncLoggingRaw(
-          getCadreDiscord(applicatorKey),
-        );
-
-        if (discordError) {
-          log(
-            `Error getting cadre discord for ${applicatorKey}: ${discordError instanceof Error ? (discordError.stack ?? discordError.message) : JSON.stringify(discordError)}`,
-          );
-          return;
-        }
-
-        if (cadreDiscord == null) {
-          log(`No discord account found for cadre member: ${applicatorKey}`);
-          return;
-        }
-
-        const [addError] = await tryAsyncLoggingRaw(
-          addCadreMember(applicatorKey, cadreDiscord),
-        );
-        if (addError) {
-          log(
-            `Error adding cadre member ${applicatorKey}: ${addError instanceof Error ? (addError.stack ?? addError.message) : JSON.stringify(addError)}`,
-          );
-        }
-      } else if (refuseVotes >= vote_threshold) {
-        console.log("Refusing cadre application:", applicatorKey);
-
-        const [refuseError] = await tryAsyncLoggingRaw(
-          refuseCadreApplication(applicatorKey),
-        );
-        if (refuseError) {
-          log(
-            `Error refusing cadre application ${applicatorKey}: ${refuseError instanceof Error ? (refuseError.stack ?? refuseError.message) : JSON.stringify(refuseError)}`,
-          );
-        }
-      } else if (removeVotes >= vote_threshold) {
-        console.log("Removing cadre member:", applicatorKey);
-
-        const [removeError] = await tryAsyncLoggingRaw(
-          removeCadreMember(applicatorKey),
-        );
-        if (removeError) {
-          log(
-            `Error removing cadre member ${applicatorKey}: ${removeError instanceof Error ? (removeError.stack ?? removeError.message) : JSON.stringify(removeError)}`,
-          );
-        }
+    if (acceptVotes >= vote_threshold) {
+      log.info(`Adding cadre member: ${applicatorKey}`);
+      const [getCadreDiscordError, cadreDiscord] = await tryAsync(
+        getCadreDiscord(applicatorKey),
+      );
+      if (getCadreDiscordError !== undefined) {
+        log.error(getCadreDiscordError);
+        return;
       }
-    }),
-  ).catch((error) =>
-    log(
-      `Failed to process vote for reason: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-    ),
+
+      if (cadreDiscord == null) {
+        log.error(
+          `No discord account found for cadre member: ${applicatorKey}`,
+        );
+        return;
+      }
+
+      const [addCadreMemberError, _] = await tryAsync(
+        addCadreMember(applicatorKey, cadreDiscord),
+      );
+      if (addCadreMemberError !== undefined) {
+        log.error(addCadreMemberError);
+      }
+    } else if (refuseVotes >= vote_threshold) {
+      log.info(`Refusing cadre application: ${applicatorKey}`);
+      const [refuseCadreApplicationError, _] = await tryAsync(
+        refuseCadreApplication(applicatorKey),
+      );
+      if (refuseCadreApplicationError !== undefined) {
+        log.error(refuseCadreApplicationError);
+      }
+    } else if (removeVotes >= vote_threshold) {
+      log.info(`Removing cadre member: ${applicatorKey}`);
+      const [removeCadreMemberError, _] = await tryAsync(
+        removeCadreMember(applicatorKey),
+      );
+      if (removeCadreMemberError !== undefined) {
+        log.error(removeCadreMemberError);
+      }
+    }
+  });
+
+  const [processAllVotesError, _] = await tryAsync(
+    Promise.all(processVotesPromises),
   );
+  if (processAllVotesError !== undefined) {
+    log.error(`Failed to process votes: ${processAllVotesError}`);
+  }
 }

@@ -23,126 +23,159 @@
  */
 
 import { CONSTANTS } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
+import { createLogger } from "../common/log";
 
-// Helper to log output
-function log(message: string, ...args: unknown[]): void {
-  console.log(`[${new Date().toISOString()}] ${message}`, ...args);
-}
+const log = createLogger({ name: "error-simulator" });
 
-// Sleep utility
+/**
+ * Creates a promise that resolves after the specified duration
+ *
+ * @param ms - The time to sleep in milliseconds
+ * @returns A promise that resolves after the specified delay
+ */
 async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Network error simulation
+/**
+ * Simulates a network error scenario with proper error handling
+ *
+ * Demonstrates how to capture and log network-related errors such as
+ * connection timeouts and network failures
+ */
 async function simulateNetworkError(): Promise<void> {
-  log("=== SIMULATING NETWORK ERROR ===");
+  log.info("=== SIMULATING NETWORK ERROR ===");
 
   const networkErrorFn = async () => {
-    log("Attempting network operation...");
+    log.info("Attempting network operation...");
     // Simulate network timeout
     await sleep(10);
     throw new Error("NETWORK ERROR: Connection timed out after 5000ms");
   };
 
-  const [error, result] = await tryAsyncLoggingRaw(networkErrorFn());
+  const [error, result] = await tryAsync(networkErrorFn());
 
-  log("Network error simulation complete");
-  log("Error object:", error);
-  log("Result:", result);
-  log("=============================\n");
+  log.info("Network error simulation complete");
+  log.info("Error:", error !== undefined ? error.message : "None");
+  log.info("Result:", result);
+  log.info("=============================\n");
 }
 
-// API validation error simulation
+/**
+ * Simulates an API validation error scenario with proper error handling
+ *
+ * Demonstrates how to capture and log API-related errors such as
+ * invalid parameters and malformed requests
+ */
 async function simulateApiError(): Promise<void> {
-  log("=== SIMULATING API VALIDATION ERROR ===");
+  log.info("=== SIMULATING API VALIDATION ERROR ===");
 
   const apiErrorFn = async () => {
-    log("Attempting API call with invalid parameters...");
+    log.info("Attempting API call with invalid parameters...");
     await sleep(10);
     throw new Error(
       "API ERROR: Invalid parameter 'blockNumber' - expected number, got string",
     );
   };
 
-  const [error, result] = await tryAsyncLoggingRaw(apiErrorFn());
+  const [error, result] = await tryAsync(apiErrorFn());
 
-  log("API error simulation complete");
-  log("Error object:", error);
-  log("Result:", result);
-  log("=============================\n");
+  log.info("API error simulation complete");
+  log.info("Error:", error !== undefined ? error.message : "None");
+  log.info("Result:", result);
+  log.info("=============================\n");
 }
 
-// Database error simulation
+/**
+ * Simulates a database error scenario with proper error handling
+ *
+ * Demonstrates how to capture and log database-related errors such as
+ * connection failures and query execution errors
+ */
 async function simulateDatabaseError(): Promise<void> {
-  log("=== SIMULATING DATABASE ERROR ===");
+  log.info("=== SIMULATING DATABASE ERROR ===");
 
   const dbErrorFn = async () => {
-    log("Attempting database operation...");
+    log.info("Attempting database operation...");
     await sleep(10);
     throw new Error(
       "DATABASE ERROR: Connection to database lost. Cannot execute query.",
     );
   };
 
-  const [error, result] = await tryAsyncLoggingRaw(dbErrorFn());
+  const [error, result] = await tryAsync(dbErrorFn());
 
-  log("Database error simulation complete");
-  log("Error object:", error);
-  log("Result:", result);
-  log("=============================\n");
+  log.info("Database error simulation complete");
+  log.info("Error:", error !== undefined ? error.message : "None");
+  log.info("Result:", result);
+  log.info("=============================\n");
 }
 
-// Blockchain data error simulation
+/**
+ * Simulates a blockchain data error scenario with proper error handling
+ *
+ * Demonstrates how to capture and log blockchain-related errors such as
+ * invalid block data and chain inconsistencies
+ */
 async function simulateBlockchainError(): Promise<void> {
-  log("=== SIMULATING BLOCKCHAIN DATA ERROR ===");
+  log.info("=== SIMULATING BLOCKCHAIN DATA ERROR ===");
 
   const blockchainErrorFn = async () => {
-    log("Attempting to fetch blockchain data...");
+    log.info("Attempting to fetch blockchain data...");
     await sleep(10);
     throw new Error(
       "BLOCKCHAIN ERROR: Invalid block data - hash does not match previous block",
     );
   };
 
-  const [error, result] = await tryAsyncLoggingRaw(blockchainErrorFn());
+  const [error, result] = await tryAsync(blockchainErrorFn());
 
-  log("Blockchain error simulation complete");
-  log("Error object:", error);
-  log("Result:", result);
-  log("=============================\n");
+  log.info("Blockchain error simulation complete");
+  log.info("Error:", error !== undefined ? error.message : "None");
+  log.info("Result:", result);
+  log.info("=============================\n");
 }
 
-// Webhook error simulation
+/**
+ * Simulates a webhook error scenario with proper error handling
+ *
+ * Demonstrates how to capture and log webhook-related errors such as
+ * rate limiting and service unavailability
+ */
 async function simulateWebhookError(): Promise<void> {
-  log("=== SIMULATING WEBHOOK ERROR ===");
+  log.info("=== SIMULATING WEBHOOK ERROR ===");
 
   const webhookErrorFn = async () => {
-    log("Attempting to send webhook notification...");
+    log.info("Attempting to send webhook notification...");
     await sleep(10);
     throw new Error(
       "WEBHOOK ERROR: Discord returned status code 429 (Too Many Requests)",
     );
   };
 
-  const [error, result] = await tryAsyncLoggingRaw(webhookErrorFn());
+  const [error, result] = await tryAsync(webhookErrorFn());
 
-  log("Webhook error simulation complete");
-  log("Error object:", error);
-  log("Result:", result);
-  log("=============================\n");
+  log.info("Webhook error simulation complete");
+  log.info("Error:", error !== undefined ? error.message : "None");
+  log.info("Result:", result);
+  log.info("=============================\n");
 }
 
-// Retry mechanism simulation
+/**
+ * Simulates a retry mechanism with proper error handling
+ *
+ * Demonstrates how to implement retry logic for operations that may fail
+ * temporarily but succeed on subsequent attempts
+ */
 async function simulateRetryMechanism(): Promise<void> {
-  log("=== SIMULATING RETRY MECHANISM ===");
+  log.info("=== SIMULATING RETRY MECHANISM ===");
 
   let attempts = 0;
 
   const retryFn = async () => {
     attempts++;
-    log(`Attempt ${attempts} to fetch data...`);
+    log.info(`Attempt ${attempts} to fetch data...`);
 
     // Fail first 2 attempts
     if (attempts < 3) {
@@ -152,58 +185,60 @@ async function simulateRetryMechanism(): Promise<void> {
     return "Success after retry!";
   };
 
-  log("Starting retry mechanism with 3 max attempts");
+  log.info("Starting retry mechanism with 3 max attempts");
   let retries = 3;
-  let lastError: unknown;
+  let lastError: Error | undefined;
   let result: string | undefined;
 
   while (retries > 0) {
-    log(`Retries remaining: ${retries}`);
-    const [error, successResult] = await tryAsyncLoggingRaw<string>(retryFn());
+    log.info(`Retries remaining: ${retries}`);
+    const [error, successResult] = await tryAsync<string>(retryFn());
 
-    if (!error) {
+    if (error === undefined) {
       result = successResult;
-      log("Retry succeeded:", result);
+      log.info("Retry succeeded:", result);
       break;
     }
 
     lastError = error;
-    log(
-      "Attempt failed:",
-      error instanceof Error ? error.message : String(error),
-    );
+    log.error(error);
     retries--;
     await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 10); // Simulated backoff
   }
 
-  if (!result) {
-    log("All retry attempts failed. Last error:", lastError);
+  if (result === undefined && lastError !== undefined) {
+    log.error("All retry attempts failed:", lastError);
   }
 
-  log("Retry mechanism simulation complete");
-  log("Final result:", result);
-  log("=============================\n");
+  log.info("Retry mechanism simulation complete");
+  log.info("Final result:", result);
+  log.info("=============================\n");
 }
 
-// Nesting error handlers simulation
+/**
+ * Simulates nested error handlers with proper error propagation
+ *
+ * Demonstrates how errors can be caught, processed, and re-thrown
+ * through multiple layers of function calls
+ */
 async function simulateNestedErrorHandlers(): Promise<void> {
-  log("=== SIMULATING NESTED ERROR HANDLERS ===");
+  log.info("=== SIMULATING NESTED ERROR HANDLERS ===");
 
   const innerFn = async () => {
-    log("Executing inner function...");
+    log.info("Executing inner function...");
     throw new Error(
       "INNER ERROR: Something went wrong inside the inner function",
     );
   };
 
   const middleFn = async () => {
-    log("Executing middle function...");
-    const [innerError, innerResult] = await tryAsyncLoggingRaw(innerFn());
+    log.info("Executing middle function...");
+    const [innerError, innerResult] = await tryAsync(innerFn());
 
-    if (innerError) {
-      log("Inner error detected:", innerError);
+    if (innerError !== undefined) {
+      log.error("Inner error detected:", innerError);
       throw new Error(
-        `MIDDLE ERROR: Middle function failed due to inner error: ${innerError instanceof Error ? innerError.message : JSON.stringify(innerError)}`,
+        `MIDDLE ERROR: Middle function failed due to inner error: ${innerError.message}`,
       );
     }
 
@@ -211,28 +246,35 @@ async function simulateNestedErrorHandlers(): Promise<void> {
   };
 
   const outerFn = async () => {
-    log("Executing outer function...");
-    const [middleError, middleResult] = await tryAsyncLoggingRaw(middleFn());
+    log.info("Executing outer function...");
+    const [middleError, middleResult] = await tryAsync(middleFn());
 
-    if (middleError) {
-      log("Middle error detected:", middleError);
+    if (middleError !== undefined) {
+      log.error("Middle error detected:", middleError);
       throw new Error(
-        `OUTER ERROR: Outer function failed due to middle error: ${middleError instanceof Error ? middleError.message : JSON.stringify(middleError)}`,
+        `OUTER ERROR: Outer function failed due to middle error: ${middleError.message}`,
       );
     }
 
     return middleResult;
   };
 
-  const [outerError, outerResult] = await tryAsyncLoggingRaw(outerFn());
+  const [outerError, outerResult] = await tryAsync(outerFn());
 
-  log("Nested error handlers simulation complete");
-  log("Final error:", outerError);
-  log("Final result:", outerResult);
-  log("=============================\n");
+  log.info("Nested error handlers simulation complete");
+  log.info(
+    "Final error:",
+    outerError !== undefined ? outerError.message : "None",
+  );
+  log.info("Final result:", outerResult);
+  log.info("=============================\n");
 }
 
-// Run all simulations or a specific one based on command line arg
+/**
+ * Runs simulation scenarios based on command line arguments
+ *
+ * @returns A promise that resolves when all simulations are complete
+ */
 async function runSimulations(): Promise<void> {
   const scenario = process.argv[2] ?? "all";
 
@@ -268,14 +310,11 @@ async function runSimulations(): Promise<void> {
       await simulateNestedErrorHandlers();
       break;
     default:
-      log(`Unknown scenario: ${scenario}`);
-      log(
+      log.warn(`Unknown scenario: ${scenario}`);
+      log.info(
         "Available scenarios: network, api, database, blockchain, webhook, retry, nested, all",
       );
   }
 }
-
 // Execute the simulations
-runSimulations().catch((error) => {
-  log("Unexpected error in error simulator:", error);
-});
+await runSimulations();

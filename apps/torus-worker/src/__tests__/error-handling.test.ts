@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await */
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
@@ -34,7 +34,7 @@ describe("Error handling patterns in torus-worker", () => {
   describe("tryAsyncLoggingRaw", () => {
     it("should handle successful async operations", async () => {
       const successFn = () => Promise.resolve("success");
-      const [error, result] = await tryAsyncLoggingRaw(successFn());
+      const [error, result] = await tryAsync(successFn());
 
       expect(error).toBeUndefined();
       expect(result).toBe("success");
@@ -42,7 +42,7 @@ describe("Error handling patterns in torus-worker", () => {
 
     it("should handle failing async operations", async () => {
       const failFn = () => Promise.reject(new Error("test error"));
-      const [error, result] = await tryAsyncLoggingRaw(failFn());
+      const [error, result] = await tryAsync(failFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();
@@ -56,7 +56,7 @@ describe("Error handling patterns in torus-worker", () => {
       const throwFn = async () => {
         throw new Error("thrown error");
       };
-      const [error, result] = await tryAsyncLoggingRaw(throwFn());
+      const [error, result] = await tryAsync(throwFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();
@@ -72,7 +72,7 @@ describe("Error handling patterns in torus-worker", () => {
     it("should handle network errors in API calls", async () => {
       // Simulate a network error
       const networkErrorFn = () => Promise.reject(new Error("network timeout"));
-      const [error, result] = await tryAsyncLoggingRaw(networkErrorFn());
+      const [error, result] = await tryAsync(networkErrorFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();
@@ -86,7 +86,7 @@ describe("Error handling patterns in torus-worker", () => {
       // Simulate an API validation error
       const validationErrorFn = () =>
         Promise.reject(new Error("invalid parameter format"));
-      const [error, result] = await tryAsyncLoggingRaw(validationErrorFn());
+      const [error, result] = await tryAsync(validationErrorFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();
@@ -100,7 +100,7 @@ describe("Error handling patterns in torus-worker", () => {
       // Simulate a database error
       const dbErrorFn = () =>
         Promise.reject(new Error("database connection failed"));
-      const [error, result] = await tryAsyncLoggingRaw(dbErrorFn());
+      const [error, result] = await tryAsync(dbErrorFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();
@@ -129,7 +129,7 @@ describe("Error handling patterns in torus-worker", () => {
         let lastError: unknown;
 
         while (retries > 0) {
-          const [error, result] = await tryAsyncLoggingRaw(retryFn());
+          const [error, result] = await tryAsync(retryFn());
 
           if (!error) {
             return result;
@@ -154,7 +154,7 @@ describe("Error handling patterns in torus-worker", () => {
       // Simulate blockchain data error
       const blockchainErrorFn = () =>
         Promise.reject(new Error("invalid block data"));
-      const [error, result] = await tryAsyncLoggingRaw(blockchainErrorFn());
+      const [error, result] = await tryAsync(blockchainErrorFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();
@@ -168,7 +168,7 @@ describe("Error handling patterns in torus-worker", () => {
       // Simulate chain disconnection
       const disconnectionErrorFn = () =>
         Promise.reject(new Error("chain disconnected"));
-      const [error, result] = await tryAsyncLoggingRaw(disconnectionErrorFn());
+      const [error, result] = await tryAsync(disconnectionErrorFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();
@@ -182,7 +182,7 @@ describe("Error handling patterns in torus-worker", () => {
       // Simulate webhook error
       const webhookErrorFn = () =>
         Promise.reject(new Error("webhook failed to deliver"));
-      const [error, result] = await tryAsyncLoggingRaw(webhookErrorFn());
+      const [error, result] = await tryAsync(webhookErrorFn());
 
       expect(error).toBeInstanceOf(Error);
       expect(result).toBeUndefined();

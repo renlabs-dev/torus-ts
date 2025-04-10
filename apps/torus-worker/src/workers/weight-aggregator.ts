@@ -11,10 +11,11 @@ import {
 } from "@torus-network/sdk";
 import type { LastBlock, SS58Address } from "@torus-network/sdk";
 import { createDb } from "@torus-ts/db/client";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import { z } from "zod";
-import { log, sleep } from "../common";
+import { sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
+import { createLogger } from "../common/log";
 import type { AgentWeight } from "../db";
 import { getUserWeightMap, upsertAgentWeight } from "../db";
 import {
@@ -32,25 +33,28 @@ export const env = parseEnvOrExit(
 
 export const db = createDb();
 
+const log = createLogger({ name: "weight-aggregator" });
+const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
+
 export async function weightAggregatorWorker(api: ApiPromise) {
-  const [error] = await tryAsyncLoggingRaw(cryptoWaitReady());
-  if (error) {
-    console.error(`Failed to wait for crypto: ${JSON.stringify(error)}`);
+  const [cryptoError, _] = await tryAsync(cryptoWaitReady());
+  if (cryptoError !== undefined) {
+    log.error(`Failed to initialize crypto: ${cryptoError}`);
     return;
   }
+
   const keyring = new Keyring({ type: "sr25519" });
   const keypair = keyring.addFromUri(env.TORUS_ALLOCATOR_MNEMONIC);
 
   let knownLastBlock: LastBlock | null = null;
 
   while (true) {
-    const [error] = await tryAsyncLoggingRaw(
+    const [workerError, __] = await tryAsync(
       (async () => {
-        const [lastBlockError, lastBlock] = await tryAsyncLoggingRaw(
-          queryLastBlock(api),
-        );
-        if (lastBlockError) {
-          log(`Error querying last block: ${JSON.stringify(lastBlockError)}`);
+        const [blockError, lastBlock] = await tryAsync(queryLastBlock(api));
+        if (blockError !== undefined) {
+          log.error(blockError);
+          await sleep(retryDelay / 2);
           return;
         }
 
@@ -59,33 +63,36 @@ export async function weightAggregatorWorker(api: ApiPromise) {
           knownLastBlock !== null &&
           lastBlock.blockNumber <= knownLastBlock
         ) {
-          log(`Block ${lastBlock.blockNumber} already processed, skipping`);
-          await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 2);
+          log.info(
+            `Block ${lastBlock.blockNumber}: already processed, skipping`,
+          );
+          await sleep(retryDelay / 2);
           return;
         }
         knownLastBlock = lastBlock;
 
-        log(`Block ${lastBlock.blockNumber}: processing`);
+        log.info(`Block ${lastBlock.blockNumber}: processing`);
 
-        const [taskError] = await tryAsyncLoggingRaw(
+        const [taskError, ___] = await tryAsync(
           weightAggregatorTask(api, keypair, lastBlock.blockNumber),
         );
-        if (taskError) {
-          log(
-            `Error in weight aggregator task: ${taskError instanceof Error ? taskError.message : JSON.stringify(taskError)}`,
-          );
+        if (taskError !== undefined) {
+          log.error(`Failed to run weight aggregator task: ${taskError}`);
           return;
         }
 
         // We aim to run this task every ~5 minutes (8 seconds block * 38)
-        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS * 37);
+        log.info(
+          `Waiting for ${(retryDelay * 37) / 1000} seconds until next run`,
+        );
       })(),
     );
 
-    if (error) {
-      log("UNEXPECTED ERROR: ", error);
-      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
+    if (workerError !== undefined) {
+      log.error(`Unexpected worker error: ${workerError}`);
     }
+
+    await sleep(retryDelay * 37);
   }
 }
 
@@ -100,30 +107,25 @@ export async function weightAggregatorTask(
 ) {
   const allocatorAddress = checkSS58(keypair.address);
 
-  const [stakeError, stakeOnCommunityValidator] = await tryAsyncLoggingRaw(
+  const [stakeError, stakeOnCommunityValidator] = await tryAsync(
     queryKeyStakedBy(api, allocatorAddress),
   );
-
-  if (stakeError) {
-    log(
-      `Error querying key staked by: ${stakeError instanceof Error ? stakeError.message : JSON.stringify(stakeError)}`,
-    );
+  if (stakeError !== undefined) {
+    log.error(`Failed to query stakes: ${stakeError}`);
     return;
   }
-  log("Committing agent weights...");
 
-  const [aggregationError] = await tryAsyncLoggingRaw(
+  log.info("Committing agent weights...");
+
+  const [aggregationError, _] = await tryAsync(
     postAgentAggregation(stakeOnCommunityValidator, api, keypair, lastBlock),
   );
-
-  if (aggregationError) {
-    log(
-      `Error in post agent aggregation: ${aggregationError instanceof Error ? aggregationError.message : JSON.stringify(aggregationError)}`,
-    );
+  if (aggregationError !== undefined) {
+    log.error(`Failed to post agent aggregation: ${aggregationError}`);
     return;
   }
 
-  log("Committed agent weights.");
+  log.info("Committed agent weights.");
 }
 
 function getNormalizedWeights(
@@ -163,17 +165,21 @@ async function doVote(
   voteMap: Map<string, number>,
 ) {
   const weights = buildNetworkVote(voteMap);
-  console.log(`keypair: ${keypair.address}`);
 
-  const [error, setWeightsTx] = await tryAsyncLoggingRaw(
+  log.info(`Setting weights for keypair: ${keypair.address}`);
+  log.info(`Setting weights for ${weights.length}: agents`);
+
+  const [weightError, setWeightsTx] = await tryAsync(
     setChainWeights(api, keypair, weights),
   );
 
-  if (error) {
-    console.error(`Failed to set weights on chain: ${JSON.stringify(error)}`);
-    return;
+  if (weightError !== undefined) {
+    log.error(`Failed to set weights on chain: ${weightError}`);
+    throw weightError;
   }
-  console.log(`Set weights tx: ${setWeightsTx.toString()}`);
+
+  log.info(`Set weights transaction: ${setWeightsTx.toString()}`);
+  return setWeightsTx;
 }
 
 async function postAgentAggregation(
@@ -182,12 +188,12 @@ async function postAgentAggregation(
   keypair: KeyringPair,
   lastBlock: number,
 ) {
-  const [mapError, moduleWeightMap] =
-    await tryAsyncLoggingRaw(getUserWeightMap());
-  if (mapError) {
-    console.error(`Failed to get user weight map: ${JSON.stringify(mapError)}`);
+  const [weightMapError, moduleWeightMap] = await tryAsync(getUserWeightMap());
+  if (weightMapError !== undefined) {
+    log.error(`Failed to get user weight map: ${weightMapError}`);
     return;
   }
+
   // gambiarra to remove the allocator from the weights
   moduleWeightMap.forEach((innerMap, _) => {
     if (innerMap.has(keypair.address)) {
@@ -204,7 +210,7 @@ async function postAgentAggregation(
     .map(([agentKey, stakeWeight]): AgentWeight | null => {
       const percWeight = percWeights.get(agentKey);
       if (percWeight === undefined) {
-        console.error(`Agent id ${agentKey} not found in normalized weights`);
+        log.error(`Agent id ${agentKey} not found in normalized weights`);
         return null;
       }
       return {
@@ -217,18 +223,23 @@ async function postAgentAggregation(
     .filter((module) => module !== null);
 
   if (dbModuleWeights.length > 0) {
-    const [upsertError] = await tryAsyncLoggingRaw(
-      upsertAgentWeight(dbModuleWeights),
-    );
-    if (upsertError) {
-      console.error(
-        `Failed to upsert agent weights: ${JSON.stringify(upsertError)}`,
-      );
+    const [upsertError, _] = await tryAsync(upsertAgentWeight(dbModuleWeights));
+    if (upsertError !== undefined) {
+      log.error(`Failed to upsert agent weights: ${upsertError}`);
       return;
     }
+    log.info(`Inserted ${dbModuleWeights.length} agent weights`);
   } else {
-    console.warn("No weights to insert");
+    log.warn("No weights to insert");
   }
 
-  await doVote(api, keypair, normalizedWeights);
+  const [voteError, __] = await tryAsync(
+    doVote(api, keypair, normalizedWeights),
+  );
+  if (voteError !== undefined) {
+    log.error(`Failed to submit votes to chain: ${voteError}`);
+    return;
+  }
+
+  log.info(`Successfully submitted votes for ${normalizedWeights.size} agents`);
 }

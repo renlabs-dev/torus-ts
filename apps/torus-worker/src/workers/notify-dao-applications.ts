@@ -1,25 +1,26 @@
-import { processApplicationMetadata } from "@torus-network/sdk";
+import { CONSTANTS, processApplicationMetadata } from "@torus-network/sdk";
 import { validateEnvOrExit } from "@torus-ts/utils/env";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
 import { buildIpfsGatewayUrl, parseIpfsUri } from "@torus-ts/utils/ipfs";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import { flattenResult } from "@torus-ts/utils/typing";
 import { z } from "zod";
 import {
   getApplicationsDB,
   getCadreCandidates,
   getProposalsDB,
-  log,
   normalizeApplicationValue,
   sleep,
 } from "../common";
+import { createLogger } from "../common/log";
 import type { ApplicationDB } from "../db";
 import * as db from "../db";
 import type { Embed, WebhookPayload } from "../discord";
 import { sendDiscordWebhook } from "../discord";
 
+const log = createLogger({ name: "notify-dao-applications" });
+
 const THUMBNAIL_URL = "https://i.imgur.com/pHJKJys.png";
-const HOUR = 60 * 60 * 1000;
-const defaultRetries = 3;
+const HOUR = CONSTANTS.TIME.ONE_HOUR * 1_000;
 const retryDelay = 1_000; // 1 second in milliseconds
 
 const getEnv = validateEnvOrExit({
@@ -49,7 +50,7 @@ export async function notifyNewApplicationsWorker() {
 
   while (true) {
     // We execute functions serially for better logging
-    const [error] = await tryAsyncLoggingRaw(
+    const [error, _] = await tryAsync(
       (async () => {
         await pushApplicationsNotification(
           env.CURATOR_DISCORD_WEBHOOK_URL,
@@ -64,10 +65,9 @@ export async function notifyNewApplicationsWorker() {
       })(),
     );
 
-    if (error) {
-      log(
-        `Error in notification cycle: ${error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error)}`,
-      );
+    if (error !== undefined) {
+      log.error(error);
+      return;
     }
     await sleep(retryDelay);
   }
@@ -82,70 +82,25 @@ async function pushCadreNotification(
   discordWebhook: string,
   buildUrl: () => string,
 ) {
-  // ==========================
-  // ===== Error Handling =====
-  // ==========================
-  let retries = defaultRetries;
-  let cadreCandidates;
-  let lastError: unknown;
-
-  while (retries > 0) {
-    const [candidatesError, candidatesResult] = await tryAsyncLoggingRaw(
-      getCadreCandidates((candidate) => candidate.notified === false),
-    );
-
-    if (!candidatesError) {
-      cadreCandidates = candidatesResult;
-      break;
-    }
-
-    lastError = candidatesError;
-    log(
-      `Error fetching cadre candidates: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
-    );
-    retries--;
-    await sleep(retryDelay);
-  }
-
-  if (retries === 0 && lastError) {
-    log("Failed to fetch cadre candidates after multiple attempts");
+  const [cadreCandidatesError, cadreCandidates] = await tryAsync(
+    getCadreCandidates((candidate) => candidate.notified === false),
+  );
+  if (cadreCandidatesError !== undefined) {
+    log.error(cadreCandidatesError);
     return;
   }
-
-  if (!cadreCandidates || cadreCandidates.length === 0) {
-    log("No cadre candidates found or list is empty");
-    return;
-  }
-  // ==========================
-
   const candidatesUrl = `${buildUrl()}?view=dao-portal`;
-
   for (const candidate of cadreCandidates) {
     const discordMessage = buildCadreMessage(candidate, candidatesUrl);
 
-    // Send webhook notification
-    const [webhookError] = await tryAsyncLoggingRaw(
+    const [discordWebhookError, _] = await tryAsync(
       sendDiscordWebhook(discordWebhook, discordMessage),
     );
-
-    if (webhookError) {
-      log(
-        `Error sending Discord webhook for cadre candidate ${candidate.userKey}: ${webhookError instanceof Error ? (webhookError.stack ?? webhookError.message) : JSON.stringify(webhookError)}`,
-      );
-      continue;
+    if (discordWebhookError !== undefined) {
+      log.error(discordWebhookError);
+      return;
     }
-
-    // Update notification status
-    const [toggleError] = await tryAsyncLoggingRaw(
-      db.toggleCadreNotification(candidate),
-    );
-
-    if (toggleError) {
-      log(
-        `Error toggling notification for cadre candidate ${candidate.userKey}: ${toggleError instanceof Error ? (toggleError.stack ?? toggleError.message) : JSON.stringify(toggleError)}`,
-      );
-    }
-
+    await db.toggleCadreNotification(candidate);
     await sleep(retryDelay);
   }
 }
@@ -161,78 +116,36 @@ async function pushProposalsNotification(
   startingBlock: number,
   buildPortalUrl: () => string,
 ) {
-  // ==========================
-  // ===== Error Handling =====
-  // ==========================
-  let retries = defaultRetries;
-  let proposals;
-  let lastError: unknown;
-
-  while (retries > 0) {
-    const [proposalsError, proposalsResult] = await tryAsyncLoggingRaw(
-      getProposalsDB((app) => app.notified === false),
-    );
-
-    if (!proposalsError) {
-      proposals = proposalsResult;
-      break;
-    }
-
-    lastError = proposalsError;
-    log(
-      `Error fetching proposals: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
-    );
-    retries--;
-    await sleep(retryDelay);
-  }
-
-  if (retries === 0 && lastError) {
-    log("Failed to fetch proposals after multiple attempts");
+  const [proposalsError, proposals] = await tryAsync(
+    getProposalsDB((app) => app.notified === false),
+  );
+  if (proposalsError !== undefined) {
+    log.error(proposalsError);
     return;
   }
-
-  if (!proposals || proposals.length === 0) {
-    log("No proposals found or list is empty");
-    return;
-  }
-  // ==========================
-
-  // Process each proposal
+  // to avoid notifying proposals that expired before the deploy of worker
   for (const proposal of proposals) {
     const proposalURL = `${buildPortalUrl()}proposal/${proposal.id}`;
     const proposalMessage = buildProposalMessage(proposal, proposalURL);
-
-    // Only notify if proposal hasn't expired
     if (proposal.expirationBlock >= startingBlock) {
-      log(
-        `Notifying proposal ${proposal.id} (expires at block ${proposal.expirationBlock})`,
-      );
+      log.info(`Notifying proposal ${proposal.id}`);
+      log.info(`Expire block ${proposal.expirationBlock}`);
 
-      const [webhookError] = await tryAsyncLoggingRaw(
+      const [webhookError, _] = await tryAsync(
         sendDiscordWebhook(discordWebhook, proposalMessage),
       );
-
-      if (webhookError) {
-        log(
-          `Error sending Discord webhook for proposal ${proposal.id}: ${webhookError instanceof Error ? (webhookError.stack ?? webhookError.message) : JSON.stringify(webhookError)}`,
-        );
-        continue;
+      if (webhookError !== undefined) {
+        log.error(webhookError);
       }
     } else {
-      log(
-        `Proposal ${proposal.id} is too old (expires at block ${proposal.expirationBlock})`,
-      );
+      log.info(`Proposal ${proposal.id} is too old`);
     }
 
-    // Update notification status regardless of whether we sent a notification
-    const [toggleError] = await tryAsyncLoggingRaw(
+    const [proposalNotificationError, _] = await tryAsync(
       db.toggleProposalNotification(proposal),
     );
-
-    if (toggleError) {
-      log(
-        `Error toggling notification for proposal ${proposal.id}: ${toggleError instanceof Error ? (toggleError.stack ?? toggleError.message) : JSON.stringify(toggleError)}`,
-      );
+    if (proposalNotificationError !== undefined) {
+      log.error(proposalNotificationError);
     }
 
     await sleep(retryDelay);
@@ -258,73 +171,31 @@ async function pushApplicationsNotification(
   discordWebhook: string,
   buildPortalUrl: () => string,
 ) {
-  // ==========================
-  // ===== Error Handling =====
-  // ==========================
-  let retries = defaultRetries;
-  let applications;
-  let lastError: unknown;
-
-  while (retries > 0) {
-    const [applicationsError, applicationsResult] = await tryAsyncLoggingRaw(
-      getApplicationsDB(isNotifiable),
-    );
-
-    if (!applicationsError) {
-      applications = applicationsResult;
-      break;
-    }
-
-    lastError = applicationsError;
-    log(
-      `Error fetching applications: ${lastError instanceof Error ? (lastError.stack ?? lastError.message) : JSON.stringify(lastError)}, (${retries} retries left)`,
-    );
-    retries--;
-    await sleep(retryDelay);
-  }
-
-  if (retries === 0 && lastError) {
-    log("Failed to fetch applications after multiple attempts");
-    return;
-  }
-
-  if (!applications) {
-    log("No applications found");
-    return;
-  }
-  // ==========================
-
-  // Process each application
+  const applications = await getApplicationsDB(isNotifiable);
   for (const proposal of applications) {
-    // Parse IPFS URI
     const r = parseIpfsUri(proposal.data);
     const cid = flattenResult(r);
     if (cid === null) {
-      log(`Failed to parse CID for application ${proposal.id}`);
-      continue;
+      log.info(`Failed to parse ${proposal.id} cid`);
+      return;
     }
 
     const url = buildIpfsGatewayUrl(cid);
 
-    // Fetch metadata
-    const [metadataError, metadata] = await tryAsyncLoggingRaw(
+    const [metadataError, metadata] = await tryAsync(
       processApplicationMetadata(url, proposal.id),
     );
-
-    if (metadataError) {
-      log(
-        `Error processing application metadata for ${proposal.id}: ${metadataError instanceof Error ? (metadataError.stack ?? metadataError.message) : JSON.stringify(metadataError)}`,
-      );
-      continue;
+    if (metadataError !== undefined) {
+      log.error(metadataError);
+      return;
     }
 
     const resolved_metadata = flattenResult(metadata);
     if (resolved_metadata === null) {
-      log(`Failed to get metadata for application ${proposal.id}`);
-      continue;
+      log.info(`Failed to get metadata on proposal ${proposal.id}`);
+      return;
     }
 
-    // Prepare notification
     const notification = {
       discord_uid: `${resolved_metadata.discord_id}`,
       app_id: `${proposal.id}`,
@@ -337,29 +208,19 @@ async function pushApplicationsNotification(
       notification.application_url,
     );
 
-    // Send webhook
-    const [webhookError] = await tryAsyncLoggingRaw(
+    const [webhookError, _] = await tryAsync(
       sendDiscordWebhook(discordWebhook, discordMessage),
     );
-
-    if (webhookError) {
-      log(
-        `Error sending Discord webhook for application ${proposal.id}: ${webhookError instanceof Error ? (webhookError.stack ?? webhookError.message) : JSON.stringify(webhookError)}`,
-      );
-      continue;
+    if (webhookError !== undefined) {
+      log.error(webhookError);
     }
 
-    // Update notification status
-    const [toggleError] = await tryAsyncLoggingRaw(
+    const [whitelistNotificationError, __] = await tryAsync(
       db.toggleWhitelistNotification(proposal),
     );
-
-    if (toggleError) {
-      log(
-        `Error toggling notification for application ${proposal.id}: ${toggleError instanceof Error ? (toggleError.stack ?? toggleError.message) : JSON.stringify(toggleError)}`,
-      );
+    if (whitelistNotificationError !== undefined) {
+      log.error(whitelistNotificationError);
     }
-
     await sleep(retryDelay);
   }
 }

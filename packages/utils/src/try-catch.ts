@@ -101,6 +101,7 @@ export function trySyncStr<T>(syncOperation: () => T): Result<T, string> {
 }
 
 // ==== Async ====
+
 /**
  * Handles asynchronous operations with Go-style error handling.
  *
@@ -143,7 +144,7 @@ export function tryAsyncRaw<T, E>(
 export function tryAsync<T>(
   promiseLike: PromiseLike<T>,
 ): AsyncResultObj<T, Error> {
-  return new AsyncResultObj(tryAsyncRaw(promiseLike, ensureError).value);
+  return new AsyncResultObj(tryAsyncRaw(promiseLike, ensureError)._value);
 }
 
 /**
@@ -158,7 +159,7 @@ export function tryAsyncStr<T>(
 ): AsyncResultObj<T, string> {
   return new AsyncResultObj(
     (async () => {
-      const result = await tryAsync(promiseLike).value;
+      const result = await tryAsync(promiseLike)._value;
       const [error, value] = result;
       if (error !== empty) {
         return [error.toString(), undefined];
@@ -166,109 +167,6 @@ export function tryAsyncStr<T>(
       return makeOk(value);
     })(),
   );
-}
-
-/**
- * Runs multiple async operations in parallel and collects their results.
- * If any operation fails, returns the first error encountered.
- *
- * @param operations Array of functions that return Promises
- * @returns AsyncResultObj containing an array of all operation results or the first error
- *
- * @example
- * ```typescript
- * const result = await tryAsyncParallel([
- *   () => api.fetchData1(),
- *   () => api.fetchData2(),
- *   () => api.fetchData3()
- * ]);
- *
- * await result.match({
- *   Ok: ([data1, data2, data3]) => console.log("All operations succeeded"),
- *   Err: (error) => console.error("An operation failed:", error)
- * });
- * ```
- */
-export function tryAsyncParallel<T extends unknown[], E = Error>(
-  operations: [() => Promise<T[0]>, ...(() => Promise<unknown>)[]],
-): AsyncResultObj<T, E> {
-  const resultPromise = (async () => {
-    try {
-      // Run all operations in parallel
-      const results = await Promise.all(operations.map((op) => op()));
-      return makeOk(results) as Result<T, E>;
-    } catch (err) {
-      return makeErr(ensureError(err) as unknown as E) as Result<T, E>;
-    }
-  })();
-
-  return AsyncResultObj.from(resultPromise);
-}
-
-/**
- * Chains multiple async operations with proper error handling.
- * Each operation only runs if the previous operations succeeded.
- *
- * @param operations Array of functions that return Promises
- * @returns AsyncResultObj containing the result of the last operation or the first error
- *
- * @example
- * ```typescript
- * const result = await tryAsyncChain([
- *   () => api.fetchUser(userId),
- *   (user) => api.fetchPosts(user.id),
- *   (posts) => api.processData(posts)
- * ]);
- *
- * await result.match({
- *   Ok: (data) => console.log("All operations succeeded:", data),
- *   Err: (error) => console.error("An operation failed:", error)
- * });
- * ```
- */
-export async function tryAsyncChain<T, E = Error>(
-  operations: [() => Promise<T>, ...((prevResult: T) => Promise<T>)[]],
-): Promise<AsyncResultObj<T, E>> {
-  if (operations.length === 0) {
-    throw new Error("Operations array cannot be empty");
-  }
-
-  // Start with the first operation
-  // Using type assertion since tryAsync returns AsyncResultObj<T, Error> but we need AsyncResultObj<T, E>
-  let chainResult = tryAsync(operations[0]()) as AsyncResultObj<T, E>;
-
-  // Chain each subsequent operation
-  for (let i = 1; i < operations.length; i++) {
-    const operation = operations[i];
-    if (!operation) continue;
-
-    const currentOp = operation;
-
-    // We need to convert Promise<T> to AsyncResult<T, E> (Promise<Result<T, E>>)
-    chainResult = await chainResult.andThen((result: T) => {
-      // Create a Promise<Result<T, E>> from Promise<T>
-      return tryAsync(currentOp(result)).value as Promise<Result<T, E>>;
-    });
-  }
-
-  return chainResult;
-}
-
-export async function tryAsyncAllExtended<T extends unknown[]>(operations: {
-  [K in keyof T]: () => Promise<T[K]>;
-}): Promise<AsyncResultObj<T, Error>> {
-  try {
-    // Use Promise.all but maintain the specific types
-    const results = (await Promise.all(
-      operations.map((op, _index) => op()) as { [K in keyof T]: Promise<T[K]> },
-    )) as unknown as T;
-
-    return AsyncResultObj.Ok(results);
-  } catch (error) {
-    const typedError =
-      error instanceof Error ? error : new Error(String(error));
-    return AsyncResultObj.Err(typedError);
-  }
 }
 
 // Unwrap function to convert AsyncResultObj to tuple format
@@ -279,28 +177,4 @@ export async function unwrapAsyncResult<T, E extends Error>(
     Ok: (value) => [undefined, value],
     Err: (error) => [error, undefined],
   });
-}
-
-// tryAsyncAll that leverages your AsyncResultObj
-export async function tryAsyncAll<T extends unknown[]>(operations: {
-  [K in keyof T]: () => Promise<T[K]>;
-}): Promise<[Error | undefined, T | undefined]> {
-  try {
-    // Execute operations in parallel
-    const results = (await Promise.all(operations.map((op) => op()))) as T;
-
-    // Create an AsyncResultObj with the results
-    const resultObj = await AsyncResultObj.Ok<T, Error>(results);
-
-    // Unwrap using our helper function
-    return await unwrapAsyncResult(resultObj);
-  } catch (error) {
-    // Create an AsyncResultObj with the error
-    const typedError =
-      error instanceof Error ? error : new Error(String(error));
-    const resultObj = await AsyncResultObj.Err<T, Error>(typedError);
-
-    // Unwrap using our helper function
-    return await unwrapAsyncResult(resultObj);
-  }
 }

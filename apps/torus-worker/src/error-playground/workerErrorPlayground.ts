@@ -26,12 +26,10 @@
  */
 
 import { CONSTANTS } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
+import { createLogger } from "../common/log";
 
-// Helper to log output
-function log(message: string, ...args: unknown[]): void {
-  console.log(`[${new Date().toISOString()}] ${message}`, ...args);
-}
+const log = createLogger({ name: "error-playground" });
 
 // Sleep utility
 async function sleep(ms: number): Promise<void> {
@@ -48,48 +46,48 @@ async function withRetry<T>(
   let lastError: unknown;
 
   while (retries > 0) {
-    log(`${label}: Attempt ${maxRetries - retries + 1}/${maxRetries}`);
+    log.info(`${label}: Attempt ${maxRetries - retries + 1}/${maxRetries}`);
 
-    const [error, result] = await tryAsyncLoggingRaw<T>(operation());
+    const [error, result] = await tryAsync<T>(operation());
 
     if (!error) {
-      log(`${label}: Success after ${maxRetries - retries + 1} attempts`);
+      log.info(`${label}: Success after ${maxRetries - retries + 1} attempts`);
       return result;
     }
 
     lastError = error;
-    log(
+    log.error(
       `${label}: Failed - ${error instanceof Error ? error.message : JSON.stringify(error)}`,
     );
     retries--;
 
     if (retries > 0) {
       const delay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 10;
-      log(`${label}: Retrying in ${delay}ms...`);
+      log.warn(`${label}: Retrying in ${delay}ms...`);
       await sleep(delay);
     }
   }
 
-  log(`${label}: All ${maxRetries} attempts failed`);
+  log.error(`${label}: All ${maxRetries} attempts failed`);
   throw lastError;
 }
 
 // Agent Fetcher Worker error simulations
 async function simulateAgentFetcherErrors(scenario: string): Promise<void> {
-  log("=== SIMULATING AGENT FETCHER WORKER ERRORS ===");
+  log.info("=== SIMULATING AGENT FETCHER WORKER ERRORS ===");
 
   switch (scenario.toLowerCase()) {
     case "fetch":
       // Simulate whitelist/agents fetch errors
-      log("Simulating whitelist query error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating whitelist query error");
+      tryAsync(
         (async () => {
           throw new Error("Failed to query whitelist: Node is not synced");
         })(),
       );
 
-      log("Simulating agents query error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating agents query error");
+      tryAsync(
         (async () => {
           throw new Error("Failed to query agents: Node connection dropped");
         })(),
@@ -98,8 +96,8 @@ async function simulateAgentFetcherErrors(scenario: string): Promise<void> {
 
     case "process":
       // Simulate processing errors
-      log("Simulating agent data processing error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating agent data processing error");
+      tryAsync(
         (async () => {
           throw new Error(
             "Failed to process agent data: Invalid agent structure",
@@ -110,8 +108,8 @@ async function simulateAgentFetcherErrors(scenario: string): Promise<void> {
 
     case "database":
       // Simulate database errors
-      log("Simulating agent data upsert error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating agent data upsert error");
+      tryAsync(
         (async () => {
           throw new Error(
             "Failed to upsert agent data: Database connection failed",
@@ -119,8 +117,8 @@ async function simulateAgentFetcherErrors(scenario: string): Promise<void> {
         })(),
       );
 
-      log("Simulating application upsert error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating application upsert error");
+      tryAsync(
         (async () => {
           throw new Error(
             "Failed to upsert application: Unique constraint violation",
@@ -136,22 +134,22 @@ async function simulateAgentFetcherErrors(scenario: string): Promise<void> {
       break;
 
     default:
-      log(`Unknown scenario for agent-fetcher: ${scenario}`);
-      log("Available scenarios: fetch, process, database, all");
+      log.warn(`Unknown scenario for agent-fetcher: ${scenario}`);
+      log.warn("Available scenarios: fetch, process, database, all");
   }
 
-  log("=== AGENT FETCHER ERROR SIMULATION COMPLETE ===\n");
+  log.info("=== AGENT FETCHER ERROR SIMULATION COMPLETE ===\n");
 }
 
 // DAO Applications Notifier error simulations
 async function simulateDaoApplicationsErrors(scenario: string): Promise<void> {
-  log("=== SIMULATING DAO APPLICATIONS NOTIFIER ERRORS ===");
+  log.info("=== SIMULATING DAO APPLICATIONS NOTIFIER ERRORS ===");
 
   switch (scenario.toLowerCase()) {
     case "fetch":
       // Simulate fetch errors
-      log("Simulating applications query error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating applications query error");
+      tryAsync(
         (async () => {
           throw new Error("Failed to query applications: Database timeout");
         })(),
@@ -160,8 +158,8 @@ async function simulateDaoApplicationsErrors(scenario: string): Promise<void> {
 
     case "process":
       // Simulate processing errors
-      log("Simulating application metadata processing error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating application metadata processing error");
+      tryAsync(
         (async () => {
           throw new Error(
             "Failed to process metadata: Invalid IPFS URI format",
@@ -172,8 +170,8 @@ async function simulateDaoApplicationsErrors(scenario: string): Promise<void> {
 
     case "notification":
       // Simulate webhook errors
-      log("Simulating Discord webhook error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating Discord webhook error");
+      tryAsync(
         (async () => {
           throw new Error(
             "Failed to send Discord webhook: Rate limit exceeded",
@@ -184,8 +182,8 @@ async function simulateDaoApplicationsErrors(scenario: string): Promise<void> {
 
     case "database":
       // Simulate database errors
-      log("Simulating notification toggle error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating notification toggle error");
+      tryAsync(
         (async () => {
           throw new Error(
             "Failed to toggle notification status: Transaction failed",
@@ -202,22 +200,24 @@ async function simulateDaoApplicationsErrors(scenario: string): Promise<void> {
       break;
 
     default:
-      log(`Unknown scenario for dao-applications: ${scenario}`);
-      log("Available scenarios: fetch, process, notification, database, all");
+      log.info(`Unknown scenario for dao-applications: ${scenario}`);
+      log.info(
+        "Available scenarios: fetch, process, notification, database, all",
+      );
   }
 
-  log("=== DAO APPLICATIONS NOTIFIER ERROR SIMULATION COMPLETE ===\n");
+  log.info("=== DAO APPLICATIONS NOTIFIER ERROR SIMULATION COMPLETE ===\n");
 }
 
 // Process DAO Applications Worker error simulations
 async function simulateProcessDaoErrors(scenario: string): Promise<void> {
-  log("=== SIMULATING PROCESS DAO APPLICATIONS WORKER ERRORS ===");
+  log.info("=== SIMULATING PROCESS DAO APPLICATIONS WORKER ERRORS ===");
 
   switch (scenario.toLowerCase()) {
     case "fetch":
       // Simulate fetch errors
-      log("Simulating votes query error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating votes query error");
+      tryAsync(
         (async () => {
           throw new Error("Failed to query votes: Database connection lost");
         })(),
@@ -226,15 +226,15 @@ async function simulateProcessDaoErrors(scenario: string): Promise<void> {
 
     case "process":
       // Simulate vote processing errors
-      log("Simulating vote processing error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating vote processing error");
+      tryAsync(
         (async () => {
           throw new Error("Failed to process votes: Invalid vote structure");
         })(),
       );
 
       // Simulate a retry scenario
-      log("Simulating vote processing with retry");
+      log.info("Simulating vote processing with retry");
       try {
         await withRetry(
           () => {
@@ -251,14 +251,14 @@ async function simulateProcessDaoErrors(scenario: string): Promise<void> {
           "Vote Processing",
         );
       } catch (error) {
-        log("All vote processing retries failed:", error);
+        log.info("All vote processing retries failed:", error);
       }
       break;
 
     case "database":
       // Simulate database errors
-      log("Simulating vote update error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating vote update error");
+      tryAsync(
         (async () => {
           throw new Error(
             "Failed to update vote: Database constraint violation",
@@ -274,29 +274,31 @@ async function simulateProcessDaoErrors(scenario: string): Promise<void> {
       break;
 
     default:
-      log(`Unknown scenario for process-dao: ${scenario}`);
-      log("Available scenarios: fetch, process, database, all");
+      log.info(`Unknown scenario for process-dao: ${scenario}`);
+      log.info("Available scenarios: fetch, process, database, all");
   }
 
-  log("=== PROCESS DAO APPLICATIONS WORKER ERROR SIMULATION COMPLETE ===\n");
+  log.info(
+    "=== PROCESS DAO APPLICATIONS WORKER ERROR SIMULATION COMPLETE ===\n",
+  );
 }
 
 // Weight Aggregator Worker error simulations
 async function simulateWeightAggregatorErrors(scenario: string): Promise<void> {
-  log("=== SIMULATING WEIGHT AGGREGATOR WORKER ERRORS ===");
+  log.info("=== SIMULATING WEIGHT AGGREGATOR WORKER ERRORS ===");
 
   switch (scenario.toLowerCase()) {
     case "fetch":
       // Simulate fetch errors
-      log("Simulating last block query error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating last block query error");
+      await tryAsync(
         (async () => {
           throw new Error("Failed to query last block: Node connection error");
         })(),
       );
 
-      log("Simulating stakes query error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating stakes query error");
+      await tryAsync(
         (async () => {
           throw new Error("Failed to query stakes: Invalid validator key");
         })(),
@@ -305,8 +307,8 @@ async function simulateWeightAggregatorErrors(scenario: string): Promise<void> {
 
     case "process":
       // Simulate weight calculation errors
-      log("Simulating weight calculation error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating weight calculation error");
+      await tryAsync(
         (async () => {
           throw new Error("Failed to calculate weights: Division by zero");
         })(),
@@ -315,8 +317,8 @@ async function simulateWeightAggregatorErrors(scenario: string): Promise<void> {
 
     case "database":
       // Simulate database errors
-      log("Simulating weight upsert error");
-      await tryAsyncLoggingRaw(
+      log.info("Simulating weight upsert error");
+      await tryAsync(
         (async () => {
           throw new Error("Failed to upsert weights: Database timeout");
         })(),
@@ -330,11 +332,11 @@ async function simulateWeightAggregatorErrors(scenario: string): Promise<void> {
       break;
 
     default:
-      log(`Unknown scenario for weight-aggregator: ${scenario}`);
-      log("Available scenarios: fetch, process, database, all");
+      log.info(`Unknown scenario for weight-aggregator: ${scenario}`);
+      log.info("Available scenarios: fetch, process, database, all");
   }
 
-  log("=== WEIGHT AGGREGATOR WORKER ERROR SIMULATION COMPLETE ===\n");
+  log.info("=== WEIGHT AGGREGATOR WORKER ERROR SIMULATION COMPLETE ===\n");
 }
 
 // Run simulations based on command line args
@@ -342,7 +344,9 @@ async function runWorkerSimulations(): Promise<void> {
   const worker = process.argv[2] ?? "all";
   const scenario = process.argv[3] ?? "all";
 
-  log(`Starting error playground for worker: ${worker}, scenario: ${scenario}`);
+  log.info(
+    `Starting error playground for worker: ${worker}, scenario: ${scenario}`,
+  );
 
   switch (worker.toLowerCase()) {
     case "agent-fetcher":
@@ -364,16 +368,16 @@ async function runWorkerSimulations(): Promise<void> {
       await simulateWeightAggregatorErrors(scenario);
       break;
     default:
-      log(`Unknown worker: ${worker}`);
-      log(
+      log.info(`Unknown worker: ${worker}`);
+      log.info(
         "Available workers: agent-fetcher, dao-applications, process-dao, weight-aggregator, all",
       );
   }
 
-  log("Error simulation playground complete");
+  log.info("Error simulation playground complete");
 }
 
 // Execute the simulations
 runWorkerSimulations().catch((error) => {
-  log("Unexpected error in worker error playground:", error);
+  log.info("Unexpected error in worker error playground:", error);
 });

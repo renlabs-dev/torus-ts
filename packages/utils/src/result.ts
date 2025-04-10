@@ -1,5 +1,5 @@
-import { assert, Equals } from "tsafe";
-import { observeType } from "./typing";
+import type { Equals } from "tsafe";
+import { assert } from "tsafe";
 
 // === Empty placeholder ===
 
@@ -100,6 +100,12 @@ export class ResultObj<T, E> {
 
 export const from = ResultObj.from.bind(ResultObj);
 
+export const Ok = ResultObj.Ok.bind(ResultObj);
+
+export const Err = ResultObj.Err.bind(ResultObj);
+
+// == Test ==
+
 function _test() {
   const res1 = makeOk(1);
   const res2 = makeErr("ono");
@@ -115,21 +121,21 @@ function _test() {
         Err: (_e) => NaN,
       });
 
+    // Trying to deconstruct the wrapper object gives us problematic typing
+
     const obj = from(res);
-    // const [err, val] = obj;
-    // if (err !== empty) {
-    //   tsafe<Equals<typeof err, string>>();
-    //   // observeType(val);
-    //   continue;
-    // }
-    // tsafe<Equals<typeof val, number>>();
+    const [err, val] = obj;
+    if (err !== empty) {
+      assert<Equals<typeof err, string>>();
+      // observeType(val);
+      continue;
+    }
     // // observeType(val);
+    // assert<Equals<typeof val, number>>(); // PROBLEM HERE
+    console.log(val);
   }
 }
 
-function tsafe<T>() {
-  throw new Error("Function not implemented.");
-}
 // // ==== Proxy wrapper ====
 
 // // TODO: test proxy wrapper properly

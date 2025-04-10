@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/require-await */
 import type { LastBlock } from "@torus-network/sdk";
-import { tryAsyncLoggingRaw } from "@torus-ts/utils/error-helpers/server-operations";
+import { tryAsync } from "@torus-ts/utils/try-catch";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as agentFetcher from "../workers/agent-fetcher";
 
@@ -79,7 +79,7 @@ describe("Worker module tests", () => {
 
       // Setup a test function that simulates success
       const testSuccessFunction = async () => {
-        const [error] = await tryAsyncLoggingRaw(
+        const [error] = await tryAsync(
           (async () => {
             await agentFetcher.runAgentFetch(mockLastBlock);
           })(),
@@ -102,7 +102,7 @@ describe("Worker module tests", () => {
         let lastError: unknown;
 
         while (retries > 0) {
-          const [error, result] = await tryAsyncLoggingRaw(
+          const [error, result] = await tryAsync(
             (async () => {
               // Simulate first two calls failing
               if (retries > 1) {
@@ -133,7 +133,7 @@ describe("Worker module tests", () => {
     it("should handle notification failures gracefully", async () => {
       // Create a test function that wraps notification logic
       const testNotificationError = async () => {
-        const [error] = await tryAsyncLoggingRaw(
+        const [error] = await tryAsync(
           (async () => {
             // Simulate discord webhook failure
             throw new Error("Discord webhook failed");
@@ -155,7 +155,7 @@ describe("Worker module tests", () => {
     it("should handle vote processing errors", async () => {
       // Create a test function that wraps vote processing logic
       const testVoteProcessingError = async () => {
-        const [error] = await tryAsyncLoggingRaw(
+        const [error] = await tryAsync(
           (async () => {
             // Simulate vote processing failure
             throw new Error("Vote processing failed");
@@ -177,7 +177,7 @@ describe("Worker module tests", () => {
     it("should handle weight calculation errors", async () => {
       // Create a test function that wraps weight calculation logic
       const testWeightCalculationError = async () => {
-        const [error] = await tryAsyncLoggingRaw(
+        const [error] = await tryAsync(
           (async () => {
             // Simulate weight calculation failure
             throw new Error("Weight calculation failed");
