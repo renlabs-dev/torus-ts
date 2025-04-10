@@ -13,6 +13,7 @@ import { Canvas, extend, useFrame } from "@react-three/fiber";
 import { Button } from "@torus-ts/ui/components/button";
 import { easing } from "maath";
 import { RoundedPlaneGeometry } from "maath/geometry";
+import Link from "next/link";
 import type { JSX } from "react";
 import React, { useRef } from "react";
 import * as THREE from "three";
@@ -34,6 +35,7 @@ export function StatueAnimation() {
 
       <SoftShadows samples={3} />
       <CameraControls
+        enabled={false}
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 2}
         minAzimuthAngle={-Math.PI / 2}
@@ -89,9 +91,17 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       >
         <meshLambertMaterial color="#404044" />
       </mesh>
-      <Annotation position={[0.5, -0.7, 1]}>Whitelist Applications</Annotation>
-      <Annotation position={[-1.6, 1, 0.7]}>DAO Portal</Annotation>
-      <Annotation position={[1.2, 1.9, 0]}>Proposals</Annotation>
+      <Annotation position={[1.1, 1.9, 0]} path="/proposals" text="Proposals" />
+      <Annotation
+        position={[1.1, 0.65, 0.7]}
+        path="/dao-portal"
+        text="DAO Portal"
+      />
+      <Annotation
+        position={[0.6, -0.7, 1]}
+        path="/whitelist-applications"
+        text="Whitelist Applications"
+      />
       <Clouds material={THREE.MeshBasicMaterial}>
         <Cloud
           seed={2}
@@ -117,7 +127,7 @@ function Model(props: JSX.IntrinsicElements["group"]) {
         penumbra={0.5}
         ref={light}
         castShadow
-        intensity={2000}
+        intensity={2200}
         shadow-mapSize={1024}
         shadow-bias={-0.0008}
       >
@@ -134,19 +144,20 @@ useGLTF.preload("/themis.glb");
 
 interface AnnotationProps {
   position: THREE.Vector3 | [number, number, number];
-  children: React.ReactNode;
+  text: string;
+  path: string;
 }
 
-function Annotation({ children, position }: AnnotationProps) {
+function Annotation({ text, position, path }: AnnotationProps) {
   return (
     <Html className="scale-75" position={position} transform>
       <Button
         size="sm"
         variant="outline"
         className="px-2 text-xs opacity-70"
-        onClick={() => console.log(".")}
+        asChild
       >
-        {children}
+        <Link href={path}>{text}</Link>
       </Button>
     </Html>
   );
