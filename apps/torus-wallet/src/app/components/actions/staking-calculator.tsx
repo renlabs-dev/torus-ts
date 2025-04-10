@@ -1,10 +1,12 @@
 "use client";
 
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Input } from "@torus-ts/ui/components/input";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { env } from "~/env";
+import { useAPR } from "~/hooks/useAPR";
 import { ArrowUpRight, Calculator, Leaf } from "lucide-react";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useState } from "react";
@@ -17,8 +19,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { env } from "~/env";
-import { useAPR } from "~/hooks/useAPR";
 
 const MONTHLY_COMPOUNDS = 12;
 const FORECAST_MONTHS = 24;
@@ -139,7 +139,7 @@ export const StakingCalculator: React.FC = () => {
           • Monthly Compounding
         </p>
       </div>
-      <div className="mb-4 flex items-center justify-between gap-4 border bg-[#080808] pr-4">
+      <div className="bg-dark mb-4 flex items-center justify-between gap-4 border pr-4">
         <Input
           type="number"
           value={customAmount}

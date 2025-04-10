@@ -154,6 +154,12 @@ export function agentProposalToProposal(proposal: Proposal): NewProposal {
  * @param value - The application status value to normalize
  * @returns The normalized application status value
  */
+/*
+  We need this for now because before we used to have the enum 
+  // as all upper case on the db. We changed it, because it didnt match the
+  // values that came from the network and we want parity of this sort of thing
+  the maximum that we can
+*/
 export function normalizeApplicationValue(
   value: string,
 ): keyof typeof applicationStatusValues {

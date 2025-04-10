@@ -26,7 +26,7 @@
     "@polkadot/api": "catalog:",
     "@torus-ts/db": "workspace:*",
     "@torus-network/sdk": "workspace:*",
-    "@torus-ts/utils": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "express": "^4.19.2",
     "rustie": "catalog:",
     "tsafe": "catalog:",

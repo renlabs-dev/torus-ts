@@ -30,7 +30,7 @@ export function Layout({
       <body
         className={cn(
           font.className,
-          `min-h-screen overflow-auto bg-[#080808] text-white antialiased`,
+          `min-h-screen overflow-auto bg-dark text-white antialiased`,
           className,
         )}
       >

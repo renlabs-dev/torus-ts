@@ -1,12 +1,12 @@
 "use client";
 
-import { RewardIntervalProgress } from "./reward-interval-progress";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { formatToken } from "@torus-ts/utils/subspace";
+import { useWallet } from "~/context/wallet-provider";
 import { Lock, Scale, Unlock } from "lucide-react";
 import { useMemo } from "react";
-import { useWallet } from "~/context/wallet-provider";
+import { RewardIntervalProgress } from "./reward-interval-progress";
 
 const BALANCE_ICONS = {
   free: <Lock size={16} />,

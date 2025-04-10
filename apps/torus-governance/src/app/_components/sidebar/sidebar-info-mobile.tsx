@@ -7,37 +7,10 @@ import {
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { formatToken, smallAddress } from "@torus-ts/utils/subspace";
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
 import { Copy, Ellipsis } from "lucide-react";
+import type { SidebarDataProps } from "./sidebar-info";
 
-export const PopoverInfo = () => {
-  const { rewardAllocation, daoTreasuryBalance, daoTreasuryAddress } =
-    useGovernance();
-  const { toast } = useToast();
-
-  const { data: cadreListData, isLoading: isFetchingCadreList } =
-    api.cadre.all.useQuery();
-
-  function handleCopyClick(value: string): void {
-    navigator.clipboard
-      .writeText(value)
-      .then(() => {
-        toast({
-          title: "SUCCCESS.",
-          description: "Treasury address copied to clipboard.",
-        });
-      })
-      .catch(() => {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Failed to copy treasury address.",
-        });
-      });
-  }
-
+export const SidebarInfoMobile = ({ data }: { data: SidebarDataProps }) => {
   return (
     <Popover>
       <PopoverTrigger asChild className="lg:hidden">
@@ -47,11 +20,11 @@ export const PopoverInfo = () => {
       </PopoverTrigger>
       <PopoverContent className="border-muted bg-background mr-5 flex w-fit flex-col gap-6 px-4 py-4">
         <div>
-          {daoTreasuryBalance.data === undefined ? (
+          {data.treasuryBalance.isLoading ? (
             <Skeleton className="flex w-1/3 py-3" />
           ) : (
             <p className="flex items-end gap-1 text-base">
-              {formatToken(daoTreasuryBalance.data)}
+              {data.treasuryBalance.value}
               <span className="mb-0.5 text-xs">TORUS</span>
             </p>
           )}
@@ -61,12 +34,14 @@ export const PopoverInfo = () => {
           </span>
         </div>
         <div>
-          {daoTreasuryAddress.data === undefined ? (
+          {data.treasuryAddress.isLoading ? (
             <Skeleton className="flex w-3/4 py-3" />
           ) : (
             <span className="flex gap-3">
-              {smallAddress(daoTreasuryAddress.data)}
-              <button onClick={() => handleCopyClick(daoTreasuryAddress.data)}>
+              {data.treasuryAddress.formattedValue}
+              <button
+                onClick={() => data.handleCopyClick(data.treasuryAddress.value)}
+              >
                 <Copy
                   size={16}
                   className="text-muted-foreground hover:text-white"
@@ -79,11 +54,11 @@ export const PopoverInfo = () => {
           </span>
         </div>
         <div className="flex flex-col">
-          {rewardAllocation.data === undefined ? (
+          {data.incentivesPayout.isLoading ? (
             <Skeleton className="flex w-1/3 py-3" />
           ) : (
             <p className="flex items-end gap-1 text-base">
-              {formatToken(rewardAllocation.data)}
+              {data.incentivesPayout.value}
               <span className="mb-0.5 text-xs">TORUS</span>
             </p>
           )}
@@ -93,10 +68,10 @@ export const PopoverInfo = () => {
         </div>
         <div>
           <p>
-            {isFetchingCadreList ? (
+            {data.cadreMembers.isLoading ? (
               <Skeleton className="flex w-1/5 py-3" />
             ) : (
-              (cadreListData?.length ?? 0)
+              data.cadreMembers.value
             )}
           </p>
           <span className="text-muted-foreground text-sm">
@@ -106,10 +81,10 @@ export const PopoverInfo = () => {
 
         <div>
           <p>
-            {isFetchingCadreList ? (
+            {data.voteThreshold.isLoading ? (
               <Skeleton className="flex w-1/5 py-3" />
             ) : (
-              Math.floor((cadreListData?.length ?? 0) / 2 + 1) // TODO: move logic out of component
+              data.voteThreshold.value
             )}
           </p>
           <span className="text-muted-foreground text-sm">

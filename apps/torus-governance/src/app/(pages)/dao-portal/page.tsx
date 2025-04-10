@@ -1,3 +1,4 @@
+import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { CreateCadreCandidates } from "~/app/_components/agent-application/create-cadre-candidates";
 import { CandidateCard } from "~/app/_components/cadre/candidate-card";
 import { api } from "~/trpc/server";
@@ -23,9 +24,7 @@ export default async function DaoPortalPage(props: {
         <ViewSelector currentStatus={status ?? "PENDING"} />
       </div>
       {candidates.length === 0 ? (
-        <div className="mt-4 text-center text-gray-500">
-          No candidates with status: {status}
-        </div>
+        <ContentNotFound message="No candidates matching the search criteria were found." />
       ) : (
         <div className="mt-4 flex flex-col space-y-4">
           {candidates.map((candidate) => (

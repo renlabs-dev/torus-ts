@@ -1,12 +1,11 @@
 import { Badge } from "@torus-ts/ui/components/badge";
-
-export type VoteStatus = "FAVORABLE" | "AGAINST" | "UNVOTED";
+import type { VoteStatus } from "~/utils/types";
 
 interface VoteLabelProps {
   vote: VoteStatus;
 }
 
-export function VoteLabel(props: VoteLabelProps) {
+export function ProposalVoteLabel(props: VoteLabelProps) {
   const { vote } = props;
 
   const votingStatus = {
@@ -14,7 +13,7 @@ export function VoteLabel(props: VoteLabelProps) {
     FAVORABLE: (
       <Badge
         variant="solid"
-        className="bg-green-500/10 text-green-500 hover:bg-green-500/10"
+        className="bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/10"
       >
         Favorable
       </Badge>

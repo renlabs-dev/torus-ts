@@ -1,10 +1,10 @@
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-import { smallAddress } from "@torus-ts/utils/subspace";
-import { X } from "lucide-react";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { X } from "lucide-react";
 
 export function AllocationAgentList() {
   const { delegatedAgents, getAgentPercentage, removeAgent, updatePercentage } =
@@ -30,7 +30,7 @@ export function AllocationAgentList() {
 
                   <div className="flex items-center gap-1">
                     <Label
-                      className="rounded-radius relative flex h-[36px] items-center gap-1 border bg-[#080808] px-2"
+                      className="rounded-radius bg-dark relative flex h-[36px] items-center gap-1 border px-2"
                       htmlFor={`percentage:${agent.address}`}
                     >
                       <Input

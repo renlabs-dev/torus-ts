@@ -10,10 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { env } from "~/env";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { env } from "~/env";
 
 export const SidebarLinks = () => {
   const chainEnv = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");

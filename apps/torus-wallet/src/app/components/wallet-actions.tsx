@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
 import * as React from "react";
 import { useState } from "react";
 import { ReceiveAction } from "./actions/receive";
@@ -8,12 +14,6 @@ import { StakeAction } from "./actions/stake";
 import { StakingCalculator } from "./actions/staking-calculator";
 import { TransferStakeAction } from "./actions/transfer-stake";
 import { UnstakeAction } from "./actions/unstake";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@torus-ts/ui/components/tabs";
 
 const transferButtons = [
   { text: "Send", component: <SendAction /> },

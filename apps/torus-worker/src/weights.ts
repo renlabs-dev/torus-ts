@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { bigintDivision } from "@torus-ts/utils";
+import { bigintDivision } from "@torus-network/torus-utils";
 
 /** Related to weights computation */
 // TODO: Validate SS58 address

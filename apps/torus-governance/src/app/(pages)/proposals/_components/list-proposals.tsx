@@ -1,14 +1,15 @@
 "use client";
 
 import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
+import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
+import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
+import { ProposalCard } from "~/app/(pages)/proposals/_components/proposal-card";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomProposal } from "~/utils";
+import type { VoteStatus } from "~/utils/types";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { CardSkeleton } from "../card-skeleton";
-import { CardViewData } from "../card-view-data";
-import type { VoteStatus } from "../vote-label";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700];
@@ -25,7 +26,7 @@ const ListCardsLoadingSkeleton = () => {
 };
 
 const EmptyState = () => (
-  <p className="animate-fade-down duration-500">No proposals found.</p>
+  <ContentNotFound message="No Proposals matching the search criteria were found." />
 );
 
 function getUserVoteStatus(
@@ -100,7 +101,7 @@ export const ListProposals = () => {
 
         return (
           <Link href={`/proposal/${proposal.id}`} key={proposal.id} prefetch>
-            <CardViewData
+            <ProposalCard
               title={title}
               author={proposal.proposer}
               voted={voted}

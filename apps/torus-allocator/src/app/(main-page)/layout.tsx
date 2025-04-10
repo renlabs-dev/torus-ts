@@ -1,5 +1,5 @@
-import { AgentBanner } from "../_components/agent-banner";
 import { Container } from "@torus-ts/ui/components/container";
+import { AgentBanner } from "../_components/agent-banner";
 
 export default function RootLayout({
   children,

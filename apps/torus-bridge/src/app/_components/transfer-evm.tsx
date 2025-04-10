@@ -6,6 +6,7 @@ import {
   withdrawFromTorusEvm,
 } from "@torus-network/sdk";
 import type { SS58Address } from "@torus-network/sdk";
+import { smallAddress, toNano } from "@torus-network/torus-utils/subspace";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
@@ -20,7 +21,6 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { smallAddress, toNano } from "@torus-ts/utils/subspace";
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";

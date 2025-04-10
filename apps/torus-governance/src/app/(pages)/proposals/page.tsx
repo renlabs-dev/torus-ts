@@ -1,6 +1,6 @@
 import { FilterContent } from "../../_components/filter-content";
-import { CreateModal } from "../../_components/modal";
-import { ListProposals } from "../../_components/render-list/list-proposals";
+import { ShapeNetworkModal } from "../../_components/shape-network-modal";
+import { ListProposals } from "./_components/list-proposals";
 
 export default function ProposalsPage() {
   return (
@@ -10,7 +10,7 @@ export default function ProposalsPage() {
           placeholder="Search proposals..."
           statusParamName="status"
         />
-        <CreateModal />
+        <ShapeNetworkModal />
       </div>
       <ListProposals />
     </div>

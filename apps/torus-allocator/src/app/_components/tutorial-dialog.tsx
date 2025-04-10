@@ -11,11 +11,11 @@ import {
 } from "@torus-ts/ui/components/alert-dialog";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { getLinks } from "@torus-ts/ui/lib/data";
+import { env } from "~/env";
+import { useTutorialStore } from "~/stores/tutorialStore";
 import { Scale, Wallet, Zap } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { env } from "~/env";
-import { useTutorialStore } from "~/stores/tutorialStore";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 

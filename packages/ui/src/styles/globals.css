@@ -4,24 +4,28 @@
 
 @layer base {
   :root {
+    --dark: 0 0% 3%;
     --background: 240 10% 6%;
     --foreground: 0 0% 98%;
     --card: 240 10% 6%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 6%;
     --popover-foreground: 0 0% 98%;
+    --button-background: 240 3% 7%;
+    --button-border: 0 0% 18%;
+    --field-background: 240 12% 5%;
     --primary: 0 0% 98%;
     --primary-foreground: 240 5.9% 10%;
     --secondary: 240 3.7% 10;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 10;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 10;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 2% 10%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 12% 17%;
-    --input: 240 3.7% 12;
+    --border: 240 13% 17%;
+    --input: 240 13% 17%;
     --ring: 240 4.9% 83.9%;
     --radius: 0.5rem;
     --chart-1: 225 80% 55%;
@@ -52,6 +56,18 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-button-background {
+    background-color: hsl(var(--button-background));
+  }
+  .border-button-border {
+    border-color: hsl(var(--button-border));
+  }
+  .bg-field-background {
+    background-color: hsl(var(--field-background));
   }
 }
 

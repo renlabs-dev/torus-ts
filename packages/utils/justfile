@@ -1,0 +1,18 @@
+default:
+    @just --list
+
+clean:
+    rm -rf node_modules dist
+
+install:
+	pnpm install
+
+check:
+	pnpm run typecheck
+	pnpm run lint
+
+build:
+	pnpm run build
+
+publish: clean install check build
+    pnpm publish

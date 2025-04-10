@@ -1,5 +1,3 @@
-import { logger } from "../utils/logger";
-import { useWarpCore } from "./token";
 import type {
   ChainName,
   MultiProtocolProvider,
@@ -12,6 +10,8 @@ import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { logger } from "../utils/logger";
+import { useWarpCore } from "./token";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;

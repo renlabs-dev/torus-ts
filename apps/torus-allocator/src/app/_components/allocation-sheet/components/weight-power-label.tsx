@@ -1,4 +1,5 @@
 import { checkSS58 } from "@torus-network/sdk";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Label } from "@torus-ts/ui/components/label";
@@ -8,7 +9,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { formatToken } from "@torus-ts/utils/subspace";
 import { env } from "~/env";
 import { useTutorialStore } from "~/stores/tutorialStore";
 import { Info } from "lucide-react";

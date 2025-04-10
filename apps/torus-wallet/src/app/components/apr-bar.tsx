@@ -1,9 +1,9 @@
 "use client";
 
-import { APRBarSkeleton } from "./apr-bar-skeleton";
-import { formatToken } from "@torus-ts/utils/subspace";
-import { motion } from "framer-motion";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { useAPR } from "~/hooks/useAPR";
+import { motion } from "framer-motion";
+import { APRBarSkeleton } from "./apr-bar-skeleton";
 
 export function APRBar() {
   const { apr, isLoading, isError, totalStake, totalIssuance } = useAPR();
@@ -24,7 +24,7 @@ export function APRBar() {
         <APRBarSkeleton />
       ) : (
         <div className="absolute top-[3.3em] w-full">
-          <div className="relative z-40 h-8 w-full overflow-hidden border-b bg-[#080808] shadow-2xl">
+          <div className="bg-dark relative z-40 h-8 w-full overflow-hidden border-b shadow-2xl">
             <div className="absolute inset-0 flex justify-center">
               <motion.div
                 className="h-full w-[200px] rotate-45 bg-gradient-to-r from-transparent via-gray-800/10 to-transparent"

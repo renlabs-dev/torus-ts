@@ -1,5 +1,5 @@
+import { fromNano, toNano } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
-import { fromNano, toNano } from "@torus-ts/utils/subspace";
 
 const buttonAmounts = [
   { label: "1/4", value: 4n },

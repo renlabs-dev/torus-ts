@@ -224,7 +224,7 @@ export function CreateCadreCandidates() {
   return (
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="animate-fade-down">
+        <Button variant="outline" className="animate-fade-down">
           Apply to be a curator DAO member.
         </Button>
       </DialogTrigger>
