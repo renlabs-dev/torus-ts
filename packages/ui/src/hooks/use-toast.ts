@@ -8,7 +8,7 @@ import type {
 } from "@torus-ts/ui/components/toast";
 
 const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_REMOVE_DELAY = 2000;
 
 type ToasterToast = ToastProps & {
   id: string;
@@ -58,7 +58,7 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
-const addToRemoveQueue = (toastId: string) => {
+const addToRemoveQueue = (toastId: string, duration = TOAST_REMOVE_DELAY) => {
   if (toastTimeouts.has(toastId)) {
     return;
   }
@@ -69,7 +69,7 @@ const addToRemoveQueue = (toastId: string) => {
       type: "REMOVE_TOAST",
       toastId: toastId,
     });
-  }, TOAST_REMOVE_DELAY);
+  }, duration);
 
   toastTimeouts.set(toastId, timeout);
 };
@@ -140,16 +140,19 @@ function dispatch(action: Action) {
   });
 }
 
-export type Toast = Omit<ToasterToast, "id">;
+export type Toast = Omit<ToasterToast, "id"> & { duration?: number };
 
-function toast({ ...props }: Toast) {
+function toast({ duration, ...props }: Toast & { duration?: number }) {
   const id = genId();
+  // Use the provided duration or fall back to the default TOAST_REMOVE_DELAY
+  const toastDuration = duration ?? TOAST_REMOVE_DELAY;
 
   const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     });
+
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
 
   dispatch({
@@ -164,12 +167,36 @@ function toast({ ...props }: Toast) {
     },
   });
 
+  // Automatically dismiss after the specified duration
+  setTimeout(() => {
+    dismiss();
+  }, toastDuration);
+
   return {
     id: id,
     dismiss,
     update,
   };
 }
+
+toast.success = (description?: string, duration?: number) => {
+  return toast({
+    title: "Success!",
+    description: description ?? "Operation completed successfully.",
+    variant: "default",
+    duration: duration,
+  });
+};
+
+toast.error = (description?: string, duration?: number) => {
+  return toast({
+    title: "Uh oh! Something went wrong.",
+    description:
+      description ?? "An unexpected error occurred. Please try again.",
+    variant: "default",
+    duration: duration,
+  });
+};
 
 export type ToastFunction = (props: Toast) => ReturnType<typeof toast>;
 

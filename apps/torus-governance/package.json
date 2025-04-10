@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@next/third-parties": "catalog:",
-    "@react-three/drei": "catalog:",
-    "@react-three/fiber": "catalog:",
+    "@react-three/drei": "^10.0.5",
+    "@react-three/fiber": "^9.0.4",
     "@tanstack/react-query": "catalog:",
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
@@ -39,7 +39,7 @@
     "rustie": "catalog:",
     "shadcn-dropzone": "^0.2.1",
     "superjson": "2.2.1",
-    "three": "catalog:",
+    "three": "^0.164.1",
     "three-stdlib": "^2.35.15",
     "tsafe": "catalog:",
     "zod": "catalog:"
@@ -52,7 +52,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "@types/three": "catalog:",
+    "@types/three": "^0.165.0",
     "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
