@@ -83,29 +83,38 @@ export function TransferStake() {
 
   const { reset, setValue, trigger, getValues, watch } = form;
 
+  const updateMaxTransferableAmount = useCallback(
+    (validatorAddress: string) => {
+      const validatorData = stakedValidators.find(
+        (v: { address: string; stake: bigint }) =>
+          v.address === validatorAddress,
+      );
+      if (validatorData) {
+        maxAmountRef.current = fromNano(validatorData.stake.toString());
+      } else {
+        maxAmountRef.current = "0";
+        console.warn(
+          `Validator ${validatorAddress} not found in staked validators`,
+        );
+      }
+    },
+    [stakedValidators],
+  );
+
   useEffect(() => {
     const { unsubscribe } = watch((values, info) => {
       if (
         info.name === "fromValidator" &&
         isSS58(String(values.fromValidator))
       ) {
-        const validator = stakedValidators.find(
-          (v: { address: string; stake: bigint }) =>
-            v.address === values.fromValidator,
-        );
-        if (validator) {
-          const stakedAmount = fromNano(validator.stake);
-          maxAmountRef.current = stakedAmount;
-        } else {
-          maxAmountRef.current = "";
-        }
+        updateMaxTransferableAmount(String(values.fromValidator));
       }
     });
     return () => {
       setValue("amount", "");
       unsubscribe();
     };
-  }, [accountStakedBy.data, watch, setValue, stakedValidators]);
+  }, [accountStakedBy.data, watch, setValue, updateMaxTransferableAmount]);
 
   const estimateFeeHandler = useCallback(async () => {
     await handleEstimateFee({
@@ -163,15 +172,7 @@ export function TransferStake() {
   ) => {
     setValue("fromValidator", address);
     setCurrentView("wallet");
-    const validatorData = stakedValidators.find(
-      (v: { address: BrandTag<"SS58Address"> & string; stake: bigint }) =>
-        v.address === address,
-    );
-    if (validatorData) {
-      maxAmountRef.current = fromNano(validatorData.stake);
-    } else {
-      maxAmountRef.current = "";
-    }
+    updateMaxTransferableAmount(address);
     await trigger("fromValidator");
   };
 
@@ -210,6 +211,7 @@ export function TransferStake() {
         handleAmountChange={handleAmountChange}
         formRef={formRef}
         fromValidatorValue={getValues("fromValidator")}
+        minAllowedStakeData={minAllowedStakeData}
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}

@@ -20,6 +20,7 @@ import { CurrencySwap } from "../../../_components/currency-swap";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
+import type { BrandTag } from "@torus-ts/utils";
 
 interface TransferStakeFormProps {
   form: UseFormReturn<TransferStakeFormValues>;
@@ -27,13 +28,18 @@ interface TransferStakeFormProps {
   maxAmountRef: RefObject<string>;
   feeRef: RefObject<FeeLabelHandle | null>;
   transactionStatus: TransactionResult;
-  handleSelectFromValidator: (validator: { address: string }) => Promise<void>;
-  handleSelectToValidator: (validator: { address: string }) => Promise<void>;
-  onReviewClick: () => Promise<void>;
-  handleAmountChange: (amount: string) => Promise<void>;
+  handleSelectFromValidatorAction: (
+    address: BrandTag<"SS58Address"> & string,
+  ) => Promise<void>;
+  handleSelectToValidatorAction: (
+    address: BrandTag<"SS58Address"> & string,
+  ) => Promise<void>;
+  onReviewClickAction: () => Promise<void>;
+  handleAmountChangeAction: (amount: string) => Promise<void>;
   formRef: RefObject<HTMLFormElement | null>;
   fromValidatorValue: string;
   usdPrice: number;
+  minAllowedStakeData: bigint;
 }
 
 export function TransferStakeForm({
@@ -42,13 +48,14 @@ export function TransferStakeForm({
   maxAmountRef,
   feeRef,
   transactionStatus,
-  handleSelectFromValidator,
-  handleSelectToValidator,
-  onReviewClick,
-  handleAmountChange,
+  handleSelectFromValidatorAction,
+  handleSelectToValidatorAction,
+  onReviewClickAction,
+  handleAmountChangeAction,
   formRef,
   fromValidatorValue,
   usdPrice,
+  minAllowedStakeData,
 }: TransferStakeFormProps) {
   return (
     <Card className="animate-fade w-full p-6">
@@ -63,7 +70,7 @@ export function TransferStakeForm({
                 <FormControl>
                   <AllocatorSelector
                     value={field.value}
-                    onSelect={handleSelectFromValidator}
+                    onSelect={handleSelectFromValidatorAction}
                     listType="staked"
                     placeholder="Select a staked allocator"
                     disabled={!selectedAccount?.address}
@@ -82,7 +89,7 @@ export function TransferStakeForm({
                 <FormControl>
                   <AllocatorSelector
                     value={field.value}
-                    onSelect={handleSelectToValidator}
+                    onSelect={handleSelectToValidatorAction}
                     listType="all"
                     placeholder="Select an allocator"
                     excludeAddress={fromValidatorValue}
@@ -97,15 +104,17 @@ export function TransferStakeForm({
           <FormField
             control={form.control}
             name="amount"
-            render={() => (
+            render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
                   <CurrencySwap
+                    amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxAmountRef.current || "0"}
-                    onAmountChangeAction={handleAmountChange}
+                    onAmountChangeAction={handleAmountChangeAction}
+                    minAllowedStakeData={minAllowedStakeData}
                   />
                 </FormControl>
                 <FormMessage />
@@ -123,7 +132,7 @@ export function TransferStakeForm({
           )}
           <Button
             type="button"
-            onClick={onReviewClick}
+            onClick={onReviewClickAction}
             disabled={!selectedAccount?.address}
           >
             Review Transaction
