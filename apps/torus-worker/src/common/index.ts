@@ -11,8 +11,8 @@ import {
   queryLastBlock,
   queryProposals,
 } from "@torus-network/sdk";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { applicationStatusValues } from "@torus-ts/db/schema";
-import { tryAsync } from "@torus-ts/utils/try-catch";
 import { match } from "rustie";
 import type {
   ApplicationDB,

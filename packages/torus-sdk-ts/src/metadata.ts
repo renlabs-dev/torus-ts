@@ -1,10 +1,8 @@
-import type { OldResult } from "@torus-ts/utils";
-import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "@torus-ts/utils/ipfs";
-// import type { Result } from "@torus-network/torus-utils";
-// import {
-// buildIpfsGatewayUrl,
-// IPFS_URI_SCHEMA,
-// } from "@torus-network/torus-utils/ipfs";
+import type { OldResult } from "@torus-network/torus-utils";
+import {
+  buildIpfsGatewayUrl,
+  IPFS_URI_SCHEMA,
+} from "@torus-network/torus-utils/ipfs";
 import type { ZodSchema } from "zod";
 import { z } from "zod";
 import type { AgentMetadata } from "./agent_metadata/agent_metadata";

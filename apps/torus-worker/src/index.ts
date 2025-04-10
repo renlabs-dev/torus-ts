@@ -1,7 +1,7 @@
 import "@polkadot/api-augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { queryLastBlock } from "@torus-network/sdk";
-import { tryAsync } from "@torus-ts/utils/try-catch";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import express from "express";
 import { z } from "zod";
 import { parseEnvOrExit } from "./common/env";

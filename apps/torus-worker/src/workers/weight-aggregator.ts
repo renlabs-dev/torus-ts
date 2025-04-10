@@ -10,8 +10,8 @@ import {
   setChainWeights,
 } from "@torus-network/sdk";
 import type { LastBlock, SS58Address } from "@torus-network/sdk";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { createDb } from "@torus-ts/db/client";
-import { tryAsync } from "@torus-ts/utils/try-catch";
 import { z } from "zod";
 import { sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";

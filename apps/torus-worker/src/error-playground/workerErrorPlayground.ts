@@ -26,7 +26,7 @@
  */
 
 import { CONSTANTS } from "@torus-network/sdk";
-import { tryAsync } from "@torus-ts/utils/try-catch";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { createLogger } from "../common/log";
 
 const log = createLogger({ name: "error-playground" });

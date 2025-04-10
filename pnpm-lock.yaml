@@ -434,7 +434,7 @@ importers:
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
-      '@torus-ts/utils':
+      '@torus-network/torus-utils':
         specifier: workspace:*
         version: link:../../packages/utils
       cors:

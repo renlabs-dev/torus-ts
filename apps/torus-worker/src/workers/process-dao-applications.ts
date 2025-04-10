@@ -8,8 +8,8 @@ import {
   queryAgents,
   removeFromWhitelist,
 } from "@torus-network/sdk";
-import { validateEnvOrExit } from "@torus-ts/utils/env";
-import { tryAsync } from "@torus-ts/utils/try-catch";
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {

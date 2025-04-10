@@ -27,8 +27,8 @@
     "@torus-network/sdk": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "@torus-network/torus-utils": "workspace:*",
     "superjson": "2.2.1",
-    "@torus-ts/utils": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
