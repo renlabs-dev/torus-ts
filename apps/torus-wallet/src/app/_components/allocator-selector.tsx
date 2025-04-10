@@ -111,9 +111,8 @@ export function AllocatorSelector({
       validator.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Updated to handle custom addresses that aren't in the validators list
   const selectedValidator =
-    validators.find((validator) => validator.address === value) ||
+    validators.find((validator) => validator.address === value) ??
     (value
       ? {
           name: "Custom Allocator",
