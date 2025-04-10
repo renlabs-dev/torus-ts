@@ -15,7 +15,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const navOptions = [
-  { title: "Whitelist Applications", href: "/" },
+  { title: "Whitelist Applications", href: "/whitelist-applications" },
   { title: "Proposals", href: "/proposals" },
   { title: "DAO Portal", href: "/dao-portal" },
   { title: "Agents", href: "/agents" },
