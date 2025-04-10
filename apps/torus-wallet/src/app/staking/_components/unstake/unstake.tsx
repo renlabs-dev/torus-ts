@@ -17,7 +17,7 @@ import { handleEstimateFee } from "./unstake-fee-handler";
 import { UnstakeForm } from "./unstake-form";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 import { createUnstakeFormSchema } from "./unstake-form-schema";
-import { BrandTag } from "@torus-ts/utils";
+import type { BrandTag } from "@torus-network/torus-utils";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;

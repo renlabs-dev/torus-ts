@@ -3,7 +3,7 @@
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useState } from "react";
 import { env } from "~/env";

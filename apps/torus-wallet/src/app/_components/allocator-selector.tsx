@@ -3,6 +3,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { Balance, SS58Address } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
+import type { BrandTag } from "@torus-network/torus-utils";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Command,
@@ -18,7 +19,7 @@ import {
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
 import { cn } from "@torus-ts/ui/lib/utils";
-import type { BrandTag } from "@torus-ts/utils";
+
 import { CheckIcon, ChevronsUpDownIcon, PlusCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { useWallet } from "~/context/wallet-provider";
