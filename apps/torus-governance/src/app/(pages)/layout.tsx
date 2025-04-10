@@ -1,5 +1,6 @@
 "use client";
 
+import { Container } from "@torus-ts/ui/components/container";
 import { SidebarInfo } from "../_components/sidebar/sidebar-info";
 import { SidebarNav } from "../_components/sidebar/sidebar-nav";
 
@@ -9,14 +10,16 @@ export default function PagesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="animate-fade-down mb-6 flex w-full flex-col gap-4 lg:flex-row">
-      <div className="flex w-full flex-row gap-4 md:flex-col lg:w-2/5 lg:max-w-[320px]">
-        <div className="flex w-full gap-4">
-          <SidebarNav />
+    <Container>
+      <main className="animate-fade-down mb-6 flex w-full flex-col gap-4 lg:flex-row">
+        <div className="flex w-full flex-row gap-4 md:flex-col lg:w-2/5 lg:max-w-[320px]">
+          <div className="flex w-full gap-4">
+            <SidebarNav />
+          </div>
+          <SidebarInfo />
         </div>
-        <SidebarInfo />
-      </div>
-      {children}
-    </main>
+        {children}
+      </main>
+    </Container>
   );
 }
