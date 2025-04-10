@@ -1,3 +1,16 @@
+import { generateMetadata } from "~/utils/seo";
+
+export const metadata = generateMetadata({
+  title: "Staking - Torus Wallet",
+  description: "Stake your tokens and earn rewards in the Torus ecosystem",
+  ogTitle: "Staking - Torus Wallet",
+  ogDescription: "Stake your tokens and earn rewards in the Torus ecosystem",
+  twitterTitle: "Staking - Torus Wallet",
+  twitterDescription: "Stake your tokens and earn rewards in the Torus ecosystem",
+  canonical: "/staking",
+  keywords: ["crypto wallet", "torus", "staking", "stake tokens", "earn rewards", "web3"],
+});
+
 "use client";
 
 import type { TabItem } from "~/app/_components/tab-layout";
