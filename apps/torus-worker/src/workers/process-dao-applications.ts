@@ -9,6 +9,7 @@ import {
   removeFromWhitelist,
 } from "@torus-network/sdk";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {
@@ -16,11 +17,11 @@ import {
   getApplications,
   getApplicationVoteStatus,
   getCadreVotes,
-  log,
   processCadreVotes,
   sleep,
   sleepUntilNewBlock,
 } from "../common";
+import { createLogger } from "../common/log";
 import type { VotesByNumericId } from "../db";
 import {
   countCadreKeys,
@@ -36,46 +37,121 @@ const getEnv = validateEnvOrExit({
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
 });
 
+const log = createLogger({ name: "process-dao-applications" });
+const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
+
 export async function processApplicationsWorker(props: WorkerProps) {
   const env = getEnv(process.env);
   while (true) {
-    try {
-      const lastBlock = await sleepUntilNewBlock(props);
-      props.lastBlock = lastBlock;
-      log(`Block ${props.lastBlock.blockNumber}: processing`);
+    const [workerError, _] = await tryAsync(
+      (async () => {
+        const [sleepError, lastBlock] = await tryAsync(
+          sleepUntilNewBlock(props),
+        );
+        if (sleepError !== undefined) {
+          log.error(sleepError);
+          await sleep(retryDelay);
+          return;
+        }
 
-      const apps_map = await getApplications(props.api, applicationIsPending);
+        props.lastBlock = lastBlock;
+        log.info(`Block ${props.lastBlock.blockNumber}: processing`);
 
-      const votes_on_pending = await getVotesOnPending(
-        apps_map,
-        lastBlock.blockNumber,
-      );
+        const [getAppsError, apps_map] = await tryAsync(
+          getApplications(props.api, applicationIsPending),
+        );
+        if (getAppsError !== undefined) {
+          log.error(getAppsError);
+          return;
+        }
 
-      const vote_threshold = await getCadreThreshold();
-      const mnemonic = env.TORUS_CURATOR_MNEMONIC;
-      await processAllVotes(
-        props.api,
-        mnemonic,
-        votes_on_pending,
-        vote_threshold,
-        apps_map,
-      );
-      const cadreVotes = await getCadreVotes();
-      await processCadreVotes(cadreVotes, vote_threshold);
-      console.log("threshold: ", vote_threshold);
+        const [getVotesError, votes_on_pending] = await tryAsync(
+          getVotesOnPending(apps_map, lastBlock.blockNumber),
+        );
+        if (getVotesError !== undefined) {
+          log.error(getVotesError);
+          return;
+        }
 
-      const penaltyVoteThreshold = await getPenaltyThreshold();
-      console.log("penalty threshold: ", penaltyVoteThreshold);
-      const factors = await getPenaltyFactors(penaltyVoteThreshold);
-      const keysResetToPenaltyZero = await getKeysToReset(
-        props.api,
-        penaltyVoteThreshold,
-      );
-      factors.push(...keysResetToPenaltyZero);
-      await processPenalty(props.api, mnemonic, factors);
-    } catch (e) {
-      log("UNEXPECTED ERROR: ", e);
-      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
+        const [thresholdError, vote_threshold] =
+          await tryAsync(getCadreThreshold());
+        if (thresholdError !== undefined) {
+          log.error(thresholdError);
+          return;
+        }
+
+        const mnemonic = env.TORUS_CURATOR_MNEMONIC;
+        const [processVotesError, __] = await tryAsync(
+          processAllVotes(
+            props.api,
+            mnemonic,
+            votes_on_pending,
+            vote_threshold,
+            apps_map,
+          ),
+        );
+        if (processVotesError !== undefined) {
+          log.error(processVotesError);
+          return;
+        }
+
+        const [cadreVotesError, cadreVotes] = await tryAsync(getCadreVotes());
+        if (cadreVotesError !== undefined) {
+          log.error(cadreVotesError);
+          return;
+        }
+
+        const [processCadreError, ___] = await tryAsync(
+          processCadreVotes(cadreVotes, vote_threshold),
+        );
+        if (processCadreError !== undefined) {
+          log.error(processCadreError);
+          return;
+        }
+
+        log.info(`Threshold: ${vote_threshold}`);
+
+        const [penaltyThresholdError, penaltyVoteThreshold] = await tryAsync(
+          getPenaltyThreshold(),
+        );
+        if (penaltyThresholdError !== undefined) {
+          log.error(penaltyThresholdError);
+          return;
+        }
+
+        log.info(`Penalty threshold: ${penaltyVoteThreshold}`);
+
+        const [factorsError, factors] = await tryAsync(
+          getPenaltyFactors(penaltyVoteThreshold),
+        );
+        if (factorsError !== undefined) {
+          log.error(factorsError);
+          return;
+        }
+
+        const [keysResetError, keysResetToPenaltyZero] = await tryAsync(
+          getKeysToReset(props.api, penaltyVoteThreshold),
+        );
+        if (keysResetError !== undefined) {
+          log.error(keysResetError);
+          return;
+        }
+
+        factors.push(...keysResetToPenaltyZero);
+
+        const [processPenaltyError, ____] = await tryAsync(
+          processPenalty(props.api, mnemonic, factors),
+        );
+        if (processPenaltyError !== undefined) {
+          log.error(processPenaltyError);
+          return;
+        }
+      })(),
+    );
+
+    if (workerError !== undefined) {
+      log.error(workerError);
+      await sleep(retryDelay);
     }
   }
 }
@@ -87,19 +163,28 @@ export async function processAllVotes(
   vote_threshold: number,
   application_map: Record<number, AgentApplication>,
 ) {
-  await Promise.all(
-    votes_on_pending.map((vote_info) =>
+  log.info(`Processing votes for ${votes_on_pending.length} applications`);
+
+  const processPromises = votes_on_pending.map(async (vote_info) => {
+    const [processError, _] = await tryAsync(
       processVotesOnProposal(
         api,
         mnemonic,
         vote_info,
         vote_threshold,
         application_map,
-      ).catch((error) =>
-        console.log(`Failed to process vote for reason: ${error}`),
       ),
-    ),
-  );
+    );
+
+    if (processError !== undefined) {
+      log.error(
+        `Failed to process vote for app ID ${vote_info.appId}: ${processError}`,
+      );
+    }
+  });
+
+  await Promise.all(processPromises);
+  log.info("All votes processed");
 }
 
 export async function processVotesOnProposal(
@@ -115,35 +200,63 @@ export async function processVotesOnProposal(
   if (app == null) throw new Error("Impossible: Application ID not found");
 
   const appVoteStatus = getApplicationVoteStatus(app);
-  log(
+  log.info(
     `Application ${appId} [${appVoteStatus}] votes[ accept:${acceptVotes}, refuse:${refuseVotes}, remove:${removeVotes} ]`,
   );
 
   // Application is open and we have votes to accept or refuse
   if (appVoteStatus == "open") {
     if (acceptVotes >= vote_threshold) {
-      log(`Accepting proposal ${appId} ${app.agentKey}`);
-      const res = await acceptApplication(api, appId, mnemonic);
-      console.log("acceptApplication executed:", res.toHuman());
+      log.info(`Accepting proposal ${appId} ${app.agentKey}`);
+      const [acceptError, acceptResult] = await tryAsync(
+        acceptApplication(api, appId, mnemonic),
+      );
+
+      if (acceptError !== undefined) {
+        log.error(`Failed to accept application ${appId}: ${acceptError}`);
+        return;
+      }
+
+      log.info(
+        `Accept application executed for ${appId}: ${JSON.stringify(acceptResult.toHuman())}`,
+      );
     } else if (refuseVotes >= vote_threshold) {
-      log(`Refusing proposal ${appId}`);
-      const res = await denyApplication(api, appId, mnemonic);
-      console.log("denyApplication executed:", res.toHuman());
+      log.info(`Refusing proposal ${appId}`);
+      const [denyError, denyResult] = await tryAsync(
+        denyApplication(api, appId, mnemonic),
+      );
+
+      if (denyError !== undefined) {
+        log.error(`Failed to deny application ${appId}: ${denyError}`);
+        return;
+      }
+
+      log.info(
+        `Deny application executed for ${appId}: ${JSON.stringify(denyResult)}`,
+      );
     }
   } else if (
     appVoteStatus == "accepted" &&
     removeVotes >= vote_threshold &&
     applications_map[appId] !== undefined
   ) {
-    log(`Removing proposal ${appId}`);
+    log.info(`Removing proposal ${appId}`);
     // Note: if chain is updated to include revoking logic, this should be
     // `revokeApplication` instead of `removeFromWhitelist`
-    const res = await removeFromWhitelist(
-      api,
-      applications_map[appId].agentKey,
-      mnemonic,
+    const [removeError, removeResult] = await tryAsync(
+      removeFromWhitelist(api, applications_map[appId].agentKey, mnemonic),
     );
-    console.log("removeFromWhitelist executed:", res.toHuman());
+
+    if (removeError !== undefined) {
+      log.error(
+        `Failed to remove from whitelist for application ${appId}: ${removeError}`,
+      );
+      return;
+    }
+
+    log.info(
+      `Remove from whitelist executed for ${appId}: ${JSON.stringify(removeResult.toHuman())}`,
+    );
   }
 }
 
@@ -151,12 +264,19 @@ export async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
   last_block_number: number,
 ): Promise<VotesByNumericId[]> {
-  const votes = await queryTotalVotesPerApp();
+  const [votesError, votes] = await tryAsync(queryTotalVotesPerApp());
+  if (votesError !== undefined) {
+    log.error(votesError);
+    return [];
+  }
+
   const votes_on_pending = votes.filter((vote) => {
     const app = applications_map[vote.appId];
     if (app == null) return false;
     return applicationIsPending(app) && app.expiresAt > last_block_number;
   });
+
+  log.info(`Found ${votes_on_pending.length} pending applications with votes`);
   return votes_on_pending;
 }
 
@@ -197,7 +317,7 @@ async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
     const voteCount = voteCountByAgentKey.get(agentKey) ?? 0;
 
     if (hasCurrentPenalty && voteCount < penaltyThreshold) {
-      log(
+      log.info(
         `Agent ${agentKey} penalty votes (${voteCount}) below threshold (${penaltyThreshold})`,
       );
       keysToResetPenalty.push({
@@ -218,9 +338,13 @@ export async function processPenalty(
     nthBiggestPenaltyFactor: number;
   }[],
 ) {
-  console.log("Penalties to apply: ", penaltiesToApply);
+  log.info(`Penalties to apply: ${JSON.stringify(penaltiesToApply)}`);
 
-  const agentsMap = await queryAgents(api);
+  const [agentsError, agentsMap] = await tryAsync(queryAgents(api));
+  if (agentsError !== undefined) {
+    log.error(`Failed to query agents: ${agentsError}`);
+    return;
+  }
 
   const allProcessedKeys: SS58Address[] = [];
 
@@ -229,8 +353,18 @@ export async function processPenalty(
     const agent = agentsMap.get(agentKey);
 
     if (agent && nthBiggestPenaltyFactor !== agent.weightPenaltyFactor) {
-      await penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic);
-      log(
+      const [penalizeError, _] = await tryAsync(
+        penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic),
+      );
+
+      if (penalizeError !== undefined) {
+        log.error(
+          `Failed to apply penalty to agent ${agentKey}: ${penalizeError}`,
+        );
+        continue;
+      }
+
+      log.info(
         `Applied penalty factor ${nthBiggestPenaltyFactor} to agent ${agentKey}`,
       );
       allProcessedKeys.push(agentKey);
@@ -238,9 +372,15 @@ export async function processPenalty(
   }
 
   if (allProcessedKeys.length > 0) {
-    await updatePenalizeAgentVotes(allProcessedKeys);
-    console.log(`Penalties updated for ${allProcessedKeys.length} agents`);
+    const [updateError, _] = await tryAsync(
+      updatePenalizeAgentVotes(allProcessedKeys),
+    );
+    if (updateError !== undefined) {
+      log.error(`Failed to update penalty votes: ${updateError}`);
+      return;
+    }
+    log.info(`Penalties updated for ${allProcessedKeys.length} agents`);
   } else {
-    console.log("No penalties required updates");
+    log.info("No penalties required updates");
   }
 }

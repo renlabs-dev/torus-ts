@@ -11,6 +11,7 @@ import {
   queryLastBlock,
   queryProposals,
 } from "@torus-network/sdk";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { applicationStatusValues } from "@torus-ts/db/schema";
 import { match } from "rustie";
 import type {
@@ -34,58 +35,75 @@ import {
   refuseCadreApplication,
   removeCadreMember,
 } from "../db";
+import { createLogger } from "./log";
 
+/**
+ * @deprecated
+ */
 export interface WorkerProps {
   lastBlockNumber: number;
   lastBlock: LastBlock;
   api: ApiPromise;
 }
 
-// -- Constants -- //
+const log = createLogger({ name: "common-index" });
+
+// ---- Constants ----
 
 export const APPLICATION_EXPIRATION_TIME =
   CONSTANTS.TIME.BLOCK_TIME_SECONDS * CONSTANTS.TIME.ONE_WEEK; // 7 days in blocks
 
-// -- Functions -- //
+// ---- Helpers ----
 
-export function log(...args: unknown[]) {
-  const [first, ...rest] = args;
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.log(`[${new Date().toISOString()}] ${first}`, ...rest);
-}
-
-export function isNewBlock(savedBlock: number, queriedBlock: number) {
-  if (savedBlock === queriedBlock) {
-    log(`Block ${queriedBlock} already processed, skipping`);
-    return false;
-  }
-  return true;
-}
-
+/**
+ * Creates a promise that resolves after the specified duration
+ *
+ * @param ms - The time to sleep in milliseconds
+ * @returns A promise that resolves after the specified delay
+ */
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Waits until a new block is available on the blockchain
+ *
+ * @param props - Worker properties containing API connection and last block info
+ * @returns The new block data once available
+ */
 export async function sleepUntilNewBlock(props: WorkerProps) {
   while (true) {
-    try {
-      const lastBlock = await queryLastBlock(props.api);
-      if (!isNewBlock(props.lastBlock.blockNumber, lastBlock.blockNumber)) {
-        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
-      } else {
-        return lastBlock;
-      }
-    } catch (e) {
-      log("UNEXPECTED ERROR: ", e);
+    const [queryLastBlockError, currentBlock] = await tryAsync(
+      queryLastBlock(props.api),
+    );
+    if (queryLastBlockError !== undefined) {
+      log.error(queryLastBlockError);
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
+      continue;
+    }
+
+    const blockNumber = currentBlock.blockNumber;
+    if (props.lastBlock.blockNumber === blockNumber) {
+      log.info(`Block ${blockNumber} already processed, skipping`);
+      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
+    } else {
+      return currentBlock;
     }
   }
 }
 
-// -- DAO Applications -- //
+// ---- DAO Applications ----
+
+// TODO: refactor out
 
 type ApplicationVoteStatus = "open" | "accepted" | "locked";
 
-// TODO: cursed function. Should refactor everywhere to just use Application
+/**
+ * Converts an agent application from the blockchain format to database format
+ *
+ * @param agentApplication - The agent application data from blockchain
+ * @returns A database-compatible application object
+ */
 export function agentApplicationToApplication(
   agentApplication: AgentApplication,
 ): NewApplication {
@@ -105,6 +123,12 @@ export function agentApplicationToApplication(
   };
 }
 
+/**
+ * Converts a proposal from blockchain format to database format
+ *
+ * @param proposal - The proposal data from blockchain
+ * @returns A database-compatible proposal object
+ */
 export function agentProposalToProposal(proposal: Proposal): NewProposal {
   const status = match(proposal.status)({
     Open: () => applicationStatusValues.Open,
@@ -124,6 +148,12 @@ export function agentProposalToProposal(proposal: Proposal): NewProposal {
   };
 }
 
+/**
+ * Normalizes application status values for consistency between database and blockchain
+ *
+ * @param value - The application status value to normalize
+ * @returns The normalized application status value
+ */
 /*
   We need this for now because before we used to have the enum 
   // as all upper case on the db. We changed it, because it didnt match the
@@ -147,6 +177,12 @@ export function normalizeApplicationValue(
   }
 }
 
+/**
+ * Gets the status of a proposal in the normalized format
+ *
+ * @param proposal - The proposal to get the status for
+ * @returns The normalized proposal status
+ */
 export function getProposalStatus(proposal: Proposal) {
   const status = match(proposal.status)({
     Open: () => applicationStatusValues.Open,
@@ -157,6 +193,12 @@ export function getProposalStatus(proposal: Proposal) {
   return status;
 }
 
+/**
+ * Determines the vote status of an application
+ *
+ * @param app - The agent application to check
+ * @returns The vote status (open, accepted, or locked)
+ */
 export const getApplicationVoteStatus = (
   app: AgentApplication,
 ): ApplicationVoteStatus =>
@@ -166,9 +208,21 @@ export const getApplicationVoteStatus = (
     Expired: () => "locked",
   });
 
+/**
+ * Checks if an application is in a pending state (not locked)
+ *
+ * @param app - The application to check
+ * @returns True if the application is pending, false otherwise
+ */
 export const applicationIsPending = (app: AgentApplication) =>
   getApplicationVoteStatus(app) != "locked";
 
+/**
+ * Checks if an application is in an open state
+ *
+ * @param app - The application to check
+ * @returns True if the application is open, false otherwise
+ */
 export const applicationIsOpen = (app: AgentApplication) =>
   match(app.status)({
     Open: () => true,
@@ -176,12 +230,25 @@ export const applicationIsOpen = (app: AgentApplication) =>
     Expired: () => false,
   });
 
-// TODO: refactor to return using the db type
+/**
+ * Fetches applications from the blockchain that match the given filter
+ *
+ * @param api - The blockchain API instance
+ * @param filterFn - Function to filter applications
+ * @returns A map of application IDs to application objects
+ */
 export async function getApplications(
   api: Api,
   filterFn: (app: AgentApplication) => boolean,
 ) {
-  const application_entries = await queryAgentApplications(api);
+  const [queryApplicationsError, application_entries] = await tryAsync(
+    queryAgentApplications(api),
+  );
+  if (queryApplicationsError !== undefined) {
+    log.error(queryApplicationsError);
+    return {};
+  }
+
   const pending_daos = application_entries.filter(filterFn);
   const applications_map: Record<number, AgentApplication> =
     pending_daos.reduce(
@@ -194,11 +261,25 @@ export async function getApplications(
   return applications_map;
 }
 
+/**
+ * Fetches proposals from the blockchain that match the given filter
+ *
+ * @param api - The blockchain API instance
+ * @param filterFn - Function to filter proposals
+ * @returns A map of proposal IDs to proposal objects
+ */
 export async function getProposals(
   api: Api,
   filterFn: (app: Proposal) => boolean,
 ) {
-  const proposals_entries = await queryProposals(api);
+  const [queryProposalsError, proposals_entries] = await tryAsync(
+    queryProposals(api),
+  );
+  if (queryProposalsError !== undefined) {
+    log.error(queryProposalsError);
+    return {};
+  }
+
   const desired_proposals = proposals_entries.filter(filterFn);
   const proposals_map: Record<number, Proposal> = desired_proposals.reduce(
     (hashmap, proposal) => {
@@ -210,32 +291,81 @@ export async function getProposals(
   return proposals_map;
 }
 
+/**
+ * Retrieves proposals from the database that match the given filter
+ *
+ * @param filterFn - Function to filter proposals
+ * @returns An array of filtered proposals
+ */
 export async function getProposalsDB(filterFn: (app: NewProposal) => boolean) {
-  const proposals = await queryProposalsDB();
+  const [queryProposalsDBError, proposals] = await tryAsync(queryProposalsDB());
+  if (queryProposalsDBError !== undefined) {
+    log.error(queryProposalsDBError);
+    return [];
+  }
+
   const pending_daos = proposals.filter(filterFn);
   return pending_daos;
 }
 
+/**
+ * Retrieves applications from the database that match the given filter
+ *
+ * @param filterFn - Function to filter applications
+ * @returns An array of filtered applications
+ */
 export async function getApplicationsDB(
   filterFn: (app: ApplicationDB) => boolean,
 ) {
-  const applications = await queryAgentApplicationsDB();
+  const [queryApplicationsDBError, applications] = await tryAsync(
+    queryAgentApplicationsDB(),
+  );
+  if (queryApplicationsDBError !== undefined) {
+    log.error(queryApplicationsDBError);
+    return [];
+  }
+
   const pending_daos = applications.filter(filterFn);
   return pending_daos;
 }
 
+/**
+ * Retrieves cadre candidates from the database that match the given filter
+ *
+ * @param filterFn - Function to filter cadre candidates
+ * @returns An array of filtered cadre candidates
+ */
 export async function getCadreCandidates(
   filterFn: (app: CadreCandidate) => boolean,
 ) {
-  const cadreCandidates = await queryCadreCandidates();
+  const [queryCadreCandidatesError, cadreCandidates] = await tryAsync(
+    queryCadreCandidates(),
+  );
+  if (queryCadreCandidatesError !== undefined) {
+    log.error(queryCadreCandidatesError);
+    return [];
+  }
+
   return cadreCandidates.filter(filterFn);
 }
 
+/**
+ * Retrieves votes on pending applications
+ *
+ * @param applications_map - Map of application IDs to application objects
+ * @param last_block_number - The last processed block number
+ * @returns An array of votes on pending applications
+ */
 export async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
   last_block_number: number,
 ): Promise<VoteById[]> {
-  const votes = await queryTotalVotesPerApp();
+  const [queryVotesError, votes] = await tryAsync(queryTotalVotesPerApp());
+  if (queryVotesError !== undefined) {
+    log.error(queryVotesError);
+    return [];
+  }
+
   const votes_on_pending = votes.filter((vote) => {
     const app = applications_map[vote.appId];
     if (app == null) return false;
@@ -244,55 +374,118 @@ export async function getVotesOnPending(
   return votes_on_pending;
 }
 
+/**
+ * Retrieves votes for cadre members
+ *
+ * @returns An array of votes by cadre key
+ */
 export async function getCadreVotes(): Promise<VoteByKey[]> {
-  const votes = await queryTotalVotesPerCadre();
+  const [queryVotesError, votes] = await tryAsync(queryTotalVotesPerCadre());
+  if (queryVotesError !== undefined) {
+    log.error(queryVotesError);
+    return [];
+  }
+
   return votes;
 }
 
+/**
+ * Calculates the threshold needed for cadre voting decisions
+ *
+ * @returns The threshold value for cadre voting
+ */
 export async function getCadreThreshold() {
-  const keys = await countCadreKeys();
+  const [countKeysError, keys] = await tryAsync(countCadreKeys());
+  if (countKeysError !== undefined) {
+    log.error(countKeysError);
+    return 1; // Default to 1 if there's an error
+  }
+
   return Math.floor(keys / 2) + 1;
 }
 
+/**
+ * Retrieves penalty factors for cadre members
+ *
+ * @param cadreThreshold - The threshold value for cadre voting
+ * @returns The penalty factors
+ */
 export async function getPenaltyFactors(cadreThreshold: number) {
-  const penalizations = await pendingPenalizations(
-    cadreThreshold,
-    Math.max(cadreThreshold - 1, 1),
+  const [pendingPenalizationsError, penalizations] = await tryAsync(
+    pendingPenalizations(cadreThreshold, Math.max(cadreThreshold - 1, 1)),
   );
+  if (pendingPenalizationsError !== undefined) {
+    log.error(pendingPenalizationsError);
+    return [];
+  }
+
   return penalizations;
 }
 
-// TODO: abstract common logic and merge with processVotesOnProposal
+/**
+ * Processes votes for cadre members based on voting thresholds
+ *
+ * @param votes - The votes to process
+ * @param vote_threshold - The threshold required for vote actions
+ */
 export async function processCadreVotes(
   votes: VoteByKey[],
   vote_threshold: number,
 ) {
-  await Promise.all(
-    votes.map(async (vote_info) => {
-      const {
-        appId: applicatorKey,
-        acceptVotes,
-        refuseVotes,
-        removeVotes,
-      } = vote_info;
-      if (acceptVotes >= vote_threshold) {
-        console.log("Adding cadre member:", applicatorKey);
-        const cadreDiscord = await getCadreDiscord(applicatorKey);
-        if (cadreDiscord == null) {
-          throw new Error(
-            "No discord account found for cadre member: " + applicatorKey,
-          );
-        }
-        await addCadreMember(applicatorKey, cadreDiscord);
-      } else if (refuseVotes >= vote_threshold) {
-        console.log("Refusing cadre application:", applicatorKey);
-        await refuseCadreApplication(applicatorKey);
-      } else if (removeVotes >= vote_threshold) {
-        console.log("Removing cadre member:", applicatorKey);
-        await removeCadreMember(applicatorKey);
+  const processVotesPromises = votes.map(async (vote_info) => {
+    const {
+      appId: applicatorKey,
+      acceptVotes,
+      refuseVotes,
+      removeVotes,
+    } = vote_info;
+
+    if (acceptVotes >= vote_threshold) {
+      log.info(`Adding cadre member: ${applicatorKey}`);
+      const [getCadreDiscordError, cadreDiscord] = await tryAsync(
+        getCadreDiscord(applicatorKey),
+      );
+      if (getCadreDiscordError !== undefined) {
+        log.error(getCadreDiscordError);
+        return;
       }
-    }),
-  ).catch((error) =>
-    console.log(`Failed to process vote for reason: ${error}`),
+
+      if (cadreDiscord == null) {
+        log.error(
+          `No discord account found for cadre member: ${applicatorKey}`,
+        );
+        return;
+      }
+
+      const [addCadreMemberError, _] = await tryAsync(
+        addCadreMember(applicatorKey, cadreDiscord),
+      );
+      if (addCadreMemberError !== undefined) {
+        log.error(addCadreMemberError);
+      }
+    } else if (refuseVotes >= vote_threshold) {
+      log.info(`Refusing cadre application: ${applicatorKey}`);
+      const [refuseCadreApplicationError, _] = await tryAsync(
+        refuseCadreApplication(applicatorKey),
+      );
+      if (refuseCadreApplicationError !== undefined) {
+        log.error(refuseCadreApplicationError);
+      }
+    } else if (removeVotes >= vote_threshold) {
+      log.info(`Removing cadre member: ${applicatorKey}`);
+      const [removeCadreMemberError, _] = await tryAsync(
+        removeCadreMember(applicatorKey),
+      );
+      if (removeCadreMemberError !== undefined) {
+        log.error(removeCadreMemberError);
+      }
+    }
+  });
+
+  const [processAllVotesError, _] = await tryAsync(
+    Promise.all(processVotesPromises),
   );
+  if (processAllVotesError !== undefined) {
+    log.error(`Failed to process votes: ${processAllVotesError}`);
+  }
 }
