@@ -28,10 +28,10 @@ export function APRBar() {
   const { data: usdPrice } = useGetTorusPrice();
 
   const stakedPercentage = useMemo(() => {
-    const totalSupply = Number(totalStake ?? 0n) + Number(totalIssuance);
-    return totalStake && totalSupply
-      ? (Number(totalStake) * 100) / totalSupply
-      : 0;
+    if (!totalStake || !totalIssuance) return "0.00%";
+    const totalSupply = totalStake + totalIssuance;
+    const percentage = (totalStake * 10000n) / totalSupply; // Multiply by 10000 for two decimal places
+    return `${(Number(percentage) / 100).toFixed(2)}%`; // Convert to Number for formatting
   }, [totalStake, totalIssuance]);
 
   const staticInfos = useMemo<APRInfo[]>(
