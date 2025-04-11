@@ -5,11 +5,12 @@ import {
   CardFooter,
   CardHeader,
 } from "@torus-ts/ui/components/card";
+import type { ReactNode, RefObject } from "react";
 
 interface WalletTransactionReviewProps {
   disabled?: boolean;
-  formRef: React.RefObject<HTMLFormElement>;
-  reviewContent: { label: string; content: string | React.ReactNode }[];
+  formRef: RefObject<HTMLFormElement>;
+  reviewContent: { label: string; content: string | ReactNode }[];
   triggerTitle?: string;
   title?: string;
 }

@@ -14,7 +14,7 @@ export const createStakeActionFormSchema = (
   minAllowedStakeData: bigint,
   existencialDepositValue: bigint,
   accountFreeBalance: bigint,
-  feeRef: RefObject<FeeLabelHandle>,
+  feeRef: RefObject<FeeLabelHandle | null>,
 ) =>
   z.object({
     recipient: z
@@ -32,7 +32,7 @@ export const createStakeActionFormSchema = (
         (value) =>
           isAboveExistentialDeposit(
             value,
-            feeRef.current.getEstimatedFee() ?? "0",
+            feeRef.current?.getEstimatedFee() ?? "0",
             accountFreeBalance,
             existencialDepositValue,
           ),
@@ -44,7 +44,7 @@ export const createStakeActionFormSchema = (
         (value) =>
           doesNotExceedMaxStake(
             value,
-            feeRef.current.getEstimatedFee() ?? "0",
+            feeRef.current?.getEstimatedFee() ?? "0",
             accountFreeBalance,
             existencialDepositValue,
           ),

@@ -32,17 +32,17 @@ export const createTransferStakeFormSchema = (
           (val) =>
             maxAmountRef.current
               ? toNano(val) <= toNano(maxAmountRef.current)
-              : true,
+              : false,
           { message: "Amount exceeds maximum transferable amount" },
         )
         .refine((value) => meetsMinimumStake(value, minAllowedStakeData), {
-          message: `You must unstake at least ${formatToken(minAllowedStakeData)} TORUS`,
+          message: `You must transfer at least ${formatToken(minAllowedStakeData)} TORUS`,
         })
         .refine(
-          () =>
-            (accountFreeBalance || 0n) -
-              toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
-            existencialDepositValue,
+          () => {
+            const fee = toNano(feeRef.current?.getEstimatedFee() ?? "0");
+            return (accountFreeBalance || 0n) - fee >= existencialDepositValue;
+          },
           {
             message: `This transaction fee would make your account go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Top up your balance before moving your stake.`,
           },
