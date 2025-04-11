@@ -18,7 +18,7 @@ interface APRResult {
   isLoading: boolean;
   isError: boolean;
   totalStake: bigint | undefined;
-  totalIssuance: unknown;
+  totalIssuance: bigint | undefined;
 }
 
 /**
