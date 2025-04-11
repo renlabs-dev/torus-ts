@@ -24,7 +24,7 @@ export default async function ProposalView({
           className="mb-6 flex w-fit items-center gap-1.5 p-0"
         >
           <Link
-            href="/proposals"
+            href="/?view=proposals"
             className="animate-fade-left flex items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -32,7 +32,10 @@ export default async function ProposalView({
           </Link>
         </Button>
 
-        <div className="flex h-full w-full flex-col justify-between divide-gray-500 text-white lg:flex-row">
+        <div
+          className="flex h-full w-full flex-col justify-between divide-gray-500 text-white
+            lg:flex-row"
+        >
           <ProposalExpandedView paramId={Number(id)} />
         </div>
       </div>
