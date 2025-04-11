@@ -12,28 +12,31 @@ import React, {
 export default function Clock() {
   const [date, setDate] = useState(new Date());
 
-  useEffect(() => {
-    const timerID = setInterval(() => tick(), 1000);
-    return () => clearInterval(timerID);
-  }, []);
-
   const tick = useCallback(() => {
     setDate(new Date());
   }, []);
 
-  const options = {
-    weekday: "short",
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  };
+  useEffect(() => {
+    const timerID = setInterval(() => tick(), 1000);
+    return () => clearInterval(timerID);
+  }, [tick]);
+
+  const options = useMemo(
+    () => ({
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+    [],
+  );
 
   const dateTimeString = useMemo(
     () => date.toLocaleString("en-GB", options as Intl.DateTimeFormatOptions),
-    [date],
+    [date, options],
   );
 
   return (

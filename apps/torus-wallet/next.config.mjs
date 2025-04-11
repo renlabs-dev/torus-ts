@@ -18,23 +18,18 @@ const config = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
-  webpack: (config) => {
-    // Add rule for shader files
-    config.module.rules.push({
-      test: /\.(glsl|vs|fs|vert|frag)$/,
-      exclude: /node_modules/,
-      use: [
-        "raw-loader",
-        {
-          loader: "glslify-loader",
-          options: {
-            transform: [["glslify-import"], ["glslify-hex"]],
+  async headers() {
+    return [
+      {
+        source: "/:path*.(svg|jpg|png|ico|webp)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
-        },
-      ],
-    });
-
-    return config;
+        ],
+      },
+    ];
   },
 };
 

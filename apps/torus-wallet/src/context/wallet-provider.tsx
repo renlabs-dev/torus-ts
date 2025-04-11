@@ -2,6 +2,7 @@
 
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
+export type { SubmittableExtrinsic, ISubmittableResult };
 import type { UseQueryResult } from "@tanstack/react-query";
 import type {
   Balance,
@@ -27,9 +28,10 @@ import type {
 import { env } from "~/env";
 import { createContext, useContext } from "react";
 
-type TransactionExtrinsicPromise =
+export type TransactionExtrinsicPromise =
   | SubmittableExtrinsic<"promise", ISubmittableResult>
   | undefined;
+
 interface WalletContextType {
   isInitialized: boolean;
 

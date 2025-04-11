@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
 import type { ApiPromise } from "@polkadot/api";
-import type { UseQueryResult } from "@tanstack/react-query";
+import type {
+  QueryObserverOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import type {
   Api,
@@ -393,11 +396,12 @@ export interface CoingeckoResponse {
   };
 }
 
-// Returns the USD value of Torus Coin
-export function useGetTorusPrice() {
+export function useGetTorusPrice(
+  options?: Omit<QueryObserverOptions<number, Error>, "queryKey" | "queryFn">,
+): UseQueryResult<number, Error> {
   return useQuery<number, Error>({
     queryKey: ["torus-price"],
-    queryFn: async () => {
+    queryFn: async (): Promise<number> => {
       const url =
         "https://api.coingecko.com/api/v3/simple/price?ids=torus&vs_currencies=usd";
       try {
@@ -420,5 +424,6 @@ export function useGetTorusPrice() {
       }
     },
     retry: 1,
+    ...options,
   });
 }
