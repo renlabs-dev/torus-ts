@@ -31,7 +31,6 @@ import { validateForm } from "./validate-form";
 export function TransferTokenForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-
   const fromParam = searchParams.get("from");
   const toParam = searchParams.get("to");
 
