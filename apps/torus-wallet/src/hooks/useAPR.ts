@@ -49,8 +49,8 @@ function calculateAPR(
   const stakingAmount = totalStake === 0n ? totalFreeBalance : totalStake;
   if (stakingAmount === 0n) return null;
 
-  const aprNumerator = yearlyRewards * 100n;
-  return Number(aprNumerator / stakingAmount);
+  const aprBigInt = (yearlyRewards * 100n) / stakingAmount;
+  return Number(aprBigInt);
 }
 
 /**

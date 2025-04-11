@@ -29,7 +29,7 @@ export function APRBar() {
 
   const stakedPercentage = useMemo(() => {
     if (!totalStake || !totalIssuance) return "0.00";
-    const totalSupply = totalStake || 0n + totalIssuance || 0n;
+    const totalSupply = (totalStake || 0n) + (totalIssuance || 0n);
     const percentage = (totalStake * 10000n) / totalSupply;
     return (Number(percentage) / 100).toFixed(2);
   }, [totalStake, totalIssuance]);
@@ -66,12 +66,18 @@ export function APRBar() {
 
   return (
     <APRBarBase>
+      <div className="sr-only" aria-live="polite">
+        {infos
+          .map((info) => `${info.label}: ${info.value} ${info.unit ?? ""}`)
+          .join(", ")}
+      </div>
       {[0, 1].map((setIndex) => (
         <div key={setIndex} className="flex gap-32">
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               className="flex items-center font-mono text-sm tracking-tight"
               key={`${setIndex}-${index}`}
+              aria-hidden={true}
             >
               <div className="flex items-center">
                 {infos.map((info, index) => (
