@@ -2,7 +2,6 @@
 
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
-export type { SubmittableExtrinsic, ISubmittableResult };
 import type { UseQueryResult } from "@tanstack/react-query";
 import type {
   Balance,
@@ -25,8 +24,9 @@ import type {
   Transfer,
   TransferStake,
 } from "@torus-ts/torus-provider/types";
-import { env } from "~/env";
 import { createContext, useContext } from "react";
+import { env } from "~/env";
+export type { ISubmittableResult, SubmittableExtrinsic };
 
 export type TransactionExtrinsicPromise =
   | SubmittableExtrinsic<"promise", ISubmittableResult>
@@ -34,35 +34,25 @@ export type TransactionExtrinsicPromise =
 
 interface WalletContextType {
   isInitialized: boolean;
-
   accounts: InjectedAccountWithMeta[] | undefined;
   isAccountConnected: boolean;
-
   selectedAccount: InjectedAccountWithMeta | null;
   accountFreeBalance: UseQueryResult<bigint, Error>;
   accountStakedBalance: bigint | undefined;
   accountStakedBy: UseQueryResult<
-    {
-      address: SS58Address;
-      stake: Balance;
-    }[],
+    { address: SS58Address; stake: Balance }[],
     Error
   >;
-
   estimateFee: (
     transaction: SubmittableExtrinsic<"promise", ISubmittableResult>,
   ) => Promise<bigint | null>;
-
   addStake: (stake: Stake) => Promise<void>;
   transfer: (transfer: Transfer) => Promise<void>;
   transferStake: (transfer: TransferStake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
-
   stakeOut: UseQueryResult<StakeData, Error>;
-
   getExistencialDeposit: () => bigint | undefined;
   minAllowedStake: UseQueryResult<bigint, Error>;
-  // TRANSACTIONS
   transferTransaction: ({
     to,
     amount,
@@ -70,17 +60,14 @@ interface WalletContextType {
     Transfer,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
-
   addStakeTransaction: ({
     validator,
     amount,
   }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
-
   removeStakeTransaction: ({
     validator,
     amount,
   }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
-
   transferStakeTransaction: ({
     fromValidator,
     toValidator,
@@ -89,75 +76,45 @@ interface WalletContextType {
     TransferStake,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
-
   lastBlock: UseQueryResult<LastBlock, Error>;
   rewardInterval: UseQueryResult<bigint, Error>;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
-export function WalletProvider({ children }: { children: React.ReactNode }) {
-  // == API Context ==
-  const {
-    accounts,
-    addStake,
-    addStakeTransaction,
-    api,
-    estimateFee,
-    getExistencialDeposit,
-    isAccountConnected,
-    isInitialized,
-    removeStake,
-    removeStakeTransaction,
-    selectedAccount,
-    transfer,
-    transferStake,
-    transferStakeTransaction,
-    transferTransaction,
-  } = useTorus();
+interface WalletProviderProps {
+  children: React.ReactNode;
+}
 
-  // == Subspace ==
+export function WalletProvider({ children }: WalletProviderProps) {
+  const torus = useTorus();
+
   const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
-
-  // == Account ==
   const accountFreeBalance = useFreeBalance(
-    api,
-    selectedAccount?.address as SS58Address,
+    torus.api,
+    torus.selectedAccount?.address as SS58Address,
   );
+  const minAllowedStake = useMinAllowedStake(torus.api);
+  const accountStakedBy = useKeyStakingTo(
+    torus.api,
+    torus.selectedAccount?.address,
+  );
+  const lastBlock = useLastBlock(torus.api);
+  const rewardInterval = useRewardInterval(torus.api);
 
-  const minAllowedStake = useMinAllowedStake(api);
-
-  const accountStakedBy = useKeyStakingTo(api, selectedAccount?.address);
-
-  const accountStakedBalance =
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-    stakeOut.data?.perAddr[selectedAccount?.address!];
-
-  const lastBlock = useLastBlock(api);
-  const rewardInterval = useRewardInterval(api);
+  const accountStakedBalance = torus.selectedAccount?.address
+    ? stakeOut.data?.perAddr[torus.selectedAccount.address]
+    : undefined;
 
   return (
     <WalletContext.Provider
       value={{
+        ...torus,
         accountFreeBalance,
-        accounts,
         accountStakedBalance,
         accountStakedBy,
-        addStake,
-        addStakeTransaction,
-        estimateFee,
-        getExistencialDeposit,
         minAllowedStake,
-        isAccountConnected,
-        isInitialized,
-        removeStake,
-        removeStakeTransaction,
-        selectedAccount,
         stakeOut,
-        transfer,
-        transferStake,
-        transferStakeTransaction,
-        transferTransaction,
         lastBlock,
         rewardInterval,
       }}
@@ -169,7 +126,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
 export const useWallet = (): WalletContextType => {
   const context = useContext(WalletContext);
-  if (context === null) {
+  if (!context) {
     throw new Error("useWallet must be used within a WalletProvider");
   }
   return context;
