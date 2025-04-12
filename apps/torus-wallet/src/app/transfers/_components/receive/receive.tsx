@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@torus-ts/ui/components/card";
 import { useWallet } from "~/context/wallet-provider";
 import { ReceiveAddressDisplay } from "./receive-address-display";
