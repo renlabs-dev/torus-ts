@@ -55,7 +55,11 @@ export const TransactionStatus = memo(
     const showLoading = status === "PENDING" || status === "STARTING";
 
     return (
-      <div className={cn("flex items-center gap-1 text-left text-sm", color)}>
+      <div
+        role={status === "ERROR" ? "alert" : "status"}
+        aria-live={status === "ERROR" ? "assertive" : "polite"}
+        className={cn("flex items-center gap-1 text-left text-sm", color)}
+      >
         {showLoading && <Loading className={color} />}
         {Icon && <Icon className="h-5 w-5" />}
         <p className="mt-0.5">{message}</p>
