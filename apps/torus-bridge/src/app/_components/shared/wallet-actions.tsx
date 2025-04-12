@@ -1,18 +1,13 @@
 "use client";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@torus-ts/ui/components/tabs";
+import { WalletActionsBase, ActionButton } from "@torus-ts/ui/components/wallet-common";
 import { updateSearchParams } from "~/utils/query-params";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
 
-const tabs = [
+const tabs: ActionButton[] = [
   {
     text: "Torus ⟷ Torus EVM",
     component: <TransferEVM />,
@@ -23,7 +18,7 @@ const tabs = [
     component: <TransferToken />,
     params: "base",
   },
-] as const;
+];
 
 const defaultTab = tabs[0];
 
@@ -52,45 +47,23 @@ function WalletOptions() {
 
   useEffect(() => {
     if (!currentTab || !tabs.some((view) => view.params === currentTab)) {
-      handleTabChange(defaultTab.params);
+      handleTabChange(defaultTab.params as string);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, router, searchParams]);
 
   return (
-    <Tabs
-      value={
-        tabs.find((tab) => tab.params === currentTab)?.params ??
-        defaultTab.params
-      }
-      onValueChange={(value) => handleTabChange(value)}
+    <WalletActionsBase 
+      buttons={tabs}
+      onTabChange={handleTabChange}
+      currentTab={tabs.find((tab) => tab.params === currentTab)?.params ?? defaultTab.params}
       className="animate-fade flex w-full flex-col gap-4"
-    >
-      <TabsList className="grid w-full grid-cols-2">
-        {tabs.map((tab) => (
-          <TabsTrigger
-            key={tab.text}
-            value={tab.params}
-            onClick={() => handleTabChange(tab.params)}
-          >
-            {tab.text}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      {tabs.map((tab) => {
-        return (
-          <TabsContent key={tab.params} value={tab.params}>
-            {tab.component}
-          </TabsContent>
-        );
-      })}
-    </Tabs>
+    />
   );
 }
 
 export function WalletActions() {
   const searchParams = useSearchParams();
-
   const view = searchParams.get("view") as "wallet" | null;
 
   const routeComponents = {

@@ -1,95 +1,34 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
-import { Card } from "@torus-ts/ui/components/card";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@torus-ts/ui/components/select";
+import { SidebarNav, NavOption } from "@torus-ts/ui/components/sidebar";
 import { env } from "~/env";
-import { Check } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export const SidebarLinks = () => {
   const chainEnv = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");
   const pathname = usePathname();
-  const router = useRouter();
 
   const bridgeLink =
     chainEnv === "mainnet"
       ? "https://bridge.torus.network"
       : "https://bridge.testnet.torus.network";
 
-  const isActive = (path: string) => pathname === path;
+  const navOptions: NavOption[] = [
+    { title: "Wallet", href: "/" },
+    { title: "Staking", href: "/staking" },
+    { title: "Bridge", href: bridgeLink },
+  ];
 
-  const handleSelectChange = (value: string) => {
-    switch (value) {
-      case "wallet":
-        router.push("/");
-        break;
-      case "staking":
-        router.push("/staking");
-        break;
-      case "bridge":
-        router.push(bridgeLink);
-        break;
-    }
+  const isActive = (href: string, path: string) => {
+    if (href === path) return true;
+    return false;
   };
-
+  
   return (
-    <>
-      <Select
-        onValueChange={handleSelectChange}
-        defaultValue={pathname === "/" ? "wallet" : pathname.slice(1)}
-      >
-        <SelectTrigger className="w-full lg:hidden">
-          <SelectValue placeholder="Select a view" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value="wallet">Wallet</SelectItem>
-            <SelectItem value="staking">Staking</SelectItem>
-            <SelectItem value="bridge">Bridge</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-
-      <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">
-        <Card className="flex flex-col gap-1.5 p-5">
-          <Button
-            asChild
-            variant="ghost"
-            className={`w-full justify-between gap-4 border-none ${isActive("/") ? "bg-accent" : ""} px-3 text-base`}
-          >
-            <Link href="/">
-              Wallet
-              {isActive("/") && <Check size={16} />}
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            className={`w-full justify-between gap-4 border-none ${isActive("/staking") ? "bg-accent" : ""} px-3 text-base`}
-          >
-            <Link href="/staking">
-              Staking
-              {isActive("/staking") && <Check size={16} />}
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            className={`w-full justify-between gap-4 border-none px-3 text-base`}
-          >
-            <Link href={bridgeLink}>Bridge</Link>
-          </Button>
-        </Card>
-      </div>
-    </>
+    <SidebarNav 
+      navOptions={navOptions}
+      defaultOption={navOptions[0]}
+      isActive={isActive}
+    />
   );
 };
