@@ -43,14 +43,22 @@ async function cacheCreateWSAPI() {
  * 1. CONTEXT
  *
  * This section defines the "contexts" that are available in the backend API.
- *
- * These allow you to access things when processing a request, like the database, the session, etc.
- *
- * This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
- * wrap this and provides the required context.
- *
- * @see https://trpc.io/docs/server/context
  */
+export interface TRPCContext {
+  db: ReturnType<typeof createDb>;
+  authType?: string;
+  sessionData: SessionData | null;
+  jwtSecret: string;
+  authOrigin: string;
+  allocatorAddress: SS58Address;
+  wsAPI: Promise<ApiPromise>;
+}
+
+// Context for authenticated procedures
+export interface AuthenticatedTRPCContext extends TRPCContext {
+  sessionData: SessionData; // Non-nullable
+}
+
 export const createTRPCContext = (opts: {
   headers: Headers;
   session: null;
@@ -77,9 +85,8 @@ export const createTRPCContext = (opts: {
     try {
       sessionData = decodeSessionToken(authToken, jwtSecret);
       assert(sessionData.uri === opts.authOrigin);
-    } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      console.error(`Failed to validate JWT: ${err}`);
+    } catch (err: unknown) {
+      console.error(`Failed to validate JWT: ${String(err)}`);
     }
   }
 
@@ -90,7 +97,7 @@ export const createTRPCContext = (opts: {
     jwtSecret,
     authOrigin: opts.authOrigin,
     allocatorAddress: opts.allocatorAddress,
-    wsAPI: wsAPI,
+    wsAPI,
   };
 };
 
@@ -100,7 +107,7 @@ export const createTRPCContext = (opts: {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
   errorFormatter: ({ shape, error }) => ({
     ...shape,
@@ -113,61 +120,54 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 
 /**
  * Create a server-side caller
- * @see https://trpc.io/docs/server/server-side-calls
  */
 export const createCallerFactory = t.createCallerFactory;
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
- *
- * These are the pieces you use to build your tRPC API. You should import these
- * a lot in the /src/server/api/routers folder
  */
 
 /**
  * This is how you create new routers and sub routers in your tRPC API
- * @see https://trpc.io/docs/router
  */
 export const createTRPCRouter = t.router;
 
 /**
  * Public procedure
- *
- * This is the base piece you use to build new queries and mutations on your
- * tRPC API.
  */
 export const publicProcedure = t.procedure;
 
 /**
  * Protected procedure
  *
- * This is a procedure that requires authentication to be accessed.
- * header: { Authorization: "Bearer <token>" }
- *
- * if the token is valid, the user will always be available in the context as `ctx.user`.
- *
- * If the token is invalid, expired, or the user is not found, it will throw an error.
+ * Requires authentication. Ensures ctx.sessionData is non-null.
  */
-export const authenticatedProcedure = t.procedure.use(
-  async function isAuthenticated(opts) {
-    if (!opts.ctx.authType) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must have an active session",
-      });
-    }
-    if (opts.ctx.authType !== "Bearer") {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Invalid or unsupported authentication type",
-      });
-    }
-    if (!opts.ctx.sessionData?.userKey) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Invalid or expired token",
-      });
-    }
-    return opts.next(opts);
-  },
-);
+export const authenticatedProcedure = t.procedure.use(async (opts) => {
+  if (!opts.ctx.authType) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must have an active session",
+    });
+  }
+  if (opts.ctx.authType !== "Bearer") {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid or unsupported authentication type",
+    });
+  }
+  if (!opts.ctx.sessionData?.userKey) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid or expired token",
+    });
+  }
+
+  const authenticatedCtx: AuthenticatedTRPCContext = {
+    ...opts.ctx,
+    sessionData: opts.ctx.sessionData,
+  };
+
+  return opts.next({
+    ctx: authenticatedCtx,
+  });
+});
