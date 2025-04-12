@@ -4,6 +4,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { Balance, SS58Address } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
 import type { BrandTag } from "@torus-network/torus-utils";
+import { formatToken } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Command,
@@ -71,7 +72,7 @@ function useValidatorsList(
       )
       .map((item) => ({
         name: `Staked Allocator`,
-        description: `Staked amount: ${Number(item.stake)}`,
+        description: `Staked amount: ${formatToken(item.stake)}`,
         address: item.address,
         stake: item.stake,
       }));
@@ -232,11 +233,6 @@ export function AllocatorSelector({
                               : "opacity-0",
                           )}
                         />
-                        {validator.stake && (
-                          <span className="ml-auto text-xs text-muted-foreground">
-                            Stake: {Number(validator.stake)}
-                          </span>
-                        )}
                       </div>
                     </CommandItem>
                   ))}

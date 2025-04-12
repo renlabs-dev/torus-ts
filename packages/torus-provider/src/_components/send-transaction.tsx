@@ -126,13 +126,6 @@ export async function sendTransaction({
             ),
             duration: Infinity,
           });
-          setTimeout(() => {
-            callback?.({
-              status: null,
-              message: null,
-              finalized: false,
-            });
-          }, 6000);
         }
 
         if (result.status.isFinalized) {
@@ -143,6 +136,14 @@ export async function sendTransaction({
           if (refetchHandler) {
             void refetchHandler();
           }
+
+          callback?.({
+            finalized: true,
+            status: success ? "SUCCESS" : "ERROR",
+            message: success
+              ? "Transaction completed successfully!"
+              : "Transaction failed",
+          });
 
           if (success) {
             toast({
@@ -175,6 +176,13 @@ export async function sendTransaction({
     );
   } catch (err) {
     console.error("Transaction error:", err);
+
+    callback?.({
+      finalized: true,
+      status: "ERROR",
+      message: err instanceof Error ? err.message : "Transaction failed",
+    });
+
     toast({
       title: "Error",
       description: err instanceof Error ? err.message : "Transaction failed",
