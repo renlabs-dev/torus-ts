@@ -60,7 +60,11 @@ export function TransferStakeForm({
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form ref={formRef} className="flex w-full flex-col gap-6">
+        <form
+          ref={formRef}
+          className="flex w-full flex-col gap-6"
+          aria-label="Transfer stake form"
+        >
           <FormField
             control={form.control}
             name="fromValidator"
@@ -134,7 +138,7 @@ export function TransferStakeForm({
             type="button"
             variant="outline"
             onClick={onReviewClickAction}
-            disabled={!selectedAccount?.address}
+            disabled={!selectedAccount?.address || form.formState.isSubmitting}
           >
             Review & Submit Transaction
           </Button>

@@ -52,7 +52,11 @@ export function StakeForm({
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form ref={formRef} className="flex w-full flex-col gap-6">
+        <form
+          ref={formRef}
+          className="flex w-full flex-col gap-6"
+          aria-label="Stake form"
+        >
           <FormField
             control={form.control}
             name="recipient"
@@ -106,7 +110,7 @@ export function StakeForm({
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address}
+            disabled={!selectedAccount?.address || form.formState.isSubmitting}
           >
             Review & Submit Transaction
           </Button>

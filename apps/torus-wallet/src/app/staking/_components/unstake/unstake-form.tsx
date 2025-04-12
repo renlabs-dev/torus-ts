@@ -28,7 +28,9 @@ interface UnstakeFormProps {
   maxAmountRef: RefObject<string>;
   feeRef: RefObject<FeeLabelHandle | null>;
   transactionStatus: TransactionResult;
-  handleSelectValidator: (address: BrandTag<"SS58Address"> & string) => void;
+  handleSelectValidator: (
+    address: BrandTag<"SS58Address"> & string,
+  ) => Promise<void>;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (amount: string) => Promise<void>;
   formRef: React.RefObject<HTMLFormElement | null>;
@@ -52,7 +54,11 @@ export function UnstakeForm({
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form ref={formRef} className="flex w-full flex-col gap-6">
+        <form
+          ref={formRef}
+          className="flex w-full flex-col gap-6"
+          aria-label="Unstake form"
+        >
           <FormField
             control={form.control}
             name="validator"
@@ -105,7 +111,7 @@ export function UnstakeForm({
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address}
+            disabled={!selectedAccount?.address || form.formState.isSubmitting}
           >
             Review & Submit Transaction
           </Button>
