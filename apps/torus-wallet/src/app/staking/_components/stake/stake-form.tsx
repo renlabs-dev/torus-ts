@@ -104,10 +104,11 @@ export function StakeForm({
           )}
           <Button
             type="button"
+            variant="outline"
             onClick={onReviewClick}
             disabled={!selectedAccount?.address}
           >
-            Review Transaction
+            Review & Submit Transaction
           </Button>
         </form>
       </Form>

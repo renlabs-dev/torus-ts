@@ -132,10 +132,11 @@ export function TransferStakeForm({
           )}
           <Button
             type="button"
+            variant="outline"
             onClick={onReviewClickAction}
             disabled={!selectedAccount?.address}
           >
-            Review Transaction
+            Review & Submit Transaction
           </Button>
         </form>
       </Form>
