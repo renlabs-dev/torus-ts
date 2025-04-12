@@ -26,10 +26,10 @@
  */
 
 import { CONSTANTS } from "@torus-network/sdk";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { createLogger } from "../common/log";
 
-const log = createLogger({ name: "error-playground" });
+const log = BasicLogger.create({ name: "error-playground" });
 
 // Sleep utility
 async function sleep(ms: number): Promise<void> {

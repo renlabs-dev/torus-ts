@@ -29,7 +29,8 @@
     "./files": "./src/files.ts",
     "./bignumber": "./src/bignumber.ts",
     "./error-helpers/*": "./src/error-helpers/*.ts",
-    "./try-catch": "./src/try-catch.ts"
+    "./try-catch": "./src/try-catch.ts",
+    "./logger": "./src/logger.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",

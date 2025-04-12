@@ -23,10 +23,10 @@
  */
 
 import { CONSTANTS } from "@torus-network/sdk";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { createLogger } from "../common/log";
 
-const log = createLogger({ name: "error-simulator" });
+const log = BasicLogger.create({ name: "error-simulator" });
 
 /**
  * Creates a promise that resolves after the specified duration

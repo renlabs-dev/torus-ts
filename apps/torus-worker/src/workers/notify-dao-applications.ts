@@ -4,6 +4,7 @@ import {
   buildIpfsGatewayUrl,
   parseIpfsUri,
 } from "@torus-network/torus-utils/ipfs";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { flattenResult } from "@torus-network/torus-utils/typing";
 import { z } from "zod";
@@ -14,13 +15,12 @@ import {
   normalizeApplicationValue,
   sleep,
 } from "../common";
-import { createLogger } from "../common/log";
 import type { ApplicationDB } from "../db";
 import * as db from "../db";
 import type { Embed, WebhookPayload } from "../discord";
 import { sendDiscordWebhook } from "../discord";
 
-const log = createLogger({ name: "notify-dao-applications" });
+const log = BasicLogger.create({ name: "notify-dao-applications" });
 
 const THUMBNAIL_URL = "https://i.imgur.com/pHJKJys.png";
 const HOUR = CONSTANTS.TIME.ONE_HOUR * 1_000;
@@ -44,7 +44,8 @@ function isNotifiable(app: ApplicationDB): boolean {
 }
 
 /**
- * Main worker function that sends notifications for new applications, cadre candidates, and proposals
+ * Continuously monitors for new DAO entities (applications, cadre candidates, proposals)
+ * and sends Discord webhook notifications for each. Runs in an infinite loop.
  */
 export async function notifyNewApplicationsWorker() {
   const env = getEnv(process.env);
@@ -53,7 +54,7 @@ export async function notifyNewApplicationsWorker() {
 
   while (true) {
     // We execute functions serially for better logging
-    const [error, _] = await tryAsync(
+    const workerRes = await tryAsync(
       (async () => {
         await pushApplicationsNotification(
           env.CURATOR_DISCORD_WEBHOOK_URL,
@@ -68,64 +69,59 @@ export async function notifyNewApplicationsWorker() {
       })(),
     );
 
-    if (error !== undefined) {
-      log.error(error);
-      return;
-    }
+    if (log.ifResultIsErr(workerRes)) return;
     await sleep(retryDelay);
   }
 }
 
 /**
- * Sends notifications for new cadre candidates
- * @param discordWebhook Discord webhook URL
- * @param buildUrl Function to build portal URL
+ * Sends Discord notifications for new cadre (council) candidates.
+ * Marks each candidate as notified after successful webhook delivery.
+ *
+ * @param discordWebhook - Discord channel webhook destination URL
+ * @param buildUrl - Function that constructs the DAO portal URL for the current environment
  */
 async function pushCadreNotification(
   discordWebhook: string,
   buildUrl: () => string,
 ) {
-  const [cadreCandidatesError, cadreCandidates] = await tryAsync(
+  const cadreCandidatesRes = await tryAsync(
     getCadreCandidates((candidate) => candidate.notified === false),
   );
-  if (cadreCandidatesError !== undefined) {
-    log.error(cadreCandidatesError);
-    return;
-  }
+  if (log.ifResultIsErr(cadreCandidatesRes)) return;
+  const [_cadreCandidatesErr, cadreCandidates] = cadreCandidatesRes;
   const candidatesUrl = `${buildUrl()}?view=dao-portal`;
   for (const candidate of cadreCandidates) {
     const discordMessage = buildCadreMessage(candidate, candidatesUrl);
 
-    const [discordWebhookError, _] = await tryAsync(
+    const discordWebhookRes = await tryAsync(
       sendDiscordWebhook(discordWebhook, discordMessage),
     );
-    if (discordWebhookError !== undefined) {
-      log.error(discordWebhookError);
-      return;
-    }
+    if (log.ifResultIsErr(discordWebhookRes)) return;
     await db.toggleCadreNotification(candidate);
     await sleep(retryDelay);
   }
 }
 
 /**
- * Sends notifications for new proposals
- * @param discordWebhook Discord webhook URL
- * @param startingBlock Block number to start notifications from
- * @param buildPortalUrl Function to build portal URL
+ * Sends notifications for new governance proposals and marks them as notified.
+ * Filters out proposals created before a configurable starting block to prevent
+ * notification spam during system initialization.
+ *
+ * @param discordWebhook - Discord channel webhook destination URL
+ * @param startingBlock - Blockchain block number threshold for notification eligibility
+ * @param buildPortalUrl - Function that constructs the DAO portal URL
  */
 async function pushProposalsNotification(
   discordWebhook: string,
   startingBlock: number,
   buildPortalUrl: () => string,
 ) {
-  const [proposalsError, proposals] = await tryAsync(
+  const proposalsRes = await tryAsync(
     getProposalsDB((app) => app.notified === false),
   );
-  if (proposalsError !== undefined) {
-    log.error(proposalsError);
-    return;
-  }
+  if (log.ifResultIsErr(proposalsRes)) return;
+  const [_proposalsErr, proposals] = proposalsRes;
   // to avoid notifying proposals that expired before the deploy of worker
   for (const proposal of proposals) {
     const proposalURL = `${buildPortalUrl()}proposal/${proposal.id}`;
@@ -134,21 +130,21 @@ async function pushProposalsNotification(
       log.info(`Notifying proposal ${proposal.id}`);
       log.info(`Expire block ${proposal.expirationBlock}`);
 
-      const [webhookError, _] = await tryAsync(
+      const webhookRes = await tryAsync(
         sendDiscordWebhook(discordWebhook, proposalMessage),
       );
-      if (webhookError !== undefined) {
-        log.error(webhookError);
+      if (log.ifResultIsErr(webhookRes)) {
+        // continue with other proposals even if this one fails
       }
     } else {
       log.info(`Proposal ${proposal.id} is too old`);
     }
 
-    const [proposalNotificationError, _] = await tryAsync(
+    const proposalNotificationRes = await tryAsync(
       db.toggleProposalNotification(proposal),
     );
-    if (proposalNotificationError !== undefined) {
-      log.error(proposalNotificationError);
+    if (log.ifResultIsErr(proposalNotificationRes)) {
+      // continue with other proposals even if toggle fails
     }
 
     await sleep(retryDelay);
@@ -156,9 +152,11 @@ async function pushProposalsNotification(
 }
 
 /**
- * Builds the URL for the Torus DAO portal
- * @param environment Chain environment (testnet or mainnet)
- * @returns Full URL to the DAO portal
+ * Constructs the appropriate URL for the Torus DAO portal based on environment.
+ * Handles subdomain differences between testnet and mainnet deployments.
+ *
+ * @param environment - Chain environment identifier ('testnet' or 'mainnet')
+ * @returns Fully qualified URL to the appropriate DAO portal
  */
 function buildPortalUrl(environment: string) {
   const urlQualifier = environment === "testnet" ? "testnet." : "";
@@ -166,9 +164,12 @@ function buildPortalUrl(environment: string) {
 }
 
 /**
- * Sends notifications for new whitelist applications
- * @param discordWebhook Discord webhook URL
- * @param buildPortalUrl Function to build portal URL
+ * Processes and notifies for new whitelist applications.
+ * Fetches IPFS metadata for each application to extract Discord user details,
+ * then sends formatted notifications with direct links to review the application.
+ *
+ * @param discordWebhook - Discord channel webhook destination URL
+ * @param buildPortalUrl - Function that constructs the DAO portal URL
  */
 async function pushApplicationsNotification(
   discordWebhook: string,
@@ -185,13 +186,11 @@ async function pushApplicationsNotification(
 
     const url = buildIpfsGatewayUrl(cid);
 
-    const [metadataError, metadata] = await tryAsync(
+    const metadataRes = await tryAsync(
       processApplicationMetadata(url, proposal.id),
     );
-    if (metadataError !== undefined) {
-      log.error(metadataError);
-      return;
-    }
+    if (log.ifResultIsErr(metadataRes)) return;
+    const [_metadataErr, metadata] = metadataRes;
 
     const resolved_metadata = flattenResult(metadata);
     if (resolved_metadata === null) {
@@ -211,27 +210,29 @@ async function pushApplicationsNotification(
       notification.application_url,
     );
 
-    const [webhookError, _] = await tryAsync(
+    const webhookRes = await tryAsync(
       sendDiscordWebhook(discordWebhook, discordMessage),
     );
-    if (webhookError !== undefined) {
-      log.error(webhookError);
+    if (log.ifResultIsErr(webhookRes)) {
+      // continue with other applications even if webhook fails
     }
 
-    const [whitelistNotificationError, __] = await tryAsync(
+    const whitelistNotificationRes = await tryAsync(
       db.toggleWhitelistNotification(proposal),
     );
-    if (whitelistNotificationError !== undefined) {
-      log.error(whitelistNotificationError);
+    if (log.ifResultIsErr(whitelistNotificationRes)) {
+      // continue with other applications even if toggle fails
     }
     await sleep(retryDelay);
   }
 }
 
 /**
- * Generates base embed parameters for different notification types
- * @param objectName Type of object (Whitelist, Proposal, etc.)
- * @returns Map of embed parameters for different statuses
+ * Creates standardized embed parameter templates for different notification types.
+ * Centralizes color coding and messaging conventions for consistent notification styling.
+ *
+ * @param objectName - Type of entity being notified about (e.g., "Whitelist", "Proposal")
+ * @returns Map of embed configurations keyed by status (Open, Accepted, Rejected, Expired)
  */
 function generateBaseEmbedParams(objectName: string) {
   const embedParamsMap = {
@@ -261,11 +262,13 @@ function generateBaseEmbedParams(objectName: string) {
 }
 
 /**
- * Builds a Discord webhook message for an application
- * @param discordId Discord ID of the applicant
- * @param proposal Application data
- * @param applicationUrl URL to the application
- * @returns Webhook payload for Discord
+ * Formats a Discord webhook message for a whitelist application.
+ * Includes direct Discord mention of the applicant and contextual styling based on status.
+ *
+ * @param discordId - Discord user ID for direct mention in the notification
+ * @param proposal - Application data including status and metadata
+ * @param applicationUrl - Direct link to review the application
+ * @returns Formatted webhook payload ready for Discord delivery
  */
 function buildApplicationMessage(
   discordId: string,
@@ -300,10 +303,13 @@ function buildApplicationMessage(
 }
 
 /**
- * Builds a Discord webhook message for a cadre candidate
- * @param candidate Cadre candidate data
- * @param candidatesUrl URL to the candidates page
- * @returns Webhook payload for Discord
+ * Formats a Discord webhook message for a cadre (council) candidate.
+ * Handles different statuses including pending, accepted, rejected, and removed statuses
+ * with appropriate color coding and messaging.
+ *
+ * @param candidate - Cadre candidate data including status and blockchain address
+ * @param candidatesUrl - URL to the candidates listing page
+ * @returns Formatted webhook payload ready for Discord delivery
  */
 function buildCadreMessage(
   candidate: db.CadreCandidate,
@@ -358,12 +364,13 @@ function buildCadreMessage(
 }
 
 /**
- * Builds a Discord webhook message for a proposal
- * @param application Proposal data
- * @param proposalURL URL to the proposal
- * @returns Webhook payload for Discord
+ * Formats a Discord webhook message for a governance proposal.
+ * Customizes fields based on proposal status, omitting voting links for expired proposals.
+ *
+ * @param application - Proposal data including status, proposer, and metadata
+ * @param proposalURL - URL to view and vote on the proposal
+ * @returns Formatted webhook payload ready for Discord delivery
  */
-
 function buildProposalMessage(
   application: db.NewProposal,
   proposalURL: string,

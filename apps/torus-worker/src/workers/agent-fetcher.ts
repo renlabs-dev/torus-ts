@@ -6,6 +6,7 @@ import {
   queryLastBlock,
   queryWhitelist,
 } from "@torus-network/sdk";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { WorkerProps } from "../common";
 import {
@@ -17,7 +18,6 @@ import {
   normalizeApplicationValue,
   sleep,
 } from "../common";
-import { createLogger } from "../common/log";
 import type { NewApplication, NewProposal } from "../db";
 import {
   queryProposalsDB,
@@ -27,15 +27,16 @@ import {
   upsertWhitelistApplication,
 } from "../db";
 
-const log = createLogger({ name: "agent-fetcher" });
+const log = BasicLogger.create({ name: "agent-fetcher" });
 
 // Constants for error handling configuration
 const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
 
 /**
- * Fetches and processes agent data for a given block.
+ * Synchronizes on-chain agent data to the database for a given block height.
+ * Handles whitelist status checks and transforms blockchain data to database format.
  *
- * @param lastBlock - The latest block data.
+ * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
 export async function runAgentFetch(lastBlock: LastBlock) {
   const startTime = new Date();
@@ -44,12 +45,13 @@ export async function runAgentFetch(lastBlock: LastBlock) {
 
   log.info(`Block ${blockNumber}: running agent fetch`);
 
-  const [whitelistError, whitelist] = await tryAsync(queryWhitelist(api));
-  const [agentsError, agentsMap] = await tryAsync(queryAgents(api));
-  if (whitelistError !== undefined || agentsError !== undefined) {
-    log.error(whitelistError ?? agentsError);
-    return;
-  }
+  const whitelistRes = await tryAsync(queryWhitelist(api));
+  if (log.ifResultIsErr(whitelistRes)) return;
+  const [_whitelistErr, whitelist] = whitelistRes;
+
+  const agentsRes = await tryAsync(queryAgents(api));
+  if (log.ifResultIsErr(agentsRes)) return;
+  const [_agentsErr, agentsMap] = agentsRes;
 
   const whitelistSet = new Set(whitelist);
   const isWhitelisted = (addr: SS58Address) => whitelistSet.has(addr);
@@ -64,11 +66,8 @@ export async function runAgentFetch(lastBlock: LastBlock) {
 
   log.info(`Block ${blockNumber}: upserting ${agents.length} agents`);
 
-  const [upsertAgentDataError, _] = await tryAsync(upsertAgentData(agentsData));
-  if (upsertAgentDataError !== undefined) {
-    log.error(upsertAgentDataError);
-    return;
-  }
+  const upserAgentDataRes = await tryAsync(upsertAgentData(agentsData));
+  if (log.ifResultIsErr(upserAgentDataRes)) return;
 
   const timeDelta = new Date().getTime() - startTime.getTime();
   log.info(
@@ -77,20 +76,20 @@ export async function runAgentFetch(lastBlock: LastBlock) {
 }
 
 /**
- * Fetches and processes applications data for a given block
- * @param lastBlock - The latest block data
+ * Captures all whitelist applications from the blockchain at a specific block height.
+ * This always processes the complete set of applications to maintain full audit history.
+ *
+ * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
 export async function runApplicationsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running applications fetch`);
 
-  const [getApplicationsError, applications] = await tryAsync(
+  const applicationsRes = await tryAsync(
     getApplications(lastBlock.apiAtBlock, (_) => true),
   );
-  if (getApplicationsError !== undefined) {
-    log.error(getApplicationsError);
-    return;
-  }
+  if (log.ifResultIsErr(applicationsRes)) return;
+  const [_applicationsErr, applications] = applicationsRes;
 
   const applicationsMap = new Map(Object.entries(applications));
   const dbApplications: NewApplication[] = [];
@@ -102,35 +101,27 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
     `Block ${lastBlockNumber}: upserting ${dbApplications.length} applications`,
   );
 
-  const [upsertWhitelistApplicationError, _] = await tryAsync(
+  const upsertWhitelistApplicationRes = await tryAsync(
     upsertWhitelistApplication(dbApplications),
   );
-  if (upsertWhitelistApplicationError === undefined) {
-    log.info(`Block ${lastBlockNumber}: applications upserted`);
-  }
+  if (log.ifResultIsErr(upsertWhitelistApplicationRes)) return;
+  log.info(`Block ${lastBlockNumber}: applications upserted`);
 }
 
 /**
- * Fetches and updates proposals based on the last processed block
+ * Performs differential synchronization of blockchain proposals to database.
+ * Optimizes database operations by only processing proposals that are new or have
+ * changed status since the last sync.
  *
- * @param lastBlock - The last processed block information
- *
- * The function:
- * 1. Queries existing proposals from DB
- * 2. Gets new proposals from blockchain for the given block
- * 3. Identifies proposals that are new or have status changes
- * 4. Upserts the identified proposals to DB
+ * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
 export async function runProposalsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running proposals fetch`);
 
-  const [queryProposalsError, queryProposalsResult] =
-    await tryAsync(queryProposalsDB());
-  if (queryProposalsError !== undefined) {
-    log.error(queryProposalsError);
-    return;
-  }
+  const queryProposalsRes = await tryAsync(queryProposalsDB());
+  if (log.ifResultIsErr(queryProposalsRes)) return;
+  const [_queryProposalsError, queryProposalsResult] = queryProposalsRes;
 
   const savedProposalsMap = new Map(
     queryProposalsResult.map((proposal) => [proposal.id, proposal]),
@@ -145,13 +136,11 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
     return isNewProposal || hasStatusChanged;
   };
 
-  const [getProposalsError, proposalsResult] = await tryAsync(
+  const getProrposalsRes = await tryAsync(
     getProposals(lastBlock.apiAtBlock, isProposalToInsert),
   );
-  if (getProposalsError !== undefined) {
-    log.error(getProposalsError);
-    return;
-  }
+  if (log.ifResultIsErr(getProrposalsRes)) return;
+  const [_getProposalsError, proposalsResult] = getProrposalsRes;
 
   const proposalsMap = new Map(Object.entries(proposalsResult));
   const dbProposals: NewProposal[] = [];
@@ -163,32 +152,30 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
     `Block ${lastBlockNumber}: upserting ${dbProposals.length} proposals`,
   );
 
-  const [upsertProposalError, _] = await tryAsync(upsertProposal(dbProposals));
-  if (upsertProposalError !== undefined) {
-    log.error(upsertProposalError);
-    return;
-  }
+  const upsertProposalRes = await tryAsync(upsertProposal(dbProposals));
+  if (log.ifResultIsErr(upsertProposalRes)) return;
 
   log.info(`Block ${lastBlockNumber}: proposals upserted`);
 }
 
 /**
- * Main worker function that fetches and processes block data continuously
- * @param props Worker properties including API connection
+ * Blockchain data synchronization in an infinite loop.
+ * Processes each new block once, skips already processed blocks, and handles
+ * all errors internally to ensure the synchronization process never terminates.
+ *
+ * @param props - Contains API connection and state for tracking the last processed block
  */
 export async function agentFetcherWorker(props: WorkerProps) {
   while (true) {
-    const [fetchWorkerError, _] = await tryAsync(
+    const fetchWorkerRes = await tryAsync(
       (async () => {
         // Get latest block information with error logging
-        const [queryLastBlockError, lastBlock] = await tryAsync(
-          queryLastBlock(props.api),
-        );
-        if (queryLastBlockError !== undefined) {
-          log.error(queryLastBlockError);
+        const queryLastBlockRes = await tryAsync(queryLastBlock(props.api));
+        if (log.ifResultIsErr(queryLastBlockRes)) {
           await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
           return;
         }
+        const [_queryLastBlockError, lastBlock] = queryLastBlockRes;
 
         const lastBlockNumber = lastBlock.blockNumber;
 
@@ -209,8 +196,7 @@ export async function agentFetcherWorker(props: WorkerProps) {
         await runProposalsFetch(lastBlock);
       })(),
     );
-    if (fetchWorkerError !== undefined) {
-      log.error(fetchWorkerError);
+    if (log.ifResultIsErr(fetchWorkerRes)) {
       await sleep(retryDelay);
     }
   }

@@ -1,11 +1,12 @@
 import "@polkadot/api-augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { queryLastBlock } from "@torus-network/sdk";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import express from "express";
 import { z } from "zod";
+// import { log } from "./common";
 import { parseEnvOrExit } from "./common/env";
-import { createLogger } from "./common/log";
 import { agentFetcherWorker } from "./workers/agent-fetcher";
 import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
 import { processApplicationsWorker } from "./workers/process-dao-applications";
@@ -17,12 +18,15 @@ export const env = parseEnvOrExit(
   }),
 )(process.env);
 
-const log = createLogger({ name: "index" });
+const log = BasicLogger.create({ name: "weight-aggregator" });
 
 /**
- * Sets up and creates a connection to the Torus blockchain node
+ * Initializes connection to the Torus blockchain.
+ * Creates a WebSocket provider using the configured RPC endpoint
+ * and establishes an API connection.
  *
- * @returns A connected API Promise instance
+ * @returns API instance ready for blockchain interactions
+ * @throws Exits process on connection failure
  */
 async function setup(): Promise<ApiPromise> {
   const wsEndpoint = env.NEXT_PUBLIC_TORUS_RPC_URL;
@@ -30,32 +34,32 @@ async function setup(): Promise<ApiPromise> {
   log.info("Connecting to ", wsEndpoint);
 
   const provider = new WsProvider(wsEndpoint);
-  const [apiCreateError, api] = await tryAsync(ApiPromise.create({ provider }));
-  if (apiCreateError !== undefined) {
-    log.error(apiCreateError);
-    process.exit(1);
-  }
+  const apiCreateRes = await tryAsync(ApiPromise.create({ provider }));
+  if (log.ifResultIsErr(apiCreateRes)) process.exit(1);
+  const [_apiCreateErr, api] = apiCreateRes;
 
   return api;
 }
 
 /**
- * Main application entry point that initializes the system and starts the appropriate worker
- * based on command line arguments
+ * Application entry point that parses command line arguments to determine
+ * which worker to run. Performs initial blockchain setup and health check
+ * configuration before starting the requested worker.
+ *
+ * Worker selection is based on the first command line argument, with validation
+ * to ensure a valid worker is specified.
+ *
+ * @throws Exits process on errors in setup, initialization, or worker execution
  */
 async function main() {
-  const [setupError, api] = await tryAsync(setup());
-  if (setupError !== undefined) {
-    log.error(setupError);
-    process.exit(1);
-  }
+  const setupRes = await tryAsync(setup());
+  if (log.ifResultIsErr(setupRes)) process.exit(1);
+  const [_setupErr, api] = setupRes;
 
   const lastBlockNumber = -1;
-  const [queryLastBlockError, lastBlock] = await tryAsync(queryLastBlock(api));
-  if (queryLastBlockError !== undefined) {
-    log.error(queryLastBlockError);
-    process.exit(1);
-  }
+  const queryLastBlockRes = await tryAsync(queryLastBlock(api));
+  if (log.ifResultIsErr(queryLastBlockRes)) process.exit(1);
+  const [_queryLastBlockErr, lastBlock] = queryLastBlockRes;
 
   const workerTypes: Record<string, () => Promise<void>> = {
     // TODO: rename "dao" worker arg
@@ -102,17 +106,18 @@ async function main() {
 
   startHealthCheckServer(workerTypeArg);
 
-  const [workerError, _] = await tryAsync(workerFn());
-  if (workerError !== undefined) {
-    log.error(workerError);
-    process.exit(1);
-  }
+  const workerRes = await tryAsync(workerFn());
+  if (log.ifResultIsErr(workerRes)) process.exit(1);
 }
 
 /**
- * Starts an Express server to provide health check endpoints for the worker
+ * Creates a simple HTTP server that provides an endpoint for health checks.
+ * Used by infrastructure monitoring to verify worker process health.
  *
- * @param workerType - The type of worker running in this process
+ * The server responds with the worker type to identify which specific
+ * worker is running in the current process.
+ *
+ * @param workerType - Current worker identifier to include in health check response
  */
 function startHealthCheckServer(workerType: string) {
   const app = express();

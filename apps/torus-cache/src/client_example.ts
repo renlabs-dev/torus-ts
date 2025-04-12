@@ -1,40 +1,33 @@
 import { STAKE_DATA_SCHEMA } from "@torus-network/sdk";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import fetch from "node-fetch";
 import SuperJSON from "superjson";
 
+const log = BasicLogger.create({ name: "client_example" });
+
 async function getStakeOutData() {
   const fetchLink = "http://localhost:3000/api/stake-out";
-  const [fetchError, result] = await tryAsync(fetch(fetchLink));
+  const fetchRes = await tryAsync(fetch(fetchLink));
 
-  // Fetching the stakeOutData
-  if (fetchError !== undefined) {
-    console.log("Error fetching stakeOutData:", fetchError);
-    return null;
-  }
+  const fetchErrorMsg = () => "Failed to fetch stakeOutData:";
+  if (log.ifResultIsErr(fetchRes, fetchErrorMsg)) return null;
+  const [_fetchErr, result] = fetchRes;
 
-  // Parsing the stakeOutData
-  const [textError, data] = await tryAsync(result.text());
-  if (textError !== undefined) {
-    console.log("Failed to read the response text:", textError);
-    return null;
-  }
+  const textErrorMsg = () => "Failed to read the response text:";
+  const resultTextRes = await tryAsync(result.text());
+  if (log.ifResultIsErr(resultTextRes, textErrorMsg)) return null;
+  const [_textErr, data] = resultTextRes;
 
-  // Parsing with JSON
-  const [parseError, parsedData] = trySync(SuperJSON.parse(data));
-  if (parseError !== undefined) {
-    console.log("Failed to parse JSON data:", parseError);
-    return null;
-  }
+  const parseErrorMsg = () => "Failed to parse JSON data:";
+  const parsedDataRes = trySync(SuperJSON.parse(data));
+  if (log.ifResultIsErr(parsedDataRes, parseErrorMsg)) return null;
+  const [_parseErr, parsedData] = parsedDataRes;
 
-  // Validating the data with schema
-  const [schemaError, stakeOutData] = trySync(() =>
-    STAKE_DATA_SCHEMA.parse(parsedData),
-  );
-  if (schemaError !== undefined) {
-    console.log("Failed to validate data schema:", schemaError);
-    return null;
-  }
+  const schemaErrorMsg = () => "Failed to validate data schema:";
+  const stakeOutDataRes = trySync(() => STAKE_DATA_SCHEMA.parse(parsedData));
+  if (log.ifResultIsErr(stakeOutDataRes, schemaErrorMsg)) return null;
+  const [_schemaErr, stakeOutData] = stakeOutDataRes;
 
   console.log(stakeOutData.perAddr);
   console.log("total: ", stakeOutData.total);

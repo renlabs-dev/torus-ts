@@ -5,10 +5,13 @@ import {
   queryStakeIn,
   queryStakeOut,
 } from "@torus-network/sdk";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import SuperJSON from "superjson";
 import { setup } from "./server";
-import { log, sleep } from "./utils";
+import { sleep } from "./utils";
+
+const log = BasicLogger.create({ name: "torus-cache-data" });
 
 const UPDATE_INTERVAL = 1000;
 
@@ -38,7 +41,13 @@ const stakeFromDataStringified = {
 
 export function getStakeOutDataStringified() {
   if (stakeOutDataStringified.atBlock !== stakeOutData.atBlock) {
-    stakeOutDataStringified.data = SuperJSON.stringify(stakeOutData);
+    const stringifyErrorMsg = () => "Error stringifying stakeOutData:";
+    const stringifyRes = trySync(() => SuperJSON.stringify(stakeOutData));
+    if (log.ifResultIsErr(stringifyRes, stringifyErrorMsg)) {
+      return stakeOutDataStringified.data;
+    }
+    const [_stringifyError, stringifiedData] = stringifyRes;
+    stakeOutDataStringified.data = stringifiedData;
     stakeOutDataStringified.atBlock = stakeOutData.atBlock;
   }
   return stakeOutDataStringified.data;
@@ -46,7 +55,13 @@ export function getStakeOutDataStringified() {
 
 export function getStakeFromDataStringified() {
   if (stakeFromDataStringified.atBlock !== stakeFromData.atBlock) {
-    stakeFromDataStringified.data = SuperJSON.stringify(stakeFromData);
+    const stringifyErrorMsg = () => "Error stringifying stakeFromData:";
+    const stringifyRes = trySync(() => SuperJSON.stringify(stakeFromData));
+    if (log.ifResultIsErr(stringifyRes, stringifyErrorMsg)) {
+      return stakeFromDataStringified.data;
+    }
+    const [_stringifyError, stringifiedData] = stringifyRes;
+    stakeFromDataStringified.data = stringifiedData;
     stakeFromDataStringified.atBlock = stakeFromData.atBlock;
   }
   return stakeFromDataStringified.data;
@@ -61,21 +76,19 @@ export const updateStakeFrom = async (
   api: ApiPromise,
   lastBlock: LastBlock,
 ) => {
-  const [error, stakeForm] = await tryAsync(queryStakeIn(api));
-  if (error !== undefined) {
-    log(
-      `Error updating StakeFrom data for block ${lastBlock.blockNumber}:`,
-      error,
-    );
-    return;
-  }
+  const queryErrorMsg = () =>
+    `Error updating StakeFrom data for block ${lastBlock.blockNumber}:`;
+  const queryStateQuintRes = await tryAsync(queryStakeIn(api));
+  if (log.ifResultIsErr(queryStateQuintRes, queryErrorMsg)) return;
+  const [_queryError, stakeForm] = queryStateQuintRes;
+
   stakeFromData = {
     total: stakeForm.total,
     perAddr: Object.fromEntries(stakeForm.perAddr),
     atBlock: BigInt(lastBlock.blockNumber),
     atTime: new Date(),
   };
-  log(`StakeFrom data updated for block ${lastBlock.blockNumber}`);
+  log.info(`StakeFrom data updated for block ${lastBlock.blockNumber}`);
 };
 
 /**
@@ -90,21 +103,19 @@ export const updateStakeFrom = async (
  * @returns Promise that resolves when the operation completes
  */
 export const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
-  const [error, stakeOut] = await tryAsync(queryStakeOut(api));
-  if (error !== undefined) {
-    log(
-      `Error updating StakeIn data for block ${lastBlock.blockNumber}:`,
-      error,
-    );
-    return;
-  }
+  const queryErrorMsg = () =>
+    `Error updating StakeOut data for block ${lastBlock.blockNumber}:`;
+  const queryRes = await tryAsync(queryStakeOut(api));
+  if (log.ifResultIsErr(queryRes, queryErrorMsg)) return;
+  const [_queryError, stakeOut] = queryRes;
+
   stakeOutData = {
     total: stakeOut.total,
     perAddr: Object.fromEntries(stakeOut.perAddr),
     atBlock: BigInt(lastBlock.blockNumber),
     atTime: new Date(),
   };
-  log(`StakeOut data updated for block ${lastBlock.blockNumber}`);
+  log.info(`StakeOut data updated for block ${lastBlock.blockNumber}`);
 };
 
 /**
@@ -126,63 +137,73 @@ export const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
  */
 export async function updateStakeDataLoop() {
   while (true) {
-    const [setupError, api] = await tryAsync(setup());
-    if (setupError !== undefined) {
-      log(
-        "Error setting up API: ",
-        setupError,
-        `retrying in  ${UPDATE_INTERVAL / 1000}s`,
-      );
+    const setupErrorMsg = () =>
+      `Error setting up API, retrying in ${UPDATE_INTERVAL / 1000}s`;
+    const setupRes = await tryAsync(setup());
+    if (log.ifResultIsErr(setupRes, setupErrorMsg)) {
       await sleep(UPDATE_INTERVAL);
       continue;
     }
+    const [_setupError, api] = setupRes;
+
     while (true) {
-      const [queryError, lastBlock] = await tryAsync(queryLastBlock(api));
-      if (queryError !== undefined) {
-        log("Error querying last block: ", queryError, `restarting connection`);
+      const queryErrorMsg = () =>
+        "Error querying last block, restarting connection";
+      const queryRes = await tryAsync(queryLastBlock(api));
+      if (log.ifResultIsErr(queryRes, queryErrorMsg)) {
         break;
       }
-      if (
-        lastBlock.blockNumber <=
-        Math.max(Number(stakeFromData.atBlock), Number(stakeOutData.atBlock))
-      ) {
-        log(`Block ${lastBlock.blockNumber} already processed, skipping`);
+      const [_queryError, lastBlock] = queryRes;
+
+      const maxBlockErrorMsg = () => "Error calculating max block:";
+      const maxBlockRes = trySync(() =>
+        Math.max(Number(stakeFromData.atBlock), Number(stakeOutData.atBlock)),
+      );
+      if (log.ifResultIsErr(maxBlockRes, maxBlockErrorMsg)) {
         await sleep(UPDATE_INTERVAL);
         continue;
       }
-      log(`Block ${lastBlock.blockNumber}: processing`);
+      const [_maxBlockError, maxBlock] = maxBlockRes;
 
-      const [promiseError, endResult] = await tryAsync(
+      if (lastBlock.blockNumber <= maxBlock) {
+        log.info(`Block ${lastBlock.blockNumber} already processed, skipping`);
+        await sleep(UPDATE_INTERVAL);
+        continue;
+      }
+      log.info(`Block ${lastBlock.blockNumber}: processing`);
+
+      const promiseErrorMsg = () => "Error executing Promise.allSettled:";
+      const promiseRes = await tryAsync(
         Promise.allSettled([
           updateStakeFrom(api, lastBlock),
           updateStakeOut(api, lastBlock),
         ]),
       );
-      if (promiseError !== undefined) {
-        log(`Error executing Promise.allSettled: ${promiseError}`);
-      }
-      if (endResult !== undefined) {
-        const stakeFromResult = endResult[0];
-        const stakeOutResult = endResult[1];
-        if (stakeFromResult.status === "rejected") {
-          log(`Error updating stakeFrom: ${stakeFromResult.reason}`);
-        }
-        if (stakeOutResult.status === "rejected") {
-          log(`Error updating stakeOut: ${stakeOutResult.reason}`);
-        }
-        if (
-          stakeFromResult.status === "fulfilled" &&
-          stakeOutResult.status === "fulfilled"
-        ) {
-          log(`Data updated for block ${lastBlock.blockNumber}`);
-        } else {
-          log(`Partial data update for block ${lastBlock.blockNumber}`);
-        }
+      if (log.ifResultIsErr(promiseRes, promiseErrorMsg)) {
         await sleep(UPDATE_INTERVAL);
+        continue;
       }
-      log(`Restarting connection in 5 seconds`);
-      await sleep(5000);
+      const [_promiseError, endResult] = promiseRes;
+      const stakeFromResult = endResult[0];
+      const stakeOutResult = endResult[1];
+      if (stakeFromResult.status === "rejected") {
+        log.error(`Error updating stakeFrom: ${stakeFromResult.reason}`);
+      }
+      if (stakeOutResult.status === "rejected") {
+        log.error(`Error updating stakeOut: ${stakeOutResult.reason}`);
+      }
+      if (
+        stakeFromResult.status === "fulfilled" &&
+        stakeOutResult.status === "fulfilled"
+      ) {
+        log.info(`Data updated for block ${lastBlock.blockNumber}`);
+      } else {
+        log.warn(`Partial data update for block ${lastBlock.blockNumber}`);
+      }
+      await sleep(UPDATE_INTERVAL);
     }
+    log.info(`Restarting connection in 5 seconds`);
+    await sleep(5000);
   }
 }
 export { stakeOutData, stakeFromData };
