@@ -16,25 +16,10 @@ export interface ActionButton {
 }
 
 interface WalletActionsBaseProps {
-  /**
-   * The buttons to display in the tabs
-   */
   buttons: ActionButton[];
-  /**
-   * Optional callback when tab changes
-   */
   onTabChange?: (value: string) => void;
-  /**
-   * Default tab value
-   */
   defaultTab?: string;
-  /**
-   * Current tab value for controlled component
-   */
   currentTab?: string;
-  /**
-   * Additional classes to apply to the tabs container
-   */
   className?: string;
 }
 
@@ -46,7 +31,7 @@ export function WalletActionsBase({
   className = "animate-fade flex w-full flex-col gap-4",
 }: WalletActionsBaseProps) {
   const [internalTab, setInternalTab] = useState(
-    defaultTab ?? buttons[0]?.text ?? ""
+    defaultTab ?? buttons[0]?.text ?? "",
   );
 
   const handleTabChange = (value: string) => {
@@ -54,7 +39,6 @@ export function WalletActionsBase({
     onTabChange?.(value);
   };
 
-  // Use controlled or uncontrolled value
   const activeTab = currentTab ?? internalTab;
 
   return (
@@ -68,10 +52,7 @@ export function WalletActionsBase({
         style={{ gridTemplateColumns: `repeat(${buttons.length}, 1fr)` }}
       >
         {buttons.map((button) => (
-          <TabsTrigger
-            key={button.text}
-            value={button.params ?? button.text}
-          >
+          <TabsTrigger key={button.text} value={button.params ?? button.text}>
             {button.text}
           </TabsTrigger>
         ))}
