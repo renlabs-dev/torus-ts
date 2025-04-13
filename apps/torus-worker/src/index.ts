@@ -18,7 +18,7 @@ export const env = parseEnvOrExit(
   }),
 )(process.env);
 
-const log = BasicLogger.create({ name: "weight-aggregator" });
+const log = BasicLogger.create({ name: "torus-web-worker" });
 
 /**
  * Initializes connection to the Torus blockchain.
@@ -34,8 +34,11 @@ async function setup(): Promise<ApiPromise> {
   log.info("Connecting to ", wsEndpoint);
 
   const provider = new WsProvider(wsEndpoint);
+  const apiCreateErrorMsg = () => "Error creating API:";
   const apiCreateRes = await tryAsync(ApiPromise.create({ provider }));
-  if (log.ifResultIsErr(apiCreateRes)) process.exit(1);
+  if (log.ifResultIsErr(apiCreateRes, apiCreateErrorMsg)) {
+    process.exit(1);
+  }
   const [_apiCreateErr, api] = apiCreateRes;
 
   return api;
