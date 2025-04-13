@@ -21,8 +21,3 @@ export const waitFor = async (
     totalTime += interval;
   }
 };
-
-export function log(msg: unknown, ...args: unknown[]) {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.log(`[${new Date().toISOString()}] ${msg}`, ...args);
-}

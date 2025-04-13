@@ -10,9 +10,11 @@ import {
   setChainWeights,
 } from "@torus-network/sdk";
 import type { LastBlock, SS58Address } from "@torus-network/sdk";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { createDb } from "@torus-ts/db/client";
 import { z } from "zod";
-import { log, sleep } from "../common";
+import { sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
 import type { AgentWeight } from "../db";
 import { getUserWeightMap, upsertAgentWeight } from "../db";
@@ -31,42 +33,82 @@ export const env = parseEnvOrExit(
 
 export const db = createDb();
 
+const log = BasicLogger.create({ name: "weight-aggregator" });
+const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
+
+/**
+ * Core weight aggregation worker that runs continuously.
+ * Calculates and commits validator weights based on user preferences and stake
+ * approximately every 5 minutes (37 blockchain blocks).
+ *
+ * Implements a polling pattern with explicit block processing and deduplication
+ * to ensure each block is processed exactly once, with proper error handling.
+ *
+ * @param api - Connected Polkadot API instance for chain interaction
+ */
 export async function weightAggregatorWorker(api: ApiPromise) {
-  await cryptoWaitReady();
+  const cryptoRes = await tryAsync(cryptoWaitReady());
+  if (log.ifResultIsErr(cryptoRes)) return;
+
   const keyring = new Keyring({ type: "sr25519" });
   const keypair = keyring.addFromUri(env.TORUS_ALLOCATOR_MNEMONIC);
 
   let knownLastBlock: LastBlock | null = null;
 
   while (true) {
-    try {
-      const lastBlock = await queryLastBlock(api);
-      if (
-        knownLastBlock != null &&
-        lastBlock.blockNumber <= knownLastBlock.blockNumber
-      ) {
-        log(`Block ${lastBlock.blockNumber} already processed, skipping`);
-        await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS / 2);
-        continue;
-      }
-      knownLastBlock = lastBlock;
+    const workerRes = await tryAsync(
+      (async () => {
+        const blockRes = await tryAsync(queryLastBlock(api));
+        if (log.ifResultIsErr(blockRes)) {
+          await sleep(retryDelay / 2);
+          return;
+        }
+        const [_blockErr, lastBlock] = blockRes;
 
-      log(`Block ${lastBlock.blockNumber}: processing`);
+        if (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          knownLastBlock !== null &&
+          lastBlock.blockNumber <= knownLastBlock
+        ) {
+          log.info(
+            `Block ${lastBlock.blockNumber}: already processed, skipping`,
+          );
+          await sleep(retryDelay / 2);
+          return;
+        }
+        knownLastBlock = lastBlock;
 
-      await weightAggregatorTask(api, keypair, lastBlock.blockNumber);
+        log.info(`Block ${lastBlock.blockNumber}: processing`);
 
-      // We aim to run this task every ~5 minutes (8 seconds block * 38)
-      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS * 37);
-    } catch (e) {
-      log("UNEXPECTED ERROR: ", e);
-      await sleep(CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS);
+        const taskRes = await tryAsync(
+          weightAggregatorTask(api, keypair, lastBlock.blockNumber),
+        );
+        const taskErrorMsg = () => "Failed to run weight aggregator task:";
+        if (log.ifResultIsErr(taskRes, taskErrorMsg)) return;
+
+        // We aim to run this task every ~5 minutes (8 seconds block * 38)
+        log.info(
+          `Waiting for ${(retryDelay * 37) / 1000} seconds until next run`,
+        );
+      })(),
+    );
+
+    if (log.ifResultIsErr(workerRes)) {
+      // log.ifResultIsErr already logs the error
     }
+
+    await sleep(retryDelay * 37);
   }
 }
 
 /**
- * Fetches assigned weights by users and their stakes, to calculate the final
- * weights for the Torus Allocator.
+ * Main weight calculation and submission task.
+ * Pulls stake data from chain, aggregates user-assigned weights,
+ * normalizes them, and submits the final weights on-chain.
+ *
+ * @param api - Polkadot API instance for blockchain queries and transactions
+ * @param keypair - Allocator account with permission to set weights
+ * @param lastBlock - Block number for tracking when weights were calculated
  */
 export async function weightAggregatorTask(
   api: ApiPromise,
@@ -74,20 +116,29 @@ export async function weightAggregatorTask(
   lastBlock: number,
 ) {
   const allocatorAddress = checkSS58(keypair.address);
-  const stakeOnCommunityValidator = await queryKeyStakedBy(
-    api,
-    allocatorAddress,
+
+  const stakeRes = await tryAsync(queryKeyStakedBy(api, allocatorAddress));
+  if (log.ifResultIsErr(stakeRes)) return;
+  const [_stakeErr, stakeOnCommunityValidator] = stakeRes;
+
+  log.info("Committing agent weights...");
+
+  const aggregationRes = await tryAsync(
+    postAgentAggregation(stakeOnCommunityValidator, api, keypair, lastBlock),
   );
-  log("Committing agent weights...");
-  await postAgentAggregation(
-    stakeOnCommunityValidator,
-    api,
-    keypair,
-    lastBlock,
-  );
-  log("Committed agent weights.");
+  if (log.ifResultIsErr(aggregationRes)) return;
+
+  log.info("Committed agent weights.");
 }
 
+/**
+ * Transforms raw stake and weight data into normalized weights for on-chain voting.
+ * Applies stake-weighting to user preferences to produce final influence distribution.
+ *
+ * @param stakeOnCommunityValidator - Map of validator addresses to stake amounts
+ * @param weightMap - Nested map of user preferences (user → validator → weight)
+ * @returns Three different weight representations for different contexts (staked, normalized and the percentage)
+ */
 function getNormalizedWeights(
   stakeOnCommunityValidator: Map<SS58Address, bigint>,
   weightMap: Map<string, Map<string, bigint>>,
@@ -103,12 +154,11 @@ function getNormalizedWeights(
 }
 
 /**
- * Builds network vote arrays from a vote map.
+ * Transforms a weight map into the array format required by the blockchain API.
+ * Ensures all keys are valid SS58 addresses before submission.
  *
- * @param voteMap - A Map object containing uid-weight pairs.
- * @returns An object containing two arrays: uids and weights.
- * - `uids`: An array of user IDs.
- * - `weights`: An array of corresponding weights.
+ * @param voteMap - Map of agent addresses to their normalized weights
+ * @returns Array of [address, weight] tuples ready for on-chain submission
  */
 function buildNetworkVote(
   voteMap: Map<string, number>,
@@ -119,22 +169,54 @@ function buildNetworkVote(
   }
   return result;
 }
+
+/**
+ * Executes the on-chain transaction to submit new agent weights.
+ * Converts the weight map to the expected format and submits it
+ * via the allocator's keypair.
+ *
+ * @param api - Polkadot API instance for transaction submission
+ * @param keypair - Allocator account with permission to set weights
+ * @param voteMap - Map of agent addresses to their normalized weights
+ * @returns Transaction hash of the submitted transaction
+ */
 async function doVote(
   api: ApiPromise,
   keypair: KeyringPair,
   voteMap: Map<string, number>,
 ) {
   const weights = buildNetworkVote(voteMap);
-  try {
-    console.log(`keypair: ${keypair.address}`);
-    const setWeightsTx = await setChainWeights(api, keypair, weights);
-    console.log(`Set weights tx: ${setWeightsTx.toString()}`);
-  } catch (err) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    console.error(`Failed to set weights on chain: ${err}`);
-    return;
+
+  log.info(`Setting weights for keypair: ${keypair.address}`);
+  log.info(`Setting weights for ${weights.length}: agents`);
+
+  const weightRes = await tryAsync(setChainWeights(api, keypair, weights));
+
+  if (log.ifResultIsErr(weightRes)) {
+    throw new Error("Failed to set weights on chain");
   }
+  const [_weightErr, setWeightsTx] = weightRes;
+
+  log.info(`Set weights transaction: ${setWeightsTx.toString()}`);
+  return setWeightsTx;
 }
+
+/**
+ * Processes and submits the final agent weight aggregation.
+ * Orchestrates the entire process:
+ * 1. Fetches user weight preferences from database
+ * 2. Applies stake-weighting and normalization
+ * 3. Stores results back to database for reporting
+ * 4. Submits final weights to the blockchain
+ *
+ * Ensures the allocator itself is excluded from weight calculations
+ * to prevent self-voting conflicts.
+ *
+ * @param stakeOnCommunityValidator - Map of validator addresses to stake amounts
+ * @param api - Polkadot API instance for blockchain interaction
+ * @param keypair - Allocator account with permission to set weights
+ * @param lastBlock - Current block number for tracking weight calculation timing
+ */
 
 async function postAgentAggregation(
   stakeOnCommunityValidator: Map<SS58Address, bigint>,
@@ -142,22 +224,27 @@ async function postAgentAggregation(
   keypair: KeyringPair,
   lastBlock: number,
 ) {
-  const moduleWeightMap = await getUserWeightMap();
+  const weightMapRes = await tryAsync(getUserWeightMap());
+  if (log.ifResultIsErr(weightMapRes)) return;
+  const [_weightMapErr, moduleWeightMap] = weightMapRes;
+
   // gambiarra to remove the allocator from the weights
   moduleWeightMap.forEach((innerMap, _) => {
     if (innerMap.has(keypair.address)) {
       innerMap.delete(keypair.address);
     }
   });
+
   const { stakeWeights, normalizedWeights, percWeights } = getNormalizedWeights(
     stakeOnCommunityValidator,
     moduleWeightMap,
   );
+
   const dbModuleWeights: AgentWeight[] = Array.from(stakeWeights)
     .map(([agentKey, stakeWeight]): AgentWeight | null => {
       const percWeight = percWeights.get(agentKey);
       if (percWeight === undefined) {
-        console.error(`Agent id ${agentKey} not found in normalized weights`);
+        log.error(`Agent id ${agentKey} not found in normalized weights`);
         return null;
       }
       return {
@@ -168,11 +255,17 @@ async function postAgentAggregation(
       };
     })
     .filter((module) => module !== null);
+
   if (dbModuleWeights.length > 0) {
-    await upsertAgentWeight(dbModuleWeights);
+    const upsertRes = await tryAsync(upsertAgentWeight(dbModuleWeights));
+    if (log.ifResultIsErr(upsertRes)) return;
+    log.info(`Inserted ${dbModuleWeights.length} agent weights`);
   } else {
-    console.warn("No weights to insert");
+    log.warn("No weights to insert");
   }
 
-  await doVote(api, keypair, normalizedWeights);
+  const voteRes = await tryAsync(doVote(api, keypair, normalizedWeights));
+  if (log.ifResultIsErr(voteRes)) return;
+
+  log.info(`Successfully submitted votes for ${normalizedWeights.size} agents`);
 }
