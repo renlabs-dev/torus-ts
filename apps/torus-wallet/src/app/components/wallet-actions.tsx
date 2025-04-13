@@ -1,6 +1,7 @@
 "use client";
 
-import { WalletActionsBase, ActionButton } from "@torus-ts/ui/components/wallet-common";
+import type { ActionButton } from "@torus-ts/ui/components/wallet-actions-base";
+import { WalletActionsBase } from "@torus-ts/ui/components/wallet-actions-base";
 import { ReceiveAction } from "./actions/receive";
 import { SendAction } from "./actions/send";
 import { StakeAction } from "./actions/stake";
@@ -26,10 +27,10 @@ interface WalletActionProps {
 
 export function WalletActions({ route }: WalletActionProps) {
   const buttons = route === "transfer" ? transferButtons : stakingButtons;
-  
+
   return (
-    <WalletActionsBase 
-      buttons={buttons} 
+    <WalletActionsBase
+      buttons={buttons}
       defaultTab={buttons[0]?.text}
       className="animate-fade flex w-full flex-col gap-4"
     />

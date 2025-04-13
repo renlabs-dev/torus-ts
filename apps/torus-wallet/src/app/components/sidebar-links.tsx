@@ -1,12 +1,11 @@
 "use client";
 
-import { SidebarNav, NavOption } from "@torus-ts/ui/components/sidebar";
+import type { NavOption } from "@torus-ts/ui/components/sidebar-nav";
+import { SidebarNav } from "@torus-ts/ui/components/sidebar-nav";
 import { env } from "~/env";
-import { usePathname } from "next/navigation";
 
 export const SidebarLinks = () => {
   const chainEnv = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");
-  const pathname = usePathname();
 
   const bridgeLink =
     chainEnv === "mainnet"
@@ -23,9 +22,9 @@ export const SidebarLinks = () => {
     if (href === path) return true;
     return false;
   };
-  
+
   return (
-    <SidebarNav 
+    <SidebarNav
       navOptions={navOptions}
       defaultOption={navOptions[0]}
       isActive={isActive}
