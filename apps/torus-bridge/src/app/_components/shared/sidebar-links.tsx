@@ -13,7 +13,7 @@ const navSidebarOptions: NavOption[] = [
   { title: "Base Bridge", href: "/" },
 ];
 
-export function Sidebar() {
+export function SidebarLinks() {
   const isActive = (href: string, _path: string) => {
     return href === "/" ? true : false;
   };
