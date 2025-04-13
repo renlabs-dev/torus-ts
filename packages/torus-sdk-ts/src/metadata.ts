@@ -1,4 +1,4 @@
-import type { Result } from "@torus-network/torus-utils";
+import type { OldResult } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
@@ -25,14 +25,14 @@ export interface CustomDataError {
   message: string;
 }
 
-export type CustomMetadataState = Result<CustomMetadata, CustomDataError>;
+export type CustomMetadataState = OldResult<CustomMetadata, CustomDataError>;
 
 export async function processMetadata<T extends CustomMetadata>(
   zodSchema: ZodSchema<T>,
   url: string,
   entryId: number,
   kind?: string,
-): Promise<Result<T, CustomDataError>> {
+): Promise<OldResult<T, CustomDataError>> {
   const response = await fetch(url);
   const obj: unknown = await response.json();
 
@@ -47,7 +47,7 @@ export async function processMetadata<T extends CustomMetadata>(
 export async function processProposalMetadata(
   url: string,
   entryId: number,
-): Promise<Result<CustomMetadata, CustomDataError>> {
+): Promise<OldResult<CustomMetadata, CustomDataError>> {
   return await processMetadata(
     CUSTOM_METADATA_SCHEMA,
     url,
@@ -59,7 +59,7 @@ export async function processProposalMetadata(
 export async function processApplicationMetadata(
   url: string,
   entryId: number,
-): Promise<Result<ApplicationMetadata, CustomDataError>> {
+): Promise<OldResult<ApplicationMetadata, CustomDataError>> {
   return await processMetadata(
     APPLICATION_METADATA_SCHEMA,
     url,
@@ -71,7 +71,7 @@ export async function processApplicationMetadata(
 export async function processAgentMetadata(
   url: string,
   entryId: number,
-): Promise<Result<AgentMetadata, CustomDataError>> {
+): Promise<OldResult<AgentMetadata, CustomDataError>> {
   return await processMetadata(AGENT_METADATA_SCHEMA, url, entryId, "AGENT  ");
 }
 
@@ -79,7 +79,7 @@ export async function fetchCustomMetadata(
   kind: "proposal" | "application" | "agent",
   entryId: number,
   metadataField: string,
-): Promise<Result<CustomMetadata, CustomDataError>> {
+): Promise<OldResult<CustomMetadata, CustomDataError>> {
   const r = IPFS_URI_SCHEMA.safeParse(metadataField);
 
   if (!r.success) {
