@@ -221,8 +221,7 @@ export const userAgentWeightRouter = {
   createMany: authenticatedProcedure
     .input(z.array(USER_AGENT_WEIGHT_INSERT_SCHEMA))
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData.userKey;
 
       const dataToInsert = input.map((item) => ({
         agentKey: item.agentKey,
@@ -235,8 +234,7 @@ export const userAgentWeightRouter = {
   delete: authenticatedProcedure
     .input(z.object({ userKey: z.string() }))
     .mutation(async ({ ctx }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData.userKey;
       await ctx.db
         .delete(userAgentWeightSchema)
         .where(eq(userAgentWeightSchema.userKey, userKey));
