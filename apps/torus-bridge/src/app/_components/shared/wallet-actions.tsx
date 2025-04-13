@@ -1,9 +1,10 @@
 "use client";
 
-import { WalletActionsBase, ActionButton } from "@torus-ts/ui/components/wallet-common";
+import type { ActionButton } from "@torus-ts/ui/components/wallet-actions-base";
+import { WalletActionsBase } from "@torus-ts/ui/components/wallet-actions-base";
 import { updateSearchParams } from "~/utils/query-params";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
 
@@ -20,43 +21,48 @@ const tabs: ActionButton[] = [
   },
 ];
 
-const defaultTab = tabs[0];
+const DEFAULT_TAB = tabs[0];
 
 function WalletOptions() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentTab = searchParams.get("tab");
 
-  const handleTabChange = (value: string) => {
-    const updates: Record<string, string | null> = {};
+  const activeTab = useMemo(() => {
+    return tabs.find((tab) => tab.params === currentTab) ?? DEFAULT_TAB;
+  }, [currentTab]);
 
-    updates.tab = value;
-    if (value === "torus") {
-      updates.from = null;
-      updates.to = null;
-      updates.mode = "bridge";
-    } else if (value === "base") {
-      updates.mode = null;
-      updates.from = "base";
-      updates.to = "torus";
-    }
+  const handleTabChange = useCallback(
+    (value: string) => {
+      // improve this @rodrigooler
+      const updates = {
+        tab: value,
+        ...(value === "torus"
+          ? { from: null, to: null, mode: "bridge" }
+          : value === "base"
+            ? { mode: null, from: "base", to: "torus" }
+            : {}),
+      };
 
-    const newQuery = updateSearchParams(searchParams, updates);
-    router.push("/?" + newQuery);
-  };
+      const newQuery = updateSearchParams(searchParams, updates);
+      router.push("/?" + newQuery);
+    },
+    [searchParams, router],
+  );
 
   useEffect(() => {
-    if (!currentTab || !tabs.some((view) => view.params === currentTab)) {
-      handleTabChange(defaultTab.params as string);
+    if (!currentTab || !tabs.some((tab) => tab.params === currentTab)) {
+      if (DEFAULT_TAB && !!DEFAULT_TAB.params) {
+        handleTabChange(DEFAULT_TAB.params);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab, router, searchParams]);
+  }, [currentTab, handleTabChange]);
 
   return (
-    <WalletActionsBase 
+    <WalletActionsBase
       buttons={tabs}
       onTabChange={handleTabChange}
-      currentTab={tabs.find((tab) => tab.params === currentTab)?.params ?? defaultTab.params}
+      currentTab={activeTab?.params ?? ""}
       className="animate-fade flex w-full flex-col gap-4"
     />
   );
@@ -66,10 +72,10 @@ export function WalletActions() {
   const searchParams = useSearchParams();
   const view = searchParams.get("view") as "wallet" | null;
 
-  const routeComponents = {
+  const routeComponents = Object.freeze({
     wallet: <WalletOptions />,
     // bridge: <BridgeAction />,
-  };
+  });
 
   return routeComponents[view ?? "wallet"];
 }
