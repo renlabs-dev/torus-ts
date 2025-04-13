@@ -51,6 +51,20 @@ async function cacheCreateWSAPI() {
  *
  * @see https://trpc.io/docs/server/context
  */
+export interface TRPCContext {
+  db: ReturnType<typeof createDb>;
+  authType?: string;
+  sessionData: SessionData | null;
+  jwtSecret: string;
+  authOrigin: string;
+  allocatorAddress: SS58Address;
+  wsAPI: Promise<ApiPromise>;
+}
+
+export interface AuthenticatedTRPCContext extends TRPCContext {
+  sessionData: SessionData;
+}
+
 export const createTRPCContext = (opts: {
   headers: Headers;
   session: null;
@@ -77,9 +91,8 @@ export const createTRPCContext = (opts: {
     try {
       sessionData = decodeSessionToken(authToken, jwtSecret);
       assert(sessionData.uri === opts.authOrigin);
-    } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      console.error(`Failed to validate JWT: ${err}`);
+    } catch (err: unknown) {
+      console.error(`Failed to validate JWT: ${String(err)}`);
     }
   }
 
@@ -90,7 +103,7 @@ export const createTRPCContext = (opts: {
     jwtSecret,
     authOrigin: opts.authOrigin,
     allocatorAddress: opts.allocatorAddress,
-    wsAPI: wsAPI,
+    wsAPI,
   };
 };
 
@@ -100,7 +113,7 @@ export const createTRPCContext = (opts: {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
   errorFormatter: ({ shape, error }) => ({
     ...shape,
@@ -148,26 +161,32 @@ export const publicProcedure = t.procedure;
  *
  * If the token is invalid, expired, or the user is not found, it will throw an error.
  */
-export const authenticatedProcedure = t.procedure.use(
-  async function isAuthenticated(opts) {
-    if (!opts.ctx.authType) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must have an active session",
-      });
-    }
-    if (opts.ctx.authType !== "Bearer") {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Invalid or unsupported authentication type",
-      });
-    }
-    if (!opts.ctx.sessionData?.userKey) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Invalid or expired token",
-      });
-    }
-    return opts.next(opts);
-  },
-);
+export const authenticatedProcedure = t.procedure.use(async (opts) => {
+  if (!opts.ctx.authType) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must have an active session",
+    });
+  }
+  if (opts.ctx.authType !== "Bearer") {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid or unsupported authentication type",
+    });
+  }
+  if (!opts.ctx.sessionData?.userKey) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid or expired token",
+    });
+  }
+
+  const authenticatedCtx: AuthenticatedTRPCContext = {
+    ...opts.ctx,
+    sessionData: opts.ctx.sessionData,
+  };
+
+  return opts.next({
+    ctx: authenticatedCtx,
+  });
+});

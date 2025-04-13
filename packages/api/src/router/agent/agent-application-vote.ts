@@ -41,8 +41,7 @@ export const agentApplicationVoteRouter = {
   create: authenticatedProcedure
     .input(AGENT_APPLICATION_VOTE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData.userKey;
 
       await ctx.db
         .insert(agentApplicationVoteSchema)
@@ -74,8 +73,7 @@ export const agentApplicationVoteRouter = {
   delete: authenticatedProcedure
     .input(AGENT_APPLICATION_VOTE_INSERT_SCHEMA.pick({ applicationId: true }))
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData.userKey;
       await ctx.db
         .delete(agentApplicationVoteSchema)
         .where(

@@ -52,8 +52,7 @@ export const commentInteractionRouter = {
   reaction: authenticatedProcedure
     .input(COMMENT_INTERACTION_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData.userKey;
       await ctx.db
         .insert(commentInteractionSchema)
         .values({
@@ -76,7 +75,7 @@ export const commentInteractionRouter = {
   deleteReaction: authenticatedProcedure
     .input(COMMENT_INTERACTION_INSERT_SCHEMA.pick({ commentId: true }))
     .mutation(async ({ ctx, input }) => {
-      const userKey = ctx.sessionData?.userKey;
+      const userKey = ctx.sessionData.userKey;
       await ctx.db
         .delete(commentInteractionSchema)
         .where(

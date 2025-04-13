@@ -20,8 +20,7 @@ export const cadreVoteRouter = {
   create: authenticatedProcedure
     .input(CADRE_VOTE_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData.userKey;
       await ctx.db
         .insert(cadreVoteSchema)
         .values({ ...input, userKey: userKey })
@@ -31,8 +30,7 @@ export const cadreVoteRouter = {
   delete: authenticatedProcedure
     .input(CADRE_VOTE_INSERT_SCHEMA.pick({ applicantKey: true }))
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const userKey = ctx.sessionData!.userKey;
+      const userKey = ctx.sessionData.userKey;
 
       await ctx.db
         .delete(cadreVoteSchema)
