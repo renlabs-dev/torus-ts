@@ -1,0 +1,119 @@
+"use client";
+
+import { Card } from "@torus-ts/ui/components/card";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
+import { Lock, Scale, Unlock, Copy } from "lucide-react";
+import Image from "next/image";
+import { useMemo } from "react";
+import { useWallet } from "~/context/wallet-provider";
+
+const BALANCE_ICONS = {
+  free: <Lock size={16} />,
+  staked: <Unlock size={16} />,
+  total: <Scale size={16} />,
+};
+
+interface BalanceItemProps {
+  amount: bigint;
+  icon: React.ReactNode;
+  label: string;
+  isLoading: boolean;
+}
+
+interface WalletHeaderProps {
+  address: string | undefined;
+}
+
+function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
+  return (
+    <div key={label} className="flex flex-col">
+      {!isLoading ? (
+        <p className="text-muted-foreground flex items-end gap-2 text-white font-bold">
+          {formatToken(amount)}
+          <span>TOR</span>
+        </p>
+      ) : (
+        <Skeleton className="w-1/2 py-3" />
+      )}
+      <span className="flex items-center gap-2 text-sm text-[#A1A1AA]">
+        {icon} {label}
+      </span>
+    </div>
+  );
+}
+
+function WalletHeader({ address }: WalletHeaderProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 flex-shrink-0">
+        <Image
+          src="/wallet-info-logo.svg"
+          alt="Wallet Info Logo"
+          width={32}
+          height={32}
+        />
+      </div>
+      {address ? (
+        <CopyButton
+          className="h-fit p-0 text-muted-foreground hover:text-white !text-base"
+          variant="ghost"
+          copy={address}
+        >
+          {smallAddress(address, 9)}
+          <Copy aria-hidden="true" className="ml-1" />
+          <span className="sr-only">Copy address</span>
+        </CopyButton>
+      ) : (
+        <span className="text-muted-foreground">Connect Wallet</span>
+      )}
+    </div>
+  );
+}
+
+export function WalletBalance() {
+  const { accountFreeBalance, accountStakedBalance, selectedAccount } =
+    useWallet();
+
+  const getBalance = useMemo(() => {
+    const free = accountFreeBalance.data ?? 0n;
+    const staked = accountStakedBalance ?? 0n;
+
+    return { free, staked };
+  }, [accountFreeBalance.data, accountStakedBalance]);
+
+  const balances = [
+    {
+      label: "Free Balance",
+      amount: getBalance.free,
+      icon: BALANCE_ICONS.free,
+    },
+    {
+      label: "Staked Balance",
+      amount: getBalance.staked,
+      icon: BALANCE_ICONS.staked,
+    },
+  ];
+
+  const isLoading = accountFreeBalance.isLoading;
+
+  return (
+    <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
+      <Card className="flex w-full flex-col gap-12 px-7 py-5">
+        <WalletHeader address={selectedAccount?.address} />
+        <div className="flex flex-col gap-6">
+          {balances.map((balance) => (
+            <BalanceItem
+              key={balance.label}
+              amount={balance.amount}
+              icon={balance.icon}
+              label={balance.label}
+              isLoading={isLoading}
+            />
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}

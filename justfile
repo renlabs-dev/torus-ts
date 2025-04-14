@@ -49,6 +49,9 @@ lint-ws:
 check-all:
   pnpm exec turbo run typecheck lint
 
+check name:
+  pnpm exec turbo run typecheck lint -F {{name}}
+
 test filter="*":
   pnpm exec turbo run test -F "{{filter}}"
 
@@ -109,5 +112,5 @@ i:
 b:
   pnpm exec ./scripts/dev-helper with-env turbo run build --ui=tui
 
-c: 
+c:
   pnpm exec turbo run format lint typecheck
