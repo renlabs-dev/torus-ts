@@ -1,12 +1,7 @@
-import { Cairo, Oxanium } from "next/font/google";
+import { Fira_Mono } from "next/font/google";
 
-export const cairo = Cairo({
+export const firaMono = Fira_Mono({
   subsets: ["latin"],
   display: "swap",
-});
-
-export const oxanium = Oxanium({
-  subsets: ["latin"],
-  display: "swap",
-  weight: "300",
+  weight: "400",
 });
