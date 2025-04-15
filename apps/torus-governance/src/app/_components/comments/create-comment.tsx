@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { SS58Address } from "@torus-network/sdk";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { fromRems } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -40,6 +40,11 @@ const commentSchema = z.object({
 
 type CommentFormData = z.infer<typeof commentSchema>;
 
+interface ToastMessage {
+  title: string;
+  description: string;
+}
+
 export function CreateComment({
   id,
   itemType,
@@ -53,10 +58,32 @@ export function CreateComment({
   const utils = api.useUtils();
   const { toast } = useToast();
 
-  const cadreList = api.cadre.all.useQuery();
-  const isUserCadre = !!cadreList.data?.find(
-    (cadre) => cadre.userKey === selectedAccount?.address,
-  );
+  const hasEnoughBalance = React.useMemo(() => {
+    if (!accountStakedBalance) return false;
+    const formattedBalance = Number(fromRems(accountStakedBalance));
+    return formattedBalance >= MIN_STAKE_REQUIRED;
+  }, [accountStakedBalance]);
+
+  // Store wallet connection status in a ref to handle wallet changes
+  const walletConnectedRef = React.useRef<boolean>(false);
+  React.useEffect(() => {
+    if (selectedAccount?.address) {
+      walletConnectedRef.current = true;
+    }
+  }, [selectedAccount?.address]);
+
+  const form = useForm<CommentFormData>({
+    resolver: zodResolver(commentSchema),
+    defaultValues: { content: "", name: "" },
+  });
+
+  const { handleSubmit, reset, control, watch } = form;
+  const contentValue = watch("content");
+  const remainingChars = MAX_CHARACTERS - (contentValue.length || 0);
+
+  const showErrorToast = (message: ToastMessage) => {
+    toast(message);
+  };
 
   const CreateCommentMutation = api.comment.create.useMutation({
     onSuccess: async () => {
@@ -68,7 +95,7 @@ export function CreateComment({
       await utils.comment.byId.invalidate({ proposalId: id });
     },
     onError: (error) => {
-      toast({
+      showErrorToast({
         title: "Uh oh! Something went wrong.",
         description:
           error.message || "An unexpected error occurred. Please try again.",
@@ -76,48 +103,41 @@ export function CreateComment({
     },
   });
 
-  const form = useForm<CommentFormData>({
-    resolver: zodResolver(commentSchema),
-    defaultValues: { content: "", name: "" },
-  });
-
-  const { handleSubmit, reset, control, watch } = form;
-
-  const contentValue = watch("content");
-  const remainingChars = MAX_CHARACTERS - (contentValue.length || 0);
-
-  const onSubmit = async (data: CommentFormData) => {
+  const validateSubmission = (): boolean => {
     if (!selectedAccount?.address) {
-      toast({
+      showErrorToast({
         title: "Uh oh! Something went wrong.",
         description: "Please connect your wallet to submit a comment.",
       });
-      return;
+      return false;
     }
-    if (itemType === "PROPOSAL") {
-      const staked = accountStakedBalance
-        ? Number(formatToken(accountStakedBalance))
-        : 0;
-      if (staked < MIN_STAKE_REQUIRED) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
-        });
-        return;
-      }
+
+    if (!hasEnoughBalance) {
+      showErrorToast({
+        title: "Uh oh! Something went wrong.",
+        description: `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
+      });
+      return false;
     }
+
     if (
       itemType === "AGENT_APPLICATION" &&
-      !isUserCadre &&
       author !== selectedAccount.address
     ) {
-      toast({
+      showErrorToast({
         title: "Uh oh! Something went wrong.",
         description:
           "Only Curator DAO members can submit comments in DAO mode.",
       });
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  const onSubmit = async (data: CommentFormData) => {
+    if (!validateSubmission()) return;
+
     try {
       await CreateCommentMutation.mutateAsync({
         content: data.content,
@@ -127,12 +147,12 @@ export function CreateComment({
       });
     } catch (err) {
       if (err instanceof z.ZodError) {
-        toast({
+        showErrorToast({
           title: "Uh oh! Something went wrong.",
           description: err.errors[0]?.message ?? "Invalid input",
         });
       } else {
-        toast({
+        showErrorToast({
           title: "Uh oh! Something went wrong.",
           description: "An unexpected error occurred. Please try again.",
         });
@@ -140,38 +160,66 @@ export function CreateComment({
     }
   };
 
-  const isSubmitDisabled = () => {
-    if (CreateCommentMutation.isPending || !selectedAccount?.address)
-      return true;
-    if (itemType === "PROPOSAL") {
-      const staked = accountStakedBalance
-        ? Number(formatToken(accountStakedBalance))
-        : 0;
-      return staked < MIN_STAKE_REQUIRED;
-    }
-    return !isUserCadre && author !== selectedAccount.address;
-  };
-
-  const setOverlay = () => {
-    if (!selectedAccount?.address) return true;
-    if (itemType === "PROPOSAL") {
-      const staked = accountStakedBalance
-        ? Number(formatToken(accountStakedBalance))
-        : 0;
-      if (staked < MIN_STAKE_REQUIRED) return true;
-    }
+  const isSubmitDisabled = React.useMemo(() => {
     if (
-      itemType === "AGENT_APPLICATION" &&
-      !isUserCadre &&
-      author !== selectedAccount.address
+      CreateCommentMutation.isPending ||
+      !selectedAccount?.address ||
+      !contentValue.length ||
+      !hasEnoughBalance
     ) {
       return true;
     }
+
+    // Only applies to AGENT_APPLICATION type
+    if (itemType === "AGENT_APPLICATION") {
+      return author !== selectedAccount.address;
+    }
+
     return false;
+  }, [
+    CreateCommentMutation.isPending,
+    selectedAccount?.address,
+    contentValue.length,
+    hasEnoughBalance,
+    itemType,
+    author,
+  ]);
+
+  const renderOverlay = () => {
+    // No wallet connected
+    if (!selectedAccount?.address) {
+      return (
+        <>
+          <div className="bg-dark/80 absolute inset-0 z-10 bg-opacity-80"></div>
+          <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+            <p className="mt-2 text-center text-lg">
+              Please connect your wallet to submit a comment.
+            </p>
+          </div>
+        </>
+      );
+    }
+
+    // Not enough balance
+    if (!hasEnoughBalance) {
+      return (
+        <>
+          <div className="bg-dark/80 absolute inset-0 z-10 bg-opacity-80"></div>
+          <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+            <p className="mt-2 text-center text-lg">
+              You need to have at least {MIN_STAKE_REQUIRED} TORUS total staked
+              balance to submit a comment.
+            </p>
+          </div>
+        </>
+      );
+    }
+
+    return null;
   };
 
   return (
-    <div className="animate-fade-down animate-delay-200 hidden h-fit min-h-max flex-col items-center justify-between text-white md:flex">
+    <div className="animate-fade-down animate-delay-700 hidden h-fit min-h-max flex-col items-center justify-between text-white md:flex">
       <div className="mb-2 w-full pb-1">
         <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
       </div>
@@ -223,64 +271,14 @@ export function CreateComment({
               type="submit"
               variant="outline"
               className="py-6 transition"
-              disabled={
-                isSubmitDisabled() ||
-                CreateCommentMutation.isPending ||
-                !selectedAccount?.address ||
-                !contentValue.length
-              }
+              disabled={isSubmitDisabled}
             >
               {CreateCommentMutation.isPending ? "Posting..." : "Post"}
             </Button>
           </form>
         </Form>
 
-        {setOverlay() && (
-          <div className="absolute inset-0 z-10 bg-black bg-opacity-80"></div>
-        )}
-
-        {!selectedAccount?.address && itemType === "PROPOSAL" && (
-          <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-            <p className="mt-2 text-center text-lg">
-              Please connect your wallet to submit a comment.
-            </p>
-          </div>
-        )}
-
-        {selectedAccount?.address &&
-          accountStakedBalance &&
-          Number(formatToken(accountStakedBalance)) < MIN_STAKE_REQUIRED &&
-          itemType === "PROPOSAL" && (
-            <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-              <p className="mt-2 text-center text-lg">
-                You need to have at least {MIN_STAKE_REQUIRED} TORUS total
-                staked balance to submit a comment.
-              </p>
-            </div>
-          )}
-
-        {!selectedAccount?.address && itemType === "AGENT_APPLICATION" && (
-          <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
-            <p className="mt-2 text-center text-sm">
-              Are you a Curator DAO member?
-            </p>
-            <p className="mt-2 text-center text-sm">
-              Please connect your wallet to comment.
-            </p>
-          </div>
-        )}
-
-        {selectedAccount &&
-          !isUserCadre &&
-          author !== selectedAccount.address &&
-          itemType === "AGENT_APPLICATION" && (
-            <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
-              <p className="mt-2 text-center text-lg">
-                You must be a Curator DAO member to comment on agent
-                applications.
-              </p>
-            </div>
-          )}
+        {renderOverlay()}
       </div>
     </div>
   );

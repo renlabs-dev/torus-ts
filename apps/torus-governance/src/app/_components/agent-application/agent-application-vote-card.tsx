@@ -17,16 +17,14 @@ import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
-const voteOptions: WhitelistVoteType[] = ["ACCEPT", "REFUSE"];
-
 const CardBarebones = (props: { children: React.ReactNode }) => {
   return (
-    <div className="animate-fade-down">
+    <Card className="animate-fade-down animate-delay-[1200ms] p-4 lg:p-6">
       <div className="pb-6 pl-0">
-        <h3 className="text-lg">Cast your vote</h3>
+        <p className="font-semibold">Cast your vote</p>
       </div>
       {props.children}
-    </div>
+    </Card>
   );
 };
 
@@ -105,11 +103,12 @@ const VoteCardFunctionsContent = (props: {
     <div className="flex w-full flex-col items-end gap-4">
       <div
         className={`relative z-20 flex w-full flex-col items-start gap-2 ${
-          (!isAccountConnected || !isUserCadre) && "blur-md"
+          (!isAccountConnected || !isUserCadre) && "opacity-30"
         }`}
       >
         <ToggleGroup
           type="single"
+          variant="outline"
           value={vote}
           onValueChange={(voteType) =>
             handleVotePreference(voteType as WhitelistVoteType | "")
@@ -117,19 +116,25 @@ const VoteCardFunctionsContent = (props: {
           disabled={voteLoading || !isUserCadre}
           className="flex w-full gap-2"
         >
-          {voteOptions.map((option) => (
-            <ToggleGroupItem
-              key={option}
-              variant="outline"
-              value={option}
-              className={`w-full capitalize ${
-                voteLoading && "cursor-not-allowed"
-              } ${option === vote ? "border-white" : "border-muted bg-card"}`}
-              disabled={voteLoading}
-            >
-              {option.toLocaleLowerCase()}
-            </ToggleGroupItem>
-          ))}
+          <ToggleGroupItem
+            value={"ACCEPT"}
+            className={`w-full text-green-500 data-[state=on]:text-green-500 ${
+              voteLoading && "cursor-not-allowed"
+            } `}
+            disabled={voteLoading}
+          >
+            Accept
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            variant="outline"
+            value={"REFUSE"}
+            className={`w-full text-red-500 data-[state=on]:text-red-500 ${
+              voteLoading && "cursor-not-allowed"
+            } `}
+            disabled={voteLoading}
+          >
+            Refuse
+          </ToggleGroupItem>
         </ToggleGroup>
 
         <Button
@@ -147,13 +152,13 @@ const VoteCardFunctionsContent = (props: {
         </Button>
       </div>
       {!isAccountConnected && (
-        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center text-sm">
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center pt-12 text-sm">
           <span>Are you a Curator DAO member?</span>
           <span>Please connect your wallet to vote</span>
         </div>
       )}
       {isAccountConnected && !isUserCadre && (
-        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5">
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5 px-6 pt-6">
           <span className="my-4">
             You must be a Curator DAO member to be able to vote on agent
             applications.
