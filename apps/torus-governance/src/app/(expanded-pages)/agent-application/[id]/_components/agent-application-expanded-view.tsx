@@ -14,6 +14,7 @@ import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { LoaderCircle } from "lucide-react";
 import { handleCustomAgentApplications } from "../../../../../utils";
+import { AgentApplicationExpandedVoteBars } from "./agent-application-expanded-vote-bars";
 
 interface CustomContent {
   paramId: number;
@@ -97,6 +98,7 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
           {/* Mobile Details Section */}
           <div className="flex w-full flex-col gap-6 transition-all md:hidden">
             <DetailsCard {...detailsCardProps} />
+            <AgentApplicationExpandedVoteBars id={content.id} />
             <AgentApplicationVoteTypeCard
               applicationId={content.id}
               applicationStatus={content.status}
@@ -125,7 +127,10 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
             applicationId={content.id}
             applicationStatus={content.status}
           />
-          <div className="animate-fade-down animate-delay-[1400ms] w-full">
+          <div className="animate-fade-down animate-delay-[800ms] w-full">
+            <AgentApplicationExpandedVoteBars id={content.id} />
+          </div>
+          <div className="animate-fade-down animate-delay-[1600ms] w-full">
             <CreateCadreCandidates />
           </div>
           <PenaltyManager agentKey={content.agentKey} status={content.status} />
