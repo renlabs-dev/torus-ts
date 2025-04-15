@@ -20,7 +20,9 @@ export default async function DaoPortalPage(props: {
   return (
     <div className="flex w-full flex-col pb-10">
       <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
-        <CreateCadreCandidates />
+        <div>
+          <CreateCadreCandidates />
+        </div>
         <ViewSelector currentStatus={status ?? "PENDING"} />
       </div>
       {candidates.length === 0 ? (
