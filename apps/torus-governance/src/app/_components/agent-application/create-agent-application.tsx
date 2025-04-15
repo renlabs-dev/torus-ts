@@ -1,8 +1,9 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { AppRouter } from "@torus-ts/api";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -25,27 +26,16 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import type { inferProcedureInput } from "@trpc/server";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useGovernance } from "~/context/governance-provider";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-const agentApplicationSchema = z.object({
-  applicationKey: z.string().min(1, "Application Key is required"),
-  discordId: z
-    .string()
-    .min(17, "Discord ID is too short")
-    .max(20, "Discord ID is too long"),
-  title: z.string().min(1, "Title is required"),
-  body: z.string().min(1, "Body is required"),
-  criteriaAgreement: z.boolean().refine((value) => value === true, {
-    message: "You must agree to the requirements",
-  }),
-});
-
-type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
+type AgentApplicationFormData = NonNullable<
+  inferProcedureInput<AppRouter["agentApplication"]["create"]>
+>;
 
 export function CreateAgentApplication() {
   const {
@@ -70,7 +60,6 @@ export function CreateAgentApplication() {
 
   const form = useForm<AgentApplicationFormData>({
     disabled: !isAccountConnected,
-    resolver: zodResolver(agentApplicationSchema),
     defaultValues: {
       applicationKey: "",
       discordId: "",
@@ -98,6 +87,58 @@ export function CreateAgentApplication() {
   const refetchHandler = async () => {
     await agentApplications.refetch();
   };
+
+  // async function uploadFile(fileToUpload: File): Promise<void> {
+  //   setUploading(true);
+
+  //   // Create form data
+  //   const data = new FormData();
+  //   data.set("file", fileToUpload);
+
+  //   // Upload file
+  //   const [fetchError, res] = await tryAsync(
+  //     fetch("/api/files", {
+  //       method: "POST",
+  //       body: data,
+  //     }),
+  //   );
+
+  //   if (fetchError !== undefined) {
+  //     setUploading(false);
+  //     console.error(fetchError);
+  //     toast.error("Error posting file, try again.");
+  //     return;
+  //   }
+
+  //   const { cid } = PIN_FILE_RESULT.parse(await res.json());
+  //   console.log(cid.toString());
+  //   setUploading(false);
+
+  //   if (!accountFreeBalance.data) {
+  //     return;
+  //   }
+
+  //   if (!networkConfigs.data) {
+  //     toast.error("Network configs are still loading.");
+  //     return;
+  //   }
+
+  //   const daoApplicationCost = networkConfigs.data.agentApplicationCost;
+
+  //   if (accountFreeBalance.data > daoApplicationCost) {
+  //     void AddAgentApplication({
+  //       applicationKey: getValues("applicationKey"),
+  //       IpfsHash: cidToIpfsUri(cid),
+  //       removing: false,
+  //       callback: (tx) => setTransactionStatus(tx),
+  //       refetchHandler,
+  //     });
+  //   } else {
+  //     toast.error(
+  //       `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+  //     );
+  //   }
+  // }
 
   async function uploadFile(fileToUpload: File): Promise<void> {
     try {

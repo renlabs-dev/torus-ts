@@ -40,6 +40,8 @@ export const timeFields = () => ({
   deletedAt: timestampz("deleted_at").default(sql`null`),
 });
 
+const DISCORD_ID_LENGTH = 20;
+
 // ==== Agents ====
 
 /**
@@ -81,6 +83,19 @@ export const agentSchema = createTable(
     ),
   ],
 );
+
+export const agentApplicationSchema = createTable("agent_application", {
+  id: serial("id").primaryKey(),
+  applicationKey: ss58Address("application_key").notNull().unique(),
+  discordId: varchar("discord_id", { length: DISCORD_ID_LENGTH })
+    .notNull()
+    .unique(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  criteriaAgreement: boolean().notNull().default(false),
+
+  ...timeFields(),
+});
 
 // ==== Agent Allocator ====
 
@@ -338,7 +353,6 @@ export const commentReportSchema = createTable("comment_report", {
 
 // ---- Cadre ----
 
-const DISCORD_ID_LENGTH = 20;
 /**
  * A groups of users that can vote on Applications.
  */

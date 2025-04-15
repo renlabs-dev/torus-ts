@@ -1,6 +1,9 @@
 import { AsyncResultObj } from "./async-result";
+import { BasicLogger } from "./logger";
 import type { Result } from "./result";
 import { empty, makeErr, makeOk } from "./result";
+
+const log = BasicLogger.create({ name: "error-helpers" });
 
 /**
  * Type guard to check if a value is an instance of Error.
@@ -167,6 +170,15 @@ export function tryAsyncStr<T>(
       return makeOk(value);
     })(),
   );
+}
+
+export async function tryAsyncLogging<T>(
+  asyncOperation: PromiseLike<T>,
+  message?: string | ((error: Error) => string),
+): Promise<[undefined, T] | [Error, undefined]> {
+  const result = await tryAsync(asyncOperation);
+  if (log.ifResultIsErr(result, message)) return [result[0], undefined];
+  return [undefined, result[1]];
 }
 
 // Unwrap function to convert AsyncResultObj to tuple format
