@@ -77,9 +77,6 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
                 <p className="text-card-foreground">
                   {metadata.short_description}
                 </p>
-                <div className="flex gap-4">
-                  <EditAgentButton agentKey={agentKey} />
-                </div>
               </div>
             </Card>
 
