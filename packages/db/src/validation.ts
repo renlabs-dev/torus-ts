@@ -22,8 +22,6 @@ export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
   deletedAt: true,
 });
 
-
-
 export const CADRE_CANDIDATE_INSERT_SCHEMA = createInsertSchema(
   cadreCandidateSchema,
 ).omit({
