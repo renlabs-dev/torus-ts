@@ -58,8 +58,6 @@ export function CreateComment({
   const utils = api.useUtils();
   const { toast } = useToast();
 
-  console.log(accountStakedBalance);
-
   const hasEnoughBalance = React.useMemo(() => {
     if (!accountStakedBalance) return false;
     const formattedBalance = Number(fromRems(accountStakedBalance));
