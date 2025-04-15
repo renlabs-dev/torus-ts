@@ -90,7 +90,7 @@ async function pushCadreNotification(
   );
   if (log.ifResultIsErr(cadreCandidatesRes)) return;
   const [_cadreCandidatesErr, cadreCandidates] = cadreCandidatesRes;
-  const candidatesUrl = `${buildUrl()}?view=dao-portal`;
+  const candidatesUrl = `${buildUrl()}/dao-portal`;
   for (const candidate of cadreCandidates) {
     const discordMessage = buildCadreMessage(candidate, candidatesUrl);
 

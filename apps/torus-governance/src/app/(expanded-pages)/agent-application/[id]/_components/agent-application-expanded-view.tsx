@@ -65,7 +65,7 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
   if (agentApplications.isLoading || !content)
     return (
       <div className="flex w-full items-center justify-center lg:h-[calc(100svh-203px)]">
-        <h1 className="text-2xl text-white">Loading...</h1>
+        <h1 className="text-lg text-white">Loading...</h1>
         <LoaderCircle className="ml-2 animate-spin" color="#FFF" width={20} />
       </div>
     );
@@ -97,7 +97,6 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
           {/* Mobile Details Section */}
           <div className="flex w-full flex-col gap-6 transition-all md:hidden">
             <DetailsCard {...detailsCardProps} />
-
             <AgentApplicationVoteTypeCard
               applicationId={content.id}
               applicationStatus={content.status}
@@ -106,14 +105,6 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
             <PenaltyManager
               agentKey={content.agentKey}
               status={content.status}
-            />
-          </div>
-
-          {/* Desktop Proposal Vote Card */}
-          <div className="hidden md:block">
-            <AgentApplicationVoteTypeCard
-              applicationId={content.id}
-              applicationStatus={content.status}
             />
           </div>
 
@@ -128,9 +119,15 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
         </div>
 
         {/* Right Column */}
-        <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
+        <div className="hidden flex-col gap-4 transition-all md:flex lg:w-1/3">
           <DetailsCard {...detailsCardProps} />
-          <CreateCadreCandidates />
+          <AgentApplicationVoteTypeCard
+            applicationId={content.id}
+            applicationStatus={content.status}
+          />
+          <div className="animate-fade-down animate-delay-[1400ms] w-full">
+            <CreateCadreCandidates />
+          </div>
           <PenaltyManager agentKey={content.agentKey} status={content.status} />
         </div>
       </div>
