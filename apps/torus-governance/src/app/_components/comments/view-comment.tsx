@@ -326,7 +326,7 @@ export function ViewComment({
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       title="Like"
                       onClick={() => handleVote(comment.id, "LIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
@@ -336,7 +336,7 @@ export function ViewComment({
                       <span>{comment.likes}</span>
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       title="Dislike"
                       onClick={() => handleVote(comment.id, "DISLIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
