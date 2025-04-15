@@ -1,6 +1,7 @@
 "use client";
 
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { AppRouter } from "@torus-ts/api";
@@ -37,6 +38,8 @@ type AgentApplicationFormData = NonNullable<
   inferProcedureInput<AppRouter["agentApplication"]["create"]>
 >;
 
+const log = BasicLogger.create({ name: "create-agent-application" });
+
 export function CreateAgentApplication() {
   const {
     isAccountConnected,
@@ -59,7 +62,6 @@ export function CreateAgentApplication() {
   );
 
   const form = useForm<AgentApplicationFormData>({
-    disabled: !isAccountConnected,
     defaultValues: {
       applicationKey: "",
       discordId: "",
@@ -67,6 +69,7 @@ export function CreateAgentApplication() {
       body: "",
       criteriaAgreement: false,
     },
+    mode: "onChange",
   });
 
   const { control, handleSubmit, setValue, getValues } = form;
@@ -88,107 +91,76 @@ export function CreateAgentApplication() {
     await agentApplications.refetch();
   };
 
-  // async function uploadFile(fileToUpload: File): Promise<void> {
-  //   setUploading(true);
-
-  //   // Create form data
-  //   const data = new FormData();
-  //   data.set("file", fileToUpload);
-
-  //   // Upload file
-  //   const [fetchError, res] = await tryAsync(
-  //     fetch("/api/files", {
-  //       method: "POST",
-  //       body: data,
-  //     }),
-  //   );
-
-  //   if (fetchError !== undefined) {
-  //     setUploading(false);
-  //     console.error(fetchError);
-  //     toast.error("Error posting file, try again.");
-  //     return;
-  //   }
-
-  //   const { cid } = PIN_FILE_RESULT.parse(await res.json());
-  //   console.log(cid.toString());
-  //   setUploading(false);
-
-  //   if (!accountFreeBalance.data) {
-  //     return;
-  //   }
-
-  //   if (!networkConfigs.data) {
-  //     toast.error("Network configs are still loading.");
-  //     return;
-  //   }
-
-  //   const daoApplicationCost = networkConfigs.data.agentApplicationCost;
-
-  //   if (accountFreeBalance.data > daoApplicationCost) {
-  //     void AddAgentApplication({
-  //       applicationKey: getValues("applicationKey"),
-  //       IpfsHash: cidToIpfsUri(cid),
-  //       removing: false,
-  //       callback: (tx) => setTransactionStatus(tx),
-  //       refetchHandler,
-  //     });
-  //   } else {
-  //     toast.error(
-  //       `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
-  //     );
-  //   }
-  // }
-
   async function uploadFile(fileToUpload: File): Promise<void> {
-    try {
-      setUploading(true);
-      const data = new FormData();
-      data.set("file", fileToUpload);
-      const res = await fetch("/api/files", {
+    setUploading(true);
+
+    // Create form data
+    const data = new FormData();
+    data.set("file", fileToUpload);
+
+    // Upload file
+    const [fetchError, res] = await tryAsync(
+      fetch("/api/files", {
         method: "POST",
         body: data,
-      });
-      const { cid } = PIN_FILE_RESULT.parse(await res.json());
-      console.log(cid.toString());
+      }),
+    );
+
+    if (fetchError !== undefined) {
       setUploading(false);
-
-      if (!accountFreeBalance.data) {
-        return;
-      }
-      if (!networkConfigs.data) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Network configs are still loading.",
-        });
-        return;
-      }
-
-      const daoApplicationCost = networkConfigs.data.agentApplicationCost;
-
-      if (accountFreeBalance.data > daoApplicationCost) {
-        void AddAgentApplication({
-          applicationKey: getValues("applicationKey"),
-          IpfsHash: cidToIpfsUri(cid),
-          removing: false,
-          callback: (tx) => setTransactionStatus(tx),
-          refetchHandler,
-        });
-      } else {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(
-            accountFreeBalance.data,
-          )}`,
-        });
-      }
-    } catch (e) {
+      log.error(fetchError);
+      toast.error("Error posting file, try again.");
+      return;
+    }
+    // First, get the JSON data
+    const [jsonError, jsonData] = await tryAsync(res.json());
+    if (jsonError !== undefined) {
       setUploading(false);
-      console.error(e);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Error uploading Agent Application",
+      log.error(jsonError);
+      toast.error("Error parsing response data");
+      return;
+    }
+
+    // Then, validate the JSON data with your schema
+    const [parseError, parsed] = await tryAsync(
+      Promise.resolve().then(() => PIN_FILE_RESULT.parse(jsonData)),
+    );
+
+    if (parseError !== undefined) {
+      setUploading(false);
+      log.error(parseError);
+      toast.error("Error validating response data");
+      return;
+    }
+
+    const { cid } = parsed;
+    console.log(cid.toString());
+    log.info(`cid to string: ${cid.toString()}`);
+    setUploading(false);
+
+    if (!accountFreeBalance.data) {
+      return;
+    }
+
+    if (!networkConfigs.data) {
+      toast.error("Network configs are still loading.");
+      return;
+    }
+
+    const daoApplicationCost = networkConfigs.data.agentApplicationCost;
+
+    if (accountFreeBalance.data > daoApplicationCost) {
+      void AddAgentApplication({
+        applicationKey: getValues("applicationKey"),
+        IpfsHash: cidToIpfsUri(cid),
+        removing: false,
+        callback: (tx) => setTransactionStatus(tx),
+        refetchHandler,
       });
+    } else {
+      toast.error(
+        `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+      );
     }
   }
 
