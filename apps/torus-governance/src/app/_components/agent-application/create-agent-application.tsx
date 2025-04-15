@@ -62,11 +62,11 @@ export function CreateAgentApplication() {
   );
 
   const form = useForm<AgentApplicationFormData>({
-    disabled: !isAccountConnected,
     defaultValues: {
       applicationKey: "",
       discordId: "",
     },
+    mode: "onChange",
   });
 
   const { control, handleSubmit, setValue, getValues } = form;
@@ -87,58 +87,6 @@ export function CreateAgentApplication() {
   const refetchHandler = async () => {
     await agentApplications.refetch();
   };
-
-  // async function uploadFile(fileToUpload: File): Promise<void> {
-  //   setUploading(true);
-
-  //   // Create form data
-  //   const data = new FormData();
-  //   data.set("file", fileToUpload);
-
-  //   // Upload file
-  //   const [fetchError, res] = await tryAsync(
-  //     fetch("/api/files", {
-  //       method: "POST",
-  //       body: data,
-  //     }),
-  //   );
-
-  //   if (fetchError !== undefined) {
-  //     setUploading(false);
-  //     console.error(fetchError);
-  //     toast.error("Error posting file, try again.");
-  //     return;
-  //   }
-
-  //   const { cid } = PIN_FILE_RESULT.parse(await res.json());
-  //   console.log(cid.toString());
-  //   setUploading(false);
-
-  //   if (!accountFreeBalance.data) {
-  //     return;
-  //   }
-
-  //   if (!networkConfigs.data) {
-  //     toast.error("Network configs are still loading.");
-  //     return;
-  //   }
-
-  //   const daoApplicationCost = networkConfigs.data.agentApplicationCost;
-
-  //   if (accountFreeBalance.data > daoApplicationCost) {
-  //     void AddAgentApplication({
-  //       applicationKey: getValues("applicationKey"),
-  //       IpfsHash: cidToIpfsUri(cid),
-  //       removing: false,
-  //       callback: (tx) => setTransactionStatus(tx),
-  //       refetchHandler,
-  //     });
-  //   } else {
-  //     toast.error(
-  //       `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
-  //     );
-  //   }
-  // }
 
   async function uploadFile(fileToUpload: File): Promise<void> {
     setUploading(true);
