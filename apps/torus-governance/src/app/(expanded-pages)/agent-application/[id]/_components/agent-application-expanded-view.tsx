@@ -126,6 +126,7 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
             applicationId={content.id}
             applicationStatus={content.status}
           />
+          <AgentApplicationExpandedVoteBars id={content.id} />
           <div className="animate-fade-down animate-delay-[1400ms] w-full">
             <CreateCadreCandidates />
           </div>
