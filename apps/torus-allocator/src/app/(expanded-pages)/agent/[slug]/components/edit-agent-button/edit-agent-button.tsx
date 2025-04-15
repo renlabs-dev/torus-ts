@@ -11,6 +11,7 @@ import {
   EditAgentNonOwnerTooltip,
   EditAgentOwnerButton,
 } from "./edit-agent-button.shared";
+import { cn } from "@torus-ts/ui/lib/utils";
 
 interface EditAgentButtonProps {
   agentKey: string;
@@ -20,14 +21,12 @@ export function EditAgentButton({ agentKey }: EditAgentButtonProps) {
   const { selectedAccount } = useTorus();
   const isOwner = selectedAccount?.address === agentKey;
 
-  const buttonClassNames = `
-    flex w-full items-center gap-1.5 p-3
-    ${
-      isOwner
-        ? "border-green-500 text-green-500 opacity-65 transition duration-200 hover:text-green-500 hover:opacity-100"
-        : "border-gray-500 text-gray-500"
-    }
-  `;
+  const buttonClassNames = cn(
+    "flex w-full items-center gap-1.5 p-3",
+    isOwner
+      ? "border-green-500 text-green-500 opacity-65 transition duration-200 hover:text-green-500 hover:opacity-100"
+      : "border-gray-500 text-gray-500",
+  );
 
   return (
     <TooltipProvider>
