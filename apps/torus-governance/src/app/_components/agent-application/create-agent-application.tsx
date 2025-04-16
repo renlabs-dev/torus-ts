@@ -1,7 +1,6 @@
 "use client";
 
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
@@ -48,8 +47,6 @@ const agentApplicationSchema = z.object({
 });
 
 type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
-
-const log = BasicLogger.create({ name: "create-agent-application" });
 
 export function CreateAgentApplication() {
   const {
