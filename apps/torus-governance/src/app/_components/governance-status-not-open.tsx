@@ -27,7 +27,7 @@ export function GovernanceStatusNotOpen(
   const { governanceModel, status, children } = props;
 
   return (
-    <Card className="rounded-radius flex flex-col p-6 gap-6">
+    <Card className="rounded-radius flex flex-col p-4 gap-3">
       <span className={` ${statusColor[status]}`}>
         This {governanceModel} {statusText[status]}.
       </span>

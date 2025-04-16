@@ -33,6 +33,9 @@ import { useGovernance } from "~/context/governance-provider";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 
 type AgentApplicationFormData = NonNullable<
   inferProcedureInput<AppRouter["agentApplication"]["create"]>
@@ -67,6 +70,17 @@ export function CreateAgentApplication() {
       discordId: "",
     },
     mode: "onChange",
+    resolver: zodResolver(
+    z.object({
+      applicationKey: z.string().min(1, "Application key is required"),
+      discordId: z.string().min(1, "Discord ID is required"),
+      title: z.string().min(1, "Title is required"),
+      body: z.string().min(1, "Body is required"),
+      criteriaAgreement: z.literal(true, {
+        errorMap: () => ({ message: "You must agree to the requirements" })
+      })
+  })
+)
   });
 
   const { control, handleSubmit, setValue, getValues } = form;
