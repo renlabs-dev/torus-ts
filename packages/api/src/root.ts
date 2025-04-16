@@ -1,5 +1,4 @@
 import { agentRouter } from "./router/agent/agent";
-import { agentApplicationRouter } from "./router/agent/agent-application";
 import { agentApplicationVoteRouter } from "./router/agent/agent-application-vote";
 import { agentReportRouter } from "./router/agent/agent-report";
 import { computedAgentWeightRouter } from "./router/agent/computed-agent-weight";
@@ -21,7 +20,6 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   // Agent
   agent: agentRouter,
-  agentApplication: agentApplicationRouter,
   agentReport: agentReportRouter,
   userAgentWeight: userAgentWeightRouter,
   computedAgentWeight: computedAgentWeightRouter,
