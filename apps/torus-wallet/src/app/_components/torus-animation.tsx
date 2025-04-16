@@ -29,8 +29,8 @@ function Torusknot(props: JSX.IntrinsicElements["mesh"]) {
   const viewport = useThree((state) => state.viewport);
   useFrame(
     (state, delta) =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      (ref.current!.rotation.x = ref.current!.rotation.y += delta / 4),
+      ref.current &&
+      (ref.current.rotation.x = ref.current.rotation.y += delta / 4),
   );
   return (
     <mesh
