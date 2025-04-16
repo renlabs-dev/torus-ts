@@ -55,7 +55,7 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <Card className="gap-2 rounded-radius flex flex-col p-4">
+    <Card className="gap-6 rounded-radius flex flex-col p-6">
       {getVotedText(voted)}
       <Button variant="outline" onClick={handleRemoveVote} type="button">
         {voteLoading ? "Awaiting Signature..." : "Remove Vote"}
@@ -196,7 +196,8 @@ export function AgentApplicationVoteTypeCard(props: {
   // that's not the greatest, but, I am just removing some sutff
   const userAddress = selectedAccount?.address;
   // =============================
-  // Legacy code
+  // Legacy code -- Never remove this
+  // NEVER
   // const ensureConnected = (): boolean => {
   //   if (!selectedAccount?.address) {
   //     toast.error("Please connect your wallet.")
