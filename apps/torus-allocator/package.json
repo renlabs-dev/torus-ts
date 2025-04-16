@@ -16,8 +16,8 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@react-three/drei": "^10.0.5",
-    "@react-three/fiber": "^9.0.4",
+    "@react-three/drei": "catalog:",
+    "@react-three/fiber": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
@@ -37,7 +37,7 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "superjson": "2.2.1",
-    "three": "^0.164.1",
+    "three": "catalog:",
     "tsafe": "catalog:",
     "zod": "catalog:",
     "zustand": "^4.5.4"
@@ -49,7 +49,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "@types/three": "^0.165.0",
+    "@types/three": "catalog:",
     "dotenv-cli": "^7.4.2",
     "jiti": "catalog:",
     "postcss": "catalog:",

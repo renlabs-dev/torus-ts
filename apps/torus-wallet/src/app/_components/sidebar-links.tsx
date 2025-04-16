@@ -11,10 +11,10 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { getLinks } from "@torus-ts/ui/lib/data";
+import { env } from "~/env";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { env } from "~/env";
 
 interface NavLink {
   path: string;
@@ -31,7 +31,7 @@ interface MobileSelectProps {
 type NavButtonProps = NavLink;
 
 const NAVIGATION_LINKS: NavLink[] = [
-  { path: "/transfers", label: "Wallet", value: "wallet" },
+  { path: "/", label: "Wallet", value: "wallet" },
   { path: "/staking", label: "Staking", value: "staking" },
   { path: "/bridge", label: "Bridge", value: "bridge" },
 ];
@@ -41,7 +41,13 @@ const useNavigation = () => {
   const bridgeLink = getLinks(chainEnv).bridge;
   const pathname = usePathname();
 
-  const isActive = (path: string): boolean => pathname.startsWith(path);
+  const isActive = (path: string): boolean => {
+    // For root path, ensure it's exactly "/" to avoid matching with other paths
+    if (path === "/") {
+      return pathname === "/" || pathname.startsWith("/(transfers)");
+    }
+    return pathname.startsWith(path);
+  };
 
   const getPath = (value: string): string =>
     value === "bridge" ? bridgeLink : `/${value === "wallet" ? "" : value}`;
@@ -49,7 +55,6 @@ const useNavigation = () => {
   const getDefaultValue = (): string => {
     const pathMap: Record<string, string> = {
       "/": "wallet",
-      "/transfers": "wallet",
       "/staking": "staking",
     };
 
@@ -96,7 +101,7 @@ function MobileSelect({
   return (
     <Select onValueChange={onValueChange} defaultValue={defaultValue}>
       <SelectTrigger
-        className="w-full lg:hidden my-4"
+        className="my-4 w-full lg:hidden"
         aria-label="Navigation options"
       >
         <SelectValue placeholder="Select a view" />
