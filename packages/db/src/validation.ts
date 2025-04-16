@@ -1,6 +1,5 @@
 import { createInsertSchema } from "drizzle-zod";
 import {
-  agentApplicationSchema,
   agentApplicationVoteSchema,
   agentReportSchema,
   cadreCandidateSchema,
@@ -23,14 +22,7 @@ export const AGENT_REPORT_INSERT_SCHEMA = createInsertSchema(
   deletedAt: true,
 });
 
-export const AGENT_APPLICATION_INSERT_SCHEMA = createInsertSchema(
-  agentApplicationSchema,
-).omit({
-  id: true,
-  updatedAt: true,
-  createdAt: true,
-  deletedAt: true,
-});
+
 
 export const CADRE_CANDIDATE_INSERT_SCHEMA = createInsertSchema(
   cadreCandidateSchema,

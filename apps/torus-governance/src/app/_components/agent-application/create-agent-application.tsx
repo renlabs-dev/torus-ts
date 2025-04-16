@@ -4,7 +4,6 @@ import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { AppRouter } from "@torus-ts/api";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -27,7 +26,6 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import type { inferProcedureInput } from "@trpc/server";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useGovernance } from "~/context/governance-provider";
 import Link from "next/link";
@@ -36,10 +34,20 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+const agentApplicationSchema = z.object({
+  applicationKey: z.string().min(1, "Application Key is required"),
+  discordId: z
+    .string()
+    .min(17, "Discord ID is too short")
+    .max(20, "Discord ID is too long"),
+  title: z.string().min(1, "Title is required"),
+  body: z.string().min(1, "Body is required"),
+  criteriaAgreement: z.boolean().refine((value) => value === true, {
+    message: "You must agree to the requirements",
+  }),
+});
 
-type AgentApplicationFormData = NonNullable<
-  inferProcedureInput<AppRouter["agentApplication"]["create"]>
->;
+type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
 
 const log = BasicLogger.create({ name: "create-agent-application" });
 
@@ -65,25 +73,12 @@ export function CreateAgentApplication() {
   );
 
   const form = useForm<AgentApplicationFormData>({
+    disabled: !isAccountConnected,
+    resolver: zodResolver(agentApplicationSchema),
     defaultValues: {
       applicationKey: "",
       discordId: "",
-      title: "",
-      body: "",
-      criteriaAgreement: false,
     },
-    mode: "onChange",
-    resolver: zodResolver(
-    z.object({
-      applicationKey: z.string().min(1, "Application key is required"),
-      discordId: z.string().min(1, "Discord ID is required"),
-      title: z.string().min(1, "Title is required"),
-      body: z.string().min(1, "Body is required"),
-      criteriaAgreement: z.literal(true, {
-        errorMap: () => ({ message: "You must agree to the requirements" })
-      })
-  })
-)
   });
 
   const { control, handleSubmit, setValue, getValues } = form;
@@ -208,7 +203,7 @@ export function CreateAgentApplication() {
       return "Connect a wallet to submit";
     }
     if (uploading) {
-      return "Uploading...";
+      return "Awaiting Signature...";
     }
     return "Submit Application";
   };
