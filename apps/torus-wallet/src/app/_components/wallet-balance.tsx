@@ -1,13 +1,14 @@
 "use client";
 
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
 import { Card } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
-import { Lock, Scale, Unlock, Copy } from "lucide-react";
+import { useWallet } from "~/context/wallet-provider";
+import { Copy, Lock, Scale, Unlock } from "lucide-react";
 import Image from "next/image";
 import { useMemo } from "react";
-import { useWallet } from "~/context/wallet-provider";
+import { TorusAnimation } from "./torus-animation";
 
 const BALANCE_ICONS = {
   free: <Lock size={16} />,
@@ -30,7 +31,7 @@ function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
   return (
     <div key={label} className="flex flex-col">
       {!isLoading ? (
-        <p className="text-muted-foreground flex items-end gap-2 text-white font-bold">
+        <p className="text-muted-foreground flex items-end gap-2 font-bold text-white">
           {formatToken(amount)}
           <span>TOR</span>
         </p>
@@ -47,7 +48,7 @@ function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
 function WalletHeader({ address }: WalletHeaderProps) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 h-8 flex-shrink-0">
+      <div className="h-8 w-8 flex-shrink-0">
         <Image
           src="/wallet-info-logo.svg"
           alt="Wallet Info Logo"
@@ -57,7 +58,7 @@ function WalletHeader({ address }: WalletHeaderProps) {
       </div>
       {address ? (
         <CopyButton
-          className="h-fit p-0 text-muted-foreground hover:text-white !text-base"
+          className="text-muted-foreground h-fit p-0 !text-base hover:text-white"
           variant="ghost"
           copy={address}
         >
@@ -100,18 +101,23 @@ export function WalletBalance() {
 
   return (
     <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
-      <Card className="flex w-full flex-col gap-12 px-7 py-5">
-        <WalletHeader address={selectedAccount?.address} />
-        <div className="flex flex-col gap-6">
-          {balances.map((balance) => (
-            <BalanceItem
-              key={balance.label}
-              amount={balance.amount}
-              icon={balance.icon}
-              label={balance.label}
-              isLoading={isLoading}
-            />
-          ))}
+      <Card className="flex w-full flex-col gap-[2.40em] px-7 py-5 relative">
+        <div className="absolute inset-0 overflow-hidden opacity-20 z-0">
+          <TorusAnimation />
+        </div>
+        <div className="relative z-10 gap-10 flex flex-col">
+          <WalletHeader address={selectedAccount?.address} />
+          <div className="flex flex-col gap-[1.85em]">
+            {balances.map((balance) => (
+              <BalanceItem
+                key={balance.label}
+                amount={balance.amount}
+                icon={balance.icon}
+                label={balance.label}
+                isLoading={isLoading}
+              />
+            ))}
+          </div>
         </div>
       </Card>
     </div>
