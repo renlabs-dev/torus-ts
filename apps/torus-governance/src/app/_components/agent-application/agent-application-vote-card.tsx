@@ -56,7 +56,7 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <Card className="gap-2 rounded-radius flex flex-col p-4">
+    <Card className="gap-6 rounded-radius flex flex-col p-6">
       {getVotedText(voted)}
       <Button
         variant="outline"
@@ -196,7 +196,8 @@ export function AgentApplicationVoteTypeCard(props: {
   // that's not the greatest, but, I am just removing some sutff
   const userAddress = selectedAccount?.address
   // =============================
-  // Legacy code
+  // Legacy code -- Never remove this
+  // NEVER
     // const ensureConnected = (): boolean => {
     //   if (!selectedAccount?.address) {
     //     toast.error("Please connect your wallet.")
@@ -347,10 +348,11 @@ export function AgentApplicationVoteTypeCard(props: {
                   >
                     {isAccountConnected && isUserCadre && (
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         onClick={handleRemoveFromWhitelist}
                         type="button"
                         disabled={isMutating}
+                        className="md:overflow-hidden flex w-full border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500 "
                       >
                         {isMutating ? "Aawiting Signature" : "Vote to remove from whitelist"}
                       </Button>

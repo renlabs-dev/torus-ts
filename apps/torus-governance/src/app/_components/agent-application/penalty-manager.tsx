@@ -135,21 +135,23 @@ export function PenaltyManager({
 
   if (appliedPenalty) {
     return (
-      <Card className="flex flex-col gap-2 p-6">
+      <Card className="flex flex-col gap-6 p-6">
         <CardHeader className="p-0">
           <CardTitle className="font-semibold text-red-500/80">Penalty Applied</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1 p-0">
+        <CardContent className="flex flex-col gap-2 p-0">
           <div className="flex justify-between text-sm">
             <p className="text-muted-foreground">Penalty factor</p>
             <span className="text-red-500/80">{appliedPenalty.penaltyFactor}%</span>
           </div>
-          <div className="flex flex-col text-sm">
+          <div className="flex flex-col text-sm gap-1">
             <p className="text-muted-foreground">Penalty reason</p>
             <span className="break-words whitespace-pre-wrap">{appliedPenalty.content}</span>
           </div>
         </CardContent>
-        <Button onClick={() => handleDeletePenaltyMutation(agentKey)}>
+        <Button 
+        className = "bg-gray-400"
+        onClick={() => handleDeletePenaltyMutation(agentKey)}>
           Remove penalty
         </Button>
       </Card>
