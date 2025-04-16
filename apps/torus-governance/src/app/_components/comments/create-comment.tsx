@@ -19,6 +19,8 @@ import { api } from "~/trpc/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+// import type { inferProcedureInput } from "@trpc/server";
+// import type { AppRouter } from "@torus-ts/api";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
@@ -39,6 +41,12 @@ const commentSchema = z.object({
 });
 
 type CommentFormData = z.infer<typeof commentSchema>;
+// type CommentFormData = NonNullable<
+//   inferProcedureInput<AppRouter["comment"]["create"]>
+// >;
+
+
+
 
 interface ToastMessage {
   title: string;

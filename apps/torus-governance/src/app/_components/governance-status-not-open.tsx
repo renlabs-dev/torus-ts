@@ -8,10 +8,10 @@ interface GovernanceStatusNotOpenProps {
 }
 
 const statusText: Record<GovernanceStatus, string> = {
-  ACCEPTED: "have been accepted",
-  REFUSED: "have been refused",
-  REMOVED: "have been removed",
-  EXPIRED: "have expired",
+  ACCEPTED: "has been accepted",
+  REFUSED: "has been refused",
+  REMOVED: "has been removed",
+  EXPIRED: "has expired",
 };
 
 const statusColor: Record<GovernanceStatus, string> = {
@@ -27,8 +27,8 @@ export function GovernanceStatusNotOpen(
   const { governanceModel, status, children } = props;
 
   return (
-    <Card className="rounded-radius flex flex-col p-4">
-      <span className={`font-semibold ${statusColor[status]}`}>
+    <Card className="rounded-radius flex flex-col p-4 gap-3">
+      <span className={` ${statusColor[status]}`}>
         This {governanceModel} {statusText[status]}.
       </span>
       {children}
