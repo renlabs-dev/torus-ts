@@ -18,6 +18,9 @@
     "@next/third-parties": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@torus-network/sdk": "workspace:*",
+    "@react-three/drei": "catalog:",
+    "@react-three/fiber": "catalog:",
+    "three": "catalog:",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
@@ -33,6 +36,7 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "catalog:",
     "@tailwindcss/typography": "catalog:",
+    "@types/three": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
