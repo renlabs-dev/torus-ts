@@ -6,6 +6,7 @@ import { env } from "~/env";
 import { api } from "~/trpc/react";
 import { useSearchParams } from "next/navigation";
 import { signData } from "node_modules/@torus-ts/api/src/auth/sign";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useEffect, useState } from "react";
 
 export const useSignIn = () => {
@@ -29,18 +30,34 @@ export const useSignIn = () => {
       return;
     }
 
-    checkSession
-      .mutateAsync({ auth })
-      .then((data) => {
-        setIsUserAuthenticated(data.isValid);
-        if (!data.isValid) {
-          localStorage.removeItem("authorization");
-        }
-      })
-      .catch((error) => {
+    // Async function for session checking with proper error handling
+    async function checkUserSession() {
+      const [error, data] = await tryAsync(checkSession.mutateAsync({ auth }));
+      
+      if (error !== undefined) {
         console.error("Session check error:", error);
-        localStorage.removeItem("authorization");
-      });
+        const [storageError] = await tryAsync(
+          Promise.resolve(localStorage.removeItem("authorization"))
+        );
+        if (storageError !== undefined) {
+          console.error("Error removing from localStorage:", storageError);
+        }
+        setIsUserAuthenticated(false);
+        return;
+      }
+      
+      setIsUserAuthenticated(data.isValid);
+      if (!data.isValid) {
+        const [storageError] = await tryAsync(
+          Promise.resolve(localStorage.removeItem("authorization"))
+        );
+        if (storageError !== undefined) {
+          console.error("Error removing from localStorage:", storageError);
+        }
+      }
+    }
+    
+    void checkUserSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
 
@@ -50,31 +67,62 @@ export const useSignIn = () => {
       return;
 
     setIsUserAuthenticated(null);
-    localStorage.removeItem("authorization");
+    
+    // Handle localStorage with proper error handling
+    const clearStorage = async () => {
+      const [storageError] = await tryAsync(
+        Promise.resolve(localStorage.removeItem("authorization"))
+      );
+      if (storageError !== undefined) {
+        console.error("Error removing from localStorage:", storageError);
+      }
+    };
+    
+    void clearStorage();
   }, [selectedAccount]);
 
   const startSessionMutation = api.auth.startSession.useMutation();
 
   const authenticateUser = async () => {
-    try {
-      const authReqData = createAuthReqData(
-        String(env("NEXT_PUBLIC_AUTH_ORIGIN")),
-      );
-      const signedData = await signData(signHex, authReqData);
-      const startSessionData =
-        await startSessionMutation.mutateAsync(signedData);
-
-      if (startSessionData.token && startSessionData.authenticationType) {
-        const newAuthorization = `${startSessionData.authenticationType} ${startSessionData.token}`;
-        localStorage.setItem("authorization", newAuthorization);
-        setIsUserAuthenticated(true);
-      } else {
-        throw new Error("Invalid authentication response");
-      }
-    } catch (error) {
-      console.error("Authentication error:", error);
-      throw error;
+    // Generate auth request data
+    const authReqData = createAuthReqData(
+      String(env("NEXT_PUBLIC_AUTH_ORIGIN")),
+    );
+    
+    // Sign the data
+    const [signError, signedData] = await tryAsync(signData(signHex, authReqData));
+    if (signError !== undefined) {
+      console.error("Error signing data:", signError);
+      throw new Error("Failed to sign authentication data");
     }
+    
+    // Start session with signed data
+    const [sessionError, startSessionData] = await tryAsync(
+      startSessionMutation.mutateAsync(signedData)
+    );
+    
+    if (sessionError !== undefined) {
+      console.error("Error starting session:", sessionError);
+      throw new Error("Failed to authenticate with server");
+    }
+    
+    // Validate session data
+    if (!startSessionData.token || !startSessionData.authenticationType) {
+      throw new Error("Invalid authentication response");
+    }
+    
+    // Store authentication token
+    const newAuthorization = `${startSessionData.authenticationType} ${startSessionData.token}`;
+    const [storageError] = await tryAsync(
+      Promise.resolve(localStorage.setItem("authorization", newAuthorization))
+    );
+    
+    if (storageError !== undefined) {
+      console.error("Error saving to localStorage:", storageError);
+      throw new Error("Failed to save authentication token");
+    }
+    
+    setIsUserAuthenticated(true);
   };
 
   return {

@@ -19,8 +19,7 @@ import { api } from "~/trpc/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-// import type { inferProcedureInput } from "@trpc/server";
-// import type { AppRouter } from "@torus-ts/api";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 const MAX_CHARACTERS = 300;
 const MAX_NAME_CHARACTERS = 300;
@@ -41,16 +40,12 @@ const commentSchema = z.object({
 });
 
 type CommentFormData = z.infer<typeof commentSchema>;
-// type CommentFormData = NonNullable<
-//   inferProcedureInput<AppRouter["comment"]["create"]>
-// >;
 
-
-
-
-interface ToastMessage {
-  title: string;
-  description: string;
+interface CreateCommentProps {
+  content: string;
+  itemId: number;
+  itemType: "PROPOSAL" | "AGENT_APPLICATION";
+  userName: string | undefined;
 }
 
 export function CreateComment({
@@ -63,7 +58,6 @@ export function CreateComment({
   author?: SS58Address;
 }>) {
   const { selectedAccount, accountStakedBalance } = useGovernance();
-  const utils = api.useUtils();
   const { toast } = useToast();
 
   const hasEnoughBalance = React.useMemo(() => {
@@ -89,42 +83,32 @@ export function CreateComment({
   const contentValue = watch("content");
   const remainingChars = MAX_CHARACTERS - (contentValue.length || 0);
 
-  const showErrorToast = (message: ToastMessage) => {
-    toast(message);
-  };
+  const createCommentMutation = api.comment.create.useMutation();
 
-  const CreateCommentMutation = api.comment.create.useMutation({
-    onSuccess: async () => {
-      reset();
-      toast({
-        title: "Success!",
-        description: "Comment submitted successfully!",
-      });
-      await utils.comment.byId.invalidate({ proposalId: id });
-    },
-    onError: (error) => {
-      showErrorToast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          error.message || "An unexpected error occurred. Please try again.",
-      });
-    },
-  });
+  async function handleCreateCommentMutation(data: CreateCommentProps) {
+    const [error, _success] = await tryAsync(
+      createCommentMutation.mutateAsync(data),
+    );
+    if (error !== undefined) {
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again.",
+      );
+      return;
+    }
+    reset();
+    toast.success("Comment submitted successfully!");
+  }
 
   const validateSubmission = (): boolean => {
     if (!selectedAccount?.address) {
-      showErrorToast({
-        title: "Uh oh! Something went wrong.",
-        description: "Please connect your wallet to submit a comment.",
-      });
+      toast.error("Please, connect your wallet to submit a comment.");
       return false;
     }
 
     if (!hasEnoughBalance) {
-      showErrorToast({
-        title: "Uh oh! Something went wrong.",
-        description: `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
-      });
+      toast.error(
+        `You need to have at least ${MIN_STAKE_REQUIRED} total staked balance to submit a comment.`,
+      );
       return false;
     }
 
@@ -132,11 +116,7 @@ export function CreateComment({
       itemType === "AGENT_APPLICATION" &&
       author !== selectedAccount.address
     ) {
-      showErrorToast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          "Only Curator DAO members can submit comments in DAO mode.",
-      });
+      toast.error("Only Curator DAO members can submit comments in DAO mode.");
       return false;
     }
 
@@ -146,31 +126,17 @@ export function CreateComment({
   const onSubmit = async (data: CommentFormData) => {
     if (!validateSubmission()) return;
 
-    try {
-      await CreateCommentMutation.mutateAsync({
-        content: data.content,
-        itemId: id,
-        itemType,
-        userName: data.name ?? undefined,
-      });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        showErrorToast({
-          title: "Uh oh! Something went wrong.",
-          description: err.errors[0]?.message ?? "Invalid input",
-        });
-      } else {
-        showErrorToast({
-          title: "Uh oh! Something went wrong.",
-          description: "An unexpected error occurred. Please try again.",
-        });
-      }
-    }
+    await handleCreateCommentMutation({
+      content: data.content,
+      itemId: id,
+      itemType,
+      userName: data.name,
+    });
   };
 
   const isSubmitDisabled = React.useMemo(() => {
     if (
-      CreateCommentMutation.isPending ||
+      createCommentMutation.isPending ||
       !selectedAccount?.address ||
       !contentValue.length ||
       !hasEnoughBalance
@@ -185,7 +151,7 @@ export function CreateComment({
 
     return false;
   }, [
-    CreateCommentMutation.isPending,
+    createCommentMutation.isPending,
     selectedAccount?.address,
     contentValue.length,
     hasEnoughBalance,
@@ -227,7 +193,10 @@ export function CreateComment({
   };
 
   return (
-    <div className="animate-fade-down animate-delay-700 hidden h-fit min-h-max flex-col items-center justify-between text-white md:flex">
+    <div
+      className="animate-fade-down animate-delay-700 hidden h-fit min-h-max flex-col items-center
+        justify-between text-white md:flex"
+    >
       <div className="mb-2 w-full pb-1">
         <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
       </div>
@@ -246,7 +215,8 @@ export function CreateComment({
                     <Textarea
                       placeholder="Type your message here..."
                       {...field}
-                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground h-24 w-full resize-none border p-3 text-white"
+                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground h-24
+                        w-full resize-none border p-3 text-white"
                       maxLength={MAX_CHARACTERS}
                     />
                   </FormControl>
@@ -267,7 +237,8 @@ export function CreateComment({
                       type="text"
                       placeholder="Type your name (optional)"
                       {...field}
-                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground w-full border p-3 text-white"
+                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground w-full
+                        border p-3 text-white"
                       maxLength={MAX_NAME_CHARACTERS}
                     />
                   </FormControl>
@@ -281,7 +252,7 @@ export function CreateComment({
               className="py-6 transition"
               disabled={isSubmitDisabled}
             >
-              {CreateCommentMutation.isPending ? "Posting..." : "Post"}
+              {createCommentMutation.isPending ? "Awaiting Signature" : "Post"}
             </Button>
           </form>
         </Form>
