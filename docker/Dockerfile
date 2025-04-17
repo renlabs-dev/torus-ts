@@ -51,7 +51,7 @@ RUN pnpm install --frozen-lockfile
 
 # Build the app
 COPY --from=pruner /build/out/full/ .
-RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
+RUN CI=1 pnpm turbo run build --filter=${APP_NAME} --turbopack
 
 # ======== runner layer ======== #
 FROM base AS runner
