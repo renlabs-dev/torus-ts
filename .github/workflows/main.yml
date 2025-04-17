@@ -307,7 +307,7 @@ jobs:
       app_name: torus-worker
 
   ###################################
-  ######## DRY RUN BUILDS  ##########
+  ########### PR PREVIEW ############
   ###################################
   torus-allocator-pr-activate:
     needs: turbo-check
