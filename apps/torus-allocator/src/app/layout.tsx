@@ -20,13 +20,11 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description: "The thermodynamic god's favorite Allocator.",
 };
-
 export const firaMono = FiraMono({
   subsets: ["latin"],
   display: "swap",
   weight: "400",
 });
-
 export default function RootLayout({
   children,
 }: Readonly<{
