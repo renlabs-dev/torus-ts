@@ -40,6 +40,41 @@ jobs:
       || needs.pr-check.outputs.skip == 'false')
     uses: ./.github/workflows/turbo-check.yml
 
+  files-check:
+    runs-on: ubuntu-latest
+    needs: pr-check
+    if: |
+      github.event.pull_request.state != 'closed' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev'
+      || needs.pr-check.outputs.skip == 'false')
+    outputs:
+      actions: ${{ steps.changes.outputs.actions == 'true' }}
+      docker: ${{ steps.changes.outputs.docker == 'true' }}
+      helm: ${{ steps.changes.outputs.helm == 'true' }}
+      apps: ${{ steps.changes.outputs.apps == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          base: ${{ github.ref }} # This is ignored for pull_request events
+          filters: |
+            actions: &actions
+              - '.github/workflows/**'
+            docker: &docker
+              - 'docker/Dockerfile'
+            helm: &helm
+              - 'apps/**/helmfile.yaml'
+              - 'apps/**/values.yaml'
+              - 'helm/**'
+            apps:
+              - *actions
+              - *docker
+              - *helm
+
   ###################################
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
