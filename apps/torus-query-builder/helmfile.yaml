@@ -1,0 +1,44 @@
+environments:
+  dev:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - namespace: torus-dev-web-apps
+      - environmentName: dev
+      - wssApiEndpoint: wss://api.testnet.torus.network
+      - cacheUrl: https://cache.testnet.torus.network
+      - releaseName: dev-query-builder
+      - ingressHost: allocator.testnet.torus.network
+      - chainEnv: testnet
+  prod:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - namespace: torus-prod-web-apps
+      - environmentName: prod
+      - wssApiEndpoint: wss://api.torus.network
+      - cacheUrl: https://cache.torus.network
+      - releaseName: query-builder
+      - ingressHost: allocator.torus.network
+      - chainEnv: mainnet
+---
+helmDefaults:
+  wait: true
+  createNamespace: false
+
+repositories:
+  - name: renlabs
+    url: https://charts.renlabs.dev/
+
+releases:
+  - name: "{{ .Values.releaseName }}"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - ingress:
+          hosts:
+            - host: "{{ .Values.ingressHost }}"
+              paths:
+                - path: /
+                  pathType: Prefix
