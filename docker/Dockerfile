@@ -41,9 +41,8 @@ ENV TURBO_TEAM=$TURBO_TEAM
 ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
 
-# Next.js will use turbopack by default (already in package.json scripts)
-# NOTE: For production builds, you might need to override this in specific cases
-ENV NEXT_TURBO=1
+# Enable turbopack for Next.js builds
+ENV USE_TURBOPACK=1
 
 WORKDIR /app
 
@@ -55,7 +54,7 @@ RUN pnpm install --frozen-lockfile
 
 # Build the app
 COPY --from=pruner /build/out/full/ .
-RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
+RUN CI=1 pnpm turbo run build --filter=${APP_NAME} -- --turbopack
 
 # ======== runner layer ======== #
 FROM base AS runner

@@ -4,7 +4,7 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "build": "next build $([ \"$USE_TURBOPACK\" = \"1\" ] && echo --turbopack)",
+    "build": "next build",
     "dev": "next dev --port 3006",
     "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
