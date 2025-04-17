@@ -4,8 +4,8 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "build": "next build",
-    "dev": "next dev --port 3008",
+    "build": "next build --turbopack",
+    "dev": "next dev --port 3008 --turbopack",
     "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "lint": "eslint --cache --cache-location .cache/.eslintcache",

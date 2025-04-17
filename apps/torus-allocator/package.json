@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
-    "build:turbo": "pnpm with-env turbo run build",
-    "dev": "next dev --port 3002",
+    "build": "next build --turbopack",
+    "build:turbo": "pnpm with-env turbo run build --turbopack",
+    "dev": "next dev --port 3002 --turbopack",
     "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
