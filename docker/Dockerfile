@@ -41,9 +41,6 @@ ENV TURBO_TEAM=$TURBO_TEAM
 ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
 
-# Enable turbopack for Next.js builds
-ENV USE_TURBOPACK=1
-
 WORKDIR /app
 
 COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
