@@ -52,8 +52,6 @@ jobs:
       docker: ${{ steps.changes.outputs.docker == 'true' }}
       helm: ${{ steps.changes.outputs.helm == 'true' }}
       apps: ${{ steps.changes.outputs.apps == 'true' }}
-    permissions:
-      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,7 +60,7 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: changes
         with:
-          base: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref }}
+          base: ${{ github.ref }}
           filters: |
             actions: &actions
               - '.github/workflows/**'
