@@ -4,11 +4,7 @@
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
-
 export type VoteType = "ACCEPT" | "REFUSE" | "REMOVE";
-
-const log = BasicLogger.create({ name: "vote-management-hook" });
 
 export function useVoteManagement(
   userKey: string,
@@ -30,40 +26,52 @@ export function useVoteManagement(
 
   // Handler for creating a vote
   async function handleVote(vote: VoteType) {
-    const createVoteRes = await tryAsync(
+    const [error, _success] = await tryAsync(
       createCadreVote.mutateAsync({
         vote,
         applicantKey: userKey,
       }),
     );
 
-    if (log.ifResultIsErr(createVoteRes)) {
-      toast.error("Failed to submit your vote. Please try again.");
-      console.error("Error submitting data:", createVoteRes[0].message);
+    if (error !== undefined) {
+      toast.error(error.message || "Failed to submit your vote. Please try again.");
       return false;
     }
 
     toast.success("Vote submitted successfully!");
-    void refetchCuratorVotes();
+    
+    // Refetch with error handling
+    const [refetchError] = await tryAsync(refetchCuratorVotes());
+    if (refetchError !== undefined) {
+      console.error("Error refreshing votes:", refetchError);
+      // Don't show error to user as the vote was successful
+    }
+    
     return true;
   }
 
   // Handler for removing a vote
   async function handleRemoveVote() {
-    const deleteVoteRes = await tryAsync(
+    const [error, _success] = await tryAsync(
       deleteCadreVote.mutateAsync({
         applicantKey: userKey,
       }),
     );
 
-    if (log.ifResultIsErr(deleteVoteRes)) {
-      toast.error("Failed to revoke your vote. Please try again.");
-      console.error("Error revoking vote:", deleteVoteRes[0].message);
+    if (error !== undefined) {
+      toast.error(error.message || "Failed to revoke your vote. Please try again.");
       return false;
     }
 
     toast.success("Vote revoked successfully!");
-    void refetchCuratorVotes();
+    
+    // Refetch with error handling
+    const [refetchError] = await tryAsync(refetchCuratorVotes());
+    if (refetchError !== undefined) {
+      console.error("Error refreshing votes:", refetchError);
+      // Don't show error to user as the vote removal was successful
+    }
+    
     return true;
   }
 

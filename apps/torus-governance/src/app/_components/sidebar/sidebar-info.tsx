@@ -2,6 +2,7 @@
 
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 import { SidebarInfoDesktop } from "./sidebar-info-desktop";
@@ -40,21 +41,15 @@ export const SidebarInfo = () => {
   const { data: cadreListData, isLoading: isFetchingCadreList } =
     api.cadre.all.useQuery();
 
-  function handleCopyClick(value: string): void {
-    navigator.clipboard
-      .writeText(value)
-      .then(() => {
-        toast({
-          title: "Copied!",
-          description: "Treasury address copied to clipboard.",
-        });
-      })
-      .catch(() => {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Failed to copy treasury address.",
-        });
-      });
+  async function handleCopyClick(value: string): Promise<void> {
+    const [error, _] = await tryAsync(navigator.clipboard.writeText(value));
+    
+    if (error !== undefined) {
+      toast.error("Failed to copy treasury address.");
+      return;
+    }
+    
+    toast.success("Treasury address copied to clipboard.");
   }
 
   // Safe access with type checking for treasury balance

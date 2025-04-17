@@ -10,6 +10,7 @@ import { smallFilename, strToFile } from "@torus-network/torus-utils/files";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken, fromNano } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -192,74 +193,76 @@ export function RegisterAgent() {
   ]);
 
   async function doMetadataPin(): Promise<CID | null> {
-    try {
-      setUploading(true);
-      let imageObj: Record<string, Record<string, string>> = {};
-      const iconFile = getValues("icon");
-      if (iconFile) {
-        const { cid } = await pinFile(iconFile);
-        imageObj = { images: { icon: cidToIpfsUri(cid) } };
-      }
-      const {
-        website,
-        twitter,
-        github,
-        telegram,
-        discord,
-        title,
-        shortDescription,
-        body,
-        name,
-      } = getValues();
-      const metadata = {
-        title,
-        short_description: shortDescription,
-        description: body,
-        website: website ? parseUrl(website) : undefined,
-        ...imageObj,
-        socials: {
-          twitter: twitter ? parseUrl(twitter) : undefined,
-          github: github ? parseUrl(github) : undefined,
-          telegram: telegram ? parseUrl(telegram) : undefined,
-          discord: discord ? parseUrl(discord) : undefined,
-        },
-      };
-      const validatedMetadata = AGENT_METADATA_SCHEMA.safeParse(metadata);
-      if (!validatedMetadata.success) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: validatedMetadata.error.errors
-            .map((e) => e.message)
-            .join(", "),
-        });
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Error on form validation",
-        });
+    setUploading(true);
+    
+    // Handle icon file if present
+    let imageObj: Record<string, Record<string, string>> = {};
+    const iconFile = getValues("icon");
+    if (iconFile) {
+      const [iconError, iconResult] = await tryAsync(pinFile(iconFile));
+      if (iconError !== undefined) {
+        setUploading(false);
+        toast.error(iconError.message || "Error uploading icon");
         return null;
       }
-      const metadataJson = JSON.stringify(metadata, null, 2);
-      const file = strToFile(metadataJson, `${name}-agent-metadata.json`);
-      const { cid } = await pinFile(file);
+      imageObj = { images: { icon: cidToIpfsUri(iconResult.cid) } };
+    }
+    
+    const {
+      website,
+      twitter,
+      github,
+      telegram,
+      discord,
+      title,
+      shortDescription,
+      body,
+      name,
+    } = getValues();
+    
+    const metadata = {
+      title,
+      short_description: shortDescription,
+      description: body,
+      website: website ? parseUrl(website) : undefined,
+      ...imageObj,
+      socials: {
+        twitter: twitter ? parseUrl(twitter) : undefined,
+        github: github ? parseUrl(github) : undefined,
+        telegram: telegram ? parseUrl(telegram) : undefined,
+        discord: discord ? parseUrl(discord) : undefined,
+      },
+    };
+    
+    const validatedMetadata = AGENT_METADATA_SCHEMA.safeParse(metadata);
+    if (!validatedMetadata.success) {
       setUploading(false);
-      return cid;
-    } catch (e) {
-      setUploading(false);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: e instanceof Error ? e.message : "Error uploading agent",
+      toast.error(validatedMetadata.error.errors.map((e) => e.message).join(", "));
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Error on form validation",
       });
       return null;
     }
+    
+    const metadataJson = JSON.stringify(metadata, null, 2);
+    const file = strToFile(metadataJson, `${name}-agent-metadata.json`);
+    
+    const [metadataError, metadataResult] = await tryAsync(pinFile(file));
+    setUploading(false);
+    
+    if (metadataError !== undefined) {
+      toast.error(metadataError.message || "Error uploading agent metadata");
+      return null;
+    }
+    
+    return metadataResult.cid;
   }
 
   async function onSubmit(data: RegisterAgentFormData): Promise<void> {
     if (!userHasEnoughBalance) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: `Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`,
-      });
+      toast.error(`Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`);
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -270,10 +273,7 @@ export function RegisterAgent() {
 
     const parsedAgentKey = checkSS58(data.agentKey);
     if (isFetchingWhitelist) {
-      toast({
-        title: "Whitelist is still loading.",
-        description: "Please try again later.",
-      });
+      toast.error("Whitelist is still loading. Please try again later.");
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -282,10 +282,7 @@ export function RegisterAgent() {
       return;
     }
     if (!whitelistedApplications?.includes(parsedAgentKey)) {
-      toast({
-        title: "Agent not whitelisted.",
-        description: "Whitelist required for registration.",
-      });
+      toast.error("Agent not whitelisted. Whitelist required for registration.");
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -294,10 +291,7 @@ export function RegisterAgent() {
       return;
     }
     if (agents.data?.has(parsedAgentKey)) {
-      toast({
-        title: "Agent already registered.",
-        description: "Make sure you are using the correct address.",
-      });
+      toast.error("Agent already registered. Make sure you are using the correct address.");
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -315,12 +309,7 @@ export function RegisterAgent() {
           : data.agentApiUrl,
       );
     if (!parsedAgentApiUrl.success) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: parsedAgentApiUrl.error.errors
-          .map((e) => e.message)
-          .join(", "),
-      });
+      toast.error(parsedAgentApiUrl.error.errors.map((e) => e.message).join(", "));
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -338,13 +327,24 @@ export function RegisterAgent() {
     if (cid == null) return;
     console.info("Pinned metadata at:", cidToIpfsUri(cid));
 
-    void registerAgent({
-      agentKey: parsedAgentKey,
-      name: data.name,
-      url: parsedAgentApiUrl.data,
-      metadata: cidToIpfsUri(cid),
-      callback: (tx) => setTransactionStatus(tx),
-    });
+    const [registerError, _] = await tryAsync(
+      registerAgent({
+        agentKey: parsedAgentKey,
+        name: data.name,
+        url: parsedAgentApiUrl.data,
+        metadata: cidToIpfsUri(cid),
+        callback: (tx) => setTransactionStatus(tx),
+      })
+    );
+    
+    if (registerError !== undefined) {
+      toast.error(registerError.message || "Error registering agent");
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Failed to register agent",
+      });
+    }
   }
 
   const getButtonSubmitLabel = ({

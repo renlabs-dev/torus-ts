@@ -1,7 +1,6 @@
 "use client";
 
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
@@ -49,7 +48,6 @@ const agentApplicationSchema = z.object({
 
 type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
 
-const log = BasicLogger.create({ name: "create-agent-application" });
 
 export function CreateAgentApplication() {
   const {
@@ -117,7 +115,6 @@ export function CreateAgentApplication() {
 
     if (fetchError !== undefined) {
       setUploading(false);
-      log.error(fetchError);
       toast.error("Error posting file, try again.");
       return;
     }
@@ -125,7 +122,6 @@ export function CreateAgentApplication() {
     const [jsonError, jsonData] = await tryAsync(res.json());
     if (jsonError !== undefined) {
       setUploading(false);
-      log.error(jsonError);
       toast.error("Error parsing response data");
       return;
     }
@@ -137,14 +133,12 @@ export function CreateAgentApplication() {
 
     if (parseError !== undefined) {
       setUploading(false);
-      log.error(parseError);
       toast.error("Error validating response data");
       return;
     }
 
     const { cid } = parsed;
     console.log(cid.toString());
-    log.info(`cid to string: ${cid.toString()}`);
     setUploading(false);
 
     if (!accountFreeBalance.data) {
@@ -159,13 +153,24 @@ export function CreateAgentApplication() {
     const daoApplicationCost = networkConfigs.data.agentApplicationCost;
 
     if (accountFreeBalance.data > daoApplicationCost) {
-      void AddAgentApplication({
-        applicationKey: getValues("applicationKey"),
-        IpfsHash: cidToIpfsUri(cid),
-        removing: false,
-        callback: (tx) => setTransactionStatus(tx),
-        refetchHandler,
-      });
+      const [error, _] = await tryAsync(
+        AddAgentApplication({
+          applicationKey: getValues("applicationKey"),
+          IpfsHash: cidToIpfsUri(cid),
+          removing: false,
+          callback: (tx) => setTransactionStatus(tx),
+          refetchHandler,
+        })
+      );
+      if (error !== undefined) {
+        toast.error(error.message || "Error submitting agent application");
+        setTransactionStatus({
+          status: "ERROR",
+          finalized: true,
+          message: "Failed to submit agent application",
+        });
+        return;
+      }
     } else {
       toast.error(
         `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
@@ -203,7 +208,7 @@ export function CreateAgentApplication() {
       return "Connect a wallet to submit";
     }
     if (uploading) {
-      return "Awaiting Signature...";
+      return "Awaiting Signature";
     }
     return "Submit Application";
   };

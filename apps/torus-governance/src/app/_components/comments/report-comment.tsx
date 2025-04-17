@@ -26,6 +26,7 @@ import { api } from "~/trpc/react";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export type commentReportReason = NonNullable<
   inferProcedureOutput<AppRouter["commentReport"]["byId"]>
@@ -49,6 +50,12 @@ interface ReportCommentProps {
   setCommentId: (id: number | null) => void;
 }
 
+interface ReportCommentData {
+  commentId: number;
+  reason: "SPAM" | "VIOLENCE" | "HARASSMENT" | "HATE_SPEECH" | "SEXUAL_CONTENT";
+  content: string | null | undefined;
+}
+
 export function ReportComment({
   commentId,
   setCommentId,
@@ -59,22 +66,20 @@ export function ReportComment({
 
   const { toast } = useToast();
 
-  const reportCommentMutation = createReport.useMutation({
-    onSuccess: () => {
-      setCommentId(null);
-      toast({
-        title: "Success!",
-        description: "Comment reported successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          error.message || "An unexpected error occurred. Please try again.",
-      });
-    },
-  });
+  const reportCommentMutation = createReport.useMutation();
+
+  async function handleCommentMutation(data: ReportCommentData) {
+    const [error, _success] = await tryAsync(reportCommentMutation.mutateAsync(data));
+    if (error !== undefined) {
+      toast.error(
+        error.message ||
+          "An unexpected error occurred. Please try again.",
+      );
+      return;
+    }
+    setCommentId(null);
+    toast.success("Comment reported successfully.");
+  }
 
   const form = useForm<ReportFormData>({
     resolver: zodResolver(reportCommentSchema),
@@ -91,7 +96,7 @@ export function ReportComment({
       console.error("No comment id found");
       return;
     }
-    reportCommentMutation.mutate({
+    void handleCommentMutation({
       commentId,
       reason: data.reason,
       content: data.content,

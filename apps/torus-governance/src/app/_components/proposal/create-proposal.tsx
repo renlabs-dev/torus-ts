@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formatToken } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -82,73 +83,88 @@ export function CreateProposal() {
   })();
 
   async function uploadFile(fileToUpload: File): Promise<void> {
-    try {
-      setUploading(true);
-      const data = new FormData();
-      data.set("file", fileToUpload);
-      const res = await fetch("/api/files", {
+    setUploading(true);
+    
+    // Create and send form data
+    const data = new FormData();
+    data.set("file", fileToUpload);
+    
+    const [fetchError, res] = await tryAsync(
+      fetch("/api/files", {
         method: "POST",
         body: data,
-      });
-      const ipfs = (await res.json()) as { cid: string };
+      })
+    );
+    
+    if (fetchError !== undefined) {
       setUploading(false);
+      toast.error(fetchError.message || "Error uploading file");
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Error uploading file",
+      });
+      return;
+    }
+    
+    const [jsonError, ipfs] = await tryAsync(res.json() as Promise<{ cid: string }>);
+    setUploading(false);
+    
+    if (jsonError !== undefined) {
+      toast.error(jsonError.message || "Error parsing response");
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Error parsing response",
+      });
+      return;
+    }
+    
+    if (!ipfs.cid || ipfs.cid === "undefined") {
+      toast.error("Error uploading proposal");
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Error uploading proposal to IPFS",
+      });
+      return;
+    }
 
-      if (!ipfs.cid || ipfs.cid === "undefined") {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Error uploading proposal",
-        });
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Error uploading proposal to IPFS",
-        });
-        return;
-      }
+    if (!accountFreeBalance.data) {
+      toast.error("Balance is still loading");
+      return;
+    }
 
-      if (!accountFreeBalance.data) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Balance is still loading",
-        });
-        return;
-      }
+    const proposalCost = networkConfigs.data?.proposalCost ?? 0;
 
-      const proposalCost = networkConfigs.data?.proposalCost ?? 0;
-
-      if (Number(accountFreeBalance.data) > proposalCost) {
-        void addCustomProposal({
+    if (Number(accountFreeBalance.data) > proposalCost) {
+      const [propError, _] = await tryAsync(
+        addCustomProposal({
           IpfsHash: `ipfs://${ipfs.cid}`,
           callback: (tx) => setTransactionStatus(tx),
-        });
-      } else {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: `Insufficient balance to create proposal. Required: ${proposalCost} but got ${formatToken(
-            accountFreeBalance.data,
-          )}`,
-          duration: 10000,
-        });
+        })
+      );
+      
+      if (propError !== undefined) {
+        toast.error(propError.message || "Error creating proposal");
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message: "Insufficient balance",
+          message: "Error creating proposal",
         });
+        return;
       }
-      router.refresh();
-    } catch (e) {
-      setUploading(false);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          e instanceof Error ? e.message : "Error uploading proposal",
-      });
+    } else {
+      toast.error(`Insufficient balance to create proposal. Required: ${proposalCost} but got ${formatToken(accountFreeBalance.data)}`);
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
         message: "Insufficient balance",
       });
+      return;
     }
+    
+    router.refresh();
   }
 
   const onSubmit = async (data: ProposalFormData) => {
