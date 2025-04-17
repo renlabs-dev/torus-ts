@@ -98,10 +98,7 @@ export function VoterList(props: Readonly<VoterListProps>) {
 
   const handleCopyAddress = async (address: string) => {
     await copyToClipboard(address);
-    toast({
-      title: "Copied!",
-      description: "Agent address copied to clipboard.",
-    });
+    toast.success("Agent address copied to clipboard.");
   };
 
   const getVoteLabel = (vote: "ACCEPT" | "REFUSE" | "REMOVE") => {

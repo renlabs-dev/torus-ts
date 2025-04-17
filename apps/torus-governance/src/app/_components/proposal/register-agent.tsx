@@ -148,18 +148,12 @@ export function RegisterAgent() {
         url: "Estimating fee",
       });
       if (!transaction) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Error estimating fee.",
-        });
+        toast.error("Error estimating fee.");
         return;
       }
       const fee = await estimateFee(transaction);
       if (fee == null) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Error estimating fee.",
-        });
+        toast.error("Error estimating fee.");
         return;
       }
       const adjustedFee = (fee * 101n) / 100n;
