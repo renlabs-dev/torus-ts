@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formatToken, toNano } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -89,68 +90,75 @@ export function CreateTransferDaoTreasuryProposal() {
   })();
 
   async function uploadFile(fileToUpload: File): Promise<void> {
-    try {
-      setUploading(true);
-      const data = new FormData();
-      data.set("file", fileToUpload);
-      const res = await fetch("/api/files", {
+    setUploading(true);
+    
+    // Create and send form data
+    const data = new FormData();
+    data.set("file", fileToUpload);
+    
+    const [fetchError, res] = await tryAsync(
+      fetch("/api/files", {
         method: "POST",
         body: data,
-      });
-      const ipfs = (await res.json()) as { cid: string };
+      })
+    );
+    
+    if (fetchError !== undefined) {
       setUploading(false);
+      toast.error(fetchError.message || "Error uploading file");
+      return;
+    }
+    
+    const [jsonError, ipfs] = await tryAsync(res.json() as Promise<{ cid: string }>);
+    setUploading(false);
+    
+    if (jsonError !== undefined) {
+      toast.error(jsonError.message || "Error parsing response");
+      return;
+    }
+    
+    if (!ipfs.cid || ipfs.cid === "undefined") {
+      toast.error("Error uploading transfer dao treasury proposal");
+      return;
+    }
 
-      if (!ipfs.cid || ipfs.cid === "undefined") {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Error uploading transfer dao treasury proposal",
-        });
-        return;
-      }
+    if (!accountFreeBalance.data) {
+      toast.error("Balance is still loading");
+      return;
+    }
 
-      if (!accountFreeBalance.data) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Balance is still loading",
-        });
-        return;
-      }
+    const daoApplicationCost = 1000;
 
-      const daoApplicationCost = 1000;
-
-      if (Number(accountFreeBalance.data) > daoApplicationCost) {
-        void addDaoTreasuryTransferProposal({
+    if (Number(accountFreeBalance.data) > daoApplicationCost) {
+      const [propError, _] = await tryAsync(
+        addDaoTreasuryTransferProposal({
           value: getValues("value"),
           destinationKey: getValues("destinationKey"),
           data: `ipfs://${ipfs.cid}`,
           callback: (tx) => setTransactionStatus(tx),
-        });
-      } else {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(
-            accountFreeBalance.data,
-          )}`,
-          duration: 10000,
-        });
+        })
+      );
+      
+      if (propError !== undefined) {
+        toast.error(propError.message || "Error creating DAO treasury transfer proposal");
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message:
-            "Insufficient balance to create transfer dao treasury proposal",
+          message: "Error creating proposal",
         });
+        return;
       }
-      router.refresh();
-    } catch (e) {
-      setUploading(false);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          e instanceof Error
-            ? e.message
-            : "Error uploading transfer dao treasury proposal",
+    } else {
+      toast.error(`Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`);
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: "Insufficient balance to create transfer dao treasury proposal",
       });
+      return;
     }
+    
+    router.refresh();
   }
 
   const onSubmit = async (data: TransferDaoTreasuryProposalFormData) => {

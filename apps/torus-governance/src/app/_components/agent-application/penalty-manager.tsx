@@ -17,12 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { Input } from "@torus-ts/ui/components/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@torus-ts/ui/components/popover";
+
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useGovernance } from "~/context/governance-provider";
@@ -30,10 +25,25 @@ import { api } from "~/trpc/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import type { inferProcedureInput } from "@trpc/server";
+import type { AppRouter } from "@torus-ts/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@torus-ts/ui/components/dialog";
+import { Slider } from "@torus-ts/ui/components/slider";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
+
+const log = BasicLogger.create({ name: "penalty-manager" });
 
 const MAX_CONTENT_CHARACTERS = 240;
 
-const penaltySchema = z.object({
+const penaltyResolver = z.object({
   penaltyFactor: z.preprocess(
     (val) => Number(val),
     z
@@ -50,7 +60,9 @@ const penaltySchema = z.object({
     ),
 });
 
-type PenaltyFormData = z.infer<typeof penaltySchema>;
+type PenaltyFormData = NonNullable<
+  inferProcedureInput<AppRouter["penalty"]["create"]>
+>;
 
 export function PenaltyManager({
   agentKey,
@@ -61,6 +73,16 @@ export function PenaltyManager({
 }>) {
   const { selectedAccount } = useGovernance();
   const { toast } = useToast();
+
+  const form = useForm<PenaltyFormData>({
+    resolver: zodResolver(penaltyResolver),
+    defaultValues: {
+      penaltyFactor: 1,
+      content: "",
+    },
+  });
+
+  const { handleSubmit, reset, control, watch } = form;
 
   const cadreList = api.cadre.all.useQuery();
   const isUserCadre = !!cadreList.data?.find(
@@ -73,49 +95,43 @@ export function PenaltyManager({
 
   const isAgentActive = agentList?.find((agent) => agent.key === agentKey);
 
-  const createPenaltyMutation = api.penalty.create.useMutation({
-    onSuccess: () => {
-      reset();
-      void refetchPenalties();
-      toast({
-        title: "Success!",
-        description: "Penalty applied successfully!",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          error.message || "An unexpected error occurred. Please try again.",
-      });
-    },
-  });
+  const createPenaltyMutation = api.penalty.create.useMutation();
+  const deletePenaltyMutation = api.penalty.delete.useMutation();
 
-  const deletePenaltyMutation = api.penalty.delete.useMutation({
-    onSuccess: () => {
-      reset();
-      void refetchPenalties();
-      toast({
-        title: "Success!",
-        description: "Penalty deleted successfully!",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          error.message || "An unexpected error occurred. Please try again.",
-      });
-    },
-  });
+  async function handleCreatePenaltyMutation(
+    data: PenaltyFormData,
+    agentKey: string,
+  ) {
+    const mutationRes = await tryAsync(
+      createPenaltyMutation.mutateAsync({ ...data, agentKey }),
+    );
+    if (log.ifResultIsErr(mutationRes)) {
+      toast.error(
+        mutationRes[0].message ||
+          "An unexpected error occurred. Please try again.",
+      );
+      return;
+    }
+    reset();
+    void refetchPenalties();
+    toast.success("Penalty applied successfully!");
+  }
 
-  const form = useForm<PenaltyFormData>({
-    resolver: zodResolver(penaltySchema),
-    defaultValues: {
-      penaltyFactor: 1,
-      content: "",
-    },
-  });
+  async function handleDeletePenaltyMutation(agentKey: string) {
+    const mutationRes = await tryAsync(
+      deletePenaltyMutation.mutateAsync({ agentKey }),
+    );
+    if (log.ifResultIsErr(mutationRes)) {
+      toast.error(
+        mutationRes[0].message ||
+          "An unexpected error occurred. Please try again.",
+      );
+      return;
+    }
+    reset();
+    void refetchPenalties();
+    toast.success("Penalty removed successfully!");
+  }
 
   if (!("Resolved" in status) || !isAgentActive || !isUserCadre) {
     return null;
@@ -127,129 +143,144 @@ export function PenaltyManager({
 
   if (appliedPenalty) {
     return (
-      <Card className="flex flex-col gap-4 p-6">
+      <Card className="flex flex-col gap-6 p-6">
         <CardHeader className="p-0">
-          <CardTitle className="font-semibold">Penalty Applied</CardTitle>
+          <CardTitle className="font-semibold text-red-500/80">
+            Penalty Applied
+          </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 p-0">
+        <CardContent className="flex flex-col gap-2 p-0">
           <div className="flex justify-between text-sm">
             <p className="text-muted-foreground">Penalty factor</p>
-            <span>{appliedPenalty.penaltyFactor}%</span>
+            <span className="text-red-500/80">
+              {appliedPenalty.penaltyFactor}%
+            </span>
           </div>
-          <div className="flex flex-col gap-1.5 text-sm">
+          <div className="flex flex-col text-sm gap-1">
             <p className="text-muted-foreground">Penalty reason</p>
-            <span>{appliedPenalty.content}</span>
+            <span className="break-words whitespace-pre-wrap">
+              {appliedPenalty.content}
+            </span>
           </div>
         </CardContent>
-        <Button onClick={() => deletePenaltyMutation.mutate({ agentKey })}>
+        <Button
+          className="bg-gray-400"
+          onClick={() => handleDeletePenaltyMutation(agentKey)}
+        >
           Remove penalty
         </Button>
       </Card>
     );
   }
 
-  const { handleSubmit, reset, control, watch } = form;
-
   const contentValue = watch("content");
   const remainingChars = MAX_CONTENT_CHARACTERS - (contentValue.length || 0);
 
   const onSubmit = (data: PenaltyFormData) => {
     if (!selectedAccount?.address) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Please connect your wallet to apply a penalty.",
-      });
+      toast.error("Please connect your wallet to apply a penalty");
       return;
     }
-    createPenaltyMutation.mutate({
-      agentKey,
-      penaltyFactor: data.penaltyFactor,
-      content: data.content,
-    });
+    void handleCreatePenaltyMutation(data, agentKey);
   };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="secondary" className="animate-fade-down">
-          Apply Penalty
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="mt-2 w-[25em] xl:mr-0" align="center">
-        <div className="mt-1 flex w-full border-b border-white/20 pb-3">
-          <p className="text-sm">
-            The Curator DAO member is allowed to apply a penalty to an agent.
-            The penalty factor is a number between 1 and 100. The higher the
-            penalty factor, the more the agent's emissions will be affected.
-          </p>
-        </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">Apply Penalty</Button>
+      </DialogTrigger>
+
+      <DialogContent className="flex-wrap flex-col max-w-xl border gap-6">
+        <DialogHeader className="flex-col flex-wrap text-left gap-2">
+          <DialogTitle className="text-2xl font-bold">
+            Apply Penalty
+          </DialogTitle>
+          <DialogDescription className="font-mono text-base text-gray-400">
+            Curator DAO members can penalize agents. Higher penalties reduce
+            agent emissions and rewards.
+          </DialogDescription>
+        </DialogHeader>
+
         <Form {...form}>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="mt-4 flex flex-col gap-4"
+            className="flex flex-col gap-2"
           >
             <FormField
               control={control}
               name="penaltyFactor"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Penalty Factor (1-100)</FormLabel>
+                  <FormLabel>Penalty Factor</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter penalty factor"
-                      {...field}
-                      min={1}
-                      max={100}
-                      step={1}
-                      className="w-full bg-gray-600/10 p-3 text-white"
-                    />
+                    <div>
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={([value]) => field.onChange(value)}
+                        max={100}
+                        min={1}
+                        step={1}
+                        variant="destructive"
+                        className="-mt-3 -mb-3"
+                      />
+                      <div className="text-right text-xs text-red-500/60 font-medium">
+                        {field.value}%
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={control}
               name="content"
               render={({ field }) => (
-                <FormItem className="relative">
-                  <FormLabel>Penalty Reason</FormLabel>
+                <FormItem>
+                  <FormLabel> Penalty Reason</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Why do you want to apply this penalty?"
-                      {...field}
-                      className="h-32 w-full resize-none bg-gray-600/10 p-3 text-white"
-                      maxLength={MAX_CONTENT_CHARACTERS}
-                    />
+                    <div className="relative">
+                      <Textarea
+                        placeholder="Why do you want to apply this penalty?"
+                        {...field}
+                        className="h-32 w-full resize-none bg-gray-800/30 p-3 text-white"
+                        maxLength={MAX_CONTENT_CHARACTERS}
+                      />
+                      <span
+                        className={`absolute bottom-2 right-2 text-sm ${
+                        remainingChars <= 50
+                            ? "text-yellow-400"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {remainingChars} characters left
+                      </span>
+                    </div>
                   </FormControl>
                   <FormMessage />
-                  <span className="absolute bottom-2 right-2 text-sm text-gray-400">
-                    {remainingChars} characters left
-                  </span>
                 </FormItem>
               )}
             />
-
             <Button
               type="submit"
-              variant="default"
+              variant="destructive"
               disabled={
                 createPenaltyMutation.isPending || !selectedAccount?.address
               }
             >
-              {createPenaltyMutation.isPending ? "Submitting..." : "Submit"}
+              {createPenaltyMutation.isPending
+                ? "Awaiting signature"
+                : "Submit penalty"}
             </Button>
 
             {!selectedAccount?.address && (
-              <p className="text-sm text-yellow-500">
+              <p className="text-sm text-yellow-500 text-left">
                 Please connect your wallet to submit a request.
               </p>
             )}
           </form>
         </Form>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }

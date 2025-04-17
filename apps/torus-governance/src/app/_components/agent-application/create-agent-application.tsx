@@ -1,8 +1,8 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -31,6 +31,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -74,10 +75,8 @@ export function CreateAgentApplication() {
     defaultValues: {
       applicationKey: "",
       discordId: "",
-      title: "",
-      body: "",
-      criteriaAgreement: false,
     },
+    mode: "onChange",
   });
 
   const { control, handleSubmit, setValue, getValues } = form;
@@ -100,54 +99,82 @@ export function CreateAgentApplication() {
   };
 
   async function uploadFile(fileToUpload: File): Promise<void> {
-    try {
-      setUploading(true);
-      const data = new FormData();
-      data.set("file", fileToUpload);
-      const res = await fetch("/api/files", {
+    setUploading(true);
+
+    // Create form data
+    const data = new FormData();
+    data.set("file", fileToUpload);
+
+    // Upload file
+    const [fetchError, res] = await tryAsync(
+      fetch("/api/files", {
         method: "POST",
         body: data,
-      });
-      const { cid } = PIN_FILE_RESULT.parse(await res.json());
-      console.log(cid.toString());
+      }),
+    );
+
+    if (fetchError !== undefined) {
       setUploading(false);
+      toast.error("Error posting file, try again.");
+      return;
+    }
+    // First, get the JSON data
+    const [jsonError, jsonData] = await tryAsync(res.json());
+    if (jsonError !== undefined) {
+      setUploading(false);
+      toast.error("Error parsing response data");
+      return;
+    }
 
-      if (!accountFreeBalance.data) {
-        return;
-      }
-      if (!networkConfigs.data) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Network configs are still loading.",
-        });
-        return;
-      }
+    // Then, validate the JSON data with your schema
+    const [parseError, parsed] = await tryAsync(
+      Promise.resolve().then(() => PIN_FILE_RESULT.parse(jsonData)),
+    );
 
-      const daoApplicationCost = networkConfigs.data.agentApplicationCost;
+    if (parseError !== undefined) {
+      setUploading(false);
+      toast.error("Error validating response data");
+      return;
+    }
 
-      if (accountFreeBalance.data > daoApplicationCost) {
-        void AddAgentApplication({
+    const { cid } = parsed;
+    console.log(cid.toString());
+    setUploading(false);
+
+    if (!accountFreeBalance.data) {
+      return;
+    }
+
+    if (!networkConfigs.data) {
+      toast.error("Network configs are still loading.");
+      return;
+    }
+
+    const daoApplicationCost = networkConfigs.data.agentApplicationCost;
+
+    if (accountFreeBalance.data > daoApplicationCost) {
+      const [error, _] = await tryAsync(
+        AddAgentApplication({
           applicationKey: getValues("applicationKey"),
           IpfsHash: cidToIpfsUri(cid),
           removing: false,
           callback: (tx) => setTransactionStatus(tx),
           refetchHandler,
+        }),
+      );
+      if (error !== undefined) {
+        toast.error(error.message || "Error submitting agent application");
+        setTransactionStatus({
+          status: "ERROR",
+          finalized: true,
+          message: "Failed to submit agent application",
         });
-      } else {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(
-            accountFreeBalance.data,
-          )}`,
-        });
+        return;
       }
-    } catch (e) {
-      setUploading(false);
-      console.error(e);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Error uploading Agent Application",
-      });
+    } else {
+      toast.error(
+        `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+      );
     }
   }
 
@@ -181,7 +208,7 @@ export function CreateAgentApplication() {
       return "Connect a wallet to submit";
     }
     if (uploading) {
-      return "Uploading...";
+      return "Awaiting Signature";
     }
     return "Submit Application";
   };

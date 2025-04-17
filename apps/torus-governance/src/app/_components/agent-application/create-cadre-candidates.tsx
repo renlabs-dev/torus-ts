@@ -1,5 +1,6 @@
 "use client";
 
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { AppRouter } from "@torus-ts/api";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -46,6 +47,7 @@ export function CreateCadreCandidates() {
   );
 
   const { toast } = useToast();
+
   const [discordId, setDiscordId] = React.useState<string | null>(null);
   const [userName, setUserName] = React.useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
@@ -93,53 +95,63 @@ export function CreateCadreCandidates() {
     }
   }, [discordId, cadreForm]);
 
-  const createCadreCandidateMutation = api.cadreCandidate.create.useMutation({
-    onSuccess: async () => {
-      try {
-        if (discordId && userName) {
-          console.log("Saving Discord info");
-          const discordSaveResult = await saveDiscordInfo();
-          if (!discordSaveResult) {
-            toast({
-              title: "Uh oh! Something went wrong.",
-              description:
-                "An error occurred while saving your Discord information.",
-            });
-          }
-        }
-        cadreForm.reset();
-        await cadreCandidates.refetch();
-        toast({
-          title: "Success!",
-          description: "Curator DAO member request submitted successfully!",
-        });
-        setDialogOpen(false);
-      } catch (error) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description:
-            "An error occurred while saving your Discord information.",
-        });
-        console.error("Error saving Discord info:", error);
-      }
-    },
-    onError: (error) => {
-      if (error.message.includes("cadre_candidate_discord_id_unique")) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description:
-            "You have already applied to be a Curator DAO member with this Discord Account.",
-        });
+  const createCadreCandidateMutation = api.cadreCandidate.create.useMutation();
+
+  /**
+   * Handles the cadre candidate creation process with multi-step validation.
+   * Processes the form submission, stores data, saves Discord information if available,
+   * and refreshes the cadre candidates list.
+   *
+   * @param data - Form data containing discordId and content required for submission
+   */
+  async function handleCreateCadreCandidate(
+    data: CreateCadreCandidateFormData,
+  ) {
+    const [createError, _createSuccess] = await tryAsync(
+      createCadreCandidateMutation.mutateAsync({
+        discordId: data.discordId,
+        content: data.content,
+      }),
+    );
+
+    // Handle creation errors
+    if (createError !== undefined) {
+      if (createError.message.includes("cadre_candidate_discord_id_unique")) {
+        toast.error(
+          "You have already applied to be a Curator DAO member with this Discord Account.",
+        );
         return;
       }
 
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          error.message || "An unexpected error occurred. Please try again.",
-      });
-    },
-  });
+      toast.error(
+        createError.message ||
+          "An unexpected error occurred. Please try again.",
+      );
+      return;
+    }
+
+    // Handle Discord info if available
+    if (discordId && userName) {
+      const [discordError, _discordSuccess] = await tryAsync(saveDiscordInfo());
+      if (discordError !== undefined) {
+        toast.error("An error occurred while saving your Discord information.");
+        return;
+      }
+    }
+
+    // Reset form and refresh data
+    cadreForm.reset();
+
+    const [refetchError, _] = await tryAsync(cadreCandidates.refetch());
+    if (refetchError !== undefined) {
+      toast.error("Error refreshing data");
+      return;
+    }
+
+    // Show success and close dialog
+    toast.success("Curator DAO member request submitted successfully!");
+    setDialogOpen(false);
+  }
 
   const { handleSubmit, control, watch, formState, getValues } = cadreForm;
   const { isValid } = formState;
@@ -152,31 +164,21 @@ export function CreateCadreCandidates() {
       return;
     }
     if (!selectedAccount?.address) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Please connect your wallet to submit a request.",
-      });
+      toast.error("Please connect your wallet to submit a request.");
       return;
     }
     if (isUserCadreCandidate) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          "You have already submitted a request to be a Curator DAO member.",
-      });
+      toast.error(
+        "You have already submitted a request to be a Curator DAO member.",
+      );
       return;
     }
     if (!isValid) {
-      toast({
-        title: "Form validation failed",
-        description: "Please check the form for errors and try again.",
-      });
+      toast.error("Please check the form for errors and try again.");
       return;
     }
-    createCadreCandidateMutation.mutate({
-      discordId: data.discordId,
-      content: data.content,
-    });
+
+    return handleCreateCadreCandidate(data);
   };
 
   // Function to prevent form submission when clicking Discord buttons

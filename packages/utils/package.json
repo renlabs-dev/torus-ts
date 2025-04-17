@@ -28,7 +28,6 @@
     "./env": "./src/env.ts",
     "./files": "./src/files.ts",
     "./bignumber": "./src/bignumber.ts",
-    "./error-helpers/*": "./src/error-helpers/*.ts",
     "./try-catch": "./src/try-catch.ts",
     "./logger": "./src/logger.ts"
   },

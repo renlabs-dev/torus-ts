@@ -3,9 +3,7 @@
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
-import React from "react";
+import { useVoteManagement } from "../../../../../../hooks/use-vote-manager";
 
 interface HandleRemoveDaoMemberProps {
   userKey: string;
@@ -15,64 +13,33 @@ interface HandleRemoveDaoMemberProps {
 }
 
 export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
-  const { selectedAccount } = useGovernance();
+  const { currentVote, isPending, handleVote, handleRemoveVote } =
+    useVoteManagement(props.userKey, props.selectedAccount?.address);
 
-  const { data: curatorVotes, refetch: refetchCuratorVotes } =
-    api.cadreVote.byId.useQuery({
-      applicantKey: props.userKey,
-    });
-
-  const handleVote = async (vote: "REMOVE") => {
-    await createCadreVote.mutateAsync({
-      vote,
-      applicantKey: props.userKey,
-    });
-  };
-
-  const createCadreVote = api.cadreVote.create.useMutation({
-    onSuccess: () => refetchCuratorVotes(),
-    onError: (error) => {
-      console.error("Error submitting data:", error);
-    },
-  });
-
-  const deleteCadreVote = api.cadreVote.delete.useMutation({
-    onSuccess: () => refetchCuratorVotes(),
-
-    onError: (error) => {
-      console.error("Error deleting data:", error);
-    },
-  });
-
-  const currentWalletVote = curatorVotes?.find(
-    (vote) => vote.userKey === selectedAccount?.address,
-  );
-
-  async function handleRemoveVote() {
-    await deleteCadreVote.mutateAsync({ applicantKey: props.userKey });
-  }
-
-  const voteCount = (
-    <>
-      Remove vote count: <span className="text-red-500">{props.revoke}</span>
-    </>
-  );
+  // Only render the vote count text if there are votes
+  const voteCountDisplay =
+    props.revoke > 0 ? (
+      <Label className="flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500">
+        Remove vote count: <span className="text-red-500">{props.revoke}</span>
+      </Label>
+    ) : (
+      // Empty space holder to keep alignment consistent
+      <div className="min-w-[150px]"></div>
+    );
 
   // User has already voted to remove
-  if (currentWalletVote?.vote === "REMOVE") {
+  if (currentVote === "REMOVE") {
     return (
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label className="flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500">
-          {voteCount}
-        </Label>
+        {voteCountDisplay}
         <Button
           variant="outline"
-          onClick={() => handleRemoveVote()}
+          onClick={handleRemoveVote}
           type="button"
           className="flex w-full sm:w-auto"
-          disabled={deleteCadreVote.isPending || !props.isUserCadre}
+          disabled={isPending || !props.isUserCadre}
         >
-          {deleteCadreVote.isPending ? "Please Sign" : "Revoke vote to remove"}
+          {isPending ? "Please Sign" : "Revoke vote to remove"}
         </Button>
       </div>
     );
@@ -80,13 +47,14 @@ export function HandleRemoveDaoMember(props: HandleRemoveDaoMemberProps) {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
+      {voteCountDisplay}
       <Button
         onClick={() => handleVote("REMOVE")}
         variant="destructive"
         className="flex w-full sm:w-auto"
-        disabled={createCadreVote.isPending || !props.isUserCadre}
+        disabled={isPending || !props.isUserCadre}
       >
-        {createCadreVote.isPending ? "Please Sign" : "Remove Member"}
+        {isPending ? "Please Sign" : "Remove Member"}
       </Button>
     </div>
   );

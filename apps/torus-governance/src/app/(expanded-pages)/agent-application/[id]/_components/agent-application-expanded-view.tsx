@@ -85,54 +85,41 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
     voters: votersList,
   };
 
-  return (
-    <div className="flex w-full flex-col gap-8">
-      <div className="animate-fade-down flex w-full flex-row items-center gap-2">
-        <AgentStatusLabel status={content.status} />
-        {isAgentRegistered && <AgentActivityLabel />}
+ return (
+  <div className="flex w-full flex-col gap-8">
+    <div className="animate-fade-down flex w-full flex-row items-center gap-2">
+      <AgentStatusLabel status={content.status} />
+      {isAgentRegistered && <AgentActivityLabel />}
+    </div>
+    
+    <div className="animate-fade-down flex w-full flex-col md:flex-row md:justify-between md:gap-8">
+      {/* Main Content Column */}
+      <div className="flex h-full w-full flex-col gap-8 md:w-2/3 mb-4">
+        <ExpandedViewContent body={content.body} title={content.title} />
+        <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
+        <CreateComment
+          id={content.id}
+          author={content.author}
+          itemType="AGENT_APPLICATION"
+        />
+        <VoterList {...votersListProps} />
       </div>
-      <div className="animate-fade-down flex w-full justify-between gap-10">
-        <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
-          <ExpandedViewContent body={content.body} title={content.title} />
 
-          {/* Mobile Details Section */}
-          <div className="flex w-full flex-col gap-6 transition-all md:hidden">
-            <DetailsCard {...detailsCardProps} />
-            <AgentApplicationVoteTypeCard
-              applicationId={content.id}
-              applicationStatus={content.status}
-            />
-            <CreateCadreCandidates />
-            <PenaltyManager
-              agentKey={content.agentKey}
-              status={content.status}
-            />
-          </div>
-
-          {/* Comments Section */}
-          <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
-          <CreateComment
-            id={content.id}
-            author={content.author}
-            itemType="AGENT_APPLICATION"
-          />
-          <VoterList {...votersListProps} />
-        </div>
-
-        {/* Right Column */}
-        <div className="hidden flex-col gap-4 transition-all md:flex lg:w-1/3">
-          <DetailsCard {...detailsCardProps} />
-          <AgentApplicationVoteTypeCard
-            applicationId={content.id}
-            applicationStatus={content.status}
-          />
+      {/* Right/Bottom Column */}
+      <div className="flex flex-col gap-4 w-full md:w-1/3 md:animate-fade-down md:animate-delay-[1400ms]">
+        <CreateCadreCandidates />
+        <DetailsCard {...detailsCardProps} />
+        <AgentApplicationVoteTypeCard
+          applicationId={content.id}
+          applicationStatus={content.status}
+        />
           <AgentApplicationExpandedVoteBars id={content.id} />
-          <div className="animate-fade-down animate-delay-[1400ms] w-full">
-            <CreateCadreCandidates />
-          </div>
-          <PenaltyManager agentKey={content.agentKey} status={content.status} />
-        </div>
+        <PenaltyManager
+          agentKey={content.agentKey}
+          status={content.status}
+        />
       </div>
     </div>
-  );
+  </div>
+);
 }
