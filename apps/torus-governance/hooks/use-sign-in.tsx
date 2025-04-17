@@ -32,12 +32,13 @@ export const useSignIn = () => {
 
     // Async function for session checking with proper error handling
     async function checkUserSession() {
+      if (!auth) return;
       const [error, data] = await tryAsync(checkSession.mutateAsync({ auth }));
-      
+
       if (error !== undefined) {
         console.error("Session check error:", error);
         const [storageError] = await tryAsync(
-          Promise.resolve(localStorage.removeItem("authorization"))
+          Promise.resolve(localStorage.removeItem("authorization")),
         );
         if (storageError !== undefined) {
           console.error("Error removing from localStorage:", storageError);
@@ -45,18 +46,18 @@ export const useSignIn = () => {
         setIsUserAuthenticated(false);
         return;
       }
-      
+
       setIsUserAuthenticated(data.isValid);
       if (!data.isValid) {
         const [storageError] = await tryAsync(
-          Promise.resolve(localStorage.removeItem("authorization"))
+          Promise.resolve(localStorage.removeItem("authorization")),
         );
         if (storageError !== undefined) {
           console.error("Error removing from localStorage:", storageError);
         }
       }
     }
-    
+
     void checkUserSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
@@ -67,17 +68,17 @@ export const useSignIn = () => {
       return;
 
     setIsUserAuthenticated(null);
-    
+
     // Handle localStorage with proper error handling
     const clearStorage = async () => {
       const [storageError] = await tryAsync(
-        Promise.resolve(localStorage.removeItem("authorization"))
+        Promise.resolve(localStorage.removeItem("authorization")),
       );
       if (storageError !== undefined) {
         console.error("Error removing from localStorage:", storageError);
       }
     };
-    
+
     void clearStorage();
   }, [selectedAccount]);
 
@@ -88,40 +89,42 @@ export const useSignIn = () => {
     const authReqData = createAuthReqData(
       String(env("NEXT_PUBLIC_AUTH_ORIGIN")),
     );
-    
+
     // Sign the data
-    const [signError, signedData] = await tryAsync(signData(signHex, authReqData));
+    const [signError, signedData] = await tryAsync(
+      signData(signHex, authReqData),
+    );
     if (signError !== undefined) {
       console.error("Error signing data:", signError);
       throw new Error("Failed to sign authentication data");
     }
-    
+
     // Start session with signed data
     const [sessionError, startSessionData] = await tryAsync(
-      startSessionMutation.mutateAsync(signedData)
+      startSessionMutation.mutateAsync(signedData),
     );
-    
+
     if (sessionError !== undefined) {
       console.error("Error starting session:", sessionError);
       throw new Error("Failed to authenticate with server");
     }
-    
+
     // Validate session data
     if (!startSessionData.token || !startSessionData.authenticationType) {
       throw new Error("Invalid authentication response");
     }
-    
+
     // Store authentication token
     const newAuthorization = `${startSessionData.authenticationType} ${startSessionData.token}`;
     const [storageError] = await tryAsync(
-      Promise.resolve(localStorage.setItem("authorization", newAuthorization))
+      Promise.resolve(localStorage.setItem("authorization", newAuthorization)),
     );
-    
+
     if (storageError !== undefined) {
       console.error("Error saving to localStorage:", storageError);
       throw new Error("Failed to save authentication token");
     }
-    
+
     setIsUserAuthenticated(true);
   };
 
