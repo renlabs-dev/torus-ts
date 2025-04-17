@@ -310,11 +310,12 @@ jobs:
   ########### PR PREVIEW ############
   ###################################
   torus-allocator-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-allocator == 'true'
+      (needs.turbo-check.outputs.torus-allocator == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
@@ -331,11 +332,12 @@ jobs:
       delete: true
 
   torus-cache-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      (needs.turbo-check.outputs.torus-cache == 'true' ||
+      (needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-cache == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
       needs.turbo-check.outputs.torus-allocator == 'true' ||
       needs.turbo-check.outputs.torus-wallet == 'true')
@@ -356,11 +358,12 @@ jobs:
       delete: true
 
   torus-governance-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-governance == 'true'
+      (needs.turbo-check.outputs.torus-governance == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
@@ -377,11 +380,12 @@ jobs:
       delete: true
 
   torus-page-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-page == 'true'
+      (needs.turbo-check.outputs.torus-page == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
@@ -398,11 +402,12 @@ jobs:
       delete: true
 
   torus-wallet-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-wallet == 'true'
+      (needs.turbo-check.outputs.torus-wallet == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
