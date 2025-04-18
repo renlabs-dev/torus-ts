@@ -12,7 +12,6 @@ import BlobImage from "~/app/_components/blob-image";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 import { AgentInfoCard } from "./components/agent-info-card";
-import { EditAgentButton } from "./components/edit-agent-button";
 
 interface AgentPageProps {
   params: Promise<{ slug: string }>;

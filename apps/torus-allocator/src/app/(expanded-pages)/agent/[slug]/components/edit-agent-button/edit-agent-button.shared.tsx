@@ -1,18 +1,18 @@
 import { Button } from "@torus-ts/ui/components/button";
 import { TooltipContent } from "@torus-ts/ui/components/tooltip";
 import { Pencil } from "lucide-react";
-import Link from "next/link";
 
 interface EditAgentOwnerButtonProps {
   agentKey: string;
   className: string;
+  onClick?: () => void;
 }
 
 interface EditAgentNonOwnerButtonProps {
   className: string;
 }
 
-function EditAgentButtonContent() {
+export function EditAgentButtonContent() {
   return (
     <>
       <Pencil className="mr-2 h-4 w-4" />
@@ -30,13 +30,15 @@ export function EditAgentNonOwnerTooltip() {
 }
 
 export const EditAgentOwnerButton = ({
-  agentKey,
   className,
+  onClick,
 }: EditAgentOwnerButtonProps) => (
-  <Button asChild variant="outline" className={className}>
-    <Link href={`/agent/${agentKey}/edit`}>
-      <EditAgentButtonContent />
-    </Link>
+  <Button
+    variant="outline"
+    className={className}
+    onClick={onClick}
+  >
+    <EditAgentButtonContent />
   </Button>
 );
 

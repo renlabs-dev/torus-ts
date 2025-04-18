@@ -7,7 +7,7 @@ import type { Agent } from "~/utils/types";
 import { Copy } from "lucide-react";
 import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
-import { EditAgentButton } from "./edit-agent-button";
+import { EditAgentButton } from "./edit-agent-button/edit-agent-button";
 import type { ReactNode } from "react";
 
 interface AgentInfoCardProps {
