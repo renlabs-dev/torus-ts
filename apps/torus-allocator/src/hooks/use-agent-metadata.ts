@@ -3,6 +3,12 @@ import type { AgentMetadataResult } from "@torus-network/sdk";
 import { fetchAgentMetadata } from "@torus-network/sdk";
 import { isIpfsUri } from "@torus-network/torus-utils/ipfs";
 
+declare global {
+  interface Window {
+    __PREVIEW_METADATA__?: AgentMetadataResult;
+  }
+}
+
 const DEFAULT_STALE_TIME = 1000 * 60 * 5;
 const IPFS_STALE_TIME = Infinity;
 
@@ -13,9 +19,10 @@ interface UseQueryAgentMetadataOptions {
 
 const isClientSide = (): boolean => typeof window !== "undefined";
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-const getClientSideMetadata = (): AgentMetadataResult | null =>
-  isClientSide() ? (window.__PREVIEW_METADATA__ ?? null) : null;
+const getClientSideMetadata = () => {
+  if (!isClientSide()) return undefined;
+  return window.__PREVIEW_METADATA__ ?? undefined;
+};
 
 export const useQueryAgentMetadata = (
   metadataUri: string,
@@ -30,8 +37,6 @@ export const useQueryAgentMetadata = (
     queryFn: async () => {
       const clientSideMetadata = getClientSideMetadata();
       if (clientSideMetadata) return clientSideMetadata;
-
-      if (!metadataUri) throw new Error("metadataUri is required");
 
       return fetchAgentMetadata(metadataUri, { fetchImages });
     },
