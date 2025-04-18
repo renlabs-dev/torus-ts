@@ -30,6 +30,7 @@ import {
 } from "react";
 import { ReportComment } from "./report-comment";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { useMutationHandler } from "hooks/use-mutation-handler";
 
 //  "LIKE" | "DISLIKE"
 export type CommentInteractionReactionType = NonNullable<
@@ -141,7 +142,7 @@ export function ViewComment({
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(
     null,
   );
-  const [commentId, setCommentId] = useState<number | null>(null);
+  const [commentId, setCommentIdAction] = useState<number | null>(null);
 
   const {
     data: comments,
@@ -190,44 +191,8 @@ export function ViewComment({
   const deleteVoteMutation =
     api.commentInteraction.deleteReaction.useMutation();
 
-  async function handleCastVoteMutation(
-    commentId: number,
-    reactionType: CommentInteractionReactionType,
-  ) {
-    const [error, _success] = await tryAsync(
-      castVoteMutation.mutateAsync({ commentId, reactionType }),
-    );
-    if (error !== undefined) {
-      toast.error(error.message || "Error casting vote");
-      return;
-    }
-    const [error2, _success2] = await tryAsync(
-      Promise.all([refetchUserVotes(), refetch()]),
-    );
-    if (error2 !== undefined) {
-      toast.error("Error refreshing data");
-      return;
-    }
-    return;
-  }
-
-  async function handleDeleteVoteMutation(commentId: number) {
-    const [error, _success] = await tryAsync(
-      deleteVoteMutation.mutateAsync({ commentId }),
-    );
-    if (error !== undefined) {
-      toast.error(error.message || "Error removing vote");
-      return;
-    }
-    const [error2, _success2] = await tryAsync(
-      Promise.all([refetchUserVotes(), refetch()]),
-    );
-    if (error2 !== undefined) {
-      toast.error("Error refreshing data");
-      return;
-    }
-    return;
-  }
+  const handleCastVote = useMutationHandler(castVoteMutation);
+  const handleDeleteVote = useMutationHandler(deleteVoteMutation);
 
   const { toast } = useToast();
 
@@ -248,19 +213,46 @@ export function ViewComment({
       const isRemovingVote = currentVote === reactionType;
 
       if (isRemovingVote) {
-        void handleDeleteVoteMutation(commentId);
+        void handleDeleteVote(
+          { commentId },
+          {
+            error: "Error removing vote",
+            onSuccess: async () => {
+              const [error] = await tryAsync(
+                Promise.all([refetchUserVotes(), refetch()]),
+              );
+              if (error) {
+                throw new Error("Error refreshing data");
+              }
+            },
+          },
+        );
       } else {
-        void handleCastVoteMutation(commentId, reactionType);
+        void handleCastVote(
+          { commentId, reactionType },
+          {
+            error: "Error casting vote",
+            onSuccess: async () => {
+              const [error] = await tryAsync(
+                Promise.all([refetchUserVotes(), refetch()]),
+              );
+              if (error) {
+                throw new Error("Error refreshing data");
+              }
+            },
+          },
+        );
       }
-      toast.success("Vote processing...");
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       selectedAccount?.address,
       comments,
       userVotes,
-      castVoteMutation,
-      deleteVoteMutation,
+      handleCastVote,
+      handleDeleteVote,
+      refetchUserVotes,
+      refetch,
+      toast,
     ],
   );
 
@@ -369,7 +361,7 @@ export function ViewComment({
                   <Button
                     variant="outline"
                     title="Report comment"
-                    onClick={() => setCommentId(comment.id)}
+                    onClick={() => setCommentIdAction(comment.id)}
                     type="button"
                     className="absolute bottom-2 right-2 h-7 border border-red-500 px-1.5 text-red-500
                       opacity-30 transition duration-200 hover:text-red-500 hover:opacity-100"
@@ -388,7 +380,10 @@ export function ViewComment({
         </div>
       </div>
 
-      <ReportComment commentId={commentId} setCommentId={setCommentId} />
+      <ReportComment
+        commentId={commentId}
+        setCommentIdAction={setCommentIdAction}
+      />
     </div>
   );
 }

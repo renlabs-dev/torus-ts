@@ -30,6 +30,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useFileUploader } from "hooks/use-file-uploader";
 
 const transferDaoTreasuryProposalSchema = z.object({
   destinationKey: z.string().min(1, "Destination is required"),
@@ -55,7 +56,6 @@ export function CreateTransferDaoTreasuryProposal() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
-  const [uploading, setUploading] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -89,38 +89,15 @@ export function CreateTransferDaoTreasuryProposal() {
     return accountFreeBalance.data > toNano(1000);
   })();
 
-  async function uploadFile(fileToUpload: File): Promise<void> {
-    setUploading(true);
-    
-    // Create and send form data
-    const data = new FormData();
-    data.set("file", fileToUpload);
-    
-    const [fetchError, res] = await tryAsync(
-      fetch("/api/files", {
-        method: "POST",
-        body: data,
-      })
-    );
-    
-    if (fetchError !== undefined) {
-      setUploading(false);
-      toast.error(fetchError.message || "Error uploading file");
-      return;
-    }
-    
-    const [jsonError, ipfs] = await tryAsync(res.json() as Promise<{ cid: string }>);
-    setUploading(false);
-    
-    if (jsonError !== undefined) {
-      toast.error(jsonError.message || "Error parsing response");
-      return;
-    }
-    
-    if (!ipfs.cid || ipfs.cid === "undefined") {
-      toast.error("Error uploading transfer dao treasury proposal");
-      return;
-    }
+  const { uploadFile, uploading } = useFileUploader();
+
+  async function handleFileUpload(fileToUpload: File): Promise<void> {
+    const { success, cid } = await uploadFile(fileToUpload, {
+      setTransactionStatus,
+      errorMessage: "Error uploading agent application file",
+    });
+
+    if (!success || !cid) return;
 
     if (!accountFreeBalance.data) {
       toast.error("Balance is still loading");
@@ -128,19 +105,22 @@ export function CreateTransferDaoTreasuryProposal() {
     }
 
     const daoApplicationCost = 1000;
+    const ipfsUri = `ipfs://${cid}`;
 
     if (Number(accountFreeBalance.data) > daoApplicationCost) {
       const [propError, _] = await tryAsync(
         addDaoTreasuryTransferProposal({
           value: getValues("value"),
           destinationKey: getValues("destinationKey"),
-          data: `ipfs://${ipfs.cid}`,
+          data: ipfsUri,
           callback: (tx) => setTransactionStatus(tx),
-        })
+        }),
       );
-      
+
       if (propError !== undefined) {
-        toast.error(propError.message || "Error creating DAO treasury transfer proposal");
+        toast.error(
+          propError.message || "Error creating DAO treasury transfer proposal",
+        );
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
@@ -149,15 +129,18 @@ export function CreateTransferDaoTreasuryProposal() {
         return;
       }
     } else {
-      toast.error(`Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`);
+      toast.error(
+        `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
-        message: "Insufficient balance to create transfer dao treasury proposal",
+        message:
+          "Insufficient balance to create transfer dao treasury proposal",
       });
       return;
     }
-    
+
     router.refresh();
   }
 
@@ -176,7 +159,7 @@ export function CreateTransferDaoTreasuryProposal() {
     const fileToUpload = new File([blob], "dao.json", {
       type: "application/json",
     });
-    await uploadFile(fileToUpload);
+    await handleFileUpload(fileToUpload);
   };
 
   const getButtonSubmitLabel = ({

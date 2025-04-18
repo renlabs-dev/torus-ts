@@ -36,10 +36,7 @@ import {
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
 import { Slider } from "@torus-ts/ui/components/slider";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
-
-const log = BasicLogger.create({ name: "penalty-manager" });
+import { useMutationHandler } from "hooks/use-mutation-handler";
 
 const MAX_CONTENT_CHARACTERS = 240;
 
@@ -98,39 +95,43 @@ export function PenaltyManager({
   const createPenaltyMutation = api.penalty.create.useMutation();
   const deletePenaltyMutation = api.penalty.delete.useMutation();
 
+  const handleCreatePenalty = useMutationHandler(createPenaltyMutation);
+  const handleDeletePenalty = useMutationHandler(deletePenaltyMutation);
+
   async function handleCreatePenaltyMutation(
     data: PenaltyFormData,
     agentKey: string,
   ) {
-    const mutationRes = await tryAsync(
-      createPenaltyMutation.mutateAsync({ ...data, agentKey }),
+    const { success } = await handleCreatePenalty(
+      { ...data, agentKey },
+      {
+        success: "Penalty applied successfully!",
+        error: "An unexpected error occurred. Please try again.",
+      },
     );
-    if (log.ifResultIsErr(mutationRes)) {
-      toast.error(
-        mutationRes[0].message ||
-          "An unexpected error occurred. Please try again.",
-      );
-      return;
+
+    if (success) {
+      reset();
+      void refetchPenalties();
     }
-    reset();
-    void refetchPenalties();
-    toast.success("Penalty applied successfully!");
+
+    return success;
   }
 
   async function handleDeletePenaltyMutation(agentKey: string) {
-    const mutationRes = await tryAsync(
-      deletePenaltyMutation.mutateAsync({ agentKey }),
+    const { success } = await handleDeletePenalty(
+      { agentKey },
+      {
+        success: "Penalty removed successfully!",
+        error: "An unexpected error occurred. Please try again.",
+      },
     );
-    if (log.ifResultIsErr(mutationRes)) {
-      toast.error(
-        mutationRes[0].message ||
-          "An unexpected error occurred. Please try again.",
-      );
-      return;
+    if (success) {
+      reset();
+      void refetchPenalties();
     }
-    reset();
-    void refetchPenalties();
-    toast.success("Penalty removed successfully!");
+
+    return success;
   }
 
   if (!("Resolved" in status) || !isAgentActive || !isUserCadre) {

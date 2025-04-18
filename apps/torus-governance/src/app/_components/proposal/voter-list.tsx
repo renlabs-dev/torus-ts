@@ -83,9 +83,11 @@ export function VoterList(props: Readonly<VoterListProps>) {
   const handleCopyAddress = async (address: string) => {
     const [error, _success] = await tryAsync(copyToClipboard(address));
     if (error !== undefined) {
-      toast.error();
+      toast.error("Failed to copy address.");
+      return;
     }
-    toast.success("Address copied to clipboard.");
+    toast.success("Agent address copied to clipboard.");
+    return;
   };
 
   return (

@@ -1,6 +1,5 @@
 "use client";
 
-import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
@@ -32,6 +31,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useFileUploader } from "hooks/use-file-uploader";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -60,7 +60,6 @@ export function CreateAgentApplication() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
-  const [uploading, setUploading] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -98,50 +97,18 @@ export function CreateAgentApplication() {
     await agentApplications.refetch();
   };
 
-  async function uploadFile(fileToUpload: File): Promise<void> {
-    setUploading(true);
+  const { uploadFile, uploading } = useFileUploader();
 
-    // Create form data
-    const data = new FormData();
-    data.set("file", fileToUpload);
+  async function handleFileUpload(fileToUpload: File): Promise<void> {
+    const { success, cid } = await uploadFile(fileToUpload, {
+      setTransactionStatus,
+      errorMessage: "Error uploading agent application file",
+    });
 
-    // Upload file
-    const [fetchError, res] = await tryAsync(
-      fetch("/api/files", {
-        method: "POST",
-        body: data,
-      }),
-    );
-
-    if (fetchError !== undefined) {
-      setUploading(false);
-      toast.error("Error posting file, try again.");
-      return;
-    }
-    // First, get the JSON data
-    const [jsonError, jsonData] = await tryAsync(res.json());
-    if (jsonError !== undefined) {
-      setUploading(false);
-      toast.error("Error parsing response data");
-      return;
-    }
-
-    // Then, validate the JSON data with your schema
-    const [parseError, parsed] = await tryAsync(
-      Promise.resolve().then(() => PIN_FILE_RESULT.parse(jsonData)),
-    );
-
-    if (parseError !== undefined) {
-      setUploading(false);
-      toast.error("Error validating response data");
-      return;
-    }
-
-    const { cid } = parsed;
-    console.log(cid.toString());
-    setUploading(false);
+    if (!success || !cid) return;
 
     if (!accountFreeBalance.data) {
+      toast.error("Balance data is not available");
       return;
     }
 
@@ -149,14 +116,14 @@ export function CreateAgentApplication() {
       toast.error("Network configs are still loading.");
       return;
     }
-
     const daoApplicationCost = networkConfigs.data.agentApplicationCost;
 
     if (accountFreeBalance.data > daoApplicationCost) {
+      const ipfsUri = `ipfs://${cid}`;
       const [error, _] = await tryAsync(
         AddAgentApplication({
           applicationKey: getValues("applicationKey"),
-          IpfsHash: cidToIpfsUri(cid),
+          IpfsHash: ipfsUri,
           removing: false,
           callback: (tx) => setTransactionStatus(tx),
           refetchHandler,
@@ -194,7 +161,7 @@ export function CreateAgentApplication() {
     const fileToUpload = new File([blob], "dao.json", {
       type: "application/json",
     });
-    await uploadFile(fileToUpload);
+    await handleFileUpload(fileToUpload);
   };
 
   const getButtonSubmitLabel = ({

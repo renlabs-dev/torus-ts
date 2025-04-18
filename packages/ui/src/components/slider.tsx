@@ -112,7 +112,7 @@ const Slider = React.forwardRef<
     return (
       <SliderPrimitive.Root
         ref={ref}
-        className={cn(sliderVariants({ variant, size, className }))}
+        className={cn(sliderVariants({ variant, size }), className)}
         {...props}
       >
         <SliderPrimitive.Track

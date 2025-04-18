@@ -1,6 +1,7 @@
 "use client";
 
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
@@ -64,7 +65,10 @@ export function VoterList(props: Readonly<VoterListProps>) {
 
   if (isError) {
     return (
-      <div className="animate-fade-down animate-delay-700 flex h-full min-h-max flex-col items-start justify-between gap-4 text-white">
+      <div
+        className="animate-fade-down animate-delay-700 flex h-full min-h-max flex-col items-start
+          justify-between gap-4 text-white"
+      >
         <span className="text-lg">
           <h3>Voters List</h3>
         </span>
@@ -81,7 +85,10 @@ export function VoterList(props: Readonly<VoterListProps>) {
 
   if (!voters || voters.length === 0) {
     return (
-      <div className="animate-fade-down animate-delay-700 flex h-full min-h-max flex-col items-start justify-between gap-4 text-white">
+      <div
+        className="animate-fade-down animate-delay-700 flex h-full min-h-max flex-col items-start
+          justify-between gap-4 text-white"
+      >
         <span className="text-lg">
           <h3>Voters List</h3>
         </span>
@@ -97,8 +104,12 @@ export function VoterList(props: Readonly<VoterListProps>) {
   }
 
   const handleCopyAddress = async (address: string) => {
-    await copyToClipboard(address);
-    toast.success("Agent address copied to clipboard.");
+    const [error, _success] = await tryAsync(copyToClipboard(address));
+    if (error !== undefined) {
+      toast.error("Failed to copy address to clipboard");
+      return;
+    }
+    toast.success("Address copied to clipboard.");
   };
 
   const getVoteLabel = (vote: "ACCEPT" | "REFUSE" | "REMOVE") => {
@@ -112,7 +123,10 @@ export function VoterList(props: Readonly<VoterListProps>) {
   };
 
   return (
-    <div className="animate-fade-down animate-delay-700 flex h-full min-h-max flex-col items-start justify-between gap-4 text-white">
+    <div
+      className="animate-fade-down animate-delay-700 flex h-full min-h-max flex-col items-start
+        justify-between gap-4 text-white"
+    >
       <span className="text-lg">
         <h3>Voters List</h3>
       </span>
@@ -124,7 +138,8 @@ export function VoterList(props: Readonly<VoterListProps>) {
           <Button
             variant="outline"
             key={address}
-            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent hover:text-muted-foreground flex w-full items-center justify-between px-6 py-8"
+            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent
+              hover:text-muted-foreground flex w-full items-center justify-between px-6 py-8"
             onClick={() => handleCopyAddress(address)}
           >
             {smallAddress(address)}
@@ -132,7 +147,9 @@ export function VoterList(props: Readonly<VoterListProps>) {
           </Button>
         ))}
         <span
-          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} bg-gradient-to-b from-transparent to-black transition-all duration-100`}
+          className={`fixed -bottom-5 flex w-full items-end justify-center
+            ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} bg-gradient-to-b
+            from-transparent to-black transition-all duration-100`}
         />
       </div>
     </div>

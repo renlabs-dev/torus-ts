@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useFileUploader } from "hooks/use-file-uploader";
 
 const proposalSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -49,7 +50,6 @@ export function CreateProposal() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
-  const [uploading, setUploading] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -82,69 +82,38 @@ export function CreateProposal() {
     return accountFreeBalance.data > networkConfigs.data.proposalCost;
   })();
 
-  async function uploadFile(fileToUpload: File): Promise<void> {
-    setUploading(true);
-    
-    // Create and send form data
-    const data = new FormData();
-    data.set("file", fileToUpload);
-    
-    const [fetchError, res] = await tryAsync(
-      fetch("/api/files", {
-        method: "POST",
-        body: data,
-      })
-    );
-    
-    if (fetchError !== undefined) {
-      setUploading(false);
-      toast.error(fetchError.message || "Error uploading file");
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Error uploading file",
-      });
-      return;
-    }
-    
-    const [jsonError, ipfs] = await tryAsync(res.json() as Promise<{ cid: string }>);
-    setUploading(false);
-    
-    if (jsonError !== undefined) {
-      toast.error(jsonError.message || "Error parsing response");
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Error parsing response",
-      });
-      return;
-    }
-    
-    if (!ipfs.cid || ipfs.cid === "undefined") {
-      toast.error("Error uploading proposal");
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Error uploading proposal to IPFS",
-      });
-      return;
-    }
+  const { uploadFile, uploading } = useFileUploader();
 
+  async function handleFileUpload(fileToUpload: File): Promise<void> {
+    const { success, cid } = await uploadFile(fileToUpload, {
+      setTransactionStatus,
+      errorMessage: "Error uploading agent application file",
+    });
+
+    if (!success || !cid) return;
+
+    // Continue with your application logic
     if (!accountFreeBalance.data) {
-      toast.error("Balance is still loading");
+      toast.error("Balance data is not available");
       return;
     }
 
-    const proposalCost = networkConfigs.data?.proposalCost ?? 0;
+    if (!networkConfigs.data) {
+      toast.error("Network configs are still loading.");
+      return;
+    }
 
+    const proposalCost = networkConfigs.data.proposalCost;
+
+    const ipfsUri = `ipfs://${cid}`;
     if (Number(accountFreeBalance.data) > proposalCost) {
       const [propError, _] = await tryAsync(
         addCustomProposal({
-          IpfsHash: `ipfs://${ipfs.cid}`,
+          IpfsHash: ipfsUri,
           callback: (tx) => setTransactionStatus(tx),
-        })
+        }),
       );
-      
+
       if (propError !== undefined) {
         toast.error(propError.message || "Error creating proposal");
         setTransactionStatus({
@@ -155,7 +124,9 @@ export function CreateProposal() {
         return;
       }
     } else {
-      toast.error(`Insufficient balance to create proposal. Required: ${proposalCost} but got ${formatToken(accountFreeBalance.data)}`);
+      toast.error(
+        `Insufficient balance to create proposal. Required: ${proposalCost} but got ${formatToken(accountFreeBalance.data)}`,
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -163,7 +134,7 @@ export function CreateProposal() {
       });
       return;
     }
-    
+
     router.refresh();
   }
 
@@ -182,7 +153,7 @@ export function CreateProposal() {
     const fileToUpload = new File([blob], "proposal.json", {
       type: "application/json",
     });
-    await uploadFile(fileToUpload);
+    await handleFileUpload(fileToUpload);
   };
 
   const getButtonSubmitLabel = ({

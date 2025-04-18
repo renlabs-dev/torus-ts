@@ -14,6 +14,7 @@ import { useState } from "react";
 import { match } from "rustie";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { useMutationHandler } from "hooks/use-mutation-handler";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
@@ -185,13 +186,15 @@ export function AgentApplicationVoteTypeCard(props: {
 
   const userVote = votes?.find((v) => v.userKey === selectedAccount?.address);
 
-  //create vote mutation
+  // Initialize the mutations
   const createApplicationVoteMutation =
     api.agentApplicationVote.create.useMutation();
-
-  //delete vote mutation
   const deleteApplicationVoteMutation =
     api.agentApplicationVote.delete.useMutation();
+
+  // Create handler functions using your custom hook
+  const handleCreateVote = useMutationHandler(createApplicationVoteMutation);
+  const handleDeleteVote = useMutationHandler(deleteApplicationVoteMutation);
 
   // that's not the greatest, but, I am just removing some sutff
   const userAddress = selectedAccount?.address;
@@ -219,59 +222,63 @@ export function AgentApplicationVoteTypeCard(props: {
   ) {
     if (!isUserCadre || !userAddress) return;
 
-    const [error, _result] = await tryAsync(
-      createApplicationVoteMutation.mutateAsync({
+    await handleCreateVote(
+      {
         applicationId,
         vote: voteType,
-      }),
+      },
+      {
+        error: "Error submitting vote",
+        success: "Vote submitted successfully!",
+        onSuccess: async () => {
+          const [invalidateError] = await tryAsync(
+            Promise.all([
+              utils.agentApplicationVote.byApplicationId.invalidate({
+                applicationId,
+              }),
+              utils.agentApplicationVote.byUserKey.invalidate({
+                userKey: userAddress,
+              }),
+            ]),
+          );
+          if (invalidateError !== undefined) {
+            console.error("Error refreshing data:", invalidateError);
+            throw new Error("Error refreshing data");
+          }
+        },
+      },
     );
-    if (error !== undefined) {
-      toast.error(`Error submitting vote: ${error.message}`);
-      return;
-    }
-    const [invalidateError, _invalidateResult] = await tryAsync(
-      Promise.all([
-        utils.agentApplicationVote.byApplicationId.invalidate({
-          applicationId,
-        }),
-        utils.agentApplicationVote.byUserKey.invalidate({
-          userKey: userAddress,
-        }),
-      ]),
-    );
-    if (invalidateError !== undefined) {
-      console.error("Error refreshing data:", invalidateError);
-      return;
-    }
-    toast.success("Vote submitted successfully!");
   }
 
   async function handleApplicationDeleteVoteMutation(applicationId: number) {
     if (!isUserCadre || !userAddress) return;
-    const [error, _success] = await tryAsync(
-      deleteApplicationVoteMutation.mutateAsync({
+
+    await handleDeleteVote(
+      {
         applicationId,
-      }),
+      },
+      {
+        error: "Error removing vote",
+        success: "Vote removed successfully!",
+        onSuccess: async () => {
+          const [invalidateError] = await tryAsync(
+            Promise.all([
+              utils.agentApplicationVote.byApplicationId.invalidate({
+                applicationId,
+              }),
+              utils.agentApplicationVote.byUserKey.invalidate({
+                userKey: userAddress,
+              }),
+            ]),
+          );
+          if (invalidateError !== undefined) {
+            throw new Error(
+              `Error refreshing data: ${invalidateError.message}`,
+            );
+          }
+        },
+      },
     );
-    if (error !== undefined) {
-      toast.error(`Error removing vote: ${error.message}`);
-      return;
-    }
-    const [invalidateError, _invalidateResult] = await tryAsync(
-      Promise.all([
-        utils.agentApplicationVote.byApplicationId.invalidate({
-          applicationId,
-        }),
-        utils.agentApplicationVote.byUserKey.invalidate({
-          userKey: userAddress,
-        }),
-      ]),
-    );
-    if (invalidateError !== undefined) {
-      toast.error(`Error removing vote: ${invalidateError.message}`);
-      return;
-    }
-    toast.success("Vote removed successfully!");
   }
 
   const isMutating =
