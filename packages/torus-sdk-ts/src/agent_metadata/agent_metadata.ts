@@ -86,13 +86,15 @@ const fetchJson = (url: string): Promise<AnyJson> =>
 const fetchBlob = (url: string): Promise<Blob> =>
   fetch(url).then((res) => res.blob());
 
+export interface AgentMetadataResult {
+  metadata: AgentMetadata;
+  images: Partial<Record<AgentMetadataImageName, Blob>>;
+}
+
 export async function fetchAgentMetadata(
   uri: string,
   { fetchImages = false },
-): Promise<{
-  metadata: AgentMetadata;
-  images: Partial<Record<AgentMetadataImageName, Blob>>;
-}> {
+): Promise<AgentMetadataResult> {
   // fetch Agent Metadata as JSON
   const data = await fetchFromIpfsOrUrl(uri, fetchJson);
 
