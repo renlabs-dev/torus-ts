@@ -1,49 +1,28 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
-import { DialogFooter } from "@torus-ts/ui/components/dialog";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import type { useForm } from "react-hook-form";
 import { AgentCardContent } from "~/app/_components/agent-item-card/components/agent-card-content";
-import { AgentCardFooter } from "~/app/_components/agent-item-card/components/agent-card-footer";
 import { AgentCardHeader } from "~/app/_components/agent-item-card/components/agent-card-header";
-import { CardHoverEffect } from "~/app/_components/agent-item-card/components/card-hover-effect";
-import type {
-  EditAgentFormData,
-  MetadataType,
-  UpdateAgentMutation,
-} from "./edit-agent-form-schema";
+import type { EditAgentFormData } from "./edit-agent-form-schema";
 
 interface EditAgentPreviewProps {
   agentKey: string;
-  updateAgentMutation: UpdateAgentMutation;
-  setActiveTab: (tab: string) => void;
-  form?: ReturnType<typeof useForm<EditAgentFormData>>;
-  metadata: MetadataType;
-  icon: string;
+  form: ReturnType<typeof useForm<EditAgentFormData>>;
 }
 
-export function EditAgentPreview({
-  agentKey,
-  updateAgentMutation,
-  setActiveTab,
-  form,
-  metadata,
-  icon,
-}: EditAgentPreviewProps) {
-  console.log("icon", icon);
-  console.log("metadata", metadata);
-
+export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
   const previewCardProps = {
     id: 0,
-    name: form?.watch("name"),
+    name: form.watch("name"),
     agentKey,
     metadataUri: "",
     registrationBlock: null,
     percComputedWeight: 0.05,
     weightFactor: 1.0,
   };
+
+  console.log("SHORT", form.getValues());
 
   return (
     <>
@@ -55,7 +34,7 @@ export function EditAgentPreview({
           <AgentCardHeader {...previewCardProps} />
           <AgentCardContent
             metadataUri={previewCardProps.metadataUri}
-            metadata={previewCardProps as any}
+            shortDescription={form.watch("shortDescription")}
           />
         </Card>
       </div>

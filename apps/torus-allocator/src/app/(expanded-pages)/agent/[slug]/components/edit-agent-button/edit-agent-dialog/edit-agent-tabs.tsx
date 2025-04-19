@@ -17,21 +17,17 @@ import type { useForm } from "react-hook-form";
 import type { UpdateAgentMutation } from "./edit-agent-form-schema";
 import { EditAgentForm } from "./edit-agent-form";
 import { EditAgentPreview } from "./edit-agent-preview";
-import type { EditAgentFormData, MetadataType } from "./edit-agent-form-schema";
+import type { EditAgentFormData } from "./edit-agent-form-schema";
 import { Button } from "@torus-ts/ui/components/button";
 
 interface EditAgentTabsProps {
   agentKey: string;
-  metadata: MetadataType;
-  icon?: Blob;
   form: ReturnType<typeof useForm<EditAgentFormData>>;
   updateAgentMutation: UpdateAgentMutation;
 }
 
 export function EditAgentTabs({
   agentKey,
-  metadata,
-  icon,
   form,
   updateAgentMutation,
 }: EditAgentTabsProps) {
@@ -61,7 +57,6 @@ export function EditAgentTabs({
         <TabsContent value="edit" className="mt-4">
           <EditAgentForm
             agentKey={agentKey}
-            metadata={metadata}
             setActiveTab={setActiveTab}
             form={form}
             updateAgentMutation={updateAgentMutation}
@@ -69,14 +64,7 @@ export function EditAgentTabs({
         </TabsContent>
 
         <TabsContent value="preview" className="mt-4">
-          <EditAgentPreview
-            agentKey={agentKey}
-            setActiveTab={setActiveTab}
-            form={form}
-            updateAgentMutation={updateAgentMutation}
-            metadata={metadata}
-            icon={icon}
-          />
+          <EditAgentPreview agentKey={agentKey} form={form} />
         </TabsContent>
       </Tabs>
 

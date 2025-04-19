@@ -6,8 +6,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { api } from "~/trpc/react";
-import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import {
   EditAgentNonOwnerButton,
   EditAgentNonOwnerTooltip,
@@ -23,19 +21,6 @@ export function EditAgentButton({ agentKey }: EditAgentButtonProps) {
   const { selectedAccount } = useTorus();
   const isOwner = selectedAccount?.address !== agentKey;
 
-  const { data: agent } = api.agent.byKeyLastBlock.useQuery(
-    { key: agentKey },
-    {
-      enabled: !!agentKey,
-      refetchOnWindowFocus: false,
-    },
-  );
-
-  const { data: agentMetadata } = useQueryAgentMetadata(agent?.metadataUri, {
-    fetchImages: true,
-    enabled: !!agent && !!agent.metadataUri,
-  });
-
   const renderButton = () => {
     if (!isOwner) {
       return (
@@ -43,24 +28,7 @@ export function EditAgentButton({ agentKey }: EditAgentButtonProps) {
       );
     }
 
-    if (agentMetadata?.metadata) {
-      return (
-        <EditAgentDialog
-          agentKey={agentKey}
-          agent={agent}
-          metadata={agentMetadata.metadata}
-          icon={agentMetadata.images?.icon}
-        />
-      );
-    }
-
-    return (
-      <EditAgentOwnerButton
-        agentKey={agentKey}
-        className="flex w-full items-center gap-1.5 p-3 border-green-500 text-green-500 opacity-65
-          transition duration-200 hover:text-green-500 hover:opacity-100"
-      />
-    );
+    return <EditAgentDialog agentKey={agentKey} />;
   };
 
   return (
