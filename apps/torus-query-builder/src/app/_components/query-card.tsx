@@ -173,17 +173,17 @@ export function QueryCard() {
   );
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
+    <div className="space-y-6 w-full">
+      <Card className="animate-fade-down">
+        <CardHeader className="animate-fade-down animate-delay-75">
           <CardTitle>Torus Query Builder</CardTitle>
           <CardDescription>
             Build and execute queries against the Torus blockchain
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex w-full gap-3">
-            <div className="w-full">
+          <div className="flex w-full gap-4">
+            <div className="w-full animate-fade-down animate-delay-100">
               <Label htmlFor="query-type">Query Type</Label>
               <Select
                 onValueChange={(value) =>
@@ -204,7 +204,7 @@ export function QueryCard() {
               </Select>
             </div>
 
-            <div className="w-full">
+            <div className="w-full animate-fade-down animate-delay-200">
               <Label htmlFor="pallet-type">Pallet</Label>
               <Select
                 onValueChange={handlePalletChange}
@@ -224,7 +224,7 @@ export function QueryCard() {
               </Select>
             </div>
 
-            <div className="w-full">
+            <div className="w-full animate-fade-down animate-delay-300">
               <Label htmlFor="pallet-item">Pallet Item</Label>
               <Select
                 onValueChange={handlePalletItemChange}
@@ -244,6 +244,7 @@ export function QueryCard() {
               </Select>
             </div>
           </div>
+
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="parameters">
               <AccordionTrigger>Query Parameters</AccordionTrigger>
@@ -272,6 +273,8 @@ export function QueryCard() {
         </CardContent>
         <CardFooter>
           <Button
+            variant="outline"
+            className="w-full"
             onClick={executeQuery}
             disabled={!isQueryComplete || !areParametersComplete}
           >
@@ -280,19 +283,16 @@ export function QueryCard() {
         </CardFooter>
       </Card>
 
-      {/* Results Card */}
-      {results && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Query Results</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="p-4 bg-accent rounded-md overflow-auto max-h-96">
-              {results}
-            </pre>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Query Results</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="p-4 bg-accent rounded-md overflow-auto max-h-96">
+            {results ?? "Fill the form to execute a query"}
+          </pre>
+        </CardContent>
+      </Card>
     </div>
   );
 }
