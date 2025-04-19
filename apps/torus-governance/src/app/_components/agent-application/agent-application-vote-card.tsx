@@ -10,10 +10,11 @@ import {
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import { Delete, TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { useMutationHandler } from "hooks/use-mutation-handler";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
@@ -55,23 +56,10 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <Card className="rounded-radius flex flex-col p-4">
+    <Card className="gap-6 rounded-radius flex flex-col p-6">
       {getVotedText(voted)}
-      <Button
-        variant="link"
-        className="w-fit p-0"
-        // className="flex w-fit items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
-        onClick={handleRemoveVote}
-        type="button"
-      >
-        {voteLoading ? (
-          "Processing..."
-        ) : (
-          <span className="flex items-center justify-center gap-2">
-            <TicketX className="h-5 w-5" />
-            Remove Vote
-          </span>
-        )}
+      <Button variant="outline" onClick={handleRemoveVote} type="button">
+        {voteLoading ? "Awaiting Signature..." : "Remove Vote"}
       </Button>
     </Card>
   );
@@ -102,9 +90,8 @@ const VoteCardFunctionsContent = (props: {
   return (
     <div className="flex w-full flex-col items-end gap-4">
       <div
-        className={`relative z-20 flex w-full flex-col items-start gap-2 ${
-          (!isAccountConnected || !isUserCadre) && "opacity-30"
-        }`}
+        className={`relative z-20 flex w-full flex-col items-start gap-2 ${ (!isAccountConnected ||
+          !isUserCadre) && "opacity-30" }`}
       >
         <ToggleGroup
           type="single"
@@ -118,9 +105,8 @@ const VoteCardFunctionsContent = (props: {
         >
           <ToggleGroupItem
             value={"ACCEPT"}
-            className={`w-full text-green-500 data-[state=on]:text-green-500 ${
-              voteLoading && "cursor-not-allowed"
-            } `}
+            className={`w-full text-green-500 data-[state=on]:text-green-500 ${ voteLoading &&
+              "cursor-not-allowed" } `}
             disabled={voteLoading}
           >
             Accept
@@ -128,9 +114,8 @@ const VoteCardFunctionsContent = (props: {
           <ToggleGroupItem
             variant="outline"
             value={"REFUSE"}
-            className={`w-full text-red-500 data-[state=on]:text-red-500 ${
-              voteLoading && "cursor-not-allowed"
-            } `}
+            className={`w-full text-red-500 data-[state=on]:text-red-500 ${ voteLoading &&
+              "cursor-not-allowed" } `}
             disabled={voteLoading}
           >
             Refuse
@@ -143,22 +128,30 @@ const VoteCardFunctionsContent = (props: {
             vote === "UNVOTED" || voteLoading
               ? "cursor-not-allowed text-gray-400"
               : ""
-          } `}
+            } `}
           disabled={vote === "UNVOTED" || voteLoading || !isUserCadre}
           onClick={handleVote}
           type="button"
         >
-          {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
+          {vote === "UNVOTED"
+            ? "Choose a vote"
+            : `Send Vote:  ${vote.charAt(0)}${vote.slice(1).toLowerCase()}`}
         </Button>
       </div>
       {!isAccountConnected && (
-        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center pt-12 text-sm">
+        <div
+          className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center pt-12
+            text-sm"
+        >
           <span>Are you a Curator DAO member?</span>
           <span>Please connect your wallet to vote</span>
         </div>
       )}
       {isAccountConnected && !isUserCadre && (
-        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5 px-6 pt-6">
+        <div
+          className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5
+            px-6 pt-6"
+        >
           <span className="my-4">
             You must be a Curator DAO member to be able to vote on agent
             applications.
@@ -193,75 +186,109 @@ export function AgentApplicationVoteTypeCard(props: {
 
   const userVote = votes?.find((v) => v.userKey === selectedAccount?.address);
 
-  const createVoteMutation = api.agentApplicationVote.create.useMutation({
-    onSuccess: async () => {
-      toast({
-        title: "Success!",
-        description: "Vote submitted successfully!",
-      });
-      await Promise.all([
-        utils.agentApplicationVote.byApplicationId.invalidate({
-          applicationId,
-        }),
-        utils.agentApplicationVote.byUserKey.invalidate({
-          userKey: selectedAccount?.address ?? "",
-        }),
-      ]);
-    },
-    onError: (error) => {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: `Error submitting vote: ${error.message}`,
-      });
-    },
-  });
-  const deleteVoteMutation = api.agentApplicationVote.delete.useMutation({
-    onSuccess: async () => {
-      toast({
-        title: "Success!",
-        description: "Vote removed successfully!",
-      });
-      await Promise.all([
-        utils.agentApplicationVote.byApplicationId.invalidate({
-          applicationId,
-        }),
-        utils.agentApplicationVote.byUserKey.invalidate({
-          userKey: selectedAccount?.address ?? "",
-        }),
-      ]);
-    },
-    onError: (error) => {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: `Error removing vote: ${error.message}`,
-      });
-    },
-  });
+  // Initialize the mutations
+  const createApplicationVoteMutation =
+    api.agentApplicationVote.create.useMutation();
+  const deleteApplicationVoteMutation =
+    api.agentApplicationVote.delete.useMutation();
+
+  // Create handler functions using your custom hook
+  const handleCreateVote = useMutationHandler(createApplicationVoteMutation);
+  const handleDeleteVote = useMutationHandler(deleteApplicationVoteMutation);
+
+  // that's not the greatest, but, I am just removing some sutff
+  const userAddress = selectedAccount?.address;
+  // =============================
+  // Legacy code -- Never remove this
+  // NEVER
+  // const ensureConnected = (): boolean => {
+  //   if (!selectedAccount?.address) {
+  //     toast.error("Please connect your wallet.")
+  //     return false;
+  //   }
+  //   return true;
+  // };
+  //  const ensureisUserCadre = (): boolean => {
+  //     if (!isUserCadre) {
+  //       return false;
+  //     }
+  //     return true;
+  //   };
+  // =============================
+
+  async function handleApplicationCreateVoteMutation(
+    applicationId: number,
+    voteType: WhitelistVoteType | "REMOVE",
+  ) {
+    if (!isUserCadre || !userAddress) return;
+
+    await handleCreateVote(
+      {
+        applicationId,
+        vote: voteType,
+      },
+      {
+        error: "Error submitting vote",
+        success: "Vote submitted successfully!",
+        onSuccess: async () => {
+          const [invalidateError] = await tryAsync(
+            Promise.all([
+              utils.agentApplicationVote.byApplicationId.invalidate({
+                applicationId,
+              }),
+              utils.agentApplicationVote.byUserKey.invalidate({
+                userKey: userAddress,
+              }),
+            ]),
+          );
+          if (invalidateError !== undefined) {
+            console.error("Error refreshing data:", invalidateError);
+            throw new Error("Error refreshing data");
+          }
+        },
+      },
+    );
+  }
+
+  async function handleApplicationDeleteVoteMutation(applicationId: number) {
+    if (!isUserCadre || !userAddress) return;
+
+    await handleDeleteVote(
+      {
+        applicationId,
+      },
+      {
+        error: "Error removing vote",
+        success: "Vote removed successfully!",
+        onSuccess: async () => {
+          const [invalidateError] = await tryAsync(
+            Promise.all([
+              utils.agentApplicationVote.byApplicationId.invalidate({
+                applicationId,
+              }),
+              utils.agentApplicationVote.byUserKey.invalidate({
+                userKey: userAddress,
+              }),
+            ]),
+          );
+          if (invalidateError !== undefined) {
+            throw new Error(
+              `Error refreshing data: ${invalidateError.message}`,
+            );
+          }
+        },
+      },
+    );
+  }
 
   const isMutating =
-    createVoteMutation.isPending || deleteVoteMutation.isPending;
-
-  const ensureConnected = (): boolean => {
-    if (!selectedAccount?.address) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Please connect your wallet.",
-      });
-      return false;
-    }
-    return true;
-  };
-  const ensureisUserCadre = (): boolean => {
-    if (!isUserCadre) {
-      return false;
-    }
-    return true;
-  };
+    createApplicationVoteMutation.isPending ||
+    deleteApplicationVoteMutation.isPending;
 
   const handleVoteAction = (voteType: WhitelistVoteType | "REMOVE"): void => {
-    if (!ensureConnected() || !ensureisUserCadre()) return;
+    if (!isUserCadre || !userAddress) return;
 
-    createVoteMutation.mutate({ applicationId, vote: voteType });
+    void handleApplicationCreateVoteMutation(applicationId, voteType);
   };
 
   const handleRemoveFromWhitelist = () => {
@@ -270,19 +297,19 @@ export function AgentApplicationVoteTypeCard(props: {
 
   const handleVote = () => {
     if (vote === "UNVOTED") {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Please select a valid vote option.",
-      });
+      toast.error("Please select a valid vote option.");
       return;
     }
     handleVoteAction(vote);
   };
 
   const handleRemoveVote = (): void => {
-    if (!ensureConnected()) return;
+    if (!selectedAccount?.address) {
+      toast.error("Please connect your wallet");
+      return;
+    }
 
-    deleteVoteMutation.mutate({ applicationId });
+    void handleApplicationDeleteVoteMutation(applicationId);
   };
 
   return match(applicationStatus)({
@@ -315,43 +342,33 @@ export function AgentApplicationVoteTypeCard(props: {
       if (accepted) {
         if (userVote && userVote.vote === "REMOVE") {
           return (
-            <CardBarebones>
-              <AlreadyVotedCardContent
-                handleRemoveVote={handleRemoveVote}
-                voted={userVote.vote}
-                voteLoading={isMutating}
-              />
-            </CardBarebones>
+            <AlreadyVotedCardContent
+              handleRemoveVote={handleRemoveVote}
+              voted={userVote.vote}
+              voteLoading={isMutating}
+            />
           );
         } else {
           return (
-            <CardBarebones>
-              <GovernanceStatusNotOpen
-                status="ACCEPTED"
-                governanceModel="whitelist application"
-              >
-                {isAccountConnected && isUserCadre && (
-                  <Button
-                    // variant={"outline"}
-                    variant={"link"}
-                    className="w-fit p-0"
-                    // className="mt-2 flex w-fit items-center justify-between text-nowrap border border-red-500 bg-amber-600/5 px-4 py-2.5 text-center font-semibold text-red-500 transition duration-200 hover:border-red-400 hover:bg-red-500/15 active:bg-red-500/50"
-                    onClick={handleRemoveFromWhitelist}
-                    type="button"
-                    disabled={isMutating}
-                  >
-                    {isMutating ? (
-                      "Processing..."
-                    ) : (
-                      <span className="flex items-center justify-center gap-2 text-red-300">
-                        <Delete className="h-5 w-5" />
-                        Vote to remove from whitelist
-                      </span>
-                    )}
-                  </Button>
-                )}
-              </GovernanceStatusNotOpen>
-            </CardBarebones>
+            <GovernanceStatusNotOpen
+              status="ACCEPTED"
+              governanceModel="whitelist application"
+            >
+              {isAccountConnected && isUserCadre && (
+                <Button
+                  variant="outline"
+                  onClick={handleRemoveFromWhitelist}
+                  type="button"
+                  disabled={isMutating}
+                  className="md:overflow-hidden flex w-full border-red-500 bg-red-500/20 text-red-500
+                    hover:bg-red-500/30 hover:text-red-500"
+                >
+                  {isMutating
+                    ? "Aawiting Signature"
+                    : "Vote to remove from whitelist"}
+                </Button>
+              )}
+            </GovernanceStatusNotOpen>
           );
         }
       } else {

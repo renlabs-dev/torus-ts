@@ -3,6 +3,7 @@
 import { Button } from "@torus-ts/ui/components/button";
 import { Icons } from "@torus-ts/ui/components/icons";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useEffect } from "react";
 
 interface DiscordLoginProps {
@@ -42,9 +43,9 @@ export default function DiscordLogin({
     e.preventDefault();
 
     onButtonClick?.();
-    try {
-      await signIn("discord", { redirect: false });
-    } catch (error) {
+    const [error, _] = await tryAsync(signIn("discord", { redirect: false }));
+    
+    if (error !== undefined) {
       console.error("Error signing in with Discord:", error);
     }
   };
@@ -53,7 +54,11 @@ export default function DiscordLogin({
     e.preventDefault();
 
     onButtonClick?.();
-    await signOut({ redirect: false });
+    const [error, _] = await tryAsync(signOut({ redirect: false }));
+    
+    if (error !== undefined) {
+      console.error("Error signing out from Discord:", error);
+    }
   };
 
   if (isLoading) {

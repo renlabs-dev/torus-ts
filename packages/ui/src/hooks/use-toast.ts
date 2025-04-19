@@ -171,6 +171,25 @@ function toast({ ...props }: Toast) {
   };
 }
 
+toast.success = (description?: string, duration?: number) => {
+  return toast({
+    title: "Success!",
+    description: description ?? "Operation completed successfully.",
+    variant: "default",
+    duration: duration ?? 2000,
+  });
+};
+
+toast.error = (description?: string, duration?: number) => {
+  return toast({
+    title: "Uh oh! Something went wrong.",
+    description:
+      description ?? "An unexpected error occurred. Please try again.",
+    variant: "default",
+    duration: duration ?? 2000,
+  });
+};
+
 export type ToastFunction = (props: Toast) => ReturnType<typeof toast>;
 
 function useToast() {

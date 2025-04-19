@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formatToken, toNano } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -29,6 +30,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useFileUploader } from "hooks/use-file-uploader";
 
 const transferDaoTreasuryProposalSchema = z.object({
   destinationKey: z.string().min(1, "Destination is required"),
@@ -54,7 +56,6 @@ export function CreateTransferDaoTreasuryProposal() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
-  const [uploading, setUploading] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -88,69 +89,59 @@ export function CreateTransferDaoTreasuryProposal() {
     return accountFreeBalance.data > toNano(1000);
   })();
 
-  async function uploadFile(fileToUpload: File): Promise<void> {
-    try {
-      setUploading(true);
-      const data = new FormData();
-      data.set("file", fileToUpload);
-      const res = await fetch("/api/files", {
-        method: "POST",
-        body: data,
-      });
-      const ipfs = (await res.json()) as { cid: string };
-      setUploading(false);
+  const { uploadFile, uploading } = useFileUploader();
 
-      if (!ipfs.cid || ipfs.cid === "undefined") {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Error uploading transfer dao treasury proposal",
-        });
-        return;
-      }
+  async function handleFileUpload(fileToUpload: File): Promise<void> {
+    const { success, cid } = await uploadFile(fileToUpload, {
+      setTransactionStatus,
+      errorMessage: "Error uploading agent application file",
+    });
 
-      if (!accountFreeBalance.data) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Balance is still loading",
-        });
-        return;
-      }
+    if (!success || !cid) return;
 
-      const daoApplicationCost = 1000;
+    if (!accountFreeBalance.data) {
+      toast.error("Balance is still loading");
+      return;
+    }
 
-      if (Number(accountFreeBalance.data) > daoApplicationCost) {
-        void addDaoTreasuryTransferProposal({
+    const daoApplicationCost = 1000;
+    const ipfsUri = `ipfs://${cid}`;
+
+    if (Number(accountFreeBalance.data) > daoApplicationCost) {
+      const [propError, _] = await tryAsync(
+        addDaoTreasuryTransferProposal({
           value: getValues("value"),
           destinationKey: getValues("destinationKey"),
-          data: `ipfs://${ipfs.cid}`,
+          data: ipfsUri,
           callback: (tx) => setTransactionStatus(tx),
-        });
-      } else {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(
-            accountFreeBalance.data,
-          )}`,
-          duration: 10000,
-        });
+        }),
+      );
+
+      if (propError !== undefined) {
+        toast.error(
+          propError.message || "Error creating DAO treasury transfer proposal",
+        );
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message:
-            "Insufficient balance to create transfer dao treasury proposal",
+          message: "Error creating proposal",
         });
+        return;
       }
-      router.refresh();
-    } catch (e) {
-      setUploading(false);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          e instanceof Error
-            ? e.message
-            : "Error uploading transfer dao treasury proposal",
+    } else {
+      toast.error(
+        `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+      );
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message:
+          "Insufficient balance to create transfer dao treasury proposal",
       });
+      return;
     }
+
+    router.refresh();
   }
 
   const onSubmit = async (data: TransferDaoTreasuryProposalFormData) => {
@@ -168,7 +159,7 @@ export function CreateTransferDaoTreasuryProposal() {
     const fileToUpload = new File([blob], "dao.json", {
       type: "application/json",
     });
-    await uploadFile(fileToUpload);
+    await handleFileUpload(fileToUpload);
   };
 
   const getButtonSubmitLabel = ({
