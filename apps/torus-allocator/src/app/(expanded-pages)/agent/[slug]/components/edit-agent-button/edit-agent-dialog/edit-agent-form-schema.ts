@@ -1,44 +1,6 @@
 import { z } from "zod";
 
-export const editAgentSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Name is required")
-    .max(50, "Name cannot exceed 50 characters"),
-  title: z
-    .string()
-    .trim()
-    .min(1, "Title is required")
-    .max(100, "Title cannot exceed 100 characters"),
-  shortDescription: z
-    .string()
-    .trim()
-    .min(1, "Short description is required")
-    .max(200, "Short description cannot exceed 200 characters"),
-  description: z
-    .string()
-    .trim()
-    .min(1, "Description is required")
-    .max(5000, "Description cannot exceed 5000 characters"),
-  website: z
-    .string()
-    .trim()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
-  apiUrl: z
-    .string()
-    .trim()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
-  imageUrl: z
-    .string()
-    .trim()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
+const editAgentSocialsSchema = z.object({
   twitter: z
     .string()
     .trim()
@@ -81,6 +43,48 @@ export const editAgentSchema = z.object({
     )
     .optional()
     .or(z.literal("")),
+});
+
+export const editAgentSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(50, "Name cannot exceed 50 characters"),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(100, "Title cannot exceed 100 characters"),
+  shortDescription: z
+    .string()
+    .trim()
+    .min(1, "Short description is required")
+    .max(200, "Short description cannot exceed 200 characters"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required")
+    .max(5000, "Description cannot exceed 5000 characters"),
+  website: z
+    .string()
+    .trim()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
+  apiUrl: z
+    .string()
+    .trim()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
+  imageUrl: z
+    .string()
+    .trim()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
+  socials: editAgentSocialsSchema,
 });
 
 export type EditAgentFormData = z.infer<typeof editAgentSchema>;

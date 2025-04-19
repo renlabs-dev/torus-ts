@@ -1,25 +1,23 @@
 "use client";
 
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import type { useForm } from "react-hook-form";
 import type {
-    EditAgentFormData,
-    MetadataType,
-    UpdateAgentMutation,
+  EditAgentFormData,
+  UpdateAgentMutation,
 } from "./edit-agent-form-schema";
 
 interface EditAgentFormProps {
   agentKey: string;
-  metadata: MetadataType;
   updateAgentMutation: UpdateAgentMutation;
   setActiveTab: (tab: string) => void;
   setIsOpen?: (isOpen: boolean) => void;
@@ -148,7 +146,7 @@ export function EditAgentForm({
 
         <FormField
           control={form.control}
-          name="discord"
+          name="socials.discord"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Discord</FormLabel>
@@ -162,7 +160,7 @@ export function EditAgentForm({
 
         <FormField
           control={form.control}
-          name="twitter"
+          name="socials.twitter"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Twitter</FormLabel>
@@ -176,7 +174,7 @@ export function EditAgentForm({
 
         <FormField
           control={form.control}
-          name="github"
+          name="socials.github"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Github</FormLabel>
@@ -190,7 +188,7 @@ export function EditAgentForm({
 
         <FormField
           control={form.control}
-          name="telegram"
+          name="socials.telegram"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Telegram</FormLabel>
