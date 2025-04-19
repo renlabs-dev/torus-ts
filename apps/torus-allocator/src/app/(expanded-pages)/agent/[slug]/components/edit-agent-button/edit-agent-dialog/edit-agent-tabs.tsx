@@ -68,17 +68,13 @@ export function EditAgentTabs({
         </TabsContent>
       </Tabs>
 
-      <DialogFooter className="mt-6 w-full flex justify-end gap-2">
+      <DialogFooter className="mt-6 flex w-full gap-2">
         <Button
-          type="button"
-          variant="outline"
-          onClick={() => setActiveTab("preview")}
-          className="mr-2"
+          className="w-full"
+          type="submit"
+          disabled={updateAgentMutation.isPending}
         >
-          Preview
-        </Button>
-        <Button type="submit" disabled={updateAgentMutation.isPending}>
-          {updateAgentMutation.isPending ? "Updating..." : "Submit agent edit"}
+          {updateAgentMutation.isPending ? "Updating..." : "Submit edit"}
         </Button>
       </DialogFooter>
     </>

@@ -22,8 +22,6 @@ export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
     weightFactor: 1.0,
   };
 
-  console.log("SHORT", form.getValues());
-
   return (
     <>
       <div className="mx-auto max-w-md my-6">
