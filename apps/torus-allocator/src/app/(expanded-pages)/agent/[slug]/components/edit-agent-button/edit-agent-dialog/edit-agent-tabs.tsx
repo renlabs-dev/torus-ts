@@ -32,6 +32,9 @@ export function EditAgentTabs({
   updateAgentMutation,
 }: EditAgentTabsProps) {
   const [activeTab, setActiveTab] = useState("edit");
+  const [previewComponent] = useState(() => (
+    <EditAgentPreview agentKey={agentKey} form={form} />
+  ));
 
   return (
     <>
@@ -64,7 +67,7 @@ export function EditAgentTabs({
         </TabsContent>
 
         <TabsContent value="preview" className="mt-4">
-          <EditAgentPreview agentKey={agentKey} form={form} />
+          {previewComponent}
         </TabsContent>
       </Tabs>
 

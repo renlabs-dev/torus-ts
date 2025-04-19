@@ -28,6 +28,14 @@ interface AgentCardHeaderProps {
   registrationBlock: number | null;
   percComputedWeight: number | null;
   weightFactor: number | null;
+  previewMetadata?: AgentPreviewMetadata;
+}
+
+interface AgentPreviewMetadata {
+  title?: string;
+  socials?: Record<string, string>;
+  website?: string;
+  icon?: string;
 }
 
 function AgentIcon({ iconUrl }: { iconUrl: string | null }) {
@@ -119,6 +127,7 @@ export function AgentCardHeader({
   metadataUri,
   percComputedWeight,
   weightFactor,
+  previewMetadata,
 }: AgentCardHeaderProps) {
   const { isInitialized } = useTorus();
   const { originalAgents, delegatedAgents } = useDelegateAgentStore();
@@ -129,19 +138,23 @@ export function AgentCardHeader({
   const { data: metadataResult, isLoading: isMetadataLoading } =
     useQueryAgentMetadata(metadataUri);
 
-  const iconUrl = useBlobUrl(metadataResult?.images.icon);
+  const iconFromMetadata = useBlobUrl(metadataResult?.images.icon);
+  const iconUrl = previewMetadata?.icon ?? iconFromMetadata;
 
-  const socialsList = buildSocials(
-    metadataResult?.metadata.socials ?? {},
-    metadataResult?.metadata.website,
-  );
+  const socialsList = previewMetadata?.socials
+    ? buildSocials(previewMetadata.socials, previewMetadata.website)
+    : buildSocials(
+        metadataResult?.metadata.socials ?? {},
+        metadataResult?.metadata.website,
+      );
 
-  const title = metadataResult?.metadata.title ?? name;
+  const title =
+    previewMetadata?.title ?? metadataResult?.metadata.title ?? name;
 
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
   const isAgentSelected = originalAgents.some((a) => a.address === agentKey);
 
-  if (isMetadataLoading) return <SkeletonAgentCardHeader />;
+  if (isMetadataLoading && !previewMetadata) return <SkeletonAgentCardHeader />;
 
   return (
     <CardHeader>

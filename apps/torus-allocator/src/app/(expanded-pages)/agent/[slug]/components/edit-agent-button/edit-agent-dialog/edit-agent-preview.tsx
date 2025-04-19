@@ -5,6 +5,7 @@ import type { useForm } from "react-hook-form";
 import { AgentCardContent } from "~/app/_components/agent-item-card/components/agent-card-content";
 import { AgentCardHeader } from "~/app/_components/agent-item-card/components/agent-card-header";
 import type { EditAgentFormData } from "./edit-agent-form-schema";
+import { api } from "~/trpc/react";
 
 interface EditAgentPreviewProps {
   agentKey: string;
@@ -12,14 +13,35 @@ interface EditAgentPreviewProps {
 }
 
 export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
-  const previewCardProps = {
-    id: 0,
+  const { data: agent } = api.agent.byKeyLastBlock.useQuery(
+    { key: agentKey },
+    {
+      enabled: !!agentKey,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+    },
+  );
+
+  if (!agent?.metadataUri) return null;
+
+  const agentCardHeaderProps = {
     name: form.watch("name"),
     agentKey,
-    metadataUri: "",
-    registrationBlock: null,
-    percComputedWeight: 0.05,
-    weightFactor: 1.0,
+    metadataUri: agent.metadataUri,
+    registrationBlock: agent.registrationBlock,
+    percComputedWeight: null,
+    weightFactor: agent.weightFactor,
+    previewMetadata: {
+      title: form.watch("title"),
+      socials: {
+        discord: form.watch("socials.discord"),
+        twitter: form.watch("socials.twitter"),
+        github: form.watch("socials.github"),
+        telegram: form.watch("socials.telegram"),
+      },
+      website: form.watch("website"),
+      icon: form.watch("imageUrl"),
+    },
   };
 
   return (
@@ -27,11 +49,11 @@ export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
       <div className="mx-auto max-w-md my-6">
         <Card
           className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition
-            duration-300 hover:border-white hover:shadow-2xl"
+            duration-300 hover:border-white hover:shadow-2xl pointer-events-none"
         >
-          <AgentCardHeader {...previewCardProps} />
+          <AgentCardHeader {...agentCardHeaderProps} />
           <AgentCardContent
-            metadataUri={previewCardProps.metadataUri}
+            metadataUri={agent.metadataUri}
             shortDescription={form.watch("shortDescription")}
           />
         </Card>

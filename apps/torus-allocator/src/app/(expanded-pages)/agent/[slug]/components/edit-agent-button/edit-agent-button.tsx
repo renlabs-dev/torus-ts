@@ -9,7 +9,6 @@ import {
 import {
   EditAgentNonOwnerButton,
   EditAgentNonOwnerTooltip,
-  EditAgentOwnerButton,
 } from "./edit-agent-button.shared";
 import { EditAgentDialog } from "./edit-agent-dialog/edit-agent-dialog";
 
