@@ -20,12 +20,12 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useMutationHandler } from "hooks/use-mutation-handler";
 
 export type commentReportReason = NonNullable<
   inferProcedureOutput<AppRouter["commentReport"]["byId"]>
@@ -46,35 +46,19 @@ type ReportFormData = z.infer<typeof reportCommentSchema>;
 
 interface ReportCommentProps {
   commentId: number | null;
-  setCommentId: (id: number | null) => void;
+  setCommentIdAction: (id: number | null) => void;
 }
 
 export function ReportComment({
   commentId,
-  setCommentId,
+  setCommentIdAction,
 }: Readonly<ReportCommentProps>) {
   const {
     commentReport: { create: createReport },
   } = api;
 
-  const { toast } = useToast();
-
-  const reportCommentMutation = createReport.useMutation({
-    onSuccess: () => {
-      setCommentId(null);
-      toast({
-        title: "Success!",
-        description: "Comment reported successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          error.message || "An unexpected error occurred. Please try again.",
-      });
-    },
-  });
+  const reportCommentMutation = createReport.useMutation();
+  const handleReportComment = useMutationHandler(reportCommentMutation);
 
   const form = useForm<ReportFormData>({
     resolver: zodResolver(reportCommentSchema),
@@ -91,11 +75,17 @@ export function ReportComment({
       console.error("No comment id found");
       return;
     }
-    reportCommentMutation.mutate({
-      commentId,
-      reason: data.reason,
-      content: data.content,
-    });
+    void handleReportComment(
+      {
+        commentId,
+        reason: data.reason,
+        content: data.content,
+      },
+      {
+        success: "Comment reported successfully.",
+        error: "Failed to report comment. Please try again.",
+      },
+    );
   };
 
   if (!commentId) return null;
@@ -104,8 +94,8 @@ export function ReportComment({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <button
         className="bg-card/30 absolute inset-0 backdrop-blur-sm"
-        onClick={() => setCommentId(null)}
-        onKeyDown={(e) => e.key === "Escape" && setCommentId(null)}
+        onClick={() => setCommentIdAction(null)}
+        onKeyDown={(e) => e.key === "Escape" && setCommentIdAction(null)}
         aria-label="Close report comment dialog"
         type="button"
       />
@@ -114,7 +104,7 @@ export function ReportComment({
           <h3 className="pl-2 text-xl font-bold leading-6">Report Comment</h3>
           <Button
             className="p-2 transition duration-200"
-            onClick={() => setCommentId(null)}
+            onClick={() => setCommentIdAction(null)}
             type="button"
             variant="ghost"
           >
@@ -187,7 +177,7 @@ export function ReportComment({
                   variant="destructive"
                   className="px-4 py-2 text-white transition duration-200"
                   disabled={reportCommentMutation.isPending}
-                  onClick={() => setCommentId(null)}
+                  onClick={() => setCommentIdAction(null)}
                 >
                   Cancel
                 </Button>

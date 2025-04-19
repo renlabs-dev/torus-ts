@@ -1,4 +1,4 @@
-import { tryAsync, tryAsyncStr } from "../../try-catch";
+import { tryAsync, tryAsyncStr } from "../try-catch";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples

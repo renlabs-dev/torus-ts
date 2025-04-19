@@ -1,5 +1,6 @@
 import type { AppRouter } from "@torus-ts/api";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { inferProcedureInput } from "@trpc/server";
 import { api } from "~/trpc/react";
 import * as React from "react";
@@ -31,44 +32,42 @@ export function useDiscordInfoForm(
   }, [discordId, userName, avatarUrl, form]);
 
   const saveDiscordInfoMutation =
-    api.discordInfo.create.useMutation<DiscordInfoFormData>({
-      onSuccess: () => {
-        toast({
-          title: "Success!",
-          description: "Discord information saved successfully!",
-        });
-      },
-      onError: (err) => {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description:
-            err.message || "An unexpected error occurred. Please try again.",
-        });
-      },
-    });
+    api.discordInfo.create.useMutation<DiscordInfoFormData>();
 
   const saveDiscordInfo = async (): Promise<boolean> => {
-    try {
-      if (!userName || !avatarUrl) {
-        return false;
-      }
-      const isValid = await form.trigger();
-      if (!isValid) return false;
-
-      const formValues = form.getValues();
-      if (formValues.discordId && formValues.userName && formValues.avatarUrl) {
-        await saveDiscordInfoMutation.mutateAsync({
-          discordId: formValues.discordId,
-          userName: formValues.userName,
-          avatarUrl: formValues.avatarUrl,
-        });
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error("Error saving discord info:", error);
+    // Early validation
+    if (!userName || !avatarUrl) {
       return false;
     }
+    
+    // Form validation
+    const [triggerError, isValid] = await tryAsync(form.trigger());
+    if (triggerError !== undefined || !isValid) {
+      return false;
+    }
+
+    // Get form values and validate
+    const formValues = form.getValues();
+    if (!formValues.discordId || !formValues.userName || !formValues.avatarUrl) {
+      return false;
+    }
+    
+    // Submit data
+    const [error, _] = await tryAsync(
+      saveDiscordInfoMutation.mutateAsync({
+        discordId: formValues.discordId,
+        userName: formValues.userName,
+        avatarUrl: formValues.avatarUrl,
+      })
+    );
+    
+    if (error !== undefined) {
+      toast.error(error.message || "An unexpected error occurred. Please try again.");
+      return false;
+    }
+    
+    toast.success("Discord information saved successfully!");
+    return true;
   };
 
   return {

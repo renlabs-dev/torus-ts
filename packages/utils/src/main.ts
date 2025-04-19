@@ -2,8 +2,8 @@
 
 import BigNumber from "bignumber.js";
 import { buildTaggedBigNumberClass } from "./bignumber";
-import { runAsyncExamples } from "./error-helpers/visualizer/async";
-import { runSyncExamples } from "./error-helpers/visualizer/sync";
+import { runAsyncExamples } from "./error-visualizer/async";
+import { runSyncExamples } from "./error-visualizer/sync";
 
 // $ pnpm exec tsx src/main.ts
 

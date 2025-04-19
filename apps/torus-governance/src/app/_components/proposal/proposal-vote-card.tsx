@@ -17,6 +17,7 @@ import type { VoteStatus } from "~/utils/types";
 import { TicketX } from "lucide-react";
 import { useState } from "react";
 import { match } from "rustie";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { VotePowerSettings } from "./vote-power-settings";
 
@@ -189,14 +190,17 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
 
   async function handleVote(): Promise<void> {
     const voteBoolean = vote === "FAVORABLE";
-    try {
-      await voteProposal({
+    
+    const [error, _] = await tryAsync(
+      voteProposal({
         proposalId,
         vote: voteBoolean,
         callback: handleCallback,
         refetchHandler,
-      });
-    } catch {
+      })
+    );
+    
+    if (error !== undefined) {
       setVotingStatus({
         status: "ERROR",
         finalized: true,
@@ -211,14 +215,16 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
       finalized: false,
       message: "Starting vote removal",
     });
-    try {
-      await removeVoteProposal({
+    
+    const [error, _] = await tryAsync(
+      removeVoteProposal({
         proposalId,
         callback: handleCallback,
         refetchHandler,
-      });
-    } catch (error) {
-      console.error(error);
+      })
+    );
+    
+    if (error !== undefined) {
       setVotingStatus({
         status: "ERROR",
         finalized: true,

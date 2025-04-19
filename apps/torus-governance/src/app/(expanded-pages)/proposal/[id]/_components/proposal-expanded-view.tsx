@@ -133,48 +133,41 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
     lastBlockNumber: lastBlock.data?.blockNumber ?? 0,
   };
 
-  return (
-    <div className="flex w-full flex-col gap-8">
-      <div className="flex w-full flex-row items-center gap-2">
-        <ProposalTypeLabel proposalType={content.data} />
-        <ProposalStatusLabel status={content.status} />
-        <RewardLabel proposalId={content.id} result={content.status} />
+return (
+  <div className="flex w-full flex-col gap-8">
+    {/* Header Section */}
+    <div className="flex w-full flex-row items-center gap-2">
+      <ProposalTypeLabel proposalType={content.data} />
+      <ProposalStatusLabel status={content.status} />
+      <RewardLabel proposalId={content.id} result={content.status} />
+    </div>
+    
+    {/* Main Content Layout */}
+    <div className="flex w-full flex-col md:flex-row md:gap-10">
+      {/* Main Column */}
+      <div className="flex h-full w-full flex-col gap-8 md:w-2/3">
+        <ExpandedViewContent body={content.body} title={content.title} />
+        
+        {/* Conditional Vote Card */}
+        {isProposalOpen && <ProposalVoteCard {...proposalVoteCardProps} />}
+        
+        {/* Comments Section */}
+        <ViewComment itemType="PROPOSAL" id={content.id} />
+        <CreateComment id={content.id} itemType="PROPOSAL" />
+        
+        {isProposalOpen && <VoterList {...votersListProps} />}
       </div>
-      <div className="flex w-full gap-10">
-        <div className="flex h-full w-full flex-col gap-14 md:w-2/3">
-          <ExpandedViewContent body={content.body} title={content.title} />
-
-          {/* Mobile Details Section */}
-          <div className="flex w-full flex-col gap-6 transition-all md:hidden">
-            <DetailsCard {...detailsCardProps} />
-            {isProposalOpen && (
-              <>
-                <ProposalVoteCard {...proposalVoteCardProps} />
-                <VoteData proposalStatus={content.status} />
-              </>
-            )}
-          </div>
-
-          {/* Desktop Proposal Vote Card */}
-          {isProposalOpen && (
-            <div className="hidden md:block">
-              <ProposalVoteCard {...proposalVoteCardProps} />
-            </div>
-          )}
-
-          {/* Comments Section */}
-          <ViewComment itemType="PROPOSAL" id={content.id} />
-          <CreateComment id={content.id} itemType="PROPOSAL" />
-
-          {isProposalOpen && <VoterList {...votersListProps} />}
-        </div>
-
-        {/* Right Column */}
-        <div className="hidden flex-col gap-6 transition-all md:flex lg:w-1/3">
-          <DetailsCard {...detailsCardProps} />
+      
+      {/* Right/Bottom Column - Responsive */}
+      <div className="flex flex-col gap-6 w-full md:w-1/3">
+        <DetailsCard {...detailsCardProps} />
+        
+        {/* Only show VoteData on mobile when proposal is open */}
+        {(isProposalOpen || window.innerWidth >= 768) && (
           <VoteData proposalStatus={content.status} />
-        </div>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
 }

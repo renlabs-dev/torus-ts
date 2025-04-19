@@ -1,8 +1,7 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -31,6 +30,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useFileUploader } from "hooks/use-file-uploader";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -59,7 +60,6 @@ export function CreateAgentApplication() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
-  const [uploading, setUploading] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
       status: null,
@@ -74,10 +74,8 @@ export function CreateAgentApplication() {
     defaultValues: {
       applicationKey: "",
       discordId: "",
-      title: "",
-      body: "",
-      criteriaAgreement: false,
     },
+    mode: "onChange",
   });
 
   const { control, handleSubmit, setValue, getValues } = form;
@@ -99,55 +97,51 @@ export function CreateAgentApplication() {
     await agentApplications.refetch();
   };
 
-  async function uploadFile(fileToUpload: File): Promise<void> {
-    try {
-      setUploading(true);
-      const data = new FormData();
-      data.set("file", fileToUpload);
-      const res = await fetch("/api/files", {
-        method: "POST",
-        body: data,
-      });
-      const { cid } = PIN_FILE_RESULT.parse(await res.json());
-      console.log(cid.toString());
-      setUploading(false);
+  const { uploadFile, uploading } = useFileUploader();
 
-      if (!accountFreeBalance.data) {
-        return;
-      }
-      if (!networkConfigs.data) {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Network configs are still loading.",
-        });
-        return;
-      }
+  async function handleFileUpload(fileToUpload: File): Promise<void> {
+    const { success, cid } = await uploadFile(fileToUpload, {
+      setTransactionStatus,
+      errorMessage: "Error uploading agent application file",
+    });
 
-      const daoApplicationCost = networkConfigs.data.agentApplicationCost;
+    if (!success || !cid) return;
 
-      if (accountFreeBalance.data > daoApplicationCost) {
-        void AddAgentApplication({
+    if (!accountFreeBalance.data) {
+      toast.error("Balance data is not available");
+      return;
+    }
+
+    if (!networkConfigs.data) {
+      toast.error("Network configs are still loading.");
+      return;
+    }
+    const daoApplicationCost = networkConfigs.data.agentApplicationCost;
+
+    if (accountFreeBalance.data > daoApplicationCost) {
+      const ipfsUri = `ipfs://${cid}`;
+      const [error, _] = await tryAsync(
+        AddAgentApplication({
           applicationKey: getValues("applicationKey"),
-          IpfsHash: cidToIpfsUri(cid),
+          IpfsHash: ipfsUri,
           removing: false,
           callback: (tx) => setTransactionStatus(tx),
           refetchHandler,
+        }),
+      );
+      if (error !== undefined) {
+        toast.error(error.message || "Error submitting agent application");
+        setTransactionStatus({
+          status: "ERROR",
+          finalized: true,
+          message: "Failed to submit agent application",
         });
-      } else {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(
-            accountFreeBalance.data,
-          )}`,
-        });
+        return;
       }
-    } catch (e) {
-      setUploading(false);
-      console.error(e);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Error uploading Agent Application",
-      });
+    } else {
+      toast.error(
+        `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
+      );
     }
   }
 
@@ -167,7 +161,7 @@ export function CreateAgentApplication() {
     const fileToUpload = new File([blob], "dao.json", {
       type: "application/json",
     });
-    await uploadFile(fileToUpload);
+    await handleFileUpload(fileToUpload);
   };
 
   const getButtonSubmitLabel = ({
@@ -181,7 +175,7 @@ export function CreateAgentApplication() {
       return "Connect a wallet to submit";
     }
     if (uploading) {
-      return "Uploading...";
+      return "Awaiting Signature";
     }
     return "Submit Application";
   };

@@ -1,6 +1,9 @@
 import { AsyncResultObj } from "./async-result";
 import type { Result } from "./result";
 import { empty, makeErr, makeOk } from "./result";
+import { BasicLogger } from "./logger";
+
+const log = BasicLogger.create({ name: "try-catch" });
 
 /**
  * Type guard to check if a value is an instance of Error.
@@ -177,4 +180,13 @@ export async function unwrapAsyncResult<T, E extends Error>(
     Ok: (value) => [undefined, value],
     Err: (error) => [error, undefined],
   });
+}
+
+export async function tryAsyncLogging<T>(
+  asyncOperation: PromiseLike<T>,
+  message?: string | ((error: Error) => string),
+): Promise<[undefined, T] | [Error, undefined]> {
+  const result = await tryAsync(asyncOperation);
+  if (log.ifResultIsErr(result, message)) return [result[0], undefined];
+  return [undefined, result[1]];
 }
