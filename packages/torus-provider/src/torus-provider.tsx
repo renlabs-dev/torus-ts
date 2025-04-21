@@ -28,6 +28,7 @@ import type {
   Stake,
   Transfer,
   TransferStake,
+  UpdateAgent,
   UpdateDelegatingVotingPower,
   Vote,
 } from "./_types";
@@ -79,6 +80,7 @@ interface TorusContextType {
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
   registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
+  updateAgent: (updateAgent: UpdateAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addDaoTreasuryTransferProposal: (
@@ -480,6 +482,28 @@ export function TorusProvider({
     });
   }
 
+  async function updateAgent({
+    name,
+    url,
+    metadata,
+    callback,
+  }: UpdateAgent): Promise<void> {
+    if (!api?.tx.torus0?.updateAgent) return;
+
+    const transaction = api.tx.torus0.updateAgent(name, url, metadata);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Update Agent",
+      wsEndpoint,
+      toast,
+    });
+  }
+
   // == Governance ==
 
   async function voteProposal({
@@ -670,6 +694,7 @@ export function TorusProvider({
         openWalletModal,
         registerAgent,
         registerAgentTransaction,
+        updateAgent,
         removeStake,
         removeStakeTransaction,
         removeVoteProposal,
