@@ -21,8 +21,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
-const MAX_CHARACTERS = 300;
-const MAX_NAME_CHARACTERS = 300;
+const MAX_CHARACTERS = 2000;
+const MAX_NAME_CHARACTERS = 25;
 const MIN_STAKE_REQUIRED = 2000;
 
 const commentSchema = z.object({
