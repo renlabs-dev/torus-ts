@@ -25,13 +25,12 @@ interface EditAgentFormProps {
 }
 
 export function EditAgentForm({
-  agentKey,
   updateAgentMutation,
   form,
+  setActiveTab,
 }: EditAgentFormProps) {
   const onSubmit = (data: EditAgentFormData) => {
     void updateAgentMutation.mutate({
-      agentKey,
       ...data,
     });
   };
@@ -135,10 +134,30 @@ export function EditAgentForm({
           name="imageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="https://..." />
-              </FormControl>
+              <FormLabel>Agent Icon</FormLabel>
+              <div className="flex flex-col gap-2">
+                <FormControl>
+                  <Input {...field} placeholder="https://..." readOnly />
+                </FormControl>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    updateAgentMutation.handleImageChange &&
+                    updateAgentMutation.handleImageChange(e)
+                  }
+                  className="cursor-pointer"
+                />
+                {field.value && (
+                  <div className="mt-2 rounded-md overflow-hidden w-24 h-24">
+                    <img
+                      src={field.value}
+                      alt="Agent Icon Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
               <FormMessage />
             </FormItem>
           )}

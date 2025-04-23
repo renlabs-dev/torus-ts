@@ -87,6 +87,10 @@ export const editAgentSchema = z.object({
   socials: editAgentSocialsSchema,
 });
 
+export const editAgentError = {
+  AgentDoesNotExist: "Agent does not exist",
+};
+
 export type EditAgentFormData = z.infer<typeof editAgentSchema>;
 
 export interface AgentType {
@@ -105,5 +109,6 @@ export interface MetadataType {
 
 export interface UpdateAgentMutation {
   isPending: boolean;
-  mutate: (data: unknown) => void;
+  mutate: (data: EditAgentFormData) => void;
+  handleImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
