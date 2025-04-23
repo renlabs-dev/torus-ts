@@ -1,21 +1,30 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTorus } from "@torus-ts/torus-provider";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
+import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { EditAgentButtonContent } from "../edit-agent-button.shared";
-import { EditAgentTabs } from "./edit-agent-tabs";
-import type { EditAgentFormData } from "./edit-agent-form-schema";
-import { editAgentSchema } from "./edit-agent-form-schema";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { api } from "~/trpc/react";
+import { EditAgentButtonContent } from "../edit-agent-button.shared";
+import type { EditAgentFormData } from "./edit-agent-form-schema";
+import { editAgentSchema } from "./edit-agent-form-schema";
+import { EditAgentTabs } from "./edit-agent-tabs";
+import {
+  cidToIpfsUri,
+  getAccountBalance,
+  updateAgentOnChain,
+  uploadMetadata,
+} from "./edit-agent-dialog-util";
 
 export interface EditAgentDialogProps {
   agentKey: string;
@@ -23,7 +32,13 @@ export interface EditAgentDialogProps {
 
 export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
   const { toast } = useToast();
+  const { updateAgent: updateAgentFunc, selectedAccount } = useTorus();
   const [isOpen, setIsOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [accountFreeBalance, setAccountFreeBalance] = useState(0n);
+  const [transactionStatus, setTransactionStatus] =
+    useState<TransactionResult | null>(null);
 
   const { data: agent } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
@@ -33,6 +48,8 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
     },
   );
 
+  console.log("Agent", agent);
+
   const { data: agentMetadata } = useQueryAgentMetadata(
     agent?.metadataUri ?? "",
     {
@@ -40,6 +57,8 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
       enabled: !!agent?.metadataUri,
     },
   );
+
+  console.log("Agent metadata", agentMetadata);
 
   const form = useForm<EditAgentFormData>({
     resolver: zodResolver(editAgentSchema),
@@ -85,21 +104,76 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
   useEffect(() => {
     if (isOpen) {
       resetFormData();
+      setTransactionStatus(null);
     }
   }, [isOpen, resetFormData]);
 
-  const updateAgentMutation = {
-    isPending: false,
-    mutate: (data: unknown) => {
-      const typedData = data as EditAgentFormData;
-      console.log("Updating agent with data:", typedData);
+  useEffect(() => {
+    if (!selectedAccount) return;
 
-      toast({
-        title: "Success!",
-        description: "Agent information updated successfully.",
+    const balance = getAccountBalance(selectedAccount);
+    setAccountFreeBalance(balance);
+  }, [selectedAccount]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      const fileUrl = URL.createObjectURL(file);
+      form.setValue("imageUrl", fileUrl);
+      return () => URL.revokeObjectURL(fileUrl);
+    }
+  };
+
+  const updateAgentMutation = {
+    isPending: isUploading,
+    handleImageChange,
+    mutate: async (editAgentFormData: EditAgentFormData) => {
+      setIsUploading(true);
+      setTransactionStatus({
+        status: "STARTING",
+        finalized: false,
+        message: "Updating Agent",
       });
 
-      setIsOpen(false);
+      try {
+        const { name, apiUrl } = editAgentFormData;
+
+        const cid = await uploadMetadata(editAgentFormData, imageFile);
+
+        const estimatedFee = 1n;
+
+        await updateAgentOnChain({
+          agentKey,
+          name,
+          apiUrl,
+          metadata: cidToIpfsUri(cid),
+          selectedAccount,
+          accountFreeBalance,
+          estimatedFee,
+          updateAgentOnChain: updateAgentFunc,
+          setTransactionStatus,
+          toast,
+          setIsUploading,
+          form,
+          setIsOpen,
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error(errorMessage);
+        toast({
+          title: "Error Updating Agent",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setTransactionStatus({
+          status: "ERROR",
+          finalized: true,
+          message: errorMessage,
+        });
+        setIsUploading(false);
+      }
     },
   };
 
@@ -120,6 +194,12 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
           form={form}
           updateAgentMutation={updateAgentMutation}
         />
+        {transactionStatus && (
+          <TransactionStatus
+            status={transactionStatus.status}
+            message={transactionStatus.message}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

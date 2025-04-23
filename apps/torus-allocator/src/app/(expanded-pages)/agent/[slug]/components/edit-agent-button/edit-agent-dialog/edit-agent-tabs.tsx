@@ -74,8 +74,9 @@ export function EditAgentTabs({
       <DialogFooter className="mt-6 flex w-full gap-2">
         <Button
           className="w-full"
-          type="submit"
+          type="button"
           disabled={updateAgentMutation.isPending}
+          onClick={() => form.handleSubmit((data) => updateAgentMutation.mutate(data))()}
         >
           {updateAgentMutation.isPending ? "Updating..." : "Submit edit"}
         </Button>
