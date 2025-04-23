@@ -518,7 +518,13 @@ export function TorusProvider({
   }: UpdateAgent): Promise<void> {
     if (!api?.tx.torus0?.updateAgent) return;
 
-    const transaction = api.tx.torus0.updateAgent(name, url, metadata);
+    const transaction = api.tx.torus0.updateAgent(
+      name,
+      url,
+      metadata,
+      null,
+      null,
+    );
 
     await sendTransaction({
       api,
