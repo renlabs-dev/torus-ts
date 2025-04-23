@@ -18,7 +18,8 @@ export default function Page() {
           width={1000}
           height={1000}
           src="/asci-text.svg"
-          className="animate-fade animate-delay-[1000ms] pointer-events-none hidden select-none px-6 md:block lg:w-[85vh]"
+          className="animate-fade animate-delay-[1000ms] pointer-events-none hidden select-none px-6
+            md:block lg:w-[85vh]"
         />
       </div>
     </main>
