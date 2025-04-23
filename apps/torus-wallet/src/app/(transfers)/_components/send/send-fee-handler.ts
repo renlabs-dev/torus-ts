@@ -39,13 +39,11 @@ export const handleEstimateFee = async ({
 }: SendFeeHandlerParams) => {
   feeRef.current?.setLoading(true);
 
-  // Create transaction directly
   const transaction = transferTransaction({
     to: allocatorAddress,
     amount: "0",
   });
 
-  // Pass the transaction and parameters to the shared function
   await createEstimateFee(transaction, {
     feeRef,
     maxAmountRef,
