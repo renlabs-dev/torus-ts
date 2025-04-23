@@ -32,10 +32,7 @@ export function CopyButton({
   const handleCopy = useCallback(async () => {
     await copyToClipboard(copy);
 
-    toast({
-      title: "Success!",
-      description: "Copied to clipboard",
-    });
+    toast.success("Address copied to clipboard.");
   }, [copy, toast]);
 
   const handleClick = useCallback(
