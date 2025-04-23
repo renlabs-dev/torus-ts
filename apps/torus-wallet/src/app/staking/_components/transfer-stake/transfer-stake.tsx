@@ -20,7 +20,7 @@ import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
 import { createTransferStakeFormSchema } from "./transfer-stake-form-schema";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
+export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 export function TransferStake() {
   const {
@@ -31,15 +31,15 @@ export function TransferStake() {
     minAllowedStake,
     transferStakeTransaction,
     estimateFee,
-    getExistencialDeposit,
+    getExistentialDeposit,
   } = useWallet();
   const { toast } = useToast();
   const { usdPrice } = useUsdPrice();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-  const existencialDepositValue =
-    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+  const existentialDepositValue =
+    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const maxAmountRef = useRef<string>("");
@@ -65,7 +65,7 @@ export function TransferStake() {
 
   const transferStakeFormSchema = createTransferStakeFormSchema(
     minAllowedStakeData,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     feeRef,
     maxAmountRef,

@@ -19,8 +19,7 @@ import { createStakeActionFormSchema } from "./stake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
-export const FEE_BUFFER_PERCENT = 225n;
+export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 export function Stake() {
   const {
@@ -31,7 +30,7 @@ export function Stake() {
     selectedAccount,
     addStakeTransaction,
     estimateFee,
-    getExistencialDeposit,
+    getExistentialDeposit,
     minAllowedStake,
   } = useWallet();
   const { toast } = useToast();
@@ -40,8 +39,8 @@ export function Stake() {
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
 
-  const existencialDepositValue =
-    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+  const existentialDepositValue =
+    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
 
   const freeBalance = accountFreeBalance.data ?? 0n;
 
@@ -62,7 +61,7 @@ export function Stake() {
 
   const stakeActionFormSchema = createStakeActionFormSchema(
     minAllowedStakeData,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     feeRef as React.RefObject<FeeLabelHandle>,
   );
@@ -86,13 +85,13 @@ export function Stake() {
       estimateFee,
       allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
       freeBalance,
-      existencialDepositValue,
+      existentialDepositValue,
       toast,
     });
   }, [
     addStakeTransaction,
     estimateFee,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     toast,
   ]);

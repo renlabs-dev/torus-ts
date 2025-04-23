@@ -20,7 +20,7 @@ import { createUnstakeFormSchema } from "./unstake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
+export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 interface StakedValidator {
   address: string;
@@ -37,7 +37,7 @@ export function Unstake() {
     estimateFee,
     selectedAccount,
     minAllowedStake,
-    getExistencialDeposit,
+    getExistentialDeposit,
   } = useWallet();
 
   const { toast } = useToast();
@@ -45,8 +45,8 @@ export function Unstake() {
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-  const existencialDepositValue =
-    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+  const existentialDepositValue =
+    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const [stakedAmount, setStakedAmount] = useState<bigint | null>(null);
@@ -68,7 +68,7 @@ export function Unstake() {
 
   const unstakeFormSchema = createUnstakeFormSchema(
     minAllowedStakeData,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     feeRef,
     stakedAmount,
