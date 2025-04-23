@@ -5,16 +5,64 @@ import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import DashboardRedirectCard from "./dashboard-redirect-card";
 import Link from "next/link";
+import { useGovernance } from "~/context/governance-provider";
+import { handleCustomAgentApplications } from "~/utils";
 import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
+import { match } from "rustie";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
-import { useAgentApplications } from "hooks/use-agent-applications";
+
+const mapStatusToView = (status: any): string => {
+  return match(status)({
+    Open: () => "active",
+    Resolved: ({ accepted }: { accepted: boolean }) =>
+      accepted ? "accepted" : "refused",
+    Expired: () => "expired",
+  });
+};
 
 export default function DashboardPendingDaoApplicationsCard() {
-  const { applications: pendingApplications, isLoading } = useAgentApplications(
-    {
-      filterByStatus: "Open", // Only show Open applications
-    },
-  );
+  const {
+    agentApplicationsWithMeta,
+    agentApplications,
+    isInitialized,
+    agents,
+  } = useGovernance();
+
+  const isLoading =
+    !agentApplicationsWithMeta ||
+    agentApplications.isPending ||
+    !isInitialized ||
+    agents.isPending;
+
+  // Display only active (Open) applications
+  const pendingApplications = agentApplicationsWithMeta
+    ?.filter((app) => app.status.type === "Open")
+    .map((app) => {
+      const { title, body } = handleCustomAgentApplications(
+        app.id,
+        app.customData ?? null,
+      );
+
+      if (!body) return null;
+
+      const status = mapStatusToView(app.status);
+      const isActiveAgent = agents.data?.has(app.agentKey);
+
+      return (
+        <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
+          <AgentApplicationCard
+            title={title}
+            author={app.payerKey}
+            agentApplicationStatus={app.status}
+            activeAgent={isActiveAgent}
+            agentApplicationId={app.id}
+            whitelistStatus={status}
+          />
+        </Link>
+      );
+    })
+    .filter(Boolean)
+    .slice(0, 3); // Limit to 3 most recent applications
 
   const renderContent = () => {
     if (isLoading) {
@@ -26,23 +74,11 @@ export default function DashboardPendingDaoApplicationsCard() {
       );
     }
 
-    if (pendingApplications.length === 0) {
+    if (!pendingApplications || pendingApplications.length === 0) {
       return <ContentNotFound message="No pending applications found" />;
     }
 
-    return pendingApplications.map((application) => (
-      <Link href={`/whitelist-applications`} key={application.id} prefetch>
-        <AgentApplicationCard
-          variant="small"
-          title={application.title}
-          author={application.payerKey}
-          agentApplicationStatus={application.rawStatus}
-          activeAgent={application.isActiveAgent}
-          agentApplicationId={application.id}
-          whitelistStatus={application.status}
-        />
-      </Link>
-    ));
+    return pendingApplications;
   };
 
   return (
