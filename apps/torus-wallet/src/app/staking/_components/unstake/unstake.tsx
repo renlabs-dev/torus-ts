@@ -140,7 +140,7 @@ export function Unstake() {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting Signature",
     });
     await removeStake({
       validator: checkSS58(values.validator),

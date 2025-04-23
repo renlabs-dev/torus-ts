@@ -151,7 +151,7 @@ export function TransferStake() {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting Signature",
     });
     await transferStake({
       fromValidator: checkSS58(values.fromValidator),

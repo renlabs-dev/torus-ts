@@ -125,7 +125,7 @@ export function Stake() {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting Signature",
     });
 
     await addStake({

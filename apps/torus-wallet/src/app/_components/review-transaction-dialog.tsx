@@ -70,7 +70,8 @@ export const ReviewTransactionDialog = forwardRef<
       toast.error(error.message);
       onError?.(error);
     } else {
-      toast.success("Transaction submitted successfully");
+      toast.success("Transaction started successfully");
+      onConfirm();
       onSuccess?.();
     }
 

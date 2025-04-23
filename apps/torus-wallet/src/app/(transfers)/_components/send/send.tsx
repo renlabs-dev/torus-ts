@@ -94,7 +94,7 @@ export function Send() {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting signature",
     });
 
     await transfer({
