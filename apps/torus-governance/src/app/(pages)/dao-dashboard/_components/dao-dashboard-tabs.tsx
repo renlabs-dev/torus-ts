@@ -18,7 +18,7 @@ export function DaoDashboardTabs() {
       </TabsList>
       <TabsContent value="dashboard">
         <DashboardTab />
-      </TabsContent>{" "}
+      </TabsContent>
       <TabsContent value="penalty">asd</TabsContent>
       <TabsContent value="dao-member-applications">asd</TabsContent>
     </Tabs>
