@@ -7,7 +7,7 @@ import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { useWallet } from "~/context/wallet-provider";
 import { Copy, Lock, Scale, Unlock } from "lucide-react";
 import Image from "next/image";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { TorusAnimation } from "./torus-animation";
 
 const BALANCE_ICONS = {
@@ -103,7 +103,9 @@ export function WalletBalance() {
     <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
       <Card className="flex w-full flex-col gap-[2.40em] px-7 py-5 relative">
         <div className="absolute inset-0 overflow-hidden opacity-20 z-0">
-          <TorusAnimation />
+          <Suspense fallback={null}>
+            <TorusAnimation />
+          </Suspense>
         </div>
         <div className="relative z-10 gap-10 flex flex-col">
           <WalletHeader address={selectedAccount?.address} />
