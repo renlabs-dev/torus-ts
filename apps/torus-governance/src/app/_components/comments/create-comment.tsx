@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { SS58Address } from "@torus-network/sdk";
 import { fromRems } from "@torus-network/torus-utils/subspace";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -51,11 +50,9 @@ interface CreateCommentProps {
 export function CreateComment({
   id,
   itemType,
-  author,
 }: Readonly<{
   id: number;
   itemType: "PROPOSAL" | "AGENT_APPLICATION";
-  author?: SS58Address;
 }>) {
   const { selectedAccount, accountStakedBalance } = useGovernance();
   const { toast } = useToast();
@@ -112,14 +109,6 @@ export function CreateComment({
       return false;
     }
 
-    if (
-      itemType === "AGENT_APPLICATION" &&
-      author !== selectedAccount.address
-    ) {
-      toast.error("Only Curator DAO members can submit comments in DAO mode.");
-      return false;
-    }
-
     return true;
   };
 
@@ -144,19 +133,12 @@ export function CreateComment({
       return true;
     }
 
-    // Only applies to AGENT_APPLICATION type
-    if (itemType === "AGENT_APPLICATION") {
-      return author !== selectedAccount.address;
-    }
-
     return false;
   }, [
     createCommentMutation.isPending,
     selectedAccount?.address,
     contentValue.length,
     hasEnoughBalance,
-    itemType,
-    author,
   ]);
 
   const renderOverlay = () => {
