@@ -69,11 +69,9 @@ export const ReviewTransactionDialog = forwardRef<
     if (error !== undefined) {
       toast.error(error.message);
       onError?.(error);
-      return;
     } else {
       toast.success("Transaction started successfully");
       onSuccess?.();
-      return;
     }
 
     setIsSubmitting(false);
