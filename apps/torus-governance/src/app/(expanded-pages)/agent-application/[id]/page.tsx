@@ -24,7 +24,7 @@ export default async function AgentApplicationView({
           className="mb-6 flex w-fit items-center gap-1.5 p-0"
         >
           <Link
-            href="/?view=agent-applications"
+            href="/whitelist-applications"
             className="animate-fade-left flex items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />

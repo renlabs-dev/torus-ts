@@ -18,9 +18,10 @@ import { handleEstimateFee } from "./transfer-stake-fee-handler";
 import { TransferStakeForm } from "./transfer-stake-form";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
 import { createTransferStakeFormSchema } from "./transfer-stake-form-schema";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
+export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 export function TransferStake() {
   const {
@@ -31,15 +32,15 @@ export function TransferStake() {
     minAllowedStake,
     transferStakeTransaction,
     estimateFee,
-    getExistencialDeposit,
+    getExistentialDeposit,
   } = useWallet();
   const { toast } = useToast();
   const { usdPrice } = useUsdPrice();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-  const existencialDepositValue =
-    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+  const existentialDepositValue =
+    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const maxAmountRef = useRef<string>("");
@@ -65,7 +66,7 @@ export function TransferStake() {
 
   const transferStakeFormSchema = createTransferStakeFormSchema(
     minAllowedStakeData,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     feeRef,
     maxAmountRef,
@@ -137,7 +138,11 @@ export function TransferStake() {
   }, [selectedAccount?.address, reset]);
 
   const refetchHandler = async () => {
-    await accountStakedBy.refetch();
+    const [error] = await tryAsync(accountStakedBy.refetch());
+    if (error !== undefined) {
+      console.error("Failed to refetch account staked by:", error);
+      toast.error("Failed to refresh staking data");
+    }
   };
 
   const handleCallback = (callbackReturn: TransactionResult) => {
@@ -151,20 +156,35 @@ export function TransferStake() {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting Signature",
     });
-    await transferStake({
-      fromValidator: checkSS58(values.fromValidator),
-      toValidator: checkSS58(values.toValidator),
-      amount: values.amount,
-      callback: handleCallback,
-      refetchHandler,
-    });
+
+    const [error] = await tryAsync(
+      transferStake({
+        fromValidator: checkSS58(values.fromValidator),
+        toValidator: checkSS58(values.toValidator),
+        amount: values.amount,
+        callback: handleCallback,
+        refetchHandler,
+      }),
+    );
+
+    if (error !== undefined) {
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: error.message || "Transaction failed",
+      });
+      toast.error("Failed to transfer stake");
+    }
   };
 
   const handleAmountChange = async (newAmount: string) => {
     setValue("amount", newAmount);
-    await trigger("amount");
+    const [error] = await tryAsync(trigger("amount"));
+    if (error !== undefined) {
+      console.error("Failed to validate amount:", error);
+    }
   };
 
   const handleSelectFromValidator = async (
@@ -172,8 +192,18 @@ export function TransferStake() {
   ) => {
     setValue("fromValidator", address);
     setCurrentView("wallet");
-    updateMaxTransferableAmount(address);
-    await trigger("fromValidator");
+
+    const [updateError] = await tryAsync(
+      Promise.resolve().then(() => updateMaxTransferableAmount(address)),
+    );
+    if (updateError !== undefined) {
+      console.error("Failed to update max transferable amount:", updateError);
+    }
+
+    const [triggerError] = await tryAsync(trigger("fromValidator"));
+    if (triggerError !== undefined) {
+      console.error("Failed to validate fromValidator:", triggerError);
+    }
   };
 
   const handleSelectToValidator = async (
@@ -181,11 +211,21 @@ export function TransferStake() {
   ) => {
     setValue("toValidator", address);
     setCurrentView("wallet");
-    await trigger("toValidator");
+    const [error] = await tryAsync(trigger("toValidator"));
+    if (error !== undefined) {
+      console.error("Failed to validate toValidator:", error);
+    }
   };
 
   const handleReviewClick = async () => {
-    const isValid = await trigger();
+    const [triggerError, isValid] = await tryAsync(trigger());
+
+    if (triggerError !== undefined) {
+      console.error("Form validation failed:", triggerError);
+      toast.error("Form validation failed");
+      return;
+    }
+
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }

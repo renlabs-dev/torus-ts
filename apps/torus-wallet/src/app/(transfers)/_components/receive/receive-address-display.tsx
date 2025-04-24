@@ -3,6 +3,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Copy } from "lucide-react";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 interface ReceiveAddressDisplayProps {
   address: string;
@@ -12,12 +13,12 @@ export function ReceiveAddressDisplay({ address }: ReceiveAddressDisplayProps) {
   const { toast } = useToast();
 
   const handleCopyAddress = async (address: string) => {
-    await copyToClipboard(address);
-
-    toast({
-      title: "Success!",
-      description: "Address Copied to clipboard",
-    });
+    const [error, _success] = await tryAsync(copyToClipboard(address));
+    if (error !== undefined) {
+      toast.error("Failed to copy address, please, try again.");
+      return;
+    }
+    toast.success("Address Copied to clipboard");
   };
 
   return (

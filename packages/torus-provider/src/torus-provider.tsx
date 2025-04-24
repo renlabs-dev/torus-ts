@@ -93,7 +93,7 @@ interface TorusContextType {
     address: string;
   }>;
 
-  getExistencialDeposit: () => bigint | undefined;
+  getExistentialDeposit: () => bigint | undefined;
 
   // TRANSACTIONS
   transferTransaction: ({
@@ -298,7 +298,7 @@ export function TorusProvider({
 
   // == Consts ==
 
-  const getExistencialDeposit = () => {
+  const getExistentialDeposit = () => {
     if (!api) return;
     return api.consts.balances.existentialDeposit.toBigInt();
   };
@@ -660,7 +660,7 @@ export function TorusProvider({
         addStakeTransaction,
         api,
         estimateFee,
-        getExistencialDeposit,
+        getExistentialDeposit,
         handleGetWallets,
         handleLogout,
         handleSelectWallet,

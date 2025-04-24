@@ -51,7 +51,7 @@ interface WalletContextType {
   transferStake: (transfer: TransferStake) => Promise<void>;
   removeStake: (stake: Stake) => Promise<void>;
   stakeOut: UseQueryResult<StakeData, Error>;
-  getExistencialDeposit: () => bigint | undefined;
+  getExistentialDeposit: () => bigint | undefined;
   minAllowedStake: UseQueryResult<bigint, Error>;
   transferTransaction: ({
     to,

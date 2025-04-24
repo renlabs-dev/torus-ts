@@ -6,7 +6,7 @@ export function AgentActivityLabel() {
       variant="solid"
       className="bg-violet-500/20 text-violet-500 hover:bg-violet-500/10"
     >
-      Whitelisted
+      Registered
     </Badge>
   );
 }

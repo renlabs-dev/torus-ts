@@ -11,6 +11,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { convertTORUSToUSD } from "~/utils/helpers";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export interface ReviewTransactionDialogHandle {
   openDialog: () => void;
@@ -57,27 +58,23 @@ export const ReviewTransactionDialog = forwardRef<
     openDialog: () => setIsOpen(true),
   }));
 
-  const handleSubmit = () => {
-    try {
-      setIsSubmitting(true);
-      setIsOpen(false);
-      onConfirm();
-      toast({
-        title: "Success!",
-        description: "Transaction submitted successfully",
-      });
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setIsOpen(false);
+
+    const [error, _success] = await tryAsync(
+      Promise.resolve().then(() => onConfirm()),
+    );
+
+    if (error !== undefined) {
+      toast.error(error.message);
+      onError?.(error);
+    } else {
+      toast.success("Transaction started successfully");
       onSuccess?.();
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      toast({
-        title: "Error",
-        description: err.message,
-        variant: "destructive",
-      });
-      onError?.(err);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
   const details = useMemo(() => {
