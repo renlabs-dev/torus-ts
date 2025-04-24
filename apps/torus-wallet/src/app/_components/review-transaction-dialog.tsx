@@ -63,16 +63,17 @@ export const ReviewTransactionDialog = forwardRef<
     setIsOpen(false);
 
     const [error, _success] = await tryAsync(
-      Promise.resolve(() => onConfirm()),
+      Promise.resolve().then(() => onConfirm()),
     );
 
     if (error !== undefined) {
       toast.error(error.message);
       onError?.(error);
+      return;
     } else {
       toast.success("Transaction started successfully");
-      onConfirm();
       onSuccess?.();
+      return;
     }
 
     setIsSubmitting(false);
