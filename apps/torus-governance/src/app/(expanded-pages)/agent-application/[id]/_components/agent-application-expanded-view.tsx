@@ -85,41 +85,37 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
     voters: votersList,
   };
 
- return (
-  <div className="flex w-full flex-col gap-8">
-    <div className="animate-fade-down flex w-full flex-row items-center gap-2">
-      <AgentStatusLabel status={content.status} />
-      {isAgentRegistered && <AgentActivityLabel />}
-    </div>
-    
-    <div className="animate-fade-down flex w-full flex-col md:flex-row md:justify-between md:gap-8">
-      {/* Main Content Column */}
-      <div className="flex h-full w-full flex-col gap-8 md:w-2/3 mb-4">
-        <ExpandedViewContent body={content.body} title={content.title} />
-        <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
-        <CreateComment
-          id={content.id}
-          author={content.author}
-          itemType="AGENT_APPLICATION"
-        />
-        <VoterList {...votersListProps} />
+  return (
+    <div className="flex w-full flex-col gap-8">
+      <div className="animate-fade-down flex w-full flex-row items-center gap-2">
+        <AgentStatusLabel status={content.status} />
+        {isAgentRegistered && <AgentActivityLabel />}
       </div>
 
-      {/* Right/Bottom Column */}
-      <div className="flex flex-col gap-4 w-full md:w-1/3 md:animate-fade-down md:animate-delay-[1400ms]">
-        <CreateCadreCandidates />
-        <DetailsCard {...detailsCardProps} />
-        <AgentApplicationVoteTypeCard
-          applicationId={content.id}
-          applicationStatus={content.status}
-        />
+      <div className="animate-fade-down flex w-full flex-col md:flex-row md:justify-between md:gap-8">
+        {/* Main Content Column */}
+        <div className="flex h-full w-full flex-col gap-8 md:w-2/3 mb-4">
+          <ExpandedViewContent body={content.body} title={content.title} />
+          <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
+          <CreateComment id={content.id} itemType="AGENT_APPLICATION" />
+          <VoterList {...votersListProps} />
+        </div>
+
+        {/* Right/Bottom Column */}
+        <div
+          className="flex flex-col gap-4 w-full md:w-1/3 md:animate-fade-down
+            md:animate-delay-[1400ms]"
+        >
+          <CreateCadreCandidates />
+          <DetailsCard {...detailsCardProps} />
+          <AgentApplicationVoteTypeCard
+            applicationId={content.id}
+            applicationStatus={content.status}
+          />
           <AgentApplicationExpandedVoteBars id={content.id} />
-        <PenaltyManager
-          agentKey={content.agentKey}
-          status={content.status}
-        />
+          <PenaltyManager agentKey={content.agentKey} status={content.status} />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
