@@ -5,6 +5,14 @@ import type {
   ISubmittableResult,
   SubmittableExtrinsic,
 } from "~/context/wallet-provider";
+import type { BrandTag } from "@torus-network/torus-utils";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import type {
+  FieldValues,
+  Path,
+  PathValue,
+  UseFormReturn,
+} from "react-hook-form";
 
 /**
  * Returns the fee adjusted by the provided buffer percent.
@@ -187,4 +195,172 @@ export async function createEstimateFee(
   }
 
   feeRef.current?.setLoading(false);
+}
+
+// ===================================
+//      Transaction Handlers
+/**
+ * Creates a handler for form amount changes
+ */
+// TODO - FINISH AND REPLACE THEU SES IN Send, Stake,Unstake and TransferStake
+export function createAmountChangeHandler<T extends FieldValues>(
+  form: Pick<UseFormReturn<T>, "setValue" | "trigger">,
+  toast?: ToastFunction,
+) {
+  return async (newAmount: string) => {
+    // Cast both the path and the value type
+    form.setValue(
+      "amount" as unknown as Path<T>,
+      newAmount as unknown as PathValue<T, Path<T>>,
+    );
+
+    const [error] = await tryAsync(
+      form.trigger("amount" as unknown as Path<T>),
+    );
+    if (error !== undefined) {
+      console.error("Failed to validate amount:", error);
+      toast?.error("Failed to validate amount");
+    }
+  };
+}
+
+/**
+ * Creates a transaction callback handler
+ */
+export function createTransactionCallbackHandler(
+  setTransactionStatus: (status: TransactionResult) => void,
+  reset: () => void,
+) {
+  return (result: TransactionResult) => {
+    setTransactionStatus(result);
+    if (result.status === "SUCCESS") {
+      reset();
+    }
+  };
+}
+
+/**
+ * Creates a review button click handler
+ */
+export function createReviewClickHandler<T extends FieldValues>(
+  form: Pick<UseFormReturn<T>, "trigger">,
+  reviewDialogRef: React.RefObject<{ openDialog: () => void }>,
+  toast?: ToastFunction,
+) {
+  return async () => {
+    const [triggerError, isValid] = await tryAsync(form.trigger());
+
+    if (triggerError !== undefined) {
+      console.error("Form validation failed:", triggerError);
+      toast?.error("Form validation failed");
+      return;
+    }
+
+    if (isValid) {
+      reviewDialogRef.current.openDialog();
+    }
+  };
+}
+
+/**
+ * Creates a transaction submission handler
+ */
+export function createSubmitHandler<T, P extends object>(
+  transactionFn: (params: P) => Promise<T>,
+  setTransactionStatus: (status: TransactionResult) => void,
+  operationName: string,
+  toast?: ToastFunction,
+) {
+  return async (params: P) => {
+    setTransactionStatus({
+      status: "STARTING",
+      finalized: false,
+      message: "Awaiting Signature",
+    });
+
+    const [error] = await tryAsync(transactionFn(params));
+
+    if (error !== undefined) {
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: error.message || "Transaction failed",
+      });
+      toast?.error(`Failed to ${operationName}`);
+      return false;
+    }
+
+    return true;
+  };
+}
+
+/**
+ * Creates a confirmation handler that gets form values and submits
+ */
+export function createConfirmHandler<T extends FieldValues, P extends object>(
+  getValues: () => T,
+  submitHandler: (params: P) => Promise<boolean>,
+  paramsMapper: (values: T) => P,
+) {
+  return () => {
+    const values = getValues();
+    void submitHandler(paramsMapper(values));
+  };
+}
+
+/**
+ * Creates a validator selection handler
+ */
+export function createValidatorSelectionHandler<T extends FieldValues>(
+  form: Pick<UseFormReturn<T>, "setValue" | "trigger">,
+  fieldName: keyof T & string,
+  setCurrentView: (view: string) => void,
+  additionalAction?: (address: string) => Promise<void> | void,
+  toast?: ToastFunction,
+) {
+  return async (address: BrandTag<"SS58Address"> & string) => {
+    form.setValue(
+      fieldName as unknown as Path<T>,
+      address as unknown as PathValue<T, Path<T>>,
+    );
+
+    setCurrentView("wallet");
+
+    if (additionalAction) {
+      const [actionError] = await tryAsync(
+        Promise.resolve().then(() => additionalAction(address)),
+      );
+      if (actionError !== undefined) {
+        console.error(`Failed to execute additional action:`, actionError);
+      }
+    }
+
+    const [triggerError] = await tryAsync(
+      form.trigger(fieldName as unknown as Path<T>),
+    );
+
+    if (triggerError !== undefined) {
+      console.error(`Failed to validate ${fieldName}:`, triggerError);
+      toast?.error(`Failed to validate validator`);
+    }
+  };
+}
+
+/**
+ * Creates a refetch handler that refetches multiple queries
+ */
+export function createRefetchHandler(
+  refetchFunctions: (() => Promise<unknown>)[],
+  toast?: ToastFunction,
+) {
+  return async () => {
+    const [error] = await tryAsync(
+      Promise.all(refetchFunctions.map((fn) => fn())),
+    );
+
+    if (error !== undefined) {
+      console.error("Failed to refetch data:", error);
+      toast?.error("Failed to refresh data");
+    }
+  };
 }

@@ -17,6 +17,7 @@ import { StakeForm } from "./stake-form";
 import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
@@ -107,11 +108,18 @@ export function Stake() {
   }, [selectedAccount?.address, reset]);
 
   const refetchData = async () => {
-    await Promise.all([
-      stakeOut.refetch(),
-      accountStakedBy.refetch(),
-      accountFreeBalance.refetch(),
-    ]);
+    const [error] = await tryAsync(
+      Promise.all([
+        stakeOut.refetch(),
+        accountStakedBy.refetch(),
+        accountFreeBalance.refetch(),
+      ]),
+    );
+
+    if (error !== undefined) {
+      console.error("Failed to refetch data:", error);
+      toast.error("Failed to refresh account data");
+    }
   };
 
   const handleTransactionCallback = (result: TransactionResult) => {
@@ -128,17 +136,31 @@ export function Stake() {
       message: "Awaiting Signature",
     });
 
-    await addStake({
-      validator: checkSS58(values.recipient),
-      amount: values.amount,
-      callback: handleTransactionCallback,
-      refetchHandler: refetchData,
-    });
+    const [error] = await tryAsync(
+      addStake({
+        validator: checkSS58(values.recipient),
+        amount: values.amount,
+        callback: handleTransactionCallback,
+        refetchHandler: refetchData,
+      }),
+    );
+
+    if (error !== undefined) {
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: error.message || "Transaction failed",
+      });
+      toast.error("Failed to stake tokens");
+    }
   };
 
   const handleAmountChange = async (newAmount: string) => {
     setValue("amount", newAmount);
-    await trigger("amount");
+    const [error] = await tryAsync(trigger("amount"));
+    if (error !== undefined) {
+      console.error("Failed to validate amount:", error);
+    }
   };
 
   const handleSelectValidator = async (
@@ -146,11 +168,21 @@ export function Stake() {
   ) => {
     setValue("recipient", address);
     setCurrentView("wallet");
-    await trigger("recipient");
+    const [error] = await tryAsync(trigger("recipient"));
+    if (error !== undefined) {
+      console.error("Failed to validate recipient:", error);
+    }
   };
 
   const handleReviewClick = async () => {
-    const isValid = await trigger();
+    const [triggerError, isValid] = await tryAsync(trigger());
+
+    if (triggerError !== undefined) {
+      console.error("Form validation failed:", triggerError);
+      toast.error("Form validation failed");
+      return;
+    }
+
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }
