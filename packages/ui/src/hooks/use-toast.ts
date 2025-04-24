@@ -190,7 +190,15 @@ toast.error = (description?: string, duration?: number) => {
   });
 };
 
-export type ToastFunction = (props: Toast) => ReturnType<typeof toast>;
+// export type ToastFunction = (props: Toast) => ReturnType<typeof toast>;
+export interface ToastFunction {
+  (props: Toast): ReturnType<typeof toast>;
+  success: (
+    description?: string,
+    duration?: number,
+  ) => ReturnType<typeof toast>;
+  error: (description?: string, duration?: number) => ReturnType<typeof toast>;
+}
 
 function useToast() {
   const [state, setState] = useState<State>(memoryState);

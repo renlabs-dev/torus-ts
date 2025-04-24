@@ -15,6 +15,7 @@ import { createSendFormSchema } from "./send-form-schema";
 import { handleEstimateFee } from "./send-fee-handler";
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
@@ -76,7 +77,12 @@ export function Send() {
 
   const handleAmountChange = async (torusAmount: string) => {
     setValue("amount", torusAmount);
-    await trigger("amount");
+    const [error, _success] = await tryAsync(trigger("amount"));
+    if (error !== undefined) {
+      toast.error(error.message);
+      return;
+    }
+    return;
   };
 
   const handleCallback = (callbackReturn: TransactionResult) => {
@@ -87,22 +93,33 @@ export function Send() {
   };
 
   const refetchHandler = async () => {
-    await accountFreeBalance.refetch();
+    const [error2, _success2] = await tryAsync(accountFreeBalance.refetch());
+    if (error2 !== undefined) {
+      toast.error(error2.message);
+      return;
+    }
+    return;
   };
 
   const onSubmit = async (values: SendFormValues) => {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting signature",
     });
 
-    await transfer({
-      to: values.recipient,
-      amount: values.amount,
-      callback: handleCallback,
-      refetchHandler,
-    });
+    const [error3, _success3] = await tryAsync(
+      transfer({
+        to: values.recipient,
+        amount: values.amount,
+        callback: handleCallback,
+        refetchHandler,
+      }),
+    );
+    if (error3 !== undefined) {
+      toast.error(error3.message);
+      return;
+    }
   };
 
   useEffect(() => {
@@ -116,8 +133,11 @@ export function Send() {
   }, [selectedAccount?.address, reset]);
 
   const handleReviewClick = async () => {
-    const isValid = await trigger();
-
+    const [error4, isValid] = await tryAsync(trigger());
+    if (error4 !== undefined) {
+      toast.error(error4.message);
+      return;
+    }
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }

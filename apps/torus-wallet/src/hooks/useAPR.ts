@@ -8,6 +8,7 @@ import {
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useMemo } from "react";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 const BLOCKS_IN_DAY = 10_800n;
 const BLOCK_EMISSION = toNano(64_000) / BLOCKS_IN_DAY;
@@ -142,12 +143,11 @@ export function useAPR(): APRResult {
   const apr = useMemo(() => {
     if (!isDataComplete) return null;
 
-    try {
+    const [error, result] = trySync(() => {
       const totalStake = BigInt(totalStakeQuery.data?.toString() ?? "0");
       const totalFreeBalance = BigInt(
         totalIssuanceQuery.data?.toString() ?? "0",
       );
-
       const recyclingRate = Number(recyclingPercentageQuery.data) / 100;
       const treasuryFee = Number(treasuryEmissionFeeQuery.data) / 100;
       const incentivesRatio = Number(incentivesRatioQuery.data) / 100;
@@ -159,10 +159,14 @@ export function useAPR(): APRResult {
         treasuryFee,
         incentivesRatio,
       );
-    } catch (error) {
+    });
+
+    if (error !== undefined) {
       console.error("Error calculating APR:", error);
       return null;
     }
+
+    return result;
   }, [
     isDataComplete,
     totalStakeQuery.data,

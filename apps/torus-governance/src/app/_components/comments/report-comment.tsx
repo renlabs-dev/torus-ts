@@ -25,7 +25,8 @@ import { api } from "~/trpc/react";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useMutationHandler } from "hooks/use-mutation-handler";
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 export type commentReportReason = NonNullable<
   inferProcedureOutput<AppRouter["commentReport"]["byId"]>
@@ -57,8 +58,13 @@ export function ReportComment({
     commentReport: { create: createReport },
   } = api;
 
+  const { toast } = useToast();
+
   const reportCommentMutation = createReport.useMutation();
-  const handleReportComment = useMutationHandler(reportCommentMutation);
+  const handleReportComment = createMutationHandler(
+    reportCommentMutation,
+    toast,
+  );
 
   const form = useForm<ReportFormData>({
     resolver: zodResolver(reportCommentSchema),

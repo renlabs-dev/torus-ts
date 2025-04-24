@@ -29,6 +29,7 @@
     "./files": "./src/files.ts",
     "./bignumber": "./src/bignumber.ts",
     "./try-catch": "./src/try-catch.ts",
+    "./mutation-handler": "./src/mutation-handler.ts",
     "./logger": "./src/logger.ts"
   },
   "dependencies": {
