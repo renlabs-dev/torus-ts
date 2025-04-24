@@ -26,7 +26,7 @@ export function AgentStatusLabel(props: StatusLabelProps) {
           variant="solid"
           className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10"
         >
-          Accepted
+          Whitelisted
         </Badge>
       ) : (
         <Badge

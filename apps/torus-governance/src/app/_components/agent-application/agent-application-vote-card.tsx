@@ -14,7 +14,7 @@ import { useState } from "react";
 import { match } from "rustie";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { useMutationHandler } from "hooks/use-mutation-handler";
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
@@ -193,8 +193,14 @@ export function AgentApplicationVoteTypeCard(props: {
     api.agentApplicationVote.delete.useMutation();
 
   // Create handler functions using your custom hook
-  const handleCreateVote = useMutationHandler(createApplicationVoteMutation);
-  const handleDeleteVote = useMutationHandler(deleteApplicationVoteMutation);
+  const handleCreateVote = createMutationHandler(
+    createApplicationVoteMutation,
+    toast,
+  );
+  const handleDeleteVote = createMutationHandler(
+    deleteApplicationVoteMutation,
+    toast,
+  );
 
   // that's not the greatest, but, I am just removing some sutff
   const userAddress = selectedAccount?.address;

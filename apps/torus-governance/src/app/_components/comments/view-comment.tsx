@@ -30,7 +30,7 @@ import {
 } from "react";
 import { ReportComment } from "./report-comment";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { useMutationHandler } from "hooks/use-mutation-handler";
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 
 //  "LIKE" | "DISLIKE"
 export type CommentInteractionReactionType = NonNullable<
@@ -187,14 +187,14 @@ export function ViewComment({
     fetchUserVotes().catch(console.error);
   }, [refetchUserVotes, selectedAccount?.address]);
 
+  const { toast } = useToast();
+
   const castVoteMutation = api.commentInteraction.reaction.useMutation();
   const deleteVoteMutation =
     api.commentInteraction.deleteReaction.useMutation();
 
-  const handleCastVote = useMutationHandler(castVoteMutation);
-  const handleDeleteVote = useMutationHandler(deleteVoteMutation);
-
-  const { toast } = useToast();
+  const handleCastVote = createMutationHandler(castVoteMutation, toast);
+  const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
 
   const handleVote = useCallback(
     (commentId: number, reactionType: CommentInteractionReactionType) => {
