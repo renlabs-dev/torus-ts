@@ -1,15 +1,14 @@
 import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
-import { fromNano } from "@torus-network/torus-utils/subspace";
 import type { RefObject } from "react";
 import type {
   ISubmittableResult,
   SubmittableExtrinsic,
   TransactionExtrinsicPromise,
 } from "~/context/wallet-provider";
-import { computeFeeData } from "~/utils/helpers";
+import { createEstimateFee } from "~/utils/helpers";
 import type { FeeLabelHandle } from "~/app/_components/fee-label";
 
-export const FEE_BUFFER_PERCENT = 102n;
+const SEND_FEE_BUFFER_PERCENT = 102n;
 
 export interface SendFeeHandlerParams {
   feeRef: RefObject<FeeLabelHandle | null>;
@@ -39,38 +38,19 @@ export const handleEstimateFee = async ({
   toast,
 }: SendFeeHandlerParams) => {
   feeRef.current?.setLoading(true);
-  try {
-    const transaction = transferTransaction({
-      to: allocatorAddress,
-      amount: "0",
-    });
 
-    if (!transaction) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Error creating transaction for estimating fee.",
-      });
-      return;
-    }
+  const transaction = transferTransaction({
+    to: allocatorAddress,
+    amount: "0",
+  });
 
-    const fee = await estimateFee(transaction);
-    if (fee != null) {
-      const { feeStr, maxTransferable } = computeFeeData(
-        fee,
-        FEE_BUFFER_PERCENT,
-        accountFreeBalance ?? 0n,
-      );
-      feeRef.current?.updateFee(feeStr);
-      maxAmountRef.current = fromNano(maxTransferable);
-    } else {
-      feeRef.current?.updateFee(null);
-      maxAmountRef.current = "";
-    }
-  } catch (error) {
-    console.error("Error estimating fee:", error);
-    feeRef.current?.updateFee(null);
-    maxAmountRef.current = "";
-  } finally {
-    feeRef.current?.setLoading(false);
-  }
+  await createEstimateFee(transaction, {
+    feeRef,
+    maxAmountRef,
+    estimateFee,
+    toast,
+    freeBalance: accountFreeBalance ?? 0n,
+    transactionType: "Send",
+    bufferPercent: SEND_FEE_BUFFER_PERCENT,
+  });
 };

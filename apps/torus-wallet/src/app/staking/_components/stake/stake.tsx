@@ -17,10 +17,10 @@ import { StakeForm } from "./stake-form";
 import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
-export const FEE_BUFFER_PERCENT = 225n;
+export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 export function Stake() {
   const {
@@ -31,7 +31,7 @@ export function Stake() {
     selectedAccount,
     addStakeTransaction,
     estimateFee,
-    getExistencialDeposit,
+    getExistentialDeposit,
     minAllowedStake,
   } = useWallet();
   const { toast } = useToast();
@@ -40,8 +40,8 @@ export function Stake() {
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
 
-  const existencialDepositValue =
-    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+  const existentialDepositValue =
+    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
 
   const freeBalance = accountFreeBalance.data ?? 0n;
 
@@ -62,7 +62,7 @@ export function Stake() {
 
   const stakeActionFormSchema = createStakeActionFormSchema(
     minAllowedStakeData,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     feeRef as React.RefObject<FeeLabelHandle>,
   );
@@ -86,13 +86,13 @@ export function Stake() {
       estimateFee,
       allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
       freeBalance,
-      existencialDepositValue,
+      existentialDepositValue,
       toast,
     });
   }, [
     addStakeTransaction,
     estimateFee,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     toast,
   ]);
@@ -108,11 +108,18 @@ export function Stake() {
   }, [selectedAccount?.address, reset]);
 
   const refetchData = async () => {
-    await Promise.all([
-      stakeOut.refetch(),
-      accountStakedBy.refetch(),
-      accountFreeBalance.refetch(),
-    ]);
+    const [error] = await tryAsync(
+      Promise.all([
+        stakeOut.refetch(),
+        accountStakedBy.refetch(),
+        accountFreeBalance.refetch(),
+      ]),
+    );
+
+    if (error !== undefined) {
+      console.error("Failed to refetch data:", error);
+      toast.error("Failed to refresh account data");
+    }
   };
 
   const handleTransactionCallback = (result: TransactionResult) => {
@@ -126,20 +133,34 @@ export function Stake() {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting Signature",
     });
 
-    await addStake({
-      validator: checkSS58(values.recipient),
-      amount: values.amount,
-      callback: handleTransactionCallback,
-      refetchHandler: refetchData,
-    });
+    const [error] = await tryAsync(
+      addStake({
+        validator: checkSS58(values.recipient),
+        amount: values.amount,
+        callback: handleTransactionCallback,
+        refetchHandler: refetchData,
+      }),
+    );
+
+    if (error !== undefined) {
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: error.message || "Transaction failed",
+      });
+      toast.error("Failed to stake tokens");
+    }
   };
 
   const handleAmountChange = async (newAmount: string) => {
     setValue("amount", newAmount);
-    await trigger("amount");
+    const [error] = await tryAsync(trigger("amount"));
+    if (error !== undefined) {
+      console.error("Failed to validate amount:", error);
+    }
   };
 
   const handleSelectValidator = async (
@@ -147,11 +168,21 @@ export function Stake() {
   ) => {
     setValue("recipient", address);
     setCurrentView("wallet");
-    await trigger("recipient");
+    const [error] = await tryAsync(trigger("recipient"));
+    if (error !== undefined) {
+      console.error("Failed to validate recipient:", error);
+    }
   };
 
   const handleReviewClick = async () => {
-    const isValid = await trigger();
+    const [triggerError, isValid] = await tryAsync(trigger());
+
+    if (triggerError !== undefined) {
+      console.error("Form validation failed:", triggerError);
+      toast.error("Form validation failed");
+      return;
+    }
+
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }

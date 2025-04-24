@@ -36,7 +36,7 @@ import {
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
 import { Slider } from "@torus-ts/ui/components/slider";
-import { useMutationHandler } from "hooks/use-mutation-handler";
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 
 const MAX_CONTENT_CHARACTERS = 240;
 
@@ -95,8 +95,14 @@ export function PenaltyManager({
   const createPenaltyMutation = api.penalty.create.useMutation();
   const deletePenaltyMutation = api.penalty.delete.useMutation();
 
-  const handleCreatePenalty = useMutationHandler(createPenaltyMutation);
-  const handleDeletePenalty = useMutationHandler(deletePenaltyMutation);
+  const handleCreatePenalty = createMutationHandler(
+    createPenaltyMutation,
+    toast,
+  );
+  const handleDeletePenalty = createMutationHandler(
+    deletePenaltyMutation,
+    toast,
+  );
 
   async function handleCreatePenaltyMutation(
     data: PenaltyFormData,

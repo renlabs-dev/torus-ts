@@ -18,9 +18,10 @@ import { UnstakeForm } from "./unstake-form";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 import { createUnstakeFormSchema } from "./unstake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENCIAL_BALANCE = 100000000000000000n;
+export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 interface StakedValidator {
   address: string;
@@ -37,7 +38,7 @@ export function Unstake() {
     estimateFee,
     selectedAccount,
     minAllowedStake,
-    getExistencialDeposit,
+    getExistentialDeposit,
   } = useWallet();
 
   const { toast } = useToast();
@@ -45,8 +46,8 @@ export function Unstake() {
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-  const existencialDepositValue =
-    getExistencialDeposit() ?? MIN_EXISTENCIAL_BALANCE;
+  const existentialDepositValue =
+    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const [stakedAmount, setStakedAmount] = useState<bigint | null>(null);
@@ -68,7 +69,7 @@ export function Unstake() {
 
   const unstakeFormSchema = createUnstakeFormSchema(
     minAllowedStakeData,
-    existencialDepositValue,
+    existentialDepositValue,
     freeBalance,
     feeRef,
     stakedAmount,
@@ -122,11 +123,18 @@ export function Unstake() {
   }, [selectedAccount?.address, reset]);
 
   const refetchHandler = async () => {
-    await Promise.all([
-      stakeOut.refetch(),
-      accountStakedBy.refetch(),
-      accountFreeBalance.refetch(),
-    ]);
+    const [error] = await tryAsync(
+      Promise.all([
+        stakeOut.refetch(),
+        accountStakedBy.refetch(),
+        accountFreeBalance.refetch(),
+      ]),
+    );
+
+    if (error !== undefined) {
+      console.error("Failed to refetch data:", error);
+      toast.error("Failed to refresh account data");
+    }
   };
 
   const handleCallback = (callbackReturn: TransactionResult) => {
@@ -140,19 +148,34 @@ export function Unstake() {
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
-      message: "Starting transaction...",
+      message: "Awaiting Signature",
     });
-    await removeStake({
-      validator: checkSS58(values.validator),
-      amount: values.amount,
-      callback: handleCallback,
-      refetchHandler,
-    });
+
+    const [error] = await tryAsync(
+      removeStake({
+        validator: checkSS58(values.validator),
+        amount: values.amount,
+        callback: handleCallback,
+        refetchHandler,
+      }),
+    );
+
+    if (error !== undefined) {
+      setTransactionStatus({
+        status: "ERROR",
+        finalized: true,
+        message: error.message || "Transaction failed",
+      });
+      toast.error("Failed to unstake tokens");
+    }
   };
 
   const handleAmountChange = async (newAmount: string) => {
     setValue("amount", newAmount);
-    await trigger("amount");
+    const [error] = await tryAsync(trigger("amount"));
+    if (error !== undefined) {
+      console.error("Failed to validate amount:", error);
+    }
   };
 
   const handleSelectValidator = async (
@@ -160,11 +183,21 @@ export function Unstake() {
   ) => {
     setValue("validator", address);
     setCurrentView("wallet");
-    await trigger("validator");
+    const [error] = await tryAsync(trigger("validator"));
+    if (error !== undefined) {
+      console.error("Failed to validate validator:", error);
+    }
   };
 
   const handleReviewClick = async () => {
-    const isValid = await trigger();
+    const [triggerError, isValid] = await tryAsync(trigger());
+
+    if (triggerError !== undefined) {
+      console.error("Form validation failed:", triggerError);
+      toast.error("Form validation failed");
+      return;
+    }
+
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }

@@ -4,6 +4,29 @@
 
 import type { Err, Result } from "./result.ts";
 
+function getCallerInfo(): string {
+  const stack = new Error().stack;
+  if (!stack) return "";
+
+  const lines = stack.split("\n");
+  const callerLine = lines[3] ?? lines[2] ?? "";
+
+  const match = /\(?([^()]+):(\d+):(\d+)\)?$/.exec(callerLine);
+  if (match?.[1]) {
+    const [_, file, line, col] = match;
+
+    const root = process.cwd();
+    if (file.startsWith(root)) {
+      const relativePath = file.slice(root.length + 1);
+      return `${relativePath}:${line}:${col}`;
+    }
+
+    return `${file}:${line}:${col}`;
+  }
+
+  return "";
+}
+
 /**
  * Simple default log function.
  *
@@ -66,7 +89,8 @@ export class BasicLogger implements Logger {
   }
 
   debug(message?: any, ...optionalParams: any[]): void {
-    log(`[${this.name}] DEBUG:`, message, ...optionalParams);
+    const callerInfo = getCallerInfo();
+    log(`[${this.name}] DEBUG: ${callerInfo}`, message, ...optionalParams);
   }
 
   info(message?: any, ...optionalParams: any[]): void {
@@ -74,11 +98,13 @@ export class BasicLogger implements Logger {
   }
 
   warn(message?: any, ...optionalParams: any[]): void {
-    log(`[${this.name}] WARN:`, message, ...optionalParams);
+    const callerInfo = getCallerInfo();
+    log(`[${this.name}] WARN: ${callerInfo}`, message, ...optionalParams);
   }
 
   error(message?: any, ...optionalParams: any[]): void {
-    log(`[${this.name}] ERROR:`, message, ...optionalParams);
+    const callerInfo = getCallerInfo();
+    log(`[${this.name}] ERROR: ${callerInfo}: `, message, ...optionalParams);
   }
 
   ifError<E>(err: E | undefined): err is E {

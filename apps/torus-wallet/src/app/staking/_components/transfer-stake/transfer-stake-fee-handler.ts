@@ -1,9 +1,9 @@
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
-import { fromNano } from "@torus-network/torus-utils/subspace";
 import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
 import type { RefObject } from "react";
 import type { FeeLabelHandle } from "~/app/_components/fee-label";
+import { createEstimateFee } from "~/utils/helpers";
 
 interface HandleEstimateFeeProps {
   feeRef: RefObject<FeeLabelHandle | null>;
@@ -27,29 +27,15 @@ export async function handleEstimateFee({
   toast,
 }: HandleEstimateFeeProps) {
   feeRef.current?.setLoading(true);
-  try {
-    const transaction = transferStakeTransaction({
-      fromValidator: allocatorAddress,
-      toValidator: allocatorAddress,
-      amount: "0",
-    });
-    if (!transaction) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Error creating transaction for estimating fee.",
-      });
-      return;
-    }
-    const fee = await estimateFee(transaction);
-    if (fee != null) {
-      feeRef.current?.updateFee(fromNano(fee));
-    } else {
-      feeRef.current?.updateFee(null);
-    }
-  } catch (error) {
-    console.error("Error estimating fee:", error);
-    feeRef.current?.updateFee(null);
-  } finally {
-    feeRef.current?.setLoading(false);
-  }
+  const transaction = transferStakeTransaction({
+    fromValidator: allocatorAddress,
+    toValidator: allocatorAddress,
+    amount: "0",
+  });
+  await createEstimateFee(transaction, {
+    feeRef,
+    estimateFee,
+    toast,
+    transactionType: "TransferStake",
+  });
 }
