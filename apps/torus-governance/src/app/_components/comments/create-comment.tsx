@@ -80,7 +80,15 @@ export function CreateComment({
   const contentValue = watch("content");
   const remainingChars = MAX_CHARACTERS - (contentValue.length || 0);
 
-  const createCommentMutation = api.comment.create.useMutation();
+  const utils = api.useUtils();
+  const createCommentMutation = api.comment.create.useMutation({
+    onSuccess: async () => {
+      // Invalidate the query cache to trigger a refetch
+      await utils.comment.byId.invalidate();
+      reset();
+      toast.success("Comment submitted successfully!");
+    },
+  });
 
   async function handleCreateCommentMutation(data: CreateCommentProps) {
     const [error, _success] = await tryAsync(
@@ -92,8 +100,6 @@ export function CreateComment({
       );
       return;
     }
-    reset();
-    toast.success("Comment submitted successfully!");
   }
 
   const validateSubmission = (): boolean => {
