@@ -5,7 +5,6 @@ import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 
-// Define the improved toast type
 interface ToastProps {
   title: string;
   description: string;
@@ -46,7 +45,7 @@ export const cidToIpfsUri = (cid: string): string => {
 export const uploadMetadata = async (
   metadata: EditAgentFormData,
   imageFile: File | null,
-): Promise<string> => {
+) => {
   try {
     const metadataObj: Record<string, string | undefined | null | object> = {
       title: metadata.title,
@@ -83,32 +82,6 @@ export const uploadMetadata = async (
   }
 };
 
-export const createShowTransactionToast = (
-  toast: ToastFunction,
-  setTransactionStatus: (status: TransactionResult) => void,
-) => {
-  return ({
-    title,
-    description,
-    status = "ERROR",
-  }: {
-    title: string;
-    description: string;
-    status?: "ERROR" | "SUCCESS" | "PENDING" | "STARTING" | null;
-  }) => {
-    toast({
-      title,
-      description,
-    });
-
-    setTransactionStatus({
-      status,
-      finalized: status === "ERROR" || status === "SUCCESS",
-      message: title,
-    });
-  };
-};
-
 export const checkUserHasEnoughBalance = (
   accountFreeBalance: bigint,
   estimatedFee: bigint,
@@ -143,18 +116,20 @@ export const estimateTransactionFee = async (
     name: string;
     metadata: string;
     url: string;
-    callback: () => void;
+    callback?: () => void;
   }) => unknown,
   toast: ToastFunction,
 ): Promise<bigint> => {
   if (!selectedAccount?.address) return 0n;
 
   try {
-    // @ts-ignore
     const transaction = createTransaction({
       name: "Estimating fee",
       metadata: "Estimating fee",
       url: "Estimating fee",
+      callback: () => {
+        // Empty callback implementation
+      },
     });
 
     if (!transaction) {
@@ -182,16 +157,16 @@ export const estimateTransactionFee = async (
 };
 
 export const getAccountBalance = (
-  selectedAccount: InjectedAccountWithMeta | null,
+  selectedAccount: InjectedAccountWithMeta | null | undefined,
 ): bigint => {
-  if (!selectedAccount?.address || !selectedAccount.freeBalance) return 0n;
-
-  try {
-    return BigInt(selectedAccount.freeBalance);
-  } catch (error) {
-    console.error("Error parsing account balance:", error);
+  if (
+    !selectedAccount?.address ||
+    typeof selectedAccount.freeBalance !== "bigint"
+  ) {
     return 0n;
   }
+
+  return selectedAccount.freeBalance;
 };
 
 export const updateAgentOnChain = async ({

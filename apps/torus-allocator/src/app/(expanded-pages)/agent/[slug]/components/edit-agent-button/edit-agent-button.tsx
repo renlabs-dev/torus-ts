@@ -18,22 +18,18 @@ interface EditAgentButtonProps {
 
 export function EditAgentButton({ agentKey }: EditAgentButtonProps) {
   const { selectedAccount } = useTorus();
-  const isOwner = selectedAccount?.address !== agentKey;
-
-  const renderButton = () => {
-    if (!isOwner) {
-      return (
-        <EditAgentNonOwnerButton className="flex w-full items-center gap-1.5 p-3 border-gray-500 text-gray-500" />
-      );
-    }
-
-    return <EditAgentDialog agentKey={agentKey} />;
-  };
+  const isOwner = selectedAccount?.address === agentKey;
 
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>{renderButton()}</TooltipTrigger>
+        <TooltipTrigger asChild>
+          {isOwner ? (
+            <EditAgentDialog agentKey={agentKey} />
+          ) : (
+            <EditAgentNonOwnerButton className="flex w-full items-center gap-1.5 p-3 border-gray-500 text-gray-500" />
+          )}
+        </TooltipTrigger>
         {!isOwner && <EditAgentNonOwnerTooltip />}
       </Tooltip>
     </TooltipProvider>
