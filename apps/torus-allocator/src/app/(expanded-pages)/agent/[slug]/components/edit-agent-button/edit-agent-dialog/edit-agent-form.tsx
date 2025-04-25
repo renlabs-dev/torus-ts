@@ -216,7 +216,10 @@ export function EditAgentForm({
                   {(field.value ?? imageFile) && (
                     <div className="rounded-md overflow-hidden w-24 h-24 border flex-shrink-0 bg-muted">
                       <Image
-                        src={field.value ?? imageFile}
+                        src={
+                          field.value ??
+                          (imageFile ? URL.createObjectURL(imageFile) : "")
+                        }
                         alt="Agent Icon Preview"
                         className="w-full h-full object-cover"
                         width={256}

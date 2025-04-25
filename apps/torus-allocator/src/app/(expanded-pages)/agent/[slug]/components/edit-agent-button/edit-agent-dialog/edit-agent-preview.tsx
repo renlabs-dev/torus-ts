@@ -60,13 +60,13 @@ export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
     previewMetadata: {
       title: formValues.title,
       socials: {
-        discord: formValues.socials.discord,
-        twitter: formValues.socials.twitter,
-        github: formValues.socials.github,
-        telegram: formValues.socials.telegram,
+        discord: formValues.socials.discord ?? "",
+        twitter: formValues.socials.twitter ?? "",
+        github: formValues.socials.github ?? "",
+        telegram: formValues.socials.telegram ?? "",
       },
       website: formValues.website,
-      icon: previewImage,
+      icon: previewImage ?? undefined,
     },
   };
 
