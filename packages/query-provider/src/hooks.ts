@@ -44,9 +44,12 @@ import {
 } from "@torus-network/sdk";
 import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
 import SuperJSON from "superjson";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 
 // -- Subspace refresh times --
 
+const log = BasicLogger.create({ name: "query-provider" });
 // == Chain ==
 
 export function useLastBlock(
@@ -404,24 +407,35 @@ export function useGetTorusPrice(
     queryFn: async (): Promise<number> => {
       const url =
         "https://api.coingecko.com/api/v3/simple/price?ids=torus&vs_currencies=usd";
-      try {
-        const response = await fetch(url);
 
-        if (!response.ok) {
-          throw new Error(`Coingecko API error: ${response.status}`);
-        }
-
-        const data = (await response.json()) as CoingeckoResponse;
-
-        if (typeof data.torus.usd !== "number") {
-          throw new Error("Invalid response format from Coingecko API");
-        }
-
-        return data.torus.usd;
-      } catch (error) {
-        console.error("Error fetching Torus price:", error);
-        throw error;
+      // Fetch the data
+      const [fetchError, response] = await tryAsync(fetch(url));
+      if (fetchError !== undefined) {
+        log.error(fetchError.message);
+        console.error("Error fetching from Coingecko API:", fetchError);
+        throw fetchError;
       }
+
+      // Check response status
+      if (!response.ok) {
+        throw new Error(`Coingecko API error: ${response.status}`);
+      }
+
+      // Parse the JSON
+      const [parseError, data] = await tryAsync(response.json());
+      if (parseError !== undefined) {
+        log.error(parseError.message);
+        console.error("Error parsing Coingecko API response:", parseError);
+        throw parseError;
+      }
+
+      const typedData = data as CoingeckoResponse;
+
+      if (typeof typedData.torus.usd !== "number") {
+        throw new Error("Invalid response format from Coingecko API");
+      }
+
+      return typedData.torus.usd;
     },
     retry: 1,
     ...options,
