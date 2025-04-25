@@ -157,7 +157,7 @@ export const estimateTransactionFee = async (
 };
 
 export const getAccountBalance = (
-  selectedAccount: InjectedAccountWithMeta | null | undefined,
+  selectedAccount: InjectedAccountWithMeta | null,
 ): bigint => {
   if (
     !selectedAccount?.address ||
