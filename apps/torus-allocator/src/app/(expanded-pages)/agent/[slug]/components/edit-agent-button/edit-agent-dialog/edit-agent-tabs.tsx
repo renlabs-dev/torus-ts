@@ -1,8 +1,8 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
 import {
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
@@ -12,75 +12,153 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { ArrowLeft, ArrowRight, Eye, Pencil, Save } from "lucide-react";
 import { useState } from "react";
 import type { useForm } from "react-hook-form";
-import type { UpdateAgentMutation } from "./edit-agent-form-schema";
 import { EditAgentForm } from "./edit-agent-form";
+import type {
+  EditAgentFormData,
+  UpdateAgentMutation,
+} from "./edit-agent-form-schema";
 import { EditAgentPreview } from "./edit-agent-preview";
-import type { EditAgentFormData } from "./edit-agent-form-schema";
-import { Button } from "@torus-ts/ui/components/button";
 
 interface EditAgentTabsProps {
   agentKey: string;
   form: ReturnType<typeof useForm<EditAgentFormData>>;
   updateAgentMutation: UpdateAgentMutation;
+  imageFile: File | null;
+  hasUnsavedChanges: boolean;
 }
 
 export function EditAgentTabs({
   agentKey,
   form,
   updateAgentMutation,
+  imageFile,
+  hasUnsavedChanges,
 }: EditAgentTabsProps) {
   const [activeTab, setActiveTab] = useState("edit");
-  const [previewComponent] = useState(() => (
-    <EditAgentPreview agentKey={agentKey} form={form} />
-  ));
+
+  const handleTabChange = async (value: string) => {
+    if (value === "preview") {
+      const isValid = await form.trigger();
+
+      if (!isValid) return;
+    }
+
+    setActiveTab(value);
+  };
+
+  const handleNextClick = async () => {
+    const isValid = await form.trigger();
+
+    if (!isValid) return;
+
+    setActiveTab("preview");
+  };
+
+  const handleBackClick = () => {
+    setActiveTab("edit");
+  };
+
+  const handleSubmit = () => {
+    void form.handleSubmit((data) => updateAgentMutation.mutate(data))();
+  };
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Edit Agent</DialogTitle>
-
-        <DialogDescription className="mt-2">
-          Edit the agent's information and preview the changes before saving.
+        <DialogTitle className="text-xl font-bold">
+          Edit Agent Information
+        </DialogTitle>
+        <DialogDescription className="mt-2 text-muted-foreground">
+          Update your agent's details and see how they will appear to users in
+          the preview tab.
         </DialogDescription>
       </DialogHeader>
 
       <Tabs
-        defaultValue="edit"
         value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full"
+        onValueChange={handleTabChange}
+        className="mt-6 w-full"
       >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="edit">Edit</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger
+            value="edit"
+            className="flex items-center gap-2 py-3 data-[state=active]:bg-primary/90"
+          >
+            <Pencil className="h-4 w-4" />
+            <span>Edit Details</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="preview"
+            className="flex items-center gap-2 py-3 data-[state=active]:bg-primary/90"
+          >
+            <Eye className="h-4 w-4" />
+            <span>Preview</span>
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="edit" className="mt-4">
-          <EditAgentForm
-            agentKey={agentKey}
-            setActiveTab={setActiveTab}
-            form={form}
-            updateAgentMutation={updateAgentMutation}
-          />
-        </TabsContent>
+        <div className="relative">
+          <TabsContent value="edit" className="mt-4 space-y-4">
+            <div className="rounded-md border bg-muted/20 p-4">
+              <EditAgentForm
+                agentKey={agentKey}
+                setActiveTab={setActiveTab}
+                form={form}
+                updateAgentMutation={updateAgentMutation}
+                imageFile={imageFile}
+              />
+            </div>
 
-        <TabsContent value="preview" className="mt-4">
-          {previewComponent}
-        </TabsContent>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleNextClick}
+                disabled={updateAgentMutation.isPending}
+                className="flex items-center gap-2"
+              >
+                Preview <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="preview" className="mt-4">
+            <div className="rounded-md border bg-muted/20 p-6">
+              <h3 className="text-lg font-medium mb-4 text-center">
+                Agent Preview
+              </h3>
+              <EditAgentPreview agentKey={agentKey} form={form} />
+              <p className="text-sm text-muted-foreground text-center mt-4">
+                This is how your agent will appear to users.
+              </p>
+            </div>
+
+            <div className="flex justify-between mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBackClick}
+                disabled={updateAgentMutation.isPending}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" /> Edit Details
+              </Button>
+
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={updateAgentMutation.isPending || !hasUnsavedChanges}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+              >
+                <Save className="h-4 w-4" />
+                {updateAgentMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </TabsContent>
+        </div>
       </Tabs>
-
-      <DialogFooter className="mt-6 flex w-full gap-2">
-        <Button
-          className="w-full"
-          type="button"
-          disabled={updateAgentMutation.isPending}
-          onClick={() => form.handleSubmit((data) => updateAgentMutation.mutate(data))()}
-        >
-          {updateAgentMutation.isPending ? "Updating..." : "Submit edit"}
-        </Button>
-      </DialogFooter>
     </>
   );
 }

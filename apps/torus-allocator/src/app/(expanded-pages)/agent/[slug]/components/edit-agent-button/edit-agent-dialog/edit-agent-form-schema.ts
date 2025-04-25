@@ -1,15 +1,24 @@
 import { z } from "zod";
 
+const validateUrl = (domains: string[], errorMessage: string) => {
+  return (val: string) => {
+    if (val === "") return true;
+    const prefixes = domains.map((domain) => `https://${domain}`);
+    return prefixes.some((prefix) => val.startsWith(prefix))
+      ? true
+      : errorMessage;
+  };
+};
+
 const editAgentSocialsSchema = z.object({
   twitter: z
     .string()
     .trim()
     .refine(
-      (val) =>
-        val === "" ||
-        val.startsWith("https://twitter.com/") ||
-        val.startsWith("https://x.com/"),
-      "Twitter URL must start with https://twitter.com/ or https://x.com/",
+      validateUrl(
+        ["twitter.com/", "x.com/"],
+        "Twitter URL must start with https://twitter.com/ or https://x.com/",
+      ),
     )
     .optional()
     .or(z.literal("")),
@@ -17,8 +26,10 @@ const editAgentSocialsSchema = z.object({
     .string()
     .trim()
     .refine(
-      (val) => val === "" || val.startsWith("https://github.com/"),
-      "GitHub URL must start with https://github.com/",
+      validateUrl(
+        ["github.com/"],
+        "GitHub URL must start with https://github.com/",
+      ),
     )
     .optional()
     .or(z.literal("")),
@@ -26,8 +37,7 @@ const editAgentSocialsSchema = z.object({
     .string()
     .trim()
     .refine(
-      (val) => val === "" || val.startsWith("https://t.me/"),
-      "Telegram URL must start with https://t.me/",
+      validateUrl(["t.me/"], "Telegram URL must start with https://t.me/"),
     )
     .optional()
     .or(z.literal("")),
@@ -35,11 +45,10 @@ const editAgentSocialsSchema = z.object({
     .string()
     .trim()
     .refine(
-      (val) =>
-        val === "" ||
-        val.startsWith("https://discord.gg/") ||
-        val.startsWith("https://discord.com/"),
-      "Discord URL must start with https://discord.gg/ or https://discord.com/",
+      validateUrl(
+        ["discord.gg/", "discord.com/"],
+        "Discord URL must start with https://discord.gg/ or https://discord.com/",
+      ),
     )
     .optional()
     .or(z.literal("")),

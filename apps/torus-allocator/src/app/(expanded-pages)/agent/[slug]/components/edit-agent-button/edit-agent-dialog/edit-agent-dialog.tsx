@@ -11,20 +11,21 @@ import {
 } from "@torus-ts/ui/components/dialog";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { UnsavedChangesDialog } from "~/app/_components/unsaved-changes-dialog";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { api } from "~/trpc/react";
 import { EditAgentButtonContent } from "../edit-agent-button.shared";
-import type { EditAgentFormData } from "./edit-agent-form-schema";
-import { editAgentSchema } from "./edit-agent-form-schema";
-import { EditAgentTabs } from "./edit-agent-tabs";
 import {
   cidToIpfsUri,
   getAccountBalance,
   updateAgentOnChain,
   uploadMetadata,
 } from "./edit-agent-dialog-util";
+import type { EditAgentFormData } from "./edit-agent-form-schema";
+import { editAgentSchema } from "./edit-agent-form-schema";
+import { EditAgentTabs } from "./edit-agent-tabs";
 
 export interface EditAgentDialogProps {
   agentKey: string;
@@ -36,9 +37,10 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [accountFreeBalance, setAccountFreeBalance] = useState(0n);
   const [transactionStatus, setTransactionStatus] =
     useState<TransactionResult | null>(null);
+  const [showConfirmClose, setShowConfirmClose] = useState(false);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   const { data: agent } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
@@ -48,8 +50,6 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
     },
   );
 
-  console.log("Agent", agent);
-
   const { data: agentMetadata } = useQueryAgentMetadata(
     agent?.metadataUri ?? "",
     {
@@ -58,7 +58,10 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
     },
   );
 
-  console.log("Agent metadata", agentMetadata);
+  const accountFreeBalance = useMemo(
+    () => (selectedAccount ? getAccountBalance(selectedAccount) : 0n),
+    [selectedAccount],
+  );
 
   const form = useForm<EditAgentFormData>({
     resolver: zodResolver(editAgentSchema),
@@ -95,112 +98,165 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
         discord: agentMetadata?.metadata.socials?.discord ?? "",
       },
     });
+    setFormIsDirty(false);
   }, [form, agent, agentMetadata]);
 
   useEffect(() => {
+    const subscription = form.watch(() =>
+      setFormIsDirty(form.formState.isDirty),
+    );
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  useEffect(() => {
     resetFormData();
-  }, [resetFormData]);
+  }, [agent, agentMetadata, resetFormData]);
 
   useEffect(() => {
     if (isOpen) {
-      resetFormData();
       setTransactionStatus(null);
     }
-  }, [isOpen, resetFormData]);
+  }, [isOpen]);
 
-  useEffect(() => {
-    if (!selectedAccount) return;
+  const handleDialogChange = useCallback(
+    (open: boolean) => {
+      if (isOpen && !open && formIsDirty && !isUploading) {
+        setShowConfirmClose(true);
+        return;
+      }
 
-    const balance = getAccountBalance(selectedAccount);
-    setAccountFreeBalance(balance);
-  }, [selectedAccount]);
+      setIsOpen(open);
+      if (open) resetFormData();
+    },
+    [isOpen, formIsDirty, isUploading, resetFormData],
+  );
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      const fileUrl = URL.createObjectURL(file);
-      form.setValue("imageUrl", fileUrl);
-      return () => URL.revokeObjectURL(fileUrl);
-    }
-  };
+  const handleCloseConfirm = useCallback(() => {
+    setShowConfirmClose(false);
+    setIsOpen(false);
+    setFormIsDirty(false);
+  }, []);
 
-  const updateAgentMutation = {
-    isPending: isUploading,
-    handleImageChange,
-    mutate: async (editAgentFormData: EditAgentFormData) => {
-      setIsUploading(true);
-      setTransactionStatus({
-        status: "STARTING",
-        finalized: false,
-        message: "Updating Agent",
-      });
+  const handleCloseCancel = useCallback(() => {
+    setShowConfirmClose(false);
+  }, []);
 
-      try {
-        const { name, apiUrl } = editAgentFormData;
-
-        const cid = await uploadMetadata(editAgentFormData, imageFile);
-
-        const estimatedFee = 1n;
-
-        await updateAgentOnChain({
-          agentKey,
-          name,
-          apiUrl,
-          metadata: cidToIpfsUri(cid),
-          selectedAccount,
-          accountFreeBalance,
-          estimatedFee,
-          updateAgentOnChain: updateAgentFunc,
-          setTransactionStatus,
-          toast,
-          setIsUploading,
-          form,
-          setIsOpen,
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
-        console.error(errorMessage);
-        toast({
-          title: "Error Updating Agent",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: errorMessage,
-        });
-        setIsUploading(false);
+  const handleImageChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files?.[0]) {
+        const file = e.target.files[0];
+        setImageFile(file);
+        const fileUrl = URL.createObjectURL(file);
+        form.setValue("imageUrl", fileUrl);
+        setFormIsDirty(true);
       }
     },
-  };
+    [form],
+  );
+
+  const updateAgentMutation = useMemo(
+    () => ({
+      isPending: isUploading,
+      handleImageChange,
+      mutate: async (editAgentFormData: EditAgentFormData) => {
+        setIsUploading(true);
+        setTransactionStatus({
+          status: "STARTING",
+          finalized: false,
+          message: "Updating Agent",
+        });
+
+        try {
+          const { name, apiUrl } = editAgentFormData;
+          const cid = await uploadMetadata(editAgentFormData, imageFile);
+          const estimatedFee = 1n;
+
+          await updateAgentOnChain({
+            agentKey,
+            name,
+            apiUrl,
+            metadata: cidToIpfsUri(cid),
+            selectedAccount,
+            accountFreeBalance,
+            estimatedFee,
+            updateAgentOnChain: updateAgentFunc,
+            setTransactionStatus,
+            toast,
+            setIsUploading,
+            form,
+            setIsOpen,
+          });
+
+          setFormIsDirty(false);
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(errorMessage);
+          toast({
+            title: "Error Updating Agent",
+            description: errorMessage,
+            variant: "destructive",
+          });
+          setTransactionStatus({
+            status: "ERROR",
+            finalized: true,
+            message: errorMessage,
+          });
+          setIsUploading(false);
+        }
+      },
+    }),
+    [
+      isUploading,
+      handleImageChange,
+      imageFile,
+      agentKey,
+      selectedAccount,
+      accountFreeBalance,
+      updateAgentFunc,
+      toast,
+      form,
+    ],
+  );
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="flex w-full items-center gap-1.5 p-3 border-green-500 text-green-500 opacity-65
-            transition duration-200 hover:text-green-500 hover:opacity-100"
-        >
-          <EditAgentButtonContent />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[60vh] overflow-y-auto">
-        <EditAgentTabs
-          agentKey={agentKey}
-          form={form}
-          updateAgentMutation={updateAgentMutation}
-        />
-        {transactionStatus && (
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
+    <>
+      <Dialog open={isOpen} onOpenChange={handleDialogChange}>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            className="flex w-full items-center gap-1.5 p-3 border-green-500 text-green-500 opacity-65
+              transition duration-200 hover:text-green-500 hover:opacity-100
+              hover:bg-green-500/10"
+          >
+            <EditAgentButtonContent />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="md:max-w-[720px] lg:max-w-[1200px] max-h-[80vh] overflow-y-auto p-6">
+          <EditAgentTabs
+            agentKey={agentKey}
+            form={form}
+            updateAgentMutation={updateAgentMutation}
+            imageFile={imageFile}
+            hasUnsavedChanges={formIsDirty}
           />
-        )}
-      </DialogContent>
-    </Dialog>
+          {transactionStatus && (
+            <div className="mt-4 border rounded-md p-3 bg-black/5">
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <UnsavedChangesDialog
+        open={showConfirmClose}
+        onOpenChange={setShowConfirmClose}
+        onCancel={handleCloseCancel}
+        onConfirm={handleCloseConfirm}
+      />
+    </>
   );
 }

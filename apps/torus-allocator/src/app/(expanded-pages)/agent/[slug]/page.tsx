@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExpandedViewSocials } from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
-import BlobImage from "~/app/_components/blob-image";
+import { AgentIcon } from "~/app/_components/agent-icon";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 import { AgentInfoCard } from "./components/agent-info-card";
@@ -68,7 +68,7 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
         <div className="mb-12 flex flex-col gap-6 md:flex-row">
           <div className="mb-12 flex flex-col gap-6 md:w-2/3">
             <Card className="mb-6 flex flex-col gap-6 md:flex-row">
-              {icon && <BlobImage blob={icon} alt={`${mdl.name} icon`} />}
+              <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
                 <h1 className="text-start text-3xl font-semibold">
                   {mdl.name}
