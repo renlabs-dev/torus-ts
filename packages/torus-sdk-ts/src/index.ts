@@ -1,4 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 // === Address ===
 export * from "./address";
@@ -33,6 +34,10 @@ export * from "./agent_metadata/agent_metadata";
 export async function setup(wsEndpoint: string): Promise<ApiPromise> {
   console.log("Connecting to ", wsEndpoint);
   const provider = new WsProvider(wsEndpoint);
-  const api = await ApiPromise.create({ provider });
+  const [error, api] = await tryAsync(ApiPromise.create({ provider }));
+  if (error !== undefined) {
+    console.error("Error creating API:", error);
+    throw error;
+  }
   return api;
 }

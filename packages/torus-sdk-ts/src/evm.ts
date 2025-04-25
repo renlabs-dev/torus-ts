@@ -8,6 +8,7 @@ import { assert } from "tsafe";
 import type { Chain, WalletClient } from "viem";
 import { encodeFunctionData } from "viem";
 import type { SS58Address } from "./address";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 export { waitForTransactionReceipt } from "@wagmi/core";
 
@@ -69,30 +70,62 @@ export async function withdrawFromTorusEvm(
   value: bigint,
   refetchHandler: () => Promise<void>,
 ) {
+  // Check if wallet client account exists
   if (!walletClient.account) {
     throw new Error("Wallet client account is undefined");
   }
 
-  const pubk = decodeAddress(destination);
-  // Convert Uint8Array to hex string with 0x prefix
-  const pubkHex = `0x${Buffer.from(pubk).toString("hex")}`;
+  // Decode the address
+  const [decodeError, pubk] = trySync(() => decodeAddress(destination));
+  if (decodeError !== undefined) {
+    console.error("Error decoding destination address:", decodeError);
+    throw decodeError;
+  }
 
-  const data = encodeFunctionData({
-    abi: CONTRACT_ABI,
-    functionName: "transfer",
-    args: [pubkHex as `0x${string}`],
-  });
+  // Convert Uint8Array to hex string with 0x prefix
+  const [bufferError, pubkHex] = trySync(
+    () => `0x${Buffer.from(pubk).toString("hex")}`,
+  );
+  if (bufferError !== undefined) {
+    console.error("Error converting address to hex:", bufferError);
+    throw bufferError;
+  }
+
+  // Encode function data
+  const [encodeError, data] = trySync(() =>
+    encodeFunctionData({
+      abi: CONTRACT_ABI,
+      functionName: "transfer",
+      args: [pubkHex as `0x${string}`],
+    }),
+  );
+
+  if (encodeError !== undefined) {
+    console.error("Error encoding function data:", encodeError);
+    throw encodeError;
+  }
 
   // Send transaction using walletClient
-  const txHash = await walletClient.sendTransaction({
-    account: walletClient.account,
-    to: CONTRACT_ADDRESS,
-    data,
-    value,
-    chain,
-  });
+  const [txError, txHash] = await tryAsync(
+    walletClient.sendTransaction({
+      account: walletClient.account,
+      to: CONTRACT_ADDRESS,
+      data,
+      value,
+      chain,
+    }),
+  );
 
-  await refetchHandler();
+  if (txError !== undefined) {
+    console.error("Error sending transaction:", txError);
+    throw txError;
+  }
+
+  // Refetch data after transaction
+  const [refetchError] = await tryAsync(refetchHandler());
+  if (refetchError !== undefined) {
+    console.error("Error refetching data after transaction:", refetchError);
+  }
 
   return txHash;
 }
