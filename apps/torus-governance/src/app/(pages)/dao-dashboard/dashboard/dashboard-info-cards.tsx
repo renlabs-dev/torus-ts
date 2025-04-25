@@ -18,7 +18,7 @@ export default function DashboardInfoCards() {
   ).length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <InfoCard title="Agents Registered" value={agentsRegistered} />
       <InfoCard title="Agents Whitelisted" value={agentsWhitelisted} />
       <InfoCard title="Penalties Applied" value={penaltiesCount} />
