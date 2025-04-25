@@ -18,6 +18,7 @@ import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWSAPI: ApiPromise | null = null;
@@ -74,25 +75,44 @@ export const createTRPCContext = (opts: {
 }) => {
   const db = cacheCreateDb();
   const wsAPI = cacheCreateWSAPI();
-
   const { jwtSecret } = opts;
-
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
   console.log(">>> tRPC Request from", source);
 
-  const [authType, authToken] = (
+  // Get authorization header with fallback
+  const authHeader =
     opts.headers.get("authorization") ??
     opts.headers.get("Authorization") ??
-    ""
-  ).split(" ");
+    "";
+
+  // Parse authorization header
+  const [authType, authToken] = authHeader.split(" ");
 
   let sessionData: SessionData | null = null;
+
   if (authToken) {
-    try {
-      sessionData = decodeSessionToken(authToken, jwtSecret);
-      assert(sessionData.uri === opts.authOrigin);
-    } catch (err: unknown) {
-      console.error(`Failed to validate JWT: ${String(err)}`);
+    // Use trySync for decoding and validating the token
+    const [decodeError, decodedToken] = trySync(() =>
+      decodeSessionToken(authToken, jwtSecret),
+    );
+
+    if (decodeError !== undefined) {
+      console.error(`Failed to decode JWT: ${decodeError.message}`);
+    } else if (decodedToken) {
+      const [validateError] = trySync(() => {
+        if (decodedToken.uri !== opts.authOrigin) {
+          assert(
+            decodedToken.uri === opts.authOrigin,
+            `URI mismatch: ${decodedToken.uri} !== ${opts.authOrigin}`,
+          );
+        }
+      });
+
+      if (validateError !== undefined) {
+        console.error(`Failed to validate JWT: ${validateError.message}`);
+      } else {
+        sessionData = decodedToken;
+      }
     }
   }
 
@@ -162,30 +182,68 @@ export const publicProcedure = t.procedure;
  * If the token is invalid, expired, or the user is not found, it will throw an error.
  */
 export const authenticatedProcedure = t.procedure.use(async (opts) => {
-  if (!opts.ctx.authType) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "You must have an active session",
-    });
+  // Check for auth type existence
+  const [authTypeError] = trySync(() => {
+    if (!opts.ctx.authType) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must have an active session",
+      });
+    }
+  });
+
+  if (authTypeError !== undefined) {
+    throw authTypeError;
   }
-  if (opts.ctx.authType !== "Bearer") {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Invalid or unsupported authentication type",
-    });
+
+  const [authTypeMatchError] = trySync(() => {
+    if (opts.ctx.authType !== "Bearer") {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid or unsupported authentication type",
+      });
+    }
+  });
+
+  if (authTypeMatchError !== undefined) {
+    throw authTypeMatchError;
   }
-  if (!opts.ctx.sessionData?.userKey) {
+
+  const [sessionDataError, _] = trySync(() => {
+    if (!opts.ctx.sessionData?.userKey) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid or expired token, error in session data",
+      });
+    }
+  });
+
+  if (sessionDataError !== undefined) {
+    throw sessionDataError;
+  }
+
+  const [ctxError, authenticatedCtx] = trySync<AuthenticatedTRPCContext>(() => {
+    if (!opts.ctx.sessionData) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid or expired token",
+      });
+    }
+    return {
+      ...opts.ctx,
+      sessionData: opts.ctx.sessionData,
+    };
+  });
+
+  if (ctxError !== undefined) {
+    console.error("Failed to create authenticated context:", ctxError);
     throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Invalid or expired token",
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to create authenticated context",
     });
   }
 
-  const authenticatedCtx: AuthenticatedTRPCContext = {
-    ...opts.ctx,
-    sessionData: opts.ctx.sessionData,
-  };
-
+  // Return with context
   return opts.next({
     ctx: authenticatedCtx,
   });
