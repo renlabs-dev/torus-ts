@@ -51,9 +51,6 @@ export const ListWhitelistApplications = () => {
     agents,
   } = useGovernance();
 
-  console.log("AgentsApplicationsWithMeta: ", agentApplicationsWithMeta);
-  console.log("AggentsApplication: ", agentApplications);
-
   const searchParams = useSearchParams();
 
   const { data: votesPerUserKey } = api.agentApplicationVote.byUserKey.useQuery(
