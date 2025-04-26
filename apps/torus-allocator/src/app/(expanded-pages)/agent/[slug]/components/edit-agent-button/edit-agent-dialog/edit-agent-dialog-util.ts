@@ -35,8 +35,8 @@ export const cidToIpfsUri = (cid: string): string => `ipfs://${cid}`;
 export const uploadMetadata = async (
   metadata: EditAgentFormData,
   imageFile: File | null,
-) => {
-  const metadataObj: Record<string, any> = {
+): Promise<string> => {
+  const baseMetadata = {
     title: metadata.title,
     short_description: metadata.shortDescription,
     description: metadata.description,
@@ -44,25 +44,22 @@ export const uploadMetadata = async (
     socials: metadata.socials,
   };
 
-  if (imageFile) {
-    const { cid: imageCid } = await pinFile(imageFile);
-    metadataObj.images = { icon: cidToIpfsUri(imageCid) };
-  }
+  const finalMetadata = imageFile
+    ? {
+        ...baseMetadata,
+        images: { icon: cidToIpfsUri((await pinFile(imageFile)).cid) },
+      }
+    : baseMetadata;
 
   const metadataFile = strToFile(
-    JSON.stringify(metadataObj, null, 2),
+    JSON.stringify(finalMetadata, null, 2),
     `${metadata.name}-agent-metadata.json`,
   );
+
   const { cid } = await pinFile(metadataFile);
+
   return cid;
 };
-
-export const getAccountBalance = (
-  selectedAccount: InjectedAccountWithMeta | null,
-): bigint =>
-  selectedAccount?.address && typeof selectedAccount.freeBalance === "bigint"
-    ? selectedAccount.freeBalance
-    : 0n;
 
 export const checkUserHasEnoughBalance = (
   accountFreeBalance: bigint,

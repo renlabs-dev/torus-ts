@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
+import type { TransactionResult } from "@torus-ts/ui/components/transaction-status";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useMemo, useState } from "react";
@@ -18,13 +19,14 @@ import { api } from "~/trpc/react";
 import { EditAgentButtonContent } from "../edit-agent-button.shared";
 import {
   cidToIpfsUri,
-  getAccountBalance,
   updateAgentOnChain,
   uploadMetadata,
 } from "./edit-agent-dialog-util";
 import type { EditAgentFormData } from "./edit-agent-form-schema";
 import { editAgentSchema } from "./edit-agent-form-schema";
 import { EditAgentTabs } from "./edit-agent-tabs";
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
+import type { SS58Address } from "@torus-network/sdk";
 
 interface EditAgentDialogProps {
   agentKey: string;
@@ -32,12 +34,24 @@ interface EditAgentDialogProps {
 
 export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
   const { toast } = useToast();
-  const { updateAgent, selectedAccount } = useTorus();
+  const { updateAgent, selectedAccount, api: torusApi } = useTorus();
   const [isOpen, setIsOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState(null);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
+
+  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
+    {
+      status: null,
+      message: null,
+      finalized: false,
+    },
+  );
+
+  const { data: accountFreeBalance } = useFreeBalance(
+    torusApi,
+    selectedAccount?.address as SS58Address,
+  );
 
   const { data: agent } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
@@ -69,11 +83,6 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
       },
     },
   });
-
-  const accountFreeBalance = useMemo(
-    () => (selectedAccount ? getAccountBalance(selectedAccount) : 0n),
-    [selectedAccount],
-  );
 
   const handleDialogChange = useCallback(
     (open: boolean) => {
@@ -118,7 +127,7 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
             apiUrl,
             metadata: cidToIpfsUri(cid),
             selectedAccount,
-            accountFreeBalance,
+            accountFreeBalance: accountFreeBalance ?? 0n,
             estimatedFee: 1n,
             updateAgentOnChain: updateAgent,
             setTransactionStatus,
@@ -178,7 +187,7 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
             imageFile={imageFile}
             hasUnsavedChanges={form.formState.isDirty}
           />
-          {transactionStatus && (
+          {transactionStatus.status && (
             <div className="mt-4 border rounded-md p-3 bg-black/5">
               <TransactionStatus
                 status={transactionStatus.status}
