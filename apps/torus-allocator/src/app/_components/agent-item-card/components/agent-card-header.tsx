@@ -21,21 +21,22 @@ import Image from "next/image";
 import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
 import { buildSocials, SocialsInfo } from "./socials-info";
 
-interface AgentCardHeaderProps {
+export interface AgentPreviewData {
+  title?: string;
+  socials?: Record<string, string>;
+  website?: string;
+  iconUrl?: string;
+}
+
+export interface AgentHeaderProps {
   name: string;
   agentKey: string;
   metadataUri: string;
   registrationBlock: number | null;
   percComputedWeight: number | null;
   weightFactor: number | null;
-  previewMetadata?: AgentPreviewMetadata;
-}
-
-interface AgentPreviewMetadata {
-  title?: string;
-  socials?: Record<string, string>;
-  website?: string;
-  icon?: string;
+  previewMode?: boolean;
+  previewData?: AgentPreviewData;
 }
 
 function AgentIcon({ iconUrl }: { iconUrl: string | null }) {
@@ -61,11 +62,14 @@ function AgentBadge({
   isInitialized,
   isAgentSelected,
   isAgentDelegated,
+  previewMode,
 }: {
   isInitialized: boolean;
   isAgentSelected: boolean;
   isAgentDelegated: boolean;
+  previewMode?: boolean;
 }) {
+  if (previewMode) return null;
   if (!isInitialized) return <Skeleton className="h-6 w-24 rounded-full" />;
 
   return (
@@ -86,11 +90,15 @@ function AgentStats({
   percComputedWeight,
   isLoading,
   displayTokensPerWeek,
+  previewMode,
 }: {
   percComputedWeight: number | null;
   isLoading: boolean;
   displayTokensPerWeek: string;
+  previewMode?: boolean;
 }) {
+  if (previewMode) return null;
+
   return (
     <div className="relative z-30 flex items-center justify-start gap-3">
       <HoverCard>
@@ -127,8 +135,9 @@ export function AgentCardHeader({
   metadataUri,
   percComputedWeight,
   weightFactor,
-  previewMetadata,
-}: AgentCardHeaderProps) {
+  previewMode = false,
+  previewData,
+}: AgentHeaderProps) {
   const { isInitialized } = useTorus();
   const { originalAgents, delegatedAgents } = useDelegateAgentStore();
   const { isLoading, displayTokensPerWeek } = useWeeklyUsdCalculation({
@@ -139,22 +148,28 @@ export function AgentCardHeader({
     useQueryAgentMetadata(metadataUri);
 
   const iconFromMetadata = useBlobUrl(metadataResult?.images.icon);
-  const iconUrl = previewMetadata?.icon ?? iconFromMetadata;
+  const iconUrl =
+    previewMode && previewData?.iconUrl
+      ? previewData.iconUrl
+      : iconFromMetadata;
 
-  const socialsList = previewMetadata?.socials
-    ? buildSocials(previewMetadata.socials, previewMetadata.website)
-    : buildSocials(
-        metadataResult?.metadata.socials ?? {},
-        metadataResult?.metadata.website,
-      );
+  const socialsList =
+    previewMode && previewData?.socials
+      ? buildSocials(previewData.socials, previewData.website)
+      : buildSocials(
+          metadataResult?.metadata.socials ?? {},
+          metadataResult?.metadata.website,
+        );
 
   const title =
-    previewMetadata?.title ?? metadataResult?.metadata.title ?? name;
+    previewMode && previewData?.title
+      ? previewData.title
+      : (metadataResult?.metadata.title ?? name);
 
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
   const isAgentSelected = originalAgents.some((a) => a.address === agentKey);
 
-  if (isMetadataLoading && !previewMetadata) return <SkeletonAgentCardHeader />;
+  if (isMetadataLoading && !previewData) return <SkeletonAgentCardHeader />;
 
   return (
     <CardHeader>
@@ -167,6 +182,7 @@ export function AgentCardHeader({
               isInitialized={isInitialized}
               isAgentSelected={isAgentSelected}
               isAgentDelegated={isAgentDelegated}
+              previewMode={previewMode}
             />
           </div>
           <h2 className="w-fit text-ellipsis text-base font-semibold md:max-w-fit">
@@ -176,6 +192,7 @@ export function AgentCardHeader({
             percComputedWeight={percComputedWeight}
             isLoading={isLoading}
             displayTokensPerWeek={displayTokensPerWeek}
+            previewMode={previewMode}
           />
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Card } from "@torus-ts/ui/components/card";
 import { AlertCircle } from "lucide-react";
 import type { useForm } from "react-hook-form";
 import { AgentCardContent } from "~/app/_components/agent-item-card/components/agent-card-content";
+import type { AgentHeaderProps } from "~/app/_components/agent-item-card/components/agent-card-header";
 import { AgentCardHeader } from "~/app/_components/agent-item-card/components/agent-card-header";
 import { api } from "~/trpc/react";
 import type { EditAgentFormData } from "./edit-agent-form-schema";
@@ -12,6 +13,38 @@ import type { EditAgentFormData } from "./edit-agent-form-schema";
 interface EditAgentPreviewProps {
   agentKey: string;
   form: ReturnType<typeof useForm<EditAgentFormData>>;
+}
+
+function AgentPreviewSkeleton() {
+  return (
+    <div className="flex justify-center items-center py-8">
+      <div className="animate-pulse flex flex-col items-center space-y-4">
+        <div className="rounded-full bg-slate-200 h-16 w-16"></div>
+        <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+      </div>
+    </div>
+  );
+}
+
+function AgentPreviewError() {
+  return (
+    <Alert variant="destructive" className="mb-6">
+      <AlertCircle className="h-4 w-4" />
+      <AlertDescription>
+        Unable to load agent metadata. Please try again.
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+function PreviewGlowEffect() {
+  return (
+    <div
+      className="absolute -inset-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg blur
+        opacity-25"
+    ></div>
+  );
 }
 
 export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
@@ -25,39 +58,25 @@ export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-pulse flex flex-col items-center space-y-4">
-          <div className="rounded-full bg-slate-200 h-16 w-16"></div>
-          <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-          <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-        </div>
-      </div>
-    );
+    return <AgentPreviewSkeleton />;
   }
 
   if (!agent?.metadataUri) {
-    return (
-      <Alert variant="destructive" className="mb-6">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Unable to load agent metadata. Please try again.
-        </AlertDescription>
-      </Alert>
-    );
+    return <AgentPreviewError />;
   }
 
-  const previewImage = form.watch("imageUrl");
   const formValues = form.getValues();
+  const previewImage = form.watch("imageUrl");
 
-  const agentCardHeaderProps = {
+  const headerProps: AgentHeaderProps = {
     name: formValues.name,
     agentKey,
     metadataUri: agent.metadataUri,
     registrationBlock: agent.registrationBlock,
     percComputedWeight: null,
     weightFactor: agent.weightFactor,
-    previewMetadata: {
+    previewMode: true,
+    previewData: {
       title: formValues.title,
       socials: {
         discord: formValues.socials.discord ?? "",
@@ -66,22 +85,19 @@ export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
         telegram: formValues.socials.telegram ?? "",
       },
       website: formValues.website,
-      icon: previewImage ?? undefined,
+      iconUrl: previewImage ?? undefined,
     },
   };
 
   return (
     <div className="mx-auto max-w-lg my-6">
       <div className="relative">
-        <div
-          className="absolute -inset-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg blur
-            opacity-25"
-        ></div>
+        <PreviewGlowEffect />
         <Card
           className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition
             duration-300 hover:border-white hover:shadow-lg pointer-events-none"
         >
-          <AgentCardHeader {...agentCardHeaderProps} />
+          <AgentCardHeader {...headerProps} />
           <AgentCardContent
             metadataUri={agent.metadataUri}
             shortDescription={formValues.shortDescription}
