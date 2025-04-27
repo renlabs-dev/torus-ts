@@ -1,7 +1,8 @@
 import { CID } from "multiformats/cid";
 import { z } from "zod";
-import { assert_error } from "./";
+// import { assert_error } from "./";
 import type { OldResult } from "./typing";
+import { trySync } from "./try-catch";
 
 export { CID } from "multiformats/cid";
 
@@ -12,17 +13,16 @@ export const cidToIpfsUri = (cid: CID): string => `ipfs://${cid.toString()}`;
 const IPFS_URI_REGEX = /^ipfs:\/\/(\w+)$/;
 
 export const CID_SCHEMA = z.string().transform((cid, ctx) => {
-  let cidResult: CID;
-  try {
-    cidResult = CID.parse(cid);
-  } catch (err) {
-    assert_error(err);
+  const [parseError, cidResult] = trySync(() => CID.parse(cid));
+
+  if (parseError !== undefined) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `Invalid CID '${cid}', ${err}`,
+      message: `Invalid CID '${cid}', ${parseError.message}`,
     });
     return z.NEVER;
   }
+
   return cidResult;
 });
 
@@ -65,23 +65,60 @@ export interface CustomDataError {
 /**
  * @deprecated Use IPFS_URI_SCHEMA instead.
  */
+
 export function parseIpfsUri(uri: string): OldResult<CID, CustomDataError> {
   const ipfsPrefix = "ipfs://";
-  const validated = URL_SCHEMA.safeParse(uri);
-  try {
-    if (validated.success) {
-      const rest = handleCleanPrefix(uri, ipfsPrefix);
-      const cid = CID.parse(rest);
-      return { Ok: cid };
+
+  // First try validating as URL
+  const [validateError, validated] = trySync(() => URL_SCHEMA.safeParse(uri));
+
+  if (validateError !== undefined) {
+    return {
+      Err: {
+        message: `Unable to parse IPFS URI '${uri}' as URL: ${validateError.message}`,
+      },
+    };
+  }
+
+  // If URL validation succeeded
+  if (validated.success) {
+    const [prefixError, rest] = trySync(() =>
+      handleCleanPrefix(uri, ipfsPrefix),
+    );
+
+    if (prefixError !== undefined) {
+      return {
+        Err: {
+          message: `Unable to process IPFS prefix: ${prefixError.message}`,
+        },
+      };
     }
 
-    const cid = CID.parse(uri);
+    const [cidError, cid] = trySync(() => CID.parse(rest));
+
+    if (cidError !== undefined) {
+      return {
+        Err: {
+          message: `Unable to parse IPFS URI '${uri}' with prefix: ${cidError.message}`,
+        },
+      };
+    }
+
     return { Ok: cid };
-  } catch (err) {
-    assert_error(err);
-    const message = `Unable to parse IPFS URI '${uri}', ${err}`;
-    return { Err: { message } };
   }
+
+  // Try parsing as direct CID if URL validation failed
+  const [directCidError, cid] = trySync(() => CID.parse(uri));
+
+  if (directCidError !== undefined) {
+    return {
+      Err: {
+        message: `Unable to parse IPFS URI '${uri}' as direct CID: ${directCidError.message}`,
+      },
+    };
+  }
+
+  return { Ok: cid };
 }
 
 // == Pinata ==

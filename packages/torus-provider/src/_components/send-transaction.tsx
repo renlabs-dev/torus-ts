@@ -3,7 +3,7 @@ import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
   InjectedAccountWithMeta,
-  InjectedExtension,
+  // InjectedExtension,
 } from "@polkadot/extension-inject/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
