@@ -33,7 +33,6 @@ const ErrorState = ({ message }: { message: string }) => (
 
 export const ListWhitelistApplications = () => {
   const { selectedAccount } = useGovernance();
-
   const searchParams = useSearchParams();
 
   const search = searchParams.get("search");
