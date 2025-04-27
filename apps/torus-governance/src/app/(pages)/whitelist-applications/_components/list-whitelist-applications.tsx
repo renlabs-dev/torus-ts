@@ -32,13 +32,7 @@ const ErrorState = ({ message }: { message: string }) => (
 );
 
 export const ListWhitelistApplications = () => {
-  const {
-    agentApplicationsWithMeta,
-    isInitialized,
-    agentApplications,
-    selectedAccount,
-    agents,
-  } = useGovernance();
+  const { selectedAccount } = useGovernance();
 
   const searchParams = useSearchParams();
 
