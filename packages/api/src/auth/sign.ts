@@ -21,13 +21,13 @@ export const signData = async <T>(
 ): Promise<SignedPayload> => {
   // cryptoWaitReady
   const [error, _success] = await tryAsync(cryptoWaitReady());
-  // stringToHex
-  const [hexError, dataHex] = trySync(() => stringToHex(JSON.stringify(data)));
-
   if (error !== undefined) {
     console.error(error.message);
     throw error;
   }
+
+  // stringToHex
+  const [hexError, dataHex] = trySync(() => stringToHex(JSON.stringify(data)));
   if (hexError !== undefined) {
     console.error("Failed to convert data to hex:", hexError.message);
     throw hexError;
@@ -48,48 +48,51 @@ export const signData = async <T>(
 };
 
 export const verifySignedData = async (signedInput: SignedPayload) => {
-  //CryptoWaitReady
-  const [cryptoError, _] = await tryAsync(cryptoWaitReady());
-  //SignatureVerify
-  const [verifyError, result] = trySync(() =>
-    signatureVerify(payload, signature, address),
-  );
-  //HexToString
-  const [parseError, decoded] = trySync<unknown>(() =>
-    JSON.parse(hexToString(payload)),
-  );
-  //AuthReqSchema
-  const [validateError, validated] = trySync(() =>
-    AUTH_REQ_SCHEMA.safeParse(decoded),
-  );
-  //CheckSS58 Address
-  const [addressError, checkedAddress] = trySync(() => checkSS58(address));
-
   const { payload, signature, address } = signedInput;
 
-  // Error handlers
-  if (addressError !== undefined) {
-    console.error("Failed to check SS58 address:", addressError.message);
-    throw addressError;
-  }
+  //CryptoWaitReady
+  const [cryptoError, _] = await tryAsync(cryptoWaitReady());
   if (cryptoError !== undefined) {
     console.error("Failed to verify signed data:", cryptoError.message);
     throw cryptoError;
   }
+
+  //SignatureVerify
+  const [verifyError, result] = trySync(() =>
+    signatureVerify(payload, signature, address),
+  );
   if (verifyError !== undefined) {
     console.error("Failed during signature verification:", verifyError.message);
     throw verifyError;
   }
-  if (!result.isValid) {
-    throw new Error("Invalid signature");
-  }
+
+  //HexToString
+  const [parseError, decoded] = trySync<unknown>(() =>
+    JSON.parse(hexToString(payload)),
+  );
   if (parseError !== undefined) {
     console.error("Failed to parse payload:", parseError.message);
     throw parseError;
   }
+
+  //AuthReqSchema
+  const [validateError, validated] = trySync(() =>
+    AUTH_REQ_SCHEMA.safeParse(decoded),
+  );
   if (validateError !== undefined) {
     console.error("Failed during payload validation:", validateError.message);
     throw validateError;
+  }
+
+  //CheckSS58 Address
+  const [addressError, checkedAddress] = trySync(() => checkSS58(address));
+  if (addressError !== undefined) {
+    console.error("Failed to check SS58 address:", addressError.message);
+    throw addressError;
+  }
+
+  if (!result.isValid) {
+    throw new Error("Invalid signature");
   }
   if (!validated.success) {
     throw new Error(`Invalid payload: ${validated.error.message}`);

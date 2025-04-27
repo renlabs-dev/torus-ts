@@ -93,7 +93,7 @@ export async function queryProposals(api: Api): Promise<Proposal[]> {
   );
   if (queryError !== undefined) {
     console.error("Error querying proposals:", queryError);
-    return [];
+    throw queryError;
   }
 
   const [handlingError, result] = trySync(() =>
@@ -101,7 +101,7 @@ export async function queryProposals(api: Api): Promise<Proposal[]> {
   );
   if (handlingError !== undefined) {
     console.error("Error handling map values for proposals:", handlingError);
-    return [];
+    throw handlingError;
   }
 
   const [proposals, errs] = result;
@@ -520,14 +520,16 @@ export async function pushToWhitelist(
     throw txError;
   }
 
-  const [sendError, extrinsic] = await tryAsync(tx.signAndSend(sudoKeypair));
+  const [sendError, extrinsic] = await tryAsync(
+    (() => tx.signAndSend(sudoKeypair))(),
+  );
 
   if (sendError !== undefined) {
     console.error("Error signing and sending transaction:", sendError);
     return false;
   }
 
-  console.log("Extrinsic:", extrinsic.toHex());
+  console.log("Extrinsic:", extrinsic.hash.toHex());
   return true;
 }
 
