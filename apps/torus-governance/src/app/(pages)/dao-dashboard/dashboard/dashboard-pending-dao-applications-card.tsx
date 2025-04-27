@@ -55,8 +55,8 @@ export default function DashboardPendingDaoApplicationsCard() {
       redirectPath="/dao-applications"
       icon={ListChecks}
     >
-      <ScrollArea className="h-[300px]">
-        <div className="flex flex-col gap-4">{renderContent()}</div>
+      <ScrollArea className="h-[160px]">
+        <div className="flex flex-col gap-2">{renderContent()}</div>
       </ScrollArea>
     </DashboardRedirectCard>
   );

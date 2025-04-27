@@ -23,9 +23,9 @@ export default function DashboardRedirectCard(
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>
-          <IconComponent className="h-5 w-5 mr-2 inline" /> {props.title}
+      <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardTitle className="text-sm">
+          <IconComponent size={16} className="inline" /> {props.title}
         </CardTitle>
         <Link href={props.redirectPath} target="_blank" rel="noreferrer">
           <SquareArrowOutUpRight className="h-5 w-5 hover:text-muted-foreground ml-auto" />

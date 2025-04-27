@@ -53,7 +53,7 @@ export function DaoCard({
           <CardTitle
             className={cn(
               "line-clamp-3 text-xl font-semibold text-white lg:pb-0 xl:line-clamp-2",
-              variant === "small" ? "text-base" : "text-xl",
+              variant === "small" ? "text-sm" : "text-xl",
             )}
           >
             {title}
