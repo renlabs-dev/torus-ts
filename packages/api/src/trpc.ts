@@ -86,8 +86,10 @@ export const createTRPCContext = (opts: {
     "";
 
   // Parse authorization header
-  const [authType, authToken] = authHeader.split(" ");
-
+  const [authType, authToken, ...rest] = authHeader.trim().split(" ");
+  if (rest.length !== 0) {
+    console.warn("Unexpected extra segments in the Authorization header");
+  }
   let sessionData: SessionData | null = null;
 
   if (authToken) {

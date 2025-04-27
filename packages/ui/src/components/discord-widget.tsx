@@ -40,7 +40,6 @@ async function getPresenceCount(): Promise<number> {
   return presenceCount;
 }
 
-// Usage example
 const [presenceError, presenceCount] = await tryAsync(getPresenceCount());
 if (presenceError !== undefined) {
   console.error(`Failed to get presence count: ${presenceError.message}`);
