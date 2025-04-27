@@ -1,27 +1,48 @@
 import * as React from "react";
 import { cn } from "../lib/utils";
+import { tryAsync } from "../../../utils/src/try-catch";
 
 const serverId = "941362322000203776";
 const uri = `https://discord.com/api/guilds/${serverId}/widget.json`;
 
 async function getDiscordWidgetData(): Promise<unknown> {
-  try {
-    const res = await fetch(uri);
-    return res.json();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
+  const [fetchError, res] = await tryAsync(fetch(uri));
+
+  if (fetchError !== undefined) {
+    console.error(`Failed to fetch Discord widget: ${fetchError.message}`);
     return null;
   }
+
+  const [parseError, data] = await tryAsync(res.json());
+
+  if (parseError !== undefined) {
+    console.error(`Failed to parse Discord widget data: ${parseError.message}`);
+    return null;
+  }
+
+  return data;
 }
 
-let presenceCount = 0;
-try {
-  const data = await getDiscordWidgetData();
+async function getPresenceCount(): Promise<number> {
+  let presenceCount = 0;
+
+  const [error, data] = await tryAsync(getDiscordWidgetData());
+
+  if (error !== undefined) {
+    console.error(`Failed to get Discord widget data: ${error.message}`);
+    return presenceCount;
+  }
+
   if (data && typeof data === "object" && "presenceCount" in data) {
     presenceCount = (data as { presenceCount: number }).presenceCount;
   }
-} catch (error) {
-  console.error("Failed to fetch Discord widget data:", error);
+
+  return presenceCount;
+}
+
+const [presenceError, presenceCount] = await tryAsync(getPresenceCount());
+if (presenceError !== undefined) {
+  console.error(`Failed to get presence count: ${presenceError.message}`);
 }
 
 export function handleDescription(description: string | null) {

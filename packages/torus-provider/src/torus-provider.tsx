@@ -31,6 +31,7 @@ import type {
   UpdateDelegatingVotingPower,
   Vote,
 } from "./_types";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
@@ -192,38 +193,65 @@ export function TorusProvider({
   async function getWallets(): Promise<InjectedAccountWithMeta[] | undefined> {
     if (!torusApi.web3Enable || !torusApi.web3Accounts || !api) return;
 
-    await torusApi.web3Enable("Torus Network");
+    const [enableError] = await tryAsync(torusApi.web3Enable("Torus Network"));
 
-    try {
-      const accounts = await torusApi.web3Accounts();
-
-      const accountsWithFreeBalance = await Promise.all(
-        accounts.map(async (account) => {
-          const { data: balance } = await api.query.system.account(
-            account.address,
-          );
-
-          return {
-            ...account,
-            freeBalance: balance.free.toBigInt(),
-          };
-        }),
-      );
-
-      return accountsWithFreeBalance;
-    } catch {
+    if (enableError !== undefined) {
+      console.error(`Failed to enable web3: ${enableError.message}`);
       return undefined;
     }
+
+    const [accountsError, accounts] = await tryAsync(torusApi.web3Accounts());
+
+    if (accountsError !== undefined) {
+      console.error(`Failed to get web3 accounts: ${accountsError.message}`);
+      return undefined;
+    }
+
+    const accountPromises = accounts.map(async (account) => {
+      const [balanceError, balance] = await tryAsync(
+        api.query.system.account(account.address),
+      );
+
+      if (balanceError !== undefined) {
+        console.error(
+          `Failed to get balance for ${account.address}: ${balanceError.message}`,
+        );
+        return {
+          ...account,
+          freeBalance: BigInt(0), // Default to zero balance on error
+        };
+      }
+
+      return {
+        ...account,
+        freeBalance: balance.data.free.toBigInt(),
+      };
+    });
+
+    const [accountsWithBalanceError, accountsWithBalance] = await tryAsync(
+      Promise.all(accountPromises),
+    );
+
+    if (accountsWithBalanceError !== undefined) {
+      console.error(
+        `Failed to get account balances: ${accountsWithBalanceError.message}`,
+      );
+      return undefined;
+    }
+
+    return accountsWithBalance;
   }
 
   async function handleGetWallets(): Promise<void> {
-    try {
-      const allAccounts = await getWallets();
-      if (allAccounts) {
-        setAccounts(allAccounts);
-      }
-    } catch (error) {
-      console.warn(error);
+    const [error, allAccounts] = await tryAsync(getWallets());
+
+    if (error !== undefined) {
+      console.warn(`Failed to get wallets: ${error.message}`);
+      return;
+    }
+
+    if (allAccounts) {
+      setAccounts(allAccounts);
     }
   }
 
@@ -599,27 +627,37 @@ export function TorusProvider({
   async function estimateFee(
     transaction: SubmittableExtrinsic<"promise", ISubmittableResult>,
   ) {
-    try {
-      // Check if the API is ready and has the transfer function
-      if (!api?.isReady) {
-        console.error("API is not ready");
-        return null;
-      }
-
-      // Check if all required parameters are provided
-      if (!selectedAccount) {
-        console.error("Missing required parameters");
-        return null;
-      }
-
-      // Estimate the fee
-      const info = await transaction.paymentInfo(selectedAccount.address);
-
-      return sb_balance.parse(info.partialFee);
-    } catch (error) {
-      console.error("Error estimating fee:", error);
+    // Check if the API is ready and has the transfer function
+    if (!api?.isReady) {
+      console.error("API is not ready");
       return null;
     }
+
+    // Check if all required parameters are provided
+    if (!selectedAccount) {
+      console.error("Missing required parameters");
+      return null;
+    }
+
+    // Estimate the fee using tryAsync
+    const [error, info] = await tryAsync(
+      transaction.paymentInfo(selectedAccount.address),
+    );
+
+    if (error !== undefined) {
+      console.error(`Error estimating fee: ${error.message}`);
+      return null;
+    }
+
+    // Parse the fee with the schema
+    const [parseError, fee] = trySync(() => sb_balance.parse(info.partialFee));
+
+    if (parseError !== undefined) {
+      console.error(`Error parsing fee: ${parseError.message}`);
+      return null;
+    }
+
+    return fee;
   }
 
   async function updateDelegatingVotingPower({

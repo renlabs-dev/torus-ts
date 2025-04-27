@@ -5,9 +5,9 @@ import { observable } from "@trpc/server/observable";
 import SuperJSON from "superjson";
 import { signData } from "./auth/sign";
 import type { AppRouter } from "./root";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // == Auth ==
-
 export const makeAuthenticateUserFn = (
   baseUrl: string,
   authOrigin: string,
@@ -25,34 +25,52 @@ export const makeAuthenticateUserFn = (
     }
     isAuthenticating = true;
 
-    try {
-      const authReqData = createAuthReqData(authOrigin);
-      const signedData = await signData(signHex, authReqData);
-
-      const authClient = createTRPCClient<AppRouter>({
-        links: [
-          httpBatchLink({
-            url: baseUrl + "/api/trpc",
-            transformer: SuperJSON,
-          }),
-        ],
-      });
-
-      const result = await authClient.auth.startSession.mutate(signedData);
-
-      if (result.token && result.authenticationType) {
-        const authorization = `${result.authenticationType} ${result.token}`;
-        setStoredAuthorization(authorization);
-        console.log("Authentication successful");
-      } else {
-        throw new Error("Invalid authentication response");
-      }
-    } catch (error) {
-      console.error("Authentication error:", error);
-      throw error;
-    } finally {
+    const [authReqError, authReqData] = trySync(() =>
+      createAuthReqData(authOrigin),
+    );
+    if (authReqError !== undefined) {
+      console.error("Failed to create auth request data:", authReqError);
       isAuthenticating = false;
+      throw authReqError;
     }
+
+    const [signError, signedData] = await tryAsync(
+      signData(signHex, authReqData),
+    );
+    if (signError !== undefined) {
+      console.error("Failed to sign authentication data:", signError);
+      isAuthenticating = false;
+      throw signError;
+    }
+
+    const authClient = createTRPCClient<AppRouter>({
+      links: [
+        httpBatchLink({
+          url: baseUrl + "/api/trpc",
+          transformer: SuperJSON,
+        }),
+      ],
+    });
+
+    const [authError, result] = await tryAsync(
+      authClient.auth.startSession.mutate(signedData),
+    );
+    if (authError !== undefined) {
+      console.error("Authentication request failed:", authError);
+      isAuthenticating = false;
+      throw authError;
+    }
+
+    if (result.token && result.authenticationType) {
+      const authorization = `${result.authenticationType} ${result.token}`;
+      setStoredAuthorization(authorization);
+      console.log("Authentication successful");
+    } else {
+      isAuthenticating = false;
+      throw new Error("Invalid authentication response");
+    }
+
+    isAuthenticating = false;
   };
 };
 
@@ -78,18 +96,28 @@ export function createAuthLink(
                   err.data?.code === "UNAUTHORIZED"
                 ) {
                   retried = true;
-                  authenticateUser()
-                    .then(() => {
+
+                  void tryAsync(authenticateUser()).then(([authError, _]) => {
+                    if (authError !== undefined) {
+                      observer.error(authError);
+                      return;
+                    }
+
+                    // Use trySync for updating headers
+                    const [headerError] = trySync(() => {
                       op.context.headers = {
                         ...(op.context.headers ?? {}),
                         authorization: getStoredAuthorization() ?? "",
                       };
-                      execute();
-                    })
-                    .catch((error) => {
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                      observer.error(error);
                     });
+
+                    if (headerError !== undefined) {
+                      observer.error(headerError);
+                      return;
+                    }
+
+                    execute();
+                  });
                 } else {
                   observer.error(err);
                 }

@@ -7,6 +7,7 @@ import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
 } from "@torus-network/torus-utils/ipfs";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { CID } from "multiformats";
 import { z } from "zod";
 
@@ -49,27 +50,27 @@ export type AgentMetadataImageName = keyof NonNullable<AgentMetadata["images"]>;
 
 export async function fetchFromIpfsOrUrl<T>(
   uri: string,
-  fetcher: (url: string) => T,
+  fetcher: (url: string) => Promise<T>,
 ): Promise<T> {
   let url: string = uri;
-
   const problems: Error[] = [];
 
-  // If it's a valid IPFS URI, set the URL to fetch from IPFS gateway
-  const parsedCid = IPFS_URI_SCHEMA.safeParse(uri);
-  if (parsedCid.success) {
-    const cid = parsedCid.data;
-    url = buildIpfsGatewayUrl(cid);
+  // Parse the URI to check if it's a valid IPFS URI
+  const [parseError, parsedCid] = trySync(() => IPFS_URI_SCHEMA.safeParse(uri));
+
+  if (parseError !== undefined) {
+    problems.push(parseError);
+  } else if (parsedCid.success) {
+    url = buildIpfsGatewayUrl(parsedCid.data);
   } else {
     problems.push(parsedCid.error);
   }
 
-  let result;
-  try {
-    result = await fetcher(url);
-  } catch (err) {
-    assert_error(err);
-    problems.push(err);
+  // Fetch from the determined URL
+  const [fetchError, result] = await tryAsync(fetcher(url));
+
+  if (fetchError !== undefined) {
+    problems.push(fetchError);
   }
 
   if (result == null) {

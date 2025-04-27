@@ -1,4 +1,5 @@
 import { SS58_SCHEMA } from "@torus-network/sdk";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 import * as jwt from "jsonwebtoken";
 import { z } from "zod";
 
@@ -19,15 +20,35 @@ export const createSessionToken = (
   tokenData: SessionData,
   jwtSecret: string,
 ) => {
-  const token = jwt.sign(tokenData, jwtSecret, JWT_OPTIONS);
+  const [error, token] = trySync(() =>
+    jwt.sign(tokenData, jwtSecret, JWT_OPTIONS),
+  );
+  if (error !== undefined) {
+    console.error("Failed to create session token:", error.message);
+    throw error;
+  }
   return token;
 };
 
 export const decodeSessionToken = (
   token: string,
   jwtSecret: string,
-): SessionData => {
-  const payload = jwt.verify(token, jwtSecret, JWT_OPTIONS);
-  const parsed = SESSION_DATA_SCHEMA.parse(payload);
-  return parsed;
+): SessionData | undefined => {
+  const [verifyError, verifyResult] = trySync(() =>
+    jwt.verify(token, jwtSecret, JWT_OPTIONS),
+  );
+  if (verifyError !== undefined) {
+    console.error("Failed to verify token:", verifyError.message);
+    return;
+  }
+
+  const [parseError, parseResult] = trySync(() =>
+    SESSION_DATA_SCHEMA.parse(verifyResult),
+  );
+  if (parseError !== undefined) {
+    console.error("Failed to parse token payload:", parseError.message);
+    return;
+  }
+
+  return parseResult;
 };

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createSessionToken } from "../auth";
 import { SIGNED_PAYLOAD_SCHEMA, verifySignedData } from "../auth/sign";
 import { publicProcedure } from "../trpc";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // Maps nonce -> timestamp
 const seenNonces = new Map<string, number>();
@@ -15,55 +16,71 @@ export const authRouter = {
   startSession: publicProcedure
     .input(SIGNED_PAYLOAD_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      let address;
-      let payload;
-      try {
-        ({ address, payload } = await verifySignedData(input));
-      } catch (err) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Invalid signed payload: ${String(err)}`,
-          cause: err,
-        });
-      }
-
-      try {
-        verifyAuthRequest(payload, ctx.authOrigin);
-      } catch (err) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Invalid authentication request: ${String(err)}`,
-          cause: err,
-        });
-      }
-
-      const token = createSessionToken(
-        {
-          userKey: address,
-          uri: payload.uri,
-        },
-        ctx.jwtSecret,
+      const [verifyError, verifyResult] = await tryAsync(
+        verifySignedData(input),
       );
+      if (verifyError !== undefined) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Invalid signed payload: ${verifyError.message}`,
+          cause: verifyError,
+        });
+      }
+
+      const { address, payload } = verifyResult;
+
+      const [authError] = trySync(() =>
+        verifyAuthRequest(payload, ctx.authOrigin),
+      );
+      if (authError !== undefined) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Invalid authentication request: ${authError.message}`,
+          cause: authError,
+        });
+      }
+
+      const [tokenError, token] = trySync(() =>
+        createSessionToken(
+          {
+            userKey: address,
+            uri: payload.uri,
+          },
+          ctx.jwtSecret,
+        ),
+      );
+
+      if (tokenError !== undefined) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create session token",
+          cause: tokenError,
+        });
+      }
 
       return { token, authenticationType: "Bearer" };
     }),
+
   checkSession: publicProcedure
     .input(z.object({ auth: z.string() }))
     .mutation(({ ctx, input }) => {
       const [_authType, authToken] = input.auth.split(" ");
 
-      try {
-        const decodedPayload = jwt.verify(authToken ?? "", ctx.jwtSecret);
-        return {
-          isValid: true,
-          decodedPayload,
-        };
-      } catch {
+      const [verifyError, decodedPayload] = trySync(() =>
+        jwt.verify(authToken ?? "", ctx.jwtSecret),
+      );
+
+      if (verifyError !== undefined) {
         return {
           isValid: false,
           decodedPayload: null,
         };
       }
+
+      return {
+        isValid: true,
+        decodedPayload,
+      };
     }),
 } satisfies TRPCRouterRecord;
 

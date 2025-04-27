@@ -25,6 +25,7 @@ import {
 import type { Api } from "./_common";
 import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const ADDRESS_FORMAT = 42;
 
@@ -87,10 +88,24 @@ export const PROPOSAL_SCHEMA = sb_struct({
 export type Proposal = z.infer<typeof PROPOSAL_SCHEMA>;
 
 export async function queryProposals(api: Api): Promise<Proposal[]> {
-  const query = await api.query.governance.proposals.entries();
-  const [proposals, errs] = handleMapValues(query, sb_some(PROPOSAL_SCHEMA));
+  const [queryError, query] = await tryAsync(
+    api.query.governance.proposals.entries(),
+  );
+  if (queryError !== undefined) {
+    console.error("Error querying proposals:", queryError);
+    throw queryError;
+  }
+
+  const [handlingError, result] = trySync(() =>
+    handleMapValues(query, sb_some(PROPOSAL_SCHEMA)),
+  );
+  if (handlingError !== undefined) {
+    console.error("Error handling map values for proposals:", handlingError);
+    throw handlingError;
+  }
+
+  const [proposals, errs] = result;
   for (const err of errs) {
-    // TODO: refactor out
     console.error(err);
   }
   return proposals;
@@ -98,16 +113,29 @@ export async function queryProposals(api: Api): Promise<Proposal[]> {
 
 // TODO: Refactor
 export async function queryUnrewardedProposals(api: Api): Promise<number[]> {
-  const unrewardedProposals =
-    await api.query.governance.unrewardedProposals.entries();
+  const [queryError, unrewardedProposals] = await tryAsync(
+    api.query.governance.unrewardedProposals.entries(),
+  );
 
-  return unrewardedProposals
-    .map(([key]) =>
-      // The key is a StorageKey, which contains the proposal ID
-      // We need to extract the proposal ID from this key and convert it to a number
-      sb_id.parse(key.args[0]),
-    )
-    .filter((id) => !isNaN(id));
+  if (queryError !== undefined) {
+    console.error("Error querying unrewarded proposals:", queryError);
+    return [];
+  }
+
+  const result: number[] = [];
+  for (const [key] of unrewardedProposals) {
+    const [parseError, id] = trySync(() => sb_id.parse(key.args[0]));
+    if (parseError !== undefined) {
+      console.error("Error parsing proposal ID:", parseError);
+      continue;
+    }
+
+    if (!isNaN(id)) {
+      result.push(id);
+    }
+  }
+
+  return result;
 }
 
 // -- Votes --
@@ -125,40 +153,78 @@ export async function processVotesAndStakes(
   votesAgainst: SS58Address[],
 ): Promise<VoteWithStake[]> {
   // Get addresses not delegating voting power and get stake information
-  const [notDelegatingAddresses, stakeFrom, stakeOut] = await Promise.all([
+  const [notDelegatingError, notDelegatingAddresses] = await tryAsync(
     queryAccountsNotDelegatingVotingPower(api),
+  );
+
+  if (notDelegatingError !== undefined) {
+    console.error(
+      "Error querying accounts not delegating voting power:",
+      notDelegatingError,
+    );
+    return [];
+  }
+
+  const [stakeFromError, stakeFrom] = await tryAsync(
     queryCachedStakeFrom(torusCacheUrl),
+  );
+  if (stakeFromError !== undefined) {
+    console.error("Error querying cached stake from:", stakeFromError);
+    return [];
+  }
+
+  const [stakeOutError, stakeOut] = await tryAsync(
     queryCachedStakeOut(torusCacheUrl),
-  ]);
+  );
+  if (stakeOutError !== undefined) {
+    console.error("Error querying cached stake out:", stakeOutError);
+    return [];
+  }
 
   const notDelegatingSet = new Set(notDelegatingAddresses);
 
-  const stakeOutMap = new Map(
-    Object.entries(stakeOut.perAddr).map(([key, value]) => [
-      key,
-      BigInt(value),
-    ]),
+  const [mapError, stakeOutMap] = trySync(
+    () =>
+      new Map(
+        Object.entries(stakeOut.perAddr).map(([key, value]) => [
+          key,
+          BigInt(value),
+        ]),
+      ),
   );
 
-  const stakeFromMap = new Map(
-    Object.entries(stakeFrom.perAddr).map(([key, value]) => [
-      key,
-      BigInt(value),
-    ]),
+  if (mapError !== undefined) {
+    console.error("Error creating stake out map:", mapError);
+    return [];
+  }
+
+  const [mapFromError, stakeFromMap] = trySync(
+    () =>
+      new Map(
+        Object.entries(stakeFrom.perAddr).map(([key, value]) => [
+          key,
+          BigInt(value),
+        ]),
+      ),
   );
+
+  if (mapFromError !== undefined) {
+    console.error("Error creating stake from map:", mapFromError);
+    return [];
+  }
 
   // Pre-calculate total stake for each address
   const totalStakeMap = new Map<SS58Address, bigint>();
   const allAddresses = new Set([...votesFor, ...votesAgainst]);
 
   for (const address of allAddresses) {
-    const stakeFrom = stakeFromMap.get(address) ?? 0n;
-    const stakeOut = stakeOutMap.get(address) ?? 0n;
+    const stakeFromValue = stakeFromMap.get(address) ?? 0n;
+    const stakeOutValue = stakeOutMap.get(address) ?? 0n;
 
     const totalStake =
-      stakeOut > 0n && !notDelegatingSet.has(address)
+      stakeOutValue > 0n && !notDelegatingSet.has(address)
         ? 0n
-        : stakeFrom + stakeOut;
+        : stakeFromValue + stakeOutValue;
     totalStakeMap.set(address, totalStake);
   }
 
@@ -212,14 +278,29 @@ export type AgentApplication = z.infer<typeof AGENT_APPLICATION_SCHEMA>;
 export async function queryAgentApplications(
   api: Api,
 ): Promise<AgentApplication[]> {
-  const query = await api.query.governance.agentApplications.entries();
-
-  const [daos, errs] = handleMapValues(
-    query,
-    sb_some(AGENT_APPLICATION_SCHEMA),
+  const [queryError, query] = await tryAsync(
+    api.query.governance.agentApplications.entries(),
   );
+
+  if (queryError !== undefined) {
+    console.error("Error querying agent applications:", queryError);
+    return [];
+  }
+
+  const [handleError, result] = trySync(() =>
+    handleMapValues(query, sb_some(AGENT_APPLICATION_SCHEMA)),
+  );
+
+  if (handleError !== undefined) {
+    console.error(
+      "Error handling map values for agent applications:",
+      handleError,
+    );
+    return [];
+  }
+
+  const [daos, errs] = result;
   for (const err of errs) {
-    // TODO: refactor out
     console.error(err);
   }
 
@@ -233,15 +314,53 @@ export type DaoTreasuryAddress = z.infer<typeof sb_address>;
 export async function queryDaoTreasuryAddress(
   api: Api,
 ): Promise<DaoTreasuryAddress> {
-  const addr = await api.query.governance.daoTreasuryAddress();
-  return sb_address.parse(addr);
+  const [queryError, addr] = await tryAsync(
+    api.query.governance.daoTreasuryAddress(),
+  );
+
+  if (queryError !== undefined) {
+    console.error("Error querying DAO treasury address:", queryError);
+    throw queryError;
+  }
+
+  const [parseError, parsedAddr] = trySync(() => sb_address.parse(addr));
+
+  if (parseError !== undefined) {
+    console.error("Error parsing DAO treasury address:", parseError);
+    throw parseError;
+  }
+
+  return parsedAddr;
 }
 
 export async function queryAccountsNotDelegatingVotingPower(
   api: Api,
 ): Promise<SS58Address[]> {
-  const value = await api.query.governance.notDelegatingVotingPower();
-  return sb_array(sb_address).parse(value);
+  const [queryError, value] = await tryAsync(
+    api.query.governance.notDelegatingVotingPower(),
+  );
+
+  if (queryError !== undefined) {
+    console.error(
+      "Error querying accounts not delegating voting power:",
+      queryError,
+    );
+    throw queryError;
+  }
+
+  const [parseError, parsedValue] = trySync(() =>
+    sb_array(sb_address).parse(value),
+  );
+
+  if (parseError !== undefined) {
+    console.error(
+      "Error parsing accounts not delegating voting power:",
+      parseError,
+    );
+    throw parseError;
+  }
+
+  return parsedValue;
 }
 
 // == Governance Configuration ==
@@ -262,13 +381,37 @@ type GovernanceConfiguration = z.infer<typeof GOVERNANCE_CONFIGURATION_SCHEMA>;
 export async function queryGlobalGovernanceConfig(
   api: Api,
 ): Promise<GovernanceConfiguration> {
-  const config = await api.query.governance.globalGovernanceConfig();
-  const parsed_config = GOVERNANCE_CONFIGURATION_SCHEMA.parse(config);
-  return parsed_config;
+  const [queryError, config] = await tryAsync(
+    api.query.governance.globalGovernanceConfig(),
+  );
+
+  if (queryError !== undefined) {
+    console.error("Error querying global governance config:", queryError);
+    throw queryError;
+  }
+
+  const [parseError, parsedConfig] = trySync(() =>
+    GOVERNANCE_CONFIGURATION_SCHEMA.parse(config),
+  );
+
+  if (parseError !== undefined) {
+    console.error("Error parsing global governance config:", parseError);
+    throw parseError;
+  }
+
+  return parsedConfig;
 }
 
 export async function queryTreasuryEmissionFee(api: Api): Promise<Percent> {
-  const treasuryEmissionFee = await api.query.governance.treasuryEmissionFee();
+  const [queryError, treasuryEmissionFee] = await tryAsync(
+    api.query.governance.treasuryEmissionFee(),
+  );
+
+  if (queryError !== undefined) {
+    console.error("Error querying treasury emission fee:", queryError);
+    throw queryError;
+  }
+
   return treasuryEmissionFee;
 }
 
@@ -291,9 +434,42 @@ export function getRewardAllocation(
 }
 
 export async function queryRewardAllocation(api: Api): Promise<bigint> {
-  const treasuryAddress = await queryDaoTreasuryAddress(api);
-  const balance = await queryFreeBalance(api, treasuryAddress);
-  const governanceConfig = await queryGlobalGovernanceConfig(api);
+  const [treasuryError, treasuryAddress] = await tryAsync(
+    queryDaoTreasuryAddress(api),
+  );
+
+  if (treasuryError !== undefined) {
+    console.error(
+      "Error querying DAO treasury address for reward allocation:",
+      treasuryError,
+    );
+    throw treasuryError;
+  }
+
+  const [balanceError, balance] = await tryAsync(
+    queryFreeBalance(api, treasuryAddress),
+  );
+
+  if (balanceError !== undefined) {
+    console.error(
+      "Error querying free balance for reward allocation:",
+      balanceError,
+    );
+    throw balanceError;
+  }
+
+  const [configError, governanceConfig] = await tryAsync(
+    queryGlobalGovernanceConfig(api),
+  );
+
+  if (configError !== undefined) {
+    console.error(
+      "Error querying global governance config for reward allocation:",
+      configError,
+    );
+    throw configError;
+  }
+
   return getRewardAllocation(governanceConfig, balance);
 }
 
@@ -304,34 +480,79 @@ export async function pushToWhitelist(
   moduleKey: SS58Address,
   mnemonic: string | undefined,
 ) {
-  const keyring = new Keyring({ type: "sr25519" });
-
   if (!mnemonic) {
     throw new Error("No sudo mnemonic provided");
   }
-  const sudoKeypair = keyring.addFromUri(mnemonic);
-  const accountId = encodeAddress(moduleKey, ADDRESS_FORMAT);
 
-  const tx = api.tx.governance.addToWhitelist(accountId);
+  const [keyringError, keyring] = trySync(
+    () => new Keyring({ type: "sr25519" }),
+  );
 
-  const extrinsic = await tx
-    .signAndSend(sudoKeypair)
-    .catch((err) => {
-      console.error(err);
-      return false;
-    })
-    .then(() => {
-      console.log(`Extrinsic: ${extrinsic}`);
-      return true;
-    });
+  if (keyringError !== undefined) {
+    console.error("Error creating keyring:", keyringError);
+    throw keyringError;
+  }
+
+  const [keypairError, sudoKeypair] = trySync(() =>
+    keyring.addFromUri(mnemonic),
+  );
+
+  if (keypairError !== undefined) {
+    console.error("Error creating keypair from mnemonic:", keypairError);
+    throw keypairError;
+  }
+
+  const [encodeError, accountId] = trySync(() =>
+    encodeAddress(moduleKey, ADDRESS_FORMAT),
+  );
+
+  if (encodeError !== undefined) {
+    console.error("Error encoding address:", encodeError);
+    throw encodeError;
+  }
+
+  const [txError, tx] = trySync(() =>
+    api.tx.governance.addToWhitelist(accountId),
+  );
+
+  if (txError !== undefined) {
+    console.error("Error creating transaction:", txError);
+    throw txError;
+  }
+
+  const [sendError, extrinsic] = await tryAsync(
+    (() => tx.signAndSend(sudoKeypair))(),
+  );
+
+  if (sendError !== undefined) {
+    console.error("Error signing and sending transaction:", sendError);
+    return false;
+  }
+
+  console.log("Extrinsic:", extrinsic.hash.toHex());
+  return true;
 }
 
 export async function queryWhitelist(api: Api): Promise<SS58Address[]> {
   const whitelist: SS58Address[] = [];
 
-  const entries = await api.query.governance.whitelist.entries();
+  const [entriesError, entries] = await tryAsync(
+    api.query.governance.whitelist.entries(),
+  );
+
+  if (entriesError !== undefined) {
+    console.error("Error querying whitelist entries:", entriesError);
+    throw entriesError;
+  }
+
   for (const [keys, _value] of entries) {
-    const address = sb_address.parse(keys.args[0]);
+    const [parseError, address] = trySync(() => sb_address.parse(keys.args[0]));
+
+    if (parseError !== undefined) {
+      console.error("Error parsing whitelist address:", parseError);
+      continue;
+    }
+
     whitelist.push(address);
   }
 
@@ -347,12 +568,58 @@ export async function removeFromWhitelist(
     throw new Error("No sudo mnemonic provided");
   }
 
-  const accountId = encodeAddress(moduleKey, ADDRESS_FORMAT);
-  const tx = api.tx.governance.removeFromWhitelist(accountId);
+  const [encodeError, accountId] = trySync(() =>
+    encodeAddress(moduleKey, ADDRESS_FORMAT),
+  );
 
-  const keyring = new Keyring({ type: "sr25519" });
-  const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx.signAndSend(sudoKeypair);
+  if (encodeError !== undefined) {
+    console.error("Error encoding address for whitelist removal:", encodeError);
+    throw encodeError;
+  }
+
+  const [txError, tx] = trySync(() =>
+    api.tx.governance.removeFromWhitelist(accountId),
+  );
+
+  if (txError !== undefined) {
+    console.error("Error creating transaction for whitelist removal:", txError);
+    throw txError;
+  }
+
+  const [keyringError, keyring] = trySync(
+    () => new Keyring({ type: "sr25519" }),
+  );
+
+  if (keyringError !== undefined) {
+    console.error(
+      "Error creating keyring for whitelist removal:",
+      keyringError,
+    );
+    throw keyringError;
+  }
+
+  const [keypairError, sudoKeypair] = trySync(() =>
+    keyring.addFromUri(mnemonic),
+  );
+
+  if (keypairError !== undefined) {
+    console.error(
+      "Error creating keypair for whitelist removal:",
+      keypairError,
+    );
+    throw keypairError;
+  }
+
+  const [sendError, extrinsic] = await tryAsync(tx.signAndSend(sudoKeypair));
+
+  if (sendError !== undefined) {
+    console.error(
+      "Error signing and sending whitelist removal transaction:",
+      sendError,
+    );
+    throw sendError;
+  }
+
   return extrinsic;
 }
 
@@ -366,11 +633,52 @@ export async function acceptApplication(
     throw new Error("No sudo mnemonic provided to accept application");
   }
 
-  const tx = api.tx.governance.acceptApplication(proposalId);
+  const [txError, tx] = trySync(() =>
+    api.tx.governance.acceptApplication(proposalId),
+  );
 
-  const keyring = new Keyring({ type: "sr25519" });
-  const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx.signAndSend(sudoKeypair);
+  if (txError !== undefined) {
+    console.error(
+      "Error creating transaction for accepting application:",
+      txError,
+    );
+    throw txError;
+  }
+
+  const [keyringError, keyring] = trySync(
+    () => new Keyring({ type: "sr25519" }),
+  );
+
+  if (keyringError !== undefined) {
+    console.error(
+      "Error creating keyring for accepting application:",
+      keyringError,
+    );
+    throw keyringError;
+  }
+
+  const [keypairError, sudoKeypair] = trySync(() =>
+    keyring.addFromUri(mnemonic),
+  );
+
+  if (keypairError !== undefined) {
+    console.error(
+      "Error creating keypair for accepting application:",
+      keypairError,
+    );
+    throw keypairError;
+  }
+
+  const [sendError, extrinsic] = await tryAsync(tx.signAndSend(sudoKeypair));
+
+  if (sendError !== undefined) {
+    console.error(
+      "Error signing and sending accept application transaction:",
+      sendError,
+    );
+    throw sendError;
+  }
+
   return extrinsic;
 }
 
@@ -384,11 +692,43 @@ export async function penalizeAgent(
     throw new Error("No sudo mnemonic provided to penalize agent");
   }
 
-  const tx = api.tx.governance.penalizeAgent(agentKey, penaltyFactor);
+  const [txError, tx] = trySync(() =>
+    api.tx.governance.penalizeAgent(agentKey, penaltyFactor),
+  );
 
-  const keyring = new Keyring({ type: "sr25519" });
-  const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx.signAndSend(sudoKeypair);
+  if (txError !== undefined) {
+    console.error("Error creating transaction for penalizing agent:", txError);
+    throw txError;
+  }
+
+  const [keyringError, keyring] = trySync(
+    () => new Keyring({ type: "sr25519" }),
+  );
+
+  if (keyringError !== undefined) {
+    console.error("Error creating keyring for penalizing agent:", keyringError);
+    throw keyringError;
+  }
+
+  const [keypairError, sudoKeypair] = trySync(() =>
+    keyring.addFromUri(mnemonic),
+  );
+
+  if (keypairError !== undefined) {
+    console.error("Error creating keypair for penalizing agent:", keypairError);
+    throw keypairError;
+  }
+
+  const [sendError, extrinsic] = await tryAsync(tx.signAndSend(sudoKeypair));
+
+  if (sendError !== undefined) {
+    console.error(
+      "Error signing and sending penalize agent transaction:",
+      sendError,
+    );
+    throw sendError;
+  }
+
   return extrinsic;
 }
 
@@ -401,10 +741,50 @@ export async function denyApplication(
     throw new Error("No sudo mnemonic provided");
   }
 
-  const tx = api.tx.governance.denyApplication(proposalId);
+  const [txError, tx] = trySync(() =>
+    api.tx.governance.denyApplication(proposalId),
+  );
+  const [keyringError, keyring] = trySync(
+    () => new Keyring({ type: "sr25519" }),
+  );
 
-  const keyring = new Keyring({ type: "sr25519" });
-  const sudoKeypair = keyring.addFromUri(mnemonic);
-  const extrinsic = await tx.signAndSend(sudoKeypair);
+  if (txError !== undefined) {
+    console.error(
+      "Error creating transaction for denying application:",
+      txError,
+    );
+    throw txError;
+  }
+
+  if (keyringError !== undefined) {
+    console.error(
+      "Error creating keyring for denying application:",
+      keyringError,
+    );
+    throw keyringError;
+  }
+
+  const [keypairError, sudoKeypair] = trySync(() =>
+    keyring.addFromUri(mnemonic),
+  );
+
+  if (keypairError !== undefined) {
+    console.error(
+      "Error creating keypair for denying application:",
+      keypairError,
+    );
+    throw keypairError;
+  }
+
+  const [sendError, extrinsic] = await tryAsync(tx.signAndSend(sudoKeypair));
+
+  if (sendError !== undefined) {
+    console.error(
+      "Error signing and sending deny application transaction:",
+      sendError,
+    );
+    throw sendError;
+  }
+
   return extrinsic;
 }

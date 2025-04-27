@@ -1,7 +1,10 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata";
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
+import type {
+  InjectedAccountWithMeta,
+  // InjectedExtension,
+} from "@polkadot/extension-inject/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { CONSTANTS } from "@torus-network/sdk";
@@ -17,6 +20,7 @@ import {
   renderSuccessfulyFinalized,
   renderWaitingForValidation,
 } from "./toast-content-handler";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 interface SendTransactionProps {
   api: ApiPromise | null;
@@ -31,18 +35,54 @@ interface SendTransactionProps {
 }
 
 async function getMetadataProof(api: ApiPromise) {
-  const metadata = await api.call.metadata.metadataAtVersion(15);
-  const { specName, specVersion } = api.runtimeVersion;
+  // Get metadata from API
+  const [metadataError, metadata] = await tryAsync(
+    api.call.metadata.metadataAtVersion(15),
+  );
+  if (metadataError !== undefined) {
+    console.error("Error getting metadata:", metadataError);
+    throw metadataError;
+  }
 
-  const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), {
-    base58Prefix: api.consts.system.ss58Prefix.toNumber(),
-    decimals: CONSTANTS.EMISSION.DECIMALS,
-    specName: specName.toString(),
-    specVersion: specVersion.toNumber(),
-    tokenSymbol: "TORUS",
+  // Get runtime information
+  const [runtimeError, runtimeInfo] = trySync(() => {
+    const { specName, specVersion } = api.runtimeVersion;
+    return { specName, specVersion };
   });
 
-  const metadataHash = u8aToHex(merkleizedMetadata.digest());
+  if (runtimeError !== undefined) {
+    console.error("Error getting runtime information:", runtimeError);
+    throw runtimeError;
+  }
+
+  const { specName, specVersion } = runtimeInfo;
+
+  // Convert metadata to hex and merkleize it
+  const [merkleError, merkleizedMetadata] = trySync(() =>
+    merkleizeMetadata(metadata.toHex(), {
+      base58Prefix: api.consts.system.ss58Prefix.toNumber(),
+      decimals: CONSTANTS.EMISSION.DECIMALS,
+      specName: specName.toString(),
+      specVersion: specVersion.toNumber(),
+      tokenSymbol: "TORUS",
+    }),
+  );
+
+  if (merkleError !== undefined) {
+    console.error("Error merkleizing metadata:", merkleError);
+    throw merkleError;
+  }
+
+  // Get hash from merkleized metadata
+  const [hashError, metadataHash] = trySync(() =>
+    u8aToHex(merkleizedMetadata.digest()),
+  );
+
+  if (hashError !== undefined) {
+    console.error("Error generating metadata hash:", hashError);
+    throw hashError;
+  }
+
   console.log("Generated metadata hash:", metadataHash);
 
   return {
@@ -63,38 +103,84 @@ export async function sendTransaction({
 }: SendTransactionProps): Promise<void> {
   if (!api || !selectedAccount || !torusApi.web3FromAddress) {
     console.error("Missing required parameters");
+    toast.error("Missing required parameters for transaction");
     return;
   }
 
-  try {
-    const injector = await torusApi.web3FromAddress(selectedAccount.address);
+  // Get injector from address
+  const [injectorError, injector] = await tryAsync(
+    torusApi.web3FromAddress(selectedAccount.address),
+  );
+  if (injectorError !== undefined) {
+    console.error("Error getting web3 injector:", injectorError);
+    callback?.({
+      finalized: true,
+      status: "ERROR",
+      message: injectorError.message || "Failed to connect to wallet",
+    });
+    toast.error(injectorError.message || "Failed to connect to wallet");
+    return;
+  }
 
-    // Generate metadata proof for all transactions
-    const { metadataHash } = await getMetadataProof(api);
+  // Generate metadata proof
+  const [proofError, proof] = await tryAsync(getMetadataProof(api));
+  if (proofError !== undefined) {
+    console.error("Error generating metadata proof:", proofError);
+    callback?.({
+      finalized: true,
+      status: "ERROR",
+      message: proofError.message || "Failed to generate metadata proof",
+    });
+    toast.error(proofError.message || "Failed to generate metadata proof");
+    return;
+  }
 
-    // Update metadata for all wallets
-    try {
-      await updateMetadata(api, [injector]);
-      console.log("Metadata update successful");
-    } catch (metadataError) {
-      console.error("Metadata update failed:", metadataError);
-      throw new Error("Failed to update wallet metadata");
-    }
+  const { metadataHash } = proof;
 
-    const txOptions = {
-      signer: injector.signer,
-      tip: 0,
-      nonce: -1,
-      mode: 1, //  mortal
-      metadataHash,
-      signedExtensions: api.registry.signedExtensions,
-      withSignedTransaction: true,
-    };
+  // Update metadata for wallet
+  const [metadataError] = await tryAsync(updateMetadata(api, [injector]));
+  if (metadataError !== undefined) {
+    console.error("Metadata update failed:", metadataError);
+    callback?.({
+      finalized: true,
+      status: "ERROR",
+      message: "Failed to update wallet metadata",
+    });
+    toast.error("Failed to update wallet metadata");
+    return;
+  }
 
-    await transaction.signAndSend(
+  console.log("Metadata update successful");
+
+  // Create transaction options
+  const [optionsError, txOptions] = trySync(() => ({
+    signer: injector.signer,
+    tip: 0,
+    nonce: -1,
+    mode: 1, // mortal
+    metadataHash,
+    signedExtensions: api.registry.signedExtensions,
+    withSignedTransaction: true,
+  }));
+
+  if (optionsError !== undefined) {
+    console.error("Error creating transaction options:", optionsError);
+    callback?.({
+      finalized: true,
+      status: "ERROR",
+      message: "Failed to create transaction options",
+    });
+    toast.error("Failed to create transaction options");
+    return;
+  }
+
+  // Sign and send transaction
+  // TODO: check for memory leak
+  const [txError] = await tryAsync(
+    transaction.signAndSend(
       selectedAccount.address,
       txOptions,
-      (result: SubmittableResult) => {
+      async (result: SubmittableResult) => {
         if (result.status.isReady) {
           callback?.({
             finalized: false,
@@ -134,7 +220,13 @@ export async function sendTransaction({
           const hash = result.status.asFinalized.toHex();
 
           if (refetchHandler) {
-            void refetchHandler();
+            const [refetchError] = await tryAsync(
+              Promise.resolve(refetchHandler()),
+            );
+            if (refetchError !== undefined) {
+              console.error("Error refetching data:", refetchError);
+              // Don't throw since transaction was successful
+            }
           }
 
           callback?.({
@@ -155,15 +247,29 @@ export async function sendTransaction({
               ),
             });
           } else if (failed) {
-            const [dispatchError] = failed.event.data as unknown as [
-              DispatchError,
-            ];
-            let msg = `${transactionType} failed: ${dispatchError.toString()}`;
+            // Fix the destructuring and error handling
+            const [parseError, dispatchErrorArray] = trySync(
+              () => failed.event.data as unknown as [DispatchError],
+            );
 
-            if (dispatchError.isModule) {
-              const mod = dispatchError.asModule;
-              const error = api.registry.findMetaError(mod);
-              msg = `${transactionType} failed: ${error.name}`;
+            if (parseError !== undefined) {
+              console.error("Error parsing dispatch error:", parseError);
+            }
+
+            const dispatchError = dispatchErrorArray?.[0];
+            let msg = `${transactionType} failed: ${dispatchError?.toString() ?? "Unknown error"}`;
+
+            if (dispatchError?.isModule) {
+              const [moduleError, metaError] = trySync(() => {
+                const mod = dispatchError.asModule;
+                return api.registry.findMetaError(mod);
+              });
+
+              if (moduleError !== undefined) {
+                console.error("Error finding meta error:", moduleError);
+              } else {
+                msg = `${transactionType} failed: ${metaError.name}`;
+              }
             }
 
             toast({
@@ -173,19 +279,16 @@ export async function sendTransaction({
           }
         }
       },
-    );
-  } catch (err) {
-    console.error("Transaction error:", err);
+    ),
+  );
 
+  if (txError !== undefined) {
+    console.error("Transaction error:", txError);
     callback?.({
       finalized: true,
       status: "ERROR",
-      message: err instanceof Error ? err.message : "Transaction failed",
+      message: txError.message || "Transaction failed",
     });
-
-    toast({
-      title: "Error",
-      description: err instanceof Error ? err.message : "Transaction failed",
-    });
+    toast.error(txError.message || "Transaction failed");
   }
 }

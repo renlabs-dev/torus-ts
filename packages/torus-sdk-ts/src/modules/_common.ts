@@ -3,6 +3,7 @@ import type { ApiDecoration } from "@polkadot/api/types";
 import type { StorageKey } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
 import { assert_error } from "@torus-network/torus-utils";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 import type { z, ZodTypeAny } from "zod";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;
@@ -14,14 +15,17 @@ export function handleMapValues<K extends Codec, T extends ZodTypeAny>(
   type Out = z.output<T>;
   const entries: Out[] = [];
   const errors: Error[] = [];
+
   for (const entry of rawEntries) {
     const [, valueRaw] = entry;
-    let parsed: Out;
-    try {
-      parsed = schema.parse(valueRaw) as Out;
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
+    const parseResult = schema.parse(valueRaw) as Out;
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    const [error, parsed] = trySync(() => parseResult);
+
+    if (error !== undefined) {
+      errors.push(error);
+      assert_error(error);
       continue;
     }
 
@@ -40,28 +44,34 @@ export function handleMapEntries<K extends ZodTypeAny, V extends ZodTypeAny>(
   type ValOut = z.output<V>;
   const entries = new Map<KeyOut, ValOut>();
   const errors: Error[] = [];
+
   for (const entry of rawEntries) {
     const [keysRaw, valueRaw] = entry;
     const [key1Raw] = keysRaw.args;
-    let parsedKey: KeyOut;
-    try {
-      parsedKey = keySchema.parse(key1Raw) as KeyOut;
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
+
+    const [keyError, parsedKey] = trySync(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      () => keySchema.parse(key1Raw) as KeyOut,
+    );
+
+    if (keyError !== undefined) {
+      errors.push(keyError);
       continue;
     }
-    let parsedVal: ValOut;
-    try {
-      parsedVal = valueSchema.parse(valueRaw) as ValOut;
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
+
+    const [valueError, parsedVal] = trySync(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      () => valueSchema.parse(valueRaw) as ValOut,
+    );
+
+    if (valueError !== undefined) {
+      errors.push(valueError);
       continue;
     }
 
     entries.set(parsedKey, parsedVal);
   }
+
   return [entries, errors];
 }
 
@@ -80,39 +90,48 @@ export function handleDoubleMapEntries<
   type ValOut = z.output<V>;
   const entries = new Map<Key1Out, Map<Key2Out, ValOut>>();
   const errors: Error[] = [];
+
   for (const entry of rawEntries) {
     const [keysRaw, valueRaw] = entry;
     const [key1Raw, key2Raw] = keysRaw.args;
-    let parsedKey1: Key1Out;
-    let parsedKey2: Key2Out;
-    let parsedVal: ValOut;
-    try {
-      parsedKey1 = key1Schema.parse(key1Raw) as Key1Out;
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
+
+    const [key1Error, parsedKey1] = trySync(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      () => key1Schema.parse(key1Raw) as Key1Out,
+    );
+
+    if (key1Error !== undefined) {
+      errors.push(key1Error);
       continue;
     }
-    try {
-      parsedKey2 = key2Schema.parse(key2Raw) as Key2Out;
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
+
+    const [key2Error, parsedKey2] = trySync(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      () => key2Schema.parse(key2Raw) as Key2Out,
+    );
+
+    if (key2Error !== undefined) {
+      errors.push(key2Error);
       continue;
     }
-    try {
-      parsedVal = valueSchema.parse(valueRaw) as ValOut;
-    } catch (err) {
-      assert_error(err);
-      errors.push(err);
+
+    const [valueError, parsedVal] = trySync(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      () => valueSchema.parse(valueRaw) as ValOut,
+    );
+
+    if (valueError !== undefined) {
+      errors.push(valueError);
       continue;
     }
 
     if (!entries.has(parsedKey1)) {
       entries.set(parsedKey1, new Map<Key2Out, ValOut>());
     }
+
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     entries.get(parsedKey1)!.set(parsedKey2, parsedVal);
   }
+
   return [entries, errors];
 }
