@@ -31,12 +31,9 @@ export default function DashboardPendingDaoApplicationsCard() {
     }
 
     return pendingApplications.map((application) => (
-      <Link
-        href={`/agent-application/${application.id}`}
-        key={application.id}
-        prefetch
-      >
+      <Link href={`/whitelist-applications`} key={application.id} prefetch>
         <AgentApplicationCard
+          variant="small"
           title={application.title}
           author={application.payerKey}
           agentApplicationStatus={application.rawStatus}
