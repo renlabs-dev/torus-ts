@@ -19,26 +19,26 @@ import { FileImage, Globe, MessageCircle, Terminal } from "lucide-react";
 import Image from "next/image";
 import type { useForm } from "react-hook-form";
 import type {
-  EditAgentFormData,
+  UpdateAgentFormData,
   UpdateAgentMutation,
-} from "./edit-agent-form-schema";
-import { editAgentSchema } from "./edit-agent-form-schema";
+} from "./update-agent-form-schema";
+import { updateAgentSchema } from "./update-agent-form-schema";
 
-interface EditAgentFormProps {
+interface UpdateAgentFormProps {
   agentKey: string;
   updateAgentMutation: UpdateAgentMutation;
   setActiveTab: (tab: string) => void;
   setIsOpen?: (isOpen: boolean) => void;
-  form: ReturnType<typeof useForm<EditAgentFormData>>;
+  form: ReturnType<typeof useForm<UpdateAgentFormData>>;
   imageFile: File | null;
 }
 
-export function EditAgentForm({
+export function UpdateAgentForm({
   updateAgentMutation,
   form,
   imageFile,
-}: EditAgentFormProps) {
-  const onSubmit = (data: EditAgentFormData) => {
+}: UpdateAgentFormProps) {
+  const onSubmit = (data: UpdateAgentFormData) => {
     void updateAgentMutation.mutate({
       ...data,
     });
@@ -101,7 +101,7 @@ export function EditAgentForm({
                 </FormControl>
                 <p className="text-xs text-muted-foreground mt-1">
                   {field.value.length || 0}/
-                  {editAgentSchema.shape.shortDescription.maxLength} characters
+                  {updateAgentSchema.shape.shortDescription.maxLength} characters
                 </p>
                 <FormMessage />
               </FormItem>
@@ -139,7 +139,7 @@ export function EditAgentForm({
                 </FormControl>
                 <p className="text-xs text-muted-foreground mt-1">
                   {field.value.length || 0}/
-                  {editAgentSchema.shape.description.maxLength} characters
+                  {updateAgentSchema.shape.description.maxLength} characters
                 </p>
                 <FormMessage />
               </FormItem>

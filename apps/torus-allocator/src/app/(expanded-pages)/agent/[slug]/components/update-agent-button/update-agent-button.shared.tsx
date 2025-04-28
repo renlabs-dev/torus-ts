@@ -2,50 +2,50 @@ import { Button } from "@torus-ts/ui/components/button";
 import { TooltipContent } from "@torus-ts/ui/components/tooltip";
 import { Pencil } from "lucide-react";
 
-interface EditAgentOwnerButtonProps {
+interface UpdateAgentOwnerButtonProps {
   agentKey: string;
   className: string;
   onClick?: () => void;
 }
 
-interface EditAgentNonOwnerButtonProps {
+interface UpdateAgentNonOwnerButtonProps {
   className: string;
 }
 
-export function EditAgentButtonContent() {
+export function UpdateAgentButtonContent() {
   return (
     <>
       <Pencil className="mr-2 h-4 w-4" />
-      Edit Agent Info
+      Update Agent Info
     </>
   );
 }
 
-export function EditAgentNonOwnerTooltip() {
+export function UpdateAgentNonOwnerTooltip() {
   return (
     <TooltipContent>
-      <p>Only the agent owner can edit agent information</p>
+      <p>Only the agent owner can update agent information</p>
     </TooltipContent>
   );
 }
 
-export const EditAgentOwnerButton = ({
+export const UpdateAgentOwnerButton = ({
   className,
   onClick,
-}: EditAgentOwnerButtonProps) => (
+}: UpdateAgentOwnerButtonProps) => (
   <Button
     variant="outline"
     className={className}
     onClick={onClick}
   >
-    <EditAgentButtonContent />
+    <UpdateAgentButtonContent />
   </Button>
 );
 
-export const EditAgentNonOwnerButton = ({
+export const UpdateAgentNonOwnerButton = ({
   className,
-}: EditAgentNonOwnerButtonProps) => (
+}: UpdateAgentNonOwnerButtonProps) => (
   <Button variant="outline" className={className} disabled>
-    <EditAgentButtonContent />
+    <UpdateAgentButtonContent />
   </Button>
 );

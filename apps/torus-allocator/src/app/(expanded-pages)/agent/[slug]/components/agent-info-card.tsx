@@ -7,7 +7,7 @@ import type { Agent } from "~/utils/types";
 import { Copy } from "lucide-react";
 import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
-import { EditAgentButton } from "./edit-agent-button/edit-agent-button";
+import { UpdateAgentButton } from "./update-agent-button/update-agent-button";
 import type { ReactNode } from "react";
 
 interface AgentInfoCardProps {
@@ -97,7 +97,7 @@ export function AgentInfoCard({ agent }: AgentInfoCardProps) {
       </CardContent>
       <div className="flex flex-col space-y-2">
         <ReportAgent agentKey={agent.key} />
-        <EditAgentButton agentKey={agent.key} />
+        <UpdateAgentButton agentKey={agent.key} />
       </div>
     </Card>
   );
