@@ -3,4 +3,4 @@ deployment:
     repository: ghcr.io/renlabs-dev/torus-page
 
   podLabels:
-    app: torus-page
+    app: torus-pageaaa
