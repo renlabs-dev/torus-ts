@@ -28,7 +28,10 @@ export default function DashboardRedirectCard(
           <IconComponent size={16} className="inline" /> {props.title}
         </CardTitle>
         <Link href={props.redirectPath} target="_blank" rel="noreferrer">
-          <SquareArrowOutUpRight className="h-5 w-5 hover:text-muted-foreground ml-auto" />
+          <SquareArrowOutUpRight
+            size={16}
+            className="hover:text-muted-foreground ml-auto"
+          />
         </Link>
       </CardHeader>
       <CardContent>{props.children}</CardContent>

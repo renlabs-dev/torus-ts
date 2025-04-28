@@ -1,19 +1,63 @@
-import { ListChecks } from "lucide-react";
-import DashboardRedirectCard from "./dashboard-redirect-card";
+"use client";
 
-export default function DashboardPendingWhitelistCard() {
+import { ListChecks } from "lucide-react";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
+import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
+import DashboardRedirectCard from "./dashboard-redirect-card";
+import Link from "next/link";
+import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
+import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
+import { useAgentApplications } from "hooks/use-agent-applications";
+
+export default function DashboardPendingDaoApplicationsCard() {
+  const { applications: pendingApplications, isLoading } = useAgentApplications(
+    {
+      filterByStatus: "Open", // Only show Open applications
+    },
+  );
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4">
+          <CardSkeleton variant="small" />
+          <CardSkeleton variant="small" />
+        </div>
+      );
+    }
+
+    if (pendingApplications.length === 0) {
+      return <ContentNotFound message="No pending applications found" />;
+    }
+
+    return pendingApplications.map((application) => (
+      <Link
+        href={`/agent-application/${application.id}`}
+        key={application.id}
+        prefetch
+      >
+        <AgentApplicationCard
+          variant="small"
+          title={application.title}
+          author={application.payerKey}
+          agentApplicationStatus={application.rawStatus}
+          activeAgent={application.isActiveAgent}
+          agentApplicationId={application.id}
+          whitelistStatus={application.status}
+        />
+      </Link>
+    ));
+  };
+
   return (
     <DashboardRedirectCard
-      redirectPath="#"
-      icon={ListChecks}
       title="Pending Whitelist Applications"
+      redirectPath="/dao-applications"
+      icon={ListChecks}
     >
-      <div className="flex flex-col items-start justify-center p-5 gap-2">
-        <p className="text-sm text-muted-foreground uppercase font-bold">
-          Pending Whitelist
-        </p>
-        <h3 className="text-3xl font-bold mt-1">0</h3>
-      </div>
+      <ScrollArea className="h-[130px]">
+        <div className="flex flex-col gap-2">{renderContent()}</div>
+      </ScrollArea>
     </DashboardRedirectCard>
   );
 }
