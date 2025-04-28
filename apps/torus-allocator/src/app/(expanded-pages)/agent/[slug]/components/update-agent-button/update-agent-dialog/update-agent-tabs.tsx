@@ -15,28 +15,28 @@ import {
 import { ArrowLeft, ArrowRight, Eye, Pencil, Save } from "lucide-react";
 import { useState } from "react";
 import type { useForm } from "react-hook-form";
-import { EditAgentForm } from "./edit-agent-form";
+import { UpdateAgentForm } from "./update-agent-form";
 import type {
-  EditAgentFormData,
+  UpdateAgentFormData,
   UpdateAgentMutation,
-} from "./edit-agent-form-schema";
-import { EditAgentPreview } from "./edit-agent-preview";
+} from "./update-agent-form-schema";
+import { UpdateAgentPreview } from "./update-agent-preview";
 
-interface EditAgentTabsProps {
+interface UpdateAgentTabsProps {
   agentKey: string;
-  form: ReturnType<typeof useForm<EditAgentFormData>>;
+  form: ReturnType<typeof useForm<UpdateAgentFormData>>;
   updateAgentMutation: UpdateAgentMutation;
   imageFile: File | null;
   hasUnsavedChanges: boolean;
 }
 
-export function EditAgentTabs({
+export function UpdateAgentTabs({
   agentKey,
   form,
   updateAgentMutation,
   imageFile,
   hasUnsavedChanges,
-}: EditAgentTabsProps) {
+}: UpdateAgentTabsProps) {
   const [activeTab, setActiveTab] = useState("edit");
 
   const handleTabChange = async (value: string) => {
@@ -69,7 +69,7 @@ export function EditAgentTabs({
     <>
       <DialogHeader>
         <DialogTitle className="text-xl font-bold">
-          Edit Agent Information
+          Update Agent Information
         </DialogTitle>
         <DialogDescription className="mt-2 text-muted-foreground">
           Update your agent's details and see how they will appear to users in
@@ -102,7 +102,7 @@ export function EditAgentTabs({
         <div className="relative">
           <TabsContent value="edit" className="mt-4 space-y-4">
             <div className="rounded-md border bg-muted/20 p-4">
-              <EditAgentForm
+              <UpdateAgentForm
                 agentKey={agentKey}
                 setActiveTab={setActiveTab}
                 form={form}
@@ -129,7 +129,7 @@ export function EditAgentTabs({
               <h3 className="text-lg font-medium mb-4 text-center">
                 Agent Preview
               </h3>
-              <EditAgentPreview agentKey={agentKey} form={form} />
+              <UpdateAgentPreview agentKey={agentKey} form={form} />
               <p className="text-sm text-muted-foreground text-center mt-4">
                 This is how your agent will appear to users.
               </p>

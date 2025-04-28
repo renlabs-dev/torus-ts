@@ -16,23 +16,23 @@ import { useForm } from "react-hook-form";
 import { UnsavedChangesDialog } from "~/app/_components/unsaved-changes-dialog";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { api } from "~/trpc/react";
-import { EditAgentButtonContent } from "../edit-agent-button.shared";
+import { UpdateAgentButtonContent } from "../update-agent-button.shared";
 import {
   cidToIpfsUri,
   updateAgentOnChain,
   uploadMetadata,
-} from "./edit-agent-dialog-util";
-import type { EditAgentFormData } from "./edit-agent-form-schema";
-import { editAgentSchema } from "./edit-agent-form-schema";
-import { EditAgentTabs } from "./edit-agent-tabs";
+} from "./update-agent-dialog-util";
+import type { UpdateAgentFormData } from "./update-agent-form-schema";
+import { updateAgentSchema } from "./update-agent-form-schema";
+import { UpdateAgentTabs } from "./update-agent-tabs";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-network/sdk";
 
-interface EditAgentDialogProps {
+interface UpdateAgentDialogProps {
   agentKey: string;
 }
 
-export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
+export function UpdateAgentDialog({ agentKey }: UpdateAgentDialogProps) {
   const { toast } = useToast();
   const { updateAgent, selectedAccount, api: torusApi } = useTorus();
   const [isOpen, setIsOpen] = useState(false);
@@ -66,8 +66,8 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
     },
   );
 
-  const form = useForm<EditAgentFormData>({
-    resolver: zodResolver(editAgentSchema),
+  const form = useForm<UpdateAgentFormData>({
+    resolver: zodResolver(updateAgentSchema),
     defaultValues: {
       name: agent?.name ?? "",
       title: agentMetadata?.metadata.title ?? "",
@@ -111,7 +111,7 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
     () => ({
       isPending: isUploading,
       handleImageChange,
-      mutate: async (data: EditAgentFormData) => {
+      mutate: async (data: UpdateAgentFormData) => {
         setIsUploading(true);
         setTransactionStatus({
           status: "STARTING",
@@ -176,11 +176,11 @@ export function EditAgentDialog({ agentKey }: EditAgentDialogProps) {
               transition duration-200 hover:text-green-500 hover:opacity-100
               hover:bg-green-500/10"
           >
-            <EditAgentButtonContent />
+            <UpdateAgentButtonContent />
           </Button>
         </DialogTrigger>
         <DialogContent className="md:max-w-[720px] lg:max-w-[1200px] max-h-[80vh] overflow-y-auto p-6">
-          <EditAgentTabs
+          <UpdateAgentTabs
             agentKey={agentKey}
             form={form}
             updateAgentMutation={updateAgentMutation}

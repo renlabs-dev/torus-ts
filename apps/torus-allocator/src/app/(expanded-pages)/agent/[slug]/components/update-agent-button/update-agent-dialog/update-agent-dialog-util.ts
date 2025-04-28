@@ -1,6 +1,6 @@
 "use client";
 
-import type { EditAgentFormData } from "./edit-agent-form-schema";
+import type { UpdateAgentFormData } from "./update-agent-form-schema";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
@@ -33,7 +33,7 @@ export const pinFile = async (file: File): Promise<{ cid: string }> => {
 export const cidToIpfsUri = (cid: string): string => `ipfs://${cid}`;
 
 export const uploadMetadata = async (
-  metadata: EditAgentFormData,
+  metadata: UpdateAgentFormData,
   imageFile: File | null,
 ): Promise<string> => {
   const baseMetadata = {

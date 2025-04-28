@@ -10,7 +10,7 @@ const validateUrl = (domains: string[], errorMessage: string) => {
   };
 };
 
-const editAgentSocialsSchema = z.object({
+const updateAgentSocialsSchema = z.object({
   twitter: z
     .string()
     .trim()
@@ -54,7 +54,7 @@ const editAgentSocialsSchema = z.object({
     .or(z.literal("")),
 });
 
-export const editAgentSchema = z.object({
+export const updateAgentSchema = z.object({
   name: z
     .string()
     .trim()
@@ -93,14 +93,14 @@ export const editAgentSchema = z.object({
     .url("Must be a valid URL")
     .optional()
     .or(z.literal("")),
-  socials: editAgentSocialsSchema,
+  socials: updateAgentSocialsSchema,
 });
 
-export const editAgentError = {
+export const updateAgentError = {
   AgentDoesNotExist: "Agent does not exist",
 };
 
-export type EditAgentFormData = z.infer<typeof editAgentSchema>;
+export type UpdateAgentFormData = z.infer<typeof updateAgentSchema>;
 
 export interface AgentType {
   name?: string | null;
@@ -118,6 +118,6 @@ export interface MetadataType {
 
 export interface UpdateAgentMutation {
   isPending: boolean;
-  mutate: (data: EditAgentFormData) => void;
+  mutate: (data: UpdateAgentFormData) => void;
   handleImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }

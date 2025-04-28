@@ -8,11 +8,11 @@ import { AgentCardContent } from "~/app/_components/agent-item-card/components/a
 import type { AgentHeaderProps } from "~/app/_components/agent-item-card/components/agent-card-header";
 import { AgentCardHeader } from "~/app/_components/agent-item-card/components/agent-card-header";
 import { api } from "~/trpc/react";
-import type { EditAgentFormData } from "./edit-agent-form-schema";
+import type { UpdateAgentFormData } from "./update-agent-form-schema";
 
-interface EditAgentPreviewProps {
+interface UpdateAgentPreviewProps {
   agentKey: string;
-  form: ReturnType<typeof useForm<EditAgentFormData>>;
+  form: ReturnType<typeof useForm<UpdateAgentFormData>>;
 }
 
 function AgentPreviewSkeleton() {
@@ -47,7 +47,7 @@ function PreviewGlowEffect() {
   );
 }
 
-export function EditAgentPreview({ agentKey, form }: EditAgentPreviewProps) {
+export function UpdateAgentPreview({ agentKey, form }: UpdateAgentPreviewProps) {
   const { data: agent, isLoading } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
     {
