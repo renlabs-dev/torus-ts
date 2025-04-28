@@ -136,7 +136,7 @@ jobs:
         if: needs.docker-build.result == 'success'
         working-directory: apps/${{ env.APP_NAME }}
         run: |
-          helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${
+          helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${{ steps.commit.outputs.hash }}
 
       - name: Install helm diff plugin
         if: needs.docker-build.result == 'skipped'
