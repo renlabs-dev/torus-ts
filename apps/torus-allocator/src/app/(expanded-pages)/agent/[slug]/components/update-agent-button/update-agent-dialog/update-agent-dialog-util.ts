@@ -1,6 +1,6 @@
 "use client";
 
-import type { UpdateAgentFormData } from "./update-agent-form-schema";
+import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";

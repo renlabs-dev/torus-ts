@@ -22,9 +22,9 @@ import {
   updateAgentOnChain,
   uploadMetadata,
 } from "./update-agent-dialog-util";
-import type { UpdateAgentFormData } from "./update-agent-form-schema";
-import { updateAgentSchema } from "./update-agent-form-schema";
-import { UpdateAgentTabs } from "./update-agent-tabs";
+import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
+import { updateAgentSchema } from "./update-agent-dialog-form-schema";
+import { UpdateAgentDialogTabs } from "./update-agent-dialog-tabs";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import type { SS58Address } from "@torus-network/sdk";
 
@@ -180,7 +180,7 @@ export function UpdateAgentDialog({ agentKey }: UpdateAgentDialogProps) {
           </Button>
         </DialogTrigger>
         <DialogContent className="md:max-w-[720px] lg:max-w-[1200px] max-h-[80vh] overflow-y-auto p-6">
-          <UpdateAgentTabs
+          <UpdateAgentDialogTabs
             agentKey={agentKey}
             form={form}
             updateAgentMutation={updateAgentMutation}
