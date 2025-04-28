@@ -8,16 +8,15 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@torus-ts/ui/components/hover-card";
-import { Icons } from "@torus-ts/ui/components/icons";
 import { Label } from "@torus-ts/ui/components/label";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { Award, Globe } from "lucide-react";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { Award, Globe } from "lucide-react";
-import Image from "next/image";
+import { AgentIcon } from "../../agent-icon";
 import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
 import { buildSocials, SocialsInfo } from "./socials-info";
 
@@ -37,25 +36,6 @@ export interface AgentHeaderProps {
   weightFactor: number | null;
   previewMode?: boolean;
   previewData?: AgentPreviewData;
-}
-
-function AgentIcon({ iconUrl }: { iconUrl: string | null }) {
-  return iconUrl ? (
-    <Image
-      src={iconUrl}
-      alt="agent"
-      width={1000}
-      height={1000}
-      className="aspect-square rounded-sm shadow-xl md:h-32 md:w-32"
-    />
-  ) : (
-    <div
-      className="flex aspect-square h-full w-full items-center justify-center rounded-sm border
-        bg-gray-500/10 shadow-xl md:h-32 md:w-32"
-    >
-      <Icons.Logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
-    </div>
-  );
 }
 
 function AgentBadge({
@@ -174,7 +154,7 @@ export function AgentCardHeader({
   return (
     <CardHeader>
       <div className="flex w-full flex-col items-center gap-6 md:flex-row md:gap-3">
-        <AgentIcon iconUrl={iconUrl} />
+        <AgentIcon icon={iconUrl} alt={`${name} icon`} variant="compact" />
         <div className="mt-1 flex h-full w-full flex-col justify-between gap-3">
           <div className="flex w-full items-center justify-between gap-4">
             <SocialsInfo socials={socialsList} />
