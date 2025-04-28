@@ -40,104 +40,181 @@ jobs:
       || needs.pr-check.outputs.skip == 'false')
     uses: ./.github/workflows/turbo-check.yml
 
+  files-check:
+    runs-on: ubuntu-latest
+    needs: pr-check
+    if: |
+      github.event.pull_request.state != 'closed' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev'
+      || needs.pr-check.outputs.skip == 'false')
+    outputs:
+      actions: ${{ steps.changes.outputs.actions == 'true' }}
+      docker: ${{ steps.changes.outputs.docker == 'true' }}
+      helm: ${{ steps.changes.outputs.helm == 'true' }}
+      apps: ${{ steps.changes.outputs.apps == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          base: ${{ github.ref }} # This is ignored for pull_request events
+          filters: |
+            actions: &actions
+              - '.github/workflows/**'
+            docker: &docker
+              - 'docker/Dockerfile'
+            helm: &helm
+              - 'apps/**/helmfile.yaml'
+              - 'apps/**/values.yaml'
+              - 'helm/**'
+            apps:
+              - *actions
+              - *docker
+              - *helm
+
   ###################################
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
   torus-page:
-    needs: turbo-check
+    needs: [turbo-check, files-check, pr-check]
     if: |
-      inputs.skip_build ||
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+      needs.pr-check.outputs.skip == 'false' &&
+      (inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-page == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+      needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-page == 'true')
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-page
-      skip_build: ${{ inputs.skip_build || false }}
+      skip_build: >-
+        ${{ inputs.skip_build || 
+        (needs.files-check.outputs.apps == 'true' && 
+        needs.files-check.outputs.docker != 'true' && 
+        needs.turbo-check.outputs.torus-page != 'true') }}
 
   torus-wallet:
-    needs: turbo-check
+    needs: [turbo-check, files-check, pr-check]
     if: |
-      inputs.skip_build ||
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+      needs.pr-check.outputs.skip == 'false' &&
+      (inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-wallet == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+      needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-wallet == 'true')
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-wallet
-      skip_build: ${{ inputs.skip_build || false }}
+      skip_build: >-
+        ${{ inputs.skip_build || 
+        (needs.files-check.outputs.apps == 'true' && 
+        needs.files-check.outputs.docker != 'true' && 
+        needs.turbo-check.outputs.torus-wallet != 'true') }}
 
   torus-allocator:
-    needs: turbo-check
+    needs: [turbo-check, files-check, pr-check]
     if: |
-      inputs.skip_build ||
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+      needs.pr-check.outputs.skip == 'false' &&
+      (inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-allocator == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+      needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-allocator == 'true')
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-allocator
-      skip_build: ${{ inputs.skip_build || false }}
+      skip_build: >-
+        ${{ inputs.skip_build || 
+        (needs.files-check.outputs.apps == 'true' && 
+        needs.files-check.outputs.docker != 'true' && 
+        needs.turbo-check.outputs.torus-allocator != 'true') }}
 
   # torus-bridge:
-  #   needs: turbo-check
+  #   needs: [turbo-check, files-check, pr-check]
   #   if: |
-  #     inputs.skip_build ||
+  #     (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+  #     needs.pr-check.outputs.skip == 'false' &&
+  #     (inputs.skip_build ||
   #     contains(github.event.head_commit.message, 'skip build') ||
-  #     (needs.turbo-check.outputs.torus-bridge == 'true' &&
-  #     (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+  #     needs.files-check.outputs.apps == 'true' ||
+  #     needs.turbo-check.outputs.torus-bridge == 'true')
   #   uses: ./.github/workflows/app-deployment-template.yml
   #   secrets: inherit
   #   with:
   #     app_name: torus-bridge
-  #     skip_build: ${{ inputs.skip_build || false }}
+  #     skip_build: >-
+  #       ${{ inputs.skip_build ||
+  #       (needs.files-check.outputs.apps == 'true' &&
+  #       needs.files-check.outputs.docker != 'true' &&
+  #       needs.turbo-check.outputs.torus-bridge != 'true') }}
 
   torus-cache:
-    needs: turbo-check
+    needs: [turbo-check, files-check, pr-check]
     if: |
-      inputs.skip_build ||
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+      needs.pr-check.outputs.skip == 'false' &&
+      (inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      ((needs.turbo-check.outputs.torus-cache == 'true' ||
+      needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-cache == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
       needs.turbo-check.outputs.torus-allocator == 'true' ||
-      needs.turbo-check.outputs.torus-wallet == 'true') &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+      needs.turbo-check.outputs.torus-wallet == 'true')
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-cache
-      skip_build: ${{ inputs.skip_build || false }}
+      skip_build: >-
+        ${{ inputs.skip_build || 
+        (needs.files-check.outputs.apps == 'true' && 
+        needs.files-check.outputs.docker != 'true' && 
+        needs.turbo-check.outputs.torus-cache != 'true') }}
 
   torus-governance:
-    needs: turbo-check
+    needs: [turbo-check, files-check, pr-check]
     if: |
-      inputs.skip_build ||
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+      needs.pr-check.outputs.skip == 'false' &&
+      (inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-governance == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+      needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-governance == 'true')
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-governance
-      skip_build: ${{ inputs.skip_build || false }}
+      skip_build: >-
+        ${{ inputs.skip_build || 
+        (needs.files-check.outputs.apps == 'true' && 
+        needs.files-check.outputs.docker != 'true' && 
+        needs.turbo-check.outputs.torus-governance != 'true') }}
 
   torus-worker:
-    needs: turbo-check
+    needs: [turbo-check, files-check, pr-check]
     if: |
-      inputs.skip_build ||
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+      needs.pr-check.outputs.skip == 'false' &&
+      (inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      ((needs.turbo-check.outputs.torus-worker == 'true' ||
+      needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-worker == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
-      needs.turbo-check.outputs.torus-allocator == 'true') &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+      needs.turbo-check.outputs.torus-allocator == 'true')
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-worker
-      skip_build: ${{ inputs.skip_build || false }}
+      skip_build: >-
+        ${{ inputs.skip_build || 
+        (needs.files-check.outputs.apps == 'true' && 
+        needs.files-check.outputs.docker != 'true' && 
+        needs.turbo-check.outputs.torus-worker != 'true') }}
 
   ###################################
   ######## DRY RUN BUILDS  ##########
@@ -237,14 +314,15 @@ jobs:
       app_name: torus-worker
 
   ###################################
-  ######## DRY RUN BUILDS  ##########
+  ########### PR PREVIEW ############
   ###################################
   torus-allocator-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-allocator == 'true'
+      (needs.turbo-check.outputs.torus-allocator == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
@@ -261,11 +339,12 @@ jobs:
       delete: true
 
   torus-cache-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      (needs.turbo-check.outputs.torus-cache == 'true' ||
+      (needs.files-check.outputs.apps == 'true' ||
+      needs.turbo-check.outputs.torus-cache == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
       needs.turbo-check.outputs.torus-allocator == 'true' ||
       needs.turbo-check.outputs.torus-wallet == 'true')
@@ -286,11 +365,12 @@ jobs:
       delete: true
 
   torus-governance-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-governance == 'true'
+      (needs.turbo-check.outputs.torus-governance == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
@@ -307,11 +387,12 @@ jobs:
       delete: true
 
   torus-page-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-page == 'true'
+      (needs.turbo-check.outputs.torus-page == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
@@ -328,11 +409,12 @@ jobs:
       delete: true
 
   torus-wallet-pr-activate:
-    needs: turbo-check
+    needs: [turbo-check, files-check]
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-wallet == 'true'
+      (needs.turbo-check.outputs.torus-wallet == 'true' ||
+      needs.files-check.outputs.apps == 'true')
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:

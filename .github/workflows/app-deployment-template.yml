@@ -136,7 +136,12 @@ jobs:
         if: needs.docker-build.result == 'success'
         working-directory: apps/${{ env.APP_NAME }}
         run: |
-          helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${{ steps.commit.outputs.short }}
+          helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${{ steps.commit.outputs.hash }}
+
+      - name: Install helm diff plugin
+        if: needs.docker-build.result == 'skipped'
+        working-directory: apps/${{ env.APP_NAME }}
+        run: helm plugin install https://github.com/databus23/helm-diff
 
       - name: Deploy application (apply diff only)
         if: needs.docker-build.result == 'skipped'
@@ -145,4 +150,20 @@ jobs:
           export RELEASE_NAME=$(helmfile -e ${ENV_NAME} list --output json | jq -r '.[].name')
           export IMAGE_TAG=$(helm get values ${RELEASE_NAME} -n ${NAMESPACE} --output  json | jq -r '.deployment.image.tag')
 
-          helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${IMAGE_TAG}
+          # Temporarily disable error handling
+          set +e
+          helmfile diff -e ${ENV_NAME} --set deployment.image.tag=${IMAGE_TAG} --detailed-exitcode
+          DIFF_EXIT_CODE=$?
+
+          # Re-enable error handling
+          set -eo pipefail
+
+          if [ "$DIFF_EXIT_CODE" == "0" ]; then
+            echo "No changes detected, skipping sync"
+          elif [ "$DIFF_EXIT_CODE" == "2" ]; then
+            echo "Changes detected, applying updates..."
+            helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${IMAGE_TAG}
+          else
+            echo "Error running helmfile diff with exit code: $DIFF_EXIT_CODE"
+            exit 1
+          fi
