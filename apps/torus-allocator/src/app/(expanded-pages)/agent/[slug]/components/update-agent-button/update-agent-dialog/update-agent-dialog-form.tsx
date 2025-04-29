@@ -9,13 +9,7 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { Separator } from "@torus-ts/ui/components/separator";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@torus-ts/ui/components/tooltip";
-import { FileImage, Globe, MessageCircle, Terminal } from "lucide-react";
+import { FileImage, Globe, Terminal } from "lucide-react";
 import Image from "next/image";
 import type { useForm } from "react-hook-form";
 import type {
@@ -60,7 +54,7 @@ export function UpdateAgentDialogForm({
                     Name <span className="text-red-500">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Agent Name" />
+                    <Input {...field} placeholder="Ex.: Chatbot Assistant" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -76,7 +70,10 @@ export function UpdateAgentDialogForm({
                     Title <span className="text-red-500">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Agent Title" />
+                    <Input
+                      {...field}
+                      placeholder="Ex.: AI Support Specialist"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -95,13 +92,14 @@ export function UpdateAgentDialogForm({
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="Brief description of your agent (max 200 characters)"
+                    placeholder="Ex.: An AI assistant that helps users troubleshoot technical problems"
                     maxLength={200}
                   />
                 </FormControl>
                 <p className="text-xs text-muted-foreground mt-1">
                   {field.value.length || 0}/
-                  {updateAgentSchema.shape.shortDescription.maxLength} characters
+                  {updateAgentSchema.shape.shortDescription.maxLength}{" "}
+                  characters
                 </p>
                 <FormMessage />
               </FormItem>
@@ -115,23 +113,12 @@ export function UpdateAgentDialogForm({
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
                   Description <span className="text-red-500">*</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-help">
-                        <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="w-[250px] text-sm">
-                          Supports Markdown formatting for rich content
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
-                    placeholder="Full description with markdown support"
+                    placeholder="Ex.: ## About This Agent
+This agent specializes in providing technical support by analyzing issues and offering step-by-step solutions. It can help with software troubleshooting, guide users through complex processes, and learn from interactions."
                     maxLength={5000}
                     rows={6}
                     className="resize-y"
@@ -162,7 +149,10 @@ export function UpdateAgentDialogForm({
                     <Globe className="h-4 w-4" /> Website URL
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://..." />
+                    <Input
+                      {...field}
+                      placeholder="Ex.: https://myagent.example.com"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -178,7 +168,10 @@ export function UpdateAgentDialogForm({
                     <Terminal className="h-4 w-4" /> API Endpoint URL
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://..." />
+                    <Input
+                      {...field}
+                      placeholder="Ex.: https://api.example.com/agent"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -247,7 +240,10 @@ export function UpdateAgentDialogForm({
                     Discord
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://discord.gg/..." />
+                    <Input
+                      {...field}
+                      placeholder="https://discord.gg/myagent or https://discord.com/invite/myagent"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -263,7 +259,10 @@ export function UpdateAgentDialogForm({
                     Twitter
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://twitter.com/..." />
+                    <Input
+                      {...field}
+                      placeholder="https://twitter.com/myagent or https://x.com/myagent"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -279,7 +278,10 @@ export function UpdateAgentDialogForm({
                     GitHub
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://github.com/..." />
+                    <Input
+                      {...field}
+                      placeholder="Ex.: https://github.com/myorg/myagent"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -295,7 +297,7 @@ export function UpdateAgentDialogForm({
                     Telegram
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://t.me/..." />
+                    <Input {...field} placeholder="Ex.: https://t.me/myagent" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
