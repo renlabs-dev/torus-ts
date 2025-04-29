@@ -83,18 +83,12 @@ export function UpdateAgentDialogTabs({
         className="mt-6 w-full"
       >
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger
-            value="edit"
-            className="flex items-center gap-2 py-3 data-[state=active]:bg-primary/90"
-          >
-            <Pencil className="h-4 w-4" />
+          <TabsTrigger value="edit">
+            <Pencil className="h-4 w-4 mr-2" />
             <span>Edit Details</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="preview"
-            className="flex items-center gap-2 py-3 data-[state=active]:bg-primary/90"
-          >
-            <Eye className="h-4 w-4" />
+          <TabsTrigger value="preview">
+            <Eye className="h-4 w-4 mr-2" />
             <span>Preview</span>
           </TabsTrigger>
         </TabsList>
@@ -148,9 +142,9 @@ export function UpdateAgentDialogTabs({
 
               <Button
                 type="button"
+                variant="outline"
                 onClick={handleSubmit}
                 disabled={updateAgentMutation.isPending || !hasUnsavedChanges}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
               >
                 <Save className="h-4 w-4" />
                 {updateAgentMutation.isPending ? "Saving..." : "Save Changes"}

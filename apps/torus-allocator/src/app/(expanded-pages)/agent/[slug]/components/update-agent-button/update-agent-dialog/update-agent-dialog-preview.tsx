@@ -27,26 +27,6 @@ function AgentPreviewSkeleton() {
   );
 }
 
-function AgentPreviewError() {
-  return (
-    <Alert variant="destructive" className="mb-6">
-      <AlertCircle className="h-4 w-4" />
-      <AlertDescription>
-        Unable to load agent metadata. Please try again.
-      </AlertDescription>
-    </Alert>
-  );
-}
-
-function PreviewGlowEffect() {
-  return (
-    <div
-      className="absolute -inset-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg blur
-        opacity-25"
-    ></div>
-  );
-}
-
 export function UpdateAgentDialogPreview({ agentKey, form }: UpdateAgentDialogPreviewProps) {
   const { data: agent, isLoading } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
@@ -57,13 +37,10 @@ export function UpdateAgentDialogPreview({ agentKey, form }: UpdateAgentDialogPr
     },
   );
 
-  if (isLoading) {
+  if (isLoading || !agent?.metadataUri) {
     return <AgentPreviewSkeleton />;
   }
 
-  if (!agent?.metadataUri) {
-    return <AgentPreviewError />;
-  }
 
   const formValues = form.getValues();
   const previewImage = form.watch("imageUrl");
@@ -92,7 +69,6 @@ export function UpdateAgentDialogPreview({ agentKey, form }: UpdateAgentDialogPr
   return (
     <div className="mx-auto max-w-lg my-6">
       <div className="relative">
-        <PreviewGlowEffect />
         <Card
           className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition
             duration-300 hover:border-white hover:shadow-lg pointer-events-none"
