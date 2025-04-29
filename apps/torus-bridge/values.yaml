@@ -6,8 +6,14 @@ deployment:
     app: torus-bridge
 
   env:
-    NEXT_PUBLIC_WALLET_CONNECT_ID:
+    NEXT_PUBLIC_CACHE_URL:
       valueFrom:
         secretKeyRef:
-          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: wallet_connect_id
+          name: torus-{{ .Values.environmentName }}-web-apps-secret
+          key: cache_url
+
+      NEXT_PUBLIC_WALLET_CONNECT_ID:
+        valueFrom:
+          secretKeyRef:
+            name: torus-{{ .Values.environmentName }}-web-apps-secret
+            key: wallet_connect_id
