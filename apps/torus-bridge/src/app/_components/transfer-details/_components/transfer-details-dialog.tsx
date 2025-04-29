@@ -69,6 +69,10 @@ export function TransfersDetailsDialog({
     useWalletDetails()[account?.protocol ?? ProtocolType.Ethereum];
 
   const getMessageUrls = useCallback(async () => {
+    setFromUrl("");
+    setToUrl("");
+    setOriginTxUrl("");
+
     if (originTxHash) {
       const [txUrlError, originTxUrl] = trySync(() =>
         multiProvider.tryGetExplorerTxUrl(origin, { hash: originTxHash }),
@@ -111,9 +115,9 @@ export function TransfersDetailsDialog({
   }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 
   useEffect(() => {
-    getMessageUrls().catch((err) =>
-      logger.error("Error getting message URLs for details modal", err),
-    );
+    getMessageUrls().catch((err) => {
+      logger.error("Error getting message URLs for details modal", err);
+    });
   }, [transfer, getMessageUrls]);
 
   const isAccountReady = !!account?.isReady;
