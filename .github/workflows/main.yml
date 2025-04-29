@@ -117,23 +117,17 @@ jobs:
         needs.turbo-check.outputs.torus-wallet != 'true') }}
 
   torus-allocator:
-    needs: [turbo-check, files-check, pr-check]
+    needs: turbo-check
     if: |
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
-      needs.pr-check.outputs.skip == 'false' &&
-      (inputs.skip_build ||
+      inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      needs.files-check.outputs.apps == 'true' ||
-      needs.turbo-check.outputs.torus-allocator == 'true')
+      (needs.turbo-check.outputs.torus-allocator == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-allocator
-      skip_build: >-
-        ${{ inputs.skip_build || 
-        (needs.files-check.outputs.apps == 'true' && 
-        needs.files-check.outputs.docker != 'true' && 
-        needs.turbo-check.outputs.torus-allocator != 'true') }}
+      skip_build: ${{ inputs.skip_build || false }}
 
   torus-bridge:
     needs: turbo-check
