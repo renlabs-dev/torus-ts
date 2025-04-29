@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
 // WARNING: ONLY NEEDED IF NEXT_PUBLIC_* VARIABLES ARE USED IN THE APP DIRECTLY
 // createJiti(fileURLToPath(import.meta.url))("./src/env");
+// import { createJiti } from "jiti";
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -14,12 +15,25 @@ const config = {
   ],
 
   productionBrowserSourceMaps: true,
-
   reactStrictMode: true,
 
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+
+  // Proxy /api/stake-out through the bridge to avoid CORS
+  async rewrites() {
+    // Use your real env var if provided; otherwise default to localhost:
+    const CACHE_URL =
+      process.env.NEXT_PUBLIC_CACHE_URL || "http://localhost:3001"; // ← adjust port to your local cache
+
+    return [
+      {
+        source: "/api/stake-out/:path*",
+        destination: `${CACHE_URL}/api/stake-out/:path*`,
+      },
+    ];
+  },
 
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
