@@ -37,6 +37,7 @@ export const UpdateAgentOwnerButton = ({
     variant="outline"
     className={className}
     onClick={onClick}
+    aria-label="Edit agent information"
   >
     <UpdateAgentButtonContent />
   </Button>
@@ -45,7 +46,13 @@ export const UpdateAgentOwnerButton = ({
 export const UpdateAgentNonOwnerButton = ({
   className,
 }: UpdateAgentNonOwnerButtonProps) => (
-  <Button variant="outline" className={className} disabled>
+  <Button
+    variant="outline"
+    className={className}
+    disabled
+    aria-label="Edit agent information"
+    aria-disabled="true"
+  >
     <UpdateAgentButtonContent />
   </Button>
 );
