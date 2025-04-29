@@ -23,9 +23,8 @@ const config = {
 
   // Proxy /api/stake-out through the bridge to avoid CORS
   async rewrites() {
-    // Use your real env var if provided; otherwise default to localhost:
     const CACHE_URL =
-      process.env.NEXT_PUBLIC_CACHE_URL || "http://localhost:3001"; // ← adjust port to your local cache
+      process.env.NEXT_PUBLIC_CACHE_URL || "http://localhost:3006";
 
     return [
       {
