@@ -38,6 +38,7 @@ import {
   useSwitchChain,
   useWalletClient,
 } from "wagmi";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const DEFAULT_MODE = "bridge";
 
@@ -134,20 +135,24 @@ export function TransferEVM() {
 
   const handleBridge = useCallback(async () => {
     if (!amount || !evmSS58Addr) return;
+
     setTransactionStatus({
       status: "PENDING",
       message: "Accept the transaction in your wallet",
       finalized: false,
     });
-    try {
-      await transfer({
+
+    const [error] = await tryAsync(
+      transfer({
         amount: amount,
         to: evmSS58Addr,
         refetchHandler,
         callback: handleCallback,
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+      }),
+    );
+
+    if (error !== undefined) {
+      console.error("Error during bridge transfer:", error);
       setTransactionStatus({
         status: "ERROR",
         message: "Something went wrong with your transaction",
@@ -157,83 +162,118 @@ export function TransferEVM() {
   }, [amount, evmSS58Addr, transfer, refetchHandler, handleCallback]);
 
   const handleWithdraw = useCallback(async () => {
+    // Check for required values
     if (
       !amount ||
       walletClient == null ||
       chain == null ||
       selectedAccount == null
     ) {
+      toast.error("Please try again later.");
+      return;
+    }
+
+    // Check if on the correct chain
+    if (chain.id !== torusEvmChainId) {
+      const [switchError] = trySync(() =>
+        switchChain({ chainId: torusEvmChainId }),
+      );
+
+      if (switchError !== undefined) {
+        console.error("Error switching chain:", switchError);
+        toast.error("Failed to switch network.");
+        return;
+      }
+
       toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Please try again later.",
+        title: "Wait, you were connected to the wrong network.",
+        description: "We switched you to Torus. Please try to withdraw again.",
       });
       return;
     }
-    if (chain.id !== torusEvmChainId) {
-      try {
-        switchChain({ chainId: torusEvmChainId });
-        toast({
-          title: "Wait, you were connected to the wrong network.",
-          description:
-            "We switched you to Torus. Please try to withdraw again.",
-        });
-        return;
-      } catch {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Failed to switch network.",
-        });
-        return;
-      }
-    }
+
     setTransactionStatus({
       status: "STARTING",
       message: "Transaction in progress, sign in your wallet",
       finalized: false,
     });
-    try {
-      const txHash = await withdrawFromTorusEvm(
+
+    // Withdraw from Torus EVM
+    const [withdrawError, txHash] = await tryAsync(
+      withdrawFromTorusEvm(
         walletClient,
         chain,
         selectedAccount.address as SS58Address,
         amountRems,
         refetchHandler,
-      );
+      ),
+    );
+
+    if (withdrawError !== undefined) {
+      console.error("Error withdrawing from Torus EVM:", withdrawError);
       setTransactionStatus({
-        status: "SUCCESS",
-        message: `Transaction included in the blockchain!`,
+        status: "ERROR",
+        message: "Something went wrong with your transaction",
         finalized: true,
       });
 
-      toast({
-        title: "Loading...",
-        description: renderWaitingForValidation(txHash),
+      // Still perform refetch and reset transaction status
+      const [refetchError] = await tryAsync(refetchHandler());
+      if (refetchError !== undefined) {
+        console.error("Error refetching after failed withdraw:", refetchError);
+      }
+
+      setTransactionStatus({
+        status: null,
+        message: null,
+        finalized: false,
       });
-      await waitForTransactionReceipt(wagmiConfig, {
+
+      return;
+    }
+
+    setTransactionStatus({
+      status: "SUCCESS",
+      message: `Transaction included in the blockchain!`,
+      finalized: true,
+    });
+
+    toast({
+      title: "Loading...",
+      description: renderWaitingForValidation(txHash),
+    });
+
+    // Wait for transaction receipt
+    const [receiptError] = await tryAsync(
+      waitForTransactionReceipt(wagmiConfig, {
         hash: txHash,
         confirmations: 2,
-      });
+      }),
+    );
+
+    if (receiptError !== undefined) {
+      console.error("Error waiting for transaction receipt:", receiptError);
+      toast.error("Failed to confirm transaction.");
+    } else {
       toast({
         title: "Success!",
         description: renderSuccessfulyFinalized(txHash),
       });
 
       setAmount("");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      setTransactionStatus({
-        status: "ERROR",
-        message: "Something went wrong with your transaction",
-        finalized: true,
-      });
-    } finally {
-      await refetchHandler();
-      setTransactionStatus({
-        status: null,
-        message: null,
-        finalized: false,
-      });
     }
+
+    // Always refetch and reset transaction status
+    const [finalRefetchError] = await tryAsync(refetchHandler());
+    if (finalRefetchError !== undefined) {
+      console.error("Error during final refetch:", finalRefetchError);
+    }
+
+    setTransactionStatus({
+      status: null,
+      message: null,
+      finalized: false,
+    });
   }, [
     amount,
     walletClient,
@@ -251,10 +291,7 @@ export function TransferEVM() {
     if (address) {
       setUserInputEthAddr(address);
     } else {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "No account found. Is your wallet connected?",
-      });
+      toast.error("No account found. Is your wallet connected?");
     }
   }, [address, toast]);
 
@@ -434,7 +471,8 @@ function ChainField({ label, chainName }: ChainFieldProps) {
         size="lg"
         variant="outline"
         disabled={true}
-        className="hover:bg-background flex w-full items-center justify-between p-2 px-0 hover:cursor-default disabled:opacity-100"
+        className="hover:bg-background flex w-full items-center justify-between p-2 px-0
+          hover:cursor-default disabled:opacity-100"
       >
         <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
           <Image

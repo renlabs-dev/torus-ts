@@ -29,6 +29,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
 import { getTransferStatusLabel } from "./get-transfer-status-label";
 import { TransferProperty } from "./transfer-property";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 export function TransfersDetailsDialog({
   isOpen,
@@ -68,21 +69,44 @@ export function TransfersDetailsDialog({
     useWalletDetails()[account?.protocol ?? ProtocolType.Ethereum];
 
   const getMessageUrls = useCallback(async () => {
-    try {
-      if (originTxHash) {
-        const originTxUrl = multiProvider.tryGetExplorerTxUrl(origin, {
-          hash: originTxHash,
-        });
-        if (originTxUrl) setOriginTxUrl(fixDoubleSlash(originTxUrl));
+    if (originTxHash) {
+      const [txUrlError, originTxUrl] = trySync(() =>
+        multiProvider.tryGetExplorerTxUrl(origin, { hash: originTxHash }),
+      );
+
+      if (txUrlError !== undefined) {
+        logger.error(
+          `Error getting transaction URL for hash ${originTxHash}:`,
+          txUrlError,
+        );
+      } else if (originTxUrl) {
+        setOriginTxUrl(fixDoubleSlash(originTxUrl));
       }
-      const [fromUrl, toUrl] = await Promise.all([
-        multiProvider.tryGetExplorerAddressUrl(origin, sender),
-        multiProvider.tryGetExplorerAddressUrl(destination, recipient),
-      ]);
-      if (fromUrl) setFromUrl(fixDoubleSlash(fromUrl));
-      if (toUrl) setToUrl(fixDoubleSlash(toUrl));
-    } catch (error) {
-      logger.error("Error fetching URLs:", error);
+    }
+
+    const [fromUrlPromise, toUrlPromise] = [
+      multiProvider.tryGetExplorerAddressUrl(origin, sender),
+      multiProvider.tryGetExplorerAddressUrl(destination, recipient),
+    ];
+
+    const [fromUrlError, fromUrl] = await tryAsync(fromUrlPromise);
+    if (fromUrlError !== undefined) {
+      logger.error(
+        `Error getting explorer URL for sender ${sender}:`,
+        fromUrlError,
+      );
+    } else if (fromUrl) {
+      setFromUrl(fixDoubleSlash(fromUrl));
+    }
+
+    const [toUrlError, toUrl] = await tryAsync(toUrlPromise);
+    if (toUrlError !== undefined) {
+      logger.error(
+        `Error getting explorer URL for recipient ${recipient}:`,
+        toUrlError,
+      );
+    } else if (toUrl) {
+      setToUrl(fixDoubleSlash(toUrl));
     }
   }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 

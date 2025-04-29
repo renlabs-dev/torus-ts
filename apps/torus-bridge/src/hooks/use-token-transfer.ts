@@ -19,6 +19,7 @@ import type { TransferContext, TransferFormValues } from "../utils/types";
 import { TransferStatus } from "../utils/types";
 import { getTokenByIndex, useWarpCore } from "./token";
 import { useMultiProvider } from "./use-multi-provider";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
@@ -111,133 +112,302 @@ async function executeTransfer({
   const { origin, destination, tokenIndex, amount, recipient } = values;
   const multiProvider = warpCore.multiProvider;
 
-  try {
-    const originToken = getTokenByIndex(warpCore, tokenIndex);
+  // Step 1: Get token by index
+  const [tokenError, originToken] = trySync(() =>
+    getTokenByIndex(warpCore, tokenIndex),
+  );
 
-    const connection = originToken?.getConnectionForChain(destination);
-    if (!originToken || !connection)
-      throw new Error("No token route found between chains");
-
-    const originProtocol = originToken.protocol;
-
-    const weiAmount = toWei(amount, originToken.decimals);
-    const originTokenAmount = originToken.amount(weiAmount);
-
-    const sendTransaction = transactionFns[originProtocol].sendTransaction;
-    const activeChain = activeChains.chains[originProtocol];
-    const sender = getAccountAddressForChain(
-      multiProvider,
-
-      origin,
-      activeAccounts.accounts,
-    );
-    if (!sender) throw new Error("No active account found for origin chain");
-
-    const isCollateralSufficient =
-      await warpCore.isDestinationCollateralSufficient({
-        originTokenAmount,
-        destination,
-      });
-    if (!isCollateralSufficient) {
-      toast({
-        title: "Insufficient collateral on destination for transfer",
-        description: "Insufficient collateral on destination for transfer",
-      });
-      throw new Error("Insufficient destination collateral");
-    }
-
-    addTransfer({
-      timestamp: new Date().getTime(),
-      status: TransferStatus.Preparing,
-      origin,
-      destination,
-      originTokenAddressOrDenom: originToken.addressOrDenom,
-      destTokenAddressOrDenom: connection.token.addressOrDenom,
-      sender,
-      recipient,
-      amount,
+  if (tokenError !== undefined) {
+    const errorMsg = "Failed to get token";
+    logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, tokenError);
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      description:
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
     });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
 
-    updateTransferStatus(
-      transferIndex,
-      (transferStatus = TransferStatus.CreatingTxs),
+  // Step 2: Get connection for chain
+  const [connectionError, connection] = trySync(() =>
+    originToken?.getConnectionForChain(destination),
+  );
+
+  if (connectionError !== undefined || !originToken || !connection) {
+    const errorMsg = "No token route found between chains";
+    logger.error(
+      `Error at stage ${transferStatus}: ${errorMsg}`,
+      connectionError,
     );
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      description:
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
 
-    const txs = await warpCore.getTransferRemoteTxs({
+  const originProtocol = originToken.protocol;
+
+  // Step 3: Convert amount to wei
+  const [weiError, weiAmount] = trySync(() =>
+    toWei(amount, originToken.decimals),
+  );
+
+  if (weiError !== undefined) {
+    const errorMsg = "Failed to convert amount";
+    logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, weiError);
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      description:
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
+
+  // Step 4: Create token amount
+  const [amountError, originTokenAmount] = trySync(() =>
+    originToken.amount(weiAmount),
+  );
+
+  if (amountError !== undefined) {
+    const errorMsg = "Failed to create token amount";
+    logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, amountError);
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      description:
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
+
+  const sendTransaction = transactionFns[originProtocol].sendTransaction;
+  const activeChain = activeChains.chains[originProtocol];
+
+  // Step 5: Get account address
+  const [addressError, sender] = trySync(() =>
+    getAccountAddressForChain(multiProvider, origin, activeAccounts.accounts),
+  );
+
+  if (addressError !== undefined || !sender) {
+    const errorMsg = "No active account found for origin chain";
+    logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, addressError);
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      description:
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
+
+  // Step 6: Check collateral
+  const [collateralError, isCollateralSufficient] = await tryAsync(
+    warpCore.isDestinationCollateralSufficient({
+      originTokenAmount,
+      destination,
+    }),
+  );
+
+  if (collateralError !== undefined) {
+    const errorMsg = "Failed to check destination collateral";
+    logger.error(
+      `Error at stage ${transferStatus}: ${errorMsg}`,
+      collateralError,
+    );
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      description:
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
+
+  if (!isCollateralSufficient) {
+    const errorMsg = "Insufficient destination collateral";
+    logger.error(
+      `Error at stage ${transferStatus}: ${errorMsg}`,
+      new Error(errorMsg),
+    );
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: "Insufficient collateral on destination for transfer",
+      description: "Insufficient collateral on destination for transfer",
+    });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
+
+  // Add transfer to state
+  addTransfer({
+    timestamp: new Date().getTime(),
+    status: TransferStatus.Preparing,
+    origin,
+    destination,
+    originTokenAddressOrDenom: originToken.addressOrDenom,
+    destTokenAddressOrDenom: connection.token.addressOrDenom,
+    sender,
+    recipient,
+    amount,
+  });
+
+  updateTransferStatus(
+    transferIndex,
+    (transferStatus = TransferStatus.CreatingTxs),
+  );
+
+  // Step 7: Get transactions
+  const [txsError, txs] = await tryAsync(
+    warpCore.getTransferRemoteTxs({
       originTokenAmount,
       destination,
       sender,
       recipient,
-    });
+    }),
+  );
 
-    const hashes: string[] = [];
-    let txReceipt: TypedTransactionReceipt | undefined = undefined;
-    for (const tx of txs) {
-      updateTransferStatus(
-        transferIndex,
-        (transferStatus = txCategoryToStatuses[tx.category][0]),
-      );
-      const { hash, confirm } = await sendTransaction({
+  if (txsError !== undefined) {
+    const errorMsg = "Failed to get transfer transactions";
+    logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, txsError);
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      description:
+        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    });
+    setIsLoading(false);
+    if (onDone) onDone();
+    return;
+  }
+
+  const hashes: string[] = [];
+  let txReceipt: TypedTransactionReceipt | undefined = undefined;
+
+  // Step 8: Process transactions
+  for (const tx of txs) {
+    updateTransferStatus(
+      transferIndex,
+      (transferStatus = txCategoryToStatuses[tx.category][0]),
+    );
+
+    // Send transaction
+    const [sendError, txResult] = await tryAsync(
+      sendTransaction({
         tx,
         chainName: origin,
         activeChainName: activeChain.chainName,
-      });
-      updateTransferStatus(
-        transferIndex,
-        (transferStatus = txCategoryToStatuses[tx.category][1]),
-      );
-      txReceipt = await confirm();
-      const description = toTitleCase(tx.category);
-      logger.debug(`${description} transaction confirmed, hash:`, hash);
-      ToastTxSuccess(`${description} transaction sent!`, hash, origin);
-      hashes.push(hash);
+      }),
+    );
+
+    if (sendError !== undefined) {
+      const errorDetails =
+        sendError instanceof Error ? sendError.message : String(sendError);
+      logger.error(`Error at stage ${transferStatus}`, sendError);
+      updateTransferStatus(transferIndex, TransferStatus.Failed);
+
+      if (errorDetails.includes(CHAIN_MISMATCH_ERROR)) {
+        toast({
+          title: "Wallet must be connected to origin chain",
+          description: "Wallet must be connected to origin chain",
+        });
+      } else if (
+        errorDetails.includes(TRANSFER_TIMEOUT_ERROR1) ||
+        errorDetails.includes(TRANSFER_TIMEOUT_ERROR2)
+      ) {
+        toast({
+          title: `Transaction timed out, ${getChainDisplayName(
+            multiProvider,
+            origin,
+          )} may be busy. Please try again.`,
+          description: `Transaction timed out, ${getChainDisplayName(
+            multiProvider,
+            origin,
+          )} may be busy. Please try again.`,
+        });
+      } else {
+        toast({
+          title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+          description:
+            errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+        });
+      }
+
+      setIsLoading(false);
+      if (onDone) onDone();
+      return;
     }
 
-    const msgId = txReceipt
-      ? tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt)
-      : undefined;
+    const { hash, confirm } = txResult;
 
     updateTransferStatus(
       transferIndex,
-      (transferStatus = TransferStatus.ConfirmedTransfer),
-      {
-        originTxHash: hashes.at(-1),
-        msgId,
-      },
+      (transferStatus = txCategoryToStatuses[tx.category][1]),
     );
-  } catch (error) {
-    logger.error(`Error at stage ${transferStatus}`, error);
-    const errorDetails = error instanceof Error ? error.message : String(error);
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
 
-    if (errorDetails.includes(CHAIN_MISMATCH_ERROR)) {
-      // Wagmi switchNetwork call helps prevent this but isn't foolproof
-      toast({
-        title: "Wallet must be connected to origin chain",
-        description: "Wallet must be connected to origin chain",
-      });
-    } else if (
-      errorDetails.includes(TRANSFER_TIMEOUT_ERROR1) ||
-      errorDetails.includes(TRANSFER_TIMEOUT_ERROR2)
-    ) {
-      toast({
-        title: `Transaction timed out, ${getChainDisplayName(
-          multiProvider,
-          origin,
-        )} may be busy. Please try again.`,
-        description: `Transaction timed out, ${getChainDisplayName(
-          multiProvider,
-          origin,
-        )} may be busy. Please try again.`,
-      });
-    } else {
+    // Confirm transaction
+    const [confirmError, receipt] = await tryAsync(confirm());
+
+    if (confirmError !== undefined) {
+      const errorMsg = "Failed to confirm transaction";
+      logger.error(
+        `Error at stage ${transferStatus}: ${errorMsg}`,
+        confirmError,
+      );
+      updateTransferStatus(transferIndex, TransferStatus.Failed);
       toast({
         title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
         description:
           errorMessages[transferStatus] ?? "Unable to transfer tokens.",
       });
+      setIsLoading(false);
+      if (onDone) onDone();
+      return;
     }
+
+    txReceipt = receipt;
+    const description = toTitleCase(tx.category);
+    logger.debug(`${description} transaction confirmed, hash:`, hash);
+    ToastTxSuccess(`${description} transaction sent!`, hash, origin);
+    hashes.push(hash);
   }
+
+  // Step 9: Get message ID
+  const [msgIdError, msgId] = txReceipt
+    ? trySync(() =>
+        tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt),
+      )
+    : [undefined, undefined];
+
+  if (msgIdError !== undefined) {
+    logger.warn("Failed to get message ID from receipt", msgIdError);
+  }
+
+  updateTransferStatus(
+    transferIndex,
+    (transferStatus = TransferStatus.ConfirmedTransfer),
+    {
+      originTxHash: hashes.at(-1),
+      msgId,
+    },
+  );
 
   setIsLoading(false);
   if (onDone) onDone();
