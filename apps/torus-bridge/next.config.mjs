@@ -21,17 +21,17 @@ const config = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
-  // Proxy /api/stake-out through the bridge to avoid CORS
-  async rewrites() {
-    const CACHE_URL = process.env.NEXT_PUBLIC_CACHE_URL;
+  // // Proxy /api/stake-out through the bridge to avoid CORS
+  // async rewrites() {
+  //   const CACHE_URL = process.env.NEXT_PUBLIC_CACHE_URL;
 
-    return [
-      {
-        source: "/api/stake-out/:path*",
-        destination: `${CACHE_URL}/api/stake-out/:path*`,
-      },
-    ];
-  },
+  //   return [
+  //     {
+  //       source: "/api/stake-out/:path*",
+  //       destination: `${CACHE_URL}/api/stake-out/:path*`,
+  //     },
+  //   ];
+  // },
 
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
