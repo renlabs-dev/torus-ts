@@ -7,17 +7,14 @@ export function useToastError(error: unknown, errorMsg?: string) {
   const { toast } = useToast();
   useEffect(() => {
     if (!error) return;
-    
+
     // Convert error to string once to avoid recreating objects
     const message = errorMsg ?? errorToString(error, 500);
     logger.error(message, error);
-    
+
     // Show the toast message
-    toast({
-      title: "Uh oh! Something went wrong.",
-      description: message,
-    });
-    
+    toast.error(message);
+
     // Include toast in dependencies to avoid lint warning while keeping functionality
   }, [error, errorMsg, toast]);
 }

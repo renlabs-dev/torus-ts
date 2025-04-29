@@ -17,23 +17,45 @@ import { clusterApiUrl } from "@solana/web3.js";
 import { logger } from "~/utils/logger";
 import type { PropsWithChildren } from "react";
 import { useCallback, useMemo } from "react";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 export function SolanaWalletProvider({
   children,
 }: Readonly<PropsWithChildren<unknown>>) {
   // TODO support multiple networks
   const network = WalletAdapterNetwork.Mainnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+
+  const endpoint = useMemo(() => {
+    const [endpointError, result] = trySync(() => clusterApiUrl(network));
+
+    if (endpointError !== undefined) {
+      console.error("Error getting cluster API URL:", endpointError);
+      // Return a fallback endpoint or throw based on requirements
+      return "https://api.mainnet-beta.solana.com"; // Fallback to a default endpoint
+    }
+
+    return result;
+  }, [network]);
+
   const wallets = useMemo(
-    () => [
-      // new PhantomWalletAdapter(),
-      // new SolflareWalletAdapter(),
-      // new BackpackWalletAdapter(),
-      // new SalmonWalletAdapter(),
-      // new SnapWalletAdapter(),
-      // new TrustWalletAdapter(),
-      new LedgerWalletAdapter(),
-    ],
+    () => {
+      const [walletsError, walletsList] = trySync(() => [
+        // new PhantomWalletAdapter(),
+        // new SolflareWalletAdapter(),
+        // new BackpackWalletAdapter(),
+        // new SalmonWalletAdapter(),
+        // new SnapWalletAdapter(),
+        // new TrustWalletAdapter(),
+        new LedgerWalletAdapter(),
+      ]);
+
+      if (walletsError !== undefined) {
+        console.error("Error initializing Solana wallets:", walletsError);
+        return [];
+      }
+
+      return walletsList;
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [network],
   );

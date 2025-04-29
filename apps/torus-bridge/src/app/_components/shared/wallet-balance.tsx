@@ -34,7 +34,6 @@ export function WalletBalance() {
   const { address: evmAddress } = wagmi.useAccount();
 
   // -- Torus EVM --
-
   const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
   if (torusEvmClient == null) throw new Error("Torus EVM client not found");
 
