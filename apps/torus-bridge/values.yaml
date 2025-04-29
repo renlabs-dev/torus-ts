@@ -12,8 +12,8 @@ deployment:
           name: torus-{{ .Values.environmentName }}-web-apps-secret
           key: cache_url
 
-      NEXT_PUBLIC_WALLET_CONNECT_ID:
-        valueFrom:
-          secretKeyRef:
-            name: torus-{{ .Values.environmentName }}-web-apps-secret
-            key: wallet_connect_id
+    NEXT_PUBLIC_WALLET_CONNECT_ID:
+      valueFrom:
+        secretKeyRef:
+          name: torus-{{ .Values.environmentName }}-web-apps-secret
+          key: wallet_connect_id
