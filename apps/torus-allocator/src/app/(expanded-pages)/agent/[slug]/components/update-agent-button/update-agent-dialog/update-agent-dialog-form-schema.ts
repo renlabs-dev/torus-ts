@@ -1,112 +1,44 @@
 import { z } from "zod";
 
-const validateUrl = (domains: string[], errorMessage: string) => {
-  return (val: string) => {
-    if (!val) return true;
-    try {
-      const url = new URL(val);
-      return domains.some((domain) => url.hostname === domain || url.hostname.endsWith(`.${domain}`))
-        ? true
-        : errorMessage;
-    } catch {
-      return errorMessage;
-    }
-  };
+const validateUrl = (domains: string[]) => (val: string) => {
+  if (!val) return true;
+  try {
+    const { hostname } = new URL(val);
+    return domains.some((d) => hostname === d || hostname.endsWith(`.${d}`));
+  } catch {
+    return false;
+  }
 };
 
-const updateAgentSocialsSchema = z.object({
+export const updateAgentSocialsSchema = z.object({
   twitter: z
     .string()
     .trim()
-    .refine(
-      (val) => {
-        if (!val) return true;
-        try {
-          const url = new URL(val);
-          
-          // Valid Twitter URL patterns:
-          // https://twitter.com/*
-          // https://x.com/*
-          
-          if (url.hostname === "twitter.com") return true;
-          if (url.hostname === "x.com") return true;
-          
-          return "Twitter URL must be https://twitter.com/* or https://x.com/*";
-        } catch {
-          return "Twitter URL must be https://twitter.com/* or https://x.com/*";
-        }
-      },
-    )
-    .optional()
-    .or(z.literal("")),
+    .refine(validateUrl(["twitter.com", "x.com"]), {
+      message: "Twitter URL must be https://twitter.com/* or https://x.com/*",
+    })
+    .optional(),
   github: z
     .string()
     .trim()
-    .refine(
-      (val) => {
-        if (!val) return true;
-        try {
-          const url = new URL(val);
-          
-          // Valid GitHub URL pattern:
-          // https://github.com/*
-          
-          if (url.hostname === "github.com") return true;
-          
-          return "GitHub URL must be https://github.com/*";
-        } catch {
-          return "GitHub URL must be https://github.com/*";
-        }
-      },
-    )
-    .optional()
-    .or(z.literal("")),
+    .refine(validateUrl(["github.com"]), {
+      message: "GitHub URL must be https://github.com/*",
+    })
+    .optional(),
   telegram: z
     .string()
     .trim()
-    .refine(
-      (val) => {
-        if (!val) return true;
-        try {
-          const url = new URL(val);
-          
-          // Valid Telegram URL pattern:
-          // https://t.me/*
-          
-          if (url.hostname === "t.me") return true;
-          
-          return "Telegram URL must be https://t.me/*";
-        } catch {
-          return "Telegram URL must be https://t.me/*";
-        }
-      },
-    )
-    .optional()
-    .or(z.literal("")),
+    .refine(validateUrl(["t.me"]), {
+      message: "Telegram URL must be https://t.me/*",
+    })
+    .optional(),
   discord: z
     .string()
     .trim()
-    .refine(
-      (val) => {
-        if (!val) return true;
-        try {
-          const url = new URL(val);
-          
-          // Valid Discord URL patterns:
-          // https://discord.gg/*
-          // https://discord.com/invite/*
-          
-          if (url.hostname === "discord.gg") return true;
-          if (url.hostname === "discord.com" && url.pathname.startsWith("/invite/")) return true;
-          
-          return "Discord URL must be https://discord.gg/* or https://discord.com/invite/*";
-        } catch {
-          return "Discord URL must be https://discord.gg/* or https://discord.com/invite/*";
-        }
-      },
-    )
-    .optional()
-    .or(z.literal("")),
+    .refine(validateUrl(["discord.com"]), {
+      message: "Discord URL must be https://discord.com/*",
+    })
+    .optional(),
 });
 
 export const updateAgentSchema = z.object({
@@ -133,21 +65,24 @@ export const updateAgentSchema = z.object({
   website: z
     .string()
     .trim()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: "Must be a valid URL",
+    })
+    .optional(),
   apiUrl: z
     .string()
     .trim()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: "Must be a valid URL",
+    })
+    .optional(),
   imageUrl: z
     .string()
     .trim()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: "Must be a valid URL",
+    })
+    .optional(),
   socials: updateAgentSocialsSchema,
 });
 
