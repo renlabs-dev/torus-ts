@@ -153,7 +153,7 @@ export const useStore = create<AppState>()(
         return (state, error) => {
           state?.failUnconfirmedTransfers();
           if (error || !state) {
-            logger.error("Error during hydration", error);
+            logger.error("Error during hydration: ", error);
             return;
           }
           void initWarpContext(
