@@ -23,8 +23,7 @@ const config = {
 
   // Proxy /api/stake-out through the bridge to avoid CORS
   async rewrites() {
-    const CACHE_URL =
-      process.env.NEXT_PUBLIC_CACHE_URL || "http://localhost:3006";
+    const CACHE_URL = process.env.NEXT_PUBLIC_CACHE_URL;
 
     return [
       {
