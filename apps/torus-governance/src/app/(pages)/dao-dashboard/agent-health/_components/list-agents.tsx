@@ -21,6 +21,7 @@ import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { useAgentHealth } from "hooks/use-agent-health";
 import type { DialogPenaltiesState, PenaltyList } from "hooks/use-agent-health";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
@@ -94,8 +95,8 @@ const AgentPenaltiesCard = ({
 
   return (
     <Card
-      className="animate-fade-down hover:bg-accent flex w-full flex-col justify-between gap-4 p-6
-        transition duration-500 sm:flex-row sm:items-center sm:gap-2"
+      className="hover:bg-accent flex w-full flex-col justify-between gap-4 p-6 transition
+        sm:flex-row sm:items-center sm:gap-2"
     >
       <div className="flex flex-col items-start gap-1">
         <div className="flex items-center gap-2">
@@ -215,17 +216,21 @@ export const ListAgents = () => {
 
   return (
     <>
-      {filteredAgents.map((agent) => (
-        <AgentPenaltiesCard
-          key={agent.key}
-          content={agent}
-          penaltyThreshold={penaltyThreshold}
-          setPenaltiesDialog={(content) => {
-            setPenaltiesDialog(content);
-            hiddenTriggerRef.current?.click();
-          }}
-        />
-      ))}
+      <ScrollArea className="h-[31.2rem]">
+        <div className="flex flex-col gap-4">
+          {filteredAgents.map((agent) => (
+            <AgentPenaltiesCard
+              key={agent.key}
+              content={agent}
+              penaltyThreshold={penaltyThreshold}
+              setPenaltiesDialog={(content) => {
+                setPenaltiesDialog(content);
+                hiddenTriggerRef.current?.click();
+              }}
+            />
+          ))}
+        </div>
+      </ScrollArea>
 
       <Dialog>
         <DialogTrigger ref={hiddenTriggerRef} className="hidden" />

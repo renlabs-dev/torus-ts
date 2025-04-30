@@ -8,7 +8,7 @@ import type { SidebarDataProps } from "./sidebar-info";
 export const SidebarInfoDesktop = ({ data }: { data: SidebarDataProps }) => {
   return (
     <>
-      <Card className="animate-fade-up animate-delay-[400ms] hidden flex-col gap-6 px-7 py-5 lg:flex">
+      <Card className="animate-fade-up animate-delay-[400ms] hidden flex-col gap-7 p-7 lg:flex">
         <div>
           {data.treasuryBalance.isLoading ? (
             <Skeleton className="flex w-1/3 py-3" />

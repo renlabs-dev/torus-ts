@@ -67,7 +67,7 @@ export default function DashboardAgentHealthCard() {
       icon={KeyboardOff}
       title="Agents Health"
     >
-      <ScrollArea className="h-[23em]">
+      <ScrollArea className="h-[22em]">
         {isFetching ? (
           <div className="text-sm">Loading...</div>
         ) : filteredAgents.length === 0 ? (

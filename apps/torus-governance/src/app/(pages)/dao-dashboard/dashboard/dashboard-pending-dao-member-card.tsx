@@ -23,7 +23,7 @@ export default function DashboardPendingDaoMemberCard() {
       redirectPath="/dao-applications"
       icon={UserRound}
     >
-      <ScrollArea className="h-[8.9rem]">
+      <ScrollArea className="h-[7.8rem]">
         <div className="flex flex-col">
           {isLoading ? (
             <div className="flex flex-col gap-3">
