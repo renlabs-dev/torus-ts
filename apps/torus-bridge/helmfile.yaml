@@ -6,7 +6,7 @@ environments:
       - namespace: torus-dev-web-apps
       - environmentName: dev
       - wssApiEndpoint: wss://api.testnet.torus.network
-      - cacheUrl: cache.testnet.torus.network
+      - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-torus-bridge
       - ingressHost: bridge.testnet.torus.network
       - chainEnv: mainnet
