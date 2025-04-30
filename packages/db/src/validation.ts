@@ -7,6 +7,7 @@ import {
   commentInteractionSchema,
   commentReportSchema,
   commentSchema,
+  daoWhitelistSchema,
   penalizeAgentVotesSchema,
   userAgentWeightSchema,
   userDiscordInfoSchema,
@@ -101,6 +102,14 @@ export const PENALTY_INSERT_SCHEMA = createInsertSchema(
 });
 export const USER_DISCORD_INFO_INSERT_SCHEMA = createInsertSchema(
   userDiscordInfoSchema,
+).omit({
+  id: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+export const DAO_WHITELIST_INSERT_SCHEMA = createInsertSchema(
+  daoWhitelistSchema,
 ).omit({
   id: true,
   updatedAt: true,

@@ -150,6 +150,12 @@ export const whitelistApplicationSchema = createTable("whitelist_application", {
   ...timeFields(),
 });
 
+export const daoWhitelistSchema = createTable("dao_whitelist", {
+  id: serial("id").primaryKey(),
+  agentKey: ss58Address("user_key").notNull(),
+  ...timeFields(),
+});
+
 export const penalizeAgentVotesSchema = createTable(
   "penalize_agent_votes",
   {
