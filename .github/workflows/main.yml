@@ -441,7 +441,6 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-bridge
-      healthCheckPath: /api/stake-out
 
   torus-bridge-pr-delete:
     if: |
