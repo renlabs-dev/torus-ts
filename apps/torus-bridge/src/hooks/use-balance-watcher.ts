@@ -19,9 +19,11 @@ export function useRecipientBalanceWatcher(
     recipient: "",
   });
   useEffect(() => {
+    const prev = prevRecipientBalance.current;
     if (
       recipient &&
       balance &&
+      prev.recipient === recipient &&
       prevRecipientBalance.current.balance &&
       prevRecipientBalance.current.recipient === recipient &&
       balance.token.equals(prevRecipientBalance.current.balance.token) &&
