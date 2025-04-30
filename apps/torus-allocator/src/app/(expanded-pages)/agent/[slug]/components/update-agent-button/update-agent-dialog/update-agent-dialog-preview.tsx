@@ -1,8 +1,6 @@
 "use client";
 
-import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
 import { Card } from "@torus-ts/ui/components/card";
-import { AlertCircle } from "lucide-react";
 import type { useForm } from "react-hook-form";
 import { AgentCardContent } from "~/app/_components/agent-item-card/components/agent-card-content";
 import type { AgentHeaderProps } from "~/app/_components/agent-item-card/components/agent-card-header";
@@ -27,7 +25,10 @@ function AgentPreviewSkeleton() {
   );
 }
 
-export function UpdateAgentDialogPreview({ agentKey, form }: UpdateAgentDialogPreviewProps) {
+export function UpdateAgentDialogPreview({
+  agentKey,
+  form,
+}: UpdateAgentDialogPreviewProps) {
   const { data: agent, isLoading } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
     {
@@ -40,7 +41,6 @@ export function UpdateAgentDialogPreview({ agentKey, form }: UpdateAgentDialogPr
   if (isLoading || !agent?.metadataUri) {
     return <AgentPreviewSkeleton />;
   }
-
 
   const formValues = form.getValues();
   const previewImage = form.watch("imageUrl");
