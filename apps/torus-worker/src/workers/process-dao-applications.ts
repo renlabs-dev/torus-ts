@@ -29,6 +29,7 @@ import {
   pendingPenalizations,
   queryTotalVotesPerApp,
   updatePenalizeAgentVotes,
+  upsertDaoWhitelist,
 } from "../db";
 
 const getEnv = validateEnvOrExit({
@@ -216,6 +217,14 @@ export async function processVotesOnProposal(
       const acceptErrorMsg = () => `Failed to accept application ${appId}:`;
       if (log.ifResultIsErr(acceptRes, acceptErrorMsg)) return;
       const [_acceptErr, acceptResult] = acceptRes;
+
+      const upsertdaoWhitelistRes = await tryAsync(
+        upsertDaoWhitelist(app.agentKey),
+      );
+      const upsertdaoWhitelistErrorMsg = () =>
+        `Failed to upsert dao whitelist for ${app.agentKey}:`;
+      if (log.ifResultIsErr(upsertdaoWhitelistRes, upsertdaoWhitelistErrorMsg))
+        return;
 
       log.info(
         `Accept application executed for ${appId}: ${JSON.stringify(acceptResult.toHuman())}`,

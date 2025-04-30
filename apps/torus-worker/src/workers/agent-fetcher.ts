@@ -24,8 +24,7 @@ import {
   SubspaceAgentToDatabase,
   upsertAgentData,
   upsertProposal,
-  // upsertWhitelistApplication,
-  upsertWhitelistApplicationAndDaoWhitelist,
+  upsertWhitelistApplication,
 } from "../db";
 
 const log = BasicLogger.create({ name: "agent-fetcher" });
@@ -103,7 +102,7 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
   );
 
   const upsertWhitelistApplicationRes = await tryAsync(
-    upsertWhitelistApplicationAndDaoWhitelist(dbApplications),
+    upsertWhitelistApplication(dbApplications),
   );
   if (log.ifResultIsErr(upsertWhitelistApplicationRes)) return;
   log.info(`Block ${lastBlockNumber}: applications upserted`);

@@ -94,50 +94,12 @@ export async function upsertWhitelistApplication(
     .execute();
 }
 
-export async function upsertWhitelistApplicationAndDaoWhitelist(
-  applications: NewApplication[],
-) {
-  // Use a transaction to ensure both operations succeed or fail together
-  return await db.transaction(async (tx) => {
-    // First, upsert into whitelistApplication
-    const whitelistResult = await tx
-      .insert(whitelistApplicationSchema)
-      .values(
-        applications.map((a) => ({
-          agentKey: a.agentKey,
-          payerKey: a.payerKey,
-          status: a.status,
-          expiresAt: a.expiresAt,
-          cost: a.cost,
-          data: a.data,
-        })),
-      )
-      .onConflictDoUpdate({
-        target: [whitelistApplicationSchema.agentKey],
-        set: buildConflictUpdateColumns(whitelistApplicationSchema, [
-          "status",
-          "notified",
-        ]),
-      })
-      .returning()
-      .execute();
-
-    // Only insert into daoWhitelist if we have successfully processed whitelistApplication
-    // To make sure that one table will always reflect the other
-    if (whitelistResult.length > 0) {
-      await tx
-        .insert(daoWhitelistSchema)
-        .values(
-          applications.map((a) => ({
-            agentKey: a.agentKey,
-          })),
-        )
-        .onConflictDoNothing()
-        .execute();
-    }
-
-    return whitelistResult;
-  });
+export async function upsertDaoWhitelist(agentKey: SS58Address) {
+  return await db
+    .insert(daoWhitelistSchema)
+    .values({ agentKey })
+    .onConflictDoNothing()
+    .execute();
 }
 
 export async function upsertProposal(proposals: NewProposal[]) {

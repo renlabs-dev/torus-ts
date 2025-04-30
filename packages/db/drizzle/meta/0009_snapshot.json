@@ -1,6 +1,6 @@
 {
-  "id": "b2ce3e53-a99d-40a8-882e-ff81474730cf",
-  "prevId": "0ceef046-4b44-444d-944e-ec39717629ef",
+  "id": "c3787ca3-ed58-4a44-b34d-2764d392819c",
+  "prevId": "07669c25-9a7a-4a8f-9a74-527952e6168a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -60,26 +60,26 @@
         "agent_application_vote_user_key_cadre_user_key_fk": {
           "name": "agent_application_vote_user_key_cadre_user_key_fk",
           "tableFrom": "agent_application_vote",
+          "tableTo": "cadre",
           "columnsFrom": [
             "user_key"
           ],
-          "tableTo": "cadre",
           "columnsTo": [
             "user_key"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "agent_application_vote_application_id_user_key_unique": {
           "name": "agent_application_vote_application_id_user_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "application_id",
             "user_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -148,15 +148,15 @@
         "agent_report_agent_key_agent_key_fk": {
           "name": "agent_report_agent_key_agent_key_fk",
           "tableFrom": "agent_report",
+          "tableTo": "agent",
           "columnsFrom": [
             "agent_key"
           ],
-          "tableTo": "agent",
           "columnsTo": [
             "key"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -269,9 +269,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -279,10 +279,10 @@
       "uniqueConstraints": {
         "agent_key_unique": {
           "name": "agent_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -365,17 +365,17 @@
       "uniqueConstraints": {
         "cadre_candidate_user_key_unique": {
           "name": "cadre_candidate_user_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "user_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         },
         "cadre_candidate_discord_id_unique": {
           "name": "cadre_candidate_discord_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "discord_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -437,17 +437,17 @@
       "uniqueConstraints": {
         "cadre_user_key_unique": {
           "name": "cadre_user_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "user_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         },
         "cadre_discord_id_unique": {
           "name": "cadre_discord_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "discord_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -574,39 +574,39 @@
         "cadre_vote_user_key_cadre_user_key_fk": {
           "name": "cadre_vote_user_key_cadre_user_key_fk",
           "tableFrom": "cadre_vote",
+          "tableTo": "cadre",
           "columnsFrom": [
             "user_key"
           ],
-          "tableTo": "cadre",
           "columnsTo": [
             "user_key"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "cadre_vote_applicant_key_cadre_candidate_user_key_fk": {
           "name": "cadre_vote_applicant_key_cadre_candidate_user_key_fk",
           "tableFrom": "cadre_vote",
+          "tableTo": "cadre_candidate",
           "columnsFrom": [
             "applicant_key"
           ],
-          "tableTo": "cadre_candidate",
           "columnsTo": [
             "user_key"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "cadre_vote_user_key_applicant_key_unique": {
           "name": "cadre_vote_user_key_applicant_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "user_key",
             "applicant_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -682,35 +682,35 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "comment_interaction_comment_id_comment_id_fk": {
           "name": "comment_interaction_comment_id_comment_id_fk",
           "tableFrom": "comment_interaction",
+          "tableTo": "comment",
           "columnsFrom": [
             "comment_id"
           ],
-          "tableTo": "comment",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "comment_interaction_user_key_comment_id_unique": {
           "name": "comment_interaction_user_key_comment_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "user_key",
             "comment_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -779,15 +779,15 @@
         "comment_report_comment_id_comment_id_fk": {
           "name": "comment_report_comment_id_comment_id_fk",
           "tableFrom": "comment_report",
+          "tableTo": "comment",
           "columnsFrom": [
             "comment_id"
           ],
-          "tableTo": "comment",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -883,9 +883,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -956,27 +956,73 @@
         "computed_agent_weight_agent_key_agent_key_fk": {
           "name": "computed_agent_weight_agent_key_agent_key_fk",
           "tableFrom": "computed_agent_weight",
+          "tableTo": "agent",
           "columnsFrom": [
             "agent_key"
           ],
-          "tableTo": "agent",
           "columnsTo": [
             "key"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "computed_agent_weight_agent_key_unique": {
           "name": "computed_agent_weight_agent_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "agent_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dao_whitelist": {
+      "name": "dao_whitelist",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_key": {
+          "name": "user_key",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "null"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1109,26 +1155,26 @@
         "penalize_agent_votes_cadre_key_cadre_user_key_fk": {
           "name": "penalize_agent_votes_cadre_key_cadre_user_key_fk",
           "tableFrom": "penalize_agent_votes",
+          "tableTo": "cadre",
           "columnsFrom": [
             "cadre_key"
           ],
-          "tableTo": "cadre",
           "columnsTo": [
             "user_key"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "penalize_agent_votes_agent_key_cadre_key_unique": {
           "name": "penalize_agent_votes_agent_key_cadre_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "agent_key",
             "cadre_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1228,10 +1274,10 @@
       "uniqueConstraints": {
         "proposal_proposal_id_unique": {
           "name": "proposal_proposal_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "proposal_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1294,26 +1340,26 @@
         "user_agent_weight_agent_key_agent_key_fk": {
           "name": "user_agent_weight_agent_key_agent_key_fk",
           "tableFrom": "user_agent_weight",
+          "tableTo": "agent",
           "columnsFrom": [
             "agent_key"
           ],
-          "tableTo": "agent",
           "columnsTo": [
             "key"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "user_agent_weight_user_key_agent_key_unique": {
           "name": "user_agent_weight_user_key_agent_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "user_key",
             "agent_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1376,10 +1422,10 @@
       "uniqueConstraints": {
         "user_discord_info_discord_id_unique": {
           "name": "user_discord_info_discord_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "discord_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1473,10 +1519,10 @@
       "uniqueConstraints": {
         "whitelist_application_user_key_unique": {
           "name": "whitelist_application_user_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "user_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1489,10 +1535,10 @@
       "name": "application_status",
       "schema": "public",
       "values": [
-        "OPEN",
-        "ACCEPTED",
-        "REJECTED",
-        "EXPIRED"
+        "Open",
+        "Accepted",
+        "Rejected",
+        "Expired"
       ]
     },
     "public.agent_application_vote_type": {
@@ -1543,10 +1589,11 @@
     }
   },
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
   "views": {
     "public.comment_digest": {
-      "name": "comment_digest",
-      "schema": "public",
       "columns": {
         "id": {
           "name": "id",
@@ -1594,13 +1641,12 @@
         }
       },
       "definition": "select \"comment\".\"id\", \"comment\".\"item_type\", \"comment\".\"item_id\", \"comment\".\"user_key\", \"comment\".\"user_name\", \"comment\".\"content\", \"comment\".\"created_at\", sum(CASE WHEN \"comment_interaction\".\"reaction_type\" = 'LIKE' THEN 1 ELSE 0 END) as \"likes\", sum(CASE WHEN \"comment_interaction\".\"reaction_type\" = 'DISLIKE' THEN 1 ELSE 0 END) as \"dislikes\" from \"comment\" left join \"comment_interaction\" on \"comment\".\"id\" = \"comment_interaction\".\"comment_id\" where \"comment\".\"deleted_at\" is null group by \"comment\".\"id\", \"comment\".\"item_type\", \"comment\".\"item_id\", \"comment\".\"user_key\", \"comment\".\"content\", \"comment\".\"created_at\" order by \"comment\".\"created_at\" asc",
-      "materialized": true,
-      "isExisting": false
+      "name": "comment_digest",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": true
     }
   },
-  "sequences": {},
-  "roles": {},
-  "policies": {},
   "_meta": {
     "columns": {},
     "schemas": {},
