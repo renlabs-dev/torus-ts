@@ -36,20 +36,20 @@ export const uploadMetadata = async (
   metadata: UpdateAgentFormData,
   imageFile: File | null,
 ): Promise<string> => {
-  const baseMetadata = {
+  const icon = imageFile
+    ? cidToIpfsUri(await pinFile(imageFile).then(({ cid }) => cid))
+    : "undefined";
+
+  const finalMetadata = {
     title: metadata.title,
     short_description: metadata.shortDescription,
     description: metadata.description,
     website: metadata.website,
     socials: metadata.socials,
+    images: {
+      icon,
+    },
   };
-
-  const finalMetadata = imageFile
-    ? {
-        ...baseMetadata,
-        images: { icon: cidToIpfsUri((await pinFile(imageFile)).cid) },
-      }
-    : baseMetadata;
 
   const metadataFile = strToFile(
     JSON.stringify(finalMetadata, null, 2),

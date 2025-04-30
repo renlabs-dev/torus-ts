@@ -3,8 +3,11 @@ import { z } from "zod";
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
   try {
-    const { hostname } = new URL(val);
-    return domains.some((d) => hostname === d || hostname.endsWith(`.${d}`));
+    const { hostname, pathname } = new URL(val);
+    return (
+      domains.some((d) => hostname === d || hostname.startsWith(`${d}.`)) &&
+      pathname.length > 1
+    );
   } catch {
     return false;
   }
