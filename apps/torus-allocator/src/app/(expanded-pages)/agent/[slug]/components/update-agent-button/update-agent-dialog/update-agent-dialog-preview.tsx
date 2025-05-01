@@ -5,10 +5,7 @@ import { AgentCardContent } from "~/app/_components/agent-item-card/components/a
 import type { AgentHeaderProps } from "~/app/_components/agent-item-card/components/agent-card-header";
 import { AgentCardHeader } from "~/app/_components/agent-item-card/components/agent-card-header";
 import { api } from "~/trpc/react";
-import type {
-  UpdateAgentForm,
-  UpdateAgentFormData,
-} from "./update-agent-dialog-form-schema";
+import type { UpdateAgentForm } from "./update-agent-dialog-form-schema";
 
 interface UpdateAgentDialogPreviewProps {
   agentKey: string;
