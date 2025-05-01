@@ -1,7 +1,6 @@
 "use client";
 
 import { smallAddress } from "@torus-network/torus-utils/subspace";
-import type { AppRouter } from "@torus-ts/api";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
@@ -14,25 +13,15 @@ import {
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
 import { getLinks } from "@torus-ts/ui/lib/data";
-import type { inferProcedureOutput } from "@trpc/server";
 import { env } from "~/env";
-import { api } from "~/trpc/react";
 import { ArrowRight, Coins } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
-
-type AgentWithAggregatedPenalties = NonNullable<
-  inferProcedureOutput<AppRouter["agent"]["allWithAggregatedPenalties"]>
->;
-
-type PenaltyList = AgentWithAggregatedPenalties[number]["penalties"];
-
-interface DialogPenaltiesState {
-  penalties: PenaltyList;
-  agentName: string;
-}
+import { useRef, useState } from "react";
+import { useAgentHealth } from "hooks/use-agent-health";
+import type { DialogPenaltiesState, PenaltyList } from "hooks/use-agent-health";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
@@ -90,46 +79,12 @@ const PenaltyLabel = ({
   );
 };
 
-function filterAgent({
-  agent,
-  search,
-  statusFilter,
-  penaltyThreshold,
-}: {
-  agent: AgentWithAggregatedPenalties[number];
-  search: string | null;
-  statusFilter: string | null;
-  penaltyThreshold: number;
-}): AgentWithAggregatedPenalties[number] | null {
-  if (search) {
-    const searchLower = search.toLocaleLowerCase();
-    const agentKeyLower = agent.key.toLocaleLowerCase();
-    const agentNameLower = (agent.name ?? "").toLocaleLowerCase();
-
-    if (
-      !agentNameLower.includes(searchLower) &&
-      !agentKeyLower.includes(searchLower)
-    ) {
-      return null;
-    }
-  }
-
-  if (statusFilter && statusFilter !== "all") {
-    const isPenalized = agent.penalties.length >= penaltyThreshold;
-
-    if (statusFilter === "healthy" && isPenalized) return null;
-    if (statusFilter === "penalized" && !isPenalized) return null;
-  }
-
-  return agent;
-}
-
 const AgentPenaltiesCard = ({
   content,
   setPenaltiesDialog,
   penaltyThreshold,
 }: {
-  content: AgentWithAggregatedPenalties[number];
+  content: ReturnType<typeof useAgentHealth>["filteredAgents"][number];
   setPenaltiesDialog: (content: DialogPenaltiesState) => void;
   penaltyThreshold: number;
 }) => {
@@ -139,7 +94,10 @@ const AgentPenaltiesCard = ({
   };
 
   return (
-    <Card className="animate-fade-down hover:bg-accent flex w-full flex-col justify-between gap-4 p-6 transition duration-500 sm:flex-row sm:items-center sm:gap-2">
+    <Card
+      className="hover:bg-accent flex w-full flex-col justify-between gap-4 p-6 transition
+        sm:flex-row sm:items-center sm:gap-2"
+    >
       <div className="flex flex-col items-start gap-1">
         <div className="flex items-center gap-2">
           <CopyButton
@@ -203,9 +161,9 @@ const PenaltiesList = ({ penalties }: { penalties?: PenaltyList }) => {
                     {smallAddress(penalty.cadreKey, 10)}
                   </CopyButton>
                   <span
-                    className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5 ${getPenaltyStatusColors(
-                      penalty.executed,
-                    )} text-xs font-medium ring-1 ring-inset`}
+                    className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5
+                    ${getPenaltyStatusColors(penalty.executed)} text-xs font-medium ring-1
+                    ring-inset`}
                   >
                     {penalty.executed ? "EXECUTED" : "PENDING"}
                   </span>
@@ -238,62 +196,41 @@ const EmptyState = () => (
   <ContentNotFound message="No Agents matching the search criteria were found." />
 );
 
-export const ListAgents = () => {
-  const { data: cadreListData } = api.cadre.all.useQuery();
-  const { data: agentsWithPenalties, isFetching } =
-    api.agent.allWithAggregatedPenalties.useQuery();
+export const AgentHealthList = () => {
+  const searchParams = useSearchParams();
+  const search = searchParams.get("search") ?? null;
+  const statusFilter = searchParams.get("status") ?? null;
 
-  // Calculate the penalty threshold based on the square root of cadre list length
-  const penaltyThreshold =
-    Math.round(Math.sqrt(cadreListData?.length ?? 0)) + 1;
+  const { filteredAgents, penaltyThreshold, isFetching } = useAgentHealth({
+    searchParam: search,
+    statusFilter,
+  });
 
   // State for managing the penalties dialog
   const [penaltiesDialog, setPenaltiesDialog] =
     useState<DialogPenaltiesState | null>(null);
   const hiddenTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const searchParams = useSearchParams();
-
-  // Filter agents based on search parameters
-  const filteredAgents = useMemo(() => {
-    if (!agentsWithPenalties) return [];
-
-    const search = searchParams.get("search")?.toLocaleLowerCase() ?? null;
-    const statusFilter = searchParams.get("status");
-
-    return agentsWithPenalties
-      .map((agent) =>
-        filterAgent({
-          agent,
-          search,
-          statusFilter,
-          penaltyThreshold,
-        }),
-      )
-      .filter(
-        (agent): agent is AgentWithAggregatedPenalties[number] =>
-          agent !== null,
-      );
-  }, [agentsWithPenalties, searchParams, penaltyThreshold]);
-
   if (isFetching) return <LoadingState />;
-  if (!agentsWithPenalties) return <EmptyState />;
-  if (agentsWithPenalties.length === 0 || filteredAgents.length === 0)
-    return <EmptyState />;
+  if (filteredAgents.length === 0) return <EmptyState />;
 
   return (
     <>
-      {filteredAgents.map((agent) => (
-        <AgentPenaltiesCard
-          key={agent.key}
-          content={agent}
-          penaltyThreshold={penaltyThreshold}
-          setPenaltiesDialog={(content) => {
-            setPenaltiesDialog(content);
-            hiddenTriggerRef.current?.click();
-          }}
-        />
-      ))}
+      <ScrollArea className="h-[31.2rem]">
+        <div className="flex flex-col gap-4">
+          {filteredAgents.map((agent) => (
+            <AgentPenaltiesCard
+              key={agent.key}
+              content={agent}
+              penaltyThreshold={penaltyThreshold}
+              setPenaltiesDialog={(content) => {
+                setPenaltiesDialog(content);
+                hiddenTriggerRef.current?.click();
+              }}
+            />
+          ))}
+        </div>
+      </ScrollArea>
 
       <Dialog>
         <DialogTrigger ref={hiddenTriggerRef} className="hidden" />
