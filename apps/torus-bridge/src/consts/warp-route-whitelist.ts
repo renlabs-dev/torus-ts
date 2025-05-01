@@ -7,7 +7,8 @@ import { env } from "~/env";
 
 const warpRoute = {
   mainnet: "TORUS/base-torus",
-  testnet: "TORUS/basesepolia-torustestnet",
+  // testnet: "TORUS/basesepolia-torustestnet",
+  testnet: "TORUS/base-torus",
 }[env("NEXT_PUBLIC_TORUS_CHAIN_ENV")];
 
 export const warpRouteWhitelist: string[] | null = [
