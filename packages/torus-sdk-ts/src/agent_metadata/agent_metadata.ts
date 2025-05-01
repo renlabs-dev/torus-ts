@@ -34,10 +34,10 @@ export const AGENT_METADATA_SCHEMA = z.object({
     .optional(),
   socials: z
     .object({
-      discord: z_url,
-      github: z_url,
-      telegram: z_url,
-      twitter: z_url,
+      discord: z_url.optional(),
+      github: z_url.optional(),
+      telegram: z_url.optional(),
+      twitter: z_url.optional(),
     })
     .partial()
     .optional(),
