@@ -135,24 +135,24 @@ jobs:
         needs.files-check.outputs.docker != 'true' && 
         needs.turbo-check.outputs.torus-allocator != 'true') }}
 
-  torus-bridge:
-    needs: [turbo-check, files-check, pr-check]
-    if: |
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
-      needs.pr-check.outputs.skip == 'false' &&
-      (inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      needs.files-check.outputs.apps == 'true' ||
-      needs.turbo-check.outputs.torus-bridge == 'true')
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-      skip_build: >-
-        ${{ inputs.skip_build ||
-        (needs.files-check.outputs.apps == 'true' &&
-        needs.files-check.outputs.docker != 'true' &&
-        needs.turbo-check.outputs.torus-bridge != 'true') }}
+  # torus-bridge:
+  #   needs: [turbo-check, files-check, pr-check]
+  #   if: |
+  #     (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd') &&
+  #     needs.pr-check.outputs.skip == 'false' &&
+  #     (inputs.skip_build ||
+  #     contains(github.event.head_commit.message, 'skip build') ||
+  #     needs.files-check.outputs.apps == 'true' ||
+  #     needs.turbo-check.outputs.torus-bridge == 'true')
+  #   uses: ./.github/workflows/app-deployment-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
+  #     skip_build: >-
+  #       ${{ inputs.skip_build ||
+  #       (needs.files-check.outputs.apps == 'true' &&
+  #       needs.files-check.outputs.docker != 'true' &&
+  #       needs.turbo-check.outputs.torus-bridge != 'true') }}
 
   torus-cache:
     needs: [turbo-check, files-check, pr-check]
@@ -258,17 +258,17 @@ jobs:
     with:
       app_name: torus-allocator
 
-  torus-bridge-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
-      needs.turbo-check.outputs.torus-bridge == 'true'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
+  # torus-bridge-dry-run:
+  #   needs: [turbo-check, pr-check]
+  #   if: |
+  #     github.ref_name != 'main' &&
+  #     github.ref_name != 'dev' &&
+  #     github.ref_name != 'cicd' &&
+  #     needs.turbo-check.outputs.torus-bridge == 'true'
+  #   uses: ./.github/workflows/dry-run-build-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
 
   torus-cache-dry-run:
     needs: [turbo-check, pr-check]
@@ -430,24 +430,24 @@ jobs:
       app_name: torus-wallet
       delete: true
 
-  torus-bridge-pr-activate:
-    needs: [turbo-check, files-check]
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      (needs.turbo-check.outputs.torus-bridge == 'true' ||
-      needs.files-check.outputs.apps == 'true')
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
+  # torus-bridge-pr-activate:
+  #   needs: [turbo-check, files-check]
+  #   if: |
+  #     github.event.pull_request.state == 'open' && !github.event.repository.fork
+  #     && github.head_ref != 'main' && github.head_ref != 'dev' &&
+  #     (needs.turbo-check.outputs.torus-bridge == 'true' ||
+  #     needs.files-check.outputs.apps == 'true')
+  #   uses: ./.github/workflows/pr-preview-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
 
-  torus-bridge-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-      delete: true
+  # torus-bridge-pr-delete:
+  #   if: |
+  #     github.event.pull_request.state == 'closed'
+  #     && github.head_ref != 'main' && github.head_ref != 'dev'
+  #   uses: ./.github/workflows/pr-preview-template.yml
+  #   secrets: inherit
+  #   with:
+  #     app_name: torus-bridge
+  #     delete: true
