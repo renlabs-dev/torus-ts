@@ -13,7 +13,7 @@ export default function ProposalsPage() {
         />
         <ShapeNetworkModal />
       </div>
-      <ScrollArea className="sm:max-h-[34.3rem]">
+      <ScrollArea className="sm:max-h-[calc(100vh-17rem)]">
         <div className="flex flex-col gap-4">
           <ListProposals />
         </div>

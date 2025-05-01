@@ -54,7 +54,7 @@ export const ListWhitelistApplications = () => {
   if (applications.length === 0) return <EmptyState />;
 
   return (
-    <ScrollArea className="h-[33.9rem]">
+    <ScrollArea className="sm:max-h-[calc(100vh-17rem)]">
       <div className="flex flex-col gap-4 pb-4">
         {applications.map((app) => {
           const userVoted = votesPerUserKey?.find(

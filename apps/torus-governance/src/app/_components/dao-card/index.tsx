@@ -52,13 +52,15 @@ export function DaoCard({
         {title && (
           <CardTitle
             className={cn(
-              "line-clamp-3 text-xl font-semibold text-white lg:pb-0 xl:line-clamp-2",
+              `line-clamp-3 text-xl font-semibold text-white lg:pb-0 xl:line-clamp-2 break-all
+              word-break-break-word overflow-hidden`,
               variant === "small" ? "text-sm" : "text-xl",
             )}
           >
             {title}
           </CardTitle>
         )}
+
         {children}
       </CardContent>
     </Card>
