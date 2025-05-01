@@ -17,6 +17,7 @@ export interface AgentApplicationCardProps {
   agentVoted?: AgentApplicationVoteType;
   agentApplicationId?: number;
   whitelistStatus?: string;
+  variant?: "default" | "small";
 }
 
 export function AgentApplicationCard({
@@ -27,6 +28,7 @@ export function AgentApplicationCard({
   agentVoted,
   agentApplicationId,
   whitelistStatus,
+  variant = "default",
 }: Readonly<AgentApplicationCardProps>) {
   // Generate top-right content (status labels)
   const topRightContent = (
@@ -48,10 +50,11 @@ export function AgentApplicationCard({
   return (
     <DaoCard
       title={title}
-      topRightContent={topRightContent}
+      variant={variant}
       metaContent={metaContent}
+      topRightContent={topRightContent}
     >
-      {agentApplicationId && (
+      {agentApplicationId && variant !== "small" && (
         <AgentApplicationVotePercentageBar
           applicationId={agentApplicationId}
           whitelistStatus={whitelistStatus}
