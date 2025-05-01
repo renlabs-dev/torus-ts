@@ -159,7 +159,6 @@ export default function UpdateAgentDialog({
             toast,
             setIsUploading,
             form,
-            setIsOpen,
           });
         } catch (error) {
           const errorMessage =
@@ -188,7 +187,6 @@ export default function UpdateAgentDialog({
       updateAgent,
       toast,
       form,
-      setIsOpen,
     ],
   );
 
