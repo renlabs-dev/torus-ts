@@ -3,6 +3,7 @@
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Tooltip,
+  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
@@ -10,79 +11,80 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Pencil } from "lucide-react";
 import { cn } from "@torus-ts/ui/lib/utils";
 
-interface AgentButtonProps {
+interface UpdateAgentCoreButtonProps {
   className?: string;
   onClick?: () => void;
-  disabled?: boolean;
+  isDisabled?: boolean;
   variant: "owner" | "wait-period" | "non-owner";
   agentKey?: string;
 }
 
-interface AgentDialogButtonProps {
+interface UpdateAgentDialogButtonProps {
   agentKey: string;
   variant: "owner" | "wait-period";
 }
 
-const baseButtonClasses = "flex w-full items-center gap-1.5 p-3";
+const baseButtonClasses = "flex w-full items-center gap-2 p-3 cursor-pointer";
 
 const variantStyles = {
   owner:
     "border-green-500 text-green-500 opacity-65 hover:text-green-500 hover:opacity-100 hover:bg-green-500/10",
   "wait-period":
     "border-amber-500 text-amber-500 opacity-65 hover:text-amber-500 hover:opacity-100 hover:bg-amber-500/10",
-  "non-owner": "border-gray-500 text-gray-500",
+  "non-owner": "border-gray-500 text-gray-500 cursor-not-allowed",
 };
 
-const AgentButtonContent = () => (
-  <>
-    <Pencil className="mr-2 h-4 w-4" />
-    Update Agent Info
-  </>
+const UpdateAgentButtonContent = () => (
+  <div className="flex items-center gap-2">
+    <Pencil className="h-4 w-4" />
+    <span>Update Agent Info</span>
+  </div>
 );
 
-const AgentNonOwnerTooltip = () => (
-  <TooltipContent>
-    <p>Only the agent owner can update agent information</p>
-  </TooltipContent>
-);
-
-const AgentButton = ({
+const UpdateAgentCoreButton = ({
   className,
   onClick,
-  disabled,
+  isDisabled,
   variant,
-}: AgentButtonProps) => (
+}: UpdateAgentCoreButtonProps) => (
   <Button
     variant="outline"
     className={cn(baseButtonClasses, variantStyles[variant], className)}
     onClick={onClick}
-    disabled={disabled ?? variant === "non-owner"}
+    disabled={isDisabled ?? variant === "non-owner"}
     aria-label="Edit agent information"
     aria-disabled={variant === "non-owner" ? "true" : undefined}
   >
-    <AgentButtonContent />
+    <UpdateAgentButtonContent />
   </Button>
 );
 
-const AgentDialogButton = ({ agentKey, variant }: AgentDialogButtonProps) => (
-  <AgentButton agentKey={agentKey} variant={variant} />
+const UpdateAgentDialogButton = ({
+  agentKey,
+  variant,
+}: UpdateAgentDialogButtonProps) => (
+  <UpdateAgentCoreButton agentKey={agentKey} variant={variant} />
 );
 
 export function UpdateAgentButton({ agentKey }: { agentKey: string }) {
   const { selectedAccount } = useTorus();
   const isOwner = selectedAccount?.address === agentKey;
 
+  if (isOwner) {
+    return <UpdateAgentDialogButton agentKey={agentKey} variant="owner" />;
+  }
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          {isOwner ? (
-            <AgentDialogButton agentKey={agentKey} variant="owner" />
-          ) : (
-            <AgentButton variant="non-owner" />
-          )}
+          <div>
+            <UpdateAgentCoreButton variant="non-owner" />
+          </div>
         </TooltipTrigger>
-        {!isOwner && <AgentNonOwnerTooltip />}
+        <TooltipContent>
+          <p>Only the agent owner can update agent information</p>
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
