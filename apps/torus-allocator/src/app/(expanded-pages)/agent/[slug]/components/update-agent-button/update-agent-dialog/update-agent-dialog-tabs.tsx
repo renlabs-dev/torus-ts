@@ -14,7 +14,6 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { ArrowLeft, ArrowRight, Eye, Pencil, Save } from "lucide-react";
 import { useState } from "react";
-import type { useForm } from "react-hook-form";
 import { UpdateAgentDialogForm } from "./update-agent-dialog-form";
 import type {
   UpdateAgentForm,

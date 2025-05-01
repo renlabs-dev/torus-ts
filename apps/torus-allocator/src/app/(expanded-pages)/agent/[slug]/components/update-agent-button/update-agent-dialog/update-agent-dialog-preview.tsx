@@ -1,7 +1,6 @@
 "use client";
 
 import { Card } from "@torus-ts/ui/components/card";
-import type { useForm } from "react-hook-form";
 import { AgentCardContent } from "~/app/_components/agent-item-card/components/agent-card-content";
 import type { AgentHeaderProps } from "~/app/_components/agent-item-card/components/agent-card-header";
 import { AgentCardHeader } from "~/app/_components/agent-item-card/components/agent-card-header";
