@@ -11,7 +11,6 @@ import { Separator } from "@torus-ts/ui/components/separator";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { FileImage, Globe, Terminal } from "lucide-react";
 import Image from "next/image";
-import type { useForm } from "react-hook-form";
 import type {
   UpdateAgentForm,
   UpdateAgentFormData,
