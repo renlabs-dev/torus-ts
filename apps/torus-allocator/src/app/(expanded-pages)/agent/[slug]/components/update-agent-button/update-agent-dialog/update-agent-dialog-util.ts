@@ -1,17 +1,6 @@
 "use client";
 
 import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { formatToken } from "@torus-network/torus-utils/subspace";
-import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-
-interface ToastProps {
-  title: string;
-  description: string;
-  variant?: "default" | "destructive";
-}
-
-type ToastFunction = (props: ToastProps) => void;
 
 export const strToFile = (
   str: string,
@@ -59,94 +48,4 @@ export const uploadMetadata = async (
   const { cid } = await pinFile(metadataFile);
 
   return cid;
-};
-
-export const checkUserHasEnoughBalance = (
-  accountFreeBalance: bigint,
-  estimatedFee: bigint,
-): boolean => accountFreeBalance > estimatedFee;
-
-export const showInsufficientBalanceError = (
-  toast: ToastFunction,
-  setTransactionStatus: (status: TransactionResult) => void,
-  accountFreeBalance: bigint,
-  estimatedFee: bigint,
-) => {
-  toast({
-    title: "Insufficient Balance",
-    description: `Required: ${formatToken(estimatedFee)} but you have ${formatToken(accountFreeBalance)}`,
-  });
-  setTransactionStatus({
-    status: "ERROR",
-    finalized: true,
-    message: "Insufficient balance",
-  });
-};
-
-export const updateAgentOnChain = async ({
-  agentKey,
-  name,
-  apiUrl,
-  metadata,
-  selectedAccount,
-  accountFreeBalance,
-  estimatedFee,
-  updateAgentOnChain,
-  setTransactionStatus,
-  toast,
-  setIsUploading,
-  form,
-}: {
-  agentKey: string;
-  name: string;
-  apiUrl?: string;
-  metadata: string;
-  selectedAccount: InjectedAccountWithMeta | null;
-  accountFreeBalance: bigint;
-  estimatedFee: bigint;
-  updateAgentOnChain: (params: {
-    name: string;
-    url: string;
-    metadata: string;
-    callback: (tx: TransactionResult) => void;
-  }) => Promise<void>;
-  setTransactionStatus: (status: TransactionResult) => void;
-  toast: ToastFunction;
-  setIsUploading: (isUploading: boolean) => void;
-  form: { reset: () => void };
-}) => {
-  if (!agentKey) throw new Error("Agent key is required");
-  if (!selectedAccount) throw new Error("No wallet connected");
-  if (!checkUserHasEnoughBalance(accountFreeBalance, estimatedFee)) {
-    showInsufficientBalanceError(
-      toast,
-      setTransactionStatus,
-      accountFreeBalance,
-      estimatedFee,
-    );
-    return;
-  }
-
-  try {
-    await updateAgentOnChain({
-      name,
-      url: apiUrl ?? "",
-      metadata,
-      callback: (tx) => {
-        setTransactionStatus(tx);
-        form.reset();
-        setIsUploading(false);
-      },
-    });
-  } catch (error) {
-    setIsUploading(false);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    toast({ title: "Error Updating Agent", description: errorMessage });
-    setTransactionStatus({
-      status: "ERROR",
-      finalized: true,
-      message: "Error Updating Agent",
-    });
-  }
 };

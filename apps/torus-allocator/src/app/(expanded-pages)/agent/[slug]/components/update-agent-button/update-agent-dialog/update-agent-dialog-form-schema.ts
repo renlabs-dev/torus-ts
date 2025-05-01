@@ -3,15 +3,12 @@ import type { UseFormReturn } from "react-hook-form";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
-  try {
-    const { hostname, pathname } = new URL(val);
-    return (
-      domains.some((d) => hostname === d || hostname.startsWith(`${d}.`)) &&
-      pathname.length > 1
-    );
-  } catch {
-    return false;
-  }
+
+  return new RegExp(
+    `^(https?:\\/\\/)(${domains
+      .map((d) => `(?:${d.replace(".", "\\.")})`)
+      .join("|")})\\/.+$`,
+  ).test(val);
 };
 
 export const updateAgentSocialsSchema = z.object({

@@ -522,8 +522,8 @@ export function TorusProvider({
       name,
       url,
       metadata,
-      null,
-      null,
+      undefined,
+      undefined
     );
 
     await sendTransaction({
