@@ -1,18 +1,18 @@
 // Basic type aliases
-type Hash = string;
-type UInt = bigint;
-type AccountId = string;
-type Decimal = number;
+export type Hash = string;
+export type UInt = bigint;
+export type AccountId = string;
+export type Decimal = number;
 
 /**
  * Permission ID - bytestring identifier
  */
-type PermId = Hash;
+export type PermId = Hash;
 
 /**
  * Comparison operators for numeric expressions
  */
-enum CompOp {
+export enum CompOp {
   Gt = "Gt", // Greater than
   Lt = "Lt", // Less than
   Gte = "Gte", // Greater than or equal
@@ -23,7 +23,7 @@ enum CompOp {
 /**
  * Numeric expression types
  */
-type NumExpr =
+export type NumExpr =
   | { $: "UIntLiteral"; value: UInt }
   | { $: "BlockNumber" }
   | { $: "StakeOf"; account: AccountId }
@@ -35,7 +35,7 @@ type NumExpr =
 /**
  * Base constraint expressions
  */
-type BaseConstraint =
+export type BaseConstraint =
   | { $: "MaxDelegationDepth"; depth: NumExpr }
   | { $: "PermissionExists"; pid: PermId }
   | { $: "PermissionEnabled"; pid: PermId }
@@ -45,7 +45,7 @@ type BaseConstraint =
 /**
  * Boolean expression types
  */
-type BoolExpr =
+export type BoolExpr =
   | { $: "Not"; body: BoolExpr }
   | { $: "And"; left: BoolExpr; right: BoolExpr }
   | { $: "Or"; left: BoolExpr; right: BoolExpr }
@@ -55,7 +55,7 @@ type BoolExpr =
 /**
  * Main constraint type
  */
-interface Constraint {
+export interface Constraint {
   // Refers to the onchain permission that this constraint applies to
   permId: PermId;
   body: BoolExpr;
@@ -64,7 +64,7 @@ interface Constraint {
 /**
  * Helper functions to create constraint expressions
  */
-const Constraint = {
+export const Constraint = {
   /**
    * Create a constraint with a boolean expression
    * @param permId The permission ID
@@ -79,7 +79,7 @@ const Constraint = {
 /**
  * Helper functions to create base constraints
  */
-const BaseConstraint = {
+export const BaseConstraint = {
   /**
    * Create a maximum delegation depth constraint
    * @param depth Maximum delegation depth
@@ -129,7 +129,7 @@ const BaseConstraint = {
 /**
  * Helper functions to create numeric expressions
  */
-const NumExpr = {
+export const NumExpr = {
   literal: (value: number | bigint): NumExpr => ({
     $: "UIntLiteral",
     value: typeof value === "number" ? BigInt(value) : value,
@@ -138,12 +138,22 @@ const NumExpr = {
   stakeOf: (account: AccountId): NumExpr => ({ $: "StakeOf", account }),
   add: (left: NumExpr, right: NumExpr): NumExpr => ({ $: "Add", left, right }),
   sub: (left: NumExpr, right: NumExpr): NumExpr => ({ $: "Sub", left, right }),
+  weightSet: (from: AccountId, to: AccountId): NumExpr => ({ 
+    $: "WeightSet", 
+    from, 
+    to 
+  }),
+  weightPowerFrom: (from: AccountId, to: AccountId): NumExpr => ({ 
+    $: "WeightPowerFrom", 
+    from, 
+    to 
+  }),
 };
 
 /**
  * Helper functions to create boolean expressions
  */
-const BoolExpr = {
+export const BoolExpr = {
   not: (body: BoolExpr): BoolExpr => ({ $: "Not", body }),
   and: (left: BoolExpr, right: BoolExpr): BoolExpr => ({
     $: "And",
@@ -159,64 +169,3 @@ const BoolExpr = {
   }),
   base: (body: BaseConstraint): BoolExpr => ({ $: "Base", body }),
 };
-
-// Example: Complex constraint from section 4 of the specification
-
-// "A permission is valid if the grantee has at least 1000 tokens staked, AND either
-// the grantor has set a weight of at least 0.3 to the grantee, OR the grantee has
-// permission #42 enabled and the current block is past block 2000000."
-
-const complexConstraint = Constraint.create(
-  "0x123", // permission ID
-  BoolExpr.and(
-    // StakeOf(#5D5F..EBnt) >= 1000
-    BoolExpr.comp(
-      CompOp.Gte,
-      NumExpr.stakeOf("5D5F..EBnt"),
-      NumExpr.literal(1000)
-    ),
-    // (WeightSet(...) >= 0.3 OR (PermissionEnabled{42} AND BlockNumber > 2000000))
-    BoolExpr.or(
-      // WeightSet("allocator2222", #5D5F..EBnt) >= 0.3
-      BoolExpr.comp(
-        CompOp.Gte,
-        { $: "WeightSet", from: "allocator2222", to: "5D5F..EBnt" },
-        NumExpr.literal(0.3)
-      ),
-      // (PermissionEnabled{42} AND BlockNumber > 2000000)
-      BoolExpr.and(
-        BoolExpr.base(BaseConstraint.permissionEnabled("42")),
-        BoolExpr.comp(
-          CompOp.Gt,
-          NumExpr.blockNumber(),
-          NumExpr.literal(2000000)
-        )
-      )
-    )
-  )
-);
-
-
-
-
-
-
-// -----------------------------------------------------------------------------
-
-// =========== Constraints =========== //
-
-// [ Temporal | Weight based | Rate Limit ]
-
-// Type: [After | Before]
-
-// When: [Apr 30 2pm]
-
-// -----------------------------------------------------------------------------
-
-declare function buildTemporalConstraint(type: "After" | "Before", when: Date);
-
-const ct = buildTemporalConstraint("After", new Date("2023-04-30T14:00:00.000Z"));
-
-// sendConstraint(auth, pid, ct);
-
-// -----------------------------------------------------------------------------
