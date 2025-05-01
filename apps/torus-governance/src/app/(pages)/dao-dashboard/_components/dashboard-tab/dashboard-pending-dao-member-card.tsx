@@ -25,7 +25,7 @@ export default function DashboardPendingDaoMemberCard() {
       icon={UserRound}
     >
       <div className="relative">
-        <ScrollArea className="h-[7.8rem]">
+        <ScrollArea className="sm:max-h-[7.8rem] max-h-48">
           <div className="flex flex-col">
             {isLoading ? (
               <div className="flex flex-col gap-3">

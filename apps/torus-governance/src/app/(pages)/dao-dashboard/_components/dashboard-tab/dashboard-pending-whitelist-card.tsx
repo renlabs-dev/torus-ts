@@ -57,7 +57,7 @@ export default function DashboardPendingDaoApplicationsCard() {
       icon={ListChecks}
     >
       <div className="relative">
-        <ScrollArea className="h-32">
+        <ScrollArea className="sm:max-h-32 max-h-48">
           <div className="flex flex-col gap-2">{renderContent()}</div>
         </ScrollArea>
         <ScrollFadeEffect />
