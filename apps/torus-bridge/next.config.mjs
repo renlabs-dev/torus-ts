@@ -1,5 +1,6 @@
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { env } from "../../../apps/torus-wallet/src/env";
 
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -26,7 +27,7 @@ const config = {
     return [
       {
         source: "/api/stake-out",
-        destination: process.env.NEXT_PUBLIC_TORUS_CACHE_URL + "/api/stake-out",
+        destination: env("NEXT_PUBLIC_TORUS_CACHE_URL") + "/api/stake-out",
       },
     ];
   },
