@@ -1,0 +1,6 @@
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/torus-portal
+
+  podLabels:
+    app: torus-portal
