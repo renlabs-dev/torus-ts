@@ -100,7 +100,7 @@ function Model(props: JSX.IntrinsicElements["group"]) {
       />
       <Annotation
         position={[isMobile ? 0.48 : 1.02, 0.62, 0.7]}
-        path="/dao-portal"
+        path="/dao-dashboard"
         text="DAO Dashboard"
       />
       <Annotation

@@ -36,7 +36,10 @@ export function CandidateCardHeader({ candidate }: CandidateCardProps) {
           className="h-16 w-16"
         />
         <div className="flex flex-col justify-center sm:-space-y-2">
-          <div className="flex flex-col-reverse items-start justify-start md:flex-row md:items-center md:gap-1">
+          <div
+            className="flex flex-col-reverse items-start justify-start md:flex-row md:items-center
+              md:gap-1"
+          >
             <Label>{candidate.userName ?? "User not found"}</Label>
             <CopyButton
               copy={candidate.discordId}
