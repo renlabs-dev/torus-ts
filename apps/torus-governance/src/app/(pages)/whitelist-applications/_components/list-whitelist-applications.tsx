@@ -58,7 +58,7 @@ export const ListWhitelistApplications = () => {
       <div className="flex flex-col gap-4 pb-4">
         {applications.map((app) => {
           const userVoted = votesPerUserKey?.find(
-            (vote) => vote.applicationId == app.id,
+            (vote) => vote.applicationId === app.id,
           );
 
           return (
