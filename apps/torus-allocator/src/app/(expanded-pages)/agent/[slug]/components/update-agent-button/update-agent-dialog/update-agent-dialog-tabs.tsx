@@ -43,16 +43,29 @@ export function UpdateAgentDialogTabs({
     if (value === "preview") {
       const isValid = await form.trigger();
 
-      if (!isValid) return;
+      if (!isValid) {
+        goToFormItemMessage();
+        return;
+      }
     }
 
     setActiveTab(value);
   };
 
+  const goToFormItemMessage = () =>
+    document.querySelector('[id$="-form-item-message"]')?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest",
+    });
+
   const handleNextClick = async () => {
     const isValid = await form.trigger();
 
-    if (!isValid) return;
+    if (!isValid) {
+      goToFormItemMessage();
+      return;
+    }
 
     setActiveTab("preview");
   };

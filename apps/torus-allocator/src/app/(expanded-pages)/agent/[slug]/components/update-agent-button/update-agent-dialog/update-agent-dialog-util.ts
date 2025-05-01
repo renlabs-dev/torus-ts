@@ -137,7 +137,6 @@ export const updateAgentOnChain = async ({
       callback: (tx) => {
         setTransactionStatus(tx);
         form.reset();
-        setIsOpen(false);
         setIsUploading(false);
       },
     });

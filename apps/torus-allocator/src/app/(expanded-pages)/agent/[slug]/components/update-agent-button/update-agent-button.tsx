@@ -10,18 +10,13 @@ import {
 import { Button } from "@torus-ts/ui/components/button";
 import { Pencil } from "lucide-react";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { UpdateAgentDialogButton } from "./update-agent-dialog/update-agent-dialog-button";
 
 interface UpdateAgentCoreButtonProps {
   className?: string;
   onClick?: () => void;
   isDisabled?: boolean;
   variant: "owner" | "wait-period" | "non-owner";
-  agentKey?: string;
-}
-
-interface UpdateAgentDialogButtonProps {
-  agentKey: string;
-  variant: "owner" | "wait-period";
 }
 
 const baseButtonClasses = "flex w-full items-center gap-2 p-3 cursor-pointer";
@@ -41,7 +36,7 @@ const UpdateAgentButtonContent = () => (
   </div>
 );
 
-const UpdateAgentCoreButton = ({
+export const UpdateAgentCoreButton = ({
   className,
   onClick,
   isDisabled,
@@ -59,19 +54,11 @@ const UpdateAgentCoreButton = ({
   </Button>
 );
 
-const UpdateAgentDialogButton = ({
-  agentKey,
-  variant,
-}: UpdateAgentDialogButtonProps) => (
-  <UpdateAgentCoreButton agentKey={agentKey} variant={variant} />
-);
-
 export function UpdateAgentButton({ agentKey }: { agentKey: string }) {
   const { selectedAccount } = useTorus();
-  const isOwner = selectedAccount?.address === agentKey;
 
-  if (isOwner) {
-    return <UpdateAgentDialogButton agentKey={agentKey} variant="owner" />;
+  if (selectedAccount?.address === agentKey) {
+    return <UpdateAgentDialogButton agentKey={agentKey} />;
   }
 
   return (
