@@ -34,7 +34,9 @@ interface ApplicationResult {
   isActiveAgent: boolean | undefined;
 }
 
-export const useAgentApplications = (options: UseAgentApplicationsOptions = {}) => {
+export const useAgentApplications = (
+  options: UseAgentApplicationsOptions = {},
+) => {
   const {
     agentApplicationsWithMeta,
     agentApplications,
@@ -65,7 +67,7 @@ export const useAgentApplications = (options: UseAgentApplicationsOptions = {}) 
             Resolved: () => filterByStatus === "Resolved",
             Expired: () => filterByStatus === "Expired",
           });
-          
+
           if (!isMatch) return false;
         }
 
@@ -116,17 +118,17 @@ export const useAgentApplications = (options: UseAgentApplicationsOptions = {}) 
           isActiveAgent,
         } as ApplicationResult;
       })
-      .filter(Boolean as unknown as (value: ApplicationResult | null) => value is ApplicationResult)
+      .filter(
+        Boolean as unknown as (
+          value: ApplicationResult | null,
+        ) => value is ApplicationResult,
+      )
       .slice(0, limit ?? undefined);
-  }, [
-    agentApplicationsWithMeta,
-    agents.data,
-    options,
-  ]);
+  }, [agentApplicationsWithMeta, agents.data, options]);
 
   return {
     applications: filteredApplications,
     isLoading,
-    error: agents.error,
+    error: agents.error ?? agentApplications.error,
   };
 };

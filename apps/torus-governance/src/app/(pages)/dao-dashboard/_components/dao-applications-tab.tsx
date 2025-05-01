@@ -31,7 +31,9 @@ export default function DaoApplicationsTab() {
     });
 
   const handleStatusChange = (value: string) => {
-    setStatus(value as CandidacyStatus);
+    if (["PENDING", "ACCEPTED", "REJECTED", "REMOVED"].includes(value)) {
+      setStatus(value as CandidacyStatus);
+    }
   };
 
   return (

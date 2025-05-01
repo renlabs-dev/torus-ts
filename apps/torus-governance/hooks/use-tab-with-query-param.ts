@@ -15,7 +15,7 @@ export function useTabWithQueryParam(defaultTab: string = "dashboard") {
       if (value === tab) {
         return;
       }
-      
+
       const params = new URLSearchParams(searchParams.toString());
 
       if (value === defaultTab) {
