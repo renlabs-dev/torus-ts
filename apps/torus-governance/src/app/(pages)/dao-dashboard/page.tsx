@@ -10,7 +10,7 @@ import DaoApplicationsPage from "./dao-applications/page";
 
 export default function DaoDashboardPage() {
   return (
-    <div className="w-full">
+    <div className="w-full animate-fade">
       <Tabs defaultValue="dashboard" className="min-w-full w-full">
         <TabsList className="grid w-full md:grid-cols-3 h-full">
           <TabsTrigger value="dashboard" className="min-w-full">

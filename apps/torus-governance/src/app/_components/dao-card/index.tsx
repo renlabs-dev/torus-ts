@@ -27,7 +27,7 @@ export function DaoCard({
   return (
     <Card
       className={cn(
-        "animate-fade hover:bg-accent w-full transition duration-500",
+        "hover:bg-accent w-full transition duration-500",
         variant === "small" ? "py-1 border-none border-b" : "p-4 lg:p-6",
       )}
     >
