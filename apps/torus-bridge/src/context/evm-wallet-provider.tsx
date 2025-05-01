@@ -1,3 +1,5 @@
+"use client";
+
 import type { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import { getWagmiChainConfigs } from "@hyperlane-xyz/widgets";
@@ -19,7 +21,7 @@ import {
 } from "@rainbow-me/rainbowkit/wallets";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { PropsWithChildren } from "react";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createClient, http } from "viem";
 import { createConfig, WagmiProvider } from "wagmi";
 import { config } from "../consts/config";
@@ -37,7 +39,8 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     throw chainsError;
   }
 
-  const [connectorsError, connectors] = trySync(() =>
+  const [connectorsError, connectors] = trySync(
+    () => console.log("projectId: ", config.walletConnectProjectId),
     connectorsForWallets(
       [
         {
@@ -93,10 +96,23 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
 export function EvmWalletProvider({
   children,
 }: Readonly<PropsWithChildren<unknown>>) {
+  // Add client-side rendering check
+  const [hasMounted, setHasMounted] = useState(false);
+
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 
+  // Effect to run after client-side mounting
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   const { wagmiConfig } = useMemo(() => {
+    // Don't attempt to initialize during SSR
+    if (!hasMounted) {
+      return { wagmiConfig: null };
+    }
+
     // Only initialize if multiProvider has chains loaded
     const [chainNamesError, chainNames] = trySync(() =>
       multiProvider.getKnownChainNames(),
@@ -119,9 +135,14 @@ export function EvmWalletProvider({
     }
 
     return wagmiData;
-  }, [multiProvider]);
+  }, [multiProvider, hasMounted]);
 
   const initialChain = useMemo(() => {
+    // Don't attempt to initialize during SSR
+    if (!hasMounted) {
+      return undefined;
+    }
+
     if (!warpCore.tokens.length) return undefined;
 
     const [firstTokenError, firstEvmToken] = trySync(() =>
@@ -145,7 +166,12 @@ export function EvmWalletProvider({
     }
 
     return chainMetadata?.chainId as number | undefined;
-  }, [multiProvider, warpCore]);
+  }, [multiProvider, warpCore, hasMounted]);
+
+  // During server-side rendering or initial client render, return minimal structure
+  if (!hasMounted) {
+    return <>{children}</>;
+  }
 
   // If we don't have a valid wagmiConfig yet, just render children without the provider
   if (!wagmiConfig) {
