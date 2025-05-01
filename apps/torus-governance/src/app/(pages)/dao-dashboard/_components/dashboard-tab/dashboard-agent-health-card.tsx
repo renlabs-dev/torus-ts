@@ -70,7 +70,7 @@ export default function DashboardAgentHealthCard() {
       title="Agents Health"
     >
       <div className="relative">
-        <ScrollArea className="sm:max-h-[22em] max-h-48">
+        <ScrollArea className="sm:h-[22em] h-48">
           {isFetching ? (
             <div className="text-sm">Loading...</div>
           ) : filteredAgents.length === 0 ? (
