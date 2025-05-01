@@ -25,9 +25,15 @@ export function useAgentHealth({
   searchParam = null,
   statusFilter = null,
 }: UseAgentHealthParams = {}) {
-  const { data: cadreListData } = api.cadre.all.useQuery();
+  const { data: cadreListData } = api.cadre.all.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
   const { data: agentsWithPenalties, isFetching } =
-    api.agent.allWithAggregatedPenalties.useQuery();
+    api.agent.allWithAggregatedPenalties.useQuery(undefined, {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+    });
 
   // Calculate the penalty threshold based on the square root of cadre list length
   const penaltyThreshold = useMemo(

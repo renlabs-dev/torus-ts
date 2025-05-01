@@ -60,7 +60,8 @@ const PenaltyLabel = ({
 };
 
 export default function DashboardAgentHealthCard() {
-  const { filteredAgents, penaltyThreshold, isFetching } = useAgentHealth({});
+  // Using empty object with no parameters to ensure consistent cache key
+  const { filteredAgents, penaltyThreshold, isFetching } = useAgentHealth();
 
   return (
     <DashboardRedirectCard

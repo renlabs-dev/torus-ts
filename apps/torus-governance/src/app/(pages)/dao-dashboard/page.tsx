@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Tabs,
@@ -9,15 +9,15 @@ import {
 import DashboardTab from "./_components/dashboard-tab/dashboard";
 import AgentHealthTab from "./_components/agent-health-tab/agent-health-tab";
 import DaoApplicationsTab from "./_components/dao-applications-tab";
-import { useTabWithQueryParam } from "./_hooks/use-tab-with-query-param";
+import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
 
 export default function DaoDashboardPage() {
-  const { tab, handleTabChange } = useTabWithQueryParam('dashboard');
+  const { tab, handleTabChange } = useTabWithQueryParam("dashboard");
 
   return (
     <div className="w-full animate-fade">
-      <Tabs 
-        value={tab} 
+      <Tabs
+        value={tab}
         onValueChange={handleTabChange}
         className="min-w-full w-full"
       >
@@ -33,13 +33,13 @@ export default function DaoDashboardPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard">
+        <TabsContent value="dashboard" key="dashboard-tab">
           <DashboardTab />
         </TabsContent>
-        <TabsContent value="agent-health">
+        <TabsContent value="agent-health" key="agent-health-tab">
           <AgentHealthTab />
         </TabsContent>
-        <TabsContent value="dao-applications">
+        <TabsContent value="dao-applications" key="dao-applications-tab">
           <DaoApplicationsTab />
         </TabsContent>
       </Tabs>
