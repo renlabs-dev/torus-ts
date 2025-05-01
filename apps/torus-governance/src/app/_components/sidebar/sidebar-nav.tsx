@@ -16,9 +16,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 const navOptions = [
   { title: "Whitelist Applications", href: "/whitelist-applications" },
+  { title: "DAO Dashboard", href: "/dao-dashboard" },
   { title: "Proposals", href: "/proposals" },
-  { title: "DAO Portal", href: "/dao-portal" },
-  { title: "Agents", href: "/agents" },
 ] as const;
 
 export type GovernanceViewMode = (typeof navOptions)[number]["href"];
@@ -54,15 +53,17 @@ export function SidebarNav() {
       </Select>
 
       {/* Desktop view: vertical buttons */}
-      <div className="animate-fade-up animate-delay-200 hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">
+      <div
+        className="animate-fade-up animate-delay-200 hidden max-h-fit w-full min-w-fit flex-col
+          gap-6 lg:flex"
+      >
         <Card className="flex flex-col gap-1.5 p-5">
           {navOptions.map((view) => (
             <Link href={view.href} key={view.href} prefetch>
               <Button
                 variant="ghost"
                 className={`w-full justify-between gap-4 border-none px-3 text-base ${
-                  isActive(view.href) ? "bg-accent" : ""
-                }`}
+                isActive(view.href) ? "bg-accent" : "" }`}
               >
                 {view.title}
                 <Check

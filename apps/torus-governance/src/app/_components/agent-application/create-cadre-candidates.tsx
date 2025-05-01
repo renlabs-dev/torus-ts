@@ -226,7 +226,7 @@ export function CreateCadreCandidates() {
   return (
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="animate-fade-down w-full">
+        <Button variant="outline" className="w-full">
           Apply to be a curator DAO member.
         </Button>
       </DialogTrigger>
@@ -286,7 +286,7 @@ export function CreateCadreCandidates() {
                         />
                         <span
                           className={`absolute bottom-2 right-2 text-sm ${
-                            remainingChars <= 50
+                          remainingChars <= 50
                               ? "text-yellow-400"
                               : "text-gray-400"
                           }`}
@@ -309,7 +309,9 @@ export function CreateCadreCandidates() {
                 }}
                 variant="outline"
                 className={cn(
-                  "flex w-full items-center justify-center border border-blue-500 bg-blue-500/20 py-5 text-sm font-semibold text-blue-500 hover:bg-blue-600/20 hover:text-blue-400",
+                  `flex w-full items-center justify-center border border-blue-500 bg-blue-500/20
+                  py-5 text-sm font-semibold text-blue-500 hover:bg-blue-600/20
+                  hover:text-blue-400`,
                   handleDisableState() ? "cursor-not-allowed opacity-50" : "",
                 )}
               >

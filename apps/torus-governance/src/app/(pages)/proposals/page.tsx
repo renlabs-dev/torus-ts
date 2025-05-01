@@ -1,10 +1,11 @@
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { FilterContent } from "../../_components/filter-content";
 import { ShapeNetworkModal } from "../../_components/shape-network-modal";
 import { ListProposals } from "./_components/list-proposals";
 
 export default function ProposalsPage() {
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4 animate-fade">
       <div className="flex w-full flex-col justify-between gap-3 lg:flex-row">
         <FilterContent
           placeholder="Search proposals..."
@@ -12,7 +13,11 @@ export default function ProposalsPage() {
         />
         <ShapeNetworkModal />
       </div>
-      <ListProposals />
+      <ScrollArea className="sm:max-h-[34.3rem]">
+        <div className="flex flex-col gap-4">
+          <ListProposals />
+        </div>
+      </ScrollArea>
     </div>
   );
 }

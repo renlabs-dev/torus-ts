@@ -9,7 +9,7 @@ interface PageContainerProps {
 
 export function PageContainer(props: PageContainerProps) {
   return (
-    <main className="flex w-full flex-col gap-4 pb-16">
+    <main className="flex w-full flex-col gap-2 pb-16 pt-2 animate-fade">
       <div className="flex w-full flex-col justify-between gap-3 pb-2 lg:flex-row">
         {props.pageHeader}
         {props.displayShapeNetworkModal && <ShapeNetworkModal />}

@@ -1,16 +1,14 @@
 "use client";
 
-import type { AgentApplication } from "@torus-network/sdk";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
 import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import { handleCustomAgentApplications } from "~/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
-import { match } from "rustie";
+import { useAgentApplications } from "hooks/use-agent-applications";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700, 1000];
@@ -26,14 +24,6 @@ const ListCardsLoadingSkeleton = () => {
   );
 };
 
-const mapStatusToView = (status: AgentApplication["status"]): string => {
-  return match(status)({
-    Open: () => "active",
-    Resolved: ({ accepted }) => (accepted ? "accepted" : "refused"),
-    Expired: () => "expired",
-  });
-};
-
 const EmptyState = () => (
   <ContentNotFound message="No Whitelist Applications matching the search criteria were found." />
 );
@@ -43,85 +33,49 @@ const ErrorState = ({ message }: { message: string }) => (
 );
 
 export const ListWhitelistApplications = () => {
-  const {
-    agentApplicationsWithMeta,
-    isInitialized,
-    agentApplications,
-    selectedAccount,
-    agents,
-  } = useGovernance();
-
+  const { selectedAccount } = useGovernance();
   const searchParams = useSearchParams();
+
+  const search = searchParams.get("search");
+  const statusFilter = searchParams.get("whitelist-status");
+
+  const { applications, isLoading, error } = useAgentApplications({
+    search,
+    statusFilter,
+  });
 
   const { data: votesPerUserKey } = api.agentApplicationVote.byUserKey.useQuery(
     { userKey: selectedAccount?.address ?? "" },
     { enabled: !!selectedAccount },
   );
 
-  const isLoading =
-    !agentApplicationsWithMeta ||
-    agentApplications.isPending ||
-    !isInitialized ||
-    agents.isPending;
-
-  const filteredAgentApplications = useMemo(() => {
-    if (!agentApplicationsWithMeta) return [];
-
-    const search = searchParams.get("search")?.toLowerCase();
-    const statusFilter = searchParams.get("whitelist-status")?.toLowerCase();
-
-    // Create a stable copy in reverse order
-    const reversedApplications = [...agentApplicationsWithMeta].reverse();
-
-    return reversedApplications
-      .map((app) => {
-        const { title, body } = handleCustomAgentApplications(
-          app.id,
-          app.customData ?? null,
-        );
-
-        if (!body) return null;
-
-        const status = mapStatusToView(app.status);
-
-        const matchesSearch =
-          !search ||
-          (title?.toLowerCase() ?? "").includes(search) ||
-          body.toLowerCase().includes(search) ||
-          app.payerKey.toLowerCase().includes(search) ||
-          app.agentKey.toLowerCase().includes(search);
-
-        const matchesStatus =
-          !statusFilter || statusFilter === "all" || status === statusFilter;
-
-        if (!matchesSearch || !matchesStatus) return null;
-
-        const isActiveAgent = agents.data?.has(app.agentKey);
-
-        const userVoted = votesPerUserKey?.find(
-          (vote) => vote.applicationId === app.id,
-        );
-
-        return (
-          <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
-            <AgentApplicationCard
-              title={title}
-              author={app.payerKey}
-              agentApplicationStatus={app.status}
-              activeAgent={isActiveAgent}
-              agentVoted={userVoted?.vote}
-              agentApplicationId={app.id}
-              whitelistStatus={status}
-            />
-          </Link>
-        );
-      })
-      .filter(Boolean);
-  }, [agentApplicationsWithMeta, searchParams, agents.data, votesPerUserKey]);
-
   if (isLoading) return <ListCardsLoadingSkeleton />;
-  if (agents.error) return <ErrorState message={agents.error.message} />;
-  if (filteredAgentApplications.length === 0) return <EmptyState />;
+  if (error) return <ErrorState message={error.message} />;
+  if (applications.length === 0) return <EmptyState />;
 
-  return filteredAgentApplications;
+  return (
+    <ScrollArea className="h-[33.9rem]">
+      <div className="flex flex-col gap-4 pb-4">
+        {applications.map((app) => {
+          const userVoted = votesPerUserKey?.find(
+            (vote) => vote.applicationId == app.id,
+          );
+
+          return (
+            <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
+              <AgentApplicationCard
+                title={app.title}
+                author={app.payerKey}
+                agentApplicationStatus={app.rawStatus}
+                activeAgent={app.isActiveAgent}
+                agentVoted={userVoted?.vote}
+                agentApplicationId={app.id}
+                whitelistStatus={app.status}
+              />
+            </Link>
+          );
+        })}
+      </div>
+    </ScrollArea>
+  );
 };
