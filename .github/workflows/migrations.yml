@@ -1,4 +1,3 @@
-# .github/workflows/migrations.yml
 name: migrations
 
 on:
@@ -9,20 +8,17 @@ on:
       - dev
       - feature/migrations
     paths:
-      - "packages/db/**"
+      - "atlas/migrations/**"
       - ".github/workflows/migrations.yml"
 
 jobs:
-  drizzle:
+  check-migrations:
     runs-on: ubuntu-latest
+    outputs:
+      has_pending: ${{ steps.check-migrations.outputs.has_pending }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set environment variables
-        run: |
-          export ENV_NAME=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
-          echo "SECRET_NAME=${ENV_NAME}_web_apps" >> $GITHUB_ENV
 
       - name: Import Secrets
         id: import-secrets
@@ -33,19 +29,75 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            torus_infra/data/${{env.SECRET_NAME}} torus_webapps_db_url | POSTGRES_URL
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps new_db_url | POSTGRES_URL
 
-      - uses: actions/setup-node@v4
+      - uses: ariga/setup-atlas@v0
+
+      - name: Check migration status
+        id: check-migrations
+        run: |
+          output=$(atlas migrate status --dir file://atlas/migrations --url "${{ env.POSTGRES_URL }}")
+          echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+          echo "$output"
+
+  apply-migrations:
+    needs: check-migrations
+    if: needs.check-migrations.outputs.has_pending == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v3
         with:
-          node-version: 20
+          method: approle
+          url: ${{ secrets.VAULT_ADDR }}
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps new_db_url | POSTGRES_URL
 
-      - uses: pnpm/action-setup@v4
+      - uses: ariga/setup-atlas@v0
 
-      - name: pnpm install
-        run: pnpm install
+      - name: Run dry-run migration
+        run: |
+          atlas migrate apply --dry-run  --dir file://atlas/migrations --url "${{ env.POSTGRES_URL }}"
 
-      - name: drizzle-kit check
-        run: pnpm exec drizzle-kit check
+      - name: Apply migrations
+        run: |
+          atlas migrate apply --dir file://atlas/migrations --url "${{ env.POSTGRES_URL }}"
 
-      # - name: drizzle-kit migrate
-      #   run: pnpm exec drizzle-kit migrate
+  restart-apps:
+    needs: [check-migrations, apply-migrations]
+    if: needs.check-migrations.outputs.has_pending == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/renlabs-dev/devops-ci:latest
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+    strategy:
+      matrix:
+        app:
+          - torus-allocator
+          - torus-cache
+          - torus-governance
+          - torus-worker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubernetes authentication
+        run: /apps/k8s_auth_w_approle_sa.sh
+
+      - name: Set environment variables
+        run: |
+          echo "NAMESPACE=torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps" >> $GITHUB_ENV
+
+      - name: Restart apps (${{ matrix.app }})
+        run: |
+          kubectl rollout restart -n ${NAMESPACE} deployment -l app=${{ matrix.app }}
+          kubectl rollout status -n ${NAMESPACE} deployment -l app=${{ matrix.app }}  --timeout=300s
