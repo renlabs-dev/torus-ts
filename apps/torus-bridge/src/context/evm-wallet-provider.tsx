@@ -39,8 +39,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     throw chainsError;
   }
 
-  const [connectorsError, connectors] = trySync(
-    () => console.log("projectId: ", config.walletConnectProjectId),
+  const [connectorsError, connectors] = trySync(() =>
     connectorsForWallets(
       [
         {
