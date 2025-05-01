@@ -196,7 +196,7 @@ const EmptyState = () => (
   <ContentNotFound message="No Agents matching the search criteria were found." />
 );
 
-export const ListAgents = () => {
+export const AgentHealthList = () => {
   const searchParams = useSearchParams();
   const search = searchParams.get("search") ?? null;
   const statusFilter = searchParams.get("status") ?? null;

@@ -9,6 +9,7 @@ import { Coins } from "lucide-react";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { useAgentHealth } from "hooks/use-agent-health";
+import { ScrollFadeEffect } from "~/app/_components/scroll-fade-effect";
 
 const EmissionHealthFactorBadge = ({
   penaltyFactor,
@@ -67,45 +68,48 @@ export default function DashboardAgentHealthCard() {
       icon={KeyboardOff}
       title="Agents Health"
     >
-      <ScrollArea className="h-[22em]">
-        {isFetching ? (
-          <div className="text-sm">Loading...</div>
-        ) : filteredAgents.length === 0 ? (
-          <ContentNotFound message="No agents found" />
-        ) : (
-          <div className="flex flex-col gap-3">
-            {filteredAgents.map((agent) => (
-              <div
-                key={agent.key}
-                className="border-border bg-card/50 hover:bg-accent flex flex-col py-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 justify-between w-full">
-                    <CopyButton
-                      copy={agent.key}
-                      variant="link"
-                      className="text-muted-foreground h-5 items-center p-0 text-sm hover:text-white"
-                    >
-                      {smallAddress(agent.key, 6)}
-                    </CopyButton>
-                    <EmissionHealthFactorBadge
+      <div className="relative">
+        <ScrollArea className="h-[22em]">
+          {isFetching ? (
+            <div className="text-sm">Loading...</div>
+          ) : filteredAgents.length === 0 ? (
+            <ContentNotFound message="No agents found" />
+          ) : (
+            <div className="flex flex-col gap-3 pb-2">
+              {filteredAgents.map((agent) => (
+                <div
+                  key={agent.key}
+                  className="border-border bg-card/50 hover:bg-accent flex flex-col py-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 justify-between w-full">
+                      <CopyButton
+                        copy={agent.key}
+                        variant="link"
+                        className="text-muted-foreground h-5 items-center p-0 text-sm hover:text-white"
+                      >
+                        {smallAddress(agent.key, 6)}
+                      </CopyButton>
+                      <EmissionHealthFactorBadge
+                        penaltyFactor={agent.weightFactor ?? 0}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-1 flex flex-col">
+                    <p className="text-sm">{agent.name}</p>
+                    <PenaltyLabel
+                      penaltyThreshold={penaltyThreshold}
+                      penaltyLength={agent.penalties.length}
                       penaltyFactor={agent.weightFactor ?? 0}
                     />
                   </div>
                 </div>
-                <div className="mt-1 flex flex-col">
-                  <p className="text-sm">{agent.name}</p>
-                  <PenaltyLabel
-                    penaltyThreshold={penaltyThreshold}
-                    penaltyLength={agent.penalties.length}
-                    penaltyFactor={agent.weightFactor ?? 0}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </ScrollArea>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+        <ScrollFadeEffect />
+      </div>
     </DashboardRedirectCard>
   );
 }

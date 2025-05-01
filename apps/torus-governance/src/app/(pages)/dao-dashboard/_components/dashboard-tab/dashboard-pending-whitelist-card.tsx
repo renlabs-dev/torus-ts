@@ -8,6 +8,7 @@ import Link from "next/link";
 import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
 import { useAgentApplications } from "hooks/use-agent-applications";
+import { ScrollFadeEffect } from "~/app/_components/scroll-fade-effect";
 
 export default function DashboardPendingDaoApplicationsCard() {
   const { applications: pendingApplications, isLoading } = useAgentApplications(
@@ -55,9 +56,12 @@ export default function DashboardPendingDaoApplicationsCard() {
       redirectPath="/dao-applications"
       icon={ListChecks}
     >
-      <ScrollArea className="h-32">
-        <div className="flex flex-col gap-2">{renderContent()}</div>
-      </ScrollArea>
+      <div className="relative">
+        <ScrollArea className="h-32">
+          <div className="flex flex-col gap-2">{renderContent()}</div>
+        </ScrollArea>
+        <ScrollFadeEffect />
+      </div>
     </DashboardRedirectCard>
   );
 }

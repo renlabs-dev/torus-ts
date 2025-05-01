@@ -4,9 +4,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import DashboardTab from "./dashboard/dashboard";
-import AgentHealthPage from "./agent-health/page";
-import DaoApplicationsPage from "./dao-applications/page";
+import DashboardTab from "./_components/dashboard-tab/dashboard";
+import AgentHealthTab from "./_components/agent-health-tab/agent-health-tab";
+import DaoApplicationsTab from "./_components/dao-applications-tab";
 
 export default function DaoDashboardPage() {
   return (
@@ -28,10 +28,10 @@ export default function DaoDashboardPage() {
           <DashboardTab />
         </TabsContent>
         <TabsContent value="agent-health">
-          <AgentHealthPage />
+          <AgentHealthTab />
         </TabsContent>
         <TabsContent value="dao-member-applications">
-          <DaoApplicationsPage />
+          <DaoApplicationsTab />
         </TabsContent>
       </Tabs>
     </div>

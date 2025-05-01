@@ -1,10 +1,8 @@
-"use client";
-
 import { PageContainer } from "~/app/_components/page-container";
 import { FilterContent } from "~/app/_components/filter-content";
-import { ListAgents } from "./_components/list-agents";
+import { AgentHealthList } from "./_components/agent-health-list";
 
-export default function AgentHealthPage() {
+export default function AgentHealthTab() {
   return (
     <PageContainer
       pageHeader={
@@ -18,7 +16,7 @@ export default function AgentHealthPage() {
           ]}
         />
       }
-      pageContent={<ListAgents />}
+      pageContent={<AgentHealthList />}
     />
   );
 }

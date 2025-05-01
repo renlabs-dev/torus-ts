@@ -8,6 +8,7 @@ import { api } from "~/trpc/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAgentApplications } from "hooks/use-agent-applications";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700, 1000];
@@ -52,23 +53,29 @@ export const ListWhitelistApplications = () => {
   if (error) return <ErrorState message={error.message} />;
   if (applications.length === 0) return <EmptyState />;
 
-  return applications.map((app) => {
-    const userVoted = votesPerUserKey?.find(
-      (vote) => vote.applicationId == app.id,
-    );
+  return (
+    <ScrollArea className="h-[33.9rem]">
+      <div className="flex flex-col gap-4 pb-4">
+        {applications.map((app) => {
+          const userVoted = votesPerUserKey?.find(
+            (vote) => vote.applicationId == app.id,
+          );
 
-    return (
-      <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
-        <AgentApplicationCard
-          title={app.title}
-          author={app.payerKey}
-          agentApplicationStatus={app.rawStatus}
-          activeAgent={app.isActiveAgent}
-          agentVoted={userVoted?.vote}
-          agentApplicationId={app.id}
-          whitelistStatus={app.status}
-        />
-      </Link>
-    );
-  });
+          return (
+            <Link href={`/agent-application/${app.id}`} key={app.id} prefetch>
+              <AgentApplicationCard
+                title={app.title}
+                author={app.payerKey}
+                agentApplicationStatus={app.rawStatus}
+                activeAgent={app.isActiveAgent}
+                agentVoted={userVoted?.vote}
+                agentApplicationId={app.id}
+                whitelistStatus={app.status}
+              />
+            </Link>
+          );
+        })}
+      </div>
+    </ScrollArea>
+  );
 };

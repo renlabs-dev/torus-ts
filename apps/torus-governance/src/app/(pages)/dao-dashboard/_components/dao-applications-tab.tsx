@@ -22,7 +22,7 @@ const statusOptions = [
   { label: "Removed", value: "REMOVED" },
 ];
 
-export default function DaoApplicationsPage() {
+export default function DaoApplicationsTab() {
   const [status, setStatus] = useState<CandidacyStatus>("PENDING");
 
   const { data: candidates, isLoading } =
@@ -60,7 +60,7 @@ export default function DaoApplicationsPage() {
         <ContentNotFound message="No candidates matching the search criteria were found." />
       ) : (
         <ScrollArea className="h-[32.2rem] pt-4">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 pb-4">
             {candidates?.map((candidate) => (
               <CandidateCard key={candidate.discordId} candidate={candidate} />
             ))}
