@@ -17,7 +17,6 @@ import { useState } from "react";
 import { UpdateAgentDialogForm } from "./update-agent-dialog-form";
 import type {
   UpdateAgentForm,
-  UpdateAgentFormData,
   UpdateAgentMutation,
 } from "./update-agent-dialog-form-schema";
 import { UpdateAgentDialogPreview } from "./update-agent-dialog-preview";
