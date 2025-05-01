@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { useForm } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
@@ -116,4 +116,4 @@ export interface UpdateAgentMutation {
   handleImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export type UpdateAgentForm = ReturnType<typeof useForm<UpdateAgentFormData>>;
+export type UpdateAgentForm = UseFormReturn<UpdateAgentFormData>;
