@@ -13,6 +13,7 @@ import { FileImage, Globe, Terminal } from "lucide-react";
 import Image from "next/image";
 import type { useForm } from "react-hook-form";
 import type {
+  UpdateAgentForm,
   UpdateAgentFormData,
   UpdateAgentMutation,
 } from "./update-agent-dialog-form-schema";
@@ -23,7 +24,7 @@ interface UpdateAgentDialogFormProps {
   updateAgentMutation: UpdateAgentMutation;
   setActiveTab: (tab: string) => void;
   setIsOpen?: (isOpen: boolean) => void;
-  form: ReturnType<typeof useForm<UpdateAgentFormData>>;
+  form: UpdateAgentForm;
   imageFile: File | null;
 }
 

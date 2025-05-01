@@ -17,6 +17,7 @@ import { useState } from "react";
 import type { useForm } from "react-hook-form";
 import { UpdateAgentDialogForm } from "./update-agent-dialog-form";
 import type {
+  UpdateAgentForm,
   UpdateAgentFormData,
   UpdateAgentMutation,
 } from "./update-agent-dialog-form-schema";
@@ -24,7 +25,7 @@ import { UpdateAgentDialogPreview } from "./update-agent-dialog-preview";
 
 interface UpdateAgentDialogTabsProps {
   agentKey: string;
-  form: ReturnType<typeof useForm<UpdateAgentFormData>>;
+  form: UpdateAgentForm;
   updateAgentMutation: UpdateAgentMutation;
   imageFile: File | null;
   hasUnsavedChanges: boolean;

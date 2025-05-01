@@ -96,7 +96,6 @@ export const updateAgentOnChain = async ({
   toast,
   setIsUploading,
   form,
-  setIsOpen,
 }: {
   agentKey: string;
   name: string;
@@ -115,7 +114,6 @@ export const updateAgentOnChain = async ({
   toast: ToastFunction;
   setIsUploading: (isUploading: boolean) => void;
   form: { reset: () => void };
-  setIsOpen: (isOpen: boolean) => void;
 }) => {
   if (!agentKey) throw new Error("Agent key is required");
   if (!selectedAccount) throw new Error("No wallet connected");
