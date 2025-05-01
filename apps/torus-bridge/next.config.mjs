@@ -1,6 +1,5 @@
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import { env } from "../../../apps/torus-wallet/src/env";
 
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -21,16 +20,6 @@ const config = {
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-
-  // Add proxy rewrites to avoid CORS issues
-  async rewrites() {
-    return [
-      {
-        source: "/api/stake-out",
-        destination: env("NEXT_PUBLIC_TORUS_CACHE_URL") + "/api/stake-out",
-      },
-    ];
-  },
 
   // Modify webpack config to optimize build and fix browser environment issues
   webpack: (config, { isServer, webpack }) => {
