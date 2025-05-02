@@ -55,7 +55,7 @@ export const agentRouter = {
       if (orderBy) {
         const [field, direction = "asc"] = orderBy.split(".");
         const column = agentSchema[field as keyof typeof agentSchema];
-        orderByClause = sql`${column} ${sql.raw(direction)}`;
+        orderByClause = sql`${column} ${sql.raw(direction.toUpperCase())}`;
       }
 
       const agents = await ctx.db
