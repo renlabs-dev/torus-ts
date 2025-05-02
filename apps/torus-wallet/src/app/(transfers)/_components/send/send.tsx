@@ -16,6 +16,7 @@ import { handleEstimateFee } from "./send-fee-handler";
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { saveTransaction } from "~/utils/transaction/save-transaction";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
@@ -108,15 +109,54 @@ export function Send() {
       message: "Awaiting signature",
     });
 
+    // Save initial transaction record
+    let updateTransaction;
+    if (selectedAccount?.address) {
+      const [saveError, saveResult] = await tryAsync(saveTransaction({
+        type: "SEND",
+        userKey: selectedAccount.address as `SS58:${string}`,
+        fromAddress: selectedAccount.address as `SS58:${string}`,
+        toAddress: values.recipient as `SS58:${string}`,
+        amount: values.amount,
+        fee: feeRef.current?.getEstimatedFee() || undefined,
+      }));
+      
+      if (saveError) {
+        console.error("Failed to save transaction:", saveError);
+      } else {
+        updateTransaction = saveResult;
+      }
+    }
+
+    // Create a callback handler that will also update the transaction record
+    const transactionCallback = (result: TransactionResult) => {
+      if (updateTransaction) {
+        void updateTransaction(
+          result, 
+          result.hash,
+          result.blockHeight ? Number(result.blockHeight) : undefined
+        );
+      }
+      handleCallback(result);
+    };
+
     const [error3, _success3] = await tryAsync(
       transfer({
         to: values.recipient,
         amount: values.amount,
-        callback: handleCallback,
+        callback: transactionCallback,
         refetchHandler,
       }),
     );
     if (error3 !== undefined) {
+      // Update transaction to error state if transfer failed
+      if (updateTransaction) {
+        void updateTransaction(
+          { status: "ERROR", finalized: true, message: error3.message },
+          undefined,
+          undefined
+        );
+      }
       toast.error(error3.message);
       return;
     }

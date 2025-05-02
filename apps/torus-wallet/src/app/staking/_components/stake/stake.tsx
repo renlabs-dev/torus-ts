@@ -18,6 +18,7 @@ import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { saveTransaction } from "~/utils/transaction/save-transaction";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
@@ -136,16 +137,56 @@ export function Stake() {
       message: "Awaiting Signature",
     });
 
+    // Save initial transaction record
+    let updateTransaction;
+    if (selectedAccount?.address) {
+      const [saveError, saveResult] = await tryAsync(saveTransaction({
+        type: "STAKE",
+        userKey: selectedAccount.address as `SS58:${string}`,
+        fromAddress: selectedAccount.address as `SS58:${string}`,
+        toAddress: values.recipient as `SS58:${string}`,
+        amount: values.amount,
+        fee: feeRef.current?.getEstimatedFee() || undefined,
+      }));
+      
+      if (saveError) {
+        console.error("Failed to save transaction:", saveError);
+      } else {
+        updateTransaction = saveResult;
+      }
+    }
+
+    // Create a transaction callback that also updates the transaction record
+    const transactionCallback = (result: TransactionResult) => {
+      if (updateTransaction) {
+        void updateTransaction(
+          result, 
+          result.hash,
+          result.blockHeight ? Number(result.blockHeight) : undefined
+        );
+      }
+      handleTransactionCallback(result);
+    };
+
     const [error] = await tryAsync(
       addStake({
         validator: checkSS58(values.recipient),
         amount: values.amount,
-        callback: handleTransactionCallback,
+        callback: transactionCallback,
         refetchHandler: refetchData,
       }),
     );
 
     if (error !== undefined) {
+      // Update transaction to error state if stake failed
+      if (updateTransaction) {
+        void updateTransaction(
+          { status: "ERROR", finalized: true, message: error.message || "Transaction failed" },
+          undefined,
+          undefined
+        );
+      }
+      
       setTransactionStatus({
         status: "ERROR",
         finalized: true,

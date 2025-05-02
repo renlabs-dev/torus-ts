@@ -199,6 +199,79 @@ export const agentReportSchema = createTable("agent_report", {
   ...timeFields(),
 });
 
+// ==== Transaction History ====
+
+/**
+ * Transaction types for the wallet transaction history
+ */
+export const transactionType = pgEnum("transaction_type", [
+  "SEND",
+  "STAKE",
+  "UNSTAKE",
+  "TRANSFER_STAKE",
+]);
+
+export const transactionTypeValues = extract_pgenum_values(transactionType);
+
+assert<
+  Equals<
+    keyof typeof transactionTypeValues,
+    "SEND" | "STAKE" | "UNSTAKE" | "TRANSFER_STAKE"
+  >
+>();
+
+/**
+ * Transaction status for tracking the transaction state
+ */
+export const transactionStatus = pgEnum("transaction_status", [
+  "PENDING",
+  "SUCCESS",
+  "ERROR",
+]);
+
+export const transactionStatusValues = extract_pgenum_values(transactionStatus);
+
+assert<
+  Equals<keyof typeof transactionStatusValues, "PENDING" | "SUCCESS" | "ERROR">
+>();
+
+/**
+ * Transaction history for user wallet operations
+ */
+export const transactionHistorySchema = createTable(
+  "transaction_history",
+  {
+    id: serial("id").primaryKey(),
+
+    // User who initiated the transaction
+    userKey: ss58Address("user_key").notNull(),
+
+    // Transaction details
+    type: transactionType("type").notNull(),
+    status: transactionStatus("status").notNull(),
+    amount: bigint("amount").notNull(),
+    fee: bigint("fee"),
+
+    // Transaction participants
+    fromAddress: ss58Address("from_address").notNull(),
+    toAddress: ss58Address("to_address").notNull(),
+
+    // Blockchain data
+    blockHeight: integer("block_height"),
+    hash: varchar("hash", { length: 256 }),
+
+    // Additional data
+    metadata: text("metadata"),
+
+    ...timeFields(),
+  },
+  (t) => [
+    index("user_key_index").on(t.userKey),
+    index("transaction_type_index").on(t.type),
+    index("transaction_status_index").on(t.status),
+  ],
+);
+
 // ==== Governance ====
 
 /**

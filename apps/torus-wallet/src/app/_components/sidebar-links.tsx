@@ -33,6 +33,7 @@ type NavButtonProps = NavLink;
 const NAVIGATION_LINKS: NavLink[] = [
   { path: "/", label: "Wallet", value: "wallet" },
   { path: "/staking", label: "Staking", value: "staking" },
+  { path: "/transaction-history", label: "History", value: "transaction-history" },
   { path: "/bridge", label: "Bridge", value: "bridge" },
 ];
 
@@ -56,6 +57,7 @@ const useNavigation = () => {
     const pathMap: Record<string, string> = {
       "/": "wallet",
       "/staking": "staking",
+      "/transaction-history": "transaction-history",
     };
 
     if (pathname === "/bridge" || pathname.startsWith(bridgeLink)) {
