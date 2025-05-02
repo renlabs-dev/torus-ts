@@ -36,8 +36,8 @@ export const updateAgentSocialsSchema = z.object({
   discord: z
     .string()
     .trim()
-    .refine(validateUrl(["discord.com"]), {
-      message: "Discord URL must be https://discord.com/*",
+    .refine(validateUrl(["discord.gg"]), {
+      message: "Discord URL must be https://discord.gg/*",
     })
     .optional(),
 });
