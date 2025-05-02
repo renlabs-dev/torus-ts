@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import type { StatusConfig } from "./get-submit-status";
 import { StatusLabel } from "./status-label";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 interface MenuTriggerProps {
   submitStatus: StatusConfig;
@@ -102,19 +103,14 @@ export function AllocationActions(props: MenuTriggerProps) {
 
   const handleSubmit = async () => {
     if (totalPercentage > 100) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Ensure total percentage is less than 100%",
-      });
+      toast.error("Ensure total percentage is less than 100%");
       return;
     }
 
     if (Number(userStakeWeight) < 50) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description:
-          "You must have at least 50 TORUS staked to allocate to agents",
-      });
+      toast.error(
+        "You must have at least 50 TORUS staked to allocate to agents",
+      );
       return;
     }
 
@@ -127,46 +123,67 @@ export function AllocationActions(props: MenuTriggerProps) {
       (agent) => agent.percentage !== 0,
     );
 
-    try {
-      setSubmitting(true);
-      // Delete existing user agent data
-      await deleteUserAgentData.mutateAsync({
+    setSubmitting(true);
+
+    // Delete existing user agent data
+    const [deleteError] = await tryAsync(
+      deleteUserAgentData.mutateAsync({
         userKey: selectedAccount.address,
-      });
+      }),
+    );
 
-      // Prepare data for createManyUserAgentData
-      const agentsData = filteredAgents.map((agent) => ({
-        agentKey: agent.address,
-        weight: agent.percentage,
-      }));
-
-      // Submit new user agent data in a single call
-      await createManyUserAgentData.mutateAsync(agentsData);
-
-      const { data: refetchedData } = await refetchUserAgentWeight();
-
-      const formattedModules = refetchedData?.map((agent) => ({
-        id: agent.user_agent_weight.id,
-        address: agent.user_agent_weight.agentKey,
-        title: agent.agent.name ?? "",
-        name: agent.agent.name ?? "",
-        percentage: agent.user_agent_weight.weight,
-        registrationBlock: agent.agent.registrationBlock,
-        metadataUri: agent.agent.metadataUri,
-        percComputedWeight:
-          agent.computed_agent_weight?.percComputedWeight ?? 0,
-        weightFactor: agent.agent.weightFactor,
-      }));
-
-      setDelegatedAgentsFromDB(formattedModules ?? []);
-
-      setPercentageChange(false);
-
+    if (deleteError !== undefined) {
+      console.error("Error deleting user agent data:", deleteError);
+      toast.error("Failed to update agent allocations");
       setSubmitting(false);
-    } catch (error) {
-      console.error("Error submitting data:", error);
-      setSubmitting(false);
+      return;
     }
+
+    // Prepare data for createManyUserAgentData
+    const agentsData = filteredAgents.map((agent) => ({
+      agentKey: agent.address,
+      weight: agent.percentage,
+    }));
+
+    // Submit new user agent data in a single call
+    const [createError] = await tryAsync(
+      createManyUserAgentData.mutateAsync(agentsData),
+    );
+
+    if (createError !== undefined) {
+      console.error("Error creating user agent data:", createError);
+      toast.error("Failed to save agent allocations");
+      setSubmitting(false);
+      return;
+    }
+
+    const [refetchError, refetchedData] = await tryAsync(
+      refetchUserAgentWeight(),
+    );
+
+    if (refetchError !== undefined) {
+      console.error("Error refetching user agent weight:", refetchError);
+      toast.error("Successfully saved but couldn't refresh data");
+      setSubmitting(false);
+      return;
+    }
+
+    const formattedModules = refetchedData.data?.map((agent) => ({
+      id: agent.user_agent_weight.id,
+      address: agent.user_agent_weight.agentKey,
+      title: agent.agent.name ?? "",
+      name: agent.agent.name ?? "",
+      percentage: agent.user_agent_weight.weight,
+      registrationBlock: agent.agent.registrationBlock,
+      metadataUri: agent.agent.metadataUri,
+      percComputedWeight: agent.computed_agent_weight?.percComputedWeight ?? 0,
+      weightFactor: agent.agent.weightFactor,
+    }));
+
+    setDelegatedAgentsFromDB(formattedModules ?? []);
+    setPercentageChange(false);
+    setSubmitting(false);
+    toast.success("Agent allocations updated successfully");
   };
 
   const handleRemoveAllWeight = async () => {
@@ -174,17 +191,30 @@ export function AllocationActions(props: MenuTriggerProps) {
       return;
     }
 
-    try {
-      await deleteUserAgentData.mutateAsync({
+    const [deleteError] = await tryAsync(
+      deleteUserAgentData.mutateAsync({
         userKey: selectedAccount.address,
-      });
-      setDelegatedAgentsFromDB([]);
+      }),
+    );
 
-      await refetchUserAgentWeight();
-    } catch (error) {
-      console.error("Error removing weight:", error);
+    if (deleteError !== undefined) {
+      console.error("Error removing weight:", deleteError);
+      toast.error("Failed to remove agent allocations");
       setSubmitting(false);
+      return;
     }
+
+    setDelegatedAgentsFromDB([]);
+
+    const [refetchError] = await tryAsync(refetchUserAgentWeight());
+
+    if (refetchError !== undefined) {
+      console.error("Error refetching user agent weight:", refetchError);
+      toast.error("Successfully removed but couldn't refresh data");
+      return;
+    }
+
+    toast.success("All agent allocations removed successfully");
   };
 
   const delegatedAgentsPercentage = Math.round(
@@ -207,7 +237,8 @@ export function AllocationActions(props: MenuTriggerProps) {
         <div className="flex flex-row gap-2">
           <Button
             onClick={handleAutoCompletePercentage}
-            className="w-1/2 border-teal-500 bg-teal-500/20 font-bold text-teal-500 hover:bg-teal-500/30 hover:text-teal-500"
+            className="w-1/2 border-teal-500 bg-teal-500/20 font-bold text-teal-500
+              hover:bg-teal-500/30 hover:text-teal-500"
             disabled={totalPercentage === 100 || delegatedAgents.length === 0}
             variant="outline"
           >
@@ -216,7 +247,8 @@ export function AllocationActions(props: MenuTriggerProps) {
 
           <Button
             onClick={handleRemoveAllWeight}
-            className="w-1/2 border-rose-500 bg-rose-500/20 font-bold text-rose-500 hover:bg-rose-500/30 hover:text-rose-500"
+            className="w-1/2 border-rose-500 bg-rose-500/20 font-bold text-rose-500
+              hover:bg-rose-500/30 hover:text-rose-500"
             disabled={!hasItemsToClear}
             variant="outline"
           >
@@ -226,7 +258,8 @@ export function AllocationActions(props: MenuTriggerProps) {
         <Button
           onClick={handleSubmit}
           variant="outline"
-          className="w-full border-green-500 bg-green-500/20 font-bold text-green-500 hover:bg-green-500/30 hover:text-green-500"
+          className="w-full border-green-500 bg-green-500/20 font-bold text-green-500
+            hover:bg-green-500/30 hover:text-green-500"
           disabled={props.submitStatus.disabled || totalPercentage === 0}
           title="Submit Agents"
         >

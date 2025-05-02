@@ -12,6 +12,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AgentInfoCard } from "./components/agent-info-card";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export default async function AgentPage({
   params,
@@ -26,8 +27,21 @@ export default async function AgentPage({
 
   const agentKey = slug;
 
-  const mdl = await api.agent.byKeyLastBlock({ key: agentKey });
-  const penalties = await api.penalty.byAgentKey({ agentKey });
+  const [penaltiesError, penalties] = await tryAsync(
+    api.penalty.byAgentKey({ agentKey }),
+  );
+  if (penaltiesError !== undefined) {
+    console.error("Error fetching agent penalties:", penaltiesError);
+    notFound();
+  }
+
+  const [mdlError, mdl] = await tryAsync(
+    api.agent.byKeyLastBlock({ key: agentKey }),
+  );
+  if (mdlError !== undefined) {
+    console.error("Error fetching agent metadata:", mdlError);
+    notFound();
+  }
 
   if (!mdl) {
     notFound();
@@ -37,24 +51,28 @@ export default async function AgentPage({
     notFound();
   }
 
-  let metadata;
-  let images;
-
-  try {
-    const r = await fetchAgentMetadata(mdl.metadataUri, {
+  const [error, success] = await tryAsync(
+    fetchAgentMetadata(mdl.metadataUri, {
       fetchImages: true,
-    });
-    metadata = r.metadata;
-    images = r.images;
-  } catch (e) {
-    console.error(e);
+    }),
+  );
+  if (error !== undefined) {
+    console.error("Error fetching agent metadata:", error);
     notFound();
   }
+  const metadata = success.metadata;
+  const images = success.images;
 
   // Blob URL for the icon
   const icon = images.icon;
 
-  const computedAgentWeight = await api.computedAgentWeight.all();
+  const [computedAgentError, computedAgentWeight] = await tryAsync(
+    api.computedAgentWeight.all(),
+  );
+  if (computedAgentError !== undefined) {
+    console.error("Error fetching agent metadata:", computedAgentError);
+    notFound();
+  }
 
   const globalWeight = computedAgentWeight.find((d) => d.agentKey === agentKey);
 
