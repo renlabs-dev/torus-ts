@@ -24,7 +24,7 @@ export const AGENT_METADATA_SCHEMA = z.object({
       `Agent short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters long`,
     ),
   description: z.string().nonempty("Agent description is required"),
-  website: z_url.optional(),
+  website: z.string().optional(),
   images: z
     .object({
       icon: z.union([IPFS_URI_SCHEMA, z_url]),
@@ -34,10 +34,10 @@ export const AGENT_METADATA_SCHEMA = z.object({
     .optional(),
   socials: z
     .object({
-      discord: z_url.optional(),
-      github: z_url.optional(),
-      telegram: z_url.optional(),
-      twitter: z_url.optional(),
+      discord: z.string().optional(),
+      github: z.string().optional(),
+      telegram: z.string().optional(),
+      twitter: z.string().optional(),
     })
     .partial()
     .optional(),
