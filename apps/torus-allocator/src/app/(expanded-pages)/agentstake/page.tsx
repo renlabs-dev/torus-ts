@@ -1,4 +1,5 @@
 import { formatToken } from "@torus-network/torus-utils/subspace";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { api } from "~/trpc/server";
@@ -12,10 +13,16 @@ export default async function UserAgentPage({
   const userKey = params.userKey;
   const agentKey = params.agentKey;
 
-  const data = await api.userAgentWeight.stakeWeight({
-    userKey: userKey,
-    agentKey: agentKey,
-  });
+  const [dataError, data] = await tryAsync(
+    api.userAgentWeight.stakeWeight({
+      userKey: userKey,
+      agentKey: agentKey,
+    }),
+  );
+  if (dataError !== undefined) {
+    console.error("Error fetching user agent weights:", dataError);
+    return <div>Error fetching user agent weights</div>;
+  }
 
   return (
     <Container>
