@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 import { Button } from "@torus-ts/ui/components/button";
-import { Pencil } from "lucide-react";
+import { Pencil, LockIcon } from "lucide-react";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { UpdateAgentDialogButton } from "./update-agent-dialog/update-agent-dialog-button";
 
@@ -29,9 +29,13 @@ const variantStyles = {
   "non-owner": "border-gray-500 text-gray-500 cursor-not-allowed",
 };
 
-const UpdateAgentButtonContent = () => (
+const UpdateAgentButtonContent = ({ variant }: { variant: string }) => (
   <div className="flex items-center gap-2">
-    <Pencil className="h-4 w-4" />
+    {variant === "non-owner" ? (
+      <LockIcon className="h-4 w-4" />
+    ) : (
+      <Pencil className="h-4 w-4" />
+    )}
     <span>Update Agent Info</span>
   </div>
 );
@@ -50,7 +54,7 @@ export const UpdateAgentCoreButton = ({
     aria-label="Edit agent information"
     aria-disabled={variant === "non-owner" ? "true" : undefined}
   >
-    <UpdateAgentButtonContent />
+    <UpdateAgentButtonContent variant={variant} />
   </Button>
 );
 
