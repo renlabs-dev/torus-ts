@@ -12,15 +12,20 @@ import { useState } from "react";
 
 const views = [
   { label: "All Agents", value: "/" },
+  { label: "New Agents", value: "/new-agents" },
   { label: "My Allocated Agents", value: "/allocated-agents" },
 ];
 
 export function ViewSelector() {
   const router = useRouter();
   const pathname = usePathname();
-  const [currentView, setCurrentView] = useState(
-    pathname === "/allocated-agents" ? "/allocated-agents" : "/",
-  );
+
+  const getInitialView = () => {
+    const matchingView = views.find((view) => view.value === pathname);
+    return matchingView ? matchingView.value : "/";
+  };
+
+  const [currentView, setCurrentView] = useState(getInitialView());
 
   const handleViewChange = (value: string) => {
     setCurrentView(value);
