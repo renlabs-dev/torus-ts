@@ -54,6 +54,7 @@ export default function UpdateAgentDialog({
 
   const form = useForm<UpdateAgentFormData>({
     resolver: zodResolver(updateAgentSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       title: "",

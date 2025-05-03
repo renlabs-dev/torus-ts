@@ -11,35 +11,55 @@ const validateUrl = (domains: string[]) => (val: string) => {
   ).test(val);
 };
 
+const ensureHttpsProtocol = (val: string): string => {
+  if (!val) return "";
+
+  const cleanedVal = val.trim().replace(/^\/+|\/+$/g, "");
+
+  if (cleanedVal.startsWith("http://")) {
+    return cleanedVal.replace("http://", "https://");
+  }
+
+  if (cleanedVal.startsWith("https://")) {
+    return cleanedVal;
+  }
+
+  return `https://${cleanedVal}`;
+};
+
 export const updateAgentSocialsSchema = z.object({
   twitter: z
     .string()
     .trim()
+    .optional()
+    .transform((val) => ensureHttpsProtocol(val ?? ""))
     .refine(validateUrl(["twitter.com", "x.com"]), {
       message: "Twitter URL must be https://twitter.com/* or https://x.com/*",
-    })
-    .optional(),
+    }),
   github: z
     .string()
     .trim()
+    .optional()
+    .transform((val) => ensureHttpsProtocol(val ?? ""))
     .refine(validateUrl(["github.com"]), {
       message: "GitHub URL must be https://github.com/*",
-    })
-    .optional(),
+    }),
   telegram: z
     .string()
     .trim()
+    .optional()
+    .transform((val) => ensureHttpsProtocol(val ?? ""))
     .refine(validateUrl(["t.me"]), {
       message: "Telegram URL must be https://t.me/*",
-    })
-    .optional(),
+    }),
   discord: z
     .string()
     .trim()
+    .optional()
+    .transform((val) => ensureHttpsProtocol(val ?? ""))
     .refine(validateUrl(["discord.gg"]), {
       message: "Discord URL must be https://discord.gg/*",
-    })
-    .optional(),
+    }),
 });
 
 export const updateAgentSchema = z.object({
