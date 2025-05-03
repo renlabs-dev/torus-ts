@@ -19,12 +19,3 @@ export function createDb() {
   return db;
 }
 export type DB = ReturnType<typeof createDb>;
-
-export function createDbGeneric() {
-  // eslint-disable-next-line no-restricted-properties
-  const conn = globalForDb.conn ?? postgres(String(process.env.POSTGRES_URL));
-  // eslint-disable-next-line no-restricted-properties
-  if (process.env.NODE_ENV !== "production") globalForDb.conn = conn;
-  const db = drizzle(conn, { schema });
-  return db;
-}
