@@ -11,7 +11,7 @@ const validateUrl = (domains: string[]) => (val: string) => {
   ).test(val);
 };
 
-const ensureHttpsProtocol = (val: string): string => {
+const ensureHttpsProtocol = (val: string | undefined): string => {
   if (!val) return "";
 
   const cleanedVal = val.trim().replace(/^\/+|\/+$/g, "");
@@ -32,7 +32,7 @@ export const updateAgentSocialsSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((val) => ensureHttpsProtocol(val ?? ""))
+    .transform(ensureHttpsProtocol)
     .refine(validateUrl(["twitter.com", "x.com"]), {
       message: "Twitter URL must be https://twitter.com/* or https://x.com/*",
     }),
@@ -40,7 +40,7 @@ export const updateAgentSocialsSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((val) => ensureHttpsProtocol(val ?? ""))
+    .transform(ensureHttpsProtocol)
     .refine(validateUrl(["github.com"]), {
       message: "GitHub URL must be https://github.com/*",
     }),
@@ -48,7 +48,7 @@ export const updateAgentSocialsSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((val) => ensureHttpsProtocol(val ?? ""))
+    .transform(ensureHttpsProtocol)
     .refine(validateUrl(["t.me"]), {
       message: "Telegram URL must be https://t.me/*",
     }),
@@ -56,7 +56,7 @@ export const updateAgentSocialsSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((val) => ensureHttpsProtocol(val ?? ""))
+    .transform(ensureHttpsProtocol)
     .refine(validateUrl(["discord.gg"]), {
       message: "Discord URL must be https://discord.gg/*",
     }),
