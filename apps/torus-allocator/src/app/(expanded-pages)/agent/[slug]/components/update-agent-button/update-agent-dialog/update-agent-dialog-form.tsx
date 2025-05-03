@@ -242,7 +242,7 @@ This agent specializes in providing technical support by analyzing issues and of
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="https://discord.gg/myagent or https://discord.com/invite/myagent"
+                      placeholder="Ex.: https://discord.gg/myagent or https://discord.gg/invite/myagent"
                     />
                   </FormControl>
                   <FormMessage />
@@ -261,7 +261,7 @@ This agent specializes in providing technical support by analyzing issues and of
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="https://twitter.com/myagent or https://x.com/myagent"
+                      placeholder="Ex.: https://twitter.com/myagent or https://x.com/myagent"
                     />
                   </FormControl>
                   <FormMessage />
