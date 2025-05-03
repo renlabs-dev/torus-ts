@@ -17,11 +17,14 @@ interface AgentCardProps {
 
 export function AgentItemCard(props: Readonly<AgentCardProps>) {
   return (
-    <Card className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
+    <Card
+      className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition
+        duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl"
+    >
       <CardHoverEffect />
 
-      <AgentCardHeader {...props} />
-      <AgentCardContent metadataUri={props.metadataUri} />
+      <AgentCardHeader {...props} metadataUri={props.metadataUri ?? ""} />
+      <AgentCardContent metadataUri={props.metadataUri ?? ""} />
       <AgentCardFooter {...props} />
 
       <Link href={`agent/${props.agentKey}`} className="absolute inset-0">

@@ -19,6 +19,8 @@ export const envSchema = {
   JWT_SECRET: z.string().min(8),
   POSTGRES_URL: z.string().url(),
   PORT: z.string(),
+  PINATA_JWT: z.string(),
+
   /**
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.

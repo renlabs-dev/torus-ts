@@ -48,6 +48,11 @@ export interface RegisterAgent {
   callback?: (status: TransactionResult) => void;
 }
 
+export type UpdateAgent = Pick<
+  RegisterAgent,
+  "name" | "url" | "metadata" | "callback"
+>;
+
 export interface AddCustomProposal {
   IpfsHash: string;
   callback?: (status: TransactionResult) => void;

@@ -25,7 +25,7 @@ export const AGENT_METADATA_SCHEMA = z.object({
       `Agent short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters long`,
     ),
   description: z.string().nonempty("Agent description is required"),
-  website: z_url.optional(),
+  website: z.string().optional(),
   images: z
     .object({
       icon: z.union([IPFS_URI_SCHEMA, z_url]),
@@ -35,10 +35,10 @@ export const AGENT_METADATA_SCHEMA = z.object({
     .optional(),
   socials: z
     .object({
-      discord: z_url,
-      github: z_url,
-      telegram: z_url,
-      twitter: z_url,
+      discord: z.string().optional(),
+      github: z.string().optional(),
+      telegram: z.string().optional(),
+      twitter: z.string().optional(),
     })
     .partial()
     .optional(),
@@ -86,13 +86,15 @@ const fetchJson = (url: string): Promise<AnyJson> =>
 const fetchBlob = (url: string): Promise<Blob> =>
   fetch(url).then((res) => res.blob());
 
+export interface AgentMetadataResult {
+  metadata: AgentMetadata;
+  images: Partial<Record<AgentMetadataImageName, Blob>>;
+}
+
 export async function fetchAgentMetadata(
   uri: string,
   { fetchImages = false },
-): Promise<{
-  metadata: AgentMetadata;
-  images: Partial<Record<AgentMetadataImageName, Blob>>;
-}> {
+): Promise<AgentMetadataResult> {
   // fetch Agent Metadata as JSON
   const data = await fetchFromIpfsOrUrl(uri, fetchJson);
 

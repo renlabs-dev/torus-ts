@@ -24,10 +24,11 @@ export const agentRouter = {
         page: z.number().int().positive().default(1),
         limit: z.number().int().positive().default(9),
         search: z.string().optional(),
+        orderBy: z.enum(["createdAt.asc", "createdAt.desc"]).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { page, limit, search } = input;
+      const { page, limit, search, orderBy } = input;
       const offset = (page - 1) * limit;
 
       const lastBlockQuery = ctx.db
@@ -47,6 +48,14 @@ export const agentRouter = {
           whereClause,
           sql`(${agentSchema.name} ILIKE ${`%${search}%`} OR ${agentSchema.key} ILIKE ${`%${search}%`})`,
         );
+      }
+
+      let orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
+
+      if (orderBy) {
+        const [field, direction = "asc"] = orderBy.split(".");
+        const column = agentSchema[field as keyof typeof agentSchema];
+        orderByClause = sql`${column} ${sql.raw(direction.toUpperCase())}`;
       }
 
       const agents = await ctx.db
@@ -77,9 +86,7 @@ export const agentRouter = {
         .where(whereClause)
         .limit(limit)
         .offset(offset)
-        .orderBy(
-          sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`,
-        );
+        .orderBy(orderByClause);
 
       const countResult = await ctx.db
         .select({ count: sql`count(*)` })

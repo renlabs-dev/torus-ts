@@ -43,7 +43,7 @@ import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 import { useGovernance } from "~/context/governance-provider";
 import { FolderUp, Info } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
@@ -120,6 +120,7 @@ export function RegisterAgent() {
   const form = useForm<RegisterAgentFormData>({
     disabled: !isAccountConnected,
     resolver: zodResolver(registerAgentSchema),
+    mode: "onChange",
     defaultValues: {
       agentKey: "",
       agentApiUrl: "",
@@ -135,7 +136,7 @@ export function RegisterAgent() {
       icon: undefined,
     },
   });
-  const { control, handleSubmit, getValues } = form;
+  const { control, handleSubmit, getValues, trigger, watch } = form;
 
   const [estimatedFee, setEstimatedFee] = useState(0n);
   useEffect(() => {
@@ -160,8 +161,7 @@ export function RegisterAgent() {
       setEstimatedFee(adjustedFee);
     }
     void fetchFee();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [estimateFee, registerAgentTransaction, selectedAccount]);
+  }, [estimateFee, registerAgentTransaction, selectedAccount, toast]);
 
   const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
   useEffect(() => {
@@ -357,14 +357,48 @@ export function RegisterAgent() {
     return "Register Agent/Module";
   };
 
-  const aboutViewDisabled =
-    !getValues("agentKey") ||
-    !getValues("name") ||
-    !getValues("shortDescription") ||
-    !userHasEnoughBalance ||
-    !selectedAccount?.address;
-  const socialsViewDisabled =
-    !getValues("title") || !getValues("body") || aboutViewDisabled;
+  const handleTabChange = useCallback(
+    async (tab: TabsViews) => {
+      let isValid = true;
+
+      if (tab === "about") {
+        isValid = await trigger(["agentKey", "name", "shortDescription"]);
+      }
+
+      if (tab === "socials") {
+        isValid = await trigger(["title", "body"]);
+      }
+
+      if (isValid) {
+        setCurrentTab(tab);
+      }
+    },
+    [trigger],
+  );
+
+  const formValues = watch();
+
+  const aboutViewDisabled = useMemo(
+    () =>
+      !formValues.agentKey ||
+      !formValues.name ||
+      !formValues.shortDescription ||
+      !userHasEnoughBalance ||
+      !selectedAccount?.address,
+    [
+      formValues.agentKey,
+      formValues.name,
+      formValues.shortDescription,
+      userHasEnoughBalance,
+      selectedAccount?.address,
+    ],
+  );
+
+  const socialsViewDisabled = useMemo(
+    () => !formValues.title || !formValues.body || aboutViewDisabled,
+    [formValues.title, formValues.body, aboutViewDisabled],
+  );
+
   const registerViewDisabled = socialsViewDisabled;
 
   return (
@@ -373,7 +407,7 @@ export function RegisterAgent() {
         <Tabs
           defaultValue="agent-info"
           value={currentTab}
-          onValueChange={(tab) => setCurrentTab(tab as TabsViews)}
+          onValueChange={(tab) => handleTabChange(tab as TabsViews)}
         >
           <TabsList className="w-full rounded-full">
             <TabsTrigger value="agent-info" className="w-full rounded-full">
@@ -488,7 +522,7 @@ export function RegisterAgent() {
             />
             <Button
               disabled={aboutViewDisabled}
-              onClick={() => setCurrentTab("about")}
+              onClick={() => handleTabChange("about")}
             >
               Continue
             </Button>
@@ -536,7 +570,7 @@ export function RegisterAgent() {
             />
             <Button
               disabled={socialsViewDisabled}
-              onClick={() => setCurrentTab("socials")}
+              onClick={() => handleTabChange("socials")}
             >
               Continue
             </Button>
@@ -741,7 +775,7 @@ export function RegisterAgent() {
             />
             <Button
               disabled={socialsViewDisabled}
-              onClick={() => setCurrentTab("register")}
+              onClick={() => handleTabChange("register")}
             >
               Continue
             </Button>

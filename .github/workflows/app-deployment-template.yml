@@ -143,6 +143,11 @@ jobs:
         working-directory: apps/${{ env.APP_NAME }}
         run: helm plugin install https://github.com/databus23/helm-diff
 
+      - name: Install helm diff plugin
+        if: needs.docker-build.result == 'skipped'
+        working-directory: apps/${{ env.APP_NAME }}
+        run: helm plugin install https://github.com/databus23/helm-diff
+
       - name: Deploy application (apply diff only)
         if: needs.docker-build.result == 'skipped'
         working-directory: apps/${{ env.APP_NAME }}
