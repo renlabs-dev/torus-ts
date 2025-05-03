@@ -55,10 +55,10 @@ export function UpdateAgentDialogPreview({
     previewData: {
       title: formValues.title,
       socials: {
-        discord: formValues.socials.discord ?? "",
-        twitter: formValues.socials.twitter ?? "",
-        github: formValues.socials.github ?? "",
-        telegram: formValues.socials.telegram ?? "",
+        discord: formValues.socials.discord,
+        twitter: formValues.socials.twitter,
+        github: formValues.socials.github,
+        telegram: formValues.socials.telegram,
       },
       website: formValues.website,
       iconUrl: previewImage ?? undefined,
