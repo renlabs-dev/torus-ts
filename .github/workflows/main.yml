@@ -338,6 +338,28 @@ jobs:
       app_name: torus-allocator
       delete: true
 
+  torus-bridge-pr-activate:
+    needs: [turbo-check, files-check]
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      (needs.turbo-check.outputs.torus-bridge == 'true' ||
+      needs.files-check.outputs.apps == 'true')
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+
+  torus-bridge-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+      delete: true
+
   torus-cache-pr-activate:
     needs: [turbo-check, files-check]
     if: |
