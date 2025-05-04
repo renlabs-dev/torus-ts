@@ -32,6 +32,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFileUploader } from "hooks/use-file-uploader";
+import DiscordLogin from "../discord-auth-button";
+import * as React from "react";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -58,6 +60,15 @@ export function CreateAgentApplication() {
     networkConfigs,
   } = useGovernance();
   const { toast } = useToast();
+
+  const [discordId, setDiscordId] = React.useState<string | null>(null);
+
+  // Function to prevent form submission when clicking Discord buttons
+  const preventFormSubmission = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("dialog", "curator-apply");
+    window.history.pushState({}, "", url);
+  };
 
   const [activeTab, setActiveTab] = useState("edit");
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -153,7 +164,7 @@ export function CreateAgentApplication() {
     });
 
     const daoData = JSON.stringify({
-      discord_id: data.discordId,
+      discord_id: discordId,
       title: data.title,
       body: data.body,
     });
@@ -174,6 +185,9 @@ export function CreateAgentApplication() {
     if (!isAccountConnected) {
       return "Connect a wallet to submit";
     }
+    if (!discordId) {
+      return "Log in with your Discord account to submit";
+    }
     if (uploading) {
       return "Awaiting Signature";
     }
@@ -184,6 +198,26 @@ export function CreateAgentApplication() {
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
+          <FormField
+            control={control}
+            name="discordId"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <DiscordLogin
+                    onAuthChange={(id) => {
+                      setDiscordId(id);
+                      if (id) {
+                        field.onChange(id);
+                      }
+                    }}
+                    onButtonClick={preventFormSubmission}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={control}
             name="applicationKey"
@@ -208,29 +242,6 @@ export function CreateAgentApplication() {
                 >
                   Paste my address
                 </Button>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="discordId"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="Discord ID (17-20 digits)"
-                    type="text"
-                    required
-                    onChange={(e) => {
-                      const value = e.target.value
-                        .replace(/[^0-9]/g, "")
-                        .slice(0, 20);
-                      field.onChange(value);
-                    }}
-                  />
-                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
