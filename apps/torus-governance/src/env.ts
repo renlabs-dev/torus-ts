@@ -27,6 +27,7 @@ export const envSchema = {
   DISCORD_CLIENT_ID: z.string().nonempty(),
   DISCORD_CLIENT_SECRET: z.string().nonempty(),
   DISCORD_REDIRECT_URL: z.string().url(),
+  DISCORD_BOT_TOKEN: z.string().nonempty(),
 
   /**
    * Specify your client-side environment variables schema here.

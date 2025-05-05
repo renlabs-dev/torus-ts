@@ -26,15 +26,10 @@ import type { VotesByNumericId } from "../db";
 import {
   countCadreKeys,
   getAgentKeysWithPenalties,
-  getCadreDiscord,
   pendingPenalizations,
   queryTotalVotesPerApp,
   updatePenalizeAgentVotes,
 } from "../db";
-import {
-  assignDAORole,
-  removeDAORole,
-} from "@torus-network/torus-utils/discord-bot-interaction";
 
 const getEnv = validateEnvOrExit({
   TORUS_CURATOR_MNEMONIC: z
@@ -212,12 +207,6 @@ export async function processVotesOnProposal(
     `Application ${appId} [${appVoteStatus}] votes[ accept:${acceptVotes}, refuse:${refuseVotes}, remove:${removeVotes} ]`,
   );
 
-  const discordIdRes = await tryAsync(getCadreDiscord(app.agentKey));
-  const discordIdErrorMsg = () =>
-    `Failed to get discordId for applicant ${app.agentKey}:`;
-  if (log.ifResultIsErr(discordIdRes, discordIdErrorMsg)) return;
-  const [_discordIdErr, discordId] = discordIdRes;
-
   // Application is open and we have votes to accept or refuse
   if (appVoteStatus == "open") {
     if (acceptVotes >= vote_threshold) {
@@ -227,8 +216,6 @@ export async function processVotesOnProposal(
       const acceptErrorMsg = () => `Failed to accept application ${appId}:`;
       if (log.ifResultIsErr(acceptRes, acceptErrorMsg)) return;
       const [_acceptErr, acceptResult] = acceptRes;
-
-      await assignDAORole(discordId);
 
       log.info(
         `Accept application executed for ${appId}: ${JSON.stringify(acceptResult.toHuman())}`,
@@ -261,8 +248,6 @@ export async function processVotesOnProposal(
       `Failed to remove from whitelist for application ${appId}:`;
     if (log.ifResultIsErr(removeRes, removeErrorMsg)) return;
     const [_removeErr, removeResult] = removeRes;
-
-    await removeDAORole(discordId);
 
     log.info(
       `Remove from whitelist executed for ${appId}: ${JSON.stringify(removeResult.toHuman())}`,

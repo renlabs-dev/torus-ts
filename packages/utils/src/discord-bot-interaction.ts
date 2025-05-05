@@ -1,15 +1,9 @@
-import { Client, GatewayIntentBits } from "discord.js";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { BasicLogger } from "./logger";
 import { validateEnvOrExit } from "./env";
 import { z } from "zod";
 
-const log = BasicLogger.create({ name: "discord-bot-interaction" });
-
-// Initialize the Discord client
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
-});
+const log = BasicLogger.create({ name: "discord-role-management" });
 
 const getEnv = validateEnvOrExit({
   DISCORD_BOT_TOKEN: z.string().min(1),
@@ -22,88 +16,93 @@ const NEXT_PUBLIC_TORUS_CHAIN_ENV = env.NEXT_PUBLIC_TORUS_CHAIN_ENV;
 
 // Discord Information
 const serverId = "1306654856286699590";
-const roleName = "Curator DAO";
+const daoRoleId = "1306686252560420905";
 
-// Login to Discord with your app's token
-await client.login(DISCORD_BOT_TOKEN);
+/**
+ * Modifies a Discord user's role (add or remove)
+ * @param discordUserId Discord user ID
+ * @param action "add" or "remove" the role
+ * @returns true if successful, false otherwise
+ */
+async function modifyUserRole(
+  discordUserId: string | undefined,
+  action: "add" | "remove",
+): Promise<boolean> {
+  // Skip in testnet environment
+  if (NEXT_PUBLIC_TORUS_CHAIN_ENV === "testnet") return false;
 
-// Function to assign a DAO role to a member
+  // Validate user ID
+  if (!discordUserId) {
+    log.error("Discord user ID not provided");
+    return false;
+  }
+
+  // Set up variables based on action
+  const method = action === "add" ? "PUT" : "DELETE";
+  const actionVerb = action === "add" ? "assign" : "remove";
+  const actionPastTense = action === "add" ? "added" : "removed";
+
+  log.info(`Attempting to ${actionVerb} DAO role to user ${discordUserId}`);
+
+  const url = `https://discord.com/api/v10/guilds/${serverId}/members/${discordUserId}/roles/${daoRoleId}`;
+  const [fetchError, response] = await tryAsync(
+    fetch(url, {
+      method: method,
+      headers: {
+        Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    }),
+  );
+
+  // Handle fetch errors
+  if (fetchError !== undefined) {
+    log.error(`Error ${actionVerb}ing role for user: ${fetchError}`);
+    return false;
+  }
+
+  // Success case
+  if (response.status === 204) {
+    log.info(
+      `Successfully ${actionPastTense} DAO role ${actionVerb === "assign" ? "to" : "from"} user ${discordUserId}`,
+    );
+    return true;
+  }
+
+  // Error cases
+  log.error(
+    `Failed to ${actionVerb} role for user. Status: ${response.status}`,
+  );
+
+  // Get detailed error message
+  const [textError, errorData] = await tryAsync(response.text());
+  if (textError !== undefined) {
+    log.error("Could not parse error response");
+  } else {
+    log.error(`Discord API error: ${errorData}`);
+  }
+
+  return false;
+}
+
+/**
+ * Assigns the DAO role to a Discord user
+ * @param discordUserId Discord user ID
+ * @returns true if successful, false otherwise
+ */
 export async function assignDAORole(
   discordUserId: string | undefined,
 ): Promise<boolean> {
-  // Get the guild (server)
-  // For some reason discord calls the server as GUILD
-  // Welcome to xXxToRuS_GuildxXx
-
-  if (NEXT_PUBLIC_TORUS_CHAIN_ENV == "testnet") return false;
-  const guild = client.guilds.cache.get(serverId);
-  if (!guild) {
-    log.error(`Server with ID ${serverId} not found`);
-    return false;
-  }
-
-  if (!discordUserId) {
-    log.error(`Discord user ID not found`);
-    return false;
-  }
-
-  // Get the member (fetch to ensure we have the latest data)
-  const memberResult = await tryAsync(guild.members.fetch(discordUserId));
-
-  const memberErrorMsg = `Member with ID ${discordUserId} not found in guild ${serverId}`;
-  if (log.ifResultIsErr(memberResult, memberErrorMsg)) return false;
-  const member = memberResult[1];
-
-  // Get the DAO role
-  const daoRole = guild.roles.cache.find((role) => role.name === roleName);
-  if (!daoRole) {
-    log.error(`Role "${roleName}" not found in the server:  ${serverId}`);
-    return false;
-  }
-
-  // Add the role to the member
-  const roleResult = await tryAsync(member.roles.add(daoRole));
-  const roleErrorMsg = `Error assigning ${roleName} role to user ${discordUserId}`;
-  if (log.ifResultIsErr(roleResult, roleErrorMsg)) return false;
-
-  log.info(`Successfully added ${roleName} role to user ${discordUserId}`);
-  return true;
+  return modifyUserRole(discordUserId, "add");
 }
 
-// Function to remove a DAO role from a member
+/**
+ * Removes the DAO role from a Discord user
+ * @param discordUserId Discord user ID
+ * @returns true if successful, false otherwise
+ */
 export async function removeDAORole(
   discordUserId: string | undefined,
 ): Promise<boolean> {
-  if (NEXT_PUBLIC_TORUS_CHAIN_ENV == "testnet") return false;
-
-  const guild = client.guilds.cache.get(serverId);
-  if (!guild) {
-    log.error(`Server with ID ${serverId} not found`);
-    return false;
-  }
-  if (!discordUserId) {
-    log.error(`Discord user ID not found`);
-    return false;
-  }
-
-  // Get the member
-  const memberResult = await tryAsync(guild.members.fetch(discordUserId));
-  const memberErrorMsg = `Member with ID ${discordUserId} not found in server ${serverId}`;
-  if (log.ifResultIsErr(memberResult, memberErrorMsg)) return false;
-  const member = memberResult[1];
-
-  // Get the DAO role
-  const daoRole = guild.roles.cache.find((role) => role.name === roleName);
-  if (!daoRole) {
-    log.error(`Role "${roleName}" not found in the server: ${serverId}`);
-    return false;
-  }
-
-  // Remove the role from the member
-  const roleResult = await tryAsync(member.roles.remove(daoRole));
-  const roleErrorMsg = `Error removing ${roleName} role from user ${discordUserId}`;
-  if (log.ifResultIsErr(roleResult, roleErrorMsg)) return false;
-
-  log.info(`Successfully removed ${roleName} role from user ${discordUserId}`);
-  return true;
+  return modifyUserRole(discordUserId, "remove");
 }

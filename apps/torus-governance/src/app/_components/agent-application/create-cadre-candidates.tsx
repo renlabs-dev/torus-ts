@@ -1,5 +1,3 @@
-"use client";
-
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { AppRouter } from "@torus-ts/api";
 import { Button } from "@torus-ts/ui/components/button";
@@ -30,7 +28,7 @@ import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import DiscordLogin from "../discord-auth-button";
-
+import { isUserInServer } from "~/utils/discord-verification";
 const MAX_CONTENT_CHARACTERS = 500;
 
 type CreateCadreCandidateFormData = NonNullable<
@@ -51,6 +49,8 @@ export function CreateCadreCandidates() {
   const [discordId, setDiscordId] = React.useState<string | null>(null);
   const [userName, setUserName] = React.useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [isInDiscordServer, setIsInDiscordServer] =
+    React.useState<boolean>(false);
 
   const { saveDiscordInfo } = useDiscordInfoForm(
     discordId,
@@ -65,6 +65,13 @@ export function CreateCadreCandidates() {
     },
     mode: "onChange",
   });
+
+  React.useEffect(() => {
+    if (discordId) {
+      cadreForm.setValue("discordId", discordId);
+      void cadreForm.trigger("discordId");
+    }
+  }, [discordId, cadreForm]);
 
   // == Handle the dialog state ==
   const searchParams = useSearchParams();
@@ -85,15 +92,16 @@ export function CreateCadreCandidates() {
     }
   }, [dialogOpen]);
 
-  // =================================
+  // Add this ref to track if we're currently verifying
+  const isVerifying = React.useRef(false);
 
-  // Set the discordId in the cadreForm when it changes
+  // Add this effect to prevent multiple verification calls
   React.useEffect(() => {
-    if (discordId) {
-      cadreForm.setValue("discordId", discordId);
-      void cadreForm.trigger("discordId");
-    }
-  }, [discordId, cadreForm]);
+    // When the component unmounts or discordId changes, reset the verification flag
+    return () => {
+      isVerifying.current = false;
+    };
+  }, [discordId]);
 
   const createCadreCandidateMutation = api.cadreCandidate.create.useMutation();
 
@@ -107,6 +115,23 @@ export function CreateCadreCandidates() {
   async function handleCreateCadreCandidate(
     data: CreateCadreCandidateFormData,
   ) {
+    // Verify Discord membership before proceeding
+    if (discordId) {
+      const [verifyError, verificationResult] = await tryAsync(
+        isUserInServer(discordId),
+      );
+
+      if (verifyError !== undefined) {
+        toast.error("Failed to verify Discord membership. Please try again.");
+        return;
+      }
+
+      if (!verificationResult) {
+        toast.error("Please, join our Discord server before applying");
+        return;
+      }
+    }
+
     const [createError, _createSuccess] = await tryAsync(
       createCadreCandidateMutation.mutateAsync({
         discordId: data.discordId,
@@ -192,7 +217,8 @@ export function CreateCadreCandidates() {
     return (
       createCadreCandidateMutation.isPending ||
       getValues("content").length < 10 ||
-      !discordId
+      !discordId ||
+      !isInDiscordServer
     );
   }
 
@@ -203,12 +229,17 @@ export function CreateCadreCandidates() {
   // == Handle errors when you either
   // 1. Do not login your discord account
   // 2. Did not type in the content
+  // 3. Not in Discord server
   function validateAndSubmit(): boolean {
     if (!discordId) {
       cadreForm.setError("discordId", {
         type: "manual",
         message: "Please log in with Discord first",
       });
+      return false;
+    }
+
+    if (!isInDiscordServer) {
       return false;
     }
 
@@ -221,6 +252,22 @@ export function CreateCadreCandidates() {
       return false;
     }
     return true;
+  }
+  async function handleIsInServer(id: string): Promise<void> {
+    const [verifyError, isInServer] = await tryAsync(isUserInServer(id));
+
+    if (verifyError !== undefined) {
+      console.error("Error verifying Discord membership:", verifyError);
+      setIsInDiscordServer(false);
+      return;
+    }
+    setIsInDiscordServer(isInServer);
+    if (!isInServer) {
+      return;
+    } else {
+      cadreForm.clearErrors("discordId");
+      return;
+    }
   }
 
   return (
@@ -237,9 +284,18 @@ export function CreateCadreCandidates() {
               Apply to be a Curator DAO Member
             </DialogTitle>
             <DialogDescription className="mt-2 font-mono text-base text-gray-400">
-              The Curator DAO member is a fundamental part of the ecosystem, it
-              can do actions like vote on whitelist applications and can set
-              penalties to agents.
+              The Curator DAO member is a fundamental part of the ecosystem,
+              with the ability to vote on whitelist applications and set
+              penalties for agents. You must be part of the{" "}
+              <a
+                href="https://discord.gg/invite/torus"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                Torus Discord community
+              </a>{" "}
+              to be eligible to apply.
             </DialogDescription>
           </DialogHeader>
 
@@ -255,11 +311,17 @@ export function CreateCadreCandidates() {
                   <FormItem>
                     <FormControl>
                       <DiscordLogin
-                        onAuthChange={(id, name, avatar) => {
+                        onAuthChange={async (id, name, avatar) => {
+                          // If the ID is the same as current, skip verification
+                          if (id === discordId) {
+                            return;
+                          }
                           setDiscordId(id);
                           setUserName(name);
                           setAvatarUrl(avatar);
+
                           if (id) {
+                            await handleIsInServer(id);
                             field.onChange(id);
                           }
                         }}
@@ -267,6 +329,20 @@ export function CreateCadreCandidates() {
                       />
                     </FormControl>
                     <FormMessage />
+                    {discordId && !isInDiscordServer && (
+                      <div className="flex gap-1 text-xs text-red-400/60">
+                        Please{" "}
+                        <a
+                          href="https://discord.gg/invite/torus"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 underline"
+                        >
+                          join our Discord server
+                        </a>{" "}
+                        before applying
+                      </div>
+                    )}
                   </FormItem>
                 )}
               />
@@ -314,8 +390,9 @@ export function CreateCadreCandidates() {
                   hover:text-blue-400`,
                   handleDisableState() ? "cursor-not-allowed opacity-50" : "",
                 )}
+                disabled={handleDisableState()}
               >
-                <Icons.Send />
+                <Icons.Send className="mr-2" />
                 {createCadreCandidateMutation.isPending
                   ? "Waiting for Signature..."
                   : "Submit Application"}
