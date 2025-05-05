@@ -29,7 +29,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // @ts-ignore
     <ErrorBoundary>
       <Layout font={firaMono} headScripts={[EnvScript]}>
         <AppContextProvider>{children}</AppContextProvider>

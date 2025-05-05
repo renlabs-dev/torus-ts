@@ -4,11 +4,9 @@ import type { PropsWithChildren } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { logger } from "~/utils/logger";
 
-interface ErrorBoundaryProps extends PropsWithChildren {
-  fallback?: (props: { error: Error; resetError: () => void }) => Element;
-}
+type ErrorBoundaryProps = PropsWithChildren;
 
-export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
+export function ErrorBoundary({ children }: ErrorBoundaryProps) {
   const [error, setError] = useState<Error | null>(null);
 
   const resetError = useCallback(() => {
@@ -44,9 +42,6 @@ export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
   }, [handleError]);
 
   if (error) {
-    if (fallback) {
-      return fallback({ error, resetError });
-    }
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
         <h2 className="text-2xl font-bold text-red-600 mb-4">
