@@ -10,7 +10,7 @@ const registryUrl = env("NEXT_PUBLIC_REGISTRY_URL") ?? undefined;
 const registryBranch = env("NEXT_PUBLIC_REGISTRY_BRANCH") ?? undefined;
 const registryProxyUrl =
   env("NEXT_PUBLIC_GITHUB_PROXY") ?? "https://proxy.hyperlane.xyz";
-const walletConnectProjectId = env("NEXT_PUBLIC_WALLET_CONNECT_ID") ?? "";
+const walletConnectProjectId = "4bd8b9455b3202ca551d37ff97d97e90";
 const transferBlacklist = env("NEXT_PUBLIC_TRANSFER_BLACKLIST") ?? "";
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const chainWalletWhitelists = JSON.parse(
