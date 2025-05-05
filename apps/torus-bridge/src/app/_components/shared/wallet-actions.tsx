@@ -9,15 +9,15 @@ import {
 import { updateSearchParams } from "~/utils/query-params";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
-import { TransferEVM } from "../transfer-evm";
+// import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
 
 const tabs = [
-  {
-    text: "Torus ⟷ Torus EVM",
-    component: <TransferEVM />,
-    params: "torus",
-  },
+  // {
+  //   text: "Torus ⟷ Torus EVM",
+  //   component: <TransferEVM />,
+  //   params: "torus",
+  // },
   {
     text: "Torus EVM ⟷ Base",
     component: <TransferToken />,
