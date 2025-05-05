@@ -3,6 +3,7 @@
 import { GuideDialog } from "./_components/guide-dialog";
 import { SelectActionDialog } from "./_components/select-action-dialog";
 import { SidebarLinks } from "./_components/shared/sidebar-links";
+import WalletActions from "./_components/shared/wallet-actions";
 import { TransferDetails } from "./_components/transfer-details";
 
 export default function HomePage() {
@@ -20,11 +21,10 @@ export default function HomePage() {
         <div className="animate-fade flex w-full flex-col gap-4 lg:w-4/12">
           <SidebarLinks />
         </div>
-        {/* <div className="flex w-full flex-col gap-6">
+        <div className="flex w-full flex-col gap-6">
           <WalletActions />
-        </div> */}
+        </div>
       </div>
     </main>
   );
 }
- 

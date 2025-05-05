@@ -7,6 +7,7 @@ import { AppContextProvider } from "~/context/app-context-provider";
 import { EnvScript } from "~/env";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
+import { ErrorBoundary } from "./_components/error-boundary";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -28,8 +29,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
-      <AppContextProvider>{children}</AppContextProvider>
-    </Layout>
+    // @ts-ignore
+    <ErrorBoundary>
+      <Layout font={firaMono} headScripts={[EnvScript]}>
+        <AppContextProvider>{children}</AppContextProvider>
+      </Layout>
+    </ErrorBoundary>
   );
 }

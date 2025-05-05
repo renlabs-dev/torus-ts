@@ -18,8 +18,7 @@ const config = {
 
   // Ativa o modo de desenvolvimento detalhado para melhor depuração
   devIndicators: {
-    buildActivity: true,
-    buildActivityPosition: "bottom-right",
+    position: "bottom-right",
   },
 
   // Configurações para melhorar o detalhamento de erros
@@ -45,10 +44,8 @@ const config = {
   },
 
   webpack: (config, { isServer, webpack, dev }) => {
-    // Adiciona mais opções de debug para o webpack
+    // No custom devtool in development to avoid performance regressions
     if (dev) {
-      config.devtool = "eval-source-map";
-
       // Adiciona definições para melhorar a depuração
       config.plugins.push(
         new webpack.DefinePlugin({
@@ -97,11 +94,8 @@ const config = {
     return config;
   },
 
-  // Habilita mais detalhes de erros durante o build
-  experimental: {
-    conformance: true,
-    outputStandalone: true,
-  },
+  // Output as standalone instead of using experimental flag
+  output: "standalone",
 };
 
 export default config;
