@@ -13,15 +13,50 @@ const config = {
     "@torus-ts/env-validation",
   ],
 
+  // Ativa os sourcemaps em produção para ajudar na depuração
   productionBrowserSourceMaps: true,
+
+  // Ativa o modo de desenvolvimento detalhado para melhor depuração
+  devIndicators: {
+    buildActivity: true,
+    buildActivityPosition: "bottom-right",
+  },
+
+  // Configurações para melhorar o detalhamento de erros
+  onDemandEntries: {
+    // period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 60 * 1000,
+    // number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 5,
+  },
 
   reactStrictMode: true,
 
   /** We already do linting and typechecking as separate tasks in CI */
-  eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },
+  eslint: {
+    ignoreDuringBuilds: true,
+    // Configuração para mostrar erro no console durante o desenvolvimento
+    dirs: ["pages", "src"],
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+    // Adiciona informações mais detalhadas sobre erros de TypeScript
+    tsconfigPath: "./tsconfig.json",
+  },
 
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer, webpack, dev }) => {
+    // Adiciona mais opções de debug para o webpack
+    if (dev) {
+      config.devtool = "eval-source-map";
+
+      // Adiciona definições para melhorar a depuração
+      config.plugins.push(
+        new webpack.DefinePlugin({
+          "process.env.WEBPACK_DEV_SERVER": JSON.stringify(true),
+        }),
+      );
+    }
+
     if (!isServer) {
       // Replace node: protocol imports with their browser versions
       config.plugins.push(
@@ -49,7 +84,23 @@ const config = {
       use: "yaml-loader",
     });
 
+    // Adiciona estatísticas detalhadas para depuração em modo de desenvolvimento
+    if (dev) {
+      config.stats = {
+        errors: true,
+        warnings: true,
+        modules: true,
+        reasons: true,
+      };
+    }
+
     return config;
+  },
+
+  // Habilita mais detalhes de erros durante o build
+  experimental: {
+    conformance: true,
+    outputStandalone: true,
   },
 };
 
