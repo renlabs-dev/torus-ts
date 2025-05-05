@@ -65,7 +65,7 @@ export default function DashboardAgentHealthCard() {
 
   return (
     <DashboardRedirectCard
-      redirectPath="/agents"
+      redirectPath="/dao-dashboard?tab=agent-health"
       icon={KeyboardOff}
       title="Agents Health"
     >
