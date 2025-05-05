@@ -42,6 +42,7 @@ export function TransfersDetailsDialog({
   const [fromUrl, setFromUrl] = useState<string>("");
   const [toUrl, setToUrl] = useState<string>("");
   const [originTxUrl, setOriginTxUrl] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   const {
     status,
@@ -69,6 +70,7 @@ export function TransfersDetailsDialog({
 
   const getMessageUrls = useCallback(async () => {
     try {
+      setError(null);
       if (originTxHash) {
         const originTxUrl = multiProvider.tryGetExplorerTxUrl(origin, {
           hash: originTxHash,
@@ -83,14 +85,18 @@ export function TransfersDetailsDialog({
       if (toUrl) setToUrl(fixDoubleSlash(toUrl));
     } catch (error) {
       logger.error("Error fetching URLs:", error);
+      setError("Failed to fetch explorer URLs");
     }
   }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 
   useEffect(() => {
-    getMessageUrls().catch((err) =>
-      logger.error("Error getting message URLs for details modal", err),
-    );
-  }, [transfer, getMessageUrls]);
+    if (isOpen) {
+      getMessageUrls().catch((err) => {
+        logger.error("Error getting message URLs for details modal", err);
+        setError("Error loading transfer details");
+      });
+    }
+  }, [isOpen, getMessageUrls]);
 
   const isAccountReady = !!account?.isReady;
   const connectorName = walletDetails.name ?? "wallet";
@@ -100,8 +106,7 @@ export function TransfersDetailsDialog({
     origin,
   ]);
   const isSent = isTransferSent(status);
-  const isFailed = isTransferFailed(status);
-  const isFinal = isSent || isFailed;
+  const isFinal = isSent || isTransferFailed(status);
   const statusDescription = getTransferStatusLabel(
     status,
     connectorName,
@@ -136,68 +141,76 @@ export function TransfersDetailsDialog({
           </div>
         </AlertDialogHeader>
 
-        <div className="mt-4 flex w-full items-center justify-center">
-          <div className="flex items-baseline">
-            <span className="text-lg font-medium">{amount}</span>
-            <span className="ml-1 text-lg font-medium">{token?.symbol}</span>
-          </div>
-        </div>
-
-        <div className="rounded-radius border-border flex items-center justify-around border p-2">
-          <span className="font-medium tracking-wider">
-            {getChainDisplayName(multiProvider, origin, true)}
-          </span>
-
-          <ChevronsRight className="h-6 w-6" />
-
-          <span className="font-medium tracking-wider">
-            {getChainDisplayName(multiProvider, destination, true)}
-          </span>
-        </div>
-
-        {isFinal ? (
-          <div className="mt-5 flex flex-col space-y-4">
-            <TransferProperty
-              name="Sender Address"
-              value={sender}
-              url={fromUrl}
-            />
-            <TransferProperty
-              name="Recipient Address"
-              value={recipient}
-              url={toUrl}
-            />
-            {token?.addressOrDenom && (
-              <TransferProperty
-                name="Token Address"
-                value={token.addressOrDenom}
-              />
-            )}
-            {originTxHash && (
-              <TransferProperty
-                name="Origin Transaction Hash"
-                value={originTxHash}
-                url={originTxUrl}
-              />
-            )}
-            {msgId && <TransferProperty name="Message ID" value={msgId} />}
-          </div>
+        {error ? (
+          <div className="mt-4 text-center text-sm text-red-600">{error}</div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-4">
-            <Loading />
-            <div
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-              className={`mt-5 text-center text-sm ${isFailed ? "text-red-600" : "text-white"}`}
-            >
-              {statusDescription}
+          <>
+            <div className="mt-4 flex w-full items-center justify-center">
+              <div className="flex items-baseline">
+                <span className="text-lg font-medium">{amount}</span>
+                <span className="ml-1 text-lg font-medium">
+                  {token?.symbol}
+                </span>
+              </div>
             </div>
-            {showSignWarning && (
-              <div className="mt-3 text-center text-sm text-gray-600">
-                If your wallet does not show a transaction request or never
-                confirms, please try the transfer again.
+
+            <div className="rounded-radius border-border flex items-center justify-around border p-2">
+              <span className="font-medium tracking-wider">
+                {getChainDisplayName(multiProvider, origin, true)}
+              </span>
+
+              <ChevronsRight className="h-6 w-6" />
+
+              <span className="font-medium tracking-wider">
+                {getChainDisplayName(multiProvider, destination, true)}
+              </span>
+            </div>
+
+            {isFinal ? (
+              <div className="mt-5 flex flex-col space-y-4">
+                <TransferProperty
+                  name="Sender Address"
+                  value={sender}
+                  url={fromUrl}
+                />
+                <TransferProperty
+                  name="Recipient Address"
+                  value={recipient}
+                  url={toUrl}
+                />
+                {token?.addressOrDenom && (
+                  <TransferProperty
+                    name="Token Address"
+                    value={token.addressOrDenom}
+                  />
+                )}
+                {originTxHash && (
+                  <TransferProperty
+                    name="Origin Transaction Hash"
+                    value={originTxHash}
+                    url={originTxUrl}
+                  />
+                )}
+                {msgId && <TransferProperty name="Message ID" value={msgId} />}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-4">
+                <Loading />
+                <div
+                  className={`mt-5 text-center text-sm
+                    ${isTransferFailed(status) ? "text-red-600" : "text-white"}`}
+                >
+                  {statusDescription}
+                </div>
+                {showSignWarning && (
+                  <div className="mt-3 text-center text-sm text-gray-600">
+                    If your wallet does not show a transaction request or never
+                    confirms, please try the transfer again.
+                  </div>
+                )}
               </div>
             )}
-          </div>
+          </>
         )}
         <AlertDialogFooter>
           <AlertDialogAction className="mt-4 w-full" onClick={onClose}>
@@ -209,7 +222,6 @@ export function TransfersDetailsDialog({
   );
 }
 
-// https://github.com/wagmi-dev/wagmi/discussions/2928
 function useSignIssueWarning(status: TransferStatus) {
   const [showWarning, setShowWarning] = useState(false);
   const warningCallback = useCallback(() => {
@@ -218,13 +230,11 @@ function useSignIssueWarning(status: TransferStatus) {
       status === TransferStatus.ConfirmingTransfer
     )
       setShowWarning(true);
-  }, [status, setShowWarning]);
+  }, [status]);
   useTimeout(warningCallback, 20_000);
   return showWarning;
 }
 
-// TODO cosmos fix double slash problem in ChainMetadataManager
-// Occurs when baseUrl has not other path (e.g. for manta explorer)
 function fixDoubleSlash(url: string) {
   return url.replace(/([^:]\/)\/+/g, "$1");
 }
