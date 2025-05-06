@@ -112,6 +112,28 @@ async function executeTransfer({
   const { origin, destination, tokenIndex, amount, recipient } = values;
   const multiProvider = warpCore.multiProvider;
 
+  const handleStepError = (
+    stage: TransferStatus,
+    transferIndex: number,
+    error: unknown,
+    opts: {
+      toast: ReturnType<typeof useToast>["toast"];
+      setIsLoading: (b: boolean) => void;
+      updateTransferStatus: AppState["updateTransferStatus"];
+      onDone?: () => void;
+    },
+  ) => {
+    const { toast, setIsLoading, updateTransferStatus, onDone } = opts;
+    logger.error(`Error at stage ${stage}`, error);
+    updateTransferStatus(transferIndex, TransferStatus.Failed);
+    toast({
+      title: errorMessages[stage] ?? "Unable to transfer tokens.",
+      description: errorMessages[stage] ?? "Unable to transfer tokens.",
+    });
+    setIsLoading(false);
+    onDone?.();
+  };
+
   // Step 1: Get token by index
   const [tokenError, originToken] = trySync(() =>
     getTokenByIndex(warpCore, tokenIndex),
@@ -120,14 +142,12 @@ async function executeTransfer({
   if (tokenError !== undefined) {
     const errorMsg = "Failed to get token";
     logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, tokenError);
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      description:
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    handleStepError(transferStatus, transferIndex, tokenError, {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -142,14 +162,12 @@ async function executeTransfer({
       `Error at stage ${transferStatus}: ${errorMsg}`,
       connectionError,
     );
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      description:
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    handleStepError(transferStatus, transferIndex, connectionError, {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -163,14 +181,12 @@ async function executeTransfer({
   if (weiError !== undefined) {
     const errorMsg = "Failed to convert amount";
     logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, weiError);
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      description:
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    handleStepError(transferStatus, transferIndex, weiError, {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -182,14 +198,12 @@ async function executeTransfer({
   if (amountError !== undefined) {
     const errorMsg = "Failed to create token amount";
     logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, amountError);
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      description:
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    handleStepError(transferStatus, transferIndex, amountError, {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -204,14 +218,12 @@ async function executeTransfer({
   if (addressError !== undefined || !sender) {
     const errorMsg = "No active account found for origin chain";
     logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, addressError);
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      description:
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    handleStepError(transferStatus, transferIndex, addressError, {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -229,14 +241,12 @@ async function executeTransfer({
       `Error at stage ${transferStatus}: ${errorMsg}`,
       collateralError,
     );
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      description:
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    handleStepError(transferStatus, transferIndex, collateralError, {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -246,13 +256,12 @@ async function executeTransfer({
       `Error at stage ${transferStatus}: ${errorMsg}`,
       new Error(errorMsg),
     );
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: "Insufficient collateral on destination for transfer",
-      description: "Insufficient collateral on destination for transfer",
+    handleStepError(transferStatus, transferIndex, new Error(errorMsg), {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -287,14 +296,12 @@ async function executeTransfer({
   if (txsError !== undefined) {
     const errorMsg = "Failed to get transfer transactions";
     logger.error(`Error at stage ${transferStatus}: ${errorMsg}`, txsError);
-    updateTransferStatus(transferIndex, TransferStatus.Failed);
-    toast({
-      title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-      description:
-        errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+    handleStepError(transferStatus, transferIndex, txsError, {
+      toast,
+      setIsLoading,
+      updateTransferStatus,
+      onDone,
     });
-    setIsLoading(false);
-    if (onDone) onDone();
     return;
   }
 
@@ -371,14 +378,12 @@ async function executeTransfer({
         `Error at stage ${transferStatus}: ${errorMsg}`,
         confirmError,
       );
-      updateTransferStatus(transferIndex, TransferStatus.Failed);
-      toast({
-        title: errorMessages[transferStatus] ?? "Unable to transfer tokens.",
-        description:
-          errorMessages[transferStatus] ?? "Unable to transfer tokens.",
+      handleStepError(transferStatus, transferIndex, confirmError, {
+        toast,
+        setIsLoading,
+        updateTransferStatus,
+        onDone,
       });
-      setIsLoading(false);
-      if (onDone) onDone();
       return;
     }
 

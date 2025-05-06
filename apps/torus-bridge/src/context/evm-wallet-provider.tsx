@@ -74,7 +74,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     createConfig({
       // Splice to make annoying wagmi type happy
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      chains: [chains[0]!, ...chains.splice(1)],
+      chains: [chains[0]!, ...chains.slice(1)],
       connectors,
       multiInjectedProviderDiscovery: false,
       client({ chain }) {

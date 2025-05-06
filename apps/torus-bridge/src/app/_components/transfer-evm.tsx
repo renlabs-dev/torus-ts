@@ -105,10 +105,15 @@ export function TransferEVM() {
     // Initialize wagmi configuration after mount
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (multiProvider) {
-      const config = initWagmi(multiProvider).wagmiConfig;
-      setWagmiConfig(config);
+      const [wagmiErr, wagmiInit] = trySync(() => initWagmi(multiProvider));
+      if (wagmiErr !== undefined) {
+        console.error("Failed to initialise wagmi:", wagmiErr);
+        toast.error("Wallet initialisation failed, please refresh.");
+      } else {
+        setWagmiConfig(wagmiInit.wagmiConfig);
+      }
     }
-  }, [multiProvider, searchParams]);
+  }, [multiProvider, searchParams, toast]);
 
   // Update mode when search params change (after initial mount)
   useEffect(() => {
