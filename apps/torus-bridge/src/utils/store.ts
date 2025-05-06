@@ -51,22 +51,27 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       chainMetadata: {},
       chainMetadataOverrides: {},
-      setChainMetadataOverrides: async (
+      setChainMetadataOverrides: (
         overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
       ) => {
         console.log("Setting chain metadata overrides:", overrides);
         try {
           console.log("Initializing warp context for overrides");
-          const { multiProvider } = await initWarpContext(
-            get().registry,
-            overrides,
-          );
-          console.log("Filtering overrides");
-          const filtered = objFilter(overrides, (_, metadata) => !!metadata);
-          console.log(
-            "Updating state with filtered overrides and multiProvider",
-          );
-          set({ chainMetadataOverrides: filtered, multiProvider });
+          initWarpContext(get().registry, overrides)
+            .then(({ multiProvider }) => {
+              console.log("Filtering overrides");
+              const filtered = objFilter(
+                overrides,
+                (_, metadata) => !!metadata,
+              );
+              console.log(
+                "Updating state with filtered overrides and multiProvider",
+              );
+              set({ chainMetadataOverrides: filtered, multiProvider });
+            })
+            .catch((error) => {
+              console.error("Error setting chain metadata overrides:", error);
+            });
         } catch (error) {
           console.error("Error setting chain metadata overrides:", error);
         }
@@ -139,11 +144,14 @@ export const useStore = create<AppState>()(
             return state;
           }
           const txs = [...state.transfers];
+          const transfer = txs[i];
+          if (!transfer) return state;
+
           txs[i] = {
-            ...txs[i],
+            ...transfer,
             status: s,
-            msgId: options?.msgId ?? txs[i].msgId,
-            originTxHash: options?.originTxHash ?? txs[i]?.originTxHash,
+            msgId: options?.msgId ?? transfer.msgId,
+            originTxHash: options?.originTxHash ?? transfer.originTxHash,
           };
           return { transfers: txs };
         });
@@ -226,7 +234,7 @@ async function initWarpContext(
     const coreConfig = assembleWarpCoreConfig();
     console.log(
       "Warp core config assembled, tokens:",
-      coreConfig.tokens?.length,
+      coreConfig.tokens.length,
     );
 
     console.log("Extracting unique chain names from tokens");
