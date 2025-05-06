@@ -1,5 +1,3 @@
-"use client";
-
 import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
 import { useEffect, useRef, useState } from "react";

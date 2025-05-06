@@ -12,13 +12,9 @@ import { logger } from "./logger";
 import type { TransferContext } from "./types";
 import { FinalTransferStatuses, TransferStatus } from "./types";
 
-// Increment this when persist state has breaking changes
 const PERSIST_STATE_VERSION = 2;
 
-// Keeping everything here for now as state is simple
-// Will refactor into slices as necessary
 export interface AppState {
-  // Chains and providers
   chainMetadata: ChainMap<ChainMetadata>;
   chainMetadataOverrides: ChainMap<Partial<ChainMetadata>>;
   setChainMetadataOverrides: (
@@ -33,8 +29,6 @@ export interface AppState {
     multiProvider: MultiProtocolProvider;
     warpCore: WarpCore;
   }) => void;
-
-  // User history
   transfers: TransferContext[];
   addTransfer: (t: TransferContext) => void;
   resetTransfers: () => void;
@@ -44,34 +38,40 @@ export interface AppState {
     options?: { msgId?: string; originTxHash?: string },
   ) => void;
   failUnconfirmedTransfers: () => void;
-
-  // Shared component state
   transferLoading: boolean;
   setTransferLoading: (isLoading: boolean) => void;
   isSideBarOpen: boolean;
   setIsSideBarOpen: (isOpen: boolean) => void;
   showEnvSelectModal: boolean;
   setShowEnvSelectModal: (show: boolean) => void;
+  isInitialized: boolean;
+  initializationError: string | null;
+  setInitializationState: (
+    isInitialized: boolean,
+    error: string | null,
+  ) => void;
 }
 
 export const useStore = create<AppState>()(
   persist(
-    // Store reducers
     (set, get) => ({
-      // Chains and providers
       chainMetadata: {},
       chainMetadataOverrides: {},
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       setChainMetadataOverrides: async (
         overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
       ) => {
-        logger.debug("Setting chain overrides in store");
-        const { multiProvider } = await initWarpContext(
-          get().registry,
-          overrides,
-        );
-        const filtered = objFilter(overrides, (_, metadata) => !!metadata);
-        set({ chainMetadataOverrides: filtered, multiProvider });
+        console.log("Setting chain metadata overrides:", overrides);
+        try {
+          const { multiProvider } = await initWarpContext(
+            get().registry,
+            overrides,
+          );
+          const filtered = objFilter(overrides, (_, metadata) => !!metadata);
+          set({ chainMetadataOverrides: filtered, multiProvider });
+        } catch (error) {
+          console.error("Failed to set chain metadata overrides:", error);
+          set({ initializationError: "Failed to update chain metadata" });
+        }
       },
       multiProvider: new MultiProtocolProvider({}),
       registry: new GithubRegistry({
@@ -86,34 +86,52 @@ export const useStore = create<AppState>()(
         multiProvider,
         warpCore,
       }) => {
-        logger.debug("Setting warp context in store");
+        console.log(
+          "Setting warp context with chainMetadata:",
+          Object.keys(chainMetadata),
+        );
         set({ registry, chainMetadata, multiProvider, warpCore });
       },
-
-      // User history
       transfers: [],
       addTransfer: (t) => {
+        console.log("Adding transfer:", t);
         set((state) => ({ transfers: [...state.transfers, t] }));
       },
       resetTransfers: () => {
+        console.log("Resetting transfers");
         set(() => ({ transfers: [] }));
       },
       updateTransferStatus: (i, s, options) => {
+        console.log(
+          "Updating transfer status at index:",
+          i,
+          "to:",
+          s,
+          "options:",
+          options,
+        );
         set((state) => {
-          if (i >= state.transfers.length) return state;
+          if (i >= state.transfers.length || i < 0) {
+            console.error(
+              "Invalid transfer index:",
+              i,
+              "transfers length:",
+              state.transfers.length,
+            );
+            return state;
+          }
           const txs = [...state.transfers];
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.status = s;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.msgId ??= options?.msgId;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.originTxHash ??= options?.originTxHash;
-          return {
-            transfers: txs,
+          txs[i] = {
+            ...txs[i],
+            status: s,
+            msgId: options?.msgId ?? txs[i].msgId,
+            originTxHash: options?.originTxHash ?? txs[i].originTxHash,
           };
+          return { transfers: txs };
         });
       },
       failUnconfirmedTransfers: () => {
+        console.log("Failing unconfirmed transfers");
         set((state) => ({
           transfers: state.transfers.map((t) =>
             FinalTransferStatuses.includes(t.status)
@@ -122,51 +140,68 @@ export const useStore = create<AppState>()(
           ),
         }));
       },
-
-      // Shared component state
       transferLoading: false,
       setTransferLoading: (isLoading) => {
+        console.log("Setting transfer loading:", isLoading);
         set(() => ({ transferLoading: isLoading }));
       },
       isSideBarOpen: false,
       setIsSideBarOpen: (isSideBarOpen) => {
+        console.log("Setting sidebar open:", isSideBarOpen);
         set(() => ({ isSideBarOpen }));
       },
       showEnvSelectModal: false,
       setShowEnvSelectModal: (showEnvSelectModal) => {
+        console.log("Setting env select modal:", showEnvSelectModal);
         set(() => ({ showEnvSelectModal }));
       },
+      isInitialized: false,
+      initializationError: null,
+      setInitializationState: (isInitialized, error) => {
+        console.log(
+          "Setting initialization state:",
+          isInitialized,
+          "error:",
+          error,
+        );
+        set(() => ({ isInitialized, initializationError: error }));
+      },
     }),
-
-    // Store config
     {
-      name: "app-state", // name in storage
+      name: "app-state",
       partialize: (state) => ({
-        // fields to persist
         chainMetadataOverrides: state.chainMetadataOverrides,
         transfers: state.transfers,
       }),
       version: PERSIST_STATE_VERSION,
       onRehydrateStorage: () => {
-        logger.debug("Rehydrating state");
+        console.log("Rehydrating state");
         return (state, error) => {
-          state?.failUnconfirmedTransfers();
           if (error || !state) {
-            logger.error("Error during hydration", error);
+            console.error("Error during hydration:", error);
+            state?.setInitializationState(false, "State hydration failed");
             return;
           }
-          void initWarpContext(
-            state.registry,
-            state.chainMetadataOverrides,
-          ).then(({ registry, chainMetadata, multiProvider, warpCore }) => {
-            state.setWarpContext({
-              registry,
-              chainMetadata,
-              multiProvider,
-              warpCore,
+          state.failUnconfirmedTransfers();
+          console.log("Initializing warp context during rehydration");
+          initWarpContext(state.registry, state.chainMetadataOverrides)
+            .then(({ registry, chainMetadata, multiProvider, warpCore }) => {
+              state.setWarpContext({
+                registry,
+                chainMetadata,
+                multiProvider,
+                warpCore,
+              });
+              state.setInitializationState(true, null);
+              console.log("Rehydration complete");
+            })
+            .catch((err) => {
+              console.error("Rehydration failed:", err);
+              state.setInitializationState(
+                false,
+                "Failed to initialize warp context",
+              );
             });
-            logger.debug("Rehydration complete");
-          });
         };
       },
     },
@@ -177,23 +212,54 @@ async function initWarpContext(
   registry: IRegistry,
   storeMetadataOverrides: ChainMap<Partial<ChainMetadata> | undefined>,
 ) {
+  console.log(
+    "Initializing warp context with registry URI:",
+    config.registryUrl,
+  );
   try {
+    if (!config.registryUrl || !config.registryBranch) {
+      console.error("Invalid registry configuration:", {
+        registryUrl: config.registryUrl,
+        registryBranch: config.registryBranch,
+      });
+      throw new Error("Missing registry configuration");
+    }
+
+    console.log("Assembling warp core config");
     const coreConfig = assembleWarpCoreConfig();
+    if (!coreConfig.tokens?.length) {
+      console.error("No tokens found in warp core config");
+      throw new Error("Invalid warp core configuration");
+    }
+
     const chainsInTokens = Array.from(
       new Set(coreConfig.tokens.map((t) => t.chainName)),
     );
-    // Pre-load registry content to avoid repeated requests
+    console.log("Chains in tokens:", chainsInTokens);
+
+    console.log("Pre-loading registry content");
     await registry.listRegistryContent();
+
+    console.log("Assembling chain metadata for chains:", chainsInTokens);
     const { chainMetadata, chainMetadataWithOverrides } =
       await assembleChainMetadata(
         chainsInTokens,
         registry,
         storeMetadataOverrides,
       );
+
+    console.log(
+      "Creating multi provider with chains:",
+      Object.keys(chainMetadataWithOverrides),
+    );
     const multiProvider = new MultiProtocolProvider(chainMetadataWithOverrides);
+
+    console.log("Initializing WarpCore");
     const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
+
     return { registry, chainMetadata, multiProvider, warpCore };
   } catch (error) {
+    console.error("Error initializing warp context:", error);
     logger.error("Error initializing warp context", error);
     return {
       registry,
