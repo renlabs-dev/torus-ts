@@ -14,11 +14,6 @@ import { FinalTransferStatuses, TransferStatus } from "./types";
 
 const PERSIST_STATE_VERSION = 2;
 
-// Default registry configuration to use as fallback
-const DEFAULT_REGISTRY_URL =
-  "https://raw.githubusercontent.com/hyperlane-xyz/hyperlane-registry";
-const DEFAULT_REGISTRY_BRANCH = "main";
-
 export interface AppState {
   chainMetadata: ChainMap<ChainMetadata>;
   chainMetadataOverrides: ChainMap<Partial<ChainMetadata>>;
@@ -49,12 +44,6 @@ export interface AppState {
   setIsSideBarOpen: (isOpen: boolean) => void;
   showEnvSelectModal: boolean;
   setShowEnvSelectModal: (show: boolean) => void;
-  isInitialized: boolean;
-  initializationError: string | null;
-  setInitializationState: (
-    isInitialized: boolean,
-    error: string | null,
-  ) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -62,36 +51,53 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       chainMetadata: {},
       chainMetadataOverrides: {},
-      setChainMetadataOverrides: (
+      setChainMetadataOverrides: async (
         overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
       ) => {
         console.log("Setting chain metadata overrides:", overrides);
         try {
-          // Instead of awaiting here, convert to promise chain
-          initWarpContext(get().registry, overrides)
-            .then(({ multiProvider }) => {
-              const filtered = objFilter(
-                overrides,
-                (_, metadata) => !!metadata,
-              );
-              set({ chainMetadataOverrides: filtered, multiProvider });
-            })
-            .catch((error) => {
-              console.error("Failed to set chain metadata overrides:", error);
-              set({ initializationError: "Failed to update chain metadata" });
-            });
+          console.log("Initializing warp context for overrides");
+          const { multiProvider } = await initWarpContext(
+            get().registry,
+            overrides,
+          );
+          console.log("Filtering overrides");
+          const filtered = objFilter(overrides, (_, metadata) => !!metadata);
+          console.log(
+            "Updating state with filtered overrides and multiProvider",
+          );
+          set({ chainMetadataOverrides: filtered, multiProvider });
         } catch (error) {
-          console.error("Failed to set chain metadata overrides:", error);
-          set({ initializationError: "Failed to update chain metadata" });
+          console.error("Error setting chain metadata overrides:", error);
         }
       },
       multiProvider: new MultiProtocolProvider({}),
-      registry: new GithubRegistry({
-        uri: config.registryUrl ?? DEFAULT_REGISTRY_URL,
-        branch: config.registryBranch ?? DEFAULT_REGISTRY_BRANCH,
-        proxyUrl: config.registryProxyUrl,
-      }),
-      warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+      registry: (() => {
+        console.log("Creating GithubRegistry with config:", {
+          uri: config.registryUrl,
+          branch: config.registryBranch,
+          proxyUrl: config.registryProxyUrl,
+        });
+        try {
+          return new GithubRegistry({
+            uri: config.registryUrl,
+            branch: config.registryBranch,
+            proxyUrl: config.registryProxyUrl,
+          });
+        } catch (error) {
+          console.error("Error creating GithubRegistry:", error);
+          return new GithubRegistry({ uri: "", branch: "" });
+        }
+      })(),
+      warpCore: (() => {
+        console.log("Creating initial WarpCore");
+        try {
+          return new WarpCore(new MultiProtocolProvider({}), []);
+        } catch (error) {
+          console.error("Error creating initial WarpCore:", error);
+          return new WarpCore(new MultiProtocolProvider({}), []);
+        }
+      })(),
       setWarpContext: ({
         registry,
         chainMetadata,
@@ -99,7 +105,7 @@ export const useStore = create<AppState>()(
         warpCore,
       }) => {
         console.log(
-          "Setting warp context with chainMetadata:",
+          "Setting warp context with chainMetadata keys:",
           Object.keys(chainMetadata),
         );
         set({ registry, chainMetadata, multiProvider, warpCore });
@@ -133,18 +139,12 @@ export const useStore = create<AppState>()(
             return state;
           }
           const txs = [...state.transfers];
-          const currentTransfer = txs[i];
-
-          // Ensure we're not creating properties that could be undefined
-          if (currentTransfer) {
-            txs[i] = {
-              ...currentTransfer,
-              status: s,
-              msgId: options?.msgId ?? currentTransfer.msgId,
-              originTxHash:
-                options?.originTxHash ?? currentTransfer.originTxHash,
-            };
-          }
+          txs[i] = {
+            ...txs[i],
+            status: s,
+            msgId: options?.msgId ?? txs[i].msgId,
+            originTxHash: options?.originTxHash ?? txs[i]?.originTxHash,
+          };
           return { transfers: txs };
         });
       },
@@ -173,17 +173,6 @@ export const useStore = create<AppState>()(
         console.log("Setting env select modal:", showEnvSelectModal);
         set(() => ({ showEnvSelectModal }));
       },
-      isInitialized: false,
-      initializationError: null,
-      setInitializationState: (isInitialized, error) => {
-        console.log(
-          "Setting initialization state:",
-          isInitialized,
-          "error:",
-          error,
-        );
-        set(() => ({ isInitialized, initializationError: error }));
-      },
     }),
     {
       name: "app-state",
@@ -197,27 +186,25 @@ export const useStore = create<AppState>()(
         return (state, error) => {
           if (error || !state) {
             console.error("Error during hydration:", error);
-            state?.setInitializationState(false, "State hydration failed");
             return;
           }
+          console.log("Failing unconfirmed transfers during rehydration");
           state.failUnconfirmedTransfers();
-          console.log("Initializing warp context during rehydration");
+          console.log("Initializing warp context for rehydration");
           initWarpContext(state.registry, state.chainMetadataOverrides)
             .then(({ registry, chainMetadata, multiProvider, warpCore }) => {
+              console.log("Rehydration successful, setting warp context");
               state.setWarpContext({
                 registry,
                 chainMetadata,
                 multiProvider,
                 warpCore,
               });
-              state.setInitializationState(true, null);
-              console.log("Rehydration complete");
             })
-            .catch((err) => {
-              console.error("Rehydration failed:", err);
-              state.setInitializationState(
-                false,
-                "Failed to initialize warp context",
+            .catch((error) => {
+              console.error(
+                "Error during rehydration warp context initialization:",
+                error,
               );
             });
         };
@@ -230,59 +217,61 @@ async function initWarpContext(
   registry: IRegistry,
   storeMetadataOverrides: ChainMap<Partial<ChainMetadata> | undefined>,
 ) {
-  const registryUrl = config.registryUrl ?? DEFAULT_REGISTRY_URL;
-  const registryBranch = config.registryBranch ?? DEFAULT_REGISTRY_BRANCH;
-
   console.log(
-    "Initializing warp context with registry URI:",
-    registryUrl,
-    "branch:",
-    registryBranch,
+    "Starting initWarpContext with registry URI:",
+    config.registryUrl,
   );
-
   try {
-    // Make sure we have a registry URL and branch before proceeding
-    if (!registryUrl || !registryBranch) {
-      console.error("Invalid registry configuration:", {
-        registryUrl,
-        registryBranch,
-      });
-      throw new Error("Missing registry configuration");
-    }
-
     console.log("Assembling warp core config");
     const coreConfig = assembleWarpCoreConfig();
-    if (!coreConfig.tokens.length) {
-      console.error("No tokens found in warp core config");
-      throw new Error("Invalid warp core configuration");
-    }
+    console.log(
+      "Warp core config assembled, tokens:",
+      coreConfig.tokens?.length,
+    );
 
+    console.log("Extracting unique chain names from tokens");
     const chainsInTokens = Array.from(
       new Set(coreConfig.tokens.map((t) => t.chainName)),
     );
     console.log("Chains in tokens:", chainsInTokens);
 
     console.log("Pre-loading registry content");
-    await registry.listRegistryContent();
+    try {
+      await registry.listRegistryContent();
+      console.log("Registry content loaded successfully");
+    } catch (error) {
+      console.error("Error loading registry content:", error);
+      throw error;
+    }
 
     console.log("Assembling chain metadata for chains:", chainsInTokens);
-    const { chainMetadata, chainMetadataWithOverrides } =
-      await assembleChainMetadata(
-        chainsInTokens,
-        registry,
-        storeMetadataOverrides,
+    try {
+      const { chainMetadata, chainMetadataWithOverrides } =
+        await assembleChainMetadata(
+          chainsInTokens,
+          registry,
+          storeMetadataOverrides,
+        );
+      console.log(
+        "Chain metadata assembled, chains:",
+        Object.keys(chainMetadata),
       );
 
-    console.log(
-      "Creating multi provider with chains:",
-      Object.keys(chainMetadataWithOverrides),
-    );
-    const multiProvider = new MultiProtocolProvider(chainMetadataWithOverrides);
+      console.log("Creating MultiProtocolProvider");
+      const multiProvider = new MultiProtocolProvider(
+        chainMetadataWithOverrides,
+      );
+      console.log("MultiProtocolProvider created");
 
-    console.log("Initializing WarpCore");
-    const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
+      console.log("Creating WarpCore from config");
+      const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
+      console.log("WarpCore created successfully");
 
-    return { registry, chainMetadata, multiProvider, warpCore };
+      return { registry, chainMetadata, multiProvider, warpCore };
+    } catch (error) {
+      console.error("Error assembling chain metadata:", error);
+      throw error;
+    }
   } catch (error) {
     console.error("Error initializing warp context:", error);
     logger.error("Error initializing warp context", error);
