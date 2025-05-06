@@ -61,6 +61,10 @@ jobs:
 
       - uses: ariga/setup-atlas@v0
 
+      - name: Run lint
+        run: |
+          atlas migrate lint --dir file://atlas/migrations --dev-url "docker://postgres/17/dev" --git-base main
+
       - name: Run dry-run migration
         run: |
           atlas migrate apply --dry-run  --dir file://atlas/migrations --url "${{ env.POSTGRES_URL }}"
