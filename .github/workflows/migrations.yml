@@ -65,6 +65,7 @@ jobs:
 
       - name: Run lint
         run: |
+          git fetch origin main:main
           atlas migrate lint --dir file://atlas/migrations --dev-url "docker://postgres/17/dev" --git-base main
 
       - name: Run dry-run migration
