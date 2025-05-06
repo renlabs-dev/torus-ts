@@ -10,6 +10,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-worker
 
+  additionalLabels:
+    app: torus-worker
+
   podLabels:
     app: torus-worker
 
