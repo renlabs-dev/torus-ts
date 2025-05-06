@@ -6,12 +6,12 @@ import { z } from "zod";
 const log = BasicLogger.create({ name: "discord-role-management" });
 
 const getEnv = validateEnvOrExit({
-  DISCORD_BOT_TOKEN: z.string().min(1),
+  DISCORD_BOT_SECRET: z.string().min(1),
   NEXT_PUBLIC_TORUS_CHAIN_ENV: z.string().min(1),
 });
 
 const env = getEnv(process.env);
-const DISCORD_BOT_TOKEN = env.DISCORD_BOT_TOKEN;
+const DISCORD_BOT_SECRET = env.DISCORD_BOT_SECRET;
 const NEXT_PUBLIC_TORUS_CHAIN_ENV = env.NEXT_PUBLIC_TORUS_CHAIN_ENV;
 
 // Discord Information
@@ -49,7 +49,7 @@ async function modifyUserRole(
     fetch(url, {
       method: method,
       headers: {
-        Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+        Authorization: `Bot ${DISCORD_BOT_SECRET}`,
         "Content-Type": "application/json",
       },
     }),

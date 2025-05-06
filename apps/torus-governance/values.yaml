@@ -22,6 +22,11 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: nextauth_secret
+    DISCORD_BOT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: discord_bot_secret
 
     # DISCORD
     DISCORD_CLIENT_ID:

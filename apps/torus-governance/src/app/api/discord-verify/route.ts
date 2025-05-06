@@ -3,7 +3,7 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { env } from "~/env";
 
-const DISCORD_BOT_TOKEN = env("DISCORD_BOT_TOKEN");
+const DISCORD_BOT_SECRET = env("DISCORD_BOT_SECRET");
 const serverId = "1306654856286699590";
 
 const log = BasicLogger.create({ name: "discord-api" });
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       `https://discord.com/api/v10/guilds/${serverId}/members/${discordUserId}`,
       {
         headers: {
-          Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+          Authorization: `Bot ${DISCORD_BOT_SECRET}`,
         },
       },
     ),
