@@ -33,57 +33,79 @@ export function WalletBalance() {
   // EVM
   const { address: evmAddress } = wagmi.useAccount();
 
-  // -- Torus EVM --
-
-  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
-  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
-
-  const { chain: torusEvmChain } = torusEvmClient;
-
-  const { data: torusEvmBalance } = wagmi.useBalance({
-    address: evmAddress,
-    chainId: torusEvmChain.id,
-  });
-
-  // -- Base --
-
-  const baseClient = wagmi.useClient({ chainId: baseChainId });
-  if (baseClient == null) throw new Error("Base client not found");
-
-  const { chain: baseChain } = baseClient;
-
-  const { data: baseBalance } = wagmi.useReadContract({
-    chainId: baseChain.id,
-    // TODO: hardcoded contract address
-    address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: evmAddress ? [evmAddress] : undefined,
-  });
-
   // -- Torus --
-
+  console.log("Fetching free balance for account:", selectedAccount?.address);
   const accountFreeBalance = useFreeBalance(
     api,
     selectedAccount?.address as SS58Address,
   );
   if (accountFreeBalance.isError) {
-    console.error(accountFreeBalance.error);
+    console.error("Error fetching free balance:", accountFreeBalance.error);
   }
   const userAccountFreeBalance = useCallback(() => {
     if (
       !isInitialized ||
       !isAccountConnected ||
       accountFreeBalance.isRefetching
-    )
+    ) {
+      console.log(
+        "Balance unavailable: not initialized, not connected, or refetching",
+      );
       return null;
+    }
 
     if (accountFreeBalance.data != null) {
+      console.log("Returning free balance:", accountFreeBalance.data);
       return accountFreeBalance.data;
     }
 
+    console.log("No balance data available, returning 0");
     return 0n;
   }, [accountFreeBalance, isAccountConnected, isInitialized]);
+
+  // -- Torus EVM --
+  console.log("Fetching Torus EVM client for chainId:", torusEvmChainId);
+  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
+
+  // -- Base --
+  console.log("Fetching Base client for chainId:", baseChainId);
+  const baseClient = wagmi.useClient({ chainId: baseChainId });
+
+  // Early returns for error cases
+  if (torusEvmClient == null) {
+    console.error("Torus EVM client not found for chainId:", torusEvmChainId);
+    return (
+      <div className="text-red-600">Error: Torus EVM client unavailable</div>
+    );
+  }
+
+  if (baseClient == null) {
+    console.error("Base client not found for chainId:", baseChainId);
+    return <div className="text-red-600">Error: Base client unavailable</div>;
+  }
+
+  const { chain: torusEvmChain } = torusEvmClient;
+  const { chain: baseChain } = baseClient;
+
+  console.log(
+    "Fetching balance for address:",
+    evmAddress,
+    "on chain:",
+    torusEvmChain.id,
+  );
+  const { data: torusEvmBalance } = wagmi.useBalance({
+    address: evmAddress,
+    chainId: torusEvmChain.id,
+  });
+
+  console.log("Fetching Base balance for address:", evmAddress);
+  const { data: baseBalance } = wagmi.useReadContract({
+    chainId: baseChain.id,
+    address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: evmAddress ? [evmAddress] : undefined,
+  });
 
   const balancesList = [
     {
@@ -114,7 +136,6 @@ export function WalletBalance() {
     },
     {
       amount: baseBalance ?? null,
-      // amount: baseBalance,
       label: `${baseChain.name}`,
       icon: (
         <Image
@@ -127,6 +148,8 @@ export function WalletBalance() {
       address: evmAddress,
     },
   ];
+
+  console.log("Rendering balances list:", balancesList);
 
   return (
     <div className="min-fit xs:flex-row flex flex-col gap-4 lg:flex-col">
