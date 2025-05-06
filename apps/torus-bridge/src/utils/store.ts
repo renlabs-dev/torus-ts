@@ -57,17 +57,24 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       chainMetadata: {},
       chainMetadataOverrides: {},
-      setChainMetadataOverrides: async (
+      setChainMetadataOverrides: (
         overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
       ) => {
         console.log("Setting chain metadata overrides:", overrides);
         try {
-          const { multiProvider } = await initWarpContext(
-            get().registry,
-            overrides,
-          );
-          const filtered = objFilter(overrides, (_, metadata) => !!metadata);
-          set({ chainMetadataOverrides: filtered, multiProvider });
+          // Instead of awaiting here, convert to promise chain
+          initWarpContext(get().registry, overrides)
+            .then(({ multiProvider }) => {
+              const filtered = objFilter(
+                overrides,
+                (_, metadata) => !!metadata,
+              );
+              set({ chainMetadataOverrides: filtered, multiProvider });
+            })
+            .catch((error) => {
+              console.error("Failed to set chain metadata overrides:", error);
+              set({ initializationError: "Failed to update chain metadata" });
+            });
         } catch (error) {
           console.error("Failed to set chain metadata overrides:", error);
           set({ initializationError: "Failed to update chain metadata" });
@@ -121,12 +128,18 @@ export const useStore = create<AppState>()(
             return state;
           }
           const txs = [...state.transfers];
-          txs[i] = {
-            ...txs[i],
-            status: s,
-            msgId: options?.msgId ?? txs[i].msgId,
-            originTxHash: options?.originTxHash ?? txs[i].originTxHash,
-          };
+          const currentTransfer = txs[i];
+
+          // Ensure we're not creating properties that could be undefined
+          if (currentTransfer) {
+            txs[i] = {
+              ...currentTransfer,
+              status: s,
+              msgId: options?.msgId ?? currentTransfer.msgId,
+              originTxHash:
+                options?.originTxHash ?? currentTransfer.originTxHash,
+            };
+          }
           return { transfers: txs };
         });
       },
@@ -227,7 +240,7 @@ async function initWarpContext(
 
     console.log("Assembling warp core config");
     const coreConfig = assembleWarpCoreConfig();
-    if (!coreConfig.tokens?.length) {
+    if (!coreConfig.tokens.length) {
       console.error("No tokens found in warp core config");
       throw new Error("Invalid warp core configuration");
     }
