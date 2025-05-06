@@ -77,7 +77,11 @@ export function TransferTokenForm() {
   };
 
   useEffect(() => {
-    if (!fromParam || !toParam) {
+    if (
+      (!fromParam || !toParam) &&
+      (fromParam !== initialValues.origin ||
+        toParam !== initialValues.destination)
+    ) {
       // Store original values to prevent loops
       const originVal = initialValues.origin;
       const destVal = initialValues.destination;
@@ -93,13 +97,13 @@ export function TransferTokenForm() {
         router.replace("/?" + query);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    // Only depend on the fromParam and toParam from URL, not the initialValues
     fromParam,
     toParam,
     router,
     searchParams,
+    initialValues.origin,
+    initialValues.destination,
   ]);
 
   return (
