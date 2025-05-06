@@ -26,18 +26,20 @@ export function TransferDetails() {
     }
   }, [transfers, transferLoading]);
 
-  return (
-    <>
-      {selectedTransfer && (
-        <TransfersDetailsDialog
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedTransfer(null);
-          }}
-          transfer={selectedTransfer}
-        />
-      )}
-    </>
-  );
+  // return (
+  //   <>
+  //     {selectedTransfer && (
+  //       <TransfersDetailsDialog
+  //         isOpen={isModalOpen}
+  //         onClose={() => {
+  //           setIsModalOpen(false);
+  //           setSelectedTransfer(null);
+  //         }}
+  //         transfer={selectedTransfer}
+  //       />
+  //     )}
+  //   </>
+  // );
+
+  return null;
 }

@@ -5,7 +5,7 @@ import { SelectActionDialog } from "./_components/select-action-dialog";
 import { SidebarLinks } from "./_components/shared/sidebar-links";
 import WalletActions from "./_components/shared/wallet-actions";
 import { WalletBalance } from "./_components/shared/wallet-balance";
-// import { TransferDetails } from "./_components/transfer-details";
+import { TransferDetails } from "./_components/transfer-details";
 
 export default function HomePage() {
   return (
@@ -13,7 +13,7 @@ export default function HomePage() {
       className="mx-auto flex min-w-full flex-col items-start gap-3 text-white
         lg:mt-[calc(20vh-64px)]"
     >
-      {/* <TransferDetails /> */}
+      <TransferDetails />
       <div className="mb-4 mt-12 flex w-full flex-col gap-6 md:mt-0 md:flex-row">
         <SelectActionDialog />
         <GuideDialog />
