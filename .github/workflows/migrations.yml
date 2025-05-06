@@ -50,6 +50,8 @@ jobs:
         with:
           fetch-depth: 0
 
+      - run: git fetch origin main:main
+
       - name: Import Secrets
         id: import-secrets
         uses: hashicorp/vault-action@v3
@@ -64,9 +66,7 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - name: Run lint
-        run: |
-          git fetch origin main:main
-          atlas migrate lint --dir file://atlas/migrations --dev-url "docker://postgres/17/dev" --git-base main
+        run: atlas migrate lint --dir file://atlas/migrations --dev-url "docker://postgres/17/dev" --git-base main
 
       - name: Run dry-run migration
         run: |
