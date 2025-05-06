@@ -2,6 +2,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-governance
 
+  additionalLabels:
+    app: torus-governance
+  
   podLabels:
     app: torus-governance
 
