@@ -14,6 +14,11 @@ import { FinalTransferStatuses, TransferStatus } from "./types";
 
 const PERSIST_STATE_VERSION = 2;
 
+// Default registry configuration to use as fallback
+const DEFAULT_REGISTRY_URL =
+  "https://raw.githubusercontent.com/hyperlane-xyz/hyperlane-registry";
+const DEFAULT_REGISTRY_BRANCH = "main";
+
 export interface AppState {
   chainMetadata: ChainMap<ChainMetadata>;
   chainMetadataOverrides: ChainMap<Partial<ChainMetadata>>;
@@ -82,8 +87,8 @@ export const useStore = create<AppState>()(
       },
       multiProvider: new MultiProtocolProvider({}),
       registry: new GithubRegistry({
-        uri: config.registryUrl,
-        branch: config.registryBranch,
+        uri: config.registryUrl ?? DEFAULT_REGISTRY_URL,
+        branch: config.registryBranch ?? DEFAULT_REGISTRY_BRANCH,
         proxyUrl: config.registryProxyUrl,
       }),
       warpCore: new WarpCore(new MultiProtocolProvider({}), []),
@@ -225,15 +230,22 @@ async function initWarpContext(
   registry: IRegistry,
   storeMetadataOverrides: ChainMap<Partial<ChainMetadata> | undefined>,
 ) {
+  const registryUrl = config.registryUrl ?? DEFAULT_REGISTRY_URL;
+  const registryBranch = config.registryBranch ?? DEFAULT_REGISTRY_BRANCH;
+
   console.log(
     "Initializing warp context with registry URI:",
-    config.registryUrl,
+    registryUrl,
+    "branch:",
+    registryBranch,
   );
+
   try {
-    if (!config.registryUrl || !config.registryBranch) {
+    // Make sure we have a registry URL and branch before proceeding
+    if (!registryUrl || !registryBranch) {
       console.error("Invalid registry configuration:", {
-        registryUrl: config.registryUrl,
-        registryBranch: config.registryBranch,
+        registryUrl,
+        registryBranch,
       });
       throw new Error("Missing registry configuration");
     }
