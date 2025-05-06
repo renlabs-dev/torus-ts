@@ -1,6 +1,7 @@
 import type { ChainName, IToken, Token, WarpCore } from "@hyperlane-xyz/sdk";
 import { isNullish } from "@hyperlane-xyz/utils";
 import { useStore } from "../../utils/store";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 export function useWarpCore() {
   return useStore((s) => s.warpCore);
@@ -50,9 +51,12 @@ export function tryFindToken(
   chain: ChainName,
   addressOrDenom?: string,
 ): IToken | null {
-  try {
-    return warpCore.findToken(chain, addressOrDenom);
-  } catch {
+  const [error, success] = trySync(() =>
+    warpCore.findToken(chain, addressOrDenom),
+  );
+  if (error !== undefined) {
+    console.error("Error finding token:", error);
     return null;
   }
+  return success;
 }

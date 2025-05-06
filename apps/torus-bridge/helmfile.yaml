@@ -5,8 +5,8 @@ environments:
       - values.yaml
       - namespace: torus-dev-web-apps
       - environmentName: dev
-      - wssApiEndpoint: wss://api.torus.network
-      - cacheUrl: https://cache.torus.network
+      - wssApiEndpoint: wss://api.testnet.torus.network
+      - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-torus-bridge
       - ingressHost: bridge.testnet.torus.network
       - chainEnv: mainnet
