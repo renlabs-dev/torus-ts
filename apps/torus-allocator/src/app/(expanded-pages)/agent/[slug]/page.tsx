@@ -27,10 +27,21 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
 
   const agentKey = slug;
 
-  const [mdl, penalties] = await Promise.all([
-    api.agent.byKeyLastBlock({ key: agentKey }),
+  const [penaltiesError, penalties] = await tryAsync(
     api.penalty.byAgentKey({ agentKey }),
-  ]);
+  );
+  if (penaltiesError !== undefined) {
+    console.error("Error fetching agent penalties:", penaltiesError);
+    notFound();
+  }
+
+  const [mdlError, mdl] = await tryAsync(
+    api.agent.byKeyLastBlock({ key: agentKey }),
+  );
+  if (mdlError !== undefined) {
+    console.error("Error fetching agent metadata:", mdlError);
+    notFound();
+  }
 
   if (!mdl?.metadataUri) return notFound();
 
@@ -42,24 +53,29 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
     notFound();
   }
 
-  const { metadata, images } = agentMetadata;
-
-  // Convert Blob to data URL for client component
-  let icon: string | undefined = undefined;
-  if (images.icon) {
-    const arrayBuffer = await images.icon.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-    const mimeType = images.icon.type || "image/png";
-    icon = `data:${mimeType};base64,${base64}`;
+  const [error, success] = await tryAsync(
+    fetchAgentMetadata(mdl.metadataUri, {
+      fetchImages: true,
+    }),
+  );
+  if (error !== undefined) {
+    console.error("Error fetching agent metadata:", error);
+    notFound();
   }
+  const metadata = success.metadata;
+  const images = success.images;
+
+  // Blob URL for the icon
+  const icon = images.icon;
 
   const [computedAgentError, computedAgentWeight] = await tryAsync(
     api.computedAgentWeight.all(),
   );
   if (computedAgentError !== undefined) {
-    console.error("Error fetching computed agent weight:", computedAgentError);
+    console.error("Error fetching agent metadata:", computedAgentError);
     notFound();
   }
+
   const globalWeight = computedAgentWeight.find((d) => d.agentKey === agentKey);
   const networkAllocation = globalWeight
     ? (globalWeight.percComputedWeight * 100).toFixed(2)

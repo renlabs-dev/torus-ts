@@ -1,6 +1,7 @@
 import { appRouter, createTRPCContext } from "@torus-ts/api";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { env } from "~/env";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 /**
  * Configure basic CORS headers
@@ -21,22 +22,34 @@ export const OPTIONS = () => {
 };
 
 const handler = async (req: Request) => {
-  const response = await fetchRequestHandler({
-    endpoint: "/api/trpc",
-    router: appRouter,
-    req,
-    createContext: () =>
-      createTRPCContext({
-        session: null,
-        headers: req.headers,
-        jwtSecret: env("JWT_SECRET"),
-        authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
-        allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
-      }),
-    onError({ error, path }) {
-      console.error(`>>> tRPC Error on '${path}'`, error);
-    },
-  });
+  const [error, response] = await tryAsync(
+    fetchRequestHandler({
+      endpoint: "/api/trpc",
+      router: appRouter,
+      req,
+      createContext: () =>
+        createTRPCContext({
+          session: null,
+          headers: req.headers,
+          jwtSecret: env("JWT_SECRET"),
+          authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
+          allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
+        }),
+      onError({ error, path }) {
+        console.error(`>>> tRPC Error on '${path}'`, error);
+      },
+    }),
+  );
+
+  if (error !== undefined) {
+    console.error("Error processing tRPC request:", error);
+    const errorResponse = new Response(
+      JSON.stringify({ error: "Internal Server Error" }),
+      { status: 500 },
+    );
+    setCorsHeaders(errorResponse);
+    return errorResponse;
+  }
 
   setCorsHeaders(response);
   return response;

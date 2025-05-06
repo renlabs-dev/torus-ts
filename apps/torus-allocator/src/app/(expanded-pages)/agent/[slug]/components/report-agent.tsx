@@ -60,16 +60,10 @@ export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
   const reportAgentMutation = api.agentReport.create.useMutation({
     onSuccess: () => {
       reset();
-      toast({
-        title: "Success!",
-        description: "Agent reported successfully.",
-      });
+      toast.success("Agent reported successfully.");
     },
     onError: (error) => {
-      toast({
-        title: "An unexpected error occurred.",
-        description: error.message,
-      });
+      toast.error(error.message);
     },
   });
 
@@ -102,7 +96,8 @@ export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
         type="button"
         variant="outline"
         asChild
-        className="flex w-full items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65 transition duration-200 hover:text-red-500 hover:opacity-100"
+        className="flex w-full items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65
+          transition duration-200 hover:text-red-500 hover:opacity-100"
       >
         <DialogTrigger>
           <TriangleAlert className="h-4 w-3" /> Report Agent to DAO
