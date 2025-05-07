@@ -2,14 +2,8 @@ import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
 import { useEffect, useRef, useState } from "react";
 import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
-import dynamic from "next/dynamic";
 
-// Ensure this component only runs on the client
-const TransferDetailsComponent = dynamic(() => Promise.resolve(TransferDetailsClient), {
-  ssr: false,
-});
-
-function TransferDetailsClient() {
+export function TransferDetails() {
   const didMountRef = useRef(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,20 +11,22 @@ function TransferDetailsClient() {
     TransferContext | undefined | null
   >(null);
 
-  // Access store selectors individually to avoid object creation
-  const transfers = useStore((s) => s.transfers);
-  const transferLoading = useStore((s) => s.transferLoading);
-
-  const prevLoading = useRef<boolean>(false);
+  const { transfers, transferLoading } = useStore((s) => ({
+    transfers: s.transfers,
+    resetTransfers: s.resetTransfers,
+    transferLoading: s.transferLoading,
+  }));
 
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
-    } else if (!prevLoading.current && transferLoading && transfers.length > 0) {
+      return;
+    }
+
+    if (!transferLoading && transfers.length > 0) {
       setSelectedTransfer(transfers[transfers.length - 1]);
       setIsModalOpen(true);
     }
-    prevLoading.current = transferLoading;
   }, [transfers, transferLoading]);
 
   return (
@@ -47,9 +43,4 @@ function TransferDetailsClient() {
       )}
     </>
   );
-}
-
-// Export a simple wrapper that loads the client component
-export function TransferDetails() {
-  return <TransferDetailsComponent />;
 }
