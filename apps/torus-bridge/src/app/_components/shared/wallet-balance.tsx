@@ -26,19 +26,16 @@ export function WalletBalance() {
   const { chainId: torusEvmChainId } = getChainValues("torus");
   const { chainId: baseChainId } = getChainValues("base");
 
-  // Torus
   const { api, isAccountConnected, isInitialized, selectedAccount } =
     useTorus();
 
-  // EVM
   const { address: evmAddress } = wagmi.useAccount();
 
-  // -- Torus --
-  console.log("Fetching free balance for account:", selectedAccount?.address);
   const accountFreeBalance = useFreeBalance(
     api,
     selectedAccount?.address as SS58Address,
   );
+
   if (accountFreeBalance.isError) {
     console.error("Error fetching free balance:", accountFreeBalance.error);
   }
@@ -47,31 +44,20 @@ export function WalletBalance() {
       !isInitialized ||
       !isAccountConnected ||
       accountFreeBalance.isRefetching
-    ) {
-      console.log(
-        "Balance unavailable: not initialized, not connected, or refetching",
-      );
+    )
       return null;
-    }
 
     if (accountFreeBalance.data != null) {
-      console.log("Returning free balance:", accountFreeBalance.data);
       return accountFreeBalance.data;
     }
 
-    console.log("No balance data available, returning 0");
     return 0n;
   }, [accountFreeBalance, isAccountConnected, isInitialized]);
 
-  // -- Torus EVM --
-  console.log("Fetching Torus EVM client for chainId:", torusEvmChainId);
   const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
 
-  // -- Base --
-  console.log("Fetching Base client for chainId:", baseChainId);
   const baseClient = wagmi.useClient({ chainId: baseChainId });
 
-  // Early returns for error cases
   if (torusEvmClient == null) {
     console.error("Torus EVM client not found for chainId:", torusEvmChainId);
     return (
@@ -87,18 +73,11 @@ export function WalletBalance() {
   const { chain: torusEvmChain } = torusEvmClient;
   const { chain: baseChain } = baseClient;
 
-  console.log(
-    "Fetching balance for address:",
-    evmAddress,
-    "on chain:",
-    torusEvmChain.id,
-  );
   const { data: torusEvmBalance } = wagmi.useBalance({
     address: evmAddress,
     chainId: torusEvmChain.id,
   });
 
-  console.log("Fetching Base balance for address:", evmAddress);
   const { data: baseBalance } = wagmi.useReadContract({
     chainId: baseChain.id,
     address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
@@ -148,8 +127,6 @@ export function WalletBalance() {
       address: evmAddress,
     },
   ];
-
-  console.log("Rendering balances list:", balancesList);
 
   return (
     <div className="min-fit xs:flex-row flex flex-col gap-4 lg:flex-col">

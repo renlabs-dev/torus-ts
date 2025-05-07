@@ -13,7 +13,6 @@ export function TransferDetails() {
 
   const { transfers, transferLoading } = useStore((s) => ({
     transfers: s.transfers,
-    resetTransfers: s.resetTransfers,
     transferLoading: s.transferLoading,
   }));
 

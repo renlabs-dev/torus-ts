@@ -2,7 +2,7 @@ import type { IRegistry } from "@hyperlane-xyz/registry";
 import { GithubRegistry } from "@hyperlane-xyz/registry";
 import type { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
 import { MultiProtocolProvider, WarpCore } from "@hyperlane-xyz/sdk";
-// import { objFilter } from "@hyperlane-xyz/utils";
+import { objFilter } from "@hyperlane-xyz/utils";
 import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -57,25 +57,25 @@ export interface AppState {
 export const useStore = create<AppState>()(
   persist(
     // Store reducers
-    (
-      set,
-      // get
-    ) => ({
+    (set, get) => ({
       // Chains and providers
       chainMetadata: {},
       chainMetadataOverrides: {},
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      setChainMetadataOverrides: async () =>
-        // overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
-        {
-          // logger.debug("Setting chain overrides in store");
-          // const { multiProvider } = await initWarpContext(
-          //   get().registry,
-          //   overrides,
-          // );
-          // const filtered = objFilter(overrides, (_, metadata) => !!metadata);
-          // set({ chainMetadataOverrides: filtered, multiProvider });
-        },
+      setChainMetadataOverrides: (
+        overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
+      ) => {
+        logger.debug("Setting chain overrides in store");
+        const filtered = objFilter(overrides, (_, metadata) => !!metadata);
+        set({ chainMetadataOverrides: filtered });
+        
+        // Initialize warp context in a non-blocking way
+        void initWarpContext(
+          get().registry,
+          overrides,
+        ).then(({ multiProvider }) => {
+          set({ multiProvider });
+        });
+      },
       multiProvider: new MultiProtocolProvider({}),
       registry: new GithubRegistry({
         uri: config.registryUrl,
