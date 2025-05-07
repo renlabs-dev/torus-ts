@@ -54,8 +54,10 @@ export interface AppState {
   setShowEnvSelectModal: (show: boolean) => void;
 }
 
-export const useStore = create<AppState>()(
-  persist(
+// Create a store instance that will be used on the client only
+export const useStore = typeof window !== 'undefined' 
+  ? create<AppState>()(
+    persist(
     // Store reducers
     (set, get) => ({
       // Chains and providers
@@ -174,7 +176,31 @@ export const useStore = create<AppState>()(
       },
     },
   ),
-);
+) : create<AppState>()((set, get) => ({
+  // Minimal store for server-side
+  chainMetadata: {},
+  chainMetadataOverrides: {},
+  setChainMetadataOverrides: () => {},
+  multiProvider: new MultiProtocolProvider({}),
+  registry: new GithubRegistry({
+    uri: config.registryUrl,
+    branch: config.registryBranch,
+    proxyUrl: config.registryProxyUrl,
+  }),
+  warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+  setWarpContext: () => {},
+  transfers: [],
+  addTransfer: () => {},
+  resetTransfers: () => {},
+  updateTransferStatus: () => {},
+  failUnconfirmedTransfers: () => {},
+  transferLoading: false,
+  setTransferLoading: () => {},
+  isSideBarOpen: false,
+  setIsSideBarOpen: () => {},
+  showEnvSelectModal: false,
+  setShowEnvSelectModal: () => {},
+}));
 
 async function initWarpContext(
   registry: IRegistry,

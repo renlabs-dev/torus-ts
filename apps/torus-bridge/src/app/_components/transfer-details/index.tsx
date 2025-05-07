@@ -2,8 +2,14 @@ import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
 import { useEffect, useRef, useState } from "react";
 import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
+import dynamic from "next/dynamic";
 
-export function TransferDetails() {
+// Ensure this component only runs on the client
+const TransferDetailsComponent = dynamic(() => Promise.resolve(TransferDetailsClient), {
+  ssr: false,
+});
+
+function TransferDetailsClient() {
   const didMountRef = useRef(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -11,15 +17,14 @@ export function TransferDetails() {
     TransferContext | undefined | null
   >(null);
 
-  const { transfers, transferLoading } = useStore((s) => ({
-    transfers: s.transfers,
-    transferLoading: s.transferLoading,
-  }));
+  // Access store selectors individually to avoid object creation
+  const transfers = useStore((s) => s.transfers);
+  const transferLoading = useStore((s) => s.transferLoading);
 
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
-    } else if (transferLoading) {
+    } else if (transferLoading && transfers.length > 0) {
       setSelectedTransfer(transfers[transfers.length - 1]);
       setIsModalOpen(true);
     }
@@ -39,4 +44,9 @@ export function TransferDetails() {
       )}
     </>
   );
+}
+
+// Export a simple wrapper that loads the client component
+export function TransferDetails() {
+  return <TransferDetailsComponent />;
 }
