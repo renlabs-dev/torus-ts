@@ -75,7 +75,6 @@ export const useStore =
               );
               set({ chainMetadataOverrides: filtered });
 
-<<<<<<< HEAD
               // Initialize warp context in a non-blocking way
               void initWarpContext(get().registry, overrides).then(
                 ({ multiProvider }) => {
@@ -91,78 +90,6 @@ export const useStore =
             }),
             warpCore: new WarpCore(new MultiProtocolProvider({}), []),
             setWarpContext: ({
-=======
-      // User history
-      transfers: [],
-      addTransfer: (t) => {
-        set((state) => ({ transfers: [...state.transfers, t] }));
-      },
-      resetTransfers: () => {
-        set(() => ({ transfers: [] }));
-      },
-      updateTransferStatus: (i, s, options) => {
-        set((state) => {
-          if (i >= state.transfers.length) return state;
-          const txs = [...state.transfers];
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.status = s;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.msgId ??= options?.msgId;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.originTxHash ??= options?.originTxHash;
-          return {
-            transfers: txs,
-          };
-        });
-      },
-      failUnconfirmedTransfers: () => {
-        set((state) => ({
-          transfers: state.transfers.map((t) =>
-            FinalTransferStatuses.includes(t.status)
-              ? t
-              : { ...t, status: TransferStatus.Failed },
-          ),
-        }));
-      },
-
-      // Shared component state
-      transferLoading: false,
-      setTransferLoading: (isLoading) => {
-        set(() => ({ transferLoading: isLoading }));
-      },
-      isSideBarOpen: false,
-      setIsSideBarOpen: (isSideBarOpen) => {
-        set(() => ({ isSideBarOpen }));
-      },
-      showEnvSelectModal: false,
-      setShowEnvSelectModal: (showEnvSelectModal) => {
-        set(() => ({ showEnvSelectModal }));
-      },
-    }),
-
-    // Store config
-    {
-      name: "app-state", // name in storage
-      partialize: (state) => ({
-        // fields to persist
-        chainMetadataOverrides: state.chainMetadataOverrides,
-        transfers: state.transfers,
-      }),
-      version: PERSIST_STATE_VERSION,
-      onRehydrateStorage: () => {
-        logger.debug("Rehydrating state");
-        return (state, error) => {
-          state?.failUnconfirmedTransfers();
-          if (error || !state) {
-            logger.error("Error during hydration: ", error);
-            return;
-          }
-          void initWarpContext(
-            state.registry,
-            state.chainMetadataOverrides,
-          ).then(({ registry, chainMetadata, multiProvider, warpCore }) => {
-            state.setWarpContext({
->>>>>>> 69f37104e0a98e3f4589827c8deab71735913410
               registry,
               chainMetadata,
               multiProvider,

@@ -26,11 +26,7 @@ function TransferDetailsClient() {
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
-<<<<<<< HEAD
-    } else if (transferLoading && transfers.length > 0) {
-=======
-    } else if (!prevLoading.current && transferLoading) {
->>>>>>> 69f37104e0a98e3f4589827c8deab71735913410
+    } else if (!prevLoading.current && transferLoading && transfers.length > 0) {
       setSelectedTransfer(transfers[transfers.length - 1]);
       setIsModalOpen(true);
     }
