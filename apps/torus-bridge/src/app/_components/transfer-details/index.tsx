@@ -44,3 +44,5 @@ export function TransferDetails() {
     </>
   );
 }
+
+export default TransferDetails;
