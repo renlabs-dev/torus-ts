@@ -18,6 +18,37 @@ on:
       - ".github/workflows/migrations.yml"
 
 jobs:
+  check-revert:
+    runs-on: ubuntu-latest
+    outputs:
+      is_revert: ${{ steps.check-revert.outputs.is_revert }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if commit is a revert with migrations
+        id: check-revert
+        run: |
+          # Get the current commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          # Check if it's a revert commit
+          if echo "$COMMIT_MSG" | grep -q "^Revert \""; then
+            # Extract the reverted commit hash
+            REVERTED_SHA=$(git log -1 --pretty=%B | grep -o '[a-f0-9]\{40\}' || true)
+            
+            if [ -n "$REVERTED_SHA" ]; then
+              # Check if the reverted commit had changes in migrations folder
+              if git show --name-only $REVERTED_SHA | grep -q "^atlas/migrations/"; then
+                echo "is_revert=true" >> $GITHUB_OUTPUT
+                exit 0
+              fi
+            fi
+          fi
+          echo "is_revert=false" >> $GITHUB_OUTPUT
+
   check-migrations:
     runs-on: ubuntu-latest
     outputs:
@@ -48,8 +79,8 @@ jobs:
           echo "$output"
 
   apply-migrations:
-    needs: check-migrations
-    if: ${{ !inputs.rollback && needs.check-migrations.outputs.has_pending == 'true' }}
+    needs: [check-revert, check-migrations]
+    if: ${{ !inputs.rollback && needs.check-revert.outputs.is_revert == 'false' && needs.check-migrations.outputs.has_pending == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -81,8 +112,8 @@ jobs:
         run: atlas migrate apply --env local --url "${{ env.POSTGRES_URL }}"
 
   rollback-migrations:
-    needs: check-migrations
-    if: ${{ inputs.rollback }}
+    needs: [check-revert, check-migrations]
+    if: ${{ inputs.rollback || needs.check-revert.outputs.is_revert == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
