@@ -106,7 +106,12 @@ jobs:
 
   restart-apps:
     needs: [check-migrations, apply-migrations, rollback-migrations]
-    if: ${{ (needs.check-migrations.outputs.has_pending == 'true' && !inputs.rollback) || inputs.rollback }}
+    if: |
+      always() && 
+      (
+        (needs.apply-migrations.result == 'success') || 
+        (needs.rollback-migrations.result == 'success')
+      )
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
