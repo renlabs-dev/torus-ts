@@ -15,7 +15,6 @@ export function ExampleConstraintButton({
 
   function loadExampleConstraint() {
     form.reset({
-      permId: "0x123",
       body: {
         type: "And",
         left: {
