@@ -43,7 +43,7 @@ jobs:
         id: check-migrations
         if: ${{ !inputs.rollback }}
         run: |
-          output=$(atlas migrate status --dir file://atlas/migrations --url "${{ env.POSTGRES_URL }}")
+          output=$(atlas migrate status --env local --url "${{ env.POSTGRES_URL }}")
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "$output"
 
@@ -72,13 +72,13 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - name: Run lint
-        run: atlas migrate lint --dir file://atlas/migrations --dev-url "docker://postgres/17/dev" --git-base main
+        run: atlas migrate lint --env local --git-base main
 
       - name: Run dry-run migration
-        run: atlas migrate apply --dry-run --dir file://atlas/migrations --url "${{ env.POSTGRES_URL }}"
+        run: atlas migrate apply --env local --dry-run --url "${{ env.POSTGRES_URL }}"
 
       - name: Apply migrations
-        run: atlas migrate apply --dir file://atlas/migrations --url "${{ env.POSTGRES_URL }}"
+        run: atlas migrate apply --env local --url "${{ env.POSTGRES_URL }}"
 
   rollback-migrations:
     needs: check-migrations
@@ -101,8 +101,7 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - name: atlas migrate down
-        run: |
-          atlas migrate down --dir file://atlas/migrations --dev-url "docker://postgres/17/dev" --url "${{ env.POSTGRES_URL }}"
+        run: atlas migrate down --env local --url "${{ env.POSTGRES_URL }}"
 
   restart-apps:
     needs: [check-migrations, apply-migrations, rollback-migrations]
