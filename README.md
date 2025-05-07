@@ -64,7 +64,7 @@ tooling
 
 - **Node.js** - `20.16.0` or higher.
 - **pnpm** - `9.7.1` or higher.
-- **just** - `20.10.7` or higher, [installation guide](https://github.com/baryshev/just).
+- **just** - `20.10.7` or higher, [installation guide](https://github.com/casey/just?tab=readme-ov-file#installation).
 - **Text editor** - We recommend using [VSCode](https://code.visualstudio.com/).
 
 ## Get it running
