@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
-  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -18,31 +16,37 @@ import {
 } from "@torus-ts/ui/components/select";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { useForm } from "react-hook-form";
-import { useWatch } from "react-hook-form";
+import { useWatch, Controller } from "react-hook-form";
 import type { FormSchema } from "./schemas";
+import { makeDynamicFieldPath } from "./form-utils";
+type NumExprType =
+  | "UIntLiteral"
+  | "BlockNumber"
+  | "StakeOf"
+  | "Add"
+  | "Sub"
+  | "WeightSet"
+  | "WeightPowerFrom";
 
 export function NumExprField({
   control,
   path,
-  onDelete,
-  showDelete = false,
 }: {
   control: ReturnType<typeof useForm<FormSchema>>["control"];
   path: string;
-  onDelete?: () => void;
-  showDelete?: boolean;
 }) {
   const { toast } = useToast();
 
   const exprType = useWatch({
     control,
-    name: `${path}.type` as any,
-  });
+    name: makeDynamicFieldPath<FormSchema>(`${path}.type`),
+  }) as NumExprType | undefined;
+
   return (
     <div className="space-y-4 border p-4 rounded-md">
-      <FormField
+      <Controller
         control={control}
-        name={`${path}.type` as any}
+        name={makeDynamicFieldPath<FormSchema>(`${path}.type`)}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Expression Type</FormLabel>
@@ -55,7 +59,7 @@ export function NumExprField({
                   description: `Changed to ${value}`,
                 });
               }}
-              defaultValue={field.value}
+              value={typeof field.value === "string" ? field.value : ""}
             >
               <FormControl>
                 <SelectTrigger>
@@ -81,14 +85,21 @@ export function NumExprField({
 
       {/* Render fields based on expression type */}
       {exprType === "UIntLiteral" && (
-        <FormField
+        <Controller
           control={control}
-          name={`${path}.value` as any}
+          name={makeDynamicFieldPath<FormSchema>(`${path}.value`)}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Value</FormLabel>
               <FormControl>
-                <Input placeholder="Enter a number value" {...field} />
+                <Input
+                  placeholder="Enter a number value"
+                  value={typeof field.value === "string" ? field.value : ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -97,14 +108,21 @@ export function NumExprField({
       )}
 
       {exprType === "StakeOf" && (
-        <FormField
+        <Controller
           control={control}
-          name={`${path}.account` as any}
+          name={makeDynamicFieldPath<FormSchema>(`${path}.account`)}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Account</FormLabel>
               <FormControl>
-                <Input placeholder="Enter account address" {...field} />
+                <Input
+                  placeholder="Enter account address"
+                  value={typeof field.value === "string" ? field.value : ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -127,44 +145,47 @@ export function NumExprField({
 
       {(exprType === "WeightSet" || exprType === "WeightPowerFrom") && (
         <>
-          <FormField
+          <Controller
             control={control}
-            name={`${path}.from` as any}
+            name={makeDynamicFieldPath<FormSchema>(`${path}.from`)}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>From Account</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter from account address" {...field} />
+                  <Input
+                    placeholder="Enter from account address"
+                    value={typeof field.value === "string" ? field.value : ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
+          <Controller
             control={control}
-            name={`${path}.to` as any}
+            name={makeDynamicFieldPath<FormSchema>(`${path}.to`)}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>To Account</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter to account address" {...field} />
+                  <Input
+                    placeholder="Enter to account address"
+                    value={typeof field.value === "string" ? field.value : ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </>
-      )}
-
-      {showDelete && (
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={onDelete}
-          type="button"
-        >
-          Remove Expression
-        </Button>
       )}
     </div>
   );
