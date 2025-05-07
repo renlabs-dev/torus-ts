@@ -55,152 +55,176 @@ export interface AppState {
 }
 
 // Create a store instance that will be used on the client only
-export const useStore = typeof window !== 'undefined' 
-  ? create<AppState>()(
-    persist(
-    // Store reducers
-    (set, get) => ({
-      // Chains and providers
-      chainMetadata: {},
-      chainMetadataOverrides: {},
-      setChainMetadataOverrides: (
-        overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
-      ) => {
-        logger.debug("Setting chain overrides in store");
-        const filtered = objFilter(overrides, (_, metadata) => !!metadata);
-        set({ chainMetadataOverrides: filtered });
-        
-        // Initialize warp context in a non-blocking way
-        void initWarpContext(
-          get().registry,
-          overrides,
-        ).then(({ multiProvider }) => {
-          set({ multiProvider });
-        });
-      },
-      multiProvider: new MultiProtocolProvider({}),
-      registry: new GithubRegistry({
-        uri: config.registryUrl,
-        branch: config.registryBranch,
-        proxyUrl: config.registryProxyUrl,
-      }),
-      warpCore: new WarpCore(new MultiProtocolProvider({}), []),
-      setWarpContext: ({
-        registry,
-        chainMetadata,
-        multiProvider,
-        warpCore,
-      }) => {
-        logger.debug("Setting warp context in store");
-        set({ registry, chainMetadata, multiProvider, warpCore });
-      },
+export const useStore =
+  typeof window !== "undefined"
+    ? create<AppState>()(
+        persist(
+          // Store reducers
+          (set, get) => ({
+            // Chains and providers
+            chainMetadata: {},
+            chainMetadataOverrides: {},
+            setChainMetadataOverrides: (
+              overrides: ChainMap<Partial<ChainMetadata> | undefined> = {},
+            ) => {
+              logger.debug("Setting chain overrides in store");
+              const filtered = objFilter(
+                overrides,
+                (_, metadata) => !!metadata,
+              );
+              set({ chainMetadataOverrides: filtered });
 
-      // User history
-      transfers: [],
-      addTransfer: (t) => {
-        set((state) => ({ transfers: [...state.transfers, t] }));
-      },
-      resetTransfers: () => {
-        set(() => ({ transfers: [] }));
-      },
-      updateTransferStatus: (i, s, options) => {
-        set((state) => {
-          if (i >= state.transfers.length) return state;
-          const txs = [...state.transfers];
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.status = s;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.msgId ??= options?.msgId;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.originTxHash ??= options?.originTxHash;
-          return {
-            transfers: txs,
-          };
-        });
-      },
-      failUnconfirmedTransfers: () => {
-        set((state) => ({
-          transfers: state.transfers.map((t) =>
-            FinalTransferStatuses.includes(t.status)
-              ? t
-              : { ...t, status: TransferStatus.Failed },
-          ),
-        }));
-      },
-
-      // Shared component state
-      transferLoading: false,
-      setTransferLoading: (isLoading) => {
-        set(() => ({ transferLoading: isLoading }));
-      },
-      isSideBarOpen: false,
-      setIsSideBarOpen: (isSideBarOpen) => {
-        set(() => ({ isSideBarOpen }));
-      },
-      showEnvSelectModal: false,
-      setShowEnvSelectModal: (showEnvSelectModal) => {
-        set(() => ({ showEnvSelectModal }));
-      },
-    }),
-
-    // Store config
-    {
-      name: "app-state", // name in storage
-      partialize: (state) => ({
-        // fields to persist
-        chainMetadataOverrides: state.chainMetadataOverrides,
-        transfers: state.transfers,
-      }),
-      version: PERSIST_STATE_VERSION,
-      onRehydrateStorage: () => {
-        logger.debug("Rehydrating state");
-        return (state, error) => {
-          state?.failUnconfirmedTransfers();
-          if (error || !state) {
-            logger.error("Error during hydration", error);
-            return;
-          }
-          void initWarpContext(
-            state.registry,
-            state.chainMetadataOverrides,
-          ).then(({ registry, chainMetadata, multiProvider, warpCore }) => {
-            state.setWarpContext({
+              // Initialize warp context in a non-blocking way
+              void initWarpContext(get().registry, overrides).then(
+                ({ multiProvider }) => {
+                  set({ multiProvider });
+                },
+              );
+            },
+            multiProvider: new MultiProtocolProvider({}),
+            registry: new GithubRegistry({
+              uri: config.registryUrl,
+              branch: config.registryBranch,
+              proxyUrl: config.registryProxyUrl,
+            }),
+            warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+            setWarpContext: ({
               registry,
               chainMetadata,
               multiProvider,
               warpCore,
-            });
-            logger.debug("Rehydration complete");
-          });
-        };
-      },
-    },
-  ),
-) : create<AppState>()((set, get) => ({
-  // Minimal store for server-side
-  chainMetadata: {},
-  chainMetadataOverrides: {},
-  setChainMetadataOverrides: () => {},
-  multiProvider: new MultiProtocolProvider({}),
-  registry: new GithubRegistry({
-    uri: config.registryUrl,
-    branch: config.registryBranch,
-    proxyUrl: config.registryProxyUrl,
-  }),
-  warpCore: new WarpCore(new MultiProtocolProvider({}), []),
-  setWarpContext: () => {},
-  transfers: [],
-  addTransfer: () => {},
-  resetTransfers: () => {},
-  updateTransferStatus: () => {},
-  failUnconfirmedTransfers: () => {},
-  transferLoading: false,
-  setTransferLoading: () => {},
-  isSideBarOpen: false,
-  setIsSideBarOpen: () => {},
-  showEnvSelectModal: false,
-  setShowEnvSelectModal: () => {},
-}));
+            }) => {
+              logger.debug("Setting warp context in store");
+              set({ registry, chainMetadata, multiProvider, warpCore });
+            },
+
+            // User history
+            transfers: [],
+            addTransfer: (t) => {
+              set((state) => ({ transfers: [...state.transfers, t] }));
+            },
+            resetTransfers: () => {
+              set(() => ({ transfers: [] }));
+            },
+            updateTransferStatus: (i, s, options) => {
+              set((state) => {
+                if (i >= state.transfers.length) return state;
+                const txs = [...state.transfers];
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                txs[i]!.status = s;
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                txs[i]!.msgId ??= options?.msgId;
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                txs[i]!.originTxHash ??= options?.originTxHash;
+                return {
+                  transfers: txs,
+                };
+              });
+            },
+            failUnconfirmedTransfers: () => {
+              set((state) => ({
+                transfers: state.transfers.map((t) =>
+                  FinalTransferStatuses.includes(t.status)
+                    ? t
+                    : { ...t, status: TransferStatus.Failed },
+                ),
+              }));
+            },
+
+            // Shared component state
+            transferLoading: false,
+            setTransferLoading: (isLoading) => {
+              set(() => ({ transferLoading: isLoading }));
+            },
+            isSideBarOpen: false,
+            setIsSideBarOpen: (isSideBarOpen) => {
+              set(() => ({ isSideBarOpen }));
+            },
+            showEnvSelectModal: false,
+            setShowEnvSelectModal: (showEnvSelectModal) => {
+              set(() => ({ showEnvSelectModal }));
+            },
+          }),
+
+          // Store config
+          {
+            name: "app-state", // name in storage
+            partialize: (state) => ({
+              // fields to persist
+              chainMetadataOverrides: state.chainMetadataOverrides,
+              transfers: state.transfers,
+            }),
+            version: PERSIST_STATE_VERSION,
+            onRehydrateStorage: () => {
+              logger.debug("Rehydrating state");
+              return (state, error) => {
+                state?.failUnconfirmedTransfers();
+                if (error || !state) {
+                  logger.error("Error during hydration", error);
+                  return;
+                }
+                void initWarpContext(
+                  state.registry,
+                  state.chainMetadataOverrides,
+                ).then(
+                  ({ registry, chainMetadata, multiProvider, warpCore }) => {
+                    state.setWarpContext({
+                      registry,
+                      chainMetadata,
+                      multiProvider,
+                      warpCore,
+                    });
+                    logger.debug("Rehydration complete");
+                  },
+                );
+              };
+            },
+          },
+        ),
+      )
+    : create<AppState>()((set, _get) => ({
+        // Minimal store for server-side
+        chainMetadata: {},
+        chainMetadataOverrides: {},
+        setChainMetadataOverrides: (_overrides) => {
+          // Empty for server-side
+        },
+        multiProvider: new MultiProtocolProvider({}),
+        registry: new GithubRegistry({
+          uri: config.registryUrl,
+          branch: config.registryBranch,
+          proxyUrl: config.registryProxyUrl,
+        }),
+        warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+        setWarpContext: (_context) => {
+          // Empty for server-side
+        },
+        transfers: [],
+        addTransfer: (_t) => {
+          // Empty for server-side
+        },
+        resetTransfers: () => {
+          // Empty for server-side
+        },
+        updateTransferStatus: (_i, _s, _options) => {
+          // Empty for server-side
+        },
+        failUnconfirmedTransfers: () => {
+          // Empty for server-side
+        },
+        transferLoading: false,
+        setTransferLoading: (_isLoading) => {
+          // Empty for server-side
+        },
+        isSideBarOpen: false,
+        setIsSideBarOpen: (_isOpen) => {
+          // Empty for server-side
+        },
+        showEnvSelectModal: false,
+        setShowEnvSelectModal: (_show) => {
+          // Empty for server-side
+        },
+      }));
 
 async function initWarpContext(
   registry: IRegistry,
