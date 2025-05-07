@@ -11,10 +11,8 @@ export function TransferDetails() {
     TransferContext | undefined | null
   >(null);
 
-  const { transfers, transferLoading } = useStore((s) => ({
-    transfers: s.transfers,
-    transferLoading: s.transferLoading,
-  }));
+  const transfers = useStore((s) => s.transfers);
+  const transferLoading = useStore((s) => s.transferLoading);
 
   useEffect(() => {
     if (!transferLoading && transfers.length > 0) {
