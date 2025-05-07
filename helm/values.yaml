@@ -35,6 +35,11 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: pinata_jwt
+    DISCORD_BOT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: discord_bot_secret
 
   startupProbe:
     enabled: true
