@@ -11,8 +11,10 @@ export function TransferDetails() {
     TransferContext | undefined | null
   >(null);
 
-  const transfers = useStore((s) => s.transfers);
-  const transferLoading = useStore((s) => s.transferLoading);
+  const { transfers, transferLoading } = useStore((s) => ({
+    transfers: s.transfers,
+    transferLoading: s.transferLoading,
+  }));
 
   useEffect(() => {
     if (!transferLoading && transfers.length > 0) {
@@ -21,18 +23,16 @@ export function TransferDetails() {
     }
   }, [transfers, transferLoading]);
 
+  if (!selectedTransfer) return null;
+
   return (
-    <>
-      {selectedTransfer && (
-        <TransfersDetailsDialog
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedTransfer(null);
-          }}
-          transfer={selectedTransfer}
-        />
-      )}
-    </>
+    <TransfersDetailsDialog
+      isOpen={isModalOpen}
+      onClose={() => {
+        setIsModalOpen(false);
+        setSelectedTransfer(null);
+      }}
+      transfer={selectedTransfer}
+    />
   );
 }
