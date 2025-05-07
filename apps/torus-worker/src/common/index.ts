@@ -36,6 +36,10 @@ import {
   refuseCadreApplication,
   removeCadreMember,
 } from "../db";
+import {
+  assignDAORole,
+  removeDAORole,
+} from "@torus-network/torus-utils/discord-bot-interaction";
 
 /**
  * @deprecated
@@ -418,11 +422,12 @@ export async function processCadreVotes(
       removeVotes,
     } = vote_info;
 
+    const getCadreDiscordRes = await tryAsync(getCadreDiscord(applicatorKey));
+    if (log.ifResultIsErr(getCadreDiscordRes)) return;
+    const [_getCadreDiscordErr, cadreDiscord] = getCadreDiscordRes;
+
     if (acceptVotes >= vote_threshold) {
       log.info(`Adding cadre member: ${applicatorKey}`);
-      const getCadreDiscordRes = await tryAsync(getCadreDiscord(applicatorKey));
-      if (log.ifResultIsErr(getCadreDiscordRes)) return;
-      const [_getCadreDiscordErr, cadreDiscord] = getCadreDiscordRes;
 
       if (cadreDiscord == null) {
         log.error(
@@ -437,6 +442,7 @@ export async function processCadreVotes(
       if (log.ifResultIsErr(addCadreMemberRes)) {
         // Already logged by ifResultIsErr
       }
+      void assignDAORole(cadreDiscord);
     } else if (refuseVotes >= vote_threshold) {
       log.info(`Refusing cadre application: ${applicatorKey}`);
       const refuseCadreApplicationRes = await tryAsync(
@@ -447,8 +453,11 @@ export async function processCadreVotes(
       }
     } else if (removeVotes >= vote_threshold) {
       log.info(`Removing cadre member: ${applicatorKey}`);
+
       const removeCadreMemberRes = await tryAsync(
-        removeCadreMember(applicatorKey),
+        Promise.resolve(removeCadreMember(applicatorKey)).then(() =>
+          removeDAORole(cadreDiscord),
+        ),
       );
       if (log.ifResultIsErr(removeCadreMemberRes)) {
         // Already logged by ifResultIsErr

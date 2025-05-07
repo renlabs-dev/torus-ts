@@ -11,6 +11,7 @@ import { config } from "../consts/config";
 import { logger } from "./logger";
 import type { TransferContext } from "./types";
 import { FinalTransferStatuses, TransferStatus } from "./types";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // Increment this when persist state has breaking changes
 const PERSIST_STATE_VERSION = 2;
@@ -155,7 +156,7 @@ export const useStore = create<AppState>()(
         return (state, error) => {
           state?.failUnconfirmedTransfers();
           if (error || !state) {
-            logger.error("Error during hydration", error);
+            logger.error("Error during hydration: ", error);
             return;
           }
           void initWarpContext(
@@ -180,24 +181,11 @@ async function initWarpContext(
   registry: IRegistry,
   storeMetadataOverrides: ChainMap<Partial<ChainMetadata> | undefined>,
 ) {
-  try {
-    const coreConfig = assembleWarpCoreConfig();
-    const chainsInTokens = Array.from(
-      new Set(coreConfig.tokens.map((t) => t.chainName)),
-    );
-    // Pre-load registry content to avoid repeated requests
-    await registry.listRegistryContent();
-    const { chainMetadata, chainMetadataWithOverrides } =
-      await assembleChainMetadata(
-        chainsInTokens,
-        registry,
-        storeMetadataOverrides,
-      );
-    const multiProvider = new MultiProtocolProvider(chainMetadataWithOverrides);
-    const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
-    return { registry, chainMetadata, multiProvider, warpCore };
-  } catch (error) {
-    logger.error("Error initializing warp context", error);
+  // Step 1: Assemble warp core config
+  const [configError, coreConfig] = trySync(() => assembleWarpCoreConfig());
+
+  if (configError !== undefined) {
+    logger.error("Error assembling warp core config:", configError);
     return {
       registry,
       chainMetadata: {},
@@ -205,4 +193,83 @@ async function initWarpContext(
       warpCore: new WarpCore(new MultiProtocolProvider({}), []),
     };
   }
+
+  // Step 2: Get chains from tokens
+  const [chainsError, chainsInTokens] = trySync(() =>
+    Array.from(new Set(coreConfig.tokens.map((t) => t.chainName))),
+  );
+
+  if (chainsError !== undefined) {
+    logger.error("Error extracting chains from tokens:", chainsError);
+    return {
+      registry,
+      chainMetadata: {},
+      multiProvider: new MultiProtocolProvider({}),
+      warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+    };
+  }
+
+  // Step 3: Pre-load registry content
+  const [registryError] = await tryAsync(
+    Promise.resolve(registry.listRegistryContent()),
+  );
+
+  if (registryError !== undefined) {
+    logger.error("Error loading registry content:", registryError);
+    return {
+      registry,
+      chainMetadata: {},
+      multiProvider: new MultiProtocolProvider({}),
+      warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+    };
+  }
+
+  // Step 4: Assemble chain metadata
+  const [metadataError, metadataSuccess] = await tryAsync(
+    assembleChainMetadata(chainsInTokens, registry, storeMetadataOverrides),
+  );
+
+  if (metadataError !== undefined) {
+    logger.error("Error assembling chain metadata:", metadataError);
+    return {
+      registry,
+      chainMetadata: {},
+      multiProvider: new MultiProtocolProvider({}),
+      warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+    };
+  }
+
+  const { chainMetadata, chainMetadataWithOverrides } = metadataSuccess;
+
+  // Step 5: Create multi provider
+  const [providerError, multiProvider] = trySync(
+    () => new MultiProtocolProvider(chainMetadataWithOverrides),
+  );
+
+  if (providerError !== undefined) {
+    logger.error("Error creating multi provider:", providerError);
+    return {
+      registry,
+      chainMetadata,
+      multiProvider: new MultiProtocolProvider({}),
+      warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+    };
+  }
+
+  // Step 6: Create warp core
+  const [warpError, warpCore] = trySync(() =>
+    WarpCore.FromConfig(multiProvider, coreConfig),
+  );
+
+  if (warpError !== undefined) {
+    logger.error("Error creating warp core:", warpError);
+    return {
+      registry,
+      chainMetadata,
+      multiProvider,
+      warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+    };
+  }
+
+  return { registry, chainMetadata, multiProvider, warpCore };
 }

@@ -53,11 +53,11 @@ export default function DashboardPendingDaoApplicationsCard() {
   return (
     <DashboardRedirectCard
       title="Pending Whitelist Applications"
-      redirectPath="/dao-applications"
+      redirectPath="/whitelist-applications"
       icon={ListChecks}
     >
       <div className="relative">
-        <ScrollArea className="sm:max-h-32 max-h-48">
+        <ScrollArea className="sm:max-h-32 max-h-48 h-48">
           <div className="flex flex-col gap-2">{renderContent()}</div>
         </ScrollArea>
         <ScrollFadeEffect />

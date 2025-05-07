@@ -5,6 +5,9 @@ deployment:
   podLabels:
     app: torus-allocator
 
+  additionalLabels:
+    app: torus-allocator
+
   env:
     JWT_SECRET:
       valueFrom:

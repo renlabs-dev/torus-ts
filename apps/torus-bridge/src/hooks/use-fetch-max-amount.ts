@@ -12,6 +12,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { logger } from "../utils/logger";
 import { useWarpCore } from "./token";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;
@@ -42,29 +43,66 @@ async function fetchMaxAmount(
   { accounts, balance, destination, origin }: FetchMaxParams,
   toast: ReturnType<typeof useToast>["toast"],
 ) {
-  try {
-    const { address, publicKey } = getAccountAddressAndPubKey(
-      multiProvider,
-      origin,
-      accounts,
-    );
-    if (!address) return balance;
-    const maxAmount = await warpCore.getMaxTransferAmount({
-      balance,
-      destination,
-      sender: address,
-      senderPubKey: await publicKey,
-    });
-    return maxAmount;
-  } catch (error) {
-    logger.warn("Error fetching fee quotes for max amount", error);
+  // Get account address and public key
+  const [accountError, accountSuccess] = trySync(() =>
+    getAccountAddressAndPubKey(multiProvider, origin, accounts),
+  );
+
+  if (accountError !== undefined) {
+    logger.warn("Error getting account address and public key:", accountError);
     toast({
       title: "Error calculating maximum transfer amount",
       description:
-        error instanceof Error
-          ? error.message
+        accountError instanceof Error
+          ? accountError.message
+          : "Unable to retrieve account information",
+    });
+    return undefined;
+  }
+
+  const { address, publicKey } = accountSuccess;
+
+  if (!address || !publicKey) {
+    toast.error("Missing wallet address or public key");
+    return undefined;
+  }
+
+  // Resolve public key
+  const [pubKeyError, resolvedPubKey] = await tryAsync(publicKey);
+
+  if (pubKeyError !== undefined) {
+    logger.warn("Error resolving sender public key:", pubKeyError);
+    toast({
+      title: "Error calculating maximum transfer amount",
+      description:
+        pubKeyError instanceof Error
+          ? pubKeyError.message
+          : "Unable to retrieve account keys",
+    });
+    return undefined;
+  }
+
+  // Get max transfer amount
+  const [maxAmountError, maxAmount] = await tryAsync(
+    warpCore.getMaxTransferAmount({
+      balance,
+      destination,
+      sender: address,
+      senderPubKey: resolvedPubKey,
+    }),
+  );
+
+  if (maxAmountError !== undefined) {
+    logger.warn("Error fetching fee quotes for max amount:", maxAmountError);
+    toast({
+      title: "Error calculating maximum transfer amount",
+      description:
+        maxAmountError instanceof Error
+          ? maxAmountError.message
           : "Unable to calculate max amount",
     });
     return undefined;
   }
+
+  return maxAmount;
 }

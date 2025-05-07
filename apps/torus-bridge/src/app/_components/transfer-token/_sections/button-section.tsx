@@ -6,6 +6,7 @@ import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useStore } from "~/utils/store";
 import type { TransferFormValues } from "~/utils/types";
 import { useFormikContext } from "formik";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export function ButtonSection({
   isReview,
@@ -41,13 +42,14 @@ export function ButtonSection({
 
     setIsReview(false);
     setTransferLoading(true);
-    try {
-      await triggerTransactions(values);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setTransferLoading(false);
+
+    const [error] = await tryAsync(triggerTransactions(values));
+
+    if (error !== undefined) {
+      console.error("Error triggering transactions:", error);
     }
+
+    setTransferLoading(false);
   };
 
   if (!isReview) {

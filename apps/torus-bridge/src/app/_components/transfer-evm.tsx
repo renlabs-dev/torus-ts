@@ -38,10 +38,15 @@ import {
   useSwitchChain,
   useWalletClient,
 } from "wagmi";
+import type { Config } from "wagmi";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const DEFAULT_MODE = "bridge";
 
 export function TransferEVM() {
+  // Create a flag to track client-side rendering
+  const [hasMounted, setHasMounted] = useState(false);
+
   const [amount, setAmount] = useState<string>("");
   const [userInputEthAddr, setUserInputEthAddr] = useState<string>("");
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -83,16 +88,43 @@ export function TransferEVM() {
     selectedAccount?.address as SS58Address,
   );
 
-  const currentMode = useMemo(() => {
-    return (
-      (searchParams.get("mode") as "bridge" | "withdraw" | null) ?? DEFAULT_MODE
-    );
-  }, [searchParams]);
+  // Safe way to get mode param without causing hydration errors
+  const [mode, setMode] = useState<"bridge" | "withdraw">(DEFAULT_MODE);
 
-  const { wagmiConfig } = useMemo(
-    () => initWagmi(multiProvider),
-    [multiProvider],
-  );
+  // Initialize wagmiConfig after component mount - explicitly define the type
+  const [wagmiConfig, setWagmiConfig] = useState<Config | null>(null);
+
+  // This effect runs only once on client-side after mounting
+  useEffect(() => {
+    setHasMounted(true);
+
+    // Now it's safe to access search params
+    const modeParam = searchParams.get("mode") as "bridge" | "withdraw" | null;
+    setMode(modeParam ?? DEFAULT_MODE);
+
+    // Initialize wagmi configuration after mount
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (multiProvider) {
+      const [wagmiErr, wagmiInit] = trySync(() => initWagmi(multiProvider));
+      if (wagmiErr !== undefined) {
+        console.error("Failed to initialise wagmi:", wagmiErr);
+        toast.error("Wallet initialisation failed, please refresh.");
+      } else {
+        setWagmiConfig(wagmiInit.wagmiConfig);
+      }
+    }
+  }, [multiProvider, searchParams, toast]);
+
+  // Update mode when search params change (after initial mount)
+  useEffect(() => {
+    if (hasMounted) {
+      const modeParam = searchParams.get("mode") as
+        | "bridge"
+        | "withdraw"
+        | null;
+      setMode(modeParam ?? DEFAULT_MODE);
+    }
+  }, [hasMounted, searchParams]);
 
   const evmSS58Addr = useMemo(
     () => (userInputEthAddr ? convertH160ToSS58(userInputEthAddr) : ""),
@@ -115,10 +147,10 @@ export function TransferEVM() {
   }, [accountFreeBalance, isAccountConnected, isInitialized]);
 
   useEffect(() => {
-    if (!torusEvmClient) {
+    if (hasMounted && !torusEvmClient) {
       console.error("Torus EVM client not found");
     }
-  }, [torusEvmClient]);
+  }, [hasMounted, torusEvmClient]);
 
   const refetchHandler = useCallback(async () => {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
@@ -134,20 +166,24 @@ export function TransferEVM() {
 
   const handleBridge = useCallback(async () => {
     if (!amount || !evmSS58Addr) return;
+
     setTransactionStatus({
       status: "PENDING",
       message: "Accept the transaction in your wallet",
       finalized: false,
     });
-    try {
-      await transfer({
+
+    const [error] = await tryAsync(
+      transfer({
         amount: amount,
         to: evmSS58Addr,
         refetchHandler,
         callback: handleCallback,
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+      }),
+    );
+
+    if (error !== undefined) {
+      console.error("Error during bridge transfer:", error);
       setTransactionStatus({
         status: "ERROR",
         message: "Something went wrong with your transaction",
@@ -157,83 +193,119 @@ export function TransferEVM() {
   }, [amount, evmSS58Addr, transfer, refetchHandler, handleCallback]);
 
   const handleWithdraw = useCallback(async () => {
+    // Check for required values
     if (
       !amount ||
-      walletClient == null ||
-      chain == null ||
-      selectedAccount == null
+      !walletClient ||
+      !chain ||
+      !selectedAccount ||
+      !wagmiConfig
     ) {
+      toast.error("Please try again later.");
+      return;
+    }
+
+    // Check if on the correct chain
+    if (chain.id !== torusEvmChainId) {
+      const [switchError] = trySync(() =>
+        switchChain({ chainId: torusEvmChainId }),
+      );
+
+      if (switchError !== undefined) {
+        console.error("Error switching chain:", switchError);
+        toast.error("Failed to switch network.");
+        return;
+      }
+
       toast({
-        title: "Uh oh! Something went wrong.",
-        description: "Please try again later.",
+        title: "Wait, you were connected to the wrong network.",
+        description: "We switched you to Torus. Please try to withdraw again.",
       });
       return;
     }
-    if (chain.id !== torusEvmChainId) {
-      try {
-        switchChain({ chainId: torusEvmChainId });
-        toast({
-          title: "Wait, you were connected to the wrong network.",
-          description:
-            "We switched you to Torus. Please try to withdraw again.",
-        });
-        return;
-      } catch {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Failed to switch network.",
-        });
-        return;
-      }
-    }
+
     setTransactionStatus({
       status: "STARTING",
       message: "Transaction in progress, sign in your wallet",
       finalized: false,
     });
-    try {
-      const txHash = await withdrawFromTorusEvm(
+
+    // Withdraw from Torus EVM
+    const [withdrawError, txHash] = await tryAsync(
+      withdrawFromTorusEvm(
         walletClient,
         chain,
         selectedAccount.address as SS58Address,
         amountRems,
         refetchHandler,
-      );
+      ),
+    );
+
+    if (withdrawError !== undefined) {
+      console.error("Error withdrawing from Torus EVM:", withdrawError);
       setTransactionStatus({
-        status: "SUCCESS",
-        message: `Transaction included in the blockchain!`,
+        status: "ERROR",
+        message: "Something went wrong with your transaction",
         finalized: true,
       });
 
-      toast({
-        title: "Loading...",
-        description: renderWaitingForValidation(txHash),
+      // Still perform refetch and reset transaction status
+      const [refetchError] = await tryAsync(refetchHandler());
+      if (refetchError !== undefined) {
+        console.error("Error refetching after failed withdraw:", refetchError);
+      }
+
+      setTransactionStatus({
+        status: null,
+        message: null,
+        finalized: false,
       });
-      await waitForTransactionReceipt(wagmiConfig, {
+
+      return;
+    }
+
+    setTransactionStatus({
+      status: "SUCCESS",
+      message: `Transaction included in the blockchain!`,
+      finalized: true,
+    });
+
+    toast({
+      title: "Loading...",
+      description: renderWaitingForValidation(txHash),
+    });
+
+    // Wait for transaction receipt
+    const [receiptError] = await tryAsync(
+      waitForTransactionReceipt(wagmiConfig, {
         hash: txHash,
         confirmations: 2,
-      });
+      }),
+    );
+
+    if (receiptError !== undefined) {
+      console.error("Error waiting for transaction receipt:", receiptError);
+      toast.error("Failed to confirm transaction.");
+    } else {
       toast({
         title: "Success!",
         description: renderSuccessfulyFinalized(txHash),
       });
 
       setAmount("");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      setTransactionStatus({
-        status: "ERROR",
-        message: "Something went wrong with your transaction",
-        finalized: true,
-      });
-    } finally {
-      await refetchHandler();
-      setTransactionStatus({
-        status: null,
-        message: null,
-        finalized: false,
-      });
     }
+
+    // Always refetch and reset transaction status
+    const [finalRefetchError] = await tryAsync(refetchHandler());
+    if (finalRefetchError !== undefined) {
+      console.error("Error during final refetch:", finalRefetchError);
+    }
+
+    setTransactionStatus({
+      status: null,
+      message: null,
+      finalized: false,
+    });
   }, [
     amount,
     walletClient,
@@ -251,15 +323,12 @@ export function TransferEVM() {
     if (address) {
       setUserInputEthAddr(address);
     } else {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "No account found. Is your wallet connected?",
-      });
+      toast.error("No account found. Is your wallet connected?");
     }
   }, [address, toast]);
 
   const handleMaxClick = useCallback(() => {
-    if (currentMode === "bridge") {
+    if (mode === "bridge") {
       let maxBalance = userAccountFreeBalance();
       if (maxBalance !== null) {
         maxBalance = maxBalance - 1n * BigInt(1e18);
@@ -273,19 +342,24 @@ export function TransferEVM() {
         setAmount(maxBalanceString.replace(/\.?0+$/, ""));
       }
     }
-  }, [currentMode, userAccountFreeBalance, torusEvmBalance]);
+  }, [mode, userAccountFreeBalance, torusEvmBalance]);
 
   const toggleMode = useCallback(() => {
     const newQuery = updateSearchParams(searchParams, {
       from: null,
       to: null,
-      mode: currentMode === "bridge" ? "withdraw" : "bridge",
+      mode: mode === "bridge" ? "withdraw" : "bridge",
     });
     router.push(`/?${newQuery}`);
-  }, [currentMode, router, searchParams]);
+  }, [mode, router, searchParams]);
 
-  const fromChain = currentMode === "bridge" ? "Torus" : "Torus EVM";
-  const toChain = currentMode === "bridge" ? "Torus EVM" : "Torus";
+  const fromChain = mode === "bridge" ? "Torus" : "Torus EVM";
+  const toChain = mode === "bridge" ? "Torus EVM" : "Torus";
+
+  // Don't render until mounted on client side to avoid hydration errors
+  if (!hasMounted) {
+    return null;
+  }
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -326,7 +400,7 @@ export function TransferEVM() {
           </div>
         </div>
 
-        {currentMode === "bridge" && (
+        {mode === "bridge" && (
           <div className="space-y-2">
             <Label htmlFor="eth-address">Ethereum Address</Label>
             <div className="flex w-full items-center gap-2">
@@ -351,7 +425,7 @@ export function TransferEVM() {
           </div>
         )}
 
-        {currentMode === "withdraw" && selectedAccount && (
+        {mode === "withdraw" && selectedAccount && (
           <div>
             <Label>Withdrawing to:</Label>
             <div className="text-sm text-gray-500">
@@ -366,7 +440,7 @@ export function TransferEVM() {
           <div className="flex items-center justify-between">
             <span>Transaction</span>
             <span className="text-zinc-400">
-              {currentMode === "bridge"
+              {mode === "bridge"
                 ? "Bridge to Torus EVM"
                 : "Withdraw from Torus EVM"}
             </span>
@@ -377,7 +451,7 @@ export function TransferEVM() {
               {Number(amount) > 0 ? amount : "0"} TORUS
             </span>
           </div>
-          {currentMode === "bridge" && (
+          {mode === "bridge" && (
             <div className="flex items-center justify-between">
               <span>To Address:</span>
               <span className="max-w-[200px] truncate text-zinc-400">
@@ -385,7 +459,7 @@ export function TransferEVM() {
               </span>
             </div>
           )}
-          {currentMode === "withdraw" && selectedAccount && (
+          {mode === "withdraw" && selectedAccount && (
             <div className="flex items-center justify-between">
               <span>From Address:</span>
               <span className="max-w-[200px] truncate text-zinc-400">
@@ -402,16 +476,16 @@ export function TransferEVM() {
             />
           )}
           <Button
-            onClick={currentMode === "bridge" ? handleBridge : handleWithdraw}
+            onClick={mode === "bridge" ? handleBridge : handleWithdraw}
             className="w-full"
             disabled={
               transactionStatus.status === "PENDING" ||
               !amount ||
-              (currentMode === "bridge" && !userInputEthAddr) ||
-              (currentMode === "withdraw" && !selectedAccount)
+              (mode === "bridge" && !userInputEthAddr) ||
+              (mode === "withdraw" && !selectedAccount)
             }
           >
-            {currentMode === "bridge" ? "Bridge" : "Withdraw"}
+            {mode === "bridge" ? "Bridge" : "Withdraw"}
           </Button>
         </CardFooter>
       </Card>
@@ -434,7 +508,8 @@ function ChainField({ label, chainName }: ChainFieldProps) {
         size="lg"
         variant="outline"
         disabled={true}
-        className="hover:bg-background flex w-full items-center justify-between p-2 px-0 hover:cursor-default disabled:opacity-100"
+        className="hover:bg-background flex w-full items-center justify-between p-2 px-0
+          hover:cursor-default disabled:opacity-100"
       >
         <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
           <Image
@@ -484,6 +559,7 @@ export const renderWaitingForValidation = (hash: string) => (
       style={linkStyle}
       target="_blank"
       href={`https://blockscout.torus.network/tx/${hash}`}
+      rel="noreferrer"
     >
       View on block explorer
     </a>
@@ -497,6 +573,7 @@ export const renderSuccessfulyFinalized = (hash: string) => (
       style={linkStyle}
       target="_blank"
       href={`https://blockscout.torus.network/tx/${hash}`}
+      rel="noreferrer"
     >
       View on block explorer
     </a>

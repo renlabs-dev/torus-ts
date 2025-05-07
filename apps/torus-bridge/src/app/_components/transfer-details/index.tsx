@@ -16,13 +16,16 @@ export function TransferDetails() {
     transferLoading: s.transferLoading,
   }));
 
+  const prevLoading = useRef<boolean>(false);
+
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
-    } else if (transferLoading) {
+    } else if (!prevLoading.current && transferLoading) {
       setSelectedTransfer(transfers[transfers.length - 1]);
       setIsModalOpen(true);
     }
+    prevLoading.current = transferLoading;
   }, [transfers, transferLoading]);
 
   return (
