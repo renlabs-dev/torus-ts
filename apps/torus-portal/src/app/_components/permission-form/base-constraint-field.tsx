@@ -32,10 +32,9 @@ export function BaseConstraintField({
   onDelete?: () => void;
   showDelete?: boolean;
 }) {
-  // Watch the constraint type
   const constraintType = useWatch({
     control,
-    name: `${path}.type` as any,
+    name: `${path}.type`,
   });
 
   return (

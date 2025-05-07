@@ -6,7 +6,7 @@ import type {
   boolExprSchema,
   numExprSchema,
 } from "./schemas";
-import type { NumExpr } from "~/utils/dsl";
+import type { NumExpr, BaseConstraint, BoolExpr } from "~/utils/dsl";
 
 // Helper functions to convert form data to match DSL structure
 export function convertNumExpr(expr: z.infer<typeof numExprSchema>): NumExpr {
@@ -53,7 +53,7 @@ export function convertNumExpr(expr: z.infer<typeof numExprSchema>): NumExpr {
 
 export function convertBaseConstraint(
   constraint: z.infer<typeof baseConstraintSchema>,
-) {
+): BaseConstraint {
   switch (constraint.type) {
     case "MaxDelegationDepth":
       return {
@@ -79,7 +79,9 @@ export function convertBaseConstraint(
   }
 }
 
-export function convertBoolExpr(expr: z.infer<typeof boolExprSchema>) {
+export function convertBoolExpr(
+  expr: z.infer<typeof boolExprSchema>,
+): BoolExpr {
   switch (expr.type) {
     case "Not":
       return { $: "Not", body: convertBoolExpr(expr.body) };

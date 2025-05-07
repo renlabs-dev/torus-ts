@@ -33,12 +33,11 @@ export function NumExprField({
   showDelete?: boolean;
 }) {
   const { toast } = useToast();
-  // Watch the expression type
+
   const exprType = useWatch({
     control,
     name: `${path}.type` as any,
   });
-
   return (
     <div className="space-y-4 border p-4 rounded-md">
       <FormField

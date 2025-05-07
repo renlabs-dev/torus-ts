@@ -107,7 +107,6 @@ export const boolExprSchema: z.ZodType<BoolExprType> = z.lazy(() =>
 );
 
 export const formSchema = z.object({
-  permId: z.string().min(1, "Permission ID is required"),
   body: boolExprSchema,
 });
 
