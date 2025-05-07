@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
-  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -16,17 +14,16 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import type { useForm } from "react-hook-form";
-import { useWatch } from "react-hook-form";
+import { useWatch, Controller } from "react-hook-form";
 import type { FormSchema } from "./schemas";
 import { NumExprField } from "./num-expr-field";
 import { BaseConstraintField } from "./base-constraint-field";
 import { CompOp } from "../../../utils/dsl";
-
+import { makeDynamicFieldPath } from "./form-utils";
+type BoolExprType = "Not" | "And" | "Or" | "CompExpr" | "Base";
 export function BoolExprField({
   control,
   path,
-  onDelete,
-  showDelete = false,
 }: {
   control: ReturnType<typeof useForm<FormSchema>>["control"];
   path: string;
@@ -36,18 +33,21 @@ export function BoolExprField({
   // Watch the expression type
   const exprType = useWatch({
     control,
-    name: `${path}.type`,
-  });
+    name: makeDynamicFieldPath<FormSchema>(`${path}.type`),
+  }) as BoolExprType | undefined;
 
   return (
     <div className="space-y-4 border p-4 rounded-md">
-      <FormField
+      <Controller
         control={control}
-        name={`${path}.type` as any}
+        name={makeDynamicFieldPath<FormSchema>(`${path}.type`)}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Expression Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select
+              onValueChange={field.onChange}
+              value={typeof field.value === "string" ? field.value : ""}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select expression type" />
@@ -89,15 +89,15 @@ export function BoolExprField({
 
       {exprType === "CompExpr" && (
         <>
-          <FormField
+          <Controller
             control={control}
-            name={`${path}.op` as any}
+            name={makeDynamicFieldPath<FormSchema>(`${path}.op`)}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Operator</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={typeof field.value === "string" ? field.value : ""}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -138,17 +138,6 @@ export function BoolExprField({
           <FormLabel>Base Constraint</FormLabel>
           <BaseConstraintField control={control} path={`${path}.body`} />
         </div>
-      )}
-
-      {showDelete && (
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={onDelete}
-          type="button"
-        >
-          Remove Expression
-        </Button>
       )}
     </div>
   );
