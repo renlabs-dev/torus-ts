@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
-  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -17,15 +15,21 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import type { useForm } from "react-hook-form";
-import { useWatch } from "react-hook-form";
+import { useWatch, Controller } from "react-hook-form";
 import type { FormSchema } from "./schemas";
 import { NumExprField } from "./num-expr-field";
+import { makeDynamicFieldPath } from "./form-utils";
+
+type ConstraintType =
+  | "MaxDelegationDepth"
+  | "PermissionExists"
+  | "PermissionEnabled"
+  | "RateLimit"
+  | "InactiveUnlessRedelegated";
 
 export function BaseConstraintField({
   control,
   path,
-  onDelete,
-  showDelete = false,
 }: {
   control: ReturnType<typeof useForm<FormSchema>>["control"];
   path: string;
@@ -34,18 +38,21 @@ export function BaseConstraintField({
 }) {
   const constraintType = useWatch({
     control,
-    name: `${path}.type`,
-  });
+    name: makeDynamicFieldPath<FormSchema>(`${path}.type`),
+  }) as ConstraintType | undefined;
 
   return (
     <div className="space-y-4 border p-4 rounded-md">
-      <FormField
+      <Controller
         control={control}
-        name={`${path}.type` as any}
+        name={makeDynamicFieldPath<FormSchema>(`${path}.type`)}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Constraint Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select
+              onValueChange={field.onChange}
+              value={typeof field.value === "string" ? field.value : ""}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select constraint type" />
@@ -82,14 +89,21 @@ export function BaseConstraintField({
 
       {(constraintType === "PermissionExists" ||
         constraintType === "PermissionEnabled") && (
-        <FormField
+        <Controller
           control={control}
-          name={`${path}.pid` as any}
+          name={makeDynamicFieldPath<FormSchema>(`${path}.pid`)}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Permission ID</FormLabel>
               <FormControl>
-                <Input placeholder="Enter permission ID" {...field} />
+                <Input
+                  placeholder="Enter permission ID"
+                  value={typeof field.value === "string" ? field.value : ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -108,17 +122,6 @@ export function BaseConstraintField({
             <NumExprField control={control} path={`${path}.period`} />
           </div>
         </>
-      )}
-
-      {showDelete && (
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={onDelete}
-          type="button"
-        >
-          Remove Constraint
-        </Button>
       )}
     </div>
   );
