@@ -12,6 +12,7 @@ import { AgentIcon } from "~/app/_components/agent-icon";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 import { AgentInfoCard } from "./components/agent-info-card";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 interface AgentPageProps {
   params: Promise<{ slug: string }>;
@@ -24,11 +25,21 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
 
   const agentKey = slug;
 
-  const [mdl, penalties, computedAgentWeight] = await Promise.all([
-    api.agent.byKeyLastBlock({ key: agentKey }),
+  const [penaltiesError, penalties] = await tryAsync(
     api.penalty.byAgentKey({ agentKey }),
-    api.computedAgentWeight.all(),
-  ]);
+  );
+  if (penaltiesError !== undefined) {
+    console.error("Error fetching agent penalties:", penaltiesError);
+    notFound();
+  }
+
+  const [mdlError, mdl] = await tryAsync(
+    api.agent.byKeyLastBlock({ key: agentKey }),
+  );
+  if (mdlError !== undefined) {
+    console.error("Error fetching agent metadata:", mdlError);
+    notFound();
+  }
 
   if (!mdl?.metadataUri) return notFound();
 
@@ -39,7 +50,27 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
     return notFound();
   });
 
+  const [error] = await tryAsync(
+    fetchAgentMetadata(mdl.metadataUri, {
+      fetchImages: true,
+    }),
+  );
+  if (error !== undefined) {
+    console.error("Error fetching agent metadata:", error);
+    notFound();
+  }
+
+  // Blob URL for the icon
   const icon = images.icon;
+
+  const [computedAgentError, computedAgentWeight] = await tryAsync(
+    api.computedAgentWeight.all(),
+  );
+  if (computedAgentError !== undefined) {
+    console.error("Error fetching agent metadata:", computedAgentError);
+    notFound();
+  }
+
   const globalWeight = computedAgentWeight.find((d) => d.agentKey === agentKey);
   const networkAllocation = globalWeight
     ? (globalWeight.percComputedWeight * 100).toFixed(2)

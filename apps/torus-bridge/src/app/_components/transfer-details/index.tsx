@@ -21,13 +21,20 @@ function TransferDetailsClient() {
   const transfers = useStore((s) => s.transfers);
   const transferLoading = useStore((s) => s.transferLoading);
 
+  const prevLoading = useRef<boolean>(false);
+
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
+<<<<<<< HEAD
     } else if (transferLoading && transfers.length > 0) {
+=======
+    } else if (!prevLoading.current && transferLoading) {
+>>>>>>> 69f37104e0a98e3f4589827c8deab71735913410
       setSelectedTransfer(transfers[transfers.length - 1]);
       setIsModalOpen(true);
     }
+    prevLoading.current = transferLoading;
   }, [transfers, transferLoading]);
 
   return (

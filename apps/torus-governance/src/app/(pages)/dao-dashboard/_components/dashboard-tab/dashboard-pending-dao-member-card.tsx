@@ -21,11 +21,11 @@ export default function DashboardPendingDaoMemberCard() {
   return (
     <DashboardRedirectCard
       title="Pending DAO Member Applications"
-      redirectPath="/dao-applications"
+      redirectPath="/dao-dashboard?tab=dao-applications"
       icon={UserRound}
     >
       <div className="relative">
-        <ScrollArea className="sm:max-h-[7.8rem] max-h-48">
+        <ScrollArea className="sm:max-h-[7.8rem] h-48 max-h-48">
           <div className="flex flex-col">
             {isLoading ? (
               <div className="flex flex-col gap-3">

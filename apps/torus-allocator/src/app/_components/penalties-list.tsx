@@ -8,6 +8,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import type { inferProcedureOutput } from "@trpc/server";
 import { useLayoutEffect, useState } from "react";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 type PenaltyList = NonNullable<
   inferProcedureOutput<AppRouter["penalty"]["byAgentKey"]>
@@ -47,11 +48,12 @@ export function PenaltyList(props: Readonly<VoterListProps>) {
   }, [containerNode]);
 
   const handleCopyAddress = async (address: string) => {
-    await copyToClipboard(address);
-    toast({
-      title: "Success!",
-      description: "Address copied to clipboard.",
-    });
+    const [error, _success] = await tryAsync(copyToClipboard(address));
+    if (error !== undefined) {
+      toast.error("Failed to copy address, please, try again.");
+      return;
+    }
+    toast.success("Address Copied to clipboard");
   };
 
   return (
@@ -67,7 +69,9 @@ export function PenaltyList(props: Readonly<VoterListProps>) {
           <Button
             variant="outline"
             key={cadreKey}
-            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent hover:text-muted-foreground flex w-full items-center justify-between px-4 py-6 hover:cursor-pointer"
+            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent
+              hover:text-muted-foreground flex w-full items-center justify-between px-4 py-6
+              hover:cursor-pointer"
             onClick={() => handleCopyAddress(cadreKey)}
           >
             {smallAddress(cadreKey)}
@@ -75,7 +79,9 @@ export function PenaltyList(props: Readonly<VoterListProps>) {
           </Button>
         ))}
         <span
-          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background bg-gradient-to-b from-transparent transition-all duration-100`}
+          className={`fixed -bottom-5 flex w-full items-end justify-center
+            ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background
+            bg-gradient-to-b from-transparent transition-all duration-100`}
         />
       </div>
     </Card>

@@ -4,6 +4,9 @@ deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-cache
 
+  additionalLabels:
+    app: torus-cache
+
   podLabels:
     app: torus-cache
 
