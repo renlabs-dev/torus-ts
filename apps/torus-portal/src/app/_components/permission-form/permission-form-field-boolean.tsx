@@ -15,13 +15,13 @@ import {
 } from "@torus-ts/ui/components/select";
 import type { useForm } from "react-hook-form";
 import { useWatch, Controller } from "react-hook-form";
-import type { FormSchema } from "./schemas";
-import { NumExprField } from "./num-expr-field";
-import { BaseConstraintField } from "./base-constraint-field";
+import type { FormSchema } from "./permission-form-schemas";
 import { CompOp } from "../../../utils/dsl";
-import { makeDynamicFieldPath } from "./form-utils";
+import { makeDynamicFieldPath } from "./permission-form-utils";
+import { PermissionFormFieldNumber } from "./permission-form-field-number";
+import { PermissionFormFieldBase } from "./permission-form-field-base";
 type BoolExprType = "Not" | "And" | "Or" | "CompExpr" | "Base";
-export function BoolExprField({
+export function PermissionFormFieldBoolean({
   control,
   path,
 }: {
@@ -70,7 +70,7 @@ export function BoolExprField({
       {exprType === "Not" && (
         <div className="pl-4 border-l-2 border-gray-300">
           <FormLabel>Body</FormLabel>
-          <BoolExprField control={control} path={`${path}.body`} />
+          <PermissionFormFieldBoolean control={control} path={`${path}.body`} />
         </div>
       )}
 
@@ -78,11 +78,17 @@ export function BoolExprField({
         <>
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Left Expression</FormLabel>
-            <BoolExprField control={control} path={`${path}.left`} />
+            <PermissionFormFieldBoolean
+              control={control}
+              path={`${path}.left`}
+            />
           </div>
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Right Expression</FormLabel>
-            <BoolExprField control={control} path={`${path}.right`} />
+            <PermissionFormFieldBoolean
+              control={control}
+              path={`${path}.right`}
+            />
           </div>
         </>
       )}
@@ -124,11 +130,17 @@ export function BoolExprField({
           />
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Left Expression</FormLabel>
-            <NumExprField control={control} path={`${path}.left`} />
+            <PermissionFormFieldNumber
+              control={control}
+              path={`${path}.left`}
+            />
           </div>
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Right Expression</FormLabel>
-            <NumExprField control={control} path={`${path}.right`} />
+            <PermissionFormFieldNumber
+              control={control}
+              path={`${path}.right`}
+            />
           </div>
         </>
       )}
@@ -136,7 +148,7 @@ export function BoolExprField({
       {exprType === "Base" && (
         <div className="pl-4 border-l-2 border-gray-300">
           <FormLabel>Base Constraint</FormLabel>
-          <BaseConstraintField control={control} path={`${path}.body`} />
+          <PermissionFormFieldBase control={control} path={`${path}.body`} />
         </div>
       )}
     </div>
