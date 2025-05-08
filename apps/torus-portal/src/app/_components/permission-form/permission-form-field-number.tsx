@@ -17,8 +17,8 @@ import {
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { useForm } from "react-hook-form";
 import { useWatch, Controller } from "react-hook-form";
-import type { FormSchema } from "./schemas";
-import { makeDynamicFieldPath } from "./form-utils";
+import type { FormSchema } from "./permission-form-schemas";
+import { makeDynamicFieldPath } from "./permission-form-utils";
 type NumExprType =
   | "UIntLiteral"
   | "BlockNumber"
@@ -28,7 +28,7 @@ type NumExprType =
   | "WeightSet"
   | "WeightPowerFrom";
 
-export function NumExprField({
+export function PermissionFormFieldNumber({
   control,
   path,
 }: {
@@ -134,11 +134,17 @@ export function NumExprField({
         <>
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Left Expression</FormLabel>
-            <NumExprField control={control} path={`${path}.left`} />
+            <PermissionFormFieldNumber
+              control={control}
+              path={`${path}.left`}
+            />
           </div>
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Right Expression</FormLabel>
-            <NumExprField control={control} path={`${path}.right`} />
+            <PermissionFormFieldNumber
+              control={control}
+              path={`${path}.right`}
+            />
           </div>
         </>
       )}

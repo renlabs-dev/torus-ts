@@ -2,7 +2,7 @@ import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { CompOp } from "~/utils/dsl";
 import type { UseFormReturn } from "react-hook-form";
-import type { FormSchema } from "./schemas";
+import type { FormSchema } from "./permission-form-schemas";
 
 interface ExampleConstraintButtonProps {
   form: UseFormReturn<FormSchema>;
