@@ -12,10 +12,10 @@ import {
 import { Form } from "@torus-ts/ui/components/form";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { formSchema } from "./schemas";
-import type { FormSchema } from "./schemas";
-import { BoolExprField } from "./bool-expr-field";
-import { ExampleConstraintButton } from "./example-constraint-button";
+import { formSchema } from "./permission-form-schemas";
+import type { FormSchema } from "./permission-form-schemas";
+import { ExampleConstraintButton } from "./permission-form-example-constraint-button";
+import { PermissionFormFieldBoolean } from "./permission-form-field-boolean";
 
 export function PermissionForm() {
   const { toast } = useToast();
@@ -52,7 +52,7 @@ export function PermissionForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <BoolExprField control={form.control} path="body" />
+            <PermissionFormFieldBoolean control={form.control} path="body" />
 
             <div className="flex justify-between">
               <ExampleConstraintButton form={form} />

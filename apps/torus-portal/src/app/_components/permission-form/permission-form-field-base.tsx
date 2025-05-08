@@ -16,9 +16,9 @@ import {
 } from "@torus-ts/ui/components/select";
 import type { useForm } from "react-hook-form";
 import { useWatch, Controller } from "react-hook-form";
-import type { FormSchema } from "./schemas";
-import { NumExprField } from "./num-expr-field";
-import { makeDynamicFieldPath } from "./form-utils";
+import type { FormSchema } from "./permission-form-schemas";
+import { makeDynamicFieldPath } from "./permission-form-utils";
+import { PermissionFormFieldNumber } from "./permission-form-field-number";
 
 type ConstraintType =
   | "MaxDelegationDepth"
@@ -27,7 +27,7 @@ type ConstraintType =
   | "RateLimit"
   | "InactiveUnlessRedelegated";
 
-export function BaseConstraintField({
+export function PermissionFormFieldBase({
   control,
   path,
 }: {
@@ -83,7 +83,7 @@ export function BaseConstraintField({
       {constraintType === "MaxDelegationDepth" && (
         <div className="pl-4 border-l-2 border-gray-300">
           <FormLabel>Depth</FormLabel>
-          <NumExprField control={control} path={`${path}.depth`} />
+          <PermissionFormFieldNumber control={control} path={`${path}.depth`} />
         </div>
       )}
 
@@ -115,11 +115,17 @@ export function BaseConstraintField({
         <>
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Max Operations</FormLabel>
-            <NumExprField control={control} path={`${path}.maxOperations`} />
+            <PermissionFormFieldNumber
+              control={control}
+              path={`${path}.maxOperations`}
+            />
           </div>
           <div className="pl-4 border-l-2 border-gray-300">
             <FormLabel>Period</FormLabel>
-            <NumExprField control={control} path={`${path}.period`} />
+            <PermissionFormFieldNumber
+              control={control}
+              path={`${path}.period`}
+            />
           </div>
         </>
       )}

@@ -5,7 +5,7 @@ import type {
   baseConstraintSchema,
   boolExprSchema,
   numExprSchema,
-} from "./schemas";
+} from "./permission-form-schemas";
 import type { NumExpr, BaseConstraint, BoolExpr } from "~/utils/dsl";
 
 // Helper functions to convert form data to match DSL structure
