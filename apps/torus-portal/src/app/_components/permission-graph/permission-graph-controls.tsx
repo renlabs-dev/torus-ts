@@ -5,9 +5,10 @@ import {
   generateRandomTree,
   samplePermissionGraph,
 } from "./permission-graph-utils";
+import type { GraphData } from "./permission-graph-utils";
 
 interface PermissionGraphControlsProps {
-  onDataChange: (data: any) => void;
+  onDataChange: (data: GraphData) => void;
 }
 
 export default function PermissionGraphControls({
@@ -26,7 +27,7 @@ export default function PermissionGraphControls({
   };
 
   return (
-    <div className="flex flex-col gap-4 mb-4 p-4 bg-slate-800 rounded-lg">
+    <div className="flex flex-col gap-4 mb-4 absolute top-20 p-4 bg-slate-800 rounded-lg">
       <h3 className="text-lg font-semibold">Graph Controls</h3>
 
       <div className="flex flex-wrap gap-4 items-center">

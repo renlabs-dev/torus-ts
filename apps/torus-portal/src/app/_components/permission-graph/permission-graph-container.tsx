@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PermissionGraph from "./permission-graph";
 import PermissionGraphControls from "./permission-graph-controls";
-import { generateRandomTree } from "./permission-graph-utils";
+import { samplePermissionGraph } from "./permission-graph-utils";
+import type { GraphData, GraphNode } from "./permission-graph-utils";
 
 export default function PermissionGraphContainer() {
-  // Initialize with random graph data
-  const [graphData, setGraphData] = useState(generateRandomTree(20));
-  const [selectedNode, setSelectedNode] = useState<any>(null);
+  // Use null as initial state to avoid hydration mismatch
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
+  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
 
-  const handleNodeSelect = (node: any) => {
+  // Initialize graph data on the client side only
+  useEffect(() => {
+    setGraphData(samplePermissionGraph);
+  }, []);
+
+  const handleNodeSelect = (node: GraphNode) => {
     setSelectedNode(node);
   };
 
-  const handleDataChange = (newData: any) => {
+  const handleDataChange = (newData: GraphData) => {
     setGraphData(newData);
     setSelectedNode(null);
   };
@@ -24,12 +30,15 @@ export default function PermissionGraphContainer() {
       <PermissionGraphControls onDataChange={handleDataChange} />
 
       <div className="flex flex-col lg:flex-row gap-4">
-        <div className="lg:flex-1 h-[500px] md:h-[600px] bg-slate-900 rounded-lg overflow-hidden">
-          <PermissionGraph
-            data={graphData}
-            height={600}
-            onNodeClick={handleNodeSelect}
-          />
+        <div className="lg:flex-1 h-[500px] md:h-[600px] rounded-lg overflow-hidden">
+          {graphData && (
+            <PermissionGraph data={graphData} onNodeClick={handleNodeSelect} />
+          )}
+          {!graphData && (
+            <div className="w-full h-full flex items-center justify-center text-slate-400">
+              Loading graph...
+            </div>
+          )}
         </div>
 
         {/* Info panel - optional */}
@@ -61,17 +70,23 @@ export default function PermissionGraphContainer() {
             </div>
           ) : (
             <div>
-              <p>
-                <span className="font-medium">Nodes:</span>{" "}
-                {graphData.nodes.length}
-              </p>
-              <p>
-                <span className="font-medium">Links:</span>{" "}
-                {graphData.links.length}
-              </p>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Click on a node to view its details.
-              </p>
+              {graphData ? (
+                <>
+                  <p>
+                    <span className="font-medium">Nodes:</span>{" "}
+                    {graphData.nodes.length}
+                  </p>
+                  <p>
+                    <span className="font-medium">Links:</span>{" "}
+                    {graphData.links.length}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    Click on a node to view its details.
+                  </p>
+                </>
+              ) : (
+                <p className="text-slate-400">Loading graph data...</p>
+              )}
             </div>
           )}
         </div>

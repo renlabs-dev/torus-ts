@@ -4,13 +4,13 @@ export interface GraphNode {
   name: string;
   color?: string;
   val?: number;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }
 
 export interface GraphLink {
   source: string;
   target: string;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }
 
 export interface GraphData {
