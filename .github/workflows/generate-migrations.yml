@@ -1,0 +1,108 @@
+name: Generate Migrations
+
+on:
+  push:
+    branches:
+      - feature/migrations
+  pull_request:
+    types: [closed]
+    branches:
+      - dev
+
+jobs:
+  generate-migrations:
+    # if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup or checkout migrations branch
+        run: |
+          if git show-ref --verify --quiet refs/remotes/origin/migrations; then
+            # migrations branch exists - checkout
+            git checkout migrations
+            git pull origin migrations  # Ensure we have latest
+          else
+            # migrations branch doesn't exist
+            git checkout -b migrations
+            git push --set-upstream origin migrations
+          fi
+
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          method: approle
+          url: ${{ secrets.VAULT_ADDR }}
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            torus_infra/data/dev_web_apps new_db_url | POSTGRES_URL
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Generate migrations (atlas migrate diff)
+        run: atlas migrate diff --env local --to "${{ env.POSTGRES_URL }}"
+
+      - name: Check if migrations were generated
+        id: check_changes
+        run: |
+          git status
+          ls -la atlas/migrations/
+          if [[ -n "$(git status --porcelain atlas/migrations/)" ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - run: git fetch origin dev:dev
+        if: steps.check_changes.outputs.has_changes == 'true'
+
+      - name: Run lint
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: atlas migrate lint --env local --git-base dev
+
+      - name: Configure Git and commit changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add atlas/migrations/
+          git commit -m "chore: Generate new migrations from PR merge"
+
+      - name: Create PR from migrations to dev
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: dev
+          branch: migrations
+          title: "Apply Database Migrations to Dev"
+          body: |
+            🔄 New database migrations ready for dev environment
+
+            This PR contains newly generated migrations that need to be applied to the dev database.
+            Please review the migrations carefully before approving.
+
+            - [ ] Review migration files
+            - [ ] Verify migration reversibility
+            - [ ] Check for potential data loss
+          labels: |
+            database
+            migrations
+            needs-review
+          reviewers: |
+            steinerkelvin
+            PsicoThePato
+            EdSDR
+          draft: false
+
+      - name: No migrations needed
+        if: steps.check_changes.outputs.has_changes == 'false'
+        run: |
+          echo "No new migrations needed to be generated"
