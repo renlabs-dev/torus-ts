@@ -1,24 +1,22 @@
-'use client';
+"use client";
 
-import { useRef, Suspense } from "react";
+import dynamic from "next/dynamic";
+import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-import dynamic from 'next/dynamic';
+import type { GraphData, GraphNode } from "./permission-graph-utils";
+import type { GraphProps } from "r3f-forcegraph";
 
-// Dynamic import to avoid SSR issues with window object
-const R3fForceGraph = dynamic(() => import('r3f-forcegraph'), { ssr: false });
+const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
 
-// Graph component that handles rendering the force directed graph
-const Graph = ({
-  graphData,
-  onNodeClick,
-}: {
-  graphData: any;
-  onNodeClick?: (node: any) => void;
-}) => {
-  const fgRef = useRef<any>(null);
+interface GraphxProps {
+  graphData: GraphData;
+  onNodeClick: (node: GraphNode) => void;
+}
 
-  // Update the graph on each animation frame
+function Graph(props: GraphxProps) {
+  const fgRef = useRef<GraphProps | null>(null);
+
   useFrame(() => {
     if (fgRef.current) {
       fgRef.current.tickFrame();
@@ -28,46 +26,46 @@ const Graph = ({
   return (
     <R3fForceGraph
       ref={fgRef}
-      graphData={graphData}
-      nodeColor={(node) => node.color}
-      // nodeLabel={(node) => node.name}
+      graphData={props.graphData}
+      nodeColor={(node) => {
+        return node.color;
+      }}
+      nodeLabel={(node) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+        return node.name;
+      }}
       linkDirectionalArrowLength={3.5}
       linkDirectionalArrowRelPos={1}
       linkCurvature={0.25}
       linkColor={() => "rgba(255, 255, 255, 0.2)"}
       nodeRelSize={6}
       onNodeClick={(node) => {
-        // Handle node click event
-        console.log("Clicked node:", node);
-        if (onNodeClick) {
-          onNodeClick(node);
-        }
+        props.onNodeClick({
+          id: String(node.id ?? ""),
+          name: String(node.name ?? `Node ${node.id}`),
+          color: String(node.color ?? "#ffffff"),
+          val: Number(node.val ?? 1),
+        });
       }}
     />
   );
-};
+}
 
-// Main permission graph component
 export default function PermissionGraph({
   data,
-  height = 600,
   onNodeClick,
 }: {
-  data: any;
-  height?: number;
-  onNodeClick?: (node: any) => void;
+  data: GraphData;
+  onNodeClick: (node: GraphNode) => void;
 }) {
   return (
-    <div style={{ height, width: "100%", position: "relative" }}>
-      <Canvas camera={{ position: [0, 0, 100], far: 1000 }}>
-        <color attach="background" args={[0.05, 0.05, 0.1]} />
-        <ambientLight intensity={Math.PI / 2} />
-        <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
-        <Suspense fallback={null}>
-          <Graph graphData={data} onNodeClick={onNodeClick} />
-          <TrackballControls />
-        </Suspense>
-      </Canvas>
-    </div>
+    <Canvas camera={{ position: [0, 0, 100], far: 1000 }}>
+      <color attach="background" args={[0.05, 0.05, 0.1]} />
+      <ambientLight intensity={Math.PI / 2} />
+      <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
+
+      <Graph graphData={data} onNodeClick={onNodeClick} />
+      <TrackballControls />
+    </Canvas>
   );
 }
