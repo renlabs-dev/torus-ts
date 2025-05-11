@@ -16,19 +16,23 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@react-three/drei": "catalog:",
+    "@react-three/fiber": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@torus-network/sdk": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/api": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
-    "@torus-network/sdk": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
-    "@torus-network/torus-utils": "workspace:*",
     "@next/third-parties": "catalog:",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "r3f-forcegraph": "^1.0.8",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
+    "three": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
