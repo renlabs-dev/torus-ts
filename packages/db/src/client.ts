@@ -1,5 +1,7 @@
 import * as schema from "@torus-ts/db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+
 import postgres from "postgres";
 
 /**
@@ -18,13 +20,15 @@ export function createDb() {
   const db = drizzle(conn, { schema });
   return db;
 }
+
 export type DB = ReturnType<typeof createDb>;
 
-export function createDbGeneric() {
+export function createDbGeneric<TSchema extends Record<string, unknown>>(
+  schema: TSchema,
+): PostgresJsDatabase<TSchema> {
   // eslint-disable-next-line no-restricted-properties
   const conn = globalForDb.conn ?? postgres(String(process.env.POSTGRES_URL));
   // eslint-disable-next-line no-restricted-properties
   if (process.env.NODE_ENV !== "production") globalForDb.conn = conn;
-  const db = drizzle(conn, { schema });
-  return db;
+  return drizzle(conn, { schema });
 }
