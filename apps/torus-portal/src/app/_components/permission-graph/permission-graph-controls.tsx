@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import type { CustomGraphData } from "./permission-graph-utils";
 import {
   generateRandomTree,
   samplePermissionGraph,
 } from "./permission-graph-utils";
-import type { GraphData } from "./permission-graph-utils";
 
 interface PermissionGraphControlsProps {
-  onDataChange: (data: GraphData) => void;
+  onDataChange: (data: CustomGraphData) => void;
 }
 
 export default function PermissionGraphControls({
@@ -21,13 +21,12 @@ export default function PermissionGraphControls({
     onDataChange(samplePermissionGraph);
   };
 
-  // Generate random graph with specified number of nodes
   const generateRandomGraph = () => {
     onDataChange(generateRandomTree(nodeCount));
   };
 
   return (
-    <div className="flex flex-col gap-4 mb-4 absolute top-20 p-4 bg-slate-800 rounded-lg">
+    <div className="flex flex-col gap-4 mb-4 p-4 bg-slate-800 rounded-lg">
       <h3 className="text-lg font-semibold">Graph Controls</h3>
 
       <div className="flex flex-wrap gap-4 items-center">

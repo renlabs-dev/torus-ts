@@ -1,5 +1,4 @@
-// Types for graph data
-export interface GraphNode {
+export interface CustomGraphNode {
   id: string;
   name: string;
   color?: string;
@@ -13,14 +12,14 @@ export interface GraphLink {
   [key: string]: string | number | undefined;
 }
 
-export interface GraphData {
-  nodes: GraphNode[];
+export interface CustomGraphData {
+  nodes: CustomGraphNode[];
   links: GraphLink[];
 }
 
 // Generate a random tree-like structure for demo purposes
-export function generateRandomTree(numNodes: number = 20): GraphData {
-  const nodes: GraphNode[] = [];
+export function generateRandomTree(numNodes: number = 20) {
+  const nodes: CustomGraphNode[] = [];
   const links: GraphLink[] = [];
 
   // Node colors
@@ -72,7 +71,7 @@ export function generateRandomTree(numNodes: number = 20): GraphData {
 }
 
 // Sample permission graph data
-export const samplePermissionGraph: GraphData = {
+export const samplePermissionGraph: CustomGraphData = {
   nodes: [
     { id: "user", name: "User", color: "#ff6b6b", val: 10 },
     { id: "admin", name: "Admin", color: "#48dbfb", val: 10 },
