@@ -1,9 +1,9 @@
 name: Generate Migrations
 
 on:
-  push:
-    branches:
-      - feature/migrations
+  # push:
+  #   branches:
+  #     - feature/migrations
   pull_request:
     types: [closed]
     branches:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   generate-migrations:
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
