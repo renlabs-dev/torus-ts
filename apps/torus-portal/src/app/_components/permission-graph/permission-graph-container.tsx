@@ -3,24 +3,27 @@
 import { useState, useEffect } from "react";
 import PermissionGraph from "./permission-graph";
 import PermissionGraphControls from "./permission-graph-controls";
+import type {
+  CustomGraphData,
+  CustomGraphNode,
+} from "./permission-graph-utils";
 import { samplePermissionGraph } from "./permission-graph-utils";
-import type { GraphData, GraphNode } from "./permission-graph-utils";
 
 export default function PermissionGraphContainer() {
-  // Use null as initial state to avoid hydration mismatch
-  const [graphData, setGraphData] = useState<GraphData | null>(null);
-  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+  const [graphData, setGraphData] = useState<CustomGraphData | null>(null);
+  const [selectedNode, setSelectedNode] = useState<CustomGraphNode | null>(
+    null,
+  );
 
-  // Initialize graph data on the client side only
   useEffect(() => {
     setGraphData(samplePermissionGraph);
   }, []);
 
-  const handleNodeSelect = (node: GraphNode) => {
+  const handleNodeSelect = (node: CustomGraphNode) => {
     setSelectedNode(node);
   };
 
-  const handleDataChange = (newData: GraphData) => {
+  const handleDataChange = (newData: CustomGraphData) => {
     setGraphData(newData);
     setSelectedNode(null);
   };
