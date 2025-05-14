@@ -11,7 +11,7 @@ import type { ApiPromise } from "@polkadot/api";
 import type { SS58Address } from "@torus-network/sdk";
 import { setup } from "@torus-network/sdk";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
-import { createDb } from "@torus-ts/db/client";
+import { createDb, createDbGeneric } from "@torus-ts/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { assert } from "tsafe";
@@ -19,8 +19,9 @@ import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
 import { trySync } from "@torus-network/torus-utils/try-catch";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-let globalDb: ReturnType<typeof createDb> | null = null;
+let globalDb: ReturnType<typeof createDbGeneric> | null = null;
 let globalWSAPI: ApiPromise | null = null;
 
 const getEnv = validateEnvOrExit({
@@ -29,9 +30,10 @@ const getEnv = validateEnvOrExit({
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
 });
 
-function cacheCreateDb() {
-  globalDb = globalDb ?? createDb();
-  return globalDb;
+function cacheCreateDb<T extends Record<string, unknown>>(schema: T) {
+  // Need to modify the global type as well
+  globalDb = globalDb ?? createDbGeneric(schema);
+  return globalDb as PostgresJsDatabase<T>;
 }
 
 async function cacheCreateWSAPI() {
@@ -53,29 +55,31 @@ async function cacheCreateWSAPI() {
  * @see https://trpc.io/docs/server/context
  */
 export interface TRPCContext {
-  db: ReturnType<typeof createDb>;
+  db: ReturnType<typeof createDbGeneric>;
   authType?: string;
   sessionData: SessionData | null;
   jwtSecret: string;
   authOrigin: string;
   allocatorAddress: SS58Address;
   wsAPI: Promise<ApiPromise>;
+  schema: string;
 }
 
 export interface AuthenticatedTRPCContext extends TRPCContext {
   sessionData: SessionData;
 }
 
-export const createTRPCContext = (opts: {
+export const createTRPCContext = <T extends Record<string, unknown>>(opts: {
   headers: Headers;
   session: null;
   jwtSecret: string;
   authOrigin: string;
   allocatorAddress: SS58Address;
+  schema: T;
 }) => {
-  const db = cacheCreateDb();
+  const { jwtSecret, schema } = opts;
+  const db = cacheCreateDb(schema);
   const wsAPI = cacheCreateWSAPI();
-  const { jwtSecret } = opts;
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
   console.log(">>> tRPC Request from", source);
 

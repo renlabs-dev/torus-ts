@@ -23,12 +23,15 @@ export function createDb() {
 
 export type DB = ReturnType<typeof createDb>;
 
-export function createDbGeneric<TSchema extends Record<string, unknown>>(
-  schema: TSchema,
-): PostgresJsDatabase<TSchema> {
+export function createDbGeneric<T extends Record<string, unknown>>(
+  schema: T,
+): PostgresJsDatabase<T> {
+  // Get or create the connection
   // eslint-disable-next-line no-restricted-properties
   const conn = globalForDb.conn ?? postgres(String(process.env.POSTGRES_URL));
+
   // eslint-disable-next-line no-restricted-properties
   if (process.env.NODE_ENV !== "production") globalForDb.conn = conn;
-  return drizzle(conn, { schema });
+
+  return drizzle(conn, { schema }) as PostgresJsDatabase<T>;
 }
