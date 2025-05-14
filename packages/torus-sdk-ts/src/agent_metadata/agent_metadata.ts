@@ -2,12 +2,12 @@ import type { AnyJson } from "@polkadot/types/types";
 import {
   assert_error,
   typed_non_null_entries,
-} from "@torus-network/torus-utils";
+} from "../utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
-} from "@torus-network/torus-utils/ipfs";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+} from "../utils/ipfs";
+import { tryAsync, trySync } from "../utils/try-catch";
 import { CID } from "multiformats";
 import { z } from "zod";
 

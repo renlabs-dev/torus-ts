@@ -1,7 +1,7 @@
 {
   "name": "@torus-network/sdk",
   "description": "Torus Network JS SDK",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "private": false,
   "license": "MIT",
   "type": "module",
@@ -13,6 +13,54 @@
     "./types": {
       "default": "./dist/types/index.js",
       "types": "./dist/types/index.d.ts"
+    },
+    "./utils": {
+      "default": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./utils/auth": {
+      "default": "./dist/utils/auth.js",
+      "types": "./dist/utils/auth.d.ts"
+    },
+    "./utils/bignumber": {
+      "default": "./dist/utils/bignumber.js",
+      "types": "./dist/utils/bignumber.d.ts"
+    },
+    "./utils/collections": {
+      "default": "./dist/utils/collections.js",
+      "types": "./dist/utils/collections.d.ts"
+    },
+    "./utils/env": {
+      "default": "./dist/utils/env.js",
+      "types": "./dist/utils/env.d.ts"
+    },
+    "./utils/files": {
+      "default": "./dist/utils/files.js",
+      "types": "./dist/utils/files.d.ts"
+    },
+    "./utils/ipfs": {
+      "default": "./dist/utils/ipfs.js",
+      "types": "./dist/utils/ipfs.d.ts"
+    },
+    "./utils/logger": {
+      "default": "./dist/utils/logger.js",
+      "types": "./dist/utils/logger.d.ts"
+    },
+    "./utils/subspace": {
+      "default": "./dist/utils/subspace.js",
+      "types": "./dist/utils/subspace.d.ts"
+    },
+    "./utils/try-catch": {
+      "default": "./dist/utils/try-catch.js",
+      "types": "./dist/utils/try-catch.d.ts"
+    },
+    "./utils/discord-bot-interaction": {
+      "default": "./dist/utils/discord-bot-interaction.js",
+      "types": "./dist/utils/discord-bot-interaction.d.ts"
+    },
+    "./utils/mutation-handler": {
+      "default": "./dist/utils/mutation-handler.js",
+      "types": "./dist/utils/mutation-handler.d.ts"
     }
   },
   "files": [
@@ -32,22 +80,26 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@polkadot/api": "catalog:",
-    "@polkadot/types": "catalog:",
-    "@polkadot/util-crypto": "catalog:",
-    "@torus-network/torus-utils": "workspace:*",
+    "@polkadot/api": "15.10.2",
+    "@polkadot/types": "15.10.2",
+    "@polkadot/util": "13.4.4",
+    "@polkadot/util-crypto": "13.4.4",
     "@wagmi/core": "2.16.3",
-    "multiformats": "catalog:",
-    "rustie": "catalog:",
+    "bignumber.js": "^9.1.2",
+    "luxon": "3.6.1",
+    "multiformats": "13.3.3",
+    "rustie": "0.4.0",
     "superjson": "2.2.1",
-    "tsafe": "catalog:",
-    "viem": "catalog:",
-    "zod": "catalog:"
+    "tsafe": "1.8.5",
+    "viem": "2.29.2",
+    "zod": "3.24.4"
   },
   "devDependencies": {
-    "@polkadot/typegen": "catalog:",
+    "@polkadot/typegen": "15.10.2",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "tsx": "catalog:"
+    "@types/luxon": "^3.4.2",
+    "type-fest": "^4.33.0",
+    "tsx": "4.19.4"
   }
 }

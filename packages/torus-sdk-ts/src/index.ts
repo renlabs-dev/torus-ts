@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync } from "./utils/try-catch";
 
 // === Address ===
 export * from "./address";
@@ -30,6 +30,9 @@ export * from "./types/zod";
 // == Metadata ==
 export * from "./metadata";
 export * from "./agent_metadata/agent_metadata";
+
+// == Utils ==
+export * from "./utils";
 
 export async function setup(wsEndpoint: string): Promise<ApiPromise> {
   console.log("Connecting to ", wsEndpoint);
