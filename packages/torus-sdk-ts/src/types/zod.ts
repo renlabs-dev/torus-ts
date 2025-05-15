@@ -1,5 +1,6 @@
 // TODO: split `zod.ts` into multiple files
 
+import { AbstractInt } from "@polkadot/types-codec";
 import {
   bool,
   BTreeSet,
@@ -13,7 +14,7 @@ import {
 import type { AnyJson, Codec } from "@polkadot/types/types";
 import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
-import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
+import type { ZodRawShape, ZodType, ZodTypeDef } from "zod";
 import { z } from "zod";
 import { SS58_SCHEMA } from "../address.js";
 
@@ -120,9 +121,9 @@ export const Option_schema = z.custom<polkadot_Option<Codec>>(
   "not a substrate Option",
 );
 
-export const sb_option = <T extends ZodTypeAny>(
+export const sb_option = <T extends z.ZodType<unknown, z.ZodTypeDef, Codec>>(
   inner: T,
-): ZodType<Option<z.output<T>>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<Option<z.output<T>>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   Option_schema.transform((val, ctx): Option<z.output<T>> => {
     type Out = z.output<T>;
     if (val.isNone) {
@@ -138,20 +139,19 @@ export const sb_option = <T extends ZodTypeAny>(
         });
         return z.NEVER;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value: Out = result.data;
       const some: Option<Out> = { Some: value };
       return some;
     }
-    throw new Error("Invalid Option");
+    throw new Error(`Invalid Option codec: ${String(val)}`);
   });
 
 export const sb_option_default = <
-  T extends ZodType<unknown, ZodTypeDef, unknown>,
+  T extends ZodType<unknown, ZodTypeDef, Codec>,
 >(
   inner: T,
   defaultValue: z.output<T>,
-): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   sb_option<T>(inner).transform((val, _ctx) => {
     const r = match(val)({
       Some: (value) => value,
@@ -160,7 +160,7 @@ export const sb_option_default = <
     return r;
   });
 
-export const sb_some = <T extends ZodTypeAny>(
+export const sb_some = <T extends z.ZodType<unknown, z.ZodTypeDef, Codec>>(
   inner: T,
 ): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   sb_option<T>(inner).transform(
@@ -188,35 +188,39 @@ export const sb_bool = bool_schema.transform((val) => val.toPrimitive());
 
 // == Numbers ==
 
-export interface ToBigInt {
-  toBigInt(): bigint;
-}
+// export interface _ToBigInt {
+//   toBigInt(): bigint;
+// }
 
-export const ToBigInt_schema = z.custom<ToBigInt>((val) => {
-  if (!(typeof val === "object" && val !== null)) {
-    // ctx.addIssue({
-    //   code: z.ZodIssueCode.invalid_type,
-    //   expected: "object",
-    //   received: typeof val,
-    // });
-    // return z.NEVER;
-    return false;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
-    // ctx.addIssue({
-    //   code: z.ZodIssueCode.custom,
-    //   message: "toBigInt not present, it's not a Codec convertible to BigInt",
-    // });
-    // return z.NEVER;
-    return false;
-  }
-  return true;
-});
+// export const _ToBigInt_schema = z.unknown().transform<_ToBigInt>((val, ctx) => {
+//   if (!(typeof val === "object" && val !== null)) {
+//     ctx.addIssue({
+//       code: z.ZodIssueCode.invalid_type,
+//       expected: "object",
+//       received: typeof val,
+//     });
+//     return z.NEVER;
+//   }
+//   if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
+//     ctx.addIssue({
+//       code: z.ZodIssueCode.custom,
+//       message: "toBigInt not present, it's not a Codec conversible to BigInt",
+//     });
+//     return z.NEVER;
+//   }
+//   return val as _ToBigInt;
+// });
 
-export const sb_bigint = ToBigInt_schema.transform((val) => val.toBigInt());
+// export const sb_bigint = _ToBigInt_schema.transform((val) => val.toBigInt());
 
-export const sb_number = ToBigInt_schema.transform((val, ctx): number => {
+export const AbstractInt_schema = z.custom<AbstractInt>(
+  (val) => val instanceof AbstractInt,
+  "not an AbstractInt",
+);
+
+export const sb_bigint = AbstractInt_schema.transform((val) => val.toBigInt());
+
+export const sb_number = AbstractInt_schema.transform((val, ctx): number => {
   const num = val.toBigInt();
   const result = Number(num);
   if (!Number.isSafeInteger(result)) {
@@ -287,7 +291,7 @@ export const sb_basic_enum = <
 
 export const GenericAccountId_schema = z.custom<GenericAccountId>(
   (val) => val instanceof GenericAccountId,
-  "not a substrate GenericAccountId",
+  "not a substrate BaseAccountId",
 );
 
 export const sb_address = GenericAccountId_schema.transform((val) =>

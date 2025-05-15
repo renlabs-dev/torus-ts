@@ -18,6 +18,7 @@ catalog:
   "@polkadot/util-crypto": ^13.2.1
   "@polkadot/typegen": ^14.2.3
   "@polkadot/types": ^14.2.3
+  "@polkadot/types-codec": ^14.2.3
   "@polkadot/api-augment": ^14.2.3
   "@polkadot/extension-dapp": ^0.52.3
   "@polkadot/extension-inject": ^0.52.3
