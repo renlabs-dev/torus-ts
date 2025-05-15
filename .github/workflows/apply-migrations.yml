@@ -38,7 +38,7 @@ jobs:
           if echo "$COMMIT_MSG" | grep -q "^Revert \""; then
             # Extract the reverted commit hash
             REVERTED_SHA=$(git log -1 --pretty=%B | grep -o '[a-f0-9]\{40\}' || true)
-            
+
             if [ -n "$REVERTED_SHA" ]; then
               # Check if the reverted commit had changes in migrations folder
               if git show --name-only $REVERTED_SHA | grep -q "^atlas/migrations/"; then
@@ -137,9 +137,9 @@ jobs:
   restart-apps:
     needs: [check-migrations, apply-migrations, rollback-migrations]
     if: |
-      always() && 
+      always() &&
       (
-        (needs.apply-migrations.result == 'success') || 
+        (needs.apply-migrations.result == 'success') ||
         (needs.rollback-migrations.result == 'success')
       )
     runs-on: ubuntu-latest
