@@ -1,29 +1,34 @@
+# Temporary files
 /data/
 /tmp/
 
+# Nix / direnv
 /.direnv/
 
-# local env files
+# Local environment files
 .env
 .env.*
 !.env.example
 
-# dependencies
+# Claude Code
+**/.claude/settings.local.json
+
+# Node.js / dependencies
 **/node_modules
 
-# next.js
+# Next.js
 **/.next
 **/.vercel/
 **/out/
 **/**/build
 **/.swc/
 
-# turbo
+# Turborepo
 .turbo
 
-# typescript
+# Typescript
 **/dist/
 **/.cache/
 
-# misc
+# OS
 .DS_Store
