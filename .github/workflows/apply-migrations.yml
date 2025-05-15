@@ -50,6 +50,7 @@ jobs:
           echo "is_revert=false" >> $GITHUB_OUTPUT
 
   check-migrations:
+    if: ${{ !inputs.rollback }}
     runs-on: ubuntu-latest
     outputs:
       has_pending: ${{ steps.check-migrations.outputs.has_pending }}
@@ -72,7 +73,6 @@ jobs:
 
       - name: Check migration status
         id: check-migrations
-        if: ${{ !inputs.rollback }}
         run: |
           output=$(atlas migrate status --env local --url "${{ env.POSTGRES_URL }}")
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
