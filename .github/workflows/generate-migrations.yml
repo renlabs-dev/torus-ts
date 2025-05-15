@@ -9,6 +9,10 @@ on:
     branches:
       - dev
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-migrations:
     if: github.event.pull_request.merged == true
