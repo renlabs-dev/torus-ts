@@ -42,7 +42,7 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            torus_infra/data/dev_web_apps new_db_url | POSTGRES_URL
+            torus_infra/data/dev_web_apps torus_webapps_db_url | POSTGRES_URL
 
       - uses: ariga/setup-atlas@v0
 
