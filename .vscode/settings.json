@@ -71,6 +71,7 @@
     "daos",
     "datetime",
     "dotenv",
+    "extrinsics",
     "gogotry",
     "heroicons",
     "hyperlane",

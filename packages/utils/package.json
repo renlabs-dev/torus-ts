@@ -23,7 +23,9 @@
     "./auth": "./src/auth.ts",
     "./ipfs": "./src/ipfs.ts",
     "./subspace": "./src/subspace.ts",
-    "./typing": "./src/typing.ts",
+    "./typing": "./src/typing/index.ts",
+    "./typing/function": "./src/typing/function.ts",
+    "./typing/zod": "./src/typing/zod.ts",
     "./collections": "./src/collections.ts",
     "./env": "./src/env.ts",
     "./error": "./src/error.ts",
@@ -32,7 +34,8 @@
     "./try-catch": "./src/try-catch.ts",
     "./mutation-handler": "./src/mutation-handler.ts",
     "./discord-bot-interaction": "./src/discord-bot-interaction.ts",
-    "./logger": "./src/logger.ts"
+    "./logger": "./src/logger.ts",
+    "./result": "./src/result.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",
