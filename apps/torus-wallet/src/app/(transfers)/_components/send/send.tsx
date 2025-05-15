@@ -8,6 +8,8 @@ import { useForm } from "react-hook-form";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
+import type { UpdatedTransaction } from "~/store/transactions-store";
+import { useTransactionsStore } from "~/store/transactions-store";
 import type { ReviewTransactionDialogHandle } from "~/app/_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "~/app/_components/review-transaction-dialog";
 import type { FeeLabelHandle } from "~/app/_components/fee-label";
@@ -16,6 +18,7 @@ import { handleEstimateFee } from "./send-fee-handler";
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { SS58Address } from "@torus-network/sdk";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
@@ -28,6 +31,24 @@ export function Send() {
     transferTransaction,
     minAllowedStake,
   } = useWallet();
+
+  const {
+    addTransaction,
+    isTransactionError,
+    isTransactionCompleted,
+    updateTransaction,
+  } = useTransactionsStore((state) => ({
+    addTransaction: (args: Parameters<typeof state.addTransaction>[0]) =>
+      state.addTransaction(args),
+    isTransactionError: (
+      args: Parameters<typeof state.isTransactionError>[0],
+    ) => state.isTransactionError(args),
+    isTransactionCompleted: (
+      args: Parameters<typeof state.isTransactionCompleted>[0],
+    ) => state.isTransactionCompleted(args),
+    updateTransaction: (...args: Parameters<typeof state.updateTransaction>) =>
+      state.updateTransaction(...args),
+  }));
 
   const { toast } = useToast();
   const { usdPrice } = useUsdPrice();
@@ -85,11 +106,29 @@ export function Send() {
     return;
   };
 
-  const handleCallback = (callbackReturn: TransactionResult) => {
+  const handleTransactionCallback = (
+    callbackReturn: TransactionResult,
+    txId: string,
+  ) => {
     setTransactionStatus(callbackReturn);
-    if (callbackReturn.status === "SUCCESS") {
-      reset();
-    }
+
+    if (!isTransactionCompleted(callbackReturn.status)) return;
+
+    const isError = isTransactionError(callbackReturn.status);
+
+    const updatedTransaction: UpdatedTransaction = isError
+      ? {
+          status: "error",
+          metadata: { error: "Transaction failed" },
+        }
+      : {
+          status: "success",
+          hash: "123123123",
+        };
+
+    updateTransaction(txId, updatedTransaction);
+
+    reset();
   };
 
   const refetchHandler = async () => {
@@ -108,18 +147,24 @@ export function Send() {
       message: "Awaiting signature",
     });
 
-    const [error3, _success3] = await tryAsync(
-      transfer({
-        to: values.recipient,
-        amount: values.amount,
-        callback: handleCallback,
-        refetchHandler,
-      }),
-    );
-    if (error3 !== undefined) {
-      toast.error(error3.message);
-      return;
-    }
+    const txId = addTransaction({
+      type: "send",
+      fromAddress: selectedAccount?.address as SS58Address,
+      toAddress: values.recipient,
+      amount: values.amount,
+      fee: feeRef.current?.getEstimatedFee() ?? "0",
+      status: "pending",
+      metadata: {
+        usdPrice: usdPrice,
+      },
+    });
+
+    await transfer({
+      to: values.recipient,
+      amount: values.amount,
+      callback: (args) => handleTransactionCallback(args, txId),
+      refetchHandler,
+    });
   };
 
   useEffect(() => {
