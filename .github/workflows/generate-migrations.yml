@@ -21,18 +21,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup or checkout migrations branch
-        run: |
-          if git show-ref --verify --quiet refs/remotes/origin/migrations; then
-            # migrations branch exists - checkout
-            git checkout migrations
-            git pull origin migrations  # Ensure we have latest
-          else
-            # migrations branch doesn't exist
-            git checkout -b migrations
-            git push --set-upstream origin migrations
-          fi
-
       - name: Import Secrets
         id: import-secrets
         uses: hashicorp/vault-action@v3
