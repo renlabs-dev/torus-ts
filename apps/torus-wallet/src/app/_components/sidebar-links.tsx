@@ -15,6 +15,7 @@ import { env } from "~/env";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { TransactionsSheet } from "../_components/transactions-sheet/transactions-sheet";
 
 interface NavLink {
   path: string;
@@ -144,6 +145,7 @@ export const SidebarLinks = () => {
           {NAVIGATION_LINKS.map((navLinkProps) => (
             <NavButton key={navLinkProps.value} {...navLinkProps} />
           ))}
+          <TransactionsSheet />
         </Card>
       </div>
     </>
