@@ -15,7 +15,7 @@ on:
       - feature/migrations
     paths:
       - "atlas/migrations/**"
-      - ".github/workflows/migrations.yml"
+      - ".github/workflows/apply-migrations.yml"
 
 jobs:
   check-revert:
