@@ -30,18 +30,20 @@ export default function PermissionGraphContainer() {
   };
 
   return (
-    <div className="w-full flex flex-col">
-      <PermissionGraphControls onDataChange={handleDataChange} />
+    <div className="fixed inset-0 w-screen h-screen">
+      <div className="absolute top-[4.3rem] left-3 right-4 z-10">
+        <PermissionGraphControls onDataChange={handleDataChange} />
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="lg:flex-1 h-[500px] md:h-[600px] rounded-lg overflow-hidden">
-          <PermissionGraph data={graphData} onNodeClick={handleNodeSelect} />
-        </div>
-
+      <div className="absolute top-0 right-4 mt-[calc(4rem+70px)] w-80 z-10">
         <PermissionGraphDetails
           selectedNode={selectedNode}
           graphData={graphData}
         />
+      </div>
+
+      <div className="w-full h-full">
+        <PermissionGraph data={graphData} onNodeClick={handleNodeSelect} />
       </div>
     </div>
   );
