@@ -66,9 +66,17 @@ export default function PermissionGraph({
   data,
   onNodeClick,
 }: {
-  data: CustomGraphData;
+  data: CustomGraphData | null;
   onNodeClick: (node: CustomGraphNode) => void;
 }) {
+  if (!data) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-slate-400">
+        Loading Graph...
+      </div>
+    );
+  }
+
   return (
     <Canvas camera={{ position: [0, 0, 100], far: 1000 }}>
       <color attach="background" args={[0.05, 0.05, 0.1]} />
