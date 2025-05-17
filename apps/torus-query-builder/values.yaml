@@ -1,0 +1,6 @@
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/torus-query-builder
+
+  podLabels:
+    app: torus-query-builder
