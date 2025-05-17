@@ -26,11 +26,10 @@ const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
 const TRANSFER_TIMEOUT_ERROR2 = "timeout";
 
 export function useTokenTransfer(onDone?: () => void) {
-  const { transfers, addTransfer, updateTransferStatus } = useStore((s) => ({
-    transfers: s.transfers,
-    addTransfer: s.addTransfer,
-    updateTransferStatus: s.updateTransferStatus,
-  }));
+  const transfers = useStore((s) => s.transfers);
+  const addTransfer = useStore((s) => s.addTransfer);
+  const updateTransferStatus = useStore((s) => s.updateTransferStatus);
+
   const transferIndex = transfers.length;
 
   const multiProvider = useMultiProvider();
