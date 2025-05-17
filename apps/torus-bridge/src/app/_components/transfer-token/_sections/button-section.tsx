@@ -21,6 +21,7 @@ export function ButtonSection({
 }>) {
   const { values } = useFormikContext<TransferFormValues>();
   const chainDisplayName = useChainDisplayName(values.destination);
+  const setTransferLoading = useStore((s) => s.setTransferLoading);
 
   const isSanctioned = useIsAccountSanctioned();
 
@@ -30,10 +31,6 @@ export function ButtonSection({
     resetForm();
   };
   const { triggerTransactions } = useTokenTransfer(onDoneTransactions);
-
-  const { setTransferLoading } = useStore((s) => ({
-    setTransferLoading: s.setTransferLoading,
-  }));
 
   const triggerTransactionsHandler = async () => {
     if (isSanctioned) {
