@@ -1,11 +1,13 @@
 import { asc, eq, isNull, sql, sum } from "drizzle-orm";
 import {
+  AnyPgColumn,
   boolean,
   check,
   bigint as drizzleBigint,
   timestamp as drizzleTimestamp,
   index,
   integer,
+  json,
   numeric,
   pgEnum,
   pgMaterializedView,
@@ -478,4 +480,63 @@ export const governanceNotificationSchema = createTable(
     notifiedAt: timestampz("notified_at").defaultNow(),
     ...timeFields(),
   },
+);
+
+// ==== Permissions ====
+export const permissionScope = pgEnum("permission_scope_type", ["EMISSION"]);
+
+/**
+ * Stores base permissions that can be assigned
+ */
+export const permissionSchema = createTable("permission", {
+  id: serial("id").primaryKey(),
+  permission_id: integer("permission_id").notNull().unique(),
+  grantor_key: ss58Address("grantor_key").notNull(),
+  grantee_key: ss58Address("grantee_key").notNull(),
+  scope: permissionScope("scope").notNull(),
+  duration: integer("duration").notNull(),
+  revocation: integer("revocation").notNull(),
+  enforcement: text("enforcement").notNull(),
+  last_execution: timestampz("notified_at").defaultNow(),
+  execution_count: integer("execution_count").notNull(),
+  parent: integer("parent_id").references(
+    (): AnyPgColumn => permissionSchema.permission_id,
+  ),
+  constrant_id: integer("constraint_id").references(() => constraintSchema.id),
+
+  ...timeFields(),
+});
+
+/**
+ * Stores the body of a constraint
+ */
+export const constraintSchema = createTable("constraint", {
+  id: serial("id").primaryKey(),
+  body: json("body").notNull(),
+
+  ...timeFields(),
+});
+
+/**
+ * Stores permission dependencies forming a Closure Table
+ * A permission may depend on other permissions
+ */
+export const permissionDependenciesSchema = createTable(
+  "permission_dependencies",
+  {
+    id: serial("id").primaryKey(),
+
+    dependent_permission_id: integer("dependent_permission_id")
+      .notNull()
+      .references(() => permissionSchema.permission_id),
+
+    required_permission_id: integer("required_permission_id")
+      .notNull()
+      .references(() => permissionSchema.permission_id),
+
+    path_length: integer("path_length").notNull(),
+
+    ...timeFields(),
+  },
+  (t) => [unique().on(t.dependent_permission_id, t.required_permission_id)],
 );
