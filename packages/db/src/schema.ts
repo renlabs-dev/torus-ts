@@ -1,6 +1,6 @@
 import { asc, eq, isNull, sql, sum } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
-  AnyPgColumn,
   boolean,
   check,
   bigint as drizzleBigint,
