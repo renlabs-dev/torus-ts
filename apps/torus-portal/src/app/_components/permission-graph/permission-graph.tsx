@@ -48,8 +48,9 @@ function ForceGraph(props: ForceGraphProps) {
       linkDirectionalArrowLength={3.5}
       linkDirectionalArrowRelPos={1}
       linkCurvature={0.4}
-      linkColor={() => "rgba(255, 255, 255, 0.2)"}
-      nodeRelSize={6}
+      linkColor={() => "rgba(255, 255, 255, 1)"}
+      nodeRelSize={3}
+      nodeResolution={24}
       onNodeClick={(node: NodeObject) => {
         props.onNodeClick({
           id: String(node.id ?? ""),
@@ -79,7 +80,7 @@ export default function PermissionGraph({
 
   return (
     <Canvas camera={{ position: [0, 0, 100], far: 1000 }}>
-      <color attach="background" args={[0.05, 0.05, 0.1]} />
+      {/* <color attach="background" args={[0.05, 0.05, 0.1]} /> */}
       <ambientLight intensity={Math.PI / 2} />
       <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
       <Suspense fallback={null}>
