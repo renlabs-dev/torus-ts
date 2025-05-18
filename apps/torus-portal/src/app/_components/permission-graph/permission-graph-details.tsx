@@ -1,3 +1,4 @@
+import { Card } from "@torus-ts/ui/components/card";
 import type {
   CustomGraphData,
   CustomGraphNode,
@@ -10,7 +11,7 @@ interface PermissionGraphDetailsProps {
 
 export function PermissionGraphDetails(props: PermissionGraphDetailsProps) {
   return (
-    <div className="w-full lg:w-80 p-4 bg-slate-800 rounded-lg">
+    <Card className="w-full lg:w-80 p-4">
       <h3 className="text-lg font-semibold mb-3">
         {props.selectedNode ? "Node Details" : "Graph Information"}
       </h3>
@@ -58,6 +59,6 @@ export function PermissionGraphDetails(props: PermissionGraphDetailsProps) {
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

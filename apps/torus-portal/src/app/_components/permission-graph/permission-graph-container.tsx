@@ -24,18 +24,13 @@ export default function PermissionGraphContainer() {
     setSelectedNode(node);
   };
 
-  const handleDataChange = (newData: CustomGraphData) => {
-    setGraphData(newData);
-    setSelectedNode(null);
-  };
-
   return (
     <div className="fixed inset-0 w-screen h-screen">
-      <div className="absolute top-[4.3rem] left-3 right-4 z-10">
-        <PermissionGraphControls onDataChange={handleDataChange} />
+      <div className="absolute top-[3.9rem] left-2 right-96 z-10">
+        <PermissionGraphControls />
       </div>
 
-      <div className="absolute top-0 right-4 mt-[calc(4rem+70px)] w-80 z-10">
+      <div className="absolute right-4 mt-[calc(4rem)] w-80 z-10">
         <PermissionGraphDetails
           selectedNode={selectedNode}
           graphData={graphData}

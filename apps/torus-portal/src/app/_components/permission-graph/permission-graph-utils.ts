@@ -17,59 +17,6 @@ export interface CustomGraphData {
   links: GraphLink[];
 }
 
-// Generate a random tree-like structure for demo purposes
-export function generateRandomTree(numNodes: number = 20) {
-  const nodes: CustomGraphNode[] = [];
-  const links: GraphLink[] = [];
-
-  // Node colors
-  const colors = [
-    "#ff6b6b", // Red
-    "#48dbfb", // Blue
-    "#1dd1a1", // Green
-    "#f368e0", // Pink
-    "#ff9f43", // Orange
-    "#54a0ff", // Light Blue
-    "#5f27cd", // Purple
-    "#ee5253", // Dark Red
-    "#01a3a4", // Teal
-  ];
-
-  // Create nodes
-  for (let i = 0; i < numNodes; i++) {
-    const colorIndex = Math.floor(Math.random() * colors.length);
-    nodes.push({
-      id: `node${i}`,
-      name: `Node ${i}`,
-      color: colors[colorIndex],
-      val: Math.random() * 10 + 1, // Random size between 1-11
-    });
-  }
-
-  // Create links (ensure tree-like structure to avoid cycles)
-  for (let i = 1; i < numNodes; i++) {
-    // Each node connects to a node with a lower index
-    const targetIndex = Math.floor(Math.random() * i);
-    links.push({
-      source: `node${i}`,
-      target: `node${targetIndex}`,
-    });
-
-    // Occasionally add extra connections to make it more interesting
-    if (Math.random() > 0.7 && i > 2) {
-      const extraTarget = Math.floor(Math.random() * i);
-      if (extraTarget !== targetIndex) {
-        links.push({
-          source: `node${i}`,
-          target: `node${extraTarget}`,
-        });
-      }
-    }
-  }
-
-  return { nodes, links };
-}
-
 // Sample permission graph data
 export const samplePermissionGraph: CustomGraphData = {
   nodes: [
