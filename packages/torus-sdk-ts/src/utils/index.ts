@@ -6,7 +6,6 @@ export * from "./async-result";
 export * from "./auth";
 export * from "./bignumber";
 export * from "./collections";
-export * from "./discord-bot-interaction";
 export * from "./env";
 export * from "./files";
 export * from "./ipfs";

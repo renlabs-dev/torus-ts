@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import BigNumber from "bignumber.js";
+
 import { buildTaggedBigNumberClass } from "./bignumber";
 import { runAsyncExamples } from "./error-visualizer/async";
 import { runSyncExamples } from "./error-visualizer/sync";
@@ -30,4 +31,4 @@ async function runAllExamples() {
 }
 
 // Uncomment the line below to run all examples
-await runAllExamples();
+// await runAllExamples();

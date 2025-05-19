@@ -61,6 +61,10 @@
     "./utils/mutation-handler": {
       "default": "./dist/utils/mutation-handler.js",
       "types": "./dist/utils/mutation-handler.d.ts"
+    },
+    "./utils/error-visualizer": {
+      "default": "./dist/utils/error-visualizer/index.js",
+      "types": "./dist/utils/error-visualizer/index.d.ts"
     }
   },
   "files": [

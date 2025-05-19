@@ -6,9 +6,9 @@ import {
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
+  type CID,
 } from "../utils/ipfs";
 import { tryAsync, trySync } from "../utils/try-catch";
-import { CID } from "multiformats";
 import { z } from "zod";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
@@ -107,12 +107,9 @@ export async function fetchAgentMetadata(
 
   const fetchFile = async <Name extends string>(
     name: Name,
-    pointer: CID | string,
+    pointer: string,
   ): Promise<Record<Name, Blob>> => {
-    const result =
-      pointer instanceof CID
-        ? await fetchBlob(buildIpfsGatewayUrl(pointer))
-        : await fetchFromIpfsOrUrl(pointer, fetchBlob);
+    const result = await fetchFromIpfsOrUrl(pointer, fetchBlob);
     return { [name]: result } as Record<Name, Blob>;
   };
 
@@ -121,7 +118,7 @@ export async function fetchAgentMetadata(
   if (fetchImages && imageUris) {
     // const entries = typed_non_null_entries(imageUris);
     const jobs = typed_non_null_entries(imageUris).map(([name, pointer]) =>
-      fetchFile(name, pointer),
+      fetchFile(name, pointer.toString()),
     );
     const imageResults = await Promise.all(jobs);
 
