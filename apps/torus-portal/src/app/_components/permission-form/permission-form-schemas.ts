@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { CompOp } from "~/utils/dsl";
 
-type NumExprType =
+export type NumExprType =
   | { type: "UIntLiteral"; value: string }
   | { type: "BlockNumber" }
   | { type: "StakeOf"; account: string }
@@ -71,7 +71,7 @@ export const baseConstraintSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-type BoolExprType =
+export type BoolExprType =
   | { type: "Not"; body: BoolExprType }
   | { type: "And"; left: BoolExprType; right: BoolExprType }
   | { type: "Or"; left: BoolExprType; right: BoolExprType }
