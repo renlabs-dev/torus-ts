@@ -16,6 +16,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@next/third-parties": "catalog:",
     "@react-three/drei": "catalog:",
     "@react-three/fiber": "catalog:",
     "@tanstack/react-query": "catalog:",
@@ -26,7 +27,7 @@
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
-    "@next/third-parties": "catalog:",
+    "@xyflow/react": "^12.6.4",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "r3f-forcegraph": "^1.0.8",
