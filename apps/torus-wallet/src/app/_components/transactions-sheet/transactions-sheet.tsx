@@ -13,7 +13,7 @@ import { useTransactionsStore } from "~/store/transactions-store";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Badge } from "@torus-ts/ui/components/badge";
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { ArrowRight } from "lucide-react";
 import type { Transaction, TransactionType } from "~/store/transactions-store";
 import { formatToken } from "@torus-network/torus-utils/subspace";
@@ -121,7 +121,7 @@ export function TransactionsSheet() {
   };
 
   const formatDate = (date: string) => {
-    return format(new Date(date), "MMM dd, HH:mm");
+    return DateTime.fromISO(date).toFormat("MMM dd, HH:mm");
   };
 
   const shortenAddress = (address: string) => {
