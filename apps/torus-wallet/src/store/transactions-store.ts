@@ -20,20 +20,6 @@ export interface Transaction {
 
 export type UpdatedTransaction = Partial<Transaction>;
 
-interface TransactionsState {
-  transactions: Record<SS58Address, Transaction[]>;
-  addTransaction(transaction: Omit<Transaction, "id" | "createdAt">): string;
-  updateTransaction(id: string, updates: UpdatedTransaction): void;
-  getTransactionsByWallet(
-    walletAddress: string,
-    options?: TransactionQueryOptions,
-  ): TransactionQueryResult;
-  getTransactionById(id: string): Transaction | undefined;
-  isTransactionCompleted(status: TransactionResult["status"]): boolean;
-  isTransactionError(status: TransactionResult["status"]): boolean;
-  clearTransactions(walletAddress: string): void;
-}
-
 interface TransactionQueryOptions {
   page?: number;
   limit?: number;
@@ -51,6 +37,22 @@ interface TransactionQueryResult {
   hasMore: boolean;
 }
 
+interface TransactionsState {
+  transactions: Record<SS58Address, Transaction[]>;
+  addTransaction: (
+    transaction: Omit<Transaction, "id" | "createdAt">,
+  ) => string;
+  updateTransaction: (id: string, updates: UpdatedTransaction) => void;
+  getTransactionsByWallet: (
+    walletAddress: string,
+    options?: TransactionQueryOptions,
+  ) => TransactionQueryResult;
+  getTransactionById: (id: string) => Transaction | undefined;
+  isTransactionCompleted: (status: TransactionResult["status"]) => boolean;
+  isTransactionError: (status: TransactionResult["status"]) => boolean;
+  clearTransactions: (walletAddress: string) => void;
+}
+
 export const useTransactionsStore = create<TransactionsState>()(
   persist(
     (set, get) => ({
@@ -61,15 +63,15 @@ export const useTransactionsStore = create<TransactionsState>()(
         const createdAt = new Date().toISOString();
         const newTx: Transaction = { ...transaction, id, createdAt };
 
-        set((state) => {
-          const walletTxs = state.transactions[transaction.fromAddress] ?? [];
-          return {
-            transactions: {
-              ...state.transactions,
-              [transaction.fromAddress]: [newTx, ...walletTxs],
-            },
-          };
-        });
+        set((state) => ({
+          transactions: {
+            ...state.transactions,
+            [transaction.fromAddress]: [
+              newTx,
+              ...(state.transactions[transaction.fromAddress] ?? []),
+            ],
+          },
+        }));
 
         return id;
       },
@@ -77,13 +79,11 @@ export const useTransactionsStore = create<TransactionsState>()(
       updateTransaction: (id, updates) => {
         set((state) => {
           const updatedTransactions: Record<SS58Address, Transaction[]> = {};
-
           for (const [address, txs] of Object.entries(state.transactions)) {
             updatedTransactions[address as SS58Address] = txs.map((tx) =>
               tx.id === id ? { ...tx, ...updates } : tx,
             );
           }
-
           return { transactions: updatedTransactions };
         });
       },
@@ -128,8 +128,8 @@ export const useTransactionsStore = create<TransactionsState>()(
           }
           if (orderField === "amount") {
             return isAsc
-              ? parseFloat(a.amount) - parseFloat(b.amount)
-              : parseFloat(b.amount) - parseFloat(a.amount);
+              ? Number(a.amount) - Number(b.amount)
+              : Number(b.amount) - Number(a.amount);
           }
           return 0;
         });
@@ -145,8 +145,9 @@ export const useTransactionsStore = create<TransactionsState>()(
       },
 
       getTransactionById: (id) => {
-        const allTxs = Object.values(get().transactions).flat();
-        return allTxs.find((tx) => tx.id === id);
+        return Object.values(get().transactions)
+          .flat()
+          .find((tx) => tx.id === id);
       },
 
       isTransactionCompleted: (status) =>
@@ -154,9 +155,9 @@ export const useTransactionsStore = create<TransactionsState>()(
 
       isTransactionError: (status) => status === "ERROR",
 
-      clearTransactions: (fromAddress) => {
+      clearTransactions: (walletAddress) => {
         set((state) => {
-          const { [fromAddress as SS58Address]: _, ...remaining } =
+          const { [walletAddress as SS58Address]: _, ...remaining } =
             state.transactions;
           return { transactions: remaining };
         });
