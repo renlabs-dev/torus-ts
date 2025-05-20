@@ -1,9 +1,9 @@
-import { PermissionForm } from "./_components/permission-form/permission-form";
+import PermissionFlow from "./_components/permission-form/permission-flow";
 
 export default function Page() {
   return (
-    <main className="container mx-auto min-h-screen py-24 p-4 w-full items-center flex">
-      <PermissionForm />
+    <main className="w-full h-screen p-0 m-0 overflow-hidden">
+      <PermissionFlow />
     </main>
   );
 }

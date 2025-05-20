@@ -42,7 +42,7 @@ export function PermissionForm() {
   }
 
   return (
-    <div className="w-full mx-auto">
+    <div className="w-full mx-auto text-updater-node">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <PermissionFormFieldBoolean control={form.control} path="body" />
