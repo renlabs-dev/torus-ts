@@ -5,10 +5,10 @@ import { useWatch } from "react-hook-form";
 import type { FormSchema } from "../permission-form-schemas";
 import { makeDynamicFieldPath } from "../permission-form-utils";
 import { PermissionFormFieldNumber } from "./permission-form-field-number";
-import { FieldWrapper } from "./permission-form-field-wrapper";
 import { SelectField } from "./permission-form-field-select";
 import { InputField } from "./permission-form-field-input";
 import { NestedField } from "./permission-form-field-nested";
+import { FieldWrapper } from "./permission-form-field-wrapper";
 
 type ConstraintType =
   | "MaxDelegationDepth"

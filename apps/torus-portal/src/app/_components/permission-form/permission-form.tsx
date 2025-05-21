@@ -45,8 +45,9 @@ export function PermissionForm() {
     <div className="w-full mx-auto text-updater-node">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <PermissionFormFieldBoolean control={form.control} path="body" />
-
+          <div className="w-full">
+            <PermissionFormFieldBoolean control={form.control} path="body" />
+          </div>
           <div className="flex justify-between">
             <ExampleConstraintButton form={form} />
           </div>
