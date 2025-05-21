@@ -1,8 +1,5 @@
 import type { AnyJson } from "@polkadot/types/types";
-import {
-  assert_error,
-  typed_non_null_entries,
-} from "@torus-network/torus-utils";
+import { typed_non_null_entries } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
@@ -95,8 +92,9 @@ export async function fetchAgentMetadata(
   uri: string,
   { fetchImages = false },
 ): Promise<AgentMetadataResult> {
+  const uriWithIpfs = uri.startsWith("ipfs://") ? uri : `ipfs://${uri}`;
   // fetch Agent Metadata as JSON
-  const data = await fetchFromIpfsOrUrl(uri, fetchJson);
+  const data = await fetchFromIpfsOrUrl(uriWithIpfs, fetchJson);
 
   // parse Agent Metadata
   const parsed = AGENT_METADATA_SCHEMA.safeParse(data);
