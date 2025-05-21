@@ -42,17 +42,15 @@ export function PermissionForm() {
   }
 
   return (
-    <div className="w-full mx-auto text-updater-node">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="w-full">
-            <PermissionFormFieldBoolean control={form.control} path="body" />
-          </div>
-          <div className="flex justify-between">
-            <ExampleConstraintButton form={form} />
-          </div>
-        </form>
-      </Form>
-    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="w-full" style={{ maxWidth: "none" }}>
+          <PermissionFormFieldBoolean control={form.control} path="body" />
+        </div>
+        <div className="flex justify-between">
+          <ExampleConstraintButton form={form} />
+        </div>
+      </form>
+    </Form>
   );
 }

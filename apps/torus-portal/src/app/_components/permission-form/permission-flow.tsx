@@ -18,10 +18,13 @@ const nodeTypes = { textUpdater: PermissionForm };
 
 export default function PermissionFlow() {
   return (
-    <div style={{ width: "100%", height: "100vh" }} className="w-full h-full">
-      <ReactFlow nodes={initialNodes} nodeTypes={nodeTypes} fitView>
-        <Background />
-      </ReactFlow>
-    </div>
+    <ReactFlow
+      nodes={initialNodes}
+      nodeTypes={nodeTypes}
+      fitView
+      style={{ width: "100%", height: "100%" }}
+    >
+      <Background />
+    </ReactFlow>
   );
 }
