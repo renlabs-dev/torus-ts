@@ -8,7 +8,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { formSchema } from "./permission-form-schemas";
 import type { FormSchema } from "./permission-form-schemas";
 import { ExampleConstraintButton } from "./permission-form-example-constraint-button";
-import { PermissionFormFieldBoolean } from "./permission-form-field-boolean";
+import { PermissionFormFieldBoolean } from "./permission-form-field/permission-form-field-boolean";
 
 export function PermissionForm() {
   const { toast } = useToast();
