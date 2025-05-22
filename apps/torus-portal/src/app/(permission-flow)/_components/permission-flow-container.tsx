@@ -1,7 +1,7 @@
 "use client";
 
 import type { DragEvent, CSSProperties, DragEventHandler } from "react";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import type { Node, Edge, OnConnect, Connection } from "@xyflow/react";
 import {
   ReactFlow,
@@ -16,8 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { DnDProvider, useDnD } from "./permission-flow-dnd-context";
 import PermissionFlowSidebar from "./permission-flow-sidebar";
-
-import "./index.css";
+import CustomNode from "./permission-flow-custom-node";
 
 const initialNodes: Node[] = [
   {
@@ -28,6 +27,13 @@ const initialNodes: Node[] = [
   },
 ];
 
+const initBgColor = "#c9f1dd";
+
+// Define the node types
+const nodeTypes = {
+  selectorNode: CustomNode,
+};
+
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
@@ -37,6 +43,9 @@ function DnDFlow() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
+
+  // TEMP
+  const [bgColor, setBgColor] = useState(initBgColor);
 
   const onConnect: OnConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -61,16 +70,49 @@ function DnDFlow() {
         x: event.clientX,
         y: event.clientY,
       });
-      const newNode: Node = {
-        id: getId(),
-        type,
-        position,
-        data: { label: `${type} node` },
-      };
+
+      let newNode: Node;
+
+      if (type === "selectorNode") {
+        const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+          const color = event.target.value;
+          setBgColor(color);
+          setNodes((nds) =>
+            nds.map((node) => {
+              if (node.id !== newNodeId) {
+                return node;
+              }
+
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  color,
+                },
+              };
+            }),
+          );
+        };
+
+        const newNodeId = getId();
+        newNode = {
+          id: newNodeId,
+          type,
+          position,
+          data: { color: initBgColor, onChange },
+        };
+      } else {
+        newNode = {
+          id: getId(),
+          type,
+          position,
+          data: { label: `${type} node` },
+        };
+      }
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [screenToFlowPosition, type, setNodes],
+    [screenToFlowPosition, type, setNodes, setBgColor],
   );
 
   const onDragStart = (
@@ -81,11 +123,11 @@ function DnDFlow() {
     event.dataTransfer.effectAllowed = "move";
   };
 
-  const reactFlowStyle: CSSProperties = { backgroundColor: "#141414" };
+  const reactFlowStyle: CSSProperties = { backgroundColor: bgColor };
 
   return (
-    <div className="dndflow">
-      <div className="reactflow-wrapper" ref={reactFlowWrapper}>
+    <div className="flex flex-col md:flex-row h-full w-full grow text-black">
+      <div className="flex-grow h-full" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -95,6 +137,7 @@ function DnDFlow() {
           onDragStart={onDragStart as DragEventHandler<HTMLDivElement>}
           onDrop={onDrop}
           onDragOver={onDragOver}
+          nodeTypes={nodeTypes}
           fitView
           style={reactFlowStyle}
         >
