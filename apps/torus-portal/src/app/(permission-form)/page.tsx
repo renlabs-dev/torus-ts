@@ -1,4 +1,4 @@
-import PermissionFlow from "../_components/permission-form/permission-flow";
+import PermissionFlow from "./_components/permission-flow";
 
 export default function Page() {
   return (
