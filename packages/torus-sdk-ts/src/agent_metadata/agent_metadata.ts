@@ -1,8 +1,5 @@
 import type { AnyJson } from "@polkadot/types/types";
-import {
-  assert_error,
-  typed_non_null_entries,
-} from "@torus-network/torus-utils";
+import { typed_non_null_entries } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
@@ -32,7 +29,10 @@ export const AGENT_METADATA_SCHEMA = z.object({
       banner: z.union([IPFS_URI_SCHEMA, z_url]),
     })
     .partial()
-    .optional(),
+    .optional()
+    .transform((images) =>
+      !images || Object.keys(images).length === 0 ? undefined : images,
+    ),
   socials: z
     .object({
       discord: z.string().optional(),
@@ -95,10 +95,9 @@ export async function fetchAgentMetadata(
   uri: string,
   { fetchImages = false },
 ): Promise<AgentMetadataResult> {
-  // fetch Agent Metadata as JSON
-  const data = await fetchFromIpfsOrUrl(uri, fetchJson);
+  const uriWithIpfs = uri.startsWith("ipfs://") ? uri : `ipfs://${uri}`;
+  const data = await fetchFromIpfsOrUrl(uriWithIpfs, fetchJson);
 
-  // parse Agent Metadata
   const parsed = AGENT_METADATA_SCHEMA.safeParse(data);
   if (!parsed.success) {
     throw new Error("Failed to parse agent metadata:" + parsed.error.message);
