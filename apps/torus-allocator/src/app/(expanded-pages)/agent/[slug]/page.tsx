@@ -46,22 +46,16 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
   if (!mdl?.metadataUri) return notFound();
 
   const [agentMetadataError, agentMetadata] = await tryAsync(
-    fetchAgentMetadata(mdl.metadataUri, { fetchImages: true }),
-  );
-  if (agentMetadataError !== undefined) {
-    console.error("Failed to fetch agent metadata:", agentMetadataError);
-    notFound();
-  }
-
-  const [error] = await tryAsync(
     fetchAgentMetadata(mdl.metadataUri, {
       fetchImages: true,
     }),
   );
-  if (error !== undefined) {
-    console.error("Error fetching agent metadata:", error);
+  if (agentMetadataError !== undefined) {
+    console.error("Error fetching agent metadata:", agentMetadataError);
     notFound();
   }
+
+  const { metadata, images } = agentMetadata;
 
   // Blob URL for the icon
   const icon = images.icon;
