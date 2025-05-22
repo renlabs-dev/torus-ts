@@ -10,7 +10,7 @@ import { z } from "zod";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
 
-const z_url = z.string().optional();
+const z_url = z.string().url();
 
 export const AGENT_METADATA_SCHEMA = z.object({
   title: z.string().nonempty("Agent title is required"),
