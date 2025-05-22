@@ -3,6 +3,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { CompOp } from "~/utils/dsl";
 import type { UseFormReturn } from "react-hook-form";
 import type { FormSchema } from "./permission-form-schemas";
+import { Sparkles, FileCode } from "lucide-react";
 
 interface ExampleConstraintButtonProps {
   form: UseFormReturn<FormSchema>;
@@ -75,8 +76,15 @@ export function ExampleConstraintButton({
   }
 
   return (
-    <Button type="button" variant="outline" onClick={loadExampleConstraint}>
-      Load Example
+    <Button 
+      type="button" 
+      variant="outline" 
+      onClick={loadExampleConstraint}
+      className="flex gap-2 items-center"
+    >
+      <Sparkles className="h-4 w-4 text-yellow-500" />
+      <span>Load Complex Example</span>
+      <FileCode className="h-4 w-4 ml-1 text-primary/70" />
     </Button>
   );
 }
