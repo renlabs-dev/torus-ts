@@ -10,7 +10,7 @@ import { z } from "zod";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
 
-const z_url = z.string().url();
+const z_url = z.string().optional();
 
 export const AGENT_METADATA_SCHEMA = z.object({
   title: z.string().nonempty("Agent title is required"),
@@ -29,7 +29,10 @@ export const AGENT_METADATA_SCHEMA = z.object({
       banner: z.union([IPFS_URI_SCHEMA, z_url]),
     })
     .partial()
-    .optional(),
+    .optional()
+    .transform((images) =>
+      !images || Object.keys(images).length === 0 ? undefined : images,
+    ),
   socials: z
     .object({
       discord: z.string().optional(),
@@ -93,10 +96,8 @@ export async function fetchAgentMetadata(
   { fetchImages = false },
 ): Promise<AgentMetadataResult> {
   const uriWithIpfs = uri.startsWith("ipfs://") ? uri : `ipfs://${uri}`;
-  // fetch Agent Metadata as JSON
   const data = await fetchFromIpfsOrUrl(uriWithIpfs, fetchJson);
 
-  // parse Agent Metadata
   const parsed = AGENT_METADATA_SCHEMA.safeParse(data);
   if (!parsed.success) {
     throw new Error("Failed to parse agent metadata:" + parsed.error.message);

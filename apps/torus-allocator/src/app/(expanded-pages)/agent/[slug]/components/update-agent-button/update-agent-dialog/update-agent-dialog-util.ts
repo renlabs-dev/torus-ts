@@ -29,7 +29,7 @@ export const uploadMetadata = async (
     ? cidToIpfsUri(await pinFile(imageFile).then(({ cid }) => cid))
     : undefined;
 
-  const images = icon !== undefined ? { icon } : {};
+  const images = icon ? { icon } : undefined;
 
   const finalMetadata = {
     title: metadata.title,
@@ -37,7 +37,7 @@ export const uploadMetadata = async (
     description: metadata.description,
     website: metadata.website,
     socials: metadata.socials,
-    images,
+    ...(images && { images }),
   };
 
   const metadataFile = strToFile(
