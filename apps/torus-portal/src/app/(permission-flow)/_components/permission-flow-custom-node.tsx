@@ -9,7 +9,7 @@ interface CustomNodeProps {
 
 function CustomNode({ data, isConnectable }: CustomNodeProps) {
   return (
-    <>
+    <div className="bg-white radius-2xl p-4 flex flex-col">
       <Handle
         type="target"
         position={Position.Left}
@@ -32,7 +32,7 @@ function CustomNode({ data, isConnectable }: CustomNodeProps) {
         position={Position.Right}
         isConnectable={isConnectable}
       />
-    </>
+    </div>
   );
 }
 
