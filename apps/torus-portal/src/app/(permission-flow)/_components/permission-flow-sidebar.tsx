@@ -1,7 +1,7 @@
 import type { DragEvent } from "react";
 import { useDnD } from "./permission-flow-dnd-context";
 
-type NodeType = "input" | "default" | "output";
+type NodeType = "input" | "default" | "output" | "selectorNode";
 
 function PermissionFlowSidebar() {
   const [_, setType] = useDnD();
@@ -45,6 +45,14 @@ function PermissionFlowSidebar() {
         draggable
       >
         Output Node
+      </div>
+      <div
+        className="h-5 p-1 border border-solid border-[#c9f1dd] rounded mb-2.5 flex justify-center
+          items-center cursor-grab text-black"
+        onDragStart={(event) => onDragStart(event, "selectorNode")}
+        draggable
+      >
+        Color Selector Node
       </div>
     </aside>
   );
