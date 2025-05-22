@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { PortalHeader } from "./_components/portal-header";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
+import { TRPCReactProvider } from "~/trpc/react";
 
 const APP_NAME = "Query Builder";
 
@@ -33,16 +34,18 @@ export default function RootLayout({
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <ReactQueryProvider>
-        <TorusProvider
-          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-        >
-          <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} />
-          {children}
-          <Toaster />
-          <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-        </TorusProvider>
-        <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+        <TRPCReactProvider>
+          <TorusProvider
+            wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+            torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+          >
+            <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} />
+            {children}
+            <Toaster />
+            <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+          </TorusProvider>
+          <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+        </TRPCReactProvider>
       </ReactQueryProvider>
     </Layout>
   );

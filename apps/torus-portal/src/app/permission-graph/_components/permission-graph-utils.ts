@@ -1,3 +1,4 @@
+
 export interface CustomGraphNode {
   id: string;
   name: string;
@@ -16,6 +17,8 @@ export interface CustomGraphData {
   nodes: CustomGraphNode[];
   links: GraphLink[];
 }
+
+
 
 // Sample permission graph data
 export const samplePermissionGraph: CustomGraphData = {
@@ -42,3 +45,29 @@ export const samplePermissionGraph: CustomGraphData = {
     { source: "folder", target: "project" },
   ],
 };
+
+
+// IDS:
+// kelvin                - 1
+// michiru               - 2
+// sinalsight            - 3
+// torus                 - 4
+// atlas                 - 5
+
+// LINKS:
+// grant-withdraw-perm   - 1
+// order-food-perm       - 2
+// cashflow-perm         - 3
+// data-access-perm      - 4
+
+// LINK DATA: 
+// Grantor (source): Account granting the permission
+// Grantee (target): Account receiving the permission
+// Scope (currently only emissions): What the permission applies to
+// Duration (in seconds): How long the permission lasts
+// Revocation Terms: How the permission can be revoked
+// Enforcement Authority (agent ID): Who can toggle the permission
+// Execution Tracking: Last execution, execution count
+// Parent ID: Parent permission (if delegated)
+// Creation Block: Block number when created
+

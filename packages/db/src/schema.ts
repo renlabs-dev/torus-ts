@@ -491,18 +491,24 @@ export const permissionScope = pgEnum("permission_scope_type", ["EMISSION"]);
 export const permissionSchema = createTable("permission", {
   id: serial("id").primaryKey(),
   permission_id: integer("permission_id").notNull().unique(),
+  ...timeFields(),
+});
+
+export const permissionDetailsSchema = createTable("permission_details", {
+  id: serial("id").primaryKey(),
+  permission_id: integer("permission_id").notNull().unique().references(() => permissionSchema.permission_id),
   grantor_key: ss58Address("grantor_key").notNull(),
   grantee_key: ss58Address("grantee_key").notNull(),
   scope: permissionScope("scope").notNull(),
   duration: integer("duration").notNull(),
   revocation: integer("revocation").notNull(),
   enforcement: text("enforcement").notNull(),
-  last_execution: timestampz("notified_at").defaultNow(),
+  last_execution: timestampz("last_execution").defaultNow(),
   execution_count: integer("execution_count").notNull(),
-  parent: integer("parent_id").references(
-    (): AnyPgColumn => permissionSchema.permission_id,
+  parent_id: integer("parent_id").references(
+    () => permissionSchema.permission_id,
   ),
-  constrant_id: integer("constraint_id").references(() => constraintSchema.id),
+  constraint_id: integer("constraint_id").references(() => constraintSchema.id),
 
   ...timeFields(),
 });

@@ -9,6 +9,7 @@ import type {
 } from "./permission-graph-utils";
 import { samplePermissionGraph } from "./permission-graph-utils";
 import { PermissionGraphDetails } from "./permission-graph-details";
+import { api } from "~/trpc/react";
 
 export default function PermissionGraphContainer() {
   const [graphData, setGraphData] = useState<CustomGraphData | null>(null);
@@ -16,9 +17,60 @@ export default function PermissionGraphContainer() {
     null,
   );
 
+  // Fetch permission details from the API
+  const { data: permissionDetails, isLoading } = api.permission.details.all.useQuery();
+
   useEffect(() => {
-    setGraphData(samplePermissionGraph);
-  }, []);
+    if (permissionDetails) {
+      // Create nodes for unique grantor and grantee addresses
+      const uniqueAddresses = new Set<string>();
+      permissionDetails.forEach((permission) => {
+        uniqueAddresses.add(permission.grantor_key);
+        uniqueAddresses.add(permission.grantee_key);
+      });
+
+      // Create nodes
+      const nodes: CustomGraphNode[] = Array.from(uniqueAddresses).map((address) => {
+        // Determine if it's a grantor, grantee, or both
+        const isGrantor = permissionDetails.some(p => p.grantor_key === address);
+        const isGrantee = permissionDetails.some(p => p.grantee_key === address);
+        
+        // Assign different colors based on role
+        let color = "#54a0ff"; // default blue
+        if (isGrantor && isGrantee) {
+          color = "#5f27cd"; // purple for both
+        } else if (isGrantor) {
+          color = "#ff6b6b"; // red for grantors
+        } else if (isGrantee) {
+          color = "#1dd1a1"; // green for grantees
+        }
+
+        return {
+          id: address,
+          name: `${address.substring(0, 6)}...${address.substring(address.length - 4)}`,
+          color,
+          val: 10,
+          fullAddress: address,
+          role: isGrantor && isGrantee ? "Both" : isGrantor ? "Grantor" : "Grantee"
+        };
+      });
+
+      // Create links based on permissions
+      const links = permissionDetails.map((permission) => ({
+        source: permission.grantor_key,
+        target: permission.grantee_key,
+        id: permission.permission_id.toString(),
+        scope: permission.scope,
+        duration: permission.duration,
+        enforcement: permission.enforcement,
+      }));
+
+      setGraphData({ nodes, links });
+    } else if (!isLoading) {
+      // If no data and not loading, use sample data as fallback
+      setGraphData(samplePermissionGraph);
+    }
+  }, [permissionDetails, isLoading]);
 
   const handleNodeSelect = (node: CustomGraphNode) => {
     setSelectedNode(node);
@@ -38,7 +90,13 @@ export default function PermissionGraphContainer() {
       </div>
 
       <div className="w-full h-full">
-        <PermissionGraph data={graphData} onNodeClick={handleNodeSelect} />
+        {isLoading ? (
+          <div className="flex items-center justify-center w-full h-full">
+            <div className="text-xl">Loading permission graph...</div>
+          </div>
+        ) : (
+          <PermissionGraph data={graphData} onNodeClick={handleNodeSelect} />
+        )}
       </div>
     </div>
   );
