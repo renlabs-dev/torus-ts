@@ -6,10 +6,8 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
-import { useLayoutEffect, useState, useEffect } from "react";
-import { api } from "~/trpc/react";
+import { useLayoutEffect, useState} from "react";
 
-// Updated interface to include userName and avatarUrl
 interface VoterListProps {
   voters:
     | {
@@ -32,50 +30,9 @@ export function VoterList(props: Readonly<VoterListProps>) {
   const { isError, isLoading, voters } = props;
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
-  const [userNames, setUserNames] = useState<Map<string, string>>(new Map());
-  const [loadingUserNames, setLoadingUserNames] = useState(false);
 
   const { toast } = useToast();
 
-  const { data: cadreList } = api.cadre.all.useQuery();
-  const { data: allDiscordInfo } = api.discordInfo.all.useQuery();
-
-  useEffect(() => {
-    if (!voters || voters.length === 0 || !cadreList || !allDiscordInfo) {
-      return;
-    }
-
-    setLoadingUserNames(true);
-
-    // Create lookup maps
-    const userKeyToDiscordId = new Map<string, string>();
-    cadreList.forEach(cadre => {
-      if (cadre.userKey && cadre.discordId) {
-        userKeyToDiscordId.set(cadre.userKey, cadre.discordId);
-      }
-    });
-
-    const discordIdToUserName = new Map<string, string>();
-    allDiscordInfo.forEach(info => {
-      if (info.discordId && info.userName) {
-        discordIdToUserName.set(info.discordId, info.userName);
-      }
-    });
-
-    const newUserNames = new Map<string, string>();
-    voters.forEach(voter => {
-      if (voter.userName) {
-        newUserNames.set(voter.userKey, voter.userName);
-      } else {
-        const discordId = userKeyToDiscordId.get(voter.userKey);
-        const userName = discordId ? discordIdToUserName.get(discordId) : null;
-        newUserNames.set(voter.userKey, userName ?? "Unknown User");
-      }
-    });
-
-    setUserNames(newUserNames);
-    setLoadingUserNames(false);
-  }, [voters, cadreList, allDiscordInfo]);
 
   useLayoutEffect(() => {
     if (!containerNode) {
@@ -95,7 +52,7 @@ export function VoterList(props: Readonly<VoterListProps>) {
     };
   }, [containerNode]);
 
-  if (isLoading || loadingUserNames) {
+  if (isLoading) {
     return (
       <Card className="animate-fade-down animate-delay-200 p-4 md:p-6">
         <CardHeader className="pl-0 pt-0">
@@ -177,9 +134,7 @@ export function VoterList(props: Readonly<VoterListProps>) {
         className="relative flex max-h-72 w-full flex-col gap-2 overflow-auto pr-2"
         ref={setContainerNode}
       >
-        {voters.map(({ userKey: address, vote }) => {
-          const userName = userNames.get(address) ?? "Loading...";
-          
+        {voters.map(({ userKey: address, vote, userName }) => {
           return (
             <Button
               variant="outline"
@@ -191,7 +146,7 @@ export function VoterList(props: Readonly<VoterListProps>) {
               <div className="flex items-center gap-3">
                   <span className="font-medium">{userName}</span>
                   <span className="text-sm text-muted-foreground">
-                    ({smallAddress(address)})
+                   ({smallAddress(address)})
                 </span>
               </div>
               <div className="flex flex-col items-end">{getVoteLabel(vote)}</div>
