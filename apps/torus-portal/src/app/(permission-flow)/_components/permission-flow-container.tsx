@@ -17,8 +17,6 @@ import "@xyflow/react/dist/style.css";
 import { DnDProvider, useDnD } from "./permission-flow-dnd-context";
 import PermissionFlowSidebar from "./permission-flow-sidebar";
 
-import "./index.css";
-
 const initialNodes: Node[] = [
   {
     id: "1",
@@ -84,8 +82,8 @@ function DnDFlow() {
   const reactFlowStyle: CSSProperties = { backgroundColor: "#141414" };
 
   return (
-    <div className="dndflow">
-      <div className="reactflow-wrapper" ref={reactFlowWrapper}>
+    <div className="flex flex-col md:flex-row h-full w-full grow text-black">
+      <div className="flex-grow h-full" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
