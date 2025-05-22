@@ -2,20 +2,20 @@ import { DateTime } from "luxon";
 import { assert, AssertionError } from "tsafe";
 
 // Export all utility modules
-export * from "./async-result";
-export * from "./auth";
-export * from "./bignumber";
-export * from "./collections";
-export * from "./env";
-export * from "./files";
-export * from "./ipfs";
-export * from "./logger";
-export * from "./main";
-export * from "./mutation-handler";
-export * from "./result";
-export * from "./subspace";
-export * from "./try-catch";
-export * from "./typing";
+export * from "./async-result.js";
+export * from "./auth.js";
+export * from "./bignumber.js";
+export * from "./collections.js";
+export * from "./env.js";
+export * from "./files.js";
+export * from "./ipfs.js";
+export * from "./logger.js";
+export * from "./main.js";
+export * from "./mutation-handler.js";
+export * from "./result.js";
+export * from "./subspace.js";
+export * from "./try-catch.js";
+export * from "./typing.js";
 
 // == Branded Types / Nominal Types ==
 

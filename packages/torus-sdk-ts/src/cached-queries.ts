@@ -1,6 +1,7 @@
 import SuperJSON from "superjson";
 import { z } from "zod";
-import { tryAsync, trySync } from "./utils/try-catch";
+
+import { tryAsync, trySync } from "./utils/try-catch.js";
 
 export const STAKE_DATA_SCHEMA = z.object({
   total: z.bigint(),

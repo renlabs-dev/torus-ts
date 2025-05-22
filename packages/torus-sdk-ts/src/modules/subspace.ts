@@ -2,8 +2,9 @@ import type { ApiPromise } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import type { Percent } from "@polkadot/types/interfaces";
 import type { z } from "zod";
-import type { SS58Address } from "../address";
-import type { Balance } from "../types";
+
+import type { SS58Address } from "../address.js";
+import type { Balance } from "../types/index.js";
 import {
   sb_address,
   sb_balance,
@@ -14,10 +15,10 @@ import {
   sb_some,
   sb_string,
   sb_struct,
-} from "../types";
-import type { Api } from "./_common";
-import { handleDoubleMapEntries, handleMapEntries } from "./_common";
-import { tryAsync, trySync } from "../utils/try-catch";
+} from "../types/index.js";
+import type { Api } from "./_common.js";
+import { handleDoubleMapEntries, handleMapEntries } from "./_common.js";
+import { tryAsync, trySync } from "../utils/try-catch.js";
 
 // ==== Balances ====
 

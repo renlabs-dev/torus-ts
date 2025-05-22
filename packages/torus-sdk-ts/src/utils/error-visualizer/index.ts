@@ -1,4 +1,4 @@
-export * from "./async";
+export * from "./async.js";
 export {
   syncUtils,
   runSyncExamples,
@@ -7,5 +7,5 @@ export {
   exampleValidJSON,
   exampleInvalidJSON,
   // Rename the sync version of exampleWithRawError to avoid conflict
-  exampleWithRawError as exampleWithRawErrorSync
-} from "./sync";
+  exampleWithRawError as exampleWithRawErrorSync,
+} from "./sync.js";

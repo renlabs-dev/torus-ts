@@ -1,6 +1,7 @@
 import { assert } from "tsafe";
-import type { NonEmpty, Result } from "./result";
-import { empty, makeErr, makeOk } from "./result";
+
+import type { NonEmpty, Result } from "./result.js";
+import { empty, makeErr, makeOk } from "./result.js";
 
 // === Async Result types ===
 

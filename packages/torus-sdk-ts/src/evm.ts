@@ -7,10 +7,10 @@ import {
 import { assert } from "tsafe";
 import type { Chain, WalletClient } from "viem";
 import { encodeFunctionData } from "viem";
-import type { SS58Address } from "./address";
-import { tryAsync, trySync } from "./utils/try-catch";
-
 export { waitForTransactionReceipt } from "@wagmi/core";
+
+import type { SS58Address } from "./address.js";
+import { tryAsync, trySync } from "./utils/try-catch.js";
 
 const ADDRESS_FORMAT = 42;
 

@@ -1,7 +1,8 @@
 import { decodeAddress } from "@polkadot/util-crypto";
-import type { Brand } from "./utils";
-import { trySync } from "./utils/try-catch";
 import { z } from "zod";
+
+import type { Brand } from "./utils/index.js";
+import { trySync } from "./utils/try-catch.js";
 
 export type SS58Address = Brand<"SS58Address", string>;
 

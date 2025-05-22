@@ -11,13 +11,13 @@ import {
   Struct,
 } from "@polkadot/types";
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import type { Option } from "../utils";
-import { match } from "rustie";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
+import { match } from "rustie";
 import { z } from "zod";
-import { SS58_SCHEMA } from "../address";
 
-export { sb_enum } from "./sb_enum";
+import type { Option } from "../utils/index.js";
+import { SS58_SCHEMA } from "../address.js";
+export { sb_enum } from "./sb_enum.js";
 
 // == Zod ==
 

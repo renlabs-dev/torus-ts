@@ -1,12 +1,13 @@
 import { z } from "zod";
+
 import type { OldResult } from "./typing";
-import { trySync } from "./try-catch";
+import { trySync } from "./try-catch.js";
 
 // Define a custom CID type that doesn't depend on multiformats/cid
-export type CID = {
+export interface CID {
   toString: () => string;
   version: number;
-};
+}
 
 export const URL_SCHEMA = z.string().trim().url();
 
@@ -32,11 +33,11 @@ export const parseCID = (cidStr: string): CID => {
   }
 
   // Determine version based on the format
-  const version = cidStr.startsWith('Qm') ? 0 : 1;
+  const version = cidStr.startsWith("Qm") ? 0 : 1;
 
   return {
     toString: () => cidStr,
-    version
+    version,
   };
 };
 

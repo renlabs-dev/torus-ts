@@ -1,2 +1,2 @@
-export * from "./zod";
-export * from "./base";
+export * from "./base.js";
+export * from "./zod.js";

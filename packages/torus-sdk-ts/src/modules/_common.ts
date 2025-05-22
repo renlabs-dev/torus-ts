@@ -2,9 +2,10 @@ import type { ApiPromise } from "@polkadot/api";
 import type { ApiDecoration } from "@polkadot/api/types";
 import type { StorageKey } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
-import { assert_error } from "../utils";
-import { trySync } from "../utils/try-catch";
 import type { z, ZodTypeAny } from "zod";
+
+import { assert_error } from "../utils/index.js";
+import { trySync } from "../utils/try-catch.js";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;
 

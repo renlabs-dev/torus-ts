@@ -1,15 +1,9 @@
-import type { AnyJson } from "@polkadot/types/types";
-import {
-  assert_error,
-  typed_non_null_entries,
-} from "../utils";
-import {
-  buildIpfsGatewayUrl,
-  IPFS_URI_SCHEMA,
-  type CID,
-} from "../utils/ipfs";
-import { tryAsync, trySync } from "../utils/try-catch";
 import { z } from "zod";
+import type { AnyJson } from "@polkadot/types/types";
+
+import { typed_non_null_entries } from "../utils/index.js";
+import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "../utils/ipfs.js";
+import { tryAsync, trySync } from "../utils/try-catch.js";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
 

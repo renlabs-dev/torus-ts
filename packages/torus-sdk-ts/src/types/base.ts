@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { sb_bigint, sb_number } from "./zod";
+
+import { sb_bigint, sb_number } from "./zod.js";
 
 export const sb_id = sb_number.pipe(z.number().int().nonnegative());
 export type Id = z.infer<typeof sb_id>;

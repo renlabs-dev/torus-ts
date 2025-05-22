@@ -3,9 +3,10 @@
 
 import "@polkadot/api/augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { IPFS_URI_SCHEMA } from "./utils/ipfs";
-import { parseTorusTokens } from "./utils/subspace";
-import { queryMinAllowedStake } from "./modules/subspace";
+
+import { IPFS_URI_SCHEMA } from "./utils/ipfs.js";
+import { parseTorusTokens } from "./utils/subspace.js";
+import { queryMinAllowedStake } from "./modules/subspace.js";
 
 // $ pnpm exec tsx src/main.ts
 

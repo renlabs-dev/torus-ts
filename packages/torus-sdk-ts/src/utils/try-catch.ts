@@ -1,7 +1,7 @@
-import { AsyncResultObj } from "./async-result";
-import type { Result } from "./result";
-import { empty, makeErr, makeOk } from "./result";
-import { BasicLogger } from "./logger";
+import { AsyncResultObj } from "./async-result.js";
+import { BasicLogger } from "./logger.js";
+import type { Result } from "./result.js";
+import { empty, makeErr, makeOk } from "./result.js";
 
 const log = BasicLogger.create({ name: "try-catch" });
 
