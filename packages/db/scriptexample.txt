@@ -1,0 +1,214 @@
+-- INSERT statements for permission data
+-- Note: You'll need to replace the ss58Address values with actual SS58 addresses for your agents
+-- and adjust the revocation integer values based on your enum mapping
+
+-- Permission 1: Kelvin -> SinalSight (Allow Withdraw)
+INSERT INTO permission (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    1,
+    '5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6',  -- Replace with actual SS58 address for Kelvin (ID: 1)
+    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- Replace with actual SS58 address for SinalSight (ID: 3)
+    'EMISSION',
+    31536000,  -- 1 year in seconds
+    1,  -- Map "Grantor can revoke at any time" to appropriate enum value
+    '1',  -- Enforcement authority: Kelvin (ID: 1)
+    to_timestamp(1683526400),  -- Last execution timestamp
+    12,  -- Execution count
+    2,  -- parent_id permission ID
+    NULL  -- No constraint specified
+);
+
+-- Permission 2: SinalSight -> Torus (Order Food)
+INSERT INTO permission (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    2,
+    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
+    '5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b',  -- Torus (ID: 4)
+    'EMISSION',
+    7776000,  -- ~90 days in seconds
+    2,  -- Map "24 hour notice required" to appropriate enum value
+    '3',  -- Enforcement authority: SinalSight (ID: 3)
+    to_timestamp(1685577600),
+    5,
+    2,  -- parent_id permission ID
+    NULL
+);
+
+-- Permission 3: Torus -> Michiru (Cashflow Management)
+INSERT INTO permission (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    3,
+    '5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b',  -- Torus (ID: 4)
+    '5CqxBDNzFB9fzAR3T8Fn2BeEhfzBr5s7vZkXYmYg83Uyqqpw',  -- Michiru (ID: 2)
+    'EMISSION',
+    15552000,  -- ~180 days in seconds
+    3,  -- Map "Majority vote required" to appropriate enum value
+    '4',  -- Enforcement authority: Torus (ID: 4)
+    to_timestamp(1687996800),
+    8,
+    NULL,  -- No parent_id (root permission)
+    NULL
+);
+
+-- Permission 4: Michiru -> Torus (Data Analytics)
+INSERT INTO permission (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    4,
+    '5CqxBDNzFB9fzAR3T8Fn2BeEhfzBr5s7vZkXYmYg83Uyqqpw',  -- Michiru (ID: 2)
+    '5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b',  -- Torus (ID: 4)
+    'EMISSION',
+    2592000,  -- 30 days in seconds
+    4,  -- Map "Automatic expiry only" to appropriate enum value
+    '2',  -- Enforcement authority: Michiru (ID: 2)
+    to_timestamp(1688256000),
+    22,
+    NULL,  -- No parent_id (root permission)
+    NULL
+);
+
+-- Permission 5: Michiru -> SinalSight (Resource Access)
+INSERT INTO permission (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    5,
+    '5CqxBDNzFB9fzAR3T8Fn2BeEhfzBr5s7vZkXYmYg83Uyqqpw',  -- Michiru (ID: 2)
+    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
+    'EMISSION',
+    5184000,  -- ~60 days in seconds
+    5,  -- Map "Either party can revoke" to appropriate enum value
+    '3',  -- Enforcement authority: SinalSight (ID: 3)
+    to_timestamp(1690416000),
+    15,
+    NULL,  -- No parent_id (root permission)
+    NULL
+);
+
+-- Permission 6: Kelvin -> SinalSight (System Monitoring)
+INSERT INTO permission (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    6,
+    '5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6',  -- Kelvin (ID: 1)
+    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
+    'EMISSION',
+    63072000,  -- ~2 years in seconds
+    6,  -- Map "Emergency committee only" to appropriate enum value
+    '1',  -- Enforcement authority: Kelvin (ID: 1)
+    to_timestamp(1692489600),
+    42,
+    NULL,  -- No parent_id (root permission)
+    NULL
+);
+
+-- Permission 7: SinalSight -> Atlas (External Communications)
+INSERT INTO permission (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    7,
+    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
+    '5DP6MNkBVdUc6Tavk4qo6eyNCxkzjUeUZPvzaq499AsFSDiW',  -- Atlas (ID: 5)
+    'EMISSION',
+    10368000,  -- ~120 days in seconds
+    7,  -- Map "Security breach trigger" to appropriate enum value
+    '3',  -- Enforcement authority: SinalSight (ID: 3)
+    to_timestamp(1694563200),
+    7,
+    NULL,  -- No parent_id (root permission)
+    NULL
+);
+
+-- Notes for execution:
+-- 1. Replace all SS58 address placeholders with actual addresses:
+--    - 5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6
+--    - 5CqxBDNzFB9fzAR3T8Fn2BeEhfzBr5s7vZkXYmYg83Uyqqpw  
+--    - 5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D
+--    - 5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b
+--    - 5DP6MNkBVdUc6Tavk4qo6eyNCxkzjUeUZPvzaq499AsFSDiW
+--
+-- 2. Update revocation enum values based on your permissionScope definition:
+--    Current mappings assumed:
+--    1 = "Grantor can revoke at any time"
+--    2 = "24 hour notice required" 
+--    3 = "Majority vote required"
+--    4 = "Automatic expiry only"
+--    5 = "Either party can revoke"
+--    6 = "Emergency committee only"
+--    7 = "Security breach trigger"
+--
+-- 3. The creation_block data from JSON is not included as it's not in your schema
+-- 4. timeFields() will be auto-populated (created_at, updated_at, etc.)
+-- 5. Make sure your permissionScope enum includes 'EMISSION' value
