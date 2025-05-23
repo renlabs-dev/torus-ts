@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TransactionsFilterValues } from "~/app/_components/transactions/transactions-filters";
 import { useTransactionsStore } from "~/store/transactions-store";
-import type { Transaction, TransactionType, TransactionQueryOptions } from "~/store/transactions-store";
+import type {
+  Transaction,
+  TransactionQueryOptions,
+} from "~/store/transactions-store";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -25,7 +28,7 @@ export function useTransactions({
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const filtersRef = useRef(filters);
+  const filtersRef = useRef<TransactionsFilterValues>(filters);
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
@@ -35,23 +38,28 @@ export function useTransactions({
       setTransactions([]);
       setTotalTransactions(0);
       setHasMore(false);
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
 
-    const options: TransactionQueryOptions = {
+    const options = {
       page,
       limit: itemsPerPage,
-      ...filtersRef.current,
-    };
+      type: filtersRef.current.type,
+      fromAddress: filtersRef.current.fromAddress,
+      toAddress: filtersRef.current.toAddress,
+      startDate: filtersRef.current.startDate,
+      endDate: filtersRef.current.endDate,
+      orderBy: filtersRef.current.orderBy,
+    } satisfies TransactionQueryOptions;
 
     const result = getTransactionsByWallet(address, options);
 
     setTransactions((prev) =>
       page === 1 ? result.transactions : [...prev, ...result.transactions],
     );
-
     setTotalTransactions(result.total);
     setHasMore(result.hasMore);
     setIsLoading(false);

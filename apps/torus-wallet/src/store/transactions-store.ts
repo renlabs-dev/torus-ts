@@ -3,7 +3,12 @@ import type { TransactionResult } from "@torus-ts/ui/components/transaction-stat
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type TransactionType = "stake" | "unstake" | "send" | "transfer-stake";
+export type TransactionType =
+  | "stake"
+  | "unstake"
+  | "send"
+  | "transfer-stake"
+  | "all";
 
 export interface Transaction {
   id: string;

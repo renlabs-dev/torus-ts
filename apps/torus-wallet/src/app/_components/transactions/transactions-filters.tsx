@@ -26,18 +26,18 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { useState } from "react";
-import type { TransactionType } from "~/store/transactions-store";
+import type { TransactionQueryOptions } from "~/store/transactions-store";
 
 const transactionsFilterSchema = z.object({
   type: z.string().optional(),
   fromAddress: z.string().optional(),
   toAddress: z.string().optional(),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   orderBy: z.string().default("createdAt.desc"),
 });
 
-export type TransactionsFilterValues = z.infer<typeof transactionsFilterSchema>;
+export type TransactionsFilterValues = TransactionQueryOptions;
 
 interface TransactionFiltersProps {
   onFiltersChange: (filters: TransactionsFilterValues) => void;
@@ -64,7 +64,6 @@ export function TransactionFilters({
   });
 
   const onSubmit = (data: TransactionsFilterValues) => {
-    // Convert "all" to undefined for type filter
     const processedData = {
       ...data,
       type: data.type === "all" ? undefined : data.type,
@@ -119,8 +118,10 @@ export function TransactionFilters({
                   <FormItem>
                     <FormLabel>Transaction Type</FormLabel>
                     <Select
-                      onValueChange={(value) => field.onChange(value === "all" ? undefined : value)}
-                      value={field.value || "all"}
+                      onValueChange={(value) =>
+                        field.onChange(value === "all" ? undefined : value)
+                      }
+                      value={field.value ?? "all"}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -130,7 +131,9 @@ export function TransactionFilters({
                       <SelectContent className="z-[80]">
                         <SelectItem value="all">All Types</SelectItem>
                         <SelectItem value="send">Send</SelectItem>
-                        <SelectItem value="transfer-stake">Transfer Stake</SelectItem>
+                        <SelectItem value="transfer-stake">
+                          Transfer Stake
+                        </SelectItem>
                         <SelectItem value="stake">Stake</SelectItem>
                         <SelectItem value="unstake">Unstake</SelectItem>
                       </SelectContent>
@@ -176,10 +179,7 @@ export function TransactionFilters({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sort By</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Sort by" />
@@ -205,11 +205,7 @@ export function TransactionFilters({
               />
             </div>
             <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleReset}
-              >
+              <Button type="button" variant="outline" onClick={handleReset}>
                 Reset
               </Button>
               <Button type="submit">Apply Filters</Button>
