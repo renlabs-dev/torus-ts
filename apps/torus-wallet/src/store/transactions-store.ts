@@ -20,7 +20,7 @@ export interface Transaction {
 
 export type UpdatedTransaction = Partial<Transaction>;
 
-interface TransactionQueryOptions {
+export interface TransactionQueryOptions {
   page?: number;
   limit?: number;
   type?: TransactionType;

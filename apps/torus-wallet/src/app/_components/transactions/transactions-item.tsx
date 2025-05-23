@@ -11,6 +11,7 @@ const BLOCK_EXPLORER_URL = "https://explorer.torus.network/tx/";
 interface TransactionItemProps {
   transaction: Transaction;
   usdPrice: number | null;
+  index?: number;
 }
 
 export function TransactionItem({
@@ -19,8 +20,10 @@ export function TransactionItem({
 }: TransactionItemProps) {
   const formatDate = (date: string) =>
     DateTime.fromISO(date).toFormat("MMM dd, HH:mm");
+
   const shortenAddress = (address: string) =>
     address ? `${address.slice(0, 5)}...${address.slice(-5)}` : "";
+
   const formatAmount = (amount: string) => {
     try {
       return formatToken(BigInt(amount));
@@ -37,9 +40,13 @@ export function TransactionItem({
       "transfer-stake": "Transfer Stake",
     })[type] || type;
 
+  const amountUSD = usdPrice
+    ? (Number(formatAmount(transaction.amount)) * usdPrice).toFixed(2)
+    : "";
+
   return (
     <div
-      className="rounded-lg border bg-card p-4 shadow-sm flex flex-col gap-2 text-sm"
+      className="rounded-lg border bg-card p-2 shadow-sm flex flex-col gap-2 text-sm"
       role="region"
       aria-label={`Transaction ${getTransactionTypeDisplay(transaction.type)}`}
     >
@@ -58,13 +65,7 @@ export function TransactionItem({
           >
             {formatAmount(transaction.amount)}
             {usdPrice && (
-              <span className="text-muted-foreground ml-1">
-                ($
-                {(Number(formatAmount(transaction.amount)) * usdPrice).toFixed(
-                  2,
-                )}
-                )
-              </span>
+              <span className="text-muted-foreground ml-1">({amountUSD})</span>
             )}
           </div>
         </div>

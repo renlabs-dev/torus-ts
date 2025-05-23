@@ -27,22 +27,16 @@ export function TransactionsSheet() {
           <ReceiptText size={20} />
         </Button>
       </SheetTrigger>
-
       <SheetContent
         className="z-[70] w-[335px] flex h-full flex-col gap-4"
-        aria-labelledby="transactions-sheet-title"
       >
         <SheetHeader>
-          <SheetTitle
-            id="transactions-sheet-title"
-            className="text-lg font-semibold"
-          >
+          <SheetTitle className="text-lg font-semibold">
             Transactions
           </SheetTitle>
 
           <SheetSubTitle>View your recent transactions</SheetSubTitle>
         </SheetHeader>
-
         <Transactions selectedAccount={selectedAccount} />
       </SheetContent>
     </Sheet>
