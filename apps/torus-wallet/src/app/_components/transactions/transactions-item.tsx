@@ -34,6 +34,7 @@ export function TransactionItem({
 
   const getTransactionTypeDisplay = (type: TransactionType) =>
     ({
+      all: "All",
       stake: "Stake",
       unstake: "Unstake",
       send: "Send",
