@@ -7,6 +7,11 @@ import { TransactionItem } from "./transactions-item";
 import { TransactionFilters } from "./transactions-filters";
 import type { TransactionsFilterValues } from "./transactions-filters";
 import { useTransactions } from "~/hooks/useTransactions";
+import {
+  TransactionsInitialLoading,
+  TransactionsLoadingMore,
+} from "./transactions-loading";
+import { TransactionsEmptyDefault } from "./transactions-empty-state";
 
 interface TransactionsProps {
   selectedAccount: InjectedAccountWithMeta | null;
@@ -75,6 +80,7 @@ export function Transactions({ selectedAccount }: TransactionsProps) {
         onFiltersChange={setFilters}
         totalTransactions={totalTransactions}
         currentCount={transactions.length}
+        walletAddress={selectedAccount?.address}
       />
       <div
         ref={scrollRef}
@@ -91,30 +97,12 @@ export function Transactions({ selectedAccount }: TransactionsProps) {
                 index={index}
               />
             ))}
-            {isLoading && transactions.length > 0 && (
-              <div className="flex justify-center py-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                  Loading more transactions...
-                </div>
-              </div>
-            )}
+            {isLoading && <TransactionsLoadingMore />}
           </div>
         ) : isLoading ? (
-          <div className="flex-1 flex items-center justify-center min-h-[200px]">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-              Loading transactions...
-            </div>
-          </div>
+          <TransactionsInitialLoading />
         ) : (
-          <div
-            className="flex-1 flex items-center justify-center rounded-lg border bg-card
-              text-muted-foreground text-sm min-h-[200px]"
-            aria-live="polite"
-          >
-            No transactions found
-          </div>
+          <TransactionsEmptyDefault />
         )}
       </div>
     </div>
