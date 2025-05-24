@@ -15,7 +15,6 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import { DnDProvider, useDnD } from "./permission-flow-dnd-context";
-import PermissionFlowSidebar from "./permission-flow-sidebar";
 import CustomNode from "./permission-flow-custom-node";
 
 const initialNodes: Node[] = [
@@ -144,7 +143,6 @@ function DnDFlow() {
           <Background />
         </ReactFlow>
       </div>
-      <PermissionFlowSidebar />
     </div>
   );
 }
