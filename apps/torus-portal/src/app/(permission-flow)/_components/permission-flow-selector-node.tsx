@@ -8,7 +8,7 @@ interface SelectorNodeData {
   label: string;
 }
 
-export function SelectorNode({ id, data }: NodeProps<SelectorNodeData>) {
+export function SelectorNode({ id, data }: NodeProps) {
   const { setNodes, setEdges } = useReactFlow();
 
   const addChildNodes = useCallback(
@@ -22,7 +22,7 @@ export function SelectorNode({ id, data }: NodeProps<SelectorNodeData>) {
 
         const childNode: Node = {
           id: childNodeId,
-          data: { label: `Node ${childNodeId}` },
+          data: { label: `Node ${String(childNodeId)}` },
           position: { x: 0, y: 0 },
           style: { opacity: 0 },
         };
@@ -60,7 +60,9 @@ export function SelectorNode({ id, data }: NodeProps<SelectorNodeData>) {
 
   return (
     <div className="bg-white border-2 border-gray-300 rounded-lg p-4 min-w-[200px]">
-      <div className="mb-3 font-semibold text-gray-800">{data.label}</div>
+      <div className="mb-3 font-semibold text-gray-800">
+        {(data as unknown as SelectorNodeData).label}
+      </div>
       <select
         onChange={handleSelectChange}
         className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
