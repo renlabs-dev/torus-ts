@@ -21,7 +21,7 @@ export default function PermissionGraphControls() {
   };
 
   return (
-    <div className="flex items-center gap-4 w-full max-w-4xl">
+    <div className="flex items-center gap-4 w-full max-w-4xl flex-wrap">
       <div className="w-80 flex-shrink-0">
         <Tabs value={currentTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-2">

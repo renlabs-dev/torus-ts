@@ -13,7 +13,7 @@ import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
 import { penaltyRouter } from "./router/penalty/penalty";
-import { permissionRouters } from "./router/permission";
+import { permissionRouter } from "./router/permission/permission-details";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
@@ -42,7 +42,7 @@ export const appRouter = createTRPCRouter({
   discordInfo: discordInfoRouter,
   
   // Permission
-  permission: createTRPCRouter(permissionRouters),
+  permissionDetails: permissionRouter,
 });
 
 export type AppRouter = typeof appRouter;
