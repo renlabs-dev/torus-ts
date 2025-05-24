@@ -123,7 +123,7 @@ export function Send() {
         }
       : {
           status: "success",
-          hash: "123123123",
+          hash: callbackReturn.hash ?? "unknown",
         };
 
     updateTransaction(txId, updatedTransaction);

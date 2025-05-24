@@ -29,9 +29,10 @@ import { useState } from "react";
 import type { TransactionQueryOptions } from "~/store/transactions-store";
 
 const transactionsFilterSchema = z.object({
-  type: z.string().optional(),
+  type: z.string().default("all"),
   fromAddress: z.string().optional(),
   toAddress: z.string().optional(),
+  hash: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   orderBy: z.string().default("createdAt.desc"),
@@ -57,6 +58,7 @@ export function TransactionFilters({
       type: undefined,
       fromAddress: undefined,
       toAddress: undefined,
+      hash: undefined,
       startDate: undefined,
       endDate: undefined,
       orderBy: "createdAt.desc",
@@ -64,23 +66,12 @@ export function TransactionFilters({
   });
 
   const onSubmit = (data: TransactionsFilterValues) => {
-    const processedData = {
-      ...data,
-      type: data.type === "all" ? undefined : data.type,
-    };
-    onFiltersChange(processedData);
+    onFiltersChange(data);
     setIsOpen(false);
   };
 
   const handleReset = () => {
-    form.reset({
-      type: undefined,
-      fromAddress: undefined,
-      toAddress: undefined,
-      startDate: undefined,
-      endDate: undefined,
-      orderBy: "createdAt.desc",
-    });
+    form.reset();
     onFiltersChange({
       orderBy: "createdAt.desc",
     });
@@ -166,6 +157,22 @@ export function TransactionFilters({
                     <FormControl>
                       <Input
                         placeholder="To address"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="hash"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Transaction Hash</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Transaction hash"
                         {...field}
                         value={field.value ?? ""}
                       />

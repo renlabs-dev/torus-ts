@@ -1,12 +1,14 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Copy } from "lucide-react";
 import { DateTime } from "luxon";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
 import type { Transaction, TransactionType } from "~/store/transactions-store";
 import { TransactionStatusBadge } from "./transactions-item-status-badge";
-
-const BLOCK_EXPLORER_URL = "https://explorer.torus.network/tx/";
+import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/toast-content-handler";
+import { env } from "~/env";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { cn } from "@torus-ts/ui/lib/utils";
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -20,9 +22,6 @@ export function TransactionItem({
 }: TransactionItemProps) {
   const formatDate = (date: string) =>
     DateTime.fromISO(date).toFormat("MMM dd, HH:mm");
-
-  const shortenAddress = (address: string) =>
-    address ? `${address.slice(0, 5)}...${address.slice(-5)}` : "";
 
   const formatAmount = (amount: string) => {
     try {
@@ -44,6 +43,11 @@ export function TransactionItem({
   const amountUSD = usdPrice
     ? (Number(formatAmount(transaction.amount)) * usdPrice).toFixed(2)
     : "";
+
+  const explorerLink = getExplorerLink({
+    wsEndpoint: env("NEXT_PUBLIC_TORUS_RPC_URL"),
+    hash: transaction.hash ?? "",
+  });
 
   return (
     <div
@@ -93,9 +97,9 @@ export function TransactionItem({
             <span className="text-muted-foreground">From</span>
             <div
               className="font-mono text-xs"
-              aria-label={`From address: ${shortenAddress(transaction.fromAddress)}`}
+              aria-label={`From address: ${transaction.fromAddress}`}
             >
-              {shortenAddress(transaction.fromAddress)}
+              {smallAddress(transaction.fromAddress, 5)}
             </div>
           </div>
           <div className="flex justify-center items-center">
@@ -108,23 +112,42 @@ export function TransactionItem({
             <span className="text-muted-foreground">To</span>
             <div
               className="font-mono text-xs"
-              aria-label={`To address: ${shortenAddress(transaction.toAddress)}`}
+              aria-label={`To address: ${transaction.toAddress}`}
             >
-              {shortenAddress(transaction.toAddress)}
+              {smallAddress(transaction.toAddress, 5)}
             </div>
           </div>
         </div>
         {transaction.hash && (
-          <div>
-            <a
-              href={`${BLOCK_EXPLORER_URL}${transaction.hash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono text-xs text-blue-500 hover:underline block"
-              aria-label="View transaction in block explorer"
-            >
-              View in block explorer
-            </a>
+          <div className="space-y-2">
+            <div>
+              <span className="text-muted-foreground">Transaction Hash</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs" title={transaction.hash}>
+                  {smallAddress(transaction.hash, 15)}
+                </span>
+                <CopyButton
+                  copy={transaction.hash}
+                  className={cn(
+                    "h-fit p-0 text-muted-foreground hover:text-white",
+                  )}
+                  variant="ghost"
+                >
+                  <Copy size={17} />
+                </CopyButton>
+              </div>
+            </div>
+            <div>
+              <a
+                href={explorerLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-blue-500 hover:underline block"
+                aria-label="View transaction in block explorer"
+              >
+                View in block explorer
+              </a>
+            </div>
           </div>
         )}
       </div>

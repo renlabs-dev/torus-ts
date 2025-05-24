@@ -31,6 +31,7 @@ export interface TransactionQueryOptions {
   type?: TransactionType;
   fromAddress?: string;
   toAddress?: string;
+  hash?: string;
   startDate?: string;
   endDate?: string;
   orderBy?: `${keyof Pick<Transaction, "amount" | "createdAt">}.${"asc" | "desc"}`;
@@ -44,6 +45,7 @@ interface TransactionQueryResult {
 
 interface TransactionsState {
   transactions: Record<SS58Address, Transaction[]>;
+  lastTransactionTimestamp: number;
   addTransaction: (
     transaction: Omit<Transaction, "id" | "createdAt">,
   ) => string;
@@ -56,17 +58,20 @@ interface TransactionsState {
   isTransactionCompleted: (status: TransactionResult["status"]) => boolean;
   isTransactionError: (status: TransactionResult["status"]) => boolean;
   clearTransactions: (walletAddress: string) => void;
+  getLastTransactionTimestamp: () => number;
 }
 
 export const useTransactionsStore = create<TransactionsState>()(
   persist(
     (set, get) => ({
       transactions: {},
+      lastTransactionTimestamp: 0,
 
       addTransaction: (transaction) => {
         const id = crypto.randomUUID();
         const createdAt = new Date().toISOString();
         const newTx: Transaction = { ...transaction, id, createdAt };
+        const timestamp = Date.now();
 
         set((state) => ({
           transactions: {
@@ -76,6 +81,7 @@ export const useTransactionsStore = create<TransactionsState>()(
               ...(state.transactions[transaction.fromAddress] ?? []),
             ],
           },
+          lastTransactionTimestamp: timestamp,
         }));
 
         return id;
@@ -100,6 +106,7 @@ export const useTransactionsStore = create<TransactionsState>()(
           type,
           fromAddress,
           toAddress,
+          hash,
           startDate,
           endDate,
           orderBy = "createdAt.desc",
@@ -109,14 +116,48 @@ export const useTransactionsStore = create<TransactionsState>()(
           get().transactions[walletAddress as SS58Address] ?? [];
 
         const filtered = walletTxs.filter((tx) => {
-          if (type && tx.type !== type) return false;
-          if (fromAddress && !tx.fromAddress.includes(fromAddress))
+          // Type filter
+          if (type && type !== "all" && tx.type !== type) {
             return false;
-          if (toAddress && !tx.toAddress.includes(toAddress)) return false;
-          if (startDate && new Date(tx.createdAt) < new Date(startDate))
-            return false;
-          if (endDate && new Date(tx.createdAt) > new Date(endDate))
-            return false;
+          }
+          
+          // From address filter (case insensitive, partial match)
+          if (fromAddress?.trim()) {
+            const normalizedFromAddress = fromAddress.toLowerCase().trim();
+            if (!tx.fromAddress.toLowerCase().includes(normalizedFromAddress)) {
+              return false;
+            }
+          }
+          
+          // To address filter (case insensitive, partial match)
+          if (toAddress?.trim()) {
+            const normalizedToAddress = toAddress.toLowerCase().trim();
+            if (!tx.toAddress.toLowerCase().includes(normalizedToAddress)) {
+              return false;
+            }
+          }
+          
+          // Hash filter (case insensitive, partial match)
+          if (hash?.trim()) {
+            const normalizedHash = hash.toLowerCase().trim();
+            if (!tx.hash?.toLowerCase().includes(normalizedHash)) {
+              return false;
+            }
+          }
+          
+          // Date range filters
+          if (startDate?.trim()) {
+            if (new Date(tx.createdAt) < new Date(startDate)) {
+              return false;
+            }
+          }
+          
+          if (endDate?.trim()) {
+            if (new Date(tx.createdAt) > new Date(endDate)) {
+              return false;
+            }
+          }
+          
           return true;
         });
 
@@ -167,10 +208,15 @@ export const useTransactionsStore = create<TransactionsState>()(
           return { transactions: remaining };
         });
       },
+
+      getLastTransactionTimestamp: () => get().lastTransactionTimestamp,
     }),
     {
       name: "transactions",
-      partialize: (state) => ({ transactions: state.transactions }),
+      partialize: (state) => ({ 
+        transactions: state.transactions,
+        lastTransactionTimestamp: state.lastTransactionTimestamp,
+      }),
     },
   ),
 );
