@@ -64,7 +64,7 @@ function useAutoLayout(options: LayoutOptions) {
       setEdges(nextEdges);
     };
 
-    runLayout();
+    void runLayout();
   }, [nodesInitialized, elements, options, setNodes, setEdges]);
 }
 

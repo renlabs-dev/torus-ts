@@ -1,18 +1,20 @@
-import { type LayoutAlgorithm, type Direction } from '.';
-import { type Node, getIncomers } from '@xyflow/react';
-import { type HierarchyPointNode, stratify, tree } from 'd3-hierarchy';
+import type { LayoutAlgorithm, Direction } from ".";
+import { getIncomers } from "@xyflow/react";
+import type { Node } from "@xyflow/react";
+import { stratify, tree } from "d3-hierarchy";
+import type { HierarchyPointNode } from "d3-hierarchy";
 
 // D3 Hierarchy doesn't support layouting in different directions, but we can
 // swap the coordinates around in different ways to get the same effect.
 const getPosition = (x: number, y: number, direction: Direction) => {
   switch (direction) {
-    case 'TB':
+    case "TB":
       return { x, y };
-    case 'LR':
+    case "LR":
       return { x: y, y: x };
-    case 'BT':
+    case "BT":
       return { x: -x, y: -y };
-    case 'RL':
+    case "RL":
       return { x: -y, y: x };
   }
 };
@@ -30,15 +32,16 @@ const layout = tree<NodeWithPosition>()
 // guarantee that, we create a fake root node here and will make sure any real
 // nodes without an incoming edge will get connected to this fake root node.
 const rootNode = {
-  id: 'd3-hierarchy-root',
+  id: "d3-hierarchy-root",
   x: 0,
   y: 0,
   position: { x: 0, y: 0 },
   data: {},
 };
 
+// eslint-disable-next-line @typescript-eslint/require-await
 const d3HierarchyLayout: LayoutAlgorithm = async (nodes, edges, options) => {
-  const isHorizontal = options.direction === 'RL' || options.direction === 'LR';
+  const isHorizontal = options.direction === "RL" || options.direction === "LR";
 
   const initialNodes = [] as NodeWithPosition[];
   let maxNodeWidth = 0;
@@ -70,7 +73,7 @@ const d3HierarchyLayout: LayoutAlgorithm = async (nodes, edges, options) => {
     // If there are no incoming edges, we say this node is connected to the fake
     // root node to prevent having multiple root nodes in the layout. If there
     // are multiple incoming edges, only the first one will be used!
-    return incomers[0]?.id || rootNode.id;
+    return incomers[0]?.id ?? rootNode.id;
   };
 
   const hierarchy = stratify<NodeWithPosition>()
@@ -82,10 +85,12 @@ const d3HierarchyLayout: LayoutAlgorithm = async (nodes, edges, options) => {
   const root = layout(hierarchy);
   const layoutNodes = new Map<string, HierarchyPointNode<NodeWithPosition>>();
   for (const node of root) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     layoutNodes.set(node.id!, node);
   }
 
   const nextNodes = nodes.map((node) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { x, y } = layoutNodes.get(node.id)!;
     const position = getPosition(x, y, options.direction);
     // The layout algorithm uses the node's center point as its origin, so we need
