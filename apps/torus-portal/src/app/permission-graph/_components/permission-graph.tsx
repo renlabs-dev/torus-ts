@@ -72,7 +72,7 @@ export default function PermissionGraph({
 }) {
   if (!data) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-slate-400">
+      <div className="w-full h-full flex items-center justify-center text-slate-400 z-50">
         Loading Graph...
       </div>
     );
