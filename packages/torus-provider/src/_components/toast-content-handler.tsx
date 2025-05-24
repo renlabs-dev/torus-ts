@@ -15,7 +15,7 @@ const linkStyle: CSSProperties = {
   cursor: "pointer",
 };
 
-const getExplorerLink = ({
+export const getExplorerLink = ({
   wsEndpoint,
   hash,
 }: {

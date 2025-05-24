@@ -235,6 +235,7 @@ export async function sendTransaction({
             message: success
               ? "Transaction completed successfully!"
               : "Transaction failed",
+            hash,
           });
 
           if (success) {
