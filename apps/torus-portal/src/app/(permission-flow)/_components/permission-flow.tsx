@@ -47,7 +47,7 @@ const nodeTypes = {
 function ReactFlowAutoLayout() {
   const { fitView } = useReactFlow();
 
-  const [nodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const layoutOptions: LayoutOptions = useMemo(
