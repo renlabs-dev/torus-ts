@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useCallback } from "react";
 
 import type { Node, Edge, NodeMouseHandler, OnConnect } from "@xyflow/react";
@@ -12,8 +14,11 @@ import {
   ConnectionLineType,
 } from "@xyflow/react";
 
-// // This is used to display a leva (https://github.com/pmndrs/leva) control panel for the example
-// import { useControls, button } from "leva";
+// This is used to display a leva (https://github.com/pmndrs/leva) control panel for the example
+import { useControls, button } from "leva";
+
+import useAutoLayout from "./useAutoLayout";
+import type { LayoutOptions } from "./useAutoLayout";
 
 import {
   nodes as initialNodes,
@@ -38,40 +43,40 @@ const defaultEdgeOptions = {
  * This example shows how you can automatically arrange your nodes after adding child nodes to your graph.
  */
 function ReactFlowAutoLayout() {
-  const { fitView } = useReactFlow();
+  const { fitView, addNodes } = useReactFlow();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   // 👇 This hook is used to display a leva (https://github.com/pmndrs/leva) control panel for this example.
   // You can safely remove it, if you don't want to use it.
-  // const layoutOptions = useControls({
-  //   algorithm: {
-  //     value: "dagre" as LayoutOptions["algorithm"],
-  //     options: ["dagre", "d3-hierarchy", "elk"] as LayoutOptions["algorithm"][],
-  //   },
-  //   direction: {
-  //     value: "TB" as LayoutOptions["direction"],
-  //     options: {
-  //       down: "TB",
-  //       right: "LR",
-  //       up: "BT",
-  //       left: "RL",
-  //     } as Record<string, LayoutOptions["direction"]>,
-  //   },
-  //   spacing: [50, 50],
-  //   "add root node": button(() =>
-  //     addNodes({
-  //       id: getId(),
-  //       position: { x: 0, y: 0 },
-  //       data: { label: `New Node` },
-  //       style: { opacity: 0 },
-  //     }),
-  //   ),
-  // });
+  const layoutOptions = useControls({
+    algorithm: {
+      value: "d3-hierarchy" as LayoutOptions["algorithm"],
+      options: ["dagre", "d3-hierarchy", "elk"] as LayoutOptions["algorithm"][],
+    },
+    direction: {
+      value: "TB" as LayoutOptions["direction"],
+      options: {
+        down: "TB",
+        right: "LR",
+        up: "BT",
+        left: "RL",
+      } as Record<string, LayoutOptions["direction"]>,
+    },
+    spacing: [50, 50],
+    "add root node": button(() =>
+      addNodes({
+        id: getId(),
+        position: { x: 0, y: 0 },
+        data: { label: `New Node` },
+        style: { opacity: 0 },
+      }),
+    ),
+  });
 
   // this hook handles the computation of the layout once the elements or the direction changes
-  // useAutoLayout(layoutOptions);
+  useAutoLayout(layoutOptions);
 
   // this helper function adds a new node and connects it to the source node
   const addChildNode = useCallback(
