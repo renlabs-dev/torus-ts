@@ -12,6 +12,7 @@ import {
   useEdgesState,
   addEdge,
   ConnectionLineType,
+  Background,
 } from "@xyflow/react";
 
 // This is used to display a leva (https://github.com/pmndrs/leva) control panel for the example
@@ -136,7 +137,9 @@ function ReactFlowAutoLayout() {
       connectionLineType={ConnectionLineType.SmoothStep}
       proOptions={proOptions}
       zoomOnDoubleClick={false}
-    />
+    >
+      <Background />
+    </ReactFlow>
   );
 }
 
