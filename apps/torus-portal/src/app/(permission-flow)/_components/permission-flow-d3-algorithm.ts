@@ -1,4 +1,4 @@
-import type { LayoutAlgorithm, Direction } from ".";
+import type { LayoutAlgorithm, Direction } from "./permission-flow-types";
 import { getIncomers } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
 import { stratify, tree } from "d3-hierarchy";

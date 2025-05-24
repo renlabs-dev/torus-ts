@@ -2,9 +2,12 @@ import { useEffect } from "react";
 import { useReactFlow, useNodesInitialized, useStore } from "@xyflow/react";
 import type { Node, Edge } from "@xyflow/react";
 
-import { getSourceHandlePosition, getTargetHandlePosition } from "./utils";
-import layoutAlgorithms from "./algorithms";
-import type { LayoutAlgorithmOptions } from "./algorithms";
+import {
+  getSourceHandlePosition,
+  getTargetHandlePosition,
+} from "./permission-flow-utils";
+import layoutAlgorithms from "./permission-flow-types";
+import type { LayoutAlgorithmOptions } from "./permission-flow-types";
 
 export type LayoutOptions = {
   algorithm: keyof typeof layoutAlgorithms;
