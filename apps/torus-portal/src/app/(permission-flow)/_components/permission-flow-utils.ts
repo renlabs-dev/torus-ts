@@ -1,5 +1,5 @@
 import { Position } from "@xyflow/react";
-import type { Direction } from "./algorithms";
+import type { Direction } from "./permission-flow-types";
 
 export function getSourceHandlePosition(direction: Direction) {
   switch (direction) {
