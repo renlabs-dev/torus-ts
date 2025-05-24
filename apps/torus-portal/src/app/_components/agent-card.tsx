@@ -7,16 +7,16 @@ import {
   Cuboid,
   IdCard,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { Icons } from "@torus-ts/ui/components//icons";
 import { Card } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { AgentImage } from "./agent-image";
 
 
 interface PortalAgentCardProps {
-  agentKey: string;
+  agentKey: string | null;
   currentBlock?: number | null;
   title: string;
   iconUrl: string | null;
@@ -85,6 +85,7 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
   } = props;
 
   const socialsMapped = buildSocials(socialsList, socialsList.website);
+  if (!agentKey) return null;
 
   return (
     <Card
@@ -93,19 +94,7 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
       <div
         className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
       >
-        {iconUrl ? (
-          <Image
-            src={iconUrl}
-            alt="agent"
-            width={1000}
-            height={1000}
-            className={`aspect-square rounded-sm shadow-xl md:h-32 md:w-32`}
-          />
-        ) : (
-          <div className="flex aspect-square h-full w-full items-center justify-center rounded-sm border bg-gray-500/10 shadow-xl md:h-32 md:w-32">
-            <Icons.Logo className="h-36 w-36 opacity-30 md:h-20 md:w-20" />
-          </div>
-        )}
+        <AgentImage iconUrl={iconUrl} />
 
         <div className="flex h-full w-full flex-col justify-between gap-3">
           <div className="justify-betweed flex w-fit items-center gap-4">

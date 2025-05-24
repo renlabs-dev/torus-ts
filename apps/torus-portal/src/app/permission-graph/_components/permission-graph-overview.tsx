@@ -13,12 +13,13 @@ const roleColors = [
 
 export function PermissionGraphOverview({ graphData }: PermissionGraphOverviewProps) {
   return (
-    <Card className="w-full lg:w-80 p-4 h-full">
+    <Card className="z-50 w-full p-4 h-full">
+
       <h2 className="text-lg font-semibold mb-3">Graph Information</h2>
       
       {graphData ? (
         <>
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6 z-50">
             <div>
               <span className="text-xs text-slate-500 dark:text-slate-400">Addresses</span>
               <div className="text-xl font-semibold">{graphData.nodes.length}</div>
@@ -29,7 +30,7 @@ export function PermissionGraphOverview({ graphData }: PermissionGraphOverviewPr
             </div>
           </div>
           
-          <div className="mb-4">
+          <div className="z-50 mb-4">
             <h4 className="text-md font-semibold mb-2">Role Legend</h4>
             <div className="space-y-2">
               {roleColors.map(({ color, label }) => (

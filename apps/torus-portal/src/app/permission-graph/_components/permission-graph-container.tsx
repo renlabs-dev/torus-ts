@@ -8,7 +8,7 @@ import type {
   CustomGraphNode,
 } from "./permission-graph-utils";
 import { samplePermissionGraph } from "./permission-graph-utils";
-import { PermissionGraphDetails } from "./permission-graph-details";
+import { PermissionGraphDetails } from "./node-details/permission-graph-details-index";
 import { api } from "~/trpc/react";
 
 export default function PermissionGraphContainer() {
@@ -17,14 +17,10 @@ export default function PermissionGraphContainer() {
     null,
   );
 
-  // Fetch permission details from the API
-  const { data: permissionDetails, isLoading } = api.permission.details.all.useQuery();
-
-  console.log("permissionDetails: ", permissionDetails);
+  const { data: permissionDetails, isLoading } = api.permissionDetails.all.useQuery();
 
   useEffect(() => {
     if (permissionDetails && permissionDetails.length > 0) {
-      // Create nodes for unique grantor and grantee addresses
       const uniqueAddresses = new Set<string>();
       permissionDetails.forEach((permission) => {
         uniqueAddresses.add(permission.grantor_key);
@@ -33,7 +29,6 @@ export default function PermissionGraphContainer() {
 
       // Create nodes
       const nodes: CustomGraphNode[] = Array.from(uniqueAddresses).map((address) => {
-        // Determine if it's a grantor, grantee, or both
         const isGrantor = permissionDetails.some(p => p.grantor_key === address);
         const isGrantee = permissionDetails.some(p => p.grantee_key === address);
         
@@ -57,7 +52,6 @@ export default function PermissionGraphContainer() {
         };
       });
 
-      // Create links based on permissions
       const links = permissionDetails.map((permission) => ({
         source: permission.grantor_key,
         target: permission.grantee_key,
@@ -69,7 +63,6 @@ export default function PermissionGraphContainer() {
 
       setGraphData({ nodes, links });
     } else if (!isLoading) {
-      // If no data is available, use the sample graph data
       console.log("No permission data found, using sample data");
       setGraphData(samplePermissionGraph);
     }
@@ -85,7 +78,8 @@ export default function PermissionGraphContainer() {
         <PermissionGraphControls />
       </div>
 
-      <div className="absolute right-4 mt-[calc(4rem)]">
+      <div className="z-50 absolute right-4 mt-[calc(4rem)]">
+      {/* <div className="absolute right-4"> */}
         <PermissionGraphDetails
           selectedNode={selectedNode}
           graphData={graphData}

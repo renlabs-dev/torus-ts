@@ -1,6 +1,6 @@
-import { PermissionGraphOverview } from "./permission-graph-overview";
+import { PermissionGraphOverview } from "../permission-graph-overview";
 import { PermissionNodeDetails } from "./permission-graph-node-details";
-import type { CustomGraphData, CustomGraphNode } from "./permission-graph-utils";
+import type { CustomGraphData, CustomGraphNode } from "../permission-graph-utils";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
