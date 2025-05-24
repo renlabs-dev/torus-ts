@@ -1,4 +1,4 @@
-import ReactFlowWrapper from "./_components";
+import ReactFlowWrapper from "./_components/permission-flow";
 
 export default function Page() {
   return (
