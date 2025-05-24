@@ -1,4 +1,4 @@
-import ReactFlowWrapper from "./_components/auto-layout-example";
+import ReactFlowWrapper from "./_components";
 
 export default function Page() {
   return (
