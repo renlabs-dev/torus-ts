@@ -1,5 +1,6 @@
 import type { TabItem } from "~/app/_components/tab-layout";
 import { TabLayout } from "~/app/_components/tab-layout";
+import { Faucet } from "~/app/(transfers)/_components/faucet/faucet";
 import { Receive } from "~/app/(transfers)/_components/receive/receive";
 import { Send } from "~/app/(transfers)/_components/send/send";
 import { generateMetadata } from "~/utils/seo";
@@ -26,6 +27,7 @@ export const metadata = generateMetadata({
 const tabs: TabItem[] = [
   { text: "Send", value: "send", component: <Send /> },
   { text: "Receive", value: "receive", component: <Receive /> },
+  { text: "Faucet", value: "faucet", component: <Faucet /> },
 ];
 
 export default function TransfersPage() {
