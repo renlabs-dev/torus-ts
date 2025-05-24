@@ -11,27 +11,34 @@ interface SelectorNodeData {
 export function SelectorNode({ id, data }: NodeProps) {
   const { setNodes, setEdges } = useReactFlow();
 
+  const removeExistingChildNodes = useCallback(() => {
+    setNodes((nodes) =>
+      nodes.filter((node) => !node.id.startsWith(`${id}-child-`)),
+    );
+    setEdges((edges) => edges.filter((edge) => !edge.id.startsWith(`${id}->`)));
+  }, [id, setNodes, setEdges]);
+
   const addChildNodes = useCallback(
     (count: number) => {
+      removeExistingChildNodes();
+
       const childNodes: Node[] = [];
       const connectingEdges: Edge[] = [];
-      const baseId = Date.now();
 
       for (let i = 0; i < count; i++) {
-        const childNodeId = `${baseId}-${i}`;
+        const childNodeId = `${id}-child-${i}`;
 
         const childNode: Node = {
           id: childNodeId,
-          data: { label: `Node ${String(childNodeId)}` },
+          type: "selector",
+          data: { label: `Node ${i + 1}` },
           position: { x: 0, y: 0 },
-          style: { opacity: 0 },
         };
 
         const connectingEdge: Edge = {
           id: `${id}->${childNodeId}`,
           source: id,
           target: childNodeId,
-          style: { opacity: 0 },
         };
 
         childNodes.push(childNode);
@@ -41,7 +48,7 @@ export function SelectorNode({ id, data }: NodeProps) {
       setNodes((nodes) => nodes.concat(childNodes));
       setEdges((edges) => edges.concat(connectingEdges));
     },
-    [id, setNodes, setEdges],
+    [id, setNodes, setEdges, removeExistingChildNodes],
   );
 
   const handleSelectChange = useCallback(
@@ -74,6 +81,11 @@ export function SelectorNode({ id, data }: NodeProps) {
         <option value="one">Create 1 node</option>
         <option value="two">Create 2 nodes</option>
       </select>
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-green-500"
+      />
       <Handle
         type="source"
         position={Position.Bottom}
