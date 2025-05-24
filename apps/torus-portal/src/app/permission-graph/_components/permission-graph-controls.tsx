@@ -21,8 +21,8 @@ export default function PermissionGraphControls() {
   };
 
   return (
-    <div className="flex justify-between items-center gap-3">
-      <div className="flex-1 max-w-md">
+    <div className="flex items-center gap-4 w-full max-w-4xl">
+      <div className="w-80 flex-shrink-0">
         <Tabs value={currentTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -31,13 +31,13 @@ export default function PermissionGraphControls() {
         </Tabs>
       </div>
 
-      <div className="relative flex-1 w-full">
+      <div className="relative flex-1 min-w-0">
         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <Search className="h-4 w-4 text-slate-400 z-50" />
+          <Search className="h-4 w-4 text-slate-400" />
         </div>
         <Input
           placeholder="Search for any agent or permission..."
-          className="pl-9"
+          className="pl-9 w-full"
         />
       </div>
     </div>

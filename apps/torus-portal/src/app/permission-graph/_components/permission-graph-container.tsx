@@ -20,8 +20,10 @@ export default function PermissionGraphContainer() {
   // Fetch permission details from the API
   const { data: permissionDetails, isLoading } = api.permission.details.all.useQuery();
 
+  console.log("permissionDetails: ", permissionDetails);
+
   useEffect(() => {
-    if (permissionDetails) {
+    if (permissionDetails && permissionDetails.length > 0) {
       // Create nodes for unique grantor and grantee addresses
       const uniqueAddresses = new Set<string>();
       permissionDetails.forEach((permission) => {
@@ -67,7 +69,8 @@ export default function PermissionGraphContainer() {
 
       setGraphData({ nodes, links });
     } else if (!isLoading) {
-      // If no data and not loading, use sample data as fallback
+      // If no data is available, use the sample graph data
+      console.log("No permission data found, using sample data");
       setGraphData(samplePermissionGraph);
     }
   }, [permissionDetails, isLoading]);
@@ -82,7 +85,7 @@ export default function PermissionGraphContainer() {
         <PermissionGraphControls />
       </div>
 
-      <div className="absolute right-4 mt-[calc(4rem)] w-80 z-10">
+      <div className="absolute right-4 mt-[calc(4rem)]">
         <PermissionGraphDetails
           selectedNode={selectedNode}
           graphData={graphData}
