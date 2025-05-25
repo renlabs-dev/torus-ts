@@ -2,9 +2,12 @@ import { useEffect } from "react";
 import { useReactFlow, useNodesInitialized, useStore } from "@xyflow/react";
 import type { Node, Edge } from "@xyflow/react";
 
-import { getSourceHandlePosition, getTargetHandlePosition } from "./utils";
-import layoutAlgorithms from "./algorithms";
-import type { LayoutAlgorithmOptions } from "./algorithms";
+import {
+  getSourceHandlePosition,
+  getTargetHandlePosition,
+} from "./permission-flow-utils";
+import layoutAlgorithms from "./permission-flow-types";
+import type { LayoutAlgorithmOptions } from "./permission-flow-types";
 
 export type LayoutOptions = {
   algorithm: keyof typeof layoutAlgorithms;
@@ -96,10 +99,10 @@ function compareNodes(xs: Node[], ys: Node[]) {
     // We early return here instead of using a `continue` because there's no
     // scenario where we'd want nodes to start moving around *while* a user is
     // trying to resize a node or move it around.
-    if (x.resizing || x.dragging) return true;
+    if (x?.resizing || x?.dragging) return true;
     if (
-      x.measured?.width !== y.measured?.width ||
-      x.measured?.height !== y.measured?.height
+      x?.measured?.width !== y.measured?.width ||
+      x?.measured?.height !== y.measured?.height
     ) {
       return false;
     }
@@ -116,7 +119,7 @@ function compareEdges(xs: Edge[], ys: Edge[]) {
     const x = xs[i];
     const y = ys[i];
 
-    if (x.source !== y.source || x.target !== y.target) return false;
+    if (x?.source !== y?.source || x?.target !== y?.target) return false;
     if (x?.sourceHandle !== y?.sourceHandle) return false;
     if (x?.targetHandle !== y?.targetHandle) return false;
   }

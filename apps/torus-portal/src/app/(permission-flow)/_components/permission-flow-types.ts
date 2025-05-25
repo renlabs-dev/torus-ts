@@ -1,6 +1,6 @@
 import type { Node, Edge } from "@xyflow/react";
 
-import d3Hierarchy from "./d3-hierarchy";
+import d3Hierarchy from "./permission-flow-d3-algorithm";
 
 // the layout direction (T = top, R = right, B = bottom, L = left, TB = top to bottom, ...)
 export type Direction = "TB" | "LR" | "RL" | "BT";

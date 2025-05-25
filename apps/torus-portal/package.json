@@ -29,7 +29,6 @@
     "@torus-ts/ui": "workspace:*",
     "@xyflow/react": "^12.6.4",
     "d3-hierarchy": "^3.1.2",
-    "leva": "^0.10.0",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "r3f-forcegraph": "^1.0.8",
