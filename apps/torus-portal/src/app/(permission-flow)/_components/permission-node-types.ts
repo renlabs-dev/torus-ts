@@ -1,19 +1,19 @@
 import type { Node, Edge } from "@xyflow/react";
 import type { BoolExpr, NumExpr, BaseConstraint } from "../../../utils/dsl";
 
-export interface BooleanNodeData {
+export interface BooleanNodeData extends Record<string, unknown> {
   type: "boolean";
   expression: BoolExpr;
   label: string;
 }
 
-export interface NumberNodeData {
+export interface NumberNodeData extends Record<string, unknown> {
   type: "number";
   expression: NumExpr;
   label: string;
 }
 
-export interface BaseNodeData {
+export interface BaseNodeData extends Record<string, unknown> {
   type: "base";
   expression: BaseConstraint;
   label: string;
@@ -27,7 +27,7 @@ export type PermissionNodeData =
 export type PermissionNode = Node<PermissionNodeData>;
 
 export interface NodeCreationResult {
-  nodes: PermissionNode[];
+  nodes: Node[];
   edges: Edge[];
 }
 
