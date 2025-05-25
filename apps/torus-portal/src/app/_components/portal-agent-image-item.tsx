@@ -11,7 +11,7 @@ interface AgentImageProps {
   className?: string;
 }
 
-export function AgentImage({ 
+export function PortalAgentImageItem({ 
   iconBlob, 
   iconUrl, 
   alt = "Agent icon",
@@ -30,7 +30,7 @@ export function AgentImage({
   }, [iconBlob]);
   
   // Use blob URL if available, otherwise use direct URL
-  const imageSource = blobUrl || iconUrl;
+  const imageSource = blobUrl ?? iconUrl;
   
   if (imageSource) {
     return (

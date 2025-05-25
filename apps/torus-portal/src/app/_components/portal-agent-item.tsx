@@ -12,7 +12,7 @@ import { Icons } from "@torus-ts/ui/components//icons";
 import { Card } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { AgentImage } from "./agent-image";
+import { PortalAgentImageItem } from "./portal-agent-image-item";
 
 
 interface PortalAgentCardProps {
@@ -21,6 +21,7 @@ interface PortalAgentCardProps {
   title: string;
   iconUrl: string | null;
   socialsList: Partial<Record<SocialKind, string>>;
+  agentWeight: number;
 }
 
 interface SocialItem {
@@ -82,6 +83,7 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
     currentBlock,
     socialsList,
     title,
+    agentWeight,
   } = props;
 
   const socialsMapped = buildSocials(socialsList, socialsList.website);
@@ -94,7 +96,7 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
       <div
         className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
       >
-        <AgentImage iconUrl={iconUrl} />
+        <PortalAgentImageItem iconUrl={iconUrl} />
 
         <div className="flex h-full w-full flex-col justify-between gap-3">
           <div className="justify-betweed flex w-fit items-center gap-4">
@@ -119,7 +121,7 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
       <div className="mt-2 text-sm flex items-center justify-between gap-3 border px-4">
         <Label className={`flex items-center gap-1.5 text-sm font-semibold`}>
           <Anvil size={14} />
-          10%
+          {agentWeight}%
         </Label>
 
         <Label className={`flex items-center gap-1.5 text-sm font-semibold`}>
