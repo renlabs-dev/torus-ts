@@ -15,9 +15,9 @@ import {
   Background,
 } from "@xyflow/react";
 
-import { PermissionNodeBoolean } from "./permission-node-boolean";
-import { PermissionNodeNumber } from "./permission-node-number";
-import { PermissionNodeBase } from "./permission-node-base";
+import PermissionNodeBoolean from "./permission-node-boolean";
+import PermissionNodeNumber from "./permission-node-number";
+import PermissionNodeBase from "./permission-node-base";
 
 import useAutoLayout from "./use-auto-layout";
 import type { LayoutOptions } from "./use-auto-layout";

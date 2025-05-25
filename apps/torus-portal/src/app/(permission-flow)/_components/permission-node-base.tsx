@@ -4,14 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
 import { BaseConstraint, NumExpr } from "../../../utils/dsl";
-import type {
-  BaseNodeData,
-  PermissionNode,
-  NodeCreationResult,
-} from "./permission-node-types";
+import type { BaseNodeData, NodeCreationResult } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
 
-export function PermissionNodeBase({ id, data }: NodeProps<BaseNodeData>) {
+interface PermissionNodeBaseProps {
+  id: string;
+  data: BaseNodeData;
+}
+
+export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
   const { setNodes, setEdges, getNodes, getEdges } = useReactFlow();
   const [permissionId, setPermissionId] = useState(() => {
     const expr = data.expression;
@@ -45,7 +46,7 @@ export function PermissionNodeBase({ id, data }: NodeProps<BaseNodeData>) {
 
   const createChildNodes = useCallback(
     (expression: BaseConstraint): NodeCreationResult => {
-      const nodes: PermissionNode[] = [];
+      const nodes = [];
       const edges = [];
 
       switch (expression.$) {
@@ -214,7 +215,7 @@ export function PermissionNodeBase({ id, data }: NodeProps<BaseNodeData>) {
       setNodes((nodes) => nodes.concat(childNodes));
       setEdges((edges) => edges.concat(childEdges));
     }
-  }, []);
+  }, [id, data.expression, getNodes, createChildNodes, setNodes, setEdges]);
 
   return (
     <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-4 min-w-[250px]">
@@ -276,4 +277,9 @@ export function PermissionNodeBase({ id, data }: NodeProps<BaseNodeData>) {
       )}
     </div>
   );
+}
+
+// Wrapper to satisfy ReactFlow's NodeProps type requirement
+export default function PermissionNodeBaseWrapper(props: NodeProps) {
+  return <PermissionNodeBase id={props.id} data={props.data as BaseNodeData} />;
 }
