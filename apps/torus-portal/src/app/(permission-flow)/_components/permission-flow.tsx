@@ -15,7 +15,9 @@ import {
   Background,
 } from "@xyflow/react";
 
-import { SelectorNode } from "./permission-flow-selector-node";
+import { PermissionNodeBoolean } from "./permission-node-boolean";
+import { PermissionNodeNumber } from "./permission-node-number";
+import { PermissionNodeBase } from "./permission-node-base";
 
 import useAutoLayout from "./use-auto-layout";
 import type { LayoutOptions } from "./use-auto-layout";
@@ -38,7 +40,9 @@ const defaultEdgeOptions = {
 };
 
 const nodeTypes = {
-  selector: SelectorNode,
+  permissionBoolean: PermissionNodeBoolean,
+  permissionNumber: PermissionNodeNumber,
+  permissionBase: PermissionNodeBase,
 };
 
 /**
