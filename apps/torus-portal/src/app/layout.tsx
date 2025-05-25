@@ -11,7 +11,7 @@ import { PortalHeader } from "./_components/portal-header";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 
-const APP_NAME = "Query Builder";
+const APP_NAME = "Torus Portal";
 
 export const metadata: Metadata = {
   robots: "all",
