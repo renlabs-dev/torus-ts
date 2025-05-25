@@ -1,3 +1,93 @@
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { Copy, UserPen, UserPlus, Share2 } from "lucide-react";
+import { GlobeIcon } from "lucide-react";
+import type { JSX } from 'react';
+
+interface AddressCopyButtonProps {
+  link: string;
+}
+
+interface AddressLinkButtonProps {
+  link: string;
+}
+
+interface AddressGoButtonProps {
+  link: string;
+}
+
+export function AddressCopyButton ({link}: AddressCopyButtonProps): JSX.Element {
+  return (
+    <CopyButton
+      className="hover:text-muted-foreground h-fit p-0"
+      variant="ghost"
+      copy={link}
+    >
+      <Copy className="h-0.5 w-0.5 ml-1 border-muted-foreground" />
+    </CopyButton>
+  );
+}
+
+export function AddressLinkButton({ link }: AddressLinkButtonProps): JSX.Element {
+  const hostname = window.location.hostname;
+  const isTestnet = typeof window !== "undefined" && (hostname.includes("testnet") || hostname.includes("localhost"));
+  console.log(isTestnet);
+  const baseUrl = isTestnet
+    ? "https://allocator.testnet.torus.network/agent/"
+    : "https://allocator.torus.network/agent/";
+
+  const href = `${baseUrl}${link}`;
+
+  return (
+    <a
+      href={href}
+      target="blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors duration-200"
+    >
+      <GlobeIcon className="h-4 w-4 opacity-60 hover:opacity-100 transition-opacity duration-150" />
+    </a>
+  );
+}
+
+export function AddressGoButton({ link }: AddressGoButtonProps): JSX.Element {
+  const isTestnet =
+    typeof window !== "undefined" &&
+    (window.location.hostname.includes("testnet") || window.location.hostname.includes("localhost"));
+
+  const baseUrl = isTestnet
+    ? "https://allocator.testnet.torus.network/agent/"
+    : "https://allocator.torus.network/agent/";
+
+  const href = `${baseUrl}${link}`;
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors duration-200"
+    >
+      <Share2 className="h-4 w-4 opacity-60 hover:opacity-100 transition-opacity duration-150" />
+    </a>
+  );
+}
+
+export function GranteePenIcon(): JSX.Element {
+  return (
+    <UserPlus className="h-4 w-4 opacity-60 hover:opacity-100 transition-opacity duration-150" />
+  );
+}
+
+
+export function GrantorPenIcon(): JSX.Element {
+  return (
+    <UserPen className="h-4 w-4 opacity-60 hover:opacity-100 transition-opacity duration-150" />
+  );
+}
+
+
+
+
 export interface CustomGraphNode {
   id: string;
   name: string;
@@ -34,19 +124,22 @@ export const formatDuration = (seconds: number): string => {
   if (!seconds) return "No expiration";
   
   const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
+  // const hours = Math.floor((seconds % 86400) / 3600);
+  // const minutes = Math.floor((seconds % 3600) / 60);
   
   return [
     days && `${days} day${days > 1 ? 's' : ''}`,
-    hours && `${hours} hour${hours > 1 ? 's' : ''}`,
-    minutes && `${minutes} minute${minutes > 1 ? 's' : ''}`
+    // hours && `${hours} hour${hours > 1 ? 's' : ''}`,
+    // minutes && `${minutes} minute${minutes > 1 ? 's' : ''}`
   ].filter(Boolean).join(', ');
 };
 
 interface PermissionWithType extends GraphLink {
   type: 'incoming' | 'outgoing';
 }
+
+
+
 
 export const getNodePermissions = (
   node: CustomGraphNode, 
@@ -71,7 +164,7 @@ export const getNodePermissions = (
   return Array.from(permissionsMap.values());
 };
 
-interface PermissionDetail {
+export interface PermissionDetail {
   grantor_key: string;
   grantee_key: string;
   permission_id: number;

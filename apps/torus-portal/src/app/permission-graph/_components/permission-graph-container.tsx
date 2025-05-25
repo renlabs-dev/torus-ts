@@ -8,7 +8,7 @@ import type {
   CustomGraphNode,
 } from "./permission-graph-utils";
 import { samplePermissionGraph } from "./permission-graph-utils";
-import { PermissionGraphDetails } from "./node-details/permission-graph-details-index";
+import { PermissionGraphNodeDetails } from "./node-details";
 import { api } from "~/trpc/react";
 
 export default function PermissionGraphContainer() {
@@ -31,6 +31,7 @@ export default function PermissionGraphContainer() {
       const nodes: CustomGraphNode[] = Array.from(uniqueAddresses).map((address) => {
         const isGrantor = permissionDetails.some(p => p.grantor_key === address);
         const isGrantee = permissionDetails.some(p => p.grantee_key === address);
+
         
         // Assign different colors based on role
         let color = "#54a0ff"; // default blue
@@ -80,7 +81,7 @@ export default function PermissionGraphContainer() {
 
       <div className="z-50 absolute right-4 mt-[calc(4rem)]">
       {/* <div className="absolute right-4"> */}
-        <PermissionGraphDetails
+        <PermissionGraphNodeDetails
           selectedNode={selectedNode}
           graphData={graphData}
         />

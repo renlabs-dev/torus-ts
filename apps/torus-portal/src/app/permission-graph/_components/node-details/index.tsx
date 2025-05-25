@@ -1,5 +1,5 @@
 import { PermissionGraphOverview } from "../permission-graph-overview";
-import { PermissionNodeDetails } from "./permission-graph-node-details";
+import { NodeDetailsCard } from "./_components/node-details-card";
 import type { CustomGraphData, CustomGraphNode } from "../permission-graph-utils";
 
 interface PermissionGraphDetailsProps {
@@ -8,7 +8,7 @@ interface PermissionGraphDetailsProps {
   onBackgroundClick?: () => void;
 }
 
-export function PermissionGraphDetails({ 
+export function PermissionGraphNodeDetails({ 
   selectedNode, 
   graphData, 
   onBackgroundClick 
@@ -18,7 +18,7 @@ export function PermissionGraphDetails({
   }
   
   return (
-    <PermissionNodeDetails 
+    <NodeDetailsCard
       selectedNode={selectedNode} 
       graphData={graphData}
       onBackgroundClick={onBackgroundClick}
