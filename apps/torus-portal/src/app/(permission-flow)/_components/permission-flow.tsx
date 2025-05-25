@@ -14,10 +14,13 @@ import {
   ConnectionLineType,
   Background,
 } from "@xyflow/react";
+import { Button } from "@torus-ts/ui/components/button";
 
 import PermissionNodeBoolean from "./permission-node-boolean";
 import PermissionNodeNumber from "./permission-node-number";
 import PermissionNodeBase from "./permission-node-base";
+import { extractConstraintFromNodes } from "./permission-constraint-utils";
+import { constraintValidationSchema } from "./permission-validation-schemas";
 
 import useAutoLayout from "./use-auto-layout";
 import type { LayoutOptions } from "./use-auto-layout";
@@ -34,7 +37,7 @@ const proOptions = {
 };
 
 const defaultEdgeOptions = {
-  type: "smoothstep",
+  type: "step",
   markerEnd: { type: MarkerType.ArrowClosed },
   pathOptions: { offset: 5 },
 };
@@ -53,6 +56,47 @@ function ReactFlowAutoLayout() {
 
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const handleCreateConstraint = useCallback(() => {
+    try {
+      // Extract constraint from the node tree
+      const constraint = extractConstraintFromNodes(
+        nodes,
+        edges,
+        "root-boolean",
+      );
+
+      if (!constraint) {
+        console.error("Failed to extract constraint from nodes");
+        return;
+      }
+
+      // Validate the constraint
+      const validationResult = constraintValidationSchema.safeParse(constraint);
+
+      if (!validationResult.success) {
+        console.error("Constraint validation failed:", validationResult.error);
+        return;
+      }
+
+      // Log the valid constraint with BigInt support
+      console.log(
+        "Created constraint:",
+        JSON.stringify(
+          constraint,
+          (key, value) => {
+            if (typeof value === "bigint") {
+              return value.toString();
+            }
+            return value as unknown;
+          },
+          2,
+        ),
+      );
+    } catch (error) {
+      console.error("Error creating constraint:", error);
+    }
+  }, [nodes, edges]);
 
   const layoutOptions: LayoutOptions = useMemo(
     () => ({
@@ -91,6 +135,15 @@ function ReactFlowAutoLayout() {
       zoomOnDoubleClick={false}
     >
       <Background />
+      <div className="absolute bottom-4 right-4 z-50">
+        <Button
+          onClick={handleCreateConstraint}
+          size="lg"
+          className="shadow-lg"
+        >
+          Create This Constraint
+        </Button>
+      </div>
     </ReactFlow>
   );
 }

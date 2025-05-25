@@ -3,6 +3,14 @@
 import { useCallback, useEffect } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
+import { Label } from "@torus-ts/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui/components/select";
 import { BoolExpr, CompOp } from "../../../utils/dsl";
 import type {
   BooleanNodeData,
@@ -178,8 +186,8 @@ export function PermissionNodeBoolean({
   );
 
   const handleTypeChange = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const type = event.target.value as BoolExpr["$"];
+    (value: string) => {
+      const type = value as BoolExpr["$"];
 
       removeExistingChildNodes();
 
@@ -243,10 +251,10 @@ export function PermissionNodeBoolean({
   );
 
   const handleCompOpChange = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
+    (value: string) => {
       if (data.expression.$ !== "CompExpr") return;
 
-      const newOp = event.target.value as CompOp;
+      const newOp = value as CompOp;
 
       setNodes((nodes) =>
         nodes.map((node) => {
@@ -294,38 +302,46 @@ export function PermissionNodeBoolean({
       <div className="mb-2 font-bold text-blue-900">{data.label}</div>
 
       <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Boolean Type
-        </label>
-        <select
-          value={data.expression.$}
-          onChange={handleTypeChange}
-          className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+        <Label
+          htmlFor={`${id}-type`}
+          className="text-sm font-medium text-gray-700 mb-1"
         >
-          <option value="Not">NOT</option>
-          <option value="And">AND</option>
-          <option value="Or">OR</option>
-          <option value="CompExpr">Comparison</option>
-          <option value="Base">Base Constraint</option>
-        </select>
+          Boolean Type
+        </Label>
+        <Select value={data.expression.$} onValueChange={handleTypeChange}>
+          <SelectTrigger id={`${id}-type`} className="w-full bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Not">NOT</SelectItem>
+            <SelectItem value="And">AND</SelectItem>
+            <SelectItem value="Or">OR</SelectItem>
+            <SelectItem value="CompExpr">Comparison</SelectItem>
+            <SelectItem value="Base">Base Constraint</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {data.expression.$ === "CompExpr" && (
         <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Operator
-          </label>
-          <select
-            value={data.expression.op}
-            onChange={handleCompOpChange}
-            className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+          <Label
+            htmlFor={`${id}-op`}
+            className="text-sm font-medium text-gray-700 mb-1"
           >
-            <option value={CompOp.Eq}>Equal (=)</option>
-            <option value={CompOp.Gt}>Greater Than (&gt;)</option>
-            <option value={CompOp.Lt}>Less Than (&lt;)</option>
-            <option value={CompOp.Gte}>Greater or Equal (≥)</option>
-            <option value={CompOp.Lte}>Less or Equal (≤)</option>
-          </select>
+            Operator
+          </Label>
+          <Select value={data.expression.op} onValueChange={handleCompOpChange}>
+            <SelectTrigger id={`${id}-op`} className="w-full bg-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={CompOp.Eq}>Equal (=)</SelectItem>
+              <SelectItem value={CompOp.Gt}>Greater Than (&gt;)</SelectItem>
+              <SelectItem value={CompOp.Lt}>Less Than (&lt;)</SelectItem>
+              <SelectItem value={CompOp.Gte}>Greater or Equal (≥)</SelectItem>
+              <SelectItem value={CompOp.Lte}>Less or Equal (≤)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
 
