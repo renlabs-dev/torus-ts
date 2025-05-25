@@ -3,12 +3,22 @@
 import { useCallback, useEffect, useState } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
+import { Label } from "@torus-ts/ui/components/label";
+import { Input } from "@torus-ts/ui/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui/components/select";
 import { NumExpr } from "~/utils/dsl";
 import type {
   NumberNodeData,
   NodeCreationResult,
 } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
+import { uintSchema, accountIdSchema } from "./permission-validation-schemas";
 
 interface PermissionNodeNumberProps {
   id: string;
@@ -23,6 +33,8 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
     }
     return "";
   });
+  const [inputError, setInputError] = useState<string>("");
+  const [accountError, setAccountError] = useState<string>("");
 
   const removeExistingChildNodes = useCallback(() => {
     const currentEdges = getEdges();
@@ -111,8 +123,8 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
   );
 
   const handleTypeChange = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const type = event.target.value as NumExpr["$"];
+    (value: string) => {
+      const type = value as NumExpr["$"];
 
       removeExistingChildNodes();
 
@@ -122,12 +134,14 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         case "UIntLiteral":
           newExpression = NumExpr.literal(0);
           setInputValue("0");
+          setInputError("");
           break;
         case "BlockNumber":
           newExpression = NumExpr.blockNumber();
           break;
         case "StakeOf":
           newExpression = NumExpr.stakeOf("");
+          setAccountError("");
           break;
         case "Add":
           newExpression = NumExpr.add(NumExpr.literal(0), NumExpr.literal(0));
@@ -137,9 +151,11 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           break;
         case "WeightSet":
           newExpression = NumExpr.weightSet("", "");
+          setAccountError("");
           break;
         case "WeightPowerFrom":
           newExpression = NumExpr.weightPowerFrom("", "");
+          setAccountError("");
           break;
         default:
           return;
@@ -172,7 +188,16 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
     (value: string) => {
       setInputValue(value);
 
-      if (data.expression.$ === "UIntLiteral" && /^\d+$/.test(value)) {
+      const validation = uintSchema.safeParse(value);
+
+      if (!validation.success) {
+        setInputError(validation.error.errors[0]?.message ?? "Invalid value");
+        return;
+      }
+
+      setInputError("");
+
+      if (data.expression.$ === "UIntLiteral") {
         setNodes((nodes) =>
           nodes.map((node) => {
             if (node.id === id) {
@@ -194,6 +219,16 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
 
   const handleAccountChange = useCallback(
     (field: "account" | "from" | "to", value: string) => {
+      const validation = accountIdSchema.safeParse(value);
+
+      if (!validation.success && value.length > 0) {
+        setAccountError(
+          validation.error.errors[0]?.message ?? "Invalid account ID",
+        );
+      } else {
+        setAccountError("");
+      }
+
       setNodes((nodes) =>
         nodes.map((node) => {
           if (node.id === id) {
@@ -251,51 +286,69 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       <div className="mb-2 font-bold text-green-900">{data.label}</div>
 
       <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Number Type
-        </label>
-        <select
-          value={data.expression.$}
-          onChange={handleTypeChange}
-          className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+        <Label
+          htmlFor={`${id}-type`}
+          className="text-sm font-medium text-gray-700 mb-1"
         >
-          <option value="UIntLiteral">Literal Value</option>
-          <option value="BlockNumber">Block Number</option>
-          <option value="StakeOf">Stake Of Account</option>
-          <option value="Add">Add</option>
-          <option value="Sub">Subtract</option>
-          <option value="WeightSet">Weight Set</option>
-          <option value="WeightPowerFrom">Weight Power From</option>
-        </select>
+          Number Type
+        </Label>
+        <Select value={data.expression.$} onValueChange={handleTypeChange}>
+          <SelectTrigger id={`${id}-type`} className="w-full bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="UIntLiteral">Literal Value</SelectItem>
+            <SelectItem value="BlockNumber">Block Number</SelectItem>
+            <SelectItem value="StakeOf">Stake Of Account</SelectItem>
+            <SelectItem value="Add">Add</SelectItem>
+            <SelectItem value="Sub">Subtract</SelectItem>
+            <SelectItem value="WeightSet">Weight Set</SelectItem>
+            <SelectItem value="WeightPowerFrom">Weight Power From</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {data.expression.$ === "UIntLiteral" && (
         <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label
+            htmlFor={`${id}-value`}
+            className="text-sm font-medium text-gray-700 mb-1"
+          >
             Value
-          </label>
-          <input
-            type="number"
+          </Label>
+          <Input
+            id={`${id}-value`}
+            type="text"
             value={inputValue}
             onChange={(e) => handleValueChange(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
-            min="0"
+            className={`w-full ${inputError ? "border-red-500" : ""}`}
+            placeholder="Enter a positive integer"
           />
+          {inputError && (
+            <p className="text-red-500 text-xs mt-1">{inputError}</p>
+          )}
         </div>
       )}
 
       {data.expression.$ === "StakeOf" && (
         <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label
+            htmlFor={`${id}-account`}
+            className="text-sm font-medium text-gray-700 mb-1"
+          >
             Account ID
-          </label>
-          <input
+          </Label>
+          <Input
+            id={`${id}-account`}
             type="text"
             value={data.expression.account || ""}
             onChange={(e) => handleAccountChange("account", e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+            className={`w-full ${accountError ? "border-red-500" : ""}`}
             placeholder="Enter account ID"
           />
+          {accountError && (
+            <p className="text-red-500 text-xs mt-1">{accountError}</p>
+          )}
         </div>
       )}
 
@@ -303,34 +356,53 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         data.expression.$ === "WeightPowerFrom") && (
         <>
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label
+              htmlFor={`${id}-from`}
+              className="text-sm font-medium text-gray-700 mb-1"
+            >
               From Account
-            </label>
-            <input
+            </Label>
+            <Input
+              id={`${id}-from`}
               type="text"
               value={data.expression.from || ""}
               onChange={(e) => handleAccountChange("from", e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+              className={`w-full ${accountError ? "border-red-500" : ""}`}
               placeholder="From account ID"
             />
           </div>
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label
+              htmlFor={`${id}-to`}
+              className="text-sm font-medium text-gray-700 mb-1"
+            >
               To Account
-            </label>
-            <input
+            </Label>
+            <Input
+              id={`${id}-to`}
               type="text"
               value={data.expression.to || ""}
               onChange={(e) => handleAccountChange("to", e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+              className={`w-full ${accountError ? "border-red-500" : ""}`}
               placeholder="To account ID"
             />
           </div>
+          {accountError && (
+            <p className="text-red-500 text-xs mt-1">{accountError}</p>
+          )}
         </>
       )}
 
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-green-500"
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-green-600"
+      />
     </div>
   );
 }
