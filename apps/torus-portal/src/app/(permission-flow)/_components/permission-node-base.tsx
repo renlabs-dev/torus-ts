@@ -3,9 +3,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
+import { Label } from "@torus-ts/ui/components/label";
+import { Input } from "@torus-ts/ui/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui/components/select";
 import { BaseConstraint, NumExpr } from "../../../utils/dsl";
 import type { BaseNodeData, NodeCreationResult } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
+import { permissionIdSchema } from "./permission-validation-schemas";
 
 interface PermissionNodeBaseProps {
   id: string;
@@ -21,6 +31,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     }
     return "";
   });
+  const [permissionIdError, setPermissionIdError] = useState<string>("");
 
   const removeExistingChildNodes = useCallback(() => {
     const currentEdges = getEdges();
@@ -117,8 +128,8 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
   );
 
   const handleTypeChange = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const type = event.target.value as BaseConstraint["$"];
+    (value: string) => {
+      const type = value as BaseConstraint["$"];
 
       removeExistingChildNodes();
 
@@ -131,10 +142,12 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         case "PermissionExists":
           newExpression = BaseConstraint.permissionExists("");
           setPermissionId("");
+          setPermissionIdError("");
           break;
         case "PermissionEnabled":
           newExpression = BaseConstraint.permissionEnabled("");
           setPermissionId("");
+          setPermissionIdError("");
           break;
         case "RateLimit":
           newExpression = BaseConstraint.rateLimit(
@@ -175,6 +188,16 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
   const handlePermissionIdChange = useCallback(
     (value: string) => {
       setPermissionId(value);
+
+      const validation = permissionIdSchema.safeParse(value);
+
+      if (!validation.success && value.length > 0) {
+        setPermissionIdError(
+          validation.error.errors[0]?.message ?? "Invalid permission ID",
+        );
+      } else {
+        setPermissionIdError("");
+      }
 
       const expr = data.expression;
       if (expr.$ === "PermissionExists" || expr.$ === "PermissionEnabled") {
@@ -222,37 +245,52 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
       <div className="mb-2 font-bold text-orange-900">{data.label}</div>
 
       <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Constraint Type
-        </label>
-        <select
-          value={data.expression.$}
-          onChange={handleTypeChange}
-          className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+        <Label
+          htmlFor={`${id}-type`}
+          className="text-sm font-medium text-gray-700 mb-1"
         >
-          <option value="MaxDelegationDepth">Max Delegation Depth</option>
-          <option value="PermissionExists">Permission Exists</option>
-          <option value="PermissionEnabled">Permission Enabled</option>
-          <option value="RateLimit">Rate Limit</option>
-          <option value="InactiveUnlessRedelegated">
-            Inactive Unless Redelegated
-          </option>
-        </select>
+          Constraint Type
+        </Label>
+        <Select value={data.expression.$} onValueChange={handleTypeChange}>
+          <SelectTrigger id={`${id}-type`} className="w-full bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="MaxDelegationDepth">
+              Max Delegation Depth
+            </SelectItem>
+            <SelectItem value="PermissionExists">Permission Exists</SelectItem>
+            <SelectItem value="PermissionEnabled">
+              Permission Enabled
+            </SelectItem>
+            <SelectItem value="RateLimit">Rate Limit</SelectItem>
+            <SelectItem value="InactiveUnlessRedelegated">
+              Inactive Unless Redelegated
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {(data.expression.$ === "PermissionExists" ||
         data.expression.$ === "PermissionEnabled") && (
         <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label
+            htmlFor={`${id}-permission`}
+            className="text-sm font-medium text-gray-700 mb-1"
+          >
             Permission ID
-          </label>
-          <input
+          </Label>
+          <Input
+            id={`${id}-permission`}
             type="text"
             value={permissionId}
             onChange={(e) => handlePermissionIdChange(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
+            className={`w-full ${permissionIdError ? "border-red-500" : ""}`}
             placeholder="Enter permission ID"
           />
+          {permissionIdError && (
+            <p className="text-red-500 text-xs mt-1">{permissionIdError}</p>
+          )}
         </div>
       )}
 
@@ -262,10 +300,18 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         </div>
       )}
 
-      <Handle type="target" position={Position.Top} />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-orange-500"
+      />
       {(data.expression.$ === "MaxDelegationDepth" ||
         data.expression.$ === "RateLimit") && (
-        <Handle type="source" position={Position.Bottom} />
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="w-3 h-3 bg-orange-600"
+        />
       )}
     </div>
   );
