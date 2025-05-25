@@ -2,7 +2,7 @@
 
 import { fetchAgentMetadata } from "@torus-network/sdk";
 import { Card } from "@torus-ts/ui/components/card";
-import { PortalAgentItem } from "../../../_components/agent-card";
+import { PortalAgentItem } from "../../../../_components/portal-agent-item";
 import { useEffect, useState } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
@@ -25,11 +25,19 @@ export function PermissionNodeAgentCard({
   const [currentBlock, setCurrentBlock] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [weightFactor, setWeightFactor] = useState<number>(0);
+
+
+  const { data: computedWeightedAgents } = api.computedAgentWeight.byAgentKey.useQuery(
+    { agentKey: nodeId },
+    { enabled: !!nodeId }
+  )
 
   const agentQuery = api.agent.byKeyLastBlock.useQuery(
     { key: nodeId },
     { enabled: !!nodeId }
   );
+
 
   useEffect(() => {
     const fetchAgentData = async () => {
@@ -37,12 +45,19 @@ export function PermissionNodeAgentCard({
         setIsLoading(false);
         return;
       }
+      if (!computedWeightedAgents) {
+        setIsLoading(false);
+        setWeightFactor(0);
+        return;
+      }
       
       setIsLoading(true);
       setError(null);
 
+
       // Wait for the query to complete
       if (agentQuery.isLoading) return;
+    
       
       if (agentQuery.error) {
         console.error("Error fetching agent data:", agentQuery.error);
@@ -57,8 +72,10 @@ export function PermissionNodeAgentCard({
         return;
       }
 
+
       const agent = agentQuery.data;
       setAgentName(agent.name ?? smallAddress(nodeId, 6));
+      setWeightFactor(computedWeightedAgents.percComputedWeight);
       setCurrentBlock(agent.atBlock);
       
       // If there's no metadata URI, just use basic info
@@ -102,7 +119,7 @@ export function PermissionNodeAgentCard({
     };
 
     void fetchAgentData();
-  }, [nodeId, agentQuery.data, agentQuery.error, agentQuery.isLoading]);
+  }, [nodeId, agentQuery.data, agentQuery.error, agentQuery.isLoading, computedWeightedAgents]);
 
   // Cleanup icon URL on unmount
   useEffect(() => {
@@ -134,6 +151,7 @@ export function PermissionNodeAgentCard({
           socialsList={socials}
           title={agentName}
           currentBlock={currentBlock}
+          agentWeight={weightFactor}
         />
       )}
     </Card>
