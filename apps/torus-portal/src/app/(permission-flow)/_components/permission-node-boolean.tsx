@@ -329,16 +329,8 @@ export function PermissionNodeBoolean({
         </div>
       )}
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-blue-500"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3 h-3 bg-blue-600"
-      />
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
