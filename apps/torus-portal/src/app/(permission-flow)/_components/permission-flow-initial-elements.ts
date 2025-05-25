@@ -1,8 +1,8 @@
-import type { Edge } from "@xyflow/react";
+import type { Node, Edge } from "@xyflow/react";
 import { BoolExpr } from "../../../utils/dsl";
-import type { PermissionNode } from "./permission-node-types";
+import type { PermissionNodeData } from "./permission-node-types";
 
-export const nodes: PermissionNode[] = [
+export const nodes: Node<PermissionNodeData>[] = [
   {
     id: "root-boolean",
     type: "permissionBoolean",

@@ -3,15 +3,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
+import { NumExpr } from "~/utils/dsl";
 import type {
   NumberNodeData,
-  PermissionNode,
   NodeCreationResult,
 } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
-import { NumExpr } from "~/utils/dsl";
 
-export function PermissionNodeNumber({ id, data }: NodeProps<NumberNodeData>) {
+interface PermissionNodeNumberProps {
+  id: string;
+  data: NumberNodeData;
+}
+
+export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
   const { setNodes, setEdges, getNodes, getEdges } = useReactFlow();
   const [inputValue, setInputValue] = useState(() => {
     if (data.expression.$ === "UIntLiteral") {
@@ -40,11 +44,11 @@ export function PermissionNodeNumber({ id, data }: NodeProps<NumberNodeData>) {
 
     setNodes((nodes) => nodes.filter((node) => !nodesToRemove.has(node.id)));
     setEdges((edges) => edges.filter((edge) => !edgesToRemove.has(edge.id)));
-  }, [id, setNodes, setEdges, getNodes, getEdges]);
+  }, [id, setNodes, setEdges, getEdges]);
 
   const createChildNodes = useCallback(
     (expression: NumExpr): NodeCreationResult => {
-      const nodes: PermissionNode[] = [];
+      const nodes = [];
       const edges = [];
 
       switch (expression.$) {
@@ -240,7 +244,7 @@ export function PermissionNodeNumber({ id, data }: NodeProps<NumberNodeData>) {
       setNodes((nodes) => nodes.concat(childNodes));
       setEdges((edges) => edges.concat(childEdges));
     }
-  }, []);
+  }, [id, data.expression, getNodes, createChildNodes, setNodes, setEdges]);
 
   return (
     <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 min-w-[250px]">
@@ -287,7 +291,7 @@ export function PermissionNodeNumber({ id, data }: NodeProps<NumberNodeData>) {
           </label>
           <input
             type="text"
-            value={data.expression.account ?? ""}
+            value={data.expression.account || ""}
             onChange={(e) => handleAccountChange("account", e.target.value)}
             className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
             placeholder="Enter account ID"
@@ -304,7 +308,7 @@ export function PermissionNodeNumber({ id, data }: NodeProps<NumberNodeData>) {
             </label>
             <input
               type="text"
-              value={data.expression.from ?? ""}
+              value={data.expression.from || ""}
               onChange={(e) => handleAccountChange("from", e.target.value)}
               className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
               placeholder="From account ID"
@@ -316,7 +320,7 @@ export function PermissionNodeNumber({ id, data }: NodeProps<NumberNodeData>) {
             </label>
             <input
               type="text"
-              value={data.expression.to ?? ""}
+              value={data.expression.to || ""}
               onChange={(e) => handleAccountChange("to", e.target.value)}
               className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
               placeholder="To account ID"
@@ -336,5 +340,12 @@ export function PermissionNodeNumber({ id, data }: NodeProps<NumberNodeData>) {
         className="w-3 h-3 bg-green-600"
       />
     </div>
+  );
+}
+
+// Wrapper to satisfy ReactFlow's NodeProps type requirement
+export default function PermissionNodeNumberWrapper(props: NodeProps) {
+  return (
+    <PermissionNodeNumber id={props.id} data={props.data as NumberNodeData} />
   );
 }
