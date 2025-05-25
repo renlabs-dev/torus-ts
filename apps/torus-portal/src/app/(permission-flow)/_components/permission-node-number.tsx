@@ -329,16 +329,8 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         </>
       )}
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-green-500"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3 h-3 bg-green-600"
-      />
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }

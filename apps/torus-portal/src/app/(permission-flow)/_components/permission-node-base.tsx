@@ -262,18 +262,10 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         </div>
       )}
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-orange-500"
-      />
+      <Handle type="target" position={Position.Top} />
       {(data.expression.$ === "MaxDelegationDepth" ||
         data.expression.$ === "RateLimit") && (
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          className="w-3 h-3 bg-orange-600"
-        />
+        <Handle type="source" position={Position.Bottom} />
       )}
     </div>
   );
