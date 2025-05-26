@@ -1,7 +1,7 @@
 import type { Node, Edge } from "@xyflow/react";
 
-import type { PermissionNodeData } from "./permission-node-types";
-import { createChildNodeId, createEdgeId } from "./permission-node-types";
+import type { PermissionNodeData } from "./constraint-node-types";
+import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 import type {
   BaseConstraint,
   BoolExpr,

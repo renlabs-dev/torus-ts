@@ -7,7 +7,7 @@ import { Handle, Position, useReactFlow } from "@xyflow/react";
 import type {
   PermissionNodeData,
   NodeCreationResult,
-} from "./permission-node-types";
+} from "./constraint-node-types";
 
 interface PermissionNodeContainerProps {
   id: string;

@@ -23,21 +23,21 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 
-import PermissionNodeBoolean from "./permission-node-boolean";
-import PermissionNodeNumber from "./permission-node-number";
-import PermissionNodeBase from "./permission-node-base";
-import { extractConstraintFromNodes } from "./permission-constraint-utils";
-import { constraintValidationSchema } from "./permission-validation-schemas";
-import { constraintExamples } from "./constraint-examples";
-import { constraintToNodes } from "./constraint-to-nodes";
+import PermissionNodeBoolean from "./constraint-nodes/constraint-node-boolean";
+import PermissionNodeNumber from "./constraint-nodes/constraint-node-number";
+import PermissionNodeBase from "./constraint-nodes/constraint-node-base";
+import { extractConstraintFromNodes } from "./constraint-utils";
+import { constraintValidationSchema } from "./constraint-validation-schemas";
+import { constraintExamples } from "./constraint-data/constraint-data-examples";
+import { constraintToNodes } from "./constraint-nodes/constraint-to-nodes";
 
-import useAutoLayout from "./use-auto-layout";
-import type { LayoutOptions } from "./use-auto-layout";
+import useAutoLayout from "./constraint-layout/use-auto-layout";
+import type { LayoutOptions } from "./constraint-layout/use-auto-layout";
 
 import {
   nodes as initialNodes,
   edges as initialEdges,
-} from "./permission-flow-initial-elements";
+} from "./constraint-data/constraint-data-initial-elements";
 
 import "@xyflow/react/dist/style.css";
 
@@ -60,7 +60,7 @@ const nodeTypes = {
 /**
  * This example shows how you can automatically arrange your nodes after adding child nodes to your graph.
  */
-function ReactFlowAutoLayout() {
+function ConstraintFlow() {
   const { fitView } = useReactFlow();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -190,12 +190,12 @@ function ReactFlowAutoLayout() {
   );
 }
 
-const ReactFlowWrapper = () => {
+const ConstraintFlowWrapper = () => {
   return (
     <ReactFlowProvider>
-      <ReactFlowAutoLayout />
+      <ConstraintFlow />
     </ReactFlowProvider>
   );
 };
 
-export default ReactFlowWrapper;
+export default ConstraintFlowWrapper;

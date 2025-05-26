@@ -5,9 +5,9 @@ import type { Node, Edge } from "@xyflow/react";
 import {
   getSourceHandlePosition,
   getTargetHandlePosition,
-} from "./permission-flow-utils";
-import layoutAlgorithms from "./permission-flow-types";
-import type { LayoutAlgorithmOptions } from "./permission-flow-types";
+} from "./constraint-layout-utils";
+import layoutAlgorithms from "./constraint-layout-types";
+import type { LayoutAlgorithmOptions } from "./constraint-layout-types";
 
 export type LayoutOptions = {
   algorithm: keyof typeof layoutAlgorithms;
