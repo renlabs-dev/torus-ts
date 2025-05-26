@@ -10,26 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  Hash,
-  Clock,
-  Coins,
-  Plus,
-  Minus,
-  Scale,
-  Zap,
-} from "lucide-react";
+import { Hash, Clock, Coins, Plus, Minus, Scale, Zap } from "lucide-react";
 import { NumExpr } from "~/utils/dsl";
 import type {
   NumberNodeData,
   NodeCreationResult,
-} from "./permission-node-types";
-import { createChildNodeId, createEdgeId } from "./permission-node-types";
-import { uintSchema, accountIdSchema } from "./permission-validation-schemas";
+} from "./constraint-node-types";
+import { createChildNodeId, createEdgeId } from "./constraint-node-types";
+import { uintSchema, accountIdSchema } from "../constraint-validation-schemas";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
-} from "./permission-node-container";
+} from "./constraint-node-container";
 
 interface PermissionNodeNumberProps {
   id: string;
@@ -225,14 +217,15 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       <Select value={data.expression.$} onValueChange={handleTypeChange}>
         <SelectTrigger
           id={`${id}-type`}
-          className={`border transition-all border-[#B1B1B7] duration-200 rounded-full [&>svg]:invisible
-            ${data.expression.$ === "UIntLiteral" && "bg-blue-50 text-blue-700"}
-            ${data.expression.$ === "BlockNumber" && "bg-purple-50 text-purple-700"}
-            ${data.expression.$ === "StakeOf" && "bg-green-50 text-green-700"}
-            ${data.expression.$ === "Add" && "bg-emerald-50 text-emerald-700"}
-            ${data.expression.$ === "Sub" && "bg-red-50 text-red-700"}
-            ${data.expression.$ === "WeightSet" && "bg-orange-50 text-orange-700"}
-            ${data.expression.$ === "WeightPowerFrom" && "bg-yellow-50 text-yellow-700"}`}
+          className={`border pr-0 w-fit transition-all border-[#B1B1B7] duration-200 rounded-full
+            [&>svg]:invisible ${ data.expression.$ === "UIntLiteral" &&
+            "bg-blue-50 text-blue-700" } ${ data.expression.$ === "BlockNumber" &&
+            "bg-purple-50 text-purple-700" } ${ data.expression.$ === "StakeOf" &&
+            "bg-green-50 text-green-700" } ${ data.expression.$ === "Add" &&
+            "bg-emerald-50 text-emerald-700" } ${data.expression.$ === "Sub" &&
+            "bg-red-50 text-red-700"} ${ data.expression.$ === "WeightSet" &&
+            "bg-orange-50 text-orange-700" } ${ data.expression.$ === "WeightPowerFrom" &&
+            "bg-yellow-50 text-yellow-700" }`}
         >
           <SelectValue />
         </SelectTrigger>
@@ -289,7 +282,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
             type="text"
             value={inputValue}
             onChange={(e) => handleValueChange(e.target.value)}
-            className={`w-full ${inputError ? "border-red-500" : ""}`}
+            className={`w-full pr-0 ${inputError ? "border-red-500" : ""}`}
             placeholder="Enter a positive integer"
           />
           {inputError && (
@@ -305,7 +298,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
             type="text"
             value={data.expression.account || ""}
             onChange={(e) => handleAccountChange("account", e.target.value)}
-            className={`w-full ${accountError ? "border-red-500" : ""}`}
+            className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
             placeholder="Enter account ID"
           />
           {accountError && (
@@ -323,7 +316,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
               type="text"
               value={data.expression.from || ""}
               onChange={(e) => handleAccountChange("from", e.target.value)}
-              className={`w-full ${accountError ? "border-red-500" : ""}`}
+              className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
               placeholder="From account ID"
             />
           </div>
@@ -333,7 +326,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
               type="text"
               value={data.expression.to || ""}
               onChange={(e) => handleAccountChange("to", e.target.value)}
-              className={`w-full ${accountError ? "border-red-500" : ""}`}
+              className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
               placeholder="To account ID"
             />
           </div>

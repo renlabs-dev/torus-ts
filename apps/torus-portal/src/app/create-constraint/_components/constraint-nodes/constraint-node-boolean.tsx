@@ -21,16 +21,16 @@ import {
   ChevronsDown,
   Workflow,
 } from "lucide-react";
-import { BoolExpr, CompOp } from "../../../utils/dsl";
+import { BoolExpr, CompOp } from "../../../../utils/dsl";
 import type {
   BooleanNodeData,
   NodeCreationResult,
-} from "./permission-node-types";
-import { createChildNodeId, createEdgeId } from "./permission-node-types";
+} from "./constraint-node-types";
+import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
-} from "./permission-node-container";
+} from "./constraint-node-container";
 
 interface PermissionNodeBooleanProps {
   id: string;
@@ -266,7 +266,7 @@ export function PermissionNodeBoolean({
         <Select value={data.expression.$} onValueChange={handleTypeChange}>
           <SelectTrigger
             id={`${id}-type`}
-            className={` border transition-all border-[#B1B1B7] duration-200 rounded-full
+            className={` border transition-all pr-0 border-[#B1B1B7] duration-200 rounded-full
               [&>svg]:invisible ${data.expression.$ === "Not" && "bg-red-50 text-red-700"} ${
               data.expression.$ === "And" && "bg-blue-50 text-blue-700" } ${data.expression.$
               === "Or" && "bg-green-50 text-green-700"} ${ data.expression.$ === "CompExpr" &&
