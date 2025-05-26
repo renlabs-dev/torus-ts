@@ -43,7 +43,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
       if (matchingNode) {
         const params = new URLSearchParams(searchParams.toString());
         params.set('agent', matchingNode);
-        router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
+        router.replace(`/?${params.toString()}`, { scroll: false });
       }
     }
   }, [searchQuery, graphNodes, router, searchParams]);
@@ -51,15 +51,13 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
   const handleSuggestionClick = useCallback((node: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('agent', node);
-    router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
+    router.replace(`/?${params.toString()}`, { scroll: false });
     setShowSuggestions(false);
   }, [router, searchParams]);
 
   return (
     <div className="relative">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
-        {/* <Label>        
-          <SearchIcon size={16} className="text-muted-foreground" /> */}
             <Input
               type="text"
               placeholder="Search by agent key..."
@@ -67,7 +65,6 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-background"
               />
-        {/* </Label> */}
       </form>
 
       {showSuggestions && (

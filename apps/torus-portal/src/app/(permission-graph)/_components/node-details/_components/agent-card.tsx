@@ -8,6 +8,7 @@ import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { CachedAgentData } from "../../permission-graph-utils";
+import { Button } from "@torus-ts/ui/components/button";
 
 interface PermissionNodeAgentCardProps {
   nodeId: string;
@@ -206,7 +207,10 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
 
   return (
     <Card className="w-[27em] flex-1 p-4 flex flex-col z-50">
+      <div className=" flex flex-row justify-between">
       <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
+      <Button variant="outline" className="-mt-1"> View on Allocator </Button>
+      </div>
       {isLoading ? (
         <p>Loading agent details...</p>
       ) : (

@@ -82,8 +82,8 @@ export function AddressCopyButton({
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <CopyButton
+      <TooltipTrigger>
+        <CopyButton asChild
           className={defaultButtonConfig.className}
           variant={defaultButtonConfig.variant}
           copy={link}
@@ -102,6 +102,7 @@ export function AddressCopyButton({
     </Tooltip>
   )
 }
+
 
 export function AddressLinkButton({
   link,
@@ -165,7 +166,7 @@ export function NodeJumpButton({
     e.preventDefault(); 
     const params = new URLSearchParams(searchParams.toString());
     params.set('agent', address);
-    router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
+    router.replace(`/?${params.toString()}`, { scroll: false });
   };
 
   return (
