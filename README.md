@@ -17,7 +17,7 @@ Monorepo for the **Torus Network** TypesSript Ecosystem. It's managed with
 .vscode
   └─ Recommended extensions and settings for VSCode users
 apps
-  |─ torus-dao
+  |─ torus-governance
   |   └─ DAO & Governance Portal
   |─ torus-page
   |   └─ Landing Page
@@ -25,12 +25,11 @@ apps
   |   └─ Set weights to Agents
   |─ torus-wallet
   |   └─ Transactions & Staking
-  └─ torus-bridge
-      └─ Bridge between Base and Torus
-services
-  |─ torus-cache
+  |─ torus-bridge
+  |   └─ Bridge between Base and Torus
+  |─ torus-cache <!-- TODO: Move to services section -->
   |   └─ Blockchain data caching service
-  └─ torus-worker
+  └─ torus-worker <!-- TODO: Move to services section -->
       └─ Background services
 packages
   ├─ api
@@ -43,8 +42,8 @@ packages
   |   └─ Polkadot JS API provider
   ├─ query-provider
   |   └─ React Query provider
-  ├─ subspace
-  |   └─ Substrate client library
+  ├─ torus-sdk-ts
+  |   └─ Main Torus Network SDK
   ├─ ui
   |   └─ UI components library
   └─ utils
@@ -79,10 +78,10 @@ just install
 # There is an `.env.example` in the root directory you can use for reference
 cp .env.example .env
 
-# build the project (required for subspace package type system)
+# Build the project (required for SDK package type system)
 just build
 
-# Push the Drizzle schema to the database (required for allocator and dao)
+# Push the Drizzle schema to the database (required for allocator and governance)
 just db-push
 
 # Run the project
