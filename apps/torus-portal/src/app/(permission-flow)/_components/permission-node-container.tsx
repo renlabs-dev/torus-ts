@@ -9,26 +9,6 @@ import type {
   NodeCreationResult,
 } from "./permission-node-types";
 
-interface NodeColorConfig {
-  background: string;
-  text: string;
-}
-
-const nodeColors: Record<PermissionNodeData["type"], NodeColorConfig> = {
-  boolean: {
-    background: "bg-accent",
-    text: "text-blue-900",
-  },
-  number: {
-    background: "bg-accent",
-    text: "text-green-900",
-  },
-  base: {
-    background: "bg-accent",
-    text: "text-orange-900",
-  },
-};
-
 interface PermissionNodeContainerProps {
   id: string;
   data: PermissionNodeData;
@@ -48,7 +28,6 @@ export function PermissionNodeContainer({
   shouldAutoCreateChildren = true,
 }: PermissionNodeContainerProps) {
   const { setNodes, setEdges, getNodes } = useReactFlow();
-  const colors = nodeColors[data.type];
 
   // Auto-create child nodes on mount if needed
   useEffect(() => {
@@ -87,9 +66,7 @@ export function PermissionNodeContainer({
   ]);
 
   return (
-    <div
-      className={`${colors.background} border border-[#B1B1B7] p-4 min-w-[250px]`}
-    >
+    <div className={"border border-[#B1B1B7] min-w-[150px]"}>
       {children}
 
       <Handle type="target" position={Position.Top} />

@@ -1,5 +1,4 @@
 import { asc, eq, isNull, sql, sum } from "drizzle-orm";
-import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   boolean,
   check,
@@ -496,7 +495,10 @@ export const permissionSchema = createTable("permission", {
 
 export const permissionDetailsSchema = createTable("permission_details", {
   id: serial("id").primaryKey(),
-  permission_id: integer("permission_id").notNull().unique().references(() => permissionSchema.permission_id),
+  permission_id: integer("permission_id")
+    .notNull()
+    .unique()
+    .references(() => permissionSchema.permission_id),
   grantor_key: ss58Address("grantor_key").notNull(),
   grantee_key: ss58Address("grantee_key").notNull(),
   scope: permissionScope("scope").notNull(),
