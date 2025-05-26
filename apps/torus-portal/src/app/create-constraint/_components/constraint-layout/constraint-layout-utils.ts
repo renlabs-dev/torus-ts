@@ -1,5 +1,5 @@
 import { Position } from "@xyflow/react";
-import type { Direction } from "./permission-flow-types";
+import type { Direction } from "./constraint-layout-types";
 
 export function getSourceHandlePosition(direction: Direction) {
   switch (direction) {
@@ -25,8 +25,4 @@ export function getTargetHandlePosition(direction: Direction) {
     case "RL":
       return Position.Right;
   }
-}
-
-export function getId() {
-  return `${Date.now()}`;
 }

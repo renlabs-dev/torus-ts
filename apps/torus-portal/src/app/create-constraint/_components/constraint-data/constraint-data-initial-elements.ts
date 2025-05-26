@@ -1,6 +1,6 @@
 import type { Node, Edge } from "@xyflow/react";
-import { BoolExpr } from "../../../utils/dsl";
-import type { PermissionNodeData } from "./permission-node-types";
+import { BoolExpr } from "../../../../utils/dsl";
+import type { PermissionNodeData } from "../constraint-nodes/constraint-node-types";
 
 export const nodes: Node<PermissionNodeData>[] = [
   {

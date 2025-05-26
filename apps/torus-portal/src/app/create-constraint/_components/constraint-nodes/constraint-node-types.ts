@@ -1,5 +1,5 @@
 import type { Node, Edge } from "@xyflow/react";
-import type { BoolExpr, NumExpr, BaseConstraint } from "../../../utils/dsl";
+import type { BoolExpr, NumExpr, BaseConstraint } from "../../../../utils/dsl";
 
 export interface BooleanNodeData extends Record<string, unknown> {
   type: "boolean";
