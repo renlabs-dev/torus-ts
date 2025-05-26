@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { GitBranch, CheckCircle, Play, Timer, Pause } from "lucide-react";
 import { BaseConstraint, NumExpr } from "../../../utils/dsl";
 import type { BaseNodeData, NodeCreationResult } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
@@ -195,18 +196,51 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
       shouldAutoCreateChildren={shouldAutoCreate}
     >
       <Select value={data.expression.$} onValueChange={handleTypeChange}>
-        <SelectTrigger id={`${id}-type`}>
+        <SelectTrigger
+          id={`${id}-type`}
+          className={`border transition-all border-[#B1B1B7] pr-0 duration-200 rounded-full
+            [&>svg]:invisible ${ data.expression.$ === "MaxDelegationDepth" &&
+            "bg-blue-50 text-blue-700" } ${ data.expression.$ === "PermissionExists" &&
+            "bg-green-50 text-green-700" } ${ data.expression.$ === "PermissionEnabled" &&
+            "bg-emerald-50 text-emerald-700" } ${ data.expression.$ === "RateLimit" &&
+            "bg-orange-50 text-orange-700" } ${ data.expression.$ ===
+            "InactiveUnlessRedelegated" && "bg-gray-50 text-gray-700" }`}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="MaxDelegationDepth">
-            Max Delegation Depth
+          <SelectItem value="MaxDelegationDepth" className="hover:bg-blue-50">
+            <div className="flex items-center gap-2">
+              <GitBranch className="h-4 w-4 text-blue-600" />
+              <span>Max Delegation Depth</span>
+            </div>
           </SelectItem>
-          <SelectItem value="PermissionExists">Permission Exists</SelectItem>
-          <SelectItem value="PermissionEnabled">Permission Enabled</SelectItem>
-          <SelectItem value="RateLimit">Rate Limit</SelectItem>
-          <SelectItem value="InactiveUnlessRedelegated">
-            Inactive Unless Redelegated
+          <SelectItem value="PermissionExists" className="hover:bg-green-50">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <span>Permission Exists</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="PermissionEnabled" className="hover:bg-emerald-50">
+            <div className="flex items-center gap-2">
+              <Play className="h-4 w-4 text-emerald-600" />
+              <span>Permission Enabled</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="RateLimit" className="hover:bg-orange-50">
+            <div className="flex items-center gap-2">
+              <Timer className="h-4 w-4 text-orange-600" />
+              <span>Rate Limit</span>
+            </div>
+          </SelectItem>
+          <SelectItem
+            value="InactiveUnlessRedelegated"
+            className="hover:bg-gray-50"
+          >
+            <div className="flex items-center gap-2">
+              <Pause className="h-4 w-4 text-gray-600" />
+              <span>Inactive Unless Redelegated</span>
+            </div>
           </SelectItem>
         </SelectContent>
       </Select>

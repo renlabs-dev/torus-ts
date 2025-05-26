@@ -10,6 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import {
+  Hash,
+  Clock,
+  Coins,
+  Plus,
+  Minus,
+  Scale,
+  Zap,
+} from "lucide-react";
 import { NumExpr } from "~/utils/dsl";
 import type {
   NumberNodeData,
@@ -214,17 +223,62 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       shouldAutoCreateChildren={shouldAutoCreate}
     >
       <Select value={data.expression.$} onValueChange={handleTypeChange}>
-        <SelectTrigger id={`${id}-type`}>
+        <SelectTrigger
+          id={`${id}-type`}
+          className={`border transition-all border-[#B1B1B7] duration-200 rounded-full [&>svg]:invisible
+            ${data.expression.$ === "UIntLiteral" && "bg-blue-50 text-blue-700"}
+            ${data.expression.$ === "BlockNumber" && "bg-purple-50 text-purple-700"}
+            ${data.expression.$ === "StakeOf" && "bg-green-50 text-green-700"}
+            ${data.expression.$ === "Add" && "bg-emerald-50 text-emerald-700"}
+            ${data.expression.$ === "Sub" && "bg-red-50 text-red-700"}
+            ${data.expression.$ === "WeightSet" && "bg-orange-50 text-orange-700"}
+            ${data.expression.$ === "WeightPowerFrom" && "bg-yellow-50 text-yellow-700"}`}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="UIntLiteral">Literal Value</SelectItem>
-          <SelectItem value="BlockNumber">Block Number</SelectItem>
-          <SelectItem value="StakeOf">Stake Of Account</SelectItem>
-          <SelectItem value="Add">Add</SelectItem>
-          <SelectItem value="Sub">Subtract</SelectItem>
-          <SelectItem value="WeightSet">Weight Set</SelectItem>
-          <SelectItem value="WeightPowerFrom">Weight Power From</SelectItem>
+          <SelectItem value="UIntLiteral" className="hover:bg-blue-50">
+            <div className="flex items-center gap-2">
+              <Hash className="h-4 w-4 text-blue-600" />
+              <span>Literal Value</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="BlockNumber" className="hover:bg-purple-50">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-purple-600" />
+              <span>Block Number</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="StakeOf" className="hover:bg-green-50">
+            <div className="flex items-center gap-2">
+              <Coins className="h-4 w-4 text-green-600" />
+              <span>Stake Of Account</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="Add" className="hover:bg-emerald-50">
+            <div className="flex items-center gap-2">
+              <Plus className="h-4 w-4 text-emerald-600" />
+              <span>Add</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="Sub" className="hover:bg-red-50">
+            <div className="flex items-center gap-2">
+              <Minus className="h-4 w-4 text-red-600" />
+              <span>Subtract</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="WeightSet" className="hover:bg-orange-50">
+            <div className="flex items-center gap-2">
+              <Scale className="h-4 w-4 text-orange-600" />
+              <span>Weight Set</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="WeightPowerFrom" className="hover:bg-yellow-50">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-yellow-600" />
+              <span>Weight Power From</span>
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
 
