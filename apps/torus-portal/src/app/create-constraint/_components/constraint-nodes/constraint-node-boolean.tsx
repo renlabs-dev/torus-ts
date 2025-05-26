@@ -21,16 +21,16 @@ import {
   ChevronsDown,
   Workflow,
 } from "lucide-react";
-import { BoolExpr, CompOp } from "../../../utils/dsl";
+import { BoolExpr, CompOp } from "../../../../utils/dsl";
 import type {
   BooleanNodeData,
   NodeCreationResult,
-} from "./permission-node-types";
-import { createChildNodeId, createEdgeId } from "./permission-node-types";
+} from "./constraint-node-types";
+import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
-} from "./permission-node-container";
+} from "./constraint-node-container";
 
 interface PermissionNodeBooleanProps {
   id: string;
