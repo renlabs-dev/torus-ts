@@ -58,8 +58,8 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
   return (
     <div className="relative">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
-        <Label>        
-          <SearchIcon size={16} className="text-muted-foreground" />
+        {/* <Label>        
+          <SearchIcon size={16} className="text-muted-foreground" /> */}
             <Input
               type="text"
               placeholder="Search by agent key..."
@@ -67,7 +67,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-background"
               />
-        </Label>
+        {/* </Label> */}
       </form>
 
       {showSuggestions && (
