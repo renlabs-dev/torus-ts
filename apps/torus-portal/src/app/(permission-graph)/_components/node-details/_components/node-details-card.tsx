@@ -11,7 +11,6 @@ import {
   getNodePermissions,
   sortPermissions,
  } from "../../permission-graph-utils";
-import { PermissionNodeAgentCard } from "./agent-card";
 import { LinkButtons } from "./link-buttons";
 import { ActionButtons } from "./action-buttons";
 import { useMemo, memo } from "react";
@@ -29,8 +28,6 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
   selectedNode, 
   graphData,
   permissionDetails,
-  getCachedAgentData,
-  setCachedAgentData,
   // TODO : When click on the background, it should close the details
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onBackgroundClick 
@@ -59,16 +56,8 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
   if (!graphData) return null;
 
   return (
-    <div className="flex flex-col gap-4 h-[44em] w-[27em] z-50">
-      <div className="flex flex-col gap-2">
-        <PermissionNodeAgentCard 
-          nodeId={selectedNode.id}
-          fullAddress={selectedNode.fullAddress}
-          getCachedAgentData={getCachedAgentData}
-          setCachedAgentData={setCachedAgentData}
-        />
-      </div>
-      <Card className="w-[27em] flex-1 p-4 flex flex-col overflow-hidden z-50">
+    <div className="flex flex-col gap-4 h-[27em] w-[27em] z-50">
+      <Card className="w-[27em] flex-1 p-4 flex flex-col  z-50">
         <h2 className="text-lg font-semibold mb-4 flex-shrink-0">Applied Permissions</h2>
         
         {sortedPermissions.length > 0 ? (
@@ -76,9 +65,11 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
             <div className="flex max-h-96 overflow-auto">
               <Accordion type="single" collapsible className="w-full">
               {sortedPermissions.map((permission, index) => {
+
                 const details = permissionDetails?.find(
                   p => p.grantor_key === permission.source && p.grantee_key === permission.target
                 );
+                console.log("details:", details);
                 const isOutgoing = permission.type === 'outgoing';
                 const connectedNode = graphData.nodes.find(
                   n => n.id === (isOutgoing ? permission.target : permission.source)
@@ -144,7 +135,7 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
                               <div>
                                 <span className="text-xs text-gray-500">Enforcement</span>
                                 <div className=" font-mono text-gray-300 break-all">
-                                  {details.enforcement}
+                                  {smallAddress(details.enforcement, 4)}
                                 </div>
                               </div>
                               
