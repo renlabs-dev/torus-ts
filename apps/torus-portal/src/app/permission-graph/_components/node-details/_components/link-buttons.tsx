@@ -16,7 +16,7 @@ interface IconConfig {
   className?: string;
 }
 
-interface UtilityButtonsDescriptionProps {
+interface LinkButtonsProps {
   details: PermissionDetail | undefined;
   grantorIcon?: IconConfig;
   granteeIcon?: IconConfig;
@@ -25,14 +25,14 @@ interface UtilityButtonsDescriptionProps {
   iconColor?: string;
 }
 
-export function UtilityButtonsDescription({
+export function LinkButtons({
   details,
   grantorIcon,
   granteeIcon,
   scopeIcon,
   iconSize = 16,
   iconColor = "currentColor"
-}: UtilityButtonsDescriptionProps): JSX.Element {
+}: LinkButtonsProps): JSX.Element {
   if (!details) {
     return (
       <div className="flex justify-center items-center gap-2 text-sm text-gray-400 font-mono">
