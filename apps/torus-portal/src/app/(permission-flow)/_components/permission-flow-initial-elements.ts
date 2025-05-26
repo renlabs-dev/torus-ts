@@ -13,6 +13,22 @@ export const nodes: Node<PermissionNodeData>[] = [
     },
     position: { x: 0, y: 0 },
   },
+  {
+    id: "root-boolean-base",
+    type: "permissionBase",
+    data: {
+      type: "base",
+      expression: { $: "InactiveUnlessRedelegated" },
+      label: "Base Constraint",
+    },
+    position: { x: 0, y: 0 },
+  },
 ];
 
-export const edges: Edge[] = [];
+export const edges: Edge[] = [
+  {
+    id: "root-boolean-root-boolean-base",
+    source: "root-boolean",
+    target: "root-boolean-base",
+  },
+];

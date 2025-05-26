@@ -236,8 +236,7 @@ export function PermissionNodeBoolean({
     [data.expression, updateNodeData],
   );
 
-  const shouldAutoCreate =
-    data.expression.$ !== "Base" && data.expression.$ !== "CompExpr";
+  const shouldAutoCreate = true;
 
   return (
     <>

@@ -55,8 +55,8 @@ export function PermissionNodeContainer({
     if (!shouldAutoCreateChildren || !createChildNodes) return;
 
     const currentNodes = getNodes();
-    const hasChildren = currentNodes.some((node) =>
-      node.id.startsWith(`${id}-`),
+    const hasChildren = currentNodes.some(
+      (node) => node.id.startsWith(`${id}-`) || node.id === `${id}-base`,
     );
 
     if (!hasChildren) {
@@ -64,8 +64,16 @@ export function PermissionNodeContainer({
         data.expression,
       );
       if (childNodes.length > 0) {
-        setNodes((nodes) => nodes.concat(childNodes));
-        setEdges((edges) => edges.concat(childEdges));
+        setNodes((nodes) => {
+          const existingIds = new Set(nodes.map((n) => n.id));
+          const newNodes = childNodes.filter((n) => !existingIds.has(n.id));
+          return nodes.concat(newNodes);
+        });
+        setEdges((edges) => {
+          const existingIds = new Set(edges.map((e) => e.id));
+          const newEdges = childEdges.filter((e) => !existingIds.has(e.id));
+          return edges.concat(newEdges);
+        });
       }
     }
   }, [
@@ -135,8 +143,16 @@ export function useChildNodeManagement(id: string) {
 
   const addChildNodes = useCallback(
     ({ nodes: childNodes, edges: childEdges }: NodeCreationResult) => {
-      setNodes((nodes) => nodes.concat(childNodes));
-      setEdges((edges) => edges.concat(childEdges));
+      setNodes((nodes) => {
+        const existingIds = new Set(nodes.map((n) => n.id));
+        const newNodes = childNodes.filter((n) => !existingIds.has(n.id));
+        return nodes.concat(newNodes);
+      });
+      setEdges((edges) => {
+        const existingIds = new Set(edges.map((e) => e.id));
+        const newEdges = childEdges.filter((e) => !existingIds.has(e.id));
+        return edges.concat(newEdges);
+      });
     },
     [setNodes, setEdges],
   );
