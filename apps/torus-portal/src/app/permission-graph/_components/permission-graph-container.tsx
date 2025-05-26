@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import PermissionGraph from "./permission-graph";
 import PermissionGraphControls from "./permission-graph-controls";
 import type {
@@ -13,6 +14,8 @@ import { PermissionGraphNodeDetails } from "./node-details";
 import { api } from "~/trpc/react";
 
 export default function PermissionGraphContainer() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [graphData, setGraphData] = useState<CustomGraphData | null>(null);
   const [selectedNode, setSelectedNode] = useState<CustomGraphNode | null>(null);
   const agentCache = useRef(new AgentLRUCache(10));
@@ -71,11 +74,30 @@ export default function PermissionGraphContainer() {
     setGraphData(memoizedGraphData);
   }, [memoizedGraphData]);
 
+  // Handle initial selected node from query params
+  useEffect(() => {
+    const agentId = searchParams.get('agent');
+    if (agentId && graphData) {
+      const node = graphData.nodes.find(n => n.id === agentId);
+      if (node && (!selectedNode || selectedNode.id !== agentId)) {
+        setSelectedNode(node);
+      }
+    } else if (agentId && !graphData) {
+      // If we have an agent ID but no graph data yet, wait for it
+      return;
+    } else if (!agentId && selectedNode) {
+      // If no agent in URL but we have a selected node, clear it
+      setSelectedNode(null);
+    }
+  }, [searchParams, graphData, selectedNode]);
+
   const handleNodeSelect = useCallback((node: CustomGraphNode) => {
     setSelectedNode(node);
-    // Update URL with the agent key
-    window.history.pushState({}, '', `/permission-graph/agent/${node.id}`);
-  }, []);
+    // Update query parameter instead of navigation
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('agent', node.id);
+    router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
 
   const getCachedAgentData = useCallback((nodeId: string): CachedAgentData | null => {
     return agentCache.current.get(nodeId);
