@@ -26,6 +26,7 @@
     "./typing": "./src/typing.ts",
     "./collections": "./src/collections.ts",
     "./env": "./src/env.ts",
+    "./error": "./src/error.ts",
     "./files": "./src/files.ts",
     "./bignumber": "./src/bignumber.ts",
     "./try-catch": "./src/try-catch.ts",

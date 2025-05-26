@@ -25,7 +25,7 @@ describe("try async functions", () => {
     it("should return [error, undefined] when async operation fails", async () => {
       const [error, result] = await tryAsyncStr(failingAsyncFn());
 
-      expect(error).toBe("async error");
+      expect(error).toBe("Error: async error");
       expect(result).toBeUndefined();
     });
 

@@ -25,7 +25,7 @@ describe("try sync functions", () => {
     it("should return [error, undefined] when sync operation fails", () => {
       const [error, result] = trySyncStr(failingSyncFn);
 
-      expect(error).toBe("sync error");
+      expect(error).toBe("Error: sync error");
       expect(result).toBeUndefined();
     });
 
