@@ -7,15 +7,20 @@ import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { CachedAgentData } from "../../permission-graph-utils";
 
 interface PermissionNodeAgentCardProps {
   nodeId: string;
   fullAddress?: string;
+  getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
+  setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
 
 export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({ 
   nodeId,
-  fullAddress
+  fullAddress,
+  getCachedAgentData,
+  setCachedAgentData
 }: PermissionNodeAgentCardProps) {
   const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [socials, setSocials] = useState<Record<string, string>>({});
@@ -54,9 +59,44 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
   }, []);
 
 
-  // Handle basic agent data
+  // Main effect to handle cached vs fresh data
   useEffect(() => {
-    if (!nodeId || agentQuery.isLoading || !agentQuery.data || !computedWeightedAgents) {
+    if (!nodeId) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Check cache first
+    const cachedData = getCachedAgentData?.(nodeId);
+    if (cachedData) {
+      // Use cached data immediately
+      setAgentName(cachedData.agentName);
+      setSocials(cachedData.socials);
+      setCurrentBlock(cachedData.currentBlock);
+      setWeightFactor(cachedData.weightFactor);
+      setError(null);
+      
+      // Create fresh blob URL from cached blob
+      if (cachedData.iconBlob) {
+        const url = URL.createObjectURL(cachedData.iconBlob);
+        setIconUrl(url);
+      } else {
+        setIconUrl(null);
+      }
+      
+      setIsLoading(false);
+      return;
+    }
+
+    // No cached data, need to fetch
+    setIsLoading(true);
+    setError(null);
+  }, [nodeId, getCachedAgentData]);
+
+  // Handle fresh data fetching when not cached
+  useEffect(() => {
+    const cachedData = getCachedAgentData?.(nodeId);
+    if (cachedData || !nodeId || agentQuery.isLoading || !agentQuery.data || !computedWeightedAgents) {
       return;
     }
 
@@ -68,65 +108,75 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
     }
 
     const agent = agentQuery.data;
-    setAgentName(agent.name ?? smallAddress(nodeId, 6));
-    setWeightFactor(computedWeightedAgents.percComputedWeight);
-    setCurrentBlock(agent.atBlock);
+    const agentName = agent.name ?? smallAddress(nodeId, 6);
+    const currentBlock = agent.atBlock;
+    const weightFactor = computedWeightedAgents.percComputedWeight;
+
+    setAgentName(agentName);
+    setWeightFactor(weightFactor);
+    setCurrentBlock(currentBlock);
     setError(null);
 
     if (!agent.metadataUri) {
+      // No metadata, cache basic data and finish
+      const cacheData: CachedAgentData = {
+        agentName,
+        iconBlob: null,
+        socials: {},
+        currentBlock,
+        weightFactor,
+        lastAccessed: Date.now()
+      };
+      setCachedAgentData?.(nodeId, cacheData);
       setIsLoading(false);
       return;
     }
 
-    // Fetch metadata separately
+    // Fetch metadata
     const loadMetadata = async () => {
       const metadata = await fetchMetadata(agent.metadataUri!);
-      if (!metadata) {
-        setIsLoading(false);
-        return;
+      let iconBlob: Blob | null = null;
+      let socials: Record<string, string> = {};
+
+      if (metadata) {
+        if (metadata.images.icon) {
+          iconBlob = metadata.images.icon;
+          const url = URL.createObjectURL(iconBlob);
+          setIconUrl(url);
+        }
+
+        if (metadata.metadata.website) {
+          socials.website = metadata.metadata.website;
+        }
+
+        if (metadata.metadata.socials) {
+          const { socials: metaSocials } = metadata.metadata;
+          if (metaSocials.discord) socials.discord = metaSocials.discord;
+          if (metaSocials.twitter) socials.twitter = metaSocials.twitter;
+          if (metaSocials.github) socials.github = metaSocials.github;
+          if (metaSocials.telegram) socials.telegram = metaSocials.telegram;
+        }
+
+        setSocials(socials);
       }
 
-      if (metadata.images.icon) {
-        setIconUrl(URL.createObjectURL(metadata.images.icon));
-      }
-
-      const socialLinks: Record<string, string> = {};
-      if (metadata.metadata.website) {
-        socialLinks.website = metadata.metadata.website;
-      }
-
-      if (metadata.metadata.socials) {
-        const { socials: metaSocials } = metadata.metadata;
-        if (metaSocials.discord) socialLinks.discord = metaSocials.discord;
-        if (metaSocials.twitter) socialLinks.twitter = metaSocials.twitter;
-        if (metaSocials.github) socialLinks.github = metaSocials.github;
-        if (metaSocials.telegram) socialLinks.telegram = metaSocials.telegram;
-      }
-
-      setSocials(socialLinks);
+      // Cache the complete data with blob instead of URL
+      const cacheData: CachedAgentData = {
+        agentName,
+        iconBlob,
+        socials,
+        currentBlock,
+        weightFactor,
+        lastAccessed: Date.now()
+      };
+      setCachedAgentData?.(nodeId, cacheData);
       setIsLoading(false);
     };
 
     void loadMetadata();
-  }, [nodeId, agentQuery.data, agentQuery.error, agentQuery.isLoading, computedWeightedAgents, fetchMetadata]);
+  }, [nodeId, agentQuery.data, agentQuery.error, agentQuery.isLoading, computedWeightedAgents, fetchMetadata, getCachedAgentData, setCachedAgentData]);
 
-  // Handle loading state separately
-  useEffect(() => {
-    if (!nodeId) {
-      setIsLoading(false);
-      return;
-    }
-    if (!computedWeightedAgents) {
-      setIsLoading(false);
-      setWeightFactor(0);
-      return;
-    }
-    if (!agentQuery.isLoading && agentQuery.data) {
-      setIsLoading(true);
-    }
-  }, [nodeId, computedWeightedAgents, agentQuery.isLoading, agentQuery.data]);
-
-  // Cleanup icon URL on unmount
+  // Cleanup icon URL on unmount and when iconUrl changes
   useEffect(() => {
     return () => {
       if (iconUrl) {
@@ -134,6 +184,14 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
       }
     };
   }, [iconUrl]);
+
+  // Cleanup previous URL when setting new one
+  const setPreviousIconUrl = iconUrl;
+  useEffect(() => {
+    if (setPreviousIconUrl && setPreviousIconUrl !== iconUrl) {
+      URL.revokeObjectURL(setPreviousIconUrl);
+    }
+  }, [iconUrl, setPreviousIconUrl]);
 
   if (error) {
     return (
@@ -160,5 +218,13 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
         />
       )}
     </Card>
+  );
+}, (prevProps, nextProps) => {
+  // Only re-render if nodeId or fullAddress changes
+  return (
+    prevProps.nodeId === nextProps.nodeId &&
+    prevProps.fullAddress === nextProps.fullAddress &&
+    prevProps.getCachedAgentData === nextProps.getCachedAgentData &&
+    prevProps.setCachedAgentData === nextProps.setCachedAgentData
   );
 });

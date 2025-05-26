@@ -63,6 +63,12 @@ const ForceGraph = memo(function ForceGraph(props: ForceGraphProps) {
       onNodeClick={handleNodeClick}
     />
   );
+}, (prevProps, nextProps) => {
+  // Custom comparison for ForceGraph - only re-render if graphData changes
+  return (
+    prevProps.graphData === nextProps.graphData &&
+    prevProps.onNodeClick === nextProps.onNodeClick
+  );
 });
 
 const PermissionGraph = memo(function PermissionGraph({
@@ -90,6 +96,12 @@ const PermissionGraph = memo(function PermissionGraph({
         <TrackballControls />
       </Suspense>
     </Canvas>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if data actually changes
+  return (
+    prevProps.data === nextProps.data &&
+    prevProps.onNodeClick === nextProps.onNodeClick
   );
 });
 

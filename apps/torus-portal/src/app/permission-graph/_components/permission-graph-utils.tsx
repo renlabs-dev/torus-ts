@@ -194,6 +194,64 @@ export const sortPermissions = (
 };
 
 // Sample permission graph data
+// Agent cache data structure
+export interface CachedAgentData {
+  agentName: string;
+  iconBlob: Blob | null; // Store the blob itself, not the URL
+  socials: Record<string, string>;
+  currentBlock: number;
+  weightFactor: number;
+  lastAccessed: number;
+}
+
+// LRU Cache for agent data
+export class AgentLRUCache {
+  private cache = new Map<string, CachedAgentData>();
+  private maxSize: number;
+
+  constructor(maxSize: number = 10) {
+    this.maxSize = maxSize;
+  }
+
+  get(key: string): CachedAgentData | null {
+    const item = this.cache.get(key);
+    if (item) {
+      // Update last accessed time and move to end (most recent)
+      item.lastAccessed = Date.now();
+      this.cache.delete(key);
+      this.cache.set(key, item);
+      return item;
+    }
+    return null;
+  }
+
+  set(key: string, value: CachedAgentData): void {
+    // If key exists, remove it first
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+    // If cache is full, remove least recently used item
+    else if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey ?? "");
+      // Note: We store blobs directly now, no URL cleanup needed here
+    }
+    
+    // Add new item with current timestamp
+    value.lastAccessed = Date.now();
+    this.cache.set(key, value);
+  }
+
+  clear(): void {
+    // No URL cleanup needed since we store blobs directly
+    this.cache.clear();
+  }
+
+  size(): number {
+    return this.cache.size;
+  }
+}
+
 export const samplePermissionGraph: CustomGraphData = {
   nodes: [
     { id: "user", name: "User", color: "#ff6b6b", val: 10, role: "Grantor" },

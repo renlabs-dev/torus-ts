@@ -1,12 +1,14 @@
 import { PermissionGraphOverview } from "../permission-graph-overview";
 import { NodeDetailsCard } from "./_components/node-details-card";
-import type { CustomGraphData, CustomGraphNode, PermissionDetail } from "../permission-graph-utils";
+import type { CustomGraphData, CustomGraphNode, PermissionDetail, CachedAgentData } from "../permission-graph-utils";
 import { memo } from "react";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
   graphData: CustomGraphData | null;
   permissionDetails?: PermissionDetail[];
+  getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
+  setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   onBackgroundClick?: () => void;
 }
 
@@ -14,6 +16,8 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
   selectedNode, 
   graphData, 
   permissionDetails,
+  getCachedAgentData,
+  setCachedAgentData,
   onBackgroundClick 
 }: PermissionGraphDetailsProps) {
   if (!selectedNode) {
@@ -25,6 +29,8 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
       selectedNode={selectedNode} 
       graphData={graphData}
       permissionDetails={permissionDetails}
+      getCachedAgentData={getCachedAgentData}
+      setCachedAgentData={setCachedAgentData}
       onBackgroundClick={onBackgroundClick}
     />
   );

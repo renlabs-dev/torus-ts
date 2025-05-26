@@ -3,7 +3,7 @@
 import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@torus-ts/ui/components/accordion";
-import type { CustomGraphData, CustomGraphNode, PermissionDetail } from "../../permission-graph-utils";
+import type { CustomGraphData, CustomGraphNode, PermissionDetail, CachedAgentData } from "../../permission-graph-utils";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { 
   formatScope,
@@ -20,6 +20,8 @@ interface PermissionNodeDetailsProps {
   selectedNode: CustomGraphNode;
   graphData: CustomGraphData | null;
   permissionDetails?: PermissionDetail[];
+  getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
+  setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   onBackgroundClick?: () => void;
 }
 
@@ -29,6 +31,8 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
   selectedNode, 
   graphData,
   permissionDetails,
+  getCachedAgentData,
+  setCachedAgentData,
   // TODO : When click on the background, it should close the details
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onBackgroundClick 
@@ -62,6 +66,8 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
         <PermissionNodeAgentCard 
           nodeId={selectedNode.id}
           fullAddress={selectedNode.fullAddress}
+          getCachedAgentData={getCachedAgentData}
+          setCachedAgentData={setCachedAgentData}
         />
       </div>
 
