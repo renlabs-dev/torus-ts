@@ -256,7 +256,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
             type="text"
             value={permissionId}
             onChange={(e) => handlePermissionIdChange(e.target.value)}
-            className={`w-full ${permissionIdError ? "border-red-500" : ""}`}
+            className={`w-full pr-0 ${permissionIdError ? "border-red-500" : ""}`}
             placeholder="Enter permission ID"
           />
           {permissionIdError && (
