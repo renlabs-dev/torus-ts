@@ -3,7 +3,8 @@ import type { JSX } from 'react';
 import { Copy, Globe, Share2  } from 'lucide-react';
 import type {LucideIcon} from 'lucide-react';
 import { CopyButton } from '@torus-ts/ui/components/copy-button';
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@torus-ts/ui/components/tooltip';
 
 // Base icon configuration
 interface IconConfig {
@@ -66,12 +67,10 @@ export function AddressCopyButton({
   icon: Icon = Copy,
   iconConfig = {},
   buttonConfig = {},
-  showTooltip = false,
-  tooltipText = "Copy address"
 }: AddressCopyButtonProps): JSX.Element {
   const defaultIconConfig: IconConfig = {
     size: 16,
-    className: "opacity-60 hover:opacity-100 transition-opacity duration-150",
+    className: "hover:opacity-20 opacity-40  transition-opacity duration-150",
     ...iconConfig
   };
 
@@ -81,33 +80,27 @@ export function AddressCopyButton({
     ...buttonConfig
   };
 
-  const button = (
-    <CopyButton
-      className={defaultButtonConfig.className}
-      variant={defaultButtonConfig.variant}
-      copy={link}
-    >
-      <Icon 
-        className={defaultIconConfig.className}
-        size={defaultIconConfig.size}
-        color={defaultIconConfig.color}
-        strokeWidth={defaultIconConfig.strokeWidth}
-      />
-    </CopyButton>
-  );
-
-  if (showTooltip) {
-    return (
-      <div className="relative group">
-        {button}
-        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-          {tooltipText}
-        </span>
-      </div>
-    );
-  }
-
-  return button;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <CopyButton
+          className={defaultButtonConfig.className}
+          variant={defaultButtonConfig.variant}
+          copy={link}
+        >
+          <Icon 
+            className={defaultIconConfig.className}
+            size={defaultIconConfig.size}
+            color={defaultIconConfig.color}
+            strokeWidth={defaultIconConfig.strokeWidth}
+          />
+        </CopyButton>
+      </TooltipTrigger>
+      <TooltipContent>
+        {"Copy Address"}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 export function AddressLinkButton({
@@ -121,30 +114,36 @@ export function AddressLinkButton({
 }: AddressLinkButtonProps): JSX.Element {
   const defaultIconConfig: IconConfig = {
     size: 16,
-    className: "opacity-60 hover:opacity-100 transition-opacity duration-150",
+    className: "opacity-60 hover:opacity-30 transition-opacity duration-150",
     ...iconConfig
   };
 
   const href = `${getBaseUrl(baseUrlOverride)}${link}`;
 
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={linkClassName}
-    >
-      <Icon 
-        className={defaultIconConfig.className}
-        size={defaultIconConfig.size}
-        color={defaultIconConfig.color}
-        strokeWidth={defaultIconConfig.strokeWidth}
-      />
-      {showLabel && <span>{label}</span>}
-    </a>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={linkClassName}
+        >
+          <Icon 
+            className={defaultIconConfig.className}
+            size={defaultIconConfig.size}
+            color={defaultIconConfig.color}
+            strokeWidth={defaultIconConfig.strokeWidth}
+          />
+          {showLabel && <span>{label}</span>}
+        </a>
+      </TooltipTrigger>
+      <TooltipContent>
+        {"View in Explorer"}
+      </TooltipContent>
+    </Tooltip>
   );
 }
-
 
 export function NodeJumpButton({
   address,
@@ -156,43 +155,45 @@ export function NodeJumpButton({
 }: NodeJumpButtonProps): JSX.Element {
   const defaultIconConfig: IconConfig = {
     size: 16,
-    className: "opacity-60 hover:opacity-100 transition-opacity duration-150",
+    className: "opacity-60 hover:opacity-30 transition-opacity duration-150",
     ...iconConfig
   };
   const router = useRouter();
+  const searchParams = useSearchParams();
 
- const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.preventDefault(); 
-
-    const currentPath = window.location.pathname;
-    const pathParts = currentPath.split("/");
-    pathParts[pathParts.length - 1] = address; 
-    const newPath = pathParts.join("/");
-
-    router.push(newPath);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('agent', address);
+    router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
   };
 
   return (
-    <a
-      href={""}
-      onClick={handleClick}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={linkClassName}
-    >
-      <Icon 
-        className={defaultIconConfig.className}
-        size={defaultIconConfig.size}
-        color={defaultIconConfig.color}
-        strokeWidth={defaultIconConfig.strokeWidth}
-      />
-      {showLabel && <span>{label}</span>}
-    </a>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          href={""}
+          onClick={handleClick}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={linkClassName}
+        >
+          <Icon 
+            className={defaultIconConfig.className}
+            size={defaultIconConfig.size}
+            color={defaultIconConfig.color}
+            strokeWidth={defaultIconConfig.strokeWidth}
+          />
+          {showLabel && <span>{label}</span>}
+        </a>
+      </TooltipTrigger>
+      <TooltipContent>
+        {"Jump to Node"}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
-
-// Unified button component that can be either type
 interface UnifiedAddressButtonProps {
   link?: string;
   address?: string;
@@ -269,7 +270,6 @@ export function ActionButtons({
         <AddressCopyButton 
           link={connectedAddress}
           iconConfig={{ size: iconSize }}
-          showTooltip={true}
         />
       )}
       {showExplorer && (

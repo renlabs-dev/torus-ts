@@ -3,9 +3,10 @@
 import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import { Input } from "@torus-ts/ui/components/input";
 import { Button } from "@torus-ts/ui/components/button";
-import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Search, SearchIcon } from "lucide-react";
 import { Card } from "@torus-ts/ui/components/card";
+import { Label } from "@torus-ts/ui/components/label";
 
 interface PermissionGraphSearchProps {
   graphNodes?: string[];
@@ -13,6 +14,7 @@ interface PermissionGraphSearchProps {
 
 const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes = [] }: PermissionGraphSearchProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -39,29 +41,33 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
       );
       
       if (matchingNode) {
-        router.push(`/permission-graph/agent/${matchingNode}`);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('agent', matchingNode);
+        router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
       }
     }
-  }, [searchQuery, graphNodes, router]);
+  }, [searchQuery, graphNodes, router, searchParams]);
 
   const handleSuggestionClick = useCallback((node: string) => {
-    router.push(`/permission-graph/agent/${node}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('agent', node);
+    router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
     setShowSuggestions(false);
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div className="relative">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
-        <Input
-          type="text"
-          placeholder="Search by agent key..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-background"
-        />
-        <Button type="submit" variant="ghost" size="icon">
-          <Search className="h-4 w-4" />
-        </Button>
+        <Label>        
+          <SearchIcon size={16} className="text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search by agent key..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-background"
+              />
+        </Label>
       </form>
 
       {showSuggestions && (
