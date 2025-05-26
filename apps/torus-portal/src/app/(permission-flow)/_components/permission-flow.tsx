@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 
 import type { OnConnect } from "@xyflow/react";
 import {
@@ -15,12 +15,21 @@ import {
   Background,
 } from "@xyflow/react";
 import { Button } from "@torus-ts/ui/components/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui/components/select";
 
 import PermissionNodeBoolean from "./permission-node-boolean";
 import PermissionNodeNumber from "./permission-node-number";
 import PermissionNodeBase from "./permission-node-base";
 import { extractConstraintFromNodes } from "./permission-constraint-utils";
 import { constraintValidationSchema } from "./permission-validation-schemas";
+import { constraintExamples } from "./constraint-examples";
+import { constraintToNodes } from "./constraint-to-nodes";
 
 import useAutoLayout from "./use-auto-layout";
 import type { LayoutOptions } from "./use-auto-layout";
@@ -54,8 +63,24 @@ const nodeTypes = {
 function ReactFlowAutoLayout() {
   const { fitView } = useReactFlow();
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [selectedExample, setSelectedExample] = useState<string>("");
+
+  const handleLoadExample = useCallback(
+    (exampleId: string) => {
+      const example = constraintExamples.find((ex) => ex.id === exampleId);
+      if (!example) return;
+
+      const { nodes: newNodes, edges: newEdges } = constraintToNodes(
+        example.constraint,
+      );
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setSelectedExample(exampleId);
+    },
+    [setNodes, setEdges],
+  );
 
   const handleCreateConstraint = useCallback(() => {
     try {
@@ -135,7 +160,24 @@ function ReactFlowAutoLayout() {
       zoomOnDoubleClick={false}
     >
       <Background />
-      <div className="absolute bottom-4 right-4 z-50">
+      <div className="absolute bottom-4 right-4 z-50 flex items-center gap-3">
+        <Select value={selectedExample} onValueChange={handleLoadExample}>
+          <SelectTrigger className="w-64 shadow-lg">
+            <SelectValue placeholder="Load constraint example..." />
+          </SelectTrigger>
+          <SelectContent>
+            {constraintExamples.map((example) => (
+              <SelectItem key={example.id} value={example.id}>
+                <div className="flex flex-col">
+                  <span className="font-medium">{example.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {example.description}
+                  </span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button
           onClick={handleCreateConstraint}
           size="lg"
