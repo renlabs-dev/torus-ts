@@ -96,7 +96,7 @@ export default function PermissionGraphContainer() {
     // Update query parameter instead of navigation
     const params = new URLSearchParams(searchParams.toString());
     params.set('agent', node.id);
-    router.replace(`/permission-graph?${params.toString()}`, { scroll: false });
+    router.replace(`/?${params.toString()}`, { scroll: false });
   }, [router, searchParams]);
 
   const getCachedAgentData = useCallback((nodeId: string): CachedAgentData | null => {

@@ -1,9 +1,37 @@
--- INSERT statements for permission data
--- Note: You'll need to replace the ss58Address values with actual SS58 addresses for your agents
--- and adjust the revocation integer values based on your enum mapping
 
--- Permission 1: Kelvin -> SinalSight (Allow Withdraw)
-INSERT INTO permission (
+-- INSERT statements for permission and permission_details tables
+-- Starting from ID 16 as requested
+-- All permissions have scope 'EMISSION' and enforcement uses keys instead of IDs
+
+-- First, insert into permission table
+INSERT INTO permission (permission_id) VALUES (16);
+INSERT INTO permission (permission_id) VALUES (17);
+INSERT INTO permission (permission_id) VALUES (18);
+INSERT INTO permission (permission_id) VALUES (19);
+INSERT INTO permission (permission_id) VALUES (20);
+INSERT INTO permission (permission_id) VALUES (21);
+INSERT INTO permission (permission_id) VALUES (22);
+INSERT INTO permission (permission_id) VALUES (23);
+INSERT INTO permission (permission_id) VALUES (24);
+INSERT INTO permission (permission_id) VALUES (25);
+INSERT INTO permission (permission_id) VALUES (26);
+INSERT INTO permission (permission_id) VALUES (27);
+INSERT INTO permission (permission_id) VALUES (28);
+INSERT INTO permission (permission_id) VALUES (29);
+INSERT INTO permission (permission_id) VALUES (30);
+INSERT INTO permission (permission_id) VALUES (31);
+INSERT INTO permission (permission_id) VALUES (32);
+INSERT INTO permission (permission_id) VALUES (33);
+INSERT INTO permission (permission_id) VALUES (34);
+INSERT INTO permission (permission_id) VALUES (35);
+INSERT INTO permission (permission_id) VALUES (36);
+INSERT INTO permission (permission_id) VALUES (37);
+INSERT INTO permission (permission_id) VALUES (38);
+INSERT INTO permission (permission_id) VALUES (39);
+
+-- Now insert into permission_details table
+-- Permission 16: Kelvin -> Aurora (Financial Operations)
+INSERT INTO permission_details (
     permission_id,
     grantor_key,
     grantee_key,
@@ -16,129 +44,21 @@ INSERT INTO permission (
     parent_id,
     constraint_id
 ) VALUES (
-    1,
-    '5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6',  -- Replace with actual SS58 address for Kelvin (ID: 1)
-    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- Replace with actual SS58 address for SinalSight (ID: 3)
+    16,
+    '5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6',  -- Kelvin
+    '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',  -- Aurora
     'EMISSION',
-    31536000,  -- 1 year in seconds
-    1,  -- Map "Grantor can revoke at any time" to appropriate enum value
-    '1',  -- Enforcement authority: Kelvin (ID: 1)
-    to_timestamp(1683526400),  -- Last execution timestamp
-    12,  -- Execution count
-    2,  -- parent_id permission ID
-    NULL  -- No constraint specified
-);
-
--- Permission 2: SinalSight -> Torus (Order Food)
-INSERT INTO permission (
-    permission_id,
-    grantor_key,
-    grantee_key,
-    scope,
-    duration,
-    revocation,
-    enforcement,
-    last_execution,
-    execution_count,
-    parent_id,
-    constraint_id
-) VALUES (
-    2,
-    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
-    '5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b',  -- Torus (ID: 4)
-    'EMISSION',
-    7776000,  -- ~90 days in seconds
-    2,  -- Map "24 hour notice required" to appropriate enum value
-    '3',  -- Enforcement authority: SinalSight (ID: 3)
-    to_timestamp(1685577600),
-    5,
-    2,  -- parent_id permission ID
-    NULL
-);
-
--- Permission 3: Torus -> Michiru (Cashflow Management)
-INSERT INTO permission (
-    permission_id,
-    grantor_key,
-    grantee_key,
-    scope,
-    duration,
-    revocation,
-    enforcement,
-    last_execution,
-    execution_count,
-    parent_id,
-    constraint_id
-) VALUES (
-    3,
-    '5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b',  -- Torus (ID: 4)
-    '5CqxBDNzFB9fzAR3T8Fn2BeEhfzBr5s7vZkXYmYg83Uyqqpw',  -- Michiru (ID: 2)
-    'EMISSION',
-    15552000,  -- ~180 days in seconds
-    3,  -- Map "Majority vote required" to appropriate enum value
-    '4',  -- Enforcement authority: Torus (ID: 4)
-    to_timestamp(1687996800),
-    8,
-    NULL,  -- No parent_id (root permission)
-    NULL
-);
-
--- Permission 4: Michiru -> Torus (Data Analytics)
-INSERT INTO permission (
-    permission_id,
-    grantor_key,
-    grantee_key,
-    scope,
-    duration,
-    revocation,
-    enforcement,
-    last_execution,
-    execution_count,
-    parent_id,
-    constraint_id
-) VALUES (
-    4,
-    '5CqxBDNzFB9fzAR3T8Fn2BeEhfzBr5s7vZkXYmYg83Uyqqpw',  -- Michiru (ID: 2)
-    '5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b',  -- Torus (ID: 4)
-    'EMISSION',
-    2592000,  -- 30 days in seconds
-    4,  -- Map "Automatic expiry only" to appropriate enum value
-    '2',  -- Enforcement authority: Michiru (ID: 2)
-    to_timestamp(1688256000),
-    22,
-    NULL,  -- No parent_id (root permission)
-    NULL
-);
-
--- Permission 5: Michiru -> SinalSight (Resource Access)
-INSERT INTO permission (
-    permission_id,
-    grantor_key,
-    grantee_key,
-    scope,
-    duration,
-    revocation,
-    enforcement,
-    last_execution,
-    execution_count,
-    parent_id,
-    constraint_id
-) VALUES (
-    5,
-    '5CqxBDNzFB9fzAR3T8Fn2BeEhfzBr5s7vZkXYmYg83Uyqqpw',  -- Michiru (ID: 2)
-    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
-    'EMISSION',
-    5184000,  -- ~60 days in seconds
-    5,  -- Map "Either party can revoke" to appropriate enum value
-    '3',  -- Enforcement authority: SinalSight (ID: 3)
-    to_timestamp(1690416000),
+    31536000,  -- 1 year
+    1,  -- Grantor can revoke at any time
+    '5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6',  -- Kelvin key
+    to_timestamp(1683526400),
     15,
-    NULL,  -- No parent_id (root permission)
+    NULL,
     NULL
 );
 
--- Permission 6: Kelvin -> SinalSight (System Monitoring)
-INSERT INTO permission (
+-- Permission 17: Aurora -> Nova (Trading Operations)
+INSERT INTO permission_details (
     permission_id,
     grantor_key,
     grantee_key,
@@ -151,21 +71,48 @@ INSERT INTO permission (
     parent_id,
     constraint_id
 ) VALUES (
-    6,
-    '5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6',  -- Kelvin (ID: 1)
-    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
+    17,
+    '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',  -- Aurora
+    '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',  -- Nova
     'EMISSION',
-    63072000,  -- ~2 years in seconds
-    6,  -- Map "Emergency committee only" to appropriate enum value
-    '1',  -- Enforcement authority: Kelvin (ID: 1)
-    to_timestamp(1692489600),
+    15552000,  -- ~180 days
+    2,  -- 24 hour notice required
+    '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',  -- Aurora key
+    to_timestamp(1685577600),
+    28,
+    16,
+    NULL
+);
+
+-- Permission 18: Nova -> Phoenix (Risk Management)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    18,
+    '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',  -- Nova
+    '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy',  -- Phoenix
+    'EMISSION',
+    7776000,  -- ~90 days
+    3,  -- Majority vote required
+    '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',  -- Nova key
+    to_timestamp(1687996800),
     42,
-    NULL,  -- No parent_id (root permission)
+    17,
     NULL
 );
 
--- Permission 7: SinalSight -> Atlas (External Communications)
-INSERT INTO permission (
+-- Permission 19: Phoenix -> Quantum (Algorithm Development)
+INSERT INTO permission_details (
     permission_id,
     grantor_key,
     grantee_key,
@@ -178,18 +125,560 @@ INSERT INTO permission (
     parent_id,
     constraint_id
 ) VALUES (
-    7,
-    '5EYCAe5jXm8DLvvQ2YjbsmnoMpDHAfokKZfg12KzGSSAzM4D',  -- SinalSight (ID: 3)
-    '5DP6MNkBVdUc6Tavk4qo6eyNCxkzjUeUZPvzaq499AsFSDiW',  -- Atlas (ID: 5)
+    19,
+    '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy',  -- Phoenix
+    '5Df6eXCcBz6d6HTdqJRnmUxpL7HRZjweA5ej9Folp5nAr2Se',  -- Quantum
     'EMISSION',
-    10368000,  -- ~120 days in seconds
-    7,  -- Map "Security breach trigger" to appropriate enum value
-    '3',  -- Enforcement authority: SinalSight (ID: 3)
-    to_timestamp(1694563200),
-    7,
-    NULL,  -- No parent_id (root permission)
+    5184000,  -- ~60 days
+    4,  -- Automatic expiry only
+    '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy',  -- Phoenix key
+    to_timestamp(1688256000),
+    33,
+    18,
     NULL
 );
+
+-- Permission 20: Quantum -> Vortex (Data Processing)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    20,
+    '5Df6eXCcBz6d6HTdqJRnmUxpL7HRZjweA5ej9Folp5nAr2Se',  -- Quantum
+    '5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK6RLc8fcaer5',  -- Vortex
+    'EMISSION',
+    2592000,  -- 30 days
+    5,  -- Either party can revoke
+    '5Df6eXCcBz6d6HTdqJRnmUxpL7HRZjweA5ej9Folp5nAr2Se',  -- Quantum key
+    to_timestamp(1690416000),
+    67,
+    19,
+    NULL
+);
+
+-- Permission 21: Vortex -> Nexus (Network Operations)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    21,
+    '5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK6RLc8fcaer5',  -- Vortex
+    '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y',  -- Nexus
+    'EMISSION',
+    10368000,  -- ~120 days
+    6,  -- Emergency committee only
+    '5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK6RLc8fcaer5',  -- Vortex key
+    to_timestamp(1692489600),
+    89,
+    20,
+    NULL
+);
+
+-- Permission 22: Nexus -> Cipher (Security Operations)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    22,
+    '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y',  -- Nexus
+    '5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL',  -- Cipher
+    'EMISSION',
+    63072000,  -- ~2 years
+    7,  -- Security breach trigger
+    '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y',  -- Nexus key
+    to_timestamp(1694563200),
+    156,
+    21,
+    NULL
+);
+
+-- Permission 23: Cipher -> Matrix (Database Management)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    23,
+    '5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL',  -- Cipher
+    '5DfhGyQdFobKM8NsWvEeAKk5EQQgYe9AydgJ7rMB1AQ5xcSt',  -- Matrix
+    'EMISSION',
+    31536000,  -- 1 year
+    1,  -- Grantor can revoke at any time
+    '5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL',  -- Cipher key
+    to_timestamp(1696636800),
+    203,
+    22,
+    NULL
+);
+
+-- Permission 24: Matrix -> Oracle (Prediction Services)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    24,
+    '5DfhGyQdFobKM8NsWvEeAKk5EQQgYe9AydgJ7rMB1AQ5xcSt',  -- Matrix
+    '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY',  -- Oracle
+    'EMISSION',
+    15552000,  -- ~180 days
+    2,  -- 24 hour notice required
+    '5DfhGyQdFobKM8NsWvEeAKk5EQQgYe9AydgJ7rMB1AQ5xcSt',  -- Matrix key
+    to_timestamp(1698710400),
+    78,
+    23,
+    NULL
+);
+
+-- Permission 25: Oracle -> Sentinel (Monitoring Services)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    25,
+    '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY',  -- Oracle
+    '5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kDnyy',  -- Sentinel
+    'EMISSION',
+    7776000,  -- ~90 days
+    3,  -- Majority vote required
+    '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY',  -- Oracle key
+    to_timestamp(1700784000),
+    134,
+    24,
+    NULL
+);
+
+-- Permission 26: Sentinel -> Guardian (Asset Protection)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    26,
+    '5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kDnyy',  -- Sentinel
+    '5E4UEf6gqZ9k6uPpTcG5vQ9VYRp2Xr8LhjBqF3mF2Xp4j7L1',  -- Guardian
+    'EMISSION',
+    5184000,  -- ~60 days
+    4,  -- Automatic expiry only
+    '5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kDnyy',  -- Sentinel key
+    to_timestamp(1702857600),
+    98,
+    25,
+    NULL
+);
+
+-- Permission 27: Guardian -> Protector (Emergency Response)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    27,
+    '5E4UEf6gqZ9k6uPpTcG5vQ9VYRp2Xr8LhjBqF3mF2Xp4j7L1',  -- Guardian
+    '5F5EoqR4Mz9k3HpGjF6Lk8Q2VxP1NmZsYr7Bt4WcX9U6d3Gh',  -- Protector
+    'EMISSION',
+    2592000,  -- 30 days
+    5,  -- Either party can revoke
+    '5E4UEf6gqZ9k6uPpTcG5vQ9VYRp2Xr8LhjBqF3mF2Xp4j7L1',  -- Guardian key
+    to_timestamp(1704931200),
+    245,
+    26,
+    NULL
+);
+
+-- Permission 28: Protector -> Defender (Threat Mitigation)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    28,
+    '5F5EoqR4Mz9k3HpGjF6Lk8Q2VxP1NmZsYr7Bt4WcX9U6d3Gh',  -- Protector
+    '5G7YvN2aBr5fW3LmQp6Zj9Ux4VtRk8HeFg1SdX0PcO3E7I2n',  -- Defender
+    'EMISSION',
+    10368000,  -- ~120 days
+    6,  -- Emergency committee only
+    '5F5EoqR4Mz9k3HpGjF6Lk8Q2VxP1NmZsYr7Bt4WcX9U6d3Gh',  -- Protector key
+    to_timestamp(1707004800),
+    67,
+    27,
+    NULL
+);
+
+-- Permission 29: Defender -> Warden (Access Control)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    29,
+    '5G7YvN2aBr5fW3LmQp6Zj9Ux4VtRk8HeFg1SdX0PcO3E7I2n',  -- Defender
+    '5H8ZuO3bCs6gX4NnRq7Ak0Vy5WuSl9IfGh2TeY1QdP4F8J3o',  -- Warden
+    'EMISSION',
+    63072000,  -- ~2 years
+    7,  -- Security breach trigger
+    '5G7YvN2aBr5fW3LmQp6Zj9Ux4VtRk8HeFg1SdX0PcO3E7I2n',  -- Defender key
+    to_timestamp(1709078400),
+    189,
+    28,
+    NULL
+);
+
+-- Permission 30: Warden -> Keeper (Data Custody)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    30,
+    '5H8ZuO3bCs6gX4NnRq7Ak0Vy5WuSl9IfGh2TeY1QdP4F8J3o',  -- Warden
+    '5I9AvP4cDt7hY5OoSr8Bl1Wz6XvTm0JgHi3UfZ2ReQ5G9K4p',  -- Keeper
+    'EMISSION',
+    31536000,  -- 1 year
+    1,  -- Grantor can revoke at any time
+    '5H8ZuO3bCs6gX4NnRq7Ak0Vy5WuSl9IfGh2TeY1QdP4F8J3o',  -- Warden key
+    to_timestamp(1711152000),
+    312,
+    29,
+    NULL
+);
+
+-- Permission 31: Keeper -> Archive (Historical Data)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    31,
+    '5I9AvP4cDt7hY5OoSr8Bl1Wz6XvTm0JgHi3UfZ2ReQ5G9K4p',  -- Keeper
+    '5J0BwQ5dEu8iZ6PpTs9Cm2Xz7YwUn1KhIj4VgA3SfR6H0L5q',  -- Archive
+    'EMISSION',
+    15552000,  -- ~180 days
+    2,  -- 24 hour notice required
+    '5I9AvP4cDt7hY5OoSr8Bl1Wz6XvTm0JgHi3UfZ2ReQ5G9K4p',  -- Keeper key
+    to_timestamp(1713225600),
+    89,
+    30,
+    NULL
+);
+
+-- Permission 32: Archive -> Vault (Secure Storage)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    32,
+    '5J0BwQ5dEu8iZ6PpTs9Cm2Xz7YwUn1KhIj4VgA3SfR6H0L5q',  -- Archive
+    '5K1CxR6eFv9jA7QqUt0Dn3Yz8ZxVo2LiJk5WhB4TgS7I1M6r',  -- Vault
+    'EMISSION',
+    7776000,  -- ~90 days
+    3,  -- Majority vote required
+    '5J0BwQ5dEu8iZ6PpTs9Cm2Xz7YwUn1KhIj4VgA3SfR6H0L5q',  -- Archive key
+    to_timestamp(1715299200),
+    456,
+    31,
+    NULL
+);
+
+-- Permission 33: Vault -> Treasury (Asset Management)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    33,
+    '5K1CxR6eFv9jA7QqUt0Dn3Yz8ZxVo2LiJk5WhB4TgS7I1M6r',  -- Vault
+    '5L2DyS7fGw0kB8RrVu1Eo4Z0A9yWp3MjKl6XiC5UhT8J2N7s',  -- Treasury
+    'EMISSION',
+    5184000,  -- ~60 days
+    4,  -- Automatic expiry only
+    '5K1CxR6eFv9jA7QqUt0Dn3Yz8ZxVo2LiJk5WhB4TgS7I1M6r',  -- Vault key
+    to_timestamp(1717372800),
+    234,
+    32,
+    NULL
+);
+
+-- Permission 34: Treasury -> Mint (Token Creation)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    34,
+    '5L2DyS7fGw0kB8RrVu1Eo4Z0A9yWp3MjKl6XiC5UhT8J2N7s',  -- Treasury
+    '5M3EzT8gHx1lC9SsWv2Fp5A1B0zXq4NkLm7YjD6ViU9K3O8t',  -- Mint
+    'EMISSION',
+    2592000,  -- 30 days
+    5,  -- Either party can revoke
+    '5L2DyS7fGw0kB8RrVu1Eo4Z0A9yWp3MjKl6XiC5UhT8J2N7s',  -- Treasury key
+    to_timestamp(1719446400),
+    567,
+    33,
+    NULL
+);
+
+-- Permission 35: Mint -> Forge (Manufacturing)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    35,
+    '5M3EzT8gHx1lC9SsWv2Fp5A1B0zXq4NkLm7YjD6ViU9K3O8t',  -- Mint
+    '5N4FaU9hIy2mD0TtXw3Gq6B2C1AYr5OlMn8ZkE7WjV0L4P9u',  -- Forge
+    'EMISSION',
+    10368000,  -- ~120 days
+    6,  -- Emergency committee only
+    '5M3EzT8gHx1lC9SsWv2Fp5A1B0zXq4NkLm7YjD6ViU9K3O8t',  -- Mint key
+    to_timestamp(1721520000),
+    123,
+    34,
+    NULL
+);
+
+-- Permission 36: Forge -> Smithy (Tool Creation)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    36,
+    '5N4FaU9hIy2mD0TtXw3Gq6B2C1AYr5OlMn8ZkE7WjV0L4P9u',  -- Forge
+    '5O5GbV0iJz3nE1UuYx4Hr7C3D2BZs6PmNo9AlF8XkW1M5Q0v',  -- Smithy
+    'EMISSION',
+    63072000,  -- ~2 years
+    7,  -- Security breach trigger
+    '5N4FaU9hIy2mD0TtXw3Gq6B2C1AYr5OlMn8ZkE7WjV0L4P9u',  -- Forge key
+    to_timestamp(1723593600),
+    789,
+    35,
+    NULL
+);
+
+-- Permission 37: Smithy -> Workshop (Development)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    37,
+    '5O5GbV0iJz3nE1UuYx4Hr7C3D2BZs6PmNo9AlF8XkW1M5Q0v',  -- Smithy
+    '5P6HcW1jKA4oF2VvZy5Is8D4E3CAt7QnOp0BmG9YlX2N6R1w',  -- Workshop
+    'EMISSION',
+    31536000,  -- 1 year
+    1,  -- Grantor can revoke at any time
+    '5O5GbV0iJz3nE1UuYx4Hr7C3D2BZs6PmNo9AlF8XkW1M5Q0v',  -- Smithy key
+    to_timestamp(1725667200),
+    345,
+    36,
+    NULL
+);
+
+-- Permission 38: Workshop -> Laboratory (Research)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    38,
+    '5P6HcW1jKA4oF2VvZy5Is8D4E3CAt7QnOp0BmG9YlX2N6R1w',  -- Workshop
+    '5Q7IdX2kLB5pG3WwAz6Jt9E5F4DBu8RoQq1CnH0ZmY3O7S2x',  -- Laboratory
+    'EMISSION',
+    15552000,  -- ~180 days
+    2,  -- 24 hour notice required
+    '5P6HcW1jKA4oF2VvZy5Is8D4E3CAt7QnOp0BmG9YlX2N6R1w',  -- Workshop key
+    to_timestamp(1727740800),
+    678,
+    37,
+    NULL
+);
+
+-- Permission 39: Laboratory -> Institute (Academic Research)
+INSERT INTO permission_details (
+    permission_id,
+    grantor_key,
+    grantee_key,
+    scope,
+    duration,
+    revocation,
+    enforcement,
+    last_execution,
+    execution_count,
+    parent_id,
+    constraint_id
+) VALUES (
+    39,
+    '5Q7IdX2kLB5pG3WwAz6Jt9E5F4DBu8RoQq1CnH0ZmY3O7S2x',  -- Laboratory
+    '5R8JeY3lMC6qH4XxBA7Ku0F6G5ECv9SpRr2DoI1AnZ4P8T3y',  -- Institute
+    'EMISSION',
+    7776000,  -- ~90 days
+    3,  -- Majority vote required
+    '5Q7IdX2kLB5pG3WwAz6Jt9E5F4DBu8RoQq1CnH0ZmY3O7S2x',  -- Laboratory key
+    to_timestamp(1729814400),
+    234,
+    38,
+    NULL
+);
+
+
 
 -- Notes for execution:
 -- 1. Replace all SS58 address placeholders with actual addresses:
@@ -212,3 +701,4 @@ INSERT INTO permission (
 -- 3. The creation_block data from JSON is not included as it's not in your schema
 -- 4. timeFields() will be auto-populated (created_at, updated_at, etc.)
 -- 5. Make sure your permissionScope enum includes 'EMISSION' value
+
