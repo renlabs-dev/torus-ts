@@ -1,0 +1,149 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { useCallback, useEffect } from "react";
+import { Handle, Position, useReactFlow } from "@xyflow/react";
+
+import type {
+  PermissionNodeData,
+  NodeCreationResult,
+} from "./permission-node-types";
+
+interface NodeColorConfig {
+  background: string;
+  text: string;
+}
+
+const nodeColors: Record<PermissionNodeData["type"], NodeColorConfig> = {
+  boolean: {
+    background: "bg-accent",
+    text: "text-blue-900",
+  },
+  number: {
+    background: "bg-accent",
+    text: "text-green-900",
+  },
+  base: {
+    background: "bg-accent",
+    text: "text-orange-900",
+  },
+};
+
+interface PermissionNodeContainerProps {
+  id: string;
+  data: PermissionNodeData;
+  children: ReactNode;
+  hasSourceHandle?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createChildNodes?: (expression: any) => NodeCreationResult;
+  shouldAutoCreateChildren?: boolean;
+}
+
+export function PermissionNodeContainer({
+  id,
+  data,
+  children,
+  hasSourceHandle = true,
+  createChildNodes,
+  shouldAutoCreateChildren = true,
+}: PermissionNodeContainerProps) {
+  const { setNodes, setEdges, getNodes } = useReactFlow();
+  const colors = nodeColors[data.type];
+
+  // Auto-create child nodes on mount if needed
+  useEffect(() => {
+    if (!shouldAutoCreateChildren || !createChildNodes) return;
+
+    const currentNodes = getNodes();
+    const hasChildren = currentNodes.some((node) =>
+      node.id.startsWith(`${id}-`),
+    );
+
+    if (!hasChildren) {
+      const { nodes: childNodes, edges: childEdges } = createChildNodes(
+        data.expression,
+      );
+      if (childNodes.length > 0) {
+        setNodes((nodes) => nodes.concat(childNodes));
+        setEdges((edges) => edges.concat(childEdges));
+      }
+    }
+  }, [
+    id,
+    data.expression,
+    getNodes,
+    createChildNodes,
+    shouldAutoCreateChildren,
+    setNodes,
+    setEdges,
+  ]);
+
+  return (
+    <div
+      className={`${colors.background} border border-[#B1B1B7] p-4 min-w-[250px]`}
+    >
+      {children}
+
+      <Handle type="target" position={Position.Top} />
+      {hasSourceHandle && <Handle type="source" position={Position.Bottom} />}
+    </div>
+  );
+}
+
+// Hook to manage child nodes
+export function useChildNodeManagement(id: string) {
+  const { setNodes, setEdges, getEdges } = useReactFlow();
+
+  const removeExistingChildNodes = useCallback(() => {
+    const currentEdges = getEdges();
+
+    const nodesToRemove = new Set<string>();
+    const edgesToRemove = new Set<string>();
+
+    const findChildren = (parentId: string) => {
+      currentEdges.forEach((edge) => {
+        if (edge.source === parentId) {
+          nodesToRemove.add(edge.target);
+          edgesToRemove.add(edge.id);
+          findChildren(edge.target);
+        }
+      });
+    };
+
+    findChildren(id);
+
+    setNodes((nodes) => nodes.filter((node) => !nodesToRemove.has(node.id)));
+    setEdges((edges) => edges.filter((edge) => !edgesToRemove.has(edge.id)));
+  }, [id, setNodes, setEdges, getEdges]);
+
+  const updateNodeData = useCallback(
+    <T extends PermissionNodeData>(updater: (data: T) => T) => {
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: updater(node.data as T),
+            };
+          }
+          return node;
+        }),
+      );
+    },
+    [id, setNodes],
+  );
+
+  const addChildNodes = useCallback(
+    ({ nodes: childNodes, edges: childEdges }: NodeCreationResult) => {
+      setNodes((nodes) => nodes.concat(childNodes));
+      setEdges((edges) => edges.concat(childEdges));
+    },
+    [setNodes, setEdges],
+  );
+
+  return {
+    removeExistingChildNodes,
+    updateNodeData,
+    addChildNodes,
+  };
+}

@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Handle, Position, useReactFlow } from "@xyflow/react";
+import { useCallback, useState } from "react";
 import type { NodeProps } from "@xyflow/react";
-import { Label } from "@torus-ts/ui/components/label";
 import { Input } from "@torus-ts/ui/components/input";
 import {
   Select,
@@ -19,6 +17,10 @@ import type {
 } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
 import { uintSchema, accountIdSchema } from "./permission-validation-schemas";
+import {
+  PermissionNodeContainer,
+  useChildNodeManagement,
+} from "./permission-node-container";
 
 interface PermissionNodeNumberProps {
   id: string;
@@ -26,7 +28,9 @@ interface PermissionNodeNumberProps {
 }
 
 export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
-  const { setNodes, setEdges, getNodes, getEdges } = useReactFlow();
+  const { removeExistingChildNodes, updateNodeData, addChildNodes } =
+    useChildNodeManagement(id);
+
   const [inputValue, setInputValue] = useState(() => {
     if (data.expression.$ === "UIntLiteral") {
       return data.expression.value.toString();
@@ -35,28 +39,6 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
   });
   const [inputError, setInputError] = useState<string>("");
   const [accountError, setAccountError] = useState<string>("");
-
-  const removeExistingChildNodes = useCallback(() => {
-    const currentEdges = getEdges();
-
-    const nodesToRemove = new Set<string>();
-    const edgesToRemove = new Set<string>();
-
-    const findChildren = (parentId: string) => {
-      currentEdges.forEach((edge) => {
-        if (edge.source === parentId) {
-          nodesToRemove.add(edge.target);
-          edgesToRemove.add(edge.id);
-          findChildren(edge.target);
-        }
-      });
-    };
-
-    findChildren(id);
-
-    setNodes((nodes) => nodes.filter((node) => !nodesToRemove.has(node.id)));
-    setEdges((edges) => edges.filter((edge) => !edgesToRemove.has(edge.id)));
-  }, [id, setNodes, setEdges, getEdges]);
 
   const createChildNodes = useCallback(
     (expression: NumExpr): NodeCreationResult => {
@@ -102,17 +84,6 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
             source: id,
             target: rightId,
           });
-          break;
-        }
-
-        case "WeightSet":
-        case "WeightPowerFrom": {
-          // These have account parameters but no child nodes
-          break;
-        }
-
-        case "StakeOf": {
-          // Has account parameter but no child nodes
           break;
         }
       }
@@ -161,27 +132,15 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           return;
       }
 
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...data,
-                expression: newExpression,
-              },
-            };
-          }
-          return node;
-        }),
-      );
+      updateNodeData<NumberNodeData>((currentData) => ({
+        ...currentData,
+        expression: newExpression,
+      }));
 
-      const { nodes: childNodes, edges: childEdges } =
-        createChildNodes(newExpression);
-      setNodes((nodes) => nodes.concat(childNodes));
-      setEdges((edges) => edges.concat(childEdges));
+      const childNodesResult = createChildNodes(newExpression);
+      addChildNodes(childNodesResult);
     },
-    [id, data, removeExistingChildNodes, createChildNodes, setNodes, setEdges],
+    [removeExistingChildNodes, updateNodeData, createChildNodes, addChildNodes],
   );
 
   const handleValueChange = useCallback(
@@ -198,23 +157,13 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       setInputError("");
 
       if (data.expression.$ === "UIntLiteral") {
-        setNodes((nodes) =>
-          nodes.map((node) => {
-            if (node.id === id) {
-              return {
-                ...node,
-                data: {
-                  ...data,
-                  expression: NumExpr.literal(BigInt(value)),
-                },
-              };
-            }
-            return node;
-          }),
-        );
+        updateNodeData<NumberNodeData>((currentData) => ({
+          ...currentData,
+          expression: NumExpr.literal(BigInt(value)),
+        }));
       }
     },
-    [id, data, setNodes],
+    [data.expression, updateNodeData],
   );
 
   const handleAccountChange = useCallback(
@@ -229,93 +178,56 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         setAccountError("");
       }
 
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            const expr = data.expression;
+      updateNodeData<NumberNodeData>((currentData) => {
+        const expr = currentData.expression;
 
-            if (expr.$ === "StakeOf" && field === "account") {
-              return {
-                ...node,
-                data: {
-                  ...data,
-                  expression: { ...expr, account: value },
-                },
-              };
-            } else if (
-              (expr.$ === "WeightSet" || expr.$ === "WeightPowerFrom") &&
-              (field === "from" || field === "to")
-            ) {
-              return {
-                ...node,
-                data: {
-                  ...data,
-                  expression: { ...expr, [field]: value },
-                },
-              };
-            }
-          }
-          return node;
-        }),
-      );
+        if (expr.$ === "StakeOf" && field === "account") {
+          return {
+            ...currentData,
+            expression: { ...expr, account: value },
+          };
+        } else if (
+          (expr.$ === "WeightSet" || expr.$ === "WeightPowerFrom") &&
+          (field === "from" || field === "to")
+        ) {
+          return {
+            ...currentData,
+            expression: { ...expr, [field]: value },
+          };
+        }
+        return currentData;
+      });
     },
-    [id, data, setNodes],
+    [updateNodeData],
   );
 
-  // Auto-create child nodes on mount if expression requires them
-  useEffect(() => {
-    const currentNodes = getNodes();
-    const hasChildren = currentNodes.some((node) =>
-      node.id.startsWith(`${id}-`),
-    );
-
-    if (
-      !hasChildren &&
-      (data.expression.$ === "Add" || data.expression.$ === "Sub")
-    ) {
-      const { nodes: childNodes, edges: childEdges } = createChildNodes(
-        data.expression,
-      );
-      setNodes((nodes) => nodes.concat(childNodes));
-      setEdges((edges) => edges.concat(childEdges));
-    }
-  }, [id, data.expression, getNodes, createChildNodes, setNodes, setEdges]);
+  const shouldAutoCreate =
+    data.expression.$ === "Add" || data.expression.$ === "Sub";
 
   return (
-    <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 min-w-[250px]">
-      <div className="mb-2 font-bold text-green-900">{data.label}</div>
-
-      <div className="mb-3">
-        <Label
-          htmlFor={`${id}-type`}
-          className="text-sm font-medium text-gray-700 mb-1"
-        >
-          Number Type
-        </Label>
-        <Select value={data.expression.$} onValueChange={handleTypeChange}>
-          <SelectTrigger id={`${id}-type`} className="w-full bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="UIntLiteral">Literal Value</SelectItem>
-            <SelectItem value="BlockNumber">Block Number</SelectItem>
-            <SelectItem value="StakeOf">Stake Of Account</SelectItem>
-            <SelectItem value="Add">Add</SelectItem>
-            <SelectItem value="Sub">Subtract</SelectItem>
-            <SelectItem value="WeightSet">Weight Set</SelectItem>
-            <SelectItem value="WeightPowerFrom">Weight Power From</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <PermissionNodeContainer
+      id={id}
+      data={data}
+      createChildNodes={createChildNodes}
+      shouldAutoCreateChildren={shouldAutoCreate}
+    >
+      <Select value={data.expression.$} onValueChange={handleTypeChange}>
+        <SelectTrigger id={`${id}-type`}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="UIntLiteral">Literal Value</SelectItem>
+          <SelectItem value="BlockNumber">Block Number</SelectItem>
+          <SelectItem value="StakeOf">Stake Of Account</SelectItem>
+          <SelectItem value="Add">Add</SelectItem>
+          <SelectItem value="Sub">Subtract</SelectItem>
+          <SelectItem value="WeightSet">Weight Set</SelectItem>
+          <SelectItem value="WeightPowerFrom">Weight Power From</SelectItem>
+        </SelectContent>
+      </Select>
 
       {data.expression.$ === "UIntLiteral" && (
-        <div className="mb-3">
-          <Label
-            htmlFor={`${id}-value`}
-            className="text-sm font-medium text-gray-700 mb-1"
-          >
-            Value
-          </Label>
+        <div className="mt-3">
           <Input
             id={`${id}-value`}
             type="text"
@@ -331,13 +243,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       )}
 
       {data.expression.$ === "StakeOf" && (
-        <div className="mb-3">
-          <Label
-            htmlFor={`${id}-account`}
-            className="text-sm font-medium text-gray-700 mb-1"
-          >
-            Account ID
-          </Label>
+        <div className="mt-3">
           <Input
             id={`${id}-account`}
             type="text"
@@ -355,13 +261,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       {(data.expression.$ === "WeightSet" ||
         data.expression.$ === "WeightPowerFrom") && (
         <>
-          <div className="mb-3">
-            <Label
-              htmlFor={`${id}-from`}
-              className="text-sm font-medium text-gray-700 mb-1"
-            >
-              From Account
-            </Label>
+          <div className="mt-3">
             <Input
               id={`${id}-from`}
               type="text"
@@ -371,13 +271,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
               placeholder="From account ID"
             />
           </div>
-          <div className="mb-3">
-            <Label
-              htmlFor={`${id}-to`}
-              className="text-sm font-medium text-gray-700 mb-1"
-            >
-              To Account
-            </Label>
+          <div className="mt-3">
             <Input
               id={`${id}-to`}
               type="text"
@@ -392,18 +286,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           )}
         </>
       )}
-
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-green-500"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3 h-3 bg-green-600"
-      />
-    </div>
+    </PermissionNodeContainer>
   );
 }
 
