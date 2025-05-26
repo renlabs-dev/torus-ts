@@ -5,7 +5,7 @@ import type {
   BaseConstraint,
   Constraint,
 } from "../../../utils/dsl";
-import type { PermissionNodeData } from "./permission-node-types";
+import type { PermissionNodeData } from "./constraint-nodes/constraint-node-types";
 
 type NodeMap = Record<string, Node<PermissionNodeData>>;
 

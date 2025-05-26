@@ -11,14 +11,14 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { GitBranch, CheckCircle, Play, Timer, Pause } from "lucide-react";
-import { BaseConstraint, NumExpr } from "../../../utils/dsl";
-import type { BaseNodeData, NodeCreationResult } from "./permission-node-types";
-import { createChildNodeId, createEdgeId } from "./permission-node-types";
-import { permissionIdSchema } from "./permission-validation-schemas";
+import { BaseConstraint, NumExpr } from "../../../../utils/dsl";
+import type { BaseNodeData, NodeCreationResult } from "./constraint-node-types";
+import { createChildNodeId, createEdgeId } from "./constraint-node-types";
+import { permissionIdSchema } from "../constraint-validation-schemas";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
-} from "./permission-node-container";
+} from "./constraint-node-container";
 
 interface PermissionNodeBaseProps {
   id: string;
@@ -60,6 +60,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
             id: createEdgeId(id, depthId),
             source: id,
             target: depthId,
+            animated: true,
           });
           break;
         }
@@ -94,12 +95,14 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
             id: createEdgeId(id, maxOpsId),
             source: id,
             target: maxOpsId,
+            animated: true,
           });
 
           edges.push({
             id: createEdgeId(id, periodId),
             source: id,
             target: periodId,
+            animated: true,
           });
           break;
         }
