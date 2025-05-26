@@ -30,5 +30,6 @@ export const edges: Edge[] = [
     id: "root-boolean-root-boolean-base",
     source: "root-boolean",
     target: "root-boolean-base",
+    animated: true,
   },
 ];

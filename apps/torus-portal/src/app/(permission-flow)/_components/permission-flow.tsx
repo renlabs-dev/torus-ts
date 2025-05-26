@@ -46,7 +46,7 @@ const proOptions = {
 };
 
 const defaultEdgeOptions = {
-  type: "step",
+  type: "smoothstep",
   markerEnd: { type: MarkerType.ArrowClosed },
   pathOptions: { offset: 5 },
 };
@@ -127,7 +127,7 @@ function ReactFlowAutoLayout() {
     () => ({
       algorithm: "d3-hierarchy",
       direction: "TB",
-      spacing: [50, 50],
+      spacing: [10, 40],
     }),
     [],
   );

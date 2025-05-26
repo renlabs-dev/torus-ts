@@ -66,7 +66,7 @@ export function PermissionNodeContainer({
   ]);
 
   return (
-    <div className={"border border-[#B1B1B7] min-w-[150px]"}>
+    <div className="w-full">
       {children}
 
       <Handle type="target" position={Position.Top} />
