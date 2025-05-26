@@ -2,7 +2,6 @@
 
 import { useCallback } from "react";
 import type { NodeProps } from "@xyflow/react";
-import { Label } from "@torus-ts/ui/components/label";
 import {
   Select,
   SelectContent,
@@ -246,7 +245,6 @@ export function PermissionNodeBoolean({
         createChildNodes={createChildNodes}
         shouldAutoCreateChildren={shouldAutoCreate}
       >
-        <Label htmlFor={`${id}-type`}>Boolean Type</Label>
         <Select value={data.expression.$} onValueChange={handleTypeChange}>
           <SelectTrigger id={`${id}-type`}>
             <SelectValue />
@@ -261,7 +259,7 @@ export function PermissionNodeBoolean({
         </Select>
       </PermissionNodeContainer>
       {data.expression.$ === "CompExpr" && (
-        <div className="absolute flex w-full top-[6.7em]">
+        <div className="absolute flex w-full top-[6em]">
           <Select value={data.expression.op} onValueChange={handleCompOpChange}>
             <SelectTrigger
               id={`${id}-op`}
