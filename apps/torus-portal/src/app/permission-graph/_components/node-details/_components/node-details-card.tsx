@@ -25,8 +25,6 @@ interface PermissionNodeDetailsProps {
   onBackgroundClick?: () => void;
 }
 
-
-
 export const NodeDetailsCard = memo(function NodeDetailsCard({ 
   selectedNode, 
   graphData,
@@ -48,8 +46,6 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
     [nodePermissions, permissionDetails]
   );
 
-  if (!graphData) return null;
-
   // Calculate time remaining for permissions
   const calculateTimeRemaining = useMemo(() => 
     (createdAt: Date, duration: number): number => {
@@ -59,6 +55,8 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
       return daysRemaining;
     }, []
   );
+
+  if (!graphData) return null;
 
   return (
     <div className="flex flex-col gap-4 h-full w-[27em] z-50">
