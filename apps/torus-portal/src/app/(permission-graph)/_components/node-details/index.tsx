@@ -3,6 +3,7 @@ import { NodeDetailsCard } from "./_components/node-details-card";
 import type { CustomGraphData, CustomGraphNode, PermissionDetail, CachedAgentData } from "../permission-graph-utils";
 import { TooltipProvider } from "@torus-ts/ui/components/tooltip";
 import { memo } from "react";
+import { PermissionNodeAgentCard } from "./_components/agent-card";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
@@ -27,14 +28,22 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
   
   return (
     <TooltipProvider>    
-      <NodeDetailsCard
-        selectedNode={selectedNode} 
-        graphData={graphData}
-        permissionDetails={permissionDetails}
-        getCachedAgentData={getCachedAgentData}
-        setCachedAgentData={setCachedAgentData}
-        onBackgroundClick={onBackgroundClick}
-      />
+      <div className="flex flex-col gap-2">
+        <PermissionNodeAgentCard 
+          nodeId={selectedNode.id}
+          fullAddress={selectedNode.fullAddress}
+          getCachedAgentData={getCachedAgentData}
+          setCachedAgentData={setCachedAgentData}
+          />
+        <NodeDetailsCard
+          selectedNode={selectedNode} 
+          graphData={graphData}
+          permissionDetails={permissionDetails}
+          getCachedAgentData={getCachedAgentData}
+          setCachedAgentData={setCachedAgentData}
+          onBackgroundClick={onBackgroundClick}
+        />
+    </div>
   </TooltipProvider>
 
   );
