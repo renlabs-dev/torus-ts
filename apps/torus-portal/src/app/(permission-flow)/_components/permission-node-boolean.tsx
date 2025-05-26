@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { Handle, Position, useReactFlow } from "@xyflow/react";
+import { useCallback } from "react";
 import type { NodeProps } from "@xyflow/react";
 import { Label } from "@torus-ts/ui/components/label";
 import {
@@ -17,6 +16,10 @@ import type {
   NodeCreationResult,
 } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
+import {
+  PermissionNodeContainer,
+  useChildNodeManagement,
+} from "./permission-node-container";
 
 interface PermissionNodeBooleanProps {
   id: string;
@@ -27,30 +30,8 @@ export function PermissionNodeBoolean({
   id,
   data,
 }: PermissionNodeBooleanProps) {
-  const { setNodes, setEdges, getNodes, getEdges } = useReactFlow();
-
-  const removeExistingChildNodes = useCallback(() => {
-    const currentEdges = getEdges();
-
-    const nodesToRemove = new Set<string>();
-    const edgesToRemove = new Set<string>();
-
-    // Find all child nodes recursively
-    const findChildren = (parentId: string) => {
-      currentEdges.forEach((edge) => {
-        if (edge.source === parentId) {
-          nodesToRemove.add(edge.target);
-          edgesToRemove.add(edge.id);
-          findChildren(edge.target);
-        }
-      });
-    };
-
-    findChildren(id);
-
-    setNodes((nodes) => nodes.filter((node) => !nodesToRemove.has(node.id)));
-    setEdges((edges) => edges.filter((edge) => !edgesToRemove.has(edge.id)));
-  }, [id, setNodes, setEdges, getEdges]);
+  const { removeExistingChildNodes, updateNodeData, addChildNodes } =
+    useChildNodeManagement(id);
 
   const createChildNodes = useCallback(
     (expression: BoolExpr): NodeCreationResult => {
@@ -226,28 +207,16 @@ export function PermissionNodeBoolean({
       }
 
       // Update current node data
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...data,
-                expression: newExpression,
-              },
-            };
-          }
-          return node;
-        }),
-      );
+      updateNodeData<BooleanNodeData>((currentData) => ({
+        ...currentData,
+        expression: newExpression,
+      }));
 
       // Create child nodes
-      const { nodes: childNodes, edges: childEdges } =
-        createChildNodes(newExpression);
-      setNodes((nodes) => nodes.concat(childNodes));
-      setEdges((edges) => edges.concat(childEdges));
+      const childNodesResult = createChildNodes(newExpression);
+      addChildNodes(childNodesResult);
     },
-    [id, data, removeExistingChildNodes, createChildNodes, setNodes, setEdges],
+    [removeExistingChildNodes, updateNodeData, createChildNodes, addChildNodes],
   );
 
   const handleCompOpChange = useCallback(
@@ -256,60 +225,31 @@ export function PermissionNodeBoolean({
 
       const newOp = value as CompOp;
 
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...data,
-                expression: {
-                  ...data.expression,
-                  op: newOp,
-                } as BoolExpr,
-              },
-            };
-          }
-          return node;
-        }),
-      );
+      updateNodeData<BooleanNodeData>((currentData) => ({
+        ...currentData,
+        expression: {
+          ...currentData.expression,
+          op: newOp,
+        } as BoolExpr,
+      }));
     },
-    [id, data, setNodes],
+    [data.expression, updateNodeData],
   );
 
-  // Auto-create child nodes on mount if expression requires them
-  useEffect(() => {
-    const currentNodes = getNodes();
-    const hasChildren = currentNodes.some((node) =>
-      node.id.startsWith(`${id}-`),
-    );
-
-    if (
-      !hasChildren &&
-      data.expression.$ !== "Base" &&
-      data.expression.$ !== "CompExpr"
-    ) {
-      const { nodes: childNodes, edges: childEdges } = createChildNodes(
-        data.expression,
-      );
-      setNodes((nodes) => nodes.concat(childNodes));
-      setEdges((edges) => edges.concat(childEdges));
-    }
-  }, [id, data.expression, getNodes, createChildNodes, setNodes, setEdges]);
+  const shouldAutoCreate =
+    data.expression.$ !== "Base" && data.expression.$ !== "CompExpr";
 
   return (
-    <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 min-w-[250px]">
-      <div className="mb-2 font-bold text-blue-900">{data.label}</div>
-
-      <div className="mb-3">
-        <Label
-          htmlFor={`${id}-type`}
-          className="text-sm font-medium text-gray-700 mb-1"
-        >
-          Boolean Type
-        </Label>
+    <>
+      <PermissionNodeContainer
+        id={id}
+        data={data}
+        createChildNodes={createChildNodes}
+        shouldAutoCreateChildren={shouldAutoCreate}
+      >
+        <Label htmlFor={`${id}-type`}>Boolean Type</Label>
         <Select value={data.expression.$} onValueChange={handleTypeChange}>
-          <SelectTrigger id={`${id}-type`} className="w-full bg-white">
+          <SelectTrigger id={`${id}-type`}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -320,18 +260,14 @@ export function PermissionNodeBoolean({
             <SelectItem value="Base">Base Constraint</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
+      </PermissionNodeContainer>
       {data.expression.$ === "CompExpr" && (
-        <div className="mb-3">
-          <Label
-            htmlFor={`${id}-op`}
-            className="text-sm font-medium text-gray-700 mb-1"
-          >
-            Operator
-          </Label>
+        <div className="absolute flex w-full top-[6.7em]">
           <Select value={data.expression.op} onValueChange={handleCompOpChange}>
-            <SelectTrigger id={`${id}-op`} className="w-full bg-white">
+            <SelectTrigger
+              id={`${id}-op`}
+              className="rounded-full border border-[#B1B1B7] text-xs"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -344,10 +280,7 @@ export function PermissionNodeBoolean({
           </Select>
         </div>
       )}
-
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
-    </div>
+    </>
   );
 }
 

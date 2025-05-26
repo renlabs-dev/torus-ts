@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Handle, Position, useReactFlow } from "@xyflow/react";
+import { useCallback, useState } from "react";
 import type { NodeProps } from "@xyflow/react";
-import { Label } from "@torus-ts/ui/components/label";
 import { Input } from "@torus-ts/ui/components/input";
 import {
   Select,
@@ -16,6 +14,10 @@ import { BaseConstraint, NumExpr } from "../../../utils/dsl";
 import type { BaseNodeData, NodeCreationResult } from "./permission-node-types";
 import { createChildNodeId, createEdgeId } from "./permission-node-types";
 import { permissionIdSchema } from "./permission-validation-schemas";
+import {
+  PermissionNodeContainer,
+  useChildNodeManagement,
+} from "./permission-node-container";
 
 interface PermissionNodeBaseProps {
   id: string;
@@ -23,7 +25,9 @@ interface PermissionNodeBaseProps {
 }
 
 export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
-  const { setNodes, setEdges, getNodes, getEdges } = useReactFlow();
+  const { removeExistingChildNodes, updateNodeData, addChildNodes } =
+    useChildNodeManagement(id);
+
   const [permissionId, setPermissionId] = useState(() => {
     const expr = data.expression;
     if (expr.$ === "PermissionExists" || expr.$ === "PermissionEnabled") {
@@ -32,28 +36,6 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     return "";
   });
   const [permissionIdError, setPermissionIdError] = useState<string>("");
-
-  const removeExistingChildNodes = useCallback(() => {
-    const currentEdges = getEdges();
-
-    const nodesToRemove = new Set<string>();
-    const edgesToRemove = new Set<string>();
-
-    const findChildren = (parentId: string) => {
-      currentEdges.forEach((edge) => {
-        if (edge.source === parentId) {
-          nodesToRemove.add(edge.target);
-          edgesToRemove.add(edge.id);
-          findChildren(edge.target);
-        }
-      });
-    };
-
-    findChildren(id);
-
-    setNodes((nodes) => nodes.filter((node) => !nodesToRemove.has(node.id)));
-    setEdges((edges) => edges.filter((edge) => !edgesToRemove.has(edge.id)));
-  }, [id, setNodes, setEdges, getEdges]);
 
   const createChildNodes = useCallback(
     (expression: BaseConstraint): NodeCreationResult => {
@@ -162,27 +144,15 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
           return;
       }
 
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...data,
-                expression: newExpression,
-              },
-            };
-          }
-          return node;
-        }),
-      );
+      updateNodeData<BaseNodeData>((currentData) => ({
+        ...currentData,
+        expression: newExpression,
+      }));
 
-      const { nodes: childNodes, edges: childEdges } =
-        createChildNodes(newExpression);
-      setNodes((nodes) => nodes.concat(childNodes));
-      setEdges((edges) => edges.concat(childEdges));
+      const childNodesResult = createChildNodes(newExpression);
+      addChildNodes(childNodesResult);
     },
-    [id, data, removeExistingChildNodes, createChildNodes, setNodes, setEdges],
+    [removeExistingChildNodes, updateNodeData, createChildNodes, addChildNodes],
   );
 
   const handlePermissionIdChange = useCallback(
@@ -201,85 +171,49 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
 
       const expr = data.expression;
       if (expr.$ === "PermissionExists" || expr.$ === "PermissionEnabled") {
-        setNodes((nodes) =>
-          nodes.map((node) => {
-            if (node.id === id) {
-              return {
-                ...node,
-                data: {
-                  ...data,
-                  expression: { ...expr, pid: value },
-                },
-              };
-            }
-            return node;
-          }),
-        );
+        updateNodeData<BaseNodeData>((currentData) => ({
+          ...currentData,
+          expression: { ...expr, pid: value },
+        }));
       }
     },
-    [id, data, setNodes],
+    [data.expression, updateNodeData],
   );
 
-  // Auto-create child nodes on mount if expression requires them
-  useEffect(() => {
-    const currentNodes = getNodes();
-    const hasChildren = currentNodes.some((node) =>
-      node.id.startsWith(`${id}-`),
-    );
+  const shouldAutoCreate =
+    data.expression.$ === "MaxDelegationDepth" ||
+    data.expression.$ === "RateLimit";
 
-    if (
-      !hasChildren &&
-      (data.expression.$ === "MaxDelegationDepth" ||
-        data.expression.$ === "RateLimit")
-    ) {
-      const { nodes: childNodes, edges: childEdges } = createChildNodes(
-        data.expression,
-      );
-      setNodes((nodes) => nodes.concat(childNodes));
-      setEdges((edges) => edges.concat(childEdges));
-    }
-  }, [id, data.expression, getNodes, createChildNodes, setNodes, setEdges]);
+  const hasSourceHandle = shouldAutoCreate;
 
   return (
-    <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-4 min-w-[250px]">
-      <div className="mb-2 font-bold text-orange-900">{data.label}</div>
-
-      <div className="mb-3">
-        <Label
-          htmlFor={`${id}-type`}
-          className="text-sm font-medium text-gray-700 mb-1"
-        >
-          Constraint Type
-        </Label>
-        <Select value={data.expression.$} onValueChange={handleTypeChange}>
-          <SelectTrigger id={`${id}-type`} className="w-full bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="MaxDelegationDepth">
-              Max Delegation Depth
-            </SelectItem>
-            <SelectItem value="PermissionExists">Permission Exists</SelectItem>
-            <SelectItem value="PermissionEnabled">
-              Permission Enabled
-            </SelectItem>
-            <SelectItem value="RateLimit">Rate Limit</SelectItem>
-            <SelectItem value="InactiveUnlessRedelegated">
-              Inactive Unless Redelegated
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <PermissionNodeContainer
+      id={id}
+      data={data}
+      hasSourceHandle={hasSourceHandle}
+      createChildNodes={createChildNodes}
+      shouldAutoCreateChildren={shouldAutoCreate}
+    >
+      <Select value={data.expression.$} onValueChange={handleTypeChange}>
+        <SelectTrigger id={`${id}-type`}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="MaxDelegationDepth">
+            Max Delegation Depth
+          </SelectItem>
+          <SelectItem value="PermissionExists">Permission Exists</SelectItem>
+          <SelectItem value="PermissionEnabled">Permission Enabled</SelectItem>
+          <SelectItem value="RateLimit">Rate Limit</SelectItem>
+          <SelectItem value="InactiveUnlessRedelegated">
+            Inactive Unless Redelegated
+          </SelectItem>
+        </SelectContent>
+      </Select>
 
       {(data.expression.$ === "PermissionExists" ||
         data.expression.$ === "PermissionEnabled") && (
-        <div className="mb-3">
-          <Label
-            htmlFor={`${id}-permission`}
-            className="text-sm font-medium text-gray-700 mb-1"
-          >
-            Permission ID
-          </Label>
+        <div className="mt-3">
           <Input
             id={`${id}-permission`}
             type="text"
@@ -293,27 +227,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
           )}
         </div>
       )}
-
-      {data.expression.$ === "InactiveUnlessRedelegated" && (
-        <div className="text-sm text-gray-600 italic">
-          No additional configuration needed
-        </div>
-      )}
-
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-orange-500"
-      />
-      {(data.expression.$ === "MaxDelegationDepth" ||
-        data.expression.$ === "RateLimit") && (
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          className="w-3 h-3 bg-orange-600"
-        />
-      )}
-    </div>
+    </PermissionNodeContainer>
   );
 }
 
