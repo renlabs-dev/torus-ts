@@ -117,7 +117,7 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
     setCurrentBlock(currentBlock);
     setError(null);
 
-    if (!agent.metadataUri) {
+    if (agent.metadataUri === null) {
       // No metadata, cache basic data and finish
       const cacheData: CachedAgentData = {
         agentName,
@@ -132,11 +132,13 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
       return;
     }
 
+    const metadataUri = agent.metadataUri;
+
     // Fetch metadata
     const loadMetadata = async () => {
-      const metadata = await fetchMetadata(agent.metadataUri!);
+      const metadata = await fetchMetadata(metadataUri);
       let iconBlob: Blob | null = null;
-      let socials: Record<string, string> = {};
+      const socials: Record<string, string> = {};
 
       if (metadata) {
         if (metadata.images.icon) {

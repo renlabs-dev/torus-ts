@@ -59,7 +59,7 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
   if (!graphData) return null;
 
   return (
-    <div className="flex flex-col gap-4 h-full w-[27em] z-50">
+    <div className="flex flex-col gap-4 h-[44em] w-[27em] z-50">
       <div className="flex flex-col gap-2">
         <PermissionNodeAgentCard 
           nodeId={selectedNode.id}
@@ -68,12 +68,11 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
           setCachedAgentData={setCachedAgentData}
         />
       </div>
-
       <Card className="w-[27em] flex-1 p-4 flex flex-col overflow-hidden z-50">
         <h2 className="text-lg font-semibold mb-4 flex-shrink-0">Applied Permissions</h2>
         
         {sortedPermissions.length > 0 ? (
-          <ScrollArea className="flex-1 min-h-0">
+          <ScrollArea className="flex-1 min-h-0 max-h-full">
             <div className="flex max-h-96 overflow-auto">
               <Accordion type="single" collapsible className="w-full">
               {sortedPermissions.map((permission, index) => {
@@ -87,7 +86,6 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
                 const connectedAddress = connectedNode?.fullAddress ?? connectedNode?.id ?? '';
                 // const selectedAddress = selectedNode.fullAddress ?? '';
 
-                
                 return (
                   <AccordionItem 
                     key={`${permission.source}-${permission.target}`} 
@@ -98,6 +96,7 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
                       <div className="flex flex-col gap-1 w-full pr-2">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-white">
+                            {isOutgoing ? '← Granted ' : '→ Received '}
                             Permission {details?.permission_id ?? index + 1}
                           </span>
                         </div>
@@ -107,14 +106,14 @@ export const NodeDetailsCard = memo(function NodeDetailsCard({
                     <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
                     <div className="flex flex-col gap-1 space-between">
                       <div className="flex items-center gap-2 text-gray-400 font-mono">
-                        <div className="flex flex-row gap-2">
                           <span className="text-xs text-gray-500  ">
-                            {isOutgoing ? 'Granted To' : 'Received From'} 
+                            {isOutgoing ? 'Granted To' : 'Received From'}
                           </span>
-                        </div>
-                        <ActionButtons connectedAddress={connectedAddress}/>
                       </div>
-                        <span>{smallAddress(connectedAddress, 14)}</span>
+                        <div className="flex flex-row justify-between gap-2">
+                          <span>{smallAddress(connectedAddress, 10)}</span>
+                          <ActionButtons connectedAddress={connectedAddress}/>
+                        </div>
                     </div>
                         {details && (
                           <>
