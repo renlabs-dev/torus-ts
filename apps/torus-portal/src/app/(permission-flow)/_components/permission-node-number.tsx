@@ -77,12 +77,14 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
             id: createEdgeId(id, leftId),
             source: id,
             target: leftId,
+            animated: true,
           });
 
           edges.push({
             id: createEdgeId(id, rightId),
             source: id,
             target: rightId,
+            animated: true,
           });
           break;
         }

@@ -62,6 +62,7 @@ function convertBoolExpr(
         id: createEdgeId(parentId, bodyId),
         source: parentId,
         target: bodyId,
+        animated: true,
       });
 
       convertBoolExpr(expr.body, bodyId, nodes, edges);
@@ -101,11 +102,13 @@ function convertBoolExpr(
           id: createEdgeId(parentId, leftId),
           source: parentId,
           target: leftId,
+          animated: true,
         },
         {
           id: createEdgeId(parentId, rightId),
           source: parentId,
           target: rightId,
+          animated: true,
         },
       );
 
@@ -146,11 +149,13 @@ function convertBoolExpr(
           id: createEdgeId(parentId, leftId),
           source: parentId,
           target: leftId,
+          animated: true,
         },
         {
           id: createEdgeId(parentId, rightId),
           source: parentId,
           target: rightId,
+          animated: true,
         },
       );
 
@@ -177,6 +182,7 @@ function convertBoolExpr(
         id: createEdgeId(parentId, baseId),
         source: parentId,
         target: baseId,
+        animated: true,
       });
 
       convertBaseConstraint(expr.body, baseId, nodes, edges);
@@ -225,11 +231,13 @@ function convertNumExpr(
           id: createEdgeId(parentId, leftId),
           source: parentId,
           target: leftId,
+          animated: true,
         },
         {
           id: createEdgeId(parentId, rightId),
           source: parentId,
           target: rightId,
+          animated: true,
         },
       );
 
@@ -265,6 +273,7 @@ function convertBaseConstraint(
         id: createEdgeId(parentId, depthId),
         source: parentId,
         target: depthId,
+        animated: true,
       });
 
       convertNumExpr(expr.depth, depthId, nodes, edges);
@@ -303,11 +312,13 @@ function convertBaseConstraint(
           id: createEdgeId(parentId, maxOpsId),
           source: parentId,
           target: maxOpsId,
+          animated: true,
         },
         {
           id: createEdgeId(parentId, periodId),
           source: parentId,
           target: periodId,
+          animated: true,
         },
       );
 
