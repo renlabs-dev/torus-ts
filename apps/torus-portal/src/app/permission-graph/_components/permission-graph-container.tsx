@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import PermissionGraph from "./permission-graph";
 import PermissionGraphControls from "./permission-graph-controls";
 import type {
   CustomGraphData,
   CustomGraphNode,
 } from "./permission-graph-utils";
+import { AgentLRUCache  } from "./permission-graph-utils";
+import type {CachedAgentData} from "./permission-graph-utils";
 import { PermissionGraphNodeDetails } from "./node-details";
 import { api } from "~/trpc/react";
 
 export default function PermissionGraphContainer() {
   const [graphData, setGraphData] = useState<CustomGraphData | null>(null);
   const [selectedNode, setSelectedNode] = useState<CustomGraphNode | null>(null);
+  const agentCache = useRef(new AgentLRUCache(10));
   
   const { data: permissionDetails, isLoading } = api.permissionDetails.all.useQuery();
 
@@ -74,6 +77,22 @@ export default function PermissionGraphContainer() {
     window.history.pushState({}, '', `/permission-graph/agent/${node.id}`);
   }, []);
 
+  const getCachedAgentData = useCallback((nodeId: string): CachedAgentData | null => {
+    return agentCache.current.get(nodeId);
+  }, []);
+
+  const setCachedAgentData = useCallback((nodeId: string, data: CachedAgentData): void => {
+    agentCache.current.set(nodeId, data);
+  }, []);
+
+  // Cleanup cache on unmount
+  useEffect(() => {
+    const cache = agentCache.current;
+    return () => {
+      cache.clear();
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 w-screen h-screen">
       <div className="absolute top-[3.9rem] left-2 right-96 z-10">
@@ -85,6 +104,8 @@ export default function PermissionGraphContainer() {
           selectedNode={selectedNode}
           graphData={graphData}
           permissionDetails={permissionDetails}
+          getCachedAgentData={getCachedAgentData}
+          setCachedAgentData={setCachedAgentData}
         />
       </div>
 
