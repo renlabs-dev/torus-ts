@@ -3,7 +3,7 @@
 import { fetchAgentMetadata } from "@torus-network/sdk";
 import { Card } from "@torus-ts/ui/components/card";
 import { PortalAgentItem } from "../../../../_components/portal-agent-item";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
@@ -13,15 +13,17 @@ interface PermissionNodeAgentCardProps {
   fullAddress?: string;
 }
 
-export function PermissionNodeAgentCard({ 
+export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({ 
   nodeId,
   fullAddress
 }: PermissionNodeAgentCardProps) {
   const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [socials, setSocials] = useState<Record<string, string>>({});
-  const [agentName, setAgentName] = useState<string>(
-    fullAddress ? smallAddress(fullAddress, 6) : ""
+  const initialAgentName = useMemo(() => 
+    fullAddress ? smallAddress(fullAddress, 6) : "", 
+    [fullAddress]
   );
+  const [agentName, setAgentName] = useState<string>(initialAgentName);
   const [currentBlock, setCurrentBlock] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -31,81 +33,68 @@ export function PermissionNodeAgentCard({
   const { data: computedWeightedAgents } = api.computedAgentWeight.byAgentKey.useQuery(
     { agentKey: nodeId },
     { enabled: !!nodeId }
-  )
+  );
 
   const agentQuery = api.agent.byKeyLastBlock.useQuery(
     { key: nodeId },
     { enabled: !!nodeId }
   );
 
+  const fetchMetadata = useCallback(async (metadataUri: string) => {
+    const [metadataError, metadata] = await tryAsync(
+      fetchAgentMetadata(metadataUri, { fetchImages: true })
+    );
 
+    if (metadataError) {
+      console.error("Error fetching agent metadata:", metadataError);
+      return null;
+    }
+
+    return metadata;
+  }, []);
+
+
+  // Handle basic agent data
   useEffect(() => {
-    const fetchAgentData = async () => {
-      if (!nodeId) {
-        setIsLoading(false);
-        return;
-      }
-      if (!computedWeightedAgents) {
-        setIsLoading(false);
-        setWeightFactor(0);
-        return;
-      }
-      
-      setIsLoading(true);
-      setError(null);
+    if (!nodeId || agentQuery.isLoading || !agentQuery.data || !computedWeightedAgents) {
+      return;
+    }
 
+    if (agentQuery.error) {
+      console.error("Error fetching agent data:", agentQuery.error);
+      setError(new Error("Failed to fetch agent data"));
+      setIsLoading(false);
+      return;
+    }
 
-      // Wait for the query to complete
-      if (agentQuery.isLoading) return;
-    
-      
-      if (agentQuery.error) {
-        console.error("Error fetching agent data:", agentQuery.error);
-        setError(new Error("Failed to fetch agent data"));
-        setIsLoading(false);
-        return;
-      }
+    const agent = agentQuery.data;
+    setAgentName(agent.name ?? smallAddress(nodeId, 6));
+    setWeightFactor(computedWeightedAgents.percComputedWeight);
+    setCurrentBlock(agent.atBlock);
+    setError(null);
 
-      if (!agentQuery.data) {
-        setError(new Error("No agent data found"));
-        setIsLoading(false);
-        return;
-      }
+    if (!agent.metadataUri) {
+      setIsLoading(false);
+      return;
+    }
 
-
-      const agent = agentQuery.data;
-      setAgentName(agent.name ?? smallAddress(nodeId, 6));
-      setWeightFactor(computedWeightedAgents.percComputedWeight);
-      setCurrentBlock(agent.atBlock);
-      
-      // If there's no metadata URI, just use basic info
-      if (!agent.metadataUri) {
+    // Fetch metadata separately
+    const loadMetadata = async () => {
+      const metadata = await fetchMetadata(agent.metadataUri!);
+      if (!metadata) {
         setIsLoading(false);
         return;
       }
 
-      // Fetch metadata
-      const [metadataError, metadata] = await tryAsync(
-        fetchAgentMetadata(agent.metadataUri, { fetchImages: true })
-      );
-
-      if (metadataError) {
-        console.error("Error fetching agent metadata:", metadataError);
-        // Don't set error here - we still have basic agent info
-        setIsLoading(false);
-        return;
-      }
-      setAgentName(agent.name ?? "Agent not found");
       if (metadata.images.icon) {
         setIconUrl(URL.createObjectURL(metadata.images.icon));
       }
-        
+
       const socialLinks: Record<string, string> = {};
-        
       if (metadata.metadata.website) {
         socialLinks.website = metadata.metadata.website;
       }
-        
+
       if (metadata.metadata.socials) {
         const { socials: metaSocials } = metadata.metadata;
         if (metaSocials.discord) socialLinks.discord = metaSocials.discord;
@@ -113,13 +102,29 @@ export function PermissionNodeAgentCard({
         if (metaSocials.github) socialLinks.github = metaSocials.github;
         if (metaSocials.telegram) socialLinks.telegram = metaSocials.telegram;
       }
-        
+
       setSocials(socialLinks);
       setIsLoading(false);
     };
 
-    void fetchAgentData();
-  }, [nodeId, agentQuery.data, agentQuery.error, agentQuery.isLoading, computedWeightedAgents]);
+    void loadMetadata();
+  }, [nodeId, agentQuery.data, agentQuery.error, agentQuery.isLoading, computedWeightedAgents, fetchMetadata]);
+
+  // Handle loading state separately
+  useEffect(() => {
+    if (!nodeId) {
+      setIsLoading(false);
+      return;
+    }
+    if (!computedWeightedAgents) {
+      setIsLoading(false);
+      setWeightFactor(0);
+      return;
+    }
+    if (!agentQuery.isLoading && agentQuery.data) {
+      setIsLoading(true);
+    }
+  }, [nodeId, computedWeightedAgents, agentQuery.isLoading, agentQuery.data]);
 
   // Cleanup icon URL on unmount
   useEffect(() => {
@@ -156,4 +161,4 @@ export function PermissionNodeAgentCard({
       )}
     </Card>
   );
-}
+});

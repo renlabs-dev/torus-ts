@@ -1,66 +1,69 @@
 "use client";
 
 import { Card } from "@torus-ts/ui/components/card";
-import { api } from "~/trpc/react";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@torus-ts/ui/components/accordion";
-import type { CustomGraphData, CustomGraphNode } from "../../permission-graph-utils";
+import type { CustomGraphData, CustomGraphNode, PermissionDetail } from "../../permission-graph-utils";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { 
-  AddressCopyButton,
-  AddressLinkButton,
-  AddressGoButton,
   formatScope,
   formatDuration,
   getNodePermissions,
   sortPermissions,
  } from "../../permission-graph-utils";
-import { trySync } from "@torus-network/torus-utils/try-catch";
 import { PermissionNodeAgentCard } from "./agent-card";
-import { UtilityButtonsDescription } from "./utility-buttons-description"
+import { LinkButtons } from "./link-buttons";
+import { ActionButtons } from "./action-buttons";
+import { useMemo, memo } from "react";
 
 interface PermissionNodeDetailsProps {
   selectedNode: CustomGraphNode;
   graphData: CustomGraphData | null;
+  permissionDetails?: PermissionDetail[];
   onBackgroundClick?: () => void;
 }
 
 
 
-export function NodeDetailsCard({ 
+export const NodeDetailsCard = memo(function NodeDetailsCard({ 
   selectedNode, 
   graphData,
+  permissionDetails,
   // TODO : When click on the background, it should close the details
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onBackgroundClick 
 }: PermissionNodeDetailsProps) {
 
-  const [detailsError, detailsSuccess] = trySync(() => api.permissionDetails.all.useQuery());
-  if (detailsError !== undefined) {
-    console.log("Error fetching permission details: ", detailsError);
-  }
-  const {data : permissionDetails } = detailsSuccess ?? { data: [] };
+  const nodePermissions = useMemo(() => 
+    graphData ? getNodePermissions(selectedNode, graphData) : [], 
+    [selectedNode, graphData]
+  );
+  
+  const sortedPermissions = useMemo(() => 
+    sortPermissions(nodePermissions, permissionDetails ?? []), 
+    [nodePermissions, permissionDetails]
+  );
 
   if (!graphData) return null;
 
-  // Get and sort permissions for this node
-  const nodePermissions = getNodePermissions(selectedNode, graphData);
-  const sortedPermissions = sortPermissions(nodePermissions, permissionDetails ?? []);
-
   // Calculate time remaining for permissions
-  const calculateTimeRemaining = (createdAt: Date, duration: number ): number => {
-    const endDate = new Date(createdAt.getTime() + (duration * 24 * 60 * 60 * 1000));
-    const timeRemainingMs = endDate.getTime() - new Date().getTime();
-    const daysRemaining = Math.ceil(timeRemainingMs / (24 * 60 * 60 * 1000));
-    return daysRemaining;
-  };
+  const calculateTimeRemaining = useMemo(() => 
+    (createdAt: Date, duration: number): number => {
+      const endDate = new Date(createdAt.getTime() + (duration * 24 * 60 * 60 * 1000));
+      const timeRemainingMs = endDate.getTime() - new Date().getTime();
+      const daysRemaining = Math.ceil(timeRemainingMs / (24 * 60 * 60 * 1000));
+      return daysRemaining;
+    }, []
+  );
 
   return (
     <div className="flex flex-col gap-4 h-full w-[27em] z-50">
-      <PermissionNodeAgentCard 
-        nodeId={selectedNode.id}
-        fullAddress={selectedNode.fullAddress}
-      />
+      <div className="flex flex-col gap-2">
+        <PermissionNodeAgentCard 
+          nodeId={selectedNode.id}
+          fullAddress={selectedNode.fullAddress}
+        />
+      </div>
 
       <Card className="w-[27em] flex-1 p-4 flex flex-col overflow-hidden z-50">
         <h2 className="text-lg font-semibold mb-4 flex-shrink-0">Applied Permissions</h2>
@@ -78,7 +81,7 @@ export function NodeDetailsCard({
                   n => n.id === (isOutgoing ? permission.target : permission.source)
                 );
                 const connectedAddress = connectedNode?.fullAddress ?? connectedNode?.id ?? '';
-                const selectedAddress = selectedNode.fullAddress ?? '';
+                // const selectedAddress = selectedNode.fullAddress ?? '';
 
                 
                 return (
@@ -94,7 +97,7 @@ export function NodeDetailsCard({
                             Permission {details?.permission_id ?? index + 1}
                           </span>
                         </div>
-                        <UtilityButtonsDescription details={details} />
+                        <LinkButtons details={details} />
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
@@ -105,7 +108,7 @@ export function NodeDetailsCard({
                             {isOutgoing ? 'Granted To' : 'Received From'} 
                           </span>
                         </div>
-                      <AddressCopyButton link={connectedAddress}/> <AddressLinkButton link={connectedAddress}/> <AddressGoButton link={selectedAddress}/>
+                        <ActionButtons connectedAddress={connectedAddress}/>
                       </div>
                         <span>{smallAddress(connectedAddress, 14)}</span>
                     </div>
@@ -118,7 +121,7 @@ export function NodeDetailsCard({
                               </div>
                               <div>
                                 <span className="text-xs text-gray-500">Expires in</span>
-                                <div className="text-sm text-gray-300">{formatDuration(calculateTimeRemaining(details.createdAt, details.duration))}
+                                <div className="text-sm text-gray-300">{formatDuration(calculateTimeRemaining(details.createdAt, Number(details.duration)))}
                                 </div>
                               </div>
                             </div>
@@ -166,4 +169,4 @@ export function NodeDetailsCard({
       </Card>
     </div>
   );
-}
+});
