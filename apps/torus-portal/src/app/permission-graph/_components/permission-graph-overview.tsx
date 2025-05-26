@@ -1,5 +1,6 @@
 import { Card } from "@torus-ts/ui/components/card";
 import type { CustomGraphData } from "./permission-graph-utils";
+import { memo } from "react";
 
 interface PermissionGraphOverviewProps {
   graphData: CustomGraphData | null;
@@ -11,7 +12,7 @@ const roleColors = [
   { color: '#5f27cd', label: 'Both (Grantor & Grantee)' }
 ];
 
-export function PermissionGraphOverview({ graphData }: PermissionGraphOverviewProps) {
+export const PermissionGraphOverview = memo(function PermissionGraphOverview({ graphData }: PermissionGraphOverviewProps) {
   return (
     <Card className="z-50 w-full p-4 h-full">
 
@@ -51,4 +52,4 @@ export function PermissionGraphOverview({ graphData }: PermissionGraphOverviewPr
       )}
     </Card>
   );
-}
+});
