@@ -22,7 +22,7 @@ export function AddressCopyButton ({link}: AddressCopyButtonProps): JSX.Element 
       variant="ghost"
       copy={link}
     >
-      <Copy className="h-0.5 w-0.5 ml-1 border-muted-foreground" />
+      <Copy className="h-4 w-4 opacity-60 hover:opacity-100 transition-opacity duration-150" />
     </CopyButton>
   );
 }
@@ -30,7 +30,6 @@ export function AddressCopyButton ({link}: AddressCopyButtonProps): JSX.Element 
 export function AddressLinkButton({ link }: AddressLinkButtonProps): JSX.Element {
   const hostname = window.location.hostname;
   const isTestnet = typeof window !== "undefined" && (hostname.includes("testnet") || hostname.includes("localhost"));
-  console.log(isTestnet);
   const baseUrl = isTestnet
     ? "https://allocator.testnet.torus.network/agent/"
     : "https://allocator.torus.network/agent/";
@@ -150,7 +149,6 @@ export const getNodePermissions = (
   graphData.links.forEach(link => {
     const key = `${link.source}-${link.target}`;
     
-    // Only process if this node is involved in the permission
     if (link.source === node.id || link.target === node.id) {
       if (!permissionsMap.has(key)) {
         permissionsMap.set(key, {
@@ -173,6 +171,7 @@ export interface PermissionDetail {
   enforcement: string;
   execution_count: number;
   parent_id: number | null;
+  createdAt: Date;
 }
 
 export const sortPermissions = (

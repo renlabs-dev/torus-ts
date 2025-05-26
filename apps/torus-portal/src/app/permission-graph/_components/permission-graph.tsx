@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useRef } from "react";
+import { Suspense, useRef, useMemo, memo, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import type {
@@ -17,8 +17,8 @@ interface ForceGraphProps {
   onNodeClick: (node: CustomGraphNode) => void;
 }
 
-function ForceGraph(props: ForceGraphProps) {
-  const fgRef = useRef<GraphMethods>(null);
+const ForceGraph = memo(function ForceGraph(props: ForceGraphProps) {
+  const fgRef = useRef<GraphMethods | undefined>(undefined);
 
   useFrame(() => {
     if (fgRef.current) {
@@ -26,7 +26,7 @@ function ForceGraph(props: ForceGraphProps) {
     }
   });
 
-  const formattedData = {
+  const formattedData = useMemo(() => ({
     nodes: props.graphData.nodes.map((node) => ({
       id: node.id,
       name: node.name,
@@ -37,7 +37,16 @@ function ForceGraph(props: ForceGraphProps) {
       source: link.source,
       target: link.target,
     })),
-  };
+  }), [props.graphData.nodes, props.graphData.links]);
+
+  const handleNodeClick = useCallback((node: NodeObject) => {
+    props.onNodeClick({
+      id: String(node.id ?? ""),
+      name: String(node.name ?? `Node ${node.id}`),
+      color: String(node.color ?? "#ffffff"),
+      val: Number(node.val ?? 1),
+    });
+  }, [props]);
 
   return (
     <R3fForceGraph
@@ -51,19 +60,12 @@ function ForceGraph(props: ForceGraphProps) {
       linkColor={() => "rgba(255, 255, 255, 1)"}
       nodeRelSize={3}
       nodeResolution={24}
-      onNodeClick={(node: NodeObject) => {
-        props.onNodeClick({
-          id: String(node.id ?? ""),
-          name: String(node.name ?? `Node ${node.id}`),
-          color: String(node.color ?? "#ffffff"),
-          val: Number(node.val ?? 1),
-        });
-      }}
+      onNodeClick={handleNodeClick}
     />
   );
-}
+});
 
-export default function PermissionGraph({
+const PermissionGraph = memo(function PermissionGraph({
   data,
   onNodeClick,
 }: {
@@ -89,4 +91,6 @@ export default function PermissionGraph({
       </Suspense>
     </Canvas>
   );
-}
+});
+
+export default PermissionGraph;
