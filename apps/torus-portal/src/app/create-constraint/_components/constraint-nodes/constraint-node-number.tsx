@@ -217,7 +217,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       <Select value={data.expression.$} onValueChange={handleTypeChange}>
         <SelectTrigger
           id={`${id}-type`}
-          className={`border transition-all border-[#B1B1B7] duration-200 rounded-full
+          className={`border pr-0 w-fit transition-all border-[#B1B1B7] duration-200 rounded-full
             [&>svg]:invisible ${ data.expression.$ === "UIntLiteral" &&
             "bg-blue-50 text-blue-700" } ${ data.expression.$ === "BlockNumber" &&
             "bg-purple-50 text-purple-700" } ${ data.expression.$ === "StakeOf" &&
@@ -282,7 +282,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
             type="text"
             value={inputValue}
             onChange={(e) => handleValueChange(e.target.value)}
-            className={`w-full ${inputError ? "border-red-500" : ""}`}
+            className={`w-full pr-0 ${inputError ? "border-red-500" : ""}`}
             placeholder="Enter a positive integer"
           />
           {inputError && (
@@ -298,7 +298,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
             type="text"
             value={data.expression.account || ""}
             onChange={(e) => handleAccountChange("account", e.target.value)}
-            className={`w-full ${accountError ? "border-red-500" : ""}`}
+            className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
             placeholder="Enter account ID"
           />
           {accountError && (
@@ -316,7 +316,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
               type="text"
               value={data.expression.from || ""}
               onChange={(e) => handleAccountChange("from", e.target.value)}
-              className={`w-full ${accountError ? "border-red-500" : ""}`}
+              className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
               placeholder="From account ID"
             />
           </div>
@@ -326,7 +326,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
               type="text"
               value={data.expression.to || ""}
               onChange={(e) => handleAccountChange("to", e.target.value)}
-              className={`w-full ${accountError ? "border-red-500" : ""}`}
+              className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
               placeholder="To account ID"
             />
           </div>
