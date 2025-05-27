@@ -16,12 +16,6 @@ interface TransactionItemProps {
   index?: number;
 }
 
-const mapStatusForBadge = (status: Transaction["status"]): "pending" | "success" | "error" => {
-  if (status === "SUCCESS") return "success";
-  if (status === "ERROR") return "error";
-  return "pending";
-};
-
 export function TransactionItem({
   transaction,
   usdPrice,
@@ -65,7 +59,7 @@ export function TransactionItem({
         <span className="font-medium">
           {getTransactionTypeDisplay(transaction.type)}
         </span>
-        <TransactionStatusBadge status={mapStatusForBadge(transaction.status)} />
+        <TransactionStatusBadge status={transaction.status} />
       </div>
       <div className="grid grid-cols-1 gap-2 text-xs">
         <div>

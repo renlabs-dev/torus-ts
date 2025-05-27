@@ -14,6 +14,7 @@ import { useTransactionsStore } from "~/store/transactions-store";
 import {
   exportTransactionsAsCSV,
   exportTransactionsAsJSON,
+  getAllTransactionsForWallet,
 } from "~/utils/export-transactions";
 
 interface TransactionExportProps {
@@ -29,9 +30,10 @@ export function TransactionExport({
 }: TransactionExportProps) {
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
-  const { transactions } = useTransactionsStore((state) =>
-    state.getTransactionsByWallet(walletAddress),
-  );
+  const allTransactions = useTransactionsStore((state) => state.transactions);
+  const transactions = walletAddress 
+    ? getAllTransactionsForWallet(allTransactions, walletAddress)
+    : [];
 
   const handleExport = async (format: ExportFormat) => {
     if (!walletAddress) {

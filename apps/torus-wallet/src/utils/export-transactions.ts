@@ -1,4 +1,5 @@
 import type { Transaction } from "~/store/transactions-store";
+import type { SS58Address } from "@torus-network/sdk";
 
 export interface ExportableTransaction {
   id: string;
@@ -21,7 +22,7 @@ const formatTransactionForExport = (
   toAddress: transaction.toAddress,
   amount: transaction.amount,
   fee: transaction.fee,
-  status: transaction.status ?? "Pending",
+  status: transaction.status,
   hash: transaction.hash,
   createdAt: transaction.createdAt,
 });
@@ -120,6 +121,6 @@ export const exportTransactionsAsCSV = (
 };
 
 export const getAllTransactionsForWallet = (
-  allTransactions: Record<string, Transaction[]>,
+  allTransactions: Record<SS58Address, Transaction[]>,
   walletAddress: string,
-): Transaction[] => allTransactions[walletAddress] ?? [];
+): Transaction[] => allTransactions[walletAddress as SS58Address] ?? [];
