@@ -215,7 +215,7 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
         <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
         <p className="text-red-500">Error: {error.message}</p>
       </Card>
-    );
+    )
   }
 
 
@@ -224,7 +224,7 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
       <div className="flex flex-row justify-between">
         <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
         <Button
-          variant="ghost"
+          variant="outline"
           className="-mt-0.5"
           onClick={onClose}
           >

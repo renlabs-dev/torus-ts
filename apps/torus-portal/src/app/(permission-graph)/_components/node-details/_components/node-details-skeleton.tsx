@@ -70,7 +70,7 @@ export function NodeDetailsSkeleton({
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-white">
                               {isOutgoing ? '← Granted ' : '→ Received '}
-                              Permission {details?.permission_id ?? index + 1}
+                              Permission {details?.permission_id ?? ""}
                             </span>
                           </div>
                           <LinkButtons details={details} />

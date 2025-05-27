@@ -29,7 +29,8 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
   onBackgroundClick 
 }: PermissionGraphDetailsProps) {
   if (!selectedNode) {
-    return <PermissionGraphOverview graphData={graphData} />;
+    return <span> oi</span>
+  //   return <PermissionGraphOverview graphData={graphData} />;
   }
   
   return (
