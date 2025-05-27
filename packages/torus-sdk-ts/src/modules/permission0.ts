@@ -405,16 +405,34 @@ export function canExecutePermission(
 /**
  * Grant an emission permission to a grantee
  */
-export function grantEmissionPermission(
-  api: Api,
-  grantee: string,
-  allocation: EmissionAllocation,
-  targets: [SS58Address, number][],
-  distribution: DistributionControl,
-  duration: PermissionDuration,
-  revocation: RevocationTerms,
-  enforcement: EnforcementAuthority,
-) {
+export interface GrantEmissionPermission {
+  api: Api;
+  grantee: string;
+  allocation: EmissionAllocation;
+  targets: [SS58Address, number][];
+  distribution: DistributionControl;
+  duration: PermissionDuration;
+  revocation: RevocationTerms;
+  enforcement: EnforcementAuthority;
+}
+
+export function grantEmissionPermission({
+  api,
+  grantee,
+  allocation,
+  targets,
+  distribution,
+  duration,
+  revocation,
+  enforcement,
+}: GrantEmissionPermission) {
+  // grantee: T::AccountId,
+  // allocation: EmissionAllocation<T>,
+  // targets: Vec<(T::AccountId, u16)>,
+  // distribution: DistributionControl<T>,
+  // duration: PermissionDuration<T>,
+  // revocation: RevocationTerms<T>,
+  // enforcement: EnforcementAuthority<T>,
   return api.tx.permission0.grantEmissionPermission(
     grantee,
     allocation,
