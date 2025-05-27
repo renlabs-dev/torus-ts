@@ -52,8 +52,8 @@ check-all:
 check name:
   pnpm exec turbo run typecheck lint -F {{name}}
 
-test filter="*" *args="":
-  pnpm exec turbo run test -F "{{filter}}" -- {{args}} 
+test filter="*":
+  pnpm exec turbo run test --continue -F "{{filter}}"
 
 create-package:
   pnpm turbo gen init
