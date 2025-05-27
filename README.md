@@ -87,3 +87,48 @@ just db-push
 # Run the project
 just dev {{app-name}}
 ```
+
+## Chain Metadata & Type Generation
+
+The SDK requires TypeScript types generated from blockchain metadata for each network environment.
+
+### Generate Types
+
+```sh
+# For specific networks
+just gen-types testnet
+just gen-types mainnet
+just gen-types local
+
+# For custom endpoints
+just gen-types "https://custom-node.example.com"
+```
+
+### Networks
+
+- `mainnet` - `https://api.torus.network`
+- `testnet` - `https://api.testnet.torus.network` 
+- `local` - `http://localhost:9951`
+
+### Process
+
+1. Fetches metadata from network endpoint
+2. Saves to `./data/metadata/{network}.json`
+3. Generates TypeScript types in `packages/torus-sdk-ts/src/interfaces/`
+4. Rebuild with `just build` after generating new types
+
+### Generated Files
+
+- `augment-api-consts.ts` - Blockchain constants
+- `augment-api-errors.ts` - Runtime errors  
+- `augment-api-events.ts` - Blockchain events
+- `augment-api-query.ts` - Storage queries
+- `augment-api-rpc.ts` - RPC calls
+- `augment-api-runtime.ts` - Runtime API calls
+- `augment-api-tx.ts` - Transaction types
+- `augment-api.ts` - Main API augmentations
+- `augment-types.ts` - Type augmentations
+- `lookup.ts` - Type lookup registry
+- `types.ts` - Core type definitions
+
+Generated types provide full TypeScript support for blockchain interactions and must match the target network's runtime version.
