@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, MultiAddress, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
+import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionEmissionEmissionAllocation, PalletPermission0PermissionEnforcementAuthority, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -148,25 +148,110 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
+    faucet: {
+      /**
+       * Request tokens from the faucet by performing proof of work
+       * 
+       * This extrinsic is only available on testnets. It requires the user to perform
+       * proof-of-work by finding a nonce that, when combined with a recent block hash
+       * and the user's account ID, produces a hash that meets the difficulty requirement.
+       * 
+       * The account must have a total balance (free + staked) below the threshold to be eligible.
+       * 
+       * # Parameters
+       * * `origin` - Must be None (unsigned)
+       * * `block_number` - A recent block number (within 3 blocks)
+       * * `nonce` - A value that makes the resulting hash meet the difficulty requirement
+       * * `work` - The hash result of the proof of work
+       * * `key` - The account ID that will receive the tokens
+       * 
+       * # Weight
+       * * Read operations: 16
+       * * Write operations: 28
+       * * Does not pay fees
+       **/
+      faucet: AugmentedSubmittable<(blockNumber: u64 | AnyNumber | Uint8Array, nonce: u64 | AnyNumber | Uint8Array, work: Bytes | string | Uint8Array, key: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u64, Bytes, MultiAddress]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
     governance: {
+      /**
+       * Accepts an agent application. Only available for the root key or
+       * curators.
+       **/
       acceptApplication: AugmentedSubmittable<(applicationId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
+      /**
+       * Adds a new allocator to the list. Only available for the root key.
+       **/
       addAllocator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      addCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      /**
+       * Creates a proposal moving funds from the treasury account to the
+       * given key.
+       **/
       addDaoTreasuryTransferProposal: AugmentedSubmittable<(value: u128 | AnyNumber | Uint8Array, destinationKey: AccountId32 | string | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, AccountId32, Bytes]>;
+      /**
+       * Creates a new emission percentage proposal.
+       **/
       addEmissionProposal: AugmentedSubmittable<(recyclingPercentage: Percent | AnyNumber | Uint8Array, treasuryPercentage: Percent | AnyNumber | Uint8Array, incentivesRatio: Percent | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent, Percent, Percent, Bytes]>;
+      /**
+       * Creates a new custom global proposal.
+       **/
       addGlobalCustomProposal: AugmentedSubmittable<(metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; maxAllowedWeights?: any; minStakePerWeight?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any; proposalCost?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
+      /**
+       * Creates a new global parameters proposal.
+       **/
+      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any; proposalCost?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
+      /**
+       * Forcefully adds a new agent to the whitelist. Only available for the
+       * root key or curators.
+       **/
       addToWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      /**
+       * Denies an agent application. Only available for the root key or
+       * curators.
+       **/
       denyApplication: AugmentedSubmittable<(applicationId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
+      /**
+       * Disables vote power delegation.
+       **/
       disableVoteDelegation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Enables vote power delegation.
+       **/
       enableVoteDelegation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Sets a penalty factor to the given agent emissions. Only available
+       * for the root key or curators.
+       **/
       penalizeAgent: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, percentage: u8 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u8]>;
+      /**
+       * Removes an existing allocator from the list. Only available for the
+       * root key.
+       **/
       removeAllocator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      removeCurator: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      /**
+       * Forcefully removes an agent from the whitelist. Only available for
+       * the root key or curators.
+       **/
       removeFromWhitelist: AugmentedSubmittable<(key: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      /**
+       * Removes a casted vote for an open proposal.
+       **/
       removeVoteProposal: AugmentedSubmittable<(proposalId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      /**
+       * Forcefully sets emission percentages. Only available for the root
+       * key.
+       **/
       setEmissionParams: AugmentedSubmittable<(recyclingPercentage: Percent | AnyNumber | Uint8Array, treasuryPercentage: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent, Percent]>;
+      /**
+       * Submits a new agent application on behalf of a given key.
+       **/
       submitApplication: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, metadata: Bytes | string | Uint8Array, removing: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes, bool]>;
+      /**
+       * Casts a vote for an open proposal.
+       **/
       voteProposal: AugmentedSubmittable<(proposalId: u64 | AnyNumber | Uint8Array, agree: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, bool]>;
       /**
        * Generic tx
@@ -333,6 +418,43 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
+    permission0: {
+      /**
+       * Execute a permission through enforcement authority
+       * The caller must be authorized as a controller or be the root key
+       **/
+      enforcementExecutePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Execute a manual distribution based on permission
+       **/
+      executePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Grant a permission for curator delegation
+       **/
+      grantCuratorPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, flags: u32 | AnyNumber | Uint8Array, cooldown: Option<u64> | null | Uint8Array | u64 | AnyNumber, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, Option<u64>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms]>;
+      /**
+       * Grant a permission for emission delegation
+       **/
+      grantEmissionPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: Vec<ITuple<[AccountId32, u16]>> | ([AccountId32 | string | Uint8Array, u16 | AnyNumber | Uint8Array])[], distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, Vec<ITuple<[AccountId32, u16]>>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
+      /**
+       * Revoke a permission. The caller must met revocation constraints or be a root key.
+       **/
+      revokePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Set enforcement authority for a permission
+       * Only the grantor or root can set enforcement authority
+       **/
+      setEnforcementAuthority: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, controllers: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], requiredVotes: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Vec<AccountId32>, u32]>;
+      /**
+       * Toggle a permission's accumulation state (enabled/disabled)
+       * The caller must be authorized as a controller or be the root key
+       **/
+      togglePermissionAccumulation: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, accumulating: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, bool]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
     sudo: {
       /**
        * Permanently removes the sudo key.
@@ -475,11 +597,33 @@ declare module '@polkadot/api-base/types/submittable' {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     torus0: {
+      /**
+       * Adds stakes from origin to the agent key.
+       **/
       addStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
+      /**
+       * Registers a new agent on behalf of an arbitrary key.
+       **/
       registerAgent: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, name: Bytes | string | Uint8Array, url: Bytes | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes, Bytes, Bytes]>;
+      /**
+       * Removes stakes from origin to the agent key.
+       **/
       removeStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
+      /**
+       * Updates origin's key agent metadata.
+       **/
+      setAgentUpdateCooldown: AugmentedSubmittable<(newCooldown: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      /**
+       * Transfers origin's stakes from an agent to another.
+       **/
       transferStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, newAgentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, u128]>;
+      /**
+       * Unregister origin's key agent.
+       **/
       unregisterAgent: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Updates origin's key agent metadata.
+       **/
       updateAgent: AugmentedSubmittable<(name: Bytes | string | Uint8Array, url: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, stakingFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, weightControlFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Option<Bytes>, Option<Percent>, Option<Percent>]>;
       /**
        * Generic tx

@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/
 import type { BTreeSet, Bytes, Null, Option, Struct, U256, U8aFixed, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletEmission0ConsensusMember, PalletEvmCodeMetadata, PalletGovernanceApplicationAgentApplication, PalletGovernanceConfigGovernanceConfiguration, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletTorus0Agent, PalletTorus0BurnBurnConfiguration, PalletTorus0FeeValidatorFeeConstraints, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, TorusRuntimeRuntimeHoldReason } from '@polkadot/types/lookup';
+import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletEmission0ConsensusMember, PalletEvmCodeMetadata, PalletGovernanceApplicationAgentApplication, PalletGovernanceConfigGovernanceConfiguration, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletPermission0PermissionEnforcementReferendum, PalletPermission0PermissionPermissionContract, PalletTorus0Agent, PalletTorus0BurnBurnConfiguration, PalletTorus0FeeValidatorFeeConstraints, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, TorusRuntimeRuntimeHoldReason } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -99,13 +99,31 @@ declare module '@polkadot/api-base/types/storage' {
       [key: string]: QueryableStorageEntry<ApiType>;
     };
     emission0: {
+      /**
+       * Map of consensus members indexed by their keys. A consensus member is
+       * any agent eligible for emissions in the next epoch. This means
+       * unregistered agents will also receive emissions.
+       **/
       consensusMembers: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<PalletEmission0ConsensusMember>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      /**
+       * Percentage of issued tokens to be burned every epoch.
+       **/
       emissionRecyclingPercentage: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Ratio between incentives and dividends on distribution. 50% means they
+       * are distributed equally.
+       **/
       incentivesRatio: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
-      maxAllowedWeights: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
-      minAllowedWeights: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
-      minStakePerWeight: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Amount of tokens accumulated since the last epoch. This increases on
+       * every block. See [`distribute::get_total_emission_per_block`].
+       **/
       pendingEmission: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Map of agents delegating weight control to other agents. Emissions
+       * derived from weight delegation are taxed and the fees go the original
+       * weight setter.
+       **/
       weightControlDelegation: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<AccountId32>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
        * Generic query
@@ -146,15 +164,46 @@ declare module '@polkadot/api-base/types/storage' {
       [key: string]: QueryableStorageEntry<ApiType>;
     };
     governance: {
+      /**
+       * A map of agent applications, past and present.
+       **/
       agentApplications: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceApplicationAgentApplication>>, [u32]> & QueryableStorageEntry<ApiType, [u32]>;
+      /**
+       * List of allocator keys, which are the default validators on the network.
+       **/
       allocators: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
-      curators: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      /**
+       * The treasury address to which the treasury emission percentages and
+       * other funds go to. A proposal can be created withdrawing the funds to a
+       * key.
+       **/
       daoTreasuryAddress: AugmentedQuery<ApiType, () => Observable<AccountId32>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Global governance configuration files.
+       **/
       globalGovernanceConfig: AugmentedQuery<ApiType, () => Observable<PalletGovernanceConfigGovernanceConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * List of keys that are NOT delegating their voting power. By default, all
+       * keys delegate their voting power.
+       **/
       notDelegatingVotingPower: AugmentedQuery<ApiType, () => Observable<BTreeSet<AccountId32>>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Map of past and present proposals indexed by their incrementing ID.
+       **/
       proposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
+      /**
+       * Fee taken from emission distribution and deposited into
+       * [`DaoTreasuryAddress`].
+       **/
       treasuryEmissionFee: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Queue of proposals to be rewarded after closing.
+       **/
       unrewardedProposals: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceProposalUnrewardedProposal>>, [u64]> & QueryableStorageEntry<ApiType, [u64]>;
+      /**
+       * List of whitelisted keys. Keys listed here are allowed to register
+       * agents.
+       **/
       whitelist: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
        * Generic query
@@ -210,6 +259,40 @@ declare module '@polkadot/api-base/types/storage' {
        * The set of open multisig operations.
        **/
       multisigs: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: U8aFixed | string | Uint8Array) => Observable<Option<PalletMultisigMultisig>>, [AccountId32, U8aFixed]> & QueryableStorageEntry<ApiType, [AccountId32, U8aFixed]>;
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>;
+    };
+    permission0: {
+      /**
+       * Accumulated amounts for each stream
+       **/
+      accumulatedStreamAmounts: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: H256 | string | Uint8Array, arg3: H256 | string | Uint8Array) => Observable<Option<u128>>, [AccountId32, H256, H256]> & QueryableStorageEntry<ApiType, [AccountId32, H256, H256]>;
+      /**
+       * Enforcement votes in progress and the voters
+       **/
+      enforcementTracking: AugmentedQuery<ApiType, (arg1: H256 | string | Uint8Array, arg2: PalletPermission0PermissionEnforcementReferendum | { EmissionAccumulation: any } | { Execution: any } | string | Uint8Array) => Observable<BTreeSet<AccountId32>>, [H256, PalletPermission0PermissionEnforcementReferendum]> & QueryableStorageEntry<ApiType, [H256, PalletPermission0PermissionEnforcementReferendum]>;
+      /**
+       * Active permission contracts - stored by permission ID
+       **/
+      permissions: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<Option<PalletPermission0PermissionPermissionContract>>, [H256]> & QueryableStorageEntry<ApiType, [H256]>;
+      /**
+       * Permissions received by a specific account
+       **/
+      permissionsByGrantee: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Vec<H256>>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      /**
+       * Permissions granted by a specific account
+       **/
+      permissionsByGrantor: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Vec<H256>>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      /**
+       * Mapping from (grantor, grantee) to permission IDs
+       **/
+      permissionsByParticipants: AugmentedQuery<ApiType, (arg: ITuple<[AccountId32, AccountId32]> | [AccountId32 | string | Uint8Array, AccountId32 | string | Uint8Array]) => Observable<Option<Vec<H256>>>, [ITuple<[AccountId32, AccountId32]>]> & QueryableStorageEntry<ApiType, [ITuple<[AccountId32, AccountId32]>]>;
+      /**
+       * Revocations in progress and the voters
+       **/
+      revocationTracking: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<BTreeSet<AccountId32>>, [H256]> & QueryableStorageEntry<ApiType, [H256]>;
       /**
        * Generic query
        **/
@@ -337,26 +420,90 @@ declare module '@polkadot/api-base/types/storage' {
       [key: string]: QueryableStorageEntry<ApiType>;
     };
     torus0: {
+      /**
+       * Known registered network agents indexed by the owner's key.
+       **/
       agents: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<PalletTorus0Agent>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      /**
+       * Cooldown (in blocks) in which an agent needs to wait between each `update_agent` call.
+       **/
+      agentUpdateCooldown: AugmentedQuery<ApiType, () => Observable<u64>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Amount of tokens to burn from a payer key when registering new agents.
+       **/
       burn: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * [`Burn`] configuration values.
+       **/
       burnConfig: AugmentedQuery<ApiType, () => Observable<PalletTorus0BurnBurnConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * The weight dividends have when finding agents to prune. 100% meaning it
+       * is taking fully into account.
+       **/
       dividendsParticipationWeight: AugmentedQuery<ApiType, () => Observable<Percent>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Constraints defining validation of agent fees.
+       **/
       feeConstraints: AugmentedQuery<ApiType, () => Observable<PalletTorus0FeeValidatorFeeConstraints>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Number of blocks in which an agent is immune to pruning after
+       * registration.
+       **/
       immunityPeriod: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Maximum number of characters allowed in an agent URL.
+       **/
       maxAgentUrlLength: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Maximum number of agents registered at one time. Registering when this
+       * number is met means new comers will cause pruning of old agents.
+       **/
       maxAllowedAgents: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Max allowed of validators. This is used then calculating emissions, only
+       * the top staked agents up to this value will have their weights
+       * considered.
+       **/
       maxAllowedValidators: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Maximum number of characters allowed in an agent name.
+       **/
       maxNameLength: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Maximum amount of agent registrations per block, tracked by
+       * [`RegistrationsThisBlock`].
+       **/
       maxRegistrationsPerBlock: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Minimum amount of stake in tokens a key has to deposit in an agent.
+       **/
       minAllowedStake: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Minimum number of characters required in an agent name.
+       **/
       minNameLength: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Minimum required stake for an agent to be considered a validator.
+       **/
       minValidatorStake: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
-      registrationBlock: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<u64>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      /**
+       * Number of agent registrations that happened this block.
+       **/
       registrationsThisBlock: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Number of agent registrations that happened in the last
+       * [`BurnConfiguration::target_registrations_interval`] blocks.
+       **/
       registrationsThisInterval: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Number of blocks between emissions.
+       **/
       rewardInterval: AugmentedQuery<ApiType, () => Observable<u16>, []> & QueryableStorageEntry<ApiType, []>;
       stakedBy: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<u128>>, [AccountId32, AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32, AccountId32]>;
       stakingTo: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<u128>>, [AccountId32, AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32, AccountId32]>;
+      /**
+       * The total amount of stake in the network.
+       **/
       totalStake: AugmentedQuery<ApiType, () => Observable<u128>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Generic query
