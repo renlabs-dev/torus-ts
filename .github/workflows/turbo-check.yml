@@ -8,9 +8,6 @@ on:
       torus-page:
         description: "Whether torus-page changed"
         value: ${{ jobs.run.outputs.torus-page }}
-      torus-portal:
-        description: "Whether torus-portal changed"
-        value: ${{ jobs.run.outputs.torus-portal }}
       torus-allocator:
         description: "Whether torus-allocator changed"
         value: ${{ jobs.run.outputs.torus-allocator }}
@@ -33,7 +30,6 @@ jobs:
     outputs:
       torus-wallet: ${{ steps.changed.outputs.torus-wallet }}
       torus-page: ${{ steps.changed.outputs.torus-page }}
-      torus-portal: ${{ steps.changed.outputs.torus-page }}
       torus-allocator: ${{ steps.changed.outputs.torus-allocator }}
       torus-cache: ${{ steps.changed.outputs.torus-cache }}
       torus-bridge: ${{ steps.changed.outputs.torus-bridge }}
