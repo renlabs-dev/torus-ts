@@ -37,23 +37,17 @@ export function Stake() {
     getExistentialDeposit,
     minAllowedStake,
   } = useWallet();
-  const {
-    addTransaction,
-    isTransactionError,
-    isTransactionCompleted,
-    updateTransaction,
-  } = useTransactionsStore((state) => ({
-    addTransaction: (args: Parameters<typeof state.addTransaction>[0]) =>
-      state.addTransaction(args),
-    isTransactionError: (
-      args: Parameters<typeof state.isTransactionError>[0],
-    ) => state.isTransactionError(args),
-    isTransactionCompleted: (
-      args: Parameters<typeof state.isTransactionCompleted>[0],
-    ) => state.isTransactionCompleted(args),
-    updateTransaction: (...args: Parameters<typeof state.updateTransaction>) =>
-      state.updateTransaction(...args),
-  }));
+
+  const addTransaction = useTransactionsStore((state) => state.addTransaction);
+  const isTransactionError = useTransactionsStore(
+    (state) => state.isTransactionError,
+  );
+  const isTransactionCompleted = useTransactionsStore(
+    (state) => state.isTransactionCompleted,
+  );
+  const updateTransaction = useTransactionsStore(
+    (state) => state.updateTransaction,
+  );
 
   const { toast } = useToast();
   const { usdPrice } = useUsdPrice();
