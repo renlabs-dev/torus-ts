@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { sb_bigint, sb_number } from "./zod";
+import { Codec } from "@polkadot/types/types";
+import { H256 } from "@polkadot/types/interfaces";
+import { U8aFixed } from "@polkadot/types";
 
 export const sb_id = sb_number.pipe(z.number().int().nonnegative());
 export type Id = z.infer<typeof sb_id>;
@@ -12,3 +15,15 @@ export type Balance = z.infer<typeof sb_balance>;
 
 export const sb_amount = sb_bigint.pipe(z.bigint());
 export type Amount = z.infer<typeof sb_amount>;
+
+// TODO: refactor, move to ./zod.ts
+export const sb_h256 = z
+  .custom<H256>((value) => {
+    if (!(value instanceof U8aFixed)) {
+      return false;
+    }
+    // if (value.length !== 32) {
+    //   return false;
+    // }
+  })
+  .transform((value) => value.toHex());
