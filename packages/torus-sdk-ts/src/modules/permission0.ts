@@ -2,6 +2,7 @@ import type { ApiPromise } from "@polkadot/api";
 import type { Option } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { match } from "rustie";
 import type { z } from "zod";
 
 import type { SS58Address } from "../address";
@@ -369,47 +370,33 @@ export function hasCuratorFlag(
   return (permissions.bits & flag) === flag;
 }
 
-// FIXME: fix isPermissionExpired
-// /**
-//  * Check if permission is expired
-//  */
-// export function isPermissionExpired(
-//   permission: PermissionContract,
-//   currentBlock: bigint,
-// ): boolean {
-//   if (permission.duration.Indefinite !== undefined) {
-//     return false;
-//   }
-//   if (permission.duration.UntilBlock !== undefined) {
-//     return currentBlock >= permission.duration.UntilBlock;
-//   }
-//   return false;
-// }
+/**
+ * Check if permission is expired
+ */
+export function isPermissionExpired(
+  permission: PermissionContract,
+  currentBlock: bigint,
+): boolean {
+  match(permission.duration)({
+    Indefinite() {
+      return false;
+    },
+    UntilBlock(block) {
+      return currentBlock > block;
+    },
+  });
+  return false;
+}
 
-// FIXME: fix canExecutePermission
-// /**
-//  * Check if permission can be executed
-//  */
-// export function canExecutePermission(
-//   permission: PermissionContract,
-//   currentBlock: bigint,
-// ): boolean {
-//   return !isPermissionExpired(permission, currentBlock);
-// }
-
-// FIXME: fix getPermissionType
-// /**
-//  * Get permission type string
-//  */
-// export function getPermissionType(permission: PermissionContract): string {
-//   if (permission.scope.Emission !== undefined) {
-//     return "Emission";
-//   }
-//   if (permission.scope.Curator !== undefined) {
-//     return "Curator";
-//   }
-//   return "Unknown";
-// }
+/**
+ * Check if permission can be executed
+ */
+export function canExecutePermission(
+  permission: PermissionContract,
+  currentBlock: bigint,
+): boolean {
+  return !isPermissionExpired(permission, currentBlock);
+}
 
 // ============================================================================
 // Transaction Functions
@@ -428,13 +415,6 @@ export function grantEmissionPermission(
   revocation: RevocationTerms,
   enforcement: EnforcementAuthority,
 ) {
-  // grantee: T::AccountId,
-  // allocation: EmissionAllocation<T>,
-  // targets: Vec<(T::AccountId, u16)>,
-  // distribution: DistributionControl<T>,
-  // duration: PermissionDuration<T>,
-  // revocation: RevocationTerms<T>,
-  // enforcement: EnforcementAuthority<T>,
   return api.tx.permission0.grantEmissionPermission(
     grantee,
     allocation,
