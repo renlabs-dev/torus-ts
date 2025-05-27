@@ -2,6 +2,9 @@
 /data/
 /tmp/
 
+# Local files
+*.local*
+
 # Nix / direnv
 /.direnv/
 
