@@ -4,6 +4,8 @@ import type { CustomGraphData, CustomGraphNode, PermissionDetail, CachedAgentDat
 import { TooltipProvider } from "@torus-ts/ui/components/tooltip";
 import { memo } from "react";
 import { PermissionNodeAgentCard } from "./_components/agent-card";
+import { Sheet, SheetContent,  SheetOverlay, SheetTitle,  } from "@torus-ts/ui/components/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
@@ -11,6 +13,8 @@ interface PermissionGraphDetailsProps {
   permissionDetails?: PermissionDetail[];
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
   onBackgroundClick?: () => void;
 }
 
@@ -20,6 +24,8 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
   permissionDetails,
   getCachedAgentData,
   setCachedAgentData,
+  isOpen, 
+  onOpenChange,
   onBackgroundClick 
 }: PermissionGraphDetailsProps) {
   if (!selectedNode) {
@@ -27,13 +33,25 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
   }
   
   return (
-      <div className="flex flex-col gap-2">
-        <PermissionNodeAgentCard 
-          nodeId={selectedNode.id}
-          fullAddress={selectedNode.fullAddress}
-          getCachedAgentData={getCachedAgentData}
-          setCachedAgentData={setCachedAgentData}
-          />
+<Sheet open={isOpen} onOpenChange={onOpenChange} modal={false}>
+  <SheetOverlay className="bg-transparent overflow-hidden" />
+  
+  <SheetContent
+    className="z-[100] w-full max-w-md sm:max-w-lg md:w-[33%] lg:w-[33%] xl:w-[33%] overflow-hidden [&>button]:hidden"
+    side="right"
+    onPointerDownOutside={(e) => e.preventDefault()} 
+    onInteractOutside={(e) => e.preventDefault()}
+  >
+    <div className="flex flex-col gap-2 w-full h-full sm:overflow-y-auto xl:overflow-hidden">
+      {/*Must to remove annoying error */}
+      <VisuallyHidden><SheetTitle>AgentDetails</SheetTitle></VisuallyHidden>
+      <PermissionNodeAgentCard 
+        nodeId={selectedNode.id}
+        fullAddress={selectedNode.fullAddress}
+        onClose={() => onOpenChange(false)}
+        getCachedAgentData={getCachedAgentData}
+        setCachedAgentData={setCachedAgentData}
+      />
       <TooltipProvider>    
         <NodeDetailsCard
           selectedNode={selectedNode} 
@@ -45,6 +63,8 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
         />
       </TooltipProvider>
     </div>
+  </SheetContent>
+</Sheet>
 
   );
 });

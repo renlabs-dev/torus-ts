@@ -10,10 +10,12 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { getAllocatorBaseUrl  } from "../../permission-graph-utils";
 import type {CachedAgentData} from "../../permission-graph-utils";
 import { Button } from "@torus-ts/ui/components/button";
+import { X } from "lucide-react";
 
 interface PermissionNodeAgentCardProps {
   nodeId: string;
   fullAddress?: string;
+  onClose?: () => void;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
@@ -21,6 +23,7 @@ interface PermissionNodeAgentCardProps {
 export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({ 
   nodeId,
   fullAddress,
+  onClose,
   getCachedAgentData,
   setCachedAgentData
 }: PermissionNodeAgentCardProps) {
@@ -217,17 +220,19 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
 
 
   return (
-    <Card className="w-[27em] flex-1 p-4 flex flex-col z-50">
-      <div className=" flex flex-row justify-between">
+    <Card className="w-[27em] flex-1 p-4 flex flex-col gap-4 z-50">
+      <div className="flex flex-row justify-between">
         <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
-        <Button 
-          variant="outline" 
-          className="-mt-1"
-          onClick={handleGoToAllocator}
-          > 
-          View in Allocator 
+        <Button
+          variant="ghost"
+          className="-mt-0.5"
+          onClick={onClose}
+          >
+            <X/>
         </Button>
-        </div>
+
+        
+      </div>
       {isLoading ? (
         <p>Loading agent details...</p>
       ) : (
@@ -240,6 +245,12 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
           agentWeight={weightFactor}
         />
       )}
+        <Button 
+          variant="outline" 
+          onClick={handleGoToAllocator}
+          > 
+          View Agent in Allocator. 
+        </Button>
     </Card>
   );
 }, (prevProps, nextProps) => {
@@ -247,6 +258,7 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
   return (
     prevProps.nodeId === nextProps.nodeId &&
     prevProps.fullAddress === nextProps.fullAddress &&
+    prevProps.onClose === nextProps.onClose &&
     prevProps.getCachedAgentData === nextProps.getCachedAgentData &&
     prevProps.setCachedAgentData === nextProps.setCachedAgentData
   );
