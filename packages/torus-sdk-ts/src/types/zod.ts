@@ -66,24 +66,31 @@ export interface ToPrimitive {
   toPrimitive(disableAscii?: boolean): AnyJson;
 }
 
-export const sb_to_primitive = z.unknown().transform<AnyJson>((val, ctx) => {
+export const ToPrimitive_schema = z.custom<ToPrimitive>((val) => {
   if (!(typeof val === "object" && val !== null)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.invalid_type,
-      expected: "object",
-      received: typeof val,
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.invalid_type,
+    //   expected: "object",
+    //   received: typeof val,
+    // });
+    // return z.NEVER;
+    return false;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!("toPrimitive" in val && typeof val.toPrimitive === "function")) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "toPrimitive not present, it's not a Codec",
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.custom,
+    //   message: "toPrimitive not present, it's not a Codec",
+    // });
+    // return z.NEVER;
+    return false;
   }
-  return (val as ToPrimitive).toPrimitive();
-});
+  return true;
+}, "doesn't have .toPrimitive()");
+
+export const sb_to_primitive = ToPrimitive_schema.transform((val) =>
+  val.toPrimitive(),
+);
 
 // == Struct ==
 
@@ -185,23 +192,26 @@ export interface ToBigInt {
   toBigInt(): bigint;
 }
 
-export const ToBigInt_schema = z.unknown().transform<ToBigInt>((val, ctx) => {
+export const ToBigInt_schema = z.custom<ToBigInt>((val) => {
   if (!(typeof val === "object" && val !== null)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.invalid_type,
-      expected: "object",
-      received: typeof val,
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.invalid_type,
+    //   expected: "object",
+    //   received: typeof val,
+    // });
+    // return z.NEVER;
+    return false;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "toBigInt not present, it's not a Codec conversible to BigInt",
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.custom,
+    //   message: "toBigInt not present, it's not a Codec conversible to BigInt",
+    // });
+    // return z.NEVER;
+    return false;
   }
-  return val as ToBigInt;
+  return true;
 });
 
 export const sb_bigint = ToBigInt_schema.transform((val) => val.toBigInt());
