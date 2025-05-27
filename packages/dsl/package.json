@@ -1,48 +1,40 @@
 {
-  "name": "@torus-ts/api",
+  "name": "@torus-ts/dsl",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
-    },
-    "./client": "./src/client.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf .turbo node_modules",
-    "dev": "tsc --watch",
     "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx tests/test-runner.ts",
+    "test:schema": "tsx tests/schema-test.ts",
+    "test:analyzer": "tsx tests/analyzer-test.ts",
+    "test:serialization": "tsx tests/serialization-test.ts",
+    "test:validation": "tsx tests/validation-test.ts",
+    "test:all": "pnpm test && pnpm test:schema && pnpm test:analyzer && pnpm test:serialization && pnpm test:validation"
   },
-  "prettier": "@torus-ts/prettier-config",
   "dependencies": {
-    "@polkadot/util": "catalog:",
-    "@polkadot/util-crypto": "catalog:",
-    "@torus-ts/db": "workspace:*",
-    "@torus-ts/dsl": "workspace:*",
     "@torus-network/sdk": "workspace:*",
-    "@torus-network/torus-utils": "workspace:*",
-    "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
-    "jsonwebtoken": "^9.0.2",
-    "rustie": "catalog:",
-    "superjson": "2.2.1",
+    "tsafe": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
+    "tsx": "^4.7.1",
     "typescript": "catalog:"
   }
 }
