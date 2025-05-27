@@ -10,6 +10,7 @@ import {
 } from "@torus-ts/ui/components/collapsible";
 import { Button } from "@torus-ts/ui/components/button";
 import { ChevronDown, ChevronUp, FilterIcon } from "lucide-react";
+import { TransactionExport } from "./transaction-export";
 import {
   Form,
   FormControl,
@@ -44,12 +45,14 @@ interface TransactionFiltersProps {
   onFiltersChange: (filters: TransactionsFilterValues) => void;
   totalTransactions: number;
   currentCount: number;
+  walletAddress?: string;
 }
 
 export function TransactionFilters({
   onFiltersChange,
   totalTransactions,
   currentCount,
+  walletAddress,
 }: TransactionFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const form = useForm<TransactionsFilterValues>({
@@ -79,22 +82,26 @@ export function TransactionFilters({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
+        <div className="flex items-center justify-end gap-2">
+          <TransactionExport walletAddress={walletAddress} />
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm">
+              <FilterIcon className="h-4 w-4 mr-2" />
+              Filters
+              {isOpen ? (
+                <ChevronUp className="h-4 w-4 ml-2" />
+              ) : (
+                <ChevronDown className="h-4 w-4 ml-2" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+        </div>
         <div className="text-xs text-muted-foreground" aria-live="polite">
           {currentCount} of {totalTransactions} transactions
         </div>
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" size="sm">
-            <FilterIcon className="h-4 w-4 mr-2" />
-            Filters
-            {isOpen ? (
-              <ChevronUp className="h-4 w-4 ml-2" />
-            ) : (
-              <ChevronDown className="h-4 w-4 ml-2" />
-            )}
-          </Button>
-        </CollapsibleTrigger>
       </div>
+
       <CollapsibleContent className="mt-4">
         <Form {...form}>
           <form

@@ -51,13 +51,17 @@ interface TransactionsState {
   ) => string;
   updateTransaction: (id: string, updates: UpdatedTransaction) => void;
   getTransactionsByWallet: (
-    walletAddress: string,
+    walletAddress?: string,
     options?: TransactionQueryOptions,
   ) => TransactionQueryResult;
   getTransactionById: (id: string) => Transaction | undefined;
-  isTransactionCompleted: (status: TransactionResult["status"]) => boolean;
-  isTransactionError: (status: TransactionResult["status"]) => boolean;
-  clearTransactions: (walletAddress: string) => void;
+  isTransactionCompleted: (
+    status: TransactionResult["status"],
+  ) => TransactionResult["status"];
+  isTransactionError: (
+    status: TransactionResult["status"],
+  ) => TransactionResult["status"];
+  clearTransactions: (walletAddress: SS58Address) => void;
   getLastTransactionTimestamp: () => number;
 }
 
@@ -87,20 +91,19 @@ export const useTransactionsStore = create<TransactionsState>()(
         return id;
       },
 
-      updateTransaction: (id, updates) => {
-        set((state) => {
-          const updatedTransactions: Record<SS58Address, Transaction[]> = {};
-          for (const [address, txs] of Object.entries(state.transactions)) {
-            updatedTransactions[address as SS58Address] = txs.map((tx) =>
-              tx.id === id ? { ...tx, ...updates } : tx,
-            );
-          }
-          return { transactions: updatedTransactions };
-        });
-      },
+      updateTransaction: (id, updates) =>
+        set((state) => ({
+          transactions: Object.fromEntries(
+            Object.entries(state.transactions).map(([address, txs]) => [
+              address,
+              txs.map((tx) => (tx.id === id ? { ...tx, ...updates } : tx)),
+            ]),
+          ),
+        })),
 
-      getTransactionsByWallet: (walletAddress, options = {}) => {
-        const {
+      getTransactionsByWallet: (
+        walletAddress,
+        {
           page = 1,
           limit = 10,
           type,
@@ -110,110 +113,86 @@ export const useTransactionsStore = create<TransactionsState>()(
           startDate,
           endDate,
           orderBy = "createdAt.desc",
-        } = options;
-
-        const walletTxs =
-          get().transactions[walletAddress as SS58Address] ?? [];
+        } = {},
+      ) => {
+        const walletTxs = walletAddress
+          ? (get().transactions[walletAddress as SS58Address] ?? [])
+          : [];
 
         const filtered = walletTxs.filter((tx) => {
-          // Type filter
-          if (type && type !== "all" && tx.type !== type) {
+          if (type && type !== "all" && tx.type !== type) return false;
+          if (
+            fromAddress?.trim() &&
+            !tx.fromAddress
+              .toLowerCase()
+              .includes(fromAddress.toLowerCase().trim())
+          )
             return false;
-          }
-          
-          // From address filter (case insensitive, partial match)
-          if (fromAddress?.trim()) {
-            const normalizedFromAddress = fromAddress.toLowerCase().trim();
-            if (!tx.fromAddress.toLowerCase().includes(normalizedFromAddress)) {
-              return false;
-            }
-          }
-          
-          // To address filter (case insensitive, partial match)
-          if (toAddress?.trim()) {
-            const normalizedToAddress = toAddress.toLowerCase().trim();
-            if (!tx.toAddress.toLowerCase().includes(normalizedToAddress)) {
-              return false;
-            }
-          }
-          
-          // Hash filter (case insensitive, partial match)
-          if (hash?.trim()) {
-            const normalizedHash = hash.toLowerCase().trim();
-            if (!tx.hash?.toLowerCase().includes(normalizedHash)) {
-              return false;
-            }
-          }
-          
-          // Date range filters
-          if (startDate?.trim()) {
-            if (new Date(tx.createdAt) < new Date(startDate)) {
-              return false;
-            }
-          }
-          
-          if (endDate?.trim()) {
-            if (new Date(tx.createdAt) > new Date(endDate)) {
-              return false;
-            }
-          }
-          
+          if (
+            toAddress?.trim() &&
+            !tx.toAddress.toLowerCase().includes(toAddress.toLowerCase().trim())
+          )
+            return false;
+          if (
+            hash?.trim() &&
+            !tx.hash?.toLowerCase().includes(hash.toLowerCase().trim())
+          )
+            return false;
+          if (startDate?.trim() && new Date(tx.createdAt) < new Date(startDate))
+            return false;
+          if (endDate?.trim() && new Date(tx.createdAt) > new Date(endDate))
+            return false;
           return true;
         });
 
-        const [orderField, orderDirection] = orderBy.split(".");
-
+        const [orderField, orderDirection] = orderBy.split(".") as [
+          keyof Transaction,
+          "asc" | "desc",
+        ];
         const sorted = [...filtered].sort((a, b) => {
           const isAsc = orderDirection === "asc";
-          if (orderField === "createdAt") {
+          if (orderField === "createdAt")
             return isAsc
               ? new Date(a.createdAt).getTime() -
                   new Date(b.createdAt).getTime()
               : new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime();
-          }
-          if (orderField === "amount") {
+          if (orderField === "amount")
             return isAsc
               ? Number(a.amount) - Number(b.amount)
               : Number(b.amount) - Number(a.amount);
-          }
           return 0;
         });
 
         const start = (page - 1) * limit;
-        const end = start + limit;
-
         return {
-          transactions: sorted.slice(start, end),
+          transactions: sorted.slice(start, start + limit),
           total: filtered.length,
-          hasMore: end < filtered.length,
+          hasMore: start + limit < filtered.length,
         };
       },
 
-      getTransactionById: (id) => {
-        return Object.values(get().transactions)
+      getTransactionById: (id) =>
+        Object.values(get().transactions)
           .flat()
-          .find((tx) => tx.id === id);
-      },
+          .find((tx) => tx.id === id),
 
       isTransactionCompleted: (status) =>
-        status === "SUCCESS" || status === "ERROR",
+        status === "SUCCESS" || status === "ERROR" ? status : "PENDING",
 
-      isTransactionError: (status) => status === "ERROR",
+      isTransactionError: (status) => (status === "ERROR" ? status : "PENDING"),
 
-      clearTransactions: (walletAddress) => {
+      clearTransactions: (walletAddress) =>
         set((state) => {
-          const { [walletAddress as SS58Address]: _, ...remaining } =
-            state.transactions;
+          const { [walletAddress]: _, ...remaining } = state.transactions;
           return { transactions: remaining };
-        });
-      },
+        }),
 
       getLastTransactionTimestamp: () => get().lastTransactionTimestamp,
     }),
     {
       name: "transactions",
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         transactions: state.transactions,
         lastTransactionTimestamp: state.lastTransactionTimestamp,
       }),
