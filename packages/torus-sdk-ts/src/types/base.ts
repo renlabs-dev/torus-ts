@@ -18,13 +18,17 @@ export const sb_amount = sb_bigint.pipe(z.bigint());
 export type Amount = z.infer<typeof sb_amount>;
 
 // TODO: refactor, move to ./zod.ts
+
 export const sb_h256 = z
   .custom<H256>((value) => {
     if (!(value instanceof U8aFixed)) {
       return false;
     }
-    // if (value.length !== 32) {
-    //   return false;
-    // }
+    if (value.length !== 32) {
+      return false;
+    }
+    return true;
   })
   .transform((value) => value.toHex());
+
+export const sb_h256_hex = z.string().regex(/^0x[a-fA-F0-9]{64}$/);

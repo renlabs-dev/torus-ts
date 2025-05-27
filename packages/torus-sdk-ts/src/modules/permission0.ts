@@ -1,14 +1,14 @@
+// TODO: fix z.unknown() holes
+
 import type { ApiPromise } from "@polkadot/api";
-import type { Option } from "@polkadot/types";
 import type { H256 } from "@polkadot/types/interfaces";
-import type { Codec } from "@polkadot/types/types";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { match } from "rustie";
-import type { z } from "zod";
+import { z } from "zod";
 
 import type { SS58Address } from "../address";
 import type { ToBigInt, ZError } from "../types";
@@ -21,6 +21,7 @@ import {
   sb_bool,
   sb_enum,
   sb_h256,
+  sb_map,
   sb_null,
   sb_option,
   sb_percent,
@@ -57,12 +58,7 @@ export const CURATOR_FLAGS = {
 // ==== Emission Types ====
 
 export const EMISSION_ALLOCATION_SCHEMA = sb_enum({
-  Streams: sb_array(
-    sb_struct({
-      streamId: STREAM_ID_SCHEMA,
-      percentage: sb_percent,
-    }),
-  ),
+  Streams: sb_map(STREAM_ID_SCHEMA, sb_percent),
   FixedAmount: sb_balance,
 });
 
@@ -76,12 +72,7 @@ export const DISTRIBUTION_CONTROL_SCHEMA = sb_enum({
 export const EMISSION_SCOPE_SCHEMA = sb_struct({
   allocation: EMISSION_ALLOCATION_SCHEMA,
   distribution: DISTRIBUTION_CONTROL_SCHEMA,
-  targets: sb_array(
-    sb_struct({
-      account: sb_address,
-      weight: sb_bigint, // u16 as bigint
-    }),
-  ),
+  targets: sb_map(sb_address, sb_bigint),
   accumulating: sb_bool,
 });
 
@@ -92,7 +83,9 @@ export type EmissionScope = z.infer<typeof EMISSION_SCOPE_SCHEMA>;
 // ==== Curator Types ====
 
 export const CURATOR_SCOPE_SCHEMA = sb_struct({
-  flags: CURATOR_PERMISSIONS_SCHEMA,
+  flags:
+    // CURATOR_PERMISSIONS_SCHEMA, // FIXME
+    z.unknown(),
   cooldown: sb_option(sb_blocks),
 });
 
@@ -169,18 +162,15 @@ export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
 export async function queryPermission(
   api: Api,
   permissionId: PermissionId,
-): Promise<Result<PermissionContract | null, ZError<PermissionContract> | Error>> {
+): Promise<
+  Result<PermissionContract | null, ZError<PermissionContract> | Error>
+> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissions(permissionId),
   );
   if (queryError) return makeErr(queryError);
 
-  const option = query as Option<Codec>;
-  if (option.isNone) {
-    return makeOk(null);
-  }
-
-  const parsed = PERMISSION_CONTRACT_SCHEMA.safeParse(option.unwrap().toJSON());
+  const parsed = sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(query);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -191,7 +181,12 @@ export async function queryPermission(
  */
 export async function queryPermissions(
   api: Api,
-): Promise<Result<Map<PermissionId, PermissionContract>, ZError<H256> | ZError<PermissionContract> | Error>> {
+): Promise<
+  Result<
+    Map<PermissionId, PermissionContract>,
+    ZError<H256> | ZError<PermissionContract> | Error
+  >
+> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissions.entries(),
   );
@@ -199,19 +194,29 @@ export async function queryPermissions(
 
   const permissionsMap = new Map<PermissionId, PermissionContract>();
 
-  for (const [key, value] of query) {
-    if (value.isSome) {
-      const idParsed = PERMISSION_ID_SCHEMA.safeParse(key.toHex());
-      if (idParsed.success === false) return makeErr(idParsed.error);
+  for (const [keysRaw, valueRaw] of query) {
+    const [keyRaw] = keysRaw.args;
 
-      const contractParsed = sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(
-        value,
-      );
-      if (contractParsed.success === false)
-        return makeErr(contractParsed.error);
+    const idParsed = PERMISSION_ID_SCHEMA.safeParse(keyRaw, {
+      path: ["storage", "permission0", "permissions", String(keyRaw)],
+    });
+    if (idParsed.success === false) return makeErr(idParsed.error);
 
-      permissionsMap.set(idParsed.data, contractParsed.data);
-    }
+    const contractParsed = sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(
+      valueRaw,
+      {
+        path: [
+          "storage",
+          "permission0",
+          "permissions",
+          String(keyRaw),
+          "<value>",
+        ],
+      },
+    );
+    if (contractParsed.success === false) return makeErr(contractParsed.error);
+
+    permissionsMap.set(idParsed.data, contractParsed.data);
   }
 
   return makeOk(permissionsMap);
@@ -229,7 +234,7 @@ export async function queryPermissionsByGrantor(
   );
   if (queryError) return makeErr(queryError);
 
-  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query.toJSON());
+  const parsed = sb_some(sb_array(PERMISSION_ID_SCHEMA)).safeParse(query);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -294,14 +299,41 @@ export async function queryAccumulatedStreamsForAccount(
   for (const [keysRaw, valueRaw] of streamTuples) {
     const [_ac, streamIdRaw, permissionIdRaw] = keysRaw.args;
 
-    const streamIdParsed = sb_h256.safeParse(streamIdRaw);
+    const streamIdParsed = sb_h256.safeParse(streamIdRaw, {
+      path: [
+        "storage",
+        "permission0",
+        "accumulatedStreamAmounts",
+        String(account),
+        String(streamIdRaw),
+      ],
+    });
     if (streamIdParsed.success === false) return makeErr(streamIdParsed.error);
 
-    const permissionIdParsed = sb_h256.safeParse(permissionIdRaw);
+    const permissionIdParsed = sb_h256.safeParse(permissionIdRaw, {
+      path: [
+        "storage",
+        "permission0",
+        "accumulatedStreamAmounts",
+        String(account),
+        String(streamIdRaw),
+        String(permissionIdRaw),
+      ],
+    });
     if (permissionIdParsed.success === false)
       return makeErr(permissionIdParsed.error);
 
-    const valueParsed = sb_balance.safeParse(valueRaw);
+    const valueParsed = sb_some(sb_balance).safeParse(valueRaw, {
+      path: [
+        "storage",
+        "permission0",
+        "accumulatedStreamAmounts",
+        String(account),
+        String(streamIdRaw),
+        String(permissionIdRaw),
+        "<value>",
+      ],
+    });
     if (valueParsed.success === false) return makeErr(valueParsed.error);
 
     const streamId = streamIdParsed.data;

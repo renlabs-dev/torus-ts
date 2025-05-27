@@ -10,11 +10,11 @@
       "skipFiles": ["<node_internals>/**"]
     },
     {
-      "name": "debug subspace",
+      "name": "debug torus-sdk-ts",
       "type": "node-terminal",
       "request": "launch",
       "command": "pnpm run dev",
-      "cwd": "${workspaceFolder}/packages/subspace",
+      "cwd": "${workspaceFolder}/packages/torus-sdk-ts",
       "skipFiles": ["<node_internals>/**"]
     },
     {
