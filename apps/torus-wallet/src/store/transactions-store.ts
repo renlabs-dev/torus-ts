@@ -52,10 +52,10 @@ interface TransactionsState {
   getTransactionById: (id: string) => Transaction | undefined;
   isTransactionCompleted: (
     status: TransactionResult["status"],
-  ) => "SUCCESS" | "ERROR" | "PENDING";
+  ) => boolean;
   isTransactionError: (
     status: TransactionResult["status"],
-  ) => "ERROR" | "PENDING";
+  ) => boolean;
   clearTransactions: (walletAddress: SS58Address) => void;
   getLastTransactionTimestamp: () => number;
 }
@@ -173,9 +173,9 @@ export const useTransactionsStore = create<TransactionsState>()(
           .find((tx) => tx.id === id),
 
       isTransactionCompleted: (status) =>
-        status === "SUCCESS" || status === "ERROR" ? status : "PENDING",
+        status === "SUCCESS" || status === "ERROR",
 
-      isTransactionError: (status) => (status === "ERROR" ? status : "PENDING"),
+      isTransactionError: (status) => status === "ERROR",
 
       clearTransactions: (walletAddress) =>
         set((state) => {
