@@ -111,7 +111,7 @@ function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
 }
 
 export default function Page() {
-  const { grantEmissionPermissionTransaction, api } = useTorus();
+  const { grantEmissionPermissionTransaction } = useTorus();
   const { toast } = useToast();
 
   const form = useForm<GrantEmissionPermissionFormData>({
@@ -141,15 +141,6 @@ export default function Page() {
   const handleSubmit = useCallback(
     async (data: GrantEmissionPermissionFormData) => {
       try {
-        if (!api) {
-          toast({
-            title: "Error",
-            description: "API not connected",
-            variant: "destructive",
-          });
-          return;
-        }
-
         const transformedData = transformFormDataToSDK(data);
 
         await grantEmissionPermissionTransaction({
@@ -174,7 +165,7 @@ export default function Page() {
         });
       }
     },
-    [api, grantEmissionPermissionTransaction, toast, form],
+    [grantEmissionPermissionTransaction, toast, form],
   );
 
   const mutation = {
