@@ -27,6 +27,36 @@ const config = {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
+          {
+            key: "Content-Type",
+            value: "image/*",
+          },
+        ],
+      },
+      {
+        source: "/og.webp",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, s-maxage=86400",
+          },
+          {
+            key: "Content-Type",
+            value: "image/webp",
+          },
+        ],
+      },
+      {
+        source: "/logo.svg",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, s-maxage=86400",
+          },
+          {
+            key: "Content-Type",
+            value: "image/svg+xml",
+          },
         ],
       },
     ];

@@ -22,11 +22,18 @@ export function generateMetadata({
   twitterDescription = "Secure Digital Asset Management in the Torus Ecosystem",
   canonical = "/",
 }: MetadataProps = {}): Metadata {
+  const baseUrl =
+    env("NODE_ENV") === "production"
+      ? "https://wallet.torus.network"
+      : "https://wallet.testnet.torus.network";
+
+  const ogImageUrl = `${baseUrl}/logo.svg`;
+
   return {
     robots: "index, follow",
     title,
     icons: [
-      { rel: "icon", url: "favicon.ico" },
+      { rel: "icon", url: "/favicon.ico" },
       {
         rel: "apple-touch-icon",
         sizes: "180x180",
@@ -35,23 +42,21 @@ export function generateMetadata({
     ],
     description,
     keywords,
-    metadataBase: new URL(
-      env("NODE_ENV") === "production"
-        ? "https://wallet.torus.network"
-        : "https://wallet.testnet.torus.network",
-    ),
+    metadataBase: new URL(baseUrl),
     openGraph: {
       title: ogTitle,
       description: ogDescription,
       type: "website",
       siteName: "Torus Wallet",
       locale: "en_US",
+      url: baseUrl + canonical,
       images: [
         {
-          url: "/og.webp",
-          width: 1200,
-          height: 630,
-          alt: "Torus Wallet",
+          url: ogImageUrl,
+          width: 512,
+          height: 512,
+          alt: "Torus Wallet - Secure Digital Asset Management",
+          type: "image/svg+xml",
         },
       ],
     },
@@ -60,10 +65,22 @@ export function generateMetadata({
       title: twitterTitle,
       description: twitterDescription,
       creator: "@torus_network",
-      images: ["/og.webp"],
+      site: "@torus_network",
+      images: [
+        {
+          url: ogImageUrl,
+          alt: "Torus Wallet - Secure Digital Asset Management",
+        },
+      ],
+    },
+    other: {
+      "og:image:secure_url": ogImageUrl,
+      "og:image:width": "512",
+      "og:image:height": "512",
+      "og:image:type": "image/svg+xml",
     },
     alternates: {
-      canonical,
+      canonical: baseUrl + canonical,
     },
   };
 }
