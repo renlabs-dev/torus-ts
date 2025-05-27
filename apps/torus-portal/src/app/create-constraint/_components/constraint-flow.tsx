@@ -62,20 +62,50 @@ function ConstraintFlow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedExample, setSelectedExample] = useState<string>("");
+  const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
+
+  // Initialize permission ID from existing node
+  useEffect(() => {
+    const permissionIdNode = nodes.find((node) => node.id === "permission-id");
+    if (
+      permissionIdNode?.data.type === "permissionId" &&
+      permissionIdNode.data.permissionId &&
+      !selectedPermissionId
+    ) {
+      setSelectedPermissionId(permissionIdNode.data.permissionId);
+    }
+  }, [nodes, selectedPermissionId]);
+
+  const handlePermissionIdChange = useCallback(
+    (permissionId: string) => {
+      setSelectedPermissionId(permissionId);
+
+      // Update the permission ID node
+      setNodes((currentNodes) =>
+        currentNodes.map((node) => {
+          if (
+            node.id === "permission-id" &&
+            node.data.type === "permissionId"
+          ) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                permissionId,
+              },
+            };
+          }
+          return node;
+        }),
+      );
+    },
+    [setNodes],
+  );
 
   const handleLoadExample = useCallback(
     (exampleId: string) => {
       const example = constraintExamples.find((ex) => ex.id === exampleId);
       if (!example) return;
-
-      // Get current permission ID from the existing permission ID node
-      const currentPermissionIdNode = nodes.find(
-        (node) => node.id === "permission-id",
-      );
-      const currentPermissionId =
-        currentPermissionIdNode?.data.type === "permissionId"
-          ? currentPermissionIdNode.data.permissionId
-          : "";
 
       const { nodes: newNodes, edges: newEdges } = constraintToNodes(
         example.constraint,
@@ -88,7 +118,7 @@ function ConstraintFlow() {
             ...node,
             data: {
               ...node.data,
-              permissionId: currentPermissionId,
+              permissionId: selectedPermissionId,
             },
           };
         }
@@ -99,7 +129,7 @@ function ConstraintFlow() {
       setEdges(newEdges);
       setSelectedExample(exampleId);
     },
-    [nodes, setNodes, setEdges],
+    [selectedPermissionId, setNodes, setEdges],
   );
 
   const handleCreateConstraint = useCallback(() => {
@@ -160,6 +190,17 @@ function ConstraintFlow() {
     [setEdges],
   );
 
+  // Sync permission ID state when nodes change (e.g., from node itself)
+  useEffect(() => {
+    const permissionIdNode = nodes.find((node) => node.id === "permission-id");
+    if (permissionIdNode?.data.type === "permissionId") {
+      const nodePermissionId = permissionIdNode.data.permissionId || "";
+      if (nodePermissionId !== selectedPermissionId) {
+        setSelectedPermissionId(nodePermissionId);
+      }
+    }
+  }, [nodes, selectedPermissionId]);
+
   // every time our nodes change, we want to center the graph again
   useEffect(() => {
     void fitView();
@@ -185,6 +226,8 @@ function ConstraintFlow() {
           selectedExample={selectedExample}
           onLoadExample={handleLoadExample}
           onCreateConstraint={handleCreateConstraint}
+          selectedPermissionId={selectedPermissionId}
+          onPermissionIdChange={handlePermissionIdChange}
         />
       </div>
     </ReactFlow>

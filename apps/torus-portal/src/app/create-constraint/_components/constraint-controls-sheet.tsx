@@ -20,16 +20,29 @@ import {
 
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
 
+// Placeholder permission IDs (Vec<H256>) - in the future this will come from a network query
+const PLACEHOLDER_PERMISSION_IDS = [
+  "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+  "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+  "0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba",
+  "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
+  "0x5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa",
+];
+
 interface ConstraintControlsSheetProps {
   selectedExample: string;
   onLoadExample: (exampleId: string) => void;
   onCreateConstraint: () => void;
+  selectedPermissionId: string;
+  onPermissionIdChange: (permissionId: string) => void;
 }
 
 export default function ConstraintControlsSheet({
   selectedExample,
   onLoadExample,
   onCreateConstraint,
+  selectedPermissionId,
+  onPermissionIdChange,
 }: ConstraintControlsSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -45,12 +58,38 @@ export default function ConstraintControlsSheet({
           Create Constraint
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-96 z-[100]">
+      <SheetContent side="right" className="w-96 z-[75]">
         <SheetHeader>
           <SheetTitle>Constraint Controls</SheetTitle>
         </SheetHeader>
 
         <div className="flex flex-col gap-6 py-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Permission</label>
+            <Select
+              value={selectedPermissionId}
+              onValueChange={onPermissionIdChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select permission..." />
+              </SelectTrigger>
+              <SelectContent>
+                {PLACEHOLDER_PERMISSION_IDS.map((permissionId, index) => (
+                  <SelectItem key={permissionId} value={permissionId}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        Permission {index + 1}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Load Example</label>
             <Select value={selectedExample} onValueChange={onLoadExample}>
