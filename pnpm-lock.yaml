@@ -12,39 +12,108 @@ catalogs:
     '@next/third-parties':
       specifier: ^15.2.3
       version: 15.2.4
+    '@polkadot/api':
+      specifier: ^14.2.3
+      version: 14.3.1
+    '@polkadot/api-augment':
+      specifier: ^14.2.3
+      version: 14.3.1
+    '@polkadot/extension-dapp':
+      specifier: ^0.52.3
+      version: 0.52.3
+    '@polkadot/extension-inject':
+      specifier: ^0.52.3
+      version: 0.52.3
+    '@polkadot/typegen':
+      specifier: ^14.2.3
+      version: 14.3.1
+    '@polkadot/types':
+      specifier: ^14.2.3
+      version: 14.3.1
+    '@polkadot/util':
+      specifier: ^13.2.1
+      version: 13.4.3
+    '@polkadot/util-crypto':
+      specifier: ^13.2.1
+      version: 13.4.3
     '@react-three/drei':
       specifier: ^10.0.6
       version: 10.0.6
     '@react-three/fiber':
       specifier: ^9.1.2
       version: 9.1.2
+    '@tailwindcss/typography':
+      specifier: ^0.5.15
+      version: 0.5.16
     '@tanstack/react-query':
       specifier: ^5.51.23
       version: 5.67.3
+    '@trpc/client':
+      specifier: ^11.0.0-rc.477
+      version: 11.0.0-rc.828
+    '@trpc/react-query':
+      specifier: ^11.0.0-rc.477
+      version: 11.0.0-rc.828
+    '@trpc/server':
+      specifier: ^11.0.0-rc.477
+      version: 11.0.0-rc.828
     '@types/node':
       specifier: ^20.14.15
       version: 20.17.24
+    '@types/three':
+      specifier: ^0.175.0
+      version: 0.175.0
+    dotenv-cli:
+      specifier: ^7.4.2
+      version: 7.4.4
+    eslint:
+      specifier: ^9.9.0
+      version: 9.22.0
     jiti:
       specifier: ^1.21.6
       version: 1.21.7
     lucide-react:
       specifier: ^0.475.0
       version: 0.475.0
+    luxon:
+      specifier: ^3.5.0
+      version: 3.5.0
+    multiformats:
+      specifier: ^13.2.3
+      version: 13.3.2
     next:
       specifier: ^15.3.0
       version: 15.3.0
     postcss:
       specifier: ^8.4.41
       version: 8.5.3
+    prettier:
+      specifier: ^3.3.3
+      version: 3.5.3
+    rustie:
+      specifier: ^0.4.0
+      version: 0.4.0
     tailwindcss:
       specifier: ^3.4.10
       version: 3.4.17
     three:
       specifier: ^0.175.0
       version: 0.175.0
+    tsafe:
+      specifier: ^1.6.6
+      version: 1.8.5
+    tsx:
+      specifier: ^4.19.1
+      version: 4.19.3
     typescript:
       specifier: ^5.5.4
       version: 5.8.2
+    viem:
+      specifier: ^2.22.1
+      version: 2.23.10
+    vitest:
+      specifier: ^1.5.1
+      version: 1.6.1
     zod:
       specifier: ^3.23.8
       version: 3.24.2
@@ -686,7 +755,7 @@ importers:
         version: 0.475.0(react@19.0.0)
       next:
         specifier: 'catalog:'
-        version: 15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 15.3.0(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       r3f-forcegraph:
         specifier: ^1.0.8
         version: 1.0.8(react@19.0.0)(three@0.175.0)
@@ -1176,6 +1245,9 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.19.3
+      vitest:
+        specifier: 'catalog:'
+        version: 1.6.1(@types/node@22.13.10)(terser@5.39.0)
 
   packages/ui:
     dependencies:
@@ -3640,7 +3712,6 @@ packages:
 
   '@jnwng/walletconnect-solana@0.2.0':
     resolution: {integrity: sha512-nyRq0xLEj9i2J4UXQ0Mr4KzsooTMbLu0ewHOqdQV7iZE0PfbtKa8poTSF4ZBAQD8hoMHEx+I7zGFCNMI9BTrTA==}
-    deprecated: Please use https://www.npmjs.com/package/@walletconnect/solana-adapter instead
     peerDependencies:
       '@solana/web3.js': ^1.63.0
 
@@ -6876,7 +6947,6 @@ packages:
   '@solana/wallet-adapter-walletconnect@0.1.17':
     resolution: {integrity: sha512-p6Jz4RrfEmCHsiDFukMdhDaeZdXDRT5QfRolVlbVbWpCU1Hop0iFMcKTeqvvLAjjDCliuYq6+N5MgKN8G0rjbg==}
     engines: {node: '>=20'}
-    deprecated: Please use https://www.npmjs.com/package/@walletconnect/solana-adapter instead
     peerDependencies:
       '@solana/web3.js': ^1.77.3
 
@@ -6936,7 +7006,6 @@ packages:
   '@solana/web3.js@2.0.0':
     resolution: {integrity: sha512-x+ZRB2/r5tVK/xw8QRbAfgPcX51G9f2ifEyAQ/J5npOO+6+MPeeCjtr5UxHNDAYs9Ypo0PN+YJATCO4vhzQJGg==}
     engines: {node: '>=20.18.0'}
-    deprecated: '@solana/web3.js version 2.0 is now @solana/kit! Remove @solana/web3.js@2 from your dependencies and replace it with @solana/kit. As needed, upgrade all of your @solana-program/* dependencies to the latest versions that use Kit.'
     peerDependencies:
       typescript: '>=5'
 
@@ -11650,7 +11719,6 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
-    deprecated: Use your platform's native DOMException instead
 
   node-fetch-native@1.6.6:
     resolution: {integrity: sha512-8Mc2HhqPdlIfedsuZoc3yioPuzp6b+L5jRCRY1QzuWZh2EGJVQrGppC6V6cF0bLdbW0+O2YpqCA25aF/1lvipQ==}
@@ -15096,7 +15164,7 @@ snapshots:
       '@babel/traverse': 7.26.10
       '@babel/types': 7.26.10
       convert-source-map: 2.0.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -15148,7 +15216,7 @@ snapshots:
       '@babel/core': 7.26.10
       '@babel/helper-compilation-targets': 7.26.5
       '@babel/helper-plugin-utils': 7.26.5
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@5.5.0)
       lodash.debounce: 4.0.8
       resolve: 1.22.10
     transitivePeerDependencies:
@@ -15891,7 +15959,7 @@ snapshots:
       '@babel/parser': 7.26.10
       '@babel/template': 7.26.9
       '@babel/types': 7.26.10
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@5.5.0)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -18569,7 +18637,7 @@ snapshots:
 
   '@next/third-parties@15.2.4(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
     dependencies:
-      next: 15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next: 15.3.0(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       third-party-capital: 1.0.20
 
@@ -25857,10 +25925,6 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  debug@4.4.0:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.4.0(supports-color@5.5.0):
     dependencies:
       ms: 2.1.3
@@ -29332,31 +29396,6 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
-    dependencies:
-      '@next/env': 15.3.0
-      '@swc/counter': 0.1.3
-      '@swc/helpers': 0.5.15
-      busboy: 1.6.0
-      caniuse-lite: 1.0.30001703
-      postcss: 8.4.31
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      styled-jsx: 5.1.6(@babel/core@7.26.10)(react@19.0.0)
-    optionalDependencies:
-      '@next/swc-darwin-arm64': 15.3.0
-      '@next/swc-darwin-x64': 15.3.0
-      '@next/swc-linux-arm64-gnu': 15.3.0
-      '@next/swc-linux-arm64-musl': 15.3.0
-      '@next/swc-linux-x64-gnu': 15.3.0
-      '@next/swc-linux-x64-musl': 15.3.0
-      '@next/swc-win32-arm64-msvc': 15.3.0
-      '@next/swc-win32-x64-msvc': 15.3.0
-      sharp: 0.34.1
-    transitivePeerDependencies:
-      - '@babel/core'
-      - babel-plugin-macros
-
   ngraph.events@1.2.2: {}
 
   ngraph.forcelayout@3.3.1:
@@ -31482,13 +31521,6 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.26.10
       babel-plugin-macros: 3.1.0
-
-  styled-jsx@5.1.6(@babel/core@7.26.10)(react@19.0.0):
-    dependencies:
-      client-only: 0.0.1
-      react: 19.0.0
-    optionalDependencies:
-      '@babel/core': 7.26.10
 
   stylis@4.2.0: {}
 
