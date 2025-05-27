@@ -14,6 +14,7 @@ interface PermissionNodeContainerProps {
   data: PermissionNodeData;
   children: ReactNode;
   hasSourceHandle?: boolean;
+  hasTargetHandle?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createChildNodes?: (expression: any) => NodeCreationResult;
   shouldAutoCreateChildren?: boolean;
@@ -24,6 +25,7 @@ export function PermissionNodeContainer({
   data,
   children,
   hasSourceHandle = true,
+  hasTargetHandle = true,
   createChildNodes,
   shouldAutoCreateChildren = true,
 }: PermissionNodeContainerProps) {
@@ -69,7 +71,7 @@ export function PermissionNodeContainer({
     <div className="w-full flex flex-col items-center">
       {children}
 
-      <Handle type="target" position={Position.Top} />
+      {hasTargetHandle && <Handle type="target" position={Position.Top} />}
       {hasSourceHandle && <Handle type="source" position={Position.Bottom} />}
     </div>
   );

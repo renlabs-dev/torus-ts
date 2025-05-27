@@ -16,6 +16,20 @@ export function constraintToNodes(constraint: Constraint): {
   const nodes: Node<PermissionNodeData>[] = [];
   const edges: Edge[] = [];
 
+  // Create permission ID node (always start with empty permission ID)
+  const permissionIdNode: Node<PermissionNodeData> = {
+    id: "permission-id",
+    type: "permissionId",
+    data: {
+      type: "permissionId",
+      permissionId: "",
+      label: "Permission ID",
+    },
+    position: { x: 0, y: -100 },
+  };
+
+  nodes.push(permissionIdNode);
+
   // Create root node
   const rootId = "root-boolean";
   const rootNode: Node<PermissionNodeData> = {
@@ -30,6 +44,14 @@ export function constraintToNodes(constraint: Constraint): {
   };
 
   nodes.push(rootNode);
+
+  // Connect permission ID node to root node
+  edges.push({
+    id: "permission-id-root-boolean",
+    source: "permission-id",
+    target: "root-boolean",
+    animated: true,
+  });
 
   // Convert the constraint body recursively
   convertBoolExpr(constraint.body, rootId, nodes, edges);

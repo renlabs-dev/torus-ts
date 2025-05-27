@@ -4,6 +4,16 @@ import type { PermissionNodeData } from "../constraint-nodes/constraint-node-typ
 
 export const nodes: Node<PermissionNodeData>[] = [
   {
+    id: "permission-id",
+    type: "permissionId",
+    data: {
+      type: "permissionId",
+      permissionId: "",
+      label: "Permission ID",
+    },
+    position: { x: 0, y: -100 },
+  },
+  {
     id: "root-boolean",
     type: "permissionBoolean",
     data: {
@@ -26,6 +36,12 @@ export const nodes: Node<PermissionNodeData>[] = [
 ];
 
 export const edges: Edge[] = [
+  {
+    id: "permission-id-root-boolean",
+    source: "permission-id",
+    target: "root-boolean",
+    animated: true,
+  },
   {
     id: "root-boolean-root-boolean-base",
     source: "root-boolean",
