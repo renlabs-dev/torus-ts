@@ -22,13 +22,16 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@trpc/server": "catalog:",
     "axios": "^1.7.7",
     "@polkadot/api": "catalog:",
     "@torus-ts/db": "workspace:*",
+    "@torus-ts/dsl": "workspace:*",
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
     "express": "^4.19.2",
     "rustie": "catalog:",
+    "superjson": "^2.2.1",
     "tsafe": "catalog:",
     "zod": "catalog:"
   },
@@ -37,6 +40,7 @@
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
+    "@trpc/client": "catalog:",
     "@types/express": "^4.17.21",
     "@types/node": "catalog:",
     "dotenv-cli": "catalog:",

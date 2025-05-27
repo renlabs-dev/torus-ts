@@ -56,7 +56,7 @@ catalogs:
       version: 11.0.0-rc.828
     '@trpc/server':
       specifier: ^11.0.0-rc.477
-      version: 11.0.0-rc.828
+      version: 11.1.3
     '@types/node':
       specifier: ^20.14.15
       version: 20.17.24
@@ -135,6 +135,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@trpc/server':
+        specifier: ^11.1.3
+        version: 11.1.3(typescript@5.8.2)
     devDependencies:
       '@torus-ts/prettier-config':
         specifier: workspace:*
@@ -175,6 +179,9 @@ importers:
       '@torus-ts/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@torus-ts/dsl':
+        specifier: workspace:*
+        version: link:../../packages/dsl
       '@torus-ts/env-validation':
         specifier: workspace:*
         version: link:../../packages/env-validation
@@ -189,13 +196,13 @@ importers:
         version: link:../../packages/ui
       '@trpc/client':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2)
+        version: 11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2)
       '@trpc/react-query':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(@tanstack/react-query@5.67.3(react@19.0.0))(@trpc/client@11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)
+        version: 11.0.0-rc.828(@tanstack/react-query@5.67.3(react@19.0.0))(@trpc/client@11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.1.3(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)
       '@trpc/server':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(typescript@5.8.2)
+        version: 11.1.3(typescript@5.8.2)
       lucide-react:
         specifier: 'catalog:'
         version: 0.475.0(react@19.0.0)
@@ -543,13 +550,13 @@ importers:
         version: link:../../packages/ui
       '@trpc/client':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2)
+        version: 11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2)
       '@trpc/react-query':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(@tanstack/react-query@5.67.3(react@19.0.0))(@trpc/client@11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)
+        version: 11.0.0-rc.828(@tanstack/react-query@5.67.3(react@19.0.0))(@trpc/client@11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.1.3(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)
       '@trpc/server':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(typescript@5.8.2)
+        version: 11.1.3(typescript@5.8.2)
       '@uiw/react-markdown-preview':
         specifier: ^5.1.1
         version: 5.1.3(@types/react@19.0.12)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -732,6 +739,9 @@ importers:
       '@torus-ts/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@torus-ts/dsl':
+        specifier: workspace:*
+        version: link:../../packages/dsl
       '@torus-ts/env-validation':
         specifier: workspace:*
         version: link:../../packages/env-validation
@@ -929,6 +939,12 @@ importers:
       '@torus-ts/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@torus-ts/dsl':
+        specifier: workspace:*
+        version: link:../../packages/dsl
+      '@trpc/server':
+        specifier: 'catalog:'
+        version: 11.1.3(typescript@5.8.2)
       axios:
         specifier: ^1.7.7
         version: 1.8.3
@@ -938,6 +954,9 @@ importers:
       rustie:
         specifier: 'catalog:'
         version: 0.4.0
+      superjson:
+        specifier: ^2.2.1
+        version: 2.2.1
       tsafe:
         specifier: 'catalog:'
         version: 1.8.5
@@ -957,6 +976,9 @@ importers:
       '@torus-ts/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
+      '@trpc/client':
+        specifier: 'catalog:'
+        version: 11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2)
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.21
@@ -999,15 +1021,21 @@ importers:
       '@torus-ts/db':
         specifier: workspace:*
         version: link:../db
+      '@torus-ts/dsl':
+        specifier: workspace:*
+        version: link:../dsl
       '@trpc/client':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2)
+        version: 11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2)
       '@trpc/server':
         specifier: 'catalog:'
-        version: 11.0.0-rc.828(typescript@5.8.2)
+        version: 11.1.3(typescript@5.8.2)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
+      rustie:
+        specifier: 'catalog:'
+        version: 0.4.0
       superjson:
         specifier: 2.2.1
         version: 2.2.1
@@ -1079,6 +1107,43 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.5.3
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.2
+
+  packages/dsl:
+    dependencies:
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../torus-sdk-ts
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
+      zod:
+        specifier: 'catalog:'
+        version: 3.24.2
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.17.24
+      eslint:
+        specifier: 'catalog:'
+        version: 9.22.0(jiti@1.21.7)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.5.3
+      tsx:
+        specifier: ^4.7.1
+        version: 4.19.3
       typescript:
         specifier: 'catalog:'
         version: 5.8.2
@@ -7289,8 +7354,8 @@ packages:
       react-dom: ^19.0.0
       typescript: '>=5.7.2'
 
-  '@trpc/server@11.0.0-rc.828':
-    resolution: {integrity: sha512-+dvcIcE5QPy52cz4rqwfUqk+WQDYAH3Xri+u2t0NdzIoo78fnL14if8oSZXAPU1bCmWGyR1k/0m5rSQ7AZaKlQ==}
+  '@trpc/server@11.1.3':
+    resolution: {integrity: sha512-Q948756+ADyJIWQiS0g5K6nbOea87ykFZ2Wc93Sx1I8kNa+E1yMIRizAaZEiiKCJS2xzzrE9G4shHBtTTrNYdw==}
     peerDependencies:
       typescript: '>=5.7.2'
 
@@ -7833,6 +7898,7 @@ packages:
 
   '@walletconnect/modal@2.7.0':
     resolution: {integrity: sha512-RQVt58oJ+rwqnPcIvRFeMGKuXb9qkgSmwz4noF8JZGUym3gUAzVs+uW2NQ1Owm9XOJAV+sANrtJ+VoVq1ftElw==}
+    deprecated: Please follow the migration guide on https://docs.reown.com/appkit/upgrade/wcm
 
   '@walletconnect/qrcode-modal@1.8.0':
     resolution: {integrity: sha512-BueaFefaAi8mawE45eUtztg3ZFbsAH4DDXh1UNwdUlsvFMjqcYzLUG0xZvDd6z2eOpbgDg2N3bl6gF0KONj1dg==}
@@ -23410,21 +23476,21 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@trpc/client@11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2)':
+  '@trpc/client@11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2)':
     dependencies:
-      '@trpc/server': 11.0.0-rc.828(typescript@5.8.2)
+      '@trpc/server': 11.1.3(typescript@5.8.2)
       typescript: 5.8.2
 
-  '@trpc/react-query@11.0.0-rc.828(@tanstack/react-query@5.67.3(react@19.0.0))(@trpc/client@11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)':
+  '@trpc/react-query@11.0.0-rc.828(@tanstack/react-query@5.67.3(react@19.0.0))(@trpc/client@11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.1.3(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)':
     dependencies:
       '@tanstack/react-query': 5.67.3(react@19.0.0)
-      '@trpc/client': 11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2)
-      '@trpc/server': 11.0.0-rc.828(typescript@5.8.2)
+      '@trpc/client': 11.0.0-rc.828(@trpc/server@11.1.3(typescript@5.8.2))(typescript@5.8.2)
+      '@trpc/server': 11.1.3(typescript@5.8.2)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
       typescript: 5.8.2
 
-  '@trpc/server@11.0.0-rc.828(typescript@5.8.2)':
+  '@trpc/server@11.1.3(typescript@5.8.2)':
     dependencies:
       typescript: 5.8.2
 

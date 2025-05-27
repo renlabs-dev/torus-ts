@@ -23,6 +23,7 @@
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/api": "workspace:*",
+    "@torus-ts/dsl": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",

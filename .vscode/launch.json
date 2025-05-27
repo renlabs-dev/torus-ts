@@ -32,6 +32,15 @@
       "command": "pnpm exec tsx --inspect-wait ./src/main.ts",
       "cwd": "${workspaceFolder}/packages/utils",
       "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "debug torus-allocator",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run dev",
+      "cwd": "${workspaceFolder}/apps/torus-allocator",
+      "skipFiles": ["<node_internals>/**"],
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 }
