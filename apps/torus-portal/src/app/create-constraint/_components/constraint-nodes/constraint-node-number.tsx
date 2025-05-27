@@ -239,7 +239,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           <SelectItem value="BlockNumber" className="hover:bg-purple-50">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-purple-600" />
-              <span>Block Number</span>
+              <span>Current Block</span>
             </div>
           </SelectItem>
           <SelectItem value="StakeOf" className="hover:bg-green-50">
@@ -274,8 +274,9 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           </SelectItem>
         </SelectContent>
       </Select>
-
-      <div className="text-white relative">↓</div>
+      {data.expression.$ !== "BlockNumber" && (
+        <div className="text-white relative">↓</div>
+      )}
 
       {data.expression.$ === "UIntLiteral" && (
         <>
