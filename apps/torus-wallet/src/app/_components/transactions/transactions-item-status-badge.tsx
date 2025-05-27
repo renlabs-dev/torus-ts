@@ -1,28 +1,30 @@
 "use client";
 
 import { Badge } from "@torus-ts/ui/components/badge";
+import type { Transaction } from "~/store/transactions-store";
 
 interface TransactionStatusBadgeProps {
-  status: "pending" | "success" | "error";
+  status: Transaction["status"];
 }
 
 export function TransactionStatusBadge({
   status,
 }: TransactionStatusBadgeProps) {
   const badgeStyles = {
-    pending: "border-yellow-500 bg-transparent text-yellow-500 text-xs",
-    success: "border-green-700 bg-transparent text-green-700 text-xs",
-    error: "border-red-500 bg-transparent text-red-500 text-xs",
-    default: "text-xs",
+    PENDING: "border-yellow-500 bg-transparent text-yellow-500 text-xs",
+    SUCCESS: "border-green-700 bg-transparent text-green-700 text-xs",
+    ERROR: "border-red-500 bg-transparent text-red-500 text-xs",
   };
 
-  const styleKey = status in badgeStyles ? status : "default";
+  const styleKey = status.toUpperCase();
+
+  const badgeStyle =
+    styleKey === "PENDING" || styleKey === "SUCCESS" || styleKey === "ERROR"
+      ? badgeStyles[styleKey]
+      : badgeStyles.PENDING;
 
   return (
-    <Badge
-      className={badgeStyles[styleKey]}
-      aria-label={`Transaction status: ${status}`}
-    >
+    <Badge className={badgeStyle} aria-label={`Transaction status: ${status}`}>
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </Badge>
   );

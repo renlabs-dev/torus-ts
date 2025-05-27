@@ -12,7 +12,7 @@ export interface Transaction {
   toAddress: SS58Address;
   amount: string;
   fee: string;
-  status: "PENDING" | "SUCCESS" | "ERROR" | "STARTING" | null;
+  status: Exclude<TransactionResult["status"], "STARTING" | null>;
   createdAt: string;
   hash?: string;
   metadata?: Record<string, unknown>;
