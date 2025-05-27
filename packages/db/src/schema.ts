@@ -15,6 +15,7 @@ import {
   serial,
   text,
   unique,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import type { Equals } from "tsafe";
@@ -483,13 +484,54 @@ export const governanceNotificationSchema = createTable(
 
 // ==== Permissions ====
 export const permissionScope = pgEnum("permission_scope_type", ["EMISSION"]);
+export const distribution_type = pgEnum("distribution_type", ["FIXED_AMOUNT", "STREAMS"]);
+
 
 /**
  * Stores base permissions that can be assigned
  */
+
+// emissionStream -> EmissionScope -> Permission -> Permission Detail
+export const emissionStreamsSchema = createTable("emission_streams", {
+  id: serial("id").primaryKey(),
+  streams_uuid: uuid("streams_uuid").unique().notNull().defaultRandom(),
+  
+  ...timeFields(),
+});
+
+
+
+export const emissionStreamsDetailsSchema = createTable("emission_streams_details", {
+  id: serial("id").primaryKey(),
+  streams_uuid: uuid("streams_uuid").notNull().references(() => emissionStreamsSchema.streams_uuid),
+  stream_id: integer("stream_id").notNull(),
+  percentage: integer("percentage").notNull(),
+  
+  ...timeFields(),
+});
+
+export const permissionEmissionScopeSchema = createTable("permission_emission_scope", {
+  id: serial("id").primaryKey(),
+  permission_id: integer("permission_id")
+    .notNull()
+    .unique(),
+  // For Streams variant 
+  streams_uuid: uuid("streams_uuid").unique().notNull().references(() => emissionStreamsSchema.streams_uuid),
+  
+  // Distribution control
+  distribution_type: distribution_type("distribution_type").notNull(),
+  distribution_info: integer("distribution_info"),
+  
+  // Whether emissions accumulate
+  accumulating: boolean("accumulating").notNull().default(false),
+  
+  ...timeFields(),
+});
+
+
 export const permissionSchema = createTable("permission", {
   id: serial("id").primaryKey(),
-  permission_id: integer("permission_id").notNull().unique(),
+  permission_id: integer("permission_id").notNull().unique().references(() => permissionEmissionScopeSchema.permission_id),
   ...timeFields(),
 });
 
@@ -514,6 +556,7 @@ export const permissionDetailsSchema = createTable("permission_details", {
 
   ...timeFields(),
 });
+
 
 /**
  * Stores the body of a constraint

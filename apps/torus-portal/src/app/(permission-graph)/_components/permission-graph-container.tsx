@@ -21,6 +21,8 @@ export default function PermissionGraphContainer() {
   const [selectedNode, setSelectedNode] = useState<CustomGraphNode | null>(
     null,
   );
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   const agentCache = useRef(new AgentLRUCache(10));
 
   const { data: permissionDetails, isLoading } =
@@ -105,6 +107,7 @@ export default function PermissionGraphContainer() {
   const handleNodeSelect = useCallback(
     (node: CustomGraphNode) => {
       setSelectedNode(node);
+      setIsSheetOpen(true);
       // Update query parameter instead of navigation
       const params = new URLSearchParams(searchParams.toString());
       params.set("agent", node.id);
@@ -112,6 +115,7 @@ export default function PermissionGraphContainer() {
     },
     [router, searchParams],
   );
+
 
   const getCachedAgentData = useCallback(
     (nodeId: string): CachedAgentData | null => {
@@ -140,7 +144,6 @@ export default function PermissionGraphContainer() {
       <div className="absolute top-[3.9rem] left-2 right-96 z-10">
         <div className="flex items-center gap-4 w-full max-w-4xl flex-wrap">
           <PortalNavigationTabs />
-
           <div className="flex-1 min-w-0">
             <PermissionGraphSearch
               graphNodes={graphData?.nodes.map((node) => node.id) ?? []}
@@ -148,16 +151,16 @@ export default function PermissionGraphContainer() {
           </div>
         </div>
       </div>
+          <PermissionGraphNodeDetails
+            selectedNode={selectedNode}
+            graphData={graphData}
+            permissionDetails={permissionDetails}
+            getCachedAgentData={getCachedAgentData}
+            setCachedAgentData={setCachedAgentData}
+            isOpen={isSheetOpen}
+            onOpenChange={setIsSheetOpen}
+          />
 
-      <div className="z-50 absolute right-4 mt-[calc(4rem)]">
-        <PermissionGraphNodeDetails
-          selectedNode={selectedNode}
-          graphData={graphData}
-          permissionDetails={permissionDetails}
-          getCachedAgentData={getCachedAgentData}
-          setCachedAgentData={setCachedAgentData}
-        />
-      </div>
 
       <div className="w-full h-full">
         {isLoading ? (

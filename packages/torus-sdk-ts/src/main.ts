@@ -6,6 +6,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { IPFS_URI_SCHEMA } from "@torus-network/torus-utils/ipfs";
 import { parseTorusTokens } from "@torus-network/torus-utils/subspace";
 import { queryMinAllowedStake } from "./modules/subspace";
+import { sb_address } from "./types";
 
 // $ pnpm exec tsx src/main.ts
 
@@ -46,6 +47,24 @@ console.log(r.toFixed(2));
 
 debugger;
 
-api.consts.emission0.blockEmission.toBigInt();
+const key = "5EYCAe5jXm8DLvz1A23jevKQWSGSiGeCpqx72FL1BLwoWLd4"
+const key2 = "5Fk3whq9Fr7yhMfXVMuokMprdPn3PMwkBDGcTG9Cc5m3GMgk"
+
+let permissionsByGrantee = await api.query.permission0.permissionsByGrantee.entries(key);
+let permissions = await api.query.permission0.permissions.entries()
+  .filter([id, permission] => permissionsByGrantee.some(([key]) => key.args[0].eq(id)));
+let emissionPermissions = permissions.
+
+const streams = await api.query.permission0.accumulatedStreamAmounts.entries();
+
+for (const [key, value] of streams) {
+  const [accountId, streamId, permissionId] = key.args;
+  console.log("accountId:", accountId.toHuman());
+  console.log("streamId:", streamId.toHuman());
+  console.log("permissionId:", permissionId.toHuman());
+  console.log("value:", value.toHuman());
+  console.log();
+}
+
 
 process.exit(0);

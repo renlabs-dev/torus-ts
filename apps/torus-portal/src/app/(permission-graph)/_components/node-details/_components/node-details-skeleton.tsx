@@ -46,7 +46,7 @@ export function NodeDetailsSkeleton({
         <h2 className="text-lg font-semibold mb-4 flex-shrink-0">Applied Permissions</h2>
         
         {sortedPermissions.length > 0 ? (
-          <ScrollArea className="flex-1 min-h-0 max-h-full">
+          <ScrollArea className="flex-1 min-h-0 max-h-full p-2">
             <div className="flex max-h-96 overflow-auto">
               <Accordion type="single" collapsible className="w-full">
                 {sortedPermissions.map((permission, index) => {
