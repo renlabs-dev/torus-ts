@@ -19,10 +19,17 @@ export interface BaseNodeData extends Record<string, unknown> {
   label: string;
 }
 
+export interface PermissionIdNodeData extends Record<string, unknown> {
+  type: "permissionId";
+  permissionId: string;
+  label: string;
+}
+
 export type PermissionNodeData =
   | BooleanNodeData
   | NumberNodeData
-  | BaseNodeData;
+  | BaseNodeData
+  | PermissionIdNodeData;
 
 export type PermissionNode = Node<PermissionNodeData>;
 

@@ -26,6 +26,7 @@ import {
 import PermissionNodeBoolean from "./constraint-nodes/constraint-node-boolean";
 import PermissionNodeNumber from "./constraint-nodes/constraint-node-number";
 import PermissionNodeBase from "./constraint-nodes/constraint-node-base";
+import PermissionNodePermissionId from "./constraint-nodes/constraint-node-permission-id";
 import { extractConstraintFromNodes } from "./constraint-utils";
 import { constraintValidationSchema } from "./constraint-validation-schemas";
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
@@ -55,6 +56,7 @@ const nodeTypes = {
   permissionBoolean: PermissionNodeBoolean,
   permissionNumber: PermissionNodeNumber,
   permissionBase: PermissionNodeBase,
+  permissionId: PermissionNodePermissionId,
 };
 
 /**
@@ -72,14 +74,36 @@ function ConstraintFlow() {
       const example = constraintExamples.find((ex) => ex.id === exampleId);
       if (!example) return;
 
+      // Get current permission ID from the existing permission ID node
+      const currentPermissionIdNode = nodes.find((node) => node.id === "permission-id");
+      const currentPermissionId = 
+        currentPermissionIdNode?.data.type === "permissionId" 
+          ? currentPermissionIdNode.data.permissionId 
+          : "";
+
       const { nodes: newNodes, edges: newEdges } = constraintToNodes(
         example.constraint,
       );
-      setNodes(newNodes);
+
+      // Preserve the current permission ID in the new nodes
+      const updatedNodes = newNodes.map((node) => {
+        if (node.id === "permission-id" && node.data.type === "permissionId") {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              permissionId: currentPermissionId,
+            },
+          };
+        }
+        return node;
+      });
+
+      setNodes(updatedNodes);
       setEdges(newEdges);
       setSelectedExample(exampleId);
     },
-    [setNodes, setEdges],
+    [nodes, setNodes, setEdges],
   );
 
   const handleCreateConstraint = useCallback(() => {
