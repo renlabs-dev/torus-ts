@@ -32,6 +32,20 @@ export function extractConstraintFromNodes(
     edgeMap[edge.source]!.push(edge);
   });
 
+  // Find the permission ID node
+  const permissionIdNode = nodeMap["permission-id"];
+  if (!permissionIdNode || permissionIdNode.data.type !== "permissionId") {
+    console.error("Permission ID node not found or invalid");
+    return null;
+  }
+
+  // Get the permission ID from the node
+  const permissionId = permissionIdNode.data.permissionId;
+  if (!permissionId || permissionId.trim() === "") {
+    console.error("Permission ID is required");
+    return null;
+  }
+
   // Find the root node
   const rootNode = nodeMap[rootNodeId];
   if (!rootNode || rootNode.data.type !== "boolean") {
@@ -46,10 +60,9 @@ export function extractConstraintFromNodes(
     return null;
   }
 
-  // For now, use a placeholder permission ID
-  // In a real implementation, this would come from a form field
+  // Create the constraint with the permission ID from the node
   const constraint: Constraint = {
-    permId: "permission-1",
+    permId: permissionId,
     body: boolExpr,
   };
 
