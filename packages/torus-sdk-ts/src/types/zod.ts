@@ -332,3 +332,53 @@ export const sb_array = <T, S extends ZodType<T, z.ZodTypeDef, unknown>>(
       });
       return xs;
     });
+
+export const sb_map = <
+  K,
+  V,
+  KS extends z.ZodType<K, z.ZodTypeDef, unknown>,
+  VS extends z.ZodType<V, z.ZodTypeDef, unknown>,
+>(
+  keySchema: KS,
+  valueSchema: VS,
+): z.ZodType<
+  Map<z.output<KS>, z.output<VS>>,
+  z.ZodTypeDef,
+  Map<unknown, unknown>
+> => {
+  return z
+    .custom<Map<unknown, unknown>>((val) => {
+      if (val instanceof Map) {
+        return true;
+      }
+      return false;
+    })
+    .transform((val, ctx) => {
+      const result = new Map<K, V>();
+      for (const [keyRaw, valueRaw] of val) {
+        const parsedKey = keySchema.safeParse(keyRaw);
+        if (parsedKey.success === false) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Error in map key: ${parsedKey.error.message}`,
+          });
+          return z.NEVER;
+        }
+        const parsedValue = valueSchema.safeParse(valueRaw);
+        if (parsedValue.success === false) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Error in map value: ${parsedValue.error.message}`,
+          });
+          return z.NEVER;
+        }
+
+        const key = parsedKey.data;
+        const value = parsedValue.data;
+
+        result.set(key, value);
+      }
+
+      return result;
+    });
+};

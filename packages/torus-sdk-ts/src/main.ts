@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 
 import "@polkadot/api/augment";
@@ -8,6 +9,8 @@ import { checkSS58 } from "./address";
 import {
   generateRootStreamId,
   queryAccumulatedStreamsForAccount,
+  queryPermissions,
+  queryPermissionsByGrantor,
   StreamId,
 } from "./modules/permission0";
 
@@ -28,6 +31,30 @@ async function connectToChainRpc(wsEndpoint: string) {
 const api = await connectToChainRpc(NODE_URL);
 
 // ====
+
+const [e0, r0] = await queryPermissions(api);
+if (e0 !== undefined) {
+  console.error("Query failed:", e0);
+  process.exit(1);
+}
+console.log("Permissions:", r0);
+
+// ====
+
+const [e1, r1] = await queryPermissionsByGrantor(
+  api,
+  "5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL",
+);
+if (e1 !== undefined) {
+  console.error("Query failed:", e1);
+  process.exit(1);
+}
+
+console.log("Permissions by grantor:", r1);
+console.log();
+console.log();
+
+// --
 
 const testAccount = checkSS58(
   "5Guyw73fh7UvPXPtQ1bGqoTS8DRoZJHd2PTGwxS8PhHAN8HG",
@@ -67,4 +94,5 @@ const allStreamIds = [rootStreamIdForAccount, ...streamIds];
 console.log(`All stream IDs for account ${testAccount}:`, allStreamIds);
 
 await api.disconnect();
+
 process.exit(0);
