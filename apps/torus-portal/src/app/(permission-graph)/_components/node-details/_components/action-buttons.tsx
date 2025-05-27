@@ -5,6 +5,7 @@ import type {LucideIcon} from 'lucide-react';
 import { CopyButton } from '@torus-ts/ui/components/copy-button';
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from '@torus-ts/ui/components/tooltip';
+import { getAllocatorBaseUrl } from "../../permission-graph-utils";
 
 // Base icon configuration
 interface IconConfig {
@@ -51,16 +52,6 @@ interface NodeJumpButtonProps {
   label?: string;
 }
 
-const getBaseUrl = (override?: string): string => {
-  if (override) return override;
-  
-  const hostname = typeof window !== "undefined" ? window.location.hostname : '';
-  const isTestnet = hostname.includes("testnet") || hostname.includes("localhost");
-  
-  return isTestnet
-    ? "https://allocator.testnet.torus.network/agent/"
-    : "https://allocator.torus.network/agent/";
-};
 
 export function AddressCopyButton({
   link,
@@ -119,7 +110,7 @@ export function AddressLinkButton({
     ...iconConfig
   };
 
-  const href = `${getBaseUrl(baseUrlOverride)}${link}`;
+  const href = `${getAllocatorBaseUrl(baseUrlOverride)}${link}`;
 
   return (
     <Tooltip>

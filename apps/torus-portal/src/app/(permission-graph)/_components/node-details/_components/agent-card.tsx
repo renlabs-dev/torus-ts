@@ -7,7 +7,8 @@ import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { CachedAgentData } from "../../permission-graph-utils";
+import { getAllocatorBaseUrl  } from "../../permission-graph-utils";
+import type {CachedAgentData} from "../../permission-graph-utils";
 import { Button } from "@torus-ts/ui/components/button";
 
 interface PermissionNodeAgentCardProps {
@@ -45,6 +46,14 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
     { key: nodeId },
     { enabled: !!nodeId }
   );
+
+
+  const handleGoToAllocator = useCallback(() => {
+    if (agentQuery.data) {
+      const href = `${getAllocatorBaseUrl()}${agentQuery.data.key}`;
+      window.open(href, '_blank');
+    }
+  }, [agentQuery.data]);
 
   const fetchMetadata = useCallback(async (metadataUri: string) => {
     const [metadataError, metadata] = await tryAsync(
@@ -112,6 +121,7 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
     const agentName = agent.name ?? smallAddress(nodeId, 6);
     const currentBlock = agent.atBlock;
     const weightFactor = computedWeightedAgents.percComputedWeight;
+
 
     setAgentName(agentName);
     setWeightFactor(weightFactor);
@@ -205,12 +215,19 @@ export const PermissionNodeAgentCard = memo(function PermissionNodeAgentCard({
     );
   }
 
+
   return (
     <Card className="w-[27em] flex-1 p-4 flex flex-col z-50">
       <div className=" flex flex-row justify-between">
-      <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
-      <Button variant="outline" className="-mt-1"> View on Allocator </Button>
-      </div>
+        <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
+        <Button 
+          variant="outline" 
+          className="-mt-1"
+          onClick={handleGoToAllocator}
+          > 
+          View in Allocator 
+        </Button>
+        </div>
       {isLoading ? (
         <p>Loading agent details...</p>
       ) : (
