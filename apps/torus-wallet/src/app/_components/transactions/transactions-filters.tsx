@@ -30,7 +30,7 @@ import { useState } from "react";
 import type { TransactionQueryOptions } from "~/store/transactions-store";
 
 const transactionsFilterSchema = z.object({
-  type: z.string().default("all"),
+  type: z.string().optional(),
   fromAddress: z.string().optional(),
   toAddress: z.string().optional(),
   hash: z.string().optional(),
@@ -58,7 +58,7 @@ export function TransactionFilters({
   const form = useForm<TransactionsFilterValues>({
     resolver: zodResolver(transactionsFilterSchema),
     defaultValues: {
-      type: "all",
+      type: undefined,
       fromAddress: undefined,
       toAddress: undefined,
       hash: undefined,
@@ -76,6 +76,7 @@ export function TransactionFilters({
   const handleReset = () => {
     form.reset();
     onFiltersChange({
+      type: undefined,
       orderBy: "createdAt.desc",
     });
   };

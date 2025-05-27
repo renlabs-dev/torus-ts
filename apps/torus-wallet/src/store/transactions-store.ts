@@ -23,7 +23,7 @@ export type UpdatedTransaction = Partial<Transaction>;
 export interface TransactionQueryOptions {
   page?: number;
   limit?: number;
-  type?: TransactionType | "all";
+  type?: TransactionType;
   fromAddress?: string;
   toAddress?: string;
   hash?: string;
@@ -52,10 +52,10 @@ interface TransactionsState {
   getTransactionById: (id: string) => Transaction | undefined;
   isTransactionCompleted: (
     status: TransactionResult["status"],
-  ) => TransactionResult["status"];
+  ) => "SUCCESS" | "ERROR" | "PENDING";
   isTransactionError: (
     status: TransactionResult["status"],
-  ) => TransactionResult["status"];
+  ) => "ERROR" | "PENDING";
   clearTransactions: (walletAddress: SS58Address) => void;
   getLastTransactionTimestamp: () => number;
 }
@@ -115,7 +115,7 @@ export const useTransactionsStore = create<TransactionsState>()(
           : [];
 
         const filtered = walletTxs.filter((tx) => {
-          if (type && type !== "all" && tx.type !== type) return false;
+          if (type && tx.type !== type) return false;
           if (
             fromAddress?.trim() &&
             !tx.fromAddress
