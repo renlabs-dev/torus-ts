@@ -1,21 +1,29 @@
-# Torus SDK Modules
+# Torus SDK core Substrate modules
 
-Core modules for interacting with Torus blockchain pallets. Each module provides TypeScript type definitions, query functions, and utilities for a specific blockchain pallet.
+Core modules for interacting with the Torus Substrate blockchain pallets. Each
+module provides Zod schemas, TypeScript type definitions, query and transaction
+functions, and utilities for a specific pallet.
 
 ## Module Overview
 
 All modules follow consistent patterns:
 
-- **Zod Schema Validation**: Substrate types defined using `sb_` prefixed utilities
-- **Type Inference**: Types inferred from Zod schemas using `z.infer<typeof SCHEMA>`
-- **Error Handling**: Robust error handling with `tryAsync` and `trySync` wrappers
-- **Query Functions**: Standardized async functions for blockchain data retrieval
+- **Zod Schema Validation**
+  - Substrate type parsers defined using `sb_` prefixed utilities
+- **Type Inference**
+  - Types inferred from Zod schemas using `z.infer<typeof SCHEMA>`
+- **Error Handling**
+  - Robust error handling with `tryAsync` and `trySync` wrappers etc
+- **Query Functions**
+  - Standardized functions for blockchain data retrieval
 
 ## Files
 
 - [@_common.ts] - Shared utilities and types for storage map parsing
-- [@governance.ts] - Governance pallet interface (proposals, voting, applications)
-- [@subspace.ts] - Subspace pallet interface (balances, staking, emission, agents)
+- [@subspace.ts] - Misc pallet interface (balances, staking, emission, agents)
+  (needs to be split, the name is outdated)
+- [@governance.ts] - Governance pallet interface (proposals, voting,
+  applications)
 - [@permission0.ts] - Permission0 pallet interface (delegation permissions)
 
 ## Type System Conventions
@@ -84,7 +92,8 @@ All modules implement consistent error handling:
 
 1. **Query Errors**: Network or API-level failures during blockchain queries
 2. **Parse Errors**: Type validation failures when parsing substrate data
-3. **Graceful Degradation**: Functions continue processing valid entries while collecting errors
+3. **Graceful Degradation**: Functions continue processing valid entries while
+   collecting errors
 4. **Detailed Messaging**: Clear error messages with context for debugging
 
 ## Development Guidelines
