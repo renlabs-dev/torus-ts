@@ -30,7 +30,7 @@ export function isError(error: unknown): error is Error {
  * @returns An Error object
  *
  * @example
- * ```typescript
+ * ```ts
  * // Returns original error
  * ensureError(new Error('test')); // Error: test
  *
@@ -136,7 +136,7 @@ export function tryAsyncRaw<T, E>(
  * @returns An AsyncResultObj containing success or Error.
  *
  * @example
- * ```typescript
+ * ```ts
  * const result = await tryAsync(fetch('https://api.example.com/data'))
  *   .match({
  *     Ok: (data) => console.log('API data:', data),
