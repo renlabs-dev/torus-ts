@@ -39,13 +39,10 @@ export const allocationSchema = z.discriminatedUnion("type", [
           percentage: z
             .string()
             .min(1, "Percentage is required")
-            .refine(
-              (val) => {
-                const num = parseFloat(val);
-                return !isNaN(num) && num >= 0 && num <= 100;
-              },
-              "Must be between 0 and 100",
-            ),
+            .refine((val) => {
+              const num = parseFloat(val);
+              return !isNaN(num) && num >= 0 && num <= 100;
+            }, "Must be between 0 and 100"),
         }),
       )
       .min(1, "At least one stream is required"),
@@ -69,26 +66,20 @@ export const distributionSchema = z.discriminatedUnion("type", [
     blockNumber: z
       .string()
       .min(1, "Block number is required")
-      .refine(
-        (val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        },
-        "Must be a positive integer",
-      ),
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num > 0;
+      }, "Must be a positive integer"),
   }),
   z.object({
     type: z.literal("Interval"),
     blocks: z
       .string()
       .min(1, "Block interval is required")
-      .refine(
-        (val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        },
-        "Must be a positive integer",
-      ),
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num > 0;
+      }, "Must be a positive integer"),
   }),
 ]);
 
@@ -102,13 +93,10 @@ export const durationSchema = z.discriminatedUnion("type", [
     blockNumber: z
       .string()
       .min(1, "Block number is required")
-      .refine(
-        (val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        },
-        "Must be a positive integer",
-      ),
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num > 0;
+      }, "Must be a positive integer"),
   }),
 ]);
 
@@ -133,26 +121,20 @@ export const revocationSchema = z.discriminatedUnion("type", [
     requiredVotes: z
       .string()
       .min(1, "Required votes is required")
-      .refine(
-        (val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        },
-        "Must be a positive integer",
-      ),
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num > 0;
+      }, "Must be a positive integer"),
   }),
   z.object({
     type: z.literal("RevocableAfter"),
     blockNumber: z
       .string()
       .min(1, "Block number is required")
-      .refine(
-        (val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        },
-        "Must be a positive integer",
-      ),
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num > 0;
+      }, "Must be a positive integer"),
   }),
 ]);
 
@@ -174,13 +156,10 @@ export const enforcementSchema = z.discriminatedUnion("type", [
     requiredVotes: z
       .string()
       .min(1, "Required votes is required")
-      .refine(
-        (val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        },
-        "Must be a positive integer",
-      ),
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num > 0;
+      }, "Must be a positive integer"),
   }),
 ]);
 
@@ -220,4 +199,5 @@ export interface GrantEmissionPermissionMutation {
   mutate: (data: GrantEmissionPermissionFormData) => void;
 }
 
-export type GrantEmissionPermissionForm = UseFormReturn<GrantEmissionPermissionFormData>;
+export type GrantEmissionPermissionForm =
+  UseFormReturn<GrantEmissionPermissionFormData>;

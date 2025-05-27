@@ -75,7 +75,8 @@ export function GrantEmissionPermissionFormComponent({
     remove: removeArbiter,
   } = useFieldArray({
     control: form.control,
-    name: "revocation.accounts",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+    name: "revocation.accounts" as any,
   });
 
   const {
@@ -84,7 +85,8 @@ export function GrantEmissionPermissionFormComponent({
     remove: removeController,
   } = useFieldArray({
     control: form.control,
-    name: "enforcement.controllers",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+    name: "enforcement.controllers" as any,
   });
 
   const allocationType = form.watch("allocation.type");
@@ -522,7 +524,8 @@ export function GrantEmissionPermissionFormComponent({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => appendArbiter("")}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+                      onClick={() => (appendArbiter as any)("")}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Arbiter
@@ -635,7 +638,8 @@ export function GrantEmissionPermissionFormComponent({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => appendController("")}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+                      onClick={() => (appendController as any)("")}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Controller
