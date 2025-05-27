@@ -250,7 +250,9 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
 
       {(data.expression.$ === "PermissionExists" ||
         data.expression.$ === "PermissionEnabled") && (
-        <div className="mt-3">
+        <>
+          <div className="text-white relative">↓</div>
+
           <Input
             id={`${id}-permission`}
             type="text"
@@ -262,7 +264,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
           {permissionIdError && (
             <p className="text-red-500 text-xs mt-1">{permissionIdError}</p>
           )}
-        </div>
+        </>
       )}
     </PermissionNodeContainer>
   );
