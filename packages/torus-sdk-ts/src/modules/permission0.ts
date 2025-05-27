@@ -1,12 +1,17 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { Option } from "@polkadot/types";
+import type { H256 } from "@polkadot/types/interfaces";
 import type { Codec } from "@polkadot/types/types";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { getOrSetDefault } from "@torus-network/torus-utils/collections";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { match } from "rustie";
 import type { z } from "zod";
 
 import type { SS58Address } from "../address";
+import type { ToBigInt, ZError } from "../types";
 import {
   sb_address,
   sb_array,
@@ -25,9 +30,7 @@ import {
 
 type Api = ApiPromise;
 
-// ============================================================================
-// Base Types
-// ============================================================================
+// ==== Base Types ====
 
 export const PERMISSION_ID_SCHEMA = sb_h256;
 export const STREAM_ID_SCHEMA = sb_h256;
@@ -35,9 +38,7 @@ export const STREAM_ID_SCHEMA = sb_h256;
 export type PermissionId = z.infer<typeof PERMISSION_ID_SCHEMA>;
 export type StreamId = z.infer<typeof STREAM_ID_SCHEMA>;
 
-// ============================================================================
-// Curator Permissions (Bitflags)
-// ============================================================================
+// ==== Curator Permissions (Bitflags) ====
 
 export const CURATOR_PERMISSIONS_SCHEMA = sb_struct({
   bits: sb_bigint,
@@ -53,9 +54,7 @@ export const CURATOR_FLAGS = {
   PENALTY_CONTROL: 0b0000_1000n,
 } as const;
 
-// ============================================================================
-// Emission Types
-// ============================================================================
+// ==== Emission Types ====
 
 export const EMISSION_ALLOCATION_SCHEMA = sb_enum({
   Streams: sb_array(
@@ -90,9 +89,7 @@ export type EmissionAllocation = z.infer<typeof EMISSION_ALLOCATION_SCHEMA>;
 export type DistributionControl = z.infer<typeof DISTRIBUTION_CONTROL_SCHEMA>;
 export type EmissionScope = z.infer<typeof EMISSION_SCOPE_SCHEMA>;
 
-// ============================================================================
-// Curator Types
-// ============================================================================
+// ==== Curator Types ====
 
 export const CURATOR_SCOPE_SCHEMA = sb_struct({
   flags: CURATOR_PERMISSIONS_SCHEMA,
@@ -101,9 +98,7 @@ export const CURATOR_SCOPE_SCHEMA = sb_struct({
 
 export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
 
-// ============================================================================
-// Permission Scope
-// ============================================================================
+// ==== Permission Scope ====
 
 export const PERMISSION_SCOPE_SCHEMA = sb_enum({
   Emission: EMISSION_SCOPE_SCHEMA,
@@ -112,9 +107,7 @@ export const PERMISSION_SCOPE_SCHEMA = sb_enum({
 
 export type PermissionScope = z.infer<typeof PERMISSION_SCOPE_SCHEMA>;
 
-// ============================================================================
-// Duration and Control Types
-// ============================================================================
+// ==== Duration and Control Types ====
 
 export const PERMISSION_DURATION_SCHEMA = sb_enum({
   UntilBlock: sb_blocks,
@@ -151,9 +144,7 @@ export type EnforcementReferendum = z.infer<
   typeof ENFORCEMENT_REFERENDUM_SCHEMA
 >;
 
-// ============================================================================
-// Main Permission Contract
-// ============================================================================
+// ==== Main Permission Contract ====
 
 export const PERMISSION_CONTRACT_SCHEMA = sb_struct({
   grantor: sb_address,
@@ -170,9 +161,7 @@ export const PERMISSION_CONTRACT_SCHEMA = sb_struct({
 
 export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
 
-// ============================================================================
-// Query Functions
-// ============================================================================
+// ==== Query Functions ====
 
 /**
  * Query a specific permission by ID
@@ -180,29 +169,21 @@ export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
 export async function queryPermission(
   api: Api,
   permissionId: PermissionId,
-): Promise<PermissionContract | null> {
+): Promise<Result<PermissionContract | null, ZError<PermissionContract> | Error>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissions(permissionId),
   );
-
-  if (queryError) {
-    throw new Error(`Failed to query permission: ${queryError.message}`);
-  }
+  if (queryError) return makeErr(queryError);
 
   const option = query as Option<Codec>;
   if (option.isNone) {
-    return null;
+    return makeOk(null);
   }
 
-  const [parseError, result] = trySync(() =>
-    PERMISSION_CONTRACT_SCHEMA.parse(option.unwrap().toJSON()),
-  );
+  const parsed = PERMISSION_CONTRACT_SCHEMA.safeParse(option.unwrap().toJSON());
+  if (parsed.success === false) return makeErr(parsed.error);
 
-  if (parseError) {
-    throw new Error(`Failed to parse permission: ${parseError.message}`);
-  }
-
-  return result;
+  return makeOk(parsed.data);
 }
 
 /**
@@ -210,26 +191,30 @@ export async function queryPermission(
  */
 export async function queryPermissions(
   api: Api,
-): Promise<Map<PermissionId, PermissionContract>> {
+): Promise<Result<Map<PermissionId, PermissionContract>, ZError<H256> | ZError<PermissionContract> | Error>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissions.entries(),
   );
-
-  if (queryError) {
-    throw new Error(`Failed to query permissions: ${queryError.message}`);
-  }
+  if (queryError) return makeErr(queryError);
 
   const permissionsMap = new Map<PermissionId, PermissionContract>();
 
   for (const [key, value] of query) {
     if (value.isSome) {
-      const id = PERMISSION_ID_SCHEMA.parse(key.toHex());
-      const contract = sb_some(PERMISSION_CONTRACT_SCHEMA).parse(value);
-      permissionsMap.set(id, contract);
+      const idParsed = PERMISSION_ID_SCHEMA.safeParse(key.toHex());
+      if (idParsed.success === false) return makeErr(idParsed.error);
+
+      const contractParsed = sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(
+        value,
+      );
+      if (contractParsed.success === false)
+        return makeErr(contractParsed.error);
+
+      permissionsMap.set(idParsed.data, contractParsed.data);
     }
   }
 
-  return permissionsMap;
+  return makeOk(permissionsMap);
 }
 
 /**
@@ -238,28 +223,16 @@ export async function queryPermissions(
 export async function queryPermissionsByGrantor(
   api: Api,
   grantor: string,
-): Promise<PermissionId[]> {
+): Promise<Result<PermissionId[], ZError<H256[]> | Error>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantor(grantor),
   );
+  if (queryError) return makeErr(queryError);
 
-  if (queryError) {
-    throw new Error(
-      `Failed to query permissions by grantor: ${queryError.message}`,
-    );
-  }
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query.toJSON());
+  if (parsed.success === false) return makeErr(parsed.error);
 
-  const [parseError, result] = trySync(() =>
-    sb_array(PERMISSION_ID_SCHEMA).parse(query.toJSON()),
-  );
-
-  if (parseError) {
-    throw new Error(
-      `Failed to parse permissions by grantor: ${parseError.message}`,
-    );
-  }
-
-  return result;
+  return makeOk(parsed.data);
 }
 
 /**
@@ -268,28 +241,16 @@ export async function queryPermissionsByGrantor(
 export async function queryPermissionsByGrantee(
   api: Api,
   grantee: string,
-): Promise<PermissionId[]> {
+): Promise<Result<PermissionId[], ZError<H256[]> | Error>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantee(grantee),
   );
+  if (queryError) return makeErr(queryError);
 
-  if (queryError) {
-    throw new Error(
-      `Failed to query permissions by grantee: ${queryError.message}`,
-    );
-  }
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query.toJSON());
+  if (parsed.success === false) return makeErr(parsed.error);
 
-  const [parseError, result] = trySync(() =>
-    sb_array(PERMISSION_ID_SCHEMA).parse(query.toJSON()),
-  );
-
-  if (parseError) {
-    throw new Error(
-      `Failed to parse permissions by grantee: ${parseError.message}`,
-    );
-  }
-
-  return result;
+  return makeOk(parsed.data);
 }
 
 /**
@@ -299,67 +260,66 @@ export async function queryPermissionsByParticipants(
   api: Api,
   grantor: string,
   grantee: string,
-): Promise<PermissionId[]> {
+): Promise<Result<PermissionId[], ZError<H256[]> | Error>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByParticipants([grantor, grantee]),
   );
+  if (queryError) return makeErr(queryError);
 
-  if (queryError) {
-    throw new Error(
-      `Failed to query permissions by participants: ${queryError.message}`,
-    );
-  }
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query.toJSON());
+  if (parsed.success === false) return makeErr(parsed.error);
 
-  const [parseError, result] = trySync(() =>
-    sb_array(PERMISSION_ID_SCHEMA).parse(query.toJSON()),
-  );
-
-  if (parseError) {
-    throw new Error(
-      `Failed to parse permissions by participants: ${parseError.message}`,
-    );
-  }
-
-  return result;
+  return makeOk(parsed.data);
 }
 
 /**
  * Query accumulated stream amounts for an account and permission
  */
-export async function queryAccumulatedStreamAmounts(
+export async function queryAccumulatedStreamsForAccount(
   api: Api,
   account: string,
-  streamId: StreamId,
-  permissionId: PermissionId,
-): Promise<bigint | null> {
-  const [queryError, query] = await tryAsync(
-    api.query.permission0.accumulatedStreamAmounts([
-      account,
-      streamId,
-      permissionId,
-    ]),
+): Promise<
+  Result<
+    Map<StreamId, Map<PermissionId, bigint>>,
+    ZError<H256> | ZError<ToBigInt> | Error
+  >
+> {
+  const [queryError, streamTuples] = await tryAsync(
+    api.query.permission0.accumulatedStreamAmounts.entries(account),
   );
+  if (queryError) return makeErr(queryError);
 
-  if (queryError) {
-    throw new Error(
-      `Failed to query accumulated stream amounts: ${queryError.message}`,
+  const result = new Map<StreamId, Map<PermissionId, bigint>>();
+
+  for (const [keysRaw, valueRaw] of streamTuples) {
+    const [_ac, streamIdRaw, permissionIdRaw] = keysRaw.args;
+
+    const streamIdParsed = sb_h256.safeParse(streamIdRaw);
+    if (streamIdParsed.success === false) return makeErr(streamIdParsed.error);
+
+    const permissionIdParsed = sb_h256.safeParse(permissionIdRaw);
+    if (permissionIdParsed.success === false)
+      return makeErr(permissionIdParsed.error);
+
+    const valueParsed = sb_balance.safeParse(valueRaw);
+    if (valueParsed.success === false) return makeErr(valueParsed.error);
+
+    const streamId = streamIdParsed.data;
+    const permissionId = permissionIdParsed.data;
+    const value = valueParsed.data;
+
+    const mapForStream = getOrSetDefault(
+      result,
+      streamId,
+      () => new Map<PermissionId, bigint>(),
     );
+    mapForStream.set(permissionId, value);
   }
 
-  const [parseError, result] = trySync(() => sb_balance.parse(query));
-
-  if (parseError) {
-    throw new Error(
-      `Failed to parse accumulated stream amounts: ${parseError.message}`,
-    );
-  }
-
-  return result;
+  return makeOk(result);
 }
 
-// ============================================================================
-// Utility Functions
-// ============================================================================
+// ==== Utility Functions ====
 
 /**
  * Static identifier prefix for root emission stream
@@ -374,15 +334,15 @@ export const ROOT_STREAM_PREFIX = "torus:emission:root";
 export function generateRootStreamId(agentId: SS58Address): StreamId {
   // Convert prefix string to bytes
   const prefixBytes = new TextEncoder().encode(ROOT_STREAM_PREFIX);
-  
+
   // Decode SS58 address to get the raw account ID bytes
   const accountIdBytes = decodeAddress(agentId);
-  
+
   // Concatenate prefix bytes with account ID bytes
   const data = new Uint8Array(prefixBytes.length + accountIdBytes.length);
   data.set(prefixBytes, 0);
   data.set(accountIdBytes, prefixBytes.length);
-  
+
   // Generate blake2 256-bit hash and return as hex string
   return blake2AsHex(data, 256);
 }
@@ -425,9 +385,7 @@ export function canExecutePermission(
   return !isPermissionExpired(permission, currentBlock);
 }
 
-// ============================================================================
-// Transaction Functions
-// ============================================================================
+// ==== Transaction Functions ====
 
 /**
  * Grant an emission permission to a grantee
@@ -453,13 +411,6 @@ export function grantEmissionPermission({
   revocation,
   enforcement,
 }: GrantEmissionPermission) {
-  // grantee: T::AccountId,
-  // allocation: EmissionAllocation<T>,
-  // targets: Vec<(T::AccountId, u16)>,
-  // distribution: DistributionControl<T>,
-  // duration: PermissionDuration<T>,
-  // revocation: RevocationTerms<T>,
-  // enforcement: EnforcementAuthority<T>,
   return api.tx.permission0.grantEmissionPermission(
     grantee,
     allocation,

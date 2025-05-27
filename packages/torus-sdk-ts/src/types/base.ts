@@ -3,6 +3,8 @@ import { sb_bigint, sb_number } from "./zod";
 import type { H256 } from "@polkadot/types/interfaces";
 import { U8aFixed } from "@polkadot/types";
 
+export type ZError<T = unknown> = z.ZodError<T>;
+
 export const sb_id = sb_number.pipe(z.number().int().nonnegative());
 export type Id = z.infer<typeof sb_id>;
 
