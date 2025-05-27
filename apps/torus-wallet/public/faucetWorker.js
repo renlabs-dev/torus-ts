@@ -1,7 +1,7 @@
+/* eslint-disable */
+
 importScripts('https://cdn.jsdelivr.net/npm/js-sha3@0.8.0/build/sha3.min.js');
 const { keccak256 } = self;
-
-console.log("start");
 
 function hexToU8a(hex) {
   const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
@@ -37,7 +37,7 @@ function meetsDifficulty(data) {
   return product <= maxU256;
 }
 
-function createHash(blockData, nonce, address) {
+async function createHash(blockData, nonce, address) {
   const blockAndKeyBytes = new Uint8Array(64);
 
   if (blockData.blockHash.length !== 32) {
@@ -58,7 +58,9 @@ function createHash(blockData, nonce, address) {
   dataBytes.set(nonce, 0);
   dataBytes.set(blockAndKeyHash, 8);
 
-  return keccak256AsU8a(dataBytes);
+  const sha = await self.crypto.subtle.digest('SHA-256', dataBytes);
+
+  return keccak256AsU8a(sha);
 }
 
 let mining = false;
@@ -94,18 +96,48 @@ self.onmessage = async (e) => {
 
 async function mineLoop() {
   while (mining) {
-    const nonce = new Uint8Array(8);
-    crypto.getRandomValues(nonce);
+    const nonceStart = randomU64();
+    const nonceLimit = nonceStart + 500000n;
 
-    const hash = createHash(currentBlockData, nonce, currentAddress);
+    for(let nonceBigInt = nonceStart; nonceBigInt < nonceLimit; nonceBigInt++) {
+      const nonce = bigintToBytes(nonceBigInt);
+      const hash = await createHash(currentBlockData, nonce, currentAddress);
 
-    if (meetsDifficulty(hash)) {
-      self.postMessage({ nonce: Array.from(nonce), hash: Array.from(hash), blockNumber: currentBlockData.blockNumber });
-      mining = false;
-      break;
+      if (meetsDifficulty(hash)) {
+        self.postMessage({ nonce: Array.from(nonce), hash: Array.from(hash), blockNumber: currentBlockData.blockNumber });
+        mining = false;
+        break;
+      }      
     }
 
-    // Yield to event loop to handle messages
     await sleep(0);
   }
+}
+
+function randomU64() {
+    const bytes = new Uint8Array(8); // 8 bytes = 64 bits
+    crypto.getRandomValues(bytes);
+
+    // Convert to BigInt (little-endian or big-endian)
+    let result = 0n;
+    for (let i = 0; i < bytes.length; i++) {
+        result |= BigInt(bytes[i]) << BigInt(i * 8);
+    }
+    return result;
+}
+
+function bigintToBytes(value, byteLength = null) {
+    let hex = value.toString(16);
+    if (hex.length % 2) hex = '0' + hex;
+
+    const bytes = hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16));
+    const result = Uint8Array.from(bytes);
+
+    if (byteLength !== null && result.length < byteLength) {
+        const padded = new Uint8Array(byteLength);
+        padded.set(result, byteLength - result.length); // Big-endian
+        return padded;
+    }
+
+    return result;
 }

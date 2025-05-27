@@ -25,8 +25,6 @@ export const envSchema = {
     .string()
     .default("5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"),
   NEXT_PUBLIC_TORUS_GA_ID: z.string().default("G-7YCMH64Q4J"),
-  NEXT_PUBLIC_RECAPTCHA_SITE_ID: z.string(),
-  RECAPTCHA_SECRET: z.string()
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

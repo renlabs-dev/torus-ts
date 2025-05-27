@@ -8,73 +8,61 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useWallet } from "~/context/wallet-provider";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { performFaucet, performFirstFaucet } from "./faucet-form-handler";
-import { useEffect, useState } from "react";
-import { checkSS58 } from "@torus-network/sdk";
+import { useState } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
+import { callFaucetExtrinsic, doWork } from "~/utils/faucet";
+import type { ApiPromise } from "@polkadot/api";
 
 export function Faucet() {
   const { api } = useTorus();
   const { toast } = useToast();
   const { selectedAccount, accountFreeBalance } = useWallet();
-  const [token, setToken] = useState<string | null>(null);
+
+  const [ isLoading, setLoading ] = useState<boolean>(false);
+  const [ loadMessage, setLoadMessage ] = useState<string>("");
 
   const form = useForm<FaucetFormValues>({
     resolver: zodResolver(FaucetFormSchema),
     defaultValues: {
-      recipient: "",
+      recipient: selectedAccount?.address ?? "",
     },
     mode: "onTouched",
   });
 
-  useEffect(() => {
-    if (selectedAccount) {
-      try {
-        form.setValue("recipient", checkSS58(selectedAccount.address));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, [selectedAccount, form]);
-
-  const submit = async () => {
-    console.log("clicked");
+  const submit = async (requiredRuns: number) => {
     const [error, isValid] = await tryAsync(form.trigger());
     if (error !== undefined) {
-      console.log("error triggering");
       toast.error(error.message);
       return;
     }
 
-    console.log("no error triggering");
-
     if (!isValid) {
-      console.log("invalid");
       return;
     }
 
-    const balance = accountFreeBalance.data ?? 0;
-    const isFirstFaucet = balance < 0.000001;
     const recipient = form.getValues().recipient;
+    for (let index = 0; index < requiredRuns; index++) {
+      const remaining = requiredRuns - (index + 1);
 
-    if (api !== null) {
-      console.log("api not null");
-      if (isFirstFaucet) {
-        console.log("first faucet");
-        if (token === null) {
-          console.log("captcha required");
-          toast.error("Captcha is required.");
-          return;
+      setLoadMessage("Working..."   + (remaining > 0 ? ` (${remaining} remaining)` : ""));
+      setLoading(true);
+      const workResult = await doWork(api as unknown as ApiPromise, recipient);
+
+      setLoadMessage("Requesting..." + (remaining > 0 ? ` (${remaining} remaining)` : ""));
+      try {
+        await callFaucetExtrinsic(api as unknown as ApiPromise, workResult, recipient);
+        toast.success("+50 TOR added to your account.")
+        await accountFreeBalance.refetch();      
+      } catch(err) {
+        if(err instanceof Error) {
+          toast.error(err.message);
+        } else {
+          toast.error("Something went wrong, try again later.");
+          console.error(err);
         }
-        console.log("perform first");
-        await performFirstFaucet(api, recipient, token);
-      } else {
-        console.log("perform");
-        await performFaucet(api, recipient);
+      } finally {
+        setLoading(false);
       }
-    } else {
-      console.log("api is null");
-      throw new Error("api is null");
     }
   };
 
@@ -83,7 +71,8 @@ export function Faucet() {
       <FaucetForm
         form={form}
         selectedAccount={selectedAccount}
-        setToken={setToken}
+        isLoading={isLoading}
+        loadMessage={loadMessage}
         onSubmit={submit}
       />
     </div>
