@@ -1,14 +1,9 @@
 import type { SS58Address } from "@torus-network/sdk";
-import type { TransactionResult } from "@torus-ts/ui/components/transaction-status";
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type TransactionType =
-  | "stake"
-  | "unstake"
-  | "send"
-  | "transfer-stake"
-  | "all";
+export type TransactionType = "stake" | "unstake" | "send" | "transfer-stake";
 
 export interface Transaction {
   id: string;
@@ -17,7 +12,7 @@ export interface Transaction {
   toAddress: SS58Address;
   amount: string;
   fee: string;
-  status: "pending" | "success" | "error";
+  status: "PENDING" | "SUCCESS" | "ERROR" | "STARTING" | null;
   createdAt: string;
   hash?: string;
   metadata?: Record<string, unknown>;
@@ -28,7 +23,7 @@ export type UpdatedTransaction = Partial<Transaction>;
 export interface TransactionQueryOptions {
   page?: number;
   limit?: number;
-  type?: TransactionType;
+  type?: TransactionType | "all";
   fromAddress?: string;
   toAddress?: string;
   hash?: string;

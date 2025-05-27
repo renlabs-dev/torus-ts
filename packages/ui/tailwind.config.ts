@@ -80,6 +80,9 @@ const config = {
       addUtilities({
         ".no-scrollbar": {
           "scrollbar-width": "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
         },
       });
     }),

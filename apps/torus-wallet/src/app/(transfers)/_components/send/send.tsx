@@ -118,11 +118,11 @@ export function Send() {
 
     const updatedTransaction: UpdatedTransaction = isError
       ? {
-          status: "error",
+          status: "ERROR",
           metadata: { error: "Transaction failed" },
         }
       : {
-          status: "success",
+          status: "SUCCESS",
           hash: callbackReturn.hash ?? "unknown",
         };
 
@@ -147,24 +147,40 @@ export function Send() {
       message: "Awaiting signature",
     });
 
+    if (!selectedAccount?.address) {
+      toast.error("No account selected");
+      return;
+    }
+
     const txId = addTransaction({
       type: "send",
-      fromAddress: selectedAccount?.address as SS58Address,
+      fromAddress: selectedAccount.address as SS58Address,
       toAddress: values.recipient,
       amount: values.amount,
       fee: feeRef.current?.getEstimatedFee() ?? "0",
-      status: "pending",
+      status: "PENDING",
       metadata: {
         usdPrice: usdPrice,
       },
     });
 
-    await transfer({
-      to: values.recipient,
-      amount: values.amount,
-      callback: (args) => handleTransactionCallback(args, txId),
-      refetchHandler,
-    });
+    const [errorTransfer] = await tryAsync(
+      transfer({
+        to: values.recipient,
+        amount: values.amount,
+        callback: (args) => handleTransactionCallback(args, txId),
+        refetchHandler,
+      }),
+    );
+
+    if (errorTransfer !== undefined) {
+      updateTransaction(txId, {
+        status: "ERROR",
+        metadata: { error: errorTransfer.message },
+      });
+
+      toast.error(errorTransfer.message);
+    }
   };
 
   useEffect(() => {

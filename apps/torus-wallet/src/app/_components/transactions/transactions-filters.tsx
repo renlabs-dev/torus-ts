@@ -58,7 +58,7 @@ export function TransactionFilters({
   const form = useForm<TransactionsFilterValues>({
     resolver: zodResolver(transactionsFilterSchema),
     defaultValues: {
-      type: undefined,
+      type: "all",
       fromAddress: undefined,
       toAddress: undefined,
       hash: undefined,

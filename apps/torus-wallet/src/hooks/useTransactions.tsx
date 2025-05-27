@@ -26,13 +26,11 @@ export function useTransactions({
     (state) => state.lastTransactionTimestamp,
   );
 
-
   const [page, setPage] = useState(1);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
 
   function resetState() {
     setTransactions([]);
@@ -47,7 +45,7 @@ export function useTransactions({
       resetState();
       return;
     }
-    
+
     // When address changes, start fresh
     setPage(1);
     setTransactions([]);
@@ -80,8 +78,8 @@ export function useTransactions({
 
       // Small delay to prevent rapid calls and improve UX
       const delay = page === 1 ? 0 : 100;
-      
-      setTimeout(() => {
+
+      const timeoutId = setTimeout(() => {
         const options: TransactionQueryOptions = {
           page,
           limit: itemsPerPage,
@@ -95,7 +93,7 @@ export function useTransactions({
         };
 
         if (!address) return;
-        
+
         const result = getTransactionsByWallet(address, options);
 
         // For page 1, replace all transactions. For other pages, append
@@ -106,9 +104,13 @@ export function useTransactions({
         setHasMore(result.hasMore);
         setIsLoading(false);
       }, delay);
+
+      // Return cleanup function to prevent memory leaks
+      return () => clearTimeout(timeoutId);
     }
 
-    loadTransactionsPage();
+    const cleanup = loadTransactionsPage();
+    return cleanup;
   }, [address, page, filters, itemsPerPage, getTransactionsByWallet]);
 
   // Load more transactions (for infinite scroll)
@@ -124,12 +126,12 @@ export function useTransactions({
     setTransactions([]);
   }, []);
 
-  return { 
-    transactions, 
-    totalTransactions, 
-    hasMore, 
-    loadMore, 
+  return {
+    transactions,
+    totalTransactions,
+    hasMore,
+    loadMore,
     refresh,
-    isLoading 
+    isLoading,
   };
 }

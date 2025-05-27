@@ -21,7 +21,7 @@ const formatTransactionForExport = (
   toAddress: transaction.toAddress,
   amount: transaction.amount,
   fee: transaction.fee,
-  status: transaction.status,
+  status: transaction.status ?? "Pending",
   hash: transaction.hash,
   createdAt: transaction.createdAt,
 });
@@ -40,8 +40,16 @@ const createDownloadLink = (blob: Blob, filename: string): void => {
   }, 100);
 };
 
-const generateFilename = (walletAddress: string, extension: string): string =>
-  `transactions-${walletAddress.slice(0, 8)}-${new Date().toISOString().split("T")[0]}.${extension}`;
+const generateFilename = (walletAddress: string, extension: string): string => {
+  if (
+    !walletAddress ||
+    typeof walletAddress !== "string" ||
+    walletAddress.trim() === ""
+  ) {
+    throw new Error("Invalid wallet address provided for filename generation");
+  }
+  return `transactions-${walletAddress.slice(0, 8)}-${new Date().toISOString().split("T")[0]}.${extension}`;
+};
 
 export const exportTransactionsAsJSON = (
   transactions: Transaction[],
