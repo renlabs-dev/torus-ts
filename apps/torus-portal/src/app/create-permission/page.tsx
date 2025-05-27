@@ -5,6 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback } from "react";
+import type {
+  SS58Address,
+  EmissionAllocation,
+  DistributionControl,
+  PermissionDuration,
+  RevocationTerms,
+  EnforcementAuthority,
+} from "@torus-network/sdk";
 import PortalNavigationTabs from "../_components/portal-navigation-tabs";
 import { GrantEmissionPermissionFormComponent } from "./_components/grant-emission-permission-form";
 import { grantEmissionPermissionSchema } from "./_components/grant-emission-permission-form-schema";
@@ -13,35 +21,38 @@ import type { GrantEmissionPermissionFormData } from "./_components/grant-emissi
 // Helper to transform form data to SDK format
 function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
   // Transform allocation
-  let allocation;
+  let allocation: EmissionAllocation;
   if (data.allocation.type === "FixedAmount") {
     allocation = {
-      FixedAmount: parseFloat(data.allocation.amount) * 1e6, // Convert to micro units
+      FixedAmount: BigInt(parseFloat(data.allocation.amount) * 1e6), // Convert to micro units as bigint
     };
   } else {
     allocation = {
       Streams: data.allocation.streams.map((stream) => ({
-        streamId: stream.streamId,
+        streamId: stream.streamId as `0x${string}`,
         percentage: parseFloat(stream.percentage),
       })),
     };
   }
 
   // Transform targets
-  const targets = data.targets.map((target) => [
-    target.account,
-    parseInt(target.weight),
-  ]);
+  const targets = data.targets.map(
+    (target) =>
+      [target.account as SS58Address, parseInt(target.weight)] as [
+        SS58Address,
+        number,
+      ],
+  );
 
   // Transform distribution
-  let distribution;
+  let distribution: DistributionControl;
   switch (data.distribution.type) {
     case "Manual":
       distribution = { Manual: null };
       break;
     case "Automatic":
       distribution = {
-        Automatic: parseFloat(data.distribution.threshold) * 1e6,
+        Automatic: BigInt(parseFloat(data.distribution.threshold) * 1e6),
       };
       break;
     case "AtBlock":
@@ -55,7 +66,7 @@ function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
   }
 
   // Transform duration
-  let duration;
+  let duration: PermissionDuration;
   if (data.duration.type === "Indefinite") {
     duration = { Indefinite: null };
   } else {
@@ -63,7 +74,7 @@ function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
   }
 
   // Transform revocation
-  let revocation;
+  let revocation: RevocationTerms;
   switch (data.revocation.type) {
     case "Irrevocable":
       revocation = { Irrevocable: null };
@@ -74,8 +85,8 @@ function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
     case "RevocableByArbiters":
       revocation = {
         RevocableByArbiters: {
-          accounts: data.revocation.accounts,
-          requiredVotes: parseInt(data.revocation.requiredVotes),
+          accounts: data.revocation.accounts as SS58Address[],
+          requiredVotes: BigInt(parseInt(data.revocation.requiredVotes)),
         },
       };
       break;
@@ -87,14 +98,14 @@ function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
   }
 
   // Transform enforcement
-  let enforcement;
+  let enforcement: EnforcementAuthority;
   if (data.enforcement.type === "None") {
     enforcement = { None: null };
   } else {
     enforcement = {
       ControlledBy: {
-        controllers: data.enforcement.controllers,
-        requiredVotes: parseInt(data.enforcement.requiredVotes),
+        controllers: data.enforcement.controllers as SS58Address[],
+        requiredVotes: BigInt(parseInt(data.enforcement.requiredVotes)),
       },
     };
   }
@@ -146,14 +157,24 @@ export default function Page() {
         await grantEmissionPermissionTransaction({
           ...transformedData,
           callback: (result) => {
-            if (result.status.isInBlock || result.status.isFinalized) {
+            if (result.status === "SUCCESS" && result.finalized) {
               toast({
                 title: "Success",
                 description: "Emission permission granted successfully",
               });
               // Reset form
               form.reset();
+            } else if (result.status === "ERROR") {
+              toast({
+                title: "Error",
+                description:
+                  result.message ?? "Failed to grant emission permission",
+                variant: "destructive",
+              });
             }
+          },
+          refetchHandler: async () => {
+            // No-op for now, could be used to refetch data after transaction
           },
         });
       } catch (error) {
