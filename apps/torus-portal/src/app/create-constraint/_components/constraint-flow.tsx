@@ -15,13 +15,6 @@ import {
   Background,
 } from "@xyflow/react";
 import { Button } from "@torus-ts/ui/components/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@torus-ts/ui/components/select";
 
 import PermissionNodeBoolean from "./constraint-nodes/constraint-node-boolean";
 import PermissionNodeNumber from "./constraint-nodes/constraint-node-number";
@@ -31,6 +24,7 @@ import { extractConstraintFromNodes } from "./constraint-utils";
 import { constraintValidationSchema } from "./constraint-validation-schemas";
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
 import { constraintToNodes } from "./constraint-nodes/constraint-to-nodes";
+import ConstraintControlsSheet from "./constraint-controls-sheet";
 
 import useAutoLayout from "./constraint-layout/use-auto-layout";
 import type { LayoutOptions } from "./constraint-layout/use-auto-layout";
@@ -75,10 +69,12 @@ function ConstraintFlow() {
       if (!example) return;
 
       // Get current permission ID from the existing permission ID node
-      const currentPermissionIdNode = nodes.find((node) => node.id === "permission-id");
-      const currentPermissionId = 
-        currentPermissionIdNode?.data.type === "permissionId" 
-          ? currentPermissionIdNode.data.permissionId 
+      const currentPermissionIdNode = nodes.find(
+        (node) => node.id === "permission-id",
+      );
+      const currentPermissionId =
+        currentPermissionIdNode?.data.type === "permissionId"
+          ? currentPermissionIdNode.data.permissionId
           : "";
 
       const { nodes: newNodes, edges: newEdges } = constraintToNodes(
@@ -184,31 +180,12 @@ function ConstraintFlow() {
       zoomOnDoubleClick={false}
     >
       <Background />
-      <div className="absolute bottom-4 right-4 z-50 flex items-center gap-3">
-        <Select value={selectedExample} onValueChange={handleLoadExample}>
-          <SelectTrigger className="w-64 shadow-lg">
-            <SelectValue placeholder="Load constraint example..." />
-          </SelectTrigger>
-          <SelectContent>
-            {constraintExamples.map((example) => (
-              <SelectItem key={example.id} value={example.id}>
-                <div className="flex flex-col">
-                  <span className="font-medium">{example.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {example.description}
-                  </span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          onClick={handleCreateConstraint}
-          size="lg"
-          className="shadow-lg"
-        >
-          Create This Constraint
-        </Button>
+      <div className="absolute bottom-4 right-4 z-50">
+        <ConstraintControlsSheet
+          selectedExample={selectedExample}
+          onLoadExample={handleLoadExample}
+          onCreateConstraint={handleCreateConstraint}
+        />
       </div>
     </ReactFlow>
   );
