@@ -27,7 +27,6 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
   }
   
   return (
-    <TooltipProvider>    
       <div className="flex flex-col gap-2">
         <PermissionNodeAgentCard 
           nodeId={selectedNode.id}
@@ -35,6 +34,7 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
           getCachedAgentData={getCachedAgentData}
           setCachedAgentData={setCachedAgentData}
           />
+      <TooltipProvider>    
         <NodeDetailsCard
           selectedNode={selectedNode} 
           graphData={graphData}
@@ -43,8 +43,8 @@ export const PermissionGraphNodeDetails = memo(function PermissionGraphNodeDetai
           setCachedAgentData={setCachedAgentData}
           onBackgroundClick={onBackgroundClick}
         />
+      </TooltipProvider>
     </div>
-  </TooltipProvider>
 
   );
 });
