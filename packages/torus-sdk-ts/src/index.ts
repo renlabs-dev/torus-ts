@@ -11,6 +11,7 @@ export * from "./rpc";
 export * from "./modules/_common";
 export * from "./modules/subspace";
 export * from "./modules/governance";
+export * from "./modules/permission0";
 
 // == EVM ==
 export * from "./evm";
