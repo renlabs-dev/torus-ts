@@ -4,9 +4,7 @@ import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import { Input } from "@torus-ts/ui/components/input";
 import { Button } from "@torus-ts/ui/components/button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, SearchIcon } from "lucide-react";
 import { Card } from "@torus-ts/ui/components/card";
-import { Label } from "@torus-ts/ui/components/label";
 
 interface PermissionGraphSearchProps {
   graphNodes?: string[];
