@@ -9,6 +9,8 @@ import { useForm } from "react-hook-form";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
+import type { UpdatedTransaction } from "~/store/transactions-store";
+import { useTransactionsStore } from "~/store/transactions-store";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
@@ -18,6 +20,7 @@ import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { SS58Address } from "@torus-network/sdk";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
@@ -34,6 +37,24 @@ export function Stake() {
     getExistentialDeposit,
     minAllowedStake,
   } = useWallet();
+  const {
+    addTransaction,
+    isTransactionError,
+    isTransactionCompleted,
+    updateTransaction,
+  } = useTransactionsStore((state) => ({
+    addTransaction: (args: Parameters<typeof state.addTransaction>[0]) =>
+      state.addTransaction(args),
+    isTransactionError: (
+      args: Parameters<typeof state.isTransactionError>[0],
+    ) => state.isTransactionError(args),
+    isTransactionCompleted: (
+      args: Parameters<typeof state.isTransactionCompleted>[0],
+    ) => state.isTransactionCompleted(args),
+    updateTransaction: (...args: Parameters<typeof state.updateTransaction>) =>
+      state.updateTransaction(...args),
+  }));
+
   const { toast } = useToast();
   const { usdPrice } = useUsdPrice();
 
@@ -122,8 +143,28 @@ export function Stake() {
     }
   };
 
-  const handleTransactionCallback = (result: TransactionResult) => {
+  const handleTransactionCallback = (
+    result: TransactionResult,
+    txId: string,
+  ) => {
     setTransactionStatus(result);
+
+    if (!isTransactionCompleted(result.status)) return;
+
+    const isError = isTransactionError(result.status);
+
+    const updatedTransaction: UpdatedTransaction = isError
+      ? {
+          status: "ERROR",
+          metadata: { error: "Transaction failed" },
+        }
+      : {
+          status: "SUCCESS",
+          hash: result.hash ?? "unknown",
+        };
+
+    updateTransaction(txId, updatedTransaction);
+
     if (result.status === "SUCCESS") {
       reset();
     }
@@ -136,16 +177,38 @@ export function Stake() {
       message: "Awaiting Signature",
     });
 
+    if (!selectedAccount?.address) {
+      toast.error("No account selected");
+      return;
+    }
+
+    const txId = addTransaction({
+      type: "stake",
+      fromAddress: selectedAccount.address as SS58Address,
+      toAddress: values.recipient,
+      amount: values.amount,
+      fee: feeRef.current?.getEstimatedFee() ?? "0",
+      status: "PENDING",
+      metadata: {
+        usdPrice: usdPrice,
+      },
+    });
+
     const [error] = await tryAsync(
       addStake({
         validator: checkSS58(values.recipient),
         amount: values.amount,
-        callback: handleTransactionCallback,
+        callback: (args) => handleTransactionCallback(args, txId),
         refetchHandler: refetchData,
       }),
     );
 
     if (error !== undefined) {
+      updateTransaction(txId, {
+        status: "ERROR",
+        metadata: { error: error.message },
+      });
+
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
