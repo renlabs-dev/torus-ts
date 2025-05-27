@@ -248,6 +248,17 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         </SelectContent>
       </Select>
 
+      {data.expression.$ === "RateLimit" && (
+        <div className="text-white text-sm absolute top-[4.3em] flex gap-16 items-center justify-between">
+          <div className="px-2 rounded-full bg-accent border border-[#B1B1B7]">
+            MaxOperations
+          </div>
+          <div className="px-2 mr-6 rounded-full bg-accent border border-[#B1B1B7]">
+            period
+          </div>
+        </div>
+      )}
+
       {(data.expression.$ === "PermissionExists" ||
         data.expression.$ === "PermissionEnabled") && (
         <>
