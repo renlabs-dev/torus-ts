@@ -504,7 +504,7 @@ export const emissionStreamsSchema = createTable("emission_streams", {
 export const emissionStreamsDetailsSchema = createTable("emission_streams_details", {
   id: serial("id").primaryKey(),
   streams_uuid: uuid("streams_uuid").notNull().references(() => emissionStreamsSchema.streams_uuid),
-  stream_id: integer("stream_id").notNull(),
+  stream_id: varchar("stream_id", { length: 66 }).notNull(),
   percentage: integer("percentage").notNull(),
   
   ...timeFields(),
@@ -512,7 +512,7 @@ export const emissionStreamsDetailsSchema = createTable("emission_streams_detail
 
 export const permissionEmissionScopeSchema = createTable("permission_emission_scope", {
   id: serial("id").primaryKey(),
-  permission_id: integer("permission_id")
+  permission_id: varchar("permission_id", { length: 66 })
     .notNull()
     .unique(),
   // For Streams variant 
@@ -531,13 +531,16 @@ export const permissionEmissionScopeSchema = createTable("permission_emission_sc
 
 export const permissionSchema = createTable("permission", {
   id: serial("id").primaryKey(),
-  permission_id: integer("permission_id").notNull().unique().references(() => permissionEmissionScopeSchema.permission_id),
+  permission_id: varchar("permission_id", { length: 66 })
+    .notNull()
+    .unique()
+    .references(() => permissionEmissionScopeSchema.permission_id),
   ...timeFields(),
 });
 
 export const permissionDetailsSchema = createTable("permission_details", {
   id: serial("id").primaryKey(),
-  permission_id: integer("permission_id")
+  permission_id:  varchar("permission_id", { length: 66 })
     .notNull()
     .unique()
     .references(() => permissionSchema.permission_id),
@@ -549,13 +552,38 @@ export const permissionDetailsSchema = createTable("permission_details", {
   enforcement: text("enforcement").notNull(),
   last_execution: timestampz("last_execution").defaultNow(),
   execution_count: integer("execution_count").notNull(),
-  parent_id: integer("parent_id").references(
+  parent_id: varchar("parent_id", { length: 66 }).references(
     () => permissionSchema.permission_id,
   ),
   constraint_id: integer("constraint_id").references(() => constraintSchema.id),
 
   ...timeFields(),
 });
+
+
+/**
+ * Stores permission dependencies forming a Closure Table
+ * A permission may depend on other permissions
+ */
+export const permissionDependenciesSchema = createTable(
+  "permission_dependencies",
+  {
+    id: serial("id").primaryKey(),
+
+    dependent_permission_id:  varchar("dependent_permission_id", { length: 66 })
+    .notNull()
+    .references(() => permissionSchema.permission_id),
+
+    required_permission_id: varchar("required_permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionSchema.permission_id),
+
+    path_length: integer("path_length").notNull(),
+
+    ...timeFields(),
+  },
+  (t) => [unique().on(t.dependent_permission_id, t.required_permission_id)],
+);
 
 
 /**
@@ -567,27 +595,3 @@ export const constraintSchema = createTable("constraint", {
 
   ...timeFields(),
 });
-
-/**
- * Stores permission dependencies forming a Closure Table
- * A permission may depend on other permissions
- */
-export const permissionDependenciesSchema = createTable(
-  "permission_dependencies",
-  {
-    id: serial("id").primaryKey(),
-
-    dependent_permission_id: integer("dependent_permission_id")
-      .notNull()
-      .references(() => permissionSchema.permission_id),
-
-    required_permission_id: integer("required_permission_id")
-      .notNull()
-      .references(() => permissionSchema.permission_id),
-
-    path_length: integer("path_length").notNull(),
-
-    ...timeFields(),
-  },
-  (t) => [unique().on(t.dependent_permission_id, t.required_permission_id)],
-);

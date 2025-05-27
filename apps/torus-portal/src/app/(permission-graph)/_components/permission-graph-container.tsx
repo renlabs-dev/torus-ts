@@ -74,7 +74,7 @@ export default function PermissionGraphContainer() {
     const links = permissionDetails.map((permission) => ({
       source: permission.grantor_key,
       target: permission.grantee_key,
-      id: permission.permission_id.toString(),
+      id: permission.permission_id,
       scope: permission.scope,
       duration: permission.duration,
       enforcement: permission.enforcement,
