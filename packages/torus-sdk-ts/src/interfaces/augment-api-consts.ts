@@ -64,13 +64,12 @@ declare module '@polkadot/api-base/types/consts' {
     };
     emission0: {
       /**
-       * Emissions per block in NANOs. Not taking into account halving and recycling.
+       * Emissions per block in NANOs. Not taking into account halving and
+       * recycling.
        **/
       blockEmission: u128 & AugmentedConst<ApiType>;
       defaultEmissionRecyclingPercentage: Percent & AugmentedConst<ApiType>;
       defaultIncentivesRatio: Percent & AugmentedConst<ApiType>;
-      defaultMaxAllowedWeights: u16 & AugmentedConst<ApiType>;
-      defaultMinAllowedWeights: u16 & AugmentedConst<ApiType>;
       /**
        * Tokens emitted in an interval before halving the emissions in NANOs.
        **/
@@ -151,6 +150,36 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       [key: string]: Codec;
     };
+    permission0: {
+      /**
+       * Maximum number of controllers per permission.
+       **/
+      maxControllersPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
+       * Maximum number of revokers.
+       **/
+      maxRevokersPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
+       * Maximum number of delegated streams per permission.
+       **/
+      maxStreamsPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
+       * Maximum number of targets per permission.
+       **/
+      maxTargetsPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
+       * Minimum threshold for auto-distribution
+       **/
+      minAutoDistributionThreshold: u128 & AugmentedConst<ApiType>;
+      /**
+       * Permission0 pallet ID
+       **/
+      palletId: FrameSupportPalletId & AugmentedConst<ApiType>;
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec;
+    };
     system: {
       /**
        * Maximum number of block number to block hash mappings to keep (oldest pruned first).
@@ -202,6 +231,10 @@ declare module '@polkadot/api-base/types/consts' {
     };
     torus0: {
       defaultAdjustmentAlpha: u64 & AugmentedConst<ApiType>;
+      /**
+       * Default Cooldown (in blocks) in which an agent needs to wait between each `update_agent` call.
+       **/
+      defaultAgentUpdateCooldown: u64 & AugmentedConst<ApiType>;
       defaultDividendsParticipationWeight: Percent & AugmentedConst<ApiType>;
       defaultImmunityPeriod: u16 & AugmentedConst<ApiType>;
       defaultMaxAgentUrlLength: u16 & AugmentedConst<ApiType>;
@@ -222,12 +255,14 @@ declare module '@polkadot/api-base/types/consts' {
       defaultTargetRegistrationsPerInterval: u16 & AugmentedConst<ApiType>;
       maxAgentMetadataLengthConstraint: u32 & AugmentedConst<ApiType>;
       /**
-       * The storage MaxNameLength should be constrained to be no more than the value of this.
-       * This is needed on agent::Agent to set the `name` field BoundedVec max length.
+       * The storage MaxNameLength should be constrained to be no more than
+       * the value of this. This is needed on agent::Agent to set the
+       * `name` field BoundedVec max length.
        **/
       maxAgentNameLengthConstraint: u32 & AugmentedConst<ApiType>;
       /**
-       * This is needed on agent::Agent to set the `url` field BoundedVec max length.
+       * This is needed on agent::Agent to set the `url` field BoundedVec max
+       * length.
        **/
       maxAgentUrlLengthConstraint: u32 & AugmentedConst<ApiType>;
       /**

@@ -488,11 +488,16 @@ export default {
       ApplicationCreated: 'u32',
       ApplicationAccepted: 'u32',
       ApplicationDenied: 'u32',
-      ApplicationExpired: 'u32'
+      ApplicationExpired: 'u32',
+      PenaltyApplied: {
+        curator: 'AccountId32',
+        agent: 'AccountId32',
+        penalty: 'Percent'
+      }
     }
   },
   /**
-   * Lookup60: pallet_torus0::pallet::Event<T>
+   * Lookup61: pallet_torus0::pallet::Event<T>
    **/
   PalletTorus0Event: {
     _enum: {
@@ -504,7 +509,7 @@ export default {
     }
   },
   /**
-   * Lookup61: pallet_emission0::pallet::Event<T>
+   * Lookup62: pallet_emission0::pallet::Event<T>
    **/
   PalletEmission0Event: {
     _enum: {
@@ -513,7 +518,80 @@ export default {
     }
   },
   /**
-   * Lookup62: frame_system::Phase
+   * Lookup63: pallet_permission0::pallet::Event<T>
+   **/
+  PalletPermission0Event: {
+    _enum: {
+      PermissionGranted: {
+        grantor: 'AccountId32',
+        grantee: 'AccountId32',
+        permissionId: 'H256',
+      },
+      PermissionRevoked: {
+        grantor: 'AccountId32',
+        grantee: 'AccountId32',
+        revokedBy: 'Option<AccountId32>',
+        permissionId: 'H256',
+      },
+      PermissionExecuted: {
+        grantor: 'AccountId32',
+        grantee: 'AccountId32',
+        permissionId: 'H256',
+        streamId: 'Option<H256>',
+        amount: 'u128',
+      },
+      AutoDistributionExecuted: {
+        grantor: 'AccountId32',
+        grantee: 'AccountId32',
+        permissionId: 'H256',
+        streamId: 'Option<H256>',
+        amount: 'u128',
+      },
+      PermissionExpired: {
+        grantor: 'AccountId32',
+        grantee: 'AccountId32',
+        permissionId: 'H256',
+      },
+      PermissionAccumulationToggled: {
+        permissionId: 'H256',
+        accumulating: 'bool',
+        toggledBy: 'Option<AccountId32>',
+      },
+      PermissionEnforcementExecuted: {
+        permissionId: 'H256',
+        executedBy: 'Option<AccountId32>',
+      },
+      EnforcementVoteCast: {
+        permissionId: 'H256',
+        voter: 'AccountId32',
+        referendum: 'PalletPermission0PermissionEnforcementReferendum',
+      },
+      EnforcementAuthoritySet: {
+        permissionId: 'H256',
+        controllersCount: 'u32',
+        requiredVotes: 'u32'
+      }
+    }
+  },
+  /**
+   * Lookup65: pallet_permission0::permission::EnforcementReferendum
+   **/
+  PalletPermission0PermissionEnforcementReferendum: {
+    _enum: {
+      EmissionAccumulation: 'bool',
+      Execution: 'Null'
+    }
+  },
+  /**
+   * Lookup66: pallet_faucet::pallet::Event<T>
+   **/
+  PalletFaucetEvent: {
+    _enum: {
+      Faucet: '(AccountId32,u128)'
+    }
+  },
+  /**
+   * Lookup67: frame_system::Phase
    **/
   FrameSystemPhase: {
     _enum: {
@@ -523,21 +601,21 @@ export default {
     }
   },
   /**
-   * Lookup65: frame_system::LastRuntimeUpgradeInfo
+   * Lookup70: frame_system::LastRuntimeUpgradeInfo
    **/
   FrameSystemLastRuntimeUpgradeInfo: {
     specVersion: 'Compact<u32>',
     specName: 'Text'
   },
   /**
-   * Lookup67: frame_system::CodeUpgradeAuthorization<T>
+   * Lookup72: frame_system::CodeUpgradeAuthorization<T>
    **/
   FrameSystemCodeUpgradeAuthorization: {
     codeHash: 'H256',
     checkVersion: 'bool'
   },
   /**
-   * Lookup68: frame_system::pallet::Call<T>
+   * Lookup73: frame_system::pallet::Call<T>
    **/
   FrameSystemCall: {
     _enum: {
@@ -584,7 +662,7 @@ export default {
     }
   },
   /**
-   * Lookup72: frame_system::limits::BlockWeights
+   * Lookup77: frame_system::limits::BlockWeights
    **/
   FrameSystemLimitsBlockWeights: {
     baseBlock: 'SpWeightsWeightV2Weight',
@@ -592,7 +670,7 @@ export default {
     perClass: 'FrameSupportDispatchPerDispatchClassWeightsPerClass'
   },
   /**
-   * Lookup73: frame_support::dispatch::PerDispatchClass<frame_system::limits::WeightsPerClass>
+   * Lookup78: frame_support::dispatch::PerDispatchClass<frame_system::limits::WeightsPerClass>
    **/
   FrameSupportDispatchPerDispatchClassWeightsPerClass: {
     normal: 'FrameSystemLimitsWeightsPerClass',
@@ -600,7 +678,7 @@ export default {
     mandatory: 'FrameSystemLimitsWeightsPerClass'
   },
   /**
-   * Lookup74: frame_system::limits::WeightsPerClass
+   * Lookup79: frame_system::limits::WeightsPerClass
    **/
   FrameSystemLimitsWeightsPerClass: {
     baseExtrinsic: 'SpWeightsWeightV2Weight',
@@ -609,13 +687,13 @@ export default {
     reserved: 'Option<SpWeightsWeightV2Weight>'
   },
   /**
-   * Lookup76: frame_system::limits::BlockLength
+   * Lookup81: frame_system::limits::BlockLength
    **/
   FrameSystemLimitsBlockLength: {
     max: 'FrameSupportDispatchPerDispatchClassU32'
   },
   /**
-   * Lookup77: frame_support::dispatch::PerDispatchClass<T>
+   * Lookup82: frame_support::dispatch::PerDispatchClass<T>
    **/
   FrameSupportDispatchPerDispatchClassU32: {
     normal: 'u32',
@@ -623,14 +701,14 @@ export default {
     mandatory: 'u32'
   },
   /**
-   * Lookup78: sp_weights::RuntimeDbWeight
+   * Lookup83: sp_weights::RuntimeDbWeight
    **/
   SpWeightsRuntimeDbWeight: {
     read: 'u64',
     write: 'u64'
   },
   /**
-   * Lookup79: sp_version::RuntimeVersion
+   * Lookup84: sp_version::RuntimeVersion
    **/
   SpVersionRuntimeVersion: {
     specName: 'Text',
@@ -643,13 +721,13 @@ export default {
     stateVersion: 'u8'
   },
   /**
-   * Lookup85: frame_system::pallet::Error<T>
+   * Lookup90: frame_system::pallet::Error<T>
    **/
   FrameSystemError: {
     _enum: ['InvalidSpecName', 'SpecVersionNeedsToIncrease', 'FailedToExtractRuntimeVersion', 'NonDefaultComposite', 'NonZeroRefCount', 'CallFiltered', 'MultiBlockMigrationsOngoing', 'InvalidTask', 'FailedTask', 'NothingAuthorized', 'Unauthorized']
   },
   /**
-   * Lookup86: pallet_timestamp::pallet::Call<T>
+   * Lookup91: pallet_timestamp::pallet::Call<T>
    **/
   PalletTimestampCall: {
     _enum: {
@@ -659,11 +737,11 @@ export default {
     }
   },
   /**
-   * Lookup88: sp_consensus_aura::sr25519::app_sr25519::Public
+   * Lookup93: sp_consensus_aura::sr25519::app_sr25519::Public
    **/
   SpConsensusAuraSr25519AppSr25519Public: '[u8;32]',
   /**
-   * Lookup91: pallet_grandpa::StoredState<N>
+   * Lookup96: pallet_grandpa::StoredState<N>
    **/
   PalletGrandpaStoredState: {
     _enum: {
@@ -680,7 +758,7 @@ export default {
     }
   },
   /**
-   * Lookup92: pallet_grandpa::StoredPendingChange<N, Limit>
+   * Lookup97: pallet_grandpa::StoredPendingChange<N, Limit>
    **/
   PalletGrandpaStoredPendingChange: {
     scheduledAt: 'u64',
@@ -689,7 +767,7 @@ export default {
     forced: 'Option<u64>'
   },
   /**
-   * Lookup96: pallet_grandpa::pallet::Call<T>
+   * Lookup101: pallet_grandpa::pallet::Call<T>
    **/
   PalletGrandpaCall: {
     _enum: {
@@ -708,14 +786,14 @@ export default {
     }
   },
   /**
-   * Lookup97: sp_consensus_grandpa::EquivocationProof<primitive_types::H256, N>
+   * Lookup102: sp_consensus_grandpa::EquivocationProof<primitive_types::H256, N>
    **/
   SpConsensusGrandpaEquivocationProof: {
     setId: 'u64',
     equivocation: 'SpConsensusGrandpaEquivocation'
   },
   /**
-   * Lookup98: sp_consensus_grandpa::Equivocation<primitive_types::H256, N>
+   * Lookup103: sp_consensus_grandpa::Equivocation<primitive_types::H256, N>
    **/
   SpConsensusGrandpaEquivocation: {
     _enum: {
@@ -724,7 +802,7 @@ export default {
     }
   },
   /**
-   * Lookup99: finality_grandpa::Equivocation<sp_consensus_grandpa::app::Public, finality_grandpa::Prevote<primitive_types::H256, N>, sp_consensus_grandpa::app::Signature>
+   * Lookup104: finality_grandpa::Equivocation<sp_consensus_grandpa::app::Public, finality_grandpa::Prevote<primitive_types::H256, N>, sp_consensus_grandpa::app::Signature>
    **/
   FinalityGrandpaEquivocationPrevote: {
     roundNumber: 'u64',
@@ -733,18 +811,18 @@ export default {
     second: '(FinalityGrandpaPrevote,SpConsensusGrandpaAppSignature)'
   },
   /**
-   * Lookup100: finality_grandpa::Prevote<primitive_types::H256, N>
+   * Lookup105: finality_grandpa::Prevote<primitive_types::H256, N>
    **/
   FinalityGrandpaPrevote: {
     targetHash: 'H256',
     targetNumber: 'u64'
   },
   /**
-   * Lookup101: sp_consensus_grandpa::app::Signature
+   * Lookup106: sp_consensus_grandpa::app::Signature
    **/
   SpConsensusGrandpaAppSignature: '[u8;64]',
   /**
-   * Lookup104: finality_grandpa::Equivocation<sp_consensus_grandpa::app::Public, finality_grandpa::Precommit<primitive_types::H256, N>, sp_consensus_grandpa::app::Signature>
+   * Lookup109: finality_grandpa::Equivocation<sp_consensus_grandpa::app::Public, finality_grandpa::Precommit<primitive_types::H256, N>, sp_consensus_grandpa::app::Signature>
    **/
   FinalityGrandpaEquivocationPrecommit: {
     roundNumber: 'u64',
@@ -753,24 +831,24 @@ export default {
     second: '(FinalityGrandpaPrecommit,SpConsensusGrandpaAppSignature)'
   },
   /**
-   * Lookup105: finality_grandpa::Precommit<primitive_types::H256, N>
+   * Lookup110: finality_grandpa::Precommit<primitive_types::H256, N>
    **/
   FinalityGrandpaPrecommit: {
     targetHash: 'H256',
     targetNumber: 'u64'
   },
   /**
-   * Lookup107: sp_core::Void
+   * Lookup112: sp_core::Void
    **/
   SpCoreVoid: 'Null',
   /**
-   * Lookup108: pallet_grandpa::pallet::Error<T>
+   * Lookup113: pallet_grandpa::pallet::Error<T>
    **/
   PalletGrandpaError: {
     _enum: ['PauseFailed', 'ResumeFailed', 'ChangePending', 'TooSoon', 'InvalidKeyOwnershipProof', 'InvalidEquivocationProof', 'DuplicateOffenceReport']
   },
   /**
-   * Lookup110: pallet_balances::types::BalanceLock<Balance>
+   * Lookup115: pallet_balances::types::BalanceLock<Balance>
    **/
   PalletBalancesBalanceLock: {
     id: '[u8;8]',
@@ -778,31 +856,31 @@ export default {
     reasons: 'PalletBalancesReasons'
   },
   /**
-   * Lookup111: pallet_balances::types::Reasons
+   * Lookup116: pallet_balances::types::Reasons
    **/
   PalletBalancesReasons: {
     _enum: ['Fee', 'Misc', 'All']
   },
   /**
-   * Lookup114: pallet_balances::types::ReserveData<ReserveIdentifier, Balance>
+   * Lookup119: pallet_balances::types::ReserveData<ReserveIdentifier, Balance>
    **/
   PalletBalancesReserveData: {
     id: 'Null',
     amount: 'u128'
   },
   /**
-   * Lookup118: torus_runtime::RuntimeHoldReason
+   * Lookup123: torus_runtime::RuntimeHoldReason
    **/
   TorusRuntimeRuntimeHoldReason: 'Null',
   /**
-   * Lookup121: frame_support::traits::tokens::misc::IdAmount<Id, Balance>
+   * Lookup126: frame_support::traits::tokens::misc::IdAmount<Id, Balance>
    **/
   FrameSupportTokensMiscIdAmount: {
     id: 'Null',
     amount: 'u128'
   },
   /**
-   * Lookup123: pallet_balances::pallet::Call<T, I>
+   * Lookup128: pallet_balances::pallet::Call<T, I>
    **/
   PalletBalancesCall: {
     _enum: {
@@ -847,25 +925,25 @@ export default {
     }
   },
   /**
-   * Lookup128: pallet_balances::types::AdjustmentDirection
+   * Lookup133: pallet_balances::types::AdjustmentDirection
    **/
   PalletBalancesAdjustmentDirection: {
     _enum: ['Increase', 'Decrease']
   },
   /**
-   * Lookup129: pallet_balances::pallet::Error<T, I>
+   * Lookup134: pallet_balances::pallet::Error<T, I>
    **/
   PalletBalancesError: {
     _enum: ['VestingBalance', 'LiquidityRestrictions', 'InsufficientBalance', 'ExistentialDeposit', 'Expendability', 'ExistingVestingSchedule', 'DeadAccount', 'TooManyReserves', 'TooManyHolds', 'TooManyFreezes', 'IssuanceDeactivated', 'DeltaZero']
   },
   /**
-   * Lookup131: pallet_transaction_payment::Releases
+   * Lookup136: pallet_transaction_payment::Releases
    **/
   PalletTransactionPaymentReleases: {
     _enum: ['V1Ancient', 'V2']
   },
   /**
-   * Lookup132: pallet_sudo::pallet::Call<T>
+   * Lookup137: pallet_sudo::pallet::Call<T>
    **/
   PalletSudoCall: {
     _enum: {
@@ -890,7 +968,7 @@ export default {
     }
   },
   /**
-   * Lookup134: pallet_multisig::pallet::Call<T>
+   * Lookup139: pallet_multisig::pallet::Call<T>
    **/
   PalletMultisigCall: {
     _enum: {
@@ -921,7 +999,7 @@ export default {
     }
   },
   /**
-   * Lookup136: pallet_ethereum::pallet::Call<T>
+   * Lookup141: pallet_ethereum::pallet::Call<T>
    **/
   PalletEthereumCall: {
     _enum: {
@@ -931,7 +1009,7 @@ export default {
     }
   },
   /**
-   * Lookup137: ethereum::transaction::TransactionV2
+   * Lookup142: ethereum::transaction::TransactionV2
    **/
   EthereumTransactionTransactionV2: {
     _enum: {
@@ -941,7 +1019,7 @@ export default {
     }
   },
   /**
-   * Lookup138: ethereum::transaction::LegacyTransaction
+   * Lookup143: ethereum::transaction::LegacyTransaction
    **/
   EthereumTransactionLegacyTransaction: {
     nonce: 'U256',
@@ -953,7 +1031,7 @@ export default {
     signature: 'EthereumTransactionTransactionSignature'
   },
   /**
-   * Lookup141: ethereum::transaction::TransactionAction
+   * Lookup146: ethereum::transaction::TransactionAction
    **/
   EthereumTransactionTransactionAction: {
     _enum: {
@@ -962,7 +1040,7 @@ export default {
     }
   },
   /**
-   * Lookup142: ethereum::transaction::TransactionSignature
+   * Lookup147: ethereum::transaction::TransactionSignature
    **/
   EthereumTransactionTransactionSignature: {
     v: 'u64',
@@ -970,7 +1048,7 @@ export default {
     s: 'H256'
   },
   /**
-   * Lookup144: ethereum::transaction::EIP2930Transaction
+   * Lookup149: ethereum::transaction::EIP2930Transaction
    **/
   EthereumTransactionEip2930Transaction: {
     chainId: 'u64',
@@ -986,14 +1064,14 @@ export default {
     s: 'H256'
   },
   /**
-   * Lookup146: ethereum::transaction::AccessListItem
+   * Lookup151: ethereum::transaction::AccessListItem
    **/
   EthereumTransactionAccessListItem: {
     address: 'H160',
     storageKeys: 'Vec<H256>'
   },
   /**
-   * Lookup147: ethereum::transaction::EIP1559Transaction
+   * Lookup152: ethereum::transaction::EIP1559Transaction
    **/
   EthereumTransactionEip1559Transaction: {
     chainId: 'u64',
@@ -1010,7 +1088,7 @@ export default {
     s: 'H256'
   },
   /**
-   * Lookup148: pallet_evm::pallet::Call<T>
+   * Lookup153: pallet_evm::pallet::Call<T>
    **/
   PalletEvmCall: {
     _enum: {
@@ -1053,16 +1131,12 @@ export default {
     }
   },
   /**
-   * Lookup152: pallet_governance::pallet::Call<T>
+   * Lookup157: pallet_governance::pallet::Call<T>
    **/
   PalletGovernanceCall: {
     _enum: {
-      add_curator: {
-        key: 'AccountId32',
-      },
-      remove_curator: {
-        key: 'AccountId32',
-      },
+      __Unused0: 'Null',
+      __Unused1: 'Null',
       add_allocator: {
         key: 'AccountId32',
       },
@@ -1124,21 +1198,19 @@ export default {
     }
   },
   /**
-   * Lookup153: pallet_governance::proposal::GlobalParamsData<T>
+   * Lookup158: pallet_governance::proposal::GlobalParamsData<T>
    **/
   PalletGovernanceProposalGlobalParamsData: {
     minNameLength: 'u16',
     maxNameLength: 'u16',
     maxAllowedAgents: 'u16',
-    maxAllowedWeights: 'u16',
-    minStakePerWeight: 'u128',
     minWeightControlFee: 'u8',
     minStakingFee: 'u8',
     dividendsParticipationWeight: 'Percent',
     proposalCost: 'u128'
   },
   /**
-   * Lookup155: pallet_torus0::pallet::Call<T>
+   * Lookup159: pallet_torus0::pallet::Call<T>
    **/
   PalletTorus0Call: {
     _enum: {
@@ -1167,12 +1239,15 @@ export default {
         url: 'Bytes',
         metadata: 'Option<Bytes>',
         stakingFee: 'Option<Percent>',
-        weightControlFee: 'Option<Percent>'
+        weightControlFee: 'Option<Percent>',
+      },
+      set_agent_update_cooldown: {
+        newCooldown: 'u64'
       }
     }
   },
   /**
-   * Lookup158: pallet_emission0::pallet::Call<T>
+   * Lookup162: pallet_emission0::pallet::Call<T>
    **/
   PalletEmission0Call: {
     _enum: {
@@ -1186,13 +1261,123 @@ export default {
     }
   },
   /**
-   * Lookup161: pallet_sudo::pallet::Error<T>
+   * Lookup165: pallet_permission0::pallet::Call<T>
+   **/
+  PalletPermission0Call: {
+    _enum: {
+      grant_emission_permission: {
+        grantee: 'AccountId32',
+        allocation: 'PalletPermission0PermissionEmissionEmissionAllocation',
+        targets: 'Vec<(AccountId32,u16)>',
+        distribution: 'PalletPermission0PermissionEmissionDistributionControl',
+        duration: 'PalletPermission0PermissionPermissionDuration',
+        revocation: 'PalletPermission0PermissionRevocationTerms',
+        enforcement: 'PalletPermission0PermissionEnforcementAuthority',
+      },
+      revoke_permission: {
+        permissionId: 'H256',
+      },
+      execute_permission: {
+        permissionId: 'H256',
+      },
+      toggle_permission_accumulation: {
+        permissionId: 'H256',
+        accumulating: 'bool',
+      },
+      enforcement_execute_permission: {
+        permissionId: 'H256',
+      },
+      set_enforcement_authority: {
+        permissionId: 'H256',
+        controllers: 'Vec<AccountId32>',
+        requiredVotes: 'u32',
+      },
+      grant_curator_permission: {
+        grantee: 'AccountId32',
+        flags: 'u32',
+        cooldown: 'Option<u64>',
+        duration: 'PalletPermission0PermissionPermissionDuration',
+        revocation: 'PalletPermission0PermissionRevocationTerms'
+      }
+    }
+  },
+  /**
+   * Lookup166: pallet_permission0::permission::emission::EmissionAllocation<T>
+   **/
+  PalletPermission0PermissionEmissionEmissionAllocation: {
+    _enum: {
+      Streams: 'BTreeMap<H256, Percent>',
+      FixedAmount: 'u128'
+    }
+  },
+  /**
+   * Lookup171: pallet_permission0::permission::emission::DistributionControl<T>
+   **/
+  PalletPermission0PermissionEmissionDistributionControl: {
+    _enum: {
+      Manual: 'Null',
+      Automatic: 'u128',
+      AtBlock: 'u64',
+      Interval: 'u64'
+    }
+  },
+  /**
+   * Lookup172: pallet_permission0::permission::PermissionDuration<T>
+   **/
+  PalletPermission0PermissionPermissionDuration: {
+    _enum: {
+      UntilBlock: 'u64',
+      Indefinite: 'Null'
+    }
+  },
+  /**
+   * Lookup173: pallet_permission0::permission::RevocationTerms<T>
+   **/
+  PalletPermission0PermissionRevocationTerms: {
+    _enum: {
+      Irrevocable: 'Null',
+      RevocableByGrantor: 'Null',
+      RevocableByArbiters: {
+        accounts: 'Vec<AccountId32>',
+        requiredVotes: 'u32',
+      },
+      RevocableAfter: 'u64'
+    }
+  },
+  /**
+   * Lookup175: pallet_permission0::permission::EnforcementAuthority<T>
+   **/
+  PalletPermission0PermissionEnforcementAuthority: {
+    _enum: {
+      None: 'Null',
+      ControlledBy: {
+        controllers: 'Vec<AccountId32>',
+        requiredVotes: 'u32'
+      }
+    }
+  },
+  /**
+   * Lookup177: pallet_faucet::pallet::Call<T>
+   **/
+  PalletFaucetCall: {
+    _enum: {
+      __Unused0: 'Null',
+      faucet: {
+        blockNumber: 'u64',
+        nonce: 'u64',
+        work: 'Bytes',
+        key: 'MultiAddress'
+      }
+    }
+  },
+  /**
+   * Lookup178: pallet_sudo::pallet::Error<T>
    **/
   PalletSudoError: {
     _enum: ['RequireSudo']
   },
   /**
-   * Lookup163: pallet_multisig::Multisig<BlockNumber, Balance, sp_core::crypto::AccountId32, MaxApprovals>
+   * Lookup180: pallet_multisig::Multisig<BlockNumber, Balance, sp_core::crypto::AccountId32, MaxApprovals>
    **/
   PalletMultisigMultisig: {
     when: 'PalletMultisigTimepoint',
@@ -1201,13 +1386,13 @@ export default {
     approvals: 'Vec<AccountId32>'
   },
   /**
-   * Lookup165: pallet_multisig::pallet::Error<T>
+   * Lookup182: pallet_multisig::pallet::Error<T>
    **/
   PalletMultisigError: {
     _enum: ['MinimumThreshold', 'AlreadyApproved', 'NoApprovalsNeeded', 'TooFewSignatories', 'TooManySignatories', 'SignatoriesOutOfOrder', 'SenderInSignatories', 'NotFound', 'NotOwner', 'NoTimepoint', 'WrongTimepoint', 'UnexpectedTimepoint', 'MaxWeightTooLow', 'AlreadyStored']
   },
   /**
-   * Lookup168: fp_rpc::TransactionStatus
+   * Lookup185: fp_rpc::TransactionStatus
    **/
   FpRpcTransactionStatus: {
     transactionHash: 'H256',
@@ -1219,11 +1404,11 @@ export default {
     logsBloom: 'EthbloomBloom'
   },
   /**
-   * Lookup171: ethbloom::Bloom
+   * Lookup188: ethbloom::Bloom
    **/
   EthbloomBloom: '[u8;256]',
   /**
-   * Lookup173: ethereum::receipt::ReceiptV3
+   * Lookup190: ethereum::receipt::ReceiptV3
    **/
   EthereumReceiptReceiptV3: {
     _enum: {
@@ -1233,7 +1418,7 @@ export default {
     }
   },
   /**
-   * Lookup174: ethereum::receipt::EIP658ReceiptData
+   * Lookup191: ethereum::receipt::EIP658ReceiptData
    **/
   EthereumReceiptEip658ReceiptData: {
     statusCode: 'u8',
@@ -1242,7 +1427,7 @@ export default {
     logs: 'Vec<EthereumLog>'
   },
   /**
-   * Lookup175: ethereum::block::Block<ethereum::transaction::TransactionV2>
+   * Lookup192: ethereum::block::Block<ethereum::transaction::TransactionV2>
    **/
   EthereumBlock: {
     header: 'EthereumHeader',
@@ -1250,7 +1435,7 @@ export default {
     ommers: 'Vec<EthereumHeader>'
   },
   /**
-   * Lookup176: ethereum::header::Header
+   * Lookup193: ethereum::header::Header
    **/
   EthereumHeader: {
     parentHash: 'H256',
@@ -1270,17 +1455,17 @@ export default {
     nonce: 'EthereumTypesHashH64'
   },
   /**
-   * Lookup177: ethereum_types::hash::H64
+   * Lookup194: ethereum_types::hash::H64
    **/
   EthereumTypesHashH64: '[u8;8]',
   /**
-   * Lookup182: pallet_ethereum::pallet::Error<T>
+   * Lookup199: pallet_ethereum::pallet::Error<T>
    **/
   PalletEthereumError: {
     _enum: ['InvalidSignature', 'PreLogExists']
   },
   /**
-   * Lookup183: pallet_evm::CodeMetadata
+   * Lookup200: pallet_evm::CodeMetadata
    **/
   PalletEvmCodeMetadata: {
     _alias: {
@@ -1291,13 +1476,13 @@ export default {
     hash_: 'H256'
   },
   /**
-   * Lookup185: pallet_evm::pallet::Error<T>
+   * Lookup202: pallet_evm::pallet::Error<T>
    **/
   PalletEvmError: {
     _enum: ['BalanceLow', 'FeeOverflow', 'PaymentOverflow', 'WithdrawFailed', 'GasPriceTooLow', 'InvalidNonce', 'GasLimitTooLow', 'GasLimitTooHigh', 'InvalidChainId', 'InvalidSignature', 'Reentrancy', 'TransactionMustComeFromEOA', 'Undefined']
   },
   /**
-   * Lookup186: pallet_governance::proposal::Proposal<T>
+   * Lookup203: pallet_governance::proposal::Proposal<T>
    **/
   PalletGovernanceProposal: {
     id: 'u64',
@@ -1310,7 +1495,7 @@ export default {
     creationBlock: 'u64'
   },
   /**
-   * Lookup187: pallet_governance::proposal::ProposalData<T>
+   * Lookup204: pallet_governance::proposal::ProposalData<T>
    **/
   PalletGovernanceProposalProposalData: {
     _enum: {
@@ -1328,7 +1513,7 @@ export default {
     }
   },
   /**
-   * Lookup188: pallet_governance::proposal::ProposalStatus<T>
+   * Lookup205: pallet_governance::proposal::ProposalStatus<T>
    **/
   PalletGovernanceProposalProposalStatus: {
     _enum: {
@@ -1352,7 +1537,7 @@ export default {
     }
   },
   /**
-   * Lookup192: pallet_governance::proposal::UnrewardedProposal<T>
+   * Lookup209: pallet_governance::proposal::UnrewardedProposal<T>
    **/
   PalletGovernanceProposalUnrewardedProposal: {
     block: 'u64',
@@ -1360,7 +1545,7 @@ export default {
     votesAgainst: 'BTreeMap<AccountId32, u128>'
   },
   /**
-   * Lookup197: pallet_governance::config::GovernanceConfiguration<T>
+   * Lookup214: pallet_governance::config::GovernanceConfiguration<T>
    **/
   PalletGovernanceConfigGovernanceConfiguration: {
     proposalCost: 'u128',
@@ -1372,7 +1557,7 @@ export default {
     proposalRewardInterval: 'u64'
   },
   /**
-   * Lookup198: pallet_governance::application::AgentApplication<T>
+   * Lookup215: pallet_governance::application::AgentApplication<T>
    **/
   PalletGovernanceApplicationAgentApplication: {
     id: 'u32',
@@ -1385,13 +1570,13 @@ export default {
     status: 'PalletGovernanceApplicationApplicationStatus'
   },
   /**
-   * Lookup199: pallet_governance::application::ApplicationAction
+   * Lookup216: pallet_governance::application::ApplicationAction
    **/
   PalletGovernanceApplicationApplicationAction: {
     _enum: ['Add', 'Remove']
   },
   /**
-   * Lookup200: pallet_governance::application::ApplicationStatus
+   * Lookup217: pallet_governance::application::ApplicationStatus
    **/
   PalletGovernanceApplicationApplicationStatus: {
     _enum: {
@@ -1403,17 +1588,17 @@ export default {
     }
   },
   /**
-   * Lookup201: frame_support::PalletId
+   * Lookup218: frame_support::PalletId
    **/
   FrameSupportPalletId: '[u8;8]',
   /**
-   * Lookup202: pallet_governance::pallet::Error<T>
+   * Lookup219: pallet_governance::pallet::Error<T>
    **/
   PalletGovernanceError: {
     _enum: ['ProposalIsFinished', 'InvalidProposalFinalizationParameters', 'InvalidProposalVotingParameters', 'InvalidProposalCost', 'InvalidProposalExpiration', 'NotEnoughBalanceToPropose', 'ProposalDataTooSmall', 'ProposalDataTooLarge', 'ModuleDelegatingForMaxStakers', 'ProposalNotFound', 'ProposalClosed', 'InvalidProposalData', 'InvalidCurrencyConversionValue', 'InsufficientDaoTreasuryFunds', 'AlreadyVoted', 'NotVoted', 'InsufficientStake', 'VoterIsDelegatingVotingPower', 'InternalError', 'ApplicationNotOpen', 'ApplicationKeyAlreadyUsed', 'NotEnoughBalanceToApply', 'NotCurator', 'ApplicationNotFound', 'AlreadyWhitelisted', 'NotWhitelisted', 'CouldNotConvertToBalance', 'InvalidApplicationDataLength', 'AlreadyCurator', 'AlreadyAllocator', 'NotAllocator', 'AgentNotFound', 'InvalidPenaltyPercentage', 'InvalidMinNameLength', 'InvalidMaxNameLength', 'InvalidMaxAllowedAgents', 'InvalidMaxAllowedWeights', 'InvalidMinWeightControlFee', 'InvalidMinStakingFee', 'InvalidEmissionProposalData']
   },
   /**
-   * Lookup203: pallet_torus0::agent::Agent<T>
+   * Lookup220: pallet_torus0::agent::Agent<T>
    **/
   PalletTorus0Agent: {
     key: 'AccountId32',
@@ -1422,24 +1607,25 @@ export default {
     metadata: 'Bytes',
     weightPenaltyFactor: 'Percent',
     registrationBlock: 'u64',
-    fees: 'PalletTorus0FeeValidatorFee'
+    fees: 'PalletTorus0FeeValidatorFee',
+    lastUpdateBlock: 'u64'
   },
   /**
-   * Lookup204: pallet_torus0::fee::ValidatorFee<T>
+   * Lookup221: pallet_torus0::fee::ValidatorFee<T>
    **/
   PalletTorus0FeeValidatorFee: {
     stakingFee: 'Percent',
     weightControlFee: 'Percent'
   },
   /**
-   * Lookup206: pallet_torus0::fee::ValidatorFeeConstraints<T>
+   * Lookup223: pallet_torus0::fee::ValidatorFeeConstraints<T>
    **/
   PalletTorus0FeeValidatorFeeConstraints: {
     minStakingFee: 'Percent',
     minWeightControlFee: 'Percent'
   },
   /**
-   * Lookup207: pallet_torus0::burn::BurnConfiguration<T>
+   * Lookup224: pallet_torus0::burn::BurnConfiguration<T>
    **/
   PalletTorus0BurnBurnConfiguration: {
     minBurn: 'u128',
@@ -1450,13 +1636,13 @@ export default {
     maxRegistrationsPerInterval: 'u16'
   },
   /**
-   * Lookup208: pallet_torus0::pallet::Error<T>
+   * Lookup225: pallet_torus0::pallet::Error<T>
    **/
   PalletTorus0Error: {
-    _enum: ['AgentDoesNotExist', 'NotEnoughStakeToWithdraw', 'NotEnoughBalanceToStake', 'TooManyAgentRegistrationsThisBlock', 'TooManyAgentRegistrationsThisInterval', 'AgentAlreadyRegistered', 'CouldNotConvertToBalance', 'BalanceNotAdded', 'StakeNotRemoved', 'InvalidShares', 'NotEnoughBalanceToRegisterAgent', 'StakeNotAdded', 'BalanceNotRemoved', 'BalanceCouldNotBeRemoved', 'NotEnoughStakeToRegister', 'StillRegistered', 'MaxAllowedAgents', 'NotEnoughBalanceToTransfer', 'InvalidAgentMetadata', 'AgentMetadataTooLong', 'AgentMetadataTooShort', 'InvalidMinBurn', 'InvalidMaxBurn', 'AgentNameTooLong', 'AgentNameTooShort', 'InvalidAgentName', 'AgentUrlTooLong', 'AgentUrlTooShort', 'InvalidAgentUrl', 'AgentNameAlreadyExists', 'ArithmeticError', 'ExtrinsicPanicked', 'StepPanicked', 'StakeTooSmall', 'AgentKeyNotWhitelisted', 'InvalidAmount', 'InvalidStakingFee', 'InvalidWeightControlFee']
+    _enum: ['AgentDoesNotExist', 'NotEnoughStakeToWithdraw', 'NotEnoughBalanceToStake', 'TooManyAgentRegistrationsThisBlock', 'TooManyAgentRegistrationsThisInterval', 'AgentAlreadyRegistered', 'CouldNotConvertToBalance', 'BalanceNotAdded', 'StakeNotRemoved', 'InvalidShares', 'NotEnoughBalanceToRegisterAgent', 'StakeNotAdded', 'BalanceNotRemoved', 'BalanceCouldNotBeRemoved', 'NotEnoughStakeToRegister', 'StillRegistered', 'MaxAllowedAgents', 'NotEnoughBalanceToTransfer', 'InvalidAgentMetadata', 'AgentMetadataTooLong', 'AgentMetadataTooShort', 'InvalidMinBurn', 'InvalidMaxBurn', 'AgentNameTooLong', 'AgentNameTooShort', 'InvalidAgentName', 'AgentUrlTooLong', 'AgentUrlTooShort', 'InvalidAgentUrl', 'AgentNameAlreadyExists', 'StakeTooSmall', 'AgentKeyNotWhitelisted', 'InvalidAmount', 'InvalidStakingFee', 'InvalidWeightControlFee', 'AgentUpdateOnCooldown']
   },
   /**
-   * Lookup209: pallet_emission0::ConsensusMember<T>
+   * Lookup226: pallet_emission0::ConsensusMember<T>
    **/
   PalletEmission0ConsensusMember: {
     weights: 'Vec<(AccountId32,u16)>',
@@ -1464,13 +1650,65 @@ export default {
     lastDividends: 'u16'
   },
   /**
-   * Lookup212: pallet_emission0::pallet::Error<T>
+   * Lookup229: pallet_emission0::pallet::Error<T>
    **/
   PalletEmission0Error: {
-    _enum: ['WeightSetTooLarge', 'AgentIsNotRegistered', 'CannotSetWeightsForSelf', 'CannotSetWeightsWhileDelegating', 'CannotDelegateWeightControlToSelf', 'AgentIsNotDelegating', 'NotEnoughStakeToSetWeights']
+    _enum: ['WeightSetTooLarge', 'AgentIsNotRegistered', 'CannotSetWeightsForSelf', 'CannotSetWeightsWhileDelegating', 'CannotDelegateWeightControlToSelf', 'AgentIsNotDelegating', 'NotEnoughStakeToSetWeights', 'WeightControlNotEnabled']
   },
   /**
-   * Lookup214: sp_runtime::MultiSignature
+   * Lookup230: pallet_permission0::permission::PermissionContract<T>
+   **/
+  PalletPermission0PermissionPermissionContract: {
+    grantor: 'AccountId32',
+    grantee: 'AccountId32',
+    scope: 'PalletPermission0PermissionPermissionScope',
+    duration: 'PalletPermission0PermissionPermissionDuration',
+    revocation: 'PalletPermission0PermissionRevocationTerms',
+    enforcement: 'PalletPermission0PermissionEnforcementAuthority',
+    lastExecution: 'Option<u64>',
+    executionCount: 'u32',
+    parent: 'Option<H256>',
+    createdAt: 'u64'
+  },
+  /**
+   * Lookup231: pallet_permission0::permission::PermissionScope<T>
+   **/
+  PalletPermission0PermissionPermissionScope: {
+    _enum: {
+      Emission: 'PalletPermission0PermissionEmissionEmissionScope',
+      Curator: 'PalletPermission0PermissionCuratorCuratorScope'
+    }
+  },
+  /**
+   * Lookup232: pallet_permission0::permission::emission::EmissionScope<T>
+   **/
+  PalletPermission0PermissionEmissionEmissionScope: {
+    allocation: 'PalletPermission0PermissionEmissionEmissionAllocation',
+    distribution: 'PalletPermission0PermissionEmissionDistributionControl',
+    targets: 'BTreeMap<AccountId32, u16>',
+    accumulating: 'bool'
+  },
+  /**
+   * Lookup235: pallet_permission0::permission::curator::CuratorScope<T>
+   **/
+  PalletPermission0PermissionCuratorCuratorScope: {
+    flags: 'u32',
+    cooldown: 'Option<u64>'
+  },
+  /**
+   * Lookup242: pallet_permission0::pallet::Error<T>
+   **/
+  PalletPermission0Error: {
+    _enum: ['NotRegisteredAgent', 'PermissionNotFound', 'SelfPermissionNotAllowed', 'InvalidPercentage', 'NoTargetsSpecified', 'InvalidThreshold', 'NoAccumulatedAmount', 'NotAuthorizedToRevoke', 'TotalAllocationExceeded', 'NotPermissionGrantee', 'NotPermissionGrantor', 'TooManyStreams', 'TooManyTargets', 'TooManyRevokers', 'StorageError', 'InvalidAmount', 'InsufficientBalance', 'InvalidInterval', 'ParentPermissionNotFound', 'InvalidDistributionMethod', 'InvalidNumberOfRevokers', 'FixedAmountCanOnlyBeTriggeredOnce', 'UnsupportedPermissionType', 'NotAuthorizedToToggle', 'TooManyControllers', 'InvalidNumberOfControllers', 'DuplicatePermission', 'PermissionInCooldown', 'InvalidCuratorPermissions']
+  },
+  /**
+   * Lookup243: pallet_faucet::pallet::Error<T>
+   **/
+  PalletFaucetError: {
+    _enum: ['InvalidWorkBlock', 'InvalidDifficulty', 'InvalidSeal']
+  },
+  /**
+   * Lookup245: sp_runtime::MultiSignature
    **/
   SpRuntimeMultiSignature: {
     _enum: {
@@ -1480,47 +1718,47 @@ export default {
     }
   },
   /**
-   * Lookup217: frame_system::extensions::check_non_zero_sender::CheckNonZeroSender<T>
+   * Lookup248: frame_system::extensions::check_non_zero_sender::CheckNonZeroSender<T>
    **/
   FrameSystemExtensionsCheckNonZeroSender: 'Null',
   /**
-   * Lookup218: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
+   * Lookup249: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
    **/
   FrameSystemExtensionsCheckSpecVersion: 'Null',
   /**
-   * Lookup219: frame_system::extensions::check_tx_version::CheckTxVersion<T>
+   * Lookup250: frame_system::extensions::check_tx_version::CheckTxVersion<T>
    **/
   FrameSystemExtensionsCheckTxVersion: 'Null',
   /**
-   * Lookup220: frame_system::extensions::check_genesis::CheckGenesis<T>
+   * Lookup251: frame_system::extensions::check_genesis::CheckGenesis<T>
    **/
   FrameSystemExtensionsCheckGenesis: 'Null',
   /**
-   * Lookup223: frame_system::extensions::check_nonce::CheckNonce<T>
+   * Lookup254: frame_system::extensions::check_nonce::CheckNonce<T>
    **/
   FrameSystemExtensionsCheckNonce: 'Compact<u32>',
   /**
-   * Lookup224: frame_system::extensions::check_weight::CheckWeight<T>
+   * Lookup255: frame_system::extensions::check_weight::CheckWeight<T>
    **/
   FrameSystemExtensionsCheckWeight: 'Null',
   /**
-   * Lookup225: pallet_transaction_payment::ChargeTransactionPayment<T>
+   * Lookup256: pallet_transaction_payment::ChargeTransactionPayment<T>
    **/
   PalletTransactionPaymentChargeTransactionPayment: 'Compact<u128>',
   /**
-   * Lookup226: frame_metadata_hash_extension::CheckMetadataHash<T>
+   * Lookup257: frame_metadata_hash_extension::CheckMetadataHash<T>
    **/
   FrameMetadataHashExtensionCheckMetadataHash: {
     mode: 'FrameMetadataHashExtensionMode'
   },
   /**
-   * Lookup227: frame_metadata_hash_extension::Mode
+   * Lookup258: frame_metadata_hash_extension::Mode
    **/
   FrameMetadataHashExtensionMode: {
     _enum: ['Disabled', 'Enabled']
   },
   /**
-   * Lookup230: torus_runtime::Runtime
+   * Lookup261: torus_runtime::Runtime
    **/
   TorusRuntimeRuntime: 'Null'
 };

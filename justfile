@@ -7,7 +7,7 @@ dump-metadata name:
 	scripts/get-metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
 
 gen-types name: (dump-metadata name)
-	(cd packages/subspace && just gen-types {{ name }})
+	(cd packages/torus-sdk-ts && just gen-types {{ name }})
 
 # == Dev ==
 
