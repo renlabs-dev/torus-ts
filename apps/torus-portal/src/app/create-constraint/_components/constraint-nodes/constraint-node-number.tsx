@@ -275,24 +275,26 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         </SelectContent>
       </Select>
 
+      <div className="text-white relative">↓</div>
+
       {data.expression.$ === "UIntLiteral" && (
-        <div className="mt-3">
+        <>
           <Input
             id={`${id}-value`}
             type="text"
             value={inputValue}
             onChange={(e) => handleValueChange(e.target.value)}
-            className={`w-full pr-0 ${inputError ? "border-red-500" : ""}`}
+            className={`w-full ${inputError ? "border-red-500" : ""}`}
             placeholder="Enter a positive integer"
           />
           {inputError && (
             <p className="text-red-500 text-xs mt-1">{inputError}</p>
           )}
-        </div>
+        </>
       )}
 
       {data.expression.$ === "StakeOf" && (
-        <div className="mt-3">
+        <>
           <Input
             id={`${id}-account`}
             type="text"
@@ -304,32 +306,30 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           {accountError && (
             <p className="text-red-500 text-xs mt-1">{accountError}</p>
           )}
-        </div>
+        </>
       )}
 
       {(data.expression.$ === "WeightSet" ||
         data.expression.$ === "WeightPowerFrom") && (
         <>
-          <div className="mt-3">
-            <Input
-              id={`${id}-from`}
-              type="text"
-              value={data.expression.from || ""}
-              onChange={(e) => handleAccountChange("from", e.target.value)}
-              className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
-              placeholder="From account ID"
-            />
-          </div>
-          <div className="mt-3">
-            <Input
-              id={`${id}-to`}
-              type="text"
-              value={data.expression.to || ""}
-              onChange={(e) => handleAccountChange("to", e.target.value)}
-              className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
-              placeholder="To account ID"
-            />
-          </div>
+          <Input
+            id={`${id}-from`}
+            type="text"
+            value={data.expression.from || ""}
+            onChange={(e) => handleAccountChange("from", e.target.value)}
+            className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
+            placeholder="From account ID"
+          />
+
+          <Input
+            id={`${id}-to`}
+            type="text"
+            value={data.expression.to || ""}
+            onChange={(e) => handleAccountChange("to", e.target.value)}
+            className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
+            placeholder="To account ID"
+          />
+
           {accountError && (
             <p className="text-red-500 text-xs mt-1">{accountError}</p>
           )}
