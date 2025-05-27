@@ -14,7 +14,6 @@ import {
   ConnectionLineType,
   Background,
 } from "@xyflow/react";
-import { Button } from "@torus-ts/ui/components/button";
 
 import PermissionNodeBoolean from "./constraint-nodes/constraint-node-boolean";
 import PermissionNodeNumber from "./constraint-nodes/constraint-node-number";
