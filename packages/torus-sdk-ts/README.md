@@ -30,7 +30,7 @@ This SDK provides a comprehensive set of tools and utilities to interact with th
 
 ### Connection Setup
 
-```typescript
+```ts
 import { setup } from "@torus-network/sdk";
 
 // Connect to a Torus node
@@ -50,7 +50,7 @@ The SDK is organized into modules for different parts of the Torus ecosystem:
 
 **Query Balance**
 
-```typescript
+```ts
 import { queryFreeBalance } from "@torus-network/sdk";
 
 const balance = await queryFreeBalance(api, "your-ss58-address");
@@ -59,7 +59,7 @@ console.log(`Current balance: ${balance}`);
 
 **Query Agents**
 
-```typescript
+```ts
 import { queryAgents } from "@torus-network/sdk";
 
 const agents = await queryAgents(api);
@@ -68,7 +68,7 @@ console.log(`Found ${agents.size} agents`);
 
 **Working with Governance**
 
-```typescript
+```ts
 import { queryProposals } from "@torus-network/sdk";
 
 const proposals = await queryProposals(api);

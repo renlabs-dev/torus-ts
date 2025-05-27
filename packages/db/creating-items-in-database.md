@@ -11,7 +11,7 @@ cache related folders and run `pnpm i` again.
 
 First, we define the schema for the module in `packages/db/src/schema.ts`.
 
-```typescript
+```ts
 // Test Table
 export const moduleTest = createTable("module_test", {
   id: serial("id").primaryKey(),
@@ -36,7 +36,7 @@ Remember to run `pnpm db:push` to push the schema to the database.
 
 Next, we define the API routes using tRPC, in this case since we are creating a new module, we will create a new router file in `packages/api/src/router/module-test.ts`.
 
-```typescript
+```ts
 export const moduleTestRouter = {
   // Get the latest module
   getLatest: publicProcedure.query(({ ctx }) => {
@@ -62,7 +62,7 @@ export const moduleTestRouter = {
 
 We then combine the individual routers into a root router in `packages/api/src/root.ts`.
 
-```typescript
+```ts
 export const appRouter = createTRPCRouter({
   moduleTest: moduleTestRouter, // We add the moduleTestRouter here
   module: moduleRouter,
@@ -75,7 +75,7 @@ export const appRouter = createTRPCRouter({
 
 We create the main page component in `apps/torus-allocator/src/app/page.tsx`.
 
-```typescript
+```ts
 export default function Page() {
   return <CrudShowcase />;
 }
@@ -106,7 +106,7 @@ async function CrudShowcase() {
 Lastly, we create a form component for adding new items in
 `apps/torus-allocator/src/app/components/create-module-test.tsx`.
 
-```typescript
+```ts
 export function CreateWeight() {
   const router = useRouter();
   const [weight, setWeight] = useState<number>(0);
