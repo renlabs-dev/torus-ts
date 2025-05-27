@@ -28,11 +28,14 @@ export function generateMetadata({
       : // : "https://wallet.testnet.torus.network";
         "https://pr-236.torus-wallet.torus.network";
 
-  const ogImageUrl = `${baseUrl}/logo.svg`;
+  const ogImageUrl = `/og.png`;
+  const fullOgImageUrl = `${baseUrl}${ogImageUrl}`;
 
   return {
-    robots: "index, follow",
     title,
+    description,
+    keywords,
+    robots: "index, follow",
     icons: [
       { rel: "icon", url: "/favicon.ico" },
       {
@@ -41,8 +44,6 @@ export function generateMetadata({
         url: "/apple-touch-icon.png",
       },
     ],
-    description,
-    keywords,
     metadataBase: new URL(baseUrl),
     openGraph: {
       title: ogTitle,
@@ -50,14 +51,13 @@ export function generateMetadata({
       type: "website",
       siteName: "Torus Wallet",
       locale: "en_US",
-      url: baseUrl + canonical,
+      url: canonical,
       images: [
         {
           url: ogImageUrl,
-          width: 512,
-          height: 512,
+          width: 2400,
+          height: 1260,
           alt: "Torus Wallet - Secure Digital Asset Management",
-          type: "image/svg+xml",
         },
       ],
     },
@@ -67,21 +67,20 @@ export function generateMetadata({
       description: twitterDescription,
       creator: "@torus_network",
       site: "@torus_network",
-      images: [
-        {
-          url: ogImageUrl,
-          alt: "Torus Wallet - Secure Digital Asset Management",
-        },
-      ],
+      images: [ogImageUrl],
     },
     other: {
-      "og:image:secure_url": ogImageUrl,
-      "og:image:width": "512",
-      "og:image:height": "512",
-      "og:image:type": "image/svg+xml",
+      "og:image:secure_url": fullOgImageUrl,
+      "og:image:width": "2400",
+      "og:image:height": "1260",
+      "og:image:type": "image/png",
+      "og:image:alt": "Torus Wallet - Secure Digital Asset Management",
+      "twitter:image": fullOgImageUrl,
+      "twitter:image:alt": "Torus Wallet - Secure Digital Asset Management",
+      "theme-color": "#000000",
     },
     alternates: {
-      canonical: baseUrl + canonical,
+      canonical: canonical,
     },
   };
 }
