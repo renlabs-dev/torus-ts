@@ -17,7 +17,7 @@ export interface GraphLink {
   revocation?: number;
   enforcement?: string;
   executionCount?: number;
-  parentId?: number;
+  parentId?: string;
   [key: string]: string | number | undefined;
 }
 
@@ -86,12 +86,12 @@ export const getNodePermissions = (
 export interface PermissionDetail {
   grantor_key: string;
   grantee_key: string;
-  permission_id: number;
+  permission_id: string;
   scope: string;
   duration: number;
   enforcement: string;
   execution_count: number;
-  parent_id: number | null;
+  parent_id: string | null;
   createdAt: Date;
 }
 
@@ -107,8 +107,8 @@ export const sortPermissions = (
       p => p.grantor_key === b.source && p.grantee_key === b.target
     );
     
-    const idA = detailsA?.permission_id ?? 0;
-    const idB = detailsB?.permission_id ?? 0;
+    const idA = detailsA?.permission_id ?? "";
+    const idB = detailsB?.permission_id ?? "";
     
     return Number(idA) - Number(idB);
   });
