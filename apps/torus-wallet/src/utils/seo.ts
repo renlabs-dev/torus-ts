@@ -25,7 +25,8 @@ export function generateMetadata({
   const baseUrl =
     env("NODE_ENV") === "production"
       ? "https://wallet.torus.network"
-      : "https://wallet.testnet.torus.network";
+      : // : "https://wallet.testnet.torus.network";
+        "https://pr-236.torus-wallet.torus.network";
 
   const ogImageUrl = `${baseUrl}/logo.svg`;
 
