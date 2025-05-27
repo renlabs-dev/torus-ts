@@ -79,22 +79,17 @@ jobs:
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
   torus-page:
-    needs: [turbo-check, files-check]
+    needs: turbo-check
     if: |
       inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      needs.files-check.outputs.apps == 'true' ||
       (needs.turbo-check.outputs.torus-page == 'true' &&
       (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-page
-      skip_build: >-
-        ${{ inputs.skip_build || 
-        (needs.files-check.outputs.apps == 'true' && 
-        needs.files-check.outputs.docker != 'true' && 
-        needs.turbo-check.outputs.torus-page != 'true') }}
+      skip_build: ${{ inputs.skip_build || false }}
 
   torus-portal:
     needs: [turbo-check, files-check, pr-check]
