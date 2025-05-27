@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { sb_bigint, sb_number } from "./zod";
-import { Codec } from "@polkadot/types/types";
-import { H256 } from "@polkadot/types/interfaces";
+import type { H256 } from "@polkadot/types/interfaces";
 import { U8aFixed } from "@polkadot/types";
 
 export const sb_id = sb_number.pipe(z.number().int().nonnegative());
