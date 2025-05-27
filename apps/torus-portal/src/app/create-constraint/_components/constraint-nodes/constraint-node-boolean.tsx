@@ -310,7 +310,7 @@ export function PermissionNodeBoolean({
         </Select>
       </PermissionNodeContainer>
       {data.expression.$ === "CompExpr" && (
-        <div className="absolute flex top-[3.2em] w-full justify-center gap-2">
+        <div className="absolute flex top-[3.35em] w-full justify-center gap-2">
           <Select value={data.expression.op} onValueChange={handleCompOpChange}>
             <SelectTrigger
               id={`${id}-op`}
