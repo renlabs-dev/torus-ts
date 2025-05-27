@@ -66,7 +66,7 @@ export function PermissionNodeContainer({
   ]);
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col items-center">
       {children}
 
       <Handle type="target" position={Position.Top} />
