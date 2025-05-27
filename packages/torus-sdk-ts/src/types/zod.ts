@@ -277,7 +277,7 @@ export const sb_basic_enum = <
 
 export const GenericAccountId_schema = z.custom<GenericAccountId>(
   (val) => val instanceof GenericAccountId,
-  "not a substrate BaseAccountId",
+  "not a substrate GenericAccountId",
 );
 
 export const sb_address = GenericAccountId_schema.transform((val) =>

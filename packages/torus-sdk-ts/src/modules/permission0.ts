@@ -1,6 +1,7 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { Option } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
+import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { match } from "rustie";
 import type { z } from "zod";
@@ -359,6 +360,32 @@ export async function queryAccumulatedStreamAmounts(
 // ============================================================================
 // Utility Functions
 // ============================================================================
+
+/**
+ * Static identifier prefix for root emission stream
+ */
+export const ROOT_STREAM_PREFIX = "torus:emission:root";
+
+/**
+ * Generates the root stream ID for an agent
+ * @param agentId - The agent's account ID (SS58 address)
+ * @returns The generated stream ID as a hex string
+ */
+export function generateRootStreamId(agentId: SS58Address): StreamId {
+  // Convert prefix string to bytes
+  const prefixBytes = new TextEncoder().encode(ROOT_STREAM_PREFIX);
+  
+  // Decode SS58 address to get the raw account ID bytes
+  const accountIdBytes = decodeAddress(agentId);
+  
+  // Concatenate prefix bytes with account ID bytes
+  const data = new Uint8Array(prefixBytes.length + accountIdBytes.length);
+  data.set(prefixBytes, 0);
+  data.set(accountIdBytes, prefixBytes.length);
+  
+  // Generate blake2 256-bit hash and return as hex string
+  return blake2AsHex(data, 256);
+}
 
 /**
  * Check if curator has specific permission flag
