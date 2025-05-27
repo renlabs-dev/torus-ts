@@ -4,6 +4,9 @@ import { Faucet } from "~/app/(transfers)/_components/faucet/faucet";
 import { Receive } from "~/app/(transfers)/_components/receive/receive";
 import { Send } from "~/app/(transfers)/_components/send/send";
 import { generateMetadata } from "~/utils/seo";
+import { useTorus } from "@torus-ts/torus-provider";
+import { ApiPromise } from "@polkadot/api";
+import { env } from "~/env";
 
 export const metadata = generateMetadata({
   title: "Transfer Tokens - Torus Wallet",
@@ -24,12 +27,15 @@ export const metadata = generateMetadata({
   ],
 });
 
-const tabs: TabItem[] = [
-  { text: "Send", value: "send", component: <Send /> },
-  { text: "Receive", value: "receive", component: <Receive /> },
-  { text: "Faucet", value: "faucet", component: <Faucet /> },
-];
-
 export default function TransfersPage() {
+  const tabs: TabItem[] = [
+    { text: "Send", value: "send", component: <Send /> },
+    { text: "Receive", value: "receive", component: <Receive /> },
+  ];
+
+  if (env("NEXT_PUBLIC_TORUS_RPC_URL").includes("testnet")) {
+    tabs.push({ text: "Faucet", value: "faucet", component: <Faucet />});
+  }
+
   return <TabLayout tabs={tabs} defaultTab="send" />;
 }
