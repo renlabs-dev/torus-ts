@@ -1,5 +1,6 @@
 // /* eslint-disable @typescript-eslint/no-unused-vars */
 // /* eslint-disable @typescript-eslint/consistent-type-imports */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import "@polkadot/api/augment";
 
@@ -8,12 +9,16 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { checkSS58 } from "./address";
 import {
   generateRootStreamId,
+  PermissionContract,
+  PermissionId,
   queryAccumulatedStreamsForAccount,
   queryPermission,
   queryPermissions,
+  queryPermissionsByGrantee,
   queryPermissionsByGrantor,
   StreamId,
 } from "./modules/permission0";
+import { extractFromMap } from "@torus-network/torus-utils/collections";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 
@@ -37,7 +42,8 @@ const api = await connectToChainRpc(NODE_URL);
 
 // // ====
 
-const [e0, r0] = await queryPermissions(api);
+// Get all permissions
+const [e0, permissions] = await queryPermissions(api);
 if (e0 !== undefined) {
   console.error("Query failed:", e0);
   process.exit(1);

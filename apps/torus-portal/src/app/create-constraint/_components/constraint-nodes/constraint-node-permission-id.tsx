@@ -16,15 +16,9 @@ import {
   useChildNodeManagement,
 } from "./constraint-node-container";
 import { permissionIdSchema } from "../constraint-validation-schemas";
-
-// Placeholder permission IDs (Vec<H256>) - in the future this will come from a network query
-const PLACEHOLDER_PERMISSION_IDS = [
-  "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-  "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-  "0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba",
-  "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
-  "0x5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa",
-];
+import { useTorus } from "@torus-ts/torus-provider";
+import { usePermissionsByGrantor } from "@torus-ts/query-provider/hooks";
+import type { SS58Address } from "@torus-network/sdk";
 
 interface PermissionNodePermissionIdProps {
   id: string;
@@ -36,9 +30,21 @@ export function PermissionNodePermissionId({
   data,
 }: PermissionNodePermissionIdProps) {
   const { updateNodeData } = useChildNodeManagement(id);
+  const { api, selectedAccount } = useTorus();
 
   const [permissionId, setPermissionId] = useState(data.permissionId || "");
   const [permissionIdError, setPermissionIdError] = useState<string>("");
+
+  const { data: permissionsByGrantor, isLoading: isLoadingPermissions } =
+    usePermissionsByGrantor(api, selectedAccount?.address as SS58Address);
+
+  const [permissionError, permissions] = permissionsByGrantor ?? [
+    undefined,
+    undefined,
+  ];
+  const hasPermissions = permissions && permissions.length > 0;
+  const isWalletConnected = selectedAccount?.address != null;
+  const shouldDisablePermissionSelect = !isWalletConnected || !hasPermissions;
 
   // Sync local state with external changes
   useEffect(() => {
@@ -78,34 +84,40 @@ export function PermissionNodePermissionId({
       createChildNodes={() => ({ nodes: [], edges: [] })}
       shouldAutoCreateChildren={false}
     >
-      <div className="flex flex-col items-center justify-center">
-        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-[#87878B]">
-          <Key className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-700">
-            Permission ID
-          </span>
-        </div>
-
-        <div className="text-white relative">↓</div>
-
-        <Select value={permissionId} onValueChange={handlePermissionIdChange}>
-          <SelectTrigger
-            className={`w-full ${permissionIdError ? "border-red-500" : "border-blue-300"}
-              focus:border-blue-500 focus:ring-blue-500`}
-          >
-            <SelectValue placeholder="Select permission..." />
+      <div className="flex items-center justify-center font-semibold">
+        <Select
+          value={permissionId}
+          onValueChange={handlePermissionIdChange}
+          disabled={shouldDisablePermissionSelect}
+        >
+          <SelectTrigger className="w-fit pl-[0.05em] pr-1 gap-2 bg-zinc-300 text-accent rounded-full">
+            <div
+              className="flex items-center gap-2 bg-accent z-50 px-3 py-[0.45em] rounded-full
+                text-zinc-300 rounded-r-none"
+            >
+              <Key className="h-4 w-4" />
+              <span className="text-nowrap font-medium">Permission ID</span>
+            </div>
+            <SelectValue
+              placeholder={
+                !isWalletConnected
+                  ? "Connect wallet"
+                  : isLoadingPermissions
+                    ? "Loading..."
+                    : permissionError
+                      ? "No permissions"
+                      : !hasPermissions
+                        ? "No permissions"
+                        : "Select Permission ID"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            {PLACEHOLDER_PERMISSION_IDS.map((permissionId, index) => (
+            {permissions?.map((permissionId) => (
               <SelectItem key={permissionId} value={permissionId}>
-                <div className="flex flex-col">
-                  <span className="font-medium">Permission {index + 1}</span>
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
-                  </span>
-                </div>
+                {permissionId.slice(0, 6)}...${permissionId.slice(-4)}
               </SelectItem>
-            ))}
+            )) ?? []}
           </SelectContent>
         </Select>
 

@@ -11,7 +11,7 @@ export const nodes: Node<PermissionNodeData>[] = [
       permissionId: "",
       label: "Permission ID",
     },
-    position: { x: 0, y: -100 },
+    position: { x: 0, y: -50 },
   },
   {
     id: "root-boolean",

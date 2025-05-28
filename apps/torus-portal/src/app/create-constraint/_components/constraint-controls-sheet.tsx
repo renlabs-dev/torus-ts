@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Sheet,
@@ -19,15 +19,12 @@ import {
 } from "@torus-ts/ui/components/select";
 
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
-
-// Placeholder permission IDs (Vec<H256>) - in the future this will come from a network query
-const PLACEHOLDER_PERMISSION_IDS = [
-  "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-  "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-  "0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba",
-  "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
-  "0x5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa",
-];
+import { useTorus } from "@torus-ts/torus-provider";
+import {
+  usePermissionsByGrantor,
+  usePermission,
+} from "@torus-ts/query-provider/hooks";
+import type { SS58Address, PermissionId } from "@torus-network/sdk";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -48,8 +45,41 @@ export default function ConstraintControlsSheet({
 
   const handleCreateConstraint = useCallback(() => {
     onCreateConstraint();
-    setIsOpen(false);
+    // setIsOpen(false);
   }, [onCreateConstraint]);
+
+  const { api, selectedAccount } = useTorus();
+
+  const { data: permissionsByGrantor, isLoading: isLoadingPermissions } =
+    usePermissionsByGrantor(api, selectedAccount?.address as SS58Address);
+
+  const [permissionError, permissions] = permissionsByGrantor ?? [
+    undefined,
+    undefined,
+  ];
+
+  const hasPermissions = permissions && permissions.length > 0;
+  const isWalletConnected = selectedAccount?.address != null;
+  const shouldDisablePermissionSelect = !isWalletConnected || !hasPermissions;
+
+  // Query selected permission details
+  const {
+    data: permissionDetailsResponse,
+    isLoading: isLoadingPermissionDetails,
+  } = usePermission(api, selectedPermissionId as PermissionId);
+
+  const [permissionDetailsError, permissionDetails] =
+    permissionDetailsResponse ?? [undefined, undefined];
+
+  // Auto-select the last permission when permissions are loaded
+  useEffect(() => {
+    if (hasPermissions && !selectedPermissionId) {
+      const lastPermission = permissions[permissions.length - 1];
+      if (lastPermission) {
+        onPermissionIdChange(lastPermission);
+      }
+    }
+  }, [permissions, selectedPermissionId, onPermissionIdChange, hasPermissions]);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -69,25 +99,106 @@ export default function ConstraintControlsSheet({
             <Select
               value={selectedPermissionId}
               onValueChange={onPermissionIdChange}
+              disabled={shouldDisablePermissionSelect}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select permission..." />
+                <SelectValue
+                  placeholder={
+                    !isWalletConnected
+                      ? "Connect wallet to view permissions"
+                      : isLoadingPermissions
+                        ? "Loading permissions..."
+                        : permissionError
+                          ? "Error loading permissions"
+                          : !hasPermissions
+                            ? "No permissions available"
+                            : "Select permission..."
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                {PLACEHOLDER_PERMISSION_IDS.map((permissionId, index) => (
+                {permissions?.map((permissionId) => (
                   <SelectItem key={permissionId} value={permissionId}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        Permission {index + 1}
-                      </span>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
-                      </span>
-                    </div>
+                    {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
                   </SelectItem>
-                ))}
+                )) ?? []}
               </SelectContent>
             </Select>
+            {permissionError && (
+              <p className="text-xs text-red-500">
+                Error: {permissionError.message}
+              </p>
+            )}
+
+            {/* Permission Details */}
+            {selectedPermissionId && (
+              <div className="mt-4 p-3 bg-accent border">
+                <h3 className="text-sm font-semibold mb-2">
+                  Permission Details
+                </h3>
+                {isLoadingPermissionDetails ? (
+                  <div className="text-xs text-muted-foreground">
+                    Loading permission details...
+                  </div>
+                ) : permissionDetailsError ? (
+                  <div className="text-xs text-red-500">
+                    Error loading permission details:{" "}
+                    {permissionDetailsError.message}
+                  </div>
+                ) : permissionDetails ? (
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <span className="font-medium">Grantor:</span>
+                      <span className="ml-2 font-mono text-muted-foreground">
+                        {permissionDetails.grantor.slice(0, 8)}...
+                        {permissionDetails.grantor.slice(-6)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Grantee:</span>
+                      <span className="ml-2 font-mono text-muted-foreground">
+                        {permissionDetails.grantee.slice(0, 8)}...
+                        {permissionDetails.grantee.slice(-6)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Scope:</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {Object.keys(permissionDetails.scope)[0]}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Duration:</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {Object.keys(permissionDetails.duration)[0]}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Revocation:</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {Object.keys(permissionDetails.revocation)[0]}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Created At:</span>
+                      <span className="ml-2 text-muted-foreground">
+                        Block #{permissionDetails.createdAt.toString()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Execution Count:</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {permissionDetails.executionCount.toString() || "0"}
+                      </span>
+                    </div>
+                  </div>
+                ) : selectedPermissionId ? (
+                  <div className="text-xs text-red-500">
+                    Failed to load permission details
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
