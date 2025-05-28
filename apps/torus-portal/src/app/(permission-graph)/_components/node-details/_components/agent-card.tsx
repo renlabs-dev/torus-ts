@@ -235,7 +235,7 @@ export const PermissionNodeAgentCard = memo(
       <Card className="w-[27em] flex-1 p-4 flex flex-col gap-4 z-50">
         <div className="flex flex-row justify-between">
           <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
-          <Button variant="outline" className="-mt-0.5" onClick={onClose}>
+          <Button variant="outline" className="-mt-1" onClick={onClose}>
             <X />
           </Button>
         </div>

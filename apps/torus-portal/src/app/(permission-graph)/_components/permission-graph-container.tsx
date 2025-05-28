@@ -13,6 +13,8 @@ import type { CachedAgentData } from "./permission-graph-utils";
 import { PermissionGraphNodeDetails } from "./node-details";
 import { api } from "~/trpc/react";
 import PermissionGraphSearch from "./permission-graph-search";
+import { PermissionGraphOverview } from "./permission-graph-overview";
+import { MousePointerClick } from "lucide-react";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -140,9 +142,14 @@ export default function PermissionGraphContainer() {
 
   return (
     <div className="fixed inset-0 w-screen h-screen">
-      <div className="absolute top-[3.9rem] left-2 right-96 z-10">
-        <div className="flex items-center gap-4 w-full max-w-4xl flex-wrap">
+      <div className="absolute right-0 bottom-14 gap-2 items-center flex flex-row px-4 z-50">
+        <MousePointerClick className="w-4" />
+        <span className="text-xs"> Click on any node for detailed view.</span>
+      </div>
+      <div className="absolute top-[3.9rem] w-screen left-2 right-96 z-10">
+        <div className="flex items-center gap-4 w-full">
           <PortalNavigationTabs />
+          <PermissionGraphOverview graphData={graphData} />
           <div className="flex-1 min-w-0">
             <PermissionGraphSearch
               graphNodes={graphData?.nodes.map((node) => node.id) ?? []}
@@ -159,7 +166,6 @@ export default function PermissionGraphContainer() {
         isOpen={isSheetOpen}
         onOpenChange={setIsSheetOpen}
       />
-
       <div className="w-full h-full">
         {isLoading ? (
           <div className="flex items-center justify-center w-full h-full">
