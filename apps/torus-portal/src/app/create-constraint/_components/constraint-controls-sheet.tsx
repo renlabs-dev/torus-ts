@@ -100,149 +100,151 @@ export default function ConstraintControlsSheet({
         side="right"
         className="w-96 z-[75] flex flex-col justify-between h-full"
       >
-        <SheetHeader>
-          <SheetTitle>Constraint Controls</SheetTitle>
-        </SheetHeader>
+        <div>
+          <SheetHeader>
+            <SheetTitle>Constraint Controls</SheetTitle>
+          </SheetHeader>
 
-        <div className="flex flex-col gap-6 py-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Permission</label>
-            <Select
-              value={selectedPermissionId}
-              onValueChange={onPermissionIdChange}
-              disabled={shouldDisablePermissionSelect}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    !isWalletConnected
-                      ? "Connect wallet to view permissions"
-                      : isLoadingPermissions
-                        ? "Loading permissions..."
-                        : permissionError
-                          ? "Error loading permissions"
-                          : !hasPermissions
-                            ? "No permissions available"
-                            : "Select permission..."
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {permissions?.map((permissionId) => (
-                  <SelectItem key={permissionId} value={permissionId}>
-                    {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
-                  </SelectItem>
-                )) ?? []}
-              </SelectContent>
-            </Select>
-            {permissionError && (
-              <p className="text-xs text-red-500">
-                Error: {permissionError.message}
-              </p>
-            )}
+          <div className="flex flex-col gap-6 py-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Permission</label>
+              <Select
+                value={selectedPermissionId}
+                onValueChange={onPermissionIdChange}
+                disabled={shouldDisablePermissionSelect}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      !isWalletConnected
+                        ? "Connect wallet to view permissions"
+                        : isLoadingPermissions
+                          ? "Loading permissions..."
+                          : permissionError
+                            ? "Error loading permissions"
+                            : !hasPermissions
+                              ? "No permissions available"
+                              : "Select permission..."
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {permissions?.map((permissionId) => (
+                    <SelectItem key={permissionId} value={permissionId}>
+                      {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
+                    </SelectItem>
+                  )) ?? []}
+                </SelectContent>
+              </Select>
+              {permissionError && (
+                <p className="text-xs text-red-500">
+                  Error: {permissionError.message}
+                </p>
+              )}
 
-            {/* Permission Details */}
-            {selectedPermissionId && (
-              <div className="mt-4 p-3 bg-accent border">
-                <h3 className="text-sm font-semibold mb-2">
-                  Permission Details
-                </h3>
-                {isLoadingPermissionDetails ? (
-                  <div className="text-xs text-muted-foreground">
-                    Loading permission details...
-                  </div>
-                ) : permissionDetailsError ? (
-                  <div className="text-xs text-red-500">
-                    Error loading permission details:{" "}
-                    {permissionDetailsError.message}
-                  </div>
-                ) : permissionDetails ? (
-                  <div className="space-y-2 text-xs">
-                    <div>
-                      <span className="font-medium">Grantor:</span>
-                      <span className="ml-2 font-mono text-muted-foreground">
-                        {permissionDetails.grantor.slice(0, 8)}...
-                        {permissionDetails.grantor.slice(-6)}
-                      </span>
+              {/* Permission Details */}
+              {selectedPermissionId && (
+                <div className="mt-4 p-3 bg-accent border">
+                  <h3 className="text-sm font-semibold mb-2">
+                    Permission Details
+                  </h3>
+                  {isLoadingPermissionDetails ? (
+                    <div className="text-xs text-muted-foreground">
+                      Loading permission details...
                     </div>
-                    <div>
-                      <span className="font-medium">Grantee:</span>
-                      <span className="ml-2 font-mono text-muted-foreground">
-                        {permissionDetails.grantee.slice(0, 8)}...
-                        {permissionDetails.grantee.slice(-6)}
-                      </span>
+                  ) : permissionDetailsError ? (
+                    <div className="text-xs text-red-500">
+                      Error loading permission details:{" "}
+                      {permissionDetailsError.message}
                     </div>
-                    <div>
-                      <span className="font-medium">Scope:</span>
-                      <span className="ml-2 text-muted-foreground">
-                        {Object.keys(permissionDetails.scope)[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Duration:</span>
-                      <span className="ml-2 text-muted-foreground">
-                        {Object.keys(permissionDetails.duration)[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Revocation:</span>
-                      <span className="ml-2 text-muted-foreground">
-                        {Object.keys(permissionDetails.revocation)[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Created At:</span>
-                      <span className="ml-2 text-muted-foreground">
-                        Block #{permissionDetails.createdAt.toString()}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Execution Count:</span>
-                      <span className="ml-2 text-muted-foreground">
-                        {permissionDetails.executionCount.toString() || "0"}
-                      </span>
-                    </div>
-                  </div>
-                ) : selectedPermissionId ? (
-                  <div className="text-xs text-red-500">
-                    Failed to load permission details
-                  </div>
-                ) : null}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Load Example</label>
-            <Command className="rounded-md border">
-              <CommandInput placeholder="Search examples..." />
-              <CommandList>
-                <CommandEmpty>No examples found.</CommandEmpty>
-                <CommandGroup>
-                  {constraintExamples.map((example) => (
-                    <CommandItem
-                      key={example.id}
-                      value={example.id}
-                      onSelect={(currentValue) => {
-                        onLoadExample(currentValue);
-                      }}
-                      className={
-                        selectedExample === example.id
-                          ? "bg-accent text-white"
-                          : ""
-                      }
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium">{example.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {example.description}
+                  ) : permissionDetails ? (
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <span className="font-medium">Grantor:</span>
+                        <span className="ml-2 font-mono text-muted-foreground">
+                          {permissionDetails.grantor.slice(0, 8)}...
+                          {permissionDetails.grantor.slice(-6)}
                         </span>
                       </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
+                      <div>
+                        <span className="font-medium">Grantee:</span>
+                        <span className="ml-2 font-mono text-muted-foreground">
+                          {permissionDetails.grantee.slice(0, 8)}...
+                          {permissionDetails.grantee.slice(-6)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Scope:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {Object.keys(permissionDetails.scope)[0]}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Duration:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {Object.keys(permissionDetails.duration)[0]}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Revocation:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {Object.keys(permissionDetails.revocation)[0]}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Created At:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          Block #{permissionDetails.createdAt.toString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Execution Count:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {permissionDetails.executionCount.toString() || "0"}
+                        </span>
+                      </div>
+                    </div>
+                  ) : selectedPermissionId ? (
+                    <div className="text-xs text-red-500">
+                      Failed to load permission details
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Load Example</label>
+              <Command className="rounded-md border">
+                <CommandInput placeholder="Search examples..." />
+                <CommandList>
+                  <CommandEmpty>No examples found.</CommandEmpty>
+                  <CommandGroup>
+                    {constraintExamples.map((example) => (
+                      <CommandItem
+                        key={example.id}
+                        value={example.id}
+                        onSelect={(currentValue) => {
+                          onLoadExample(currentValue);
+                        }}
+                        className={
+                          selectedExample === example.id
+                            ? "bg-accent text-white"
+                            : ""
+                        }
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">{example.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {example.description}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </div>
           </div>
         </div>
 
