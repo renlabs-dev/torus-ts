@@ -24,6 +24,7 @@ import { constraintValidationSchema } from "./constraint-validation-schemas";
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
 import { constraintToNodes } from "./constraint-nodes/constraint-to-nodes";
 import ConstraintControlsSheet from "./constraint-controls-sheet";
+import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
 
 import useAutoLayout from "./constraint-layout/use-auto-layout";
 import type { LayoutOptions } from "./constraint-layout/use-auto-layout";
@@ -226,7 +227,8 @@ function ConstraintFlow() {
       }}
     >
       <Background />
-      <div className="absolute bottom-4 right-4 z-50">
+      <div className="absolute bottom-4 right-4 z-50 flex gap-3">
+        <ConstraintTutorialDialog />
         <ConstraintControlsSheet
           selectedExample={selectedExample}
           onLoadExample={handleLoadExample}
