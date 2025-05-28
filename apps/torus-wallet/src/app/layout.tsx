@@ -27,7 +27,7 @@ export const metadata = createSeoMetadata({
     "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence.",
   twitterTitle: "Torus Wallet",
   twitterDescription: "Secure Digital Asset Management in the Torus Ecosystem",
-  baseUrl: env("NEXT_PUBLIC_BASE_URL"),
+  baseUrl: env("BASE_URL"),
   canonical: "/",
 });
 
