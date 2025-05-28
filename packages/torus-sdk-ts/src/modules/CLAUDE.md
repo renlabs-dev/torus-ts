@@ -96,6 +96,49 @@ All modules implement consistent error handling:
    collecting errors
 4. **Detailed Messaging**: Clear error messages with context for debugging
 
+### Result Type Pattern
+
+Modules are transitioning to use Result types for better error handling:
+
+We aim to have in the future only specific errors instead of allowing a generic error in the union like `E1 | E2 | Error` .
+
+```ts
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+
+// Query functions return Result with specific error types
+export async function queryData(
+  api: Api,
+  id: string
+): Promise<Result<Data | null, ZError<Data> | Error>> {
+  const [queryError, query] = await tryAsync(api.query.pallet.data(id));
+  if (queryError) return makeErr(queryError);
+  
+  const parsed = DATA_SCHEMA.safeParse(query.toJSON());
+  if (parsed.success === false) return makeErr(parsed.error);
+  
+  return makeOk(parsed.data);
+}
+
+// Usage with Result destructuring
+const [error, data] = await queryData(api, "123");
+if (error !== undefined) {
+  console.error("Query failed:", error);
+} else {
+  console.log("Data:", data);
+}
+```
+
+### Error Path Tracking
+
+When using `safeParse`, include path information for better debugging:
+
+```ts
+const parsed = SCHEMA.safeParse(data, {
+  path: ["storage", "pallet", "storageItem", String(key)]
+});
+```
+
 ## Development Guidelines
 
 ### Adding New Modules
@@ -121,6 +164,20 @@ When pallet types change:
 - **Error Handling**: Verify graceful handling of malformed data
 - **Query Functions**: Test against live or mocked blockchain state
 - **Utility Functions**: Unit test business logic separately
+
+## Current Limitations
+
+### Schema Type Holes
+
+Some schemas temporarily use `z.unknown()` where proper type definitions are pending:
+
+- `CURATOR_SCOPE_SCHEMA.flags` - Should be `CURATOR_PERMISSIONS_SCHEMA` once fixed
+- These are marked with `// TODO: fix z.unknown() holes` comments
+
+### Migration Status
+
+- **permission0.ts**: Fully migrated to Result type pattern with specific error types
+- Other modules still use throw/catch pattern and need migration
 
 ## Dependencies
 
