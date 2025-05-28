@@ -1,7 +1,7 @@
 import { and, isNull } from "@torus-ts/db";
 import { permissionDetailsSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
-import {  publicProcedure } from "../../trpc";
+import { publicProcedure } from "../../trpc";
 
 export const permissionRouter = {
   // GET

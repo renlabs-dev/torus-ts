@@ -13,8 +13,15 @@ interface MenuTriggerProps {
 
 export function AllocationSheetTrigger(props: MenuTriggerProps) {
   return (
-    <div className="animate-fade-up animate-delay-1000 fixed bottom-0 z-[50] flex w-full flex-col items-center justify-end marker:flex md:bottom-14">
-      <div className="to-accent flex w-full flex-col items-center gap-3 border-t border-white/20 bg-gradient-to-bl from-zinc-900 p-2 pt-3 md:w-fit md:flex-row md:gap-6 md:rounded-full md:border md:pl-4 md:pt-2">
+    <div
+      className="animate-fade-up animate-delay-1000 fixed bottom-0 z-[50] flex w-full flex-col
+        items-center justify-end marker:flex md:bottom-14"
+    >
+      <div
+        className="to-accent flex w-full flex-col items-center gap-3 border-t border-white/20
+          bg-gradient-to-bl from-zinc-900 p-2 pt-3 md:w-fit md:flex-row md:gap-6
+          md:rounded-full md:border md:pl-4 md:pt-2"
+      >
         <WeightPowerLabel />
         <SelectedAgentsLabel />
         <StatusLabel status={props.submitStatus} />
@@ -23,7 +30,8 @@ export function AllocationSheetTrigger(props: MenuTriggerProps) {
             <Button
               size="sm"
               variant="outline"
-              className="w-full border border-green-500 bg-green-500/20 px-2 font-bold text-green-500 hover:bg-green-500/30 hover:text-green-500 md:rounded-full"
+              className="w-full border border-green-500 bg-green-500/20 px-2 font-bold text-green-500
+                hover:bg-green-500/30 hover:text-green-500 md:rounded-full"
             >
               {!props.selectedAccount ? (
                 <LoaderCircle className="animate-spin" />

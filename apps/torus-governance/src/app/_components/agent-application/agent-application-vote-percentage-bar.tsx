@@ -66,7 +66,10 @@ export const AgentApplicationVotePercentageBar = (props: {
         />
       )}
 
-      <div className="border-border bg-primary-foreground relative h-8 w-full overflow-hidden rounded-full border">
+      <div
+        className="border-border bg-primary-foreground relative h-8 w-full overflow-hidden
+          rounded-full border"
+      >
         {/* Favorable votes section */}
         <div
           className="h-full rounded-full rounded-r-none bg-white/30"

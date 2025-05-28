@@ -35,7 +35,8 @@ export function ButtonsSectionMobile() {
       <motion.div
         variants={ANIMATIONS.BUTTON}
         custom={5}
-        className="absolute bottom-[3.8em] flex w-full max-w-[42rem] items-center justify-around gap-[12.5em]"
+        className="absolute bottom-[3.8em] flex w-full max-w-[42rem] items-center justify-around
+          gap-[12.5em]"
       >
         <div className="full bg-border flex h-12 w-12 items-center justify-center rounded-full">
           <CircleDotDashed className="h-6 w-6" />

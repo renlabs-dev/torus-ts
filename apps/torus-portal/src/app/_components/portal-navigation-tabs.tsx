@@ -33,15 +33,24 @@ const PortalNavigationTabs = memo(function PortalNavigationTabs() {
     <div className="w-fit flex-shrink-0">
       <Tabs value={currentTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="permission-graph" className="flex items-center gap-2">
+          <TabsTrigger
+            value="permission-graph"
+            className="flex items-center gap-2"
+          >
             <Network size={16} />
             Permission Graph
           </TabsTrigger>
-          <TabsTrigger value="create-permission" className="flex items-center gap-2">
+          <TabsTrigger
+            value="create-permission"
+            className="flex items-center gap-2"
+          >
             <Shield size={16} />
             Create Permission
           </TabsTrigger>
-          <TabsTrigger value="create-constraint" className="flex items-center gap-2">
+          <TabsTrigger
+            value="create-constraint"
+            className="flex items-center gap-2"
+          >
             <Plus size={16} />
             Create Constraint
           </TabsTrigger>

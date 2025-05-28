@@ -34,19 +34,21 @@ export function useVoteManagement(
     );
 
     if (error !== undefined) {
-      toast.error(error.message || "Failed to submit your vote. Please try again.");
+      toast.error(
+        error.message || "Failed to submit your vote. Please try again.",
+      );
       return false;
     }
 
     toast.success("Vote submitted successfully!");
-    
+
     // Refetch with error handling
     const [refetchError] = await tryAsync(refetchCuratorVotes());
     if (refetchError !== undefined) {
       console.error("Error refreshing votes:", refetchError);
       // Don't show error to user as the vote was successful
     }
-    
+
     return true;
   }
 
@@ -59,19 +61,21 @@ export function useVoteManagement(
     );
 
     if (error !== undefined) {
-      toast.error(error.message || "Failed to revoke your vote. Please try again.");
+      toast.error(
+        error.message || "Failed to revoke your vote. Please try again.",
+      );
       return false;
     }
 
     toast.success("Vote revoked successfully!");
-    
+
     // Refetch with error handling
     const [refetchError] = await tryAsync(refetchCuratorVotes());
     if (refetchError !== undefined) {
       console.error("Error refreshing votes:", refetchError);
       // Don't show error to user as the vote removal was successful
     }
-    
+
     return true;
   }
 

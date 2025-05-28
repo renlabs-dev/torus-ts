@@ -67,21 +67,21 @@ export type Data = z.infer<typeof DATA_SCHEMA>;
 // 3. Query function with error handling
 export async function queryData(api: Api): Promise<Data[]> {
   const [queryError, query] = await tryAsync(
-    api.query.pallet.storage.entries()
+    api.query.pallet.storage.entries(),
   );
-  
+
   if (queryError) {
     throw new Error(`Failed to query: ${queryError.message}`);
   }
-  
+
   const [handlingError, result] = trySync(() =>
-    handleMapValues(query, sb_some(DATA_SCHEMA))
+    handleMapValues(query, sb_some(DATA_SCHEMA)),
   );
-  
+
   if (handlingError) {
     throw new Error(`Failed to parse: ${handlingError.message}`);
   }
-  
+
   return result;
 }
 ```
@@ -109,14 +109,14 @@ import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 // Query functions return Result with specific error types
 export async function queryData(
   api: Api,
-  id: string
+  id: string,
 ): Promise<Result<Data | null, ZError<Data> | Error>> {
   const [queryError, query] = await tryAsync(api.query.pallet.data(id));
   if (queryError) return makeErr(queryError);
-  
+
   const parsed = DATA_SCHEMA.safeParse(query.toJSON());
   if (parsed.success === false) return makeErr(parsed.error);
-  
+
   return makeOk(parsed.data);
 }
 
@@ -135,7 +135,7 @@ When using `safeParse`, include path information for better debugging:
 
 ```ts
 const parsed = SCHEMA.safeParse(data, {
-  path: ["storage", "pallet", "storageItem", String(key)]
+  path: ["storage", "pallet", "storageItem", String(key)],
 });
 ```
 

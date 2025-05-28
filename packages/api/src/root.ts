@@ -40,7 +40,7 @@ export const appRouter = createTRPCRouter({
 
   // Discord Auth
   discordInfo: discordInfoRouter,
-  
+
   // Permission
   permissionDetails: permissionRouter,
 });

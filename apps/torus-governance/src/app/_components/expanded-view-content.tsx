@@ -34,19 +34,22 @@ export const ExpandedViewContent = (props: ExpandedViewContentProps) => {
   }, [body]);
 
   return (
-    <div className={`animate-fade-down flex h-fit w-full flex-col`}>
+    <div className={"animate-fade-down flex h-fit w-full flex-col"}>
       <h2 className="break-words pb-5 text-2xl font-bold text-white">
         {title ?? "Title not found"}
       </h2>
       <div
         ref={contentRef}
-        className={`relative block overflow-hidden ${expandedText ? "max-h-full pb-24" : "max-h-[250px] pb-0"} duration-1000`}
+        className={`relative block overflow-hidden
+          ${expandedText ? "max-h-full pb-24" : "max-h-[250px] pb-0"} duration-1000`}
       >
         <MarkdownView source={body ?? "Content not found."} />
 
         {isOverflowing && (
           <div
-            className={`absolute -bottom-0 flex w-full items-end justify-center ${expandedText ? "animate-fade h-0" : "animate-fade h-12"} bg-gradient-to-b from-transparent to-black transition-all duration-100`}
+            className={`absolute -bottom-0 flex w-full items-end justify-center
+            ${expandedText ? "animate-fade h-0" : "animate-fade h-12"} bg-gradient-to-b
+            from-transparent to-black transition-all duration-100`}
           >
             <Button
               className="flex w-32 items-center gap-2 bg-black"

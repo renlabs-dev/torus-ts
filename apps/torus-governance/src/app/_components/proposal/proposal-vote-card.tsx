@@ -51,7 +51,8 @@ const AlreadyVotedCardContent = (props: {
       {getVotedText(voted)}
       <Button
         variant="outline"
-        className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
+        className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center
+          font-semibold text-white transition duration-200"
         onClick={handleRemoveVote}
         type="button"
       >
@@ -91,7 +92,7 @@ const VoteCardFunctionsContent = (props: {
 
   return (
     <div className="flex w-full flex-col items-end gap-4">
-      <div className={`z-20 flex w-full flex-col items-start gap-2`}>
+      <div className={"z-20 flex w-full flex-col items-start gap-2"}>
         <ToggleGroup
           type="single"
           value={vote}
@@ -106,7 +107,8 @@ const VoteCardFunctionsContent = (props: {
               key={option}
               variant="outline"
               value={option}
-              className={`w-full capitalize ${votingStatus.status === "PENDING" && "cursor-not-allowed"} ${option === vote ? "border-white" : "border-muted bg-card"}`}
+              className={`w-full capitalize ${votingStatus.status === "PENDING" && "cursor-not-allowed"}
+              ${option === vote ? "border-white" : "border-muted bg-card"}`}
               disabled={votingStatus.status === "PENDING"}
             >
               {option.toLocaleLowerCase()}
@@ -116,7 +118,8 @@ const VoteCardFunctionsContent = (props: {
 
         <Button
           variant="outline"
-          className={`w-full ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
+          className={`w-full
+            ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
           disabled={
             vote === "UNVOTED" ||
             votingStatus.status === "PENDING" ||
@@ -190,16 +193,16 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
 
   async function handleVote(): Promise<void> {
     const voteBoolean = vote === "FAVORABLE";
-    
+
     const [error, _] = await tryAsync(
       voteProposal({
         proposalId,
         vote: voteBoolean,
         callback: handleCallback,
         refetchHandler,
-      })
+      }),
     );
-    
+
     if (error !== undefined) {
       setVotingStatus({
         status: "ERROR",
@@ -215,15 +218,15 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
       finalized: false,
       message: "Starting vote removal",
     });
-    
+
     const [error, _] = await tryAsync(
       removeVoteProposal({
         proposalId,
         callback: handleCallback,
         refetchHandler,
-      })
+      }),
     );
-    
+
     if (error !== undefined) {
       setVotingStatus({
         status: "ERROR",

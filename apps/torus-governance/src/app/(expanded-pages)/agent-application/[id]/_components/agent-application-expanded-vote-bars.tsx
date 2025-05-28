@@ -38,41 +38,43 @@ export function AgentApplicationExpandedVoteBars({ id }: { id: number }) {
   const favorableWidth = (favorableVotes / threshold) * 100;
   const againstWidth = (againstVotes / totalCadreMembers) * 100;
 
-const VoteBar = ({ label, votes, threshold, width }: VoteBarProps) => (
-  <div className="flex w-full flex-col gap-2">
-    <div className="flex w-full items-center justify-between">
-      <span className="text-sm text-white">{label}</span>
-      <span className="text-muted-foreground text-xs">
-        {votes}/{threshold}
-      </span>
-    </div>
-    <div className="bg-primary-foreground border-border relative h-6 w-full overflow-hidden rounded-full border">
+  const VoteBar = ({ label, votes, threshold, width }: VoteBarProps) => (
+    <div className="flex w-full flex-col gap-2">
+      <div className="flex w-full items-center justify-between">
+        <span className="text-sm text-white">{label}</span>
+        <span className="text-muted-foreground text-xs">
+          {votes}/{threshold}
+        </span>
+      </div>
       <div
-        className="absolute h-full rounded-full bg-white/40"
-        style={{ width: `${width}%` }}
-      />
+        className="bg-primary-foreground border-border relative h-6 w-full overflow-hidden
+          rounded-full border"
+      >
+        <div
+          className="absolute h-full rounded-full bg-white/40"
+          style={{ width: `${width}%` }}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
 
+  return (
+    <Card className="animate-fade-down flex w-full flex-col gap-6 p-6">
+      <h3 className="font-medium text-white">Vote Progress</h3>
 
-return (
-  <Card className="animate-fade-down flex w-full flex-col gap-6 p-6">
-    <h3 className="font-medium text-white">Vote Progress</h3>
-    
-    <VoteBar 
-      label="Favorable" 
-      votes={favorableVotes} 
-      threshold={threshold} 
-      width={favorableWidth} 
-    />
-    
-    <VoteBar 
-      label="Against" 
-      votes={againstVotes} 
-      threshold={threshold} 
-      width={againstWidth} 
-    />
-  </Card>
-);
+      <VoteBar
+        label="Favorable"
+        votes={favorableVotes}
+        threshold={threshold}
+        width={favorableWidth}
+      />
+
+      <VoteBar
+        label="Against"
+        votes={againstVotes}
+        threshold={threshold}
+        width={againstWidth}
+      />
+    </Card>
+  );
 }
