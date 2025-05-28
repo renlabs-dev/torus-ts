@@ -17,7 +17,7 @@ export const constraintExamples: ConstraintExample[] = [
       permId: "1",
       body: BoolExpr.comp(
         CompOp.Gte,
-        NumExpr.stakeOf("user-account"),
+        NumExpr.stakeOf(""),
         NumExpr.literal(1000),
       ),
     },
@@ -29,16 +29,12 @@ export const constraintExamples: ConstraintExample[] = [
     constraint: {
       permId: "2",
       body: BoolExpr.or(
-        BoolExpr.comp(
-          CompOp.Gte,
-          NumExpr.stakeOf("user-account"),
-          NumExpr.literal(10000),
-        ),
+        BoolExpr.comp(CompOp.Gte, NumExpr.stakeOf(""), NumExpr.literal(10000)),
         BoolExpr.or(
           BoolExpr.and(
             BoolExpr.comp(
               CompOp.Gte,
-              NumExpr.stakeOf("user-account"),
+              NumExpr.stakeOf(""),
               NumExpr.literal(5000),
             ),
             BoolExpr.base(
@@ -51,7 +47,7 @@ export const constraintExamples: ConstraintExample[] = [
           BoolExpr.and(
             BoolExpr.comp(
               CompOp.Eq,
-              NumExpr.stakeOf("user-account"),
+              NumExpr.stakeOf(""),
               NumExpr.literal(2500),
             ),
             BoolExpr.base(
@@ -74,14 +70,14 @@ export const constraintExamples: ConstraintExample[] = [
   //     body: BoolExpr.or(
   //       BoolExpr.comp(
   //         CompOp.Gte,
-  //         NumExpr.hasToDelegate("user-account"),
+  //         NumExpr.hasToDelegate(""),
   //         NumExpr.decimal("5%"),
   //       ),
   //       BoolExpr.or(
   //         BoolExpr.and(
   //           BoolExpr.comp(
   //             CompOp.Gte,
-  //             NumExpr.hasToDelegate("user-account"),
+  //             NumExpr.hasToDelegate(""),
   //             NumExpr.decimal("3%"),
   //           ),
   //           BoolExpr.base(
@@ -94,7 +90,7 @@ export const constraintExamples: ConstraintExample[] = [
   //         BoolExpr.and(
   //           BoolExpr.comp(
   //             CompOp.Eq,
-  //             NumExpr.hasToDelegate("user-account"),
+  //             NumExpr.hasToDelegate(""),
   //             NumExpr.decimal("1.5%"),
   //           ),
   //           BoolExpr.base(

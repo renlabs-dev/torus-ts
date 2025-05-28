@@ -19,8 +19,8 @@ export function ConstraintTutorialDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="lg" className="shadow-lg">
-          <HelpCircle className="h-4 w-4 mr-2" />
+        <Button variant="outline" className="shadow-lg">
+          <HelpCircle className="h-4 w-4 mr-1" />
           Tutorial
         </Button>
       </DialogTrigger>
@@ -41,13 +41,13 @@ export function ConstraintTutorialDialog() {
                 What are Constraints?
               </h3>
               <div className="bg-accent p-4 rounded-lg border">
-                <p className="text-sm leading-relaxed">
+                <div className="text-sm leading-relaxed">
                   Constraints are conditional rules that govern when and how
                   emission permissions can be executed. They act as programmable
                   logic gates that must evaluate to{" "}
                   <Badge variant="secondary">true</Badge> before a permission
                   can distribute emissions to target accounts.
-                </p>
+                </div>
               </div>
             </section>
 
