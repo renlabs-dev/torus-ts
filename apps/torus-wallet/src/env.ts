@@ -13,6 +13,7 @@ if (process?.env) {
 // warning: DO NOT expose any sensitive data on the schema default values!
 export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
+
   /*
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
@@ -25,6 +26,15 @@ export const envSchema = {
     .string()
     .default("5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"),
   NEXT_PUBLIC_TORUS_GA_ID: z.string().default("G-7YCMH64Q4J"),
+  NEXT_PUBLIC_BASE_URL: z
+    .string()
+    .url()
+    .default(
+      process?.env?.NODE_ENV === "production"
+        ? "https://wallet.torus.network"
+        : // : "https://wallet.testnet.torus.network",
+          "https://pr-236.torus-wallet.torus.network",
+    ),
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

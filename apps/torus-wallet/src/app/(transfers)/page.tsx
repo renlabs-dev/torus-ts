@@ -1,18 +1,13 @@
-import type { TabItem } from "~/app/_components/tab-layout";
-import { TabLayout } from "~/app/_components/tab-layout";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Receive } from "~/app/(transfers)/_components/receive/receive";
 import { Send } from "~/app/(transfers)/_components/send/send";
-import { generateMetadata } from "~/utils/seo";
+import type { TabItem } from "~/app/_components/tab-layout";
+import { TabLayout } from "~/app/_components/tab-layout";
+import { env } from "~/env";
 
-export const metadata = generateMetadata({
+export const metadata = createSeoMetadata({
   title: "Transfer Tokens - Torus Wallet",
   description: "Send and receive digital assets securely with Torus Wallet",
-  ogTitle: "Transfer Tokens - Torus Wallet",
-  ogDescription: "Send and receive digital assets securely with Torus Wallet",
-  twitterTitle: "Transfer Tokens - Torus Wallet",
-  twitterDescription:
-    "Send and receive digital assets securely with Torus Wallet",
-  canonical: "/transfers",
   keywords: [
     "crypto wallet",
     "torus",
@@ -21,6 +16,12 @@ export const metadata = generateMetadata({
     "transfer",
     "web3",
   ],
+  ogTitle: "Transfer Tokens - Torus Wallet",
+  ogDescription: "Send and receive digital assets securely with Torus Wallet",
+  twitterTitle: "Transfer Tokens - Torus Wallet",
+  twitterDescription:
+    "Send and receive digital assets securely with Torus Wallet",
+  baseUrl: env("NEXT_PUBLIC_BASE_URL"),
 });
 
 const tabs: TabItem[] = [
