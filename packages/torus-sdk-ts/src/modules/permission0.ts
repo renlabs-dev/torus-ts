@@ -28,8 +28,7 @@ import {
   sb_some,
   sb_struct,
 } from "../types";
-
-type Api = ApiPromise;
+import type { Api } from "./_common";
 
 // ==== Base Types ====
 
@@ -249,7 +248,7 @@ export async function queryPermissionsByGrantee(
   );
   if (queryError) return makeErr(queryError);
 
-  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query.toJSON());
+  const parsed = sb_some(sb_array(PERMISSION_ID_SCHEMA)).safeParse(query);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -420,7 +419,7 @@ export function canExecutePermission(
  * Grant an emission permission to a grantee
  */
 export interface GrantEmissionPermission {
-  api: Api;
+  api: ApiPromise;
   grantee: string;
   allocation: EmissionAllocation;
   targets: [SS58Address, number][];
