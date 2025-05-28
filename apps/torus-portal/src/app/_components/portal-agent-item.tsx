@@ -130,8 +130,8 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
             hover:no-underline`}
         >
           <IdCard size={16} />
-          <span className="hidden md:block">{smallAddress(agentKey, 5)}</span>
-          <span className="block md:hidden">{smallAddress(agentKey, 4)}</span>
+          {/* <span className="hidden md:block">{smallAddress(agentKey, 5)}</span>
+          <span className="block md:hidden">{smallAddress(agentKey, 4)}</span> */}
         </CopyButton>
       </div>
     </Card>

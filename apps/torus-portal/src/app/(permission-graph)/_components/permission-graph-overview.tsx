@@ -6,12 +6,6 @@ interface PermissionGraphOverviewProps {
   graphData: CustomGraphData | null;
 }
 
-const roleColors = [
-  { color: "#ff6b6b", label: "Grantor" },
-  { color: "#1dd1a1", label: "Grantee" },
-  { color: "#5f27cd", label: "Both" },
-];
-
 export const PermissionGraphOverview = memo(function PermissionGraphOverview({
   graphData,
 }: PermissionGraphOverviewProps) {

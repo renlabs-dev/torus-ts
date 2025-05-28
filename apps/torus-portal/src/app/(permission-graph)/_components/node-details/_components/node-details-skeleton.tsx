@@ -64,7 +64,7 @@ export function NodeDetailsSkeleton({
           <ScrollArea className="flex-1 min-h-0 max-h-full p-2">
             <div className="flex max-h-96 overflow-auto">
               <Accordion type="single" collapsible className="w-full">
-                {sortedPermissions.map((permission, index) => {
+                {sortedPermissions.map((permission) => {
                   const details = permissionDetails?.find(
                     (p) =>
                       p.grantor_key === permission.source &&
@@ -161,7 +161,9 @@ export function NodeDetailsSkeleton({
                                   Enforcement
                                 </span>
                                 <div className="font-mono text-gray-300 break-all">
-                                  {smallAddress(details.enforcement, 4)}
+                                  {/*todo edit*/}
+                                  {details.enforcement}
+                                  {/* {smallAddress(details.enforcement, 4)} */}
                                 </div>
                               </div>
 
