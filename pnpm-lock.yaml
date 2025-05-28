@@ -744,6 +744,15 @@ importers:
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@trpc/client':
+        specifier: 'catalog:'
+        version: 11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2)
+      '@trpc/react-query':
+        specifier: 'catalog:'
+        version: 11.0.0-rc.828(@tanstack/react-query@5.67.3(react@19.0.0))(@trpc/client@11.0.0-rc.828(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.0.0-rc.828(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)
+      '@trpc/server':
+        specifier: 'catalog:'
+        version: 11.0.0-rc.828(typescript@5.8.2)
       '@xyflow/react':
         specifier: ^12.6.4
         version: 12.6.4(@types/react@19.0.12)(immer@10.1.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -3712,6 +3721,7 @@ packages:
 
   '@jnwng/walletconnect-solana@0.2.0':
     resolution: {integrity: sha512-nyRq0xLEj9i2J4UXQ0Mr4KzsooTMbLu0ewHOqdQV7iZE0PfbtKa8poTSF4ZBAQD8hoMHEx+I7zGFCNMI9BTrTA==}
+    deprecated: Please use https://www.npmjs.com/package/@walletconnect/solana-adapter instead
     peerDependencies:
       '@solana/web3.js': ^1.63.0
 
@@ -6947,6 +6957,7 @@ packages:
   '@solana/wallet-adapter-walletconnect@0.1.17':
     resolution: {integrity: sha512-p6Jz4RrfEmCHsiDFukMdhDaeZdXDRT5QfRolVlbVbWpCU1Hop0iFMcKTeqvvLAjjDCliuYq6+N5MgKN8G0rjbg==}
     engines: {node: '>=20'}
+    deprecated: Please use https://www.npmjs.com/package/@walletconnect/solana-adapter instead
     peerDependencies:
       '@solana/web3.js': ^1.77.3
 
@@ -7006,6 +7017,7 @@ packages:
   '@solana/web3.js@2.0.0':
     resolution: {integrity: sha512-x+ZRB2/r5tVK/xw8QRbAfgPcX51G9f2ifEyAQ/J5npOO+6+MPeeCjtr5UxHNDAYs9Ypo0PN+YJATCO4vhzQJGg==}
     engines: {node: '>=20.18.0'}
+    deprecated: '@solana/web3.js version 2.0 is now @solana/kit! Remove @solana/web3.js@2 from your dependencies and replace it with @solana/kit. As needed, upgrade all of your @solana-program/* dependencies to the latest versions that use Kit.'
     peerDependencies:
       typescript: '>=5'
 
@@ -11719,6 +11731,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch-native@1.6.6:
     resolution: {integrity: sha512-8Mc2HhqPdlIfedsuZoc3yioPuzp6b+L5jRCRY1QzuWZh2EGJVQrGppC6V6cF0bLdbW0+O2YpqCA25aF/1lvipQ==}
