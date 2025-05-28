@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/consistent-type-imports */
 
 import "@polkadot/api/augment";
 
@@ -8,11 +7,15 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { checkSS58 } from "./address";
 import {
   generateRootStreamId,
+  PermissionContract,
+  PermissionId,
   queryAccumulatedStreamsForAccount,
   queryPermissions,
+  queryPermissionsByGrantee,
   queryPermissionsByGrantor,
   StreamId,
 } from "./modules/permission0";
+import { extractFromMap } from "@torus-network/torus-utils/collections";
 
 // $ pnpm exec tsx src/main.ts
 
@@ -32,16 +35,18 @@ const api = await connectToChainRpc(NODE_URL);
 
 // ====
 
-const [e0, r0] = await queryPermissions(api);
+// Get all permissions
+const [e0, permissions] = await queryPermissions(api);
 if (e0 !== undefined) {
   console.error("Query failed:", e0);
   process.exit(1);
 }
-console.log("Permissions:", r0);
+console.log("Permissions:", permissions);
 
-// ====
+// ----
 
-const [e1, r1] = await queryPermissionsByGrantor(
+// Get ids of permission by a specific grantor
+const [e1, permsFromFooIds] = await queryPermissionsByGrantor(
   api,
   "5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL",
 );
@@ -50,48 +55,23 @@ if (e1 !== undefined) {
   process.exit(1);
 }
 
-console.log("Permissions by grantor:", r1);
+console.log("Permissions by grantor:", permsFromFooIds);
 console.log();
 console.log();
 
-// --
+// ----
 
-const testAccount = checkSS58(
-  "5Guyw73fh7UvPXPtQ1bGqoTS8DRoZJHd2PTGwxS8PhHAN8HG",
-);
-console.log("Testing with account:", testAccount);
-console.log();
+// Get data of permissions by a specific grantor
+const permsFromFoo = extractFromMap(permissions, permsFromFooIds);
 
-const result = await queryAccumulatedStreamsForAccount(api, testAccount);
-
-const [error, streamsMap] = result;
-
-const streamIds = new Set<StreamId>();
-
-if (error !== undefined) {
-  console.error("Query failed:", error);
-} else {
-  console.log(`Found accumulated streams for ${streamsMap.size} stream(s)`);
-
-  for (const [streamId, permissionsMap] of streamsMap) {
-    console.log(`\nStream ID: ${streamId}`);
-    console.log(`  Permissions count: ${permissionsMap.size}`);
-
-    for (const [permissionId, amount] of permissionsMap) {
-      console.log(`  Permission ID: ${permissionId}`);
-      console.log(`  Amount: ${amount.toString()}`);
-    }
-
-    streamIds.add(streamId);
-    console.log();
-  }
+for (const [id, perm] of permsFromFoo) {
+  console.log("Permissions with id:", id);
+  console.log(perm);
+  // debugger;
+  console.log();
 }
 
-const rootStreamIdForAccount = generateRootStreamId(testAccount);
-
-const allStreamIds = [rootStreamIdForAccount, ...streamIds];
-
-console.log(`All stream IDs for account ${testAccount}:`, allStreamIds);
+// ----
 
 await api.disconnect();
 
