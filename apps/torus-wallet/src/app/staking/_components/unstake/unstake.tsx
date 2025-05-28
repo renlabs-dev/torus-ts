@@ -10,6 +10,8 @@ import { useForm } from "react-hook-form";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
+import type { UpdatedTransaction } from "~/store/transactions-store";
+import { useTransactionsStore } from "~/store/transactions-store";
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
@@ -19,6 +21,7 @@ import type { UnstakeFormValues } from "./unstake-form-schema";
 import { createUnstakeFormSchema } from "./unstake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { SS58Address } from "@torus-network/sdk";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
@@ -40,6 +43,17 @@ export function Unstake() {
     minAllowedStake,
     getExistentialDeposit,
   } = useWallet();
+
+  const addTransaction = useTransactionsStore((state) => state.addTransaction);
+  const isTransactionError = useTransactionsStore(
+    (state) => state.isTransactionError,
+  );
+  const isTransactionCompleted = useTransactionsStore(
+    (state) => state.isTransactionCompleted,
+  );
+  const updateTransaction = useTransactionsStore(
+    (state) => state.updateTransaction,
+  );
 
   const { toast } = useToast();
   const { usdPrice } = useUsdPrice();
@@ -137,8 +151,25 @@ export function Unstake() {
     }
   };
 
-  const handleCallback = (callbackReturn: TransactionResult) => {
+  const handleCallback = (callbackReturn: TransactionResult, txId: string) => {
     setTransactionStatus(callbackReturn);
+
+    if (!isTransactionCompleted(callbackReturn.status)) return;
+
+    const isError = isTransactionError(callbackReturn.status);
+
+    const updatedTransaction: UpdatedTransaction = isError
+      ? {
+          status: "ERROR",
+          metadata: { error: "Transaction failed" },
+        }
+      : {
+          status: "SUCCESS",
+          hash: callbackReturn.hash ?? "unknown",
+        };
+
+    updateTransaction(txId, updatedTransaction);
+
     if (callbackReturn.status === "SUCCESS") {
       reset();
     }
@@ -151,16 +182,38 @@ export function Unstake() {
       message: "Awaiting Signature",
     });
 
+    if (!selectedAccount?.address) {
+      toast.error("No account selected");
+      return;
+    }
+
+    const txId = addTransaction({
+      type: "unstake",
+      fromAddress: selectedAccount.address as SS58Address,
+      toAddress: values.validator,
+      amount: values.amount,
+      fee: feeRef.current?.getEstimatedFee() ?? "0",
+      status: "PENDING",
+      metadata: {
+        usdPrice: usdPrice,
+      },
+    });
+
     const [error] = await tryAsync(
       removeStake({
         validator: checkSS58(values.validator),
         amount: values.amount,
-        callback: handleCallback,
+        callback: (args) => handleCallback(args, txId),
         refetchHandler,
       }),
     );
 
     if (error !== undefined) {
+      updateTransaction(txId, {
+        status: "ERROR",
+        metadata: { error: error.message },
+      });
+
       setTransactionStatus({
         status: "ERROR",
         finalized: true,

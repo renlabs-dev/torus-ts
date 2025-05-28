@@ -4,6 +4,7 @@ export interface TransactionResult {
   finalized: boolean;
   message: string | null;
   status: "SUCCESS" | "ERROR" | "PENDING" | "STARTING" | null;
+  hash?: string;
 }
 
 // TODO: amount field should be `bigint`
