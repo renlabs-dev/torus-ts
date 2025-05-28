@@ -17,6 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@torus-ts/ui/components/command";
 
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -88,7 +96,10 @@ export default function ConstraintControlsSheet({
           Create Constraint
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-96 z-[75]">
+      <SheetContent
+        side="right"
+        className="w-96 z-[75] flex flex-col justify-between h-full"
+      >
         <SheetHeader>
           <SheetTitle>Constraint Controls</SheetTitle>
         </SheetHeader>
@@ -203,23 +214,35 @@ export default function ConstraintControlsSheet({
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Load Example</label>
-            <Select value={selectedExample} onValueChange={onLoadExample}>
-              <SelectTrigger>
-                <SelectValue placeholder="Load constraint example..." />
-              </SelectTrigger>
-              <SelectContent>
-                {constraintExamples.map((example) => (
-                  <SelectItem key={example.id} value={example.id}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{example.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {example.description}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Command className="rounded-md border">
+              <CommandInput placeholder="Search examples..." />
+              <CommandList>
+                <CommandEmpty>No examples found.</CommandEmpty>
+                <CommandGroup>
+                  {constraintExamples.map((example) => (
+                    <CommandItem
+                      key={example.id}
+                      value={example.id}
+                      onSelect={(currentValue) => {
+                        onLoadExample(currentValue);
+                      }}
+                      className={
+                        selectedExample === example.id
+                          ? "bg-accent text-white"
+                          : ""
+                      }
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-medium">{example.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {example.description}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
           </div>
         </div>
 
