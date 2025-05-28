@@ -225,10 +225,7 @@ export async function queryPermissions(
 /**
  * Query permissions by grantor
  */
-export async function queryPermissionsByGrantor(
-  api: Api,
-  grantor: string,
-): Promise<Result<PermissionId[], ZError<H256[]> | Error>> {
+export async function queryPermissionsByGrantor(api: Api, grantor: string) {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantor(grantor),
   );
