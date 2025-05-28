@@ -18,23 +18,34 @@ const config = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "wallet.torus.network",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.torus.network",
+        pathname: "/**",
+      },
+    ],
+  },
+
   async headers() {
     return [
       {
-        source: "/:path*.(svg|jpg|png|ico|webp)",
+        source: "/:path*.(svg|jpg|png|ico)",
         headers: [
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
-          {
-            key: "Content-Type",
-            value: "image/*",
-          },
         ],
       },
       {
-        source: "/og.webp",
+        source: "/og.png",
         headers: [
           {
             key: "Cache-Control",
@@ -42,20 +53,7 @@ const config = {
           },
           {
             key: "Content-Type",
-            value: "image/webp",
-          },
-        ],
-      },
-      {
-        source: "/logo.svg",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400, s-maxage=86400",
-          },
-          {
-            key: "Content-Type",
-            value: "image/svg+xml",
+            value: "image/png",
           },
         ],
       },

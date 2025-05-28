@@ -28,14 +28,13 @@ export function generateMetadata({
       : // : "https://wallet.testnet.torus.network";
         "https://pr-236.torus-wallet.torus.network";
 
-  const ogImageUrl = `/og.png`;
-  const fullOgImageUrl = `${baseUrl}${ogImageUrl}`;
+  const ogImageUrl = `${baseUrl}/og.png`;
 
   return {
     title,
     description,
     keywords,
-    robots: "index, follow",
+    robots: { index: true, follow: true },
     icons: [
       { rel: "icon", url: "/favicon.ico" },
       {
@@ -51,13 +50,14 @@ export function generateMetadata({
       type: "website",
       siteName: "Torus Wallet",
       locale: "en_US",
-      url: canonical,
+      url: `${baseUrl}${canonical}`,
       images: [
         {
           url: ogImageUrl,
-          width: 2400,
-          height: 1260,
-          alt: "Torus Wallet - Secure Digital Asset Management",
+          width: 1200,
+          height: 630,
+          alt: ogTitle,
+          type: "image/png",
         },
       ],
     },
@@ -67,20 +67,15 @@ export function generateMetadata({
       description: twitterDescription,
       creator: "@torus_network",
       site: "@torus_network",
-      images: [ogImageUrl],
-    },
-    other: {
-      "og:image:secure_url": fullOgImageUrl,
-      "og:image:width": "2400",
-      "og:image:height": "1260",
-      "og:image:type": "image/png",
-      "og:image:alt": "Torus Wallet - Secure Digital Asset Management",
-      "twitter:image": fullOgImageUrl,
-      "twitter:image:alt": "Torus Wallet - Secure Digital Asset Management",
-      "theme-color": "#000000",
+      images: [
+        {
+          url: ogImageUrl,
+          alt: twitterTitle,
+        },
+      ],
     },
     alternates: {
-      canonical: canonical,
+      canonical: `${baseUrl}${canonical}`,
     },
   };
 }
