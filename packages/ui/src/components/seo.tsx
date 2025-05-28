@@ -31,7 +31,7 @@ export interface SeoMetadataConfig {
   twitterDescription?: string;
 
   // URL configuration
-  canonical?: string;
+  canonical: string;
   baseUrl: string;
 
   // Custom image (optional)
@@ -46,7 +46,7 @@ export function createSeoMetadata({
   ogDescription,
   twitterTitle,
   twitterDescription,
-  canonical = "/",
+  canonical,
   baseUrl,
   ogImagePath = "/og.png",
 }: SeoMetadataConfig): Metadata {

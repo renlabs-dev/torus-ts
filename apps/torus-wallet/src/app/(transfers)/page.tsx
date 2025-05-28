@@ -16,12 +16,8 @@ export const metadata = createSeoMetadata({
     "transfer",
     "web3",
   ],
-  ogTitle: "Transfer Tokens - Torus Wallet",
-  ogDescription: "Send and receive digital assets securely with Torus Wallet",
-  twitterTitle: "Transfer Tokens - Torus Wallet",
-  twitterDescription:
-    "Send and receive digital assets securely with Torus Wallet",
   baseUrl: env("NEXT_PUBLIC_BASE_URL"),
+  canonical: "/transfers",
 });
 
 const tabs: TabItem[] = [

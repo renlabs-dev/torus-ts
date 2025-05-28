@@ -18,12 +18,8 @@ export const metadata = createSeoMetadata({
     "earn rewards",
     "web3",
   ],
-  ogTitle: "Staking - Torus Wallet",
-  ogDescription: "Stake your tokens and earn rewards in the Torus ecosystem",
-  twitterTitle: "Staking - Torus Wallet",
-  twitterDescription:
-    "Stake your tokens and earn rewards in the Torus ecosystem",
   baseUrl: env("NEXT_PUBLIC_BASE_URL"),
+  canonical: "/staking",
 });
 
 const tabs: TabItem[] = [

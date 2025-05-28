@@ -28,6 +28,7 @@ export const metadata = createSeoMetadata({
   twitterTitle: "Torus Wallet",
   twitterDescription: "Secure Digital Asset Management in the Torus Ecosystem",
   baseUrl: env("NEXT_PUBLIC_BASE_URL"),
+  canonical: "/",
 });
 
 interface ProvidersProps {
