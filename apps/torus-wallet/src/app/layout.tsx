@@ -45,6 +45,9 @@ export default function RootLayout({
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
+      <meta property="og:image" content="/og.png" />
+      <meta property="og:image:alt" content="Torus Protocol" />
+
       <Providers
         wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
         torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}

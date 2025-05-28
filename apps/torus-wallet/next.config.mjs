@@ -1,11 +1,7 @@
-// Import env files to validate at build time. Use jiti so we can load .ts files in here.
-// WARNING: ONLY NEEDED IF NEXT_PUBLIC_* VARIABLES ARE USED IN THE APP DIRECTLY
-// createJiti(fileURLToPath(import.meta.url))("./src/env");
-
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  /** Enables hot reloading for local packages without a build step */
+
   transpilePackages: [
     "@torus-ts/api",
     "@torus-ts/db",
@@ -14,24 +10,8 @@ const config = {
     "@torus-ts/env-validation",
   ],
 
-  /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "wallet.torus.network",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "*.torus.network",
-        pathname: "/**",
-      },
-    ],
-  },
 
   async headers() {
     return [
