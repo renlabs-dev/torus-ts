@@ -1,5 +1,4 @@
-// /* eslint-disable @typescript-eslint/no-unused-vars */
-// /* eslint-disable @typescript-eslint/consistent-type-imports */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import "@polkadot/api/augment";
 
@@ -8,12 +7,16 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { checkSS58 } from "./address";
 import {
   generateRootStreamId,
+  PermissionContract,
+  PermissionId,
   queryAccumulatedStreamsForAccount,
   queryPermission,
   queryPermissions,
+  queryPermissionsByGrantee,
   queryPermissionsByGrantor,
   StreamId,
 } from "./modules/permission0";
+import { extractFromMap } from "@torus-network/torus-utils/collections";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 
@@ -37,7 +40,8 @@ const api = await connectToChainRpc(NODE_URL);
 
 // // ====
 
-const [e0, r0] = await queryPermissions(api);
+// Get all permissions
+const [e0, permissions] = await queryPermissions(api);
 if (e0 !== undefined) {
   console.error("Query failed:", e0);
   process.exit(1);
@@ -261,6 +265,37 @@ async function calculateStreamsForAllAgents(api: ApiPromise): Promise<Map<string
 
 log.info("Calculating streams for all agents...")
 await calculateStreamsForAllAgents(api)
+console.log("Permissions:", permissions);
+
+// ----
+
+// Get ids of permission by a specific grantor
+const [e1, permsFromFooIds] = await queryPermissionsByGrantor(
+  api,
+  "5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL",
+);
+if (e1 !== undefined) {
+  console.error("Query failed:", e1);
+  process.exit(1);
+}
+
+console.log("Permissions by grantor:", permsFromFooIds);
+console.log();
+console.log();
+
+// ----
+
+// Get data of permissions by a specific grantor
+const permsFromFoo = extractFromMap(permissions, permsFromFooIds);
+
+for (const [id, perm] of permsFromFoo) {
+  console.log("Permissions with id:", id);
+  console.log(perm);
+  // debugger;
+  console.log();
+}
+
+// ----
 
 await api.disconnect();
 
