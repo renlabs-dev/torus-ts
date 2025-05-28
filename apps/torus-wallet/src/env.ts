@@ -28,7 +28,7 @@ export const envSchema = {
   NEXT_PUBLIC_TORUS_GA_ID: z.string().default("G-7YCMH64Q4J"),
   NEXT_PUBLIC_BASE_URL: z
     .string()
-    .url()
+    .optional()
     .default(
       process?.env?.NODE_ENV === "production"
         ? "https://wallet.torus.network"
