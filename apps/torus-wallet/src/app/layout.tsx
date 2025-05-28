@@ -1,22 +1,38 @@
+import "@torus-ts/ui/globals.css";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { Seo, createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
-import "@torus-ts/ui/globals.css";
 import { UsdPriceProvider } from "~/context/usd-price-provider";
 import { WalletProvider } from "~/context/wallet-provider";
 import { EnvScript, env } from "~/env";
 import { firaMono } from "~/utils/fonts";
-import { generateMetadata } from "~/utils/seo";
 import { APRBar } from "./_components/apr-bar/apr-bar";
 import { SidebarLinks } from "./_components/sidebar-links";
 import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
 
-export const metadata = generateMetadata();
+export const metadata = createSeoMetadata({
+  title: "Torus Wallet - Secure Digital Asset Management",
+  description:
+    "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
+  keywords: ["crypto wallet", "torus", "blockchain", "digital assets", "web3"],
+  ogTitle: "Torus Wallet - Secure Digital Asset Management",
+  ogDescription:
+    "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence.",
+  twitterTitle: "Torus Wallet",
+  twitterDescription: "Secure Digital Asset Management in the Torus Ecosystem",
+  baseUrl:
+    env("NODE_ENV") === "production"
+      ? "https://wallet.torus.network"
+      : // : "https://wallet.testnet.torus.network";
+        "https://pr-236.torus-wallet.torus.network",
+});
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -45,8 +61,7 @@ export default function RootLayout({
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      <meta property="og:image" content="/og.png" />
-      <meta property="og:image:alt" content="Torus Protocol" />
+      <Seo ogImageAlt="Torus Wallet" />
 
       <Providers
         wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
