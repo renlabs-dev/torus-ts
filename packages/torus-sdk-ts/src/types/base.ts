@@ -31,4 +31,4 @@ export const sb_h256 = z
   })
   .transform((value) => value.toHex());
 
-export const sb_h256_hex = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
+export const H256_HEX = z.string().regex(/^0x[a-fA-F0-9]{64}$/);

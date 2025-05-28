@@ -50,6 +50,7 @@ export function NumExprField({
             <Select
               onValueChange={(value) => {
                 field.onChange(value);
+                field.onBlur();
                 // Reset fields when type changes
                 toast({
                   title: "Expression type changed",
@@ -89,7 +90,13 @@ export function NumExprField({
             <FormItem>
               <FormLabel>Value</FormLabel>
               <FormControl>
-                <Input placeholder="Enter a number value" {...field} />
+                <Input
+                  placeholder="Enter a number value"
+                  {...field}
+                  onBlur={(e) => {
+                    field.onBlur();
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -105,7 +112,13 @@ export function NumExprField({
             <FormItem>
               <FormLabel>Account</FormLabel>
               <FormControl>
-                <Input placeholder="Enter account address" {...field} />
+                <Input
+                  placeholder="Enter account address"
+                  {...field}
+                  onBlur={(e) => {
+                    field.onBlur();
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -135,7 +148,13 @@ export function NumExprField({
               <FormItem>
                 <FormLabel>From Account</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter from account address" {...field} />
+                  <Input
+                    placeholder="Enter from account address"
+                    {...field}
+                    onBlur={(e) => {
+                      field.onBlur();
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -148,7 +167,13 @@ export function NumExprField({
               <FormItem>
                 <FormLabel>To Account</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter to account address" {...field} />
+                  <Input
+                    placeholder="Enter to account address"
+                    {...field}
+                    onBlur={(e) => {
+                      field.onBlur();
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

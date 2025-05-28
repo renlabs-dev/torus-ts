@@ -1,12 +1,13 @@
 import type { Node, Edge } from "@xyflow/react";
-import type {
-  BoolExprType,
-  NumExprType,
-  BaseConstraintType,
-  Constraint,
-} from "../../../utils/dsl";
+
 import type { PermissionNodeData } from "./constraint-nodes/constraint-node-types";
 import { constraintValidationSchema } from "./constraint-validation-schemas";
+import type {
+  BaseConstraintType,
+  BoolExprType,
+  Constraint,
+  NumExprType,
+} from "@torus-ts/dsl";
 
 type NodeMap = Record<string, Node<PermissionNodeData>>;
 
@@ -90,20 +91,20 @@ export function validateConstraintForm(
   const errors: ValidationError[] = [];
 
   // Check permission ID node
-  const permissionIdNode = nodes.find(node => node.id === "permission-id");
+  const permissionIdNode = nodes.find((node) => node.id === "permission-id");
   if (!permissionIdNode || permissionIdNode.data.type !== "permissionId") {
     errors.push({
       nodeId: "permission-id",
       field: "permissionId",
-      message: "Permission ID node not found"
+      message: "Permission ID node not found",
     });
   } else {
-    const permissionId = (permissionIdNode.data as any).permissionId;
-    if (!permissionId || permissionId.trim() === "") {
+    const permissionId = permissionIdNode.data.permissionId;
+    if (!permissionId) {
       errors.push({
         nodeId: "permission-id",
         field: "permissionId",
-        message: "Permission ID is required"
+        message: "Permission ID is required",
       });
     }
   }
@@ -115,7 +116,7 @@ export function validateConstraintForm(
   if (errors.length > 0) {
     return {
       isValid: false,
-      errors
+      errors,
     };
   }
 
@@ -126,11 +127,11 @@ export function validateConstraintForm(
       errors.push({
         nodeId: rootNodeId,
         field: "constraint",
-        message: "Failed to build constraint from nodes"
+        message: "Failed to build constraint from nodes",
       });
       return {
         isValid: false,
-        errors
+        errors,
       };
     }
 
@@ -138,53 +139,55 @@ export function validateConstraintForm(
     const validationResult = constraintValidationSchema.safeParse(constraint);
     if (!validationResult.success) {
       // Convert Zod errors to our format
-      validationResult.error.errors.forEach(error => {
+      validationResult.error.errors.forEach((error) => {
         errors.push({
           nodeId: "constraint",
           field: error.path.join("."),
-          message: error.message
+          message: error.message,
         });
       });
 
       return {
         isValid: false,
-        errors
+        errors,
       };
     }
 
     return {
       isValid: true,
       errors: [],
-      constraint
+      constraint,
     };
   } catch (error) {
     errors.push({
       nodeId: "constraint",
       field: "general",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message:
+        error instanceof Error ? error.message : "Unknown error occurred",
     });
 
     return {
       isValid: false,
-      errors
+      errors,
     };
   }
 }
 
 function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     const nodeData = node.data as PermissionNodeData;
 
     switch (nodeData.type) {
       case "number": {
-        const expr = (nodeData as any).expression;
+        const expr = nodeData.expression;
         switch (expr.$) {
           case "UIntLiteral":
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (expr.value === undefined || expr.value === null) {
               errors.push({
                 nodeId: node.id,
                 field: "value",
-                message: "Value is required"
+                message: "Value is required",
               });
             }
             break;
@@ -193,7 +196,7 @@ function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
               errors.push({
                 nodeId: node.id,
                 field: "account",
-                message: "Account ID is required"
+                message: "Account ID is required",
               });
             }
             break;
@@ -203,14 +206,14 @@ function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
               errors.push({
                 nodeId: node.id,
                 field: "from",
-                message: "From account ID is required"
+                message: "From account ID is required",
               });
             }
             if (!expr.to || String(expr.to).trim() === "") {
               errors.push({
                 nodeId: node.id,
                 field: "to",
-                message: "To account ID is required"
+                message: "To account ID is required",
               });
             }
             break;
@@ -218,7 +221,7 @@ function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
         break;
       }
       case "base": {
-        const expr = (nodeData as any).expression;
+        const expr = nodeData.expression;
         switch (expr.$) {
           case "PermissionExists":
           case "PermissionEnabled":
@@ -226,7 +229,7 @@ function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
               errors.push({
                 nodeId: node.id,
                 field: "pid",
-                message: "Permission ID is required"
+                message: "Permission ID is required",
               });
             }
             break;

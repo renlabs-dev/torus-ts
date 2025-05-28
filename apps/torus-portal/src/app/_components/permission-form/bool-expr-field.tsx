@@ -33,7 +33,7 @@ export function BoolExprField({
   onDelete?: () => void;
   showDelete?: boolean;
 }) {
-  // Watch the expression type  
+  // Watch the expression type
   const exprType = useWatch({
     control,
     name: `${path}.type` as keyof FormSchema,
@@ -47,7 +47,13 @@ export function BoolExprField({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Expression Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select
+              onValueChange={(value) => {
+                field.onChange(value);
+                field.onBlur();
+              }}
+              defaultValue={field.value}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select expression type" />
@@ -96,7 +102,10 @@ export function BoolExprField({
               <FormItem>
                 <FormLabel>Operator</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    field.onBlur();
+                  }}
                   defaultValue={field.value}
                 >
                   <FormControl>
