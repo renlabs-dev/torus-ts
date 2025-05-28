@@ -1,10 +1,15 @@
 "use client";
 
-import type { CustomGraphData, CustomGraphNode, PermissionDetail, CachedAgentData } from "../../permission-graph-utils";
-import { 
+import type {
+  CustomGraphData,
+  CustomGraphNode,
+  PermissionDetail,
+  CachedAgentData,
+} from "../../permission-graph-utils";
+import {
   getNodePermissions,
   sortPermissions,
- } from "../../permission-graph-utils";
+} from "../../permission-graph-utils";
 import { useMemo, memo } from "react";
 import { NodeDetailsSkeleton } from "./node-details-skeleton";
 
@@ -17,23 +22,22 @@ interface PermissionNodeDetailsProps {
   onBackgroundClick?: () => void;
 }
 
-export const NodeDetailsCard = memo(function NodeDetailsCard({ 
-  selectedNode, 
+export const NodeDetailsCard = memo(function NodeDetailsCard({
+  selectedNode,
   graphData,
   permissionDetails,
   // TODO : When click on the background, it should close the details
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onBackgroundClick 
+  onBackgroundClick,
 }: PermissionNodeDetailsProps) {
-
-  const nodePermissions = useMemo(() => 
-    graphData ? getNodePermissions(selectedNode, graphData) : [], 
-    [selectedNode, graphData]
+  const nodePermissions = useMemo(
+    () => (graphData ? getNodePermissions(selectedNode, graphData) : []),
+    [selectedNode, graphData],
   );
-  
-  const sortedPermissions = useMemo(() => 
-    sortPermissions(nodePermissions, permissionDetails ?? []), 
-    [nodePermissions, permissionDetails]
+
+  const sortedPermissions = useMemo(
+    () => sortPermissions(nodePermissions, permissionDetails ?? []),
+    [nodePermissions, permissionDetails],
   );
 
   if (!graphData) return null;

@@ -1,12 +1,12 @@
 "use client";
 
-import React from 'react';
-import type { JSX } from 'react';
-import { smallAddress } from '@torus-network/torus-utils/subspace';
-import { formatScope } from '../../permission-graph-utils';
-import { UserPlus, UserPen, Layers  } from "lucide-react";
-import type {LucideIcon} from "lucide-react";
-import type { PermissionDetail } from '../../permission-graph-utils';
+import React from "react";
+import type { JSX } from "react";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { formatScope } from "../../permission-graph-utils";
+import { UserPlus, UserPen, Layers } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { PermissionDetail } from "../../permission-graph-utils";
 
 interface IconConfig {
   icon: LucideIcon;
@@ -31,7 +31,7 @@ export function LinkButtons({
   granteeIcon,
   scopeIcon,
   iconSize = 16,
-  iconColor = "currentColor"
+  iconColor = "currentColor",
 }: LinkButtonsProps): JSX.Element {
   if (!details) {
     return (
@@ -45,40 +45,40 @@ export function LinkButtons({
     icon: UserPlus,
     size: iconSize,
     color: iconColor,
-    ...grantorIcon
+    ...grantorIcon,
   };
 
   const defaultGranteeIcon: IconConfig = {
     icon: UserPen,
     size: iconSize,
     color: iconColor,
-    ...granteeIcon
+    ...granteeIcon,
   };
 
   const defaultScopeIcon: IconConfig = {
     icon: Layers,
     size: iconSize,
     color: iconColor,
-    ...scopeIcon
+    ...scopeIcon,
   };
 
-  const AddressDisplay = ({ 
-    address, 
+  const AddressDisplay = ({
+    address,
     label,
-    iconConfig
-  }: { 
+    iconConfig,
+  }: {
     iconConfig: IconConfig;
     address: string;
     label?: string;
   }) => {
     const { icon: Icon, size, color, strokeWidth, className } = iconConfig;
-    
+
     return (
       <div className="flex items-center gap-1" title={address}>
         {label && <span className="sr-only">{label}:</span>}
-        <Icon 
-          size={size} 
-          color={color} 
+        <Icon
+          size={size}
+          color={color}
           strokeWidth={strokeWidth}
           className={className}
         />
@@ -88,12 +88,15 @@ export function LinkButtons({
   };
 
   return (
-    <div className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400 font-mono">
-      <AddressDisplay 
+    <div
+      className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400
+        font-mono"
+    >
+      <AddressDisplay
         iconConfig={defaultGrantorIcon}
         address={smallAddress(details.grantor_key, 3)}
       />
-      <AddressDisplay 
+      <AddressDisplay
         iconConfig={defaultGranteeIcon}
         address={smallAddress(details.grantee_key, 3)}
       />

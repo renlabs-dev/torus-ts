@@ -10,7 +10,9 @@ interface PermissionGraphSearchProps {
   graphNodes?: string[];
 }
 
-const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes = [] }: PermissionGraphSearchProps) {
+const PermissionGraphSearch = memo(function PermissionGraphSearch({
+  graphNodes = [],
+}: PermissionGraphSearchProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,9 +21,11 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
 
   const filteredNodes = useMemo(() => {
     if (searchQuery.length >= 3 && graphNodes.length > 0) {
-      return graphNodes.filter(node => 
-        node.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 5);
+      return graphNodes
+        .filter((node) =>
+          node.toLowerCase().includes(searchQuery.toLowerCase()),
+        )
+        .slice(0, 5);
     }
     return [];
   }, [searchQuery, graphNodes]);
@@ -31,38 +35,44 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
     setShowSuggestions(filteredNodes.length > 0);
   }, [filteredNodes]);
 
-  const handleSearch = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.length >= 3) {
-      const matchingNode = graphNodes.find(node => 
-        node.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      
-      if (matchingNode) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('agent', matchingNode);
-        router.replace(`/?${params.toString()}`, { scroll: false });
-      }
-    }
-  }, [searchQuery, graphNodes, router, searchParams]);
+  const handleSearch = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (searchQuery.length >= 3) {
+        const matchingNode = graphNodes.find((node) =>
+          node.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
 
-  const handleSuggestionClick = useCallback((node: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('agent', node);
-    router.replace(`/?${params.toString()}`, { scroll: false });
-    setShowSuggestions(false);
-  }, [router, searchParams]);
+        if (matchingNode) {
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("agent", matchingNode);
+          router.replace(`/?${params.toString()}`, { scroll: false });
+        }
+      }
+    },
+    [searchQuery, graphNodes, router, searchParams],
+  );
+
+  const handleSuggestionClick = useCallback(
+    (node: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("agent", node);
+      router.replace(`/?${params.toString()}`, { scroll: false });
+      setShowSuggestions(false);
+    },
+    [router, searchParams],
+  );
 
   return (
     <div className="relative">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
-            <Input
-              type="text"
-              placeholder="Search by agent key..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-background"
-              />
+        <Input
+          type="text"
+          placeholder="Search by agent key..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-background"
+        />
       </form>
 
       {showSuggestions && (
@@ -70,12 +80,14 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({ graphNodes =
           <ul>
             {suggestions.map((node) => (
               <li key={node}>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start text-left px-2 py-1 h-auto"
                   onClick={() => handleSuggestionClick(node)}
                 >
-                  {node.length > 20 ? `${node.substring(0, 10)}...${node.substring(node.length - 8)}` : node}
+                  {node.length > 20
+                    ? `${node.substring(0, 10)}...${node.substring(node.length - 8)}`
+                    : node}
                 </Button>
               </li>
             ))}

@@ -54,7 +54,10 @@ export function SkeletonAgentCardFooter() {
 
 export function AgentItemSkeleton() {
   return (
-    <Card className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
+    <Card
+      className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition
+        duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl"
+    >
       <SkeletonAgentCardHeader />
       <SkeletonAgentCardContent />
       <SkeletonAgentCardFooter />

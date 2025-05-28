@@ -35,9 +35,9 @@ const handler = (req: Request) => {
           }
         : undefined,
   });
-  
+
   // Since fetchRequestHandler returns a Promise<Response>, we need to handle it
-  return Promise.resolve(response).then(res => {
+  return Promise.resolve(response).then((res) => {
     setCorsHeaders(res);
     return res;
   });

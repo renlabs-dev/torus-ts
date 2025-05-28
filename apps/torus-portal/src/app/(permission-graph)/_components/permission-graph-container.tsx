@@ -116,7 +116,6 @@ export default function PermissionGraphContainer() {
     [router, searchParams],
   );
 
-
   const getCachedAgentData = useCallback(
     (nodeId: string): CachedAgentData | null => {
       return agentCache.current.get(nodeId);
@@ -151,16 +150,15 @@ export default function PermissionGraphContainer() {
           </div>
         </div>
       </div>
-          <PermissionGraphNodeDetails
-            selectedNode={selectedNode}
-            graphData={graphData}
-            permissionDetails={permissionDetails}
-            getCachedAgentData={getCachedAgentData}
-            setCachedAgentData={setCachedAgentData}
-            isOpen={isSheetOpen}
-            onOpenChange={setIsSheetOpen}
-          />
-
+      <PermissionGraphNodeDetails
+        selectedNode={selectedNode}
+        graphData={graphData}
+        permissionDetails={permissionDetails}
+        getCachedAgentData={getCachedAgentData}
+        setCachedAgentData={setCachedAgentData}
+        isOpen={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      />
 
       <div className="w-full h-full">
         {isLoading ? (

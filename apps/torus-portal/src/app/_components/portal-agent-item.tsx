@@ -1,19 +1,13 @@
 "use client";
 
 import { smallAddress } from "@torus-network/torus-utils/subspace";
-import {
-  Anvil,
-  Globe,
-  Cuboid,
-  IdCard,
-} from "lucide-react";
+import { Anvil, Globe, Cuboid, IdCard } from "lucide-react";
 import Link from "next/link";
 import { Icons } from "@torus-ts/ui/components//icons";
 import { Card } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { PortalAgentImageItem } from "./portal-agent-image-item";
-
 
 interface PortalAgentCardProps {
   agentKey: string | null;
@@ -77,24 +71,21 @@ export function buildSocials(
 }
 
 export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
-  const {
-    agentKey,
-    iconUrl,
-    currentBlock,
-    socialsList,
-    title,
-    agentWeight,
-  } = props;
+  const { agentKey, iconUrl, currentBlock, socialsList, title, agentWeight } =
+    props;
 
   const socialsMapped = buildSocials(socialsList, socialsList.website);
   if (!agentKey) return null;
 
   return (
     <Card
-      className={`w-full border bg-gradient-to-t from-[#0A0B13] to-background p-6 transition duration-300`}
+      className={`w-full border bg-gradient-to-t from-[#0A0B13] to-background p-6 transition
+        duration-300`}
     >
       <div
-        className={`flex w-full flex-col items-center gap-6 md:flex-row md:gap-3`}
+        className={
+          "flex w-full flex-col items-center gap-6 md:flex-row md:gap-3"
+        }
       >
         <PortalAgentImageItem iconUrl={iconUrl} />
 
@@ -111,7 +102,9 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
             </div>
           </div>
           <h2
-            className={`w-fit text-ellipsis text-base font-semibold md:max-w-fit`}
+            className={
+              "w-fit text-ellipsis text-base font-semibold md:max-w-fit"
+            }
           >
             {title}
           </h2>
@@ -119,12 +112,12 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
       </div>
 
       <div className="mt-2 text-sm flex items-center justify-between gap-3 border px-4">
-        <Label className={`flex items-center gap-1.5 text-sm font-semibold`}>
+        <Label className={"flex items-center gap-1.5 text-sm font-semibold"}>
           <Anvil size={14} />
           {agentWeight}%
         </Label>
 
-        <Label className={`flex items-center gap-1.5 text-sm font-semibold`}>
+        <Label className={"flex items-center gap-1.5 text-sm font-semibold"}>
           <Cuboid size={14} />
           {currentBlock}
         </Label>
@@ -133,7 +126,8 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
           variant="link"
           type="button"
           copy={agentKey}
-          className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground hover:no-underline`}
+          className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground
+            hover:no-underline`}
         >
           <IdCard size={16} />
           <span className="hidden md:block">{smallAddress(agentKey, 5)}</span>

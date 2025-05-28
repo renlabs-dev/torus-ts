@@ -138,15 +138,15 @@ export const NumExpr = {
   stakeOf: (account: AccountId): NumExpr => ({ $: "StakeOf", account }),
   add: (left: NumExpr, right: NumExpr): NumExpr => ({ $: "Add", left, right }),
   sub: (left: NumExpr, right: NumExpr): NumExpr => ({ $: "Sub", left, right }),
-  weightSet: (from: AccountId, to: AccountId): NumExpr => ({ 
-    $: "WeightSet", 
-    from, 
-    to 
+  weightSet: (from: AccountId, to: AccountId): NumExpr => ({
+    $: "WeightSet",
+    from,
+    to,
   }),
-  weightPowerFrom: (from: AccountId, to: AccountId): NumExpr => ({ 
-    $: "WeightPowerFrom", 
-    from, 
-    to 
+  weightPowerFrom: (from: AccountId, to: AccountId): NumExpr => ({
+    $: "WeightPowerFrom",
+    from,
+    to,
   }),
 };
 

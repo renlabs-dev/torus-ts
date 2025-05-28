@@ -13,7 +13,10 @@ export function ExpirationInfo({
   currentBlock,
 }: Readonly<ExpirationInfoProps>) {
   return (
-    <span className="text-muted-foreground line-clamp-1 flex w-fit items-center gap-1.5 truncate text-sm">
+    <span
+      className="text-muted-foreground line-clamp-1 flex w-fit items-center gap-1.5 truncate
+        text-sm"
+    >
       <Clock size={14} />
       {currentBlock && currentBlock < expirationBlock ? "Ends" : "Ended"}{" "}
       {getExpirationTime(currentBlock, expirationBlock, true)}

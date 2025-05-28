@@ -17,92 +17,104 @@ interface ForceGraphProps {
   onNodeClick: (node: CustomGraphNode) => void;
 }
 
-const ForceGraph = memo(function ForceGraph(props: ForceGraphProps) {
-  const fgRef = useRef<GraphMethods | undefined>(undefined);
+const ForceGraph = memo(
+  function ForceGraph(props: ForceGraphProps) {
+    const fgRef = useRef<GraphMethods | undefined>(undefined);
 
-  useFrame(() => {
-    if (fgRef.current) {
-      fgRef.current.tickFrame();
-    }
-  });
-
-  const formattedData = useMemo(() => ({
-    nodes: props.graphData.nodes.map((node) => ({
-      id: node.id,
-      name: node.name,
-      color: node.color,
-      val: node.val,
-    })),
-    links: props.graphData.links.map((link) => ({
-      source: link.source,
-      target: link.target,
-    })),
-  }), [props.graphData.nodes, props.graphData.links]);
-
-  const handleNodeClick = useCallback((node: NodeObject) => {
-    props.onNodeClick({
-      id: String(node.id ?? ""),
-      name: String(node.name ?? `Node ${node.id}`),
-      color: String(node.color ?? "#ffffff"),
-      val: Number(node.val ?? 1),
+    useFrame(() => {
+      if (fgRef.current) {
+        fgRef.current.tickFrame();
+      }
     });
-  }, [props]);
 
-  return (
-    <R3fForceGraph
-      ref={fgRef}
-      graphData={formattedData}
-      nodeColor={(node: NodeObject) => String(node.color)}
-      nodeLabel={(node: NodeObject) => String(node.name ?? "")}
-      linkDirectionalArrowLength={3.5}
-      linkDirectionalArrowRelPos={1}
-      linkCurvature={0.4}
-      linkColor={() => "rgba(255, 255, 255, 1)"}
-      nodeRelSize={3}
-      nodeResolution={24}
-      onNodeClick={handleNodeClick}
-    />
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison for ForceGraph - only re-render if graphData changes
-  return (
-    prevProps.graphData === nextProps.graphData &&
-    prevProps.onNodeClick === nextProps.onNodeClick
-  );
-});
-
-const PermissionGraph = memo(function PermissionGraph({
-  data,
-  onNodeClick,
-}: {
-  data: CustomGraphData | null;
-  onNodeClick: (node: CustomGraphNode) => void;
-}) {
-  if (!data) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-slate-400 z-50">
-        Loading Graph...
-      </div>
+    const formattedData = useMemo(
+      () => ({
+        nodes: props.graphData.nodes.map((node) => ({
+          id: node.id,
+          name: node.name,
+          color: node.color,
+          val: node.val,
+        })),
+        links: props.graphData.links.map((link) => ({
+          source: link.source,
+          target: link.target,
+        })),
+      }),
+      [props.graphData.nodes, props.graphData.links],
     );
-  }
 
-  return (
-    <Canvas camera={{ position: [0, 0, 100], far: 1000 }}>
-      {/* <color attach="background" args={[0.05, 0.05, 0.1]} /> */}
-      <ambientLight intensity={Math.PI / 2} />
-      <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
-      <Suspense fallback={null}>
-        <ForceGraph graphData={data} onNodeClick={onNodeClick} />
-        <TrackballControls />
-      </Suspense>
-    </Canvas>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison - only re-render if data actually changes
-  return (
-    prevProps.data === nextProps.data &&
-    prevProps.onNodeClick === nextProps.onNodeClick
-  );
-});
+    const handleNodeClick = useCallback(
+      (node: NodeObject) => {
+        props.onNodeClick({
+          id: String(node.id ?? ""),
+          name: String(node.name ?? `Node ${node.id}`),
+          color: String(node.color ?? "#ffffff"),
+          val: Number(node.val ?? 1),
+        });
+      },
+      [props],
+    );
+
+    return (
+      <R3fForceGraph
+        ref={fgRef}
+        graphData={formattedData}
+        nodeColor={(node: NodeObject) => String(node.color)}
+        nodeLabel={(node: NodeObject) => String(node.name ?? "")}
+        linkDirectionalArrowLength={3.5}
+        linkDirectionalArrowRelPos={1}
+        linkCurvature={0.4}
+        linkColor={() => "rgba(255, 255, 255, 1)"}
+        nodeRelSize={3}
+        nodeResolution={24}
+        onNodeClick={handleNodeClick}
+      />
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison for ForceGraph - only re-render if graphData changes
+    return (
+      prevProps.graphData === nextProps.graphData &&
+      prevProps.onNodeClick === nextProps.onNodeClick
+    );
+  },
+);
+
+const PermissionGraph = memo(
+  function PermissionGraph({
+    data,
+    onNodeClick,
+  }: {
+    data: CustomGraphData | null;
+    onNodeClick: (node: CustomGraphNode) => void;
+  }) {
+    if (!data) {
+      return (
+        <div className="w-full h-full flex items-center justify-center text-slate-400 z-50">
+          Loading Graph...
+        </div>
+      );
+    }
+
+    return (
+      <Canvas camera={{ position: [0, 0, 100], far: 1000 }}>
+        {/* <color attach="background" args={[0.05, 0.05, 0.1]} /> */}
+        <ambientLight intensity={Math.PI / 2} />
+        <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
+        <Suspense fallback={null}>
+          <ForceGraph graphData={data} onNodeClick={onNodeClick} />
+          <TrackballControls />
+        </Suspense>
+      </Canvas>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison - only re-render if data actually changes
+    return (
+      prevProps.data === nextProps.data &&
+      prevProps.onNodeClick === nextProps.onNodeClick
+    );
+  },
+);
 
 export default PermissionGraph;
