@@ -36,10 +36,12 @@ function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
     };
   } else {
     allocation = {
-      Streams: data.allocation.streams.map((stream) => ({
-        streamId: stream.streamId as `0x${string}`,
-        percentage: parseFloat(stream.percentage),
-      })),
+      Streams: new Map(
+        data.allocation.streams.map((stream) => [
+          stream.streamId as `0x${string}`,
+          parseFloat(stream.percentage),
+        ])
+      ),
     };
   }
 

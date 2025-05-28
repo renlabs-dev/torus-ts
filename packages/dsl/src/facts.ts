@@ -1,10 +1,10 @@
-import {
+import type {
   AccountId,
   PermId,
   UInt,
-  NumExpr,
-  BoolExpr,
-  BaseConstraint,
+  NumExprType,
+  BoolExprType,
+  BaseConstraintType,
   Constraint,
   CompOp
 } from './types';
@@ -57,7 +57,7 @@ export interface PermissionEnabledFact extends Fact {
 export interface MaxDelegationDepthFact extends Fact {
   type: 'MaxDelegationDepth';
   permId: PermId;
-  depth: NumExpr;
+  depth: NumExprType;
   actualDepth?: UInt; // Optional: actual value when known
 }
 
@@ -96,8 +96,8 @@ export type SpecificFact =
 export interface ComparisonFact extends Fact {
   type: 'Comparison';
   op: CompOp;
-  left: NumExpr;
-  right: NumExpr;
+  left: NumExprType;
+  right: NumExprType;
 }
 
 /**
@@ -105,7 +105,7 @@ export interface ComparisonFact extends Fact {
  * @param expr The numeric expression to analyze
  * @returns Array of extracted facts
  */
-export function extractFactsFromNumExpr(expr: NumExpr): SpecificFact[] {
+export function extractFactsFromNumExpr(expr: NumExprType): SpecificFact[] {
   const facts: SpecificFact[] = [];
   
   switch (expr.$) {
@@ -155,7 +155,7 @@ export function extractFactsFromNumExpr(expr: NumExpr): SpecificFact[] {
  * @returns Array of extracted facts
  */
 export function extractFactsFromBaseConstraint(
-  constraint: BaseConstraint,
+  constraint: BaseConstraintType,
   permId: PermId
 ): SpecificFact[] {
   const facts: SpecificFact[] = [];
@@ -210,7 +210,7 @@ export function extractFactsFromBaseConstraint(
  * @returns Array of extracted facts and comparisons
  */
 export function extractFactsFromBoolExpr(
-  expr: BoolExpr,
+  expr: BoolExprType,
   permId: PermId
 ): (SpecificFact | ComparisonFact)[] {
   const facts: (SpecificFact | ComparisonFact)[] = [];
@@ -279,7 +279,7 @@ export function categorizeFacts(
     if (item.type === 'StakeOf' || item.type === 'WeightSet' || item.type === 'WeightPowerFrom') {
       addressFacts.push(item as any);
     } else if (item.type === 'Comparison') {
-      comparisonFacts.push(item as ComparisonFact);
+      comparisonFacts.push(item);
     } else if (
       item.type === 'PermissionExists' || 
       item.type === 'PermissionEnabled' || 

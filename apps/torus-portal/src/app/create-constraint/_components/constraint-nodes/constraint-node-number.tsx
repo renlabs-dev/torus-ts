@@ -12,6 +12,7 @@ import {
 } from "@torus-ts/ui/components/select";
 import { Hash, Clock, Coins, Plus, Minus, Scale, Zap } from "lucide-react";
 import { NumExpr } from "~/utils/dsl";
+import type { NumExprType } from "~/utils/dsl";
 import type {
   NumberNodeData,
   NodeCreationResult,
@@ -42,7 +43,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
   const [accountError, setAccountError] = useState<string>("");
 
   const createChildNodes = useCallback(
-    (expression: NumExpr): NodeCreationResult => {
+    (expression: NumExprType): NodeCreationResult => {
       const nodes = [];
       const edges = [];
 
@@ -98,11 +99,11 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
 
   const handleTypeChange = useCallback(
     (value: string) => {
-      const type = value as NumExpr["$"];
+      const type = value as NumExprType["$"];
 
       removeExistingChildNodes();
 
-      let newExpression: NumExpr;
+      let newExpression: NumExprType;
 
       switch (type) {
         case "UIntLiteral":

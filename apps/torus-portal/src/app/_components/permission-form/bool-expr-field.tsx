@@ -33,11 +33,11 @@ export function BoolExprField({
   onDelete?: () => void;
   showDelete?: boolean;
 }) {
-  // Watch the expression type
+  // Watch the expression type  
   const exprType = useWatch({
     control,
-    name: `${path}.type`,
-  });
+    name: `${path}.type` as keyof FormSchema,
+  }) as string;
 
   return (
     <div className="space-y-4 border p-4 rounded-md">

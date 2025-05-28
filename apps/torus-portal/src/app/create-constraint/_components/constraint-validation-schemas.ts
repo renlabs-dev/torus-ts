@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { NumExpr, BaseConstraint } from "../../../utils/dsl";
+import type { NumExprType, BaseConstraintType } from "../../../utils/dsl";
 
 // Base schemas for each field type
 export const permissionIdSchema = z
@@ -26,7 +26,7 @@ export const uintSchema = z
   }, "Value is too large");
 
 // Validation schemas for each expression type
-export const numExprValidationSchema: z.ZodType<NumExpr> = z.discriminatedUnion(
+export const numExprValidationSchema: z.ZodType<NumExprType> = z.discriminatedUnion(
   "$",
   [
     z.object({
@@ -63,7 +63,7 @@ export const numExprValidationSchema: z.ZodType<NumExpr> = z.discriminatedUnion(
   ],
 );
 
-export const baseConstraintValidationSchema: z.ZodType<BaseConstraint> =
+export const baseConstraintValidationSchema: z.ZodType<BaseConstraintType> =
   z.discriminatedUnion("$", [
     z.object({
       $: z.literal("MaxDelegationDepth"),

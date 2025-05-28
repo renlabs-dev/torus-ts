@@ -1,8 +1,8 @@
 import type { Node, Edge } from "@xyflow/react";
 import type {
-  BoolExpr,
-  NumExpr,
-  BaseConstraint,
+  BoolExprType,
+  NumExprType,
+  BaseConstraintType,
   Constraint,
 } from "../../../utils/dsl";
 import type { PermissionNodeData } from "./constraint-nodes/constraint-node-types";
@@ -73,7 +73,7 @@ function extractBoolExpr(
   node: Node<PermissionNodeData>,
   nodeMap: NodeMap,
   edgeMap: EdgeMap,
-): BoolExpr | null {
+): BoolExprType | null {
   if (node.data.type !== "boolean") return null;
 
   const expr = node.data.expression;
@@ -162,7 +162,7 @@ function extractNumExpr(
   node: Node<PermissionNodeData>,
   nodeMap: NodeMap,
   edgeMap: EdgeMap,
-): NumExpr | null {
+): NumExprType | null {
   if (node.data.type !== "number") return null;
 
   const expr = node.data.expression;
@@ -204,7 +204,7 @@ function extractBaseConstraint(
   node: Node<PermissionNodeData>,
   nodeMap: NodeMap,
   edgeMap: EdgeMap,
-): BaseConstraint | null {
+): BaseConstraintType | null {
   if (node.data.type !== "base") return null;
 
   const expr = node.data.expression;

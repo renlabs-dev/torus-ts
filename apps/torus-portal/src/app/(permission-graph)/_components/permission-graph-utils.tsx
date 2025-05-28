@@ -13,7 +13,7 @@ export interface GraphLink {
   target: string;
   id?: string;
   scope?: string;
-  duration?: number;
+  duration?: string;
   revocation?: number;
   enforcement?: string;
   executionCount?: number;
@@ -29,10 +29,11 @@ export interface CustomGraphData {
 export const formatScope = (scope: string): string =>
   scope.charAt(0).toUpperCase() + scope.slice(1).toLowerCase();
 
-export const formatDuration = (seconds: number): string => {
-  if (!seconds) return "No expiration";
+export const formatDuration = (seconds: string | number): string => {
+  const numSeconds = typeof seconds === 'string' ? parseInt(seconds) : seconds;
+  if (!numSeconds) return "No expiration";
 
-  const days = Math.floor(seconds / 86400);
+  const days = Math.floor(numSeconds / 86400);
   // const hours = Math.floor((seconds % 86400) / 3600);
   // const minutes = Math.floor((seconds % 3600) / 60);
 
@@ -89,8 +90,7 @@ export interface PermissionDetail {
   grantee_key: string;
   permission_id: string;
   scope: string;
-  duration: number;
-  enforcement: string;
+  duration: string;
   execution_count: number;
   parent_id: string | null;
   createdAt: Date;
@@ -209,7 +209,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "read",
       id: "1",
       scope: "EMISSION",
-      duration: 86400,
+      duration: "86400",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -217,7 +217,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "write",
       id: "2",
       scope: "EMISSION",
-      duration: 172800,
+      duration: "172800",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -225,7 +225,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "read",
       id: "3",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -233,7 +233,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "write",
       id: "4",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -241,7 +241,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "delete",
       id: "5",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -249,7 +249,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "document",
       id: "6",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -257,7 +257,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "folder",
       id: "7",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -265,7 +265,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "document",
       id: "8",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -273,7 +273,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "document",
       id: "9",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
     {
@@ -281,7 +281,7 @@ export const samplePermissionGraph: CustomGraphData = {
       target: "project",
       id: "10",
       scope: "EMISSION",
-      duration: 0,
+      duration: "0",
       enforcement: "torus_enforcement_agent",
     },
   ],

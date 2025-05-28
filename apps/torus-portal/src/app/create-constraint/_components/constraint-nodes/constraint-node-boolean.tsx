@@ -22,6 +22,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { BoolExpr, CompOp } from "../../../../utils/dsl";
+import type { BoolExprType } from "../../../../utils/dsl";
 import type {
   BooleanNodeData,
   NodeCreationResult,
@@ -45,7 +46,7 @@ export function PermissionNodeBoolean({
     useChildNodeManagement(id);
 
   const createChildNodes = useCallback(
-    (expression: BoolExpr): NodeCreationResult => {
+    (expression: BoolExprType): NodeCreationResult => {
       const nodes = [];
       const edges = [];
 
@@ -185,11 +186,11 @@ export function PermissionNodeBoolean({
 
   const handleTypeChange = useCallback(
     (value: string) => {
-      const type = value as BoolExpr["$"];
+      const type = value as BoolExprType["$"];
 
       removeExistingChildNodes();
 
-      let newExpression: BoolExpr;
+      let newExpression: BoolExprType;
 
       switch (type) {
         case "Not":
@@ -247,7 +248,7 @@ export function PermissionNodeBoolean({
         expression: {
           ...currentData.expression,
           op: newOp,
-        } as BoolExpr,
+        } as BoolExprType,
       }));
     },
     [data.expression, updateNodeData],

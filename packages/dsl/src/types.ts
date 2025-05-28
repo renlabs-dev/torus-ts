@@ -23,34 +23,34 @@ export enum CompOp {
 /**
  * Numeric expression types
  */
-export type NumExpr =
+export type NumExprType =
   | { $: "UIntLiteral"; value: UInt }
   | { $: "BlockNumber" }
   | { $: "StakeOf"; account: AccountId }
-  | { $: "Add"; left: NumExpr; right: NumExpr }
-  | { $: "Sub"; left: NumExpr; right: NumExpr }
+  | { $: "Add"; left: NumExprType; right: NumExprType }
+  | { $: "Sub"; left: NumExprType; right: NumExprType }
   | { $: "WeightSet"; from: AccountId; to: AccountId }
   | { $: "WeightPowerFrom"; from: AccountId; to: AccountId };
 
 /**
  * Base constraint expressions
  */
-export type BaseConstraint =
-  | { $: "MaxDelegationDepth"; depth: NumExpr }
+export type BaseConstraintType =
+  | { $: "MaxDelegationDepth"; depth: NumExprType }
   | { $: "PermissionExists"; pid: PermId }
   | { $: "PermissionEnabled"; pid: PermId }
-  | { $: "RateLimit"; maxOperations: NumExpr; period: NumExpr }
+  | { $: "RateLimit"; maxOperations: NumExprType; period: NumExprType }
   | { $: "InactiveUnlessRedelegated" };
 
 /**
  * Boolean expression types
  */
-export type BoolExpr =
-  | { $: "Not"; body: BoolExpr }
-  | { $: "And"; left: BoolExpr; right: BoolExpr }
-  | { $: "Or"; left: BoolExpr; right: BoolExpr }
-  | { $: "CompExpr"; op: CompOp; left: NumExpr; right: NumExpr }
-  | { $: "Base"; body: BaseConstraint };
+export type BoolExprType =
+  | { $: "Not"; body: BoolExprType }
+  | { $: "And"; left: BoolExprType; right: BoolExprType }
+  | { $: "Or"; left: BoolExprType; right: BoolExprType }
+  | { $: "CompExpr"; op: CompOp; left: NumExprType; right: NumExprType }
+  | { $: "Base"; body: BaseConstraintType };
 
 /**
  * Main constraint type
@@ -58,5 +58,5 @@ export type BoolExpr =
 export interface Constraint {
   // Refers to the onchain permission that this constraint applies to
   permId: PermId;
-  body: BoolExpr;
+  body: BoolExprType;
 }

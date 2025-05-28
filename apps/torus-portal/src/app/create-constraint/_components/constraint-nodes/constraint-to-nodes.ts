@@ -3,10 +3,10 @@ import type { Node, Edge } from "@xyflow/react";
 import type { PermissionNodeData } from "./constraint-node-types";
 import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 import type {
-  BaseConstraint,
-  BoolExpr,
+  BaseConstraintType,
+  BoolExprType,
   Constraint,
-  NumExpr,
+  NumExprType,
 } from "~/utils/dsl";
 
 export function constraintToNodes(constraint: Constraint): {
@@ -60,7 +60,7 @@ export function constraintToNodes(constraint: Constraint): {
 }
 
 function convertBoolExpr(
-  expr: BoolExpr,
+  expr: BoolExprType,
   parentId: string,
   nodes: Node<PermissionNodeData>[],
   edges: Edge[],
@@ -214,7 +214,7 @@ function convertBoolExpr(
 }
 
 function convertNumExpr(
-  expr: NumExpr,
+  expr: NumExprType,
   parentId: string,
   nodes: Node<PermissionNodeData>[],
   edges: Edge[],
@@ -271,7 +271,7 @@ function convertNumExpr(
 }
 
 function convertBaseConstraint(
-  expr: BaseConstraint,
+  expr: BaseConstraintType,
   parentId: string,
   nodes: Node<PermissionNodeData>[],
   edges: Edge[],
@@ -351,7 +351,7 @@ function convertBaseConstraint(
   }
 }
 
-function getBoolExprLabel(expr: BoolExpr): string {
+function getBoolExprLabel(expr: BoolExprType): string {
   switch (expr.$) {
     case "Not":
       return "NOT";
@@ -366,7 +366,7 @@ function getBoolExprLabel(expr: BoolExpr): string {
   }
 }
 
-function getNumExprLabel(expr: NumExpr): string {
+function getNumExprLabel(expr: NumExprType): string {
   switch (expr.$) {
     case "UIntLiteral":
       return `Value: ${expr.value.toString()}`;
@@ -385,7 +385,7 @@ function getNumExprLabel(expr: NumExpr): string {
   }
 }
 
-function getBaseConstraintLabel(expr: BaseConstraint): string {
+function getBaseConstraintLabel(expr: BaseConstraintType): string {
   switch (expr.$) {
     case "MaxDelegationDepth":
       return "Max Delegation Depth";
