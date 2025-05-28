@@ -215,7 +215,7 @@ export default function ConstraintControlsSheet({
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Load Example</label>
-              <Command className="rounded-md border">
+              <Command className="border">
                 <CommandInput placeholder="Search examples..." />
                 <CommandList>
                   <CommandEmpty>No examples found.</CommandEmpty>
@@ -226,6 +226,7 @@ export default function ConstraintControlsSheet({
                         value={example.id}
                         onSelect={(currentValue) => {
                           onLoadExample(currentValue);
+                          setIsOpen(false);
                         }}
                         className={
                           selectedExample === example.id
