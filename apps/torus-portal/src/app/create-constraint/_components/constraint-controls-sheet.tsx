@@ -33,6 +33,7 @@ import {
   usePermission,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
+import { PlusIcon } from "lucide-react";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -49,7 +50,7 @@ export default function ConstraintControlsSheet({
   selectedPermissionId,
   onPermissionIdChange,
 }: ConstraintControlsSheetProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const handleCreateConstraint = useCallback(() => {
     onCreateConstraint();
@@ -92,7 +93,8 @@ export default function ConstraintControlsSheet({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button size="lg" className="shadow-lg">
+        <Button className="shadow-lg">
+          <PlusIcon className="h-4 w-4 mr-1" />
           Create Constraint
         </Button>
       </SheetTrigger>
