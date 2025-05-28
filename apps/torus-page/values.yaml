@@ -7,3 +7,10 @@ deployment:
 
   podLabels:
     app: torus-page
+
+  env:
+    NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: torus_allocator_address
