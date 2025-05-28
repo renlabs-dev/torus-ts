@@ -176,7 +176,7 @@ function ConstraintFlow() {
     () => ({
       algorithm: "d3-hierarchy",
       direction: "TB",
-      spacing: [10, 40],
+      spacing: [20, 50],
     }),
     [],
   );
@@ -218,6 +218,9 @@ function ConstraintFlow() {
       connectionLineType={ConnectionLineType.SmoothStep}
       proOptions={proOptions}
       zoomOnDoubleClick={false}
+      edgesFocusable={false}
+      nodesConnectable={false}
+      nodesFocusable={false}
     >
       <Background />
       <div className="absolute bottom-4 right-4 z-50">
