@@ -32,6 +32,8 @@ import {
   queryKeyStakingTo,
   queryLastBlock,
   queryMinAllowedStake,
+  queryPermissions,
+  queryPermissionsByGrantor,
   queryProposals,
   queryRecyclingPercentage,
   queryRewardAllocation,
@@ -439,5 +441,31 @@ export function useGetTorusPrice(
     },
     retry: 1,
     ...options,
+  });
+}
+
+export function usePermissions(
+  api: ApiPromise | Nullish,
+  h256: string | Nullish,
+) {
+  return useQuery({
+    queryKey: ["permissions", h256],
+    enabled: api != null && h256 != null,
+    queryFn: () => queryPermissions(api!, h256!),
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePermissionsByGrantor(
+  api: ApiPromise | Nullish,
+  address: SS58Address | Nullish,
+) {
+  return useQuery({
+    queryKey: ["permissions_by_grantor", address],
+    enabled: api != null && address != null,
+    queryFn: () => queryPermissionsByGrantor(api!, address!),
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
   });
 }
