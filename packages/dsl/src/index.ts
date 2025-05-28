@@ -2,16 +2,16 @@
 export * from './types';
 
 // Import specific types for helper functions
-import {
+import type {
   Constraint as ConstraintType,
   BoolExpr as BoolExprType,
   BaseConstraint as BaseConstraintType,
   NumExpr as NumExprType,
   CompOp,
-  UInt,
   PermId,
   AccountId
 } from './types';
+
 
 /**
  * Helper functions to create constraint expressions
