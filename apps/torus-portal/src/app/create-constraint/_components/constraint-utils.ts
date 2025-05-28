@@ -6,6 +6,7 @@ import type {
   Constraint,
 } from "../../../utils/dsl";
 import type { PermissionNodeData } from "./constraint-nodes/constraint-node-types";
+import { constraintValidationSchema } from "./constraint-validation-schemas";
 
 type NodeMap = Record<string, Node<PermissionNodeData>>;
 
@@ -67,6 +68,173 @@ export function extractConstraintFromNodes(
   };
 
   return constraint;
+}
+
+export interface ValidationError {
+  nodeId: string;
+  field: string;
+  message: string;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  constraint?: Constraint;
+}
+
+export function validateConstraintForm(
+  nodes: Node[],
+  edges: Edge[],
+  rootNodeId: string,
+): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  // Check permission ID node
+  const permissionIdNode = nodes.find(node => node.id === "permission-id");
+  if (!permissionIdNode || permissionIdNode.data.type !== "permissionId") {
+    errors.push({
+      nodeId: "permission-id",
+      field: "permissionId",
+      message: "Permission ID node not found"
+    });
+  } else {
+    const permissionId = (permissionIdNode.data as any).permissionId;
+    if (!permissionId || permissionId.trim() === "") {
+      errors.push({
+        nodeId: "permission-id",
+        field: "permissionId",
+        message: "Permission ID is required"
+      });
+    }
+  }
+
+  // Validate all nodes for missing required fields
+  validateNodeFields(nodes, errors);
+
+  // If there are validation errors, return early
+  if (errors.length > 0) {
+    return {
+      isValid: false,
+      errors
+    };
+  }
+
+  // Try to extract and validate constraint
+  try {
+    const constraint = extractConstraintFromNodes(nodes, edges, rootNodeId);
+    if (!constraint) {
+      errors.push({
+        nodeId: rootNodeId,
+        field: "constraint",
+        message: "Failed to build constraint from nodes"
+      });
+      return {
+        isValid: false,
+        errors
+      };
+    }
+
+    // Validate against schema
+    const validationResult = constraintValidationSchema.safeParse(constraint);
+    if (!validationResult.success) {
+      // Convert Zod errors to our format
+      validationResult.error.errors.forEach(error => {
+        errors.push({
+          nodeId: "constraint",
+          field: error.path.join("."),
+          message: error.message
+        });
+      });
+
+      return {
+        isValid: false,
+        errors
+      };
+    }
+
+    return {
+      isValid: true,
+      errors: [],
+      constraint
+    };
+  } catch (error) {
+    errors.push({
+      nodeId: "constraint",
+      field: "general",
+      message: error instanceof Error ? error.message : "Unknown error occurred"
+    });
+
+    return {
+      isValid: false,
+      errors
+    };
+  }
+}
+
+function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
+  nodes.forEach(node => {
+    const nodeData = node.data as PermissionNodeData;
+
+    switch (nodeData.type) {
+      case "number": {
+        const expr = (nodeData as any).expression;
+        switch (expr.$) {
+          case "UIntLiteral":
+            if (expr.value === undefined || expr.value === null) {
+              errors.push({
+                nodeId: node.id,
+                field: "value",
+                message: "Value is required"
+              });
+            }
+            break;
+          case "StakeOf":
+            if (!expr.account || String(expr.account).trim() === "") {
+              errors.push({
+                nodeId: node.id,
+                field: "account",
+                message: "Account ID is required"
+              });
+            }
+            break;
+          case "WeightSet":
+          case "WeightPowerFrom":
+            if (!expr.from || String(expr.from).trim() === "") {
+              errors.push({
+                nodeId: node.id,
+                field: "from",
+                message: "From account ID is required"
+              });
+            }
+            if (!expr.to || String(expr.to).trim() === "") {
+              errors.push({
+                nodeId: node.id,
+                field: "to",
+                message: "To account ID is required"
+              });
+            }
+            break;
+        }
+        break;
+      }
+      case "base": {
+        const expr = (nodeData as any).expression;
+        switch (expr.$) {
+          case "PermissionExists":
+          case "PermissionEnabled":
+            if (!expr.pid || String(expr.pid).trim() === "") {
+              errors.push({
+                nodeId: node.id,
+                field: "pid",
+                message: "Permission ID is required"
+              });
+            }
+            break;
+        }
+        break;
+      }
+    }
+  });
 }
 
 function extractBoolExpr(

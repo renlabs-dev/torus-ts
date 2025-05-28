@@ -34,6 +34,7 @@ import {
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
 import { PlusIcon } from "lucide-react";
+import type { ValidationError } from "./constraint-utils";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -41,6 +42,8 @@ interface ConstraintControlsSheetProps {
   onCreateConstraint: () => void;
   selectedPermissionId: string;
   onPermissionIdChange: (permissionId: string) => void;
+  isSubmitDisabled: boolean;
+  validationErrors: ValidationError[];
 }
 
 export default function ConstraintControlsSheet({
@@ -49,6 +52,7 @@ export default function ConstraintControlsSheet({
   onCreateConstraint,
   selectedPermissionId,
   onPermissionIdChange,
+  isSubmitDisabled,
 }: ConstraintControlsSheetProps) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -91,7 +95,7 @@ export default function ConstraintControlsSheet({
   }, [permissions, selectedPermissionId, onPermissionIdChange, hasPermissions]);
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <SheetTrigger asChild>
         <Button className="shadow-lg">
           <PlusIcon className="h-4 w-4 mr-1" />
@@ -252,7 +256,11 @@ export default function ConstraintControlsSheet({
         </div>
 
         <SheetFooter>
-          <Button onClick={handleCreateConstraint} className="w-full">
+          <Button
+            onClick={handleCreateConstraint}
+            className="w-full"
+            disabled={isSubmitDisabled}
+          >
             Create This Constraint
           </Button>
         </SheetFooter>
