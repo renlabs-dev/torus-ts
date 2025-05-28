@@ -10,33 +10,11 @@ export interface ConstraintExample {
 
 export const constraintExamples: ConstraintExample[] = [
   {
-    id: "max-delegation-depth",
-    name: "Max Delegation Depth",
-    description: "Limit delegation depth to 3 levels",
+    id: "stake-gate",
+    name: "Stake Gate",
+    description: "Basic stake requirement gate for access control",
     constraint: {
-      permId: "delegation-control",
-      body: BoolExpr.base(
-        BaseConstraint.maxDelegationDepth(NumExpr.literal(3)),
-      ),
-    },
-  },
-  {
-    id: "rate-limit-hourly",
-    name: "Hourly Rate Limit",
-    description: "Allow max 100 operations per hour (600 blocks)",
-    constraint: {
-      permId: "operation-limit",
-      body: BoolExpr.base(
-        BaseConstraint.rateLimit(NumExpr.literal(100), NumExpr.literal(600)),
-      ),
-    },
-  },
-  {
-    id: "stake-threshold",
-    name: "Minimum Stake Requirement",
-    description: "Require minimum stake of 1000 tokens",
-    constraint: {
-      permId: "stake-access",
+      permId: "1",
       body: BoolExpr.comp(
         CompOp.Gte,
         NumExpr.stakeOf("user-account"),
@@ -45,37 +23,110 @@ export const constraintExamples: ConstraintExample[] = [
     },
   },
   {
-    id: "permission-combo",
-    name: "Permission Combination",
-    description: "Require both admin permission and stake > 500",
+    id: "stake-tier",
+    name: "Stake Tier",
+    description: "Tiered access based on stake amount with rate limiting",
     constraint: {
-      permId: "admin-access",
-      body: BoolExpr.and(
-        BoolExpr.base(BaseConstraint.permissionEnabled("admin-perm")),
+      permId: "2",
+      body: BoolExpr.or(
         BoolExpr.comp(
-          CompOp.Gt,
+          CompOp.Gte,
           NumExpr.stakeOf("user-account"),
-          NumExpr.literal(500),
+          NumExpr.literal(10000),
+        ),
+        BoolExpr.or(
+          BoolExpr.and(
+            BoolExpr.comp(
+              CompOp.Gte,
+              NumExpr.stakeOf("user-account"),
+              NumExpr.literal(5000),
+            ),
+            BoolExpr.base(
+              BaseConstraint.rateLimit(
+                NumExpr.literal(10),
+                NumExpr.literal(1000),
+              ),
+            ),
+          ),
+          BoolExpr.and(
+            BoolExpr.comp(
+              CompOp.Eq,
+              NumExpr.stakeOf("user-account"),
+              NumExpr.literal(2500),
+            ),
+            BoolExpr.base(
+              BaseConstraint.rateLimit(
+                NumExpr.literal(5),
+                NumExpr.literal(1000),
+              ),
+            ),
+          ),
         ),
       ),
     },
   },
+  // {
+  //   id: "emission-tier",
+  //   name: "Emission Tier",
+  //   description: "Tiered emission access based on delegation percentage",
+  //   constraint: {
+  //     permId: "2",
+  //     body: BoolExpr.or(
+  //       BoolExpr.comp(
+  //         CompOp.Gte,
+  //         NumExpr.hasToDelegate("user-account"),
+  //         NumExpr.decimal("5%"),
+  //       ),
+  //       BoolExpr.or(
+  //         BoolExpr.and(
+  //           BoolExpr.comp(
+  //             CompOp.Gte,
+  //             NumExpr.hasToDelegate("user-account"),
+  //             NumExpr.decimal("3%"),
+  //           ),
+  //           BoolExpr.base(
+  //             BaseConstraint.rateLimit(
+  //               NumExpr.literal(10),
+  //               NumExpr.literal(1000),
+  //             ),
+  //           ),
+  //         ),
+  //         BoolExpr.and(
+  //           BoolExpr.comp(
+  //             CompOp.Eq,
+  //             NumExpr.hasToDelegate("user-account"),
+  //             NumExpr.decimal("1.5%"),
+  //           ),
+  //           BoolExpr.base(
+  //             BaseConstraint.rateLimit(
+  //               NumExpr.literal(5),
+  //               NumExpr.literal(1000),
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   },
+  // },
   {
-    id: "complex-governance",
-    name: "Complex Governance Rule",
-    description: "Governance access with multiple conditions",
+    id: "rate-limit-basic",
+    name: "Rate Limit",
+    description: "Basic rate limiting: 10 operations per 1000 blocks",
     constraint: {
-      permId: "governance-vote",
-      body: BoolExpr.and(
-        BoolExpr.or(
-          BoolExpr.base(BaseConstraint.permissionExists("council-member")),
-          BoolExpr.comp(
-            CompOp.Gte,
-            NumExpr.stakeOf("user-account"),
-            NumExpr.literal(10000),
-          ),
-        ),
-        BoolExpr.not(BoolExpr.base(BaseConstraint.inactiveUnlessRedelegated())),
+      permId: "3",
+      body: BoolExpr.base(
+        BaseConstraint.rateLimit(NumExpr.literal(10), NumExpr.literal(1000)),
+      ),
+    },
+  },
+  {
+    id: "depth-limit-basic",
+    name: "Depth Limit",
+    description: "Limit delegation depth to 3 levels maximum",
+    constraint: {
+      permId: "4",
+      body: BoolExpr.base(
+        BaseConstraint.maxDelegationDepth(NumExpr.literal(3)),
       ),
     },
   },
