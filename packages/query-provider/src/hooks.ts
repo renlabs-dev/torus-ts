@@ -444,21 +444,18 @@ export function useGetTorusPrice(
   });
 }
 
-export function usePermissions(
-  api: ApiPromise | Nullish,
-  h256: string | Nullish,
-) {
+export function usePermissions(api: Api | Nullish, h256: string | Nullish) {
   return useQuery({
     queryKey: ["permissions", h256],
     enabled: api != null && h256 != null,
-    queryFn: () => queryPermissions(api!, h256!),
+    queryFn: () => queryPermissions(api!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
 
 export function usePermissionsByGrantor(
-  api: ApiPromise | Nullish,
+  api: Api | Nullish,
   address: SS58Address | Nullish,
 ) {
   return useQuery({

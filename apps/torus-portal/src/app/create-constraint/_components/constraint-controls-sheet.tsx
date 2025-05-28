@@ -19,6 +19,9 @@ import {
 } from "@torus-ts/ui/components/select";
 
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
+import { useTorus } from "@torus-ts/torus-provider";
+import { usePermissionsByGrantor } from "@torus-ts/query-provider/hooks";
+import type { SS58Address } from "@torus-network/sdk";
 
 // Placeholder permission IDs (Vec<H256>) - in the future this will come from a network query
 const PLACEHOLDER_PERMISSION_IDS = [
@@ -48,8 +51,29 @@ export default function ConstraintControlsSheet({
 
   const handleCreateConstraint = useCallback(() => {
     onCreateConstraint();
-    setIsOpen(false);
+    // setIsOpen(false);
   }, [onCreateConstraint]);
+
+  const { api, selectedAccount } = useTorus();
+
+  const { data: permissionsByGrantor } = usePermissionsByGrantor(
+    api,
+    selectedAccount?.address as SS58Address,
+    // "5CoS1LXeGQDiXxZ8TcdiMuzyFKu9Ku7XAihu9iS2tCACxf4n" as SS58Address,
+  );
+
+  if (permissionsByGrantor === undefined) {
+    return console.log("Loading permissions by grantor...");
+  }
+
+  // 5CoS1LXeGQDiXxZ8TcdiMuzyFKu9Ku7XAihu9iS2tCACxf4n
+
+  const [err, permissions] = permissionsByGrantor;
+  if (err !== undefined) {
+    console.error("Query failed:", err);
+  }
+
+  console.log("permissions", permissions);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
