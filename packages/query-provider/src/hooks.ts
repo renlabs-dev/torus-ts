@@ -9,6 +9,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import type {
   Api,
   LastBlock,
+  PermissionId,
   Proposal,
   SS58Address,
   StakeData,
@@ -32,7 +33,7 @@ import {
   queryKeyStakingTo,
   queryLastBlock,
   queryMinAllowedStake,
-  queryPermissions,
+  queryPermission,
   queryPermissionsByGrantor,
   queryProposals,
   queryRecyclingPercentage,
@@ -444,11 +445,14 @@ export function useGetTorusPrice(
   });
 }
 
-export function usePermissions(api: Api | Nullish, h256: string | Nullish) {
+export function usePermission(
+  api: Api | Nullish,
+  permId: PermissionId | Nullish,
+) {
   return useQuery({
-    queryKey: ["permissions", h256],
-    enabled: api != null && h256 != null,
-    queryFn: () => queryPermissions(api!),
+    queryKey: ["permission", permId],
+    enabled: api != null && permId != null,
+    queryFn: () => queryPermission(api!, permId!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

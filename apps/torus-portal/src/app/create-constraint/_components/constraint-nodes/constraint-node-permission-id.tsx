@@ -16,15 +16,9 @@ import {
   useChildNodeManagement,
 } from "./constraint-node-container";
 import { permissionIdSchema } from "../constraint-validation-schemas";
-
-// Placeholder permission IDs (Vec<H256>) - in the future this will come from a network query
-const PLACEHOLDER_PERMISSION_IDS = [
-  "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-  "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-  "0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba",
-  "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
-  "0x5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa",
-];
+import { useTorus } from "@torus-ts/torus-provider";
+import { usePermissionsByGrantor } from "@torus-ts/query-provider/hooks";
+import type { SS58Address } from "@torus-network/sdk";
 
 interface PermissionNodePermissionIdProps {
   id: string;
@@ -36,9 +30,21 @@ export function PermissionNodePermissionId({
   data,
 }: PermissionNodePermissionIdProps) {
   const { updateNodeData } = useChildNodeManagement(id);
+  const { api, selectedAccount } = useTorus();
 
   const [permissionId, setPermissionId] = useState(data.permissionId || "");
   const [permissionIdError, setPermissionIdError] = useState<string>("");
+
+  const { data: permissionsByGrantor, isLoading: isLoadingPermissions } =
+    usePermissionsByGrantor(api, selectedAccount?.address as SS58Address);
+
+  const [permissionError, permissions] = permissionsByGrantor ?? [
+    undefined,
+    undefined,
+  ];
+  const hasPermissions = permissions && permissions.length > 0;
+  const isWalletConnected = selectedAccount?.address != null;
+  const shouldDisablePermissionSelect = !isWalletConnected || !hasPermissions;
 
   // Sync local state with external changes
   useEffect(() => {
@@ -79,7 +85,11 @@ export function PermissionNodePermissionId({
       shouldAutoCreateChildren={false}
     >
       <div className="flex items-center justify-center font-semibold">
-        <Select value={permissionId} onValueChange={handlePermissionIdChange}>
+        <Select
+          value={permissionId}
+          onValueChange={handlePermissionIdChange}
+          disabled={shouldDisablePermissionSelect}
+        >
           <SelectTrigger className="w-fit pl-[0.05em] pr-1 gap-2 bg-zinc-300 text-accent rounded-full">
             <div
               className="flex items-center gap-2 bg-accent z-50 px-3 py-[0.45em] rounded-full
@@ -88,14 +98,26 @@ export function PermissionNodePermissionId({
               <Key className="h-4 w-4" />
               <span className="text-nowrap font-medium">Permission ID</span>
             </div>
-            <SelectValue placeholder="Select Permission ID" />
+            <SelectValue
+              placeholder={
+                !isWalletConnected
+                  ? "Connect wallet"
+                  : isLoadingPermissions
+                    ? "Loading..."
+                    : permissionError
+                      ? "No permissions"
+                      : !hasPermissions
+                        ? "No permissions"
+                        : "Select Permission ID"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            {PLACEHOLDER_PERMISSION_IDS.map((permissionId) => (
+            {permissions?.map((permissionId) => (
               <SelectItem key={permissionId} value={permissionId}>
-                {permissionId.slice(0, 9)}...{permissionId.slice(-8)}
+                {permissionId.slice(0, 6)}...${permissionId.slice(-4)}
               </SelectItem>
-            ))}
+            )) ?? []}
           </SelectContent>
         </Select>
 
