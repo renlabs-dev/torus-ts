@@ -4,9 +4,9 @@ export * from './types';
 // Import specific types for helper functions
 import type {
   Constraint as ConstraintType,
-  BoolExpr as BoolExprType,
-  BaseConstraint as BaseConstraintType,
-  NumExpr as NumExprType,
+  BoolExprType,
+  BaseConstraintType,
+  NumExprType,
   CompOp,
   PermId,
   AccountId

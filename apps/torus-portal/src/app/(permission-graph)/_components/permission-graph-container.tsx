@@ -79,7 +79,7 @@ export default function PermissionGraphContainer() {
       id: permission.permission_id,
       scope: permission.scope,
       duration: permission.duration,
-      enforcement: permission.enforcement,
+      enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
     }));
 
     return { nodes, links };

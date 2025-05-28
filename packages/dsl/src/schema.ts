@@ -1,30 +1,31 @@
 import { z } from 'zod';
 import {
-  CompOp,
-  type Constraint,
-  type BoolExpr,
-  type BaseConstraint,
-  type NumExpr,
-  type UInt,
-  type AccountId,
-  type PermId,
+  CompOp
+  
+  
+  
+  
+  
+  
+  
 } from './types';
+import type {Constraint, BoolExprType, BaseConstraintType, NumExprType, UInt, AccountId, PermId} from './types';
 
 /**
  * Type mapping from TypeScript types to Zod schemas
  * This helps create a more dynamic schema system where the schemas
  * are derived from the TypeScript types
  */
-type SchemaMap = {
+interface SchemaMap {
   CompOp: z.ZodEnum<[string, ...string[]]>;
   UInt: z.ZodType<UInt>;
   AccountId: z.ZodString;
   PermId: z.ZodString;
-  NumExpr: z.ZodType<NumExpr>;
-  BaseConstraint: z.ZodType<BaseConstraint>;
-  BoolExpr: z.ZodType<BoolExpr>;
+  NumExpr: z.ZodType<NumExprType>;
+  BaseConstraint: z.ZodType<BaseConstraintType>;
+  BoolExpr: z.ZodType<BoolExprType>;
   Constraint: z.ZodType<Constraint>;
-};
+}
 
 /**
  * Create a Zod schema map from TypeScript types
@@ -55,7 +56,7 @@ export const createSchemaMap = (): SchemaMap => {
   
   // Create recursive schemas using z.lazy()
   // NumExpr schema
-  const NumExprSchema: z.ZodType<NumExpr> = z.lazy(() => 
+  const NumExprSchema: z.ZodType<NumExprType> = z.lazy(() => 
     z.discriminatedUnion('$', [
       z.object({
         $: z.literal('UIntLiteral'),
@@ -92,7 +93,7 @@ export const createSchemaMap = (): SchemaMap => {
   );
 
   // BaseConstraint schema
-  const BaseConstraintSchema: z.ZodType<BaseConstraint> = z.discriminatedUnion('$', [
+  const BaseConstraintSchema: z.ZodType<BaseConstraintType> = z.discriminatedUnion('$', [
     z.object({
       $: z.literal('MaxDelegationDepth'),
       depth: NumExprSchema
@@ -116,7 +117,7 @@ export const createSchemaMap = (): SchemaMap => {
   ]);
 
   // BoolExpr schema
-  const BoolExprSchema: z.ZodType<BoolExpr> = z.lazy(() => 
+  const BoolExprSchema: z.ZodType<BoolExprType> = z.lazy(() => 
     z.discriminatedUnion('$', [
       z.object({
         $: z.literal('Not'),

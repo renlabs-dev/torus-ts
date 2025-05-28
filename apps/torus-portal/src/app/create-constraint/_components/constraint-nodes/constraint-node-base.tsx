@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { GitBranch, CheckCircle, Play, Timer, Pause } from "lucide-react";
-import { BaseConstraint, NumExpr } from "../../../../utils/dsl";
+import type { BaseConstraintType } from "@torus-ts/dsl";
+import { BaseConstraint, NumExpr } from "@torus-ts/dsl";
 import type { BaseNodeData, NodeCreationResult } from "./constraint-node-types";
 import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 import { permissionIdSchema } from "../constraint-validation-schemas";
@@ -39,7 +40,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
   const [permissionIdError, setPermissionIdError] = useState<string>("");
 
   const createChildNodes = useCallback(
-    (expression: BaseConstraint): NodeCreationResult => {
+    (expression: BaseConstraintType): NodeCreationResult => {
       const nodes = [];
       const edges = [];
 
@@ -115,11 +116,11 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
 
   const handleTypeChange = useCallback(
     (value: string) => {
-      const type = value as BaseConstraint["$"];
+      const type = value as BaseConstraintType["$"];
 
       removeExistingChildNodes();
 
-      let newExpression: BaseConstraint;
+      let newExpression: BaseConstraintType;
 
       switch (type) {
         case "MaxDelegationDepth":

@@ -1,10 +1,10 @@
-import { 
+import type { 
   Constraint, 
-  BoolExpr, 
-  BaseConstraint, 
-  NumExpr,
-  CompOp
+  BoolExprType, 
+  BaseConstraintType,
+  NumExprType
 } from "./types";
+import { CompOp } from "./types";
 
 /**
  * Analysis result for a constraint
@@ -62,7 +62,7 @@ function analyzeConstraint(constraint: Constraint): ConstraintAnalysis {
  * @param expr The boolean expression to analyze
  * @param analysis The analysis object to update
  */
-function analyzeExpr(expr: BoolExpr, analysis: ConstraintAnalysis): void {
+function analyzeExpr(expr: BoolExprType, analysis: ConstraintAnalysis): void {
   switch(expr.$) {
     case "Base":
       analyzeBase(expr.body, analysis);
@@ -96,7 +96,7 @@ function analyzeExpr(expr: BoolExpr, analysis: ConstraintAnalysis): void {
  * @param base The base constraint to analyze
  * @param analysis The analysis object to update
  */
-function analyzeBase(base: BaseConstraint, analysis: ConstraintAnalysis): void {
+function analyzeBase(base: BaseConstraintType, analysis: ConstraintAnalysis): void {
   switch(base.$) {
     case "MaxDelegationDepth":
       analysis.type = "Delegation Depth Limit";

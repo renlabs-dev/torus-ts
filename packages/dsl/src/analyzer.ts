@@ -1,8 +1,8 @@
-import {
+import type {
   Constraint,
-  BoolExpr,
-  BaseConstraint,
-  NumExpr,
+  BoolExprType,
+  BaseConstraintType,
+  NumExprType,
   CompOp
 } from './types';
 
@@ -10,8 +10,8 @@ import {
  * Represents an atomic fact extracted from a boolean expression
  */
 export type AtomicFact = 
-  | { type: 'BaseConstraint'; constraint: BaseConstraint }
-  | { type: 'Comparison'; op: CompOp; left: NumExpr; right: NumExpr };
+  | { type: 'BaseConstraint'; constraint: BaseConstraintType }
+  | { type: 'Comparison'; op: CompOp; left: NumExprType; right: NumExprType };
 
 /**
  * Result of analyzing a constraint
@@ -56,7 +56,7 @@ export function analyzeConstraint(constraint: Constraint): ConstraintAnalysisRes
  * @returns The structure representation of the expression
  */
 function extractBoolExprStructure(
-  expr: BoolExpr, 
+  expr: BoolExprType, 
   facts: AtomicFact[]
 ): BoolExprStructure {
   switch (expr.$) {
@@ -130,7 +130,7 @@ function countComplexity(structure: BoolExprStructure): number {
 export function reconstructBoolExpr(
   structure: BoolExprStructure,
   facts: AtomicFact[]
-): BoolExpr {
+): BoolExprType {
   switch (structure.type) {
     case 'AtomicFact': {
       const fact = facts[structure.factIndex];
@@ -144,7 +144,7 @@ export function reconstructBoolExpr(
           body: fact.constraint
         };
       } else { // Comparison
-        const compFact = fact as { type: 'Comparison'; op: CompOp; left: NumExpr; right: NumExpr };
+        const compFact = fact as { type: 'Comparison'; op: CompOp; left: NumExprType; right: NumExprType };
         return {
           $: 'CompExpr',
           op: compFact.op,
@@ -182,7 +182,7 @@ export function reconstructBoolExpr(
  * @param expr The boolean expression to flatten
  * @returns Array of expressions in CNF
  */
-export function flattenToCNF(expr: BoolExpr): BoolExpr[] {
+export function flattenToCNF(expr: BoolExprType): BoolExprType[] {
   // Step 1: Extract facts and structure
   const facts: AtomicFact[] = [];
   const structure = extractBoolExprStructure(expr, facts);
@@ -240,7 +240,7 @@ function toCNF(structure: BoolExprStructure): BoolExprStructure {
  * @param facts The atomic facts
  * @returns Array of boolean expressions representing clauses
  */
-function extractClauses(structure: BoolExprStructure, facts: AtomicFact[]): BoolExpr[] {
+function extractClauses(structure: BoolExprStructure, facts: AtomicFact[]): BoolExprType[] {
   if (structure.type !== 'And') {
     // If it's not an AND, it's a single clause
     return [reconstructBoolExpr(structure, facts)];
@@ -291,7 +291,7 @@ export function visualizeStructure(
       if (fact.type === 'BaseConstraint') {
         return `${padding}Fact #${structure.factIndex}: Base(${fact.constraint.$})`;
       } else {
-        const compFact = fact as { type: 'Comparison'; op: CompOp; left: NumExpr; right: NumExpr };
+        const compFact = fact as { type: 'Comparison'; op: CompOp; left: NumExprType; right: NumExprType };
         return `${padding}Fact #${structure.factIndex}: Compare(${compFact.op})`;
       }
     }

@@ -1,21 +1,21 @@
 import type { Node, Edge } from "@xyflow/react";
-import type { BoolExpr, NumExpr, BaseConstraint } from "../../../../utils/dsl";
+import type { BoolExprType, NumExprType, BaseConstraintType } from "../../../../utils/dsl";
 
 export interface BooleanNodeData extends Record<string, unknown> {
   type: "boolean";
-  expression: BoolExpr;
+  expression: BoolExprType;
   label: string;
 }
 
 export interface NumberNodeData extends Record<string, unknown> {
   type: "number";
-  expression: NumExpr;
+  expression: NumExprType;
   label: string;
 }
 
 export interface BaseNodeData extends Record<string, unknown> {
   type: "base";
-  expression: BaseConstraint;
+  expression: BaseConstraintType;
   label: string;
 }
 

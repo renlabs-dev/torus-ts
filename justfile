@@ -28,8 +28,8 @@ dev name *args:
 dev-watch name *args:
   pnpm exec ./scripts/dev-helper dev --watch {{name}} {{args}}
 
-typecheck:
-  pnpm exec turbo run typecheck
+typecheck filter="*":
+  pnpm exec turbo run typecheck --continue -F "{{filter}}"
 
 format:
   pnpm exec turbo run format --continue

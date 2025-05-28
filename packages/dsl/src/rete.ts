@@ -1,14 +1,14 @@
-import {
+import type {
   AccountId,
   PermId,
-  UInt,
-  NumExpr,
-  BoolExpr,
-  BaseConstraint,
+  NumExprType,
   Constraint,
-  CompOp
+  CompOp,
+  UInt,
+  BoolExprType,
+  BaseConstraintType
 } from './types';
-import {
+import type {
   Fact,
   SpecificFact,
   ComparisonFact,
@@ -19,7 +19,8 @@ import {
   PermissionEnabledFact,
   MaxDelegationDepthFact,
   InactiveUnlessRedelegatedFact,
-  BlockFact,
+  BlockFact} from './facts';
+import {
   extractFactsFromConstraint,
   categorizeFacts,
   deduplicateFacts
@@ -81,12 +82,12 @@ export interface Token {
  */
 export class AlphaMemory<T extends Fact> {
   // Use a Map for O(1) fact lookup instead of an array
-  factsMap: Map<string, T> = new Map();
+  factsMap = new Map<string, T>();
   
   // Maps from entity IDs to fact keys
-  entityToKeyMap: Map<string, Set<string>> = new Map();
+  entityToKeyMap = new Map<string, Set<string>>();
   
-  successors: Set<BetaNode> = new Set();
+  successors = new Set<BetaNode>();
 
   /**
    * Get all facts in this memory
@@ -377,8 +378,8 @@ export class BlockAlphaNode extends AlphaNode<BlockFact> {
  */
 export interface ComparisonTest {
   op: CompOp;
-  left: NumExpr;
-  right: NumExpr;
+  left: NumExprType;
+  right: NumExprType;
   
   /**
    * Evaluate the comparison
@@ -393,9 +394,9 @@ export interface ComparisonTest {
  */
 export class BetaMemory {
   // Use a Map for O(1) token lookup
-  tokensMap: Map<string, Token> = new Map();
+  tokensMap = new Map<string, Token>();
   parent?: BetaNode;
-  successors: Set<BetaNode | ProductionNode> = new Set();
+  successors = new Set<BetaNode | ProductionNode>();
 
   /**
    * Get all tokens in this memory
@@ -592,7 +593,7 @@ export class BetaNode {
  */
 export class ProductionNode {
   constraint: Constraint;
-  activations: Map<string, Token> = new Map();
+  activations = new Map<string, Token>();
   comparisonTests: ComparisonTest[] = [];
 
   /**
@@ -661,16 +662,16 @@ function createComparisonTest(comparison: ComparisonFact): ComparisonTest {
  */
 export class WorkingMemory {
   // Account facts indexed by AccountId
-  accountFacts: Map<AccountId, Map<string, Fact>> = new Map();
+  accountFacts = new Map<AccountId, Map<string, Fact>>();
   
   // Permission facts indexed by PermId
-  permissionFacts: Map<PermId, Map<string, Fact>> = new Map();
+  permissionFacts = new Map<PermId, Map<string, Fact>>();
   
   // Current block information
   currentBlock?: BlockFact;
   
   // Operation facts indexed by PermId and timestamp
-  operationFacts: Map<PermId, Fact[]> = new Map();
+  operationFacts = new Map<PermId, Fact[]>();
   
   /**
    * Add or update a fact in working memory
@@ -938,7 +939,7 @@ export class WorkingMemory {
         // Update based on fact type
         if (fact.type === 'PermissionExists') {
           const existingPermFact = existingFact as PermissionExistsFact;
-          const newPermFact = fact as PermissionExistsFact;
+          const newPermFact = fact;
           
           if (existingPermFact.exists !== newPermFact.exists) {
             existingPermFact.exists = newPermFact.exists;
@@ -946,7 +947,7 @@ export class WorkingMemory {
           }
         } else if (fact.type === 'PermissionEnabled') {
           const existingPermFact = existingFact as PermissionEnabledFact;
-          const newPermFact = fact as PermissionEnabledFact;
+          const newPermFact = fact;
           
           if (existingPermFact.enabled !== newPermFact.enabled) {
             existingPermFact.enabled = newPermFact.enabled;
@@ -954,7 +955,7 @@ export class WorkingMemory {
           }
         } else if (fact.type === 'MaxDelegationDepth') {
           const existingPermFact = existingFact as MaxDelegationDepthFact;
-          const newPermFact = fact as MaxDelegationDepthFact;
+          const newPermFact = fact;
           
           // For MaxDelegationDepth, we need to check if the depth or actualDepth changed
           if (JSON.stringify(existingPermFact.depth) !== JSON.stringify(newPermFact.depth) ||
@@ -965,7 +966,7 @@ export class WorkingMemory {
           }
         } else if (fact.type === 'InactiveUnlessRedelegated') {
           const existingPermFact = existingFact as InactiveUnlessRedelegatedFact;
-          const newPermFact = fact as InactiveUnlessRedelegatedFact;
+          const newPermFact = fact;
           
           if (existingPermFact.isRedelegated !== newPermFact.isRedelegated) {
             existingPermFact.isRedelegated = newPermFact.isRedelegated;
@@ -1096,13 +1097,13 @@ export class WorkingMemory {
  */
 export class ReteNetwork {
   // Alpha network (indexed by node key)
-  private alphaNodes: Map<string, AlphaNode<Fact>> = new Map();
+  private alphaNodes = new Map<string, AlphaNode<Fact>>();
   
   // Beta network
   private betaNodes: BetaNode[] = [];
   
   // Production nodes (indexed by node ID)
-  private productionNodes: Map<string, ProductionNode> = new Map();
+  private productionNodes = new Map<string, ProductionNode>();
   
   // Working memory
   private workingMemory: WorkingMemory = new WorkingMemory();
@@ -1117,8 +1118,8 @@ export class ReteNetwork {
     const allFacts = extractFactsFromConstraint(constraint);
     
     // Separate facts and comparisons
-    const facts = allFacts.filter(f => f.type !== 'Comparison') as SpecificFact[];
-    const comparisons = allFacts.filter(f => f.type === 'Comparison') as ComparisonFact[];
+    const facts = allFacts.filter(f => f.type !== 'Comparison');
+    const comparisons = allFacts.filter(f => f.type === 'Comparison');
     
     // Create comparison tests for the production node
     const comparisonTests = comparisons.map(createComparisonTest);
@@ -1133,7 +1134,7 @@ export class ReteNetwork {
       if (fact.type === 'StakeOf') {
         // StakeOf fact - index by account
         const key = `Account:${fact.account}:StakeOf`;
-        alphaNode = this.alphaNodes.get(key) as AlphaNode<Fact>;
+        alphaNode = this.alphaNodes.get(key)!;
         
         if (!alphaNode) {
           alphaNode = new AccountAlphaNode(fact.account, 'StakeOf');
@@ -1144,7 +1145,7 @@ export class ReteNetwork {
         
         // From account node
         const keyFrom = `Account:${fact.from}:${fact.type}:from`;
-        let alphaNodeFrom = this.alphaNodes.get(keyFrom) as AlphaNode<Fact>;
+        let alphaNodeFrom = this.alphaNodes.get(keyFrom)!;
         
         if (!alphaNodeFrom) {
           alphaNodeFrom = new AccountAlphaNode(fact.from, fact.type, 'from');
@@ -1153,7 +1154,7 @@ export class ReteNetwork {
         
         // To account node
         const keyTo = `Account:${fact.to}:${fact.type}:to`;
-        let alphaNodeTo = this.alphaNodes.get(keyTo) as AlphaNode<Fact>;
+        let alphaNodeTo = this.alphaNodes.get(keyTo)!;
         
         if (!alphaNodeTo) {
           alphaNodeTo = new AccountAlphaNode(fact.to, fact.type, 'to');
@@ -1177,7 +1178,7 @@ export class ReteNetwork {
         }
         
         const key = `Permission:${permId}:${fact.type}`;
-        alphaNode = this.alphaNodes.get(key) as AlphaNode<Fact>;
+        alphaNode = this.alphaNodes.get(key)!;
         
         if (!alphaNode) {
           alphaNode = new PermissionAlphaNode(permId, fact.type);
@@ -1186,7 +1187,7 @@ export class ReteNetwork {
       } else if (fact.type === 'Block') {
         // Block fact - one global node
         const key = 'Block';
-        alphaNode = this.alphaNodes.get(key) as AlphaNode<Fact>;
+        alphaNode = this.alphaNodes.get(key)!;
         
         if (!alphaNode) {
           alphaNode = new BlockAlphaNode();

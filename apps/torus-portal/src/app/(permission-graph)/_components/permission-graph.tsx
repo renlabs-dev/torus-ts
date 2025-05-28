@@ -60,7 +60,6 @@ const ForceGraph = memo(
         ref={fgRef}
         graphData={formattedData}
         nodeColor={(node: NodeObject) => String(node.color)}
-        nodeLabel={(node: NodeObject) => String(node.name ?? "")}
         linkDirectionalArrowLength={3.5}
         linkDirectionalArrowRelPos={1}
         linkCurvature={0.4}
