@@ -32,8 +32,13 @@ import {
   Settings,
   Siren,
   Split,
+  Wand2,
+  Loader2,
 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
+import { useTorus } from "@torus-ts/torus-provider";
+import type { SS58Address } from "@torus-network/sdk";
+import { useAvailableStreams } from "~/hooks/use-available-streams";
 import type {
   GrantEmissionPermissionForm,
   GrantEmissionPermissionFormData,
@@ -51,6 +56,11 @@ export function GrantEmissionPermissionFormComponent({
   mutation,
   onClose,
 }: GrantEmissionPermissionFormProps) {
+  const { selectedAccount } = useTorus();
+  const availableStreams = useAvailableStreams(
+    selectedAccount?.address as SS58Address,
+  );
+
   const {
     fields: targetFields,
     append: appendTarget,
@@ -94,6 +104,25 @@ export function GrantEmissionPermissionFormComponent({
   const durationType = form.watch("duration.type");
   const revocationType = form.watch("revocation.type");
   const enforcementType = form.watch("enforcement.type");
+
+  const handleAutoPopulateStreams = () => {
+    if (!availableStreams.data) return;
+
+    // Clear existing streams
+    const currentStreamCount = streamFields.length;
+    for (let i = currentStreamCount - 1; i >= 0; i--) {
+      removeStream(i);
+    }
+
+    // Add available streams with reasonable default percentages
+    availableStreams.data.forEach((stream) => {
+      const defaultPercentage = stream.isRootStream ? "100" : "0";
+      appendStream({
+        streamId: stream.streamId,
+        percentage: defaultPercentage,
+      });
+    });
+  };
 
   const onSubmit = (data: GrantEmissionPermissionFormData) => {
     mutation.mutate(data);
@@ -202,61 +231,109 @@ export function GrantEmissionPermissionFormComponent({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">Streams</h4>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        appendStream({ streamId: "", percentage: "" })
-                      }
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Stream
-                    </Button>
-                  </div>
-                  {streamFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-start">
-                      <FormField
-                        control={form.control}
-                        name={`allocation.streams.${index}.streamId`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Stream ID</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="0x..." />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`allocation.streams.${index}.percentage`}
-                        render={({ field }) => (
-                          <FormItem className="w-32">
-                            <FormLabel>Percentage</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="50"
-                                type="number"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <div className="flex gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="mt-8"
-                        onClick={() => removeStream(index)}
+                        onClick={handleAutoPopulateStreams}
+                        disabled={
+                          availableStreams.isLoading ||
+                          !availableStreams.data?.length ||
+                          !selectedAccount?.address
+                        }
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {availableStreams.isLoading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-4 w-4 mr-2" />
+                        )}
+                        Auto-populate
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          appendStream({ streamId: "", percentage: "" })
+                        }
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Stream
                       </Button>
                     </div>
-                  ))}
+                  </div>
+                  {!selectedAccount?.address && (
+                    <p className="text-sm text-muted-foreground">
+                      Connect your wallet to auto-populate available streams
+                    </p>
+                  )}
+                  {availableStreams.data &&
+                    availableStreams.data.length > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Found {availableStreams.data.length} available streams
+                        for your account
+                      </p>
+                    )}
+                  {streamFields.map((field, index) => {
+                    const currentStreamValue = form.watch(
+                      `allocation.streams.${index}.streamId`,
+                    );
+                    const isRootStream = availableStreams.data?.find(
+                      (stream) => stream.streamId === currentStreamValue,
+                    )?.isRootStream;
+
+                    return (
+                      <div key={field.id} className="flex gap-2 items-start">
+                        <FormField
+                          control={form.control}
+                          name={`allocation.streams.${index}.streamId`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="flex items-center gap-2">
+                                Stream ID
+                                {isRootStream && (
+                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    Root Stream
+                                  </span>
+                                )}
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="0x..." />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`allocation.streams.${index}.percentage`}
+                          render={({ field }) => (
+                            <FormItem className="w-32">
+                              <FormLabel>Percentage</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="50"
+                                  type="number"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-8"
+                          onClick={() => removeStream(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
