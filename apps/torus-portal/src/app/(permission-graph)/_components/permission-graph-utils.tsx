@@ -26,55 +26,56 @@ export interface CustomGraphData {
   links: GraphLink[];
 }
 
-
-export const formatScope = (scope: string): string => 
+export const formatScope = (scope: string): string =>
   scope.charAt(0).toUpperCase() + scope.slice(1).toLowerCase();
 
 export const formatDuration = (seconds: number): string => {
   if (!seconds) return "No expiration";
-  
+
   const days = Math.floor(seconds / 86400);
   // const hours = Math.floor((seconds % 86400) / 3600);
   // const minutes = Math.floor((seconds % 3600) / 60);
-  
+
   return [
-    days && `${days} day${days > 1 ? 's' : ''}`,
+    days && `${days} day${days > 1 ? "s" : ""}`,
     // hours && `${hours} hour${hours > 1 ? 's' : ''}`,
     // minutes && `${minutes} minute${minutes > 1 ? 's' : ''}`
-  ].filter(Boolean).join(', ');
+  ]
+    .filter(Boolean)
+    .join(", ");
 };
 
 export interface PermissionWithType extends GraphLink {
-  type: 'incoming' | 'outgoing';
+  type: "incoming" | "outgoing";
 }
-
 
 export const getAllocatorBaseUrl = (override?: string): string => {
   if (override) return override;
-  
-  const hostname = typeof window !== "undefined" ? window.location.hostname : '';
-  const isTestnet = hostname.includes("testnet") || hostname.includes("localhost");
-  
+
+  const hostname =
+    typeof window !== "undefined" ? window.location.hostname : "";
+  const isTestnet =
+    hostname.includes("testnet") || hostname.includes("localhost");
+
   return isTestnet
     ? "https://allocator.testnet.torus.network/agent/"
     : "https://allocator.torus.network/agent/";
 };
 
-
 export const getNodePermissions = (
-  node: CustomGraphNode, 
-  graphData: CustomGraphData
+  node: CustomGraphNode,
+  graphData: CustomGraphData,
 ): PermissionWithType[] => {
   const permissionsMap = new Map<string, PermissionWithType>();
-  
-  graphData.links.forEach(link => {
+
+  graphData.links.forEach((link) => {
     const key = `${link.source}-${link.target}`;
-    
+
     if (link.source === node.id || link.target === node.id) {
       if (!permissionsMap.has(key)) {
         permissionsMap.set(key, {
           ...link,
-          type: link.source === node.id ? 'outgoing' : 'incoming'
+          type: link.source === node.id ? "outgoing" : "incoming",
         });
       }
     }
@@ -96,20 +97,20 @@ export interface PermissionDetail {
 }
 
 export const sortPermissions = (
-  permissions: PermissionWithType[], 
-  permissionDetails: PermissionDetail[] 
+  permissions: PermissionWithType[],
+  permissionDetails: PermissionDetail[],
 ): PermissionWithType[] => {
   return permissions.sort((a, b) => {
     const detailsA = permissionDetails.find(
-      p => p.grantor_key === a.source && p.grantee_key === a.target
+      (p) => p.grantor_key === a.source && p.grantee_key === a.target,
     );
     const detailsB = permissionDetails.find(
-      p => p.grantor_key === b.source && p.grantee_key === b.target
+      (p) => p.grantor_key === b.source && p.grantee_key === b.target,
     );
-    
+
     const idA = detailsA?.permission_id ?? "";
     const idB = detailsB?.permission_id ?? "";
-    
+
     return Number(idA) - Number(idB);
   });
 };
@@ -157,7 +158,7 @@ export class AgentLRUCache {
       this.cache.delete(firstKey ?? "");
       // Note: We store blobs directly now, no URL cleanup needed here
     }
-    
+
     // Add new item with current timestamp
     value.lastAccessed = Date.now();
     this.cache.set(key, value);
@@ -180,90 +181,108 @@ export const samplePermissionGraph: CustomGraphData = {
     { id: "read", name: "Read", color: "#1dd1a1", val: 8, role: "Both" },
     { id: "write", name: "Write", color: "#f368e0", val: 8, role: "Both" },
     { id: "delete", name: "Delete", color: "#ff9f43", val: 8, role: "Both" },
-    { id: "document", name: "Document", color: "#54a0ff", val: 12, role: "Grantee" },
-    { id: "folder", name: "Folder", color: "#5f27cd", val: 12, role: "Grantee" },
-    { id: "project", name: "Project", color: "#ee5253", val: 12, role: "Grantee" },
+    {
+      id: "document",
+      name: "Document",
+      color: "#54a0ff",
+      val: 12,
+      role: "Grantee",
+    },
+    {
+      id: "folder",
+      name: "Folder",
+      color: "#5f27cd",
+      val: 12,
+      role: "Grantee",
+    },
+    {
+      id: "project",
+      name: "Project",
+      color: "#ee5253",
+      val: 12,
+      role: "Grantee",
+    },
   ],
   links: [
-    { 
-      source: "user", 
-      target: "read", 
+    {
+      source: "user",
+      target: "read",
       id: "1",
       scope: "EMISSION",
       duration: 86400,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "user", 
-      target: "write", 
+    {
+      source: "user",
+      target: "write",
       id: "2",
       scope: "EMISSION",
       duration: 172800,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "admin", 
-      target: "read", 
+    {
+      source: "admin",
+      target: "read",
       id: "3",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "admin", 
-      target: "write", 
+    {
+      source: "admin",
+      target: "write",
       id: "4",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "admin", 
-      target: "delete", 
+    {
+      source: "admin",
+      target: "delete",
       id: "5",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "read", 
-      target: "document", 
+    {
+      source: "read",
+      target: "document",
       id: "6",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "read", 
-      target: "folder", 
+    {
+      source: "read",
+      target: "folder",
       id: "7",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "write", 
-      target: "document", 
+    {
+      source: "write",
+      target: "document",
       id: "8",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "delete", 
-      target: "document", 
+    {
+      source: "delete",
+      target: "document",
       id: "9",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
-    { 
-      source: "folder", 
-      target: "project", 
+    {
+      source: "folder",
+      target: "project",
       id: "10",
       scope: "EMISSION",
       duration: 0,
-      enforcement: "torus_enforcement_agent"
+      enforcement: "torus_enforcement_agent",
     },
   ],
 };

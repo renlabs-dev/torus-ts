@@ -12,7 +12,8 @@ export default function AgentLoading() {
       <div className="animate-fade-up mx-auto pb-16 text-white">
         <Link
           href="/"
-          className="animate-fade-left mb-4 flex w-fit items-center gap-1.5 text-white transition duration-200"
+          className="animate-fade-left mb-4 flex w-fit items-center gap-1.5 text-white transition
+            duration-200"
         >
           <ArrowLeft className="h-5 w-5" />
           Go back to agents list

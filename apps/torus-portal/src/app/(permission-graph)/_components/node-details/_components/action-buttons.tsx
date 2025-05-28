@@ -1,10 +1,14 @@
-import React from 'react';
-import type { JSX } from 'react';
-import { Copy, Globe, Share2  } from 'lucide-react';
-import type {LucideIcon} from 'lucide-react';
-import { CopyButton } from '@torus-ts/ui/components/copy-button';
+import React from "react";
+import type { JSX } from "react";
+import { Copy, Globe, Share2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Tooltip, TooltipContent, TooltipTrigger } from '@torus-ts/ui/components/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@torus-ts/ui/components/tooltip";
 import { getAllocatorBaseUrl } from "../../permission-graph-utils";
 
 // Base icon configuration
@@ -18,8 +22,8 @@ interface IconConfig {
 // Base button configuration
 interface ActionButtonsConfig {
   className?: string;
-  variant?: 'ghost' | 'outline' | 'default'; 
-  size?: 'sm' | 'md' | 'lg' | 'icon';
+  variant?: "ghost" | "outline" | "default";
+  size?: "sm" | "md" | "lg" | "icon";
 }
 
 // Props for each button type
@@ -52,7 +56,6 @@ interface NodeJumpButtonProps {
   label?: string;
 }
 
-
 export function AddressCopyButton({
   link,
   icon: Icon = Copy,
@@ -62,24 +65,25 @@ export function AddressCopyButton({
   const defaultIconConfig: IconConfig = {
     size: 16,
     className: "hover:opacity-20 opacity-40  transition-opacity duration-150",
-    ...iconConfig
+    ...iconConfig,
   };
 
   const defaultButtonConfig: ActionButtonsConfig = {
     className: "hover:text-muted-foreground h-fit p-0",
     variant: "ghost",
-    ...buttonConfig
+    ...buttonConfig,
   };
 
   return (
     <Tooltip>
       <TooltipTrigger>
-        <CopyButton asChild
+        <CopyButton
+          asChild
           className={defaultButtonConfig.className}
           variant={defaultButtonConfig.variant}
           copy={link}
         >
-          <Icon 
+          <Icon
             className={defaultIconConfig.className}
             size={defaultIconConfig.size}
             color={defaultIconConfig.color}
@@ -87,13 +91,10 @@ export function AddressCopyButton({
           />
         </CopyButton>
       </TooltipTrigger>
-      <TooltipContent>
-        {"Copy Address"}
-      </TooltipContent>
+      <TooltipContent>{"Copy Address"}</TooltipContent>
     </Tooltip>
-  )
+  );
 }
-
 
 export function AddressLinkButton({
   link,
@@ -102,12 +103,12 @@ export function AddressLinkButton({
   linkClassName = "flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors duration-200",
   baseUrlOverride,
   showLabel = false,
-  label = "View in Explorer"
+  label = "View in Explorer",
 }: AddressLinkButtonProps): JSX.Element {
   const defaultIconConfig: IconConfig = {
     size: 16,
     className: "opacity-60 hover:opacity-30 transition-opacity duration-150",
-    ...iconConfig
+    ...iconConfig,
   };
 
   const href = `${getAllocatorBaseUrl(baseUrlOverride)}${link}`;
@@ -121,7 +122,7 @@ export function AddressLinkButton({
           rel="noopener noreferrer"
           className={linkClassName}
         >
-          <Icon 
+          <Icon
             className={defaultIconConfig.className}
             size={defaultIconConfig.size}
             color={defaultIconConfig.color}
@@ -130,9 +131,7 @@ export function AddressLinkButton({
           {showLabel && <span>{label}</span>}
         </a>
       </TooltipTrigger>
-      <TooltipContent>
-        {"View in Explorer"}
-      </TooltipContent>
+      <TooltipContent>{"View in Explorer"}</TooltipContent>
     </Tooltip>
   );
 }
@@ -143,20 +142,20 @@ export function NodeJumpButton({
   iconConfig = {},
   linkClassName = "flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors duration-200",
   showLabel = false,
-  label = "View in Explorer"
+  label = "View in Explorer",
 }: NodeJumpButtonProps): JSX.Element {
   const defaultIconConfig: IconConfig = {
     size: 16,
     className: "opacity-60 hover:opacity-30 transition-opacity duration-150",
-    ...iconConfig
+    ...iconConfig,
   };
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault(); 
+    e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
-    params.set('agent', address);
+    params.set("agent", address);
     router.replace(`/?${params.toString()}`, { scroll: false });
   };
 
@@ -170,7 +169,7 @@ export function NodeJumpButton({
           rel="noopener noreferrer"
           className={linkClassName}
         >
-          <Icon 
+          <Icon
             className={defaultIconConfig.className}
             size={defaultIconConfig.size}
             color={defaultIconConfig.color}
@@ -179,9 +178,7 @@ export function NodeJumpButton({
           {showLabel && <span>{label}</span>}
         </a>
       </TooltipTrigger>
-      <TooltipContent>
-        {"Jump to Node"}
-      </TooltipContent>
+      <TooltipContent>{"Jump to Node"}</TooltipContent>
     </Tooltip>
   );
 }
@@ -189,7 +186,7 @@ export function NodeJumpButton({
 interface UnifiedAddressButtonProps {
   link?: string;
   address?: string;
-  type: 'copy' | 'link' | 'go';
+  type: "copy" | "link" | "go";
   icon?: LucideIcon;
   iconConfig?: IconConfig;
   copyProps?: Partial<AddressCopyButtonProps>;
@@ -203,32 +200,32 @@ export function AddressActionButton({
   icon,
   iconConfig,
   copyProps,
-  linkProps
+  linkProps,
 }: UnifiedAddressButtonProps): JSX.Element {
   switch (type) {
-    case 'copy':
+    case "copy":
       return (
-        <AddressCopyButton 
-          link={link ?? ""} 
-          icon={icon} 
+        <AddressCopyButton
+          link={link ?? ""}
+          icon={icon}
           iconConfig={iconConfig}
           {...copyProps}
         />
       );
-    case 'link':
+    case "link":
       return (
-        <AddressLinkButton 
-          link={link ?? ""} 
-          icon={icon ?? Globe} 
+        <AddressLinkButton
+          link={link ?? ""}
+          icon={icon ?? Globe}
           iconConfig={iconConfig}
           {...linkProps}
         />
       );
-    case 'go':
+    case "go":
       return (
-        <NodeJumpButton 
-          address={address ?? ""} 
-          icon={icon ?? Share2} 
+        <NodeJumpButton
+          address={address ?? ""}
+          icon={icon ?? Share2}
           iconConfig={iconConfig}
           {...linkProps}
         />
@@ -254,24 +251,24 @@ export function ActionButtons({
   showExplorer = true,
   showGo = true,
   iconSize = 16,
-  className = "flex items-center gap-2"
+  className = "flex items-center gap-2",
 }: ActionButtonProps): JSX.Element {
   return (
     <div className={className}>
       {showCopy && (
-        <AddressCopyButton 
+        <AddressCopyButton
           link={connectedAddress}
           iconConfig={{ size: iconSize }}
         />
       )}
       {showExplorer && (
-        <AddressLinkButton 
+        <AddressLinkButton
           link={connectedAddress}
           iconConfig={{ size: iconSize }}
         />
       )}
       {showGo && (
-        <NodeJumpButton 
+        <NodeJumpButton
           address={connectedAddress}
           iconConfig={{ size: iconSize }}
         />

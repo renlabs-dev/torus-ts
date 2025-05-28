@@ -25,7 +25,10 @@ export const ProposalVotePercentageBar = (props: {
   const againstPercent = 100 - favorablePercent;
 
   return (
-    <div className="border-border bg-primary-foreground relative h-8 w-full overflow-hidden rounded-full border">
+    <div
+      className="border-border bg-primary-foreground relative h-8 w-full overflow-hidden
+        rounded-full border"
+    >
       <div
         className="bg-accent h-full rounded-full rounded-r-none"
         style={{ width: `${favorablePercent}%` }}
