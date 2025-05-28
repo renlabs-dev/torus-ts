@@ -225,12 +225,19 @@ export async function queryPermissions(
  * Query permissions by grantor
  */
 export async function queryPermissionsByGrantor(api: Api, grantor: string) {
+  console.log("====> queryPermissionsByGrantor:", grantor);
+
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantor(grantor),
   );
   if (queryError) return makeErr(queryError);
 
-  const parsed = sb_some(sb_array(PERMISSION_ID_SCHEMA)).safeParse(query);
+  if (!query.isSome) {
+    return makeErr(new Error("No permissions found for grantor"));
+  }
+  const inner = query.value;
+
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(inner);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -248,7 +255,12 @@ export async function queryPermissionsByGrantee(
   );
   if (queryError) return makeErr(queryError);
 
-  const parsed = sb_some(sb_array(PERMISSION_ID_SCHEMA)).safeParse(query);
+  if (!query.isSome) {
+    return makeErr(new Error("No permissions found for grantee"));
+  }
+  const inner = query.value;
+
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(inner);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
