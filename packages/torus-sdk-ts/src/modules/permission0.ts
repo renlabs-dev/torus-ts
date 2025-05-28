@@ -35,6 +35,7 @@ import type { Api } from "./_common";
 export const PERMISSION_ID_SCHEMA = sb_h256;
 export const STREAM_ID_SCHEMA = sb_h256;
 
+// TODO: branded types on PermissionId and StreamId
 export type PermissionId = z.infer<typeof PERMISSION_ID_SCHEMA>;
 export type StreamId = z.infer<typeof STREAM_ID_SCHEMA>;
 
@@ -286,7 +287,9 @@ export async function queryPermissionsByParticipants(
 }
 
 /**
- * Query accumulated stream amounts for an account and permission
+ * Query accumulated stream amounts for an account
+ *
+ * @returns A map (StreamId -> PermissionId -> Amount)
  */
 export async function queryAccumulatedStreamsForAccount(
   api: Api,
