@@ -19,8 +19,8 @@ import PermissionNodeBoolean from "./constraint-nodes/constraint-node-boolean";
 import PermissionNodeNumber from "./constraint-nodes/constraint-node-number";
 import PermissionNodeBase from "./constraint-nodes/constraint-node-base";
 import PermissionNodePermissionId from "./constraint-nodes/constraint-node-permission-id";
-import { extractConstraintFromNodes } from "./constraint-utils";
-import { constraintValidationSchema } from "./constraint-validation-schemas";
+import { validateConstraintForm } from "./constraint-utils";
+import type { ValidationResult } from "./constraint-utils";
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
 import { constraintToNodes } from "./constraint-nodes/constraint-to-nodes";
 import ConstraintControlsSheet from "./constraint-controls-sheet";
@@ -63,6 +63,11 @@ function ConstraintFlow() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedExample, setSelectedExample] = useState<string>("");
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
+  const [validationResult, setValidationResult] = useState<ValidationResult>({
+    isValid: false,
+    errors: [],
+  });
+  const [showErrors, setShowErrors] = useState(false);
 
   // Initialize permission ID from existing node
   useEffect(() => {
@@ -133,32 +138,19 @@ function ConstraintFlow() {
   );
 
   const handleCreateConstraint = useCallback(() => {
-    try {
-      // Extract constraint from the node tree
-      const constraint = extractConstraintFromNodes(
-        nodes,
-        edges,
-        "root-boolean",
-      );
+    const result = validateConstraintForm(nodes, edges, "root-boolean");
 
-      if (!constraint) {
-        console.error("Failed to extract constraint from nodes");
-        return;
-      }
+    if (!result.isValid) {
+      setShowErrors(true);
+      return;
+    }
 
-      // Validate the constraint
-      const validationResult = constraintValidationSchema.safeParse(constraint);
-
-      if (!validationResult.success) {
-        console.error("Constraint validation failed:", validationResult.error);
-        return;
-      }
-
+    if (result.constraint) {
       // Log the valid constraint with BigInt support
       console.log(
         "Created constraint:",
         JSON.stringify(
-          constraint,
+          result.constraint,
           (key, value) => {
             if (typeof value === "bigint") {
               return value.toString();
@@ -168,8 +160,9 @@ function ConstraintFlow() {
           2,
         ),
       );
-    } catch (error) {
-      console.error("Error creating constraint:", error);
+
+      // TODO: Submit constraint to backend
+      setShowErrors(false);
     }
   }, [nodes, edges]);
 
@@ -200,6 +193,12 @@ function ConstraintFlow() {
       }
     }
   }, [nodes, selectedPermissionId]);
+
+  // Validate constraint whenever nodes change
+  useEffect(() => {
+    const result = validateConstraintForm(nodes, edges, "root-boolean");
+    setValidationResult(result);
+  }, [nodes, edges]);
 
   // every time our nodes change, we want to center the graph again
   useEffect(() => {
@@ -235,6 +234,8 @@ function ConstraintFlow() {
           onCreateConstraint={handleCreateConstraint}
           selectedPermissionId={selectedPermissionId}
           onPermissionIdChange={handlePermissionIdChange}
+          isSubmitDisabled={!validationResult.isValid}
+          validationErrors={showErrors ? validationResult.errors : []}
         />
       </div>
     </ReactFlow>
