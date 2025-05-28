@@ -144,8 +144,8 @@ export default function Page() {
     defaultValues: {
       grantee: "",
       allocation: {
-        type: "FixedAmount",
-        amount: "",
+        type: "Streams",
+        streams: [],
       },
       targets: [{ account: "", weight: "" }],
       distribution: {

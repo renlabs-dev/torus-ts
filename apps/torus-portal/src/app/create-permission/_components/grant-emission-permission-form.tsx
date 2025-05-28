@@ -36,6 +36,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
+import { useEffect } from "react";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { SS58Address } from "@torus-network/sdk";
 import { useAvailableStreams } from "~/hooks/use-available-streams";
@@ -124,6 +125,30 @@ export function GrantEmissionPermissionFormComponent({
     });
   };
 
+  // Automatically populate streams when allocation type changes to "Streams" and data is available
+  useEffect(() => {
+    if (
+      allocationType === "Streams" &&
+      availableStreams.data &&
+      availableStreams.data.length > 0 &&
+      streamFields.length === 0
+    ) {
+      handleAutoPopulateStreams();
+    }
+  }, [allocationType, availableStreams.data]);
+
+  // Automatically populate streams when user account changes (and we're in Streams mode)
+  useEffect(() => {
+    if (
+      allocationType === "Streams" &&
+      availableStreams.data &&
+      availableStreams.data.length > 0 &&
+      selectedAccount?.address
+    ) {
+      handleAutoPopulateStreams();
+    }
+  }, [selectedAccount?.address]);
+
   const onSubmit = (data: GrantEmissionPermissionFormData) => {
     mutation.mutate(data);
   };
@@ -147,6 +172,9 @@ export function GrantEmissionPermissionFormComponent({
                 <Target className="h-5 w-5" />
                 Basic Information
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Specify the recipient who will receive the emission permission and be able to allocate streams.
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -177,6 +205,9 @@ export function GrantEmissionPermissionFormComponent({
                 <Coins className="h-5 w-5" />
                 Allocation Configuration
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Define how emissions are allocated. Streams allow percentage-based distribution from your available streams.
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -195,8 +226,8 @@ export function GrantEmissionPermissionFormComponent({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="FixedAmount">
-                          Fixed Amount
+                        <SelectItem value="FixedAmount" disabled>
+                          Fixed Amount (Coming Soon)
                         </SelectItem>
                         <SelectItem value="Streams">Streams</SelectItem>
                       </SelectContent>
@@ -248,7 +279,7 @@ export function GrantEmissionPermissionFormComponent({
                         ) : (
                           <Wand2 className="h-4 w-4 mr-2" />
                         )}
-                        Auto-populate
+                        Refresh Streams
                       </Button>
                       <Button
                         type="button"
@@ -265,14 +296,27 @@ export function GrantEmissionPermissionFormComponent({
                   </div>
                   {!selectedAccount?.address && (
                     <p className="text-sm text-muted-foreground">
-                      Connect your wallet to auto-populate available streams
+                      Connect your wallet to automatically populate available streams
+                    </p>
+                  )}
+                  {availableStreams.isLoading && selectedAccount?.address && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading available streams...
                     </p>
                   )}
                   {availableStreams.data &&
                     availableStreams.data.length > 0 && (
                       <p className="text-sm text-muted-foreground">
-                        Found {availableStreams.data.length} available streams
+                        Automatically populated {availableStreams.data.length} available streams
                         for your account
+                      </p>
+                    )}
+                  {availableStreams.data &&
+                    availableStreams.data.length === 0 &&
+                    selectedAccount?.address && (
+                      <p className="text-sm text-muted-foreground">
+                        No streams found for your account. You can add streams manually.
                       </p>
                     )}
                   {streamFields.map((field, index) => {
@@ -346,13 +390,13 @@ export function GrantEmissionPermissionFormComponent({
                 <Target className="h-5 w-5" />
                 Target Accounts
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Specify the accounts that will receive emissions and their relative weights for distribution.
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Define the accounts that will receive emissions and their
-                  weights
-                </p>
+                <div></div>
                 <Button
                   type="button"
                   variant="outline"
@@ -415,6 +459,9 @@ export function GrantEmissionPermissionFormComponent({
                 <Settings className="h-5 w-5" />
                 Distribution Control
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Configure how and when emissions are distributed to target accounts (manual, automatic, or scheduled).
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -506,6 +553,9 @@ export function GrantEmissionPermissionFormComponent({
                 <Clock className="h-5 w-5" />
                 Duration
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Set how long this permission remains active (indefinitely or until a specific block number).
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -558,6 +608,9 @@ export function GrantEmissionPermissionFormComponent({
                 <Split className="h-5 w-5" />
                 Revocation Terms
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Define the conditions under which this permission can be revoked or cancelled.
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -678,6 +731,9 @@ export function GrantEmissionPermissionFormComponent({
                 <Siren className="h-5 w-5" />
                 Enforcement Authority
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Specify who has the authority to enforce or control the execution of this permission.
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
