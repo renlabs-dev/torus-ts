@@ -64,7 +64,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
   );
 
   return (
-    <div className="relative">
+    <div className="relative w-full pr-4">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
         <Input
           type="text"

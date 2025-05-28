@@ -9,59 +9,46 @@ interface PermissionGraphOverviewProps {
 const roleColors = [
   { color: "#ff6b6b", label: "Grantor" },
   { color: "#1dd1a1", label: "Grantee" },
-  { color: "#5f27cd", label: "Both (Grantor & Grantee)" },
+  { color: "#5f27cd", label: "Both" },
 ];
 
 export const PermissionGraphOverview = memo(function PermissionGraphOverview({
   graphData,
 }: PermissionGraphOverviewProps) {
+  if (!graphData) {
+    return (
+      <Card className="h-9 w-96 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <div
+            className="items-center animate-spin h-4 w-4 border-2 border-gray-700 border-t-gray-400
+              rounded-full"
+          />
+          <span className="text-sm text-gray-400">Loading graph data...</span>
+        </div>
+      </Card>
+    );
+  }
+
+  const Bar = () => <div className="h-4 w-px bg-gray-800" />;
+
+  const Stat = ({ label, value }: { label: string; value: number }) => (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-medium text-gray-500">{label}</span>
+      <span className="text-sm font-semibold text-white">{value}</span>
+    </div>
+  );
+
   return (
-    <Card className="z-50 w-full p-4 h-full">
-      <h2 className="text-lg font-semibold mb-3">Graph Information</h2>
-
-      {graphData ? (
-        <>
-          <div className="grid grid-cols-2 gap-4 mb-6 z-50">
-            <div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                Addresses
-              </span>
-              <div className="text-xl font-semibold">
-                {graphData.nodes.length}
-              </div>
-            </div>
-            <div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                Permissions
-              </span>
-              <div className="text-xl font-semibold">
-                {graphData.links.length}
-              </div>
-            </div>
+    <Card className="h-9 flex items-center">
+      <div className="px-4 w-full">
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center gap-3">
+            <Stat label="Addresses" value={graphData.nodes.length} />
+            <Bar />
+            <Stat label="Permissions" value={graphData.links.length} />
           </div>
-
-          <div className="z-50 mb-4">
-            <h4 className="text-md font-semibold mb-2">Role Legend</h4>
-            <div className="space-y-2">
-              {roleColors.map(({ color, label }) => (
-                <div key={label} className="flex items-center">
-                  <div
-                    className="w-3 h-3 rounded-full mr-2"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="text-sm">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <span className="text-sm text-slate-500 dark:text-slate-400">
-            Click on a node to view its permissions in detail.
-          </span>
-        </>
-      ) : (
-        <span className="text-slate-400">Loading graph data...</span>
-      )}
+        </div>
+      </div>
     </Card>
   );
 });
