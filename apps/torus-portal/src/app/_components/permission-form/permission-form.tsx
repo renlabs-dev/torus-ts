@@ -38,6 +38,8 @@ export function PermissionForm() {
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       permId: "",
       body: {
@@ -80,7 +82,13 @@ export function PermissionForm() {
                 <FormItem>
                   <FormLabel>Permission ID</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter permission ID" {...field} />
+                    <Input
+                      placeholder="Enter permission ID"
+                      {...field}
+                      onBlur={(e) => {
+                        field.onBlur();
+                      }}
+                    />
                   </FormControl>
                   <FormDescription>
                     Unique identifier for this permission
@@ -101,9 +109,60 @@ export function PermissionForm() {
               </AccordionItem>
             </Accordion>
 
+            {/* Form-level error summary */}
+            {Object.keys(form.formState.errors).length > 0 && (
+              <div className="p-4 border border-red-200 bg-red-50 rounded-md">
+                <h3 className="text-sm font-medium text-red-800 mb-2">
+                  Please fix the following errors:
+                </h3>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {Object.entries(form.formState.errors)
+                    .map(([key, error]) => {
+                      if (error?.message) {
+                        return (
+                          <li key={key}>
+                            • {key === "permId" ? "Permission ID" : key}:{" "}
+                            {error.message}
+                          </li>
+                        );
+                      }
+                      // Handle nested errors
+                      if (error && typeof error === "object") {
+                        const flattenErrors = (
+                          obj: any,
+                          prefix = "",
+                        ): string[] => {
+                          const errors: string[] = [];
+                          Object.entries(obj).forEach(([k, v]) => {
+                            const path = prefix ? `${prefix}.${k}` : k;
+                            if (v && typeof v === "object" && "message" in v) {
+                              errors.push(`${path}: ${v.message}`);
+                            } else if (v && typeof v === "object") {
+                              errors.push(...flattenErrors(v, path));
+                            }
+                          });
+                          return errors;
+                        };
+                        return flattenErrors(error).map((errorMsg, idx) => (
+                          <li key={`${key}-${idx}`}>• {errorMsg}</li>
+                        ));
+                      }
+                      return null;
+                    })
+                    .flat()
+                    .filter(Boolean)}
+                </ul>
+              </div>
+            )}
+
             <div className="flex justify-between">
               <ExampleConstraintButton form={form} />
-              <Button type="submit">Create Permission</Button>
+              <Button
+                type="submit"
+                disabled={!form.formState.isValid && form.formState.isDirty}
+              >
+                Create Permission
+              </Button>
             </div>
           </form>
         </Form>

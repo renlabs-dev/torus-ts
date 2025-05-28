@@ -1,16 +1,6 @@
 import { z } from "zod";
 import type { NumExprType, BaseConstraintType } from "../../../utils/dsl";
-
-// Base schemas for each field type
-export const permissionIdSchema = z
-  .string()
-  .min(1, "Permission ID is required")
-  .regex(/^[a-zA-Z0-9_-]+$/, "Invalid permission ID format");
-
-export const accountIdSchema = z
-  .string()
-  .min(1, "Account ID is required")
-  .regex(/^[a-zA-Z0-9_-]+$/, "Invalid account ID format");
+import { H256_HEX, SS58_SCHEMA } from "@torus-network/sdk";
 
 export const uintSchema = z
   .string()
@@ -26,9 +16,8 @@ export const uintSchema = z
   }, "Value is too large");
 
 // Validation schemas for each expression type
-export const numExprValidationSchema: z.ZodType<NumExprType> = z.discriminatedUnion(
-  "$",
-  [
+export const numExprValidationSchema: z.ZodType<NumExprType> =
+  z.discriminatedUnion("$", [
     z.object({
       $: z.literal("UIntLiteral"),
       value: z.bigint(),
@@ -38,7 +27,7 @@ export const numExprValidationSchema: z.ZodType<NumExprType> = z.discriminatedUn
     }),
     z.object({
       $: z.literal("StakeOf"),
-      account: accountIdSchema,
+      account: SS58_SCHEMA,
     }),
     z.object({
       $: z.literal("Add"),
@@ -52,16 +41,15 @@ export const numExprValidationSchema: z.ZodType<NumExprType> = z.discriminatedUn
     }),
     z.object({
       $: z.literal("WeightSet"),
-      from: accountIdSchema,
-      to: accountIdSchema,
+      from: SS58_SCHEMA,
+      to: SS58_SCHEMA,
     }),
     z.object({
       $: z.literal("WeightPowerFrom"),
-      from: accountIdSchema,
-      to: accountIdSchema,
+      from: SS58_SCHEMA,
+      to: SS58_SCHEMA,
     }),
-  ],
-);
+  ]);
 
 export const baseConstraintValidationSchema: z.ZodType<BaseConstraintType> =
   z.discriminatedUnion("$", [
@@ -71,11 +59,11 @@ export const baseConstraintValidationSchema: z.ZodType<BaseConstraintType> =
     }),
     z.object({
       $: z.literal("PermissionExists"),
-      pid: permissionIdSchema,
+      pid: H256_HEX,
     }),
     z.object({
       $: z.literal("PermissionEnabled"),
-      pid: permissionIdSchema,
+      pid: H256_HEX,
     }),
     z.object({
       $: z.literal("RateLimit"),
@@ -121,6 +109,6 @@ export const boolExprValidationSchema: z.ZodType<any> = z.discriminatedUnion(
 );
 
 export const constraintValidationSchema = z.object({
-  permId: permissionIdSchema,
+  permId: H256_HEX,
   body: boolExprValidationSchema,
 });

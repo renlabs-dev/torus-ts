@@ -15,9 +15,9 @@ import {
   PermissionNodeContainer,
   useChildNodeManagement,
 } from "./constraint-node-container";
-import { permissionIdSchema } from "../constraint-validation-schemas";
 import { useTorus } from "@torus-ts/torus-provider";
 import { usePermissionsByGrantor } from "@torus-ts/query-provider/hooks";
+import { H256_HEX } from "@torus-network/sdk";
 import type { SS58Address } from "@torus-network/sdk";
 
 interface PermissionNodePermissionIdProps {
@@ -57,7 +57,7 @@ export function PermissionNodePermissionId({
     (value: string) => {
       setPermissionId(value);
 
-      const validation = permissionIdSchema.safeParse(value);
+      const validation = H256_HEX.safeParse(value);
 
       if (!validation.success && value.length > 0) {
         setPermissionIdError(

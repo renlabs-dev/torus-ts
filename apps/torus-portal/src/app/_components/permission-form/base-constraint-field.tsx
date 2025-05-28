@@ -46,7 +46,13 @@ export function BaseConstraintField({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Constraint Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select
+              onValueChange={(value) => {
+                field.onChange(value);
+                field.onBlur();
+              }}
+              defaultValue={field.value}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select constraint type" />
@@ -90,7 +96,13 @@ export function BaseConstraintField({
             <FormItem>
               <FormLabel>Permission ID</FormLabel>
               <FormControl>
-                <Input placeholder="Enter permission ID" {...field} />
+                <Input
+                  placeholder="Enter permission ID"
+                  {...field}
+                  onBlur={(e) => {
+                    field.onBlur();
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

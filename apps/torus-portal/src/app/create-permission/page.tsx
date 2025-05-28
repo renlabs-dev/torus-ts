@@ -40,7 +40,7 @@ function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
         data.allocation.streams.map((stream) => [
           stream.streamId as `0x${string}`,
           parseFloat(stream.percentage),
-        ])
+        ]),
       ),
     };
   }

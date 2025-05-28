@@ -15,11 +15,11 @@ import type { BaseConstraintType } from "@torus-ts/dsl";
 import { BaseConstraint, NumExpr } from "@torus-ts/dsl";
 import type { BaseNodeData, NodeCreationResult } from "./constraint-node-types";
 import { createChildNodeId, createEdgeId } from "./constraint-node-types";
-import { permissionIdSchema } from "../constraint-validation-schemas";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
 } from "./constraint-node-container";
+import { H256_HEX } from "@torus-network/sdk";
 
 interface PermissionNodeBaseProps {
   id: string;
@@ -164,7 +164,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     (value: string) => {
       setPermissionId(value);
 
-      const validation = permissionIdSchema.safeParse(value);
+      const validation = H256_HEX.safeParse(value);
 
       if (!validation.success && value.length > 0) {
         setPermissionIdError(

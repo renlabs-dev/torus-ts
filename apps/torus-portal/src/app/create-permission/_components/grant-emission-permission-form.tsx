@@ -173,7 +173,8 @@ export function GrantEmissionPermissionFormComponent({
                 Basic Information
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Specify the recipient who will receive the emission permission and be able to allocate streams.
+                Specify the recipient who will receive the emission permission
+                and be able to allocate streams.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -206,7 +207,8 @@ export function GrantEmissionPermissionFormComponent({
                 Allocation Configuration
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Define how emissions are allocated. Streams allow percentage-based distribution from your available streams.
+                Define how emissions are allocated. Streams allow
+                percentage-based distribution from your available streams.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -296,7 +298,8 @@ export function GrantEmissionPermissionFormComponent({
                   </div>
                   {!selectedAccount?.address && (
                     <p className="text-sm text-muted-foreground">
-                      Connect your wallet to automatically populate available streams
+                      Connect your wallet to automatically populate available
+                      streams
                     </p>
                   )}
                   {availableStreams.isLoading && selectedAccount?.address && (
@@ -308,15 +311,16 @@ export function GrantEmissionPermissionFormComponent({
                   {availableStreams.data &&
                     availableStreams.data.length > 0 && (
                       <p className="text-sm text-muted-foreground">
-                        Automatically populated {availableStreams.data.length} available streams
-                        for your account
+                        Automatically populated {availableStreams.data.length}{" "}
+                        available streams for your account
                       </p>
                     )}
                   {availableStreams.data &&
                     availableStreams.data.length === 0 &&
                     selectedAccount?.address && (
                       <p className="text-sm text-muted-foreground">
-                        No streams found for your account. You can add streams manually.
+                        No streams found for your account. You can add streams
+                        manually.
                       </p>
                     )}
                   {streamFields.map((field, index) => {
@@ -391,7 +395,8 @@ export function GrantEmissionPermissionFormComponent({
                 Target Accounts
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Specify the accounts that will receive emissions and their relative weights for distribution.
+                Specify the accounts that will receive emissions and their
+                relative weights for distribution.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -460,7 +465,8 @@ export function GrantEmissionPermissionFormComponent({
                 Distribution Control
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Configure how and when emissions are distributed to target accounts (manual, automatic, or scheduled).
+                Configure how and when emissions are distributed to target
+                accounts (manual, automatic, or scheduled).
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -554,7 +560,8 @@ export function GrantEmissionPermissionFormComponent({
                 Duration
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Set how long this permission remains active (indefinitely or until a specific block number).
+                Set how long this permission remains active (indefinitely or
+                until a specific block number).
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -609,7 +616,8 @@ export function GrantEmissionPermissionFormComponent({
                 Revocation Terms
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Define the conditions under which this permission can be revoked or cancelled.
+                Define the conditions under which this permission can be revoked
+                or cancelled.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -732,7 +740,8 @@ export function GrantEmissionPermissionFormComponent({
                 Enforcement Authority
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Specify who has the authority to enforce or control the execution of this permission.
+                Specify who has the authority to enforce or control the
+                execution of this permission.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">

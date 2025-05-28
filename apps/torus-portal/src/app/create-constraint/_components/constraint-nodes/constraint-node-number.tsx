@@ -18,11 +18,12 @@ import type {
   NodeCreationResult,
 } from "./constraint-node-types";
 import { createChildNodeId, createEdgeId } from "./constraint-node-types";
-import { uintSchema, accountIdSchema } from "../constraint-validation-schemas";
+import { uintSchema } from "../constraint-validation-schemas";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
 } from "./constraint-node-container";
+import { SS58_SCHEMA } from "@torus-network/sdk";
 
 interface PermissionNodeNumberProps {
   id: string;
@@ -172,7 +173,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
 
   const handleAccountChange = useCallback(
     (field: "account" | "from" | "to", value: string) => {
-      const validation = accountIdSchema.safeParse(value);
+      const validation = SS58_SCHEMA.safeParse(value);
 
       if (!validation.success && value.length > 0) {
         setAccountError(
