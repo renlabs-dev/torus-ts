@@ -221,6 +221,9 @@ function ConstraintFlow() {
       edgesFocusable={false}
       nodesConnectable={false}
       nodesFocusable={false}
+      style={{
+        backgroundColor: "#0E0E11",
+      }}
     >
       <Background />
       <div className="absolute bottom-4 right-4 z-50">
