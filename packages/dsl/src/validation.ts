@@ -1,4 +1,4 @@
-import { 
+import type { 
   Constraint
 } from "./types";
 import { ZodError } from 'zod';
@@ -23,6 +23,7 @@ export class ConstraintValidationError extends Error {
  * @returns The validated Constraint with proper types
  * @throws ConstraintValidationError if validation fails
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validateConstraint(data: any): Constraint {
   try {
     // Use Zod schema for validation
@@ -64,6 +65,7 @@ export function parseConstraintJson(jsonString: string): Constraint {
   try {
     // TODO: use a zod object here
     // First try to parse the JSON
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(jsonString);
     
     // Then validate it as a constraint

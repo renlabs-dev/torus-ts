@@ -37,8 +37,8 @@ format:
 format-fix filter="*":
   pnpm exec turbo run format-fix --continue -F "{{filter}}"
 
-lint:
-  pnpm exec turbo run lint --continue
+lint filter="*":
+  pnpm exec turbo run lint --continue -F "{{filter}}"
 
 lint-fix:
   pnpm exec turbo run lint-fix --continue

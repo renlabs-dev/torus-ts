@@ -581,6 +581,7 @@ export async function queryDelegationStreamsByAccount(
     ZError<PermissionId[]> | ZError<PermissionContract> | ZError<DelegationStream> | Error
   >
 > {
+  // TODO: reimplement this babushka correctly
   // Step 1: Get all permissions where this account is the grantor (i.e., delegating)
   const [grantorError, permissionIds] = await queryPermissionsByGrantor(api, account);
   const permissionIdsList = permissionIds ?? [];
@@ -606,6 +607,7 @@ export async function queryDelegationStreamsByAccount(
             if (streamEntries.length > 0) {
               // For now, we'll use the first stream (most common case)
               // In practice, you might want to handle multiple streams differently
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const [streamId, percentage] = streamEntries[0]!;
               
               return {
@@ -641,8 +643,10 @@ export async function queryDelegationStreamsByAccount(
       );
       
       if (accumulatedError === undefined && accumulatedStreams.has(delegationInfo.streamId)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const streamMap = accumulatedStreams.get(delegationInfo.streamId)!;
         if (streamMap.has(permissionId)) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           delegationInfo.accumulatedAmount = streamMap.get(permissionId)!;
         }
       }

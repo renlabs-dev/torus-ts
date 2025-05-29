@@ -1,4 +1,8 @@
-import { Constraint } from "./types";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import type { Constraint } from "./types";
 
 /**
  * Serializes a constraint to a JSON string, handling BigInt values
@@ -61,6 +65,7 @@ export function convertStringsToBigInt(obj: any): any {
   const result: any = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       result[key] = convertStringsToBigInt(obj[key]);
     }
   }

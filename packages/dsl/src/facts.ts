@@ -118,7 +118,6 @@ export function extractFactsFromNumExpr(expr: NumExprType): SpecificFact[] {
  */
 export function extractFactsFromBaseConstraint(
   constraint: BaseConstraintType,
-  permId: PermId
 ): SpecificFact[] {
   const facts: SpecificFact[] = [];
   
@@ -163,7 +162,7 @@ export function extractFactsFromBoolExpr(
   
   switch (expr.$) {
     case 'Base':
-      facts.push(...extractFactsFromBaseConstraint(expr.body, permId));
+      facts.push(...extractFactsFromBaseConstraint(expr.body));
       break;
       
     case 'CompExpr':
@@ -223,7 +222,7 @@ export function categorizeFacts(
   
   for (const item of items) {
     if (item.type === 'StakeOf') {
-      addressFacts.push(item as StakeOfFact);
+      addressFacts.push(item);
     } else if (item.type === 'Comparison') {
       comparisonFacts.push(item);
     } else if (
@@ -231,7 +230,7 @@ export function categorizeFacts(
       item.type === 'PermissionEnabled' || 
       item.type === 'InactiveUnlessRedelegated'
     ) {
-      permissionFacts.push(item as any);
+      permissionFacts.push(item);
     }
   }
   

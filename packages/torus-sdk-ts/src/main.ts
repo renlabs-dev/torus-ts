@@ -1,4 +1,3 @@
-/* eslint-disable no-debugger */
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -9,20 +8,15 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import { checkSS58, SS58Address } from "./address";
 import {
-  extractStreamsFromPermission,
   generateRootStreamId,
-  PermissionContract,
-  PermissionId,
   queryAccumulatedStreamsForAccount,
   queryDelegationStreamsByAccount,
   queryPermission,
   queryPermissions,
-  queryPermissionsByGrantee,
   queryPermissionsByGrantor,
   StreamId,
   buildAvailableStreamsFor,
 } from "./modules/permission0";
-import { extractFromMap } from "@torus-network/torus-utils/collections";
 import { sb_address, sb_bigint, sb_h256, sb_some } from "./types";
 
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";

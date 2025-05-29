@@ -1,5 +1,4 @@
 import type { EventRecord } from '@polkadot/types/interfaces';
-import type { ApiPromise } from '@polkadot/api';
 import type { Header } from '@polkadot/types/interfaces';
 import type { ChainAwareReteNetwork } from './chain-fetcher';
 import type { PermissionExistsFact, PermissionEnabledFact, InactiveUnlessRedelegatedFact, BlockFact } from './facts';
@@ -7,8 +6,6 @@ import {
   parsePermissionAccumulationToggledEvent, 
   parsePermissionRevokedEvent, 
   parsePermissionExpiredEvent,
-  queryPermissionsByGrantee,
-  queryPermission,
   queryDelegationStreamsByAccount,
   checkSS58
 } from '@torus-network/sdk';
@@ -105,7 +102,7 @@ export class TorusChainWatcher {
         timestamp: timestamp
       };
       
-      this.reteNetwork.addFact(blockFact);
+      void this.reteNetwork.addFact(blockFact);
       
     } catch (error) {
       console.error('[ChainWatcher] Error handling new block:', error instanceof Error ? error.message : String(error));
@@ -171,7 +168,7 @@ export class TorusChainWatcher {
       // Fetch updated stake from chain and update RETE network
       const fetcher = this.reteNetwork.getFetcher();
       const updatedStakeFact = await fetcher.fetchStakeOf(accountStr);
-      this.reteNetwork.addFact(updatedStakeFact);
+      await this.reteNetwork.addFact(updatedStakeFact);
       
     } catch (error) {
       console.error('[ChainWatcher] Error handling stake event:', error instanceof Error ? error.message : String(error));
@@ -200,7 +197,7 @@ export class TorusChainWatcher {
         exists: true
       };
       
-      this.reteNetwork.addFact(permissionFact);
+      void this.reteNetwork.addFact(permissionFact);
       
     } catch (error) {
       console.error('[ChainWatcher] Error handling permission granted:', error instanceof Error ? error.message : String(error));
@@ -225,9 +222,9 @@ export class TorusChainWatcher {
       
       // Check if there's already a PermissionExists fact for this permission
       const existingFacts = this.reteNetwork.getFacts();
-      const hasPermissionExistsFact = existingFacts.some((fact: any) => 
+      const hasPermissionExistsFact = existingFacts.some((fact) => 
         fact.type === 'PermissionExists' && 
-        fact.permId === permission_id
+        'permId' in fact && fact.permId === permission_id
       );
       
       if (hasPermissionExistsFact) {
@@ -238,7 +235,7 @@ export class TorusChainWatcher {
           exists: false
         };
         
-        this.reteNetwork.addFact(permissionFact);
+        void this.reteNetwork.addFact(permissionFact);
       }
       
       // Check for InactiveUnlessRedelegated implications
@@ -267,9 +264,9 @@ export class TorusChainWatcher {
       
       // Check if there's already a PermissionExists fact for this permission
       const existingFacts = this.reteNetwork.getFacts();
-      const hasPermissionExistsFact = existingFacts.some((fact: any) => 
+      const hasPermissionExistsFact = existingFacts.some((fact) => 
         fact.type === 'PermissionExists' && 
-        fact.permId === permission_id
+        'permId' in fact && fact.permId === permission_id
       );
       
       if (hasPermissionExistsFact) {
@@ -280,7 +277,7 @@ export class TorusChainWatcher {
           exists: false
         };
         
-        this.reteNetwork.addFact(permissionFact);
+        void this.reteNetwork.addFact(permissionFact);
       }
       
       // Check for InactiveUnlessRedelegated implications
@@ -298,10 +295,10 @@ export class TorusChainWatcher {
     try {
       // Get existing InactiveUnlessRedelegated facts in the network
       const existingFacts = this.reteNetwork.getFacts();
-      const inactiveUnlessRedelegatedFacts = existingFacts.filter((fact: any) => 
+      const inactiveUnlessRedelegatedFacts = existingFacts.filter((fact): fact is InactiveUnlessRedelegatedFact => 
         fact.type === 'InactiveUnlessRedelegated' && 
-        fact.account === grantor
-      ) as InactiveUnlessRedelegatedFact[];
+        'account' in fact && fact.account === grantor
+      );
       
       if (inactiveUnlessRedelegatedFacts.length === 0) {
         return; // No InactiveUnlessRedelegated facts for this account
@@ -333,7 +330,7 @@ export class TorusChainWatcher {
           isRedelegated: hasActiveDelegations
         };
         
-        this.reteNetwork.addFact(updatedFact);
+        await this.reteNetwork.addFact(updatedFact);
         
         console.log(`[ChainWatcher] Updated InactiveUnlessRedelegated for ${grantor}: isRedelegated = ${hasActiveDelegations}`);
       }
@@ -361,9 +358,9 @@ export class TorusChainWatcher {
       
       // Check if there's already a PermissionEnabled fact for this permission
       const existingFacts = this.reteNetwork.getFacts();
-      const hasPermissionEnabledFact = existingFacts.some((fact: any) => 
+      const hasPermissionEnabledFact = existingFacts.some((fact) => 
         fact.type === 'PermissionEnabled' && 
-        fact.permId === permission_id
+        'permId' in fact && fact.permId === permission_id
       );
       
       if (!hasPermissionEnabledFact) {
@@ -378,7 +375,7 @@ export class TorusChainWatcher {
         enabled: accumulating
       };
       
-      this.reteNetwork.addFact(permissionEnabledFact);
+      await this.reteNetwork.addFact(permissionEnabledFact);
       
     } catch (error) {
       console.error('[ChainWatcher] Error handling permission accumulation toggled:', error instanceof Error ? error.message : String(error));
