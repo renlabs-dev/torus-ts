@@ -34,6 +34,7 @@ import {
   PermissionNodeContainer,
   useChildNodeManagement,
 } from "./constraint-node-container";
+import type { Edge, Node } from "@xyflow/react";
 
 interface PermissionNodeBooleanProps {
   id: string;
@@ -49,138 +50,148 @@ export function ConstraintNodeBoolean({
 
   const createChildNodes = useCallback(
     (expression: BoolExprType): NodeCreationResult => {
-      const nodes = [];
-      const edges = [];
+      const nodes: Node[] = [];
+      const edges: Edge[] = [];
 
-      switch (expression.$) {
-        case "Not": {
-          const childId = createChildNodeId(id, "body");
-          nodes.push({
-            id: childId,
-            type: "permissionBoolean",
-            data: {
-              type: "boolean",
-              expression: expression.body,
-              label: "NOT Body",
-            },
-            position: { x: 0, y: 0 },
-          });
-          edges.push({
-            id: createEdgeId(id, childId),
-            source: id,
-            target: childId,
-            animated: true,
-          });
-          break;
+      const createChildNodesRecursive = (
+        expr: BoolExprType,
+        parentId: string,
+      ): void => {
+        switch (expr.$) {
+          case "Not": {
+            const childId = createChildNodeId(parentId, "body");
+            nodes.push({
+              id: childId,
+              type: "permissionBoolean",
+              data: {
+                type: "boolean",
+                expression: expr.body,
+                label: "NOT Body",
+              },
+              position: { x: 0, y: 0 },
+            });
+            edges.push({
+              id: createEdgeId(parentId, childId),
+              source: parentId,
+              target: childId,
+              animated: true,
+            });
+            createChildNodesRecursive(expr.body, childId);
+            break;
+          }
+
+          case "And":
+          case "Or": {
+            const leftId = createChildNodeId(parentId, "left");
+            const rightId = createChildNodeId(parentId, "right");
+
+            nodes.push({
+              id: leftId,
+              type: "permissionBoolean",
+              data: {
+                type: "boolean",
+                expression: expr.left,
+                label: "Left",
+              },
+              position: { x: 0, y: 0 },
+            });
+
+            nodes.push({
+              id: rightId,
+              type: "permissionBoolean",
+              data: {
+                type: "boolean",
+                expression: expr.right,
+                label: "Right",
+              },
+              position: { x: 0, y: 0 },
+            });
+
+            edges.push({
+              id: createEdgeId(parentId, leftId),
+              source: parentId,
+              target: leftId,
+              animated: true,
+            });
+
+            edges.push({
+              id: createEdgeId(parentId, rightId),
+              source: parentId,
+              target: rightId,
+              animated: true,
+            });
+
+            createChildNodesRecursive(expr.left, leftId);
+            createChildNodesRecursive(expr.right, rightId);
+            break;
+          }
+
+          case "CompExpr": {
+            const leftId = createChildNodeId(parentId, "left");
+            const rightId = createChildNodeId(parentId, "right");
+
+            nodes.push({
+              id: leftId,
+              type: "permissionNumber",
+              data: {
+                type: "number",
+                expression: expr.left,
+                label: "Left Value",
+              },
+              position: { x: 0, y: 0 },
+            });
+
+            nodes.push({
+              id: rightId,
+              type: "permissionNumber",
+              data: {
+                type: "number",
+                expression: expr.right,
+                label: "Right Value",
+              },
+              position: { x: 0, y: 0 },
+            });
+
+            edges.push({
+              id: createEdgeId(parentId, leftId),
+              source: parentId,
+              target: leftId,
+              animated: true,
+            });
+
+            edges.push({
+              id: createEdgeId(parentId, rightId),
+              source: parentId,
+              target: rightId,
+              animated: true,
+            });
+            break;
+          }
+
+          case "Base": {
+            const childId = createChildNodeId(parentId, "base");
+            nodes.push({
+              id: childId,
+              type: "permissionBase",
+              data: {
+                type: "base",
+                expression: expr.body,
+                label: "Base Constraint",
+              },
+              position: { x: 0, y: 0 },
+            });
+            edges.push({
+              id: createEdgeId(parentId, childId),
+              source: parentId,
+              target: childId,
+              animated: true,
+            });
+            break;
+          }
         }
+      };
 
-        case "And":
-        case "Or": {
-          const leftId = createChildNodeId(id, "left");
-          const rightId = createChildNodeId(id, "right");
-
-          nodes.push({
-            id: leftId,
-            type: "permissionBoolean",
-            data: {
-              type: "boolean",
-              expression: expression.left,
-              label: "Left",
-            },
-            position: { x: 0, y: 0 },
-          });
-
-          nodes.push({
-            id: rightId,
-            type: "permissionBoolean",
-            data: {
-              type: "boolean",
-              expression: expression.right,
-              label: "Right",
-            },
-            position: { x: 0, y: 0 },
-          });
-
-          edges.push({
-            id: createEdgeId(id, leftId),
-            source: id,
-            target: leftId,
-            animated: true,
-          });
-
-          edges.push({
-            id: createEdgeId(id, rightId),
-            source: id,
-            target: rightId,
-            animated: true,
-          });
-          break;
-        }
-
-        case "CompExpr": {
-          const leftId = createChildNodeId(id, "left");
-          const rightId = createChildNodeId(id, "right");
-
-          nodes.push({
-            id: leftId,
-            type: "permissionNumber",
-            data: {
-              type: "number",
-              expression: expression.left,
-              label: "Left Value",
-            },
-            position: { x: 0, y: 0 },
-          });
-
-          nodes.push({
-            id: rightId,
-            type: "permissionNumber",
-            data: {
-              type: "number",
-              expression: expression.right,
-              label: "Right Value",
-            },
-            position: { x: 0, y: 0 },
-          });
-
-          edges.push({
-            id: createEdgeId(id, leftId),
-            source: id,
-            target: leftId,
-            animated: true,
-          });
-
-          edges.push({
-            id: createEdgeId(id, rightId),
-            source: id,
-            target: rightId,
-            animated: true,
-          });
-          break;
-        }
-
-        case "Base": {
-          const childId = createChildNodeId(id, "base");
-          nodes.push({
-            id: childId,
-            type: "permissionBase",
-            data: {
-              type: "base",
-              expression: expression.body,
-              label: "Base Constraint",
-            },
-            position: { x: 0, y: 0 },
-          });
-          edges.push({
-            id: createEdgeId(id, childId),
-            source: id,
-            target: childId,
-            animated: true,
-          });
-          break;
-        }
-      }
-
+      createChildNodesRecursive(expression, id);
       return { nodes, edges };
     },
     [id],
