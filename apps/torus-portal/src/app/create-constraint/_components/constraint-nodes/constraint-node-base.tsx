@@ -15,6 +15,7 @@ import {
   useChildNodeManagement,
 } from "./constraint-node-container";
 import { H256_HEX } from "@torus-network/sdk";
+import { Badge } from "@torus-ts/ui/components/badge";
 
 interface PermissionNodeBaseProps {
   id: string;
@@ -160,7 +161,10 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
       )}
 
       {data.expression.$ === "InactiveUnlessRedelegated" && (
-        <>
+        <div className="relative w-full space-y-[0.05em]">
+          <Badge className="text-xs cursor-default absolute scale-90 top-[0.4em] right-[0.3em] z-50">
+            SS58
+          </Badge>
           <ConstraintInput
             id={`${id}-account`}
             type="text"
@@ -179,6 +183,9 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
             placeholder="Enter account ID"
           />
 
+          <Badge className="text-xs cursor-default absolute scale-90 top-[3.4em] right-[0.3em] z-50">
+            Percent
+          </Badge>
           <ConstraintInput
             id={`${id}-percentage`}
             type="number"
@@ -196,7 +203,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
             }}
             placeholder="Enter percentage (0-100)"
           />
-        </>
+        </div>
       )}
     </PermissionNodeContainer>
   );

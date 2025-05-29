@@ -222,7 +222,7 @@ export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
           value="UIntLiteral"
           colorVariant="blue"
           icon={<Hash className="h-4 w-4 text-blue-600" />}
-          label="Literal Value"
+          label="Literal Value (UInt)"
         />
         <ConstraintSelectIconItem
           value="BlockNumber"
