@@ -6,7 +6,6 @@ import {
   timestamp as drizzleTimestamp,
   index,
   integer,
-  json,
   numeric,
   pgEnum,
   pgMaterializedView,
@@ -484,8 +483,12 @@ export const governanceNotificationSchema = createTable(
 
 // ==== Permissions ====
 export const permissionScope = pgEnum("permission_scope_type", ["EMISSION"]);
-export const distribution_type = pgEnum("distribution_type", ["MANUAL", "AUTOMATIC", "AT_BLOCK", "INTERVAL"]);
-
+export const distribution_type = pgEnum("distribution_type", [
+  "MANUAL",
+  "AUTOMATIC",
+  "AT_BLOCK",
+  "INTERVAL",
+]);
 
 /**
  * Stores base permissions that can be assigned
@@ -495,44 +498,52 @@ export const distribution_type = pgEnum("distribution_type", ["MANUAL", "AUTOMAT
 export const emissionStreamsSchema = createTable("emission_streams", {
   id: serial("id").primaryKey(),
   streams_uuid: uuid("streams_uuid").unique().notNull().defaultRandom(),
-  permission_id: varchar("permission_id", { length: 66 })
-  .notNull()
-  .unique(),
-  
+  permission_id: varchar("permission_id", { length: 66 }).notNull().unique(),
+
   ...timeFields(),
 });
 
+export const emissionStreamsDetailsSchema = createTable(
+  "emission_streams_details",
+  {
+    id: serial("id").primaryKey(),
+    streams_uuid: uuid("streams_uuid")
+      .notNull()
+      .references(() => emissionStreamsSchema.streams_uuid),
+    permission_id: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => emissionStreamsSchema.permission_id),
+    stream_id: varchar("stream_id", { length: 66 }).notNull(),
+    percentage: integer("percentage").notNull(),
 
-export const emissionStreamsDetailsSchema = createTable("emission_streams_details", {
-  id: serial("id").primaryKey(),
-  streams_uuid: uuid("streams_uuid").notNull().references(() => emissionStreamsSchema.streams_uuid),
-  permission_id: varchar("permission_id", { length: 66 })
-    .notNull()
-    .references(() => emissionStreamsSchema.permission_id),
-  stream_id: varchar("stream_id", { length: 66 }).notNull(),
-  percentage: integer("percentage").notNull(),
-  
-  ...timeFields(),
-});
+    ...timeFields(),
+  },
+);
 
-export const permissionEmissionScopeSchema = createTable("permission_emission_scope", {
-  id: serial("id").primaryKey(),
-  permission_id: varchar("permission_id", { length: 66 })
-    .notNull()
-    .unique()
-    .references(() => emissionStreamsSchema.permission_id),
-  // For Streams variant 
-  streams_uuid: uuid("streams_uuid").notNull().unique().references(() => emissionStreamsSchema.streams_uuid),
-  
-  // Distribution control
-  distribution_type: distribution_type("distribution_type").notNull(),
-  distribution_info: numeric("distribution_info"),
-  
-  // Whether emissions accumulate
-  accumulating: boolean("accumulating").notNull().default(false),
-  
-  ...timeFields(),
-});
+export const permissionEmissionScopeSchema = createTable(
+  "permission_emission_scope",
+  {
+    id: serial("id").primaryKey(),
+    permission_id: varchar("permission_id", { length: 66 })
+      .notNull()
+      .unique()
+      .references(() => emissionStreamsSchema.permission_id),
+    // For Streams variant
+    streams_uuid: uuid("streams_uuid")
+      .notNull()
+      .unique()
+      .references(() => emissionStreamsSchema.streams_uuid),
+
+    // Distribution control
+    distribution_type: distribution_type("distribution_type").notNull(),
+    distribution_info: numeric("distribution_info"),
+
+    // Whether emissions accumulate
+    accumulating: boolean("accumulating").notNull().default(false),
+
+    ...timeFields(),
+  },
+);
 
 export const permissionSchema = createTable("permission", {
   id: serial("id").primaryKey(),
