@@ -1,3 +1,4 @@
+import { SS58_SCHEMA } from "@torus-network/sdk";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
@@ -26,7 +27,8 @@ export const envSchema = {
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
-  NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: z.string(),
+  JWT_SECRET: z.string().min(8),
+  NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: SS58_SCHEMA,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

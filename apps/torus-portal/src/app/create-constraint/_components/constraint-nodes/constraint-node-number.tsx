@@ -8,7 +8,7 @@ import {
   ConstraintInput,
   ConstraintSelectIconItem,
 } from "./node-styled-components";
-import { Hash, Clock, Coins, Plus, Minus, Scale, Zap } from "lucide-react";
+import { Hash, Clock, Coins, Plus, Minus } from "lucide-react";
 import { NumExpr } from "~/utils/dsl";
 import type { NumExprType } from "~/utils/dsl";
 import type {
@@ -176,6 +176,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       updateNodeData<NumberNodeData>((currentData) => {
         const expr = currentData.expression;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (expr.$ === "StakeOf" && field === "account") {
           return {
             ...currentData,
@@ -273,7 +274,6 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           errorMessage={accountError}
         />
       )}
-
     </PermissionNodeContainer>
   );
 }
