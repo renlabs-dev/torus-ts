@@ -35,8 +35,34 @@ function getOrCreateReteNetwork() {
   if (!globalReteNetwork) {
     // Use environment variable for WebSocket endpoint
     const wsEndpoint = process.env.NEXT_PUBLIC_TORUS_RPC_URL || 'wss://api.testnet.torus.network';
-    globalReteNetwork = createChainAwareReteNetwork(wsEndpoint);
-    console.log('Initialized global ChainAwareReteNetwork');
+    
+    // Create network with constraint violation callback
+    globalReteNetwork = createChainAwareReteNetwork(wsEndpoint, async (constraintId: string) => {
+      console.log(`🚨 CONSTRAINT VIOLATION DETECTED: ${constraintId}`);
+      console.log(`📝 Taking action for violated constraint: ${constraintId}`);
+      
+      // Here you could implement various enforcement actions:
+      // - Send alerts/notifications
+      // - Log violations to a database
+      // - Trigger automatic remediation
+      // - Disable permissions
+      // - Send messages to external systems
+      
+      try {
+        // For now, just log the violation with timestamp
+        const timestamp = new Date().toISOString();
+        console.log(`⚠️  [${timestamp}] Constraint ${constraintId} became violated - enforcement action triggered`);
+        
+        // Example: Could save to database, send webhook, etc.
+        // await saveViolationToDatabase(constraintId, timestamp);
+        // await sendViolationNotification(constraintId);
+        
+      } catch (error) {
+        console.error(`❌ Error in violation handler for constraint ${constraintId}:`, error);
+      }
+    });
+    
+    console.log('Initialized global ChainAwareReteNetwork with violation callback');
     
     // Initialize and start chain watcher automatically
     globalChainWatcher = createChainWatcher(globalReteNetwork);
@@ -369,6 +395,41 @@ export const constraintRouter = {
     }),
 
   /**
+   * Get the evaluation status of a constraint (satisfied/violated/unknown)
+   */
+  getEvaluationStatus: publicProcedure
+    .input(constraintIdSchema)
+    .query(({ input }) => {
+      const network = getOrCreateReteNetwork();
+      const status = network.getConstraintEvaluationStatus(input.constraintId);
+      
+      return {
+        constraintId: input.constraintId,
+        status
+      };
+    }),
+
+  /**
+   * Get detailed status information about a constraint
+   */
+  getDetailedStatus: publicProcedure
+    .input(constraintIdSchema)
+    .query(({ input }) => {
+      const network = getOrCreateReteNetwork();
+      const statusInfo = network.getConstraintStatus(input.constraintId);
+      
+      return {
+        constraintId: input.constraintId,
+        ...statusInfo,
+        // Remove the constraint object to avoid serialization issues with BigInt
+        constraint: statusInfo.constraint ? {
+          permId: statusInfo.constraint.permId,
+          bodyType: typeof statusInfo.constraint.body
+        } : undefined
+      };
+    }),
+
+  /**
    * Get constraint activations (the facts that triggered the constraint)
    */
   getActivations: publicProcedure
@@ -401,6 +462,20 @@ export const constraintRouter = {
       
       return {
         visualization,
+        timestamp: new Date().toISOString()
+      };
+    }),
+
+  /**
+   * Get structured network components for detailed inspection
+   */
+  getNetworkComponents: publicProcedure
+    .query(() => {
+      const network = getOrCreateReteNetwork();
+      const components = network.getNetworkComponents();
+      
+      return {
+        ...components,
         timestamp: new Date().toISOString()
       };
     }),
