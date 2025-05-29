@@ -30,7 +30,6 @@ import {
   Target,
   Clock,
   Settings,
-  Siren,
   Split,
   Wand2,
   Loader2,
@@ -90,21 +89,10 @@ export function GrantEmissionPermissionFormComponent({
     name: "revocation.accounts" as any,
   });
 
-  const {
-    fields: controllerFields,
-    append: appendController,
-    remove: removeController,
-  } = useFieldArray({
-    control: form.control,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-    name: "enforcement.controllers" as any,
-  });
-
   const allocationType = form.watch("allocation.type");
   const distributionType = form.watch("distribution.type");
   const durationType = form.watch("duration.type");
   const revocationType = form.watch("revocation.type");
-  const enforcementType = form.watch("enforcement.type");
 
   const handleAutoPopulateStreams = () => {
     if (!availableStreams.data) return;
@@ -732,108 +720,6 @@ export function GrantEmissionPermissionFormComponent({
                     </FormItem>
                   )}
                 />
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Enforcement */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Siren className="h-5 w-5" />
-                Enforcement Authority
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Specify who has the authority to enforce or control the
-                execution of this permission.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="enforcement.type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Enforcement Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select enforcement type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="None">None</SelectItem>
-                        <SelectItem value="ControlledBy">
-                          Controlled By
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {enforcementType === "ControlledBy" && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Controllers</h4>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
-                      onClick={() => (appendController as any)("")}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Controller
-                    </Button>
-                  </div>
-                  {controllerFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-end">
-                      <FormField
-                        control={form.control}
-                        name={`enforcement.controllers.${index}`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Controller Address</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="py-[1.4em]"
-                        onClick={() => removeController(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <FormField
-                    control={form.control}
-                    name="enforcement.requiredVotes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Required Votes</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="1" type="number" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
               )}
             </CardContent>
           </Card>
