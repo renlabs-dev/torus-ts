@@ -303,7 +303,7 @@ function extractBoolExpr(
       const childNode = nodeMap[childEdge.target];
       if (!childNode || childNode.data.type !== "base") return expr;
 
-      const body = extractBaseConstraint(childNode, nodeMap, edgeMap);
+      const body = extractBaseConstraint(childNode);
       return body ? { $: "Base", body } : expr;
     }
 
@@ -356,13 +356,10 @@ function extractNumExpr(
 
 function extractBaseConstraint(
   node: Node<PermissionNodeData>,
-  nodeMap: NodeMap,
-  edgeMap: EdgeMap,
 ): BaseConstraintType | null {
   if (node.data.type !== "base") return null;
 
   const expr = node.data.expression;
-  const childEdges = edgeMap[node.id] ?? [];
 
   // For current BaseConstraintType variants, all fields are simple values
   // No child node extraction needed

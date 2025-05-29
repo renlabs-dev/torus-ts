@@ -25,7 +25,14 @@ const handler = (req: Request) => {
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    createContext: () => createTRPCContext({ headers: req.headers }),
+    createContext: () =>
+      createTRPCContext({
+        session: null,
+        headers: req.headers,
+        jwtSecret: env("JWT_SECRET"),
+        authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
+        allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
+      }),
     onError:
       env("NEXT_PUBLIC_NODE_ENV") === "development"
         ? ({ path, error }) => {

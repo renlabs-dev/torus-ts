@@ -207,7 +207,7 @@ function convertBoolExpr(
         animated: true,
       });
 
-      convertBaseConstraint(expr.body, baseId, nodes, edges);
+      convertBaseConstraint(expr.body);
       break;
     }
   }
@@ -270,12 +270,7 @@ function convertNumExpr(
   }
 }
 
-function convertBaseConstraint(
-  expr: BaseConstraintType,
-  parentId: string,
-  nodes: Node<PermissionNodeData>[],
-  edges: Edge[],
-): void {
+function convertBaseConstraint(expr: BaseConstraintType): void {
   switch (expr.$) {
     case "InactiveUnlessRedelegated": {
       // This constraint has account and percentage fields but they are leaf nodes

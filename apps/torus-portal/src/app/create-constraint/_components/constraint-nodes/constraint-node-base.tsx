@@ -1,17 +1,16 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { NodeProps, Node, Edge } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import {
   ConstraintSelect,
   ConstraintInput,
   ConstraintSelectIconItem,
 } from "./node-styled-components";
-import { GitBranch, CheckCircle, Play, Timer, Pause } from "lucide-react";
+import { CheckCircle, Play, Pause } from "lucide-react";
 import type { BaseConstraintType } from "@torus-ts/dsl";
-import { BaseConstraint, NumExpr } from "@torus-ts/dsl";
-import type { BaseNodeData, NodeCreationResult } from "./constraint-node-types";
-import { createChildNodeId, createEdgeId } from "./constraint-node-types";
+import { BaseConstraint } from "@torus-ts/dsl";
+import type { BaseNodeData } from "./constraint-node-types";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
@@ -24,7 +23,7 @@ interface PermissionNodeBaseProps {
 }
 
 export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
-  const { removeExistingChildNodes, updateNodeData, addChildNodes } =
+  const { removeExistingChildNodes, updateNodeData } =
     useChildNodeManagement(id);
 
   const [permissionId, setPermissionId] = useState(() => {
@@ -34,7 +33,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     }
     return "";
   });
-  
+
   const [account, setAccount] = useState(() => {
     const expr = data.expression;
     if (expr.$ === "InactiveUnlessRedelegated") {
@@ -42,7 +41,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     }
     return "";
   });
-  
+
   const [percentage, setPercentage] = useState(() => {
     const expr = data.expression;
     if (expr.$ === "InactiveUnlessRedelegated") {
@@ -51,20 +50,6 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     return "0";
   });
   const [permissionIdError, setPermissionIdError] = useState<string>("");
-
-  const createChildNodes = useCallback(
-    (expression: BaseConstraintType): NodeCreationResult => {
-      const nodes: Node[] = [];
-      const edges: Edge[] = [];
-
-      // No child nodes needed for current BaseConstraintType variants
-      // All current types (PermissionExists, PermissionEnabled, InactiveUnlessRedelegated) 
-      // have simple field values rather than complex expressions
-
-      return { nodes, edges };
-    },
-    [id],
-  );
 
   const handleTypeChange = useCallback(
     (value: string) => {
@@ -98,11 +83,8 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         ...currentData,
         expression: newExpression,
       }));
-
-      const childNodesResult = createChildNodes(newExpression);
-      addChildNodes(childNodesResult);
     },
-    [removeExistingChildNodes, updateNodeData, createChildNodes, addChildNodes],
+    [removeExistingChildNodes, updateNodeData],
   );
 
   const handlePermissionIdChange = useCallback(
@@ -130,18 +112,8 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     [data.expression, updateNodeData],
   );
 
-  const shouldAutoCreate = false; // No auto-creation needed for current BaseConstraintType variants
-
-  const hasSourceHandle = shouldAutoCreate;
-
   return (
-    <PermissionNodeContainer
-      id={id}
-      data={data}
-      hasSourceHandle={hasSourceHandle}
-      createChildNodes={createChildNodes}
-      shouldAutoCreateChildren={shouldAutoCreate}
-    >
+    <PermissionNodeContainer id={id} data={data} hasSourceHandle={false}>
       <ConstraintSelect
         id={`${id}-type`}
         value={data.expression.$}
@@ -174,7 +146,6 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         />
       </ConstraintSelect>
 
-
       {(data.expression.$ === "PermissionExists" ||
         data.expression.$ === "PermissionEnabled") && (
         <>
@@ -191,11 +162,11 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
           />
         </>
       )}
-      
+
       {data.expression.$ === "InactiveUnlessRedelegated" && (
         <>
           <div className="text-white relative">↓</div>
-          
+
           <ConstraintInput
             id={`${id}-account`}
             type="text"
@@ -205,12 +176,15 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
               setAccount(value);
               updateNodeData<BaseNodeData>((currentData) => ({
                 ...currentData,
-                expression: { ...data.expression, account: value } as BaseConstraintType,
+                expression: {
+                  ...data.expression,
+                  account: value,
+                } as BaseConstraintType,
               }));
             }}
             placeholder="Enter account ID"
           />
-          
+
           <ConstraintInput
             id={`${id}-percentage`}
             type="number"
@@ -220,7 +194,10 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
               setPercentage(value);
               updateNodeData<BaseNodeData>((currentData) => ({
                 ...currentData,
-                expression: { ...data.expression, percentage: BigInt(value || "0") } as BaseConstraintType,
+                expression: {
+                  ...data.expression,
+                  percentage: BigInt(value || "0"),
+                } as BaseConstraintType,
               }));
             }}
             placeholder="Enter percentage (0-100)"
