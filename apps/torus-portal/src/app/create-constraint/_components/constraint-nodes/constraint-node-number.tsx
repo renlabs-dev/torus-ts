@@ -2,14 +2,12 @@
 
 import { useCallback, useState } from "react";
 import type { NodeProps } from "@xyflow/react";
-import { Input } from "@torus-ts/ui/components/input";
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@torus-ts/ui/components/select";
+  ConstraintSelect,
+  ConstraintInput,
+  ConstraintSelectIconItem,
+} from "./node-styled-components";
 import { Hash, Clock, Coins, Plus, Minus, Scale, Zap } from "lucide-react";
 import { NumExpr } from "~/utils/dsl";
 import type { NumExprType } from "~/utils/dsl";
@@ -216,126 +214,120 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
       createChildNodes={createChildNodes}
       shouldAutoCreateChildren={shouldAutoCreate}
     >
-      <Select value={data.expression.$} onValueChange={handleTypeChange}>
-        <SelectTrigger
-          id={`${id}-type`}
-          className={`border pr-0 w-fit transition-all border-[#B1B1B7] duration-200 rounded-full
-            [&>svg]:invisible ${ data.expression.$ === "UIntLiteral" &&
-            "bg-blue-50 text-blue-700" } ${ data.expression.$ === "BlockNumber" &&
-            "bg-purple-50 text-purple-700" } ${ data.expression.$ === "StakeOf" &&
-            "bg-green-50 text-green-700" } ${ data.expression.$ === "Add" &&
-            "bg-emerald-50 text-emerald-700" } ${data.expression.$ === "Sub" &&
-            "bg-red-50 text-red-700"} ${ data.expression.$ === "WeightSet" &&
-            "bg-orange-50 text-orange-700" } ${ data.expression.$ === "WeightPowerFrom" &&
-            "bg-yellow-50 text-yellow-700" }`}
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="UIntLiteral" className="hover:bg-blue-50">
-            <div className="flex items-center gap-2">
-              <Hash className="h-4 w-4 text-blue-600" />
-              <span>Literal Value</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="BlockNumber" className="hover:bg-purple-50">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-purple-600" />
-              <span>Current Block</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="StakeOf" className="hover:bg-green-50">
-            <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 text-green-600" />
-              <span>Stake Of Account</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="Add" className="hover:bg-emerald-50">
-            <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-emerald-600" />
-              <span>Add</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="Sub" className="hover:bg-red-50">
-            <div className="flex items-center gap-2">
-              <Minus className="h-4 w-4 text-red-600" />
-              <span>Subtract</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="WeightSet" className="hover:bg-orange-50">
-            <div className="flex items-center gap-2">
-              <Scale className="h-4 w-4 text-orange-600" />
-              <span>Weight Set</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="WeightPowerFrom" className="hover:bg-yellow-50">
-            <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-yellow-600" />
-              <span>Weight Power From</span>
-            </div>
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <ConstraintSelect
+        id={`${id}-type`}
+        value={data.expression.$}
+        onValueChange={handleTypeChange}
+        className="w-fit"
+        colorVariant={
+          data.expression.$ === "UIntLiteral"
+            ? "blue"
+            : data.expression.$ === "BlockNumber"
+              ? "purple"
+              : data.expression.$ === "StakeOf"
+                ? "green"
+                : data.expression.$ === "Add"
+                  ? "emerald"
+                  : data.expression.$ === "Sub"
+                    ? "red"
+                    : data.expression.$ === "WeightSet"
+                      ? "orange"
+                      : "gray" // data.expression.$ === "WeightPowerFrom"
+        }
+      >
+        <ConstraintSelectIconItem
+          value="UIntLiteral"
+          colorVariant="blue"
+          icon={<Hash className="h-4 w-4 text-blue-600" />}
+          label="Literal Value"
+        />
+        <ConstraintSelectIconItem
+          value="BlockNumber"
+          colorVariant="purple"
+          icon={<Clock className="h-4 w-4 text-purple-600" />}
+          label="Current Block"
+        />
+        <ConstraintSelectIconItem
+          value="StakeOf"
+          colorVariant="green"
+          icon={<Coins className="h-4 w-4 text-green-600" />}
+          label="Stake Of Account"
+        />
+        <ConstraintSelectIconItem
+          value="Add"
+          colorVariant="emerald"
+          icon={<Plus className="h-4 w-4 text-emerald-600" />}
+          label="Add"
+        />
+        <ConstraintSelectIconItem
+          value="Sub"
+          colorVariant="red"
+          icon={<Minus className="h-4 w-4 text-red-600" />}
+          label="Subtract"
+        />
+        <ConstraintSelectIconItem
+          value="WeightSet"
+          colorVariant="orange"
+          icon={<Scale className="h-4 w-4 text-orange-600" />}
+          label="Weight Set"
+        />
+        <ConstraintSelectIconItem
+          value="WeightPowerFrom"
+          colorVariant="yellow"
+          icon={<Zap className="h-4 w-4 text-yellow-600" />}
+          label="Weight Power From"
+        />
+      </ConstraintSelect>
       {data.expression.$ !== "BlockNumber" && (
         <div className="text-white relative">↓</div>
       )}
 
       {data.expression.$ === "UIntLiteral" && (
-        <>
-          <Input
-            id={`${id}-value`}
-            type="text"
-            value={inputValue}
-            onChange={(e) => handleValueChange(e.target.value)}
-            className={`w-full ${inputError ? "border-red-500" : ""}`}
-            placeholder="Enter a positive integer"
-          />
-          {inputError && (
-            <p className="text-red-500 text-xs mt-1">{inputError}</p>
-          )}
-        </>
+        <ConstraintInput
+          id={`${id}-value`}
+          type="text"
+          value={inputValue}
+          onChange={(e) => handleValueChange(e.target.value)}
+          placeholder="Enter a positive integer"
+          hasError={!!inputError}
+          errorMessage={inputError}
+        />
       )}
 
       {data.expression.$ === "StakeOf" && (
-        <>
-          <Input
-            id={`${id}-account`}
-            type="text"
-            value={data.expression.account || ""}
-            onChange={(e) => handleAccountChange("account", e.target.value)}
-            className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
-            placeholder="Enter account ID"
-          />
-          {accountError && (
-            <p className="text-red-500 text-xs mt-1">{accountError}</p>
-          )}
-        </>
+        <ConstraintInput
+          id={`${id}-account`}
+          type="text"
+          value={data.expression.account || ""}
+          onChange={(e) => handleAccountChange("account", e.target.value)}
+          placeholder="Enter account ID"
+          hasError={!!accountError}
+          errorMessage={accountError}
+        />
       )}
 
       {(data.expression.$ === "WeightSet" ||
         data.expression.$ === "WeightPowerFrom") && (
         <>
-          <Input
+          <ConstraintInput
             id={`${id}-from`}
             type="text"
             value={data.expression.from || ""}
             onChange={(e) => handleAccountChange("from", e.target.value)}
-            className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
             placeholder="From account ID"
+            hasError={!!accountError}
+            errorMessage={undefined}
           />
 
-          <Input
+          <ConstraintInput
             id={`${id}-to`}
             type="text"
             value={data.expression.to || ""}
             onChange={(e) => handleAccountChange("to", e.target.value)}
-            className={`w-full pr-0 ${accountError ? "border-red-500" : ""}`}
             placeholder="To account ID"
+            hasError={!!accountError}
+            errorMessage={accountError}
           />
-
-          {accountError && (
-            <p className="text-red-500 text-xs mt-1">{accountError}</p>
-          )}
         </>
       )}
     </PermissionNodeContainer>

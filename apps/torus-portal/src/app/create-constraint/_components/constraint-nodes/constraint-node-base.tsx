@@ -2,14 +2,11 @@
 
 import { useCallback, useState } from "react";
 import type { NodeProps } from "@xyflow/react";
-import { Input } from "@torus-ts/ui/components/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@torus-ts/ui/components/select";
+  ConstraintSelect,
+  ConstraintInput,
+  ConstraintSelectIconItem,
+} from "./node-styled-components";
 import { GitBranch, CheckCircle, Play, Timer, Pause } from "lucide-react";
 import type { BaseConstraintType } from "@torus-ts/dsl";
 import { BaseConstraint, NumExpr } from "@torus-ts/dsl";
@@ -199,55 +196,53 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
       createChildNodes={createChildNodes}
       shouldAutoCreateChildren={shouldAutoCreate}
     >
-      <Select value={data.expression.$} onValueChange={handleTypeChange}>
-        <SelectTrigger
-          id={`${id}-type`}
-          className={`border transition-all border-[#B1B1B7] pr-0 duration-200 rounded-full
-            [&>svg]:invisible ${ data.expression.$ === "MaxDelegationDepth" &&
-            "bg-blue-50 text-blue-700" } ${ data.expression.$ === "PermissionExists" &&
-            "bg-green-50 text-green-700" } ${ data.expression.$ === "PermissionEnabled" &&
-            "bg-emerald-50 text-emerald-700" } ${ data.expression.$ === "RateLimit" &&
-            "bg-orange-50 text-orange-700" } ${ data.expression.$ ===
-            "InactiveUnlessRedelegated" && "bg-gray-50 text-gray-700" }`}
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="MaxDelegationDepth" className="hover:bg-blue-50">
-            <div className="flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-blue-600" />
-              <span>Max Delegation Depth</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="PermissionExists" className="hover:bg-green-50">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span>Permission Exists</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="PermissionEnabled" className="hover:bg-emerald-50">
-            <div className="flex items-center gap-2">
-              <Play className="h-4 w-4 text-emerald-600" />
-              <span>Permission Enabled</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="RateLimit" className="hover:bg-orange-50">
-            <div className="flex items-center gap-2">
-              <Timer className="h-4 w-4 text-orange-600" />
-              <span>Rate Limit</span>
-            </div>
-          </SelectItem>
-          <SelectItem
-            value="InactiveUnlessRedelegated"
-            className="hover:bg-gray-50"
-          >
-            <div className="flex items-center gap-2">
-              <Pause className="h-4 w-4 text-gray-600" />
-              <span>Inactive Unless Redelegated</span>
-            </div>
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <ConstraintSelect
+        id={`${id}-type`}
+        value={data.expression.$}
+        onValueChange={handleTypeChange}
+        colorVariant={
+          data.expression.$ === "MaxDelegationDepth"
+            ? "blue"
+            : data.expression.$ === "PermissionExists"
+              ? "green"
+              : data.expression.$ === "PermissionEnabled"
+                ? "emerald"
+                : data.expression.$ === "RateLimit"
+                  ? "orange"
+                  : "gray" // data.expression.$ === "InactiveUnlessRedelegated"
+        }
+      >
+        <ConstraintSelectIconItem
+          value="MaxDelegationDepth"
+          colorVariant="blue"
+          icon={<GitBranch className="h-4 w-4 text-blue-600" />}
+          label="Max Delegation Depth"
+        />
+        <ConstraintSelectIconItem
+          value="PermissionExists"
+          colorVariant="green"
+          icon={<CheckCircle className="h-4 w-4 text-green-600" />}
+          label="Permission Exists"
+        />
+        <ConstraintSelectIconItem
+          value="PermissionEnabled"
+          colorVariant="emerald"
+          icon={<Play className="h-4 w-4 text-emerald-600" />}
+          label="Permission Enabled"
+        />
+        <ConstraintSelectIconItem
+          value="RateLimit"
+          colorVariant="orange"
+          icon={<Timer className="h-4 w-4 text-orange-600" />}
+          label="Rate Limit"
+        />
+        <ConstraintSelectIconItem
+          value="InactiveUnlessRedelegated"
+          colorVariant="gray"
+          icon={<Pause className="h-4 w-4 text-gray-600" />}
+          label="Inactive Unless Redelegated"
+        />
+      </ConstraintSelect>
 
       {data.expression.$ === "RateLimit" && (
         <div className="text-white text-sm absolute top-[4.3em] flex gap-16 items-center justify-between">
@@ -265,17 +260,15 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         <>
           <div className="text-white relative">↓</div>
 
-          <Input
+          <ConstraintInput
             id={`${id}-permission`}
             type="text"
             value={permissionId}
             onChange={(e) => handlePermissionIdChange(e.target.value)}
-            className={`w-full pr-0 ${permissionIdError ? "border-red-500" : ""}`}
             placeholder="Enter permission ID"
+            hasError={!!permissionIdError}
+            errorMessage={permissionIdError}
           />
-          {permissionIdError && (
-            <p className="text-red-500 text-xs mt-1">{permissionIdError}</p>
-          )}
         </>
       )}
     </PermissionNodeContainer>

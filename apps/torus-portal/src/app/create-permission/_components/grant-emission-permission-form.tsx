@@ -135,6 +135,7 @@ export function GrantEmissionPermissionFormComponent({
     ) {
       handleAutoPopulateStreams();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allocationType, availableStreams.data]);
 
   // Automatically populate streams when user account changes (and we're in Streams mode)
@@ -147,6 +148,7 @@ export function GrantEmissionPermissionFormComponent({
     ) {
       handleAutoPopulateStreams();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAccount?.address]);
 
   const onSubmit = (data: GrantEmissionPermissionFormData) => {
@@ -212,7 +214,7 @@ export function GrantEmissionPermissionFormComponent({
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="allocation.type"
                 render={({ field }) => (
@@ -237,7 +239,7 @@ export function GrantEmissionPermissionFormComponent({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               {allocationType === "FixedAmount" && (
                 <FormField
@@ -332,7 +334,7 @@ export function GrantEmissionPermissionFormComponent({
                     )?.isRootStream;
 
                     return (
-                      <div key={field.id} className="flex gap-2 items-start">
+                      <div key={field.id} className="flex gap-2 items-end">
                         <FormField
                           control={form.control}
                           name={`allocation.streams.${index}.streamId`}
@@ -374,8 +376,8 @@ export function GrantEmissionPermissionFormComponent({
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="mt-8"
                           onClick={() => removeStream(index)}
+                          className="py-[1.4em]"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -413,7 +415,7 @@ export function GrantEmissionPermissionFormComponent({
                 </Button>
               </div>
               {targetFields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 items-start">
+                <div key={field.id} className="flex gap-2 items-end">
                   <FormField
                     control={form.control}
                     name={`targets.${index}.account`}
@@ -447,8 +449,8 @@ export function GrantEmissionPermissionFormComponent({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="mt-8"
                     onClick={() => removeTarget(index)}
+                    className="py-[1.4em]"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -670,7 +672,7 @@ export function GrantEmissionPermissionFormComponent({
                     </Button>
                   </div>
                   {arbiterFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-start">
+                    <div key={field.id} className="flex gap-2 items-end">
                       <FormField
                         control={form.control}
                         name={`revocation.accounts.${index}`}
@@ -691,7 +693,7 @@ export function GrantEmissionPermissionFormComponent({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="mt-8"
+                        className="py-[1.4em]"
                         onClick={() => removeArbiter(index)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -788,7 +790,7 @@ export function GrantEmissionPermissionFormComponent({
                     </Button>
                   </div>
                   {controllerFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-start">
+                    <div key={field.id} className="flex gap-2 items-end£">
                       <FormField
                         control={form.control}
                         name={`enforcement.controllers.${index}`}
@@ -809,7 +811,7 @@ export function GrantEmissionPermissionFormComponent({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="mt-8"
+                        className="py-[1.4em]"
                         onClick={() => removeController(index)}
                       >
                         <Trash2 className="h-4 w-4" />
