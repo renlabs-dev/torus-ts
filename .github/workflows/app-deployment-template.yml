@@ -26,7 +26,7 @@ concurrency:
 jobs:
   docker-build:
     if: |
-      !inputs.skip_build && 
+      !inputs.skip_build &&
       !contains(github.event.head_commit.message, 'skip build')
     permissions: write-all
     runs-on: ubuntu-22.04-32core-karl
@@ -59,9 +59,9 @@ jobs:
           file: docker/Dockerfile
           build-args: |
             APP_NAME=${{ inputs.app_name }}
-            TURBO_API=${{ vars.TURBO_API }}
-            TURBO_TEAM=${{ vars.TURBO_TEAM }}
-            TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
+            # TURBO_API=${{ vars.TURBO_API }}
+            # TURBO_TEAM=${{ vars.TURBO_TEAM }}
+            # TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
           tags: |
             ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ steps.commit.outputs.short }}
             ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ env.SANITIZED_REF }}

@@ -22,11 +22,6 @@ export const metadata = createSeoMetadata({
   description:
     "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
   keywords: ["crypto wallet", "torus", "blockchain", "digital assets", "web3"],
-  ogTitle: "Torus Wallet - Secure Digital Asset Management",
-  ogDescription:
-    "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence.",
-  twitterTitle: "Torus Wallet",
-  twitterDescription: "Secure Digital Asset Management in the Torus Ecosystem",
   baseUrl: env("BASE_URL"),
   canonical: "/",
 });
