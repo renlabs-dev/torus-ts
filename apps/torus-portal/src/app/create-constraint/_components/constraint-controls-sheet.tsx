@@ -96,11 +96,11 @@ export default function ConstraintControlsSheet({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-96 z-[75] flex flex-col justify-between h-full"
+        className="md:w-96 w-full z-[75] flex flex-col justify-between h-full"
       >
         <div>
           <SheetHeader>
-            <SheetTitle>Constraint Controls</SheetTitle>
+            <SheetTitle className="text-start">Constraint Controls</SheetTitle>
           </SheetHeader>
 
           <div className="flex flex-col gap-6 py-6">
