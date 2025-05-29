@@ -17,14 +17,14 @@ import { SidebarLinks } from "./_components/sidebar-links";
 import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
 
-// export const metadata = createSeoMetadata({
-//   title: "Torus Wallet - Secure Digital Asset Management",
-//   description:
-//     "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
-//   keywords: ["crypto wallet", "torus", "blockchain", "digital assets", "web3"],
-//   baseUrlFn: () => env("BASE_URL"),
-//   canonical: "/",
-// });
+export const metadata = createSeoMetadata({
+  title: "Torus Wallet - Secure Digital Asset Management",
+  description:
+    "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
+  keywords: ["crypto wallet", "torus", "blockchain", "digital assets", "web3"],
+  baseUrlFn: () => env("BASE_URL"),
+  canonical: "/",
+});
 
 interface ProvidersProps {
   children: React.ReactNode;
