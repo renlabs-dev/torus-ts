@@ -27,6 +27,7 @@ import { constraintExamples } from "./constraint-data/constraint-data-examples";
 import { constraintToNodes } from "./constraint-nodes/constraint-to-nodes";
 import ConstraintControlsSheet from "./constraint-controls-sheet";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
+import { ConstraintSubmission } from "./constraint-submission";
 
 import useAutoLayout from "./constraint-layout/use-auto-layout";
 import type { LayoutOptions } from "./constraint-layout/use-auto-layout";
@@ -69,7 +70,6 @@ function ConstraintFlow() {
     isValid: false,
     errors: [],
   });
-  const [showErrors, setShowErrors] = useState(false);
 
   // Initialize permission ID from existing node
   useEffect(() => {
@@ -144,37 +144,7 @@ function ConstraintFlow() {
     setEdges(initialEdges);
     setSelectedExample("");
     setSelectedPermissionId("");
-    setShowErrors(false);
   }, [setNodes, setEdges]);
-
-  const handleCreateConstraint = useCallback(() => {
-    const result = validateConstraintForm(nodes, edges, "root-boolean");
-
-    if (!result.isValid) {
-      setShowErrors(true);
-      return;
-    }
-
-    if (result.constraint) {
-      // Log the valid constraint with BigInt support
-      console.log(
-        "Created constraint:",
-        JSON.stringify(
-          result.constraint,
-          (key, value) => {
-            if (typeof value === "bigint") {
-              return value.toString();
-            }
-            return value as unknown;
-          },
-          2,
-        ),
-      );
-
-      // TODO: Submit constraint to backend
-      setShowErrors(false);
-    }
-  }, [nodes, edges]);
 
   const layoutOptions: LayoutOptions = useMemo(
     () => ({
@@ -249,11 +219,19 @@ function ConstraintFlow() {
         <ConstraintControlsSheet
           selectedExample={selectedExample}
           onLoadExample={handleLoadExample}
-          onCreateConstraint={handleCreateConstraint}
           selectedPermissionId={selectedPermissionId}
           onPermissionIdChange={handlePermissionIdChange}
           isSubmitDisabled={!validationResult.isValid}
-          validationErrors={showErrors ? validationResult.errors : []}
+          validationErrors={validationResult.errors}
+          submitButton={
+            <ConstraintSubmission
+              nodes={nodes}
+              edges={edges}
+              rootNodeId="root-boolean"
+              selectedPermissionId={selectedPermissionId}
+              isSubmitDisabled={!validationResult.isValid}
+            />
+          }
         />
       </div>
     </ReactFlow>

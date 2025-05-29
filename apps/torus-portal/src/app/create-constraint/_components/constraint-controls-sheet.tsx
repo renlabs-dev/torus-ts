@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Sheet,
@@ -31,27 +31,21 @@ import type { ValidationError } from "./constraint-utils";
 interface ConstraintControlsSheetProps {
   selectedExample: string;
   onLoadExample: (exampleId: string) => void;
-  onCreateConstraint: () => void;
   selectedPermissionId: string;
   onPermissionIdChange: (permissionId: string) => void;
   isSubmitDisabled: boolean;
   validationErrors: ValidationError[];
+  submitButton: React.ReactNode;
 }
 
 export default function ConstraintControlsSheet({
   selectedExample,
   onLoadExample,
-  onCreateConstraint,
   selectedPermissionId,
   onPermissionIdChange,
-  isSubmitDisabled,
+  submitButton,
 }: ConstraintControlsSheetProps) {
   const [isOpen, setIsOpen] = useState(true);
-
-  const handleCreateConstraint = useCallback(() => {
-    onCreateConstraint();
-    // setIsOpen(false);
-  }, [onCreateConstraint]);
 
   const { api, selectedAccount } = useTorus();
 
@@ -219,15 +213,7 @@ export default function ConstraintControlsSheet({
           </div>
         </div>
 
-        <SheetFooter>
-          <Button
-            onClick={handleCreateConstraint}
-            className="w-full"
-            disabled={isSubmitDisabled}
-          >
-            Create This Constraint
-          </Button>
-        </SheetFooter>
+        <SheetFooter>{submitButton}</SheetFooter>
       </SheetContent>
     </Sheet>
   );
