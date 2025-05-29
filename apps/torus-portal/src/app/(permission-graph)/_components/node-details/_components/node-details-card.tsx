@@ -59,9 +59,9 @@ export function NodeDetailsCard({
         Applied Permissions
       </h2>
 
-      <ScrollArea className="h-full max-h-[calc(100vh-28rem)]">
+      <ScrollArea className="h-full md:max-h-[calc(100vh-28rem)] max-h-[calc(100vh-35rem)]">
         {sortedPermissions.length > 0 ? (
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion type="single" collapsible className="w-fit md:w-full">
             {sortedPermissions.map((permission) => {
               const details = permissionDetails?.find(
                 (p) =>
