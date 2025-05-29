@@ -246,8 +246,8 @@ export class TorusChainFetcher implements ChainFetcher {
 export class ChainAwareReteNetwork extends ReteNetwork {
   private fetcher: ChainFetcher;
 
-  constructor(fetcher: ChainFetcher) {
-    super();
+  constructor(fetcher: ChainFetcher, onConstraintViolated?: (constraintId: string) => Promise<void>) {
+    super(onConstraintViolated);
     this.fetcher = fetcher;
   }
 
@@ -347,10 +347,14 @@ export function createChainFetcher(wsEndpoint?: string): ChainFetcher {
 /**
  * Create a chain-aware Rete network that automatically fetches facts
  * @param wsEndpoint Optional websocket endpoint (defaults to main Torus node)
+ * @param onConstraintViolated Optional callback for when constraints become violated
  */
-export function createChainAwareReteNetwork(wsEndpoint?: string): ChainAwareReteNetwork {
+export function createChainAwareReteNetwork(
+  wsEndpoint?: string, 
+  onConstraintViolated?: (constraintId: string) => Promise<void>
+): ChainAwareReteNetwork {
   const fetcher = createChainFetcher(wsEndpoint);
-  return new ChainAwareReteNetwork(fetcher);
+  return new ChainAwareReteNetwork(fetcher, onConstraintViolated);
 }
 
 /**

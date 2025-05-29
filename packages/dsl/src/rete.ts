@@ -3,11 +3,12 @@ import type {
   PermId,
   NumExprType,
   Constraint,
-  CompOp,
   UInt,
   BoolExprType,
   BaseConstraintType
 } from './types';
+import { CompOp } from './types';
+import superjson from 'superjson';
 import type {
   Fact,
   SpecificFact,
@@ -579,6 +580,100 @@ export class BetaNode {
 }
 
 /**
+ * Evaluates a boolean expression given available facts
+ */
+function evaluateBoolExpression(expr: BoolExprType, facts: Map<string, Fact>): boolean {
+  switch (expr.$) {
+    case 'Not':
+      // NOT expression - negate the result
+      return !evaluateBoolExpression(expr.body, facts);
+      
+    case 'And':
+      // AND expression - both must be true
+      return evaluateBoolExpression(expr.left, facts) && 
+             evaluateBoolExpression(expr.right, facts);
+      
+    case 'Or':
+      // OR expression - at least one must be true
+      return evaluateBoolExpression(expr.left, facts) || 
+             evaluateBoolExpression(expr.right, facts);
+      
+    case 'CompExpr':
+      // Comparison expression - evaluate numeric comparison
+      const leftValue = evaluateNumericExpression(expr.left, facts);
+      const rightValue = evaluateNumericExpression(expr.right, facts);
+      
+      if (leftValue === undefined || rightValue === undefined) {
+        console.warn('Could not evaluate comparison in boolean expression:', {
+          left: leftValue,
+          right: rightValue,
+          expr
+        });
+        return false;
+      }
+      
+      return performComparison(expr.op, leftValue, rightValue);
+      
+    case 'Base':
+      // Base constraint - check specific constraint type
+      return evaluateBaseConstraint(expr.body, facts);
+      
+    default:
+      console.warn('Unknown boolean expression type:', (expr as any).$);
+      return false;
+  }
+}
+
+/**
+ * Evaluates a base constraint given available facts
+ */
+function evaluateBaseConstraint(constraint: BaseConstraintType, facts: Map<string, Fact>): boolean {
+  switch (constraint.$) {
+    case 'PermissionExists':
+      // Check if permission exists
+      for (const fact of facts.values()) {
+        if (fact.type === 'PermissionExists') {
+          const permFact = fact as PermissionExistsFact;
+          if (permFact.permId === constraint.pid && permFact.exists !== undefined) {
+            return permFact.exists;
+          }
+        }
+      }
+      return false;
+      
+    case 'PermissionEnabled':
+      // Check if permission is enabled
+      for (const fact of facts.values()) {
+        if (fact.type === 'PermissionEnabled') {
+          const permFact = fact as PermissionEnabledFact;
+          if (permFact.permId === constraint.pid && permFact.enabled !== undefined) {
+            return permFact.enabled;
+          }
+        }
+      }
+      return false;
+      
+    case 'InactiveUnlessRedelegated':
+      // Check redelegation status
+      for (const fact of facts.values()) {
+        if (fact.type === 'InactiveUnlessRedelegated') {
+          const redelegatedFact = fact as InactiveUnlessRedelegatedFact;
+          if (redelegatedFact.account === constraint.account && 
+              redelegatedFact.percentage === constraint.percentage &&
+              redelegatedFact.isRedelegated !== undefined) {
+            return redelegatedFact.isRedelegated;
+          }
+        }
+      }
+      return false;
+      
+    default:
+      console.warn('Unknown base constraint type:', (constraint as any).$);
+      return false;
+  }
+}
+
+/**
  * Production node represents a rule activation
  */
 export class ProductionNode {
@@ -601,11 +696,12 @@ export class ProductionNode {
    * @param token The token that triggered activation
    */
   activate(token: Token): void {
-    // Apply all comparison tests
-    for (const test of this.comparisonTests) {
-      if (!test.evaluate(token.facts)) {
-        return; // Test failed, don't activate
-      }
+    // Evaluate the boolean expression using the token's facts
+    const expressionResult = evaluateBoolExpression(this.constraint.body, token.facts);
+    
+    // Only activate if the expression evaluates to true
+    if (!expressionResult) {
+      return; // Expression evaluated to false, don't activate
     }
     
     // Create a consistent key for the token
@@ -630,19 +726,106 @@ export class ProductionNode {
  * @param comparison The comparison description
  * @returns A comparison test function
  */
+/**
+ * Evaluates a numeric expression using available facts
+ */
+function evaluateNumericExpression(expr: NumExprType, facts: Map<string, Fact>): bigint | undefined {
+  switch (expr.$) {
+    case 'UIntLiteral':
+      return BigInt(expr.value);
+      
+    case 'BlockNumber':
+      // Find the current block fact
+      for (const fact of facts.values()) {
+        if (fact.type === 'Block') {
+          const blockFact = fact as BlockFact;
+          return blockFact.number;
+        }
+      }
+      return undefined;
+      
+    case 'StakeOf':
+      // Find the stake fact for this account
+      for (const fact of facts.values()) {
+        if (fact.type === 'StakeOf') {
+          const stakeFact = fact as StakeOfFact;
+          if (stakeFact.account === expr.account && stakeFact.amount !== undefined) {
+            return BigInt(stakeFact.amount);
+          }
+        }
+      }
+      return undefined;
+      
+    case 'Add':
+      const leftAdd = evaluateNumericExpression(expr.left, facts);
+      const rightAdd = evaluateNumericExpression(expr.right, facts);
+      if (leftAdd !== undefined && rightAdd !== undefined) {
+        return leftAdd + rightAdd;
+      }
+      return undefined;
+      
+    case 'Sub':
+      const leftSub = evaluateNumericExpression(expr.left, facts);
+      const rightSub = evaluateNumericExpression(expr.right, facts);
+      if (leftSub !== undefined && rightSub !== undefined) {
+        return leftSub - rightSub;
+      }
+      return undefined;
+      
+    default:
+      console.warn('Unknown numeric expression type:', (expr as any).$);
+      return undefined;
+  }
+}
+
+/**
+ * Performs a comparison between two bigint values
+ */
+function performComparison(op: CompOp, left: bigint, right: bigint): boolean {
+  switch (op) {
+    case CompOp.Lt:
+      return left < right;
+    case CompOp.Lte:
+      return left <= right;
+    case CompOp.Gt:
+      return left > right;
+    case CompOp.Gte:
+      return left >= right;
+    case CompOp.Eq:
+      return left === right;
+    default:
+      console.warn('Unknown comparison operator:', op);
+      return false;
+  }
+}
+
 function createComparisonTest(comparison: ComparisonFact): ComparisonTest {
   return {
     op: comparison.op,
     left: comparison.left,
     right: comparison.right,
     evaluate: (facts: Map<string, Fact>): boolean => {
-      // TODO: Implement proper evaluation of numeric expressions
-      // This would require evaluating the left and right expressions
-      // based on the actual facts available at runtime
+      // Evaluate the left and right numeric expressions
+      const leftValue = evaluateNumericExpression(comparison.left, facts);
+      const rightValue = evaluateNumericExpression(comparison.right, facts);
       
-      // For now, we return true to indicate the comparison passes
-      // In a real implementation, this would calculate actual values
-      return true;
+      // If either value is undefined, we can't evaluate the comparison
+      if (leftValue === undefined || rightValue === undefined) {
+        console.warn('Could not evaluate comparison - missing values:', {
+          left: leftValue,
+          right: rightValue,
+          leftExpr: comparison.left,
+          rightExpr: comparison.right
+        });
+        return false; // Fail the test if we can't evaluate
+      }
+      
+      // Perform the actual comparison
+      const result = performComparison(comparison.op, leftValue, rightValue);
+      
+      console.log(`Comparison evaluation: ${leftValue} ${comparison.op} ${rightValue} = ${result}`);
+      
+      return result;
     }
   };
 }
@@ -1028,15 +1211,11 @@ export class ReteNetwork {
    * @returns The ID of the production node
    */
   addConstraint(constraint: Constraint): string {
-    // Extract facts and comparisons from the constraint
+    // Extract all facts from the constraint (including those in comparisons)
     const allFacts = extractFactsFromConstraint(constraint);
     
-    // Separate facts and comparisons
+    // Filter out comparison facts - we handle those differently now
     const facts = allFacts.filter(f => f.type !== 'Comparison');
-    const comparisons = allFacts.filter(f => f.type === 'Comparison');
-    
-    // Create comparison tests for the production node
-    const comparisonTests = comparisons.map(createComparisonTest);
     
     // Get or create alpha nodes for each fact type
     const alphaNodes: AlphaNode<Fact>[] = [];
@@ -1102,11 +1281,11 @@ export class ReteNetwork {
     let productionNode: ProductionNode;
     
     if (alphaNodes.length === 0) {
-      // No facts, just create a production node with the comparisons
-      productionNode = new ProductionNode(constraint, comparisonTests);
+      // No facts, just create a production node
+      productionNode = new ProductionNode(constraint);
     } else if (alphaNodes.length === 1) {
       // Single fact case - create a production node directly connected to the alpha node
-      productionNode = new ProductionNode(constraint, comparisonTests);
+      productionNode = new ProductionNode(constraint);
       
       // Create a simple adapter to connect alpha to production
       const dummyMemory = new BetaMemory();
@@ -1156,7 +1335,7 @@ export class ReteNetwork {
       }
       
       // Create the production node and connect it to the final beta node
-      productionNode = new ProductionNode(constraint, comparisonTests);
+      productionNode = new ProductionNode(constraint);
       previousNode.memory.successors.add(productionNode);
       
       // Activate production node with any existing tokens
@@ -1345,6 +1524,59 @@ export class ReteNetwork {
     
     return activatedConstraints;
   }
+
+  /**
+   * Get the evaluation status of a constraint
+   * @param productionId The ID of the production node
+   * @returns 'satisfied' if constraint is met, 'violated' if not met, 'unknown' if never evaluated
+   */
+  getConstraintEvaluationStatus(productionId: string): 'satisfied' | 'violated' | 'unknown' {
+    const productionNode = this.productionNodes.get(productionId);
+    if (!productionNode) {
+      return 'unknown'; // Production node doesn't exist
+    }
+
+    const state = this.constraintStates.get(productionId);
+    if (state === undefined) {
+      return 'unknown'; // Never been evaluated
+    }
+    
+    return state ? 'satisfied' : 'violated';
+  }
+
+  /**
+   * Get detailed constraint status information
+   * @param productionId The ID of the production node
+   * @returns Detailed status information about the constraint
+   */
+  getConstraintStatus(productionId: string): {
+    exists: boolean;
+    status: 'satisfied' | 'violated' | 'unknown';
+    activationCount: number;
+    hasActivations: boolean;
+    constraint?: Constraint;
+  } {
+    const productionNode = this.productionNodes.get(productionId);
+    if (!productionNode) {
+      return {
+        exists: false,
+        status: 'unknown',
+        activationCount: 0,
+        hasActivations: false
+      };
+    }
+
+    const activations = productionNode.getActivations();
+    const state = this.constraintStates.get(productionId);
+    
+    return {
+      exists: true,
+      status: state === undefined ? 'unknown' : (state ? 'satisfied' : 'violated'),
+      activationCount: activations.length,
+      hasActivations: activations.length > 0,
+      constraint: productionNode.constraint
+    };
+  }
   
   /**
    * Generate a visualization of the network structure
@@ -1472,5 +1704,274 @@ export class ReteNetwork {
     visualization += `  Permission facts: ${Array.from(this.workingMemory.permissionFacts.keys()).length} permissions\n`;
     
     return visualization;
+  }
+
+  /**
+   * Get structured network components for debugging and inspection
+   * @returns Structured data about all network components
+   */
+  getNetworkComponents(): {
+    alphaNodes: Array<{
+      key: string;
+      factCount: number;
+      facts: Array<{
+        type: string;
+        details: any;
+      }>;
+      successorCount: number;
+    }>;
+    betaNodes: Array<{
+      index: number;
+      tokenCount: number;
+      uniqueCombinations: number;
+      allTokens: Array<{
+        tokenIndex: number;
+        facts: Array<{
+          key: string;
+          type: string;
+          details: any;
+        }>;
+        factCount: number;
+        summary: string;
+      }>;
+      successorCount: number;
+    }>;
+    productionNodes: Array<{
+      id: string;
+      constraintId: string;
+      activationCount: number;
+      uniqueActivations: number;
+      status: 'satisfied' | 'violated' | 'unknown';
+      constraint: {
+        permId: string;
+        bodyType: string;
+        bodyStructure: any;
+      };
+      allActivations: Array<{
+        activationIndex: number;
+        facts: Array<{
+          type: string;
+          details: any;
+        }>;
+        factCount: number;
+        summary: string;
+      }>;
+    }>;
+    workingMemory: {
+      totalFacts: number;
+      accountFacts: Record<string, Array<{
+        type: string;
+        details: any;
+      }>>;
+      permissionFacts: Record<string, Array<{
+        type: string;
+        details: any;
+      }>>;
+      currentBlock?: {
+        number: string;
+        timestamp: string;
+      };
+    };
+  } {
+    // Alpha nodes
+    const alphaNodes = Array.from(this.alphaNodes.entries()).map(([key, node]) => ({
+      key,
+      factCount: node.memory.facts.length,
+      facts: node.memory.facts.map(fact => ({
+        type: fact.type,
+        details: this.sanitizeFactForSerialization(fact)
+      })),
+      successorCount: node.memory.successors.size
+    }));
+
+    // Beta nodes
+    const betaNodes = this.betaNodes.map((node, index) => {
+      const uniqueCombinations = new Set<string>();
+      const allTokens = node.memory.tokens.map((token, tokenIndex) => {
+        const facts = Array.from(token.facts.entries()).map(([key, fact]) => ({
+          key,
+          type: fact.type,
+          details: this.sanitizeFactForSerialization(fact)
+        }));
+        
+        const factSummary = facts
+          .map(f => `${f.type}:${superjson.stringify(f.details)}`)
+          .sort()
+          .join('|');
+        uniqueCombinations.add(factSummary);
+
+        return {
+          tokenIndex: tokenIndex + 1,
+          facts,
+          factCount: facts.length,
+          summary: factSummary
+        };
+      });
+
+      return {
+        index: index + 1,
+        tokenCount: node.memory.tokens.length,
+        uniqueCombinations: uniqueCombinations.size,
+        allTokens,
+        successorCount: node.memory.successors.size
+      };
+    });
+
+    // Production nodes
+    const productionNodes = Array.from(this.productionNodes.entries()).map(([id, node]) => {
+      const activations = node.getActivations();
+      const uniqueActivations = new Set<string>();
+      
+      const allActivations = activations.map((token, activationIndex) => {
+        const facts = Array.from(token.facts.values()).map(fact => ({
+          type: fact.type,
+          details: this.sanitizeFactForSerialization(fact)
+        }));
+        
+        const factSummary = facts
+          .map(f => `${f.type}:${superjson.stringify(f.details)}`)
+          .sort()
+          .join('|');
+        uniqueActivations.add(factSummary);
+
+        return {
+          activationIndex: activationIndex + 1,
+          facts,
+          factCount: facts.length,
+          summary: factSummary
+        };
+      });
+
+      return {
+        id,
+        constraintId: node.constraint.permId,
+        activationCount: activations.length,
+        uniqueActivations: uniqueActivations.size,
+        status: this.getConstraintEvaluationStatus(id),
+        constraint: {
+          permId: node.constraint.permId,
+          bodyType: typeof node.constraint.body,
+          bodyStructure: this.getBoolExprStructure(node.constraint.body)
+        },
+        allActivations
+      };
+    });
+
+    // Working memory
+    const allFacts = this.workingMemory.getAllFacts();
+    const accountFacts: Record<string, Array<any>> = {};
+    const permissionFacts: Record<string, Array<any>> = {};
+    let currentBlock: any = undefined;
+
+    allFacts.forEach(fact => {
+      const sanitized = {
+        type: fact.type,
+        details: this.sanitizeFactForSerialization(fact)
+      };
+
+      if (fact.type === 'StakeOf' || fact.type === 'InactiveUnlessRedelegated') {
+        const accountId = (fact as StakeOfFact | InactiveUnlessRedelegatedFact).account;
+        if (!accountFacts[accountId]) accountFacts[accountId] = [];
+        accountFacts[accountId].push(sanitized);
+      } else if (fact.type === 'PermissionExists' || fact.type === 'PermissionEnabled') {
+        const permId = (fact as PermissionExistsFact | PermissionEnabledFact).permId;
+        if (!permissionFacts[permId]) permissionFacts[permId] = [];
+        permissionFacts[permId].push(sanitized);
+      } else if (fact.type === 'Block') {
+        const blockFact = fact as BlockFact;
+        currentBlock = {
+          number: blockFact.number.toString(),
+          timestamp: blockFact.timestamp.toString()
+        };
+      }
+    });
+
+    return {
+      alphaNodes,
+      betaNodes,
+      productionNodes,
+      workingMemory: {
+        totalFacts: allFacts.length,
+        accountFacts,
+        permissionFacts,
+        currentBlock
+      }
+    };
+  }
+
+  /**
+   * Gets a readable structure representation of a boolean expression
+   */
+  private getBoolExprStructure(expr: BoolExprType): any {
+    switch (expr.$) {
+      case 'Not':
+        return {
+          type: 'NOT',
+          body: this.getBoolExprStructure(expr.body)
+        };
+      case 'And':
+        return {
+          type: 'AND',
+          left: this.getBoolExprStructure(expr.left),
+          right: this.getBoolExprStructure(expr.right)
+        };
+      case 'Or':
+        return {
+          type: 'OR',
+          left: this.getBoolExprStructure(expr.left),
+          right: this.getBoolExprStructure(expr.right)
+        };
+      case 'CompExpr':
+        return {
+          type: 'COMPARISON',
+          operator: expr.op,
+          left: this.getNumExprStructure(expr.left),
+          right: this.getNumExprStructure(expr.right)
+        };
+      case 'Base':
+        return {
+          type: 'BASE_CONSTRAINT',
+          constraint: expr.body
+        };
+      default:
+        return { type: 'UNKNOWN', expr };
+    }
+  }
+
+  /**
+   * Gets a readable structure representation of a numeric expression
+   */
+  private getNumExprStructure(expr: NumExprType): any {
+    switch (expr.$) {
+      case 'UIntLiteral':
+        return { type: 'LITERAL', value: expr.value };
+      case 'BlockNumber':
+        return { type: 'BLOCK_NUMBER' };
+      case 'StakeOf':
+        return { type: 'STAKE_OF', account: expr.account };
+      case 'Add':
+        return {
+          type: 'ADD',
+          left: this.getNumExprStructure(expr.left),
+          right: this.getNumExprStructure(expr.right)
+        };
+      case 'Sub':
+        return {
+          type: 'SUBTRACT',
+          left: this.getNumExprStructure(expr.left),
+          right: this.getNumExprStructure(expr.right)
+        };
+      default:
+        return { type: 'UNKNOWN', expr };
+    }
+  }
+
+  /**
+   * Sanitizes a fact for JSON serialization using superjson (handles BigInt automatically)
+   */
+  private sanitizeFactForSerialization(fact: Fact): any {
+    // Use superjson to serialize and deserialize to get a JSON-safe object
+    const serialized = superjson.stringify(fact);
+    return superjson.parse(serialized);
   }
 }
