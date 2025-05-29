@@ -162,9 +162,10 @@ export function NodeDetailsCard({
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <span className="text-xs text-gray-500">
+                            {/* TODO ADD ENFORCEMENT */}
+                            {/* <span className="text-xs text-gray-500">
                               Enforcement
-                            </span>
+                            </span> */}
                             <div className="font-mono text-gray-300 break-all">
                               {/*todo edit*/}
                               {/* {details.enforcement} */}
