@@ -20,13 +20,18 @@ interface ForceGraphProps {
 const ForceGraph = memo(
   function ForceGraph(props: ForceGraphProps) {
     const fgRef = useRef<GraphMethods | undefined>(undefined);
+    const linkDistance = 100;
 
     useFrame(() => {
-      if (fgRef.current) {
+      if (fgRef.current?.d3Force) {
+        const linkForce = fgRef.current.d3Force("link");
+        if (linkForce && typeof linkForce.distance === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          linkForce.distance(linkDistance);
+        }
         fgRef.current.tickFrame();
       }
     });
-
     const formattedData = useMemo(() => {
       return {
         nodes: props.graphData.nodes.map((node) => ({
@@ -87,7 +92,7 @@ const ForceGraph = memo(
         linkWidth={(link) => {
           return Number(link.linkWidth);
         }}
-        nodeRelSize={3}
+        // nodeRelSize={10}
         nodeResolution={24}
         onNodeClick={handleNodeClick}
       />
