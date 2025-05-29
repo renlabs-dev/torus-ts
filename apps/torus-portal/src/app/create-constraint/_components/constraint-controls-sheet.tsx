@@ -25,9 +25,10 @@ import {
   usePermission,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, CheckIcon } from "lucide-react";
 import type { ValidationError } from "./constraint-utils";
 import { api as trpcApi } from "~/trpc/react";
+import { deserializeConstraint } from "@torus-ts/dsl";
 // import { deserializeConstraint } from "@torus-ts/dsl";
 
 interface ConstraintControlsSheetProps {
@@ -52,16 +53,16 @@ export default function ConstraintControlsSheet({
   const { data: permissionsWithConstraints } =
     trpcApi.permission.withConstraints.useQuery();
 
-  // if (permissionsWithConstraints) {
-  //   permissionsWithConstraints.forEach((permission) => {
-  //     const x = permission.constraint;
-  //     if (x) {
-  //       const ct = deserializeConstraint(
-  //         JSON.stringify(JSON.parse(x.body).json),
-  //       );
-  //     }
-  //   });
-  // }
+  if (permissionsWithConstraints) {
+    permissionsWithConstraints.forEach((permission) => {
+      const x = permission.constraint;
+      if (x) {
+        const ct = deserializeConstraint(
+          JSON.stringify(JSON.parse(x.body).json),
+        );
+      }
+    });
+  }
 
   const { api, selectedAccount } = useTorus();
 
@@ -76,6 +77,16 @@ export default function ConstraintControlsSheet({
   const hasPermissions = permissions && permissions.length > 0;
   const isWalletConnected = selectedAccount?.address != null;
   const shouldDisablePermissionSelect = !isWalletConnected || !hasPermissions;
+
+  // Helper function to check if a permission has a constraint
+  const hasConstraint = (permissionId: string): boolean => {
+    if (!permissionsWithConstraints) return false;
+    return permissionsWithConstraints.some(
+      (item) =>
+        item.permission.permission_id === permissionId &&
+        item.constraint !== null,
+    );
+  };
 
   // Query selected permission details
   const {
@@ -145,7 +156,14 @@ export default function ConstraintControlsSheet({
                 <SelectContent>
                   {permissions?.map((permissionId) => (
                     <SelectItem key={permissionId} value={permissionId}>
-                      {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
+                      <div className="flex items-center justify-between w-full">
+                        <span>
+                          {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
+                        </span>
+                        {hasConstraint(permissionId) && (
+                          <CheckIcon className="h-4 w-4 text-green-500 ml-2" />
+                        )}
+                      </div>
                     </SelectItem>
                   )) ?? []}
                 </SelectContent>
