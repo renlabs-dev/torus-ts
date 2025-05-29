@@ -123,14 +123,6 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         case "Sub":
           newExpression = NumExpr.sub(NumExpr.literal(0), NumExpr.literal(0));
           break;
-        case "WeightSet":
-          newExpression = NumExpr.weightSet("", "");
-          setAccountError("");
-          break;
-        case "WeightPowerFrom":
-          newExpression = NumExpr.weightPowerFrom("", "");
-          setAccountError("");
-          break;
         default:
           return;
       }
@@ -170,7 +162,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
   );
 
   const handleAccountChange = useCallback(
-    (field: "account" | "from" | "to", value: string) => {
+    (field: "account", value: string) => {
       const validation = SS58_SCHEMA.safeParse(value);
 
       if (!validation.success && value.length > 0) {
@@ -188,14 +180,6 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           return {
             ...currentData,
             expression: { ...expr, account: value },
-          };
-        } else if (
-          (expr.$ === "WeightSet" || expr.$ === "WeightPowerFrom") &&
-          (field === "from" || field === "to")
-        ) {
-          return {
-            ...currentData,
-            expression: { ...expr, [field]: value },
           };
         }
         return currentData;
@@ -228,11 +212,7 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
                 ? "green"
                 : data.expression.$ === "Add"
                   ? "emerald"
-                  : data.expression.$ === "Sub"
-                    ? "red"
-                    : data.expression.$ === "WeightSet"
-                      ? "orange"
-                      : "gray" // data.expression.$ === "WeightPowerFrom"
+                  : "red" // data.expression.$ === "Sub"
         }
       >
         <ConstraintSelectIconItem
@@ -265,18 +245,6 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
           icon={<Minus className="h-4 w-4 text-red-600" />}
           label="Subtract"
         />
-        <ConstraintSelectIconItem
-          value="WeightSet"
-          colorVariant="orange"
-          icon={<Scale className="h-4 w-4 text-orange-600" />}
-          label="Weight Set"
-        />
-        <ConstraintSelectIconItem
-          value="WeightPowerFrom"
-          colorVariant="yellow"
-          icon={<Zap className="h-4 w-4 text-yellow-600" />}
-          label="Weight Power From"
-        />
       </ConstraintSelect>
       {data.expression.$ !== "BlockNumber" && (
         <div className="text-white relative">↓</div>
@@ -306,30 +274,6 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         />
       )}
 
-      {(data.expression.$ === "WeightSet" ||
-        data.expression.$ === "WeightPowerFrom") && (
-        <>
-          <ConstraintInput
-            id={`${id}-from`}
-            type="text"
-            value={data.expression.from || ""}
-            onChange={(e) => handleAccountChange("from", e.target.value)}
-            placeholder="From account ID"
-            hasError={!!accountError}
-            errorMessage={undefined}
-          />
-
-          <ConstraintInput
-            id={`${id}-to`}
-            type="text"
-            value={data.expression.to || ""}
-            onChange={(e) => handleAccountChange("to", e.target.value)}
-            placeholder="To account ID"
-            hasError={!!accountError}
-            errorMessage={accountError}
-          />
-        </>
-      )}
     </PermissionNodeContainer>
   );
 }

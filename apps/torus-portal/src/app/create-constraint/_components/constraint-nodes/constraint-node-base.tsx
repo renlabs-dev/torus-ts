@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { NodeProps } from "@xyflow/react";
+import type { NodeProps, Node, Edge } from "@xyflow/react";
 import {
   ConstraintSelect,
   ConstraintInput,
@@ -34,77 +34,32 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     }
     return "";
   });
+  
+  const [account, setAccount] = useState(() => {
+    const expr = data.expression;
+    if (expr.$ === "InactiveUnlessRedelegated") {
+      return expr.account || "";
+    }
+    return "";
+  });
+  
+  const [percentage, setPercentage] = useState(() => {
+    const expr = data.expression;
+    if (expr.$ === "InactiveUnlessRedelegated") {
+      return expr.percentage.toString() || "0";
+    }
+    return "0";
+  });
   const [permissionIdError, setPermissionIdError] = useState<string>("");
 
   const createChildNodes = useCallback(
     (expression: BaseConstraintType): NodeCreationResult => {
-      const nodes = [];
-      const edges = [];
+      const nodes: Node[] = [];
+      const edges: Edge[] = [];
 
-      switch (expression.$) {
-        case "MaxDelegationDepth": {
-          const depthId = createChildNodeId(id, "depth");
-          nodes.push({
-            id: depthId,
-            type: "permissionNumber",
-            data: {
-              type: "number",
-              expression: expression.depth,
-              label: "Max Depth",
-            },
-            position: { x: 0, y: 0 },
-          });
-          edges.push({
-            id: createEdgeId(id, depthId),
-            source: id,
-            target: depthId,
-            animated: true,
-          });
-          break;
-        }
-
-        case "RateLimit": {
-          const maxOpsId = createChildNodeId(id, "maxOps");
-          const periodId = createChildNodeId(id, "period");
-
-          nodes.push({
-            id: maxOpsId,
-            type: "permissionNumber",
-            data: {
-              type: "number",
-              expression: expression.maxOperations,
-              label: "Max Operations",
-            },
-            position: { x: 0, y: 0 },
-          });
-
-          nodes.push({
-            id: periodId,
-            type: "permissionNumber",
-            data: {
-              type: "number",
-              expression: expression.period,
-              label: "Period (blocks)",
-            },
-            position: { x: 0, y: 0 },
-          });
-
-          edges.push({
-            id: createEdgeId(id, maxOpsId),
-            source: id,
-            target: maxOpsId,
-            animated: true,
-          });
-
-          edges.push({
-            id: createEdgeId(id, periodId),
-            source: id,
-            target: periodId,
-            animated: true,
-          });
-          break;
-        }
-      }
+      // No child nodes needed for current BaseConstraintType variants
+      // All current types (PermissionExists, PermissionEnabled, InactiveUnlessRedelegated) 
+      // have simple field values rather than complex expressions
 
       return { nodes, edges };
     },
@@ -120,9 +75,6 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
       let newExpression: BaseConstraintType;
 
       switch (type) {
-        case "MaxDelegationDepth":
-          newExpression = BaseConstraint.maxDelegationDepth(NumExpr.literal(1));
-          break;
         case "PermissionExists":
           newExpression = BaseConstraint.permissionExists("");
           setPermissionId("");
@@ -133,14 +85,10 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
           setPermissionId("");
           setPermissionIdError("");
           break;
-        case "RateLimit":
-          newExpression = BaseConstraint.rateLimit(
-            NumExpr.literal(10),
-            NumExpr.literal(100),
-          );
-          break;
         case "InactiveUnlessRedelegated":
-          newExpression = BaseConstraint.inactiveUnlessRedelegated();
+          newExpression = BaseConstraint.inactiveUnlessRedelegated("", 0);
+          setAccount("");
+          setPercentage("0");
           break;
         default:
           return;
@@ -182,9 +130,7 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
     [data.expression, updateNodeData],
   );
 
-  const shouldAutoCreate =
-    data.expression.$ === "MaxDelegationDepth" ||
-    data.expression.$ === "RateLimit";
+  const shouldAutoCreate = false; // No auto-creation needed for current BaseConstraintType variants
 
   const hasSourceHandle = shouldAutoCreate;
 
@@ -201,23 +147,13 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         value={data.expression.$}
         onValueChange={handleTypeChange}
         colorVariant={
-          data.expression.$ === "MaxDelegationDepth"
-            ? "blue"
-            : data.expression.$ === "PermissionExists"
-              ? "green"
-              : data.expression.$ === "PermissionEnabled"
-                ? "emerald"
-                : data.expression.$ === "RateLimit"
-                  ? "orange"
-                  : "gray" // data.expression.$ === "InactiveUnlessRedelegated"
+          data.expression.$ === "PermissionExists"
+            ? "green"
+            : data.expression.$ === "PermissionEnabled"
+              ? "emerald"
+              : "gray" // data.expression.$ === "InactiveUnlessRedelegated"
         }
       >
-        <ConstraintSelectIconItem
-          value="MaxDelegationDepth"
-          colorVariant="blue"
-          icon={<GitBranch className="h-4 w-4 text-blue-600" />}
-          label="Max Delegation Depth"
-        />
         <ConstraintSelectIconItem
           value="PermissionExists"
           colorVariant="green"
@@ -231,12 +167,6 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
           label="Permission Enabled"
         />
         <ConstraintSelectIconItem
-          value="RateLimit"
-          colorVariant="orange"
-          icon={<Timer className="h-4 w-4 text-orange-600" />}
-          label="Rate Limit"
-        />
-        <ConstraintSelectIconItem
           value="InactiveUnlessRedelegated"
           colorVariant="gray"
           icon={<Pause className="h-4 w-4 text-gray-600" />}
@@ -244,16 +174,6 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
         />
       </ConstraintSelect>
 
-      {data.expression.$ === "RateLimit" && (
-        <div className="text-white text-sm absolute top-[4.3em] flex gap-16 items-center justify-between">
-          <div className="px-2 rounded-full bg-accent border border-[#B1B1B7]">
-            MaxOperations
-          </div>
-          <div className="px-2 mr-6 rounded-full bg-accent border border-[#B1B1B7]">
-            period
-          </div>
-        </div>
-      )}
 
       {(data.expression.$ === "PermissionExists" ||
         data.expression.$ === "PermissionEnabled") && (
@@ -268,6 +188,42 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
             placeholder="Enter permission ID"
             hasError={!!permissionIdError}
             errorMessage={permissionIdError}
+          />
+        </>
+      )}
+      
+      {data.expression.$ === "InactiveUnlessRedelegated" && (
+        <>
+          <div className="text-white relative">↓</div>
+          
+          <ConstraintInput
+            id={`${id}-account`}
+            type="text"
+            value={account}
+            onChange={(e) => {
+              const value = e.target.value;
+              setAccount(value);
+              updateNodeData<BaseNodeData>((currentData) => ({
+                ...currentData,
+                expression: { ...data.expression, account: value } as BaseConstraintType,
+              }));
+            }}
+            placeholder="Enter account ID"
+          />
+          
+          <ConstraintInput
+            id={`${id}-percentage`}
+            type="number"
+            value={percentage}
+            onChange={(e) => {
+              const value = e.target.value;
+              setPercentage(value);
+              updateNodeData<BaseNodeData>((currentData) => ({
+                ...currentData,
+                expression: { ...data.expression, percentage: BigInt(value || "0") } as BaseConstraintType,
+              }));
+            }}
+            placeholder="Enter percentage (0-100)"
           />
         </>
       )}

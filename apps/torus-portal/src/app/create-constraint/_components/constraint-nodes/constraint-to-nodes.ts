@@ -277,75 +277,15 @@ function convertBaseConstraint(
   edges: Edge[],
 ): void {
   switch (expr.$) {
-    case "MaxDelegationDepth": {
-      const depthId = createChildNodeId(parentId, "depth");
-      const depthNode: Node<PermissionNodeData> = {
-        id: depthId,
-        type: "permissionNumber",
-        data: {
-          type: "number",
-          expression: expr.depth,
-          label: getNumExprLabel(expr.depth),
-        },
-        position: { x: 0, y: 0 },
-      };
-
-      nodes.push(depthNode);
-      edges.push({
-        id: createEdgeId(parentId, depthId),
-        source: parentId,
-        target: depthId,
-        animated: true,
-      });
-
-      convertNumExpr(expr.depth, depthId, nodes, edges);
+    case "InactiveUnlessRedelegated": {
+      // This constraint has account and percentage fields but they are leaf nodes
+      // No child nodes needed for this simple constraint
       break;
     }
-
-    case "RateLimit": {
-      const maxOpsId = createChildNodeId(parentId, "maxOps");
-      const periodId = createChildNodeId(parentId, "period");
-
-      const maxOpsNode: Node<PermissionNodeData> = {
-        id: maxOpsId,
-        type: "permissionNumber",
-        data: {
-          type: "number",
-          expression: expr.maxOperations,
-          label: getNumExprLabel(expr.maxOperations),
-        },
-        position: { x: 0, y: 0 },
-      };
-
-      const periodNode: Node<PermissionNodeData> = {
-        id: periodId,
-        type: "permissionNumber",
-        data: {
-          type: "number",
-          expression: expr.period,
-          label: getNumExprLabel(expr.period),
-        },
-        position: { x: 0, y: 0 },
-      };
-
-      nodes.push(maxOpsNode, periodNode);
-      edges.push(
-        {
-          id: createEdgeId(parentId, maxOpsId),
-          source: parentId,
-          target: maxOpsId,
-          animated: true,
-        },
-        {
-          id: createEdgeId(parentId, periodId),
-          source: parentId,
-          target: periodId,
-          animated: true,
-        },
-      );
-
-      convertNumExpr(expr.maxOperations, maxOpsId, nodes, edges);
-      convertNumExpr(expr.period, periodId, nodes, edges);
+    case "PermissionExists":
+    case "PermissionEnabled": {
+      // These constraints only have a pid field which is a leaf value
+      // No child nodes needed for these simple constraints
       break;
     }
   }
@@ -378,24 +318,16 @@ function getNumExprLabel(expr: NumExprType): string {
       return "Add";
     case "Sub":
       return "Subtract";
-    case "WeightSet":
-      return `Weight ${expr.from} → ${expr.to}`;
-    case "WeightPowerFrom":
-      return `Weight Power ${expr.from} → ${expr.to}`;
   }
 }
 
 function getBaseConstraintLabel(expr: BaseConstraintType): string {
   switch (expr.$) {
-    case "MaxDelegationDepth":
-      return "Max Delegation Depth";
     case "PermissionExists":
       return `Permission Exists: ${expr.pid}`;
     case "PermissionEnabled":
       return `Permission Enabled: ${expr.pid}`;
-    case "RateLimit":
-      return "Rate Limit";
     case "InactiveUnlessRedelegated":
-      return "Inactive Unless Redelegated";
+      return `Inactive Unless Redelegated: ${expr.account} (${expr.percentage}%)`;
   }
 }

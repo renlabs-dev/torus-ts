@@ -18,7 +18,7 @@ export const nodes: Node<PermissionNodeData>[] = [
     type: "permissionBoolean",
     data: {
       type: "boolean",
-      expression: BoolExpr.base({ $: "InactiveUnlessRedelegated" }),
+      expression: BoolExpr.base({ $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) }),
       label: "Permission Root",
     },
     position: { x: 0, y: 0 },
@@ -28,7 +28,7 @@ export const nodes: Node<PermissionNodeData>[] = [
     type: "permissionBase",
     data: {
       type: "base",
-      expression: { $: "InactiveUnlessRedelegated" },
+      expression: { $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) },
       label: "Base Constraint",
     },
     position: { x: 0, y: 0 },

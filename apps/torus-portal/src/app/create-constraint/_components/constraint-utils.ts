@@ -200,23 +200,6 @@ function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
               });
             }
             break;
-          case "WeightSet":
-          case "WeightPowerFrom":
-            if (!expr.from || String(expr.from).trim() === "") {
-              errors.push({
-                nodeId: node.id,
-                field: "from",
-                message: "From account ID is required",
-              });
-            }
-            if (!expr.to || String(expr.to).trim() === "") {
-              errors.push({
-                nodeId: node.id,
-                field: "to",
-                message: "To account ID is required",
-              });
-            }
-            break;
         }
         break;
       }
@@ -381,44 +364,7 @@ function extractBaseConstraint(
   const expr = node.data.expression;
   const childEdges = edgeMap[node.id] ?? [];
 
-  switch (expr.$) {
-    case "MaxDelegationDepth": {
-      const depthEdge = childEdges.find((e) => e.target.includes("-depth"));
-      if (!depthEdge) return expr;
-
-      const depthNode = nodeMap[depthEdge.target];
-      if (!depthNode || depthNode.data.type !== "number") return expr;
-
-      const depth = extractNumExpr(depthNode, nodeMap, edgeMap);
-      return depth ? { $: "MaxDelegationDepth", depth } : expr;
-    }
-
-    case "RateLimit": {
-      const maxOpsEdge = childEdges.find((e) => e.target.includes("-maxOps"));
-      const periodEdge = childEdges.find((e) => e.target.includes("-period"));
-
-      if (!maxOpsEdge || !periodEdge) return expr;
-
-      const maxOpsNode = nodeMap[maxOpsEdge.target];
-      const periodNode = nodeMap[periodEdge.target];
-
-      if (
-        !maxOpsNode ||
-        !periodNode ||
-        maxOpsNode.data.type !== "number" ||
-        periodNode.data.type !== "number"
-      )
-        return expr;
-
-      const maxOperations = extractNumExpr(maxOpsNode, nodeMap, edgeMap);
-      const period = extractNumExpr(periodNode, nodeMap, edgeMap);
-
-      if (!maxOperations || !period) return expr;
-
-      return { $: "RateLimit", maxOperations, period };
-    }
-
-    default:
-      return expr;
-  }
+  // For current BaseConstraintType variants, all fields are simple values
+  // No child node extraction needed
+  return expr;
 }
