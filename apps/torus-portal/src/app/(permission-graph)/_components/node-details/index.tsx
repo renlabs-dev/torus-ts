@@ -2,7 +2,7 @@ import { NodeDetails } from "./_components/node-details";
 import type {
   CustomGraphData,
   CustomGraphNode,
-  PermissionDetail,
+  PermissionDetails,
   CachedAgentData,
 } from "../permission-graph-utils";
 import { memo } from "react";
@@ -18,7 +18,7 @@ import { PermissionGraphOverview } from "../permission-graph-overview";
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
   graphData: CustomGraphData | null;
-  permissionDetails?: PermissionDetail[];
+  permissionDetails?: PermissionDetails;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   isOpen: boolean;
