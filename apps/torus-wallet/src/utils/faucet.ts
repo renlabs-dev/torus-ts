@@ -1,6 +1,5 @@
 import type { ApiPromise } from "@polkadot/api";
-import type { SubmittableExtrinsicFunction, VoidFn } from "@polkadot/api/types";
-import type { AnyTuple } from "@polkadot/types-codec/types";
+import type { VoidFn } from "@polkadot/api/types";
 import type { DispatchError } from '@polkadot/types/interfaces';
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";

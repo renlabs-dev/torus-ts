@@ -69,7 +69,7 @@ export function FaucetForm({ form, selectedAccount, onSubmit, isLoading, loadMes
             <DropdownMenu>
               
               <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" disabled={!selectedAccount?.address || isLoading}>
                   <ChevronDown />
                 </Button>
               </DropdownMenuTrigger>
