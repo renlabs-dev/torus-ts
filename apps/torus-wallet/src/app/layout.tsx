@@ -22,13 +22,7 @@ export const metadata = () =>
     title: "Torus Wallet - Secure Digital Asset Management",
     description:
       "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
-    keywords: [
-      "crypto wallet",
-      "torus",
-      "blockchain",
-      "digital assets",
-      "web3",
-    ],
+    keywords: ["torus wallet"],
     baseUrl: env("BASE_URL"),
     canonical: "/",
   });

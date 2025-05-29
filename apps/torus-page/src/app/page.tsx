@@ -1,5 +1,4 @@
 import Image from "next/image";
-import * as React from "react";
 import { TorusAnimation } from "./_components/torus-animation";
 
 export default function Page() {

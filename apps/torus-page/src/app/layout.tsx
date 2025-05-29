@@ -1,19 +1,22 @@
-import { Layout } from "@torus-ts/ui/components/layout";
-import * as React from "react";
 import "@torus-ts/ui/globals.css";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { EnvScript } from "~/env";
-import type { Metadata } from "next";
+import { Layout } from "@torus-ts/ui/components/layout";
+import { Seo, createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Fira_Mono as FiraMono } from "next/font/google";
+import type { ReactNode } from "react";
+import { EnvScript, env } from "~/env";
 import { Footer } from "./_components/footer";
 import { HoverHeader } from "./_components/hover-header";
 
-export const metadata: Metadata = {
-  robots: "all",
-  title: "Torus",
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite child.",
-};
+export const generateMetadata = () =>
+  createSeoMetadata({
+    title: "Torus Network",
+    description: "The thermodynamic god's favorite child.",
+    keywords: ["torus page", "torus site"],
+    baseUrl: env("BASE_URL"),
+    canonical: "/",
+  });
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
@@ -24,14 +27,15 @@ export const firaMono = FiraMono({
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
+      <Seo />
       <HoverHeader />
       {children}
       <Footer />
-      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+      <GoogleAnalytics gaId={env("NEXT_PUBLIC_GA_ID")} />
     </Layout>
   );
 }

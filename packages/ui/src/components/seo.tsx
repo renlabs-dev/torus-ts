@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
 export interface SeoProps {
-  ogImageAlt: string;
+  ogImageAlt?: string;
   ogImageUrl?: string;
 }
 
-export const Seo = ({ ogImageAlt, ogImageUrl = "/og.png" }: SeoProps) => {
+export const Seo = ({
+  ogImageAlt = "Torus Network",
+  ogImageUrl = "/og.png",
+}: SeoProps) => {
   return (
     <>
       <meta property="og:image" content={ogImageUrl} />
@@ -55,8 +58,26 @@ export function createSeoMetadata({
   return {
     title,
     description,
-    keywords,
-    robots: { index: true, follow: true },
+    keywords: [
+      "torus network",
+      "Torus Network",
+      "autonomous blockchain",
+      "peer-to-peer blockchain",
+      "stake-driven network",
+      "Substrate blockchain",
+      "Rust blockchain",
+      "decentralized incentives",
+      "blockchain ecosystem",
+      "self-evolving protocol",
+      "emergent network architecture",
+      "decentralized agents",
+      "recursive permissions",
+      "hypergraph blockchain",
+      "modular blockchain infrastructure",
+      "adaptive blockchain protocol",
+      ...(keywords?.length ? keywords : []),
+    ],
+    robots: "all",
     icons: [
       { rel: "icon", url: "/favicon.ico" },
       {

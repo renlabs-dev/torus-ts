@@ -1,7 +1,7 @@
 import TransfersPage from "./(transfers)/page";
-import * as layout from "./layout";
+import * as Layout from "./layout";
 
-export const metadata = layout.metadata;
+export const metadata = Layout.metadata;
 
 export default function RootPage() {
   return <TransfersPage />;
