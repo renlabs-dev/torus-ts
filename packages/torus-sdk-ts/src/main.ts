@@ -25,6 +25,7 @@ import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { if_let } from "rustie";
+import { assert } from "tsafe";
 
 const log = BasicLogger.create({ name: "Permission0" });
 
@@ -45,6 +46,22 @@ async function connectToChainRpc(wsEndpoint: string) {
 const api = await connectToChainRpc(NODE_URL);
 
 // // ====
+
+const testAddr = checkSS58("5DhzV3cXD984cZKcUZq3shTQFnwtTq4QPAwVGbSHBAvdAKJn");
+
+const [permsByGrantorErr, permsByGrantor] = await queryPermissionsByGrantor(
+  api,
+  testAddr,
+);
+
+assert(permsByGrantorErr === undefined);
+assert(permsByGrantor === null);
+
+console.log(permsByGrantor);
+
+process.exit(0);
+
+// ----
 
 // // Get all permissions
 // const [e0, r0] = await queryPermissions(api);
