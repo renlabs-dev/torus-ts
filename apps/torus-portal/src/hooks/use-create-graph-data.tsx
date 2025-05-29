@@ -36,7 +36,11 @@ export function useCreateGraphData() {
     const agentWeightMap = new Map<string, number>();
     if (allComputedWeights) {
       allComputedWeights.forEach((agent) => {
-        agentWeightMap.set(agent.agentKey, agent.percComputedWeight);
+        // Validate weight before storing to prevent NaN propagation
+        const weight = agent.percComputedWeight;
+        if (Number.isFinite(weight) && weight >= 0) {
+          agentWeightMap.set(agent.agentKey, weight);
+        }
       });
     }
 
@@ -67,8 +71,11 @@ export function useCreateGraphData() {
           color = "#81C784"; // soft green for grantees
         }
 
-        // Use computed weight if available, otherwise default to 10
-        const weight = agentWeightMap.get(address) ?? 10;
+        // Use computed weight if available, otherwise default to 1
+        const rawWeight = agentWeightMap.get(address) ?? 1;
+        // Ensure weight is a valid positive number to prevent NaN
+        const weight =
+          Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
 
         return {
           id: address,
@@ -128,7 +135,7 @@ export function useCreateGraphData() {
             source: allocatorAddress,
             target: agentKey,
             id: `allocation-${agentKey}`,
-            linkDirectionalParticles: 3,
+            linkDirectionalParticles: computedAgentWeight / (scaleFactor * 2),
             linkDirectionalParticleWidth: 1,
             linkCurvature: 0,
             linkColor: "#90CAF9", // soft sky blue for allocation links
@@ -138,7 +145,10 @@ export function useCreateGraphData() {
       });
 
       // Add missing agent nodes from allocations
-      for (const [agentKey, weight] of agentsToAdd.entries()) {
+      for (const [agentKey, rawWeight] of agentsToAdd.entries()) {
+        // Ensure weight is a valid positive number to prevent NaN
+        const weight =
+          Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
         const val =
           agentKey === allocatorAddress
             ? 150
