@@ -14,6 +14,11 @@ if (process?.env) {
 // warning: DO NOT expose any sensitive data on the schema default values!
 export const envSchema = {
   NODE_ENV: NodeEnvSchema,
+  BASE_URL: z.string().default(
+    process.env.NODE_ENV === "production"
+      ? "https://bridge.torus.network"
+      : "https://bridge.testnet.torus.network",
+  ),
   /*
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
@@ -31,6 +36,7 @@ export const envSchema = {
   NEXT_PUBLIC_WALLET_CONNECT_ID: z.string().default(""),
   NEXT_PUBLIC_TRANSFER_BLACKLIST: z.string().default(""),
   NEXT_PUBLIC_CHAIN_WALLET_WHITELISTS: z.string().default("[]"),
+  NEXT_PUBLIC_GA_ID: z.string().default("G-7YCMH64Q4J"),
   // NEXT_PUBLIC_TORUS_RPC_HTTPS_URL: string().url(),
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
 };
