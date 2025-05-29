@@ -6,10 +6,7 @@ import type {
   PermissionDetail,
   CachedAgentData,
 } from "../../permission-graph-utils";
-import {
-  getNodePermissions,
-  sortPermissions,
-} from "../../permission-graph-utils";
+import { getNodePermissions } from "../../permission-graph-utils";
 import { useMemo, memo } from "react";
 import { NodeDetailsCard } from "./node-details-card";
 
@@ -35,18 +32,12 @@ export const NodeDetails = memo(function NodeDetails({
     [selectedNode, graphData],
   );
 
-  const sortedPermissions = useMemo(() => {
-    const original = sortPermissions(nodePermissions, permissionDetails ?? []);
-    return [...original, ...original, ...original, ...original, ...original];
-  }, [nodePermissions, permissionDetails]);
-
   if (!graphData) return null;
 
   return (
     <NodeDetailsCard
-      sortedPermissions={sortedPermissions}
-      nodePermissions={nodePermissions}
       graphData={graphData}
+      nodePermissions={nodePermissions}
       permissionDetails={permissionDetails}
     />
   );
