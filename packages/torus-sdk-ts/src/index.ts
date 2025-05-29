@@ -27,6 +27,7 @@ export * from "./types/base";
 export * from "./types/index";
 export * from "./types/sb_enum";
 export * from "./types/zod";
+export * from "./types/events";
 
 // == Metadata ==
 export * from "./metadata";

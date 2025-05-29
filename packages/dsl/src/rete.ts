@@ -178,14 +178,9 @@ export class AlphaMemory<T extends Fact> {
       return `account:${(fact as any).account}`;
     }
     
-    if (fact.type === 'WeightSet' || fact.type === 'WeightPowerFrom') {
-      return `weight:${(fact as any).from}:${(fact as any).to}`;
-    }
-    
     if (
       fact.type === 'PermissionExists' || 
       fact.type === 'PermissionEnabled' || 
-      fact.type === 'MaxDelegationDepth' || 
       fact.type === 'InactiveUnlessRedelegated'
     ) {
       if ('permId' in fact) {
@@ -712,6 +707,13 @@ export class ProductionNode {
       this.activations.set(tokenKey, token);
     }
   }
+
+  /**
+   * Get the constraint ID for this production node
+   */
+  getConstraintId(): string {
+    return this.constraint.permId;
+  }
   
   /**
    * Get all activation tokens
@@ -1206,11 +1208,101 @@ export class ReteNetwork {
   }
 
   /**
+   * Update constraint states for all production nodes
+   */
+  private updateAllConstraintStates(): void {
+    for (const [constraintId, productionNode] of this.productionNodes) {
+      const currentlyActivated = productionNode.getActivations().length > 0;
+      this.constraintStates.set(constraintId, currentlyActivated);
+    }
+  }
+
+  /**
+   * Create a deterministic constraint ID based on constraint content
+   * @param constraint The constraint to create an ID for
+   * @returns A deterministic constraint ID
+   */
+  private createConstraintId(constraint: Constraint): string {
+    // Create a stable hash based on constraint content, not timestamp
+    const constraintContent = {
+      permId: constraint.permId,
+      body: constraint.body
+    };
+    
+    // Use a simple but deterministic hash of the constraint content
+    const contentString = superjson.stringify(constraintContent);
+    let hash = 0;
+    for (let i = 0; i < contentString.length; i++) {
+      const char = contentString.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    // Make it positive and convert to hex for readability
+    const positiveHash = Math.abs(hash).toString(16);
+    return `constraint_${constraint.permId.slice(2, 10)}_${positiveHash}`;
+  }
+
+  /**
+   * Create a deterministic beta node registry key
+   * @param leftNodeKey Key identifying the left input node
+   * @param rightNodeKey Key identifying the right input node  
+   * @returns A deterministic beta node key
+   */
+  private createBetaNodeKey(leftNodeKey: string, rightNodeKey: string): string {
+    return `beta_${leftNodeKey}_${rightNodeKey}`;
+  }
+
+  /**
+   * Beta node registry for reusing beta nodes with same inputs
+   */
+  private betaNodeRegistry = new Map<string, BetaNode>();
+
+  /**
+   * Get or create a beta node for the given inputs
+   * @param leftMemory The left input memory
+   * @param rightMemory The right input memory
+   * @param leftKey Identifying key for left input
+   * @param rightKey Identifying key for right input
+   * @returns The beta node for these inputs
+   */
+  private getOrCreateBetaNode(
+    leftMemory: BetaMemory,
+    rightMemory: AlphaMemory<Fact>,
+    leftKey: string,
+    rightKey: string
+  ): BetaNode {
+    const betaKey = this.createBetaNodeKey(leftKey, rightKey);
+    
+    let betaNode = this.betaNodeRegistry.get(betaKey);
+    if (!betaNode) {
+      // Create new beta node and register it
+      betaNode = new BetaNode(leftMemory, rightMemory);
+      this.betaNodeRegistry.set(betaKey, betaNode);
+      this.betaNodes.push(betaNode);
+      
+      console.log(`Created new beta node: ${betaKey}`);
+    } else {
+      console.log(`Reusing existing beta node: ${betaKey}`);
+    }
+    
+    return betaNode;
+  }
+
+  /**
    * Add a constraint to the Rete network
    * @param constraint The constraint to add
    * @returns The ID of the production node
    */
   addConstraint(constraint: Constraint): string {
+    // Create deterministic constraint ID
+    const constraintId = this.createConstraintId(constraint);
+    
+    // Check if we already have a production node for this exact constraint
+    if (this.productionNodes.has(constraintId)) {
+      console.log(`Reusing existing production node for constraint: ${constraintId}`);
+      return constraintId;
+    }
     // Extract all facts from the constraint (including those in comparisons)
     const allFacts = extractFactsFromConstraint(constraint);
     
@@ -1219,19 +1311,21 @@ export class ReteNetwork {
     
     // Get or create alpha nodes for each fact type
     const alphaNodes: AlphaNode<Fact>[] = [];
+    const alphaNodeKeys: string[] = [];
     
     // Process each fact to create appropriate alpha nodes
     for (const fact of facts) {
       let alphaNode: AlphaNode<Fact> | undefined;
+      let alphaKey: string;
       
       if (fact.type === 'StakeOf') {
         // StakeOf fact - index by account
-        const key = `Account:${fact.account}:StakeOf`;
-        alphaNode = this.alphaNodes.get(key)!;
+        alphaKey = `Account:${fact.account}:StakeOf`;
+        alphaNode = this.alphaNodes.get(alphaKey)!;
         
         if (!alphaNode) {
           alphaNode = new AccountAlphaNode(fact.account, 'StakeOf');
-          this.alphaNodes.set(key, alphaNode);
+          this.alphaNodes.set(alphaKey, alphaNode);
         }
       } else if (
         fact.type === 'PermissionExists' || 
@@ -1240,32 +1334,32 @@ export class ReteNetwork {
         // Permission fact - index by permId
         const permId = fact.permId;
         
-        const key = `Permission:${permId}:${fact.type}`;
-        alphaNode = this.alphaNodes.get(key)!;
+        alphaKey = `Permission:${permId}:${fact.type}`;
+        alphaNode = this.alphaNodes.get(alphaKey)!;
         
         if (!alphaNode) {
           alphaNode = new PermissionAlphaNode(permId, fact.type);
-          this.alphaNodes.set(key, alphaNode);
+          this.alphaNodes.set(alphaKey, alphaNode);
         }
       } else if (fact.type === 'InactiveUnlessRedelegated') {
         // InactiveUnlessRedelegated fact - index by account
         const account = fact.account;
         
-        const key = `InactiveUnlessRedelegated:${account}`;
-        alphaNode = this.alphaNodes.get(key)!;
+        alphaKey = `InactiveUnlessRedelegated:${account}`;
+        alphaNode = this.alphaNodes.get(alphaKey)!;
         
         if (!alphaNode) {
           alphaNode = new InactiveUnlessRedelegatedAlphaNode(account);
-          this.alphaNodes.set(key, alphaNode);
+          this.alphaNodes.set(alphaKey, alphaNode);
         }
       } else if (fact.type === 'Block') {
         // Block fact - one global node
-        const key = 'Block';
-        alphaNode = this.alphaNodes.get(key)!;
+        alphaKey = 'Block';
+        alphaNode = this.alphaNodes.get(alphaKey)!;
         
         if (!alphaNode) {
           alphaNode = new BlockAlphaNode();
-          this.alphaNodes.set(key, alphaNode);
+          this.alphaNodes.set(alphaKey, alphaNode);
         }
       } else {
         // Unknown fact type, skip
@@ -1274,10 +1368,11 @@ export class ReteNetwork {
       
       if (alphaNode) {
         alphaNodes.push(alphaNode);
+        alphaNodeKeys.push(alphaKey);
       }
     }
     
-    // If we have multiple facts, create a simple linear beta network
+    // If we have multiple facts, create a beta network with reuse
     let productionNode: ProductionNode;
     
     if (alphaNodes.length === 0) {
@@ -1293,11 +1388,19 @@ export class ReteNetwork {
       if (!firstAlphaNode) {
         throw new Error('No alpha nodes found for constraint');
       }
-      const singleFactBeta = new BetaNode(dummyMemory, firstAlphaNode.memory);
-      this.betaNodes.push(singleFactBeta);
       
-      // Add initial empty token to start
-      dummyMemory.addToken({ facts: new Map() });
+      // Use deterministic beta node creation
+      const singleFactBeta = this.getOrCreateBetaNode(
+        dummyMemory, 
+        firstAlphaNode.memory, 
+        'dummy', 
+        alphaNodeKeys[0]!
+      );
+      
+      // Add initial empty token to start (only if memory is empty)
+      if (dummyMemory.tokens.length === 0) {
+        dummyMemory.addToken({ facts: new Map() });
+      }
       
       // Connect the beta node to the production node
       singleFactBeta.memory.successors.add(productionNode);
@@ -1307,24 +1410,41 @@ export class ReteNetwork {
         singleFactBeta.rightActivation(fact);
       }
     } else {
-      // Multiple facts - build a beta network
+      // Multiple facts - build a beta network with reuse
       
       // Create the first beta node with a dummy left input
       const dummyMemory = new BetaMemory();
-      dummyMemory.addToken({ facts: new Map() });
+      if (dummyMemory.tokens.length === 0) {
+        dummyMemory.addToken({ facts: new Map() });
+      }
       
-      let previousNode = new BetaNode(dummyMemory, alphaNodes[0]!.memory);
-      this.betaNodes.push(previousNode);
+      let previousNode = this.getOrCreateBetaNode(
+        dummyMemory, 
+        alphaNodes[0]!.memory, 
+        'dummy', 
+        alphaNodeKeys[0]!
+      );
       
       // Process existing facts in the first alpha node
       for (const fact of alphaNodes[0]?.memory.facts || []) {
         previousNode.rightActivation(fact);
       }
       
-      // Chain the rest of the alpha nodes through beta nodes
+      // Chain the rest of the alpha nodes through beta nodes with reuse
       for (let i = 1; i < alphaNodes.length; i++) {
-        const currentNode = new BetaNode(previousNode.memory, alphaNodes[i]!.memory);
-        this.betaNodes.push(currentNode);
+        const previousKey = i === 1 ? 
+          this.createBetaNodeKey('dummy', alphaNodeKeys[0]!) : 
+          this.createBetaNodeKey(
+            this.createBetaNodeKey('dummy', alphaNodeKeys[0]!),
+            alphaNodeKeys[i - 1]!
+          );
+        
+        const currentNode = this.getOrCreateBetaNode(
+          previousNode.memory, 
+          alphaNodes[i]!.memory, 
+          previousKey, 
+          alphaNodeKeys[i]!
+        );
         
         // Process existing facts in this alpha node
         for (const fact of alphaNodes[i]?.memory.facts || []) {
@@ -1344,14 +1464,17 @@ export class ReteNetwork {
       }
     }
     
-    // Register the production node
-    const productionId = `prod_${constraint.permId}_${Date.now()}`;
-    this.productionNodes.set(productionId, productionNode);
+    // Register the production node with deterministic ID
+    this.productionNodes.set(constraintId, productionNode);
     
     // Initialize constraint state as undefined (never evaluated)
-    this.constraintStates.set(productionId, undefined);
+    this.constraintStates.set(constraintId, undefined);
     
-    return productionId;
+    // Update constraint states for all constraints (in case this constraint was added to existing network)
+    this.updateAllConstraintStates();
+    
+    console.log(`Added constraint with deterministic ID: ${constraintId}`);
+    return constraintId;
   }
   
   /**
@@ -1523,6 +1646,14 @@ export class ReteNetwork {
     }
     
     return activatedConstraints;
+  }
+
+  /**
+   * Get all facts currently in the working memory
+   * @returns Array of all facts
+   */
+  getFacts(): Fact[] {
+    return this.workingMemory.getAllFacts();
   }
 
   /**
@@ -1773,6 +1904,9 @@ export class ReteNetwork {
       };
     };
   } {
+    // Update all constraint states before returning network components
+    this.updateAllConstraintStates();
+    
     // Alpha nodes
     const alphaNodes = Array.from(this.alphaNodes.entries()).map(([key, node]) => ({
       key,

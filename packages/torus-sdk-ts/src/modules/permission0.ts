@@ -546,6 +546,125 @@ export function buildAvailableStreamsFor(
     streamsMap: streamsTotalMap,
   };
 }
+// ==== Delegation Stream Types ====
+
+export const DELEGATION_STREAM_SCHEMA = sb_struct({
+  streamId: STREAM_ID_SCHEMA,
+  grantee: sb_address,
+  percentage: sb_percent,
+  targets: sb_map(sb_address, sb_bigint),
+  accumulatedAmount: sb_bigint,
+});
+
+export type DelegationStream = z.infer<typeof DELEGATION_STREAM_SCHEMA>;
+
+/**
+ * Query delegation streams for a given account (i.e., streams that this account is delegating to others)
+ * 
+ * This function returns information about:
+ * - Which streams the account is delegating 
+ * - To whom they are delegating (grantees)
+ * - What percentage of each stream is being delegated
+ * - The targets for each delegated permission
+ * - How much has accumulated for each delegation
+ *
+ * @param api - The API instance
+ * @param account - The account ID to query delegation streams for
+ * @returns A map of PermissionId -> DelegationStream showing all active delegations
+ */
+export async function queryDelegationStreamsByAccount(
+  api: Api,
+  account: SS58Address,
+): Promise<
+  Result<
+    Map<PermissionId, DelegationStream>,
+    ZError<PermissionId[]> | ZError<PermissionContract> | ZError<DelegationStream> | Error
+  >
+> {
+  // Step 1: Get all permissions where this account is the grantor (i.e., delegating)
+  const [grantorError, permissionIds] = await queryPermissionsByGrantor(api, account);
+  const permissionIdsList = permissionIds ?? [];
+  if (grantorError !== undefined) return makeErr(grantorError);
+
+  const delegationStreams = new Map<PermissionId, DelegationStream>();
+
+  // Step 2: For each permission, check if it's an emission permission with stream allocation
+  for (const permissionId of permissionIdsList) {
+    const [permissionError, permission] = await queryPermission(api, permissionId);
+    if (permissionError !== undefined) continue; // Skip errored permissions
+    if (permission === null) continue; // Skip non-existent permissions
+
+    // Step 3: Check if this is an emission permission with streams allocation
+    const delegationInfo = match(permission.scope)({
+      Emission(emissionScope) {
+        return match(emissionScope.allocation)({
+          Streams(streamsMap) {
+            // This is a stream-based emission permission
+            // The streams map contains StreamId -> percentage mappings
+            const streamEntries = Array.from(streamsMap.entries());
+            
+            if (streamEntries.length > 0) {
+              // For now, we'll use the first stream (most common case)
+              // In practice, you might want to handle multiple streams differently
+              const [streamId, percentage] = streamEntries[0]!;
+              
+              return {
+                streamId,
+                grantee: permission.grantee,
+                percentage,
+                targets: emissionScope.targets,
+                // We'll try to get accumulated amount, defaulting to 0 if not found
+                accumulatedAmount: BigInt(0), // Will be updated below
+              };
+            }
+            return null;
+          },
+          FixedAmount() {
+            // Fixed amount permissions are not stream delegations
+            return null;
+          },
+        });
+      },
+      Curator() {
+        // Curator permissions are not stream delegations
+        return null;
+      },
+    });
+
+    if (delegationInfo === null) continue; // Skip non-stream permissions
+
+    // Step 4: Try to get the accumulated amount for this stream delegation
+    try {
+      const [accumulatedError, accumulatedStreams] = await queryAccumulatedStreamsForAccount(
+        api, 
+        permission.grantee
+      );
+      
+      if (accumulatedError === undefined && accumulatedStreams.has(delegationInfo.streamId)) {
+        const streamMap = accumulatedStreams.get(delegationInfo.streamId)!;
+        if (streamMap.has(permissionId)) {
+          delegationInfo.accumulatedAmount = streamMap.get(permissionId)!;
+        }
+      }
+    } catch {
+      // If we can't get accumulated amounts, just use 0
+      // This is not critical for the delegation query
+    }
+
+    // Step 5: Validate the delegation data with our schema
+    const validationResult = DELEGATION_STREAM_SCHEMA.safeParse(delegationInfo, {
+      path: ["delegation", permissionId],
+    });
+
+    if (validationResult.success === false) {
+      continue; // Skip invalid data rather than failing the entire query
+    }
+
+    delegationStreams.set(permissionId, validationResult.data);
+  }
+
+  return makeOk(delegationStreams);
+}
 
 // ==== Transaction Functions ====
 
