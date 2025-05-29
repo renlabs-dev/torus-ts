@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Suspense, useRef, useMemo, memo, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { TrackballControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import type {
   CustomGraphData,
   CustomGraphNode,
@@ -102,7 +102,7 @@ const PermissionGraph = memo(
         <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
         <Suspense fallback={null}>
           <ForceGraph graphData={data} onNodeClick={onNodeClick} />
-          <TrackballControls />
+          <OrbitControls dampingFactor={0.01} enablePan={false} />
         </Suspense>
       </Canvas>
     );
