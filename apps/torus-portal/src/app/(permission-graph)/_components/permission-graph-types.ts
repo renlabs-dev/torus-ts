@@ -36,6 +36,14 @@ export interface CustomGraphLink extends LinkObject {
   enforcement?: string;
   executionCount?: number;
   parentId?: string;
+  // Link Customization
+  linkDirectionalParticles?: number;
+  linkDirectionalParticleWidth?: number;
+  linkDirectionalArrowLength?: number;
+  linkDirectionalArrowRelPos?: number;
+  linkCurvature?: number;
+  linkColor?: string;
+  linkWidth: number;
 }
 
 export interface CustomGraphData {
