@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -8,6 +9,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import { checkSS58, SS58Address } from "./address";
 import {
+  extractStreamsFromPermission,
   generateRootStreamId,
   PermissionContract,
   PermissionId,
@@ -17,9 +19,10 @@ import {
   queryPermissionsByGrantee,
   queryPermissionsByGrantor,
   StreamId,
+  buildAvailableStreamsFor,
 } from "./modules/permission0";
 import { extractFromMap } from "@torus-network/torus-utils/collections";
-import { sb_address, sb_h256 } from "./types";
+import { sb_address, sb_bigint, sb_h256, sb_some } from "./types";
 
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
@@ -47,6 +50,12 @@ const api = await connectToChainRpc(NODE_URL);
 
 // // ====
 
+const [e0, permissions] = await queryPermissions(api);
+if (e0 !== undefined) {
+  console.error("queryPermissions failed:", e0);
+  process.exit(1);
+}
+
 const testAddr = checkSS58("5DhzV3cXD984cZKcUZq3shTQFnwtTq4QPAwVGbSHBAvdAKJn");
 
 const [permsByGrantorErr, permsByGrantor] = await queryPermissionsByGrantor(
@@ -58,8 +67,6 @@ assert(permsByGrantorErr === undefined);
 assert(permsByGrantor === null);
 
 console.log(permsByGrantor);
-
-process.exit(0);
 
 // ----
 
@@ -172,7 +179,7 @@ process.exit(0);
 
 async function calculateStreams(
   api: ApiPromise,
-  agentId: string,
+  agentId: SS58Address,
 ): Promise<{
   received: bigint;
   distributed: bigint;
@@ -210,6 +217,10 @@ async function calculateStreams(
     agentId,
   );
   if (e2 !== undefined) {
+    return null;
+  }
+  if (delegatedPermissionIds === null) {
+    console.log("No delegated permissions found");
     return null;
   }
 
@@ -269,7 +280,7 @@ async function calculateStreamsForAllAgents(api: ApiPromise): Promise<
   log.info("Calculating stream metrics for all agents...");
 
   // Step 1: Extract all unique agents (grantors and grantees) from permissions
-  const allAgents = new Set<string>();
+  const allAgents = new Set<SS58Address>();
   permissionsMap.forEach((permission) => {
     allAgents.add(permission.grantor);
     allAgents.add(permission.grantee);
@@ -309,8 +320,8 @@ async function calculateStreamsForAllAgents(api: ApiPromise): Promise<
   return results;
 }
 
-log.info("Calculating streams for all agents...");
-await calculateStreamsForAllAgents(api);
+// log.info("Calculating streams for all agents...");
+// await calculateStreamsForAllAgents(api);
 
 // -----------------------------------------------------------------------------
 
@@ -327,42 +338,13 @@ for (const [keys, valueRaw] of allAccumulatedStreams) {
   const agentId = sb_address.parse(agentIdRaw);
   const permId = sb_h256.parse(permIdRaw);
   const streamId = sb_h256.parse(streamIdRaw);
-  console.log("Stream:", agentId, permId, streamId);
+  const balance = sb_some(sb_bigint).parse(valueRaw);
+  console.log("Stream:", agentId, permId, streamId, balance);
   console.log();
 }
 
 console.log();
 console.log();
-
-const streamTestAccount = checkSS58(
-  "5Dw5xxnpgVAbBgXtxT1DEWKv3YJJxHGELZKHNCEWzRNKbXdL",
-);
-
-/**
- * Instantaneous stream amounts for an agent.
- */
-async function getAllAvailableStreamsFor(agentId: SS58Address) {
-  const agentRootStreamId = generateRootStreamId(agentId);
-
-  const [qErr, baseStreamsMap] = await queryAccumulatedStreamsForAccount(
-    api,
-    agentId,
-  );
-  if (qErr !== undefined) return makeErr(qErr);
-
-  const streamsTotalMap = new Map<StreamId, bigint>();
-  for (const [streamId, permToAmountMap] of baseStreamsMap) {
-    for (const [_permId, amount] of permToAmountMap) {
-      const cur = streamsTotalMap.get(streamId) ?? 0n;
-      streamsTotalMap.set(streamId, cur + amount);
-    }
-  }
-
-  return makeOk({
-    agentRootStreamId,
-    streamsMap: streamsTotalMap,
-  });
-}
 
 function handleStreamsMap(
   streamsMap: Map<StreamId, bigint>,
@@ -376,25 +358,40 @@ function handleStreamsMap(
   const selfStream = sortedStreams.filter(
     ([streamId]) => streamId === agentRootStreamId,
   );
+  const hasSelfStream = selfStream.length > 0;
 
-  // If not, add it to the beginning
-  if (selfStream.length === 0) {
-    sortedStreams.unshift([agentRootStreamId, 0n]);
-  }
+  // If not, add it to the end
+  const streams = !hasSelfStream
+    ? [...sortedStreams, [agentRootStreamId, 0n]]
+    : sortedStreams;
 
-  return sortedStreams.map(
+  return streams.map(
     ([streamId, amount]) =>
-      `<StreamComponent streamId={${streamId}} amount={${amount}} self={${streamId === agentRootStreamId}} />`,
+      `<StreamComponent streamId={${streamId}} amount={${amount}} isRoot={${streamId === agentRootStreamId}} />`,
   );
 }
 
-const [streamsErr, streams] =
-  await getAllAvailableStreamsFor(streamTestAccount);
-if (streamsErr !== undefined) console.log(streamsErr), process.exit(1);
+//
+
+const streamTestAccount = checkSS58(
+  // "5F9esPAgeRtfdapYJSPyvSMJkXvZNuRnxJBsCa6JDhjw68FX", // Honza fake multiple-streams receiving account
+  "5GzbJksCeLt7Xs1ju1kCLBsyKW3r7cP7ZCb2R5GdUx3UKayr",
+);
+
+const [accStErr, accumulatedStreams] = await queryAccumulatedStreamsForAccount(
+  api,
+  streamTestAccount,
+);
+if (accStErr !== undefined) console.log(accStErr), process.exit(1);
+
+const pickedStreams = buildAvailableStreamsFor(streamTestAccount, {
+  permissions,
+  accumulatedStreams,
+});
 
 const renderList = handleStreamsMap(
-  streams.streamsMap,
-  streams.agentRootStreamId,
+  pickedStreams.streamsMap,
+  pickedStreams.agentRootStreamId,
 );
 console.log(renderList);
 
