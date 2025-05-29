@@ -190,7 +190,10 @@ export default function PermissionGraphContainer() {
 
   return (
     <div className="fixed inset-0 w-screen h-screen">
-      <div className="absolute right-0 bottom-14 gap-2 items-center flex flex-row px-4 z-50">
+      <div
+        className="absolute right-0 md:bottom-14 bottom-2 gap-2 items-center flex flex-row md:px-4
+          px-2 z-50"
+      >
         <MousePointerClick className="w-4" />
         <span className="text-xs"> Click on any node for detailed view.</span>
       </div>
