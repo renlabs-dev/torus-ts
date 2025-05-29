@@ -7,20 +7,20 @@ import { StakingCalculator } from "./_components/staking-calculator/staking-calc
 import { TransferStake } from "./_components/transfer-stake/transfer-stake";
 import { Unstake } from "./_components/unstake/unstake";
 
-export const metadata = createSeoMetadata({
-  title: "Staking - Torus Wallet",
-  description: "Stake your tokens and earn rewards in the Torus ecosystem",
-  keywords: [
-    "crypto wallet",
-    "torus",
-    "staking",
-    "stake tokens",
-    "earn rewards",
-    "web3",
-  ],
-  baseUrlFn: () => env("BASE_URL"),
-  canonical: "/staking",
-});
+// export const metadata = createSeoMetadata({
+//   title: "Staking - Torus Wallet",
+//   description: "Stake your tokens and earn rewards in the Torus ecosystem",
+//   keywords: [
+//     "crypto wallet",
+//     "torus",
+//     "staking",
+//     "stake tokens",
+//     "earn rewards",
+//     "web3",
+//   ],
+//   baseUrlFn: () => env("BASE_URL"),
+//   canonical: "/staking",
+// });
 
 const tabs: TabItem[] = [
   { text: "Stake", value: "stake", component: <Stake /> },
