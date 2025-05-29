@@ -305,6 +305,7 @@ export function ConstraintNodeBoolean({
           id={`${id}-type`}
           value={data.expression.$}
           onValueChange={handleTypeChange}
+          isRenderingField={false}
           colorVariant={
             data.expression.$ === "Not"
               ? "red"
@@ -350,7 +351,7 @@ export function ConstraintNodeBoolean({
         </ConstraintSelect>
       </PermissionNodeContainer>
       {data.expression.$ === "CompExpr" && (
-        <div className="absolute flex top-[3.35em] w-full justify-center gap-2">
+        <div className="absolute flex top-[4.25em] w-full justify-center gap-2">
           <Select value={data.expression.op} onValueChange={handleCompOpChange}>
             <SelectTrigger
               id={`${id}-op`}

@@ -9,11 +9,10 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { Input } from "@torus-ts/ui/components/input";
-import { Key } from "lucide-react";
 
-type ColorVariant = 
+type ColorVariant =
   | "red"
-  | "blue" 
+  | "blue"
   | "green"
   | "purple"
   | "gray"
@@ -29,6 +28,7 @@ interface ConstraintSelectProps {
   colorVariant: ColorVariant;
   disabled?: boolean;
   className?: string;
+  isRenderingField?: boolean;
 }
 
 export function ConstraintSelect({
@@ -39,6 +39,7 @@ export function ConstraintSelect({
   colorVariant,
   disabled = false,
   className = "",
+  isRenderingField = false,
 }: ConstraintSelectProps) {
   const getColorClasses = (variant: ColorVariant) => {
     switch (variant) {
@@ -68,13 +69,12 @@ export function ConstraintSelect({
       <SelectTrigger
         id={id}
         className={`border transition-all pr-0 border-[#B1B1B7] duration-200 rounded-full
-          [&>svg]:invisible ${getColorClasses(colorVariant)} ${className}`}
+          ${getColorClasses(colorVariant)} ${className}
+          ${isRenderingField ? "rounded-t-xl rounded-b-none" : "rounded-full"}`}
       >
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
-        {children}
-      </SelectContent>
+      <SelectContent>{children}</SelectContent>
     </Select>
   );
 }
@@ -116,7 +116,10 @@ export function ConstraintSelectItem({
   };
 
   return (
-    <SelectItem value={value} className={`${getHoverClasses(colorVariant)} ${className}`}>
+    <SelectItem
+      value={value}
+      className={`${getHoverClasses(colorVariant)} ${className}`}
+    >
       {children}
     </SelectItem>
   );
@@ -134,19 +137,25 @@ interface ConstraintInputProps {
   disabled?: boolean;
 }
 
-export const ConstraintInput = forwardRef<HTMLInputElement, ConstraintInputProps>(
-  ({ 
-    id, 
-    type = "text", 
-    value, 
-    onChange, 
-    placeholder, 
-    className = "", 
-    hasError = false, 
-    errorMessage,
-    disabled = false,
-    ...props 
-  }, ref) => {
+export const ConstraintInput = forwardRef<
+  HTMLInputElement,
+  ConstraintInputProps
+>(
+  (
+    {
+      id,
+      type = "text",
+      value,
+      onChange,
+      placeholder,
+      className = "",
+      hasError = false,
+      errorMessage,
+      disabled = false,
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <div className="w-full">
         <Input
@@ -165,7 +174,7 @@ export const ConstraintInput = forwardRef<HTMLInputElement, ConstraintInputProps
         )}
       </div>
     );
-  }
+  },
 );
 
 ConstraintInput.displayName = "ConstraintInput";
@@ -177,7 +186,12 @@ interface ConstraintSelectIconItemProps {
   colorVariant: ColorVariant;
 }
 
-export function ConstraintSelectIconItem({ value, icon, label, colorVariant }: ConstraintSelectIconItemProps) {
+export function ConstraintSelectIconItem({
+  value,
+  icon,
+  label,
+  colorVariant,
+}: ConstraintSelectIconItemProps) {
   return (
     <ConstraintSelectItem value={value} colorVariant={colorVariant}>
       <div className="flex items-center gap-2">
@@ -185,53 +199,5 @@ export function ConstraintSelectIconItem({ value, icon, label, colorVariant }: C
         <span>{label}</span>
       </div>
     </ConstraintSelectItem>
-  );
-}
-
-interface ConstraintPermissionSelectProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  children?: React.ReactNode;
-  errorMessage?: string;
-}
-
-export function ConstraintPermissionSelect({
-  value,
-  onValueChange,
-  disabled = false,
-  placeholder = "Select Permission ID",
-  children,
-  errorMessage,
-}: ConstraintPermissionSelectProps) {
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-center font-semibold">
-        <Select
-          value={value}
-          onValueChange={onValueChange}
-          disabled={disabled}
-        >
-          <SelectTrigger className="w-fit pl-[0.05em] pr-1 gap-2 bg-zinc-300 text-accent rounded-full">
-            <div
-              className="flex items-center gap-2 bg-accent z-50 px-3 py-[0.45em] rounded-full
-                text-zinc-300 rounded-r-none"
-            >
-              <Key className="h-4 w-4" />
-              <span className="text-nowrap font-medium">Permission ID</span>
-            </div>
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {children}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      {errorMessage && (
-        <p className="text-red-500 text-xs mt-1">{errorMessage}</p>
-      )}
-    </div>
   );
 }
