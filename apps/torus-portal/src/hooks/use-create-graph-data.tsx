@@ -57,14 +57,14 @@ export function useCreateGraphData() {
           (p) => p.grantee_key === address,
         );
 
-        // Assign different colors based on role
-        let color = "#54a0ff"; // default blue
+        // Assign different colors based on role - Modern gradient palette
+        let color = "#64B5F6"; // default soft blue
         if (isGrantor && isGrantee) {
-          color = "#5f27cd"; // purple for both
+          color = "#9575CD"; // soft purple for nodes that are both
         } else if (isGrantor) {
-          color = "#54a0ff"; // blue for grantors
+          color = "#4FC3F7"; // light cyan for grantors
         } else if (isGrantee) {
-          color = "#1dd1a1"; // green for grantees
+          color = "#81C784"; // soft green for grantees
         }
 
         // Use computed weight if available, otherwise default to 10
@@ -95,7 +95,7 @@ export function useCreateGraphData() {
       linkDirectionalArrowLength: 3.5,
       linkDirectionalArrowRelPos: 1,
       linkCurvature: 0.5,
-      linkColor: "#FFFF00",
+      linkColor: "#B39DDB", // soft lavender for permission links
       linkWidth: 0.3,
     }));
 
@@ -131,7 +131,7 @@ export function useCreateGraphData() {
             linkDirectionalParticles: 3,
             linkDirectionalParticleWidth: 1,
             linkCurvature: 0,
-            linkColor: "#ffffff",
+            linkColor: "#90CAF9", // soft sky blue for allocation links
             linkWidth: 1,
           });
         }
@@ -143,7 +143,7 @@ export function useCreateGraphData() {
           agentKey === allocatorAddress
             ? 150
             : Math.pow(weight, 1.2) / scaleFactor;
-        const color = agentKey === allocatorAddress ? "#ffffff" : "#ffff00";
+        const color = agentKey === allocatorAddress ? "#ffffff" : "#FFB74D"; // white for allocator, soft orange for allocated agents
         nodes.push({
           id: agentKey,
           name: smallAddress(agentKey),
