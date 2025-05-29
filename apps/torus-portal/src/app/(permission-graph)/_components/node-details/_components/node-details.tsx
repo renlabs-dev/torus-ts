@@ -35,10 +35,10 @@ export const NodeDetails = memo(function NodeDetails({
     [selectedNode, graphData],
   );
 
-  const sortedPermissions = useMemo(
-    () => sortPermissions(nodePermissions, permissionDetails ?? []),
-    [nodePermissions, permissionDetails],
-  );
+  const sortedPermissions = useMemo(() => {
+    const original = sortPermissions(nodePermissions, permissionDetails ?? []);
+    return [...original, ...original, ...original, ...original, ...original];
+  }, [nodePermissions, permissionDetails]);
 
   if (!graphData) return null;
 

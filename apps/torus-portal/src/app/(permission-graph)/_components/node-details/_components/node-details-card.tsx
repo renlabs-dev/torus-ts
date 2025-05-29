@@ -55,140 +55,136 @@ export function NodeDetailsCard({
 
   return (
     <Card className="w-[27em] flex-1 flex flex-col z-50 border-none">
-      <h2 className="text-lg font-semibold flex-shrink-0">
+      <h2 className="text-lg font-semibold flex-shrink-0 mb-4">
         Applied Permissions
       </h2>
 
-      {sortedPermissions.length > 0 ? (
-        <ScrollArea className="flex-1 min-h-0 max-h-full pr-2">
-          <div className="flex max-h-96 overflow-auto">
-            <Accordion type="single" collapsible className="w-full">
-              {sortedPermissions.map((permission) => {
-                const details = permissionDetails?.find(
-                  (p) =>
-                    p.grantor_key === permission.source &&
-                    p.grantee_key === permission.target,
-                );
-                const isOutgoing = permission.type === "outgoing";
-                const connectedNode = graphData.nodes.find(
-                  (n) =>
-                    n.id ===
-                    (isOutgoing ? permission.target : permission.source),
-                );
-                const connectedAddress =
-                  connectedNode?.fullAddress ?? connectedNode?.id ?? "";
+      <ScrollArea className="h-full max-h-[calc(100vh-28rem)]">
+        {sortedPermissions.length > 0 ? (
+          <Accordion type="single" collapsible className="w-full">
+            {sortedPermissions.map((permission) => {
+              const details = permissionDetails?.find(
+                (p) =>
+                  p.grantor_key === permission.source &&
+                  p.grantee_key === permission.target,
+              );
+              const isOutgoing = permission.type === "outgoing";
+              const connectedNode = graphData.nodes.find(
+                (n) =>
+                  n.id === (isOutgoing ? permission.target : permission.source),
+              );
+              const connectedAddress =
+                connectedNode?.fullAddress ?? connectedNode?.id ?? "";
 
-                return (
-                  <AccordionItem
-                    key={`${permission.source}-${permission.target}`}
-                    value={`${permission.source}-${permission.target}`}
-                    className="mt-4 border bg-accent"
-                  >
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
-                      <div className="flex flex-col gap-1 w-full pr-2">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-white">
-                            {isOutgoing ? "← Granted " : "→ Received "}
-                            Permission {details?.permission_id ?? ""}
-                          </span>
-                        </div>
-                        <LinkButtons details={details} />
+              return (
+                <AccordionItem
+                  key={`${permission.source}-${permission.target}`}
+                  value={`${permission.source}-${permission.target}`}
+                  className="border bg-accent mb-2"
+                >
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
+                    <div className="flex flex-col gap-1 w-full pr-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-white">
+                          {isOutgoing ? "← Granted " : "→ Received "}
+                          Permission{" "}
+                          {smallAddress(`${details?.permission_id}`, 6)}
+                        </span>
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
-                      <div className="flex flex-col gap-1 space-between">
-                        <div className="flex items-center gap-2 text-gray-400 font-mono">
-                          <span className="text-xs text-gray-500">
-                            {isOutgoing ? "Granted To" : "Received From"}
-                          </span>
-                        </div>
-                        <div className="flex flex-row justify-between gap-2">
-                          <span>{smallAddress(connectedAddress, 10)}</span>
-                          <ActionButtons connectedAddress={connectedAddress} />
-                        </div>
+                      <LinkButtons details={details} />
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
+                    <div className="flex flex-col gap-1 space-between">
+                      <div className="flex items-center gap-2 text-gray-400 font-mono">
+                        <span className="text-xs text-gray-500">
+                          {isOutgoing ? "Granted To" : "Received From"}
+                        </span>
                       </div>
-                      {details && (
-                        <>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <span className="text-xs text-gray-500">
-                                Scope
-                              </span>
-                              <div className="text-sm text-gray-300">
-                                {formatScope(details.scope)}
-                              </div>
+                      <div className="flex flex-row justify-between gap-2">
+                        <span>{smallAddress(connectedAddress, 10)}</span>
+                        <ActionButtons connectedAddress={connectedAddress} />
+                      </div>
+                    </div>
+                    {details && (
+                      <>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-xs text-gray-500">Scope</span>
+                            <div className="text-sm text-gray-300">
+                              {formatScope(details.scope)}
                             </div>
-                            <div>
-                              <span className="text-xs text-gray-500">
-                                Expires in
-                              </span>
-                              <div className="text-sm text-gray-300">
-                                {formatDuration(
-                                  calculateTimeRemaining(
-                                    new Date(details.createdAt ?? Date.now()),
-                                    Number(details.duration),
-                                  ),
-                                )}
-                              </div>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Expires in
+                            </span>
+                            <div className="text-sm text-gray-300">
+                              {formatDuration(
+                                calculateTimeRemaining(
+                                  new Date(details.createdAt ?? Date.now()),
+                                  Number(details.duration),
+                                ),
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Executions
+                            </span>
+                            <div className="text-sm text-gray-300">
+                              {details.execution_count}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Permission ID
+                            </span>
+                            <div className="text-sm text-gray-300">
+                              {details.permission_id}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Enforcement
+                            </span>
+                            <div className="font-mono text-gray-300 break-all">
+                              {/*todo edit*/}
+                              {/* {details.enforcement} */}
+                              {/* {smallAddress(details.enforcement, 4)} */}
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3">
+                          {details.parent_id && (
                             <div>
                               <span className="text-xs text-gray-500">
-                                Executions
+                                Parent ID
                               </span>
                               <div className="text-sm text-gray-300">
-                                {details.execution_count}
+                                {details.parent_id}
                               </div>
                             </div>
-                            <div>
-                              <span className="text-xs text-gray-500">
-                                Permission ID
-                              </span>
-                              <div className="text-sm text-gray-300">
-                                {details.permission_id}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <span className="text-xs text-gray-500">
-                                Enforcement
-                              </span>
-                              <div className="font-mono text-gray-300 break-all">
-                                {/*todo edit*/}
-                                {/* {details.enforcement} */}
-                                {/* {smallAddress(details.enforcement, 4)} */}
-                              </div>
-                            </div>
-
-                            {details.parent_id && (
-                              <div>
-                                <span className="text-xs text-gray-500">
-                                  Parent ID
-                                </span>
-                                <div className="text-sm text-gray-300">
-                                  {details.parent_id}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          </div>
-        </ScrollArea>
-      ) : (
-        <span className="text-gray-500 text-center mt-8">
-          No permissions found for this agent
-        </span>
-      )}
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        ) : (
+          <span className="text-gray-500 text-center mt-8">
+            No permissions found for this agent
+          </span>
+        )}
+      </ScrollArea>
     </Card>
   );
 }
