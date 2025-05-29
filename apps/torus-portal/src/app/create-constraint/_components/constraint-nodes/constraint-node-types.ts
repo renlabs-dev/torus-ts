@@ -29,7 +29,7 @@ export interface PermissionIdNodeData extends Record<string, unknown> {
   label: string;
 }
 
-export type PermissionNodeData =
+export type ConstraintNodeData =
   | BooleanNodeData
   | NumberNodeData
   | BaseNodeData
@@ -40,13 +40,8 @@ export interface NodeCreationResult {
   edges: Edge[];
 }
 
-export function createChildNodeId(
-  parentId: string,
-  childType: string,
-  index?: number,
-): string {
-  const suffix = index !== undefined ? `-${index}` : "";
-  return `${parentId}-${childType}${suffix}`;
+export function createChildNodeId(parentId: string, childType: string): string {
+  return `${parentId}-${childType}`;
 }
 
 export function createEdgeId(sourceId: string, targetId: string): string {

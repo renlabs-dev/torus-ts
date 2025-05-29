@@ -1,6 +1,6 @@
 import type { Node, Edge } from "@xyflow/react";
 
-import type { PermissionNodeData } from "./constraint-node-types";
+import type { ConstraintNodeData } from "./constraint-node-types";
 import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 import type {
   BaseConstraintType,
@@ -10,14 +10,14 @@ import type {
 } from "~/utils/dsl";
 
 export function constraintToNodes(constraint: Constraint): {
-  nodes: Node<PermissionNodeData>[];
+  nodes: Node<ConstraintNodeData>[];
   edges: Edge[];
 } {
-  const nodes: Node<PermissionNodeData>[] = [];
+  const nodes: Node<ConstraintNodeData>[] = [];
   const edges: Edge[] = [];
 
   // Create permission ID node (always start with empty permission ID)
-  const permissionIdNode: Node<PermissionNodeData> = {
+  const permissionIdNode: Node<ConstraintNodeData> = {
     id: "permission-id",
     type: "permissionId",
     data: {
@@ -32,7 +32,7 @@ export function constraintToNodes(constraint: Constraint): {
 
   // Create root node
   const rootId = "root-boolean";
-  const rootNode: Node<PermissionNodeData> = {
+  const rootNode: Node<ConstraintNodeData> = {
     id: rootId,
     type: "permissionBoolean",
     data: {
@@ -62,13 +62,13 @@ export function constraintToNodes(constraint: Constraint): {
 function convertBoolExpr(
   expr: BoolExprType,
   parentId: string,
-  nodes: Node<PermissionNodeData>[],
+  nodes: Node<ConstraintNodeData>[],
   edges: Edge[],
 ): void {
   switch (expr.$) {
     case "Not": {
       const bodyId = createChildNodeId(parentId, "body");
-      const bodyNode: Node<PermissionNodeData> = {
+      const bodyNode: Node<ConstraintNodeData> = {
         id: bodyId,
         type: "permissionBoolean",
         data: {
@@ -96,7 +96,7 @@ function convertBoolExpr(
       const leftId = createChildNodeId(parentId, "left");
       const rightId = createChildNodeId(parentId, "right");
 
-      const leftNode: Node<PermissionNodeData> = {
+      const leftNode: Node<ConstraintNodeData> = {
         id: leftId,
         type: "permissionBoolean",
         data: {
@@ -107,7 +107,7 @@ function convertBoolExpr(
         position: { x: 0, y: 0 },
       };
 
-      const rightNode: Node<PermissionNodeData> = {
+      const rightNode: Node<ConstraintNodeData> = {
         id: rightId,
         type: "permissionBoolean",
         data: {
@@ -143,7 +143,7 @@ function convertBoolExpr(
       const leftId = createChildNodeId(parentId, "left");
       const rightId = createChildNodeId(parentId, "right");
 
-      const leftNode: Node<PermissionNodeData> = {
+      const leftNode: Node<ConstraintNodeData> = {
         id: leftId,
         type: "permissionNumber",
         data: {
@@ -154,7 +154,7 @@ function convertBoolExpr(
         position: { x: 0, y: 0 },
       };
 
-      const rightNode: Node<PermissionNodeData> = {
+      const rightNode: Node<ConstraintNodeData> = {
         id: rightId,
         type: "permissionNumber",
         data: {
@@ -188,7 +188,7 @@ function convertBoolExpr(
 
     case "Base": {
       const baseId = createChildNodeId(parentId, "base");
-      const baseNode: Node<PermissionNodeData> = {
+      const baseNode: Node<ConstraintNodeData> = {
         id: baseId,
         type: "permissionBase",
         data: {
@@ -216,7 +216,7 @@ function convertBoolExpr(
 function convertNumExpr(
   expr: NumExprType,
   parentId: string,
-  nodes: Node<PermissionNodeData>[],
+  nodes: Node<ConstraintNodeData>[],
   edges: Edge[],
 ): void {
   switch (expr.$) {
@@ -225,7 +225,7 @@ function convertNumExpr(
       const leftId = createChildNodeId(parentId, "left");
       const rightId = createChildNodeId(parentId, "right");
 
-      const leftNode: Node<PermissionNodeData> = {
+      const leftNode: Node<ConstraintNodeData> = {
         id: leftId,
         type: "permissionNumber",
         data: {
@@ -236,7 +236,7 @@ function convertNumExpr(
         position: { x: 0, y: 0 },
       };
 
-      const rightNode: Node<PermissionNodeData> = {
+      const rightNode: Node<ConstraintNodeData> = {
         id: rightId,
         type: "permissionNumber",
         data: {

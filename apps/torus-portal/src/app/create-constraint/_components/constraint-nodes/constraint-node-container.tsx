@@ -5,13 +5,13 @@ import { useCallback, useEffect } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 
 import type {
-  PermissionNodeData,
+  ConstraintNodeData,
   NodeCreationResult,
 } from "./constraint-node-types";
 
 interface PermissionNodeContainerProps {
   id: string;
-  data: PermissionNodeData;
+  data: ConstraintNodeData;
   children: ReactNode;
   hasSourceHandle?: boolean;
   hasTargetHandle?: boolean;
@@ -104,7 +104,7 @@ export function useChildNodeManagement(id: string) {
   }, [id, setNodes, setEdges, getEdges]);
 
   const updateNodeData = useCallback(
-    <T extends PermissionNodeData>(updater: (data: T) => T) => {
+    <T extends ConstraintNodeData>(updater: (data: T) => T) => {
       setNodes((nodes) =>
         nodes.map((node) => {
           if (node.id === id) {
