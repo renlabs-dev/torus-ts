@@ -60,6 +60,11 @@ export function useExtraAllocatorLinks({
             scope: "allocation",
             duration: `${weight.percComputedWeight.toFixed(2)}%`,
             enforcement: "weighted_allocation",
+            linkDirectionalParticles: 3,
+            linkDirectionalParticleWidth: 1,
+            linkCurvature: 0,
+            linkColor: "#ffffff",
+            linkWidth: 1,
           });
         }
       }
@@ -67,11 +72,13 @@ export function useExtraAllocatorLinks({
 
     // Add missing agent nodes
     agentsToAdd.forEach((agentKey) => {
+      const val = agentKey === allocatorAddress ? 250 : 10;
+      const color = agentKey === allocatorAddress ? "#ffffff" : "#ffff00";
       updatedNodes.push({
         id: agentKey,
         name: smallAddress(agentKey),
-        color: "#48dbfb", // Light blue for allocated agents
-        val: 8,
+        color: color, // Orange
+        val: val,
         fullAddress: agentKey,
         role: "Allocated Agent",
       });

@@ -27,8 +27,8 @@ const ForceGraph = memo(
       }
     });
 
-    const formattedData = useMemo(
-      () => ({
+    const formattedData = useMemo(() => {
+      return {
         nodes: props.graphData.nodes.map((node) => ({
           id: node.id,
           name: node.name,
@@ -38,10 +38,16 @@ const ForceGraph = memo(
         links: props.graphData.links.map((link) => ({
           source: link.source,
           target: link.target,
+          linkDirectionalParticles: link.linkDirectionalParticles,
+          linkDirectionalParticleWidth: link.linkDirectionalParticleWidth,
+          linkDirectionalArrowLength: link.linkDirectionalArrowLength,
+          linkDirectionalArrowRelPos: link.linkDirectionalArrowRelPos,
+          linkCurvature: link.linkCurvature,
+          linkColor: link.linkColor,
+          linkWidth: link.linkWidth,
         })),
-      }),
-      [props.graphData.nodes, props.graphData.links],
-    );
+      };
+    }, [props.graphData.nodes, props.graphData.links]);
 
     const handleNodeClick = useCallback(
       (node: NodeObject) => {
@@ -59,11 +65,28 @@ const ForceGraph = memo(
       <R3fForceGraph
         ref={fgRef}
         graphData={formattedData}
-        nodeColor={(node: NodeObject) => String(node.color)}
-        linkDirectionalArrowLength={3.5}
-        linkDirectionalArrowRelPos={1}
-        linkCurvature={0.4}
-        linkColor={() => "rgba(255, 255, 255, 1)"}
+        nodeColor={(node) => String(node.color)}
+        linkDirectionalParticleWidth={(link) => {
+          return Number(link.linkDirectionalParticleWidth);
+        }}
+        linkDirectionalParticles={(link) => {
+          return Number(link.linkDirectionalParticles);
+        }}
+        linkDirectionalArrowLength={(link) => {
+          return Number(link.linkDirectionalArrowLength);
+        }}
+        linkDirectionalArrowRelPos={(link) => {
+          return Number(link.linkDirectionalArrowRelPos);
+        }}
+        linkCurvature={(link) => {
+          return Number(link.linkCurvature);
+        }}
+        linkColor={(link) => {
+          return String(link.linkColor);
+        }}
+        linkWidth={(link) => {
+          return Number(link.linkWidth);
+        }}
         nodeRelSize={3}
         nodeResolution={24}
         onNodeClick={handleNodeClick}

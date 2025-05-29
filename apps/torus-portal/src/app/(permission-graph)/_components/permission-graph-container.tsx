@@ -16,7 +16,6 @@ import { api } from "~/trpc/react";
 import PermissionGraphSearch from "./permission-graph-search";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import { MousePointerClick } from "lucide-react";
-import { env } from "~/env";
 import { useExtraAllocatorLinks } from "../../../hooks/use-extra-allocation-links";
 
 export default function PermissionGraphContainer() {
@@ -29,8 +28,6 @@ export default function PermissionGraphContainer() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const agentCache = useRef(new AgentLRUCache(10));
-
-  const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
 
   const { data: rawPermissionDetails, isLoading } =
     api.permissionDetails.all.useQuery();
@@ -95,27 +92,14 @@ export default function PermissionGraphContainer() {
       parentId: permission.parent_id ?? "",
       permissionId: permission.permission_id,
       enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
+      linkDirectionalArrowLength: 3.5,
+      linkDirectionalArrowRelPos: 1,
+      linkCurvature: 0.5,
+      linkColor: "#FFFF00",
+      linkWidth: 0.3,
     }));
-
-    // Update allocator node color if found
-    const allocatorNode = nodes.find((node) => node.id === allocatorAddress);
-    if (allocatorNode) {
-      allocatorNode.color = "#ff6b6b";
-    } else {
-      // Create allocator node
-      // TODO : Get allocator data
-      nodes.push({
-        id: allocatorAddress,
-        name: "Torus Allocator",
-        color: "#ff6b6b",
-        val: 250,
-        fullAddress: allocatorAddress,
-        role: "Allocator",
-      });
-    }
-
     return { nodes, links };
-  }, [allocatorAddress, permissionDetails]);
+  }, [permissionDetails]);
 
   // Handle graph data updates from allocator links
   const handleGraphUpdate = useCallback(
