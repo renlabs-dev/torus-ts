@@ -14,6 +14,8 @@ import {
   ConnectionLineType,
   Background,
 } from "@xyflow/react";
+import { Button } from "@torus-ts/ui/components/button";
+import { RotateCcw } from "lucide-react";
 
 import PermissionNodeBoolean from "./constraint-nodes/constraint-node-boolean";
 import PermissionNodeNumber from "./constraint-nodes/constraint-node-number";
@@ -137,6 +139,14 @@ function ConstraintFlow() {
     [selectedPermissionId, setNodes, setEdges],
   );
 
+  const handleResetNodes = useCallback(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+    setSelectedExample("");
+    setSelectedPermissionId("");
+    setShowErrors(false);
+  }, [setNodes, setEdges]);
+
   const handleCreateConstraint = useCallback(() => {
     const result = validateConstraintForm(nodes, edges, "root-boolean");
 
@@ -227,6 +237,14 @@ function ConstraintFlow() {
     >
       <Background />
       <div className="absolute bottom-4 right-4 z-50 flex gap-3">
+        <Button
+          variant="outline"
+          className="shadow-lg"
+          onClick={handleResetNodes}
+        >
+          <RotateCcw className="h-4 w-4 mr-1" />
+          Reset Nodes
+        </Button>
         <ConstraintTutorialDialog />
         <ConstraintControlsSheet
           selectedExample={selectedExample}
