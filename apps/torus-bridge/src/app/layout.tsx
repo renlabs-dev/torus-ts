@@ -2,7 +2,6 @@ import "@torus-ts/ui/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { AppContextProvider } from "~/context/app-context-provider";
 import { EnvScript, env } from "~/env";
@@ -45,7 +44,6 @@ export default function RootLayout({
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <Seo />
       <AppContextProvider>{children}</AppContextProvider>
-      <GoogleAnalytics gaId={env("NEXT_PUBLIC_GA_ID")} />
     </Layout>
   );
 }
