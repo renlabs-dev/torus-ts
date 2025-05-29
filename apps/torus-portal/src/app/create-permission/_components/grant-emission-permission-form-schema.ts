@@ -45,7 +45,14 @@ export const allocationSchema = z.discriminatedUnion("type", [
             }, "Must be between 0 and 100"),
         }),
       )
-      .min(1, "At least one stream is required"),
+      .min(1, "At least one stream is required")
+      .refine((streams) => {
+        const total = streams.reduce((sum, stream) => {
+          const percentage = parseFloat(stream.percentage || "0");
+          return sum + (isNaN(percentage) ? 0 : percentage);
+        }, 0);
+        return total <= 100;
+      }, "Total percentage across all streams cannot exceed 100%"),
   }),
 ]);
 

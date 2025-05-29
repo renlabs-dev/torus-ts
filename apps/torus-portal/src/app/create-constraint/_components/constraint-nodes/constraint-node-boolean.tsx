@@ -7,8 +7,8 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@torus-ts/ui/components/select";
+import { ConstraintSelect, ConstraintSelectIconItem } from "./node-styled-components";
 import {
   Ban,
   Plus,
@@ -21,8 +21,8 @@ import {
   ChevronsDown,
   Workflow,
 } from "lucide-react";
-import { BoolExpr, CompOp } from "../../../../utils/dsl";
-import type { BoolExprType } from "../../../../utils/dsl";
+import { BoolExpr, CompOp } from "@torus-ts/dsl";
+import type { BoolExprType } from "@torus-ts/dsl";
 import type {
   BooleanNodeData,
   NodeCreationResult,
@@ -264,51 +264,53 @@ export function PermissionNodeBoolean({
         createChildNodes={createChildNodes}
         shouldAutoCreateChildren={shouldAutoCreate}
       >
-        <Select value={data.expression.$} onValueChange={handleTypeChange}>
-          <SelectTrigger
-            id={`${id}-type`}
-            className={` border transition-all pr-0 border-[#B1B1B7] duration-200 rounded-full
-              [&>svg]:invisible ${data.expression.$ === "Not" && "bg-red-50 text-red-700"} ${
-              data.expression.$ === "And" && "bg-blue-50 text-blue-700" } ${data.expression.$
-              === "Or" && "bg-green-50 text-green-700"} ${ data.expression.$ === "CompExpr" &&
-              "bg-purple-50 text-purple-700" } ${data.expression.$ === "Base" &&
-              "bg-gray-50 text-gray-700"} `}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Not" className="hover:bg-red-50">
-              <div className="flex items-center gap-2">
-                <Ban className="h-4 w-4 text-red-600" />
-                <span>NOT</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="And" className="hover:bg-blue-50">
-              <div className="flex items-center gap-2">
-                <Plus className="h-4 w-4 text-blue-600" />
-                <span>AND</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="Or" className="hover:bg-green-50">
-              <div className="flex items-center gap-2">
-                <GitBranch className="h-4 w-4 text-green-600" />
-                <span>OR</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="CompExpr" className="hover:bg-purple-50">
-              <div className="flex items-center gap-2">
-                <Scale className="h-4 w-4 text-purple-600" />
-                <span>Comparison</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="Base" className="hover:bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Workflow className="h-4 w-4 text-gray-600" />
-                <span>Base Constraint</span>
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <ConstraintSelect
+          id={`${id}-type`}
+          value={data.expression.$}
+          onValueChange={handleTypeChange}
+          colorVariant={
+            data.expression.$ === "Not"
+              ? "red"
+              : data.expression.$ === "And"
+                ? "blue"
+                : data.expression.$ === "Or"
+                  ? "green"
+                  : data.expression.$ === "CompExpr"
+                    ? "purple"
+                    : "gray" // data.expression.$ === "Base"
+          }
+        >
+          <ConstraintSelectIconItem
+            value="Not"
+            colorVariant="red"
+            icon={<Ban className="h-4 w-4 text-red-600" />}
+            label="NOT"
+          />
+          <ConstraintSelectIconItem
+            value="And"
+            colorVariant="blue"
+            icon={<Plus className="h-4 w-4 text-blue-600" />}
+            label="AND"
+          />
+          <ConstraintSelectIconItem
+            value="Or"
+            colorVariant="green"
+            icon={<GitBranch className="h-4 w-4 text-green-600" />}
+            label="OR"
+          />
+          <ConstraintSelectIconItem
+            value="CompExpr"
+            colorVariant="purple"
+            icon={<Scale className="h-4 w-4 text-purple-600" />}
+            label="Comparison"
+          />
+          <ConstraintSelectIconItem
+            value="Base"
+            colorVariant="gray"
+            icon={<Workflow className="h-4 w-4 text-gray-600" />}
+            label="Base Constraint"
+          />
+        </ConstraintSelect>
       </PermissionNodeContainer>
       {data.expression.$ === "CompExpr" && (
         <div className="absolute flex top-[3.35em] w-full justify-center gap-2">
