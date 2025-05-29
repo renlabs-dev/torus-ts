@@ -10,12 +10,10 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { getAllocatorBaseUrl } from "../../permission-graph-utils";
 import type { CachedAgentData } from "../../permission-graph-utils";
 import { Button } from "@torus-ts/ui/components/button";
-import { X } from "lucide-react";
 
 interface PermissionNodeAgentCardProps {
   nodeId: string;
   fullAddress?: string;
-  onClose?: () => void;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
@@ -24,7 +22,6 @@ export const PermissionNodeAgentCard = memo(
   function PermissionNodeAgentCard({
     nodeId,
     fullAddress,
-    onClose,
     getCachedAgentData,
     setCachedAgentData,
   }: PermissionNodeAgentCardProps) {
@@ -224,21 +221,14 @@ export const PermissionNodeAgentCard = memo(
 
     if (error) {
       return (
-        <Card className="w-[27em] flex-1 p-4 flex flex-col z-50">
-          <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
+        <Card className="flex-1 flex flex-col z-50 border-none">
           <p className="text-red-500">Error: {error.message}</p>
         </Card>
       );
     }
 
     return (
-      <Card className="w-[27em] flex-1 p-4 flex flex-col gap-4 z-50">
-        <div className="flex flex-row justify-between">
-          <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
-          <Button variant="outline" className="-mt-1" onClick={onClose}>
-            <X />
-          </Button>
-        </div>
+      <Card className="flex-1 flex flex-col gap-4 z-50 border-none w-full mt-4">
         {isLoading ? (
           <p>Loading agent details...</p>
         ) : (
@@ -262,7 +252,6 @@ export const PermissionNodeAgentCard = memo(
     return (
       prevProps.nodeId === nextProps.nodeId &&
       prevProps.fullAddress === nextProps.fullAddress &&
-      prevProps.onClose === nextProps.onClose &&
       prevProps.getCachedAgentData === nextProps.getCachedAgentData &&
       prevProps.setCachedAgentData === nextProps.setCachedAgentData
     );

@@ -1,15 +1,18 @@
-import { NodeDetailsCard } from "./_components/node-details-card";
+import { NodeDetails } from "./_components/node-details";
 import type {
   CustomGraphData,
   CustomGraphNode,
   PermissionDetail,
   CachedAgentData,
 } from "../permission-graph-utils";
-import { TooltipProvider } from "@torus-ts/ui/components/tooltip";
 import { memo } from "react";
 import { PermissionNodeAgentCard } from "./_components/agent-card";
-import { Sheet, SheetContent, SheetTitle } from "@torus-ts/ui/components/sheet";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@torus-ts/ui/components/sheet";
 import { PermissionGraphOverview } from "../permission-graph-overview";
 
 interface PermissionGraphDetailsProps {
@@ -41,34 +44,32 @@ export const PermissionGraphNodeDetails = memo(
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange} modal={false}>
         <SheetContent
-          className="z-[100] w-full max-w-md sm:max-w-lg md:w-[33%] lg:w-[33%] xl:w-[33%]
-            overflow-hidden [&>button]:hidden"
-          side="right"
+          // w-full max-w-md sm:max-w-lg md:w-[33%] lg:w-[33%] xl:w-[33%] overflow-hidden
+          className="z-[100] min-w-[30em]"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <div className="flex flex-col gap-2 w-full h-full sm:overflow-y-auto xl:overflow-hidden">
-            {/*Must to remove annoying error */}
-            <VisuallyHidden>
-              <SheetTitle>AgentDetails</SheetTitle>
-            </VisuallyHidden>
-            <PermissionNodeAgentCard
-              nodeId={selectedNode.id}
-              fullAddress={selectedNode.fullAddress}
-              onClose={() => onOpenChange(false)}
-              getCachedAgentData={getCachedAgentData}
-              setCachedAgentData={setCachedAgentData}
-            />
-            <TooltipProvider>
-              <NodeDetailsCard
-                selectedNode={selectedNode}
-                graphData={graphData}
-                permissionDetails={permissionDetails}
+          <SheetHeader>
+            <SheetTitle>Agent details</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-8 items-start justify-start w-full h-full">
+            <div className="w-full">
+              <PermissionNodeAgentCard
+                nodeId={selectedNode.id}
+                fullAddress={selectedNode.fullAddress}
                 getCachedAgentData={getCachedAgentData}
                 setCachedAgentData={setCachedAgentData}
-                onBackgroundClick={onBackgroundClick}
               />
-            </TooltipProvider>
+            </div>
+
+            <NodeDetails
+              selectedNode={selectedNode}
+              graphData={graphData}
+              permissionDetails={permissionDetails}
+              getCachedAgentData={getCachedAgentData}
+              setCachedAgentData={setCachedAgentData}
+              onBackgroundClick={onBackgroundClick}
+            />
           </div>
         </SheetContent>
       </Sheet>

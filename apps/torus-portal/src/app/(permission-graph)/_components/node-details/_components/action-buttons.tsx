@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 import { getAllocatorBaseUrl } from "../../permission-graph-utils";
@@ -254,25 +255,27 @@ export function ActionButtons({
   className = "flex items-center gap-2",
 }: ActionButtonProps): JSX.Element {
   return (
-    <div className={className}>
-      {showCopy && (
-        <AddressCopyButton
-          link={connectedAddress}
-          iconConfig={{ size: iconSize }}
-        />
-      )}
-      {showExplorer && (
-        <AddressLinkButton
-          link={connectedAddress}
-          iconConfig={{ size: iconSize }}
-        />
-      )}
-      {showGo && (
-        <NodeJumpButton
-          address={connectedAddress}
-          iconConfig={{ size: iconSize }}
-        />
-      )}
-    </div>
+    <TooltipProvider>
+      <div className={className}>
+        {showCopy && (
+          <AddressCopyButton
+            link={connectedAddress}
+            iconConfig={{ size: iconSize }}
+          />
+        )}
+        {showExplorer && (
+          <AddressLinkButton
+            link={connectedAddress}
+            iconConfig={{ size: iconSize }}
+          />
+        )}
+        {showGo && (
+          <NodeJumpButton
+            address={connectedAddress}
+            iconConfig={{ size: iconSize }}
+          />
+        )}
+      </div>
+    </TooltipProvider>
   );
 }
