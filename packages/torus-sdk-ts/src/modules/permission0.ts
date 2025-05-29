@@ -1,5 +1,3 @@
-// TODO: fix z.unknown() holes
-
 import type { ApiPromise } from "@polkadot/api";
 import type { H256 } from "@polkadot/types/interfaces";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
@@ -7,6 +5,7 @@ import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { Nullable } from "@torus-network/torus-utils/typing";
 import { match } from "rustie";
 import { z } from "zod";
 
@@ -29,6 +28,7 @@ import {
   sb_struct,
 } from "../types";
 import type { Api } from "./_common";
+import { SbQueryError } from "./_common";
 
 // ==== Base Types ====
 
@@ -84,7 +84,7 @@ export type EmissionScope = z.infer<typeof EMISSION_SCOPE_SCHEMA>;
 
 export const CURATOR_SCOPE_SCHEMA = sb_struct({
   flags:
-    // CURATOR_PERMISSIONS_SCHEMA, // FIXME
+    // CURATOR_PERMISSIONS_SCHEMA, // FIXME: z.unknown() hole on schema
     z.unknown(),
   cooldown: sb_option(sb_blocks),
 });
@@ -157,18 +157,18 @@ export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
 // ==== Query Functions ====
 
 /**
- * Query a specific permission by ID
+ * Query a specific permission by ID.
+ *
+ * @return `Ok<null>` if the permission does not exist.
  */
 export async function queryPermission(
   api: Api,
   permissionId: PermissionId,
-): Promise<
-  Result<PermissionContract | null, ZError<PermissionContract> | Error>
-> {
+): Promise<Result<Nullable<PermissionContract>, SbQueryError | ZError<unknown>>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissions(permissionId),
   );
-  if (queryError) return makeErr(queryError);
+  if (queryError) return makeErr(SbQueryError.from(queryError));
 
   const parsed = sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(query);
   if (parsed.success === false) return makeErr(parsed.error);
@@ -184,13 +184,13 @@ export async function queryPermissions(
 ): Promise<
   Result<
     Map<PermissionId, PermissionContract>,
-    ZError<H256> | ZError<PermissionContract> | Error
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
   >
 > {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissions.entries(),
   );
-  if (queryError) return makeErr(queryError);
+  if (queryError) return makeErr(SbQueryError.from(queryError));
 
   const permissionsMap = new Map<PermissionId, PermissionContract>();
 
@@ -223,18 +223,21 @@ export async function queryPermissions(
 }
 
 /**
- * Query permissions by grantor
+ * Query permissions by grantor.
+ *
+ * @return `Ok<null>` if no permissions found of the given grantor.
  */
-export async function queryPermissionsByGrantor(api: Api, grantor: string) {
-  console.log("====> queryPermissionsByGrantor:", grantor);
-
+export async function queryPermissionsByGrantor(
+  api: Api,
+  grantor: SS58Address,
+): Promise<Result<Nullable<`0x${string}`[]>, SbQueryError | ZError<unknown>>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantor(grantor),
   );
-  if (queryError) return makeErr(queryError);
+  if (queryError) return makeErr(SbQueryError.from(queryError));
 
   if (!query.isSome) {
-    return makeErr(new Error("No permissions found for grantor"));
+    return makeOk(null);
   }
   const inner = query.value;
 
@@ -245,19 +248,21 @@ export async function queryPermissionsByGrantor(api: Api, grantor: string) {
 }
 
 /**
- * Query permissions by grantee
+ * Query permissions by grantee.
+ *
+ * @return `Ok<null>` if no permissions found of the given grantee.
  */
 export async function queryPermissionsByGrantee(
   api: Api,
-  grantee: string,
-): Promise<Result<PermissionId[], ZError<H256[]> | Error>> {
+  grantee: SS58Address,
+): Promise<Result<Nullable<PermissionId[]>, SbQueryError | ZError<unknown>>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantee(grantee),
   );
-  if (queryError) return makeErr(queryError);
+  if (queryError) return makeErr(SbQueryError.from(queryError));
 
   if (!query.isSome) {
-    return makeErr(new Error("No permissions found for grantee"));
+    return makeOk(null);
   }
   const inner = query.value;
 
@@ -268,19 +273,26 @@ export async function queryPermissionsByGrantee(
 }
 
 /**
- * Query permissions between grantor and grantee
+ * Query permissions between grantor and grantee.
+ *
+ * @return `Ok<null>` if no permissions found for the given participants.
  */
 export async function queryPermissionsByParticipants(
   api: Api,
-  grantor: string,
-  grantee: string,
-): Promise<Result<PermissionId[], ZError<H256[]> | Error>> {
+  grantor: SS58Address,
+  grantee: SS58Address,
+): Promise<Result<Nullable<PermissionId[]>, SbQueryError | ZError<unknown>>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByParticipants([grantor, grantee]),
   );
-  if (queryError) return makeErr(queryError);
+  if (queryError) return makeErr(SbQueryError.from(queryError));
 
-  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query.toJSON());
+  if (!query.isSome) {
+    return makeOk(null);
+  }
+  const inner = query.value;
+
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(inner);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -293,17 +305,17 @@ export async function queryPermissionsByParticipants(
  */
 export async function queryAccumulatedStreamsForAccount(
   api: Api,
-  account: string,
+  account: SS58Address,
 ): Promise<
   Result<
     Map<StreamId, Map<PermissionId, bigint>>,
-    ZError<H256> | ZError<ToBigInt> | Error
+    SbQueryError | ZError<H256> | ZError<ToBigInt>
   >
 > {
   const [queryError, streamTuples] = await tryAsync(
     api.query.permission0.accumulatedStreamAmounts.entries(account),
   );
-  if (queryError) return makeErr(queryError);
+  if (queryError) return makeErr(SbQueryError.from(queryError));
 
   const result = new Map<StreamId, Map<PermissionId, bigint>>();
 
@@ -435,9 +447,12 @@ export async function isPermissionEnabled(
   api: Api,
   permissionId: PermissionId,
 ): Promise<Result<boolean, ZError<PermissionContract> | Error>> {
-  const [permissionError, permission] = await queryPermission(api, permissionId);
+  const [permissionError, permission] = await queryPermission(
+    api,
+    permissionId,
+  );
   if (permissionError !== undefined) return makeErr(permissionError);
-  
+
   if (permission === null) {
     return makeErr(new Error(`Permission ${permissionId} not found`));
   }
