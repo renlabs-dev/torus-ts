@@ -1,14 +1,16 @@
 "use client";
 
 import { useCallback } from "react";
-import type { NodeProps } from "@xyflow/react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from "@torus-ts/ui/components/select";
-import { ConstraintSelect, ConstraintSelectIconItem } from "./node-styled-components";
+import {
+  ConstraintSelect,
+  ConstraintSelectIconItem,
+} from "./node-styled-components";
 import {
   Ban,
   Plus,
@@ -38,7 +40,7 @@ interface PermissionNodeBooleanProps {
   data: BooleanNodeData;
 }
 
-export function PermissionNodeBoolean({
+export function ConstraintNodeBoolean({
   id,
   data,
 }: PermissionNodeBooleanProps) {
@@ -195,19 +197,39 @@ export function PermissionNodeBoolean({
       switch (type) {
         case "Not":
           newExpression = BoolExpr.not(
-            BoolExpr.base({ $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) }),
+            BoolExpr.base({
+              $: "InactiveUnlessRedelegated",
+              account: "",
+              percentage: BigInt(0),
+            }),
           );
           break;
         case "And":
           newExpression = BoolExpr.and(
-            BoolExpr.base({ $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) }),
-            BoolExpr.base({ $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) }),
+            BoolExpr.base({
+              $: "InactiveUnlessRedelegated",
+              account: "",
+              percentage: BigInt(0),
+            }),
+            BoolExpr.base({
+              $: "InactiveUnlessRedelegated",
+              account: "",
+              percentage: BigInt(0),
+            }),
           );
           break;
         case "Or":
           newExpression = BoolExpr.or(
-            BoolExpr.base({ $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) }),
-            BoolExpr.base({ $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) }),
+            BoolExpr.base({
+              $: "InactiveUnlessRedelegated",
+              account: "",
+              percentage: BigInt(0),
+            }),
+            BoolExpr.base({
+              $: "InactiveUnlessRedelegated",
+              account: "",
+              percentage: BigInt(0),
+            }),
           );
           break;
         case "CompExpr":
@@ -218,7 +240,11 @@ export function PermissionNodeBoolean({
           );
           break;
         case "Base":
-          newExpression = BoolExpr.base({ $: "InactiveUnlessRedelegated", account: "", percentage: BigInt(0) });
+          newExpression = BoolExpr.base({
+            $: "InactiveUnlessRedelegated",
+            account: "",
+            percentage: BigInt(0),
+          });
           break;
         default:
           return;
@@ -363,12 +389,5 @@ export function PermissionNodeBoolean({
         </div>
       )}
     </>
-  );
-}
-
-// Wrapper to satisfy ReactFlow's NodeProps type requirement
-export default function PermissionNodeBooleanWrapper(props: NodeProps) {
-  return (
-    <PermissionNodeBoolean id={props.id} data={props.data as BooleanNodeData} />
   );
 }

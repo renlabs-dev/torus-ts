@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
-import type { NodeProps } from "@xyflow/react";
 import { SelectItem } from "@torus-ts/ui/components/select";
 import { ConstraintPermissionSelect } from "./node-styled-components";
 import type { PermissionIdNodeData } from "./constraint-node-types";
@@ -19,7 +18,7 @@ interface PermissionNodePermissionIdProps {
   data: PermissionIdNodeData;
 }
 
-export function PermissionNodePermissionId({
+export function ConstraintNodePermissionId({
   id,
   data,
 }: PermissionNodePermissionIdProps) {
@@ -104,15 +103,5 @@ export function PermissionNodePermissionId({
         </ConstraintPermissionSelect>
       </div>
     </PermissionNodeContainer>
-  );
-}
-
-// Wrapper to satisfy ReactFlow's NodeProps type requirement
-export default function PermissionNodePermissionIdWrapper(props: NodeProps) {
-  return (
-    <PermissionNodePermissionId
-      id={props.id}
-      data={props.data as PermissionIdNodeData}
-    />
   );
 }
