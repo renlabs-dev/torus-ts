@@ -32,7 +32,7 @@ export interface SeoMetadataConfig {
 
   // URL configuration
   canonical: string;
-  baseUrl: string;
+  baseUrlFn: () => string;
 
   // Custom image (optional)
   ogImagePath?: string;
@@ -47,9 +47,10 @@ export function createSeoMetadata({
   twitterTitle,
   twitterDescription,
   canonical,
-  baseUrl,
+  baseUrlFn,
   ogImagePath = "/og.png",
 }: SeoMetadataConfig): Metadata {
+  const baseUrl = baseUrlFn();
   const ogImageUrl = `${baseUrl}${ogImagePath}`;
 
   return {
