@@ -38,10 +38,7 @@ export const constraintExamples: ConstraintExample[] = [
               NumExpr.literal(5000),
             ),
             BoolExpr.base(
-              BaseConstraint.rateLimit(
-                NumExpr.literal(10),
-                NumExpr.literal(1000),
-              ),
+              BaseConstraint.inactiveUnlessRedelegated("", 50),
             ),
           ),
           BoolExpr.and(
@@ -51,10 +48,7 @@ export const constraintExamples: ConstraintExample[] = [
               NumExpr.literal(2500),
             ),
             BoolExpr.base(
-              BaseConstraint.rateLimit(
-                NumExpr.literal(5),
-                NumExpr.literal(1000),
-              ),
+              BaseConstraint.inactiveUnlessRedelegated("", 25),
             ),
           ),
         ),
@@ -111,7 +105,7 @@ export const constraintExamples: ConstraintExample[] = [
     constraint: {
       permId: "3",
       body: BoolExpr.base(
-        BaseConstraint.rateLimit(NumExpr.literal(10), NumExpr.literal(1000)),
+        BaseConstraint.permissionExists("0x123"),
       ),
     },
   },
@@ -122,7 +116,7 @@ export const constraintExamples: ConstraintExample[] = [
     constraint: {
       permId: "4",
       body: BoolExpr.base(
-        BaseConstraint.maxDelegationDepth(NumExpr.literal(3)),
+        BaseConstraint.permissionEnabled("0x456"),
       ),
     },
   },

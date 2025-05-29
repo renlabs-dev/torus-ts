@@ -39,24 +39,10 @@ export const numExprValidationSchema: z.ZodType<NumExprType> =
       left: z.lazy(() => numExprValidationSchema),
       right: z.lazy(() => numExprValidationSchema),
     }),
-    z.object({
-      $: z.literal("WeightSet"),
-      from: SS58_SCHEMA,
-      to: SS58_SCHEMA,
-    }),
-    z.object({
-      $: z.literal("WeightPowerFrom"),
-      from: SS58_SCHEMA,
-      to: SS58_SCHEMA,
-    }),
   ]);
 
 export const baseConstraintValidationSchema: z.ZodType<BaseConstraintType> =
   z.discriminatedUnion("$", [
-    z.object({
-      $: z.literal("MaxDelegationDepth"),
-      depth: numExprValidationSchema,
-    }),
     z.object({
       $: z.literal("PermissionExists"),
       pid: H256_HEX,
@@ -66,12 +52,9 @@ export const baseConstraintValidationSchema: z.ZodType<BaseConstraintType> =
       pid: H256_HEX,
     }),
     z.object({
-      $: z.literal("RateLimit"),
-      maxOperations: numExprValidationSchema,
-      period: numExprValidationSchema,
-    }),
-    z.object({
       $: z.literal("InactiveUnlessRedelegated"),
+      account: SS58_SCHEMA,
+      percentage: z.bigint(),
     }),
   ]);
 
