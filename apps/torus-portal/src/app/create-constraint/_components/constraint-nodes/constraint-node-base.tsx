@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { NodeProps } from "@xyflow/react";
 import {
   ConstraintSelect,
   ConstraintInput,
@@ -22,7 +21,7 @@ interface PermissionNodeBaseProps {
   data: BaseNodeData;
 }
 
-export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
+export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
   const { removeExistingChildNodes, updateNodeData } =
     useChildNodeManagement(id);
 
@@ -206,9 +205,4 @@ export function PermissionNodeBase({ id, data }: PermissionNodeBaseProps) {
       )}
     </PermissionNodeContainer>
   );
-}
-
-// Wrapper to satisfy ReactFlow's NodeProps type requirement
-export default function PermissionNodeBaseWrapper(props: NodeProps) {
-  return <PermissionNodeBase id={props.id} data={props.data as BaseNodeData} />;
 }

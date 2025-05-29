@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { NodeProps } from "@xyflow/react";
 
 import {
   ConstraintSelect,
@@ -28,7 +27,7 @@ interface PermissionNodeNumberProps {
   data: NumberNodeData;
 }
 
-export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
+export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
   const { removeExistingChildNodes, updateNodeData, addChildNodes } =
     useChildNodeManagement(id);
 
@@ -275,12 +274,5 @@ export function PermissionNodeNumber({ id, data }: PermissionNodeNumberProps) {
         />
       )}
     </PermissionNodeContainer>
-  );
-}
-
-// Wrapper to satisfy ReactFlow's NodeProps type requirement
-export default function PermissionNodeNumberWrapper(props: NodeProps) {
-  return (
-    <PermissionNodeNumber id={props.id} data={props.data as NumberNodeData} />
   );
 }

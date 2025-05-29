@@ -17,10 +17,9 @@ import {
 import { Button } from "@torus-ts/ui/components/button";
 import { RotateCcw } from "lucide-react";
 
-import PermissionNodeBoolean from "./constraint-nodes/constraint-node-boolean";
-import PermissionNodeNumber from "./constraint-nodes/constraint-node-number";
-import PermissionNodeBase from "./constraint-nodes/constraint-node-base";
-import PermissionNodePermissionId from "./constraint-nodes/constraint-node-permission-id";
+import { ConstraintNodeBoolean } from "./constraint-nodes/constraint-node-boolean";
+import { ConstraintNodeNumber } from "./constraint-nodes/constraint-node-number";
+import { ConstraintNodeBase } from "./constraint-nodes/constraint-node-base";
 import { validateConstraintForm } from "./constraint-utils";
 import type { ValidationResult } from "./constraint-utils";
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
@@ -38,6 +37,7 @@ import {
 } from "./constraint-data/constraint-data-initial-elements";
 
 import "@xyflow/react/dist/style.css";
+import { ConstraintNodePermissionId } from "./constraint-nodes/constraint-node-permission-id";
 
 const proOptions = {
   hideAttribution: true,
@@ -50,10 +50,10 @@ const defaultEdgeOptions = {
 };
 
 const nodeTypes = {
-  permissionBoolean: PermissionNodeBoolean,
-  permissionNumber: PermissionNodeNumber,
-  permissionBase: PermissionNodeBase,
-  permissionId: PermissionNodePermissionId,
+  permissionBoolean: ConstraintNodeBoolean,
+  permissionNumber: ConstraintNodeNumber,
+  permissionBase: ConstraintNodeBase,
+  permissionId: ConstraintNodePermissionId,
 };
 
 /**
