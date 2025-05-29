@@ -370,7 +370,7 @@ export function GrantEmissionPermissionFormComponent({
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder="50"
+                                  placeholder="0"
                                   type="number"
                                 />
                               </FormControl>
@@ -433,7 +433,7 @@ export function GrantEmissionPermissionFormComponent({
                       <FormItem className="w-32">
                         <FormLabel>Weight</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="100" type="number" />
+                          <Input {...field} placeholder="0" type="number" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
