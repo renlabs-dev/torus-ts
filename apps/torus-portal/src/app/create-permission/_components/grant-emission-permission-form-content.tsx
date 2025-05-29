@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import { checkSS58 } from "@torus-network/sdk";
 import {
@@ -103,7 +103,7 @@ export function GrantEmissionPermissionFormComponent({
   const durationType = form.watch("duration.type");
   const revocationType = form.watch("revocation.type");
 
-  const handleAutoPopulateStreams = () => {
+  const handleAutoPopulateStreams = useCallback(() => {
     if (!availableStreams.data) return;
 
     // Clear existing streams
@@ -114,13 +114,12 @@ export function GrantEmissionPermissionFormComponent({
 
     // Add available streams with reasonable default percentages
     availableStreams.data.forEach((stream) => {
-      const defaultPercentage = stream.isRootStream ? "100" : "0";
       appendStream({
         streamId: stream.streamId,
-        percentage: defaultPercentage,
+        percentage: "",
       });
     });
-  };
+  }, [availableStreams.data, streamFields.length, removeStream, appendStream]);
 
   // Automatically populate streams when allocation type changes to "Streams" and data is available
   useEffect(() => {
@@ -132,8 +131,12 @@ export function GrantEmissionPermissionFormComponent({
     ) {
       handleAutoPopulateStreams();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allocationType, availableStreams.data]);
+  }, [
+    allocationType,
+    availableStreams.data,
+    streamFields.length,
+    handleAutoPopulateStreams,
+  ]);
 
   // Automatically populate streams when user account changes (and we're in Streams mode)
   useEffect(() => {
@@ -145,8 +148,12 @@ export function GrantEmissionPermissionFormComponent({
     ) {
       handleAutoPopulateStreams();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAccount?.address]);
+  }, [
+    selectedAccount?.address,
+    availableStreams.data,
+    allocationType,
+    handleAutoPopulateStreams,
+  ]);
 
   const onSubmit = (data: GrantEmissionPermissionFormData) => {
     mutation.mutate(data);
