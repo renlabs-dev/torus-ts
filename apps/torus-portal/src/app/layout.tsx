@@ -34,18 +34,19 @@ export default function RootLayout({
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
       <ReactQueryProvider>
-        <TRPCReactProvider>
-          <TorusProvider
-            wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-            torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-          >
+        <TorusProvider
+          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+        >
+          <TRPCReactProvider>
             <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} />
             {children}
             <Toaster />
             <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-          </TorusProvider>
-          <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-        </TRPCReactProvider>
+
+            <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+          </TRPCReactProvider>
+        </TorusProvider>
       </ReactQueryProvider>
     </Layout>
   );

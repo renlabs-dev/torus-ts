@@ -31,7 +31,7 @@ import { eq } from "drizzle-orm";
 import type { DB } from "@torus-ts/db/client";
 import type { PermissionContract, SS58Address } from "@torus-network/sdk";
 import { queryPermission } from "@torus-network/sdk";
-import { publicProcedure } from "../../trpc";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 // Global Rete network instance (in production, this might be managed differently)
 let globalReteNetwork: ReturnType<typeof createChainAwareReteNetwork> | null =
@@ -320,7 +320,7 @@ export const constraintRouter = {
    * Add a constraint for testing (no authentication required)
    * This endpoint is for development and testing purposes only
    */
-  addTest: publicProcedure
+  addTest: authenticatedProcedure
     .input(constraintInputSchema)
     .mutation(async ({ ctx, input }) => {
       let constraint: Constraint;
