@@ -9,6 +9,21 @@ import type { SafeParseReturnType, z } from "zod";
 export type Nullish = null | undefined;
 
 /**
+ * A utility type that makes a type nullable by allowing it to be either the
+ * original type or null.
+ *
+ * @example
+ * ```ts
+ * type User = { name: string; age: number };
+ * type NullableUser = Nullable<User>; // User | null
+ *
+ * const user: NullableUser = null; // Valid
+ * const user2: NullableUser = { name: "John", age: 30 }; // Valid
+ * ```
+ */
+export type Nullable<T> = T | null;
+
+/**
  * Extracts the type of elements from an array type.
  * If the input type is not an array, returns `never`.
  *
