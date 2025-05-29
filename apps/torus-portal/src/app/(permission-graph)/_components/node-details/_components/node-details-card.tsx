@@ -21,7 +21,6 @@ import { LinkButtons } from "./link-buttons";
 import { useMemo } from "react";
 
 interface NodeDetailsCardProps {
-  sortedPermissions: PermissionWithType[];
   nodePermissions: PermissionWithType[];
   selectedNode?: CustomGraphNode;
   graphData: CustomGraphData | null;
@@ -32,8 +31,8 @@ interface NodeDetailsCardProps {
 }
 
 export function NodeDetailsCard({
-  sortedPermissions,
   graphData,
+  nodePermissions,
   permissionDetails,
 }: NodeDetailsCardProps) {
   const calculateTimeRemaining = useMemo(
@@ -60,9 +59,9 @@ export function NodeDetailsCard({
       </h2>
 
       <ScrollArea className="h-full md:max-h-[calc(100vh-28rem)] max-h-[calc(100vh-35rem)]">
-        {sortedPermissions.length > 0 ? (
+        {nodePermissions.length > 0 ? (
           <Accordion type="single" collapsible className="w-fit md:w-full">
-            {sortedPermissions.map((permission) => {
+            {nodePermissions.map((permission) => {
               const details = permissionDetails?.find(
                 (p) =>
                   p.grantor_key === permission.source &&
