@@ -14,6 +14,7 @@ import {
   PermissionContract,
   PermissionId,
   queryAccumulatedStreamsForAccount,
+  queryDelegationStreamsByAccount,
   queryPermission,
   queryPermissions,
   queryPermissionsByGrantee,
@@ -346,6 +347,33 @@ for (const [keys, valueRaw] of allAccumulatedStreams) {
 console.log();
 console.log();
 
+
+/**
+ * Instantaneous stream amounts for an agent.
+ */
+async function getAllAvailableStreamsFor(agentId: SS58Address) {
+  const agentRootStreamId = generateRootStreamId(agentId);
+
+  const [qErr, baseStreamsMap] = await queryAccumulatedStreamsForAccount(
+    api,
+    agentId,
+  );
+  if (qErr !== undefined) return makeErr(qErr);
+
+  const streamsTotalMap = new Map<StreamId, bigint>();
+  for (const [streamId, permToAmountMap] of baseStreamsMap) {
+    for (const [_permId, amount] of permToAmountMap) {
+      const cur = streamsTotalMap.get(streamId) ?? 0n;
+      streamsTotalMap.set(streamId, cur + amount);
+    }
+  }
+
+  return makeOk({
+    agentRootStreamId,
+    streamsMap: streamsTotalMap,
+  });
+}
+
 function handleStreamsMap(
   streamsMap: Map<StreamId, bigint>,
   agentRootStreamId: StreamId,
@@ -394,6 +422,55 @@ const renderList = handleStreamsMap(
   pickedStreams.agentRootStreamId,
 );
 console.log(renderList);
+
+/**
+ * Example function demonstrating how to query delegation streams for an account
+ */
+async function showDelegationStreamsExample(
+  api: ApiPromise,
+  accountId: SS58Address,
+): Promise<void> {
+  console.log("\n=== DELEGATION STREAMS EXAMPLE ===");
+  console.log(`Querying delegation streams for account: ${accountId}`);
+
+  const [delegationError, delegationStreams] = await queryDelegationStreamsByAccount(
+    api,
+    accountId,
+  );
+
+  if (delegationError !== undefined) {
+    console.log("Error querying delegation streams:", delegationError);
+    return;
+  }
+
+  console.log(`Found ${delegationStreams.size} delegation stream(s):`);
+  
+  if (delegationStreams.size === 0) {
+    console.log("  No delegation streams found for this account.");
+  } else {
+    for (const [permissionId, delegation] of delegationStreams) {
+      console.log(`\n  Permission ID: ${permissionId}`);
+      console.log(`    Delegating to: ${delegation.grantee}`);
+      console.log(`    Stream ID: ${delegation.streamId}`);
+      console.log(`    Percentage: ${delegation.percentage}%`);
+      console.log(`    Accumulated Amount: ${delegation.accumulatedAmount.toString()}`);
+      console.log(`    Target Count: ${delegation.targets.size}`);
+      
+      if (delegation.targets.size > 0) {
+        console.log("    Targets:");
+        for (const [targetAddress, targetAmount] of delegation.targets) {
+          console.log(`      ${targetAddress}: ${targetAmount.toString()}`);
+        }
+      }
+    }
+  }
+
+  console.log("=== END DELEGATION STREAMS EXAMPLE ===\n");
+}
+
+// ---- Run delegation streams example ----
+
+await showDelegationStreamsExample(api, streamTestAccount);
 
 // ----
 

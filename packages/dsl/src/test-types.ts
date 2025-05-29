@@ -10,7 +10,7 @@ const dummyFetcher = new DummyChainFetcher();
 async function testTypes() {
   const stake = await fetcher.fetchStakeOf("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
   const block = await fetcher.fetchCurrentBlock();
-  const inactive = await fetcher.fetchInactiveUnlessRedelegated("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", BigInt(75));
+  const inactive = await fetcher.fetchInactiveUnlessRedelegated("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", BigInt(75), "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
   
   console.log(stake, block, inactive);
 }

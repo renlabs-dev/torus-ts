@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { setup, queryFreeBalance, queryKeyStakingTo, queryStakeOut, checkSS58, queryPermission, isPermissionEnabled } from '@torus-network/sdk';
+import { setup, queryFreeBalance, queryKeyStakingTo, queryStakeOut, checkSS58, queryPermission, isPermissionEnabled, queryDelegationStreamsByAccount } from '@torus-network/sdk';
 import {
   AccountId,
   PermId,
@@ -32,7 +32,7 @@ export interface ChainFetcher {
   // Permission-related facts
   fetchPermissionExists(permId: PermId): Promise<PermissionExistsFact>;
   fetchPermissionEnabled(permId: PermId): Promise<PermissionEnabledFact>;
-  fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt): Promise<InactiveUnlessRedelegatedFact>;
+  fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt, permissionId: PermId): Promise<InactiveUnlessRedelegatedFact>;
   
   // Block-related facts
   fetchCurrentBlock(): Promise<BlockFact>;
@@ -186,19 +186,74 @@ export class TorusChainFetcher implements ChainFetcher {
 
   /**
    * Fetch whether an account is inactive unless redelegated
+   * Checks if the grantee of the specified permission has delegation streams to the target account with at least the required percentage
    */
-  async fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt): Promise<InactiveUnlessRedelegatedFact> {
+  async fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt, permissionId: PermId): Promise<InactiveUnlessRedelegatedFact> {
     const api = await this.ensureConnected();
     
     try {
-      // TODO: Implement redelegation status check
-      // This depends on how redelegation status is tracked in the Torus runtime
+      // Validate addresses
+      const validTargetAccount = checkSS58(account);
+      const hexPermId = permissionId.startsWith('0x') ? permissionId as `0x${string}` : `0x${permissionId}` as `0x${string}`;
       
+      // Get the specific permission to find its grantee
+      const [permissionError, permission] = await queryPermission(api, hexPermId);
+      
+      if (permissionError !== undefined) {
+        console.warn(`Error querying permission ${permissionId}:`, permissionError);
+        return {
+          type: 'InactiveUnlessRedelegated',
+          account,
+          percentage,
+          isRedelegated: false
+        };
+      }
+      
+      if (permission === null) {
+        console.warn(`Permission ${permissionId} not found`);
+        return {
+          type: 'InactiveUnlessRedelegated',
+          account,
+          percentage,
+          isRedelegated: false
+        };
+      }
+      
+      // Get delegation streams for the grantee of this permission
+      const [delegationError, delegationStreams] = await queryDelegationStreamsByAccount(api, permission.grantee);
+      
+      if (delegationError !== undefined) {
+        console.warn(`Error querying delegation streams for grantee ${permission.grantee}:`, delegationError);
+        return {
+          type: 'InactiveUnlessRedelegated',
+          account,
+          percentage,
+          isRedelegated: false
+        };
+      }
+      
+      // Check if any delegation stream goes to the target account with sufficient percentage
+      for (const [permId, delegationStream] of delegationStreams.entries()) {
+        // Check if this delegation stream has the target account as one of its targets
+        if (delegationStream.targets.has(validTargetAccount)) {
+          // Check if the delegation percentage meets the requirement
+          if (Number(delegationStream.percentage) >= Number(percentage)) {
+            return {
+              type: 'InactiveUnlessRedelegated',
+              account,
+              percentage,
+              isRedelegated: true
+            };
+          }
+        }
+      }
+      
+      // No sufficient delegation streams to the target account found
       return {
         type: 'InactiveUnlessRedelegated',
         account,
         percentage,
-        isRedelegated: false // TODO: Replace with actual redelegation status
+        isRedelegated: false
       };
     } catch (error) {
       console.error(`Error checking redelegation status for account ${account}:`, error);
@@ -297,7 +352,7 @@ export class ChainAwareReteNetwork extends ReteNetwork {
             break;
             
           case 'InactiveUnlessRedelegated':
-            fetchedFact = await this.fetcher.fetchInactiveUnlessRedelegated(fact.account, fact.percentage);
+            fetchedFact = await this.fetcher.fetchInactiveUnlessRedelegated(fact.account, fact.percentage, constraint.permId);
             break;
             
           default:
@@ -382,7 +437,7 @@ export class DummyChainFetcher implements ChainFetcher {
     return { type: 'PermissionEnabled', permId, enabled: true };
   }
 
-  async fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt): Promise<InactiveUnlessRedelegatedFact> {
+  async fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt, permissionId: PermId): Promise<InactiveUnlessRedelegatedFact> {
     return { type: 'InactiveUnlessRedelegated', account, percentage, isRedelegated: false };
   }
 

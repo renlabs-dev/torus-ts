@@ -2,7 +2,16 @@ import type { EventRecord } from '@polkadot/types/interfaces';
 import type { ApiPromise } from '@polkadot/api';
 import type { Header } from '@polkadot/types/interfaces';
 import type { ChainAwareReteNetwork } from './chain-fetcher';
-import type { PermissionExistsFact, BlockFact } from './facts';
+import type { PermissionExistsFact, PermissionEnabledFact, InactiveUnlessRedelegatedFact, BlockFact } from './facts';
+import { 
+  parsePermissionAccumulationToggledEvent, 
+  parsePermissionRevokedEvent, 
+  parsePermissionExpiredEvent,
+  queryPermissionsByGrantee,
+  queryPermission,
+  queryDelegationStreamsByAccount,
+  checkSS58
+} from '@torus-network/sdk';
 
 /**
  * Chain watcher that monitors Torus blockchain events and updates RETE network facts
@@ -118,19 +127,22 @@ export class TorusChainWatcher {
             void this.handleStakeEvent(event.data);
             break;
           
-          case 'torus0.WeightsSet':
-          case 'torus0.DelegatedWeightControl':
-            void this.handleWeightEvent(event.data);
-            break;
-          
           case 'permission0.PermissionGranted':
             this.handlePermissionGranted(event.data);
             break;
           
           case 'permission0.PermissionRevoked':
-          case 'permission0.PermissionExpired':
-            this.handlePermissionRevoked(event.data);
+            void this.handlePermissionRevoked(event.data);
             break;
+          
+          case 'permission0.PermissionExpired':
+            void this.handlePermissionExpired(event.data);
+            break;
+          
+          case 'permission0.PermissionAccumulationToggled':
+            void this.handlePermissionAccumulationToggled(event.data);
+            break;
+          
 
           default:
             // Ignore other events
@@ -166,41 +178,6 @@ export class TorusChainWatcher {
     }
   }
 
-  /**
-   * Handle weight-related events (WeightsSet, DelegatedWeightControl)
-   */
-  private async handleWeightEvent(eventData: unknown[]): Promise<void> {
-    try {
-      if (eventData.length >= 2) {
-        const [from, to] = eventData;
-        if (!from || !to || 
-            typeof (from as { toString: () => string }).toString !== 'function' ||
-            typeof (to as { toString: () => string }).toString !== 'function') {
-          console.warn('[ChainWatcher] Invalid data in weight event');
-          return;
-        }
-        const fromStr = (from as { toString: () => string }).toString();
-        const toStr = (to as { toString: () => string }).toString();
-        
-        console.log(`[ChainWatcher] Weight changed: ${fromStr} -> ${toStr}`);
-        
-        // Weight facts are no longer supported in the DSL
-        console.log(`[ChainWatcher] Weight change detected but weight facts are no longer supported`);
-      } else if (eventData.length >= 1) {
-        // WeightsSet event with single account
-        const [account] = eventData;
-        if (account && typeof (account as { toString: () => string }).toString === 'function') {
-          const accountStr = (account as { toString: () => string }).toString();
-          console.log(`[ChainWatcher] Weights set by account: ${accountStr}`);
-          // Note: We'd need to fetch all weight relationships for this account
-          // For now, we just log the event
-        }
-      }
-      
-    } catch (error) {
-      console.error('[ChainWatcher] Error handling weight event:', error instanceof Error ? error.message : String(error));
-    }
-  }
 
   /**
    * Handle permission granted events
@@ -231,37 +208,183 @@ export class TorusChainWatcher {
   }
 
   /**
-   * Handle permission revoked/expired events
+   * Handle permission revoked events
    */
-  private handlePermissionRevoked(eventData: unknown[]): void {
+  private async handlePermissionRevoked(eventData: unknown): Promise<void> {
     try {
-      // For both PermissionRevoked and PermissionExpired, permissionId is the last element
-      if (eventData.length === 0) {
-        console.warn('[ChainWatcher] Empty event data for permission revoked');
+      const parseResult = parsePermissionRevokedEvent(eventData);
+      
+      if (!parseResult.success) {
+        console.warn('[ChainWatcher] Failed to parse PermissionRevoked event:', parseResult.error.message);
         return;
       }
-      const permissionId = eventData[eventData.length - 1];
-      if (!permissionId || typeof (permissionId as { toString: () => string }).toString !== 'function') {
-        console.warn('[ChainWatcher] Invalid permission ID in revoked event');
-        return;
+      
+      const { grantor, grantee, permission_id } = parseResult.data;
+      
+      console.log(`[ChainWatcher] Permission revoked: ${permission_id}, grantor: ${grantor}, grantee: ${grantee}`);
+      
+      // Check if there's already a PermissionExists fact for this permission
+      const existingFacts = this.reteNetwork.getFacts();
+      const hasPermissionExistsFact = existingFacts.some((fact: any) => 
+        fact.type === 'PermissionExists' && 
+        fact.permId === permission_id
+      );
+      
+      if (hasPermissionExistsFact) {
+        // Update permission existence fact
+        const permissionFact: PermissionExistsFact = {
+          type: 'PermissionExists',
+          permId: permission_id,
+          exists: false
+        };
+        
+        this.reteNetwork.addFact(permissionFact);
       }
-      const permissionIdStr = (permissionId as { toString: () => string }).toString();
       
-      console.log(`[ChainWatcher] Permission revoked/expired: ${permissionIdStr}`);
-      
-      // Update permission existence fact
-      const permissionFact: PermissionExistsFact = {
-        type: 'PermissionExists',
-        permId: permissionIdStr,
-        exists: false
-      };
-      
-      this.reteNetwork.addFact(permissionFact);
+      // Check for InactiveUnlessRedelegated implications
+      await this.checkInactiveUnlessRedelegatedForGrantor(grantor);
       
     } catch (error) {
       console.error('[ChainWatcher] Error handling permission revoked:', error instanceof Error ? error.message : String(error));
     }
   }
+
+  /**
+   * Handle permission expired events
+   */
+  private async handlePermissionExpired(eventData: unknown): Promise<void> {
+    try {
+      const parseResult = parsePermissionExpiredEvent(eventData);
+      
+      if (!parseResult.success) {
+        console.warn('[ChainWatcher] Failed to parse PermissionExpired event:', parseResult.error.message);
+        return;
+      }
+      
+      const { grantor, grantee, permission_id } = parseResult.data;
+      
+      console.log(`[ChainWatcher] Permission expired: ${permission_id}, grantor: ${grantor}, grantee: ${grantee}`);
+      
+      // Check if there's already a PermissionExists fact for this permission
+      const existingFacts = this.reteNetwork.getFacts();
+      const hasPermissionExistsFact = existingFacts.some((fact: any) => 
+        fact.type === 'PermissionExists' && 
+        fact.permId === permission_id
+      );
+      
+      if (hasPermissionExistsFact) {
+        // Update permission existence fact
+        const permissionFact: PermissionExistsFact = {
+          type: 'PermissionExists',
+          permId: permission_id,
+          exists: false
+        };
+        
+        this.reteNetwork.addFact(permissionFact);
+      }
+      
+      // Check for InactiveUnlessRedelegated implications
+      await this.checkInactiveUnlessRedelegatedForGrantor(grantor);
+      
+    } catch (error) {
+      console.error('[ChainWatcher] Error handling permission expired:', error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  /**
+   * Check if a grantor losing a permission affects any InactiveUnlessRedelegated facts
+   */
+  private async checkInactiveUnlessRedelegatedForGrantor(grantor: string): Promise<void> {
+    try {
+      // Get existing InactiveUnlessRedelegated facts in the network
+      const existingFacts = this.reteNetwork.getFacts();
+      const inactiveUnlessRedelegatedFacts = existingFacts.filter((fact: any) => 
+        fact.type === 'InactiveUnlessRedelegated' && 
+        fact.account === grantor
+      ) as InactiveUnlessRedelegatedFact[];
+      
+      if (inactiveUnlessRedelegatedFacts.length === 0) {
+        return; // No InactiveUnlessRedelegated facts for this account
+      }
+      
+      console.log(`[ChainWatcher] Checking InactiveUnlessRedelegated status for ${grantor} after permission loss`);
+      
+      const api = await this.reteNetwork.getFetcher().ensureConnected();
+      
+      // Validate the grantor address
+      const validGrantorAddress = checkSS58(grantor);
+      
+      // Check if the grantor still has active delegation streams
+      const [delegationError, delegationStreams] = await queryDelegationStreamsByAccount(api, validGrantorAddress);
+      
+      if (delegationError !== undefined) {
+        console.warn(`[ChainWatcher] Failed to query delegation streams for ${grantor}:`, delegationError);
+        return;
+      }
+      
+      const hasActiveDelegations = delegationStreams.size > 0;
+      
+      // Update all InactiveUnlessRedelegated facts for this account
+      for (const fact of inactiveUnlessRedelegatedFacts) {
+        const updatedFact: InactiveUnlessRedelegatedFact = {
+          type: 'InactiveUnlessRedelegated',
+          account: fact.account,
+          percentage: fact.percentage,
+          isRedelegated: hasActiveDelegations
+        };
+        
+        this.reteNetwork.addFact(updatedFact);
+        
+        console.log(`[ChainWatcher] Updated InactiveUnlessRedelegated for ${grantor}: isRedelegated = ${hasActiveDelegations}`);
+      }
+      
+    } catch (error) {
+      console.error('[ChainWatcher] Error checking InactiveUnlessRedelegated implications:', error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  /**
+   * Handle permission accumulation toggled events
+   */
+  private async handlePermissionAccumulationToggled(eventData: unknown): Promise<void> {
+    try {
+      const parseResult = parsePermissionAccumulationToggledEvent(eventData);
+      
+      if (!parseResult.success) {
+        console.warn('[ChainWatcher] Failed to parse PermissionAccumulationToggled event:', parseResult.error.message);
+        return;
+      }
+      
+      const { permission_id, accumulating } = parseResult.data;
+      
+      console.log(`[ChainWatcher] Permission accumulation toggled: ${permission_id}, accumulating: ${accumulating}`);
+      
+      // Check if there's already a PermissionEnabled fact for this permission
+      const existingFacts = this.reteNetwork.getFacts();
+      const hasPermissionEnabledFact = existingFacts.some((fact: any) => 
+        fact.type === 'PermissionEnabled' && 
+        fact.permId === permission_id
+      );
+      
+      if (!hasPermissionEnabledFact) {
+        console.log(`[ChainWatcher] No PermissionEnabled fact found for ${permission_id}, skipping update`);
+        return;
+      }
+      
+      // Update permission enabled fact
+      const permissionEnabledFact: PermissionEnabledFact = {
+        type: 'PermissionEnabled',
+        permId: permission_id,
+        enabled: accumulating
+      };
+      
+      this.reteNetwork.addFact(permissionEnabledFact);
+      
+    } catch (error) {
+      console.error('[ChainWatcher] Error handling permission accumulation toggled:', error instanceof Error ? error.message : String(error));
+    }
+  }
+
 }
 
 /**
