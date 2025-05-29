@@ -7,6 +7,7 @@ import PortalNavigationTabs from "../../_components/portal-navigation-tabs";
 import type {
   CustomGraphData,
   CustomGraphNode,
+  GraphLink,
 } from "./permission-graph-utils";
 import { AgentLRUCache } from "./permission-graph-utils";
 import type { CachedAgentData } from "./permission-graph-utils";
@@ -15,6 +16,8 @@ import { api } from "~/trpc/react";
 import PermissionGraphSearch from "./permission-graph-search";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import { MousePointerClick } from "lucide-react";
+import { env } from "~/env";
+import { useExtraAllocatorLinks } from "./permission-graph-allocator-links";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -27,8 +30,18 @@ export default function PermissionGraphContainer() {
 
   const agentCache = useRef(new AgentLRUCache(10));
 
-  const { data: permissionDetails, isLoading } =
+  const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
+
+  const { data: rawPermissionDetails, isLoading } =
     api.permissionDetails.all.useQuery();
+
+  const permissionDetails = useMemo(() => {
+    if (!rawPermissionDetails) return undefined;
+    return rawPermissionDetails.map((detail) => ({
+      ...detail,
+      execution_count: parseInt(detail.execution_count, 10),
+    }));
+  }, [rawPermissionDetails]);
 
   const memoizedGraphData = useMemo(() => {
     if (!permissionDetails || permissionDetails.length === 0) {
@@ -56,7 +69,7 @@ export default function PermissionGraphContainer() {
         if (isGrantor && isGrantee) {
           color = "#5f27cd"; // purple for both
         } else if (isGrantor) {
-          color = "#ff6b6b"; // red for grantors
+          color = "#54a0ff"; // red for grantors
         } else if (isGrantee) {
           color = "#1dd1a1"; // green for grantees
         }
@@ -74,16 +87,53 @@ export default function PermissionGraphContainer() {
     );
 
     const links = permissionDetails.map((permission) => ({
+      linkType: "permission",
       source: permission.grantor_key,
       target: permission.grantee_key,
+      // id: createPermissionIdentifier(permission.permission_id),
       id: permission.permission_id,
       scope: permission.scope,
       duration: permission.duration,
+      // parentId: createPermissionIdentifier(permission.parent_id ?? ""),
+      parentId: permission.parent_id ?? "",
+      permissionId: permission.permission_id,
       enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
     }));
 
+    // Update allocator node color if found
+    const allocatorNode = nodes.find((node) => node.id === allocatorAddress);
+    if (allocatorNode) {
+      allocatorNode.color = "#ff6b6b";
+    } else {
+      // Create allocator node
+      // TODO : Get allocator data
+      nodes.push({
+        id: allocatorAddress,
+        name: "Torus Allocator",
+        color: "#ff6b6b",
+        val: 250,
+        fullAddress: allocatorAddress,
+        role: "Allocator",
+      });
+    }
+
     return { nodes, links };
-  }, [permissionDetails]);
+  }, [allocatorAddress, permissionDetails]);
+
+  // Handle graph data updates from allocator links
+  const handleGraphUpdate = useCallback(
+    (nodes: CustomGraphNode[], links: GraphLink[]) => {
+      setGraphData({ nodes, links });
+    },
+    [],
+  );
+
+  // Add allocator links to the graph
+  useExtraAllocatorLinks({
+    nodes: graphData?.nodes ?? [],
+    links: graphData?.links ?? [],
+    onUpdate: handleGraphUpdate,
+  });
 
   useEffect(() => {
     setGraphData(memoizedGraphData);

@@ -1,3 +1,18 @@
+type PermissionIdentifier = string & { readonly __brand: unique symbol };
+
+function isValidPermissionId(value: string): value is PermissionIdentifier {
+  return value.length === 66 && /^0x[a-fA-F0-9]{64}$/.test(value);
+}
+
+export function createPermissionIdentifier(
+  value: string,
+): PermissionIdentifier {
+  if (!isValidPermissionId(value)) {
+    throw new Error(`Invalid permission ID: ${value}`);
+  }
+  return value;
+}
+
 export interface CustomGraphNode {
   id: string;
   name: string;
@@ -7,8 +22,8 @@ export interface CustomGraphNode {
   role?: string;
   [key: string]: string | number | undefined;
 }
-
 export interface GraphLink {
+  linkType: string;
   source: string;
   target: string;
   id?: string;
@@ -26,11 +41,41 @@ export interface CustomGraphData {
   links: GraphLink[];
 }
 
+export interface PermissionWithType extends GraphLink {
+  type: "incoming" | "outgoing";
+}
+
+export interface PermissionDetail {
+  grantor_key: string;
+  grantee_key: string;
+  permission_id: string;
+  scope: string;
+  duration: string;
+  revocation: number;
+  last_execution: Date | null;
+  execution_count: number;
+  parent_id: string | null;
+  constraint_id: number | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Sample permission graph data
+// Agent cache data structure
+export interface CachedAgentData {
+  agentName: string;
+  iconBlob: Blob | null; // Store the blob itself, not the URL
+  socials: Record<string, string>;
+  currentBlock: number;
+  weightFactor: number;
+  lastAccessed: number;
+}
+
 export const formatScope = (scope: string): string =>
   scope.charAt(0).toUpperCase() + scope.slice(1).toLowerCase();
 
 export const formatDuration = (seconds: string | number): string => {
-  const numSeconds = typeof seconds === 'string' ? parseInt(seconds) : seconds;
+  const numSeconds = typeof seconds === "string" ? parseInt(seconds) : seconds;
   if (!numSeconds) return "No expiration";
 
   const days = Math.floor(numSeconds / 86400);
@@ -45,10 +90,6 @@ export const formatDuration = (seconds: string | number): string => {
     .filter(Boolean)
     .join(", ");
 };
-
-export interface PermissionWithType extends GraphLink {
-  type: "incoming" | "outgoing";
-}
 
 export const getAllocatorBaseUrl = (override?: string): string => {
   if (override) return override;
@@ -72,7 +113,10 @@ export const getNodePermissions = (
   graphData.links.forEach((link) => {
     const key = `${link.source}-${link.target}`;
 
-    if (link.source === node.id || link.target === node.id) {
+    if (
+      (link.source === node.id || link.target === node.id) &&
+      link.linkType === "permission"
+    ) {
       if (!permissionsMap.has(key)) {
         permissionsMap.set(key, {
           ...link,
@@ -84,17 +128,6 @@ export const getNodePermissions = (
 
   return Array.from(permissionsMap.values());
 };
-
-export interface PermissionDetail {
-  grantor_key: string;
-  grantee_key: string;
-  permission_id: string;
-  scope: string;
-  duration: string;
-  execution_count: number;
-  parent_id: string | null;
-  createdAt: Date;
-}
 
 export const sortPermissions = (
   permissions: PermissionWithType[],
@@ -114,17 +147,6 @@ export const sortPermissions = (
     return Number(idA) - Number(idB);
   });
 };
-
-// Sample permission graph data
-// Agent cache data structure
-export interface CachedAgentData {
-  agentName: string;
-  iconBlob: Blob | null; // Store the blob itself, not the URL
-  socials: Record<string, string>;
-  currentBlock: number;
-  weightFactor: number;
-  lastAccessed: number;
-}
 
 // LRU Cache for agent data
 export class AgentLRUCache {
@@ -173,116 +195,3 @@ export class AgentLRUCache {
     return this.cache.size;
   }
 }
-
-export const samplePermissionGraph: CustomGraphData = {
-  nodes: [
-    { id: "user", name: "User", color: "#ff6b6b", val: 10, role: "Grantor" },
-    { id: "admin", name: "Admin", color: "#48dbfb", val: 10, role: "Both" },
-    { id: "read", name: "Read", color: "#1dd1a1", val: 8, role: "Both" },
-    { id: "write", name: "Write", color: "#f368e0", val: 8, role: "Both" },
-    { id: "delete", name: "Delete", color: "#ff9f43", val: 8, role: "Both" },
-    {
-      id: "document",
-      name: "Document",
-      color: "#54a0ff",
-      val: 12,
-      role: "Grantee",
-    },
-    {
-      id: "folder",
-      name: "Folder",
-      color: "#5f27cd",
-      val: 12,
-      role: "Grantee",
-    },
-    {
-      id: "project",
-      name: "Project",
-      color: "#ee5253",
-      val: 12,
-      role: "Grantee",
-    },
-  ],
-  links: [
-    {
-      source: "user",
-      target: "read",
-      id: "1",
-      scope: "EMISSION",
-      duration: "86400",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "user",
-      target: "write",
-      id: "2",
-      scope: "EMISSION",
-      duration: "172800",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "admin",
-      target: "read",
-      id: "3",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "admin",
-      target: "write",
-      id: "4",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "admin",
-      target: "delete",
-      id: "5",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "read",
-      target: "document",
-      id: "6",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "read",
-      target: "folder",
-      id: "7",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "write",
-      target: "document",
-      id: "8",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "delete",
-      target: "document",
-      id: "9",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-    {
-      source: "folder",
-      target: "project",
-      id: "10",
-      scope: "EMISSION",
-      duration: "0",
-      enforcement: "torus_enforcement_agent",
-    },
-  ],
-};

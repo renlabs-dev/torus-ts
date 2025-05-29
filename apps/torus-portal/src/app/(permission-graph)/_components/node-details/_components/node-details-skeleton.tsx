@@ -128,7 +128,7 @@ export function NodeDetailsSkeleton({
                                 <div className="text-sm text-gray-300">
                                   {formatDuration(
                                     calculateTimeRemaining(
-                                      details.createdAt,
+                                      new Date(details.createdAt ?? Date.now()),
                                       Number(details.duration),
                                     ),
                                   )}
@@ -162,7 +162,7 @@ export function NodeDetailsSkeleton({
                                 </span>
                                 <div className="font-mono text-gray-300 break-all">
                                   {/*todo edit*/}
-                                  {details.enforcement}
+                                  {/* {details.enforcement} */}
                                   {/* {smallAddress(details.enforcement, 4)} */}
                                 </div>
                               </div>

@@ -9,12 +9,7 @@ import type {
 import { TooltipProvider } from "@torus-ts/ui/components/tooltip";
 import { memo } from "react";
 import { PermissionNodeAgentCard } from "./_components/agent-card";
-import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-} from "@torus-ts/ui/components/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@torus-ts/ui/components/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface PermissionGraphDetailsProps {
@@ -40,14 +35,11 @@ export const PermissionGraphNodeDetails = memo(
     onBackgroundClick,
   }: PermissionGraphDetailsProps) {
     if (!selectedNode) {
-      return <span> oi</span>;
-      //   return <PermissionGraphOverview graphData={graphData} />;
+      return <PermissionGraphOverview graphData={graphData} />;
     }
 
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange} modal={false}>
-        <SheetOverlay className="bg-transparent overflow-hidden" />
-
         <SheetContent
           className="z-[100] w-full max-w-md sm:max-w-lg md:w-[33%] lg:w-[33%] xl:w-[33%]
             overflow-hidden [&>button]:hidden"
