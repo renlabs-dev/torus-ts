@@ -1,6 +1,5 @@
 "use client";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { Anvil, Globe, Cuboid, IdCard } from "lucide-react";
 import Link from "next/link";
 import { Icons } from "@torus-ts/ui/components//icons";

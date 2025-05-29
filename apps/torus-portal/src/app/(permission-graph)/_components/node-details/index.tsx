@@ -1,4 +1,3 @@
-import { PermissionGraphOverview } from "../permission-graph-overview";
 import { NodeDetailsCard } from "./_components/node-details-card";
 import type {
   CustomGraphData,
