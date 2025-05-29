@@ -27,6 +27,8 @@ import {
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
 import { PlusIcon } from "lucide-react";
 import type { ValidationError } from "./constraint-utils";
+import { api as trpcApi } from "~/trpc/react";
+// import { deserializeConstraint } from "@torus-ts/dsl";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -46,6 +48,20 @@ export default function ConstraintControlsSheet({
   submitButton,
 }: ConstraintControlsSheetProps) {
   const [isOpen, setIsOpen] = useState(true);
+
+  const { data: permissionsWithConstraints } =
+    trpcApi.permission.withConstraints.useQuery();
+
+  // if (permissionsWithConstraints) {
+  //   permissionsWithConstraints.forEach((permission) => {
+  //     const x = permission.constraint;
+  //     if (x) {
+  //       const ct = deserializeConstraint(
+  //         JSON.stringify(JSON.parse(x.body).json),
+  //       );
+  //     }
+  //   });
+  // }
 
   const { api, selectedAccount } = useTorus();
 
@@ -78,7 +94,13 @@ export default function ConstraintControlsSheet({
         onPermissionIdChange(lastPermission);
       }
     }
-  }, [permissions, selectedPermissionId, onPermissionIdChange, hasPermissions]);
+  }, [
+    permissions,
+    selectedPermissionId,
+    onPermissionIdChange,
+    hasPermissions,
+    selectedAccount,
+  ]);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen} modal={false}>

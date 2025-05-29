@@ -10,8 +10,6 @@ import {
 } from "@torus-ts/ui/components/command";
 
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
-import { api } from "~/trpc/react";
-import { deserializeConstraint, safeParseConstraintJson } from "@torus-ts/dsl";
 
 interface ConstraintExamplesSelectorProps {
   selectedExample: string;
@@ -24,24 +22,7 @@ export default function ConstraintExamplesSelector({
   onExampleSelect,
   onClose,
 }: ConstraintExamplesSelectorProps) {
-  const { data: permissionsWithConstraints } =
-    api.permission.withConstraints.useQuery();
-  if (permissionsWithConstraints) {
-    permissionsWithConstraints.forEach((permission) => {
-      const x = permission.constraint;
-      if(x){
-        console.log("aaaaaa")
-        const body = JSON.parse(x.body).json;
-        console.log("Raw constraint body:", body);
-        const ct = deserializeConstraint(JSON.stringify(JSON.parse(x.body).json));
-        console.log("Deserialized constraint:", ct);
-      }
-    });
-  }
-  console.log("Permissions with constraints:", permissionsWithConstraints);
-  
   const handleSelect = (currentValue: string) => {
-    console.log(`Selected example: ${currentValue}`);
     onExampleSelect(currentValue);
     onClose?.();
   };
