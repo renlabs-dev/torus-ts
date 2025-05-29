@@ -1,6 +1,6 @@
 import type { Node, Edge } from "@xyflow/react";
 
-import type { PermissionNodeData } from "./constraint-nodes/constraint-node-types";
+import type { ConstraintNodeData } from "./constraint-nodes/constraint-node-types";
 import { constraintValidationSchema } from "./constraint-validation-schemas";
 import type {
   BaseConstraintType,
@@ -9,7 +9,7 @@ import type {
   NumExprType,
 } from "@torus-ts/dsl";
 
-type NodeMap = Record<string, Node<PermissionNodeData>>;
+type NodeMap = Record<string, Node<ConstraintNodeData>>;
 
 type EdgeMap = Record<string, Edge[]>;
 
@@ -23,7 +23,7 @@ export function extractConstraintFromNodes(
   const edgeMap: EdgeMap = {};
 
   nodes.forEach((node) => {
-    nodeMap[node.id] = node as Node<PermissionNodeData>;
+    nodeMap[node.id] = node as Node<ConstraintNodeData>;
   });
 
   edges.forEach((edge) => {
@@ -175,7 +175,7 @@ export function validateConstraintForm(
 
 function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
   nodes.forEach((node) => {
-    const nodeData = node.data as PermissionNodeData;
+    const nodeData = node.data as ConstraintNodeData;
 
     switch (nodeData.type) {
       case "number": {
@@ -224,7 +224,7 @@ function validateNodeFields(nodes: Node[], errors: ValidationError[]) {
 }
 
 function extractBoolExpr(
-  node: Node<PermissionNodeData>,
+  node: Node<ConstraintNodeData>,
   nodeMap: NodeMap,
   edgeMap: EdgeMap,
 ): BoolExprType | null {
@@ -313,7 +313,7 @@ function extractBoolExpr(
 }
 
 function extractNumExpr(
-  node: Node<PermissionNodeData>,
+  node: Node<ConstraintNodeData>,
   nodeMap: NodeMap,
   edgeMap: EdgeMap,
 ): NumExprType | null {
@@ -355,7 +355,7 @@ function extractNumExpr(
 }
 
 function extractBaseConstraint(
-  node: Node<PermissionNodeData>,
+  node: Node<ConstraintNodeData>,
 ): BaseConstraintType | null {
   if (node.data.type !== "base") return null;
 
