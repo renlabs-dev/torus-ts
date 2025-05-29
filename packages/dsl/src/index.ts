@@ -33,15 +33,6 @@ export const ConstraintBuilder = {
  */
 export const BaseConstraint = {
   /**
-   * Create a maximum delegation depth constraint
-   * @param depth Maximum delegation depth
-   */
-  maxDelegationDepth: (depth: NumExprType): BaseConstraintType => ({
-    $: "MaxDelegationDepth",
-    depth,
-  }),
-
-  /**
    * Create a permission exists constraint
    * @param pid The permission ID to check for
    */
@@ -60,21 +51,14 @@ export const BaseConstraint = {
   }),
 
   /**
-   * Create a rate limit constraint
-   * @param maxOperations Maximum number of operations
-   * @param period Time period in blocks
-   */
-  rateLimit: (maxOperations: NumExprType, period: NumExprType): BaseConstraintType => ({
-    $: "RateLimit",
-    maxOperations,
-    period,
-  }),
-
-  /**
    * Create an inactive unless redelegated constraint
+   * @param account The account to check
+   * @param percentage The percentage threshold
    */
-  inactiveUnlessRedelegated: (): BaseConstraintType => ({
+  inactiveUnlessRedelegated: (account: AccountId, percentage: number | bigint): BaseConstraintType => ({
     $: "InactiveUnlessRedelegated",
+    account,
+    percentage: typeof percentage === "number" ? BigInt(percentage) : percentage,
   }),
 };
 
@@ -90,16 +74,6 @@ export const NumExpr = {
   stakeOf: (account: AccountId): NumExprType => ({ $: "StakeOf", account }),
   add: (left: NumExprType, right: NumExprType): NumExprType => ({ $: "Add", left, right }),
   sub: (left: NumExprType, right: NumExprType): NumExprType => ({ $: "Sub", left, right }),
-  weightSet: (from: AccountId, to: AccountId): NumExprType => ({ 
-    $: "WeightSet", 
-    from, 
-    to 
-  }),
-  weightPowerFrom: (from: AccountId, to: AccountId): NumExprType => ({ 
-    $: "WeightPowerFrom", 
-    from, 
-    to 
-  }),
 };
 
 /**

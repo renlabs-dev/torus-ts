@@ -25,19 +25,6 @@ export interface StakeOfFact extends Fact {
   amount?: UInt; // Optional: actual value when known
 }
 
-export interface WeightSetFact extends Fact {
-  type: 'WeightSet';
-  from: AccountId;
-  to: AccountId;
-  amount?: UInt; // Optional: actual value when known
-}
-
-export interface WeightPowerFromFact extends Fact {
-  type: 'WeightPowerFrom';
-  from: AccountId;
-  to: AccountId;
-  amount?: UInt; // Optional: actual value when known
-}
 
 /**
  * Facts about permissions
@@ -54,16 +41,10 @@ export interface PermissionEnabledFact extends Fact {
   enabled?: boolean; // Optional: actual value when known
 }
 
-export interface MaxDelegationDepthFact extends Fact {
-  type: 'MaxDelegationDepth';
-  permId: PermId;
-  depth: NumExprType;
-  actualDepth?: UInt; // Optional: actual value when known
-}
-
 export interface InactiveUnlessRedelegatedFact extends Fact {
   type: 'InactiveUnlessRedelegated';
-  permId: PermId;
+  account: AccountId;
+  percentage: UInt;
   isRedelegated?: boolean; // Optional: actual value when known
 }
 
@@ -81,11 +62,8 @@ export interface BlockFact extends Fact {
  */
 export type SpecificFact =
   | StakeOfFact
-  | WeightSetFact
-  | WeightPowerFromFact
   | PermissionExistsFact
   | PermissionEnabledFact
-  | MaxDelegationDepthFact
   | InactiveUnlessRedelegatedFact
   | BlockFact;
 
@@ -113,22 +91,6 @@ export function extractFactsFromNumExpr(expr: NumExprType): SpecificFact[] {
       facts.push({
         type: 'StakeOf',
         account: expr.account
-      });
-      break;
-      
-    case 'WeightSet':
-      facts.push({
-        type: 'WeightSet',
-        from: expr.from,
-        to: expr.to
-      });
-      break;
-      
-    case 'WeightPowerFrom':
-      facts.push({
-        type: 'WeightPowerFrom',
-        from: expr.from,
-        to: expr.to
       });
       break;
       
@@ -161,17 +123,6 @@ export function extractFactsFromBaseConstraint(
   const facts: SpecificFact[] = [];
   
   switch (constraint.$) {
-    case 'MaxDelegationDepth':
-      facts.push({
-        type: 'MaxDelegationDepth',
-        permId,
-        depth: constraint.depth
-      });
-      
-      // Also extract facts from the depth expression
-      facts.push(...extractFactsFromNumExpr(constraint.depth));
-      break;
-      
     case 'PermissionExists':
       facts.push({
         type: 'PermissionExists',
@@ -189,14 +140,9 @@ export function extractFactsFromBaseConstraint(
     case 'InactiveUnlessRedelegated':
       facts.push({
         type: 'InactiveUnlessRedelegated',
-        permId
+        account: constraint.account,
+        percentage: constraint.percentage
       });
-      break;
-      
-    case 'RateLimit':
-      // Extract facts from the numeric expressions
-      facts.push(...extractFactsFromNumExpr(constraint.maxOperations));
-      facts.push(...extractFactsFromNumExpr(constraint.period));
       break;
   }
   
@@ -267,23 +213,22 @@ export function extractFactsFromConstraint(
 export function categorizeFacts(
   items: (SpecificFact | ComparisonFact)[]
 ): {
-  addressFacts: (StakeOfFact | WeightSetFact | WeightPowerFromFact)[];
-  permissionFacts: (PermissionExistsFact | PermissionEnabledFact | MaxDelegationDepthFact | InactiveUnlessRedelegatedFact)[];
+  addressFacts: StakeOfFact[];
+  permissionFacts: (PermissionExistsFact | PermissionEnabledFact | InactiveUnlessRedelegatedFact)[];
   comparisonFacts: ComparisonFact[];
 } {
-  const addressFacts: (StakeOfFact | WeightSetFact | WeightPowerFromFact)[] = [];
-  const permissionFacts: (PermissionExistsFact | PermissionEnabledFact | MaxDelegationDepthFact | InactiveUnlessRedelegatedFact)[] = [];
+  const addressFacts: StakeOfFact[] = [];
+  const permissionFacts: (PermissionExistsFact | PermissionEnabledFact | InactiveUnlessRedelegatedFact)[] = [];
   const comparisonFacts: ComparisonFact[] = [];
   
   for (const item of items) {
-    if (item.type === 'StakeOf' || item.type === 'WeightSet' || item.type === 'WeightPowerFrom') {
-      addressFacts.push(item as any);
+    if (item.type === 'StakeOf') {
+      addressFacts.push(item as StakeOfFact);
     } else if (item.type === 'Comparison') {
       comparisonFacts.push(item);
     } else if (
       item.type === 'PermissionExists' || 
       item.type === 'PermissionEnabled' || 
-      item.type === 'MaxDelegationDepth' || 
       item.type === 'InactiveUnlessRedelegated'
     ) {
       permissionFacts.push(item as any);

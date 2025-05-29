@@ -79,25 +79,11 @@ export const createSchemaMap = (): SchemaMap => {
         left: NumExprSchema,
         right: NumExprSchema
       }),
-      z.object({
-        $: z.literal('WeightSet'),
-        from: AccountIdSchema,
-        to: AccountIdSchema
-      }),
-      z.object({
-        $: z.literal('WeightPowerFrom'),
-        from: AccountIdSchema,
-        to: AccountIdSchema
-      })
     ])
   );
 
   // BaseConstraint schema
   const BaseConstraintSchema: z.ZodType<BaseConstraintType> = z.discriminatedUnion('$', [
-    z.object({
-      $: z.literal('MaxDelegationDepth'),
-      depth: NumExprSchema
-    }),
     z.object({
       $: z.literal('PermissionExists'),
       pid: PermIdSchema
@@ -107,12 +93,9 @@ export const createSchemaMap = (): SchemaMap => {
       pid: PermIdSchema
     }),
     z.object({
-      $: z.literal('RateLimit'),
-      maxOperations: NumExprSchema,
-      period: NumExprSchema
-    }),
-    z.object({
-      $: z.literal('InactiveUnlessRedelegated')
+      $: z.literal('InactiveUnlessRedelegated'),
+      account: AccountIdSchema,
+      percentage: UIntSchema // This is a UInt, but represents a percentage
     })
   ]);
 

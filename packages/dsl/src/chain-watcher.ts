@@ -184,13 +184,8 @@ export class TorusChainWatcher {
         
         console.log(`[ChainWatcher] Weight changed: ${fromStr} -> ${toStr}`);
         
-        // Fetch updated weight facts and update RETE network
-        const fetcher = this.reteNetwork.getFetcher();
-        const weightSetFact = await fetcher.fetchWeightSet(fromStr, toStr);
-        const weightPowerFact = await fetcher.fetchWeightPowerFrom(fromStr, toStr);
-        
-        this.reteNetwork.addFact(weightSetFact);
-        this.reteNetwork.addFact(weightPowerFact);
+        // Weight facts are no longer supported in the DSL
+        console.log(`[ChainWatcher] Weight change detected but weight facts are no longer supported`);
       } else if (eventData.length >= 1) {
         // WeightsSet event with single account
         const [account] = eventData;
