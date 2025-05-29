@@ -7,6 +7,7 @@ import { Card } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { PortalAgentImageItem } from "./portal-agent-image-item";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 
 interface PortalAgentCardProps {
   agentKey: string | null;

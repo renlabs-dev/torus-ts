@@ -10,6 +10,7 @@ import { memo } from "react";
 import { PermissionNodeAgentCard } from "./_components/agent-card";
 import { Sheet, SheetContent, SheetTitle } from "@torus-ts/ui/components/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { PermissionGraphOverview } from "../permission-graph-overview";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
