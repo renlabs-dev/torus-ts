@@ -2,7 +2,6 @@ import type {
   Constraint, 
   BoolExprType, 
   BaseConstraintType,
-  NumExprType
 } from "./types";
 import { CompOp } from "./types";
 

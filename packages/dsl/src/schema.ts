@@ -9,7 +9,7 @@ import {
   
   
 } from './types';
-import type {Constraint, BoolExprType, BaseConstraintType, NumExprType, UInt, AccountId, PermId} from './types';
+import type {Constraint, BoolExprType, BaseConstraintType, NumExprType, UInt} from './types';
 
 /**
  * Type mapping from TypeScript types to Zod schemas

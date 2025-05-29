@@ -320,7 +320,7 @@ export const constraintRouter = {
    * Add a constraint for testing (no authentication required)
    * This endpoint is for development and testing purposes only
    */
-  addTest: authenticatedProcedure
+  addTest: publicProcedure
     .input(constraintInputSchema)
     .mutation(async ({ ctx, input }) => {
       let constraint: Constraint;

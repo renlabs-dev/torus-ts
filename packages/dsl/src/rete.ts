@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+// We basically need zod schema to be able to lint this correcly
 import type {
   AccountId,
   PermId,
   NumExprType,
   Constraint,
-  UInt,
   BoolExprType,
   BaseConstraintType
 } from './types';
@@ -11,8 +15,6 @@ import { CompOp } from './types';
 import superjson from 'superjson';
 import type {
   Fact,
-  SpecificFact,
-  ComparisonFact,
   StakeOfFact,
   PermissionExistsFact,
   PermissionEnabledFact,
@@ -20,8 +22,6 @@ import type {
   BlockFact} from './facts';
 import {
   extractFactsFromConstraint,
-  categorizeFacts,
-  deduplicateFacts
 } from './facts';
 
 /**
@@ -30,13 +30,7 @@ import {
  * @returns A string hash
  */
 function hashObject(obj: any): string {
-  return JSON.stringify(obj, (_, value) => {
-    // Handle BigInt serialization
-    if (typeof value === 'bigint') {
-      return `BigInt:${value.toString()}`;
-    }
-    return value;
-  });
+  return superjson.stringify(obj);
 }
 
 /**
@@ -111,8 +105,8 @@ export class AlphaMemory<T extends Fact> {
     if (isUpdate && entityId) {
       // Check if we have existing facts for this entity
       if (this.entityToKeyMap.has(entityId)) {
-        const existingKeys = this.entityToKeyMap.get(entityId)!;
-        
+        const existingKeys = this.entityToKeyMap.get(entityId);
+        if (existingKeys === undefined) {throw new Error("never");} // never
         // If we have existing keys, remove them and their facts
         if (existingKeys.size > 0) {
           for (const key of existingKeys) {
@@ -148,11 +142,9 @@ export class AlphaMemory<T extends Fact> {
     
     // Index by entity ID if available
     if (entityId) {
-      if (!this.entityToKeyMap.has(entityId)) {
-        this.entityToKeyMap.set(entityId, new Set());
-      }
-      
-      this.entityToKeyMap.get(entityId)!.add(factKey);
+      const set = this.entityToKeyMap.get(entityId) ?? new Set();
+      set.add(factKey);
+      this.entityToKeyMap.set(entityId, set);
     }
     
     return true;
@@ -175,6 +167,8 @@ export class AlphaMemory<T extends Fact> {
    */
   private getEntityId(fact: T): string {
     if (fact.type === 'StakeOf') {
+    
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return `account:${(fact as any).account}`;
     }
     
@@ -184,6 +178,7 @@ export class AlphaMemory<T extends Fact> {
       fact.type === 'InactiveUnlessRedelegated'
     ) {
       if ('permId' in fact) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return `permission:${(fact as any).permId}:${fact.type}`;
       }
     }
@@ -262,7 +257,7 @@ export class AccountAlphaNode extends AlphaNode<StakeOfFact> {
    * @returns A unique key for this node
    */
   getKey(): AlphaNodeKey {
-    return `Account:${this.accountId}:${this.factSubtype || 'Any'}`;
+    return `Account:${this.accountId}:${this.factSubtype ?? 'Any'}`;
   }
 }
 
@@ -304,7 +299,7 @@ export class PermissionAlphaNode extends AlphaNode<
       
       if (fact.type === 'PermissionExists') {
         return (fact as PermissionExistsFact).permId === this.permId;
-      } else if (fact.type === 'PermissionEnabled') {
+      } else if (fact.type === 'PermissionEnabled') {  // Redundant to be sure. TODO: Use zod and matchs in the future
         return (fact as PermissionEnabledFact).permId === this.permId;
       }
     }
@@ -317,7 +312,7 @@ export class PermissionAlphaNode extends AlphaNode<
    * @returns A unique key for this node
    */
   getKey(): AlphaNodeKey {
-    return `Permission:${this.permId}:${this.factSubtype || 'Any'}`;
+    return `Permission:${this.permId}:${this.factSubtype ?? 'Any'}`;
   }
 }
 
@@ -483,18 +478,6 @@ export class BetaNode {
       return true;
     }
     
-    // Allow joining different fact types for the same constraint
-    // This helps with constraints that combine different types (like StakeOf and PermissionExists)
-    const getEntityId = (f: Fact): string => {
-      if (f.type === 'StakeOf') return (f as StakeOfFact).account;
-      if (f.type === 'InactiveUnlessRedelegated') {
-        return (f as InactiveUnlessRedelegatedFact).account;
-      }
-      if (f.type === 'PermissionExists' || f.type === 'PermissionEnabled') {
-        return (f as PermissionExistsFact | PermissionEnabledFact).permId;
-      }
-      return '';
-    };
     
     // Default compatibility logic - different fact types are always compatible
     // This is a simplification for our basic implementation to allow heterogeneous joins
@@ -595,7 +578,7 @@ function evaluateBoolExpression(expr: BoolExprType, facts: Map<string, Fact>): b
       
     case 'CompExpr':
       // Comparison expression - evaluate numeric comparison
-      const leftValue = evaluateNumericExpression(expr.left, facts);
+      { const leftValue = evaluateNumericExpression(expr.left, facts);
       const rightValue = evaluateNumericExpression(expr.right, facts);
       
       if (leftValue === undefined || rightValue === undefined) {
@@ -607,14 +590,14 @@ function evaluateBoolExpression(expr: BoolExprType, facts: Map<string, Fact>): b
         return false;
       }
       
-      return performComparison(expr.op, leftValue, rightValue);
+      return performComparison(expr.op, leftValue, rightValue); }
       
     case 'Base':
       // Base constraint - check specific constraint type
       return evaluateBaseConstraint(expr.body, facts);
       
     default:
-      console.warn('Unknown boolean expression type:', (expr as any).$);
+      console.warn('Unknown boolean expression type:', (expr));
       return false;
   }
 }
@@ -663,7 +646,7 @@ function evaluateBaseConstraint(constraint: BaseConstraintType, facts: Map<strin
       return false;
       
     default:
-      console.warn('Unknown base constraint type:', (constraint as any).$);
+      console.warn('Unknown base constraint type:', (constraint));
       return false;
   }
 }
@@ -759,23 +742,23 @@ function evaluateNumericExpression(expr: NumExprType, facts: Map<string, Fact>):
       return undefined;
       
     case 'Add':
-      const leftAdd = evaluateNumericExpression(expr.left, facts);
+      { const leftAdd = evaluateNumericExpression(expr.left, facts);
       const rightAdd = evaluateNumericExpression(expr.right, facts);
       if (leftAdd !== undefined && rightAdd !== undefined) {
         return leftAdd + rightAdd;
       }
-      return undefined;
+      return undefined; }
       
     case 'Sub':
-      const leftSub = evaluateNumericExpression(expr.left, facts);
+      { const leftSub = evaluateNumericExpression(expr.left, facts);
       const rightSub = evaluateNumericExpression(expr.right, facts);
       if (leftSub !== undefined && rightSub !== undefined) {
         return leftSub - rightSub;
       }
-      return undefined;
+      return undefined; }
       
     default:
-      console.warn('Unknown numeric expression type:', (expr as any).$);
+      console.warn('Unknown numeric expression type:', (expr));
       return undefined;
   }
 }
@@ -799,37 +782,6 @@ function performComparison(op: CompOp, left: bigint, right: bigint): boolean {
       console.warn('Unknown comparison operator:', op);
       return false;
   }
-}
-
-function createComparisonTest(comparison: ComparisonFact): ComparisonTest {
-  return {
-    op: comparison.op,
-    left: comparison.left,
-    right: comparison.right,
-    evaluate: (facts: Map<string, Fact>): boolean => {
-      // Evaluate the left and right numeric expressions
-      const leftValue = evaluateNumericExpression(comparison.left, facts);
-      const rightValue = evaluateNumericExpression(comparison.right, facts);
-      
-      // If either value is undefined, we can't evaluate the comparison
-      if (leftValue === undefined || rightValue === undefined) {
-        console.warn('Could not evaluate comparison - missing values:', {
-          left: leftValue,
-          right: rightValue,
-          leftExpr: comparison.left,
-          rightExpr: comparison.right
-        });
-        return false; // Fail the test if we can't evaluate
-      }
-      
-      // Perform the actual comparison
-      const result = performComparison(comparison.op, leftValue, rightValue);
-      
-      console.log(`Comparison evaluation: ${leftValue} ${comparison.op} ${rightValue} = ${result}`);
-      
-      return result;
-    }
-  };
 }
 
 /**
@@ -891,15 +843,15 @@ export class WorkingMemory {
     
     // Get or create the map for this account
     if (!this.accountFacts.has(account)) {
-      this.accountFacts.set(account, new Map());
+      const newAccountMap = new Map();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      this.accountFacts.set(account, newAccountMap);
       
-      // New account, just add the fact
-      const accountMap = this.accountFacts.get(account)!;
       const factKey = hashObject(fact);
-      accountMap.set(factKey, fact);
+      newAccountMap.set(factKey, fact);
       
       return { isNew: true, updated: false, fact };
-    }
+  }
     
     const accountMap = this.accountFacts.get(account)!;
     
@@ -986,7 +938,7 @@ export class WorkingMemory {
             existingPermFact.exists = newPermFact.exists;
             hasChanged = true;
           }
-        } else if (fact.type === 'PermissionEnabled') {
+        } else if (fact.type === 'PermissionEnabled') { // explicity should be match
           const existingPermFact = existingFact as PermissionEnabledFact;
           const newPermFact = fact;
           
@@ -1111,14 +1063,6 @@ export class WorkingMemory {
     };
   }
   
-  /**
-   * Set the current block information (legacy method)
-   * @param blockFact The block fact
-   * @returns true if the block info was updated, false otherwise
-   */
-  private setCurrentBlock(blockFact: BlockFact): boolean {
-    return true; // Always returns true for compatibility
-  }
   
   /**
    * Get all facts for a specific account
@@ -1406,7 +1350,7 @@ export class ReteNetwork {
       singleFactBeta.memory.successors.add(productionNode);
       
       // Process existing facts in this alpha node
-      for (const fact of alphaNodes[0]?.memory.facts || []) {
+      for (const fact of alphaNodes[0]?.memory.facts ?? []) {
         singleFactBeta.rightActivation(fact);
       }
     } else {
@@ -1426,7 +1370,7 @@ export class ReteNetwork {
       );
       
       // Process existing facts in the first alpha node
-      for (const fact of alphaNodes[0]?.memory.facts || []) {
+      for (const fact of alphaNodes[0]?.memory.facts ?? []) {
         previousNode.rightActivation(fact);
       }
       
@@ -1447,7 +1391,7 @@ export class ReteNetwork {
         );
         
         // Process existing facts in this alpha node
-        for (const fact of alphaNodes[i]?.memory.facts || []) {
+        for (const fact of alphaNodes[i]?.memory.facts ?? []) {
           currentNode.rightActivation(fact);
         }
         
@@ -1542,57 +1486,8 @@ export class ReteNetwork {
     
     return { isNew: result.isNew, updated: result.updated };
   }
-  
-  /**
-   * Check if a fact is an update to an existing fact
-   * @param fact The fact to check
-   * @returns true if this would update an existing fact
-   */
-  private isUpdateToExistingFact(fact: Fact): boolean {
-    // For account-based facts
-    if (fact.type === 'StakeOf') {
-      const accountFacts = this.workingMemory.getAccountFacts((fact as StakeOfFact).account);
-      return accountFacts.some(f => f.type === 'StakeOf');
-    }
     
-    // For InactiveUnlessRedelegated facts (account-based)
-    if (fact.type === 'InactiveUnlessRedelegated') {
-      const inactiveFact = fact as InactiveUnlessRedelegatedFact;
-      const accountFacts = this.workingMemory.getAccountFacts(inactiveFact.account);
-      return accountFacts.some(f => f.type === 'InactiveUnlessRedelegated');
-    }
-    
-    // For permission-based facts
-    if (
-      fact.type === 'PermissionExists' || 
-      fact.type === 'PermissionEnabled'
-    ) {
-      const permFact = fact as (PermissionExistsFact | PermissionEnabledFact);
-      const permFacts = this.workingMemory.getPermissionFacts(permFact.permId);
-      return permFacts.some(f => f.type === fact.type);
-    }
-    
-    return false;
-  }
-  
-  /**
-   * Remove a fact from the network
-   * @param fact The fact to remove
-   * @returns true if the fact was removed, false otherwise
-   */
-  removeFact(fact: Fact): boolean {
-    // We only need to implement the core logic for fact removal
-    // For a complete implementation, we would need to:
-    // 1. Remove the fact from working memory
-    // 2. Remove the fact from alpha memories
-    // 3. Remove tokens containing this fact from beta memories
-    // 4. Update production node activations
-    
-    // For now, we'll just remove from working memory
-    // TODO: Implement removeFact method in WorkingMemory class
-    return false;
-  }
-  
+
   /**
    * Add multiple facts to the network
    * @param facts The facts to add
@@ -1654,6 +1549,52 @@ export class ReteNetwork {
    */
   getFacts(): Fact[] {
     return this.workingMemory.getAllFacts();
+  }
+
+  /**
+   * Find constraints by permission ID
+   * @param permissionId The permission ID to search for
+   * @returns Array of constraint IDs for the given permission
+   */
+  getConstraintsByPermissionId(permissionId: PermId): string[] {
+    const constraintIds: string[] = [];
+    
+    for (const [id, node] of this.productionNodes.entries()) {
+      if (node.constraint.permId === permissionId) {
+        constraintIds.push(id);
+      }
+    }
+    
+    return constraintIds;
+  }
+
+  /**
+   * Remove a constraint from the network
+   * @param constraintId The ID of the constraint to remove
+   * @returns true if the constraint was removed, false if it didn't exist
+   */
+  removeConstraint(constraintId: string): boolean {
+    const productionNode = this.productionNodes.get(constraintId);
+    if (!productionNode) {
+      return false; // Constraint doesn't exist
+    }
+
+    // Remove the production node
+    this.productionNodes.delete(constraintId);
+    
+    // Remove constraint state tracking
+    this.constraintStates.delete(constraintId);
+    
+    // TODO: Implement proper cleanup of alpha/beta network nodes
+    // For now, we'll leave the network structure intact to avoid breaking other constraints
+    // In a full implementation, we'd need to:
+    // 1. Check if other constraints use the same alpha nodes
+    // 2. Remove unused alpha nodes
+    // 3. Remove unused beta nodes
+    // 4. Update network connections
+    
+    console.log(`Removed constraint: ${constraintId}`);
+    return true;
   }
 
   /**
@@ -1842,32 +1783,32 @@ export class ReteNetwork {
    * @returns Structured data about all network components
    */
   getNetworkComponents(): {
-    alphaNodes: Array<{
+    alphaNodes: {
       key: string;
       factCount: number;
-      facts: Array<{
+      facts: {
         type: string;
         details: any;
-      }>;
+      }[];
       successorCount: number;
-    }>;
-    betaNodes: Array<{
+    }[];
+    betaNodes: {
       index: number;
       tokenCount: number;
       uniqueCombinations: number;
-      allTokens: Array<{
+      allTokens: {
         tokenIndex: number;
-        facts: Array<{
+        facts: {
           key: string;
           type: string;
           details: any;
-        }>;
+        }[];
         factCount: number;
         summary: string;
-      }>;
+      }[];
       successorCount: number;
-    }>;
-    productionNodes: Array<{
+    }[];
+    productionNodes: {
       id: string;
       constraintId: string;
       activationCount: number;
@@ -1878,26 +1819,26 @@ export class ReteNetwork {
         bodyType: string;
         bodyStructure: any;
       };
-      allActivations: Array<{
+      allActivations: {
         activationIndex: number;
-        facts: Array<{
+        facts: {
           type: string;
           details: any;
-        }>;
+        }[];
         factCount: number;
         summary: string;
-      }>;
-    }>;
+      }[];
+    }[];
     workingMemory: {
       totalFacts: number;
-      accountFacts: Record<string, Array<{
+      accountFacts: Record<string, {
         type: string;
         details: any;
-      }>>;
-      permissionFacts: Record<string, Array<{
+      }[]>;
+      permissionFacts: Record<string, {
         type: string;
         details: any;
-      }>>;
+      }[]>;
       currentBlock?: {
         number: string;
         timestamp: string;
@@ -1993,8 +1934,8 @@ export class ReteNetwork {
 
     // Working memory
     const allFacts = this.workingMemory.getAllFacts();
-    const accountFacts: Record<string, Array<any>> = {};
-    const permissionFacts: Record<string, Array<any>> = {};
+    const accountFacts: Record<string, any[]> = {};
+    const permissionFacts: Record<string, any[]> = {};
     let currentBlock: any = undefined;
 
     allFacts.forEach(fact => {
@@ -2036,6 +1977,7 @@ export class ReteNetwork {
   /**
    * Gets a readable structure representation of a boolean expression
    */
+  // TODO: ZOD ZOD ZOD ZOD ZOD ZOD ZOD ZOD MATCH MATCH MATCH
   private getBoolExprStructure(expr: BoolExprType): any {
     switch (expr.$) {
       case 'Not':

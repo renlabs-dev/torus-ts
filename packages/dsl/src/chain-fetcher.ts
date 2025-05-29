@@ -1,20 +1,24 @@
-import { ApiPromise } from '@polkadot/api';
-import { setup, queryFreeBalance, queryKeyStakingTo, queryStakeOut, checkSS58, queryPermission, isPermissionEnabled, queryDelegationStreamsByAccount } from '@torus-network/sdk';
-import {
+import type { ApiPromise } from '@polkadot/api';
+import { 
+  setup, queryStakeOut, checkSS58, 
+  queryPermission, isPermissionEnabled, queryDelegationStreamsByAccount,
+  PERMISSION_ID_SCHEMA,
+} from '@torus-network/sdk';
+import type {
   AccountId,
   PermId,
   UInt,
   Constraint
 } from './types';
-import {
+import type {
   StakeOfFact,
   PermissionExistsFact,
   PermissionEnabledFact,
   InactiveUnlessRedelegatedFact,
   BlockFact,
-  SpecificFact,
-  extractFactsFromConstraint,
-  categorizeFacts
+  SpecificFact} from './facts';
+import {
+  extractFactsFromConstraint
 } from './facts';
 import { ReteNetwork } from './rete';
 
@@ -127,7 +131,7 @@ export class TorusChainFetcher implements ChainFetcher {
     const api = await this.ensureConnected();
     try {
       // Ensure permId is a hex string
-      const hexPermId = permId.startsWith('0x') ? permId as `0x${string}` : `0x${permId}` as `0x${string}`;
+      const hexPermId = PERMISSION_ID_SCHEMA.parse(permId);
       const permissionResult = await queryPermission(api, hexPermId);
       // Result is a tuple [error, value] - check if error is empty (undefined)
       const permExists = permissionResult[0] === undefined && permissionResult[1] !== null;
@@ -154,7 +158,8 @@ export class TorusChainFetcher implements ChainFetcher {
     
     try {
       // Ensure permId is a hex string
-      const hexPermId = permId.startsWith('0x') ? permId as `0x${string}` : `0x${permId}` as `0x${string}`;
+      // const hexPermId = permId.startsWith('0x') ? permId as `0x${string}` : `0x${permId}`;
+      const hexPermId = PERMISSION_ID_SCHEMA.parse(permId);
       
       // Use the new isPermissionEnabled function from the SDK
       const [error, enabled] = await isPermissionEnabled(api, hexPermId);
@@ -194,8 +199,8 @@ export class TorusChainFetcher implements ChainFetcher {
     try {
       // Validate addresses
       const validTargetAccount = checkSS58(account);
-      const hexPermId = permissionId.startsWith('0x') ? permissionId as `0x${string}` : `0x${permissionId}` as `0x${string}`;
-      
+      // const hexPermId = permissionId.startsWith('0x') ? permissionId as `0x${string}` : `0x${permissionId}`;
+      const hexPermId = PERMISSION_ID_SCHEMA.parse(permissionId);
       // Get the specific permission to find its grantee
       const [permissionError, permission] = await queryPermission(api, hexPermId);
       
@@ -233,7 +238,7 @@ export class TorusChainFetcher implements ChainFetcher {
       }
       
       // Check if any delegation stream goes to the target account with sufficient percentage
-      for (const [permId, delegationStream] of delegationStreams.entries()) {
+      for (const [_permId, delegationStream] of delegationStreams.entries()) {
         // Check if this delegation stream has the target account as one of its targets
         if (delegationStream.targets.has(validTargetAccount)) {
           // Check if the delegation percentage meets the requirement
@@ -315,20 +320,39 @@ export class ChainAwareReteNetwork extends ReteNetwork {
 
   /**
    * Add a constraint and automatically fetch all required facts from the chain
+   * When a constraint for the same permission already exists, it will be replaced
    * @param constraint The constraint to add
    * @returns The production node ID and the facts that were fetched
    */
   async addConstraintWithFacts(constraint: Constraint): Promise<{
     productionId: string;
     fetchedFacts: SpecificFact[];
+    replacedConstraints: string[];
   }> {
+    const replacedConstraints: string[] = [];
+    
+    // Check if there are existing constraints for this permission
+    const existingConstraintIds = this.getConstraintsByPermissionId(constraint.permId);
+    
+    if (existingConstraintIds.length > 0) {
+      console.log(`Found ${existingConstraintIds.length} existing constraint(s) for permission ${constraint.permId}, replacing them`);
+      
+      // Remove existing constraints from the network (but keep the facts)
+      for (const constraintId of existingConstraintIds) {
+        if (this.removeConstraint(constraintId)) {
+          replacedConstraints.push(constraintId);
+          console.log(`Removed existing constraint: ${constraintId}`);
+        }
+      }
+    }
+    
     // Extract required facts from the constraint
     const allFacts = extractFactsFromConstraint(constraint);
-    const facts = allFacts.filter(f => f.type !== 'Comparison') as SpecificFact[];
+    const facts = allFacts.filter(f => f.type !== 'Comparison');
     
     console.log(`Constraint requires ${facts.length} facts to be fetched from chain`);
     
-    // Add the constraint to the network FIRST (this creates the network structure)
+    // Add the new constraint to the network (this creates the network structure)
     const productionId = this.addConstraint(constraint);
     
     // THEN fetch and add facts to propagate through the network
@@ -356,7 +380,7 @@ export class ChainAwareReteNetwork extends ReteNetwork {
             break;
             
           default:
-            console.warn(`Unknown fact type: ${(fact as any).type}`);
+            console.warn(`Unknown fact type: ${(fact as SpecificFact).type}`);
             continue;
         }
         
@@ -375,7 +399,7 @@ export class ChainAwareReteNetwork extends ReteNetwork {
     // Also fetch current block info
     try {
       const blockFact = await this.fetcher.fetchCurrentBlock();
-      this.addFact(blockFact);
+      void this.addFact(blockFact);
       console.log('Fetched and added current block fact:', blockFact);
     } catch (error) {
       console.error('Failed to fetch current block:', error);
@@ -386,7 +410,8 @@ export class ChainAwareReteNetwork extends ReteNetwork {
     
     return {
       productionId,
-      fetchedFacts
+      fetchedFacts,
+      replacedConstraints
     };
   }
 }
@@ -416,41 +441,41 @@ export function createChainAwareReteNetwork(
  * Dummy implementation for testing without chain connection
  */
 export class DummyChainFetcher implements ChainFetcher {
-  async fetchStakeOf(account: AccountId): Promise<StakeOfFact> {
+  fetchStakeOf(account: AccountId): Promise<StakeOfFact> {
     // Return different amounts based on account to test different scenarios
     const amounts: Record<string, bigint> = {
       'alice': BigInt(1500),  // Should satisfy > 1000
       'bob': BigInt(6000),    // Should satisfy >= 5000
     };
-    return { 
+    return Promise.resolve({ 
       type: 'StakeOf', 
       account, 
-      amount: amounts[account] || BigInt(1000) 
-    };
+      amount: amounts[account] ?? BigInt(1000) 
+    });
   }
 
-  async fetchPermissionExists(permId: PermId): Promise<PermissionExistsFact> {
-    return { type: 'PermissionExists', permId, exists: true };
+  fetchPermissionExists(permId: PermId): Promise<PermissionExistsFact> {
+    return Promise.resolve({ type: 'PermissionExists', permId, exists: true });
   }
 
-  async fetchPermissionEnabled(permId: PermId): Promise<PermissionEnabledFact> {
-    return { type: 'PermissionEnabled', permId, enabled: true };
+  fetchPermissionEnabled(permId: PermId): Promise<PermissionEnabledFact> {
+    return Promise.resolve({ type: 'PermissionEnabled', permId, enabled: true });
   }
 
-  async fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt, permissionId: PermId): Promise<InactiveUnlessRedelegatedFact> {
-    return { type: 'InactiveUnlessRedelegated', account, percentage, isRedelegated: false };
+  fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt, _permissionId: PermId): Promise<InactiveUnlessRedelegatedFact> {
+    return Promise.resolve({ type: 'InactiveUnlessRedelegated', account, percentage, isRedelegated: false });
   }
 
-  async fetchCurrentBlock(): Promise<BlockFact> {
-    return {
+  fetchCurrentBlock(): Promise<BlockFact> {
+    return Promise.resolve({
       type: 'Block',
       number: BigInt(1000),
       timestamp: BigInt(Date.now())
-    };
+    });
   }
 
-  async ensureConnected(): Promise<ApiPromise> {
+  ensureConnected(): Promise<ApiPromise> {
     // Dummy implementation - just return a placeholder
-    throw new Error('DummyChainFetcher.ensureConnected() not implemented - use TorusChainFetcher for real connections');
+    return Promise.reject(new Error('DummyChainFetcher.ensureConnected() not implemented - use TorusChainFetcher for real connections'));
   }
 }
