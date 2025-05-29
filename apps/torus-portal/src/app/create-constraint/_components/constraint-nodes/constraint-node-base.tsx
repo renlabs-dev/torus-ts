@@ -117,6 +117,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
         id={`${id}-type`}
         value={data.expression.$}
         onValueChange={handleTypeChange}
+        isRenderingField={true} // All base constraint types render fields
         colorVariant={
           data.expression.$ === "PermissionExists"
             ? "green"
@@ -147,25 +148,19 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
 
       {(data.expression.$ === "PermissionExists" ||
         data.expression.$ === "PermissionEnabled") && (
-        <>
-          <div className="text-white relative">↓</div>
-
-          <ConstraintInput
-            id={`${id}-permission`}
-            type="text"
-            value={permissionId}
-            onChange={(e) => handlePermissionIdChange(e.target.value)}
-            placeholder="Enter permission ID"
-            hasError={!!permissionIdError}
-            errorMessage={permissionIdError}
-          />
-        </>
+        <ConstraintInput
+          id={`${id}-permission`}
+          type="text"
+          value={permissionId}
+          onChange={(e) => handlePermissionIdChange(e.target.value)}
+          placeholder="Enter permission ID"
+          hasError={!!permissionIdError}
+          errorMessage={permissionIdError}
+        />
       )}
 
       {data.expression.$ === "InactiveUnlessRedelegated" && (
         <>
-          <div className="text-white relative">↓</div>
-
           <ConstraintInput
             id={`${id}-account`}
             type="text"

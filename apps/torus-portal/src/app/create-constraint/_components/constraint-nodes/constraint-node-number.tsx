@@ -203,6 +203,9 @@ export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
         value={data.expression.$}
         onValueChange={handleTypeChange}
         className="w-fit"
+        isRenderingField={
+          data.expression.$ === "UIntLiteral" || data.expression.$ === "StakeOf"
+        }
         colorVariant={
           data.expression.$ === "UIntLiteral"
             ? "blue"
@@ -246,9 +249,6 @@ export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
           label="Subtract"
         />
       </ConstraintSelect>
-      {data.expression.$ !== "BlockNumber" && (
-        <div className="text-white relative">↓</div>
-      )}
 
       {data.expression.$ === "UIntLiteral" && (
         <ConstraintInput
