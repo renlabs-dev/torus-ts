@@ -5,20 +5,21 @@ import type { TabItem } from "~/app/_components/tab-layout";
 import { TabLayout } from "~/app/_components/tab-layout";
 import { env } from "~/env";
 
-export const metadata = createSeoMetadata({
-  title: "Transfer Tokens - Torus Wallet",
-  description: "Send and receive digital assets securely with Torus Wallet",
-  keywords: [
-    "crypto wallet",
-    "torus",
-    "send tokens",
-    "receive tokens",
-    "transfer",
-    "web3",
-  ],
-  baseUrlFn: () => env("BASE_URL"),
-  canonical: "/transfers",
-});
+export const generateMetadata = () =>
+  createSeoMetadata({
+    title: "Transfer Tokens - Torus Wallet",
+    description: "Send and receive digital assets securely with Torus Wallet",
+    keywords: [
+      "crypto wallet",
+      "torus",
+      "send tokens",
+      "receive tokens",
+      "transfer",
+      "web3",
+    ],
+    baseUrl: env("BASE_URL"),
+    canonical: "/transfers",
+  });
 
 const tabs: TabItem[] = [
   { text: "Send", value: "send", component: <Send /> },
