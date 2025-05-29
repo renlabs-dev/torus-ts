@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { api } from "~/trpc/react";
-import type { CustomGraphNode, GraphLink } from "./permission-graph-utils";
+import type {
+  CustomGraphNode,
+  GraphLink,
+} from "../app/(permission-graph)/_components/permission-graph-utils";
 import { env } from "~/env";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
