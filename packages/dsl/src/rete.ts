@@ -13,11 +13,8 @@ import type {
   SpecificFact,
   ComparisonFact,
   StakeOfFact,
-  WeightSetFact,
-  WeightPowerFromFact,
   PermissionExistsFact,
   PermissionEnabledFact,
-  MaxDelegationDepthFact,
   InactiveUnlessRedelegatedFact,
   BlockFact} from './facts';
 import {
@@ -231,22 +228,19 @@ export abstract class AlphaNode<T extends Fact> {
 /**
  * Alpha node for account-related facts
  */
-export class AccountAlphaNode extends AlphaNode<StakeOfFact | WeightSetFact | WeightPowerFromFact> {
+export class AccountAlphaNode extends AlphaNode<StakeOfFact> {
   private readonly accountId: AccountId;
   private readonly factSubtype?: string;
-  private readonly role?: 'from' | 'to' | 'any';
 
   /**
    * Create an account alpha node
    * @param accountId The account ID to match
-   * @param factSubtype Optional fact subtype (StakeOf, WeightSet, WeightPowerFrom)
-   * @param role Optional role (from, to, or any) for weight-related facts
+   * @param factSubtype Optional fact subtype (StakeOf)
    */
-  constructor(accountId: AccountId, factSubtype?: string, role: 'from' | 'to' | 'any' = 'any') {
+  constructor(accountId: AccountId, factSubtype?: string) {
     super();
     this.accountId = accountId;
     this.factSubtype = factSubtype;
-    this.role = role;
   }
 
   /**
@@ -264,25 +258,6 @@ export class AccountAlphaNode extends AlphaNode<StakeOfFact | WeightSetFact | We
       return (fact as StakeOfFact).account === this.accountId;
     }
     
-    if (fact.type === 'WeightSet' || fact.type === 'WeightPowerFrom') {
-      // If subtype is specified, only match that specific subtype
-      if (this.factSubtype && this.factSubtype !== fact.type) {
-        return false;
-      }
-      
-      const weightFact = fact as WeightSetFact | WeightPowerFromFact;
-      
-      // Check role if specified
-      if (this.role === 'from') {
-        return weightFact.from === this.accountId;
-      } else if (this.role === 'to') {
-        return weightFact.to === this.accountId;
-      } else {
-        // Match either from or to fields
-        return weightFact.from === this.accountId || weightFact.to === this.accountId;
-      }
-    }
-    
     return false;
   }
   
@@ -291,7 +266,7 @@ export class AccountAlphaNode extends AlphaNode<StakeOfFact | WeightSetFact | We
    * @returns A unique key for this node
    */
   getKey(): AlphaNodeKey {
-    return `Account:${this.accountId}:${this.factSubtype || 'Any'}:${this.role}`;
+    return `Account:${this.accountId}:${this.factSubtype || 'Any'}`;
   }
 }
 
@@ -299,7 +274,7 @@ export class AccountAlphaNode extends AlphaNode<StakeOfFact | WeightSetFact | We
  * Alpha node for permission-related facts
  */
 export class PermissionAlphaNode extends AlphaNode<
-  PermissionExistsFact | PermissionEnabledFact | MaxDelegationDepthFact | InactiveUnlessRedelegatedFact
+  PermissionExistsFact | PermissionEnabledFact | InactiveUnlessRedelegatedFact
 > {
   private readonly permId: PermId;
   private readonly factSubtype?: string;
@@ -324,9 +299,7 @@ export class PermissionAlphaNode extends AlphaNode<
     // Check if fact type is one of the permission-related types
     if (
       fact.type === 'PermissionExists' || 
-      fact.type === 'PermissionEnabled' || 
-      fact.type === 'MaxDelegationDepth' || 
-      fact.type === 'InactiveUnlessRedelegated'
+      fact.type === 'PermissionEnabled'
     ) {
       // If subtype is specified, only match that specific subtype
       if (this.factSubtype && this.factSubtype !== fact.type) {
@@ -337,10 +310,6 @@ export class PermissionAlphaNode extends AlphaNode<
         return (fact as PermissionExistsFact).permId === this.permId;
       } else if (fact.type === 'PermissionEnabled') {
         return (fact as PermissionEnabledFact).permId === this.permId;
-      } else if (fact.type === 'MaxDelegationDepth') {
-        return (fact as MaxDelegationDepthFact).permId === this.permId;
-      } else if (fact.type === 'InactiveUnlessRedelegated') {
-        return (fact as InactiveUnlessRedelegatedFact).permId === this.permId;
       }
     }
     
@@ -359,6 +328,29 @@ export class PermissionAlphaNode extends AlphaNode<
 /**
  * Block fact for tracking current block information
  */
+
+/**
+ * Alpha node for InactiveUnlessRedelegated facts
+ */
+export class InactiveUnlessRedelegatedAlphaNode extends AlphaNode<InactiveUnlessRedelegatedFact> {
+  private readonly accountId: AccountId;
+
+  constructor(accountId: AccountId) {
+    super();
+    this.accountId = accountId;
+  }
+
+  test(fact: Fact): boolean {
+    if (fact.type === 'InactiveUnlessRedelegated') {
+      return (fact as InactiveUnlessRedelegatedFact).account === this.accountId;
+    }
+    return false;
+  }
+
+  getKey(): AlphaNodeKey {
+    return `InactiveUnlessRedelegated:${this.accountId}`;
+  }
+}
 
 /**
  * Alpha node for block facts
@@ -499,13 +491,11 @@ export class BetaNode {
     // This helps with constraints that combine different types (like StakeOf and PermissionExists)
     const getEntityId = (f: Fact): string => {
       if (f.type === 'StakeOf') return (f as StakeOfFact).account;
-      if (f.type === 'WeightSet' || f.type === 'WeightPowerFrom') {
-        const wf = f as (WeightSetFact | WeightPowerFromFact);
-        return `${wf.from}:${wf.to}`;
+      if (f.type === 'InactiveUnlessRedelegated') {
+        return (f as InactiveUnlessRedelegatedFact).account;
       }
-      if (f.type === 'PermissionExists' || f.type === 'PermissionEnabled' || 
-          f.type === 'MaxDelegationDepth' || f.type === 'InactiveUnlessRedelegated') {
-        return 'permId' in f ? (f as any).permId : '';
+      if (f.type === 'PermissionExists' || f.type === 'PermissionEnabled') {
+        return (f as PermissionExistsFact | PermissionEnabledFact).permId;
       }
       return '';
     };
@@ -681,15 +671,13 @@ export class WorkingMemory {
   addOrUpdateFact(fact: Fact): { isNew: boolean, updated: boolean, fact: Fact } {
     if (fact.type === 'StakeOf') {
       return this.addOrUpdateAccountFact(fact as StakeOfFact);
-    } else if (fact.type === 'WeightSet' || fact.type === 'WeightPowerFrom') {
-      return this.addOrUpdateWeightFact(fact as (WeightSetFact | WeightPowerFromFact));
     } else if (
       fact.type === 'PermissionExists' || 
-      fact.type === 'PermissionEnabled' || 
-      fact.type === 'MaxDelegationDepth' || 
-      fact.type === 'InactiveUnlessRedelegated'
+      fact.type === 'PermissionEnabled'
     ) {
-      return this.addOrUpdatePermissionFact(fact as (PermissionExistsFact | PermissionEnabledFact | MaxDelegationDepthFact | InactiveUnlessRedelegatedFact));
+      return this.addOrUpdatePermissionFact(fact as (PermissionExistsFact | PermissionEnabledFact));
+    } else if (fact.type === 'InactiveUnlessRedelegated') {
+      return this.addOrUpdateInactiveUnlessRedelegatedFact(fact as InactiveUnlessRedelegatedFact);
     } else if (fact.type === 'Block') {
       return this.updateCurrentBlock(fact as BlockFact);
     } else {
@@ -769,134 +757,6 @@ export class WorkingMemory {
     return this.addOrUpdateAccountFact(fact).isNew;
   }
   
-  /**
-   * Add or update a weight fact
-   * @param fact The weight fact to add or update
-   * @returns Result object with isNew, updated flags and the final fact
-   */
-  private addOrUpdateWeightFact(fact: WeightSetFact | WeightPowerFromFact): 
-    { isNew: boolean, updated: boolean, fact: WeightSetFact | WeightPowerFromFact } {
-    const { from, to } = fact;
-    
-    // Check if we have existing weight facts for this from/to pair
-    let existingFact: WeightSetFact | WeightPowerFromFact | undefined;
-    let existingKey: string | undefined;
-    let sourceMap: Map<string, Fact> | undefined;
-    
-    // Check in 'from' account map
-    if (this.accountFacts.has(from)) {
-      const fromMap = this.accountFacts.get(from)!;
-      
-      for (const [key, f] of fromMap.entries()) {
-        if (f.type === fact.type && 
-            (f as any).from === from && 
-            (f as any).to === to) {
-          existingFact = f as (WeightSetFact | WeightPowerFromFact);
-          existingKey = key;
-          sourceMap = fromMap;
-          break;
-        }
-      }
-    }
-    
-    // If not found in 'from', check in 'to' account map
-    if (!existingFact && this.accountFacts.has(to)) {
-      const toMap = this.accountFacts.get(to)!;
-      
-      for (const [key, f] of toMap.entries()) {
-        if (f.type === fact.type && 
-            (f as any).from === from && 
-            (f as any).to === to) {
-          existingFact = f as (WeightSetFact | WeightPowerFromFact);
-          existingKey = key;
-          sourceMap = toMap;
-          break;
-        }
-      }
-    }
-    
-    // If we found an existing fact, update it
-    if (existingFact && existingKey && sourceMap) {
-      // Check if amount actually changed
-      if (existingFact.amount === fact.amount) {
-        return { isNew: false, updated: false, fact: existingFact };
-      }
-      
-      // Update the amount
-      existingFact.amount = fact.amount;
-      
-      // Remove old key and add with new key (since the hash may have changed)
-      sourceMap.delete(existingKey);
-      const newKey = hashObject(existingFact);
-      sourceMap.set(newKey, existingFact);
-      
-      // Also update in the other account map if it exists
-      if (sourceMap === this.accountFacts.get(from) && this.accountFacts.has(to)) {
-        const toMap = this.accountFacts.get(to)!;
-        
-        // Look for the fact in the to map
-        for (const [key, f] of toMap.entries()) {
-          if (f.type === fact.type && 
-              (f as any).from === from && 
-              (f as any).to === to) {
-            toMap.delete(key);
-            break;
-          }
-        }
-        
-        // Add updated fact to to map
-        toMap.set(newKey, existingFact);
-      } else if (sourceMap === this.accountFacts.get(to) && this.accountFacts.has(from)) {
-        const fromMap = this.accountFacts.get(from)!;
-        
-        // Look for the fact in the from map
-        for (const [key, f] of fromMap.entries()) {
-          if (f.type === fact.type && 
-              (f as any).from === from && 
-              (f as any).to === to) {
-            fromMap.delete(key);
-            break;
-          }
-        }
-        
-        // Add updated fact to from map
-        fromMap.set(newKey, existingFact);
-      }
-      
-      return { isNew: false, updated: true, fact: existingFact };
-    }
-    
-    // No existing fact found, add a new one
-    
-    // For the 'from' account
-    if (!this.accountFacts.has(from)) {
-      this.accountFacts.set(from, new Map());
-    }
-    
-    const fromMap = this.accountFacts.get(from)!;
-    const factKey = hashObject(fact);
-    
-    fromMap.set(factKey, fact);
-    
-    // For the 'to' account
-    if (!this.accountFacts.has(to)) {
-      this.accountFacts.set(to, new Map());
-    }
-    
-    const toMap = this.accountFacts.get(to)!;
-    toMap.set(factKey, fact);
-    
-    return { isNew: true, updated: false, fact };
-  }
-  
-  /**
-   * Add a weight fact (legacy method)
-   * @param fact The weight fact to add
-   * @returns true if the fact was new, false otherwise
-   */
-  private addWeightFact(fact: WeightSetFact | WeightPowerFromFact): boolean {
-    return this.addOrUpdateWeightFact(fact).isNew;
-  }
   
   /**
    * Add or update a permission fact
@@ -904,17 +764,13 @@ export class WorkingMemory {
    * @returns Result object with isNew, updated flags and the final fact
    */
   private addOrUpdatePermissionFact(
-    fact: PermissionExistsFact | PermissionEnabledFact | MaxDelegationDepthFact | InactiveUnlessRedelegatedFact
+    fact: PermissionExistsFact | PermissionEnabledFact
   ): { 
     isNew: boolean, 
     updated: boolean, 
-    fact: PermissionExistsFact | PermissionEnabledFact | MaxDelegationDepthFact | InactiveUnlessRedelegatedFact 
+    fact: PermissionExistsFact | PermissionEnabledFact 
   } {
-    const permId = 'permId' in fact ? fact.permId : '';
-    
-    if (!permId) {
-      return { isNew: false, updated: false, fact }; // Invalid permission fact
-    }
+    const permId = fact.permId;
     
     // Get or create the map for this permission
     if (!this.permissionFacts.has(permId)) {
@@ -953,25 +809,6 @@ export class WorkingMemory {
             existingPermFact.enabled = newPermFact.enabled;
             hasChanged = true;
           }
-        } else if (fact.type === 'MaxDelegationDepth') {
-          const existingPermFact = existingFact as MaxDelegationDepthFact;
-          const newPermFact = fact;
-          
-          // For MaxDelegationDepth, we need to check if the depth or actualDepth changed
-          if (JSON.stringify(existingPermFact.depth) !== JSON.stringify(newPermFact.depth) ||
-              existingPermFact.actualDepth !== newPermFact.actualDepth) {
-            existingPermFact.depth = newPermFact.depth;
-            existingPermFact.actualDepth = newPermFact.actualDepth;
-            hasChanged = true;
-          }
-        } else if (fact.type === 'InactiveUnlessRedelegated') {
-          const existingPermFact = existingFact as InactiveUnlessRedelegatedFact;
-          const newPermFact = fact;
-          
-          if (existingPermFact.isRedelegated !== newPermFact.isRedelegated) {
-            existingPermFact.isRedelegated = newPermFact.isRedelegated;
-            hasChanged = true;
-          }
         }
         
         if (!hasChanged) {
@@ -986,9 +823,7 @@ export class WorkingMemory {
         return { 
           isNew: false, 
           updated: true, 
-          fact: existingFact as 
-            PermissionExistsFact | PermissionEnabledFact | 
-            MaxDelegationDepthFact | InactiveUnlessRedelegatedFact 
+          fact: existingFact as PermissionExistsFact | PermissionEnabledFact 
         };
       }
     }
@@ -1001,12 +836,71 @@ export class WorkingMemory {
   }
   
   /**
+   * Add or update an InactiveUnlessRedelegated fact
+   * @param fact The InactiveUnlessRedelegated fact to add or update
+   * @returns Result object with isNew, updated flags and the final fact
+   */
+  private addOrUpdateInactiveUnlessRedelegatedFact(
+    fact: InactiveUnlessRedelegatedFact
+  ): { 
+    isNew: boolean, 
+    updated: boolean, 
+    fact: InactiveUnlessRedelegatedFact 
+  } {
+    const { account } = fact;
+    
+    // Get or create the map for this account
+    if (!this.accountFacts.has(account)) {
+      this.accountFacts.set(account, new Map());
+      
+      // New account, just add the fact
+      const accountMap = this.accountFacts.get(account)!;
+      const factKey = hashObject(fact);
+      accountMap.set(factKey, fact);
+      
+      return { isNew: true, updated: false, fact };
+    }
+    
+    const accountMap = this.accountFacts.get(account)!;
+    
+    // Check if we already have an InactiveUnlessRedelegated fact for this account
+    for (const [key, existingFact] of accountMap.entries()) {
+      if (existingFact.type === 'InactiveUnlessRedelegated') {
+        const existingInactiveFact = existingFact as InactiveUnlessRedelegatedFact;
+        
+        // Check if values actually changed
+        if (existingInactiveFact.percentage === fact.percentage && 
+            existingInactiveFact.isRedelegated === fact.isRedelegated) {
+          return { isNew: false, updated: false, fact: existingInactiveFact };
+        }
+        
+        // Update the values
+        existingInactiveFact.percentage = fact.percentage;
+        existingInactiveFact.isRedelegated = fact.isRedelegated;
+        
+        // Remove old key and add with new key (since the hash may have changed)
+        accountMap.delete(key);
+        const newKey = hashObject(existingInactiveFact);
+        accountMap.set(newKey, existingInactiveFact);
+        
+        return { isNew: false, updated: true, fact: existingInactiveFact };
+      }
+    }
+    
+    // No existing InactiveUnlessRedelegated fact found, add a new one
+    const factKey = hashObject(fact);
+    accountMap.set(factKey, fact);
+    
+    return { isNew: true, updated: false, fact };
+  }
+
+  /**
    * Add a permission fact (legacy method)
    * @param fact The permission fact to add
    * @returns true if the fact was new, false otherwise
    */
   private addPermissionFact(
-    fact: PermissionExistsFact | PermissionEnabledFact | MaxDelegationDepthFact | InactiveUnlessRedelegatedFact
+    fact: PermissionExistsFact | PermissionEnabledFact
   ): boolean {
     return this.addOrUpdatePermissionFact(fact).isNew;
   }
@@ -1108,6 +1002,26 @@ export class ReteNetwork {
   // Working memory
   private workingMemory: WorkingMemory = new WorkingMemory();
   
+  // Constraint state tracking for enforcement
+  private constraintStates = new Map<string, boolean | undefined>(); // undefined = never evaluated
+  private onConstraintViolated?: (constraintId: string) => Promise<void>;
+  
+  /**
+   * Create a new ReteNetwork instance
+   * @param onConstraintViolated Optional callback for when constraints become violated
+   */
+  constructor(onConstraintViolated?: (constraintId: string) => Promise<void>) {
+    this.onConstraintViolated = onConstraintViolated;
+  }
+
+  /**
+   * Set the constraint violation handler
+   * @param handler Callback function to call when a constraint becomes violated
+   */
+  setViolationHandler(handler: (constraintId: string) => Promise<void>): void {
+    this.onConstraintViolated = handler;
+  }
+
   /**
    * Add a constraint to the Rete network
    * @param constraint The constraint to add
@@ -1140,48 +1054,29 @@ export class ReteNetwork {
           alphaNode = new AccountAlphaNode(fact.account, 'StakeOf');
           this.alphaNodes.set(key, alphaNode);
         }
-      } else if (fact.type === 'WeightSet' || fact.type === 'WeightPowerFrom') {
-        // Weight fact - index by from and to accounts
-        
-        // From account node
-        const keyFrom = `Account:${fact.from}:${fact.type}:from`;
-        let alphaNodeFrom = this.alphaNodes.get(keyFrom)!;
-        
-        if (!alphaNodeFrom) {
-          alphaNodeFrom = new AccountAlphaNode(fact.from, fact.type, 'from');
-          this.alphaNodes.set(keyFrom, alphaNodeFrom);
-        }
-        
-        // To account node
-        const keyTo = `Account:${fact.to}:${fact.type}:to`;
-        let alphaNodeTo = this.alphaNodes.get(keyTo)!;
-        
-        if (!alphaNodeTo) {
-          alphaNodeTo = new AccountAlphaNode(fact.to, fact.type, 'to');
-          this.alphaNodes.set(keyTo, alphaNodeTo);
-        }
-        
-        alphaNodes.push(alphaNodeFrom);
-        alphaNodes.push(alphaNodeTo);
-        continue; // Skip adding again below
       } else if (
         fact.type === 'PermissionExists' || 
-        fact.type === 'PermissionEnabled' || 
-        fact.type === 'MaxDelegationDepth' || 
-        fact.type === 'InactiveUnlessRedelegated'
+        fact.type === 'PermissionEnabled'
       ) {
         // Permission fact - index by permId
-        const permId = 'permId' in fact ? fact.permId : '';
-        
-        if (!permId) {
-          continue; // Skip invalid permission facts
-        }
+        const permId = fact.permId;
         
         const key = `Permission:${permId}:${fact.type}`;
         alphaNode = this.alphaNodes.get(key)!;
         
         if (!alphaNode) {
           alphaNode = new PermissionAlphaNode(permId, fact.type);
+          this.alphaNodes.set(key, alphaNode);
+        }
+      } else if (fact.type === 'InactiveUnlessRedelegated') {
+        // InactiveUnlessRedelegated fact - index by account
+        const account = fact.account;
+        
+        const key = `InactiveUnlessRedelegated:${account}`;
+        alphaNode = this.alphaNodes.get(key)!;
+        
+        if (!alphaNode) {
+          alphaNode = new InactiveUnlessRedelegatedAlphaNode(account);
           this.alphaNodes.set(key, alphaNode);
         }
       } else if (fact.type === 'Block') {
@@ -1274,6 +1169,9 @@ export class ReteNetwork {
     const productionId = `prod_${constraint.permId}_${Date.now()}`;
     this.productionNodes.set(productionId, productionNode);
     
+    // Initialize constraint state as undefined (never evaluated)
+    this.constraintStates.set(productionId, undefined);
+    
     return productionId;
   }
   
@@ -1304,7 +1202,10 @@ export class ReteNetwork {
    * @param fact The fact to add or update
    * @returns An object with information about the operation result
    */
-  addFact(fact: Fact): { isNew: boolean, updated: boolean } {
+  async addFact(fact: Fact): Promise<{ isNew: boolean, updated: boolean }> {
+    // Store previous constraint states for violation detection
+    const previousStates = new Map(this.constraintStates);
+    
     // Add or update the fact in working memory
     const result = this.workingMemory.addOrUpdateFact(fact);
     
@@ -1312,6 +1213,29 @@ export class ReteNetwork {
     if (result.isNew || result.updated) {
       // Process the fact through the network
       this.processFact(result.fact, result.updated);
+      
+      // Check for constraint violations if we have a violation handler
+      if (this.onConstraintViolated) {
+        for (const [constraintId, productionNode] of this.productionNodes) {
+          const currentlyActivated = productionNode.getActivations().length > 0;
+          const currentState = currentlyActivated; // true = satisfied, false = violated
+          const previousState = previousStates.get(constraintId);
+          
+          // Check if constraint transitioned from satisfied/unknown to violated
+          if (previousState !== false && currentState === false) {
+            // Constraint became violated - call the violation handler
+            try {
+              await this.onConstraintViolated(constraintId);
+            } catch (error) {
+              // Log error but don't stop processing
+              console.error(`Error in constraint violation handler for ${constraintId}:`, error);
+            }
+          }
+          
+          // Update the constraint state
+          this.constraintStates.set(constraintId, currentState);
+        }
+      }
     }
     
     return { isNew: result.isNew, updated: result.updated };
@@ -1329,35 +1253,20 @@ export class ReteNetwork {
       return accountFacts.some(f => f.type === 'StakeOf');
     }
     
-    // For weight-based facts
-    if (fact.type === 'WeightSet' || fact.type === 'WeightPowerFrom') {
-      const weightFact = fact as (WeightSetFact | WeightPowerFromFact);
-      const fromFacts = this.workingMemory.getAccountFacts(weightFact.from);
-      const toFacts = this.workingMemory.getAccountFacts(weightFact.to);
-      
-      // Check if we already have a weight fact for this from/to pair
-      return fromFacts.some(f => 
-        (f.type === fact.type) && 
-        (f as any).from === weightFact.from && 
-        (f as any).to === weightFact.to
-      ) || toFacts.some(f => 
-        (f.type === fact.type) && 
-        (f as any).from === weightFact.from && 
-        (f as any).to === weightFact.to
-      );
+    // For InactiveUnlessRedelegated facts (account-based)
+    if (fact.type === 'InactiveUnlessRedelegated') {
+      const inactiveFact = fact as InactiveUnlessRedelegatedFact;
+      const accountFacts = this.workingMemory.getAccountFacts(inactiveFact.account);
+      return accountFacts.some(f => f.type === 'InactiveUnlessRedelegated');
     }
     
     // For permission-based facts
     if (
       fact.type === 'PermissionExists' || 
-      fact.type === 'PermissionEnabled' || 
-      fact.type === 'MaxDelegationDepth' || 
-      fact.type === 'InactiveUnlessRedelegated'
+      fact.type === 'PermissionEnabled'
     ) {
-      const permId = 'permId' in fact ? (fact as any).permId : '';
-      if (!permId) return false;
-      
-      const permFacts = this.workingMemory.getPermissionFacts(permId);
+      const permFact = fact as (PermissionExistsFact | PermissionEnabledFact);
+      const permFacts = this.workingMemory.getPermissionFacts(permFact.permId);
       return permFacts.some(f => f.type === fact.type);
     }
     
@@ -1391,11 +1300,11 @@ export class ReteNetwork {
    * @param facts The facts to add or update
    * @returns Array of results for each fact
    */
-  addFacts(facts: Fact[]): { isNew: boolean, updated: boolean }[] {
+  async addFacts(facts: Fact[]): Promise<{ isNew: boolean, updated: boolean }[]> {
     const results: { isNew: boolean, updated: boolean }[] = [];
     
     for (const fact of facts) {
-      results.push(this.addFact(fact));
+      results.push(await this.addFact(fact));
     }
     
     return results;
@@ -1471,19 +1380,11 @@ export class ReteNetwork {
           .map(fact => {
             if (fact.type === 'StakeOf') {
               return `StakeOf:${(fact as StakeOfFact).account}:${(fact as StakeOfFact).amount}`;
-            } else if (fact.type === 'WeightSet' || fact.type === 'WeightPowerFrom') {
-              const wf = fact as (WeightSetFact | WeightPowerFromFact);
-              return `${fact.type}:${wf.from}:${wf.to}:${wf.amount}`;
-            } else if (
-              fact.type === 'PermissionExists' || 
-              fact.type === 'PermissionEnabled' || 
-              fact.type === 'MaxDelegationDepth' || 
-              fact.type === 'InactiveUnlessRedelegated'
-            ) {
-              if ('permId' in fact) {
-                return `${fact.type}:${(fact as any).permId}`;
-              }
-              return fact.type;
+            } else if (fact.type === 'PermissionExists' || fact.type === 'PermissionEnabled') {
+              return `${fact.type}:${(fact as PermissionExistsFact | PermissionEnabledFact).permId}`;
+            } else if (fact.type === 'InactiveUnlessRedelegated') {
+              const iur = fact as InactiveUnlessRedelegatedFact;
+              return `${fact.type}:${iur.account}:${iur.percentage}`;
             } else {
               return fact.type;
             }
@@ -1523,19 +1424,11 @@ export class ReteNetwork {
           .map(fact => {
             if (fact.type === 'StakeOf') {
               return `StakeOf:${(fact as StakeOfFact).account}:${(fact as StakeOfFact).amount}`;
-            } else if (fact.type === 'WeightSet' || fact.type === 'WeightPowerFrom') {
-              const wf = fact as (WeightSetFact | WeightPowerFromFact);
-              return `${fact.type}:${wf.from}:${wf.to}:${wf.amount}`;
-            } else if (
-              fact.type === 'PermissionExists' || 
-              fact.type === 'PermissionEnabled' || 
-              fact.type === 'MaxDelegationDepth' || 
-              fact.type === 'InactiveUnlessRedelegated'
-            ) {
-              if ('permId' in fact) {
-                return `${fact.type}:${(fact as any).permId}`;
-              }
-              return fact.type;
+            } else if (fact.type === 'PermissionExists' || fact.type === 'PermissionEnabled') {
+              return `${fact.type}:${(fact as PermissionExistsFact | PermissionEnabledFact).permId}`;
+            } else if (fact.type === 'InactiveUnlessRedelegated') {
+              const iur = fact as InactiveUnlessRedelegatedFact;
+              return `${fact.type}:${iur.account}:${iur.percentage}`;
             } else {
               return fact.type;
             }
@@ -1558,13 +1451,13 @@ export class ReteNetwork {
           
           if (fact.type === 'StakeOf') {
             factDetails += ` of ${(fact as StakeOfFact).account}: ${(fact as StakeOfFact).amount}`;
-          } else if (fact.type === 'WeightSet') {
-            const wf = fact as WeightSetFact;
-            factDetails += ` from ${wf.from} to ${wf.to}: ${wf.amount}`;
           } else if (fact.type === 'PermissionExists') {
             factDetails += ` for ${(fact as PermissionExistsFact).permId}: ${(fact as PermissionExistsFact).exists}`;
           } else if (fact.type === 'PermissionEnabled') {
             factDetails += ` for ${(fact as PermissionEnabledFact).permId}: ${(fact as PermissionEnabledFact).enabled}`;
+          } else if (fact.type === 'InactiveUnlessRedelegated') {
+            const iur = fact as InactiveUnlessRedelegatedFact;
+            factDetails += ` for ${iur.account}: ${iur.percentage}% (redelegated: ${iur.isRedelegated})`;
           }
           
           visualization += `      ${factDetails}\n`;

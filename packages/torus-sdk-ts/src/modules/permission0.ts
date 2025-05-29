@@ -428,6 +428,34 @@ export function canExecutePermission(
   return !isPermissionExpired(permission, currentBlock);
 }
 
+/**
+ * Check if a permission is enabled by verifying that accumulating = true in an EmissionScope
+ */
+export async function isPermissionEnabled(
+  api: Api,
+  permissionId: PermissionId,
+): Promise<Result<boolean, ZError<PermissionContract> | Error>> {
+  const [permissionError, permission] = await queryPermission(api, permissionId);
+  if (permissionError !== undefined) return makeErr(permissionError);
+  
+  if (permission === null) {
+    return makeErr(new Error(`Permission ${permissionId} not found`));
+  }
+
+  const isEnabled = match(permission.scope)({
+    Emission(emissionScope) {
+      return emissionScope.accumulating;
+    },
+    Curator() {
+      // Curator permissions don't have an accumulating field
+      // Consider them always "enabled" if they exist and aren't expired
+      return true;
+    },
+  });
+
+  return makeOk(isEnabled);
+}
+
 // ==== Transaction Functions ====
 
 /**

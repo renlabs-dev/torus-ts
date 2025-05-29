@@ -98,10 +98,6 @@ function analyzeExpr(expr: BoolExprType, analysis: ConstraintAnalysis): void {
  */
 function analyzeBase(base: BaseConstraintType, analysis: ConstraintAnalysis): void {
   switch(base.$) {
-    case "MaxDelegationDepth":
-      analysis.type = "Delegation Depth Limit";
-      analysis.description = "Limits the maximum delegation depth";
-      break;
     case "PermissionExists":
       analysis.type = "Permission Requirement";
       analysis.description = `Requires permission ${base.pid} to exist`;
@@ -110,13 +106,9 @@ function analyzeBase(base: BaseConstraintType, analysis: ConstraintAnalysis): vo
       analysis.type = "Permission Requirement";
       analysis.description = `Requires permission ${base.pid} to be enabled`;
       break;
-    case "RateLimit":
-      analysis.type = "Rate Limit";
-      analysis.description = "Applies a rate limit to operations";
-      break;
     case "InactiveUnlessRedelegated":
       analysis.type = "Delegation Condition";
-      analysis.description = "Inactive unless redelegated";
+      analysis.description = `Account ${base.account} inactive unless ${base.percentage}% redelegated`;
       break;
   }
 }
@@ -155,15 +147,9 @@ export function createSampleConstraint(): Constraint {
         right: {
           $: "Base",
           body: {
-            $: "RateLimit",
-            maxOperations: {
-              $: "UIntLiteral",
-              value: BigInt(5)
-            },
-            period: {
-              $: "UIntLiteral",
-              value: BigInt(100)
-            }
+            $: "InactiveUnlessRedelegated",
+            account: "account456",
+            percentage: BigInt(75)
           }
         }
       }

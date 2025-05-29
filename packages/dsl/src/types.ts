@@ -25,22 +25,17 @@ export enum CompOp {
  */
 export type NumExprType =
   | { $: "UIntLiteral"; value: UInt }
-  | { $: "BlockNumber" }
+  | { $: "BlockNumber" } // current block
   | { $: "StakeOf"; account: AccountId }
   | { $: "Add"; left: NumExprType; right: NumExprType }
-  | { $: "Sub"; left: NumExprType; right: NumExprType }
-  | { $: "WeightSet"; from: AccountId; to: AccountId }
-  | { $: "WeightPowerFrom"; from: AccountId; to: AccountId };
-
+  | { $: "Sub"; left: NumExprType; right: NumExprType };
 /**
  * Base constraint expressions
  */
 export type BaseConstraintType =
-  | { $: "MaxDelegationDepth"; depth: NumExprType }
   | { $: "PermissionExists"; pid: PermId }
   | { $: "PermissionEnabled"; pid: PermId }
-  | { $: "RateLimit"; maxOperations: NumExprType; period: NumExprType }
-  | { $: "InactiveUnlessRedelegated" };
+  | { $: "InactiveUnlessRedelegated"; account: AccountId;  percentage: UInt}; // Has to be delegated; actually a decimal 0  <= x <= 100
 
 /**
  * Boolean expression types

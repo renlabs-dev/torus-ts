@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { setup, queryFreeBalance, queryKeyStakingTo, queryStakeOut, checkSS58, queryPermission } from '@torus-network/sdk';
+import { setup, queryFreeBalance, queryKeyStakingTo, queryStakeOut, checkSS58, queryPermission, isPermissionEnabled } from '@torus-network/sdk';
 import {
   AccountId,
   PermId,
@@ -8,11 +8,8 @@ import {
 } from './types';
 import {
   StakeOfFact,
-  WeightSetFact,
-  WeightPowerFromFact,
   PermissionExistsFact,
   PermissionEnabledFact,
-  MaxDelegationDepthFact,
   InactiveUnlessRedelegatedFact,
   BlockFact,
   SpecificFact,
@@ -31,14 +28,11 @@ export interface ChainFetcher {
   
   // Account-related facts
   fetchStakeOf(account: AccountId): Promise<StakeOfFact>;
-  fetchWeightSet(from: AccountId, to: AccountId): Promise<WeightSetFact>;
-  fetchWeightPowerFrom(from: AccountId, to: AccountId): Promise<WeightPowerFromFact>;
   
   // Permission-related facts
   fetchPermissionExists(permId: PermId): Promise<PermissionExistsFact>;
   fetchPermissionEnabled(permId: PermId): Promise<PermissionEnabledFact>;
-  fetchMaxDelegationDepth(permId: PermId): Promise<MaxDelegationDepthFact>;
-  fetchInactiveUnlessRedelegated(permId: PermId): Promise<InactiveUnlessRedelegatedFact>;
+  fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt): Promise<InactiveUnlessRedelegatedFact>;
   
   // Block-related facts
   fetchCurrentBlock(): Promise<BlockFact>;
@@ -125,75 +119,6 @@ export class TorusChainFetcher implements ChainFetcher {
     }
   }
 
-  /**
-   * Fetch the weight set from one account to another
-   */
-  async fetchWeightSet(from: AccountId, to: AccountId): Promise<WeightSetFact> {
-    const api = await this.ensureConnected();
-    
-    try {
-      // Validate SS58 addresses
-      const validFromAddress = checkSS58(from);
-      const validToAddress = checkSS58(to);
-      
-      // Query the staking delegation from 'from' account
-      const stakingData = await queryKeyStakingTo(api, validFromAddress);
-      
-      // Find the stake delegated to the 'to' account
-      const delegation = stakingData.find(stake => stake.address === validToAddress);
-      
-      return {
-        type: 'WeightSet',
-        from,
-        to,
-        amount: delegation ? delegation.stake : BigInt(0)
-      };
-    } catch (error) {
-      console.error(`Error fetching weight set from ${from} to ${to}:`, error);
-      return {
-        type: 'WeightSet',
-        from,
-        to,
-        amount: BigInt(0)
-      };
-    }
-  }
-
-  /**
-   * Fetch the weight power from one account to another
-   */
-  async fetchWeightPowerFrom(from: AccountId, to: AccountId): Promise<WeightPowerFromFact> {
-    const api = await this.ensureConnected();
-    
-    try {
-      // Validate SS58 addresses
-      const validFromAddress = checkSS58(from);
-      const validToAddress = checkSS58(to);
-      
-      // TODO: Implement weight power calculation
-      // This might require querying multiple storage items and calculating
-      // the effective voting power including delegations
-      
-      // For now, use the same logic as weight set
-      const stakingData = await queryKeyStakingTo(api, validFromAddress);
-      const delegation = stakingData.find(stake => stake.address === validToAddress);
-      
-      return {
-        type: 'WeightPowerFrom',
-        from,
-        to,
-        amount: delegation ? delegation.stake : BigInt(0)
-      };
-    } catch (error) {
-      console.error(`Error fetching weight power from ${from} to ${to}:`, error);
-      return {
-        type: 'WeightPowerFrom',
-        from,
-        to,
-        amount: BigInt(0)
-      };
-    }
-  }
 
   /**
    * Fetch whether a permission exists
@@ -228,13 +153,25 @@ export class TorusChainFetcher implements ChainFetcher {
     const api = await this.ensureConnected();
     
     try {
-      // TODO: Implement permission enabled check
-      // This depends on how permission status is stored in the Torus runtime
+      // Ensure permId is a hex string
+      const hexPermId = permId.startsWith('0x') ? permId as `0x${string}` : `0x${permId}` as `0x${string}`;
+      
+      // Use the new isPermissionEnabled function from the SDK
+      const [error, enabled] = await isPermissionEnabled(api, hexPermId);
+      
+      if (error !== undefined) {
+        console.error(`Error checking if permission ${permId} is enabled:`, error);
+        return {
+          type: 'PermissionEnabled',
+          permId,
+          enabled: false
+        };
+      }
       
       return {
         type: 'PermissionEnabled',
         permId,
-        enabled: false // TODO: Replace with actual enabled status query
+        enabled
       };
     } catch (error) {
       console.error(`Error checking if permission ${permId} is enabled:`, error);
@@ -246,37 +183,11 @@ export class TorusChainFetcher implements ChainFetcher {
     }
   }
 
-  /**
-   * Fetch the maximum delegation depth for a permission
-   */
-  async fetchMaxDelegationDepth(permId: PermId): Promise<MaxDelegationDepthFact> {
-    const api = await this.ensureConnected();
-    
-    try {
-      // TODO: Implement max delegation depth query
-      // This depends on how delegation depths are stored in the Torus runtime
-      
-      return {
-        type: 'MaxDelegationDepth',
-        permId,
-        depth: { $: 'UIntLiteral', value: BigInt(0) }, // TODO: Replace with actual depth expression
-        actualDepth: BigInt(0) // TODO: Replace with actual depth value
-      };
-    } catch (error) {
-      console.error(`Error fetching max delegation depth for permission ${permId}:`, error);
-      return {
-        type: 'MaxDelegationDepth',
-        permId,
-        depth: { $: 'UIntLiteral', value: BigInt(0) },
-        actualDepth: BigInt(0)
-      };
-    }
-  }
 
   /**
-   * Fetch whether a permission is inactive unless redelegated
+   * Fetch whether an account is inactive unless redelegated
    */
-  async fetchInactiveUnlessRedelegated(permId: PermId): Promise<InactiveUnlessRedelegatedFact> {
+  async fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt): Promise<InactiveUnlessRedelegatedFact> {
     const api = await this.ensureConnected();
     
     try {
@@ -285,14 +196,16 @@ export class TorusChainFetcher implements ChainFetcher {
       
       return {
         type: 'InactiveUnlessRedelegated',
-        permId,
+        account,
+        percentage,
         isRedelegated: false // TODO: Replace with actual redelegation status
       };
     } catch (error) {
-      console.error(`Error checking redelegation status for permission ${permId}:`, error);
+      console.error(`Error checking redelegation status for account ${account}:`, error);
       return {
         type: 'InactiveUnlessRedelegated',
-        permId,
+        account,
+        percentage,
         isRedelegated: false
       };
     }
@@ -375,14 +288,6 @@ export class ChainAwareReteNetwork extends ReteNetwork {
             fetchedFact = await this.fetcher.fetchStakeOf(fact.account);
             break;
             
-          case 'WeightSet':
-            fetchedFact = await this.fetcher.fetchWeightSet(fact.from, fact.to);
-            break;
-            
-          case 'WeightPowerFrom':
-            fetchedFact = await this.fetcher.fetchWeightPowerFrom(fact.from, fact.to);
-            break;
-            
           case 'PermissionExists':
             fetchedFact = await this.fetcher.fetchPermissionExists(fact.permId);
             break;
@@ -391,12 +296,8 @@ export class ChainAwareReteNetwork extends ReteNetwork {
             fetchedFact = await this.fetcher.fetchPermissionEnabled(fact.permId);
             break;
             
-          case 'MaxDelegationDepth':
-            fetchedFact = await this.fetcher.fetchMaxDelegationDepth(fact.permId);
-            break;
-            
           case 'InactiveUnlessRedelegated':
-            fetchedFact = await this.fetcher.fetchInactiveUnlessRedelegated(fact.permId);
+            fetchedFact = await this.fetcher.fetchInactiveUnlessRedelegated(fact.account, fact.percentage);
             break;
             
           default:
@@ -405,7 +306,7 @@ export class ChainAwareReteNetwork extends ReteNetwork {
         }
         
         // Add the fetched fact to the network
-        this.addFact(fetchedFact);
+        await this.addFact(fetchedFact);
         fetchedFacts.push(fetchedFact);
         
         console.log(`Fetched and added fact: ${fetchedFact.type}`, fetchedFact);
@@ -469,14 +370,6 @@ export class DummyChainFetcher implements ChainFetcher {
     };
   }
 
-  async fetchWeightSet(from: AccountId, to: AccountId): Promise<WeightSetFact> {
-    return { type: 'WeightSet', from, to, amount: BigInt(500) };
-  }
-
-  async fetchWeightPowerFrom(from: AccountId, to: AccountId): Promise<WeightPowerFromFact> {
-    return { type: 'WeightPowerFrom', from, to, amount: BigInt(500) };
-  }
-
   async fetchPermissionExists(permId: PermId): Promise<PermissionExistsFact> {
     return { type: 'PermissionExists', permId, exists: true };
   }
@@ -485,17 +378,8 @@ export class DummyChainFetcher implements ChainFetcher {
     return { type: 'PermissionEnabled', permId, enabled: true };
   }
 
-  async fetchMaxDelegationDepth(permId: PermId): Promise<MaxDelegationDepthFact> {
-    return {
-      type: 'MaxDelegationDepth',
-      permId,
-      depth: { $: 'UIntLiteral', value: BigInt(5) },
-      actualDepth: BigInt(5)
-    };
-  }
-
-  async fetchInactiveUnlessRedelegated(permId: PermId): Promise<InactiveUnlessRedelegatedFact> {
-    return { type: 'InactiveUnlessRedelegated', permId, isRedelegated: false };
+  async fetchInactiveUnlessRedelegated(account: AccountId, percentage: UInt): Promise<InactiveUnlessRedelegatedFact> {
+    return { type: 'InactiveUnlessRedelegated', account, percentage, isRedelegated: false };
   }
 
   async fetchCurrentBlock(): Promise<BlockFact> {
