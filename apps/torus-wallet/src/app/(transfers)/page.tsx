@@ -4,8 +4,6 @@ import { Faucet } from "~/app/(transfers)/_components/faucet/faucet";
 import { Receive } from "~/app/(transfers)/_components/receive/receive";
 import { Send } from "~/app/(transfers)/_components/send/send";
 import { generateMetadata } from "~/utils/seo";
-import { useTorus } from "@torus-ts/torus-provider";
-import { ApiPromise } from "@polkadot/api";
 import { env } from "~/env";
 
 export const metadata = generateMetadata({
