@@ -6,7 +6,7 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { Nullable } from "@torus-network/torus-utils/typing";
-import { match } from "rustie";
+import { if_let, match } from "rustie";
 import { z } from "zod";
 
 import type { SS58Address } from "../address";
@@ -30,7 +30,7 @@ import {
 import type { Api } from "./_common";
 import { SbQueryError } from "./_common";
 
-// ==== Base Types ====
+// ==== Data types ====
 
 export const PERMISSION_ID_SCHEMA = sb_h256;
 export const STREAM_ID_SCHEMA = sb_h256;
@@ -39,7 +39,7 @@ export const STREAM_ID_SCHEMA = sb_h256;
 export type PermissionId = z.infer<typeof PERMISSION_ID_SCHEMA>;
 export type StreamId = z.infer<typeof STREAM_ID_SCHEMA>;
 
-// ==== Curator Permissions (Bitflags) ====
+// ---- Curator Permissions (Bitflags) ----
 
 export const CURATOR_PERMISSIONS_SCHEMA = sb_struct({
   bits: sb_bigint,
@@ -55,7 +55,7 @@ export const CURATOR_FLAGS = {
   PENALTY_CONTROL: 0b0000_1000n,
 } as const;
 
-// ==== Emission Types ====
+// ---- Emission Types ----
 
 export const EMISSION_ALLOCATION_SCHEMA = sb_enum({
   Streams: sb_map(STREAM_ID_SCHEMA, sb_percent),
@@ -80,7 +80,7 @@ export type EmissionAllocation = z.infer<typeof EMISSION_ALLOCATION_SCHEMA>;
 export type DistributionControl = z.infer<typeof DISTRIBUTION_CONTROL_SCHEMA>;
 export type EmissionScope = z.infer<typeof EMISSION_SCOPE_SCHEMA>;
 
-// ==== Curator Types ====
+// ---- Curator Types ----
 
 export const CURATOR_SCOPE_SCHEMA = sb_struct({
   flags:
@@ -91,7 +91,7 @@ export const CURATOR_SCOPE_SCHEMA = sb_struct({
 
 export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
 
-// ==== Permission Scope ====
+// ---- Permission Scope ----
 
 export const PERMISSION_SCOPE_SCHEMA = sb_enum({
   Emission: EMISSION_SCOPE_SCHEMA,
@@ -100,7 +100,7 @@ export const PERMISSION_SCOPE_SCHEMA = sb_enum({
 
 export type PermissionScope = z.infer<typeof PERMISSION_SCOPE_SCHEMA>;
 
-// ==== Duration and Control Types ====
+// ---- Duration and Control Types ----
 
 export const PERMISSION_DURATION_SCHEMA = sb_enum({
   UntilBlock: sb_blocks,
@@ -137,7 +137,7 @@ export type EnforcementReferendum = z.infer<
   typeof ENFORCEMENT_REFERENDUM_SCHEMA
 >;
 
-// ==== Main Permission Contract ====
+// ---- Main Permission Contract ----
 
 export const PERMISSION_CONTRACT_SCHEMA = sb_struct({
   grantor: sb_address,
@@ -164,7 +164,9 @@ export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
 export async function queryPermission(
   api: Api,
   permissionId: PermissionId,
-): Promise<Result<Nullable<PermissionContract>, SbQueryError | ZError<unknown>>> {
+): Promise<
+  Result<Nullable<PermissionContract>, SbQueryError | ZError<unknown>>
+> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissions(permissionId),
   );
@@ -441,6 +443,19 @@ export function canExecutePermission(
 }
 
 /**
+ * Extract streams from a permission.
+ */
+export const extractStreamsFromPermission = (permission: PermissionContract) =>
+  if_let(permission.scope, "Emission")(
+    (emissionScope) =>
+      if_let(emissionScope.allocation, "Streams")(
+        (streams) => streams,
+        () => null,
+      ),
+    () => null,
+  );
+
+/**
  * Check if a permission is enabled by verifying that accumulating = true in an EmissionScope
  */
 export async function isPermissionEnabled(
@@ -469,6 +484,67 @@ export async function isPermissionEnabled(
   });
 
   return makeOk(isEnabled);
+}
+
+/**
+ * Extract the available streams for an agent.
+ *
+ * Includes streams reaching the agent and it's root stream. Contains the
+ * accumulated stream amounts when available, if `accumulatedStreams` is
+ * provided.
+ *
+ * @param agentId - Agent to get available streams for
+ * @param permissions - All permissions
+ * @param accumulatedStreams - Accumulated streams amounts map
+ */
+export function buildAvailableStreamsFor(
+  agentId: SS58Address,
+  {
+    permissions,
+    accumulatedStreams,
+  }: {
+    permissions?: Map<PermissionId, PermissionContract>;
+    accumulatedStreams?: Map<StreamId, Map<PermissionId, bigint>>;
+  },
+) {
+  if (permissions == null && accumulatedStreams == null) {
+    throw new Error("Must provide either permissions or accumulatedStreams");
+  }
+
+  const agentRootStreamId = generateRootStreamId(agentId);
+
+  const streamsTotalMap = new Map<StreamId, bigint>();
+
+  if (accumulatedStreams != null) {
+    for (const [streamId, permToAmountMap] of accumulatedStreams) {
+      for (const [_permId, amount] of permToAmountMap) {
+        const cur = streamsTotalMap.get(streamId) ?? 0n;
+        streamsTotalMap.set(streamId, cur + amount);
+      }
+    }
+  }
+
+  if (permissions != null) {
+    for (const [_permId, permission] of permissions) {
+      const grantee = permission.grantee;
+
+      // Only add consider permissions that are granted to the agent
+      if (grantee !== agentId) continue;
+
+      const streams = extractStreamsFromPermission(permission);
+      if (streams != null) {
+        for (const [streamId, _alloc] of streams) {
+          const cur = streamsTotalMap.get(streamId) ?? 0n;
+          streamsTotalMap.set(streamId, cur);
+        }
+      }
+    }
+  }
+
+  return {
+    agentRootStreamId,
+    streamsMap: streamsTotalMap,
+  };
 }
 
 // ==== Transaction Functions ====
