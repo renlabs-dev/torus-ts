@@ -1,5 +1,29 @@
 "use client";
 
+import { useEffect } from "react";
+
+import { checkSS58 } from "@torus-network/sdk";
+import {
+  Clock,
+  Coins,
+  Loader2,
+  Plus,
+  Settings,
+  Split,
+  Target,
+  Trash2,
+  Wand2,
+} from "lucide-react";
+import { useFieldArray } from "react-hook-form";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import { Button } from "@torus-ts/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 import {
   Form,
   FormControl,
@@ -9,7 +33,6 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-import { Button } from "@torus-ts/ui/components/button";
 import {
   Select,
   SelectContent,
@@ -17,28 +40,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@torus-ts/ui/components/card";
-import {
-  Plus,
-  Trash2,
-  Coins,
-  Target,
-  Clock,
-  Settings,
-  Split,
-  Wand2,
-  Loader2,
-} from "lucide-react";
-import { useFieldArray } from "react-hook-form";
-import { useEffect } from "react";
-import { useTorus } from "@torus-ts/torus-provider";
-import type { SS58Address } from "@torus-network/sdk";
+
 import { useAvailableStreams } from "~/hooks/use-available-streams";
+
 import type {
   GrantEmissionPermissionForm,
   GrantEmissionPermissionFormData,
@@ -51,14 +55,19 @@ interface GrantEmissionPermissionFormProps {
   onClose?: () => void;
 }
 
+const checkSS58IfDefined = (addressTxt?: string) =>
+  addressTxt ? checkSS58(addressTxt) : null;
+
 export function GrantEmissionPermissionFormComponent({
   form,
   mutation,
   onClose,
 }: GrantEmissionPermissionFormProps) {
-  const { selectedAccount } = useTorus();
+  const { api, selectedAccount } = useTorus();
+
   const availableStreams = useAvailableStreams(
-    selectedAccount?.address as SS58Address,
+    api,
+    checkSS58IfDefined(selectedAccount?.address),
   );
 
   const {
