@@ -10,6 +10,7 @@ import {
 } from "@torus-ts/ui/components/command";
 
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
+import { api } from "~/trpc/react";
 
 interface ConstraintExamplesSelectorProps {
   selectedExample: string;
@@ -22,6 +23,11 @@ export default function ConstraintExamplesSelector({
   onExampleSelect,
   onClose,
 }: ConstraintExamplesSelectorProps) {
+  const { data: permissionsWithConstraints } =
+    api.permission.withConstraints.useQuery();
+
+  console.log("Permissions with constraints:", permissionsWithConstraints);
+
   const handleSelect = (currentValue: string) => {
     onExampleSelect(currentValue);
     onClose?.();
