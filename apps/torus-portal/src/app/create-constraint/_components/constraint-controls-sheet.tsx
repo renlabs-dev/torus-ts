@@ -17,16 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@torus-ts/ui/components/command";
 
-import { constraintExamples } from "./constraint-data/constraint-data-examples";
+import ConstraintExamplesSelector from "./constraint-examples-selector";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   usePermissionsByGrantor,
@@ -219,39 +211,11 @@ export default function ConstraintControlsSheet({
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Load Example</label>
-              <Command className="border">
-                <CommandInput placeholder="Search examples..." />
-                <CommandList>
-                  <CommandEmpty>No examples found.</CommandEmpty>
-                  <CommandGroup>
-                    {constraintExamples.map((example) => (
-                      <CommandItem
-                        key={example.id}
-                        value={example.id}
-                        onSelect={(currentValue) => {
-                          onLoadExample(currentValue);
-                          setIsOpen(false);
-                        }}
-                        className={
-                          selectedExample === example.id
-                            ? "bg-accent text-white"
-                            : ""
-                        }
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-medium">{example.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {example.description}
-                          </span>
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </div>
+            <ConstraintExamplesSelector
+              selectedExample={selectedExample}
+              onExampleSelect={onLoadExample}
+              onClose={() => setIsOpen(false)}
+            />
           </div>
         </div>
 
