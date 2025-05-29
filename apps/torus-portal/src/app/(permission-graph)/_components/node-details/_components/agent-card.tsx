@@ -109,8 +109,8 @@ export const PermissionNodeAgentCard = memo(
         cachedData ||
         !nodeId ||
         agentQuery.isLoading ||
-        !agentQuery.data ||
-        !computedWeightedAgents
+        !agentQuery.data
+        // !computedWeightedAgents
       ) {
         return;
       }
@@ -125,7 +125,7 @@ export const PermissionNodeAgentCard = memo(
       const agent = agentQuery.data;
       const agentName = agent.name ?? smallAddress(nodeId, 6);
       const currentBlock = agent.atBlock;
-      const weightFactor = computedWeightedAgents.percComputedWeight;
+      const weightFactor = computedWeightedAgents?.percComputedWeight ?? 0;
 
       setAgentName(agentName);
       setWeightFactor(weightFactor);
