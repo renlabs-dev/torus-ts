@@ -17,7 +17,6 @@ export function createPermissionIdentifier(
   return value;
 }
 
-// The original custom types - we need to keep the exact structure
 export interface CustomGraphNode extends NodeObject {
   id: string;
   name: string;
@@ -49,7 +48,7 @@ export interface PermissionWithType extends GraphLink {
   type: "incoming" | "outgoing";
 }
 
-type PermissionDetail = NonNullable<
+export type PermissionDetails = NonNullable<
   inferProcedureOutput<AppRouter["permissionDetails"]["all"]>
 >;
 
@@ -114,7 +113,7 @@ export const getNodePermissions = (
 
 export const sortPermissions = (
   permissions: PermissionWithType[],
-  permissionDetails: PermissionDetail,
+  permissionDetails: PermissionDetails,
 ): PermissionWithType[] => {
   return permissions.sort((a, b) => {
     const detailsA = permissionDetails.find(

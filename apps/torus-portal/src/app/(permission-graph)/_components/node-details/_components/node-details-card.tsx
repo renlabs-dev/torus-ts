@@ -13,7 +13,7 @@ import type {
   CachedAgentData,
   CustomGraphData,
   CustomGraphNode,
-  PermissionDetail,
+  PermissionDetails,
   PermissionWithType,
 } from "../../permission-graph-utils";
 import { ActionButtons } from "./action-buttons";
@@ -24,7 +24,7 @@ interface NodeDetailsCardProps {
   nodePermissions: PermissionWithType[];
   selectedNode?: CustomGraphNode;
   graphData: CustomGraphData | null;
-  permissionDetails?: PermissionDetail[];
+  permissionDetails?: PermissionDetails;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   onBackgroundClick?: () => void;
@@ -86,11 +86,14 @@ export function NodeDetailsCard({
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-white">
                           {isOutgoing ? "← Granted " : "→ Received "}
-                          Permission{" "}
-                          {smallAddress(`${details?.permission_id}`, 6)}
+                          Permission {details?.permission_id}
                         </span>
                       </div>
-                      <LinkButtons details={details} />
+                      <LinkButtons
+                        grantor_key={details?.grantor_key}
+                        grantee_key={details?.grantee_key}
+                        scope={details?.scope}
+                      />
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
@@ -121,7 +124,7 @@ export function NodeDetailsCard({
                             <div className="text-sm text-gray-300">
                               {formatDuration(
                                 calculateTimeRemaining(
-                                  new Date(details.createdAt ?? Date.now()),
+                                  details.createdAt,
                                   Number(details.duration),
                                 ),
                               )}

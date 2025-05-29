@@ -39,7 +39,6 @@ export default function PermissionGraphContainer() {
     if (!rawPermissionDetails) return undefined;
     return rawPermissionDetails.map((detail) => ({
       ...detail,
-      execution_count: parseInt(detail.execution_count, 10),
     }));
   }, [rawPermissionDetails]);
 

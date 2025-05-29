@@ -6,7 +6,6 @@ import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { formatScope } from "../../permission-graph-utils";
 import { UserPlus, UserPen, Layers } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { PermissionDetail } from "../../permission-graph-utils";
 
 interface IconConfig {
   icon: LucideIcon;
@@ -17,7 +16,9 @@ interface IconConfig {
 }
 
 interface LinkButtonsProps {
-  details: PermissionDetail | undefined;
+  grantor_key: string | undefined;
+  grantee_key: string | undefined;
+  scope: string | undefined;
   grantorIcon?: IconConfig;
   granteeIcon?: IconConfig;
   scopeIcon?: IconConfig;
@@ -26,14 +27,16 @@ interface LinkButtonsProps {
 }
 
 export function LinkButtons({
-  details,
+  grantor_key,
+  grantee_key,
+  scope,
   grantorIcon,
   granteeIcon,
   scopeIcon,
   iconSize = 16,
   iconColor = "currentColor",
 }: LinkButtonsProps): JSX.Element {
-  if (!details) {
+  if (!grantor_key || !grantee_key) {
     return (
       <div className="flex justify-center items-center gap-2 text-sm text-gray-400 font-mono">
         <span>No details available</span>
@@ -62,7 +65,7 @@ export function LinkButtons({
     ...scopeIcon,
   };
 
-  const AddressDisplay = ({
+  const ShortenedDetailsDisplay = ({
     address,
     label,
     iconConfig,
@@ -92,17 +95,17 @@ export function LinkButtons({
       className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400
         font-mono"
     >
-      <AddressDisplay
+      <ShortenedDetailsDisplay
         iconConfig={defaultGrantorIcon}
-        address={smallAddress(details.grantor_key, 3)}
+        address={smallAddress(grantor_key, 3)}
       />
-      <AddressDisplay
+      <ShortenedDetailsDisplay
         iconConfig={defaultGranteeIcon}
-        address={smallAddress(details.grantee_key, 3)}
+        address={smallAddress(grantee_key, 3)}
       />
-      <AddressDisplay
+      <ShortenedDetailsDisplay
         iconConfig={defaultScopeIcon}
-        address={formatScope(details.scope)}
+        address={formatScope(scope ?? "")}
       />
     </div>
   );

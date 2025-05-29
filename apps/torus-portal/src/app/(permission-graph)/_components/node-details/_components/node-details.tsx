@@ -3,7 +3,7 @@
 import type {
   CustomGraphData,
   CustomGraphNode,
-  PermissionDetail,
+  PermissionDetails,
   CachedAgentData,
 } from "../../permission-graph-utils";
 import { getNodePermissions } from "../../permission-graph-utils";
@@ -13,7 +13,7 @@ import { NodeDetailsCard } from "./node-details-card";
 interface PermissionNodeDetailsProps {
   selectedNode: CustomGraphNode;
   graphData: CustomGraphData | null;
-  permissionDetails?: PermissionDetail[];
+  permissionDetails?: PermissionDetails;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   onBackgroundClick?: () => void;
