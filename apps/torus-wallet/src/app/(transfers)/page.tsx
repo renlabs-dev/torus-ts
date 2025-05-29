@@ -16,7 +16,7 @@ export const metadata = createSeoMetadata({
     "transfer",
     "web3",
   ],
-  baseUrl: env("BASE_URL"),
+  // baseUrl: env("BASE_URL"),
   canonical: "/transfers",
 });
 

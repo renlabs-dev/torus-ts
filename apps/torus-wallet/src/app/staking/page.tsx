@@ -18,7 +18,7 @@ export const metadata = createSeoMetadata({
     "earn rewards",
     "web3",
   ],
-  baseUrl: env("BASE_URL"),
+  // baseUrl: env("BASE_URL"),
   canonical: "/staking",
 });
 

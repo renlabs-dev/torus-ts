@@ -22,7 +22,7 @@ export const metadata = createSeoMetadata({
   description:
     "Simple, secure, and easy-to-use wallet for the torus ecosystem. Manage your digital assets with confidence using our industry-leading security features.",
   keywords: ["crypto wallet", "torus", "blockchain", "digital assets", "web3"],
-  baseUrl: env("BASE_URL"),
+  // baseUrl: env("BASE_URL"),
   canonical: "/",
 });
 
