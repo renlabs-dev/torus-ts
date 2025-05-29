@@ -8,7 +8,7 @@ import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { getAllocatorBaseUrl } from "../../permission-graph-utils";
-import type { CachedAgentData } from "../../permission-graph-utils";
+import type { CachedAgentData } from "../../permission-graph-types";
 import { Button } from "@torus-ts/ui/components/button";
 
 interface PermissionNodeAgentCardProps {

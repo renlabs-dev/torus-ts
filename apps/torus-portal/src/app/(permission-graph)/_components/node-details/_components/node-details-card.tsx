@@ -15,7 +15,7 @@ import type {
   CustomGraphNode,
   PermissionDetails,
   PermissionWithType,
-} from "../../permission-graph-utils";
+} from "../../permission-graph-types";
 import { ActionButtons } from "./action-buttons";
 import { LinkButtons } from "./link-buttons";
 import { useMemo } from "react";
@@ -75,10 +75,19 @@ export function NodeDetailsCard({
               const connectedAddress =
                 connectedNode?.fullAddress ?? connectedNode?.id ?? "";
 
+              const sourceId =
+                typeof permission.source === "object"
+                  ? permission.source.id
+                  : permission.source;
+              const targetId =
+                typeof permission.target === "object"
+                  ? permission.target.id
+                  : permission.target;
+
               return (
                 <AccordionItem
-                  key={`${permission.source}-${permission.target}`}
-                  value={`${permission.source}-${permission.target}`}
+                  key={`${sourceId}-${targetId}`}
+                  value={`${sourceId}-${targetId}`}
                   className="border bg-accent mb-2"
                 >
                   <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
