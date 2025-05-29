@@ -1,9 +1,9 @@
-import type { Node, Edge } from "@xyflow/react";
 import type {
   BoolExprType,
   NumExprType,
   BaseConstraintType,
-} from "../../../../utils/dsl";
+} from "@torus-ts/dsl";
+import type { Node, Edge } from "@xyflow/react";
 
 export interface BooleanNodeData extends Record<string, unknown> {
   type: "boolean";
@@ -34,8 +34,6 @@ export type PermissionNodeData =
   | NumberNodeData
   | BaseNodeData
   | PermissionIdNodeData;
-
-export type PermissionNode = Node<PermissionNodeData>;
 
 export interface NodeCreationResult {
   nodes: Node[];
