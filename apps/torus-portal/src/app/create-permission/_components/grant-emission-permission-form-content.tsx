@@ -166,7 +166,7 @@ export function GrantEmissionPermissionFormComponent({
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -264,13 +264,14 @@ export function GrantEmissionPermissionFormComponent({
 
               {allocationType === "Streams" && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Streams</h4>
-                    <div className="flex gap-2">
+                  <div className="flex md:flex-row flex-col w-full items-start md:items-center justify-between">
+                    <h4 className="font-medium mb-1 w-fit">Streams</h4>
+                    <div className="flex flex-col md:flex-row gap-2 md:w-fit w-full">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
+                        className="w-full md:w-auto"
                         onClick={handleAutoPopulateStreams}
                         disabled={
                           availableStreams.isLoading ||
@@ -289,6 +290,7 @@ export function GrantEmissionPermissionFormComponent({
                         type="button"
                         variant="outline"
                         size="sm"
+                        className="w-full md:w-auto"
                         onClick={() =>
                           appendStream({ streamId: "", percentage: "" })
                         }
@@ -340,10 +342,10 @@ export function GrantEmissionPermissionFormComponent({
                           name={`allocation.streams.${index}.streamId`}
                           render={({ field }) => (
                             <FormItem className="flex-1">
-                              <FormLabel className="flex items-center gap-2">
+                              <FormLabel className="flex items-center gap-2 mb-3 md:mb-0">
                                 Stream ID
                                 {isRootStream && (
-                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  <span className="text-xs hidden md:block bg-blue-100 text-blue-800 px-2 py-1 rounded">
                                     Root Stream
                                   </span>
                                 )}
@@ -402,18 +404,6 @@ export function GrantEmissionPermissionFormComponent({
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div></div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendTarget({ account: "", weight: "" })}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Target
-                </Button>
-              </div>
               {targetFields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 items-end">
                   <FormField
@@ -456,6 +446,18 @@ export function GrantEmissionPermissionFormComponent({
                   </Button>
                 </div>
               ))}
+              <div className="flex items-center justify-between">
+                <div></div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => appendTarget({ account: "", weight: "" })}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Target
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -790,7 +792,7 @@ export function GrantEmissionPermissionFormComponent({
                     </Button>
                   </div>
                   {controllerFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-end£">
+                    <div key={field.id} className="flex gap-2 items-end">
                       <FormField
                         control={form.control}
                         name={`enforcement.controllers.${index}`}
