@@ -4,7 +4,7 @@ import type {
   CustomGraphNode,
   PermissionDetails,
   CachedAgentData,
-} from "../permission-graph-utils";
+} from "../permission-graph-types";
 import { memo } from "react";
 import { PermissionNodeAgentCard } from "./_components/agent-card";
 import {

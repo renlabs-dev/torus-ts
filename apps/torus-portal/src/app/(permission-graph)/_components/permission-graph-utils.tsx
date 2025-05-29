@@ -1,65 +1,10 @@
-import type { AppRouter } from "@torus-ts/api";
-import type { inferProcedureOutput } from "@trpc/server";
-import type { LinkObject, NodeObject } from "r3f-forcegraph";
-
-type PermissionIdentifier = string & { readonly __brand: unique symbol };
-
-function isValidPermissionId(value: string): value is PermissionIdentifier {
-  return value.length === 66 && /^0x[a-fA-F0-9]{64}$/.test(value);
-}
-
-export function createPermissionIdentifier(
-  value: string,
-): PermissionIdentifier {
-  if (!isValidPermissionId(value)) {
-    throw new Error(`Invalid permission ID: ${value}`);
-  }
-  return value;
-}
-
-export interface CustomGraphNode extends NodeObject {
-  id: string;
-  name: string;
-  color?: string;
-  val?: number;
-  fullAddress?: string;
-  role?: string;
-}
-
-export interface GraphLink extends LinkObject {
-  linkType: string;
-  source: string;
-  target: string;
-  id?: string;
-  scope?: string;
-  duration?: string;
-  revocation?: number;
-  enforcement?: string;
-  executionCount?: number;
-  parentId?: string;
-}
-
-export interface CustomGraphData {
-  nodes: CustomGraphNode[];
-  links: GraphLink[];
-}
-
-export interface PermissionWithType extends GraphLink {
-  type: "incoming" | "outgoing";
-}
-
-export type PermissionDetails = NonNullable<
-  inferProcedureOutput<AppRouter["permissionDetails"]["all"]>
->;
-
-export interface CachedAgentData {
-  agentName: string;
-  iconBlob: Blob | null;
-  socials: Record<string, string>;
-  currentBlock: number;
-  weightFactor: number;
-  lastAccessed: number;
-}
+import type {
+  CachedAgentData,
+  CustomGraphData,
+  CustomGraphNode,
+  PermissionDetails,
+  PermissionWithType,
+} from "./permission-graph-types";
 
 export const formatScope = (scope: string): string =>
   scope.charAt(0).toUpperCase() + scope.slice(1).toLowerCase();
@@ -93,10 +38,14 @@ export const getNodePermissions = (
   const permissionsMap = new Map<string, PermissionWithType>();
 
   graphData.links.forEach((link) => {
-    const key = `${link.source}-${link.target}`;
+    const sourceId =
+      typeof link.source === "object" ? link.source.id : link.source;
+    const targetId =
+      typeof link.target === "object" ? link.target.id : link.target;
+    const key = `${sourceId}-${targetId}`;
 
     if (
-      (link.source === node.id || link.target === node.id) &&
+      (sourceId === node.id || targetId === node.id) &&
       link.linkType === "permission"
     ) {
       if (!permissionsMap.has(key)) {

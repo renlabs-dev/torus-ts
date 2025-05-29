@@ -7,10 +7,10 @@ import PortalNavigationTabs from "../../_components/portal-navigation-tabs";
 import type {
   CustomGraphData,
   CustomGraphNode,
-  GraphLink,
-} from "./permission-graph-utils";
+  CustomGraphLink,
+  CachedAgentData,
+} from "./permission-graph-types";
 import { AgentLRUCache } from "./permission-graph-utils";
-import type { CachedAgentData } from "./permission-graph-utils";
 import { PermissionGraphNodeDetails } from "./node-details";
 import { api } from "~/trpc/react";
 import PermissionGraphSearch from "./permission-graph-search";
@@ -119,7 +119,7 @@ export default function PermissionGraphContainer() {
 
   // Handle graph data updates from allocator links
   const handleGraphUpdate = useCallback(
-    (nodes: CustomGraphNode[], links: GraphLink[]) => {
+    (nodes: CustomGraphNode[], links: CustomGraphLink[]) => {
       setGraphData({ nodes, links });
     },
     [],

@@ -1,16 +1,15 @@
 import { useEffect } from "react";
 import { api } from "~/trpc/react";
 import type {
+  CustomGraphData,
   CustomGraphNode,
-  GraphLink,
-} from "../app/(permission-graph)/_components/permission-graph-utils";
+  CustomGraphLink,
+} from "../app/(permission-graph)/_components/permission-graph-types";
 import { env } from "~/env";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
-interface AllocatorLinksProps {
-  nodes: CustomGraphNode[];
-  links: GraphLink[];
-  onUpdate: (nodes: CustomGraphNode[], links: GraphLink[]) => void;
+interface AllocatorLinksProps extends CustomGraphData {
+  onUpdate: (nodes: CustomGraphNode[], links: CustomGraphLink[]) => void;
 }
 
 export function useExtraAllocatorLinks({

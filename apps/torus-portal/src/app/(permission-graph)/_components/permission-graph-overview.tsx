@@ -1,5 +1,5 @@
 import { Card } from "@torus-ts/ui/components/card";
-import type { CustomGraphData } from "./permission-graph-utils";
+import type { CustomGraphData } from "./permission-graph-types";
 import { memo } from "react";
 
 interface PermissionGraphOverviewProps {

@@ -7,7 +7,7 @@ import { OrbitControls } from "@react-three/drei";
 import type {
   CustomGraphData,
   CustomGraphNode,
-} from "./permission-graph-utils";
+} from "./permission-graph-types";
 import type { GraphMethods, NodeObject } from "r3f-forcegraph";
 
 const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
