@@ -1,5 +1,4 @@
 "use client";
-
 import dynamic from "next/dynamic";
 import { Suspense, useRef, useMemo, memo, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -8,7 +7,18 @@ import type {
   CustomGraphData,
   CustomGraphNode,
 } from "./permission-graph-utils";
-import type { GraphMethods, NodeObject } from "r3f-forcegraph";
+import {
+  getNodeColor,
+  getLinkColor,
+  getLinkWidth,
+  getLinkCurvature,
+  getLinkOpacity,
+  getLinkArrowLength,
+  getLinkArrowRelPos,
+  getNodeRelSize,
+  getNodeResolution,
+} from "./permission-graph-utils";
+import type { GraphMethods, LinkObject, NodeObject } from "r3f-forcegraph";
 
 const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
 
@@ -27,6 +37,62 @@ const ForceGraph = memo(
       }
     });
 
+    const handleNodeClick = useCallback(
+      (node: NodeObject) => {
+        const graphNode = props.graphData.nodes.find((n) => n.id === node.id);
+        if (graphNode) {
+          props.onNodeClick(graphNode);
+        }
+      },
+      [props],
+    );
+
+    // Create wrapped functions that match the expected signatures
+    const nodeColorFunction = useCallback(
+      (node: NodeObject) => getNodeColor(node, props.graphData),
+      [props.graphData],
+    );
+
+    const linkColorFunction = useCallback(
+      (link: LinkObject) => getLinkColor(link, props.graphData),
+      [props.graphData],
+    );
+
+    const linkWidthFunction = useCallback(
+      (link: LinkObject) => getLinkWidth(link, props.graphData),
+      [props.graphData],
+    );
+
+    const linkCurvatureFunction = useCallback(
+      (link: LinkObject) => getLinkCurvature(link, props.graphData),
+      [props.graphData],
+    );
+
+    const linkOpacityFunction = useCallback(
+      (link: LinkObject) => getLinkOpacity(link, props.graphData),
+      [props.graphData],
+    );
+
+    const linkArrowLengthFunction = useCallback(
+      (link: LinkObject) => getLinkArrowLength(link, props.graphData),
+      [props.graphData],
+    );
+
+    const linkArrowRelPosFunction = useCallback(
+      (link: LinkObject) => getLinkArrowRelPos(link, props.graphData),
+      [props.graphData],
+    );
+
+    const nodeRelSizeFunction = useCallback(
+      (node: NodeObject) => getNodeRelSize(node, props.graphData),
+      [props.graphData],
+    );
+
+    const nodeResolutionFunction = useCallback(
+      (node: NodeObject) => getNodeResolution(node, props.graphData),
+      [props.graphData],
+    );
+
     const formattedData = useMemo(
       () => ({
         nodes: props.graphData.nodes.map((node) => ({
@@ -43,29 +109,19 @@ const ForceGraph = memo(
       [props.graphData.nodes, props.graphData.links],
     );
 
-    const handleNodeClick = useCallback(
-      (node: NodeObject) => {
-        props.onNodeClick({
-          id: String(node.id ?? ""),
-          name: String(node.name ?? `Node ${node.id}`),
-          color: String(node.color ?? "#ffffff"),
-          val: Number(node.val ?? 1),
-        });
-      },
-      [props],
-    );
-
     return (
       <R3fForceGraph
         ref={fgRef}
         graphData={formattedData}
-        nodeColor={(node: NodeObject) => String(node.color)}
-        linkDirectionalArrowLength={3.5}
-        linkDirectionalArrowRelPos={1}
-        linkCurvature={0.4}
-        linkColor={() => "rgba(255, 255, 255, 1)"}
-        nodeRelSize={3}
-        nodeResolution={24}
+        nodeColor={nodeColorFunction}
+        linkColor={linkColorFunction}
+        linkWidth={linkWidthFunction}
+        linkCurvature={linkCurvatureFunction}
+        linkOpacity={linkOpacityFunction(props.graphData.links)}
+        linkDirectionalArrowLength={linkArrowLengthFunction}
+        linkDirectionalArrowRelPos={linkArrowRelPosFunction}
+        nodeRelSize={nodeRelSizeFunction(props.graphData.nodes)}
+        nodeResolution={nodeResolutionFunction(props.graphData.nodes)}
         onNodeClick={handleNodeClick}
       />
     );

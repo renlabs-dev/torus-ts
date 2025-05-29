@@ -17,7 +17,7 @@ import PermissionGraphSearch from "./permission-graph-search";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import { MousePointerClick } from "lucide-react";
 import { env } from "~/env";
-import { useExtraAllocatorLinks } from "./permission-graph-allocator-links";
+import { useExtraAllocatorLinks } from "../../../hooks/use-extra-allocation-links";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -90,11 +90,9 @@ export default function PermissionGraphContainer() {
       linkType: "permission",
       source: permission.grantor_key,
       target: permission.grantee_key,
-      // id: createPermissionIdentifier(permission.permission_id),
       id: permission.permission_id,
       scope: permission.scope,
       duration: permission.duration,
-      // parentId: createPermissionIdentifier(permission.parent_id ?? ""),
       parentId: permission.parent_id ?? "",
       permissionId: permission.permission_id,
       enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
