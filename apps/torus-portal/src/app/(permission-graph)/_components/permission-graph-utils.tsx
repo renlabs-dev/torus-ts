@@ -79,6 +79,25 @@ export const sortPermissions = (
   });
 };
 
+export function lightenColor(color: string, amount: number): string {
+  // Remove # if present
+  const hex = color.replace("#", "");
+
+  // Convert to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Lighten by mixing with white
+  const newR = Math.round(r + (255 - r) * amount);
+  const newG = Math.round(g + (255 - g) * amount);
+  const newB = Math.round(b + (255 - b) * amount);
+
+  // Convert back to hex
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
+}
+
 // LRU Cache for agent data
 export class AgentLRUCache {
   private cache = new Map<string, CachedAgentData>();

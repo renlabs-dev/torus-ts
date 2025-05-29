@@ -1,14 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useRef, useMemo, memo, useCallback } from "react";
+import { Suspense, useRef, useMemo, memo, useCallback, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { lightenColor } from "./permission-graph-utils";
 import type {
   CustomGraphData,
   CustomGraphNode,
 } from "./permission-graph-types";
-import type { GraphMethods, NodeObject } from "r3f-forcegraph";
+import type { GraphMethods, NodeObject, LinkObject } from "r3f-forcegraph";
 
 const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
 
@@ -22,6 +23,14 @@ const ForceGraph = memo(
     const fgRef = useRef<GraphMethods | undefined>(undefined);
     const linkDistance = 100;
 
+    const [highlightNodes, setHighlightNodes] = useState<Set<string>>(
+      new Set(),
+    );
+    const [highlightLinks, setHighlightLinks] = useState<Set<string>>(
+      new Set(),
+    );
+    const [hoverNode, setHoverNode] = useState<string | null>(null);
+
     useFrame(() => {
       if (fgRef.current?.d3Force) {
         const linkForce = fgRef.current.d3Force("link");
@@ -32,6 +41,32 @@ const ForceGraph = memo(
         fgRef.current.tickFrame();
       }
     });
+
+    const neighborMap = useMemo(() => {
+      const map = new Map<string, Set<string>>();
+      props.graphData.links.forEach((link) => {
+        const sourceId =
+          (typeof link.source === "object"
+            ? link.source.id
+            : link.source
+          )?.toString() ?? "";
+        const targetId =
+          (typeof link.target === "object"
+            ? link.target.id
+            : link.target
+          )?.toString() ?? "";
+
+        if (sourceId && targetId) {
+          if (!map.has(sourceId)) map.set(sourceId, new Set());
+          if (!map.has(targetId)) map.set(targetId, new Set());
+
+          map.get(sourceId)?.add(targetId);
+          map.get(targetId)?.add(sourceId);
+        }
+      });
+      return map;
+    }, [props.graphData.links]);
+
     const formattedData = useMemo(() => {
       return {
         nodes: props.graphData.nodes.map((node) => ({
@@ -66,35 +101,145 @@ const ForceGraph = memo(
       [props],
     );
 
+    const handleNodeHover = useCallback(
+      (node: NodeObject | null) => {
+        if (node) {
+          const newHighlightNodes = new Set<string>();
+          const newHighlightLinks = new Set<string>();
+
+          const nodeId = String(node.id);
+          newHighlightNodes.add(nodeId);
+
+          // Add neighbors
+          const neighbors = neighborMap.get(nodeId);
+          if (neighbors) {
+            neighbors.forEach((neighborId) =>
+              newHighlightNodes.add(neighborId),
+            );
+          }
+
+          // Add connected links
+          props.graphData.links.forEach((link) => {
+            const sourceId =
+              typeof link.source === "object" ? link.source.id : link.source;
+            const targetId =
+              typeof link.target === "object" ? link.target.id : link.target;
+
+            if (sourceId === nodeId || targetId === nodeId) {
+              newHighlightLinks.add(`${sourceId}-${targetId}`);
+            }
+          });
+
+          setHoverNode(nodeId);
+          setHighlightNodes(newHighlightNodes);
+          setHighlightLinks(newHighlightLinks);
+        } else {
+          // Clear all highlights when not hovering
+          setHoverNode(null);
+          setHighlightNodes(new Set());
+          setHighlightLinks(new Set());
+        }
+      },
+      [neighborMap, props.graphData.links],
+    );
+
+    const handleLinkHover = useCallback((link: LinkObject | null) => {
+      if (link) {
+        const newHighlightNodes = new Set<string>();
+        const newHighlightLinks = new Set<string>();
+
+        const sourceId =
+          typeof link.source === "object"
+            ? String(link.source.id)
+            : String(link.source);
+        const targetId =
+          typeof link.target === "object"
+            ? String(link.target.id)
+            : String(link.target);
+
+        newHighlightLinks.add(`${sourceId}-${targetId}`);
+        newHighlightNodes.add(sourceId);
+        newHighlightNodes.add(targetId);
+
+        setHighlightNodes(newHighlightNodes);
+        setHighlightLinks(newHighlightLinks);
+      } else {
+        // Clear all highlights when not hovering
+        setHighlightNodes(new Set());
+        setHighlightLinks(new Set());
+      }
+    }, []);
+
     return (
       <R3fForceGraph
         ref={fgRef}
         graphData={formattedData}
-        nodeColor={(node) => String(node.color)}
-        linkDirectionalParticleWidth={(link) => {
+        nodeColor={(node: NodeObject) => {
+          const nodeId = String(node.id);
+          const baseColor = String(node.color ?? "#00ffff");
+
+          if (highlightNodes.has(nodeId)) {
+            // Lighten the color for highlighted nodes
+            const lightenAmount = nodeId === hoverNode ? 0.3 : 0.15;
+            return lightenColor(baseColor, lightenAmount);
+          }
+          return baseColor;
+        }}
+        linkDirectionalParticleWidth={(link: LinkObject) => {
           return Number(link.linkDirectionalParticleWidth);
         }}
-        linkDirectionalParticles={(link) => {
-          return Number(link.linkDirectionalParticles);
+        linkDirectionalParticles={(link: LinkObject) => {
+          const sourceId =
+            typeof link.source === "object"
+              ? String(link.source.id)
+              : String(link.source);
+          const targetId =
+            typeof link.target === "object"
+              ? String(link.target.id)
+              : String(link.target);
+          const linkId = `${sourceId}-${targetId}`;
+          const baseParticles = Number(link.linkDirectionalParticles ?? 0);
+
+          if (highlightLinks.has(linkId)) {
+            // Add just 2 more particles for subtle effect
+            return Math.max(baseParticles + 2, 2);
+          }
+          return baseParticles;
         }}
-        linkDirectionalArrowLength={(link) => {
+        linkDirectionalArrowLength={(link: LinkObject) => {
           return Number(link.linkDirectionalArrowLength);
         }}
-        linkDirectionalArrowRelPos={(link) => {
+        linkDirectionalArrowRelPos={(link: LinkObject) => {
           return Number(link.linkDirectionalArrowRelPos);
         }}
-        linkCurvature={(link) => {
+        linkCurvature={(link: LinkObject) => {
           return Number(link.linkCurvature);
         }}
-        linkColor={(link) => {
+        linkColor={(link: LinkObject) => {
           return String(link.linkColor);
         }}
-        linkWidth={(link) => {
-          return Number(link.linkWidth);
+        linkWidth={(link: LinkObject) => {
+          const sourceId =
+            typeof link.source === "object"
+              ? String(link.source.id)
+              : String(link.source);
+          const targetId =
+            typeof link.target === "object"
+              ? String(link.target.id)
+              : String(link.target);
+          const linkId = `${sourceId}-${targetId}`;
+          const baseWidth = Number(link.linkWidth ?? 1);
+
+          if (highlightLinks.has(linkId)) {
+            // Subtle increase - only 1.5x the original width
+            return baseWidth * 2;
+          }
+          return baseWidth;
         }}
-        // nodeRelSize={10}
-        nodeResolution={24}
+        nodeResolution={46}
         onNodeClick={handleNodeClick}
+        onNodeHover={handleNodeHover}
+        onLinkHover={handleLinkHover}
       />
     );
   },
