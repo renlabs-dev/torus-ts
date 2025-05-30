@@ -25,9 +25,10 @@ import {
   usePermission,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
-import { PlusIcon, Grid2x2Check } from "lucide-react";
+import { PlusIcon, Grid2x2Check, Edit } from "lucide-react";
 import type { ValidationError } from "./constraint-utils";
 import { api as trpcApi } from "~/trpc/react";
+import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -37,6 +38,7 @@ interface ConstraintControlsSheetProps {
   isSubmitDisabled: boolean;
   validationErrors: ValidationError[];
   submitButton: React.ReactNode;
+  isEditingConstraint?: boolean;
 }
 
 export default function ConstraintControlsSheet({
@@ -45,6 +47,7 @@ export default function ConstraintControlsSheet({
   selectedPermissionId,
   onPermissionIdChange,
   submitButton,
+  isEditingConstraint = false,
 }: ConstraintControlsSheetProps) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -104,8 +107,17 @@ export default function ConstraintControlsSheet({
     <Sheet open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <SheetTrigger asChild>
         <Button className="shadow-lg">
-          <PlusIcon className="h-4 w-4 mr-1" />
-          Create Constraint
+          {isEditingConstraint ? (
+            <>
+              <Edit className="h-4 w-4 mr-1" />
+              Edit Constraint
+            </>
+          ) : (
+            <>
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Create Constraint
+            </>
+          )}
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -114,12 +126,15 @@ export default function ConstraintControlsSheet({
       >
         <div>
           <SheetHeader>
-            <SheetTitle className="text-start">Constraint Controls</SheetTitle>
+            <SheetTitle className="text-start">
+              {isEditingConstraint ? "Edit Constraint" : "Create Constraint"}
+            </SheetTitle>
           </SheetHeader>
 
           <div className="flex flex-col gap-6 py-6">
+            <ConstraintTutorialDialog />
             <div className="space-y-2">
-              <label className="text-sm font-medium">Permission</label>
+              <label className="text-sm font-medium">Select a Permission</label>
               <Select
                 value={selectedPermissionId}
                 onValueChange={onPermissionIdChange}

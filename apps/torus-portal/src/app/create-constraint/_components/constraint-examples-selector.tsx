@@ -29,7 +29,7 @@ export default function ConstraintExamplesSelector({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Load Example</label>
+      <label className="text-sm font-medium">Load a Constraint Example</label>
       <Command className="border">
         <CommandInput placeholder="Search examples..." />
         <CommandList>

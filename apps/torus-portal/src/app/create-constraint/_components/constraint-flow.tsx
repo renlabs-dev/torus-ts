@@ -25,7 +25,6 @@ import type { ValidationResult } from "./constraint-utils";
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
 import { constraintToNodes } from "./constraint-nodes/constraint-to-nodes";
 import ConstraintControlsSheet from "./constraint-controls-sheet";
-import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
 import { ConstraintSubmission } from "./constraint-submission";
 import { api as trpcApi } from "~/trpc/react";
 import type { BoolExprType } from "@torus-ts/dsl";
@@ -90,6 +89,16 @@ function ConstraintFlow() {
       setSelectedPermissionId(permissionIdNode.data.permissionId);
     }
   }, [nodes, selectedPermissionId]);
+
+  // Helper function to check if selected permission has an existing constraint
+  const isEditingConstraint = useMemo(() => {
+    if (!selectedPermissionId || !permissionsWithConstraints) return false;
+    return permissionsWithConstraints.some(
+      (item) =>
+        item.permission.permission_id === selectedPermissionId &&
+        item.constraint !== null,
+    );
+  }, [selectedPermissionId, permissionsWithConstraints]);
 
   const handlePermissionIdChange = useCallback(
     (permissionId: string) => {
@@ -299,7 +308,6 @@ function ConstraintFlow() {
           <RotateCcw className="h-4 w-4 mr-1" />
           Reset Nodes
         </Button>
-        <ConstraintTutorialDialog />
         <ConstraintControlsSheet
           selectedExample={selectedExample}
           onLoadExample={handleLoadExample}
@@ -307,6 +315,7 @@ function ConstraintFlow() {
           onPermissionIdChange={handlePermissionIdChange}
           isSubmitDisabled={!validationResult.isValid}
           validationErrors={validationResult.errors}
+          isEditingConstraint={isEditingConstraint}
           submitButton={
             <ConstraintSubmission
               nodes={nodes}
@@ -314,6 +323,7 @@ function ConstraintFlow() {
               rootNodeId="root-boolean"
               selectedPermissionId={selectedPermissionId}
               isSubmitDisabled={!validationResult.isValid}
+              isEditingConstraint={isEditingConstraint}
             />
           }
         />
