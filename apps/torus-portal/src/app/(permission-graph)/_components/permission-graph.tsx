@@ -285,7 +285,7 @@ const PermissionGraph = memo(
     }
 
     return (
-      <Canvas camera={{ position: [0, 0, 180], far: 1000 }} shadows>
+      <Canvas camera={{ position: [0, 0, 180], far: 2000 }} shadows>
         {/* <color attach="background" args={[0.05, 0.05, 0.1]} /> */}
         <ambientLight intensity={Math.PI / 2} />
         <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
@@ -300,7 +300,7 @@ const PermissionGraph = memo(
             radius={200}
             depth={50}
             count={2000}
-            factor={4}
+            factor={8}
             saturation={0}
             fade
             speed={1}
