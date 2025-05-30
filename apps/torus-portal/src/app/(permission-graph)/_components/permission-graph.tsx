@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Suspense, useRef, useMemo, memo, useCallback, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Stars } from "@react-three/drei";
 import { lightenColor } from "./permission-graph-utils";
 import type {
   CustomGraphData,
@@ -180,7 +180,7 @@ const ForceGraph = memo(
 
           if (highlightNodes.has(nodeId)) {
             // Lighten the color for highlighted nodes
-            const lightenAmount = nodeId === hoverNode ? 0.3 : 0.15;
+            const lightenAmount = nodeId === hoverNode ? 0.4 : 0.15;
             return lightenColor(baseColor, lightenAmount);
           }
           return baseColor;
@@ -269,13 +269,22 @@ const PermissionGraph = memo(
     }
 
     return (
-      <Canvas camera={{ position: [0, 0, 100], far: 1000 }}>
+      <Canvas camera={{ position: [0, 0, 180], far: 1000 }} shadows>
         {/* <color attach="background" args={[0.05, 0.05, 0.1]} /> */}
         <ambientLight intensity={Math.PI / 2} />
         <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
         <Suspense fallback={null}>
           <ForceGraph graphData={data} onNodeClick={onNodeClick} />
           <OrbitControls dampingFactor={0.01} enablePan={false} />
+          <Stars
+            radius={50}
+            depth={50}
+            count={2000}
+            factor={4}
+            saturation={0}
+            fade
+            speed={1}
+          />
         </Suspense>
       </Canvas>
     );
