@@ -706,3 +706,9 @@ export function grantEmissionPermission({
     enforcement,
   );
 }
+
+
+export function togglePermission(api: ApiPromise, permissionId: PermissionId, enable: boolean) {
+  return api.tx.permission0.togglePermissionAccumulation(permissionId, enable);
+
+}

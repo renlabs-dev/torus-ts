@@ -1552,6 +1552,16 @@ export class ReteNetwork {
   }
 
   /**
+   * Get a constraint by ID
+   * @param constraintId The ID of the constraint to get
+   * @returns The constraint if found, undefined otherwise
+   */
+  getConstraint(constraintId: string): Constraint | undefined {
+    const productionNode = this.productionNodes.get(constraintId);
+    return productionNode?.constraint;
+  }
+
+  /**
    * Find constraints by permission ID
    * @param permissionId The permission ID to search for
    * @returns Array of constraint IDs for the given permission
