@@ -23,100 +23,68 @@ export const constraintExamples: ConstraintExample[] = [
     },
   },
   {
-    id: "stake-tier",
-    name: "Stake Tier",
-    description: "Tiered access based on stake amount with rate limiting",
+    id: "has-permission",
+    name: "Has Permission",
+    description: "Check if a specific permission exists",
     constraint: {
       permId: "2",
-      body: BoolExpr.or(
-        BoolExpr.comp(CompOp.Gte, NumExpr.stakeOf(""), NumExpr.literal(10000)),
-        BoolExpr.or(
-          BoolExpr.and(
-            BoolExpr.comp(
-              CompOp.Gte,
-              NumExpr.stakeOf(""),
-              NumExpr.literal(5000),
-            ),
-            BoolExpr.base(
-              BaseConstraint.inactiveUnlessRedelegated("", 50),
-            ),
-          ),
-          BoolExpr.and(
-            BoolExpr.comp(
-              CompOp.Eq,
-              NumExpr.stakeOf(""),
-              NumExpr.literal(2500),
-            ),
-            BoolExpr.base(
-              BaseConstraint.inactiveUnlessRedelegated("", 25),
-            ),
-          ),
-        ),
-      ),
+      body: BoolExpr.base(BaseConstraint.permissionExists("100")),
     },
   },
-  // {
-  //   id: "emission-tier",
-  //   name: "Emission Tier",
-  //   description: "Tiered emission access based on delegation percentage",
-  //   constraint: {
-  //     permId: "2",
-  //     body: BoolExpr.or(
-  //       BoolExpr.comp(
-  //         CompOp.Gte,
-  //         NumExpr.hasToDelegate(""),
-  //         NumExpr.decimal("5%"),
-  //       ),
-  //       BoolExpr.or(
-  //         BoolExpr.and(
-  //           BoolExpr.comp(
-  //             CompOp.Gte,
-  //             NumExpr.hasToDelegate(""),
-  //             NumExpr.decimal("3%"),
-  //           ),
-  //           BoolExpr.base(
-  //             BaseConstraint.rateLimit(
-  //               NumExpr.literal(10),
-  //               NumExpr.literal(1000),
-  //             ),
-  //           ),
-  //         ),
-  //         BoolExpr.and(
-  //           BoolExpr.comp(
-  //             CompOp.Eq,
-  //             NumExpr.hasToDelegate(""),
-  //             NumExpr.decimal("1.5%"),
-  //           ),
-  //           BoolExpr.base(
-  //             BaseConstraint.rateLimit(
-  //               NumExpr.literal(5),
-  //               NumExpr.literal(1000),
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   },
-  // },
   {
-    id: "rate-limit-basic",
-    name: "Rate Limit",
-    description: "Basic rate limiting: 10 operations per 1000 blocks",
+    id: "permission-enabled",
+    name: "Permission Enabled",
+    description: "Check if a specific permission is enabled",
     constraint: {
       permId: "3",
-      body: BoolExpr.base(
-        BaseConstraint.permissionExists("0x123"),
+      body: BoolExpr.base(BaseConstraint.permissionEnabled("100")),
+    },
+  },
+  {
+    id: "redelegation-requirement",
+    name: "Redelegation Requirement",
+    description: "Requires user to have redelegated a minimum percentage",
+    constraint: {
+      permId: "4",
+      body: BoolExpr.base(BaseConstraint.inactiveUnlessRedelegated("", 5)),
+    },
+  },
+  {
+    id: "stake-or-permission",
+    name: "Stake or Permission",
+    description: "Requires either sufficient stake OR a specific permission",
+    constraint: {
+      permId: "5",
+      body: BoolExpr.or(
+        BoolExpr.comp(CompOp.Gte, NumExpr.stakeOf(""), NumExpr.literal(1000)),
+        BoolExpr.base(BaseConstraint.permissionEnabled("100")),
       ),
     },
   },
   {
-    id: "depth-limit-basic",
-    name: "Depth Limit",
-    description: "Limit delegation depth to 3 levels maximum",
+    id: "multiple-requirements",
+    name: "Multiple Requirements",
+    description: "Requires both stake AND redelegation",
     constraint: {
-      permId: "4",
-      body: BoolExpr.base(
-        BaseConstraint.permissionEnabled("0x456"),
+      permId: "6",
+      body: BoolExpr.and(
+        BoolExpr.comp(CompOp.Gte, NumExpr.stakeOf(""), NumExpr.literal(5000)),
+        BoolExpr.base(BaseConstraint.inactiveUnlessRedelegated("", 10)),
+      ),
+    },
+  },
+  {
+    id: "complex-tiered",
+    name: "Complex Tiered Access",
+    description: "Multi-tier access based on stake and permissions",
+    constraint: {
+      permId: "7",
+      body: BoolExpr.or(
+        BoolExpr.comp(CompOp.Gte, NumExpr.stakeOf(""), NumExpr.literal(10000)),
+        BoolExpr.and(
+          BoolExpr.comp(CompOp.Gte, NumExpr.stakeOf(""), NumExpr.literal(5000)),
+          BoolExpr.base(BaseConstraint.permissionExists("")),
+        ),
       ),
     },
   },
