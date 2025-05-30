@@ -27,6 +27,9 @@ import { constraintToNodes } from "./constraint-nodes/constraint-to-nodes";
 import ConstraintControlsSheet from "./constraint-controls-sheet";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
 import { ConstraintSubmission } from "./constraint-submission";
+import { api as trpcApi } from "~/trpc/react";
+import type { BoolExprType } from "@torus-ts/dsl";
+import { useTorus } from "@torus-ts/torus-provider";
 
 import useAutoLayout from "./constraint-layout/use-auto-layout";
 import type { LayoutOptions } from "./constraint-layout/use-auto-layout";
@@ -61,6 +64,7 @@ const nodeTypes = {
  */
 function ConstraintFlow() {
   const { fitView } = useReactFlow();
+  const { selectedAccount } = useTorus();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -70,6 +74,10 @@ function ConstraintFlow() {
     isValid: false,
     errors: [],
   });
+
+  // Fetch permissions with constraints
+  const { data: permissionsWithConstraints } =
+    trpcApi.permission.withConstraints.useQuery();
 
   // Initialize permission ID from existing node
   useEffect(() => {
@@ -173,6 +181,82 @@ function ConstraintFlow() {
       }
     }
   }, [nodes, selectedPermissionId]);
+
+  // Load existing constraint when permission with constraint is selected
+  useEffect(() => {
+    if (!selectedPermissionId || !permissionsWithConstraints) return;
+
+    // Find the permission with constraint
+    const permissionWithConstraint = permissionsWithConstraints.find(
+      (item) =>
+        item.permission.permission_id === selectedPermissionId &&
+        item.constraint !== null,
+    );
+
+    if (permissionWithConstraint?.constraint) {
+      try {
+        // Deserialize the constraint
+        const constraintBody = JSON.parse(
+          permissionWithConstraint.constraint.body,
+        ) as { json: unknown };
+        // The stored JSON is actually just the BoolExpr body, not the full Constraint
+        const deserializedBoolExpr = JSON.parse(
+          JSON.stringify(constraintBody.json),
+          (key, value: unknown) => {
+            if (
+              typeof value === "object" &&
+              value !== null &&
+              "type" in value &&
+              "value" in value
+            ) {
+              const typedValue = value as { type: string; value: string };
+              if (typedValue.type === "bigint") {
+                return BigInt(typedValue.value);
+              }
+            }
+            return value;
+          },
+        ) as BoolExprType;
+
+        // Convert to nodes and edges - wrap the deserialized bool expression in proper Constraint structure
+        const { nodes: newNodes, edges: newEdges } = constraintToNodes({
+          permId: selectedPermissionId,
+          body: deserializedBoolExpr,
+        });
+
+        // Update the permission ID in the new nodes
+        const updatedNodes = newNodes.map((node) => {
+          if (
+            node.id === "permission-id" &&
+            node.data.type === "permissionId"
+          ) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                permissionId: selectedPermissionId,
+              },
+            };
+          }
+          return node;
+        });
+
+        setNodes(updatedNodes);
+        setEdges(newEdges);
+        setSelectedExample(""); // Clear selected example since we loaded from existing constraint
+      } catch (error) {
+        console.error("Failed to load existing constraint:", error);
+      }
+    }
+  }, [selectedPermissionId, permissionsWithConstraints, setNodes, setEdges]);
+
+  // Reset form when wallet changes
+  useEffect(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+    setSelectedExample("");
+    setSelectedPermissionId("");
+  }, [selectedAccount?.address, setNodes, setEdges]);
 
   // Validate constraint whenever nodes change
   useEffect(() => {
