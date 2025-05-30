@@ -28,6 +28,12 @@ const nodeColorLegend: NodeColorInfo[] = [
     description: "The primary allocator in the network",
   },
   {
+    color: "#FFD700",
+    title: "Connected to Allocator",
+    description: "Nodes directly connected to the allocator",
+  },
+  // Other nodes (not connected to allocator)
+  {
     color: "#9575CD",
     title: "Grantor and Grantee",
     description: "Nodes that both grant and receive permissions",
@@ -41,11 +47,6 @@ const nodeColorLegend: NodeColorInfo[] = [
     color: "#81C784",
     title: "Grantee",
     description: "Nodes that receive permissions from others",
-  },
-  {
-    color: "#FFB74D",
-    title: "Allocated Agent",
-    description: "Agents that receive allocations",
   },
 ];
 

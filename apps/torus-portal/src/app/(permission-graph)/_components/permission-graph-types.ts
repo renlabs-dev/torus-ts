@@ -24,6 +24,7 @@ export interface CustomGraphNode extends NodeObject {
   val?: number;
   fullAddress?: string;
   role?: string;
+  opacity?: number;
   fx?: number; 
   fy?: number; 
   fz?: number;
@@ -46,6 +47,7 @@ export interface CustomGraphLink extends LinkObject {
   linkCurvature?: number;
   linkColor?: string;
   linkWidth: number;
+  linkOpacity?: number;
 }
 
 export interface CustomGraphData {

@@ -76,6 +76,7 @@ const ForceGraph = memo(
           color: node.color,
           val: node.val,
           role: node.role,
+          opacity: node.opacity,
           fx: node.fx, // Pass fixed x position
           fy: node.fy, // Pass fixed y position
           fz: node.fz, // Pass fixed z position
@@ -90,6 +91,7 @@ const ForceGraph = memo(
           linkCurvature: link.linkCurvature,
           linkColor: link.linkColor,
           linkWidth: link.linkWidth,
+          linkOpacity: link.linkOpacity,
         })),
       };
     }, [props.graphData.nodes, props.graphData.links]);
@@ -179,6 +181,7 @@ const ForceGraph = memo(
       <R3fForceGraph
         ref={fgRef}
         graphData={formattedData}
+        nodeOpacity={1}
         nodeColor={(node: NodeObject) => {
           const nodeId = String(node.id);
           const baseColor = String(node.color ?? "#00ffff");
@@ -249,6 +252,7 @@ const ForceGraph = memo(
           }
           return baseWidth;
         }}
+        linkOpacity={0.25}
         nodeResolution={46}
         onNodeClick={handleNodeClick}
         onNodeHover={handleNodeHover}

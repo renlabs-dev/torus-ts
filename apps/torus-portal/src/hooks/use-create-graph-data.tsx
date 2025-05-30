@@ -85,25 +85,44 @@ export function useCreateGraphData() {
         const isAllocatedOnly =
           hasWeight && !isGrantor && !isGrantee && !isAllocator;
 
+        // Check if this node is directly connected to the allocator
+        const isConnectedToAllocator = hasWeight && !isAllocator;
+
         // Assign different colors based on role - Modern gradient palette
         let color = "#64B5F6"; // default soft blue
         let role = "";
+        let opacity = 0.5;
 
         if (isAllocator) {
           color = "#ffffff"; // white for allocator
           role = "Allocator";
-        } else if (isAllocatedOnly) {
-          color = "#FFB74D"; // soft orange for allocated agents
-          role = "Allocated Agent";
-        } else if (isGrantor && isGrantee) {
-          color = "#9575CD"; // soft purple for nodes that are both
-          role = "Both";
-        } else if (isGrantor) {
-          color = "#4FC3F7"; // light cyan for grantors
-          role = "Grantor";
-        } else if (isGrantee) {
-          color = "#81C784"; // soft green for grantees
-          role = "Grantee";
+          opacity = 1;
+        } else if (isConnectedToAllocator) {
+          // All nodes connected to allocator get the same gold color
+          color = "#FFD700"; // gold for all connected nodes
+          
+          // Still track their role
+          if (isAllocatedOnly) {
+            role = "Allocated Agent";
+          } else if (isGrantor && isGrantee) {
+            role = "Both";
+          } else if (isGrantor) {
+            role = "Grantor";
+          } else if (isGrantee) {
+            role = "Grantee";
+          }
+        } else {
+          // Nodes NOT connected to allocator keep original vibrant colors
+          if (isGrantor && isGrantee) {
+            color = "#9575CD"; // soft purple for nodes that are both
+            role = "Both";
+          } else if (isGrantor) {
+            color = "#4FC3F7"; // light cyan for grantors
+            role = "Grantor";
+          } else if (isGrantee) {
+            color = "#81C784"; // soft green for grantees
+            role = "Grantee";
+          }
         }
 
         // Use computed weight if available, otherwise default to 1
@@ -125,6 +144,7 @@ export function useCreateGraphData() {
           val,
           fullAddress: address,
           role,
+          opacity: opacity,
         };
 
         // Pin the allocator to the center
@@ -152,9 +172,10 @@ export function useCreateGraphData() {
             enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
             linkDirectionalArrowLength: 3.5,
             linkDirectionalArrowRelPos: 1,
-            linkCurvature: 0.2,
+            linkCurvature: 0.3,
             linkColor: "#B39DDB", // soft lavender for permission links
-            linkWidth: 0.3,
+            linkWidth: 1.5, // Increased width for better visibility
+            linkOpacity: 0.6,
           }))
         : [];
 
@@ -179,11 +200,12 @@ export function useCreateGraphData() {
             source: allocatorAddress,
             target: agentKey,
             id: `allocation-${agentKey}`,
-            linkDirectionalParticles: computedAgentWeight / (scaleFactor * 2),
-            linkDirectionalParticleWidth: 1,
+            linkDirectionalParticles: Math.max(2, computedAgentWeight),
+            linkDirectionalParticleWidth: 2.5,
             linkCurvature: 0,
             linkColor: "#90CAF9", // soft sky blue for allocation links
-            linkWidth: 1,
+            linkWidth: 2.5, // Thicker width for allocation links
+            linkOpacity: 0.8,
           });
         }
       });
