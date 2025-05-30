@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { api } from "../../../trpc/react";
 import type { Edge, Node } from "@xyflow/react";
 import { validateConstraintForm } from "./constraint-utils";
+import { useTorus } from "@torus-ts/torus-provider";
 
 interface ConstraintSubmissionProps {
   nodes: Node[];
@@ -27,22 +28,23 @@ export function ConstraintSubmission({
 }: ConstraintSubmissionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { selectedAccount } = useTorus();
 
   const constraintMutation = api.constraint.addTest.useMutation({
     onSuccess: (result) => {
       toast({
-        title: isEditingConstraint 
-          ? "Constraint updated successfully!" 
+        title: isEditingConstraint
+          ? "Constraint updated successfully!"
           : "Constraint created successfully!",
-        description: `Constraint ${result.constraintId} has been ${isEditingConstraint ? 'updated and' : ''} activated.`,
+        description: `Constraint ${result.constraintId} has been ${isEditingConstraint ? "updated and" : ""} activated.`,
       });
       setIsSubmitting(false);
     },
     onError: (error) => {
       console.error("Constraint submission error:", error);
       toast({
-        title: isEditingConstraint 
-          ? "Failed to update constraint" 
+        title: isEditingConstraint
+          ? "Failed to update constraint"
           : "Failed to create constraint",
         description: error.message || "An unexpected error occurred.",
         variant: "destructive",
@@ -60,7 +62,7 @@ export function ConstraintSubmission({
     if (!validationResult.isValid) {
       toast({
         title: "Constraint validation failed",
-        description: `Please fix the validation errors before ${isEditingConstraint ? 'updating' : 'creating'} the constraint.`,
+        description: `Please fix the validation errors before ${isEditingConstraint ? "updating" : "creating"} the constraint.`,
         variant: "destructive",
       });
       return;
@@ -79,8 +81,7 @@ export function ConstraintSubmission({
     if (!selectedPermissionId) {
       toast({
         title: "Permission required",
-        description:
-          `Please select a permission ID before ${isEditingConstraint ? 'updating' : 'creating'} the constraint.`,
+        description: `Please select a permission ID before ${isEditingConstraint ? "updating" : "creating"} the constraint.`,
         variant: "destructive",
       });
       return;
@@ -95,10 +96,13 @@ export function ConstraintSubmission({
         permId: selectedPermissionId,
       };
 
-      console.log(`${isEditingConstraint ? 'Updating' : 'Submitting'} constraint:`, {
-        permId: constraintToSubmit.permId,
-        body: constraintToSubmit.body,
-      });
+      console.log(
+        `${isEditingConstraint ? "Updating" : "Submitting"} constraint:`,
+        {
+          permId: constraintToSubmit.permId,
+          body: constraintToSubmit.body,
+        },
+      );
 
       // Submit the constraint via tRPC
       const result = await constraintMutation.mutateAsync({
@@ -125,16 +129,18 @@ export function ConstraintSubmission({
   return (
     <Button
       onClick={handleSubmitConstraint}
-      disabled={isSubmitDisabled || isSubmitting}
+      disabled={isSubmitDisabled || isSubmitting || !selectedAccount?.address}
       className="w-full"
     >
       {isSubmitting ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          {isEditingConstraint ? 'Updating' : 'Creating'} Constraint...
+          {isEditingConstraint ? "Updating" : "Creating"} Constraint...
         </>
+      ) : isEditingConstraint ? (
+        "Update This Constraint"
       ) : (
-        isEditingConstraint ? "Update This Constraint" : "Create This Constraint"
+        "Create This Constraint"
       )}
     </Button>
   );
