@@ -294,7 +294,7 @@ const PermissionGraph = memo(
           />
           <OrbitControls dampingFactor={0.01} enablePan={false} />
           <Stars
-            radius={50}
+            radius={200}
             depth={50}
             count={2000}
             factor={4}
