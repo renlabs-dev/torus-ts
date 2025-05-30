@@ -31,7 +31,7 @@
     "@torus-network/torus-utils": "workspace:*",
     "express": "^4.19.2",
     "rustie": "catalog:",
-    "superjson": "^2.2.1",
+    "superjson": "2.2.1",
     "tsafe": "catalog:",
     "zod": "catalog:"
   },
