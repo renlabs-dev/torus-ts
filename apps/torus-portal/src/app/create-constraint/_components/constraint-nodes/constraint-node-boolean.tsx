@@ -310,42 +310,42 @@ export function ConstraintNodeBoolean({
             data.expression.$ === "Not"
               ? "red"
               : data.expression.$ === "And"
-                ? "blue"
+                ? "yellow"
                 : data.expression.$ === "Or"
                   ? "green"
                   : data.expression.$ === "CompExpr"
                     ? "purple"
-                    : "gray" // data.expression.$ === "Base"
+                    : "blue" // data.expression.$ === "Base"
           }
         >
           <ConstraintSelectIconItem
             value="Not"
             colorVariant="red"
-            icon={<Ban className="h-4 w-4 text-red-600" />}
+            icon={<Ban className="h-4 w-4 text-red-500" />}
             label="NOT"
           />
           <ConstraintSelectIconItem
             value="And"
             colorVariant="blue"
-            icon={<Plus className="h-4 w-4 text-blue-600" />}
+            icon={<Plus className="h-4 w-4 text-yellow-500" />}
             label="AND"
           />
           <ConstraintSelectIconItem
             value="Or"
             colorVariant="green"
-            icon={<GitBranch className="h-4 w-4 text-green-600" />}
+            icon={<GitBranch className="h-4 w-4 text-green-500" />}
             label="OR"
           />
           <ConstraintSelectIconItem
             value="CompExpr"
             colorVariant="purple"
-            icon={<Scale className="h-4 w-4 text-purple-600" />}
+            icon={<Scale className="h-4 w-4 text-purple-500" />}
             label="Comparison"
           />
           <ConstraintSelectIconItem
             value="Base"
-            colorVariant="gray"
-            icon={<Workflow className="h-4 w-4 text-gray-600" />}
+            colorVariant="emerald"
+            icon={<Workflow className="h-4 w-4 text-blue-500" />}
             label="Base Constraint"
           />
         </ConstraintSelect>

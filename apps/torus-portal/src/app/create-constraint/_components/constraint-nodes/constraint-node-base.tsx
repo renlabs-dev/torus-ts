@@ -142,7 +142,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
         <ConstraintSelectIconItem
           value="InactiveUnlessRedelegated"
           colorVariant="gray"
-          icon={<Pause className="h-4 w-4 text-gray-600" />}
+          icon={<Pause className="h-4 w-4 text-gray-300" />}
           label="Inactive Unless Redelegated"
         />
       </ConstraintSelect>
