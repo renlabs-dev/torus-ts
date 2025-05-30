@@ -958,7 +958,7 @@ importers:
         specifier: 'catalog:'
         version: 0.4.0
       superjson:
-        specifier: ^2.2.1
+        specifier: 2.2.1
         version: 2.2.1
       tsafe:
         specifier: 'catalog:'
