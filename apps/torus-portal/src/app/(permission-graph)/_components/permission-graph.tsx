@@ -22,7 +22,7 @@ interface ForceGraphProps {
 const ForceGraph = memo(
   function ForceGraph(props: ForceGraphProps) {
     const fgRef = useRef<GraphMethods | undefined>(undefined);
-    const linkDistance = 120;
+    const linkDistance = 100;
 
     const [highlightNodes, setHighlightNodes] = useState<Set<string>>(
       new Set(),
