@@ -44,23 +44,23 @@ export function ConstraintSelect({
   const getColorClasses = (variant: ColorVariant) => {
     switch (variant) {
       case "red":
-        return "bg-red-50 text-red-700";
+        return "border-red-500 text-red-500 hover:bg-red-500/10";
       case "blue":
-        return "bg-blue-50 text-blue-700";
+        return "border-blue-500 text-blue-500 hover:bg-blue-500/10";
       case "green":
-        return "bg-green-50 text-green-700";
+        return "border-green-500 text-green-500 hover:bg-green-500/10";
       case "purple":
-        return "bg-purple-50 text-purple-700";
+        return "border-purple-500 text-purple-500 hover:bg-purple-500/10";
       case "gray":
-        return "bg-gray-50 text-gray-700";
+        return "border-gray-300 text-gray-300 hover:bg-gray-300/10";
       case "emerald":
-        return "bg-emerald-50 text-emerald-700";
+        return "border-emerald-500 text-emerald-500 hover:bg-emerald-500/10";
       case "orange":
-        return "bg-orange-50 text-orange-700";
+        return "border-orange-500 text-orange-500 hover:bg-orange-500/10";
       case "yellow":
-        return "bg-yellow-50 text-yellow-700";
+        return "border-yellow-500 text-yellow-500 hover:bg-yellow-500/10";
       default:
-        return "bg-gray-50 text-gray-700";
+        return "border-white text-white hover:bg-white-500/10";
     }
   };
 
@@ -68,9 +68,9 @@ export function ConstraintSelect({
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger
         id={id}
-        className={`border transition-all pr-0 border-[#B1B1B7] duration-200 rounded-full
+        className={`border transition-all pr-0 duration-200 rounded-full px-3 backdrop-blur-xl
           ${getColorClasses(colorVariant)} ${className}
-          ${isRenderingField ? "rounded-t-xl rounded-b-none" : "rounded-full"}`}
+          ${isRenderingField ? "rounded-t-md rounded-b-none" : "rounded-md"}`}
       >
         <SelectValue />
       </SelectTrigger>
@@ -166,7 +166,7 @@ export const ConstraintInput = forwardRef<
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full pr-0 ${hasError ? "border-red-500" : ""} ${className}`}
+          className={`w-full border-t-0 pr-0 ${hasError ? "border-red-500" : ""} ${className}`}
           {...props}
         />
         {hasError && errorMessage && (

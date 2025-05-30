@@ -85,16 +85,16 @@ export function ConstraintNodePermissionId({
     >
       <div className="flex items-center justify-center font-semibold">
         <div className="w-full">
-          <div className="flex items-center justify-center font-semibold">
+          <div className="flex items-center justify-center">
             <Select
               value={permissionId}
               onValueChange={handlePermissionIdChange}
               disabled={shouldDisablePermissionSelect}
             >
-              <SelectTrigger className="w-fit pl-[0.05em] pr-1 gap-2 bg-zinc-300 text-accent rounded-full">
+              <SelectTrigger className="w-fit pl-[0.05em] pr-1 gap-2 text-zinc-300 border border-[#B1B1B6] rounded-full">
                 <div
                   className="flex items-center gap-2 bg-accent z-50 px-3 py-[0.45em] rounded-full
-                    text-zinc-300 rounded-r-none"
+                    rounded-r-none"
                 >
                   <Key className="h-4 w-4" />
                   <span className="text-nowrap font-medium">Permission ID</span>

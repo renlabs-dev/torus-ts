@@ -208,7 +208,7 @@ export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
         }
         colorVariant={
           data.expression.$ === "UIntLiteral"
-            ? "blue"
+            ? "orange"
             : data.expression.$ === "BlockNumber"
               ? "purple"
               : data.expression.$ === "StakeOf"
@@ -220,32 +220,32 @@ export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
       >
         <ConstraintSelectIconItem
           value="UIntLiteral"
-          colorVariant="blue"
-          icon={<Hash className="h-4 w-4 text-blue-600" />}
+          colorVariant="orange"
+          icon={<Hash className="h-4 w-4 text-orange-500" />}
           label="Literal Value (UInt)"
         />
         <ConstraintSelectIconItem
           value="BlockNumber"
           colorVariant="purple"
-          icon={<Clock className="h-4 w-4 text-purple-600" />}
+          icon={<Clock className="h-4 w-4 text-purple-500" />}
           label="Current Block"
         />
         <ConstraintSelectIconItem
           value="StakeOf"
           colorVariant="green"
-          icon={<Coins className="h-4 w-4 text-green-600" />}
+          icon={<Coins className="h-4 w-4 text-green-500" />}
           label="Stake Of Account"
         />
         <ConstraintSelectIconItem
           value="Add"
           colorVariant="emerald"
-          icon={<Plus className="h-4 w-4 text-emerald-600" />}
+          icon={<Plus className="h-4 w-4 text-emerald-500" />}
           label="Add"
         />
         <ConstraintSelectIconItem
           value="Sub"
           colorVariant="red"
-          icon={<Minus className="h-4 w-4 text-red-600" />}
+          icon={<Minus className="h-4 w-4 text-red-500" />}
           label="Subtract"
         />
       </ConstraintSelect>
