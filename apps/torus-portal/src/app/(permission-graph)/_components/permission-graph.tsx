@@ -252,7 +252,7 @@ const ForceGraph = memo(
           }
           return baseWidth;
         }}
-        linkOpacity={0.25}
+        linkOpacity={0.5}
         nodeResolution={46}
         onNodeClick={handleNodeClick}
         onNodeHover={handleNodeHover}
@@ -289,7 +289,7 @@ const PermissionGraph = memo(
     }
 
     return (
-      <Canvas camera={{ position: [0, 0, 180], far: 2000 }} shadows>
+      <Canvas camera={{ position: [0, 0, 600], far: 8000 }} shadows>
         {/* <color attach="background" args={[0.05, 0.05, 0.1]} /> */}
         <ambientLight intensity={Math.PI / 2} />
         <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
