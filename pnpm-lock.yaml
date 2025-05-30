@@ -860,6 +860,9 @@ importers:
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@torus-ts/env-validation':
         specifier: workspace:*
         version: link:../../packages/env-validation
@@ -884,9 +887,6 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
-      react-google-recaptcha:
-        specifier: ^3.1.0
-        version: 3.1.0(react@19.0.0)
       react-hook-form:
         specifier: ^7.53.2
         version: 7.54.2(react@19.0.0)
@@ -906,9 +906,6 @@ importers:
       '@tailwindcss/typography':
         specifier: 'catalog:'
         version: 0.5.16(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.24)(typescript@5.8.2)))
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
@@ -924,9 +921,6 @@ importers:
       '@types/react-dom':
         specifier: catalog:react19
         version: 19.0.4(@types/react@19.0.12)
-      '@types/react-google-recaptcha':
-        specifier: ^2.1.9
-        version: 2.1.9
       '@types/three':
         specifier: 'catalog:'
         version: 0.175.0
@@ -7640,9 +7634,6 @@ packages:
     peerDependencies:
       '@types/react': ^19.0.0
 
-  '@types/react-google-recaptcha@2.1.9':
-    resolution: {integrity: sha512-nT31LrBDuoSZJN4QuwtQSF3O89FVHC4jLhM+NtKEmVF5R1e8OY0Jo4//x2Yapn2aNHguwgX5doAq8Zo+Ehd0ug==}
-
   '@types/react-reconciler@0.28.9':
     resolution: {integrity: sha512-HHM3nxyUZ3zAylX8ZEyrDNd2XZOnQ0D5XfunJF5FLQnZbHHYq4UWvW1QfelQNXv1ICNkwYhfxjwfnqivYB6bFg==}
     peerDependencies:
@@ -12637,11 +12628,6 @@ packages:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  react-async-script@1.2.0:
-    resolution: {integrity: sha512-bCpkbm9JiAuMGhkqoAiC0lLkb40DJ0HOEJIku+9JDjxX3Rcs+ztEOG13wbrOskt3n2DTrjshhaQ/iay+SnGg5Q==}
-    peerDependencies:
-      react: ^19.0.0
-
   react-devtools-core@6.1.1:
     resolution: {integrity: sha512-TFo1MEnkqE6hzAbaztnyR5uLTMoz6wnEWwWBsCUzNt+sVXJycuRJdDqvL078M4/h65BI/YO5XWTaxZDWVsW0fw==}
 
@@ -12658,11 +12644,6 @@ packages:
 
   react-fast-compare@2.0.4:
     resolution: {integrity: sha512-suNP+J1VU1MWFKcyt7RtjiSWUjvidmQSlqu+eHslq+342xCbGTYmC0mEhPCOHxlW0CywylOC1u2DFAT+bv4dBw==}
-
-  react-google-recaptcha@3.1.0:
-    resolution: {integrity: sha512-cYW2/DWas8nEKZGD7SCu9BSuVz8iOcOLHChHyi7upUuVhkpkhYG/6N3KDiTQ3XAiZ2UAZkfvYKMfAHOzBOcGEg==}
-    peerDependencies:
-      react: ^19.0.0
 
   react-hook-form@7.54.2:
     resolution: {integrity: sha512-eHpAUgUjWbZocoQYUHposymRb4ZP6d0uwUnooL2uOybA9/3tPUvoAKqEWK1WaSiTxxOfTpffNZP7QwlnM3/gEg==}
@@ -23987,10 +23968,6 @@ snapshots:
     dependencies:
       '@types/react': 19.0.12
 
-  '@types/react-google-recaptcha@2.1.9':
-    dependencies:
-      '@types/react': 19.0.12
-
   '@types/react-reconciler@0.28.9(@types/react@19.0.12)':
     dependencies:
       '@types/react': 19.0.12
@@ -30632,12 +30609,6 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  react-async-script@1.2.0(react@19.0.0):
-    dependencies:
-      hoist-non-react-statics: 3.3.2
-      prop-types: 15.8.1
-      react: 19.0.0
-
   react-devtools-core@6.1.1(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       shell-quote: 1.8.2
@@ -30659,12 +30630,6 @@ snapshots:
       react: 19.0.0
 
   react-fast-compare@2.0.4: {}
-
-  react-google-recaptcha@3.1.0(react@19.0.0):
-    dependencies:
-      prop-types: 15.8.1
-      react: 19.0.0
-      react-async-script: 1.2.0(react@19.0.0)
 
   react-hook-form@7.54.2(react@19.0.0):
     dependencies:

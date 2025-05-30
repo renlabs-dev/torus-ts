@@ -54,6 +54,7 @@ type TransactionExtrinsicPromise =
   | undefined;
 
 interface TorusContextType {
+  // TODO: Test changing `api` on `TorusProvider` to `ApiPromise` instead of `Api`
   api: Api | null;
   torusCacheUrl: string;
 

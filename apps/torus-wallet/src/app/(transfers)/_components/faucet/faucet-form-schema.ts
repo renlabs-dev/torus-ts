@@ -7,6 +7,6 @@ export const FaucetFormSchema = z.object({
   recipient: z
     .string()
     .trim()
-    .nonempty({ message: "Recipient address is required" })
-    .refine(isSS58, { message: "Invalid recipient address" })
+    .min(1, { message: "Recipient address is required" })
+    .refine(isSS58, { message: "Invalid recipient address" }),
 });
