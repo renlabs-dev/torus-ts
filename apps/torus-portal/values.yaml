@@ -4,3 +4,15 @@ deployment:
 
   podLabels:
     app: torus-portal
+
+  env:
+    JWT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: jwt_secret
+    NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: torus_allocator_address
