@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   BookMarked,
   Globe,
+  House,
   Scale,
   Telescope,
   WalletCards,
@@ -51,7 +52,7 @@ export function Footer({ torusChainEnv }: FooterProps) {
 
   const _appList = [
     {
-      icon: <Globe className="h-3 w-3" />,
+      icon: <House className="h-3 w-3" />,
       name: "Home",
       href: links.landing_page,
     },
@@ -84,6 +85,11 @@ export function Footer({ torusChainEnv }: FooterProps) {
       icon: <Telescope className="h-3 w-3" />,
       name: "Explorer",
       href: links.torex_explorer,
+    },
+    {
+      icon: <Globe className="h-3 w-3" />,
+      name: "Portal",
+      href: links.portal,
     },
   ];
 
