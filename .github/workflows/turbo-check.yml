@@ -33,7 +33,7 @@ jobs:
     outputs:
       torus-wallet: ${{ steps.changed.outputs.torus-wallet }}
       torus-page: ${{ steps.changed.outputs.torus-page }}
-      torus-portal: ${{ steps.changed.outputs.torus-page }}
+      torus-portal: ${{ steps.changed.outputs.torus-portal }}
       torus-allocator: ${{ steps.changed.outputs.torus-allocator }}
       torus-cache: ${{ steps.changed.outputs.torus-cache }}
       torus-bridge: ${{ steps.changed.outputs.torus-bridge }}
