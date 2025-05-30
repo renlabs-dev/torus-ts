@@ -24,6 +24,9 @@ export interface CustomGraphNode extends NodeObject {
   val?: number;
   fullAddress?: string;
   role?: string;
+  fx?: number; 
+  fy?: number; 
+  fz?: number;
 }
 
 export interface CustomGraphLink extends LinkObject {
