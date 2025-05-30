@@ -16,6 +16,7 @@ const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
 interface ForceGraphProps {
   graphData: CustomGraphData;
   onNodeClick: (node: CustomGraphNode) => void;
+  userAddress?: string;
 }
 
 const ForceGraph = memo(
@@ -74,6 +75,7 @@ const ForceGraph = memo(
           name: node.name,
           color: node.color,
           val: node.val,
+          role: node.role,
         })),
         links: props.graphData.links.map((link) => ({
           source: link.source,
@@ -178,6 +180,14 @@ const ForceGraph = memo(
           const nodeId = String(node.id);
           const baseColor = String(node.color ?? "#00ffff");
 
+          // Check if this is the user's node
+          if (
+            props.userAddress &&
+            nodeId.toLowerCase() === props.userAddress.toLowerCase()
+          ) {
+            return "#dc2626"; // red-600 color for user's node
+          }
+
           if (highlightNodes.has(nodeId)) {
             // Lighten the color for highlighted nodes
             const lightenAmount = nodeId === hoverNode ? 0.4 : 0.15;
@@ -244,10 +254,11 @@ const ForceGraph = memo(
     );
   },
   (prevProps, nextProps) => {
-    // Custom comparison for ForceGraph - only re-render if graphData changes
+    // Custom comparison for ForceGraph - only re-render if graphData or userAddress changes
     return (
       prevProps.graphData === nextProps.graphData &&
-      prevProps.onNodeClick === nextProps.onNodeClick
+      prevProps.onNodeClick === nextProps.onNodeClick &&
+      prevProps.userAddress === nextProps.userAddress
     );
   },
 );
@@ -256,9 +267,11 @@ const PermissionGraph = memo(
   function PermissionGraph({
     data,
     onNodeClick,
+    userAddress,
   }: {
     data: CustomGraphData | null;
     onNodeClick: (node: CustomGraphNode) => void;
+    userAddress?: string;
   }) {
     if (!data) {
       return (
@@ -274,7 +287,11 @@ const PermissionGraph = memo(
         <ambientLight intensity={Math.PI / 2} />
         <directionalLight position={[0, 0, 5]} intensity={Math.PI / 2} />
         <Suspense fallback={null}>
-          <ForceGraph graphData={data} onNodeClick={onNodeClick} />
+          <ForceGraph
+            graphData={data}
+            onNodeClick={onNodeClick}
+            userAddress={userAddress}
+          />
           <OrbitControls dampingFactor={0.01} enablePan={false} />
           <Stars
             radius={50}
@@ -290,10 +307,11 @@ const PermissionGraph = memo(
     );
   },
   (prevProps, nextProps) => {
-    // Custom comparison - only re-render if data actually changes
+    // Custom comparison - only re-render if data or userAddress actually changes
     return (
       prevProps.data === nextProps.data &&
-      prevProps.onNodeClick === nextProps.onNodeClick
+      prevProps.onNodeClick === nextProps.onNodeClick &&
+      prevProps.userAddress === nextProps.userAddress
     );
   },
 );

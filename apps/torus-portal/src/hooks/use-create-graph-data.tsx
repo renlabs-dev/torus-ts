@@ -16,9 +16,13 @@ export function useCreateGraphData() {
   const { data: rawPermissionDetails, isLoading: isLoadingPermissions } =
     api.permissionDetails.all.useQuery();
 
+  console.log("Raw permission details: ", rawPermissionDetails);
+
   // Fetch computed weights for allocations
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     api.computedAgentWeight.all.useQuery();
+
+  console.log("Raw computed weights: ", allComputedWeights);
 
   const permissionDetails = useMemo(() => {
     if (!rawPermissionDetails) return undefined;
@@ -28,7 +32,11 @@ export function useCreateGraphData() {
   }, [rawPermissionDetails]);
 
   const graphData = useMemo(() => {
-    if (!permissionDetails || permissionDetails.length === 0) {
+    // Allow graph to render if we have either permissions OR computed weights
+    if (
+      (!permissionDetails || permissionDetails.length === 0) &&
+      (!allComputedWeights || allComputedWeights.length === 0)
+    ) {
       return null;
     }
 
@@ -46,10 +54,12 @@ export function useCreateGraphData() {
 
     // First, create nodes and links from permissions
     const uniqueAddresses = new Set<string>();
-    permissionDetails.forEach((permission) => {
-      uniqueAddresses.add(permission.grantor_key);
-      uniqueAddresses.add(permission.grantee_key);
-    });
+    if (permissionDetails && permissionDetails.length > 0) {
+      permissionDetails.forEach((permission) => {
+        uniqueAddresses.add(permission.grantor_key);
+        uniqueAddresses.add(permission.grantee_key);
+      });
+    }
 
     // Always include the allocator address if we have computed weights
     if (
@@ -58,18 +68,26 @@ export function useCreateGraphData() {
       allocatorAddress
     ) {
       uniqueAddresses.add(allocatorAddress);
+
+      // Also add all agents with computed weights to ensure they're included
+      allComputedWeights.forEach((agent) => {
+        uniqueAddresses.add(agent.agentKey);
+      });
     }
 
     // Create permission nodes
     const nodes: CustomGraphNode[] = Array.from(uniqueAddresses).map(
       (address) => {
-        const isGrantor = permissionDetails.some(
-          (p) => p.grantor_key === address,
-        );
-        const isGrantee = permissionDetails.some(
-          (p) => p.grantee_key === address,
-        );
+        const isGrantor =
+          permissionDetails?.some((p) => p.grantor_key === address) ?? false;
+        const isGrantee =
+          permissionDetails?.some((p) => p.grantee_key === address) ?? false;
         const isAllocator = address === allocatorAddress;
+
+        // Check if this is an allocated agent (has weight but no permissions)
+        const hasWeight = agentWeightMap.has(address);
+        const isAllocatedOnly =
+          hasWeight && !isGrantor && !isGrantee && !isAllocator;
 
         // Assign different colors based on role - Modern gradient palette
         let color = "#64B5F6"; // default soft blue
@@ -78,6 +96,9 @@ export function useCreateGraphData() {
         if (isAllocator) {
           color = "#ffffff"; // white for allocator
           role = "Allocator";
+        } else if (isAllocatedOnly) {
+          color = "#FFB74D"; // soft orange for allocated agents
+          role = "Allocated Agent";
         } else if (isGrantor && isGrantee) {
           color = "#9575CD"; // soft purple for nodes that are both
           role = "Both";
@@ -96,7 +117,9 @@ export function useCreateGraphData() {
           Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
 
         // Special size for allocator
-        const val = isAllocator ? 150 : Math.pow(weight, 1.2) / scaleFactor;
+        const val = isAllocator
+          ? 200
+          : Math.max(Math.pow(weight, 1.2) / scaleFactor, 5);
 
         return {
           id: address,
@@ -110,36 +133,31 @@ export function useCreateGraphData() {
     );
 
     // Create permission links
-    const links: CustomGraphLink[] = permissionDetails.map((permission) => ({
-      linkType: "permission",
-      source: permission.grantor_key,
-      target: permission.grantee_key,
-      id: permission.permission_id,
-      scope: permission.scope,
-      duration: permission.duration,
-      parentId: permission.parent_id ?? "",
-      enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
-      linkDirectionalArrowLength: 3.5,
-      linkDirectionalArrowRelPos: 1,
-      linkCurvature: 0.2,
-      linkColor: "#B39DDB", // soft lavender for permission links
-      linkWidth: 0.3,
-    }));
+    const links: CustomGraphLink[] =
+      permissionDetails && permissionDetails.length > 0
+        ? permissionDetails.map((permission) => ({
+            linkType: "permission",
+            source: permission.grantor_key,
+            target: permission.grantee_key,
+            id: permission.permission_id,
+            scope: permission.scope,
+            duration: permission.duration,
+            parentId: permission.parent_id ?? "",
+            enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
+            linkDirectionalArrowLength: 3.5,
+            linkDirectionalArrowRelPos: 1,
+            linkCurvature: 0.2,
+            linkColor: "#B39DDB", // soft lavender for permission links
+            linkWidth: 0.3,
+          }))
+        : [];
 
     // Now add allocation data if available
     if (allComputedWeights && allComputedWeights.length > 0) {
-      // Track which agents need to be added as nodes
-      const agentsToAdd = new Map<string, number>();
-
       // Create links from allocator to each weighted agent
       allComputedWeights.forEach((agent) => {
         const agentKey = agent.agentKey;
         const computedAgentWeight = agent.percComputedWeight;
-
-        // Check if agent node exists
-        if (!nodes.find((node) => node.id === agentKey)) {
-          agentsToAdd.set(agentKey, computedAgentWeight);
-        }
 
         // Check if link already exists
         const linkExists = links.some(
@@ -163,23 +181,6 @@ export function useCreateGraphData() {
           });
         }
       });
-
-      // Add missing agent nodes from allocations
-      for (const [agentKey, rawWeight] of agentsToAdd.entries()) {
-        // Ensure weight is a valid positive number to prevent NaN
-        const weight =
-          Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
-        const val = Math.pow(weight, 1.2) / scaleFactor;
-        const color = "#FFB74D"; // soft orange for allocated agents
-        nodes.push({
-          id: agentKey,
-          name: smallAddress(agentKey),
-          color: color,
-          val: val,
-          fullAddress: agentKey,
-          role: "Allocated Agent",
-        });
-      }
     }
 
     return { nodes, links };
