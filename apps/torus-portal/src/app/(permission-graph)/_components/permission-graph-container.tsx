@@ -14,6 +14,9 @@ import PermissionGraphSearch from "./permission-graph-search";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import { MousePointerClick } from "lucide-react";
 import { useCreateGraphData } from "../../../hooks/use-create-graph-data";
+import { NodeColorLegend } from "./node-color-legend";
+import { MyAgentButton } from "./my-agent-button";
+import { useTorus } from "@torus-ts/torus-provider";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -26,6 +29,7 @@ export default function PermissionGraphContainer() {
   const agentCache = useRef(new AgentLRUCache(10));
 
   const { graphData, isLoading, permissionDetails } = useCreateGraphData();
+  const { selectedAccount } = useTorus();
 
   // Handle initial selected node from query params
   useEffect(() => {
@@ -87,10 +91,17 @@ export default function PermissionGraphContainer() {
         <MousePointerClick className="w-4" />
         <span className="text-xs"> Click on any node for detailed view.</span>
       </div>
+      <div
+        className="absolute left-0 md:bottom-[53px] bottom-2 gap-2 items-center flex flex-row
+          md:px-4 px-2 z-50"
+      >
+        <NodeColorLegend />
+      </div>
       <div className="absolute top-[3.9rem] w-screen left-2 right-96 z-10">
         <div className="flex md:flex-row flex-col items-center gap-2 w-full">
           <PortalNavigationTabs />
           <PermissionGraphOverview graphData={graphData} />
+          <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
           <div className="flex-1 w-full">
             <PermissionGraphSearch
               graphNodes={graphData?.nodes.map((node) => node.id) ?? []}
@@ -113,7 +124,11 @@ export default function PermissionGraphContainer() {
             <div className="text-xl">Loading permission graph...</div>
           </div>
         ) : (
-          <PermissionGraph data={graphData} onNodeClick={handleNodeSelect} />
+          <PermissionGraph 
+            data={graphData} 
+            onNodeClick={handleNodeSelect} 
+            userAddress={selectedAccount?.address}
+          />
         )}
       </div>
     </div>
