@@ -162,7 +162,7 @@ export const sb_option_default = <
 
 export const sb_some = <T extends ZodTypeAny>(
   inner: T,
-): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   sb_option<T>(inner).transform(
     (val, ctx): z.output<T> =>
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -206,7 +206,7 @@ export const ToBigInt_schema = z.custom<ToBigInt>((val) => {
   if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
     // ctx.addIssue({
     //   code: z.ZodIssueCode.custom,
-    //   message: "toBigInt not present, it's not a Codec conversible to BigInt",
+    //   message: "toBigInt not present, it's not a Codec convertible to BigInt",
     // });
     // return z.NEVER;
     return false;

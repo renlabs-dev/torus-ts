@@ -29,6 +29,9 @@ import {
 } from "../types";
 import type { Api } from "./_common";
 import { SbQueryError } from "./_common";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
+
+const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });
 
 // ==== Data types ====
 
@@ -546,125 +549,120 @@ export function buildAvailableStreamsFor(
     streamsMap: streamsTotalMap,
   };
 }
-// ==== Delegation Stream Types ====
 
-export const DELEGATION_STREAM_SCHEMA = sb_struct({
-  streamId: STREAM_ID_SCHEMA,
-  grantee: sb_address,
-  percentage: sb_percent,
-  targets: sb_map(sb_address, sb_bigint),
-  accumulatedAmount: sb_bigint,
-});
-
-export type DelegationStream = z.infer<typeof DELEGATION_STREAM_SCHEMA>;
+export interface DelegationStreamInfo {
+  grantor: SS58Address;
+  grantee: SS58Address;
+  streamId: StreamId;
+  percentage: number;
+  targets: Map<SS58Address, bigint>;
+  accumulatedAmount: bigint | null;
+}
 
 /**
- * Query delegation streams for a given account (i.e., streams that this account is delegating to others)
- * 
+ * Query delegation streams for a given account (i.e., streams that this account
+ * is delegating to others).
+ *
  * This function returns information about:
- * - Which streams the account is delegating 
+ * - Which streams the account is delegating
  * - To whom they are delegating (grantees)
  * - What percentage of each stream is being delegated
  * - The targets for each delegated permission
  * - How much has accumulated for each delegation
  *
  * @param api - The API instance
- * @param account - The account ID to query delegation streams for
- * @returns A map of PermissionId -> DelegationStream showing all active delegations
+ * @param grantorAccount - The account ID to query delegation streams for
+ * @returns A map of PermissionId -> DelegationStream showing all active
+ *          delegations
  */
 export async function queryDelegationStreamsByAccount(
   api: Api,
-  account: SS58Address,
-): Promise<
-  Result<
-    Map<PermissionId, DelegationStream>,
-    ZError<PermissionId[]> | ZError<PermissionContract> | ZError<DelegationStream> | Error
-  >
-> {
+  grantorAccount: SS58Address,
+  { getAccumulatedAmounts = false }: { getAccumulatedAmounts?: boolean } = {},
+): Promise<Result<Map<PermissionId, DelegationStreamInfo>, SbQueryError>> {
   // TODO: reimplement this babushka correctly
-  // Step 1: Get all permissions where this account is the grantor (i.e., delegating)
-  const [grantorError, permissionIds] = await queryPermissionsByGrantor(api, account);
-  const permissionIdsList = permissionIds ?? [];
-  if (grantorError !== undefined) return makeErr(grantorError);
 
-  const delegationStreams = new Map<PermissionId, DelegationStream>();
+  // Query all permissions where this account is the grantor (i.e. delegating)
+  const [queryErr, permIds] = await queryPermissionsByGrantor(
+    api,
+    grantorAccount,
+  );
+  const permissionIdsList = permIds ?? [];
+  if (queryErr !== undefined) return makeErr(SbQueryError.from(queryErr));
 
-  // Step 2: For each permission, check if it's an emission permission with stream allocation
+  const delegationStreams = new Map<PermissionId, DelegationStreamInfo>();
+
+  // For each permission, check if it's an emission permission with stream allocation
   for (const permissionId of permissionIdsList) {
-    const [permissionError, permission] = await queryPermission(api, permissionId);
-    if (permissionError !== undefined) continue; // Skip errored permissions
-    if (permission === null) continue; // Skip non-existent permissions
+    const [qErr, permission] = await queryPermission(api, permissionId);
+    if (qErr !== undefined || permission === null) {
+      logger.error(`Failed querying permission ${permissionId}:`, qErr);
+      continue;
+    }
 
-    // Step 3: Check if this is an emission permission with streams allocation
-    const delegationInfo = match(permission.scope)({
-      Emission(emissionScope) {
-        return match(emissionScope.allocation)({
-          Streams(streamsMap) {
+    const delegationInfo: DelegationStreamInfo | null = if_let(
+      permission.scope,
+      "Emission",
+    )(
+      (emissionScope) =>
+        if_let(emissionScope.allocation, "Streams")(
+          (streamsMap) => {
             // This is a stream-based emission permission
             // The streams map contains StreamId -> percentage mappings
             const streamEntries = Array.from(streamsMap.entries());
-            
+
             if (streamEntries.length > 0) {
+              // FIXME: use all streams @jairo
+
               // For now, we'll use the first stream (most common case)
               // In practice, you might want to handle multiple streams differently
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const [streamId, percentage] = streamEntries[0]!;
-              
+
               return {
-                streamId,
+                grantor: grantorAccount,
                 grantee: permission.grantee,
+                streamId,
                 percentage,
                 targets: emissionScope.targets,
-                // We'll try to get accumulated amount, defaulting to 0 if not found
-                accumulatedAmount: BigInt(0), // Will be updated below
-              };
+                accumulatedAmount: null,
+              } as DelegationStreamInfo;
             }
             return null;
           },
-          FixedAmount() {
-            // Fixed amount permissions are not stream delegations
-            return null;
-          },
-        });
-      },
-      Curator() {
-        // Curator permissions are not stream delegations
-        return null;
-      },
-    });
+          () => null,
+        ),
+      () => null,
+    );
 
-    if (delegationInfo === null) continue; // Skip non-stream permissions
+    // Skip non-stream permissions
+    if (delegationInfo === null) continue;
 
-    // Step 4: Try to get the accumulated amount for this stream delegation
-    try {
-      const [accumulatedError, accumulatedStreams] = await queryAccumulatedStreamsForAccount(
-        api, 
-        permission.grantee
-      );
-      
-      if (accumulatedError === undefined && accumulatedStreams.has(delegationInfo.streamId)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const streamMap = accumulatedStreams.get(delegationInfo.streamId)!;
-        if (streamMap.has(permissionId)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          delegationInfo.accumulatedAmount = streamMap.get(permissionId)!;
+    if (getAccumulatedAmounts) {
+      // Try to get the accumulated amount for this stream delegation
+      // TODO: refactor
+      await (async () => {
+        const [err, accumulatedStreams] =
+          await queryAccumulatedStreamsForAccount(api, permission.grantee);
+        if (err !== undefined) {
+          logger.error(
+            `Failed to query accumulated streams for account ${permission.grantee}:`,
+            err,
+          );
+          return;
         }
-      }
-    } catch {
-      // If we can't get accumulated amounts, just use 0
-      // This is not critical for the delegation query
+
+        const streamsMap = accumulatedStreams.get(delegationInfo.streamId);
+        if (streamsMap === undefined) return;
+
+        const accumulatedAmount = streamsMap.get(permissionId);
+        if (accumulatedAmount === undefined) return;
+
+        delegationInfo.accumulatedAmount = accumulatedAmount;
+      })();
     }
 
-    // Step 5: Validate the delegation data with our schema
-    const validationResult = DELEGATION_STREAM_SCHEMA.safeParse(delegationInfo, {
-      path: ["delegation", permissionId],
-    });
-
-    if (validationResult.success === false) {
-      continue; // Skip invalid data rather than failing the entire query
-    }
-
-    delegationStreams.set(permissionId, validationResult.data);
+    delegationStreams.set(permissionId, delegationInfo);
   }
 
   return makeOk(delegationStreams);
@@ -707,8 +705,10 @@ export function grantEmissionPermission({
   );
 }
 
-
-export function togglePermission(api: ApiPromise, permissionId: PermissionId, enable: boolean) {
+export function togglePermission(
+  api: ApiPromise,
+  permissionId: PermissionId,
+  enable: boolean,
+) {
   return api.tx.permission0.togglePermissionAccumulation(permissionId, enable);
-
 }

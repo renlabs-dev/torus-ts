@@ -122,14 +122,11 @@ export class BasicLogger implements Logger {
     const [error, _] = result;
     if (error !== undefined) {
       if (typeof message === "function") {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        this.error(`${message(error)} ${error}`);
+        this.error(`${message(error)} ${String(error)}`);
       } else if (message !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        this.error(`${message} ${error}`);
+        this.error(`${message} ${String(error)}`);
       } else {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        this.error(`${error}`);
+        this.error(`${String(error)}`);
       }
       return true;
     }
