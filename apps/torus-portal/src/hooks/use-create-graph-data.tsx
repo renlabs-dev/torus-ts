@@ -16,13 +16,9 @@ export function useCreateGraphData() {
   const { data: rawPermissionDetails, isLoading: isLoadingPermissions } =
     api.permissionDetails.all.useQuery();
 
-  console.log("Raw permission details: ", rawPermissionDetails);
-
   // Fetch computed weights for allocations
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     api.computedAgentWeight.all.useQuery();
-
-  console.log("Raw computed weights: ", allComputedWeights);
 
   const permissionDetails = useMemo(() => {
     if (!rawPermissionDetails) return undefined;
