@@ -95,7 +95,8 @@ export function NodeDetailsCard({
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-white">
                           {isOutgoing ? "← Granted " : "→ Received "}
-                          Permission {details?.permission_id}
+                          Permission{" "}
+                          {smallAddress(String(details?.permission_id))}
                         </span>
                       </div>
                       <LinkButtons
@@ -155,7 +156,7 @@ export function NodeDetailsCard({
                               Permission ID
                             </span>
                             <div className="text-sm text-gray-300">
-                              {details.permission_id}
+                              {smallAddress(connectedAddress, 8)}
                             </div>
                           </div>
                         </div>

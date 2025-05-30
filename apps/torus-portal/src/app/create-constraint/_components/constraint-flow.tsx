@@ -313,7 +313,6 @@ function ConstraintFlow() {
           onLoadExample={handleLoadExample}
           selectedPermissionId={selectedPermissionId}
           onPermissionIdChange={handlePermissionIdChange}
-          isSubmitDisabled={!validationResult.isValid}
           validationErrors={validationResult.errors}
           isEditingConstraint={isEditingConstraint}
           submitButton={
@@ -322,7 +321,6 @@ function ConstraintFlow() {
               edges={edges}
               rootNodeId="root-boolean"
               selectedPermissionId={selectedPermissionId}
-              isSubmitDisabled={!validationResult.isValid}
               isEditingConstraint={isEditingConstraint}
             />
           }

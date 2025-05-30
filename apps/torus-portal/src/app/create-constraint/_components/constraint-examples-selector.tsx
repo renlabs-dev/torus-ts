@@ -32,7 +32,7 @@ export default function ConstraintExamplesSelector({
       <label className="text-sm font-medium">Load a Constraint Example</label>
       <Command className="border">
         <CommandInput placeholder="Search examples..." />
-        <CommandList>
+        <CommandList className="max-h-[250px]">
           <CommandEmpty>No examples found.</CommandEmpty>
           <CommandGroup>
             {constraintExamples.map((example) => (

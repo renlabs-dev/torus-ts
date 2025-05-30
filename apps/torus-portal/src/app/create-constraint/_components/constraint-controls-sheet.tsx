@@ -35,7 +35,6 @@ interface ConstraintControlsSheetProps {
   onLoadExample: (exampleId: string) => void;
   selectedPermissionId: string;
   onPermissionIdChange: (permissionId: string) => void;
-  isSubmitDisabled: boolean;
   validationErrors: ValidationError[];
   submitButton: React.ReactNode;
   isEditingConstraint?: boolean;
@@ -46,6 +45,7 @@ export default function ConstraintControlsSheet({
   onLoadExample,
   selectedPermissionId,
   onPermissionIdChange,
+  validationErrors,
   submitButton,
   isEditingConstraint = false,
 }: ConstraintControlsSheetProps) {
@@ -255,7 +255,29 @@ export default function ConstraintControlsSheet({
           </div>
         </div>
 
-        <SheetFooter>{submitButton}</SheetFooter>
+        <SheetFooter>
+          <div className="text-xs text-muted-foreground space-y-2 w-full">
+            {validationErrors.length > 0 && (
+              <div className="space-y-1">
+                {validationErrors.map((error, index) => (
+                  <div key={index} className="text-xs text-red-700">
+                    <span className="font-medium">
+                      {error.nodeId === "permission-id"
+                        ? "Permission ID"
+                        : error.nodeId === "constraint"
+                          ? "Constraint"
+                          : `Node ${error.nodeId}`}
+                      :
+                    </span>{" "}
+                    {error.message}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {submitButton}
+          </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
