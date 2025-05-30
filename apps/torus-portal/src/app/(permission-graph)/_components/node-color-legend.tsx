@@ -56,7 +56,7 @@ export function NodeColorLegend() {
       <DropdownMenuTrigger asChild>
         <Button variant="link" size="sm" className="h-8">
           <InfoIcon className="w-4 h-4 mr-2" />
-          Node Color Legend
+          Node Colors Information
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
