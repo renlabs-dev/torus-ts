@@ -92,8 +92,8 @@ export default function PermissionGraphContainer() {
         <span className="text-xs"> Click on any node for detailed view.</span>
       </div>
       <div
-        className="absolute left-0 md:bottom-[53px] bottom-2 gap-2 items-center flex flex-row
-          md:px-4 px-2 z-50"
+        className="absolute left-0 md:bottom-[53px] bottom-2 gap-2 items-center flex flex-row px-2
+          z-50"
       >
         <NodeColorLegend />
       </div>
@@ -124,9 +124,9 @@ export default function PermissionGraphContainer() {
             <div className="text-xl">Loading permission graph...</div>
           </div>
         ) : (
-          <PermissionGraph 
-            data={graphData} 
-            onNodeClick={handleNodeSelect} 
+          <PermissionGraph
+            data={graphData}
+            onNodeClick={handleNodeSelect}
             userAddress={selectedAccount?.address}
           />
         )}
