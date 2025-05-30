@@ -32,7 +32,8 @@ export default function GrantEmissionPermissionForm({
       },
       targets: [{ account: "", weight: "" }],
       distribution: {
-        type: "Manual",
+        type: "Interval",
+        blocks: "",
       },
       duration: {
         type: "Indefinite",

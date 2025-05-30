@@ -195,7 +195,7 @@ export function GrantEmissionPermissionFormComponent({
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+                        placeholder="e.g. 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
                       />
                     </FormControl>
                     <FormMessage />
@@ -255,7 +255,7 @@ export function GrantEmissionPermissionFormComponent({
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="1000.0"
+                          placeholder="e.g. 1000.0"
                           type="number"
                           step="0.000001"
                         />
@@ -355,7 +355,7 @@ export function GrantEmissionPermissionFormComponent({
                                 )}
                               </FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="0x..." />
+                                <Input {...field} placeholder="e.g. 0x..." />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -370,7 +370,7 @@ export function GrantEmissionPermissionFormComponent({
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder="0"
+                                  placeholder="e.g. 20"
                                   type="number"
                                 />
                               </FormControl>
@@ -433,7 +433,11 @@ export function GrantEmissionPermissionFormComponent({
                       <FormItem className="w-32">
                         <FormLabel>Weight</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="0" type="number" />
+                          <Input
+                            {...field}
+                            placeholder="e.g. 20"
+                            type="number"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -494,9 +498,9 @@ export function GrantEmissionPermissionFormComponent({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Manual">Manual</SelectItem>
-                        <SelectItem value="Automatic">Automatic</SelectItem>
                         <SelectItem value="AtBlock">At Block</SelectItem>
+                        <SelectItem value="Manual">Manual</SelectItem>
+                        <SelectItem value="Automatic">Treshold</SelectItem>
                         <SelectItem value="Interval">Interval</SelectItem>
                       </SelectContent>
                     </Select>
@@ -515,7 +519,7 @@ export function GrantEmissionPermissionFormComponent({
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="100.0"
+                          placeholder="e.g. 100.0"
                           type="number"
                           step="0.000001"
                         />
@@ -534,7 +538,11 @@ export function GrantEmissionPermissionFormComponent({
                     <FormItem>
                       <FormLabel>Block Number</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="1000000" type="number" />
+                        <Input
+                          {...field}
+                          placeholder="e.g.  1000000"
+                          type="number"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -550,7 +558,11 @@ export function GrantEmissionPermissionFormComponent({
                     <FormItem>
                       <FormLabel>Block Interval</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="14400" type="number" />
+                        <Input
+                          {...field}
+                          placeholder="e.g. 14400"
+                          type="number"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -688,7 +700,7 @@ export function GrantEmissionPermissionFormComponent({
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+                                placeholder="e.g. 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
                               />
                             </FormControl>
                             <FormMessage />
@@ -713,7 +725,11 @@ export function GrantEmissionPermissionFormComponent({
                       <FormItem>
                         <FormLabel>Required Votes</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="2" type="number" />
+                          <Input
+                            {...field}
+                            placeholder="e.g. 2"
+                            type="number"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -730,7 +746,11 @@ export function GrantEmissionPermissionFormComponent({
                     <FormItem>
                       <FormLabel>Revocable After Block</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="1500000" type="number" />
+                        <Input
+                          {...field}
+                          placeholder="e.g. 1500000"
+                          type="number"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
