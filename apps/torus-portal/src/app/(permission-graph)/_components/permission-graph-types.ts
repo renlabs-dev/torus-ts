@@ -17,7 +17,6 @@ export function createPermissionIdentifier(
   return value;
 }
 
-
 export interface CustomGraphNode extends NodeObject {
   id: string;
   name: string;
