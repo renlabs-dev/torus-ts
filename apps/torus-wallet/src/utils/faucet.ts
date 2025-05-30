@@ -1,6 +1,6 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { VoidFn } from "@polkadot/api/types";
-import type { DispatchError } from '@polkadot/types/interfaces';
+import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
 import { queryLastBlock } from "@torus-network/sdk";
@@ -66,17 +66,23 @@ export class MultiWorkerManager {
   start() {
     this.found = false;
     for (let i = 0; i < this.workerCount; i++) {
+      // TODO: check if we can inject the faucet worker code from the bundler
+      // instead of using a static file
       const worker = new window.Worker("/faucetWorker.js");
 
       worker.onmessage = async (e) => {
         if (this.found) return; // already found, ignore
 
         this.found = true;
-        const { nonce, hash, blockNumber } = e.data as { nonce: Buffer, hash: Buffer, blockNumber: number };
+        const { nonce, hash, blockNumber } = e.data as {
+          nonce: Buffer;
+          hash: Buffer;
+          blockNumber: number;
+        };
 
         this.terminateAll();
         await this.onFound({
-          nonce: new Uint8Array<ArrayBufferLike>(nonce),
+          nonce: new Uint8Array(nonce),
           hash: new Uint8Array(hash),
           block: blockNumber,
         });
@@ -177,12 +183,12 @@ export function callFaucetExtrinsic(
       const call = api.tx.faucet!.faucet!(
         workResult.block,
         workResult.nonce,
-        // Had to send this as a hex 'cause when it was being sent as a Uint8Array the chain was parsing it as an empty vec.
-        u8aToHex(workResult.hash), 
+        // ! Had to send this as a hex 'cause when it was being sent as a Uint8Array the chain was getting an empty vec.
+        u8aToHex(workResult.hash),
         address,
       );
 
-      const unsub = await call.send((result) => {
+      const unsubscribe = await call.send((result) => {
         if (result.status.isInBlock) {
           console.log(
             "Included at block hash",
@@ -195,7 +201,6 @@ export function callFaucetExtrinsic(
           );
 
           result.events.forEach(({ event: { method, section, data } }) => {
-
             if (section === "system" && method === "ExtrinsicFailed") {
               const [dispatchError] = data as unknown as [DispatchError];
 
@@ -211,14 +216,14 @@ export function callFaucetExtrinsic(
                 console.error("❌ Error:", dispatchError.toString());
               }
 
-                reject(new Error("Transaction Failed."));
+              reject(new Error("Transaction Failed."));
             } else if (section === "system" && method === "ExtrinsicSuccess") {
               resolve();
               console.log("✅ Transaction succeeded");
             }
           });
 
-          unsub();
+          unsubscribe();
         }
       });
     })();

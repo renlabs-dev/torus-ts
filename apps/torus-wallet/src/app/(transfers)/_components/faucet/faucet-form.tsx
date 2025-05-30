@@ -1,6 +1,18 @@
+// TODO: add "Self" button on faucet form's address field
+
+import { useLayoutEffect, useRef, useState } from "react";
+
+import { ChevronDown, LoaderCircle } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
-import type { FaucetFormValues } from "./faucet-form-schema";
+
+import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@torus-ts/ui/components/dropdown-menu";
 import {
   Form,
   FormControl,
@@ -9,11 +21,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { useLayoutEffect, useRef, useState } from "react";
 import { Input } from "@torus-ts/ui/components/input";
-import { Button } from "@torus-ts/ui/components/button";
-import { LoaderCircle, ChevronDown } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@torus-ts/ui/components/dropdown-menu";
+
+import type { FaucetFormValues } from "./faucet-form-schema";
 
 interface FaucetFormProps {
   form: UseFormReturn<FaucetFormValues>;
@@ -23,16 +33,22 @@ interface FaucetFormProps {
   onSubmit: (amount: number) => Promise<void>;
 }
 
-export function FaucetForm({ form, selectedAccount, onSubmit, isLoading, loadMessage}: FaucetFormProps) {
+export function FaucetForm({
+  form,
+  selectedAccount,
+  onSubmit,
+  isLoading,
+  loadMessage,
+}: FaucetFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number>(0);
-  
+
   useLayoutEffect(() => {
     if (containerRef.current) {
-      setWidth(containerRef.current.offsetWidth)
+      setWidth(containerRef.current.offsetWidth);
     }
-  }, [])
+  }, []);
 
   return (
     <Card className="animate-fade w-full p-6">
@@ -64,20 +80,35 @@ export function FaucetForm({ form, selectedAccount, onSubmit, isLoading, loadMes
               disabled={!selectedAccount?.address || isLoading}
               onClick={async () => await onSubmit(1)}
             >
-              {isLoading ? <> <LoaderCircle className="animate-spin"/> {loadMessage} </> : <>Submit Faucet Request (50 TOR)</>}
+              {isLoading ? (
+                <>
+                  <LoaderCircle className="animate-spin" /> {loadMessage}{" "}
+                </>
+              ) : (
+                <>Submit Faucet Request (50 TOR)</>
+              )}
             </Button>
             <DropdownMenu>
-              
               <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline" disabled={!selectedAccount?.address || isLoading}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!selectedAccount?.address || isLoading}
+                >
                   <ChevronDown />
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" style={{width}}>
-                <DropdownMenuItem onClick={async () => await onSubmit(2)}>Submit 2x Faucet Requests (100 TOR)</DropdownMenuItem>
-                <DropdownMenuItem onClick={async () => await onSubmit(10)}>Submit 10x Faucet Requests (500 TOR)</DropdownMenuItem>
-                <DropdownMenuItem onClick={async () => await onSubmit(20)}>Submit 20x Faucet Requests (1.000 TOR)</DropdownMenuItem>
+              <DropdownMenuContent align="end" style={{ width }}>
+                <DropdownMenuItem onClick={async () => await onSubmit(2)}>
+                  Submit 2x Faucet Requests (100 TOR)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={async () => await onSubmit(10)}>
+                  Submit 10x Faucet Requests (500 TOR)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={async () => await onSubmit(20)}>
+                  Submit 20x Faucet Requests (1000 TOR)
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
