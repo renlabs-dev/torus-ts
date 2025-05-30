@@ -25,11 +25,9 @@ import {
   usePermission,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
-import { PlusIcon, CheckIcon } from "lucide-react";
+import { PlusIcon, Grid2x2Check } from "lucide-react";
 import type { ValidationError } from "./constraint-utils";
 import { api as trpcApi } from "~/trpc/react";
-import { deserializeConstraint } from "@torus-ts/dsl";
-// import { deserializeConstraint } from "@torus-ts/dsl";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -52,17 +50,6 @@ export default function ConstraintControlsSheet({
 
   const { data: permissionsWithConstraints } =
     trpcApi.permission.withConstraints.useQuery();
-
-  if (permissionsWithConstraints) {
-    permissionsWithConstraints.forEach((permission) => {
-      const x = permission.constraint;
-      if (x) {
-        const ct = deserializeConstraint(
-          JSON.stringify(JSON.parse(x.body).json),
-        );
-      }
-    });
-  }
 
   const { api, selectedAccount } = useTorus();
 
@@ -157,12 +144,12 @@ export default function ConstraintControlsSheet({
                   {permissions?.map((permissionId) => (
                     <SelectItem key={permissionId} value={permissionId}>
                       <div className="flex items-center justify-between w-full">
+                        {hasConstraint(permissionId) && (
+                          <Grid2x2Check className="h-4 w-4 text-green-500 mr-2" />
+                        )}
                         <span>
                           {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
                         </span>
-                        {hasConstraint(permissionId) && (
-                          <CheckIcon className="h-4 w-4 text-green-500 ml-2" />
-                        )}
                       </div>
                     </SelectItem>
                   )) ?? []}
