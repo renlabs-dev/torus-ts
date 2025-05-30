@@ -10,7 +10,7 @@ export interface LastBlock {
   blockHeader: Header;
   blockNumber: Blocks;
   blockHash: IU8a;
-  blockHashHex: string;
+  blockHashHex: `${string}`;
   apiAtBlock: Api;
 }
 

@@ -29,6 +29,7 @@
     "./error": "./src/error.ts",
     "./files": "./src/files.ts",
     "./bignumber": "./src/bignumber.ts",
+    "./result": "./src/result.ts",
     "./try-catch": "./src/try-catch.ts",
     "./mutation-handler": "./src/mutation-handler.ts",
     "./discord-bot-interaction": "./src/discord-bot-interaction.ts",

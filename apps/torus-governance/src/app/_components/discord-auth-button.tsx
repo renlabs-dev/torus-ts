@@ -44,7 +44,7 @@ export default function DiscordLogin({
 
     onButtonClick?.();
     const [error, _] = await tryAsync(signIn("discord", { redirect: false }));
-    
+
     if (error !== undefined) {
       console.error("Error signing in with Discord:", error);
     }
@@ -55,7 +55,7 @@ export default function DiscordLogin({
 
     onButtonClick?.();
     const [error, _] = await tryAsync(signOut({ redirect: false }));
-    
+
     if (error !== undefined) {
       console.error("Error signing out from Discord:", error);
     }

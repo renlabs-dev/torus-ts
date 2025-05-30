@@ -31,12 +31,15 @@ export function AppBarValue({ children }: AppBarValueProps) {
 }
 
 export function AppBarSkeletonValue() {
-  return (
-    <div className={`h-4 w-16 animate-pulse rounded bg-gray-700/30`} />
-  );
+  return <div className={"h-4 w-16 animate-pulse rounded bg-gray-700/30"} />;
 }
 
-export function AppBarDataGroup({ label, value, unit, isLoading }: AppBarDataGroupProps) {
+export function AppBarDataGroup({
+  label,
+  value,
+  unit,
+  isLoading,
+}: AppBarDataGroupProps) {
   return (
     <>
       <AppBarLabel>{label}</AppBarLabel>

@@ -13,7 +13,10 @@ import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
 import { penaltyRouter } from "./router/penalty/penalty";
+import { permissionDetailsRouter } from "./router/permission/permission-details";
+import { constraintRouter } from "./router/constraint/constraint";
 import { createTRPCRouter } from "./trpc";
+import { permissionRouter } from "./router/permission/permission";
 
 export const appRouter = createTRPCRouter({
   // Auth
@@ -37,8 +40,15 @@ export const appRouter = createTRPCRouter({
   commentInteraction: commentInteractionRouter,
   penalty: penaltyRouter,
 
+  // Constraint Management
+  constraint: constraintRouter,
+
   // Discord Auth
   discordInfo: discordInfoRouter,
+
+  // Permission
+  permission: permissionRouter,
+  permissionDetails: permissionDetailsRouter,
 });
 
 export type AppRouter = typeof appRouter;

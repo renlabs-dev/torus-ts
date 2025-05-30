@@ -188,7 +188,7 @@ export function RegisterAgent() {
 
   async function doMetadataPin(): Promise<CID | null> {
     setUploading(true);
-    
+
     // Handle icon file if present
     let imageObj: Record<string, Record<string, string>> = {};
     const iconFile = getValues("icon");
@@ -201,7 +201,7 @@ export function RegisterAgent() {
       }
       imageObj = { images: { icon: cidToIpfsUri(iconResult.cid) } };
     }
-    
+
     const {
       website,
       twitter,
@@ -213,7 +213,7 @@ export function RegisterAgent() {
       body,
       name,
     } = getValues();
-    
+
     const metadata = {
       title,
       short_description: shortDescription,
@@ -227,11 +227,13 @@ export function RegisterAgent() {
         discord: discord ? parseUrl(discord) : undefined,
       },
     };
-    
+
     const validatedMetadata = AGENT_METADATA_SCHEMA.safeParse(metadata);
     if (!validatedMetadata.success) {
       setUploading(false);
-      toast.error(validatedMetadata.error.errors.map((e) => e.message).join(", "));
+      toast.error(
+        validatedMetadata.error.errors.map((e) => e.message).join(", "),
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -239,24 +241,26 @@ export function RegisterAgent() {
       });
       return null;
     }
-    
+
     const metadataJson = JSON.stringify(metadata, null, 2);
     const file = strToFile(metadataJson, `${name}-agent-metadata.json`);
-    
+
     const [metadataError, metadataResult] = await tryAsync(pinFile(file));
     setUploading(false);
-    
+
     if (metadataError !== undefined) {
       toast.error(metadataError.message || "Error uploading agent metadata");
       return null;
     }
-    
+
     return metadataResult.cid;
   }
 
   async function onSubmit(data: RegisterAgentFormData): Promise<void> {
     if (!userHasEnoughBalance) {
-      toast.error(`Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`);
+      toast.error(
+        `Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`,
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -276,7 +280,9 @@ export function RegisterAgent() {
       return;
     }
     if (!whitelistedApplications?.includes(parsedAgentKey)) {
-      toast.error("Agent not whitelisted. Whitelist required for registration.");
+      toast.error(
+        "Agent not whitelisted. Whitelist required for registration.",
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -285,7 +291,9 @@ export function RegisterAgent() {
       return;
     }
     if (agents.data?.has(parsedAgentKey)) {
-      toast.error("Agent already registered. Make sure you are using the correct address.");
+      toast.error(
+        "Agent already registered. Make sure you are using the correct address.",
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -303,7 +311,9 @@ export function RegisterAgent() {
           : data.agentApiUrl,
       );
     if (!parsedAgentApiUrl.success) {
-      toast.error(parsedAgentApiUrl.error.errors.map((e) => e.message).join(", "));
+      toast.error(
+        parsedAgentApiUrl.error.errors.map((e) => e.message).join(", "),
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -328,9 +338,9 @@ export function RegisterAgent() {
         url: parsedAgentApiUrl.data,
         metadata: cidToIpfsUri(cid),
         callback: (tx) => setTransactionStatus(tx),
-      })
+      }),
     );
-    
+
     if (registerError !== undefined) {
       toast.error(registerError.message || "Error registering agent");
       setTransactionStatus({

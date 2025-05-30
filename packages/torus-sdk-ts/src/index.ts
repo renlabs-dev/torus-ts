@@ -11,6 +11,7 @@ export * from "./rpc";
 export * from "./modules/_common";
 export * from "./modules/subspace";
 export * from "./modules/governance";
+export * from "./modules/permission0";
 
 // == EVM ==
 export * from "./evm";
@@ -26,6 +27,7 @@ export * from "./types/base";
 export * from "./types/index";
 export * from "./types/sb_enum";
 export * from "./types/zod";
+export * from "./types/events";
 
 // == Metadata ==
 export * from "./metadata";

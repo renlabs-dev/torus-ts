@@ -20,7 +20,8 @@ export function AllocationAgentList() {
             .map((agent) => (
               <div
                 key={agent.address}
-                className={`border-muted-foreground/20 flex flex-col gap-1.5 border-b py-4 first:border-t last:border-b-0`}
+                className={`border-muted-foreground/20 flex flex-col gap-1.5 border-b py-4 first:border-t
+                  last:border-b-0`}
               >
                 <span className="font-medium">{agent.name}</span>
                 <div className="flex items-center justify-between">

@@ -19,8 +19,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (formDataError !== undefined) {
     console.error("Error parsing form data:", formDataError);
     return NextResponse.json(
-      { error: "Error parsing form data" }, 
-      { status: 400 }
+      { error: "Error parsing form data" },
+      { status: 400 },
     );
   }
 
@@ -29,17 +29,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!(file instanceof File)) {
     return NextResponse.json(
       { error: "Key 'file' should be a File" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   // Pin file to IPFS
-  const [pinError, pinResult] = await tryAsync(pinFileOnPinata(file, file.name));
+  const [pinError, pinResult] = await tryAsync(
+    pinFileOnPinata(file, file.name),
+  );
   if (pinError !== undefined) {
     console.error("Error pinning file to IPFS:", pinError);
     return NextResponse.json(
       { error: "Error uploading to IPFS" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -78,9 +80,9 @@ async function pinFileOnPinata(
         Authorization: `Bearer ${PINATA_JWT}`,
       },
       body: requestBody,
-    })
+    }),
   );
-  
+
   if (fetchError !== undefined) {
     throw new Error(`Failed to upload to Pinata: ${fetchError.message}`);
   }
@@ -90,12 +92,12 @@ async function pinFileOnPinata(
   if (jsonError !== undefined) {
     throw new Error(`Failed to parse Pinata response: ${jsonError.message}`);
   }
-  
+
   // Validate the response data
   const [parseError, parsedData] = await tryAsync(
-    Promise.resolve(PINATA_PIN_FILE_RESULT.parse(jsonData))
+    Promise.resolve(PINATA_PIN_FILE_RESULT.parse(jsonData)),
   );
-  
+
   if (parseError !== undefined) {
     throw new Error(`Invalid response from Pinata: ${parseError.message}`);
   }
