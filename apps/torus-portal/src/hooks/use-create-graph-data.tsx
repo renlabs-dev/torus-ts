@@ -51,6 +51,15 @@ export function useCreateGraphData() {
       uniqueAddresses.add(permission.grantee_key);
     });
 
+    // Always include the allocator address if we have computed weights
+    if (
+      allComputedWeights &&
+      allComputedWeights.length > 0 &&
+      allocatorAddress
+    ) {
+      uniqueAddresses.add(allocatorAddress);
+    }
+
     // Create permission nodes
     const nodes: CustomGraphNode[] = Array.from(uniqueAddresses).map(
       (address) => {
@@ -60,15 +69,24 @@ export function useCreateGraphData() {
         const isGrantee = permissionDetails.some(
           (p) => p.grantee_key === address,
         );
+        const isAllocator = address === allocatorAddress;
 
         // Assign different colors based on role - Modern gradient palette
         let color = "#64B5F6"; // default soft blue
-        if (isGrantor && isGrantee) {
+        let role = "";
+
+        if (isAllocator) {
+          color = "#ffffff"; // white for allocator
+          role = "Allocator";
+        } else if (isGrantor && isGrantee) {
           color = "#9575CD"; // soft purple for nodes that are both
+          role = "Both";
         } else if (isGrantor) {
           color = "#4FC3F7"; // light cyan for grantors
+          role = "Grantor";
         } else if (isGrantee) {
           color = "#81C784"; // soft green for grantees
+          role = "Grantee";
         }
 
         // Use computed weight if available, otherwise default to 1
@@ -77,14 +95,16 @@ export function useCreateGraphData() {
         const weight =
           Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
 
+        // Special size for allocator
+        const val = isAllocator ? 150 : Math.pow(weight, 1.2) / scaleFactor;
+
         return {
           id: address,
           name: smallAddress(address),
           color,
-          val: Math.pow(weight, 1.2) / scaleFactor,
+          val,
           fullAddress: address,
-          role:
-            isGrantor && isGrantee ? "Both" : isGrantor ? "Grantor" : "Grantee",
+          role,
         };
       },
     );
@@ -101,7 +121,7 @@ export function useCreateGraphData() {
       enforcement: "default_enforcement", // TODO: Fetch from enforcementAuthoritySchema
       linkDirectionalArrowLength: 3.5,
       linkDirectionalArrowRelPos: 1,
-      linkCurvature: 0.5,
+      linkCurvature: 0.2,
       linkColor: "#B39DDB", // soft lavender for permission links
       linkWidth: 0.3,
     }));
@@ -149,11 +169,8 @@ export function useCreateGraphData() {
         // Ensure weight is a valid positive number to prevent NaN
         const weight =
           Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
-        const val =
-          agentKey === allocatorAddress
-            ? 150
-            : Math.pow(weight, 1.2) / scaleFactor;
-        const color = agentKey === allocatorAddress ? "#ffffff" : "#FFB74D"; // white for allocator, soft orange for allocated agents
+        const val = Math.pow(weight, 1.2) / scaleFactor;
+        const color = "#FFB74D"; // soft orange for allocated agents
         nodes.push({
           id: agentKey,
           name: smallAddress(agentKey),
