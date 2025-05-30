@@ -30,7 +30,7 @@ import {
 import { eq } from "drizzle-orm";
 import type { DB } from "@torus-ts/db/client";
 import type { PermissionContract, SS58Address } from "@torus-network/sdk";
-import { queryPermission } from "@torus-network/sdk";
+import { queryPermission, togglePermission, sb_h256, sb_address, SS58_SCHEMA } from "@torus-network/sdk";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 // Global Rete network instance (in production, this might be managed differently)
@@ -51,13 +51,28 @@ function getOrCreateReteNetwork() {
     // Create network with constraint violation callback
     globalReteNetwork = createChainAwareReteNetwork(
       wsEndpoint,
-      // eslint-disable-next-line @typescript-eslint/require-await
       async (constraintId: string) => {
         console.log(`🚨 CONSTRAINT VIOLATION DETECTED: ${constraintId}`);
         console.log(
           `📝 Taking action for violated constraint: ${constraintId}`,
         );
-
+        // At this point globalReteNetwork should be assigned
+        if (!globalReteNetwork) {
+          console.error(`❌ No global RETE network available for constraint ${constraintId}`);
+          return;
+        }
+        
+        const api = await globalReteNetwork.getFetcher().ensureConnected();
+        
+        // Get the constraint to find its associated permission ID
+        const constraint = globalReteNetwork.getConstraint(constraintId);
+        if (!constraint) {
+          console.error(`❌ Could not find constraint ${constraintId}`);
+          return;
+        }
+        
+        // Toggle the permission that this constraint applies to
+        void togglePermission(api, sb_h256.parse(constraint.permId), false);
         // Here you could implement various enforcement actions:
         // - Send alerts/notifications
         // - Log violations to a database
@@ -416,6 +431,45 @@ export const constraintRouter = {
       console.log(
         `[TEST] Found permission data on blockchain - contains BigInt values, skipping detailed log`,
       );
+
+      // Check if allocator address is in enforcement authorities
+      const allocatorAddressRaw = process.env.NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS;
+      if (!allocatorAddressRaw) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Allocator address not configured in environment",
+        });
+      }
+
+      console.log(`[DEBUG] Parsing allocator address: "${allocatorAddressRaw}", type: ${typeof allocatorAddressRaw}`);
+      const allocatorAddressParsed = SS58_SCHEMA.safeParse(allocatorAddressRaw);
+      console.log(`[DEBUG] Parse result:`, allocatorAddressParsed);
+      if (!allocatorAddressParsed.success) {
+        console.log(`[DEBUG] Parse errors:`, allocatorAddressParsed.error.issues);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Invalid allocator address format: ${allocatorAddressRaw}. Parse error: ${JSON.stringify(allocatorAddressParsed.error.issues)}`,
+        });
+      }
+      const allocatorAddress = allocatorAddressParsed.data;
+
+      const hasAllocatorAuthority = match(permissionData.enforcement)({
+        ControlledBy(controlled) {
+          return controlled.controllers.includes(allocatorAddress);
+        },
+        None() {
+          return false;
+        },
+      });
+
+      if (!hasAllocatorAuthority) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Permission "${constraint.permId}" does not grant enforcement authority to the allocator (${allocatorAddress}). The allocator must be included in the permission's enforcement authorities to add constraints.`,
+        });
+      }
+
+      console.log(`[TEST] Verified allocator ${allocatorAddress} has enforcement authority`);
 
       // 2. Check if permission already exists in database
       const existingPermission = await ctx.db

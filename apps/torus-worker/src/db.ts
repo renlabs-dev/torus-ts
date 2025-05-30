@@ -28,6 +28,11 @@ import {
   computedAgentWeightSchema,
   governanceNotificationSchema,
   penalizeAgentVotesSchema,
+  permissionSchema,
+  permissionDetailsSchema,
+  permissionEmissionScopeSchema,
+  emissionStreamsSchema,
+  enforcementAuthoritySchema,
   proposalSchema,
   userAgentWeightSchema,
   whitelistApplicationSchema,
@@ -40,6 +45,11 @@ export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type NewProposal = typeof proposalSchema.$inferInsert;
+export type NewPermission = typeof permissionSchema.$inferInsert;
+export type NewPermissionDetails = typeof permissionDetailsSchema.$inferInsert;
+export type NewPermissionEmissionScope = typeof permissionEmissionScopeSchema.$inferInsert;
+export type NewEmissionStream = typeof emissionStreamsSchema.$inferInsert;
+export type NewEnforcementAuthority = typeof enforcementAuthoritySchema.$inferInsert;
 
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
@@ -512,4 +522,78 @@ export async function getUserWeightMap(): Promise<
     userWeightMap.set(agentKey, BigInt(Math.round(weight)));
   }
   return weightMap;
+}
+
+export async function upsertPermissions(permissions: {
+  permission: NewPermission;
+  details: NewPermissionDetails; 
+  emissionScope?: NewPermissionEmissionScope;
+  emissionStream?: NewEmissionStream;
+  enforcementAuthorities?: NewEnforcementAuthority[];
+}[]) {
+  await db.transaction(async (tx) => {
+    for (const { permission, details, emissionScope, emissionStream, enforcementAuthorities } of permissions) {
+      
+      // STEP 1: Insert emissionStreamsSchema first (this is referenced by other tables)
+      let actualStreamsUuid: string | undefined;
+      if (emissionStream) {
+        const streamResult = await tx
+          .insert(emissionStreamsSchema)
+          .values(emissionStream)
+          .onConflictDoNothing({
+            target: [emissionStreamsSchema.permission_id],
+          })
+          .returning({ streams_uuid: emissionStreamsSchema.streams_uuid });
+        
+        if (streamResult.length > 0) {
+          actualStreamsUuid = streamResult[0]?.streams_uuid;
+        } else {
+          // If conflict, query existing record to get the UUID
+          const existingStream = await tx
+            .select({ streams_uuid: emissionStreamsSchema.streams_uuid })
+            .from(emissionStreamsSchema)
+            .where(eq(emissionStreamsSchema.permission_id, permission.permission_id))
+            .limit(1);
+          actualStreamsUuid = existingStream[0]?.streams_uuid;
+        }
+      }
+      
+      // STEP 2: Insert permissionEmissionScopeSchema (references emissionStreamsSchema)
+      if (emissionScope && actualStreamsUuid) {
+        await tx
+          .insert(permissionEmissionScopeSchema)
+          .values({
+            ...emissionScope,
+            streams_uuid: actualStreamsUuid, // Use the actual auto-generated UUID
+          })
+          .onConflictDoNothing({
+            target: [permissionEmissionScopeSchema.permission_id],
+          });
+      }
+      
+      // STEP 3: Insert permission (references permissionEmissionScopeSchema)
+      await tx
+        .insert(permissionSchema)
+        .values(permission)
+        .onConflictDoNothing({
+          target: [permissionSchema.permission_id],
+        });
+
+      // STEP 4: Insert permission details (references permissionSchema)
+      await tx
+        .insert(permissionDetailsSchema)
+        .values(details)
+        .onConflictDoNothing({
+          target: [permissionDetailsSchema.permission_id],
+        });
+
+      // STEP 5: Insert enforcement authorities (references permissionSchema)
+      if (enforcementAuthorities && enforcementAuthorities.length > 0) {
+        await tx
+          .insert(enforcementAuthoritySchema)
+          .values(enforcementAuthorities)
+          .onConflictDoNothing();
+      }
+    }
+  });
 }
