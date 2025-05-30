@@ -14,7 +14,6 @@ interface ConstraintSubmissionProps {
   edges: Edge[];
   rootNodeId: string;
   selectedPermissionId: string;
-  isSubmitDisabled: boolean;
   isEditingConstraint: boolean;
 }
 
@@ -23,7 +22,6 @@ export function ConstraintSubmission({
   edges,
   rootNodeId,
   selectedPermissionId,
-  isSubmitDisabled,
   isEditingConstraint,
 }: ConstraintSubmissionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,15 +52,33 @@ export function ConstraintSubmission({
   });
 
   const handleSubmitConstraint = useCallback(async () => {
-    if (isSubmitDisabled || isSubmitting) return;
+    if (isSubmitting) return;
+
+    console.log("handleSubmitConstraint");
 
     // Validate the constraint form
     const validationResult = validateConstraintForm(nodes, edges, rootNodeId);
 
+    if (!selectedAccount?.address) {
+      toast({
+        title: "Wallet required",
+        description: `Please connect your wallet to create the constraint.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!validationResult.isValid) {
+      const errorSummary = validationResult.errors.slice(0, 3).map(error => 
+        `${error.nodeId === "permission-id" ? "Permission ID" : error.nodeId === "constraint" ? "Constraint" : `Node ${error.nodeId}`}: ${error.message}`
+      ).join("; ");
+      
+      const additionalErrorsCount = validationResult.errors.length - 3;
+      const description = errorSummary + (additionalErrorsCount > 0 ? ` (and ${additionalErrorsCount} more errors)` : "");
+
       toast({
         title: "Constraint validation failed",
-        description: `Please fix the validation errors before ${isEditingConstraint ? "updating" : "creating"} the constraint.`,
+        description: description,
         variant: "destructive",
       });
       return;
@@ -115,23 +131,19 @@ export function ConstraintSubmission({
       console.error("Error in handleSubmitConstraint:", error);
     }
   }, [
-    isSubmitDisabled,
     isSubmitting,
     nodes,
     edges,
     rootNodeId,
+    selectedAccount?.address,
     selectedPermissionId,
     toast,
-    constraintMutation,
     isEditingConstraint,
+    constraintMutation,
   ]);
 
   return (
-    <Button
-      onClick={handleSubmitConstraint}
-      disabled={isSubmitDisabled || isSubmitting || !selectedAccount?.address}
-      className="w-full"
-    >
+    <Button onClick={handleSubmitConstraint} className="w-full">
       {isSubmitting ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
