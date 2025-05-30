@@ -117,7 +117,8 @@ export function useCreateGraphData() {
           ? 200
           : Math.max(Math.pow(weight, 1.2) / scaleFactor, 5);
 
-        return {
+        // Fix position for allocator to keep it centered
+        const node: CustomGraphNode = {
           id: address,
           name: smallAddress(address),
           color,
@@ -125,6 +126,15 @@ export function useCreateGraphData() {
           fullAddress: address,
           role,
         };
+
+        // Pin the allocator to the center
+        if (isAllocator) {
+          node.fx = 0; // Fixed x position at center
+          node.fy = 0; // Fixed y position at center
+          node.fz = 0; // Fixed z position at center
+        }
+
+        return node;
       },
     );
 

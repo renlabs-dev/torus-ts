@@ -22,7 +22,7 @@ interface ForceGraphProps {
 const ForceGraph = memo(
   function ForceGraph(props: ForceGraphProps) {
     const fgRef = useRef<GraphMethods | undefined>(undefined);
-    const linkDistance = 100;
+    const linkDistance = 50;
 
     const [highlightNodes, setHighlightNodes] = useState<Set<string>>(
       new Set(),
@@ -76,6 +76,9 @@ const ForceGraph = memo(
           color: node.color,
           val: node.val,
           role: node.role,
+          fx: node.fx, // Pass fixed x position
+          fy: node.fy, // Pass fixed y position
+          fz: node.fz, // Pass fixed z position
         })),
         links: props.graphData.links.map((link) => ({
           source: link.source,
