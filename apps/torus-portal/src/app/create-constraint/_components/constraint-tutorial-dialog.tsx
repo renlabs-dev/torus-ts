@@ -21,7 +21,7 @@ export function ConstraintTutorialDialog() {
       <DialogTrigger asChild>
         <Button variant="outline" className="shadow-lg">
           <HelpCircle className="h-4 w-4 mr-1" />
-          Tutorial
+          Constraints Tutorial
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">

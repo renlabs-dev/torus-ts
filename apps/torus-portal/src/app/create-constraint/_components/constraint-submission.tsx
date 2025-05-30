@@ -14,6 +14,7 @@ interface ConstraintSubmissionProps {
   rootNodeId: string;
   selectedPermissionId: string;
   isSubmitDisabled: boolean;
+  isEditingConstraint: boolean;
 }
 
 export function ConstraintSubmission({
@@ -22,6 +23,7 @@ export function ConstraintSubmission({
   rootNodeId,
   selectedPermissionId,
   isSubmitDisabled,
+  isEditingConstraint,
 }: ConstraintSubmissionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -29,15 +31,19 @@ export function ConstraintSubmission({
   const constraintMutation = api.constraint.addTest.useMutation({
     onSuccess: (result) => {
       toast({
-        title: "Constraint created successfully!",
-        description: `Constraint ${result.constraintId} has been activated.`,
+        title: isEditingConstraint 
+          ? "Constraint updated successfully!" 
+          : "Constraint created successfully!",
+        description: `Constraint ${result.constraintId} has been ${isEditingConstraint ? 'updated and' : ''} activated.`,
       });
       setIsSubmitting(false);
     },
     onError: (error) => {
       console.error("Constraint submission error:", error);
       toast({
-        title: "Failed to create constraint",
+        title: isEditingConstraint 
+          ? "Failed to update constraint" 
+          : "Failed to create constraint",
         description: error.message || "An unexpected error occurred.",
         variant: "destructive",
       });
@@ -54,7 +60,7 @@ export function ConstraintSubmission({
     if (!validationResult.isValid) {
       toast({
         title: "Constraint validation failed",
-        description: "Please fix the validation errors before submitting.",
+        description: `Please fix the validation errors before ${isEditingConstraint ? 'updating' : 'creating'} the constraint.`,
         variant: "destructive",
       });
       return;
@@ -74,7 +80,7 @@ export function ConstraintSubmission({
       toast({
         title: "Permission required",
         description:
-          "Please select a permission ID before creating the constraint.",
+          `Please select a permission ID before ${isEditingConstraint ? 'updating' : 'creating'} the constraint.`,
         variant: "destructive",
       });
       return;
@@ -89,7 +95,7 @@ export function ConstraintSubmission({
         permId: selectedPermissionId,
       };
 
-      console.log("Submitting constraint:", {
+      console.log(`${isEditingConstraint ? 'Updating' : 'Submitting'} constraint:`, {
         permId: constraintToSubmit.permId,
         body: constraintToSubmit.body,
       });
@@ -113,6 +119,7 @@ export function ConstraintSubmission({
     selectedPermissionId,
     toast,
     constraintMutation,
+    isEditingConstraint,
   ]);
 
   return (
@@ -124,10 +131,10 @@ export function ConstraintSubmission({
       {isSubmitting ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Creating Constraint...
+          {isEditingConstraint ? 'Updating' : 'Creating'} Constraint...
         </>
       ) : (
-        "Create This Constraint"
+        isEditingConstraint ? "Update This Constraint" : "Create This Constraint"
       )}
     </Button>
   );
