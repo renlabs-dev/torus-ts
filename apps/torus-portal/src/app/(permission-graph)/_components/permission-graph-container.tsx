@@ -38,6 +38,7 @@ export default function PermissionGraphContainer() {
       const node = graphData.nodes.find((n) => n.id === agentId);
       if (node && (!selectedNode || selectedNode.id !== agentId)) {
         setSelectedNode(node);
+        setIsSheetOpen(true); // Open sheet when node is selected from search
       }
     } else if (agentId && !graphData) {
       // If we have an agent ID but no graph data yet, wait for it
@@ -45,6 +46,7 @@ export default function PermissionGraphContainer() {
     } else if (!agentId && selectedNode) {
       // If no agent in URL but we have a selected node, clear it
       setSelectedNode(null);
+      setIsSheetOpen(false);
     }
   }, [searchParams, graphData, selectedNode]);
 
@@ -84,29 +86,38 @@ export default function PermissionGraphContainer() {
 
   return (
     <div className="fixed inset-0 w-screen h-screen">
-      <div
-        className="absolute right-0 md:bottom-14 bottom-2 gap-2 items-center flex flex-row md:px-4
-          px-2 z-50"
-      >
-        <MousePointerClick className="w-4" />
-        <span className="text-xs"> Click on any node for detailed view.</span>
+      <div className="absolute bottom-2 left-2 right-2 md:bottom-14 z-50 flex flex-col sm:flex-row justify-between gap-2">
+        <div className="flex items-center">
+          <NodeColorLegend />
+        </div>
+        <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-1">
+          <MousePointerClick className="w-4" />
+          <span className="text-xs">Click on any node for detailed view.</span>
+        </div>
       </div>
-      <div
-        className="absolute left-0 md:bottom-[53px] bottom-2 gap-2 items-center flex flex-row px-2
-          z-50"
-      >
-        <NodeColorLegend />
-      </div>
-      <div className="absolute top-[3.9rem] w-screen left-2 right-96 z-10">
-        <div className="flex md:flex-row flex-col items-center gap-2 w-full">
+      <div className="absolute top-[3.9rem] left-2 right-2 z-10">
+        {/* Desktop layout */}
+        <div className="hidden lg:flex items-center gap-2 w-full">
           <PortalNavigationTabs />
           <PermissionGraphOverview graphData={graphData} />
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
-          <div className="flex-1 w-full">
+          <div className="flex-1">
             <PermissionGraphSearch
               graphNodes={graphData?.nodes.map((node) => node.id) ?? []}
             />
           </div>
+        </div>
+        
+        {/* Mobile/Tablet layout - stacked */}
+        <div className="flex flex-col gap-2 lg:hidden">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            <PortalNavigationTabs />
+            <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
+          </div>
+          <PermissionGraphSearch
+            graphNodes={graphData?.nodes.map((node) => node.id) ?? []}
+          />
+          <PermissionGraphOverview graphData={graphData} />
         </div>
       </div>
       <PermissionGraphNodeDetails

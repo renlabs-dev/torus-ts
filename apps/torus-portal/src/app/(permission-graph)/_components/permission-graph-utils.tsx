@@ -11,10 +11,10 @@ export const formatScope = (scope: string): string =>
 
 export const formatDuration = (seconds: string | number): string => {
   const numSeconds = typeof seconds === "string" ? parseInt(seconds) : seconds;
-  if (!numSeconds) return "No expiration";
+  if (!numSeconds) return "0 Days";
 
   const days = Math.floor(numSeconds / 86400);
-  return (days && `${days} day${days > 1 ? "s" : ""}`) || "No expiration";
+  return (days && `${days} day${days > 1 ? "s" : ""}`) || "";
 };
 
 // Other utility functions
