@@ -18,6 +18,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showNoResults, setShowNoResults] = useState(false);
 
   const filteredNodes = useMemo(() => {
     if (searchQuery.length >= 3 && graphNodes.length > 0) {
@@ -38,6 +39,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
   const handleSearch = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      setShowNoResults(false);
       if (searchQuery.length >= 3) {
         const matchingNode = graphNodes.find((node) =>
           node.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -47,6 +49,12 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
           const params = new URLSearchParams(searchParams.toString());
           params.set("agent", matchingNode);
           router.replace(`/?${params.toString()}`, { scroll: false });
+          setSearchQuery(""); // Clear search after selection
+          setShowSuggestions(false);
+        } else {
+          // Show no results message
+          setShowNoResults(true);
+          setTimeout(() => setShowNoResults(false), 3000);
         }
       }
     },
@@ -58,19 +66,23 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
       const params = new URLSearchParams(searchParams.toString());
       params.set("agent", node);
       router.replace(`/?${params.toString()}`, { scroll: false });
+      setSearchQuery(""); // Clear search after selection
       setShowSuggestions(false);
     },
     [router, searchParams],
   );
 
   return (
-    <div className="relative w-full pr-4">
+    <div className="relative w-full">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
         <Input
           type="text"
           placeholder="Search by agent key..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowNoResults(false); // Hide no results when typing
+          }}
           className="w-full bg-background"
         />
       </form>
@@ -92,6 +104,17 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
               </li>
             ))}
           </ul>
+        </Card>
+      )}
+
+      {showNoResults && (
+        <Card
+          className="absolute top-full left-0 right-0 mt-1 z-50 p-3 bg-destructive/10
+            border-destructive/20"
+        >
+          <p className="text-sm text-destructive">
+            No agents found matching "{searchQuery}"
+          </p>
         </Card>
       )}
     </div>

@@ -11,7 +11,7 @@ export const PermissionGraphOverview = memo(function PermissionGraphOverview({
 }: PermissionGraphOverviewProps) {
   if (!graphData) {
     return (
-      <Card className="h-9 w-96 flex items-center justify-center">
+      <Card className="h-9 w-full sm:w-auto flex items-center justify-center">
         <div className="flex items-center gap-2">
           <div
             className="items-center animate-spin h-4 w-4 border-2 border-gray-700 border-t-gray-400
@@ -33,8 +33,8 @@ export const PermissionGraphOverview = memo(function PermissionGraphOverview({
   );
 
   return (
-    <Card className="h-9 flex items-center">
-      <div className="px-4 w-full">
+    <Card className="h-9 w-full sm:w-auto flex items-center">
+      <div className="px-2 sm:px-4 w-full">
         <div className="flex items-center justify-center gap-3">
           <div className="flex items-center gap-3">
             <Stat label="Addresses" value={graphData.nodes.length} />
