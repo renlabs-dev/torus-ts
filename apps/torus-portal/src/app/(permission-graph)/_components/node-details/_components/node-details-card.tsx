@@ -53,14 +53,14 @@ export function NodeDetailsCard({
   if (!graphData) return null;
 
   return (
-    <Card className="w-[27em] flex-1 flex flex-col z-50 border-none">
+    <Card className="w-full flex-1 flex flex-col z-50 border-none">
       <h2 className="text-lg font-semibold flex-shrink-0 mb-4">
         Applied Permissions
       </h2>
 
-      <ScrollArea className="h-full md:max-h-[calc(100vh-28rem)] max-h-[calc(100vh-35rem)]">
+      <ScrollArea className="h-full max-h-[50vh] md:max-h-[calc(100vh-28rem)]">
         {nodePermissions.length > 0 ? (
-          <Accordion type="single" collapsible className="w-fit md:w-full">
+          <Accordion type="single" collapsible className="w-full">
             {nodePermissions.map((permission) => {
               const details = permissionDetails?.find(
                 (p) =>
@@ -133,9 +133,12 @@ export function NodeDetailsCard({
                             </span>
                             <div className="text-sm text-gray-300">
                               {formatDuration(
-                                calculateTimeRemaining(
-                                  details.createdAt,
-                                  Number(details.duration),
+                                Math.max(
+                                  calculateTimeRemaining(
+                                    details.createdAt,
+                                    Number(details.duration),
+                                  ),
+                                  0,
                                 ),
                               )}
                             </div>

@@ -9,6 +9,19 @@ import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { PortalAgentImageItem } from "./portal-agent-image-item";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
+// Format weight to max 3 chars
+function formatWeight(weight: number): string {
+  if (weight === 0) return "0";
+  if (weight >= 100) return "100";
+  if (weight >= 10) return Math.round(weight).toString();
+  if (weight >= 1) return Math.round(weight).toString();
+  if (weight < 0.1) return "0";
+  
+  // For 0.1 to 0.99, show as 0.X
+  const firstDecimal = Math.floor(weight * 10) % 10;
+  return "0." + firstDecimal;
+}
+
 interface PortalAgentCardProps {
   agentKey: string | null;
   currentBlock?: number | null;
@@ -111,27 +124,27 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
         </div>
       </div>
 
-      <div className="mt-2 text-sm flex items-center justify-between gap-3 border px-4">
-        <Label className={"flex items-center gap-1.5 text-sm font-semibold"}>
+      <div className="mt-2 text-sm flex flex-wrap items-center justify-between gap-2 border px-2 sm:px-4 py-1">
+        <Label className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}>
           <Anvil size={14} />
-          {agentWeight}%
+          <span>{formatWeight(agentWeight)}%</span>
         </Label>
 
-        <Label className={"flex items-center gap-1.5 text-sm font-semibold"}>
+        <Label className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}>
           <Cuboid size={14} />
-          {currentBlock}
+          <span>{currentBlock}</span>
         </Label>
 
         <CopyButton
           variant="link"
           type="button"
           copy={agentKey}
-          className={`text-foreground-muted flex items-center gap-1.5 px-0 hover:text-muted-foreground
-            hover:no-underline`}
+          className={`text-foreground-muted flex items-center gap-1 px-0 hover:text-muted-foreground
+            hover:no-underline min-w-0`}
         >
-          <IdCard size={16} />
-          <span className="hidden md:block">{smallAddress(agentKey, 5)}</span>
-          <span className="block md:hidden">{smallAddress(agentKey, 4)}</span>
+          <IdCard size={14} className="shrink-0" />
+          <span className="hidden sm:block">{smallAddress(agentKey, 5)}</span>
+          <span className="block sm:hidden text-xs">{smallAddress(agentKey, 3)}</span>
         </CopyButton>
       </div>
     </Card>

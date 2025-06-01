@@ -77,6 +77,7 @@ const ForceGraph = memo(
           val: node.val,
           role: node.role,
           opacity: node.opacity,
+          fullAddress: node.fullAddress, // Pass fullAddress
           fx: node.fx, // Pass fixed x position
           fy: node.fy, // Pass fixed y position
           fz: node.fz, // Pass fixed z position
@@ -98,12 +99,11 @@ const ForceGraph = memo(
 
     const handleNodeClick = useCallback(
       (node: NodeObject) => {
-        props.onNodeClick({
-          id: String(node.id ?? ""),
-          name: String(node.name ?? `Node ${node.id}`),
-          color: String(node.color ?? "#ffffff"),
-          val: Number(node.val ?? 1),
-        });
+        // Find the original node from graphData to get all properties
+        const originalNode = props.graphData.nodes.find(n => n.id === String(node.id));
+        if (originalNode) {
+          props.onNodeClick(originalNode);
+        }
       },
       [props],
     );
