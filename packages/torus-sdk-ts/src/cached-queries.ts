@@ -1,6 +1,6 @@
 import SuperJSON from "superjson";
 import { z } from "zod";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "./utils/try-catch";
 
 export const STAKE_DATA_SCHEMA = z.object({
   total: z.bigint(),

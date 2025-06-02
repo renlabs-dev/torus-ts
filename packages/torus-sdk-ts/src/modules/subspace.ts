@@ -19,7 +19,7 @@ import {
 } from "../types";
 import type { Api } from "./_common";
 import { handleDoubleMapEntries, handleMapEntries } from "./_common";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "../utils/try-catch";
 
 // ==== Balances ====
 

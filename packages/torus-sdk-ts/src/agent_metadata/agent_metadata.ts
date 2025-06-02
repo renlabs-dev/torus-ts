@@ -1,12 +1,10 @@
 import type { AnyJson } from "@polkadot/types/types";
-import { typed_non_null_entries } from "@torus-network/torus-utils";
-import {
-  buildIpfsGatewayUrl,
-  IPFS_URI_SCHEMA,
-} from "@torus-network/torus-utils/ipfs";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { CID } from "multiformats";
 import { z } from "zod";
+
+import { typed_non_null_entries } from "../utils";
+import { buildIpfsGatewayUrl, IPFS_URI_SCHEMA } from "../utils/ipfs";
+import { tryAsync, trySync } from "../utils/try-catch";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
 

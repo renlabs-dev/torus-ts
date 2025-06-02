@@ -4,7 +4,7 @@ import type { IU8a } from "@polkadot/types/types";
 import type { Api } from "./modules/_common";
 import type { Blocks } from "./types";
 import { sb_blocks } from "./types";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "./utils/try-catch";
 
 export interface LastBlock {
   blockHeader: Header;

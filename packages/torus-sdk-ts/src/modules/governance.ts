@@ -25,7 +25,7 @@ import {
 import type { Api } from "./_common";
 import { handleMapValues } from "./_common";
 import { queryFreeBalance } from "./subspace";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "../utils/try-catch";
 
 const ADDRESS_FORMAT = 42;
 

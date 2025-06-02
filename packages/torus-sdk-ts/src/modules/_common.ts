@@ -2,8 +2,8 @@ import type { ApiPromise } from "@polkadot/api";
 import type { ApiDecoration } from "@polkadot/api/types";
 import type { StorageKey } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
-import { assert_error } from "@torus-network/torus-utils";
-import { trySync } from "@torus-network/torus-utils/try-catch";
+import { assert_error } from "../utils";
+import { trySync } from "../utils/try-catch";
 import type { z, ZodTypeAny } from "zod";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;
