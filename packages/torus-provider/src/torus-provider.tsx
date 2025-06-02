@@ -247,9 +247,19 @@ export function TorusProvider({
       );
       return undefined;
     }
+    
+    const sortedAccounts = accountsWithBalance.sort((a, b) => {
+      const balanceA = a.freeBalance;
+      const balanceB = b.freeBalance;
+      
+      if (balanceA > balanceB) return -1; // a comes first (higher balance)
+      if (balanceA < balanceB) return 1;  // b comes first (higher balance)
+      return 0; 
+    });
 
-    return accountsWithBalance;
+    return sortedAccounts;
   }
+
 
   async function handleGetWallets(): Promise<void> {
     const [error, allAccounts] = await tryAsync(getWallets());
