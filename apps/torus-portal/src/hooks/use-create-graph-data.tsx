@@ -51,10 +51,12 @@ export function useCreateGraphData() {
       } else if (lastBlock) {
         // Parse the numeric string to number
         const expirationBlock = parseInt(detail.duration, 10);
-        const currentBlock = Number(lastBlock.data?.blockNumber);
+        const currentBlock = lastBlock.data?.blockNumber
+          ? Number(lastBlock.data.blockNumber)
+          : 0;
 
         // Check for NaN
-        if (isNaN(expirationBlock)) {
+        if (isNaN(expirationBlock) || currentBlock === 0) {
           remainingBlocks = 0;
         } else {
           // Simple calculation: expiration block - current block
@@ -261,13 +263,9 @@ export function useCreateGraphData() {
     return { nodes, links };
   }, [basePermissionDetails, allComputedWeights, allocatorAddress]);
 
-  // Check if lastBlock is loading (separate from data loading)
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const isLastBlockLoading = !lastBlock && api;
-
   return {
     graphData,
-    isLoading: isLoadingPermissions || isLoadingWeights || isLastBlockLoading,
+    isLoading: isLoadingPermissions || isLoadingWeights || lastBlock.isLoading,
     permissionDetails,
     allComputedWeights, // Expose the weights data
   };
