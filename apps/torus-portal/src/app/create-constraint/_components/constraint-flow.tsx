@@ -15,7 +15,7 @@ import {
   Background,
 } from "@xyflow/react";
 import { Button } from "@torus-ts/ui/components/button";
-import { RotateCcw } from "lucide-react";
+import { InfoIcon, RotateCcw } from "lucide-react";
 
 import { ConstraintNodeBoolean } from "./constraint-nodes/constraint-node-boolean";
 import { ConstraintNodeNumber } from "./constraint-nodes/constraint-node-number";
@@ -299,7 +299,25 @@ function ConstraintFlow() {
       }}
     >
       <Background />
-      <div className="absolute bottom-4 right-4 z-50 flex gap-3">
+      {validationResult.errors.length > 0 && (
+        <div className="text-red-500 text-nowrap absolute bottom-4 left-4">
+          {validationResult.errors.map((error, index) => (
+            <div key={index} className="text-red-500 flex items-center gap-1">
+              <InfoIcon className="h-4 w-4" />
+              <span className="font-medium">
+                {error.nodeId === "permission-id"
+                  ? "Permission ID"
+                  : error.nodeId === "constraint"
+                    ? "Constraint"
+                    : `Node ${error.nodeId}`}
+                :
+              </span>{" "}
+              {error.message}, fix before submitting.
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="absolute bottom-4 right-4 z-50 flex gap-3 items-center">
         <Button
           variant="outline"
           className="shadow-lg"
@@ -313,17 +331,14 @@ function ConstraintFlow() {
           onLoadExample={handleLoadExample}
           selectedPermissionId={selectedPermissionId}
           onPermissionIdChange={handlePermissionIdChange}
-          validationErrors={validationResult.errors}
           isEditingConstraint={isEditingConstraint}
-          submitButton={
-            <ConstraintSubmission
-              nodes={nodes}
-              edges={edges}
-              rootNodeId="root-boolean"
-              selectedPermissionId={selectedPermissionId}
-              isEditingConstraint={isEditingConstraint}
-            />
-          }
+        />
+        <ConstraintSubmission
+          nodes={nodes}
+          edges={edges}
+          rootNodeId="root-boolean"
+          selectedPermissionId={selectedPermissionId}
+          isEditingConstraint={isEditingConstraint}
         />
       </div>
     </ReactFlow>
