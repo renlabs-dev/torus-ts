@@ -29,6 +29,9 @@
     "format": "prettier --check . --ignore-path .prettierignore --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "format-fix": "prettier --write . --ignore-path .prettierignore --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "test": "vitest run",
+    "test:verbose": "vitest run --reporter verbose",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -48,6 +51,7 @@
     "@polkadot/typegen": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "vitest": "catalog:"
   }
 }

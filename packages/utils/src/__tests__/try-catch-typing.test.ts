@@ -202,8 +202,10 @@ describe("We should be able to bubble up errors type-safely in raw error handlin
      * external library, and it's typing doesn't indicate that it can fail.
      */
     async function blackBox(): Promise<number> {
-      const d = (await asyncCoinFlip()) ? 2 : 0;
-      return 1 / d;
+      const f = (await asyncCoinFlip())
+        ? () => 10
+        : ("not a fn" as unknown as () => number);
+      return f();
     }
 
     /** Some resource */
@@ -224,7 +226,7 @@ describe("We should be able to bubble up errors type-safely in raw error handlin
       const result = tryAsyncRaw(
         (async () => {
           if (coinFlip()) {
-            throw new ResNotAvailable("fubá");
+            throw new ResNotAvailable("fuba");
           }
           return await Promise.resolve(new Res());
         })(),
@@ -248,18 +250,24 @@ describe("We should be able to bubble up errors type-safely in raw error handlin
     };
 
     async function run() {
-      const [err, val] = await doSomething();
-      if (err) {
-        if (err instanceof ResNotAvailable) {
-          console.log(err.name);
-        } else if (err instanceof InternalError) {
-          console.log(err.reason);
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          assert(err == null);
+      for (let i = 0; i < 32; i++) {
+        const [err, _val] = await doSomething();
+        if (err) {
+          if (err instanceof ResNotAvailable) {
+            // console.log("ResNotAvailable", err.name);
+            expect(err.name).toEqual("fuba");
+          } else if (err instanceof InternalError) {
+            // console.log("InternalError", err.reason);
+            expect(err.reason).toBeInstanceOf(TypeError);
+          } else {
+            console.log("Unknown error", err);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            assert(err == null);
+          }
         }
+        // console.log(val);
+        // console.log();
       }
-      console.log(val);
     }
 
     await run();

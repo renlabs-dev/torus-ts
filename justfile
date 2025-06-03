@@ -28,8 +28,8 @@ dev name *args:
 dev-watch name *args:
   pnpm exec ./scripts/dev-helper dev --watch {{name}} {{args}}
 
-typecheck:
-  pnpm exec turbo run typecheck
+typecheck filter="*":
+  pnpm exec turbo run typecheck --continue -F "{{filter}}"
 
 format:
   pnpm exec turbo run format --continue
@@ -37,8 +37,8 @@ format:
 format-fix filter="*":
   pnpm exec turbo run format-fix --continue -F "{{filter}}"
 
-lint:
-  pnpm exec turbo run lint --continue
+lint filter="*":
+  pnpm exec turbo run lint --continue -F "{{filter}}"
 
 lint-fix:
   pnpm exec turbo run lint-fix --continue
@@ -52,8 +52,8 @@ check-all:
 check name:
   pnpm exec turbo run typecheck lint -F {{name}}
 
-test filter="*" *args="":
-  pnpm exec turbo run test -F "{{filter}}" -- {{args}} 
+test filter="*":
+  pnpm exec turbo run test --continue -F "{{filter}}"
 
 create-package:
   pnpm turbo gen init

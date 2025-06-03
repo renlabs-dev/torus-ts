@@ -11,9 +11,10 @@ import type {
   AgentApplication,
   Api,
   CustomMetadataState,
+  GrantEmissionPermission,
   Proposal,
 } from "@torus-network/sdk";
-import { sb_balance } from "@torus-network/sdk";
+import { grantEmissionPermission, sb_balance } from "@torus-network/sdk";
 import { toNano } from "@torus-network/torus-utils/subspace";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import * as React from "react";
@@ -28,6 +29,7 @@ import type {
   Stake,
   Transfer,
   TransferStake,
+  TransactionHelpers,
   UpdateAgent,
   UpdateDelegatingVotingPower,
   Vote,
@@ -52,6 +54,7 @@ type TransactionExtrinsicPromise =
   | undefined;
 
 interface TorusContextType {
+  // TODO: Test changing `api` on `TorusProvider` to `ApiPromise` instead of `Api`
   api: Api | null;
   torusCacheUrl: string;
 
@@ -134,6 +137,10 @@ interface TorusContextType {
     TransferStake,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
+
+  grantEmissionPermissionTransaction: (
+    props: Omit<GrantEmissionPermission, "api"> & TransactionHelpers,
+  ) => Promise<void>;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -240,9 +247,19 @@ export function TorusProvider({
       );
       return undefined;
     }
+    
+    const sortedAccounts = accountsWithBalance.sort((a, b) => {
+      const balanceA = a.freeBalance;
+      const balanceB = b.freeBalance;
+      
+      if (balanceA > balanceB) return -1; // a comes first (higher balance)
+      if (balanceA < balanceB) return 1;  // b comes first (higher balance)
+      return 0; 
+    });
 
-    return accountsWithBalance;
+    return sortedAccounts;
   }
+
 
   async function handleGetWallets(): Promise<void> {
     const [error, allAccounts] = await tryAsync(getWallets());
@@ -523,7 +540,7 @@ export function TorusProvider({
       url,
       metadata,
       undefined,
-      undefined
+      undefined,
     );
 
     await sendTransaction({
@@ -717,6 +734,47 @@ export function TorusProvider({
       toast,
     });
   }
+
+  async function grantEmissionPermissionTransaction({
+    grantee,
+    allocation,
+    targets,
+    distribution,
+    duration,
+    revocation,
+    enforcement,
+    callback,
+    refetchHandler,
+  }: Omit<GrantEmissionPermission, "api"> & TransactionHelpers): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = grantEmissionPermission({
+      api,
+      grantee,
+      allocation,
+      targets,
+      distribution,
+      duration,
+      revocation,
+      enforcement,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Grant Emission Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
   return (
     <TorusContext.Provider
       value={{
@@ -753,6 +811,7 @@ export function TorusProvider({
         transferTransaction,
         updateDelegatingVotingPower,
         voteProposal,
+        grantEmissionPermissionTransaction,
       }}
     >
       {children}

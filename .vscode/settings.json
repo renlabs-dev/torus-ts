@@ -56,16 +56,17 @@
     "cache",
     "governance",
     "page",
-    "validator",
+    "allocator",
     "wallet",
-    "comx-page",
     "worker",
     "package",
-    "tooling"
+    "tooling",
+    "torus-sdk"
   ],
 
   // Spell Check
   "cSpell.words": [
+    "blake",
     "Blockscout",
     "comrads",
     "daos",
@@ -73,6 +74,7 @@
     "dotenv",
     "gogotry",
     "heroicons",
+    "Honza",
     "hyperlane",
     "ipfs",
     "jiti",

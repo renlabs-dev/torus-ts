@@ -1,3 +1,51 @@
+type ErrorCtr = new (message: string, options?: ErrorOptions) => Error;
+
+/**
+ * Creates an error with a chained message that preserves the original error as the cause.
+ *
+ * This utility function helps create more descriptive error messages by prepending
+ * a context message to the original error message while preserving the original
+ * error as the cause. This is particularly useful when handling errors from
+ * lower-level operations and adding domain-specific context.
+ *
+ * @param msg - The context message to prepend to the error
+ * @param errCtr - Optional error constructor to use (defaults to Error)
+ * @returns A function that takes an error and returns a new error with chained message
+ *
+ * @example
+ * ```ts
+ * // Basic usage
+ * try {
+ *   await someOperation();
+ * } catch (err) {
+ *   throw chainErr("Failed to perform operation")(err);
+ *   // Results in: Error: Failed to perform operation: Original error message
+ * }
+ *
+ * // With custom error constructor
+ * class ValidationError extends Error {}
+ *
+ * try {
+ *   await validateData();
+ * } catch (err) {
+ *   throw chainErr("Validation failed", ValidationError)(err);
+ *   // Results in: ValidationError: Validation failed: Original validation error
+ * }
+ *
+ * // In async operations with Result types
+ * const [err, data] = await someAsyncOperation();
+ * if (err !== undefined) {
+ *   throw chainErr("Failed to fetch data")(err);
+ * }
+ * ```
+ */
+export const chainErr =
+  (msg: string, errCtr: ErrorCtr = Error) =>
+  (err: Error) =>
+    new errCtr(`${msg}: ${err.message}`, { cause: err });
+
+// ==== MultiError ====
+
 /**
  * Type representing an error that combines both Error and Array<Error> interfaces.
  * Allows an error object to be treated as both a single error and a collection of errors.
@@ -123,6 +171,125 @@ export class ErrorArray extends Array<Error> implements MultiError {
 
 if (process.env.NODE_ENV === "test" && import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest;
+
+  describe("chainErr", () => {
+    it("should chain error messages with default Error constructor", () => {
+      const originalError = new Error("Original error message");
+      const chainedError = chainErr("Failed to process")(originalError);
+
+      expect(chainedError).toBeInstanceOf(Error);
+      expect(chainedError.message).toBe(
+        "Failed to process: Original error message",
+      );
+      expect(chainedError.cause).toBe(originalError);
+    });
+
+    it("should use custom error constructor when provided", () => {
+      class CustomError extends Error {
+        constructor(message: string, options?: ErrorOptions) {
+          super(message, options);
+          this.name = "CustomError";
+        }
+      }
+
+      const originalError = new Error("Database connection failed");
+      const chainedError = chainErr(
+        "Failed to fetch user",
+        CustomError,
+      )(originalError);
+
+      expect(chainedError).toBeInstanceOf(CustomError);
+      expect(chainedError.name).toBe("CustomError");
+      expect(chainedError.message).toBe(
+        "Failed to fetch user: Database connection failed",
+      );
+      expect(chainedError.cause).toBe(originalError);
+    });
+
+    it("should preserve the error chain with multiple applications", () => {
+      const baseError = new Error("Network timeout");
+      const firstChain = chainErr("Failed to fetch data")(baseError);
+      const secondChain = chainErr("Failed to load user profile")(firstChain);
+
+      expect(secondChain.message).toBe(
+        "Failed to load user profile: Failed to fetch data: Network timeout",
+      );
+      expect(secondChain.cause).toBe(firstChain);
+      expect((secondChain.cause as Error).cause).toBe(baseError);
+    });
+
+    it("should work with different error types", () => {
+      const typeError = new TypeError("Cannot read property 'x' of undefined");
+      const chainedError = chainErr("Failed to parse response")(typeError);
+
+      expect(chainedError.message).toBe(
+        "Failed to parse response: Cannot read property 'x' of undefined",
+      );
+      expect(chainedError.cause).toBe(typeError);
+    });
+
+    it("should handle errors with empty messages", () => {
+      const emptyError = new Error("");
+      const chainedError = chainErr("Operation failed")(emptyError);
+
+      expect(chainedError.message).toBe("Operation failed: ");
+      expect(chainedError.cause).toBe(emptyError);
+    });
+
+    it("should work with built-in error constructors", () => {
+      const originalError = new Error("Invalid input");
+
+      const typeError = chainErr(
+        "Type validation failed",
+        TypeError,
+      )(originalError);
+      expect(typeError).toBeInstanceOf(TypeError);
+      expect(typeError.message).toBe("Type validation failed: Invalid input");
+
+      const rangeError = chainErr(
+        "Value out of range",
+        RangeError,
+      )(originalError);
+      expect(rangeError).toBeInstanceOf(RangeError);
+      expect(rangeError.message).toBe("Value out of range: Invalid input");
+    });
+
+    it("should preserve stack traces", () => {
+      const originalError = new Error("Original error");
+      const chainedError = chainErr("Context added")(originalError);
+
+      expect(chainedError.stack).toBeDefined();
+      expect(originalError.stack).toBeDefined();
+      // Stack traces should be different since they're different error objects
+      expect(chainedError.stack).not.toBe(originalError.stack);
+    });
+
+    it("should handle errors with additional properties", () => {
+      class DetailedError extends Error {
+        constructor(
+          message: string,
+          public code: string,
+          public statusCode: number,
+          options?: ErrorOptions,
+        ) {
+          super(message, options);
+          this.name = "DetailedError";
+        }
+      }
+
+      const originalError = new DetailedError(
+        "Not found",
+        "USER_NOT_FOUND",
+        404,
+      );
+      const chainedError = chainErr("Failed to fetch user data")(originalError);
+
+      expect(chainedError.message).toBe("Failed to fetch user data: Not found");
+      expect(chainedError.cause).toBe(originalError);
+      expect((chainedError.cause as DetailedError).code).toBe("USER_NOT_FOUND");
+      expect((chainedError.cause as DetailedError).statusCode).toBe(404);
+    });
+  });
 
   describe("ErrorArray", () => {
     it("should create an ErrorArray from multiple errors", () => {

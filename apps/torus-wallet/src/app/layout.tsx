@@ -16,6 +16,7 @@ import { APRBar } from "./_components/apr-bar/apr-bar";
 import { SidebarLinks } from "./_components/sidebar-links";
 import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
+import { TransactionsSheet } from "./_components/transactions-sheet";
 
 export const metadata = () =>
   createSeoMetadata({
@@ -75,6 +76,7 @@ export default function RootLayout({
               {children}
               <div className="mb-20 lg:hidden" />
             </div>
+            <TransactionsSheet />
           </main>
         </Container>
         <Toaster />

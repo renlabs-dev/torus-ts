@@ -39,7 +39,7 @@ export function useDiscordInfoForm(
     if (!userName || !avatarUrl) {
       return false;
     }
-    
+
     // Form validation
     const [triggerError, isValid] = await tryAsync(form.trigger());
     if (triggerError !== undefined || !isValid) {
@@ -48,24 +48,30 @@ export function useDiscordInfoForm(
 
     // Get form values and validate
     const formValues = form.getValues();
-    if (!formValues.discordId || !formValues.userName || !formValues.avatarUrl) {
+    if (
+      !formValues.discordId ||
+      !formValues.userName ||
+      !formValues.avatarUrl
+    ) {
       return false;
     }
-    
+
     // Submit data
     const [error, _] = await tryAsync(
       saveDiscordInfoMutation.mutateAsync({
         discordId: formValues.discordId,
         userName: formValues.userName,
         avatarUrl: formValues.avatarUrl,
-      })
+      }),
     );
-    
+
     if (error !== undefined) {
-      toast.error(error.message || "An unexpected error occurred. Please try again.");
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again.",
+      );
       return false;
     }
-    
+
     toast.success("Discord information saved successfully!");
     return true;
   };

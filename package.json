@@ -29,5 +29,8 @@
         "next"
       ]
     }
+  },
+  "dependencies": {
+    "@trpc/server": "^11.1.3"
   }
 }

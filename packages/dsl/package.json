@@ -1,0 +1,40 @@
+{
+  "name": "@torus-ts/dsl",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules",
+    "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx tests/test-runner.ts",
+    "test:schema": "tsx tests/schema-test.ts",
+    "test:analyzer": "tsx tests/analyzer-test.ts",
+    "test:serialization": "tsx tests/serialization-test.ts",
+    "test:validation": "tsx tests/validation-test.ts",
+    "test:all": "pnpm test && pnpm test:schema && pnpm test:analyzer && pnpm test:serialization && pnpm test:validation"
+  },
+  "dependencies": {
+    "@torus-network/sdk": "workspace:*",
+    "tsafe": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/prettier-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "^4.7.1",
+    "typescript": "catalog:"
+  }
+}
