@@ -1,36 +1,83 @@
 import { useMemo } from "react";
-import { api } from "~/trpc/react";
+import { api as extApi } from "~/trpc/react";
 import type {
   CustomGraphNode,
   CustomGraphLink,
 } from "../app/(permission-graph)/_components/permission-graph-types";
 import { env } from "~/env";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { useLastBlock } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 
 export function useCreateGraphData() {
   const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
 
+  const { api } = useTorus();
+
   const scaleFactor = 5;
+
+  const lastBlock = useLastBlock(api);
 
   // Fetch permission details
   const { data: rawPermissionDetails, isLoading: isLoadingPermissions } =
-    api.permissionDetails.all.useQuery();
+    extApi.permissionDetails.all.useQuery();
 
   // Fetch computed weights for allocations
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
-    api.computedAgentWeight.all.useQuery();
+    extApi.computedAgentWeight.all.useQuery();
 
-  const permissionDetails = useMemo(() => {
+  // Process permission details without including lastBlock to avoid re-renders
+  const basePermissionDetails = useMemo(() => {
     if (!rawPermissionDetails) return undefined;
-    return rawPermissionDetails.map((detail) => ({
-      ...detail,
-    }));
+    return rawPermissionDetails;
   }, [rawPermissionDetails]);
+
+  // Calculate remaining blocks separately to avoid graph re-renders
+  const permissionDetails = useMemo(() => {
+    if (!basePermissionDetails) return undefined;
+
+    return basePermissionDetails.map((detail) => {
+      // Calculate remaining blocks
+      // Note: 'duration' field is actually the expiration block number (misnomed in DB)
+      let remainingBlocks: number;
+
+      // todo : remove when its fixed in the DB
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (detail.duration === null) {
+        // Null duration means indefinite/never-ending permission
+        remainingBlocks = 999999999; // Large number to indicate indefinite
+        // todo: remove this when fixed in the db
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      } else if (lastBlock) {
+        // Parse the numeric string to number
+        const expirationBlock = parseInt(detail.duration, 10);
+        const currentBlock = lastBlock.data?.blockNumber
+          ? Number(lastBlock.data.blockNumber)
+          : 0;
+
+        // Check for NaN
+        if (isNaN(expirationBlock) || currentBlock === 0) {
+          remainingBlocks = 0;
+        } else {
+          // Simple calculation: expiration block - current block
+          remainingBlocks = Math.max(0, expirationBlock - currentBlock);
+        }
+      } else {
+        // If we don't have lastBlock data yet, we can't calculate
+        remainingBlocks = 0;
+      }
+
+      return {
+        ...detail,
+        remainingBlocks,
+      };
+    });
+  }, [basePermissionDetails, lastBlock]);
 
   const graphData = useMemo(() => {
     // Allow graph to render if we have either permissions OR computed weights
     if (
-      (!permissionDetails || permissionDetails.length === 0) &&
+      (!basePermissionDetails || basePermissionDetails.length === 0) &&
       (!allComputedWeights || allComputedWeights.length === 0)
     ) {
       return null;
@@ -50,8 +97,8 @@ export function useCreateGraphData() {
 
     // First, create nodes and links from permissions
     const uniqueAddresses = new Set<string>();
-    if (permissionDetails && permissionDetails.length > 0) {
-      permissionDetails.forEach((permission) => {
+    if (basePermissionDetails && basePermissionDetails.length > 0) {
+      basePermissionDetails.forEach((permission) => {
         uniqueAddresses.add(permission.grantor_key);
         uniqueAddresses.add(permission.grantee_key);
       });
@@ -75,9 +122,11 @@ export function useCreateGraphData() {
     const nodes: CustomGraphNode[] = Array.from(uniqueAddresses).map(
       (address) => {
         const isGrantor =
-          permissionDetails?.some((p) => p.grantor_key === address) ?? false;
+          basePermissionDetails?.some((p) => p.grantor_key === address) ??
+          false;
         const isGrantee =
-          permissionDetails?.some((p) => p.grantee_key === address) ?? false;
+          basePermissionDetails?.some((p) => p.grantee_key === address) ??
+          false;
         const isAllocator = address === allocatorAddress;
 
         // Check if this is an allocated agent (has weight but no permissions)
@@ -100,7 +149,7 @@ export function useCreateGraphData() {
         } else if (isConnectedToAllocator) {
           // All nodes connected to allocator get the same gold color
           color = "#FFD700"; // gold for all connected nodes
-          
+
           // Still track their role
           if (isAllocatedOnly) {
             role = "Allocated Agent";
@@ -160,8 +209,8 @@ export function useCreateGraphData() {
 
     // Create permission links
     const links: CustomGraphLink[] =
-      permissionDetails && permissionDetails.length > 0
-        ? permissionDetails.map((permission) => ({
+      basePermissionDetails && basePermissionDetails.length > 0
+        ? basePermissionDetails.map((permission) => ({
             linkType: "permission",
             source: permission.grantor_key,
             target: permission.grantee_key,
@@ -212,11 +261,12 @@ export function useCreateGraphData() {
     }
 
     return { nodes, links };
-  }, [permissionDetails, allComputedWeights, allocatorAddress]);
+  }, [basePermissionDetails, allComputedWeights, allocatorAddress]);
 
   return {
     graphData,
-    isLoading: isLoadingPermissions || isLoadingWeights,
+    isLoading: isLoadingPermissions || isLoadingWeights || lastBlock.isLoading,
     permissionDetails,
+    allComputedWeights, // Expose the weights data
   };
 }
