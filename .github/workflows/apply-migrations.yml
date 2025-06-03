@@ -130,6 +130,7 @@ jobs:
           - torus-cache
           - torus-governance
           - torus-worker
+          - torus-portal
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
