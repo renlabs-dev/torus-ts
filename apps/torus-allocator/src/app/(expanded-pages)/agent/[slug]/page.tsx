@@ -4,12 +4,14 @@ import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { Label } from "@torus-ts/ui/components/label";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
+import { Seo, createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExpandedViewSocials } from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
 import { AgentIcon } from "~/app/_components/agent-icon";
 import { PenaltyList } from "~/app/_components/penalties-list";
+import { env } from "~/env";
 import { api } from "~/trpc/server";
 import { AgentInfoCard } from "./components/agent-info-card";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
@@ -17,6 +19,51 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 interface AgentPageProps {
   params: Promise<{ slug: string }>;
 }
+
+export const generateMetadata = async ({ params }: { params: { slug: string } }) => {
+  try {
+    const agentKey = params.slug;
+    const agent = await api.agent.byKeyLastBlock({ key: agentKey });
+    
+    if (!agent?.metadataUri) {
+      return createSeoMetadata({
+        title: "Agent Details - Torus Allocator",
+        description: "View detailed information about Torus Network agents.",
+        baseUrl: env("BASE_URL"),
+        canonical: `/agent/${agentKey}`
+      });
+    }
+
+    const agentMetadata = await fetchAgentMetadata(agent.metadataUri, { fetchImages: false });
+    
+    // Use the dynamic OG image API route with absolute URL for OG image
+    const ogImagePath = `${env("BASE_URL")}/api/og-image/${agentKey}`;
+    
+    return createSeoMetadata({
+      title: `${agent.name || 'Agent'} - Torus Allocator`,
+      description: agentMetadata.metadata.short_description || "View detailed information about this Torus Network agent and allocate your stake.",
+      keywords: [
+        "torus agent", 
+        "torus network", 
+        "stake delegation", 
+        agent.name || "torus agent",
+        "agent details",
+        "blockchain delegation"
+      ],
+      baseUrl: env("BASE_URL"),
+      canonical: `/agent/${agentKey}`,
+      ogImagePath,
+    });
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    return createSeoMetadata({
+      title: "Agent Details - Torus Allocator",
+      description: "View detailed information about Torus Network agents.",
+      baseUrl: env("BASE_URL"),
+      canonical: `/agent/${params.slug}`
+    });
+  }
+};
 
 export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
   const { slug } = await params;

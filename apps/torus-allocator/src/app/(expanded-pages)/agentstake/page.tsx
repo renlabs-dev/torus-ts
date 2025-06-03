@@ -2,7 +2,46 @@ import { formatToken } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 import { api } from "~/trpc/server";
+
+export const generateMetadata = async ({ searchParams }: { searchParams: { userKey?: string; agentKey?: string } }) => {
+  const userKey = searchParams.userKey;
+  const agentKey = searchParams.agentKey;
+  
+  let title = "Agent Stake Details - Torus Allocator";
+  let description = "View detailed stake information for agents on the Torus Network. Track stake weights and allocation metrics for specific agents.";
+  
+  // Enhance metadata with specifics if parameters are available
+  if (agentKey) {
+    try {
+      const agent = await api.agent.byKeyLastBlock({ key: agentKey });
+      if (agent?.name) {
+        title = `${agent.name} Stake Details - Torus Allocator`;
+        description = `View detailed stake information for ${agent.name} on the Torus Network. Track stake weights and allocation metrics.`;
+      }
+    } catch (error) {
+      console.error("Error fetching agent metadata:", error);
+    }
+  }
+  
+  return createSeoMetadata({
+    title,
+    description,
+    keywords: [
+      "torus agent stake", 
+      "torus network", 
+      "stake weights", 
+      "agent allocation metrics", 
+      "stake delegation",
+      userKey ? "user stake" : "",
+      agentKey ? "agent details" : "",
+    ].filter(Boolean),
+    baseUrl: env("BASE_URL"),
+    canonical: `/agentstake${agentKey ? `?agentKey=${agentKey}` : ""}${userKey ? `${agentKey ? "&" : "?"}userKey=${userKey}` : ""}`,
+  });
+};
 
 export default async function UserAgentPage({
   searchParams,

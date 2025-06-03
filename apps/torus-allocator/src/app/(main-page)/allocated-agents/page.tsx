@@ -1,9 +1,20 @@
 "use client";
 
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { ViewSelector } from "~/app/_components/view-selector";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { AgentItemCard } from "../../_components/agent-item-card";
 import { Filter } from "../../_components/filter-content";
+import { env } from "~/env";
+
+export const metadata = () =>
+  createSeoMetadata({
+    title: "My Allocated Agents - Torus Allocator",
+    description: "View and manage your agent allocations on the Torus Network. Optimize your stake distribution and track your delegation performance.",
+    keywords: ["torus allocator", "torus network", "my allocated agents", "stake delegation", "agent management"],
+    baseUrl: env("BASE_URL"),
+    canonical: "/allocated-agents",
+  });
 
 export default function AllocatedAgentsPage() {
   const { delegatedAgents } = useDelegateAgentStore();
