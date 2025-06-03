@@ -8,12 +8,16 @@ import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { getAllocatorBaseUrl } from "../../permission-graph-utils";
-import type { CachedAgentData } from "../../permission-graph-types";
+import type {
+  CachedAgentData,
+  ComputedWeightsList,
+} from "../../permission-graph-types";
 import { Button } from "@torus-ts/ui/components/button";
 
 interface PermissionNodeAgentCardProps {
   nodeId: string;
   fullAddress?: string;
+  allComputedWeights?: ComputedWeightsList;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
@@ -22,6 +26,7 @@ export const PermissionNodeAgentCard = memo(
   function PermissionNodeAgentCard({
     nodeId,
     fullAddress,
+    allComputedWeights,
     getCachedAgentData,
     setCachedAgentData,
   }: PermissionNodeAgentCardProps) {
@@ -37,11 +42,10 @@ export const PermissionNodeAgentCard = memo(
     const [error, setError] = useState<Error | null>(null);
     const [weightFactor, setWeightFactor] = useState<number>(0);
 
-    const { data: computedWeightedAgents } =
-      api.computedAgentWeight.byAgentKey.useQuery(
-        { agentKey: nodeId },
-        { enabled: !!nodeId },
-      );
+    const computedWeight = useMemo(() => {
+      if (!allComputedWeights) return null;
+      return allComputedWeights.find((weight) => weight.agentKey === nodeId);
+    }, [allComputedWeights, nodeId]);
 
     const agentQuery = api.agent.byKeyLastBlock.useQuery(
       { key: nodeId },
@@ -125,7 +129,7 @@ export const PermissionNodeAgentCard = memo(
       const agent = agentQuery.data;
       const agentName = agent.name ?? smallAddress(nodeId, 6);
       const currentBlock = agent.atBlock;
-      const weightFactor = computedWeightedAgents?.percComputedWeight ?? 0;
+      const weightFactor = computedWeight?.percComputedWeight ?? 0;
 
       setAgentName(agentName);
       setWeightFactor(weightFactor);
@@ -196,7 +200,7 @@ export const PermissionNodeAgentCard = memo(
       agentQuery.data,
       agentQuery.error,
       agentQuery.isLoading,
-      computedWeightedAgents,
+      computedWeight,
       fetchMetadata,
       getCachedAgentData,
       setCachedAgentData,
