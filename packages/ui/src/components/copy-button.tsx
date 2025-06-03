@@ -16,6 +16,7 @@ interface CopyButtonProps
   children: React.ReactNode;
   className?: string;
   variant?: ButtonVariantProps["variant"];
+  message?: string;
   asChild?: boolean;
 }
 
@@ -24,6 +25,7 @@ export function CopyButton({
   className,
   variant,
   copy,
+  message,
   asChild = false,
   ...rest
 }: Readonly<CopyButtonProps>) {
@@ -32,8 +34,8 @@ export function CopyButton({
   const handleCopy = useCallback(async () => {
     await copyToClipboard(copy);
 
-    toast.success("Address copied to clipboard.");
-  }, [copy, toast]);
+    toast.success(message ?? "Address copied to clipboard.");
+  }, [copy, message, toast]);
 
   const handleClick = useCallback(
     async (event: React.MouseEvent<HTMLButtonElement>) => {

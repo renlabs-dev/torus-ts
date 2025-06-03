@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@torus-ts/ui/components/button";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
   Sheet,
   SheetContent,
@@ -25,7 +26,7 @@ import {
   usePermission,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
-import { Grid2x2Check, Edit, Shield } from "lucide-react";
+import { Grid2x2Check, Edit, Shield, Copy } from "lucide-react";
 import type { ValidationError } from "./constraint-utils";
 import { api as trpcApi } from "~/trpc/react";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
@@ -135,41 +136,54 @@ export default function ConstraintControlsSheet({
             <ConstraintTutorialDialog />
             <div className="space-y-2">
               <label className="text-sm font-medium">Select a Permission</label>
-              <Select
-                value={selectedPermissionId}
-                onValueChange={onPermissionIdChange}
-                disabled={shouldDisablePermissionSelect}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      !isWalletConnected
-                        ? "Connect wallet to view permissions"
-                        : isLoadingPermissions
-                          ? "Loading permissions..."
-                          : permissionError
-                            ? "Error loading permissions"
-                            : !hasPermissions
-                              ? "No permissions available"
-                              : "Select permission..."
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {permissions?.map((permissionId) => (
-                    <SelectItem key={permissionId} value={permissionId}>
-                      <div className="flex items-center justify-between w-full">
-                        {hasConstraint(permissionId) && (
-                          <Grid2x2Check className="h-4 w-4 text-green-500 mr-2" />
-                        )}
-                        <span>
-                          {permissionId.slice(0, 16)}...{permissionId.slice(-8)}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  )) ?? []}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between gap-2">
+                <Select
+                  value={selectedPermissionId}
+                  onValueChange={onPermissionIdChange}
+                  disabled={shouldDisablePermissionSelect}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        !isWalletConnected
+                          ? "Connect wallet to view permissions"
+                          : isLoadingPermissions
+                            ? "Loading permissions..."
+                            : permissionError
+                              ? "Error loading permissions"
+                              : !hasPermissions
+                                ? "No permissions available"
+                                : "Select permission..."
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {permissions?.map((permissionId) => (
+                      <SelectItem key={permissionId} value={permissionId}>
+                        <div className="flex items-center justify-between w-full">
+                          {hasConstraint(permissionId) && (
+                            <Grid2x2Check className="h-4 w-4 text-green-500 mr-2" />
+                          )}
+                          <span>
+                            {permissionId.slice(0, 16)}...
+                            {permissionId.slice(-8)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    )) ?? []}
+                  </SelectContent>
+                </Select>
+                {selectedPermissionId && (
+                  <CopyButton
+                    copy={selectedPermissionId}
+                    variant="outline"
+                    className="h-9 px-2"
+                    message="Permission ID copied to clipboard."
+                  >
+                    <Copy className="h-3 w-3" />
+                  </CopyButton>
+                )}
+              </div>
               {permissionError && (
                 <p className="text-xs text-red-500">
                   Error: {permissionError.message}
