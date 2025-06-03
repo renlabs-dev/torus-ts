@@ -50,6 +50,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
     return "0";
   });
   const [permissionIdError, setPermissionIdError] = useState<string>("");
+  const [percentageError, setPercentageError] = useState<string>("");
 
   const handleTypeChange = useCallback(
     (value: string) => {
@@ -74,6 +75,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
           newExpression = BaseConstraint.inactiveUnlessRedelegated("", 0);
           setAccount("");
           setPercentage("0");
+          setPercentageError("");
           break;
         default:
           return;
@@ -108,6 +110,30 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
           expression: { ...expr, pid: value },
         }));
       }
+    },
+    [data.expression, updateNodeData],
+  );
+
+  const handlePercentageChange = useCallback(
+    (value: string) => {
+      setPercentage(value);
+
+      // Validate percentage range
+      const numValue = parseFloat(value);
+      if (value !== "" && (isNaN(numValue) || numValue < 0 || numValue > 100)) {
+        setPercentageError("Percentage must be between 0 and 100");
+        return;
+      }
+      
+      setPercentageError("");
+
+      updateNodeData<BaseNodeData>((currentData) => ({
+        ...currentData,
+        expression: {
+          ...data.expression,
+          percentage: BigInt(value || "0"),
+        } as BaseConstraintType,
+      }));
     },
     [data.expression, updateNodeData],
   );
@@ -189,19 +215,14 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
           <ConstraintInput
             id={`${id}-percentage`}
             type="number"
+            min="0"
+            max="100"
+            step="0.1"
             value={percentage}
-            onChange={(e) => {
-              const value = e.target.value;
-              setPercentage(value);
-              updateNodeData<BaseNodeData>((currentData) => ({
-                ...currentData,
-                expression: {
-                  ...data.expression,
-                  percentage: BigInt(value || "0"),
-                } as BaseConstraintType,
-              }));
-            }}
+            onChange={(e) => handlePercentageChange(e.target.value)}
             placeholder="Enter percentage (0-100)"
+            hasError={!!percentageError}
+            errorMessage={percentageError}
           />
         </div>
       )}
