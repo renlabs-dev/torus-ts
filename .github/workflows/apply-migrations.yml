@@ -106,7 +106,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: migrations-report-${{ github.ref }}-${{ github.sha }}
+          name: migrations-report-${{ github.sha }}
           path: ./migration-artifacts/
           retention-days: 90
           if-no-files-found: error
@@ -154,7 +154,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rollback-report-${{ github.ref }}-${{ github.sha }}
+          name: rollback-report-${{ github.sha }}
           path: ./rollback-artifacts/
           retention-days: 90
           if-no-files-found: error
