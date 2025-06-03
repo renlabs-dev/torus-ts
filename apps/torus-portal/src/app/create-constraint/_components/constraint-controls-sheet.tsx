@@ -26,8 +26,7 @@ import {
   usePermission,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
-import { Grid2x2Check, Edit, Shield, Copy } from "lucide-react";
-import type { ValidationError } from "./constraint-utils";
+import { Grid2x2Check, Copy, Info } from "lucide-react";
 import { api as trpcApi } from "~/trpc/react";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
 
@@ -36,8 +35,6 @@ interface ConstraintControlsSheetProps {
   onLoadExample: (exampleId: string) => void;
   selectedPermissionId: string;
   onPermissionIdChange: (permissionId: string) => void;
-  validationErrors: ValidationError[];
-  submitButton: React.ReactNode;
   isEditingConstraint?: boolean;
 }
 
@@ -46,8 +43,6 @@ export default function ConstraintControlsSheet({
   onLoadExample,
   selectedPermissionId,
   onPermissionIdChange,
-  validationErrors,
-  submitButton,
   isEditingConstraint = false,
 }: ConstraintControlsSheetProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -105,20 +100,11 @@ export default function ConstraintControlsSheet({
   ]);
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen} modal={false}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button className="shadow-lg">
-          {isEditingConstraint ? (
-            <>
-              <Edit className="h-4 w-4 mr-1" />
-              Edit Constraint
-            </>
-          ) : (
-            <>
-              <Shield className="h-4 w-4 mr-1" />
-              Create Constraint
-            </>
-          )}
+        <Button variant="outline" className="shadow-lg">
+          <Info className="h-4 w-4 mr-1" />
+          Open Constraint Details
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -270,27 +256,14 @@ export default function ConstraintControlsSheet({
         </div>
 
         <SheetFooter>
-          <div className="text-xs text-muted-foreground space-y-2 w-full">
-            {validationErrors.length > 0 && (
-              <div className="space-y-1">
-                {validationErrors.map((error, index) => (
-                  <div key={index} className="text-xs text-red-700">
-                    <span className="font-medium">
-                      {error.nodeId === "permission-id"
-                        ? "Permission ID"
-                        : error.nodeId === "constraint"
-                          ? "Constraint"
-                          : `Node ${error.nodeId}`}
-                      :
-                    </span>{" "}
-                    {error.message}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {submitButton}
-          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => setIsOpen(false)}
+          >
+            Edit Constraint Details
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
