@@ -52,39 +52,55 @@ export function NodeDetailsCard({
 
   if (!graphData) return null;
 
+  const processedPermissions = nodePermissions.map((permission) => {
+    const details = permissionDetails?.find(
+      (p) =>
+        p.grantor_key === permission.source &&
+        p.grantee_key === permission.target,
+    );
+    const isOutgoing = permission.type === "outgoing";
+    const connectedNode = graphData.nodes.find(
+      (n) => n.id === (isOutgoing ? permission.target : permission.source),
+    );
+    const connectedAddress =
+      connectedNode?.fullAddress ?? connectedNode?.id ?? "";
+
+    const sourceId =
+      typeof permission.source === "object"
+        ? permission.source.id
+        : permission.source;
+    const targetId =
+      typeof permission.target === "object"
+        ? permission.target.id
+        : permission.target;
+
+    return {
+      permission,
+      details,
+      isOutgoing,
+      connectedAddress,
+      sourceId,
+      targetId,
+    };
+  });
+
   return (
     <Card className="w-full flex-1 flex flex-col z-50 border-none">
       <h2 className="text-lg font-semibold flex-shrink-0 mb-4">
         Applied Permissions
       </h2>
 
-      <ScrollArea className="h-full max-h-[50vh] md:max-h-[calc(100vh-28rem)]">
-        {nodePermissions.length > 0 ? (
+      <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-28rem)]">
+        {processedPermissions.length > 0 ? (
           <Accordion type="single" collapsible className="w-full">
-            {nodePermissions.map((permission) => {
-              const details = permissionDetails?.find(
-                (p) =>
-                  p.grantor_key === permission.source &&
-                  p.grantee_key === permission.target,
-              );
-              const isOutgoing = permission.type === "outgoing";
-              const connectedNode = graphData.nodes.find(
-                (n) =>
-                  n.id === (isOutgoing ? permission.target : permission.source),
-              );
-              const connectedAddress =
-                connectedNode?.fullAddress ?? connectedNode?.id ?? "";
-
-              const sourceId =
-                typeof permission.source === "object"
-                  ? permission.source.id
-                  : permission.source;
-              const targetId =
-                typeof permission.target === "object"
-                  ? permission.target.id
-                  : permission.target;
-
-              return (
+            {processedPermissions.map(
+              ({
+                details,
+                isOutgoing,
+                connectedAddress,
+                sourceId,
+                targetId,
+              }) => (
                 <AccordionItem
                   key={`${sourceId}-${targetId}`}
                   value={`${sourceId}-${targetId}`}
@@ -168,8 +184,8 @@ export function NodeDetailsCard({
                           <div>
                             {/* TODO ADD ENFORCEMENT */}
                             {/* <span className="text-xs text-gray-500">
-                              Enforcement
-                            </span> */}
+                            Enforcement
+                          </span> */}
                             <div className="font-mono text-gray-300 break-all">
                               {/*todo edit*/}
                               {/* {details.enforcement} */}
@@ -192,8 +208,8 @@ export function NodeDetailsCard({
                     )}
                   </AccordionContent>
                 </AccordionItem>
-              );
-            })}
+              ),
+            )}
           </Accordion>
         ) : (
           <span className="text-gray-500 text-center mt-8">
