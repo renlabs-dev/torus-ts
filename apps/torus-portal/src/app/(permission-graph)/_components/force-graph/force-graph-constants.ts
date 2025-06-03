@@ -9,7 +9,6 @@ export const GRAPH_CONSTANTS = {
   MIN_NODE_SIZE: 5,
 
   // Link constants
-  LINK_OPACITY: 0.5,
   HIGHLIGHT_LINK_WIDTH_MULTIPLIER: 2,
   HIGHLIGHT_PARTICLES_INCREASE: 2,
   MIN_PARTICLES: 2,
@@ -19,36 +18,32 @@ export const GRAPH_CONSTANTS = {
   NEIGHBOR_NODE_LIGHTEN_AMOUNT: 0.15,
 
   // Data processing
-  SCALE_FACTOR: 5,
+  SCALE_FACTOR: 2,
   WEIGHT_POWER: 1.2,
   INDEFINITE_PERMISSION_BLOCKS: 999999999,
 
   // Colors
   COLORS: {
-    USER_NODE: "#dc2626", // red-600
+    USER_NODE: "#fde68a", // amber-300
     ALLOCATOR: "#ffffff", // white
-    ALLOCATED_AGENT: "#FFD700", // gold
-    GRANTOR: "#4FC3F7", // light cyan
-    GRANTEE: "#81C784", // soft green
-    BOTH: "#9575CD", // soft purple
+    ALLOCATED_AGENT: "#93c5fd", // blue-300
+    GRANTOR: "#7dd3fc", // sky-300
+    GRANTEE: "#38bdf8", // sky-500
+    BOTH: "#34d399", // soft purple
     DEFAULT: "#64B5F6", // soft blue
-    PERMISSION_LINK: "#B39DDB", // soft lavender
-    ALLOCATION_LINK: "#90CAF9", // soft sky blue
+    PERMISSION_LINK: "#cbd5e1", // slate-300
+    ALLOCATION_LINK: "#FFFFFF", // white
   },
 
   // Link properties
   PERMISSION_LINK: {
     directionalArrowLength: 3.5,
     directionalArrowRelPos: 1,
-    curvature: 0.3,
-    width: 1.5,
-    opacity: 0.6,
+    width: 1,
   },
 
   ALLOCATION_LINK: {
-    particleWidth: 2.5,
-    curvature: 0,
-    width: 2.5,
-    opacity: 0.8,
+    particleWidth: 3,
+    width: 1,
   },
 } as const;

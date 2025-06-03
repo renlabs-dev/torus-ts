@@ -36,12 +36,10 @@ export function createNodes(
 
     let color: string = GRAPH_CONSTANTS.COLORS.DEFAULT;
     let role = "";
-    let opacity = 0.5;
 
     if (isAllocator) {
       color = GRAPH_CONSTANTS.COLORS.ALLOCATOR;
       role = "Allocator";
-      opacity = 1;
     } else if (isConnectedToAllocator) {
       color = GRAPH_CONSTANTS.COLORS.ALLOCATED_AGENT;
 
@@ -85,7 +83,6 @@ export function createNodes(
       val,
       fullAddress: address,
       role,
-      opacity,
     };
 
     if (isAllocator) {
@@ -118,10 +115,7 @@ export function createPermissionLinks(
       GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowLength,
     linkDirectionalArrowRelPos:
       GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowRelPos,
-    linkCurvature: GRAPH_CONSTANTS.PERMISSION_LINK.curvature,
     linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_LINK,
-    linkWidth: GRAPH_CONSTANTS.PERMISSION_LINK.width,
-    linkOpacity: GRAPH_CONSTANTS.PERMISSION_LINK.opacity,
   }));
 }
 
@@ -159,10 +153,8 @@ export function createAllocationLinks(
         ),
         linkDirectionalParticleWidth:
           GRAPH_CONSTANTS.ALLOCATION_LINK.particleWidth,
-        linkCurvature: GRAPH_CONSTANTS.ALLOCATION_LINK.curvature,
         linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
         linkWidth: GRAPH_CONSTANTS.ALLOCATION_LINK.width,
-        linkOpacity: GRAPH_CONSTANTS.ALLOCATION_LINK.opacity,
       });
     }
   });

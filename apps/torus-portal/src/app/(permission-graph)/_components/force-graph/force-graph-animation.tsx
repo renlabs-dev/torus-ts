@@ -65,7 +65,8 @@ const ForceGraph = memo(
         nodeColor={(node: NodeObject) =>
           getNodeColor(node, highlightState, props.userAddress)
         }
-        linkDirectionalParticleWidth={2}
+        linkDirectionalParticleResolution={GRAPH_CONSTANTS.NODE_RESOLUTION}
+        linkDirectionalParticleWidth={3}
         linkDirectionalParticles={(link: LinkObject) =>
           getLinkParticles(link, highlightState)
         }
@@ -77,8 +78,7 @@ const ForceGraph = memo(
         }
         linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
         linkColor={(link: LinkObject) => String(link.linkColor)}
-        linkWidth={1}
-        linkOpacity={GRAPH_CONSTANTS.LINK_OPACITY}
+        linkWidth={(link: LinkObject) => getLinkWidth(link, highlightState)}
         nodeResolution={GRAPH_CONSTANTS.NODE_RESOLUTION}
         onNodeClick={handleNodeClick}
         onNodeHover={handleNodeHover}

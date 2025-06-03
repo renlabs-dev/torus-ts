@@ -8,22 +8,45 @@ export interface HighlightState {
   hoverNode: string | null;
 }
 
+/**
+ * Extracts source and target IDs from a link object, handling both object and string representations.
+ */
+export function extractLinkIds(link: LinkObject | CustomGraphLink) {
+  const sourceId =
+    (typeof link.source === "object"
+      ? link.source.id
+      : link.source
+    )?.toString() ?? "";
+
+  const targetId =
+    (typeof link.target === "object"
+      ? link.target.id
+      : link.target
+    )?.toString() ?? "";
+
+  const linkId = `${sourceId}-${targetId}`;
+
+  return { sourceId, targetId, linkId };
+}
+
+/**
+ * Checks if a link connects to a specific node.
+ */
+export function linkConnectsToNode(
+  link: LinkObject | CustomGraphLink,
+  nodeId: string,
+): boolean {
+  const { sourceId, targetId } = extractLinkIds(link);
+  return sourceId === nodeId || targetId === nodeId;
+}
+
 export function createNeighborMap(
   links: CustomGraphLink[],
 ): Map<string, Set<string>> {
   const map = new Map<string, Set<string>>();
 
   links.forEach((link) => {
-    const sourceId =
-      (typeof link.source === "object"
-        ? link.source.id
-        : link.source
-      )?.toString() ?? "";
-    const targetId =
-      (typeof link.target === "object"
-        ? link.target.id
-        : link.target
-      )?.toString() ?? "";
+    const { sourceId, targetId } = extractLinkIds(link);
 
     if (sourceId && targetId) {
       if (!map.has(sourceId)) map.set(sourceId, new Set());
@@ -54,13 +77,9 @@ export function calculateNodeHighlights(
   }
 
   links.forEach((link) => {
-    const sourceId =
-      typeof link.source === "object" ? link.source.id : link.source;
-    const targetId =
-      typeof link.target === "object" ? link.target.id : link.target;
-
-    if (sourceId === nodeId || targetId === nodeId) {
-      newHighlightLinks.add(`${sourceId}-${targetId}`);
+    if (linkConnectsToNode(link, nodeId)) {
+      const { linkId } = extractLinkIds(link);
+      newHighlightLinks.add(linkId);
     }
   });
 
@@ -77,16 +96,9 @@ export function calculateLinkHighlights(link: LinkObject): {
   const newHighlightNodes = new Set<string>();
   const newHighlightLinks = new Set<string>();
 
-  const sourceId =
-    typeof link.source === "object"
-      ? String(link.source.id)
-      : String(link.source);
-  const targetId =
-    typeof link.target === "object"
-      ? String(link.target.id)
-      : String(link.target);
+  const { sourceId, targetId, linkId } = extractLinkIds(link);
 
-  newHighlightLinks.add(`${sourceId}-${targetId}`);
+  newHighlightLinks.add(linkId);
   newHighlightNodes.add(sourceId);
   newHighlightNodes.add(targetId);
 
@@ -123,15 +135,7 @@ export function getLinkParticles(
   link: LinkObject,
   highlightState: HighlightState,
 ): number {
-  const sourceId =
-    typeof link.source === "object"
-      ? String(link.source.id)
-      : String(link.source);
-  const targetId =
-    typeof link.target === "object"
-      ? String(link.target.id)
-      : String(link.target);
-  const linkId = `${sourceId}-${targetId}`;
+  const { linkId } = extractLinkIds(link);
   const baseParticles = Number(link.linkDirectionalParticles ?? 0);
 
   if (highlightState.highlightLinks.has(linkId)) {
@@ -148,15 +152,7 @@ export function getLinkWidth(
   link: LinkObject,
   highlightState: HighlightState,
 ): number {
-  const sourceId =
-    typeof link.source === "object"
-      ? String(link.source.id)
-      : String(link.source);
-  const targetId =
-    typeof link.target === "object"
-      ? String(link.target.id)
-      : String(link.target);
-  const linkId = `${sourceId}-${targetId}`;
+  const { linkId } = extractLinkIds(link);
   const baseWidth = Number(link.linkWidth ?? 1);
 
   if (highlightState.highlightLinks.has(linkId)) {
