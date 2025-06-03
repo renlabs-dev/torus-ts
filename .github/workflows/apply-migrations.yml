@@ -15,6 +15,7 @@ on:
       - feature/migrations
     paths:
       - "atlas/migrations/**"
+      - atlas.hcl
       - ".github/workflows/apply-migrations.yml"
 
 concurrency:
