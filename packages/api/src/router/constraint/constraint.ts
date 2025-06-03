@@ -460,7 +460,20 @@ export const constraintRouter = {
       const network = getOrCreateReteNetwork();
 
       // Add constraint with automatic fact fetching
-      const result = await network.addConstraintWithFacts(constraint);
+      let result: {
+        productionId: string;
+        fetchedFacts: SpecificFact[];
+        replacedConstraints: string[];
+      };
+      try {
+        result = await network.addConstraintWithFacts(constraint);
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to add constraint to the network: ${error instanceof Error ? error.message : String(error)}`,
+          cause: error,
+        });
+      }
 
       // Log the successful addition
       console.log(

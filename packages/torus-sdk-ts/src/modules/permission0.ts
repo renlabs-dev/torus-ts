@@ -166,7 +166,7 @@ export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
  */
 export async function queryPermission(
   api: Api,
-  permissionId: PermissionId,
+  permissionId: string,
 ): Promise<
   Result<Nullable<PermissionContract>, SbQueryError | ZError<unknown>>
 > {

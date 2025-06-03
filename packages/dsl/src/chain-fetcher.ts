@@ -2,7 +2,7 @@ import type { ApiPromise } from '@polkadot/api';
 import { 
   setup, queryStakeOut, checkSS58, 
   queryPermission, isPermissionEnabled, queryDelegationStreamsByAccount,
-  PERMISSION_ID_SCHEMA,
+  PERMISSION_ID_SCHEMA, H256_HEX,
 } from '@torus-network/sdk';
 import type {
   AccountId,
@@ -131,7 +131,7 @@ export class TorusChainFetcher implements ChainFetcher {
     const api = await this.ensureConnected();
     try {
       // Ensure permId is a hex string
-      const hexPermId = PERMISSION_ID_SCHEMA.parse(permId);
+      const hexPermId = H256_HEX.parse(permId);
       const permissionResult = await queryPermission(api, hexPermId);
       const [permissionError, permissionData] = permissionResult;
       const permExists = permissionError === undefined && permissionData !== null;
