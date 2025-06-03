@@ -27,13 +27,13 @@ const PortalNavigationTabs = memo(function PortalNavigationTabs() {
       {
         value: "create-permission",
         label: "Create Permission",
-        icon: Plus,
+        icon: Shield,
         path: "/create-permission",
       },
       {
         value: "create-constraint",
         label: "Create Constraint",
-        icon: Shield,
+        icon: Plus,
         path: "/create-constraint",
       },
     ],
