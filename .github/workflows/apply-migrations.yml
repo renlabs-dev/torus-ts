@@ -80,11 +80,33 @@ jobs:
         run: |
           atlas migrate lint --env local --git-base origin/main
 
+      - name: Generate migrations report
+        run: |
+          echo "Migration execution timestamp: $(date)" > migrations-report.txt
+          echo "Branch: ${{ github.ref_name }}" >> migrations-report.txt
+          echo "Commit: ${{ github.sha }}" >> migrations-report.txt
+          echo "\nCurrent migration status:" >> migrations-report.txt
+          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> migrations-report.txt
+          echo "\nMigrations to be applied:" >> migrations-report.txt
+          atlas migrate apply --env local --dry-run --url "${{ env.POSTGRES_URL }}" >> migrations-report.txt 2>&1
+
       - name: Run dry-run migration
         run: atlas migrate apply --env local --dry-run --url "${{ env.POSTGRES_URL }}"
 
       - name: Apply migrations
-        run: atlas migrate apply --env local --url "${{ env.POSTGRES_URL }}"
+        run: atlas migrate apply --env local --url "${{ env.POSTGRES_URL }}" --lock-timeout 120s
+
+      - name: Update migrations report with final status
+        run: |
+          echo "\nFinal migration status:" >> migrations-report.txt
+          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> migrations-report.txt
+
+      - name: Upload migrations report
+        uses: actions/upload-artifact@v3
+        with:
+          name: migrations-report-${{ github.ref }}-${{ github.sha }}
+          path: migrations-report.txt
+          retention-days: 90
 
   rollback-migrations:
     needs: check-migrations
@@ -106,8 +128,30 @@ jobs:
 
       - uses: ariga/setup-atlas@v0
 
-      - name: atlas migrate down
+      - name: Generate rollback report
+        run: |
+          echo "Rollback execution timestamp: $(date)" > rollback-report.txt
+          echo "Branch: ${{ github.ref_name }}" >> rollback-report.txt
+          echo "Commit: ${{ github.sha }}" >> rollback-report.txt
+          echo "\nCurrent migration status:" >> rollback-report.txt
+          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> rollback-report.txt
+          echo "\nChanges to be rolled back:" >> rollback-report.txt
+          atlas migrate down --env local --dry-run --url "${{ env.POSTGRES_URL }}" >> rollback-report.txt 2>&1
+
+      - name: Atlas migrate down
         run: atlas migrate down --env local --url "${{ env.POSTGRES_URL }}"
+
+      - name: Update rollback report with final status
+        run: |
+          echo "\nFinal migration status:" >> rollback-report.txt
+          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> rollback-report.txt
+
+      - name: Upload rollback report
+        uses: actions/upload-artifact@v3
+        with:
+          name: rollback-report-${{ github.ref }}-${{ github.sha }}
+          path: rollback-report.txt
+          retention-days: 90
 
   restart-apps:
     needs: [check-migrations, apply-migrations, rollback-migrations]
