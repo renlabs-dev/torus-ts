@@ -17,7 +17,7 @@ import {
   safeParseConstraintJson,
   createChainWatcher,
 } from "@torus-ts/dsl";
-import type { Constraint, SpecificFact } from "@torus-ts/dsl";
+import type { Constraint, SpecificFact, BoolExprType, NumExprType, BaseConstraintType, CompOp } from "@torus-ts/dsl";
 import {
   permissionSchema,
   constraintSchema,
@@ -298,7 +298,7 @@ async function storePermissionAndConstraintInDB(
         duration:
           "UntilBlock" in permissionData.duration
             ? permissionData.duration.UntilBlock.toString()
-            : "0",
+            : null,
         revocation: "Irrevocable" in permissionData.revocation ? 0 : 1,
         execution_count: (permissionData.executionCount || 0).toString(),
         parent_id: permissionData.parent ? String(permissionData.parent) : null,
@@ -320,7 +320,10 @@ async function storePermissionAndConstraintInDB(
         }),
       );
 
-      await tx.insert(enforcementAuthoritySchema).values(enforcementRecords);
+      await tx
+        .insert(enforcementAuthoritySchema)
+        .values(enforcementRecords)
+        .onConflictDoNothing();
       console.log(
         `[TEST] Created ${enforcementRecords.length} enforcement authority records`,
       );
@@ -371,53 +374,13 @@ export const constraintRouter = {
         hexPermId as `0x${string}`,
       );
 
-      // Result is a tuple [error, value] - check if error exists
-      if (permissionResult[0] !== undefined) {
+      // Destructure the Result-style tuple [error, data]
+      const [permissionError, permissionData] = permissionResult;
+      if (permissionError !== undefined) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to query permission: ${permissionResult[0]}`,
-          cause: permissionResult[0],
-        });
-      }
-      const permissionData = permissionResult[1];
-      console.log(
-        `[TEST] Permission data fetched from blockchain - contains BigInt values, skipping detailed log`,
-      );
-      if (permissionData) {
-        const scope = permissionData.scope;
-        match(scope)({
-          Emission: function (v: {
-            allocation:
-              | Record<"Streams", Map<`0x${string}`, number>>
-              | Record<"FixedAmount", bigint>;
-            distribution:
-              | Record<"Manual", null>
-              | Record<"Automatic", bigint>
-              | Record<"AtBlock", number>
-              | Record<"Interval", number>;
-            targets: Map<SS58Address, bigint>;
-            accumulating: boolean;
-          }) {
-            match(v.allocation)({
-              Streams: function (streams: Map<`0x${string}`, number>) {
-                console.log(
-                  `[TEST] Found Streams allocation with ${streams.size} streams`,
-                );
-                return streams;
-              },
-              FixedAmount: function (amount: bigint) {
-                throw new Error(
-                  "FixedAmount allocation is not supported for constraints for now",
-                );
-              },
-            });
-          },
-          Curator: function (v: {
-            cooldown: import("@torus-network/torus-utils").Option<number>;
-            flags?: unknown;
-          }): unknown {
-            throw new Error("Function not implemented.");
-          },
+          message: `Failed to query permission: ${permissionError}`,
+          cause: permissionError,
         });
       }
 
@@ -427,32 +390,32 @@ export const constraintRouter = {
           message: `Permission with ID "${constraint.permId}" does not exist on the Torus blockchain. Please verify the permission ID is correct and has been created on-chain before adding constraints.`,
         });
       }
+      
+      if (permissionData) {
+        // guarantees we only process streams TODO: also accept fixed amount
+        const scope = permissionData.scope;
+        match(scope)({
+          Emission: function (v) {
+            match(v.allocation)({
+              Streams: function (streams) {
+                return streams;
+              },
+              FixedAmount: function (_amount) {
+                throw new Error(
+                  "FixedAmount allocation is not supported for constraints for now",
+                );
+              },
+            });
+          },
+          Curator: function (v): unknown {
+            throw new Error("Function not implemented.");
+          },
+        });
+      }
 
-      console.log(
-        `[TEST] Found permission data on blockchain - contains BigInt values, skipping detailed log`,
-      );
 
       // Check if allocator address is in enforcement authorities
-      const allocatorAddressRaw = process.env.NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS;
-      if (!allocatorAddressRaw) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Allocator address not configured in environment",
-        });
-      }
-
-      console.log(`[DEBUG] Parsing allocator address: "${allocatorAddressRaw}", type: ${typeof allocatorAddressRaw}`);
-      const allocatorAddressParsed = SS58_SCHEMA.safeParse(allocatorAddressRaw);
-      console.log(`[DEBUG] Parse result:`, allocatorAddressParsed);
-      if (!allocatorAddressParsed.success) {
-        console.log(`[DEBUG] Parse errors:`, allocatorAddressParsed.error.issues);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Invalid allocator address format: ${allocatorAddressRaw}. Parse error: ${JSON.stringify(allocatorAddressParsed.error.issues)}`,
-        });
-      }
-      const allocatorAddress = allocatorAddressParsed.data;
-
+      const allocatorAddress = ctx.allocatorAddress
       const hasAllocatorAuthority = match(permissionData.enforcement)({
         ControlledBy(controlled) {
           return controlled.controllers.includes(allocatorAddress);
@@ -469,7 +432,6 @@ export const constraintRouter = {
         });
       }
 
-      console.log(`[TEST] Verified allocator ${allocatorAddress} has enforcement authority`);
 
       // 2. Check if permission already exists in database
       const existingPermission = await ctx.db
@@ -480,7 +442,7 @@ export const constraintRouter = {
 
       if (existingPermission.length > 0) {
         console.log(
-          `[TEST] Permission ${constraint.permId} already exists in database, skipping database creation`,
+          `[DEBUG] Permission ${constraint.permId} already exists in database, skipping database creation`,
         );
       } else {
         // 3. Store permission and constraint data in database
@@ -490,7 +452,7 @@ export const constraintRouter = {
           permissionData,
         );
         console.log(
-          `[TEST] Created constraint record in DB with ID: ${constraintRecord.id}`,
+          `[DEBUG] Created constraint record in DB with ID: ${constraintRecord.id}`,
         );
       }
 
@@ -505,9 +467,6 @@ export const constraintRouter = {
         `[TEST] Added constraint ${constraint.permId} with production ID: ${result.productionId}`,
       );
       console.log(
-        `[TEST] Fetched ${result.fetchedFacts.length} facts from chain`,
-      );
-      console.log(
         `[TEST] Constraint activated: ${network.isConstraintActivated(result.productionId)}`,
       );
 
@@ -518,11 +477,9 @@ export const constraintRouter = {
         constraintId: constraint.permId,
         activated: network.isConstraintActivated(result.productionId),
         fetchedFactsCount: result.fetchedFacts.length,
-        // Simplified facts without complex objects
         fetchedFactsTypes: result.fetchedFacts.map(
           (fact: SpecificFact) => fact.type,
         ),
-        // Don't return the full permissionData to avoid BigInt issues
         permissionExists: true,
       };
     }),

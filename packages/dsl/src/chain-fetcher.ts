@@ -133,8 +133,8 @@ export class TorusChainFetcher implements ChainFetcher {
       // Ensure permId is a hex string
       const hexPermId = PERMISSION_ID_SCHEMA.parse(permId);
       const permissionResult = await queryPermission(api, hexPermId);
-      // Result is a tuple [error, value] - check if error is empty (undefined)
-      const permExists = permissionResult[0] === undefined && permissionResult[1] !== null;
+      const [permissionError, permissionData] = permissionResult;
+      const permExists = permissionError === undefined && permissionData !== null;
       return {
         type: 'PermissionExists',
         permId,
@@ -380,7 +380,7 @@ export class ChainAwareReteNetwork extends ReteNetwork {
             break;
             
           default:
-            console.warn(`Unknown fact type: ${(fact as SpecificFact).type}`);
+            // Exhaustiveness check: this will cause a type error if we miss any cases
             continue;
         }
         

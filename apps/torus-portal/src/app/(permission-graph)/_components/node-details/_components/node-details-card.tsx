@@ -145,7 +145,7 @@ export function NodeDetailsCard({
                           </div>
                           <div>
                             <span className="text-xs text-gray-500">
-                              Expires in
+                              {details.duration === null ? "Duration" : "Expires in"}
                             </span>
                             <div className="text-sm text-gray-300">
                               {formatDuration(

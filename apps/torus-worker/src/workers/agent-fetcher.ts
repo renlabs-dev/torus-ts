@@ -63,7 +63,7 @@ function permissionContractToDatabase(
   }
 
   const duration = match(contract.duration)({
-    Indefinite: () => "0",
+    Indefinite: () => null,
     UntilBlock: (block) => block.toString(),
   });
 
