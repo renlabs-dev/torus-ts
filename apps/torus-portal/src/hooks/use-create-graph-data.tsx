@@ -42,7 +42,6 @@ export function useCreateGraphData() {
       let remainingBlocks: number;
 
       // todo : remove when its fixed in the DB
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (detail.duration === null) {
         // Null duration means indefinite/never-ending permission
         remainingBlocks = 999999999; // Large number to indicate indefinite
