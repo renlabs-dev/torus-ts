@@ -67,9 +67,6 @@ export function useGraphInteractions(
 
       setHighlightNodes(newHighlightNodes);
       setHighlightLinks(newHighlightLinks);
-    } else {
-      setHighlightNodes(new Set());
-      setHighlightLinks(new Set());
     }
   }, []);
 

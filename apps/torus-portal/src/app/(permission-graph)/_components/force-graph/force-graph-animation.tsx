@@ -61,11 +61,10 @@ const ForceGraph = memo(
       <R3fForceGraph
         ref={fgRef}
         graphData={formatedData}
-        nodeOpacity={GRAPH_CONSTANTS.NODE_OPACITY}
+        nodeOpacity={1}
         nodeColor={(node: NodeObject) =>
           getNodeColor(node, highlightState, props.userAddress)
         }
-        linkDirectionalParticleResolution={GRAPH_CONSTANTS.NODE_RESOLUTION}
         linkDirectionalParticleWidth={3}
         linkDirectionalParticles={(link: LinkObject) =>
           getLinkParticles(link, highlightState)
@@ -79,7 +78,7 @@ const ForceGraph = memo(
         linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
         linkColor={(link: LinkObject) => String(link.linkColor)}
         linkWidth={(link: LinkObject) => getLinkWidth(link, highlightState)}
-        nodeResolution={GRAPH_CONSTANTS.NODE_RESOLUTION}
+        nodeResolution={24}
         onNodeClick={handleNodeClick}
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
