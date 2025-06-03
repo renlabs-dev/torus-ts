@@ -563,7 +563,7 @@ export const permissionDetailsSchema = createTable("permission_details", {
   grantor_key: ss58Address("grantor_key").notNull(),
   grantee_key: ss58Address("grantee_key").notNull(),
   scope: permissionScope("scope").notNull(),
-  duration: numeric("duration").notNull(),
+  duration: numeric("duration"),
   revocation: integer("revocation").notNull(),
   last_execution: timestampz("last_execution").defaultNow(),
   execution_count: numeric("execution_count").notNull(),
@@ -581,7 +581,9 @@ export const enforcementAuthoritySchema = createTable("enforcement_authority", {
   ss58_address: ss58Address("ss58_address").notNull(),
 
   ...timeFields(),
-});
+}, (table) => ({
+  uniquePermissionAuthority: unique().on(table.permission_id, table.ss58_address),
+}));
 
 /**
  * Stores the body of a constraint

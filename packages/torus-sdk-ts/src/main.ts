@@ -25,7 +25,7 @@ import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { if_let } from "rustie";
 import { assert } from "tsafe";
 
-const log = BasicLogger.create({ name: "Permission0" });
+const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
 
 // // $ pnpm exec tsx src/main.ts
 
@@ -58,8 +58,10 @@ const [permsByGrantorErr, permsByGrantor] = await queryPermissionsByGrantor(
   testAddr,
 );
 
-assert(permsByGrantorErr === undefined);
-assert(permsByGrantor === null);
+assert(
+  permsByGrantorErr === undefined,
+  "permsByGrantorErr should be undefined",
+);
 
 console.log(permsByGrantor);
 
@@ -189,7 +191,7 @@ async function calculateStreams(
   if (e1 !== undefined) {
     return null;
   }
-  log.info("Query successfull");
+  log.info("Query successful");
   console.log("-----");
   log.info("Calculating total received");
   let totalReceived = 0n;
@@ -341,7 +343,6 @@ for (const [keys, valueRaw] of allAccumulatedStreams) {
 console.log();
 console.log();
 
-
 /**
  * Instantaneous stream amounts for an agent.
  */
@@ -424,21 +425,20 @@ async function showDelegationStreamsExample(
   api: ApiPromise,
   accountId: SS58Address,
 ): Promise<void> {
-  console.log("\n=== DELEGATION STREAMS EXAMPLE ===");
+  console.log("\n=== DELEGATION STREAMS EXAMPLE ===\n");
   console.log(`Querying delegation streams for account: ${accountId}`);
 
-  const [delegationError, delegationStreams] = await queryDelegationStreamsByAccount(
+  const [err, delegationStreams] = await queryDelegationStreamsByAccount(
     api,
     accountId,
   );
-
-  if (delegationError !== undefined) {
-    console.log("Error querying delegation streams:", delegationError);
+  if (err !== undefined) {
+    console.log("Error querying delegation streams:", err);
     return;
   }
 
   console.log(`Found ${delegationStreams.size} delegation stream(s):`);
-  
+
   if (delegationStreams.size === 0) {
     console.log("  No delegation streams found for this account.");
   } else {
@@ -447,9 +447,9 @@ async function showDelegationStreamsExample(
       console.log(`    Delegating to: ${delegation.grantee}`);
       console.log(`    Stream ID: ${delegation.streamId}`);
       console.log(`    Percentage: ${delegation.percentage}%`);
-      console.log(`    Accumulated Amount: ${delegation.accumulatedAmount.toString()}`);
+      console.log(`    Accumulated Amount: ${delegation.accumulatedAmount}`);
       console.log(`    Target Count: ${delegation.targets.size}`);
-      
+
       if (delegation.targets.size > 0) {
         console.log("    Targets:");
         for (const [targetAddress, targetAmount] of delegation.targets) {
@@ -459,12 +459,16 @@ async function showDelegationStreamsExample(
     }
   }
 
-  console.log("=== END DELEGATION STREAMS EXAMPLE ===\n");
+  console.log("\n=== END DELEGATION STREAMS EXAMPLE ===\n");
 }
 
 // ---- Run delegation streams example ----
 
-await showDelegationStreamsExample(api, streamTestAccount);
+await showDelegationStreamsExample(
+  api,
+  // checkSS58("5Guyw73fh7UvPXPtQ1bGqoTS8DRoZJHd2PTGwxS8PhHAN8HG"),
+  checkSS58("5Guyw73fh7UvPXPtQ1bGqoTS8DRoZJHd2PTGwxS8PhHAN8HG"),
+);
 
 // ----
 
