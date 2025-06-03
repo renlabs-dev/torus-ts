@@ -32,9 +32,7 @@ export function useGraphInteractions(
 
   const handleNodeClick = useCallback(
     (node: NodeObject) => {
-      const originalNode = graphData.nodes.find(
-        (n) => n.id === String(node.id),
-      );
+      const originalNode = graphData.nodes.find((n) => n.id === node.id);
       if (originalNode) {
         onNodeClick(originalNode);
       }
