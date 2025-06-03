@@ -26,8 +26,23 @@ export const WalletLabel = ({
   }
 
   if (meta.name) {
-    return `${smallWalletName(meta.name, 15)} | ${smallAddress(address, 3)}`;
+    return (
+      <span className="inline-flex items-center">
+        <span className="max-w-[3rem] truncate sm:max-w-[5rem] md:max-w-[8rem] lg:max-w-[10rem]">
+          {meta.name}
+        </span>
+        <span className="hidden sm:inline md:hidden">
+          {" "}
+          | {smallAddress(address, 3)}
+        </span>
+        <span className="hidden md:inline lg:hidden">
+          {" "}
+          | {smallAddress(address, 5)}
+        </span>
+        <span className="hidden lg:inline"> | {smallAddress(address, 10)}</span>
+        <span className="sm:hidden"> | {smallAddress(address, 2)}</span>
+      </span>
+    );
   }
-
   return smallAddress(address, 6);
 };
