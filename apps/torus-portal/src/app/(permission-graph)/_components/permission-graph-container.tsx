@@ -28,7 +28,7 @@ export default function PermissionGraphContainer() {
 
   const agentCache = useRef(new AgentLRUCache(10));
 
-  const { graphData, isLoading, permissionDetails } = useCreateGraphData();
+  const { graphData, isLoading, permissionDetails, allComputedWeights } = useCreateGraphData();
   const { selectedAccount } = useTorus();
 
   // Handle initial selected node from query params
@@ -124,6 +124,7 @@ export default function PermissionGraphContainer() {
         selectedNode={selectedNode}
         graphData={graphData}
         permissionDetails={permissionDetails}
+        allComputedWeights={allComputedWeights}
         getCachedAgentData={getCachedAgentData}
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}

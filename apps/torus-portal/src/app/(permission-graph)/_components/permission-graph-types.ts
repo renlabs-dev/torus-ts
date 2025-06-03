@@ -59,8 +59,16 @@ export interface PermissionWithType extends CustomGraphLink {
   type: "incoming" | "outgoing";
 }
 
-export type PermissionDetails = NonNullable<
+export type PermissionDetailsBase = NonNullable<
   inferProcedureOutput<AppRouter["permissionDetails"]["all"]>
+>;
+
+export type PermissionDetails = (PermissionDetailsBase[number] & {
+  remainingBlocks?: number;
+})[];
+
+export type ComputedWeightsList = NonNullable<
+  inferProcedureOutput<AppRouter["computedAgentWeight"]["all"]>
 >;
 
 export interface CachedAgentData {

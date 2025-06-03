@@ -4,6 +4,7 @@ import type {
   CustomGraphNode,
   PermissionDetails,
   CachedAgentData,
+  ComputedWeightsList,
 } from "../permission-graph-types";
 import { memo } from "react";
 import { PermissionNodeAgentCard } from "./_components/agent-card";
@@ -19,6 +20,7 @@ interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
   graphData: CustomGraphData | null;
   permissionDetails?: PermissionDetails;
+  allComputedWeights?: ComputedWeightsList;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   isOpen: boolean;
@@ -31,6 +33,7 @@ export const PermissionGraphNodeDetails = memo(
     selectedNode,
     graphData,
     permissionDetails,
+    allComputedWeights,
     getCachedAgentData,
     setCachedAgentData,
     isOpen,
@@ -56,6 +59,7 @@ export const PermissionGraphNodeDetails = memo(
               <PermissionNodeAgentCard
                 nodeId={selectedNode.id}
                 fullAddress={selectedNode.fullAddress}
+                allComputedWeights={allComputedWeights}
                 getCachedAgentData={getCachedAgentData}
                 setCachedAgentData={setCachedAgentData}
               />

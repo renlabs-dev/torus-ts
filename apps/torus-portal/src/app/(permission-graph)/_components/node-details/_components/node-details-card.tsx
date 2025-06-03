@@ -18,7 +18,6 @@ import type {
 } from "../../permission-graph-types";
 import { ActionButtons } from "./action-buttons";
 import { LinkButtons } from "./link-buttons";
-import { useMemo } from "react";
 
 interface NodeDetailsCardProps {
   nodePermissions: PermissionWithType[];
@@ -35,21 +34,6 @@ export function NodeDetailsCard({
   nodePermissions,
   permissionDetails,
 }: NodeDetailsCardProps) {
-  const calculateTimeRemaining = useMemo(
-    () =>
-      (createdAt: Date, duration: number): number => {
-        const endDate = new Date(
-          createdAt.getTime() + duration * 24 * 60 * 60 * 1000,
-        );
-        const timeRemainingMs = endDate.getTime() - new Date().getTime();
-        const daysRemaining = Math.ceil(
-          timeRemainingMs / (24 * 60 * 60 * 1000),
-        );
-        return daysRemaining;
-      },
-    [],
-  );
-
   if (!graphData) return null;
 
   const processedPermissions = nodePermissions.map((permission) => {
@@ -149,13 +133,7 @@ export function NodeDetailsCard({
                             </span>
                             <div className="text-sm text-gray-300">
                               {formatDuration(
-                                Math.max(
-                                  calculateTimeRemaining(
-                                    details.createdAt,
-                                    Number(details.duration),
-                                  ),
-                                  0,
-                                ),
+                                Number(details.remainingBlocks ?? 0),
                               )}
                             </div>
                           </div>

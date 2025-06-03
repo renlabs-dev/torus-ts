@@ -5,18 +5,32 @@ import type {
   PermissionDetails,
   PermissionWithType,
 } from "./permission-graph-types";
+import { CONSTANTS } from "@torus-network/sdk";
 
 export const formatScope = (scope: string): string =>
   scope.charAt(0).toUpperCase() + scope.slice(1).toLowerCase();
 
-export const formatDuration = (seconds: string | number | null): string => {
-  if (seconds === null) return "Indefinite";
-  
-  const numSeconds = typeof seconds === "string" ? parseInt(seconds) : seconds;
-  if (!numSeconds) return "0 Days";
+// Convert remaining blocks to days
+export const blocksToDays = (blocks: number): number => {
+  if (blocks >= 999999999) {
+    // Special case for indefinite permissions
+    return 999999999;
+  }
+  const blocksPerDay =
+    CONSTANTS.TIME.ONE_DAY / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
+  return Math.ceil(blocks / blocksPerDay);
+};
 
-  const days = Math.floor(numSeconds / 86400);
-  return (days && `${days} day${days > 1 ? "s" : ""}`) || "";
+// Format duration for display
+export const formatDuration = (blocks: number): string => {
+  if (blocks >= 999999999) {
+    return "Indefinite";
+  }
+
+  const days = blocksToDays(blocks);
+  if (days === 0) return "Expired";
+  if (days === 1) return "1 day";
+  return `${days} days`;
 };
 
 // Other utility functions
