@@ -127,7 +127,8 @@ export function GrantEmissionPermissionFormComponent({
       allocationType === "Streams" &&
       availableStreams.data &&
       availableStreams.data.length > 0 &&
-      streamFields.length === 0
+      streamFields.length === 0 &&
+      selectedAccount?.address
     ) {
       handleAutoPopulateStreams();
     }
@@ -135,23 +136,7 @@ export function GrantEmissionPermissionFormComponent({
     allocationType,
     availableStreams.data,
     streamFields.length,
-    handleAutoPopulateStreams,
-  ]);
-
-  // Automatically populate streams when user account changes (and we're in Streams mode)
-  useEffect(() => {
-    if (
-      allocationType === "Streams" &&
-      availableStreams.data &&
-      availableStreams.data.length > 0 &&
-      selectedAccount?.address
-    ) {
-      handleAutoPopulateStreams();
-    }
-  }, [
     selectedAccount?.address,
-    availableStreams.data,
-    allocationType,
     handleAutoPopulateStreams,
   ]);
 
@@ -372,6 +357,9 @@ export function GrantEmissionPermissionFormComponent({
                                   {...field}
                                   placeholder="e.g. 20"
                                   type="number"
+                                  min="0"
+                                  max="100"
+                                  step="0.1"
                                 />
                               </FormControl>
                               <FormMessage />
