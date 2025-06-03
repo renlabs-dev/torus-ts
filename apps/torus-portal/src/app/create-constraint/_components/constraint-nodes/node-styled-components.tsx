@@ -135,6 +135,9 @@ interface ConstraintInputProps {
   hasError?: boolean;
   errorMessage?: string;
   disabled?: boolean;
+  min?: string;
+  max?: string;
+  step?: string;
 }
 
 export const ConstraintInput = forwardRef<
