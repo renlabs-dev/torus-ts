@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import PermissionGraph from "./permission-graph";
 import PortalNavigationTabs from "../../_components/portal-navigation-tabs";
 import type {
   CustomGraphNode,
@@ -13,10 +12,12 @@ import { PermissionGraphNodeDetails } from "./node-details";
 import PermissionGraphSearch from "./permission-graph-search";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import { MousePointerClick } from "lucide-react";
-import { useCreateGraphData } from "../../../hooks/use-create-graph-data";
 import { NodeColorLegend } from "./node-color-legend";
 import { MyAgentButton } from "./my-agent-button";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useGraphData } from "./force-graph/use-graph-data";
+import { PermissionGraph } from "./force-graph/force-graph-canvas";
+import { Loading } from "@torus-ts/ui/components/loading";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -28,7 +29,8 @@ export default function PermissionGraphContainer() {
 
   const agentCache = useRef(new AgentLRUCache(10));
 
-  const { graphData, isLoading, permissionDetails, allComputedWeights } = useCreateGraphData();
+  const { graphData, isLoading, permissionDetails, allComputedWeights } =
+    useGraphData();
   const { selectedAccount } = useTorus();
 
   // Handle initial selected node from query params
@@ -84,9 +86,19 @@ export default function PermissionGraphContainer() {
     };
   }, []);
 
+  if (isLoading || !graphData)
+    return (
+      <div className="w-full min-h-full">
+        <Loading />
+      </div>
+    );
+
   return (
     <div className="fixed inset-0 w-screen h-screen">
-      <div className="absolute bottom-2 left-2 right-2 md:bottom-14 z-50 flex flex-col sm:flex-row justify-between gap-2">
+      <div
+        className="absolute bottom-2 left-2 right-2 md:bottom-14 z-50 flex flex-col sm:flex-row
+          justify-between gap-2"
+      >
         <div className="flex items-center">
           <NodeColorLegend />
         </div>
@@ -103,19 +115,22 @@ export default function PermissionGraphContainer() {
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
           <div className="flex-1">
             <PermissionGraphSearch
-              graphNodes={graphData?.nodes.map((node) => node.id) ?? []}
+              graphNodes={graphData.nodes.map((node) => node.id)}
             />
           </div>
         </div>
-        
+
         {/* Mobile/Tablet layout - stacked */}
         <div className="flex flex-col gap-2 lg:hidden">
           <div className="flex items-center gap-2 overflow-x-auto">
             <PortalNavigationTabs />
-            <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
+            <MyAgentButton
+              graphData={graphData}
+              onNodeClick={handleNodeSelect}
+            />
           </div>
           <PermissionGraphSearch
-            graphNodes={graphData?.nodes.map((node) => node.id) ?? []}
+            graphNodes={graphData.nodes.map((node) => node.id)}
           />
           <PermissionGraphOverview graphData={graphData} />
         </div>
@@ -131,17 +146,11 @@ export default function PermissionGraphContainer() {
         onOpenChange={setIsSheetOpen}
       />
       <div className="w-full h-full">
-        {isLoading ? (
-          <div className="flex items-center justify-center w-full h-full">
-            <div className="text-xl">Loading permission graph...</div>
-          </div>
-        ) : (
-          <PermissionGraph
-            data={graphData}
-            onNodeClick={handleNodeSelect}
-            userAddress={selectedAccount?.address}
-          />
-        )}
+        <PermissionGraph
+          data={graphData}
+          onNodeClick={handleNodeSelect}
+          userAddress={selectedAccount?.address}
+        />
       </div>
     </div>
   );
