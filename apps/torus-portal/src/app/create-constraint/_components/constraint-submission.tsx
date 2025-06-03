@@ -8,6 +8,7 @@ import { api } from "../../../trpc/react";
 import type { Edge, Node } from "@xyflow/react";
 import { validateConstraintForm } from "./constraint-utils";
 import { useTorus } from "@torus-ts/torus-provider";
+import { smallAddress } from "@torus-network/torus-utils/subspace";
 
 interface ConstraintSubmissionProps {
   nodes: Node[];
@@ -34,7 +35,7 @@ export function ConstraintSubmission({
         title: isEditingConstraint
           ? "Constraint updated successfully!"
           : "Constraint created successfully!",
-        description: `Constraint ${result.constraintId} has been ${isEditingConstraint ? "updated and" : ""} activated.`,
+        description: `Constraint ${smallAddress(result.constraintId)} has been ${isEditingConstraint ? "updated and" : ""} activated.`,
       });
       setIsSubmitting(false);
     },
@@ -69,12 +70,20 @@ export function ConstraintSubmission({
     }
 
     if (!validationResult.isValid) {
-      const errorSummary = validationResult.errors.slice(0, 3).map(error => 
-        `${error.nodeId === "permission-id" ? "Permission ID" : error.nodeId === "constraint" ? "Constraint" : `Node ${error.nodeId}`}: ${error.message}`
-      ).join("; ");
-      
+      const errorSummary = validationResult.errors
+        .slice(0, 3)
+        .map(
+          (error) =>
+            `${error.nodeId === "permission-id" ? "Permission ID" : error.nodeId === "constraint" ? "Constraint" : `Node ${error.nodeId}`}: ${error.message}`,
+        )
+        .join("; ");
+
       const additionalErrorsCount = validationResult.errors.length - 3;
-      const description = errorSummary + (additionalErrorsCount > 0 ? ` (and ${additionalErrorsCount} more errors)` : "");
+      const description =
+        errorSummary +
+        (additionalErrorsCount > 0
+          ? ` (and ${additionalErrorsCount} more errors)`
+          : "");
 
       toast({
         title: "Constraint validation failed",

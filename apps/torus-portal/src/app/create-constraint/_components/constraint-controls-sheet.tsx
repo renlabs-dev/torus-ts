@@ -25,7 +25,7 @@ import {
   usePermission,
 } from "@torus-ts/query-provider/hooks";
 import type { SS58Address, PermissionId } from "@torus-network/sdk";
-import { PlusIcon, Grid2x2Check, Edit } from "lucide-react";
+import { Grid2x2Check, Edit, Shield } from "lucide-react";
 import type { ValidationError } from "./constraint-utils";
 import { api as trpcApi } from "~/trpc/react";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
@@ -114,7 +114,7 @@ export default function ConstraintControlsSheet({
             </>
           ) : (
             <>
-              <PlusIcon className="h-4 w-4 mr-1" />
+              <Shield className="h-4 w-4 mr-1" />
               Create Constraint
             </>
           )}
