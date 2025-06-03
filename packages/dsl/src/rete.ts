@@ -183,6 +183,11 @@ export class AlphaMemory<T extends Fact> {
       }
     }
     
+    if (fact.type === 'Block') {
+      // Return a consistent entity ID for block facts so they get treated as updates
+      return 'block:current';
+    }
+    
     return '';
   }
 }

@@ -34,7 +34,7 @@ export interface CustomGraphLink extends LinkObject {
   linkType: string;
   id?: string;
   scope?: string;
-  duration?: string;
+  duration?: string | null;
   revocation?: number;
   enforcement?: string;
   executionCount?: number;

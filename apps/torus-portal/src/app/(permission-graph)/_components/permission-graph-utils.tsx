@@ -9,7 +9,9 @@ import type {
 export const formatScope = (scope: string): string =>
   scope.charAt(0).toUpperCase() + scope.slice(1).toLowerCase();
 
-export const formatDuration = (seconds: string | number): string => {
+export const formatDuration = (seconds: string | number | null): string => {
+  if (seconds === null) return "Indefinite";
+  
   const numSeconds = typeof seconds === "string" ? parseInt(seconds) : seconds;
   if (!numSeconds) return "0 Days";
 
