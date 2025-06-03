@@ -1,5 +1,6 @@
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import { api } from "~/trpc/server";
 import { env } from "~/env";
@@ -37,7 +38,7 @@ export async function GET(
     const statusColor = getStatusColor(application.status);
     
     // Truncate agent ID for display if needed
-    const agentIdDisplay = application.agentId?.length > 15 
+    const agentIdDisplay = application.agentId && application.agentId.length > 15 
       ? `${application.agentId.substring(0, 6)}...${application.agentId.substring(application.agentId.length - 4)}` 
       : application.agentId;
 
@@ -94,7 +95,7 @@ export async function GET(
               lineHeight: '1.2',
               fontWeight: 'bold',
             }}>
-              {application.name || 'Agent Application'}
+              {application.name ?? 'Agent Application'}
             </h1>
             
             <div style={{ fontSize: '24px', opacity: 0.7, marginTop: '10px' }}>
@@ -158,7 +159,7 @@ export async function GET(
         ],
       }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error generating OG image:", error);
     return NextResponse.json({ error: "Failed to generate OG image" }, { status: 500 });
   }
@@ -220,7 +221,7 @@ async function generateDefaultOgImage(title: string) {
           <circle cx="100" cy="100" r="30" fill="#00AEEF"/>
         </svg>
         <h1 style={{ fontSize: '60px', zIndex: '2', maxWidth: '900px' }}>
-          {title.length > 30 ? `${title.substring(0, 30)}...` : title}
+          {typeof title === 'string' && title.length > 30 ? `${title.substring(0, 30)}...` : title}
         </h1>
         <p style={{ fontSize: '30px', opacity: 0.8, zIndex: '2' }}>Agent Whitelist Application</p>
       </div>

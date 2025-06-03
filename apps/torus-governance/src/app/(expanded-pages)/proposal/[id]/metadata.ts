@@ -3,16 +3,16 @@ import { env } from "~/env";
 import { api } from "~/trpc/server";
 import type { Metadata } from "next";
 
-type Props = {
+interface Props {
   params: { id: string };
-};
+}
 
 export async function generateMetadata(
   { params }: Props,
 ): Promise<Metadata> {
   const id = parseInt(params.id, 10);
   const baseUrl = env("BASE_URL");
-  const ogImageUrl = `${baseUrl}/api/og-image/proposal/${id}`;
+  const _ogImageUrl = `${baseUrl}/api/og-image/proposal/${id}`;
   
   try {
     // Fetch the proposal details
@@ -30,12 +30,12 @@ export async function generateMetadata(
     }
     
     // Create dynamic title from proposal title
-    const title = `${proposal.title} - Torus DAO Proposal`;
+    const title = `${proposal.title ?? ''} - Torus DAO Proposal`;
     
     // Create description from proposal summary or description
     // Limit description to ~160 characters
-    let description = proposal.summary || proposal.description || "";
-    if (description.length > 160) {
+    let description = proposal.summary ?? proposal.description ?? "";
+    if (description && description.length > 160) {
       description = description.substring(0, 157) + "...";
     }
     
@@ -46,13 +46,13 @@ export async function generateMetadata(
         "torus proposal",
         "governance voting",
         "dao proposal",
-        proposal.title.toLowerCase().replace(/[^\w\s]/gi, '').split(' ').slice(0, 3).join(' '),
+        proposal.title ? proposal.title.toLowerCase().replace(/[^\w\s]/gi, '').split(' ').slice(0, 3).join(' ') : 'governance',
       ],
       baseUrl: baseUrl,
       canonical: `/proposal/${id}`,
       ogImagePath: `/api/og-image/proposal/${id}`,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     // Fallback metadata if the API call fails
     return createSeoMetadata({
       title: "Proposal Details - Torus DAO",

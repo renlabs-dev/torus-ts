@@ -7,13 +7,10 @@ import { Seo, createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { AllocationSheet } from "./_components/allocation-sheet";
 import { AllocatorHeader } from "./_components/allocator-header";
 import { TutorialDialog } from "./_components/tutorial-dialog";
-
-const APP_NAME = "Allocator";
 
 export const metadata = () => 
   createSeoMetadata({

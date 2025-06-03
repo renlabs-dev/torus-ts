@@ -4,7 +4,7 @@ import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { Label } from "@torus-ts/ui/components/label";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
-import { Seo, createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -40,13 +40,13 @@ export const generateMetadata = async ({ params }: { params: { slug: string } })
     const ogImagePath = `${env("BASE_URL")}/api/og-image/${agentKey}`;
     
     return createSeoMetadata({
-      title: `${agent.name || 'Agent'} - Torus Allocator`,
+      title: `${agent.name ?? 'Agent'} - Torus Allocator`,
       description: agentMetadata.metadata.short_description || "View detailed information about this Torus Network agent and allocate your stake.",
       keywords: [
         "torus agent", 
         "torus network", 
         "stake delegation", 
-        agent.name || "torus agent",
+        agent.name ?? "torus agent",
         "agent details",
         "blockchain delegation"
       ],

@@ -3,20 +3,23 @@ import { env } from "~/env";
 import { api } from "~/trpc/server";
 import type { Metadata } from "next";
 
-type Props = {
+interface Props {
   params: { id: string };
-};
+}
 
 export async function generateMetadata(
   { params }: Props,
 ): Promise<Metadata> {
   const id = parseInt(params.id, 10);
   const baseUrl = env("BASE_URL");
-  const ogImageUrl = `${baseUrl}/api/og-image/agent-application/${id}`;
+  const _ogImageUrl = `${baseUrl}/api/og-image/agent-application/${id}`;
   
   try {
     // Fetch the agent application details
     const application = await api.agentApplication.getAgentApplicationById({ id });
+    if (!application) {
+      throw new Error('Application not found');
+    }
     
     if (!application) {
       return createSeoMetadata({
@@ -30,12 +33,12 @@ export async function generateMetadata(
     }
     
     // Create dynamic title based on agent name or address
-    const title = `Agent Application: ${application.name || application.agentId.substring(0, 10)} - Torus DAO`;
+    const title = `Agent Application: ${application.name ?? application.agentId?.substring(0, 10)} - Torus DAO`;
     
     // Create description from application details
     // Limit description to ~160 characters
-    let description = application.description || `Agent application for ${application.name || application.agentId.substring(0, 10)} on the Torus Network.`;
-    if (description.length > 160) {
+    let description = application.description ?? `Agent application for ${application.name ?? application.agentId?.substring(0, 10)} on the Torus Network.`;
+    if (description && description.length > 160) {
       description = description.substring(0, 157) + "...";
     }
     
@@ -48,13 +51,13 @@ export async function generateMetadata(
         "whitelist application",
         "agent onboarding",
         "torus dao",
-        application.name?.toLowerCase().replace(/[^\w\s]/gi, '').split(' ').join(' ') || "agent whitelist",
+        application.name?.toLowerCase().replace(/[^\w\s]/gi, '').split(' ').join(' ') ?? "agent whitelist",
       ],
       baseUrl: baseUrl,
       canonical: `/agent-application/${id}`,
       ogImagePath: `/api/og-image/agent-application/${id}`,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     // Fallback metadata if the API call fails
     return createSeoMetadata({
       title: "Agent Application Details - Torus DAO",

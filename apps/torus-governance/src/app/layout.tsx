@@ -8,11 +8,8 @@ import { Toaster } from "@torus-ts/ui/components/toaster";
 import { GovernanceProvider } from "~/context/governance-provider";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import DiscordAuthProvider from "../context/auth-provider";
-
-const APP_NAME = "Torus DAO";
 
 export const metadata = () => 
   createSeoMetadata({

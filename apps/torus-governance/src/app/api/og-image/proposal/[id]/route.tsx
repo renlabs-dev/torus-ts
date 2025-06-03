@@ -1,5 +1,6 @@
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import { api } from "~/trpc/server";
 import { env } from "~/env";
@@ -89,12 +90,12 @@ export async function GET(
               lineHeight: '1.2',
               fontWeight: 'bold',
             }}>
-              {proposal.title.length > 60 ? `${proposal.title.substring(0, 60)}...` : proposal.title}
+              {proposal.title ? (proposal.title.length > 60 ? `${proposal.title.substring(0, 60)}...` : proposal.title) : 'Proposal'}
             </h1>
           </div>
           
           {/* Description */}
-          {proposal.summary && (
+          {proposal.summary ? (
             <p style={{ 
               fontSize: '28px', 
               margin: '10px 0', 
@@ -105,7 +106,7 @@ export async function GET(
               {proposal.summary.substring(0, 160)}
               {proposal.summary.length > 160 ? '...' : ''}
             </p>
-          )}
+          ) : null}
           
           {/* Footer info */}
           <div style={{ 
@@ -149,7 +150,7 @@ export async function GET(
         ],
       }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error generating OG image:", error);
     return NextResponse.json({ error: "Failed to generate OG image" }, { status: 500 });
   }
@@ -213,7 +214,7 @@ async function generateDefaultOgImage(title: string) {
           <circle cx="100" cy="100" r="30" fill="#00AEEF"/>
         </svg>
         <h1 style={{ fontSize: '60px', zIndex: '2', maxWidth: '900px' }}>
-          {title.length > 30 ? `${title.substring(0, 30)}...` : title}
+          {title && typeof title === 'string' && title.length > 30 ? `${title.substring(0, 30)}...` : title}
         </h1>
         <p style={{ fontSize: '30px', opacity: 0.8, zIndex: '2' }}>Torus DAO Governance</p>
       </div>

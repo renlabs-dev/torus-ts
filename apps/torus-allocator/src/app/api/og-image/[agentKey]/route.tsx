@@ -1,7 +1,8 @@
 import { fetchAgentMetadata } from "@torus-network/sdk";
 import { api } from "~/trpc/server";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import { env } from "~/env";
 
@@ -54,7 +55,7 @@ export async function GET(
         return NextResponse.redirect(agentMetadata.images.icon);
       }
       // Otherwise generate an OG image with the agent info
-      return generateDefaultOgImage(agent.name || agentKey);
+      return generateDefaultOgImage(agent.name ?? agentKey);
     }
 
     // If we have a Blob, we need to convert it to a data URL or serve it as an image
@@ -91,7 +92,7 @@ export async function GET(
                 }}
               />
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
-                <h1 style={{ fontSize: '60px', margin: 0 }}>{agent.name || 'Torus Agent'}</h1>
+                <h1 style={{ fontSize: '60px', margin: 0 }}>{agent.name ?? 'Torus Agent'}</h1>
                 <p style={{ fontSize: '28px', margin: 0, opacity: 0.8 }}>Torus Network Agent</p>
               </div>
             </div>
@@ -119,7 +120,7 @@ export async function GET(
     }
 
     // Fallback to default OG image
-    return generateDefaultOgImage(agent.name || agentKey);
+    return generateDefaultOgImage(agent.name ?? agentKey);
   } catch (error) {
     console.error("Error generating OG image:", error);
     return NextResponse.json({ error: "Failed to generate OG image" }, { status: 500 });
