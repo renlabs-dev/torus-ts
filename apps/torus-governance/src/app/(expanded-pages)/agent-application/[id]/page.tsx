@@ -3,6 +3,9 @@ import { Container } from "@torus-ts/ui/components/container";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
+import { generateMetadata } from "./metadata";
+
+export const metadata = generateMetadata;
 
 export default async function AgentApplicationView({
   params,

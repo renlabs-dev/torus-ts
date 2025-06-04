@@ -4,9 +4,8 @@ import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
 
 const AUTH_ORIGIN_DEFAULT = "dao.torus.network";
-const BASE_URL_DEFAULT = process.env.NODE_ENV === "production"
-  ? "https://dao.torus.network"
-  : "https://dao.testnet.torus.network";
+// const BASE_URL_DEFAULT = "https://dao.torus.network";
+const BASE_URL_DEFAULT = "https://pr-236.dao.torus.network";
 
 const NodeEnvSchema = z
   .enum(["development", "production", "test"])
