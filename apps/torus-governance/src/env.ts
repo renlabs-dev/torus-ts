@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const AUTH_ORIGIN_DEFAULT = "dao.torus.network";
 // const BASE_URL_DEFAULT = "https://dao.torus.network";
-const BASE_URL_DEFAULT = "https://pr-236.dao.torus.network";
+const BASE_URL_DEFAULT = "https://pr-236.torus-governance.torus.network";
 
 const NodeEnvSchema = z
   .enum(["development", "production", "test"])
