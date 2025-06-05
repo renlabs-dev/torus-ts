@@ -1,4 +1,4 @@
-import { fetchAgentMetadata, fetchCustomMetadata, queryAgentApplications, setup } from "@torus-network/sdk";
+import { fetchAgentMetadata, fetchCustomMetadata, queryAgentApplicationById, setup } from "@torus-network/sdk";
 import { Button } from "@torus-ts/ui/components/button";
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
@@ -20,14 +20,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = env("BASE_URL");
 
   try {
-    // Get applications using SDK
+    // Get single application using efficient SDK function
     const applicationId = Number(id);
     
-    // Setup API connection to fetch agent applications
+    // Setup API connection to fetch the specific agent application
     const wsEndpoint = env("NEXT_PUBLIC_TORUS_RPC_URL");
     const blockchainApi = await setup(wsEndpoint);
-    const applications = await queryAgentApplications(blockchainApi);
-    const application = applications.find((app) => app.id === applicationId);
+    const application = await queryAgentApplicationById(blockchainApi, applicationId);
 
     if (!application) {
       return createSeoMetadata({

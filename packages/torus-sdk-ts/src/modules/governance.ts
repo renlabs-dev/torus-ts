@@ -307,6 +307,36 @@ export async function queryAgentApplications(
   return daos;
 }
 
+export async function queryAgentApplicationById(
+  api: Api,
+  applicationId: number,
+): Promise<AgentApplication | null> {
+  const [queryError, query] = await tryAsync(
+    api.query.governance.agentApplications(applicationId),
+  );
+
+  if (queryError !== undefined) {
+    console.error("Error querying agent application by ID:", queryError);
+    return null;
+  }
+
+  // Check if the application exists (Some vs None)
+  if (query.isNone) {
+    return null;
+  }
+
+  const [parseError, application] = trySync(() =>
+    AGENT_APPLICATION_SCHEMA.parse(query.unwrap().toJSON()),
+  );
+
+  if (parseError !== undefined) {
+    console.error("Error parsing agent application:", parseError);
+    return null;
+  }
+
+  return application;
+}
+
 // == Dao Treasury ==
 
 export type DaoTreasuryAddress = z.infer<typeof sb_address>;
