@@ -311,30 +311,14 @@ export async function queryAgentApplicationById(
   api: Api,
   applicationId: number,
 ): Promise<AgentApplication | null> {
-  const [queryError, query] = await tryAsync(
-    api.query.governance.agentApplications(applicationId),
-  );
+  const [error, applications] = await tryAsync(queryAgentApplications(api));
 
-  if (queryError !== undefined) {
-    console.error("Error querying agent application by ID:", queryError);
-    return null;
+  if (error) {
+    console.error("Error querying agent applications:", error);
+    throw error;
   }
 
-  // Check if the application exists (Some vs None)
-  if (query.isNone) {
-    return null;
-  }
-
-  const [parseError, application] = trySync(() =>
-    AGENT_APPLICATION_SCHEMA.parse(query.unwrap().toJSON()),
-  );
-
-  if (parseError !== undefined) {
-    console.error("Error parsing agent application:", parseError);
-    return null;
-  }
-
-  return application;
+  return applications.find((app) => app.id === applicationId) ?? null;
 }
 
 // == Dao Treasury ==
