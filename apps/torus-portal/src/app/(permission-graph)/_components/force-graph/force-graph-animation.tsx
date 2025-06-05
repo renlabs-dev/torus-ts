@@ -58,31 +58,33 @@ const ForceGraph = memo(
     }, [props.graphData.nodes, props.graphData.links]);
 
     return (
-      <R3fForceGraph
-        ref={fgRef}
-        graphData={formatedData}
-        nodeOpacity={1}
-        nodeColor={(node: NodeObject) =>
-          getNodeColor(node, highlightState, props.userAddress)
-        }
-        linkDirectionalParticleWidth={3}
-        linkDirectionalParticles={(link: LinkObject) =>
-          getLinkParticles(link, highlightState)
-        }
-        linkDirectionalArrowLength={(link: LinkObject) =>
-          Number(link.linkDirectionalArrowLength)
-        }
-        linkDirectionalArrowRelPos={(link: LinkObject) =>
-          Number(link.linkDirectionalArrowRelPos)
-        }
-        linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
-        linkColor={(link: LinkObject) => String(link.linkColor)}
-        linkWidth={(link: LinkObject) => getLinkWidth(link, highlightState)}
-        nodeResolution={24}
-        onNodeClick={handleNodeClick}
-        onNodeHover={handleNodeHover}
-        onLinkHover={handleLinkHover}
-      />
+      <>
+        <R3fForceGraph
+          ref={fgRef}
+          graphData={formatedData}
+          nodeOpacity={1}
+          nodeColor={(node: NodeObject) =>
+            getNodeColor(node, highlightState, props.userAddress)
+          }
+          linkDirectionalParticleWidth={3}
+          linkDirectionalParticles={(link: LinkObject) =>
+            getLinkParticles(link, highlightState)
+          }
+          linkDirectionalArrowLength={(link: LinkObject) =>
+            Number(link.linkDirectionalArrowLength)
+          }
+          linkDirectionalArrowRelPos={(link: LinkObject) =>
+            Number(link.linkDirectionalArrowRelPos)
+          }
+          linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
+          linkColor={(link: LinkObject) => String(link.linkColor)}
+          linkWidth={(link: LinkObject) => getLinkWidth(link, highlightState)}
+          nodeResolution={24}
+          onNodeClick={handleNodeClick}
+          onNodeHover={handleNodeHover}
+          onLinkHover={handleLinkHover}
+        />
+      </>
     );
   },
   (prevProps, nextProps) => {
