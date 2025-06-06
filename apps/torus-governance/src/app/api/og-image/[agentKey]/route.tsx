@@ -4,7 +4,8 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
-import Image from "next/image";
+
+export const runtime = "edge";
 
 export async function GET(
   _req: NextRequest,
@@ -36,10 +37,32 @@ export async function GET(
   }
 
   const iconBuffer = await metadata.images.icon.arrayBuffer();
-  const iconDataUrl = `data:image/png;base64,${Buffer.from(iconBuffer).toString("base64")}`;
+  const iconBase64 = Buffer.from(iconBuffer).toString("base64");
+  const iconDataUrl = `data:image/png;base64,${iconBase64}`;
 
   return new ImageResponse(
-    <Image src={iconDataUrl} width="400" height="400" alt="Agent icon" />,
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+        }}
+      >
+        <img
+          src={iconDataUrl}
+          width={400}
+          height={400}
+          alt="Agent icon"
+          style={{ borderRadius: "20px" }}
+        />
+        <p style={{ fontSize: 32, color: "#000" }}>{agent.name ?? "Agent"}</p>
+      </div>
+    ),
     {
       width: 1200,
       height: 630,
