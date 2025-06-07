@@ -7,6 +7,13 @@ import type {
 } from "../permission-graph-types";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
 
+/**
+ * Generates a random particle speed between min and max values for asynchronous animation.
+ */
+function getRandomParticleSpeed(): number {
+  return Math.random() * (GRAPH_CONSTANTS.PARTICLE_SPEED_MAX - GRAPH_CONSTANTS.PARTICLE_SPEED_MIN) + GRAPH_CONSTANTS.PARTICLE_SPEED_MIN;
+}
+
 export type PermissionDetail = PermissionDetailsBase[number] & {
   remainingBlocks?: number;
 };
@@ -115,6 +122,10 @@ export function createPermissionLinks(
       GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowLength,
     linkDirectionalArrowRelPos:
       GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowRelPos,
+    linkDirectionalParticles: GRAPH_CONSTANTS.MIN_PARTICLES,
+    linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+    linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+    linkWidth: GRAPH_CONSTANTS.PERMISSION_LINK.width,
     linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_LINK,
   }));
 }
@@ -153,6 +164,8 @@ export function createAllocationLinks(
         ),
         linkDirectionalParticleWidth:
           GRAPH_CONSTANTS.ALLOCATION_LINK.particleWidth,
+        linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+        linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
         linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
         linkWidth: GRAPH_CONSTANTS.ALLOCATION_LINK.width,
       });

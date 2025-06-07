@@ -8,11 +8,7 @@ import type {
   CustomGraphNode,
 } from "../permission-graph-types";
 import { useGraphInteractions } from "./use-graph-interactions";
-import {
-  getNodeColor,
-  getLinkParticles,
-  getLinkWidth,
-} from "./force-graph-highlight-utils";
+import { getNodeColor, getLinkWidth } from "./force-graph-highlight-utils";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
 import { useFrame } from "@react-three/fiber";
 
@@ -67,8 +63,9 @@ const ForceGraph = memo(
             getNodeColor(node, highlightState, props.userAddress)
           }
           linkDirectionalParticleWidth={3}
-          linkDirectionalParticles={(link: LinkObject) =>
-            getLinkParticles(link, highlightState)
+          linkDirectionalParticles={1}
+          linkDirectionalParticleSpeed={(link: LinkObject) =>
+            Number(link.linkDirectionalParticleSpeed) || 0.008
           }
           linkDirectionalArrowLength={(link: LinkObject) =>
             Number(link.linkDirectionalArrowLength)

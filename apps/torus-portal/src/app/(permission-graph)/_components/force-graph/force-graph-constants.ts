@@ -9,7 +9,12 @@ export const GRAPH_CONSTANTS = {
   // Link constants
   HIGHLIGHT_LINK_WIDTH_MULTIPLIER: 2,
   HIGHLIGHT_PARTICLES_INCREASE: 2,
-  MIN_PARTICLES: 2,
+  MIN_PARTICLES: 1,
+
+  // Particle animation constants
+  PARTICLE_SPEED_MIN: 0.001,
+  PARTICLE_SPEED_MAX: 0.006,
+  PARTICLE_RESOLUTION: 4,
 
   // Highlight effects
   HOVER_NODE_LIGHTEN_AMOUNT: 0.8,
@@ -35,7 +40,7 @@ export const GRAPH_CONSTANTS = {
 
   // Link properties
   PERMISSION_LINK: {
-    directionalArrowLength: 3.5,
+    directionalArrowLength: 6,
     directionalArrowRelPos: 1,
     width: 1,
   },

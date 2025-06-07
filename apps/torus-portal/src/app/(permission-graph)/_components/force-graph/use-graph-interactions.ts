@@ -65,6 +65,10 @@ export function useGraphInteractions(
 
       setHighlightNodes(newHighlightNodes);
       setHighlightLinks(newHighlightLinks);
+    } else {
+      setHoverNode(null);
+      setHighlightNodes(new Set());
+      setHighlightLinks(new Set());
     }
   }, []);
 

@@ -19,15 +19,10 @@ export function useGraphData() {
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     trpcApi.computedAgentWeight.all.useQuery();
 
-  const basePermissionDetails = useMemo(() => {
-    if (!rawPermissionDetails) return undefined;
-    return rawPermissionDetails;
-  }, [rawPermissionDetails]);
-
   const permissionDetails = useMemo((): PermissionDetails | undefined => {
-    if (!basePermissionDetails) return undefined;
+    if (!rawPermissionDetails) return undefined;
 
-    return basePermissionDetails.map((detail) => {
+    return rawPermissionDetails.map((detail) => {
       let remainingBlocks: number;
 
       if (detail.duration === null) {
@@ -53,7 +48,7 @@ export function useGraphData() {
         remainingBlocks,
       };
     });
-  }, [basePermissionDetails, lastBlock]);
+  }, [rawPermissionDetails, lastBlock]);
 
   const computedWeights: ComputedWeight[] | undefined = useMemo(() => {
     return allComputedWeights?.map((agent) => ({
@@ -64,11 +59,11 @@ export function useGraphData() {
 
   const graphData = useMemo(() => {
     return createGraphData(
-      basePermissionDetails,
+      rawPermissionDetails,
       computedWeights,
       allocatorAddress,
     );
-  }, [basePermissionDetails, computedWeights, allocatorAddress]);
+  }, [rawPermissionDetails, computedWeights, allocatorAddress]);
 
   return {
     graphData,
