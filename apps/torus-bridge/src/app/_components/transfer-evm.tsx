@@ -2,8 +2,6 @@
 
 import {
   convertH160ToSS58,
-  waitForTransactionReceipt,
-  withdrawFromTorusEvm,
 } from "@torus-network/sdk";
 import type { SS58Address } from "@torus-network/sdk";
 import { smallAddress, toNano } from "@torus-network/torus-utils/subspace";
@@ -22,9 +20,7 @@ import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { getChainValuesOnEnv } from "~/config";
-import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";
-import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
 import { ArrowLeftRight } from "lucide-react";
 import Image from "next/image";
@@ -35,8 +31,6 @@ import {
   useAccount,
   useBalance,
   useClient,
-  useSwitchChain,
-  useWalletClient,
 } from "wagmi";
 
 const DEFAULT_MODE = "bridge";
@@ -54,14 +48,11 @@ export function TransferEVM() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const multiProvider = useMultiProvider();
   const { toast } = useToast();
 
-  const { transfer, selectedAccount, isInitialized, isAccountConnected, api } =
+  const { transfer, selectedAccount, isInitialized, isAccountConnected, api, evmWithdraw } =
     useTorus();
-  const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
-  const { switchChain } = useSwitchChain();
 
   const getChainValues = getChainValuesOnEnv(
     env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
@@ -88,11 +79,6 @@ export function TransferEVM() {
       (searchParams.get("mode") as "bridge" | "withdraw" | null) ?? DEFAULT_MODE
     );
   }, [searchParams]);
-
-  const { wagmiConfig } = useMemo(
-    () => initWagmi(multiProvider),
-    [multiProvider],
-  );
 
   const evmSS58Addr = useMemo(
     () => (userInputEthAddr ? convertH160ToSS58(userInputEthAddr) : ""),
@@ -159,9 +145,7 @@ export function TransferEVM() {
   const handleWithdraw = useCallback(async () => {
     if (
       !amount ||
-      walletClient == null ||
-      chain == null ||
-      selectedAccount == null
+      !selectedAccount
     ) {
       toast({
         title: "Uh oh! Something went wrong.",
@@ -169,82 +153,36 @@ export function TransferEVM() {
       });
       return;
     }
-    if (chain.id !== torusEvmChainId) {
-      try {
-        switchChain({ chainId: torusEvmChainId });
-        toast({
-          title: "Wait, you were connected to the wrong network.",
-          description:
-            "We switched you to Torus. Please try to withdraw again.",
-        });
-        return;
-      } catch {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Failed to switch network.",
-        });
-        return;
-      }
-    }
+
     setTransactionStatus({
       status: "STARTING",
       message: "Transaction in progress, sign in your wallet",
       finalized: false,
     });
-    try {
-      const txHash = await withdrawFromTorusEvm(
-        walletClient,
-        chain,
-        selectedAccount.address as SS58Address,
-        amountRems,
-        refetchHandler,
-      );
-      setTransactionStatus({
-        status: "SUCCESS",
-        message: `Transaction included in the blockchain!`,
-        finalized: true,
-      });
 
-      toast({
-        title: "Loading...",
-        description: renderWaitingForValidation(txHash),
-      });
-      await waitForTransactionReceipt(wagmiConfig, {
-        hash: txHash,
-        confirmations: 2,
-      });
-      toast({
-        title: "Success!",
-        description: renderSuccessfulyFinalized(txHash),
+    try {
+      await evmWithdraw({
+        evmAddress: address || "",
+        amount: amount,
+        callback: handleCallback,
+        refetchHandler,
       });
 
       setAmount("");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setTransactionStatus({
         status: "ERROR",
         message: "Something went wrong with your transaction",
         finalized: true,
       });
-    } finally {
-      await refetchHandler();
-      setTransactionStatus({
-        status: null,
-        message: null,
-        finalized: false,
-      });
     }
   }, [
     amount,
-    walletClient,
-    chain,
     selectedAccount,
-    torusEvmChainId,
-    switchChain,
-    amountRems,
+    address,
+    evmWithdraw,
+    handleCallback,
     refetchHandler,
-    wagmiConfig,
-    toast,
   ]);
 
   const handleSelfClick = useCallback(() => {

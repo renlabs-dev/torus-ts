@@ -23,11 +23,13 @@ import type {
   AddAgentApplication,
   AddCustomProposal,
   AddDaoTreasuryTransferProposal,
+  EvmWithdraw,
   RegisterAgent,
   RemoveVote,
   Stake,
   Transfer,
   TransferStake,
+  TransactionResult,
   UpdateAgent,
   UpdateDelegatingVotingPower,
   Vote,
@@ -76,6 +78,7 @@ interface TorusContextType {
   removeStake: (stake: Stake) => Promise<void>;
   transfer: (transfer: Transfer) => Promise<void>;
   transferStake: (transfer: TransferStake) => Promise<void>;
+  evmWithdraw: (withdraw: EvmWithdraw) => Promise<void>;
 
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
@@ -134,6 +137,11 @@ interface TorusContextType {
     TransferStake,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
+
+  evmWithdrawTransaction: ({
+    evmAddress,
+    amount,
+  }: Omit<EvmWithdraw, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -469,6 +477,36 @@ export function TorusProvider({
     });
   }
 
+  const evmWithdrawTransaction = ({
+    evmAddress,
+    amount,
+  }: Omit<EvmWithdraw, "callback" | "refetchHandler">) => {
+    if (!api?.tx.evm?.withdraw) return;
+    return api.tx.evm.withdraw(evmAddress, toNano(amount));
+  };
+
+  async function evmWithdraw({
+    evmAddress,
+    amount,
+    callback,
+    refetchHandler,
+  }: EvmWithdraw): Promise<void> {
+    if (!api?.tx.evm?.withdraw) return;
+
+    const transaction = api.tx.evm.withdraw(evmAddress, toNano(amount));
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "EVM Withdraw",
+      refetchHandler,
+      wsEndpoint,
+      toast,
+    });
+  }
+
   // == Subspace ==
 
   const registerAgentTransaction = ({
@@ -753,6 +791,8 @@ export function TorusProvider({
         transferTransaction,
         updateDelegatingVotingPower,
         voteProposal,
+        evmWithdraw,
+        evmWithdrawTransaction,
       }}
     >
       {children}

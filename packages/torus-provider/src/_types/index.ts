@@ -29,6 +29,11 @@ export interface TransferStake extends TransactionHelpers {
   amount: string;
 }
 
+export interface EvmWithdraw extends TransactionHelpers {
+  evmAddress: string; // H160 EVM address
+  amount: string;     // Amount to withdraw from EVM to substrate
+}
+
 // == Governance ==
 
 export interface Vote extends TransactionHelpers {
