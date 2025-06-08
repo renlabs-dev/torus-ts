@@ -31,6 +31,7 @@ import {
   useAccount,
   useBalance,
   useClient,
+  useSwitchChain,
 } from "wagmi";
 
 const DEFAULT_MODE = "bridge";
@@ -53,6 +54,7 @@ export function TransferEVM() {
   const { transfer, selectedAccount, isInitialized, isAccountConnected, api, evmWithdraw } =
     useTorus();
   const { chain, address } = useAccount();
+  const { switchChain } = useSwitchChain();
 
   const getChainValues = getChainValuesOnEnv(
     env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
@@ -83,11 +85,6 @@ export function TransferEVM() {
   const evmSS58Addr = useMemo(
     () => (userInputEthAddr ? convertH160ToSS58(userInputEthAddr) : ""),
     [userInputEthAddr],
-  );
-
-  const amountRems = useMemo(
-    () => (amount ? toNano(parseFloat(amount)) : BigInt(0)),
-    [amount],
   );
 
   const userAccountFreeBalance = useCallback(() => {
@@ -154,6 +151,25 @@ export function TransferEVM() {
       return;
     }
 
+    // Check if user is connected to the correct EVM network
+    if (chain?.id !== torusEvmChainId) {
+      try {
+        switchChain({ chainId: torusEvmChainId });
+        toast({
+          title: "Wait, you were connected to the wrong network.",
+          description:
+            "We switched you to Torus EVM. Please try to withdraw again.",
+        });
+        return;
+      } catch {
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to switch network.",
+        });
+        return;
+      }
+    }
+
     setTransactionStatus({
       status: "STARTING",
       message: "Transaction in progress, sign in your wallet",
@@ -162,14 +178,14 @@ export function TransferEVM() {
 
     try {
       await evmWithdraw({
-        evmAddress: address || "",
+        evmAddress: address ?? "",
         amount: amount,
         callback: handleCallback,
         refetchHandler,
       });
 
       setAmount("");
-    } catch (error) {
+    } catch {
       setTransactionStatus({
         status: "ERROR",
         message: "Something went wrong with your transaction",
@@ -179,10 +195,14 @@ export function TransferEVM() {
   }, [
     amount,
     selectedAccount,
+    chain,
+    torusEvmChainId,
+    switchChain,
     address,
     evmWithdraw,
     handleCallback,
     refetchHandler,
+    toast,
   ]);
 
   const handleSelfClick = useCallback(() => {
