@@ -34,8 +34,10 @@ export function useGraphData() {
           ? Number(lastBlock.data.blockNumber)
           : 0;
 
-        if (isNaN(expirationBlock) || currentBlock === 0) {
+        if (isNaN(expirationBlock)) {
           remainingBlocks = 0;
+        } else if (currentBlock === 0) {
+          remainingBlocks = expirationBlock;
         } else {
           remainingBlocks = Math.max(0, expirationBlock - currentBlock);
         }

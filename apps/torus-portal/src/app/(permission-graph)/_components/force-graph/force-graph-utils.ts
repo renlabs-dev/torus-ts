@@ -11,7 +11,12 @@ import { GRAPH_CONSTANTS } from "./force-graph-constants";
  * Generates a random particle speed between min and max values for asynchronous animation.
  */
 function getRandomParticleSpeed(): number {
-  return Math.random() * (GRAPH_CONSTANTS.PARTICLE_SPEED_MAX - GRAPH_CONSTANTS.PARTICLE_SPEED_MIN) + GRAPH_CONSTANTS.PARTICLE_SPEED_MIN;
+  return (
+    Math.random() *
+      (GRAPH_CONSTANTS.PARTICLE_SPEED_MAX -
+        GRAPH_CONSTANTS.PARTICLE_SPEED_MIN) +
+    GRAPH_CONSTANTS.PARTICLE_SPEED_MIN
+  );
 }
 
 export type PermissionDetail = PermissionDetailsBase[number] & {
@@ -74,7 +79,6 @@ export function createNodes(
 
     const rawWeight = agentWeightMap.get(address) ?? 1;
     const weight = Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
-
     const val = isAllocator
       ? GRAPH_CONSTANTS.ALLOCATOR_NODE_SIZE
       : Math.max(

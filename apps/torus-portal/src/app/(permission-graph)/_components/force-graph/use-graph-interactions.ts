@@ -51,6 +51,10 @@ export function useGraphInteractions(
         setHoverNode(String(node.id));
         setHighlightNodes(newHighlightNodes);
         setHighlightLinks(newHighlightLinks);
+      } else {
+        setHoverNode(null);
+        setHighlightNodes(new Set());
+        setHighlightLinks(new Set());
       }
     },
     [neighborMap, graphData.links],
