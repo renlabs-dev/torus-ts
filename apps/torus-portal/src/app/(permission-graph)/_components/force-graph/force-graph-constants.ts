@@ -12,7 +12,7 @@ export const GRAPH_CONSTANTS = {
   MIN_PARTICLES: 1,
 
   // Particle animation constants
-  PARTICLE_SPEED_MIN: 0.001,
+  PARTICLE_SPEED_MIN: 0.002,
   PARTICLE_SPEED_MAX: 0.006,
   PARTICLE_RESOLUTION: 4,
 
