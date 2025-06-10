@@ -1,10 +1,10 @@
 import { fetchAgentMetadata } from "@torus-network/sdk";
-import { api } from "~/trpc/server";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { promises as fs } from "fs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
 import path from "path";
+import { api } from "~/trpc/server";
 
 interface Params {
   agentKey: Promise<string>;
@@ -30,8 +30,6 @@ async function getDefaultImageResponse() {
 
 export async function GET(_req: NextRequest, { params }: { params: Params }) {
   const agentKey = await params.agentKey;
-
-  console.log("agentKey", agentKey);
 
   if (!agentKey) {
     return getDefaultImageResponse();
