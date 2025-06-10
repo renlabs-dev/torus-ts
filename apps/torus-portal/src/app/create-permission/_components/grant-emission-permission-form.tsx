@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useState } from "react";
-import { GrantEmissionPermissionFormComponent } from "./grant-emission-permission-form-content";
+import { PermissionFormShared } from "./permission-form-shared";
 import { grantEmissionPermissionSchema } from "./grant-emission-permission-form-schema";
 import type { GrantEmissionPermissionFormData } from "./grant-emission-permission-form-schema";
 import { transformFormDataToSDK } from "./grant-emission-permission-form-utils";
@@ -96,6 +96,10 @@ export default function GrantEmissionPermissionForm({
   };
 
   return (
-    <GrantEmissionPermissionFormComponent form={form} mutation={mutation} />
+    <PermissionFormShared
+      form={form}
+      mutation={mutation}
+      submitButtonText="Create Permission"
+    />
   );
 }
