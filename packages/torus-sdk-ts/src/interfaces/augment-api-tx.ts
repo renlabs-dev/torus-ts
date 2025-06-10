@@ -6,7 +6,7 @@
 import '@polkadot/api-base/types/submittable';
 
 import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableExtrinsicFunction } from '@polkadot/api-base/types';
-import type { Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { BTreeMap, Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, MultiAddress, Percent } from '@polkadot/types/interfaces/runtime';
 import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionEmissionEmissionAllocation, PalletPermission0PermissionEnforcementAuthority, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
@@ -435,7 +435,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Grant a permission for emission delegation
        **/
-      grantEmissionPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: Vec<ITuple<[AccountId32, u16]>> | ([AccountId32 | string | Uint8Array, u16 | AnyNumber | Uint8Array])[], distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, Vec<ITuple<[AccountId32, u16]>>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
+      grantEmissionPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: BTreeMap<AccountId32, u16>, distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, BTreeMap<AccountId32, u16>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
       /**
        * Revoke a permission. The caller must met revocation constraints or be a root key.
        **/
@@ -444,12 +444,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * Set enforcement authority for a permission
        * Only the grantor or root can set enforcement authority
        **/
-      setEnforcementAuthority: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, controllers: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], requiredVotes: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Vec<AccountId32>, u32]>;
+      setEnforcementAuthority: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, PalletPermission0PermissionEnforcementAuthority]>;
       /**
        * Toggle a permission's accumulation state (enabled/disabled)
        * The caller must be authorized as a controller or be the root key
        **/
       togglePermissionAccumulation: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, accumulating: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, bool]>;
+      /**
+       * Allows Grantor/Grantee to edit stream emission permission
+       **/
+      updateEmissionPermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, newTargets: BTreeMap<AccountId32, u16>, newStreams: Option<BTreeMap<H256, Percent>> | null | Uint8Array | BTreeMap<H256, Percent>, newDistributionControl: Option<PalletPermission0PermissionEmissionDistributionControl> | null | Uint8Array | PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string) => SubmittableExtrinsic<ApiType>, [H256, BTreeMap<AccountId32, u16>, Option<BTreeMap<H256, Percent>>, Option<PalletPermission0PermissionEmissionDistributionControl>]>;
       /**
        * Generic tx
        **/

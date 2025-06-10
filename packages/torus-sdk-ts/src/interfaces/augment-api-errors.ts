@@ -469,6 +469,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       DuplicatePermission: AugmentedError<ApiType>;
       /**
+       * A permission with the same exact parameters was
+       * already created in the current block
+       **/
+      DuplicatePermissionInBlock: AugmentedError<ApiType>;
+      /**
        * Fixed amount emissions can only be triggered once, manually or at a block
        **/
       FixedAmountCanOnlyBeTriggeredOnce: AugmentedError<ApiType>;
@@ -506,6 +511,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidPercentage: AugmentedError<ApiType>;
       /**
+       * Invalid emission weight set to target
+       **/
+      InvalidTargetWeight: AugmentedError<ApiType>;
+      /**
        * Invalid threshold
        **/
       InvalidThreshold: AugmentedError<ApiType>;
@@ -518,6 +527,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoTargetsSpecified: AugmentedError<ApiType>;
       /**
+       * Not authorized to edit a stream emission permission.
+       **/
+      NotAuthorizedToEdit: AugmentedError<ApiType>;
+      /**
        * Not authorized to revoke
        **/
       NotAuthorizedToRevoke: AugmentedError<ApiType>;
@@ -525,6 +538,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Not authorized to toggle permission state
        **/
       NotAuthorizedToToggle: AugmentedError<ApiType>;
+      /**
+       * Stream emission permission is not editable yet
+       **/
+      NotEditableYet: AugmentedError<ApiType>;
       /**
        * Not the grantee of the permission
        **/
@@ -541,6 +558,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Parent permission not found
        **/
       ParentPermissionNotFound: AugmentedError<ApiType>;
+      /**
+       * Permissions can only be created through extrinsics
+       **/
+      PermissionCreationOutsideExtrinsic: AugmentedError<ApiType>;
       /**
        * Permission is in cooldown, wait a bit.
        **/
