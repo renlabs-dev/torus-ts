@@ -466,7 +466,7 @@ export function GrantEmissionPermissionFormComponent({
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
                 Configure how and when emissions are distributed to target
-                accounts (manual, automatic, or scheduled).
+                accounts``.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
