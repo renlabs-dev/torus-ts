@@ -23,8 +23,11 @@ export default function Page() {
       </div>
       <div className="pt-24 pb-12">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">x</h1>
-          <p className="text-muted-foreground">x</p>
+          <h1 className="text-3xl font-bold">Grant Emission Permission</h1>
+          <p className="text-muted-foreground">
+            Create or edit a emission permission to grant allocation and
+            distribution rights
+          </p>
         </div>
         <div className="max-w-4xl mx-auto p-6 space-y-8">
           <Tabs
