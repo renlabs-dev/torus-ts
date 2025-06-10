@@ -1,5 +1,5 @@
 import type { ApiPromise } from "@polkadot/api";
-import type { H256 } from "@polkadot/types/interfaces";
+import type { AccountId32, H256 } from "@polkadot/types/interfaces";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import type { Result } from "@torus-network/torus-utils/result";
@@ -30,6 +30,7 @@ import {
 import type { Api } from "./_common";
 import { SbQueryError } from "./_common";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { BTreeMap, GenericAccountId32, u16 } from "@polkadot/types";
 
 const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });
 
@@ -684,6 +685,10 @@ export interface GrantEmissionPermission {
   enforcement: EnforcementAuthority;
 }
 
+/**
+ * TODO: test
+ * TODO: docs
+ */
 export function grantEmissionPermission({
   api,
   grantee,
@@ -694,10 +699,19 @@ export function grantEmissionPermission({
   revocation,
   enforcement,
 }: GrantEmissionPermission) {
+  const targetsMap = new Map(targets);
+
+  const targetsMap_ = new BTreeMap<AccountId32, u16>(
+    api.registry,
+    "AccountId32",
+    "u32",
+    targetsMap,
+  );
+
   return api.tx.permission0.grantEmissionPermission(
     grantee,
     allocation,
-    targets,
+    targetsMap_,
     distribution,
     duration,
     revocation,
