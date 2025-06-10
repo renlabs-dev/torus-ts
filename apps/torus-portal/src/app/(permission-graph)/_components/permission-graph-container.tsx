@@ -96,13 +96,16 @@ export default function PermissionGraphContainer() {
   return (
     <div className="fixed inset-0 w-screen h-screen">
       <div
-        className="absolute bottom-2 left-2 right-2 md:bottom-14 z-50 flex flex-col sm:flex-row
-          justify-between gap-2"
+        className="absolute bottom-2 left-2 right-2 md:bottom-[3.3em] z-50 flex flex-col
+          sm:flex-row justify-between gap-2"
       >
         <div className="flex items-center">
           <NodeColorLegend />
         </div>
-        <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-1">
+        <div
+          className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-1
+            animate-fade-up animate-delay-[800ms]"
+        >
           <MousePointerClick className="w-4" />
           <span className="text-xs">Click on any node for detailed view.</span>
         </div>
@@ -145,7 +148,7 @@ export default function PermissionGraphContainer() {
         isOpen={isSheetOpen}
         onOpenChange={setIsSheetOpen}
       />
-      <div className="w-full h-full">
+      <div className="w-full h-full animate-fade animate-delay-1000">
         <PermissionGraph
           data={graphData}
           onNodeClick={handleNodeSelect}
