@@ -19,7 +19,7 @@ on:
       - ".github/workflows/apply-migrations.yml"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
     if: ${{ !inputs.rollback }}
     runs-on: ubuntu-latest
     outputs:
-      has_pending: ${{ steps.check-migrations.outputs.has_pending }}
+      has_pending: ${{ steps.migration-status.outputs.has_pending }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,9 +46,9 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - name: Check migration status
-        id: check-migrations
+        id: migration-status
         run: |
-          output=$(atlas migrate status --env local --url "${{ env.POSTGRES_URL }}")
+          output=$(atlas migrate status --env local --url "${POSTGRES_URL}")
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "$output"
 
@@ -86,21 +86,18 @@ jobs:
           echo "Migration execution timestamp: $(date)" > ./migration-artifacts/migrations-report.txt
           echo "Branch: ${{ github.ref_name }}" >> ./migration-artifacts/migrations-report.txt
           echo "Commit: ${{ github.sha }}" >> ./migration-artifacts/migrations-report.txt
-          echo "\nCurrent migration status:" >> ./migration-artifacts/migrations-report.txt
-          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> ./migration-artifacts/migrations-report.txt
-          echo "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report.txt
-          atlas migrate apply --env local --dry-run --url "${{ env.POSTGRES_URL }}" >> ./migration-artifacts/migrations-report.txt 2>&1
-
-      - name: Run dry-run migration
-        run: atlas migrate apply --env local --dry-run --url "${{ env.POSTGRES_URL }}"
+          echo -e "\nCurrent migration status:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
+          echo -e "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate apply --env local --dry-run --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt 2>&1
 
       - name: Apply migrations
-        run: atlas migrate apply --env local --url "${{ env.POSTGRES_URL }}" --lock-timeout 120s
+        run: atlas migrate apply --env local --url "${POSTGRES_URL}" --lock-timeout 120s
 
       - name: Update migrations report with final status
         run: |
-          echo "\nFinal migration status:" >> ./migration-artifacts/migrations-report.txt
-          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> ./migration-artifacts/migrations-report.txt
+          echo -e "\nFinal migration status:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
 
       - name: Upload migrations report
         uses: actions/upload-artifact@v4
@@ -137,18 +134,18 @@ jobs:
           echo "Rollback execution timestamp: $(date)" > ./rollback-artifacts/rollback-report.txt
           echo "Branch: ${{ github.ref_name }}" >> ./rollback-artifacts/rollback-report.txt
           echo "Commit: ${{ github.sha }}" >> ./rollback-artifacts/rollback-report.txt
-          echo "\nCurrent migration status:" >> ./rollback-artifacts/rollback-report.txt
-          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> ./rollback-artifacts/rollback-report.txt
-          echo "\nChanges to be rolled back:" >> ./rollback-artifacts/rollback-report.txt
-          atlas migrate down --env local --dry-run --url "${{ env.POSTGRES_URL }}" >> ./rollback-artifacts/rollback-report.txt 2>&1
+          echo -e "\nCurrent migration status:" >> ./rollback-artifacts/rollback-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt
+          echo -e "\nChanges to be rolled back:" >> ./rollback-artifacts/rollback-report.txt
+          atlas migrate down --env local --dry-run --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt 2>&1
 
       - name: Atlas migrate down
-        run: atlas migrate down --env local --url "${{ env.POSTGRES_URL }}"
+        run: atlas migrate down --env local --url "${POSTGRES_URL}"
 
       - name: Update rollback report with final status
         run: |
-          echo "\nFinal migration status:" >> ./rollback-artifacts/rollback-report.txt
-          atlas migrate status --env local --url "${{ env.POSTGRES_URL }}" >> ./rollback-artifacts/rollback-report.txt
+          echo -e "\nFinal migration status:" >> ./rollback-artifacts/rollback-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt
 
       - name: Upload rollback report
         uses: actions/upload-artifact@v4
@@ -161,12 +158,7 @@ jobs:
 
   restart-apps:
     needs: [check-migrations, apply-migrations, rollback-migrations]
-    if: |
-      always() &&
-      (
-        (needs.apply-migrations.result == 'success') ||
-        (needs.rollback-migrations.result == 'success')
-      )
+    if: ${{ needs.apply-migrations.result == 'success' || needs.rollback-migrations.result == 'success' }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
