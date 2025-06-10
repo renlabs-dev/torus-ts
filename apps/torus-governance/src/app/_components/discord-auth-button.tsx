@@ -24,17 +24,18 @@ export function DiscordAuthButton({
   onSignOut,
   onError,
   connectText = "Validate your Discord account",
-  disconnectText = "Disconnect",
   showIcon = true,
   className,
   connectedClassName = "flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm",
-  disconnectedClassName = className || "w-full bg-[#5865F2] text-white hover:bg-[#4752c4]",
+  disconnectedClassName = className ??
+    "w-full bg-[#5865F2] text-white hover:bg-[#4752c4]",
   variant = "outline",
   disabled,
   children,
   ...buttonProps
 }: DiscordAuthButtonProps) {
-  const { isAuthenticated, isLoading, signIn, signOut, discordId } = useDiscordAuth();
+  const { isAuthenticated, isLoading, signIn, signOut, discordId } =
+    useDiscordAuth();
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -66,7 +67,12 @@ export function DiscordAuthButton({
 
   if (isLoading) {
     return (
-      <Button {...buttonProps} disabled variant={variant} className={disconnectedClassName}>
+      <Button
+        {...buttonProps}
+        disabled
+        variant={variant}
+        className={disconnectedClassName}
+      >
         Loading...
       </Button>
     );
