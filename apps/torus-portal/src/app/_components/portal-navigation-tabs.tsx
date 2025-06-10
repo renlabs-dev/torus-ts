@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@torus-ts/ui/components/select";
 import { Network, Shield, Plus } from "lucide-react";
 
-const PortalNavigationTabs = memo(function PortalNavigationTabs() {
+export default function PortalNavigationTabs() {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -113,6 +113,4 @@ const PortalNavigationTabs = memo(function PortalNavigationTabs() {
       </div>
     </>
   );
-});
-
-export default PortalNavigationTabs;
+}

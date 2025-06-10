@@ -109,7 +109,7 @@ export default function PermissionGraphContainer() {
       </div>
       <div className="absolute top-[3.9rem] left-2 right-2 z-10">
         {/* Desktop layout */}
-        <div className="hidden lg:flex items-center gap-2 w-full">
+        <div className="hidden lg:flex items-center gap-2 w-full animate-fade-down">
           <PortalNavigationTabs />
           <PermissionGraphOverview graphData={graphData} />
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
