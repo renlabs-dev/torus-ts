@@ -397,6 +397,18 @@ declare module '@polkadot/api-base/types/events' {
        **/
       AgentUpdated: AugmentedEvent<ApiType, [AccountId32]>;
       /**
+       * Namespace created
+       **/
+      NamespaceCreated: AugmentedEvent<ApiType, [owner: AccountId32, path: Bytes, deposit: u128], { owner: AccountId32, path: Bytes, deposit: u128 }>;
+      /**
+       * Namespace deleted
+       **/
+      NamespaceDeleted: AugmentedEvent<ApiType, [owner: AccountId32, path: Bytes, depositReleased: u128], { owner: AccountId32, path: Bytes, depositReleased: u128 }>;
+      /**
+       * Namespace transferred
+       **/
+      NamespaceTransferred: AugmentedEvent<ApiType, [from: AccountId32, to: AccountId32, path: Bytes], { from: AccountId32, to: AccountId32, path: Bytes }>;
+      /**
        * Event created when stake has been transferred from the coldkey
        * account onto the key staking account
        **/
