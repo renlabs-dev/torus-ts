@@ -3,17 +3,38 @@ import { api } from "~/trpc/server";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { ImageResponse } from "next/og";
+import { promises as fs } from "fs";
+import path from "path";
 
-export const runtime = "edge";
+interface Params {
+  agentKey: Promise<string>;
+}
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { agentKey: string } },
-) {
-  const agentKey = params.agentKey;
+async function getDefaultImageResponse() {
+  const filePath = path.join(process.cwd(), "public", "agent.png");
+  const [error, fileBuffer] = await tryAsync(fs.readFile(filePath));
+
+  if (error) {
+    console.error("Error reading fallback image:", error);
+    return new NextResponse("Default image not found.", { status: 500 });
+  }
+
+  const headers = new Headers();
+  headers.set("Content-Type", "image/png");
+
+  return new NextResponse(fileBuffer, {
+    status: 200,
+    headers,
+  });
+}
+
+export async function GET(_req: NextRequest, { params }: { params: Params }) {
+  const agentKey = await params.agentKey;
+
+  console.log("agentKey", agentKey);
+
   if (!agentKey) {
-    return NextResponse.redirect("/og.png");
+    return getDefaultImageResponse();
   }
 
   const [agentError, agent] = await tryAsync(
@@ -21,8 +42,7 @@ export async function GET(
   );
 
   if (agentError || !agent) {
-    console.error("Error fetching agent data:", agentError);
-    return NextResponse.redirect("/og.png");
+    return getDefaultImageResponse();
   }
 
   const [metadataError, metadata] = agent.metadataUri
@@ -32,40 +52,18 @@ export async function GET(
     : [null, null];
 
   if (metadataError || !metadata?.images.icon) {
-    console.error("Error fetching agent metadata or no icon:", metadataError);
-    return NextResponse.redirect("/og.png");
+    return getDefaultImageResponse();
   }
 
-  const iconBuffer = await metadata.images.icon.arrayBuffer();
-  const iconBase64 = Buffer.from(iconBuffer).toString("base64");
-  const iconDataUrl = `data:image/png;base64,${iconBase64}`;
+  const blob = metadata.images.icon;
+  if (!(blob instanceof Blob)) {
+    return getDefaultImageResponse();
+  }
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          backgroundColor: "#ffffff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-        }}
-      >
-        <img
-          src={iconDataUrl}
-          width={400}
-          height={400}
-          alt="Agent icon"
-          style={{ borderRadius: "20px" }}
-        />
-        <p style={{ fontSize: 32, color: "#000" }}>{agent.name ?? "Agent"}</p>
-      </div>
-    ),
-    {
-      width: 1200,
-      height: 630,
-    },
-  );
+  const contentType = blob.type || "image/png";
+
+  const headers = new Headers();
+  headers.set("Content-Type", contentType);
+
+  return new NextResponse(blob, { status: 200, headers });
 }
