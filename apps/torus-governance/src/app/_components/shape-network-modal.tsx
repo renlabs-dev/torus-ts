@@ -35,6 +35,7 @@ import { CreateAgentApplication } from "./agent-application/create-agent-applica
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 type ViewType =
   | "whitelist-agent"
@@ -83,19 +84,24 @@ export function ShapeNetworkModal() {
   const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");
   const [isOpen, setIsOpen] = useState(false);
 
-  // Check if dialog should be open from sessionStorage
   useEffect(() => {
-    const shouldBeOpen = sessionStorage.getItem('shapeNetworkModalOpen') === 'true';
+    const [shouldBeError, shouldBeOpen] = trySync(
+      () => sessionStorage.getItem("shapeNetworkModalOpen") === "true",
+    );
+    if (shouldBeError !== undefined) {
+      console.error("Error reading sessionStorage:", shouldBeError);
+      return;
+    }
     if (shouldBeOpen) {
       setIsOpen(true);
-      sessionStorage.removeItem('shapeNetworkModalOpen');
+      sessionStorage.removeItem("shapeNetworkModalOpen");
     }
   }, []);
 
   // Save dialog state before any authentication
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      sessionStorage.removeItem('shapeNetworkModalOpen');
+      sessionStorage.removeItem("shapeNetworkModalOpen");
     }
     setIsOpen(open);
   };

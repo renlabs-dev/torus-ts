@@ -1,7 +1,7 @@
 "use client";
 
 import { formatToken } from "@torus-network/torus-utils/subspace";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -73,10 +73,20 @@ export function CreateAgentApplication() {
     typeof window !== "undefined"
       ? localStorage.getItem("agentApplicationFormData")
       : null;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const parsedFormData: Partial<AgentApplicationFormData> = savedFormData
-    ? JSON.parse(savedFormData)
-    : {};
+
+  let parsedFormData: Partial<AgentApplicationFormData> = {};
+  if (savedFormData) {
+    const [parseError, parsed] = trySync<Partial<AgentApplicationFormData>>(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      () => JSON.parse(savedFormData),
+    );
+    if (parseError !== undefined) {
+      console.error("Error parsing saved form data:", parseError);
+      localStorage.removeItem("agentApplicationFormData");
+    } else {
+      parsedFormData = parsed;
+    }
+  }
 
   const form = useForm<AgentApplicationFormData>({
     disabled: !isAccountConnected,

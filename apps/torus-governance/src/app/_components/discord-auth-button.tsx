@@ -91,19 +91,8 @@ export function DiscordAuthButton({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={async (e) => {
-            e.preventDefault();
-            const [callbackError] = await tryAsync(Promise.resolve(onSignOut));
-            if (callbackError) {
-              onError?.(callbackError);
-              return;
-            }
-            const signOutError = await signOut();
-            if (signOutError) {
-              onError?.(signOutError);
-            }
-          }}
           className="h-7 px-2 text-xs"
+          onClick={handleClick}
         >
           Logout
         </Button>

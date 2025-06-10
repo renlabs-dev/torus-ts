@@ -1,4 +1,4 @@
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { AppRouter } from "@torus-ts/api";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -55,14 +55,24 @@ export function CreateCadreCandidates() {
     typeof window !== "undefined"
       ? localStorage.getItem("cadreCandidateFormData")
       : null;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const parsedFormData: Partial<CreateCadreCandidateFormData> = savedFormData
-    ? JSON.parse(savedFormData)
-    : {};
+
+  let parsedFormData: Partial<CreateCadreCandidateFormData> = {};
+  if (savedFormData) {
+    const [parseError, parsed] = trySync<Partial<CreateCadreCandidateFormData>>(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      () => JSON.parse(savedFormData),
+    );
+    if (parseError !== undefined) {
+      console.error("Error parsing saved form data:", parseError);
+      // Clear corrupted data
+      localStorage.removeItem("cadreCandidateFormData");
+    } else {
+      parsedFormData = parsed;
+    }
+  }
 
   const cadreForm = useForm<CreateCadreCandidateFormData>({
     defaultValues: {
-      discordId: "",
       content: parsedFormData.content ?? "",
     },
     mode: "onChange",

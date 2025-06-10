@@ -12,7 +12,14 @@ interface ExtendedUser {
 
 function isExtendedUser(user: unknown): user is ExtendedUser {
   if (!user || typeof user !== "object") return false;
-  return "discordId" in user;
+  const hasDiscordId = "discordId" in user;
+  if (!hasDiscordId) return false;
+
+  return (
+    user.discordId === undefined ||
+    user.discordId === null ||
+    typeof user.discordId === "string"
+  );
 }
 
 export function useDiscordAuth() {
