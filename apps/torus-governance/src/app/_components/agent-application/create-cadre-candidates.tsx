@@ -23,11 +23,11 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import type { inferProcedureInput } from "@trpc/server";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import { useDiscordInfoForm } from "hooks/use-discord-info";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import DiscordLogin from "../discord-auth-button";
+import { DiscordAuthButton } from "../discord-auth-button";
+import { useDiscordAuth } from "hooks/use-discord-auth";
 import { isUserInServer } from "~/utils/discord-verification";
 const MAX_CONTENT_CHARACTERS = 500;
 
@@ -46,30 +46,50 @@ export function CreateCadreCandidates() {
 
   const { toast } = useToast();
 
-  const [discordId, setDiscordId] = React.useState<string | null>(null);
-  const [userName, setUserName] = React.useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const { discordId, userName, avatarUrl } = useDiscordAuth();
   const [isInDiscordServer, setIsInDiscordServer] =
     React.useState<boolean>(false);
 
-  const { saveDiscordInfo } = useDiscordInfoForm(
-    discordId,
-    userName,
-    avatarUrl,
-  );
+  // Load saved form data from localStorage
+  const savedFormData =
+    typeof window !== "undefined"
+      ? localStorage.getItem("cadreCandidateFormData")
+      : null;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const parsedFormData: Partial<CreateCadreCandidateFormData> = savedFormData
+    ? JSON.parse(savedFormData)
+    : {};
 
   const cadreForm = useForm<CreateCadreCandidateFormData>({
     defaultValues: {
       discordId: "",
-      content: "",
+      content: parsedFormData.content ?? "",
     },
     mode: "onChange",
   });
 
   React.useEffect(() => {
     if (discordId) {
+      const handleIsInServer = async (id: string): Promise<void> => {
+        const [verifyError, isInServer] = await tryAsync(isUserInServer(id));
+
+        if (verifyError !== undefined) {
+          console.error("Error verifying Discord membership:", verifyError);
+          setIsInDiscordServer(false);
+          return;
+        }
+        setIsInDiscordServer(isInServer);
+        if (!isInServer) {
+          return;
+        } else {
+          cadreForm.clearErrors("discordId");
+          return;
+        }
+      };
+
       cadreForm.setValue("discordId", discordId);
       void cadreForm.trigger("discordId");
+      void handleIsInServer(discordId);
     }
   }, [discordId, cadreForm]);
 
@@ -91,6 +111,16 @@ export function CreateCadreCandidates() {
       window.history.pushState({}, "", url);
     }
   }, [dialogOpen]);
+
+  // Check if dialog should be open from sessionStorage
+  React.useEffect(() => {
+    const shouldBeOpen =
+      sessionStorage.getItem("cadreCandidateDialogOpen") === "true";
+    if (shouldBeOpen) {
+      setDialogOpen(true);
+      sessionStorage.removeItem("cadreCandidateDialogOpen");
+    }
+  }, []);
 
   // Add this ref to track if we're currently verifying
   const isVerifying = React.useRef(false);
@@ -157,7 +187,14 @@ export function CreateCadreCandidates() {
 
     // Handle Discord info if available
     if (discordId && userName) {
-      const [discordError, _discordSuccess] = await tryAsync(saveDiscordInfo());
+      const saveDiscordMutation = api.discordInfo.create.useMutation();
+      const [discordError] = await tryAsync(
+        saveDiscordMutation.mutateAsync({
+          discordId,
+          userName,
+          avatarUrl: avatarUrl ?? "",
+        }),
+      );
       if (discordError !== undefined) {
         toast.error("An error occurred while saving your Discord information.");
         return;
@@ -166,6 +203,9 @@ export function CreateCadreCandidates() {
 
     // Reset form and refresh data
     cadreForm.reset();
+
+    // Clear localStorage after successful submission
+    localStorage.removeItem("cadreCandidateFormData");
 
     const [refetchError, _] = await tryAsync(cadreCandidates.refetch());
     if (refetchError !== undefined) {
@@ -181,7 +221,16 @@ export function CreateCadreCandidates() {
   const { handleSubmit, control, watch, formState, getValues } = cadreForm;
   const { isValid } = formState;
 
+  // Save form data to localStorage whenever it changes
   const contentValue = watch("content");
+
+  React.useEffect(() => {
+    const formData = {
+      content: contentValue,
+    };
+    localStorage.setItem("cadreCandidateFormData", JSON.stringify(formData));
+  }, [contentValue]);
+
   const remainingChars = MAX_CONTENT_CHARACTERS - (contentValue.length || 0);
 
   const onSubmit = (data: CreateCadreCandidateFormData) => {
@@ -211,6 +260,9 @@ export function CreateCadreCandidates() {
     const url = new URL(window.location.href);
     url.searchParams.set("dialog", "curator-apply");
     window.history.pushState({}, "", url);
+
+    // Save dialog state to sessionStorage to reopen after auth
+    sessionStorage.setItem("cadreCandidateDialogOpen", "true");
   };
 
   function handleDisableState() {
@@ -253,23 +305,6 @@ export function CreateCadreCandidates() {
     }
     return true;
   }
-  async function handleIsInServer(id: string): Promise<void> {
-    const [verifyError, isInServer] = await tryAsync(isUserInServer(id));
-
-    if (verifyError !== undefined) {
-      console.error("Error verifying Discord membership:", verifyError);
-      setIsInDiscordServer(false);
-      return;
-    }
-    setIsInDiscordServer(isInServer);
-    if (!isInServer) {
-      return;
-    } else {
-      cadreForm.clearErrors("discordId");
-      return;
-    }
-  }
-
   return (
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -307,26 +342,10 @@ export function CreateCadreCandidates() {
               <FormField
                 control={control}
                 name="discordId"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormControl>
-                      <DiscordLogin
-                        onAuthChange={async (id, name, avatar) => {
-                          // If the ID is the same as current, skip verification
-                          if (id === discordId) {
-                            return;
-                          }
-                          setDiscordId(id);
-                          setUserName(name);
-                          setAvatarUrl(avatar);
-
-                          if (id) {
-                            await handleIsInServer(id);
-                            field.onChange(id);
-                          }
-                        }}
-                        onButtonClick={preventFormSubmission}
-                      />
+                      <DiscordAuthButton onSignIn={preventFormSubmission} />
                     </FormControl>
                     <FormMessage />
                     {discordId && !isInDiscordServer && (

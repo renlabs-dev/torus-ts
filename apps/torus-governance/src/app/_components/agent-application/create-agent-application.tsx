@@ -27,18 +27,17 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useGovernance } from "~/context/governance-provider";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFileUploader } from "hooks/use-file-uploader";
+import { useDiscordAuth } from "hooks/use-discord-auth";
+import { Icons } from "@torus-ts/ui/components/icons";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
-  discordId: z
-    .string()
-    .min(17, "Discord ID is too short")
-    .max(20, "Discord ID is too long"),
+  discordId: z.string().min(1, "Discord ID is required"),
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Body is required"),
   criteriaAgreement: z.boolean().refine((value) => value === true, {
@@ -67,18 +66,58 @@ export function CreateAgentApplication() {
       finalized: false,
     },
   );
+  const { discordId, signIn, signOut, isAuthenticated } = useDiscordAuth();
+
+  // Load saved form data from localStorage
+  const savedFormData =
+    typeof window !== "undefined"
+      ? localStorage.getItem("agentApplicationFormData")
+      : null;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const parsedFormData: Partial<AgentApplicationFormData> = savedFormData
+    ? JSON.parse(savedFormData)
+    : {};
 
   const form = useForm<AgentApplicationFormData>({
     disabled: !isAccountConnected,
     resolver: zodResolver(agentApplicationSchema),
     defaultValues: {
-      applicationKey: "",
+      applicationKey: parsedFormData.applicationKey ?? "",
       discordId: "",
+      title: parsedFormData.title ?? "",
+      body: parsedFormData.body ?? "",
+      criteriaAgreement: parsedFormData.criteriaAgreement ?? false,
     },
     mode: "onChange",
   });
 
-  const { control, handleSubmit, setValue, getValues } = form;
+  const { control, handleSubmit, setValue, getValues, watch } = form;
+
+  // Save form data to localStorage whenever it changes
+  const watchedFields = watch([
+    "applicationKey",
+    "title",
+    "body",
+    "criteriaAgreement",
+  ]);
+
+  useEffect(() => {
+    const formData = {
+      applicationKey: watchedFields[0],
+      title: watchedFields[1],
+      body: watchedFields[2],
+      criteriaAgreement: watchedFields[3],
+    };
+    localStorage.setItem("agentApplicationFormData", JSON.stringify(formData));
+  }, [watchedFields]);
+
+  // Update form when Discord ID changes
+  useEffect(() => {
+    if (discordId) {
+      form.setValue("discordId", discordId);
+      void form.trigger("discordId");
+    }
+  }, [discordId, form]);
 
   const userHasEnoughBalance = (() => {
     if (
@@ -146,6 +185,12 @@ export function CreateAgentApplication() {
   }
 
   const onSubmit = async (data: AgentApplicationFormData) => {
+    // Verify Discord membership before proceeding
+    if (!discordId) {
+      toast.error("Please connect your Discord account first");
+      return;
+    }
+
     setTransactionStatus({
       status: "STARTING",
       finalized: false,
@@ -153,7 +198,7 @@ export function CreateAgentApplication() {
     });
 
     const daoData = JSON.stringify({
-      discord_id: data.discordId,
+      discord_id: discordId,
       title: data.title,
       body: data.body,
     });
@@ -162,33 +207,20 @@ export function CreateAgentApplication() {
       type: "application/json",
     });
     await handleFileUpload(fileToUpload);
-  };
 
-  const getButtonSubmitLabel = ({
-    uploading,
-    isAccountConnected,
-  }: {
-    uploading: boolean;
-    isAccountConnected: boolean;
-  }) => {
-    if (!isAccountConnected) {
-      return "Connect a wallet to submit";
-    }
-    if (uploading) {
-      return "Awaiting Signature";
-    }
-    return "Submit Application";
+    // Clear localStorage after successful submission
+    localStorage.removeItem("agentApplicationFormData");
   };
 
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-row w-full gap-2">
           <FormField
             control={control}
             name="applicationKey"
             render={({ field }) => (
-              <FormItem className="flex flex-col gap-2 sm:flex-row">
+              <FormItem className="flex w-full flex-col gap-2 sm:flex-row">
                 <FormControl>
                   <Input
                     {...field}
@@ -212,29 +244,6 @@ export function CreateAgentApplication() {
               </FormItem>
             )}
           />
-          <FormField
-            control={control}
-            name="discordId"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="Discord ID (17-20 digits)"
-                    type="text"
-                    required
-                    onChange={(e) => {
-                      const value = e.target.value
-                        .replace(/[^0-9]/g, "")
-                        .slice(0, 20);
-                      field.onChange(value);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -246,6 +255,31 @@ export function CreateAgentApplication() {
             <TabsTrigger value="preview">Preview Content</TabsTrigger>
           </TabsList>
           <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
+            {/* Discord ID Display */}
+            {isAuthenticated && discordId && (
+              <div
+                className="flex items-center justify-between rounded-md border border-input bg-background
+                  px-3 py-2 text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <Icons.Discord className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Discord ID:</span>
+                  <span className="font-mono">{discordId}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    await signOut();
+                    toast.success("Disconnected from Discord");
+                  }}
+                  className="h-7 px-2 text-xs"
+                >
+                  Logout
+                </Button>
+              </div>
+            )}
             <FormField
               control={control}
               name="title"
@@ -354,18 +388,42 @@ export function CreateAgentApplication() {
         </div>
         {!userHasEnoughBalance && (
           <span className="text-sm text-red-400">
-            You don't have enough balance to submit an application.
+            You don't have enough free balance to submit an application.
           </span>
         )}
-        <Button
-          size="lg"
-          type="submit"
-          variant="default"
-          className="flex items-center gap-2"
-          disabled={!userHasEnoughBalance || !form.formState.isValid}
-        >
-          {getButtonSubmitLabel({ uploading, isAccountConnected })}
-        </Button>
+
+        {!isAuthenticated ? (
+          <Button
+            size="lg"
+            type="button"
+            variant="outline"
+            className="flex items-center gap-2 bg-[#5865F2] text-white hover:bg-[#4752c4]"
+            onClick={async () => {
+              // Save dialog state to reopen after auth
+              sessionStorage.setItem("shapeNetworkModalOpen", "true");
+              const error = await signIn();
+              if (error) {
+                toast.error("Failed to authenticate with Discord");
+                sessionStorage.removeItem("shapeNetworkModalOpen");
+              }
+            }}
+          >
+            <Icons.Discord className="h-5 w-5" />
+            Validate your Discord account
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            type="submit"
+            variant="default"
+            className="flex items-center gap-2"
+            disabled={
+              !userHasEnoughBalance || !form.formState.isValid || uploading
+            }
+          >
+            {uploading ? "Awaiting Signature" : "Submit Application"}
+          </Button>
+        )}
         {transactionStatus.status && (
           <TransactionStatus
             status={transactionStatus.status}
