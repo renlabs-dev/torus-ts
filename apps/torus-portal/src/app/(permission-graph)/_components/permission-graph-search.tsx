@@ -73,7 +73,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
   );
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full animate-fade-down animate-delay-[400ms]">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
         <Input
           type="text"
