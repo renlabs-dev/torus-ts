@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { Codec } from '@polkadot/types-codec/types';
 import type { Percent } from '@polkadot/types/interfaces/runtime';
-import type { FrameSupportPalletId, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight } from '@polkadot/types/lookup';
+import type { FrameSupportPalletId, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, PalletTorus0NamespaceNamespacePricingConfig, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
 
@@ -156,6 +156,10 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxControllersPerPermission: u32 & AugmentedConst<ApiType>;
       /**
+       * Maximum number of namespaces a single permission can delegate.
+       **/
+      maxNamespacesPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
        * Maximum number of revokers.
        **/
       maxRevokersPerPermission: u32 & AugmentedConst<ApiType>;
@@ -236,9 +240,7 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       defaultAgentUpdateCooldown: u64 & AugmentedConst<ApiType>;
       defaultDividendsParticipationWeight: Percent & AugmentedConst<ApiType>;
-      defaultImmunityPeriod: u16 & AugmentedConst<ApiType>;
       defaultMaxAgentUrlLength: u16 & AugmentedConst<ApiType>;
-      defaultMaxAllowedAgents: u16 & AugmentedConst<ApiType>;
       defaultMaxAllowedValidators: u16 & AugmentedConst<ApiType>;
       defaultMaxBurn: u128 & AugmentedConst<ApiType>;
       defaultMaxNameLength: u16 & AugmentedConst<ApiType>;
@@ -250,6 +252,7 @@ declare module '@polkadot/api-base/types/consts' {
       defaultMinStakingFee: u8 & AugmentedConst<ApiType>;
       defaultMinValidatorStake: u128 & AugmentedConst<ApiType>;
       defaultMinWeightControlFee: u8 & AugmentedConst<ApiType>;
+      defaultNamespacePricingConfig: PalletTorus0NamespaceNamespacePricingConfig & AugmentedConst<ApiType>;
       defaultRewardInterval: u16 & AugmentedConst<ApiType>;
       defaultTargetRegistrationsInterval: u64 & AugmentedConst<ApiType>;
       defaultTargetRegistrationsPerInterval: u16 & AugmentedConst<ApiType>;
