@@ -37,7 +37,6 @@ import { Icons } from "@torus-ts/ui/components/icons";
 
 import { DiscordAuthButton } from "../discord-auth-button";
 
-
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
   discordId: z.string().min(1, "Discord ID is required"),
@@ -69,7 +68,7 @@ export function CreateAgentApplication() {
       finalized: false,
     },
   );
-  const { discordId, signIn, signOut, isAuthenticated } = useDiscordAuth();
+  const { discordId, signIn, isAuthenticated } = useDiscordAuth();
 
   // Load saved form data from localStorage
   const savedFormData =
@@ -273,14 +272,13 @@ export function CreateAgentApplication() {
             {isAuthenticated && (
               <DiscordAuthButton
                 variant="ghost"
-                onSignOut={async () => {
+                onSignOut={() => {
                   toast.success("Disconnected from Discord");
                 }}
                 onError={(error) => {
                   toast.error(error.message || "Failed to disconnect");
                 }}
               />
-
             )}
             <FormField
               control={control}
