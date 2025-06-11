@@ -1,0 +1,191 @@
+name: Apply/Revert Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      rollback:
+        description: "Rollback last migration"
+        type: boolean
+        required: false
+        default: false
+  push:
+    branches:
+      - main
+      - dev
+      - feature/migrations
+    paths:
+      - "atlas/migrations/**"
+      - atlas.hcl
+      - ".github/workflows/apply-migrations.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  check-migrations:
+    if: ${{ !inputs.rollback }}
+    runs-on: ubuntu-latest
+    outputs:
+      has_pending: ${{ steps.migration-status.outputs.has_pending }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          method: approle
+          url: ${{ secrets.VAULT_ADDR }}
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Check migration status
+        id: migration-status
+        run: |
+          output=$(atlas migrate status --env local --url "${POSTGRES_URL}")
+          echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+          echo "$output"
+
+  apply-migrations:
+    needs: check-migrations
+    if: ${{ !inputs.rollback && needs.check-migrations.outputs.has_pending == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: git fetch origin main:main
+
+      - name: Import Secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          method: approle
+          url: ${{ secrets.VAULT_ADDR }}
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Run lint
+        run: |
+          atlas migrate lint --env local --git-base origin/main
+
+      - name: Generate migrations report
+        run: |
+          mkdir -p ./migration-artifacts
+          echo "Migration execution timestamp: $(date)" > ./migration-artifacts/migrations-report.txt
+          echo "Branch: ${{ github.ref_name }}" >> ./migration-artifacts/migrations-report.txt
+          echo "Commit: ${{ github.sha }}" >> ./migration-artifacts/migrations-report.txt
+          echo -e "\nCurrent migration status:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
+          echo -e "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate apply --env local --dry-run --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt 2>&1
+
+      - name: Apply migrations
+        run: atlas migrate apply --env local --url "${POSTGRES_URL}" --lock-timeout 120s
+
+      - name: Update migrations report with final status
+        run: |
+          echo -e "\nFinal migration status:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
+
+      - name: Upload migrations report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migrations-report-${{ github.sha }}
+          path: ./migration-artifacts/
+          retention-days: 90
+          if-no-files-found: error
+
+  rollback-migrations:
+    needs: check-migrations
+    if: ${{ inputs.rollback }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import Secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          method: approle
+          url: ${{ secrets.VAULT_ADDR }}
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Generate rollback report
+        run: |
+          mkdir -p ./rollback-artifacts
+          echo "Rollback execution timestamp: $(date)" > ./rollback-artifacts/rollback-report.txt
+          echo "Branch: ${{ github.ref_name }}" >> ./rollback-artifacts/rollback-report.txt
+          echo "Commit: ${{ github.sha }}" >> ./rollback-artifacts/rollback-report.txt
+          echo -e "\nCurrent migration status:" >> ./rollback-artifacts/rollback-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt
+          echo -e "\nChanges to be rolled back:" >> ./rollback-artifacts/rollback-report.txt
+          atlas migrate down --env local --dry-run --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt 2>&1
+
+      - name: Atlas migrate down
+        run: atlas migrate down --env local --url "${POSTGRES_URL}"
+
+      - name: Update rollback report with final status
+        run: |
+          echo -e "\nFinal migration status:" >> ./rollback-artifacts/rollback-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt
+
+      - name: Upload rollback report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rollback-report-${{ github.sha }}
+          path: ./rollback-artifacts/
+          retention-days: 90
+          if-no-files-found: error
+
+  restart-apps:
+    needs: [check-migrations, apply-migrations, rollback-migrations]
+    if: ${{ needs.apply-migrations.result == 'success' || needs.rollback-migrations.result == 'success' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/renlabs-dev/devops-ci:latest
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+    strategy:
+      matrix:
+        app:
+          - torus-allocator
+          - torus-cache
+          - torus-governance
+          - torus-worker
+          - torus-portal
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubernetes authentication
+        run: /apps/k8s_auth_w_approle_sa.sh
+
+      - name: Set environment variables
+        run: |
+          echo "NAMESPACE=torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps" >> $GITHUB_ENV
+
+      - name: Restart apps (${{ matrix.app }})
+        run: |
+          kubectl rollout restart -n ${NAMESPACE} deployment -l app=${{ matrix.app }}
+          kubectl rollout status -n ${NAMESPACE} deployment -l app=${{ matrix.app }}  --timeout=300s

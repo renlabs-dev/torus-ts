@@ -34,7 +34,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFileUploader } from "hooks/use-file-uploader";
 import { useDiscordAuth } from "hooks/use-discord-auth";
 import { Icons } from "@torus-ts/ui/components/icons";
+
 import { DiscordAuthButton } from "../discord-auth-button";
+
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -267,6 +269,7 @@ export function CreateAgentApplication() {
           </TabsList>
           <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
             {/* Discord ID Display */}
+
             {isAuthenticated && (
               <DiscordAuthButton
                 variant="ghost"
@@ -277,6 +280,7 @@ export function CreateAgentApplication() {
                   toast.error(error.message || "Failed to disconnect");
                 }}
               />
+
             )}
             <FormField
               control={control}

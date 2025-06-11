@@ -56,7 +56,11 @@ export function NodeColorLegend() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="link" size="sm" className="h-8">
+        <Button
+          variant="link"
+          size="sm"
+          className="h-8 animate-fade-up animate-delay-[600ms]"
+        >
           <InfoIcon className="w-4 h-4 mr-2" />
           Node Colors Information
         </Button>
