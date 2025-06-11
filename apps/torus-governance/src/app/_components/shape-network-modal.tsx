@@ -30,11 +30,12 @@ import {
   Grid2x2Check,
   Grid2x2Plus,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CreateAgentApplication } from "./agent-application/create-agent-application";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 type ViewType =
   | "whitelist-agent"
@@ -81,11 +82,34 @@ export function ShapeNetworkModal() {
   const { isAccountConnected } = useTorus();
   const { isInitialized } = useGovernance();
   const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const [shouldBeError, shouldBeOpen] = trySync(
+      () => sessionStorage.getItem("shapeNetworkModalOpen") === "true",
+    );
+    if (shouldBeError !== undefined) {
+      console.error("Error reading sessionStorage:", shouldBeError);
+      return;
+    }
+    if (shouldBeOpen) {
+      setIsOpen(true);
+      sessionStorage.removeItem("shapeNetworkModalOpen");
+    }
+  }, []);
+
+  // Save dialog state before any authentication
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      sessionStorage.removeItem("shapeNetworkModalOpen");
+    }
+    setIsOpen(open);
+  };
 
   const selectedFormAction = viewList[selectedView];
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild disabled={!isInitialized}>
         <Button
           variant="outline"
