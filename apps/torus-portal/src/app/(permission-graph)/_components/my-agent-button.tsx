@@ -36,7 +36,12 @@ export function MyAgentButton({ graphData, onNodeClick }: MyAgentButtonProps) {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleClick} className="h-9">
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleClick}
+      className="h-9 animate-fade-down animate-delay-200"
+    >
       <User className="w-4 h-4 mr-2" />
       View my agent
     </Button>

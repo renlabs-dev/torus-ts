@@ -6,7 +6,7 @@
 import '@polkadot/api-base/types/submittable';
 
 import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableExtrinsicFunction } from '@polkadot/api-base/types';
-import type { Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { BTreeMap, BTreeSet, Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, MultiAddress, Percent } from '@polkadot/types/interfaces/runtime';
 import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionEmissionEmissionAllocation, PalletPermission0PermissionEnforcementAuthority, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
@@ -150,28 +150,6 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     faucet: {
       /**
-       * Request tokens from the faucet by performing proof of work
-       * 
-       * This extrinsic is only available on testnets. It requires the user to perform
-       * proof-of-work by finding a nonce that, when combined with a recent block hash
-       * and the user's account ID, produces a hash that meets the difficulty requirement.
-       * 
-       * The account must have a total balance (free + staked) below the threshold to be eligible.
-       * 
-       * # Parameters
-       * * `origin` - Must be None (unsigned)
-       * * `block_number` - A recent block number (within 3 blocks)
-       * * `nonce` - A value that makes the resulting hash meet the difficulty requirement
-       * * `work` - The hash result of the proof of work
-       * * `key` - The account ID that will receive the tokens
-       * 
-       * # Weight
-       * * Read operations: 16
-       * * Write operations: 28
-       * * Does not pay fees
-       **/
-      faucet: AugmentedSubmittable<(blockNumber: u64 | AnyNumber | Uint8Array, nonce: u64 | AnyNumber | Uint8Array, work: Bytes | string | Uint8Array, key: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u64, Bytes, MultiAddress]>;
-      /**
        * Generic tx
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
@@ -202,7 +180,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Creates a new global parameters proposal.
        **/
-      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; maxAllowedAgents?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any; proposalCost?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
+      addGlobalParamsProposal: AugmentedSubmittable<(data: PalletGovernanceProposalGlobalParamsData | { minNameLength?: any; maxNameLength?: any; minWeightControlFee?: any; minStakingFee?: any; dividendsParticipationWeight?: any; namespacePricingConfig?: any; proposalCost?: any } | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletGovernanceProposalGlobalParamsData, Bytes]>;
       /**
        * Forcefully adds a new agent to the whitelist. Only available for the
        * root key or curators.
@@ -435,7 +413,11 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Grant a permission for emission delegation
        **/
-      grantEmissionPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: Vec<ITuple<[AccountId32, u16]>> | ([AccountId32 | string | Uint8Array, u16 | AnyNumber | Uint8Array])[], distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, Vec<ITuple<[AccountId32, u16]>>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
+      grantEmissionPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: BTreeMap<AccountId32, u16>, distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, BTreeMap<AccountId32, u16>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
+      /**
+       * Grant a permission over namespaces
+       **/
+      grantNamespacePermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, paths: BTreeSet<Bytes>, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, BTreeSet<Bytes>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms]>;
       /**
        * Revoke a permission. The caller must met revocation constraints or be a root key.
        **/
@@ -444,7 +426,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * Set enforcement authority for a permission
        * Only the grantor or root can set enforcement authority
        **/
-      setEnforcementAuthority: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, controllers: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], requiredVotes: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Vec<AccountId32>, u32]>;
+      setEnforcementAuthority: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, PalletPermission0PermissionEnforcementAuthority]>;
       /**
        * Toggle a permission's accumulation state (enabled/disabled)
        * The caller must be authorized as a controller or be the root key
@@ -601,6 +583,14 @@ declare module '@polkadot/api-base/types/submittable' {
        * Adds stakes from origin to the agent key.
        **/
       addStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
+      /**
+       * Create a new namespace, automatically creating missing intermediate nodes
+       **/
+      createNamespace: AugmentedSubmittable<(path: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      /**
+       * Delete a namespace and all its children
+       **/
+      deleteNamespace: AugmentedSubmittable<(path: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
       /**
        * Registers a new agent on behalf of an arbitrary key.
        **/

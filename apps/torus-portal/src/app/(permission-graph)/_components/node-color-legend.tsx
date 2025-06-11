@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@torus-ts/ui/components/dropdown-menu";
 import { Button } from "@torus-ts/ui/components/button";
+import { GRAPH_CONSTANTS } from "./force-graph/force-graph-constants";
 
 interface NodeColorInfo {
   color: string;
@@ -18,33 +19,34 @@ interface NodeColorInfo {
 
 const nodeColorLegend: NodeColorInfo[] = [
   {
-    color: "#dc2626",
+    color: GRAPH_CONSTANTS.COLORS.USER_NODE,
     title: "Your Agent",
     description: "Your connected wallet's agent node",
   },
   {
-    color: "#ffffff",
+    color: GRAPH_CONSTANTS.COLORS.ALLOCATOR,
     title: "Allocator Main Node",
     description: "The primary allocator in the network",
+    borderColor: "#000000",
   },
   {
-    color: "#FFD700",
+    color: GRAPH_CONSTANTS.COLORS.ALLOCATED_AGENT,
     title: "Connected to Allocator",
     description: "Nodes directly connected to the allocator",
   },
   // Other nodes (not connected to allocator)
   {
-    color: "#9575CD",
+    color: GRAPH_CONSTANTS.COLORS.BOTH,
     title: "Grantor and Grantee",
     description: "Nodes that both grant and receive permissions",
   },
   {
-    color: "#4FC3F7",
+    color: GRAPH_CONSTANTS.COLORS.GRANTOR,
     title: "Grantor",
     description: "Nodes that grant permissions to others",
   },
   {
-    color: "#81C784",
+    color: GRAPH_CONSTANTS.COLORS.GRANTEE,
     title: "Grantee",
     description: "Nodes that receive permissions from others",
   },
@@ -54,7 +56,11 @@ export function NodeColorLegend() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="link" size="sm" className="h-8">
+        <Button
+          variant="link"
+          size="sm"
+          className="h-8 animate-fade-up animate-delay-[600ms]"
+        >
           <InfoIcon className="w-4 h-4 mr-2" />
           Node Colors Information
         </Button>

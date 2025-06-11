@@ -1,5 +1,5 @@
 import type { ApiPromise } from "@polkadot/api";
-import type { H256 } from "@polkadot/types/interfaces";
+import type { AccountId32, H256 } from "@polkadot/types/interfaces";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import type { Result } from "@torus-network/torus-utils/result";
@@ -30,6 +30,7 @@ import {
 import type { Api } from "./_common";
 import { SbQueryError } from "./_common";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { BTreeMap, GenericAccountId32, u16 } from "@polkadot/types";
 
 const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });
 
@@ -235,18 +236,13 @@ export async function queryPermissions(
 export async function queryPermissionsByGrantor(
   api: Api,
   grantor: SS58Address,
-): Promise<Result<Nullable<`0x${string}`[]>, SbQueryError | ZError<unknown>>> {
+): Promise<Result<`0x${string}`[], SbQueryError | ZError<unknown>>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantor(grantor),
   );
   if (queryError) return makeErr(SbQueryError.from(queryError));
 
-  if (!query.isSome) {
-    return makeOk(null);
-  }
-  const inner = query.value;
-
-  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(inner);
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -260,18 +256,13 @@ export async function queryPermissionsByGrantor(
 export async function queryPermissionsByGrantee(
   api: Api,
   grantee: SS58Address,
-): Promise<Result<Nullable<PermissionId[]>, SbQueryError | ZError<unknown>>> {
+): Promise<Result<PermissionId[], SbQueryError | ZError<unknown>>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantee(grantee),
   );
   if (queryError) return makeErr(SbQueryError.from(queryError));
 
-  if (!query.isSome) {
-    return makeOk(null);
-  }
-  const inner = query.value;
-
-  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(inner);
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -286,18 +277,13 @@ export async function queryPermissionsByParticipants(
   api: Api,
   grantor: SS58Address,
   grantee: SS58Address,
-): Promise<Result<Nullable<PermissionId[]>, SbQueryError | ZError<unknown>>> {
+): Promise<Result<PermissionId[], SbQueryError | ZError<unknown>>> {
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByParticipants([grantor, grantee]),
   );
   if (queryError) return makeErr(SbQueryError.from(queryError));
 
-  if (!query.isSome) {
-    return makeOk(null);
-  }
-  const inner = query.value;
-
-  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(inner);
+  const parsed = sb_array(PERMISSION_ID_SCHEMA).safeParse(query);
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
@@ -587,13 +573,12 @@ export async function queryDelegationStreamsByAccount(
     api,
     grantorAccount,
   );
-  const permissionIdsList = permIds ?? [];
   if (queryErr !== undefined) return makeErr(SbQueryError.from(queryErr));
 
   const delegationStreams = new Map<PermissionId, DelegationStreamInfo>();
 
   // For each permission, check if it's an emission permission with stream allocation
-  for (const permissionId of permissionIdsList) {
+  for (const permissionId of permIds) {
     const [qErr, permission] = await queryPermission(api, permissionId);
     if (qErr !== undefined || permission === null) {
       logger.error(`Failed querying permission ${permissionId}:`, qErr);
@@ -684,6 +669,10 @@ export interface GrantEmissionPermission {
   enforcement: EnforcementAuthority;
 }
 
+/**
+ * TODO: test
+ * TODO: docs
+ */
 export function grantEmissionPermission({
   api,
   grantee,
@@ -694,10 +683,19 @@ export function grantEmissionPermission({
   revocation,
   enforcement,
 }: GrantEmissionPermission) {
+  const targetsMap = new Map(targets);
+
+  const targetsMap_ = new BTreeMap<AccountId32, u16>(
+    api.registry,
+    "AccountId32",
+    "u32",
+    targetsMap,
+  );
+
   return api.tx.permission0.grantEmissionPermission(
     grantee,
     allocation,
-    targets,
+    targetsMap_,
     distribution,
     duration,
     revocation,
