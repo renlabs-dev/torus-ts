@@ -1,108 +1,121 @@
 "use client";
 
 import { Button } from "@torus-ts/ui/components/button";
+import type { ButtonProps } from "@torus-ts/ui/components/button";
 import { Icons } from "@torus-ts/ui/components/icons";
-import { signIn, signOut, useSession } from "next-auth/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { useEffect } from "react";
+import { useDiscordAuth } from "../../../hooks/use-discord-auth";
+import * as React from "react";
 
-interface DiscordLoginProps {
-  onAuthChange?: (
-    discordId: string | null,
-    userName: string | null,
-    avatarUrl: string | null,
-  ) => void;
-  onButtonClick?: () => void;
+interface DiscordAuthButtonProps
+  extends Omit<ButtonProps, "onClick" | "onError"> {
+  onSignIn?: () => void | Promise<void>;
+  onSignOut?: () => void | Promise<void>;
+  onError?: (error: Error) => void;
+  connectText?: string;
+  disconnectText?: string;
+  showIcon?: boolean;
+  connectedClassName?: string;
+  disconnectedClassName?: string;
 }
 
-interface ExtendedUser {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  discordId?: string;
-}
+export function DiscordAuthButton({
+  onSignIn,
+  onSignOut,
+  onError,
+  connectText = "Validate your Discord account",
+  showIcon = true,
+  className,
+  connectedClassName = "flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm",
+  disconnectedClassName = className ??
+    "w-full bg-[#5865F2] text-white hover:bg-[#4752c4]",
+  variant = "outline",
+  disabled,
+  children,
+  ...buttonProps
+}: DiscordAuthButtonProps) {
+  const { isAuthenticated, isLoading, signIn, signOut, discordId } =
+    useDiscordAuth();
 
-export default function DiscordLogin({
-  onAuthChange,
-  onButtonClick,
-}: DiscordLoginProps) {
-  const { data: session, status } = useSession();
-  const isLoading = status === "loading";
-  const user = session?.user as ExtendedUser | undefined;
-  const discordId = user?.discordId;
-  const userName = user?.name;
-  const avatarUrl = user?.image;
-
-  useEffect(() => {
-    if (onAuthChange) {
-      onAuthChange(discordId ?? null, userName ?? null, avatarUrl ?? null);
-    }
-  }, [discordId, userName, avatarUrl, onAuthChange]);
-
-  const handleSignIn = async (e: React.MouseEvent) => {
+  const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    onButtonClick?.();
-    const [error, _] = await tryAsync(signIn("discord", { redirect: false }));
+    if (isAuthenticated) {
+      const [callbackError] = await tryAsync(Promise.resolve(onSignOut));
+      if (callbackError) {
+        onError?.(callbackError);
+        return;
+      }
 
-    if (error !== undefined) {
-      console.error("Error signing in with Discord:", error);
-    }
-  };
+      const signOutError = await signOut();
+      if (signOutError) {
+        onError?.(signOutError);
+      }
+    } else {
+      const [callbackError] = await tryAsync(Promise.resolve(onSignIn));
+      if (callbackError) {
+        onError?.(callbackError);
+        return;
+      }
 
-  const handleSignOut = async (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    onButtonClick?.();
-    const [error, _] = await tryAsync(signOut({ redirect: false }));
-
-    if (error !== undefined) {
-      console.error("Error signing out from Discord:", error);
+      const signInError = await signIn();
+      if (signInError) {
+        onError?.(signInError);
+      }
     }
   };
 
   if (isLoading) {
     return (
-      <Button type="button" disabled>
+      <Button
+        {...buttonProps}
+        disabled
+        variant={variant}
+        className={disconnectedClassName}
+      >
         Loading...
       </Button>
     );
   }
 
-  if (session && discordId) {
+  // When authenticated, show the Discord ID display with logout button
+  if (isAuthenticated && discordId) {
     return (
-      <div className="flex items-center gap-3 bg-gray-600/20 p-3">
-        {user.image && (
-          <>
-            <div className="flex flex-col">
-              <span className="text-sm text-white">
-                Connected as {user.name}
-              </span>
-              <span className="text-xs text-gray-400">ID: {discordId}</span>
-            </div>
-            <Button
-              type="button"
-              variant="destructive"
-              className="ml-auto"
-              onClick={handleSignOut}
-            >
-              Disconnect
-            </Button>
-          </>
-        )}
+      <div className={connectedClassName}>
+        <div className="flex items-center gap-2">
+          <Icons.Discord className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Discord ID:</span>
+          <span className="font-mono">{discordId}</span>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={handleClick}
+        >
+          Logout
+        </Button>
       </div>
     );
   }
 
+  // When not authenticated, show the connect button
   return (
     <Button
+      {...buttonProps}
       type="button"
-      variant="outline"
-      className="w-full bg-[#5865F2] text-white hover:bg-[#4752c4]"
-      onClick={handleSignIn}
+      variant={variant}
+      className={disconnectedClassName}
+      onClick={handleClick}
+      disabled={disabled}
     >
-      <Icons.Discord className="h-5 w-5 md:h-4 md:w-4" /> Validate your Discord
-      account
+      {children ?? (
+        <>
+          {showIcon && <Icons.Discord className="h-5 w-5 md:h-4 md:w-4" />}
+          {connectText}
+        </>
+      )}
     </Button>
   );
 }
