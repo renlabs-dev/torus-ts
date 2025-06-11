@@ -11,8 +11,8 @@ import { Suspense, useMemo } from "react";
 import { TorusAnimation } from "./torus-animation";
 
 const BALANCE_ICONS = {
-  free: <Lock size={16} />,
-  staked: <Unlock size={16} />,
+  free: <Unlock size={16} />,
+  staked: <Lock size={16} />,
   total: <Scale size={16} />,
 };
 
