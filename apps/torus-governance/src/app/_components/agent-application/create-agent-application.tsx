@@ -34,6 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFileUploader } from "hooks/use-file-uploader";
 import { useDiscordAuth } from "hooks/use-discord-auth";
 import { Icons } from "@torus-ts/ui/components/icons";
+import { DiscordAuthButton } from "../discord-auth-button";
 
 const agentApplicationSchema = z.object({
   applicationKey: z.string().min(1, "Application Key is required"),
@@ -266,29 +267,16 @@ export function CreateAgentApplication() {
           </TabsList>
           <TabsContent value="edit" className="mt-1 flex flex-col gap-1">
             {/* Discord ID Display */}
-            {isAuthenticated && discordId && (
-              <div
-                className="flex items-center justify-between rounded-md border border-input bg-background
-                  px-3 py-2 text-sm"
-              >
-                <div className="flex items-center gap-2">
-                  <Icons.Discord className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Discord ID:</span>
-                  <span className="font-mono">{discordId}</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={async () => {
-                    await signOut();
-                    toast.success("Disconnected from Discord");
-                  }}
-                  className="h-7 px-2 text-xs"
-                >
-                  Logout
-                </Button>
-              </div>
+            {isAuthenticated && (
+              <DiscordAuthButton
+                variant="ghost"
+                onSignOut={async () => {
+                  toast.success("Disconnected from Discord");
+                }}
+                onError={(error) => {
+                  toast.error(error.message || "Failed to disconnect");
+                }}
+              />
             )}
             <FormField
               control={control}

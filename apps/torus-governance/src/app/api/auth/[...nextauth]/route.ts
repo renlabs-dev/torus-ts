@@ -17,10 +17,10 @@ function getHandler() {
 }
 
 // Export functions that use the lazy-initialized handler
-export function GET(req: NextRequest, context: any) {
+export function GET(req: NextRequest, context: { params: { nextauth: string[] } }) {
   return getHandler()(req, context);
 }
 
-export function POST(req: NextRequest, context: any) {
+export function POST(req: NextRequest, context: { params: { nextauth: string[] } }) {
   return getHandler()(req, context);
 }
