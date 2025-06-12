@@ -7,8 +7,16 @@ import { ListWhitelistApplications } from "./_components/list-whitelist-applicat
 export const metadata = () =>
   createSeoMetadata({
     title: "Torus DAO - Agent Whitelist Applications",
-    description: "Review and vote on agent whitelist applications for the Torus Network. Help determine which agents can participate in the network's consensus.",
-    keywords: ["agent applications", "torus whitelist", "agent whitelist", "torus agents", "blockchain agent applications"],
+    description:
+      "Review and vote on agent whitelist applications for the Torus Network. Help determine which agents can participate in the network's consensus.",
+    keywords: [
+      "agent applications",
+      "torus whitelist",
+      "agent whitelist",
+      "torus agents",
+      "blockchain agent applications",
+    ],
+    ogSiteName: "Torus DAO",
     baseUrl: env("BASE_URL"),
     canonical: "/whitelist-applications",
   });

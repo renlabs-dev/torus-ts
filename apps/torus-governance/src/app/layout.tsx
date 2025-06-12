@@ -23,6 +23,7 @@ export const metadata = () =>
       "blockchain governance",
       "dao voting",
     ],
+    ogSiteName: "Torus DAO",
     baseUrl: env("BASE_URL"),
     canonical: "/",
   });

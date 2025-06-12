@@ -1,6 +1,5 @@
 import {
   fetchAgentMetadata,
-  fetchCustomMetadata,
   queryAgentApplicationById,
   setup,
 } from "@torus-network/sdk";

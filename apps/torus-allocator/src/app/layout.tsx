@@ -12,11 +12,19 @@ import { AllocationSheet } from "./_components/allocation-sheet";
 import { AllocatorHeader } from "./_components/allocator-header";
 import { TutorialDialog } from "./_components/tutorial-dialog";
 
-export const metadata = () => 
+export const metadata = () =>
   createSeoMetadata({
     title: "Torus Allocator - Delegate Stake to Agents",
-    description: "Discover and allocate your stake to Torus Network agents. Participate in the decentralized reward system and help shape the Torus ecosystem.",
-    keywords: ["torus allocator", "torus network", "stake delegation", "torus agents", "blockchain delegation"],
+    description:
+      "Discover and allocate your stake to Torus Network agents. Participate in the decentralized reward system and help shape the Torus ecosystem.",
+    keywords: [
+      "torus allocator",
+      "torus network",
+      "stake delegation",
+      "torus agents",
+      "blockchain delegation",
+    ],
+    ogSiteName: "Torus Allocator",
     baseUrl: env("BASE_URL"),
     canonical: "/",
   });
@@ -40,9 +48,12 @@ export default function RootLayout({
         torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
       >
         <TRPCReactProvider>
-          {/* The Seo component in the layout provides default OG image. 
+          {/* The Seo component in the layout provides default OG image.
               Pages with dynamic metadata will override these values */}
-          <Seo ogImageAlt="Torus Allocator" ogImageUrl={`${env("BASE_URL")}/og.png`} />
+          <Seo
+            ogImageAlt="Torus Allocator"
+            ogImageUrl={`${env("BASE_URL")}/og.png`}
+          />
           <AllocatorHeader torusCacheUrl={torusCacheUrl} />
           <TutorialDialog />
           <AllocationSheet />

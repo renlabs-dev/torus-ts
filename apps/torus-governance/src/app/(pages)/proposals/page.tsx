@@ -8,8 +8,16 @@ import { ListProposals } from "./_components/list-proposals";
 export const metadata = () =>
   createSeoMetadata({
     title: "Torus DAO - Governance Proposals",
-    description: "View and vote on active governance proposals for the Torus Network. Participate in decision-making and help shape the future of the protocol.",
-    keywords: ["torus proposals", "governance voting", "dao proposals", "torus governance", "blockchain voting"],
+    description:
+      "View and vote on active governance proposals for the Torus Network. Participate in decision-making and help shape the future of the protocol.",
+    keywords: [
+      "torus proposals",
+      "governance voting",
+      "dao proposals",
+      "torus governance",
+      "blockchain voting",
+    ],
+    ogSiteName: "Torus DAO",
     baseUrl: env("BASE_URL"),
     canonical: "/proposals",
   });

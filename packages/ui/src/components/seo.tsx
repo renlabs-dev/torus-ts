@@ -28,7 +28,7 @@ export interface SeoMetadataConfig {
   // Open Graph
   ogTitle?: string;
   ogDescription?: string;
-  ogSiteName?: string;
+  ogSiteName: string;
 
   // Twitter
   twitterTitle?: string;
