@@ -28,6 +28,7 @@ export interface SeoMetadataConfig {
   // Open Graph
   ogTitle?: string;
   ogDescription?: string;
+  ogSiteName?: string;
 
   // Twitter
   twitterTitle?: string;
@@ -47,6 +48,7 @@ export function createSeoMetadata({
   keywords,
   ogTitle,
   ogDescription,
+  ogSiteName,
   twitterTitle,
   twitterDescription,
   canonical,
@@ -91,7 +93,7 @@ export function createSeoMetadata({
       title: ogTitle ?? title,
       description: ogDescription ?? description,
       type: "website",
-      siteName: "Torus Wallet",
+      siteName: ogSiteName,
       locale: "en_US",
       url: `${baseUrl}${canonical}`,
       images: [

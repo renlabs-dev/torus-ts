@@ -12,7 +12,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { env } from "~/env";
 import { api } from "~/trpc/server";
-import { handleCustomAgentApplications } from "../../../../utils";
 import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
@@ -24,42 +23,30 @@ export async function generateMetadata({
   params,
 }: Props): Promise<Metadata | null> {
   const { id } = await params;
-  const baseUrl = env("BASE_URL");
-  const applicationId = Number(id);
-  const wsEndpoint = env("NEXT_PUBLIC_TORUS_RPC_URL");
 
-  const [setupError, blockchainApi] = await tryAsync(setup(wsEndpoint));
-  if (setupError) {
-    console.error("Error setting up blockchain API:", setupError);
-    return null;
-  }
-
-  const [appError, application] = await tryAsync(
-    queryAgentApplicationById(blockchainApi, applicationId),
+  const [apiErr, blockchainApi] = await tryAsync(
+    setup(env("NEXT_PUBLIC_TORUS_RPC_URL")),
   );
-  if (appError || !application) {
-    console.error("Error querying agent application:", appError);
+  if (apiErr) {
+    console.error("Error setting up blockchain API:", apiErr);
     return null;
   }
 
-  const [agentError, agent] = await tryAsync(
-    api.agent.byKeyLastBlock({ key: application.agentKey }),
+  const [agentApplicationErr, agentApplication] = await tryAsync(
+    queryAgentApplicationById(blockchainApi, +id),
   );
-  if (agentError || !agent) {
-    console.error("Error querying agent:", agentError);
+  if (agentApplicationErr || !agentApplication) {
+    console.error("Error querying agent application:", agentApplicationErr);
     return null;
   }
 
-  const customData = application.data
-    ? ((
-        await tryAsync(
-          fetchCustomMetadata("application", application.id, application.data),
-        )
-      )[1] ?? (console.error("Failed to fetch application metadata:"), null))
-    : null;
-
-  const { title: applicationTitle, body: applicationBody } =
-    handleCustomAgentApplications(application.id, customData);
+  const [agentErr, agent] = await tryAsync(
+    api.agent.byKeyLastBlock({ key: agentApplication.agentKey }),
+  );
+  if (agentErr || !agent) {
+    console.error("Error querying agent:", agentErr);
+    return null;
+  }
 
   const agentMetadata = agent.metadataUri
     ? ((
@@ -71,18 +58,14 @@ export async function generateMetadata({
     : null;
 
   const title =
-    applicationTitle ??
+    agentMetadata?.title ??
     `Agent Application: ${agent.name ?? agent.key} - Torus DAO`;
-  const description =
-    (
-      applicationBody ??
-      agentMetadata?.short_description ??
-      `Agent application for ${agent.name ?? agent.key} on the Torus Network.`
-    ).slice(0, 160) + ((applicationBody?.length ?? 0) > 160 ? "..." : "");
 
-  // Use the agent key for OG image to avoid ID inconsistencies between environments
-  // This will show agent info and agent icon
-  const ogImagePath = `/api/og-image/${agent.key}`;
+  const description = agentMetadata?.short_description
+    ? agentMetadata.short_description.length > 160
+      ? `${agentMetadata.short_description.slice(0, 157)}...`
+      : agentMetadata.short_description
+    : `Agent application for ${agent.name ?? agent.key} on the Torus Network.`;
 
   return createSeoMetadata({
     title,
@@ -101,9 +84,10 @@ export async function generateMetadata({
             .join(" ")
         : "agent whitelist",
     ],
-    baseUrl,
+    baseUrl: env("BASE_URL"),
     canonical: `/agent-application/${id}`,
-    ogImagePath,
+    ogImagePath: `/api/og-image/${agent.key}`,
+    ogSiteName: "Torus DAO",
   });
 }
 

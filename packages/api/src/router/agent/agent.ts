@@ -7,6 +7,7 @@ import {
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
+import { sb_address } from "@torus-network/sdk";
 
 export const agentRouter = {
   // GET
@@ -115,7 +116,7 @@ export const agentRouter = {
       });
     }),
   byKeyLastBlock: publicProcedure
-    .input(z.object({ key: z.string() }))
+    .input(z.object({ key: z.union([sb_address, z.string()]) }))
     .query(async ({ ctx, input }) => {
       const lastBlock = ctx.db
         .select({ value: max(agentSchema.atBlock) })
