@@ -39,6 +39,7 @@ export function CreateCadreCandidates() {
   const { selectedAccount } = useGovernance();
 
   const cadreCandidates = api.cadreCandidate.all.useQuery();
+  const saveDiscordMutation = api.discordInfo.create.useMutation();
 
   const isUserCadreCandidate = !!cadreCandidates.data?.find(
     (user) => user.userKey === selectedAccount?.address,
@@ -197,7 +198,6 @@ export function CreateCadreCandidates() {
 
     // Handle Discord info if available
     if (discordId && userName) {
-      const saveDiscordMutation = api.discordInfo.create.useMutation();
       const [discordError] = await tryAsync(
         saveDiscordMutation.mutateAsync({
           discordId,

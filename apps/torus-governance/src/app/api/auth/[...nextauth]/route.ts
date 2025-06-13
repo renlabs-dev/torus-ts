@@ -1,7 +1,26 @@
-import { authConfig } from "~/utils/auth-config";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { getAuthConfig } from "~/utils/auth-config";
 import NextAuth from "next-auth";
+import type { NextRequest } from "next/server";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const handler = NextAuth(authConfig);
+// Create a wrapper that handles the initialization lazily
+let handler: any = null;
 
-export { handler as GET, handler as POST };
+function getHandler() {
+  if (!handler) {
+    handler = NextAuth(getAuthConfig());
+  }
+  return handler;
+}
+
+// Export functions that use the lazy-initialized handler
+export function GET(req: NextRequest, context: { params: { nextauth: string[] } }) {
+  return getHandler()(req, context);
+}
+
+export function POST(req: NextRequest, context: { params: { nextauth: string[] } }) {
+  return getHandler()(req, context);
+}
