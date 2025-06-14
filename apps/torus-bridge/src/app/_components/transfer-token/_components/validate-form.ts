@@ -17,44 +17,30 @@ const emptyAccountErrMsg = /AccountNotFound/i;
 
 export async function validateForm(
   warpCore: WarpCore,
-  values: TransferFormValues,
+  { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
   accounts: Record<ProtocolType, AccountInfo>,
 ) {
-  const { origin, destination, tokenIndex, amount, recipient } = values;
-
-  // Get token
   const [tokenError, token] = trySync(() =>
     getTokenByIndex(warpCore, tokenIndex),
   );
-
-  if (tokenError !== undefined) {
+  if (tokenError || !token) {
     logger.error("Error getting token:", tokenError);
-    return { form: errorToString(tokenError, 40) };
+    return {
+      form: tokenError ? errorToString(tokenError, 40) : "Token is required",
+    };
   }
 
-  if (!token) return { token: "Token is required" };
-
-  // Convert amount to Wei
   const [amountError, amountWei] = trySync(() => toWei(amount, token.decimals));
-
-  if (amountError !== undefined) {
+  if (amountError) {
     logger.error("Error converting amount to wei:", amountError);
     return { amount: "Invalid amount" };
   }
 
-  // Get account address and public key
-  const [accountError, accountSuccess] = trySync(() =>
+  const [accountError, { address, publicKey } = {}] = trySync(() =>
     getAccountAddressAndPubKey(warpCore.multiProvider, origin, accounts),
   );
-
-  if (accountError !== undefined) {
-    logger.error("Error getting account address and public key:", accountError);
-    return { form: "Error retrieving account information" };
-  }
-
-  const { address, publicKey } = accountSuccess;
-
-  if (!address) {
+  if (accountError || !address) {
+    logger.error("Error getting account address:", accountError);
     return { form: "Error retrieving account information" };
   }
 
@@ -64,8 +50,7 @@ export async function validateForm(
         Promise.reject(new Error("Sender public key is not provided")),
     ),
   );
-
-  if (pubKeyError !== undefined) {
+  if (pubKeyError) {
     logger.error("Error resolving sender public key:", pubKeyError);
     return { form: "Error retrieving account keys" };
   }
@@ -80,20 +65,17 @@ export async function validateForm(
     }),
   );
 
-  if (validateError !== undefined) {
+  if (validateError) {
     logger.error("Error validating transfer:", validateError);
-
-    let errorMsg = errorToString(validateError, 40);
+    const errorMsg = errorToString(validateError, 40);
     const fullError = `${errorMsg} ${validateError.message}`;
-
-    if (
-      insufficientFundsErrMsg.test(fullError) ||
-      emptyAccountErrMsg.test(fullError)
-    ) {
-      errorMsg = "Insufficient funds for gas fees";
-    }
-
-    return { form: errorMsg };
+    return {
+      form:
+        insufficientFundsErrMsg.test(fullError) ||
+        emptyAccountErrMsg.test(fullError)
+          ? "Insufficient funds for gas fees"
+          : errorMsg,
+    };
   }
 
   return result;
