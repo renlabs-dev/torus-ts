@@ -8,15 +8,11 @@ import type { ProtocolType } from "@hyperlane-xyz/utils";
 import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { useMutation } from "@tanstack/react-query";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { useWarpCore } from "./token";
-import {
-  tryAsync,
-  trySync,
-  unwrapAsyncResult,
-} from "@torus-network/torus-utils/try-catch";
 import { logger } from "../utils/logger";
+import { useWarpCore } from "./token";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;
@@ -52,7 +48,7 @@ async function fetchMaxAmount(
   );
 
   if (accountError || !address) {
-    logger.warn("Error getting account address:", accountError);
+    logger.warn("Error getting account address or public key:", accountError);
     toast({
       title: "Error calculating maximum transfer amount",
       description:
@@ -63,31 +59,14 @@ async function fetchMaxAmount(
     return undefined;
   }
 
-  const [pubKeyError, resolvedPubKey] = await unwrapAsyncResult(
-    tryAsync(
-      publicKey ??
-        Promise.reject(new Error("Sender public key is not provided")),
-    ),
-  );
-
-  if (pubKeyError) {
-    logger.warn("Error resolving sender public key:", pubKeyError);
-    toast({
-      title: "Error calculating maximum transfer amount",
-      description:
-        pubKeyError instanceof Error
-          ? pubKeyError.message
-          : "Unable to retrieve account keys",
-    });
-    return undefined;
-  }
+  const senderPubKey = await publicKey;
 
   const [maxAmountError, maxAmount] = await tryAsync(
     warpCore.getMaxTransferAmount({
       balance,
       destination,
       sender: address,
-      senderPubKey: resolvedPubKey,
+      senderPubKey,
     }),
   );
 
