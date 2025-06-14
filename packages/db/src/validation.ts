@@ -113,6 +113,7 @@ export const AGENT_DEMAND_SIGNAL_INSERT_SCHEMA = createInsertSchema(
   agentDemandSignalSchema,
 ).omit({
   id: true,
+  agentKey: true,
   updatedAt: true,
   createdAt: true,
   deletedAt: true,

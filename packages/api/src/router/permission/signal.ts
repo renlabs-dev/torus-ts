@@ -14,6 +14,9 @@ export const signalRouter = {
   create: authenticatedProcedure
     .input(AGENT_DEMAND_SIGNAL_INSERT_SCHEMA)
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(agentDemandSignalSchema).values({ ...input });
+      const agentKey = ctx.sessionData.userKey;
+      await ctx.db
+        .insert(agentDemandSignalSchema)
+        .values({ ...input, agentKey });
     }),
 } satisfies TRPCRouterRecord;
