@@ -30,10 +30,15 @@ export function useFetchMaxAmount() {
   const warpCore = useWarpCore();
   const { toast } = useToast();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (params: FetchMaxParams) =>
       fetchMaxAmount(multiProvider, warpCore, params, toast),
   });
+
+  return {
+    fetchMaxAmount: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+  };
 }
 
 async function fetchMaxAmount(
