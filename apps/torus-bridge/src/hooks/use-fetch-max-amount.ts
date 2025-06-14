@@ -10,13 +10,13 @@ import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { logger } from "../utils/logger";
 import { useWarpCore } from "./token";
 import {
   tryAsync,
   trySync,
   unwrapAsyncResult,
 } from "@torus-network/torus-utils/try-catch";
+import { logger } from "../utils/logger";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;
@@ -30,15 +30,10 @@ export function useFetchMaxAmount() {
   const warpCore = useWarpCore();
   const { toast } = useToast();
 
-  const mutation = useMutation({
+  return useMutation({
     mutationFn: (params: FetchMaxParams) =>
       fetchMaxAmount(multiProvider, warpCore, params, toast),
   });
-
-  return {
-    fetchMaxAmount: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-  };
 }
 
 async function fetchMaxAmount(
@@ -46,14 +41,13 @@ async function fetchMaxAmount(
   warpCore: WarpCore,
   { accounts, balance, destination, origin }: FetchMaxParams,
   toast: ReturnType<typeof useToast>["toast"],
-) {
-  // Get account address and public key
-  const [accountError, accountSuccess] = trySync(() =>
+): Promise<TokenAmount | undefined> {
+  const [accountError, { address, publicKey } = {}] = trySync(() =>
     getAccountAddressAndPubKey(multiProvider, origin, accounts),
   );
 
-  if (accountError !== undefined) {
-    logger.warn("Error getting account address and public key:", accountError);
+  if (accountError || !address) {
+    logger.warn("Error getting account address:", accountError);
     toast({
       title: "Error calculating maximum transfer amount",
       description:
@@ -64,13 +58,6 @@ async function fetchMaxAmount(
     return undefined;
   }
 
-  const { address, publicKey } = accountSuccess;
-
-  if (!address) {
-    toast.error("Missing wallet address or public key");
-    return undefined;
-  }
-
   const [pubKeyError, resolvedPubKey] = await unwrapAsyncResult(
     tryAsync(
       publicKey ??
@@ -78,7 +65,7 @@ async function fetchMaxAmount(
     ),
   );
 
-  if (pubKeyError !== undefined) {
+  if (pubKeyError) {
     logger.warn("Error resolving sender public key:", pubKeyError);
     toast({
       title: "Error calculating maximum transfer amount",
@@ -90,7 +77,6 @@ async function fetchMaxAmount(
     return undefined;
   }
 
-  // Get max transfer amount
   const [maxAmountError, maxAmount] = await tryAsync(
     warpCore.getMaxTransferAmount({
       balance,
@@ -100,7 +86,7 @@ async function fetchMaxAmount(
     }),
   );
 
-  if (maxAmountError !== undefined) {
+  if (maxAmountError) {
     logger.warn("Error fetching fee quotes for max amount:", maxAmountError);
     toast({
       title: "Error calculating maximum transfer amount",
