@@ -62,13 +62,14 @@ async function fetchMaxAmount(
 
   const { address, publicKey } = accountSuccess;
 
-  if (!address || !publicKey) {
+  if (!address) {
     toast.error("Missing wallet address or public key");
     return undefined;
   }
 
-  // Resolve public key
-  const [pubKeyError, resolvedPubKey] = await tryAsync(publicKey);
+  const [pubKeyError, resolvedPubKey] = await tryAsync(
+    publicKey ?? Promise.reject(new Error("Sender public key is not provided")),
+  );
 
   if (pubKeyError !== undefined) {
     logger.warn("Error resolving sender public key:", pubKeyError);

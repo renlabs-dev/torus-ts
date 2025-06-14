@@ -3,7 +3,11 @@ import type { ProtocolType } from "@hyperlane-xyz/utils";
 import { errorToString, toWei } from "@hyperlane-xyz/utils";
 import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import {
+  tryAsync,
+  trySync,
+  unwrapAsyncResult,
+} from "@torus-network/torus-utils/try-catch";
 import { getTokenByIndex } from "~/hooks/token";
 import { logger } from "~/utils/logger";
 import type { TransferFormValues } from "~/utils/types";
@@ -48,21 +52,24 @@ export async function validateForm(
     return { form: "Error retrieving account information" };
   }
 
-  const { address, publicKey: senderPubKey } = accountSuccess;
+  const { address, publicKey } = accountSuccess;
 
-  if (!address || !senderPubKey) {
+  if (!address) {
     return { form: "Error retrieving account information" };
   }
 
-  // Get sender public key
-  const [pubKeyError, resolvedPubKey] = await tryAsync(senderPubKey);
+  const [pubKeyError, resolvedPubKey] = await unwrapAsyncResult(
+    tryAsync(
+      publicKey ??
+        Promise.reject(new Error("Sender public key is not provided")),
+    ),
+  );
 
   if (pubKeyError !== undefined) {
     logger.error("Error resolving sender public key:", pubKeyError);
     return { form: "Error retrieving account keys" };
   }
 
-  // Validate transfer
   const [validateError, result] = await tryAsync(
     warpCore.validateTransfer({
       originTokenAmount: token.amount(amountWei),
