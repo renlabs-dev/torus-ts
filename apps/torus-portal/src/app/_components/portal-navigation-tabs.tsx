@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Network, Shield, Plus } from "lucide-react";
+import { Network, Shield, Plus, Radio } from "lucide-react";
 
 export default function PortalNavigationTabs() {
   const router = useRouter();
@@ -36,6 +36,12 @@ export default function PortalNavigationTabs() {
         icon: Shield,
         path: "/create-constraint",
       },
+      {
+        value: "create-signal",
+        label: "Create Signaling",
+        icon: Radio,
+        path: "/create-signal",
+      },
     ],
     [],
   );
@@ -44,6 +50,7 @@ export default function PortalNavigationTabs() {
     if (pathname === "/") return "permission-graph";
     if (pathname === "/create-permission") return "create-permission";
     if (pathname === "/create-constraint") return "create-constraint";
+    if (pathname === "/create-signal") return "create-signal";
     return "permission-graph";
   };
   const currentTab = getCurrentTab();
@@ -65,7 +72,7 @@ export default function PortalNavigationTabs() {
       {/* Desktop Tabs */}
       <div className="hidden md:block w-fit">
         <Tabs value={currentTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               return (

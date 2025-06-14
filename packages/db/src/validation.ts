@@ -1,6 +1,7 @@
 import { createInsertSchema } from "drizzle-zod";
 import {
   agentApplicationVoteSchema,
+  agentDemandSignalSchema,
   agentReportSchema,
   cadreCandidateSchema,
   cadreVoteSchema,
@@ -101,6 +102,15 @@ export const PENALTY_INSERT_SCHEMA = createInsertSchema(
 });
 export const USER_DISCORD_INFO_INSERT_SCHEMA = createInsertSchema(
   userDiscordInfoSchema,
+).omit({
+  id: true,
+  updatedAt: true,
+  createdAt: true,
+  deletedAt: true,
+});
+
+export const AGENT_DEMAND_SIGNAL_INSERT_SCHEMA = createInsertSchema(
+  agentDemandSignalSchema,
 ).omit({
   id: true,
   updatedAt: true,

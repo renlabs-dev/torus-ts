@@ -17,6 +17,7 @@ import { permissionDetailsRouter } from "./router/permission/permission-details"
 import { constraintRouter } from "./router/constraint/constraint";
 import { createTRPCRouter } from "./trpc";
 import { permissionRouter } from "./router/permission/permission";
+import { signalRouter } from "./router/permission/signal";
 
 export const appRouter = createTRPCRouter({
   // Auth
@@ -49,6 +50,7 @@ export const appRouter = createTRPCRouter({
   // Permission
   permission: permissionRouter,
   permissionDetails: permissionDetailsRouter,
+  signal: signalRouter,
 });
 
 export type AppRouter = typeof appRouter;
