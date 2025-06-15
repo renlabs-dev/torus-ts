@@ -211,8 +211,7 @@ export function createSignalLinks(
     source: signal.agentKey,
     target: `signal-${signal.id}`,
     id: `signal-link-${signal.id}`,
-    linkDirectionalParticles: GRAPH_CONSTANTS.SIGNAL_LINK.particles,
-    linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+    linkDirectionalParticles: 0,
     linkColor: GRAPH_CONSTANTS.COLORS.SIGNAL_LINK,
     linkWidth: GRAPH_CONSTANTS.SIGNAL_LINK.width,
   }));
