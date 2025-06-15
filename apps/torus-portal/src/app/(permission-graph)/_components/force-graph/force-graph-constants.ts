@@ -35,10 +35,10 @@ export const GRAPH_CONSTANTS = {
     GRANTEE: "#38bdf8", // sky-500
     BOTH: "#34d399", // soft purple
     DEFAULT: "#64B5F6", // soft blue
-    SIGNAL: "#f59e0b", // amber-500
+    SIGNAL: "#8b5cf6", // amber-500
     PERMISSION_LINK: "#cbd5e1", // slate-300
     ALLOCATION_LINK: "#FFFFFF", // white
-    SIGNAL_LINK: "#fbbf24", // amber-400
+    SIGNAL_LINK: "#8b5cf6", // amber-400
   },
 
   // Link properties

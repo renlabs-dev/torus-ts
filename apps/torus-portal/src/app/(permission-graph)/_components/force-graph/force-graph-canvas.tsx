@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Stars } from "@react-three/drei";
 import type {
   CustomGraphData,
   CustomGraphNode,
@@ -21,8 +21,33 @@ export function PermissionGraph({
 }) {
   return (
     <Canvas camera={{ position: [0, 0, 600], far: 8000 }} shadows>
-      {/* <color attach="background" args={[0.05, 0.05, 0.1]} /> */}
-      <ambientLight intensity={Math.PI / 2} />
+      {/* <color attach="background" args={["#252530"]} /> */}
+      <ambientLight intensity={1.01} />
+      <hemisphereLight
+        intensity={1.125}
+        color="#8040df"
+        groundColor="#bfdbfe"
+      />
+      <spotLight
+        castShadow
+        color="orange"
+        intensity={2}
+        position={[-50, 50, 40]}
+        angle={0.25}
+        penumbra={1}
+        shadow-mapSize={[128, 128]}
+        shadow-bias={0.00005}
+      />
+      <Stars
+        radius={2000}
+        depth={50}
+        count={2000}
+        factor={4}
+        saturation={0}
+        fade
+        speed={1}
+      />
+
       <Suspense fallback={null}>
         <ForceGraph
           graphData={data}
