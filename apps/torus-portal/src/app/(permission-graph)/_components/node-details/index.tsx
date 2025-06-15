@@ -1,5 +1,4 @@
 import { NodeDetails } from "./_components/node-details";
-import { SignalDetails } from "./_components/signal-details";
 import type {
   CustomGraphData,
   CustomGraphNode,
@@ -17,6 +16,7 @@ import {
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
 import { PermissionGraphOverview } from "../permission-graph-overview";
+import { SignalDetails } from "./_components/signal-details";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
@@ -58,7 +58,9 @@ export const PermissionGraphNodeDetails = memo(
           onInteractOutside={(e) => e.preventDefault()}
         >
           <SheetHeader>
-            <SheetTitle>{isSignalNode ? "Signal details" : "Agent details"}</SheetTitle>
+            <SheetTitle>
+              {isSignalNode ? "Signal details" : "Agent details"}
+            </SheetTitle>
           </SheetHeader>
           <div className="flex flex-col gap-8 items-start justify-start w-full h-full">
             {isSignalNode ? (

@@ -31,11 +31,15 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
     { name: "Discord", value: signalData.discord, prefix: "" },
     { name: "GitHub", value: signalData.github, prefix: "https://github.com/" },
     { name: "Telegram", value: signalData.telegram, prefix: "https://t.me/" },
-    { name: "Twitter", value: signalData.twitter, prefix: "https://twitter.com/" },
+    {
+      name: "Twitter",
+      value: signalData.twitter,
+      prefix: "https://twitter.com/",
+    },
   ].filter((social) => social.value);
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 pt-8">
       {/* Main Signal Info */}
       <Card>
         <CardHeader>
@@ -49,7 +53,9 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
               {signalData.proposedAllocation}%
             </Badge>
           </div>
-          <CardDescription>Demand Signal from {smallAddress(signalData.agentKey)}</CardDescription>
+          <CardDescription>
+            Demand Signal from {smallAddress(signalData.agentKey)}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -58,7 +64,7 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
               {signalData.description}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
             Created {new Date(signalData.createdAt).toLocaleDateString()}
@@ -77,7 +83,9 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-sm">{signalData.agentKey}</p>
+              <p className="font-mono text-sm">
+                {smallAddress(signalData.agentKey)}
+              </p>
               <p className="text-xs text-muted-foreground">
                 Agent requesting this capability
               </p>
@@ -95,7 +103,10 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
           <CardContent>
             <div className="grid grid-cols-1 gap-3">
               {socialLinks.map((social) => (
-                <div key={social.name} className="flex items-center justify-between">
+                <div
+                  key={social.name}
+                  className="flex items-center justify-between"
+                >
                   <span className="text-sm font-medium">{social.name}</span>
                   {social.prefix ? (
                     <a
@@ -107,7 +118,9 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
                       {social.value}
                     </a>
                   ) : (
-                    <span className="text-sm text-muted-foreground">{social.value}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {social.value}
+                    </span>
                   )}
                 </div>
               ))}
@@ -115,25 +128,6 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
           </CardContent>
         </Card>
       )}
-
-      {/* Signal Metadata */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Signal Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="font-medium">Signal ID</p>
-              <p className="text-muted-foreground">#{signalData.id}</p>
-            </div>
-            <div>
-              <p className="font-medium">Allocation</p>
-              <p className="text-muted-foreground">{signalData.proposedAllocation}%</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

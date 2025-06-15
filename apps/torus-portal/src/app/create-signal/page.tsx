@@ -66,7 +66,7 @@ export default function Page() {
         <PortalNavigationTabs />
       </div>
       <div className="pt-24 pb-12 px-6 max-w-2xl mx-auto">
-        <Card>
+        <Card className="border-0">
           <CardHeader>
             <CardTitle>Create Demand Signal</CardTitle>
             <CardDescription>
