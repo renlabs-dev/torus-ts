@@ -4,6 +4,7 @@ import type {
   CustomGraphLink,
   CustomGraphData,
   PermissionDetailsBase,
+  SignalsList,
 } from "../permission-graph-types";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
 
@@ -94,6 +95,7 @@ export function createNodes(
       val,
       fullAddress: address,
       role,
+      nodeType: "agent",
     };
 
     if (isAllocator) {
@@ -179,6 +181,43 @@ export function createAllocationLinks(
   return allocationLinks;
 }
 
+export function createSignalNodes(
+  signals: SignalsList | undefined,
+): CustomGraphNode[] {
+  if (!signals || signals.length === 0) {
+    return [];
+  }
+
+  return signals.map((signal) => ({
+    id: `signal-${signal.id}`,
+    name: signal.title,
+    color: GRAPH_CONSTANTS.COLORS.SIGNAL,
+    val: GRAPH_CONSTANTS.SIGNAL_NODE_SIZE,
+    role: "Signal",
+    nodeType: "signal" as const,
+    signalData: signal,
+  }));
+}
+
+export function createSignalLinks(
+  signals: SignalsList | undefined,
+): CustomGraphLink[] {
+  if (!signals || signals.length === 0) {
+    return [];
+  }
+
+  return signals.map((signal) => ({
+    linkType: "signal",
+    source: signal.agentKey,
+    target: `signal-${signal.id}`,
+    id: `signal-link-${signal.id}`,
+    linkDirectionalParticles: GRAPH_CONSTANTS.SIGNAL_LINK.particles,
+    linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+    linkColor: GRAPH_CONSTANTS.COLORS.SIGNAL_LINK,
+    linkWidth: GRAPH_CONSTANTS.SIGNAL_LINK.width,
+  }));
+}
+
 export function createAgentWeightMap(
   computedWeights: ComputedWeight[] | undefined,
 ): Map<string, number> {
@@ -200,6 +239,7 @@ export function createGraphData(
   permissionDetails: PermissionDetail[] | undefined,
   computedWeights: ComputedWeight[] | undefined,
   allocatorAddress: string,
+  signals?: SignalsList,
 ): CustomGraphData | null {
   if (
     (!permissionDetails || permissionDetails.length === 0) &&
@@ -238,8 +278,12 @@ export function createGraphData(
     permissionLinks,
   );
 
+  // Create signal nodes and links
+  const signalNodes = createSignalNodes(signals);
+  const signalLinks = createSignalLinks(signals);
+
   return {
-    nodes,
-    links: [...permissionLinks, ...allocationLinks],
+    nodes: [...nodes, ...signalNodes],
+    links: [...permissionLinks, ...allocationLinks, ...signalLinks],
   };
 }

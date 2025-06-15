@@ -19,6 +19,9 @@ export function useGraphData() {
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     trpcApi.computedAgentWeight.all.useQuery();
 
+  const { data: allSignals, isLoading: isLoadingSignals } =
+    trpcApi.signal.all.useQuery();
+
   const permissionDetails = useMemo((): PermissionDetails | undefined => {
     if (!rawPermissionDetails) return undefined;
 
@@ -64,13 +67,15 @@ export function useGraphData() {
       rawPermissionDetails,
       computedWeights,
       allocatorAddress,
+      allSignals,
     );
-  }, [rawPermissionDetails, computedWeights, allocatorAddress]);
+  }, [rawPermissionDetails, computedWeights, allocatorAddress, allSignals]);
 
   return {
     graphData,
-    isLoading: isLoadingPermissions || isLoadingWeights || lastBlock.isLoading,
+    isLoading: isLoadingPermissions || isLoadingWeights || isLoadingSignals || lastBlock.isLoading,
     permissionDetails,
     allComputedWeights,
+    allSignals,
   };
 }

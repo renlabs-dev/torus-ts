@@ -29,7 +29,7 @@ export default function PermissionGraphContainer() {
 
   const agentCache = useRef(new AgentLRUCache(10));
 
-  const { graphData, isLoading, permissionDetails, allComputedWeights } =
+  const { graphData, isLoading, permissionDetails, allComputedWeights, allSignals } =
     useGraphData();
   const { selectedAccount } = useTorus();
 
@@ -143,6 +143,7 @@ export default function PermissionGraphContainer() {
         graphData={graphData}
         permissionDetails={permissionDetails}
         allComputedWeights={allComputedWeights}
+        allSignals={allSignals}
         getCachedAgentData={getCachedAgentData}
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}

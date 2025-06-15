@@ -5,6 +5,7 @@ export const GRAPH_CONSTANTS = {
   // Node constants
   ALLOCATOR_NODE_SIZE: 200,
   MIN_NODE_SIZE: 5,
+  SIGNAL_NODE_SIZE: 0.5,
 
   // Link constants
   HIGHLIGHT_LINK_WIDTH_MULTIPLIER: 2,
@@ -34,8 +35,10 @@ export const GRAPH_CONSTANTS = {
     GRANTEE: "#38bdf8", // sky-500
     BOTH: "#34d399", // soft purple
     DEFAULT: "#64B5F6", // soft blue
+    SIGNAL: "#f59e0b", // amber-500
     PERMISSION_LINK: "#cbd5e1", // slate-300
     ALLOCATION_LINK: "#FFFFFF", // white
+    SIGNAL_LINK: "#fbbf24", // amber-400
   },
 
   // Link properties
@@ -48,5 +51,10 @@ export const GRAPH_CONSTANTS = {
   ALLOCATION_LINK: {
     particleWidth: 3,
     width: 1,
+  },
+
+  SIGNAL_LINK: {
+    width: 0,
+    particles: 0,
   },
 } as const;
