@@ -102,7 +102,7 @@ export default function CreateSignalForm() {
                       <Textarea
                         maxLength={200}
                         placeholder="Detailed description of your demand signal..."
-                        className="min-h-[120px]"
+                        className="min-h-[120px] resize-none"
                         {...field}
                       />
                     </FormControl>
