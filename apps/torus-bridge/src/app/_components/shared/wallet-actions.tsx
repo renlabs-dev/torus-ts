@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import { updateSearchParams } from "~/utils/query-params";
 import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
- 
+
 type TabId = "torus" | "base";
 type ViewType = "wallet" | null;
 
@@ -23,7 +23,7 @@ interface TabConfig {
 
 type TabUpdates = Record<string, string | null>;
 
-const TABS: ReadonlyArray<TabConfig> = [
+const TABS: readonly TabConfig[] = [
   {
     text: "Torus ⟷ Torus EVM",
     component: <TransferEVM />,
@@ -36,7 +36,7 @@ const TABS: ReadonlyArray<TabConfig> = [
   },
 ] as const;
 
-const DEFAULT_TAB = TABS[0] as TabConfig;
+const DEFAULT_TAB = TABS[0]!;
 
 const getTabUpdates = (tabId: TabId): TabUpdates => {
   const baseUpdates: TabUpdates = {
@@ -53,15 +53,11 @@ const getTabUpdates = (tabId: TabId): TabUpdates => {
     };
   }
 
-  if (tabId === "base") {
-    return {
-      ...baseUpdates,
-      from: "torus",
-      to: "base",
-    };
-  }
-
-  return baseUpdates;
+  return {
+    ...baseUpdates,
+    from: "torus",
+    to: "base",
+  };
 };
 
 function WalletOptions() {
