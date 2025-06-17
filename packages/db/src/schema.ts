@@ -573,17 +573,24 @@ export const permissionDetailsSchema = createTable("permission_details", {
   ...timeFields(),
 });
 
-export const enforcementAuthoritySchema = createTable("enforcement_authority", {
-  id: serial("id").primaryKey(),
-  permission_id: varchar("permission_id", { length: 66 })
-    .notNull()
-    .references(() => permissionSchema.permission_id),
-  ss58_address: ss58Address("ss58_address").notNull(),
+export const enforcementAuthoritySchema = createTable(
+  "enforcement_authority",
+  {
+    id: serial("id").primaryKey(),
+    permission_id: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionSchema.permission_id),
+    ss58_address: ss58Address("ss58_address").notNull(),
 
-  ...timeFields(),
-}, (table) => ({
-  uniquePermissionAuthority: unique().on(table.permission_id, table.ss58_address),
-}));
+    ...timeFields(),
+  },
+  (table) => ({
+    uniquePermissionAuthority: unique().on(
+      table.permission_id,
+      table.ss58_address,
+    ),
+  }),
+);
 
 /**
  * Stores the body of a constraint
@@ -594,3 +601,33 @@ export const constraintSchema = createTable("constraint", {
 
   ...timeFields(),
 });
+
+/**
+ * Stores the signaling capabilities of a agent
+ */
+export const agentDemandSignalSchema = createTable(
+  "agent_demand_signal",
+  {
+    id: serial("id").primaryKey(),
+    agentKey: ss58Address("agent_key").notNull(),
+
+    // demand signal
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    proposedAllocation: integer("proposed_allocation").notNull(),
+
+    // contact info
+    discord: text("discord"),
+    github: text("github"),
+    telegram: text("telegram"),
+    twitter: text("twitter"),
+
+    ...timeFields(),
+  },
+  (t) => [
+    check(
+      "percent_check",
+      sql`${t.proposedAllocation} >= 0 and ${t.proposedAllocation} <= 100`,
+    ),
+  ],
+);

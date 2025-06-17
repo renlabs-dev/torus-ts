@@ -9,6 +9,21 @@ export interface CustomGraphNode extends NodeObject {
   val?: number;
   fullAddress?: string;
   role?: string;
+  nodeType?: "agent" | "signal";
+  signalData?: SignalData;
+}
+
+export interface SignalData {
+  id: number;
+  title: string;
+  description: string;
+  proposedAllocation: number;
+  agentKey: string;
+  discord?: string | null;
+  github?: string | null;
+  telegram?: string | null;
+  twitter?: string | null;
+  createdAt: Date;
 }
 
 export interface CustomGraphLink extends LinkObject {
@@ -40,6 +55,10 @@ export type PermissionDetails = (PermissionDetailsBase[number] & {
 
 export type ComputedWeightsList = NonNullable<
   inferProcedureOutput<AppRouter["computedAgentWeight"]["all"]>
+>;
+
+export type SignalsList = NonNullable<
+  inferProcedureOutput<AppRouter["signal"]["all"]>
 >;
 
 export interface CachedAgentData {

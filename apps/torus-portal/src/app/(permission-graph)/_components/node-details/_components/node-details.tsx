@@ -39,6 +39,7 @@ export const NodeDetails = memo(function NodeDetails({
       graphData={graphData}
       nodePermissions={nodePermissions}
       permissionDetails={permissionDetails}
+      selectedNode={selectedNode}
     />
   );
 });
