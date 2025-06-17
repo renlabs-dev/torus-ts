@@ -1,6 +1,8 @@
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 import {
   agentApplicationVoteSchema,
+  agentDemandSignalSchema,
   agentReportSchema,
   cadreCandidateSchema,
   cadreVoteSchema,
@@ -107,3 +109,53 @@ export const USER_DISCORD_INFO_INSERT_SCHEMA = createInsertSchema(
   createdAt: true,
   deletedAt: true,
 });
+
+export const AGENT_DEMAND_SIGNAL_INSERT_SCHEMA = createInsertSchema(
+  agentDemandSignalSchema,
+)
+  .omit({
+    id: true,
+    agentKey: true,
+    updatedAt: true,
+    createdAt: true,
+    deletedAt: true,
+  })
+  .extend({
+    proposedAllocation: z.number().int().min(0, "Must be between 0 and 100"),
+    title: z
+      .string()
+      .min(1, "Title is required")
+      .max(100, "Title cannot exceed 100 characters"),
+    description: z
+      .string()
+      .min(1, "Description is required")
+      .max(8000, "Description cannot exceed 8000 characters"),
+    discord: z
+      .string()
+      .trim()
+      .regex(/^[a-zA-Z0-9._]{2,32}$/, "Invalid Discord username")
+      .optional(),
+    github: z
+      .string()
+      .optional()
+      .refine(
+        (val) =>
+          !val ||
+          /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(val),
+        {
+          message: "Invalid GitHub username",
+        },
+      ),
+    telegram: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^@?[a-zA-Z0-9_]{5,32}$/.test(val), {
+        message: "Invalid Telegram username",
+      }),
+    twitter: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^@?[a-zA-Z0-9_]{1,15}$/.test(val), {
+        message: "Invalid Twitter handle",
+      }),
+  });

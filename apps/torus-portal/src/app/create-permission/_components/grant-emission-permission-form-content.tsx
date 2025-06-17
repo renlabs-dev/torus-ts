@@ -3,17 +3,7 @@
 import { useCallback, useEffect } from "react";
 
 import { checkSS58 } from "@torus-network/sdk";
-import {
-  Clock,
-  Coins,
-  Loader2,
-  Plus,
-  Settings,
-  Split,
-  Target,
-  Trash2,
-  Wand2,
-} from "lucide-react";
+import { Loader2, Plus, Trash2, Wand2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
 import { useTorus } from "@torus-ts/torus-provider";
@@ -21,6 +11,7 @@ import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
@@ -48,6 +39,7 @@ import type {
   GrantEmissionPermissionFormData,
   GrantEmissionPermissionMutation,
 } from "./grant-emission-permission-form-schema";
+import { Badge } from "@torus-ts/ui/components/badge";
 
 interface GrantEmissionPermissionFormProps {
   form: GrantEmissionPermissionForm;
@@ -145,29 +137,19 @@ export function GrantEmissionPermissionFormComponent({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Grant Emission Permission</h1>
-        <p className="text-muted-foreground">
-          Create a new emission permission to grant allocation and distribution
-          rights
-        </p>
-      </div>
+    <div className="pb-12 px-6 w-full mx-auto flex items-end justify-end">
+      <Card className="mx-auto max-w-2xl border-0">
+        <CardHeader>
+          <CardTitle>Grant Emission Permission</CardTitle>
+          <CardDescription>
+            Create a new emission permission to grant allocation and
+            distribution rights{" "}
+          </CardDescription>
+        </CardHeader>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Specify the recipient who will receive the emission permission
-                and be able to allocate streams.
-              </p>
-            </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Basic Information */}
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
@@ -187,21 +169,13 @@ export function GrantEmissionPermissionFormComponent({
                   </FormItem>
                 )}
               />
-            </CardContent>
-          </Card>
-
-          {/* Allocation */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Coins className="h-5 w-5" />
-                Allocation Configuration
-              </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Define how emissions are allocated. Streams allow
-                percentage-based distribution from your available streams.
+                Specify the recipient who will receive the emission permission
+                and be able to allocate streams.
               </p>
-            </CardHeader>
+            </CardContent>
+
+            {/* Allocation */}
             <CardContent className="space-y-4">
               {/* <FormField
                 control={form.control}
@@ -301,21 +275,7 @@ export function GrantEmissionPermissionFormComponent({
                       Loading available streams...
                     </p>
                   )}
-                  {availableStreams.data &&
-                    availableStreams.data.length > 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Automatically populated {availableStreams.data.length}{" "}
-                        available streams for your account
-                      </p>
-                    )}
-                  {availableStreams.data &&
-                    availableStreams.data.length === 0 &&
-                    selectedAccount?.address && (
-                      <p className="text-sm text-muted-foreground">
-                        No streams found for your account. You can add streams
-                        manually.
-                      </p>
-                    )}
+
                   {streamFields.map((field, index) => {
                     const currentStreamValue = form.watch(
                       `allocation.streams.${index}.streamId`,
@@ -331,16 +291,11 @@ export function GrantEmissionPermissionFormComponent({
                           name={`allocation.streams.${index}.streamId`}
                           render={({ field }) => (
                             <FormItem className="flex-1">
-                              <FormLabel className="flex items-center gap-2 mb-3 md:mb-0">
-                                Stream ID
-                                {isRootStream && (
-                                  <span className="text-xs hidden md:block bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                    Root Stream
-                                  </span>
-                                )}
+                              <FormLabel>
+                                {isRootStream && <Badge>Root Stream</Badge>}
                               </FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="e.g. 0x..." />
+                                <Input {...field} placeholder={"Stream ID"} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -351,11 +306,10 @@ export function GrantEmissionPermissionFormComponent({
                           name={`allocation.streams.${index}.percentage`}
                           render={({ field }) => (
                             <FormItem className="w-32">
-                              <FormLabel>Percentage</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder="e.g. 20"
+                                  placeholder="Percentage"
                                   type="number"
                                   min="0"
                                   max="100"
@@ -380,22 +334,16 @@ export function GrantEmissionPermissionFormComponent({
                   })}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Targets */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Target Accounts
-              </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Specify the accounts that will receive emissions and their
-                relative weights for distribution.
+                Define how emissions are allocated. Streams allow
+                percentage-based distribution from your available streams.
               </p>
-            </CardHeader>
+            </CardContent>
+
+            {/* Targets */}
             <CardContent className="space-y-4">
+              <h4 className="font-medium mb-1 w-fit">Targets</h4>
+
               {targetFields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 items-end">
                   <FormField
@@ -403,12 +351,8 @@ export function GrantEmissionPermissionFormComponent({
                     name={`targets.${index}.account`}
                     render={({ field }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>Account Address</FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                          />
+                          <Input {...field} placeholder="Account Address" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -419,11 +363,10 @@ export function GrantEmissionPermissionFormComponent({
                     name={`targets.${index}.weight`}
                     render={({ field }) => (
                       <FormItem className="w-32">
-                        <FormLabel>Weight</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="e.g. 20"
+                            placeholder="Weight"
                             type="number"
                           />
                         </FormControl>
@@ -443,7 +386,6 @@ export function GrantEmissionPermissionFormComponent({
                 </div>
               ))}
               <div className="flex items-center justify-between">
-                <div></div>
                 <Button
                   type="button"
                   variant="outline"
@@ -454,21 +396,13 @@ export function GrantEmissionPermissionFormComponent({
                   Add Target
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Distribution Control
-              </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Configure how and when emissions are distributed to target
-                accounts``.
+                Specify the accounts that will receive emissions and their
+                relative weights for distribution.
               </p>
-            </CardHeader>
+            </CardContent>
+
+            {/* Distribution */}
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
@@ -557,21 +491,13 @@ export function GrantEmissionPermissionFormComponent({
                   )}
                 />
               )}
-            </CardContent>
-          </Card>
-
-          {/* Duration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Duration
-              </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Set how long this permission remains active (indefinitely or
-                until a specific block number).
+                Configure how and when emissions are distributed to target
+                accounts.
               </p>
-            </CardHeader>
+            </CardContent>
+
+            {/* Duration */}
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
@@ -613,21 +539,13 @@ export function GrantEmissionPermissionFormComponent({
                   )}
                 />
               )}
-            </CardContent>
-          </Card>
-
-          {/* Revocation */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Split className="h-5 w-5" />
-                Revocation Terms
-              </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Define the conditions under which this permission can be revoked
-                or cancelled.
+                Set how long this permission remains active (indefinitely or
+                until a specific block number).
               </p>
-            </CardHeader>
+            </CardContent>
+
+            {/* Revocation */}
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
@@ -745,26 +663,25 @@ export function GrantEmissionPermissionFormComponent({
                   )}
                 />
               )}
-            </CardContent>
-          </Card>
+              <p className="text-sm text-muted-foreground mt-2">
+                Define the conditions under which this permission can be revoked
+                or cancelled.
+              </p>
 
-          {/* Submit */}
-          <div className="flex gap-4 justify-center">
-            {onClose && (
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-            )}
-            <Button
-              type="submit"
-              disabled={mutation.isPending}
-              className="w-full"
-            >
-              {mutation.isPending ? "Creating..." : "Create Permission"}
-            </Button>
-          </div>
-        </form>
-      </Form>
+              <div className="flex justify-end space-x-4">
+                {onClose && (
+                  <Button type="button" variant="outline" onClick={onClose}>
+                    Cancel
+                  </Button>
+                )}
+                <Button type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending ? "Creating..." : "Create Permission"}
+                </Button>
+              </div>
+            </CardContent>
+          </form>
+        </Form>
+      </Card>
     </div>
   );
 }

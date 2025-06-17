@@ -64,7 +64,7 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
     api.computedAgentWeight.all(),
   );
   if (computedAgentError !== undefined) {
-    console.error("Error fetching agent metadata:", computedAgentError);
+    console.error("Error fetching computed agent weight:", computedAgentError);
     notFound();
   }
 

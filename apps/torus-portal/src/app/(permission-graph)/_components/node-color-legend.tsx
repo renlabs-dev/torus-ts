@@ -50,6 +50,11 @@ const nodeColorLegend: NodeColorInfo[] = [
     title: "Grantee",
     description: "Nodes that receive permissions from others",
   },
+  {
+    color: GRAPH_CONSTANTS.COLORS.SIGNAL,
+    title: "Demand Signal",
+    description: "Signals requesting specific capabilities from agents",
+  },
 ];
 
 export function NodeColorLegend() {

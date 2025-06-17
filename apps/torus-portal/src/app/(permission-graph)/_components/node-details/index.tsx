@@ -5,6 +5,7 @@ import type {
   PermissionDetails,
   CachedAgentData,
   ComputedWeightsList,
+  SignalsList,
 } from "../permission-graph-types";
 import { memo } from "react";
 import { PermissionNodeAgentCard } from "./_components/agent-card";
@@ -15,12 +16,14 @@ import {
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
 import { PermissionGraphOverview } from "../permission-graph-overview";
+import { SignalDetails } from "./_components/signal-details";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
   graphData: CustomGraphData | null;
   permissionDetails?: PermissionDetails;
   allComputedWeights?: ComputedWeightsList;
+  allSignals?: SignalsList;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   isOpen: boolean;
@@ -34,6 +37,7 @@ export const PermissionGraphNodeDetails = memo(
     graphData,
     permissionDetails,
     allComputedWeights,
+    allSignals: _allSignals,
     getCachedAgentData,
     setCachedAgentData,
     isOpen,
@@ -44,6 +48,8 @@ export const PermissionGraphNodeDetails = memo(
       return <PermissionGraphOverview graphData={graphData} />;
     }
 
+    const isSignalNode = selectedNode.nodeType === "signal";
+
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange} modal={false}>
         <SheetContent
@@ -52,27 +58,35 @@ export const PermissionGraphNodeDetails = memo(
           onInteractOutside={(e) => e.preventDefault()}
         >
           <SheetHeader>
-            <SheetTitle>Agent details</SheetTitle>
+            <SheetTitle>
+              {isSignalNode ? "Signal details" : "Agent details"}
+            </SheetTitle>
           </SheetHeader>
           <div className="flex flex-col gap-8 items-start justify-start w-full h-full">
-            <div className="w-full">
-              <PermissionNodeAgentCard
-                nodeId={selectedNode.id}
-                fullAddress={selectedNode.fullAddress}
-                allComputedWeights={allComputedWeights}
-                getCachedAgentData={getCachedAgentData}
-                setCachedAgentData={setCachedAgentData}
-              />
-            </div>
+            {isSignalNode ? (
+              <SignalDetails selectedNode={selectedNode} />
+            ) : (
+              <>
+                <div className="w-full">
+                  <PermissionNodeAgentCard
+                    nodeId={selectedNode.id}
+                    fullAddress={selectedNode.fullAddress}
+                    allComputedWeights={allComputedWeights}
+                    getCachedAgentData={getCachedAgentData}
+                    setCachedAgentData={setCachedAgentData}
+                  />
+                </div>
 
-            <NodeDetails
-              selectedNode={selectedNode}
-              graphData={graphData}
-              permissionDetails={permissionDetails}
-              getCachedAgentData={getCachedAgentData}
-              setCachedAgentData={setCachedAgentData}
-              onBackgroundClick={onBackgroundClick}
-            />
+                <NodeDetails
+                  selectedNode={selectedNode}
+                  graphData={graphData}
+                  permissionDetails={permissionDetails}
+                  getCachedAgentData={getCachedAgentData}
+                  setCachedAgentData={setCachedAgentData}
+                  onBackgroundClick={onBackgroundClick}
+                />
+              </>
+            )}
           </div>
         </SheetContent>
       </Sheet>

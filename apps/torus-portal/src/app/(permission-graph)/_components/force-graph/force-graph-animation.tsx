@@ -63,7 +63,9 @@ const ForceGraph = memo(
             getNodeColor(node, highlightState, props.userAddress)
           }
           linkDirectionalParticleWidth={3}
-          linkDirectionalParticles={1}
+          linkDirectionalParticles={(link: LinkObject) =>
+            Number(link.linkDirectionalParticles) || 0
+          }
           linkDirectionalParticleSpeed={(link: LinkObject) =>
             Number(link.linkDirectionalParticleSpeed) || 0.008
           }

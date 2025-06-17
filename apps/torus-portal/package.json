@@ -27,6 +27,7 @@
     "@torus-ts/dsl": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
+    "@torus-ts/db": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "@trpc/client": "catalog:",
