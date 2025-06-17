@@ -27,6 +27,55 @@ import { SelectChainSection } from "../_sections/select-chain-section";
 import { TokenSection } from "../_sections/token-section";
 import { WalletTransactionReview } from "../../shared/wallet-review";
 import { validateForm } from "./validate-form";
+import { useValidationErrors } from "./use-validation-errors";
+
+interface ValidationError {
+  form?: string;
+  amount?: string;
+  details?: string;
+  errorType?: 'insufficient_funds' | 'gas_estimation' | 'base_eth_insufficient' | 'token_error' | 'account_error' | 'validation_error';
+}
+
+interface FormWithToastProps {
+  errors: Record<string, unknown>;
+  isReview: boolean;
+  resetForm: () => void;
+  isValidating: boolean;
+  setIsReview: (b: boolean) => void;
+}
+
+function FormWithToast({ errors, isReview, resetForm, isValidating, setIsReview }: FormWithToastProps) {
+  useValidationErrors(errors as ValidationError);
+  
+  return (
+    <Form className="flex flex-col">
+      <div className="flex w-full flex-col gap-4 md:flex-row">
+        <Card className="animate-fade flex w-full flex-col gap-4 p-6 md:w-3/5">
+          <SelectChainSection isReview={isReview} />
+          <div className="mt-3.5 flex items-end justify-between space-x-4">
+            <TokenSection isReview={isReview} />
+            <AmountSection isReview={isReview} />
+          </div>
+          <RecipientSection isReview={isReview} />
+        </Card>
+        <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
+          <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
+          <CardContent className="p-0">
+            <WalletTransactionReview isReview={isReview} />
+          </CardContent>
+          <CardFooter className="w-full px-0 pb-0 pt-6">
+            <ButtonSection
+              resetForm={resetForm}
+              isReview={isReview}
+              isValidating={isValidating}
+              setIsReview={setIsReview}
+            />
+          </CardFooter>
+        </Card>
+      </div>
+    </Form>
+  );
+}
 
 export function TransferTokenForm() {
   const searchParams = useSearchParams();
@@ -115,33 +164,14 @@ export function TransferTokenForm() {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({ isValidating, resetForm }) => (
-        <Form className="flex flex-col">
-          <div className="flex w-full flex-col gap-4 md:flex-row">
-            <Card className="animate-fade flex w-full flex-col gap-4 p-6 md:w-3/5">
-              <SelectChainSection isReview={isReview} />
-              <div className="mt-3.5 flex items-end justify-between space-x-4">
-                <TokenSection isReview={isReview} />
-                <AmountSection isReview={isReview} />
-              </div>
-              <RecipientSection isReview={isReview} />
-            </Card>
-            <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
-              <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
-              <CardContent className="p-0">
-                <WalletTransactionReview isReview={isReview} />
-              </CardContent>
-              <CardFooter className="w-full px-0 pb-0 pt-6">
-                <ButtonSection
-                  resetForm={resetForm}
-                  isReview={isReview}
-                  isValidating={isValidating}
-                  setIsReview={setIsReview}
-                />
-              </CardFooter>
-            </Card>
-          </div>
-        </Form>
+      {({ isValidating, resetForm, errors }) => (
+        <FormWithToast 
+          errors={errors} 
+          isReview={isReview} 
+          resetForm={resetForm} 
+          isValidating={isValidating} 
+          setIsReview={setIsReview} 
+        />
       )}
     </Formik>
   );

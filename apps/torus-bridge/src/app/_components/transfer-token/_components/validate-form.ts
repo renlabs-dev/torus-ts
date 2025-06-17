@@ -10,26 +10,43 @@ import type { TransferFormValues } from "~/utils/types";
 
 const insufficientFundsErrMsg = /insufficient.[funds|lamports]/i;
 const emptyAccountErrMsg = /AccountNotFound/i;
+const gasEstimationErrMsg = /gas.*(estimation|required)/i;
+const baseEthInsufficientErrMsg = /insufficient.*eth/i;
+
+interface ValidationError {
+  form?: string;
+  amount?: string;
+  details?: string;
+  errorType?: 'insufficient_funds' | 'gas_estimation' | 'base_eth_insufficient' | 'token_error' | 'account_error' | 'validation_error';
+}
 
 export async function validateForm(
   warpCore: WarpCore,
   { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
   accounts: Record<ProtocolType, AccountInfo>,
-) {
+): Promise<ValidationError | Record<string, unknown>> {
   const [tokenError, token] = trySync(() =>
     getTokenByIndex(warpCore, tokenIndex),
   );
   if (tokenError || !token) {
     logger.error("Error getting token:", tokenError);
+    const details = tokenError ? `Token retrieval failed: ${errorToString(tokenError, 200)}` : "Token configuration not found";
     return {
-      form: tokenError ? errorToString(tokenError, 40) : "Token is required",
+      form: "Error",
+      details,
+      errorType: 'token_error' as const,
     };
   }
 
   const [amountError, amountWei] = trySync(() => toWei(amount, token.decimals));
   if (amountError) {
     logger.error("Error converting amount to wei:", amountError);
-    return { amount: "Invalid amount" };
+    const details = `Amount conversion failed: ${errorToString(amountError, 200)}. Please check your input format.`;
+    return { 
+      amount: "Invalid amount",
+      details,
+      errorType: 'validation_error' as const,
+    };
   }
 
   const [accountError, { address, publicKey } = {}] = trySync(() =>
@@ -37,7 +54,14 @@ export async function validateForm(
   );
   if (accountError || !address) {
     logger.error("Error getting account address:", accountError);
-    return { form: "Error retrieving account information" };
+    const details = accountError ? 
+      `Account retrieval failed: ${errorToString(accountError, 200)}` : 
+      "No account address found. Please ensure your wallet is properly connected.";
+    return { 
+      form: "Error", 
+      details,
+      errorType: 'account_error' as const,
+    };
   }
 
   const senderPubKey = await publicKey;
@@ -56,14 +80,43 @@ export async function validateForm(
     logger.error("Error validating transfer:", validateError);
     const errorMsg = errorToString(validateError, 40);
     const fullError = `${errorMsg} ${validateError.message}`;
+    const detailedError = errorToString(validateError, 500);
+    
+    if (insufficientFundsErrMsg.test(fullError) || emptyAccountErrMsg.test(fullError)) {
+      const [balanceError, currentBalance] = await tryAsync(token.getBalance(warpCore.multiProvider, address));
+      const formattedBalance = currentBalance?.getDecimalFormattedAmount() ?? "0";
+      const formattedAmount = token.amount(amountWei).getDecimalFormattedAmount();
+      
+      return {
+        form: "Error",
+        details: `Insufficient balance: You have ${formattedBalance} ${token.symbol} and are trying to transfer ${formattedAmount} ${token.symbol}. Please adjust the amount and try again.`,
+        errorType: 'insufficient_funds' as const,
+      } as ValidationError;
+    }
+    
+    if (gasEstimationErrMsg.test(fullError)) {
+      return {
+        form: "Error", 
+        details: `Gas estimation failed: ${detailedError}. Please ensure you have enough ETH to cover the gas fees on the origin chain.`,
+        errorType: 'gas_estimation' as const,
+      } as ValidationError;
+    }
+    
+    if (baseEthInsufficientErrMsg.test(fullError)) {
+      return {
+        form: "Error",
+        details: `Insufficient ETH on Base: ${detailedError}. You need ETH on Base to pay for transaction gas fees when bridging from Base. Please add some ETH to your Base wallet.`,
+        errorType: 'base_eth_insufficient' as const,
+      } as ValidationError;
+    }
+
+    // General validation error
     return {
-      form:
-        insufficientFundsErrMsg.test(fullError) ||
-        emptyAccountErrMsg.test(fullError)
-          ? "Insufficient funds for gas fees"
-          : errorMsg,
-    };
+      form: "Error",
+      details: `Transfer validation failed: ${detailedError}. Please check your inputs and try again.`,
+      errorType: 'validation_error' as const,
+    } as ValidationError;
   }
 
-  return result;
+  return result as ValidationError | Record<string, unknown>;
 }
