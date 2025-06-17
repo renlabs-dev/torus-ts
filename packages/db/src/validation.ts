@@ -1,4 +1,5 @@
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 import {
   agentApplicationVoteSchema,
   agentDemandSignalSchema,
@@ -117,4 +118,19 @@ export const AGENT_DEMAND_SIGNAL_INSERT_SCHEMA = createInsertSchema(
   updatedAt: true,
   createdAt: true,
   deletedAt: true,
+}).extend({
+  title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
+  description: z.string().min(1, "Description is required").max(8000, "Description cannot exceed 8000 characters"),
+  discord: z.string().optional().refine((val) => !val || /^[a-zA-Z0-9._]{2,32}$/.test(val), {
+    message: "Invalid Discord username"
+  }),
+  github: z.string().optional().refine((val) => !val || /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(val), {
+    message: "Invalid GitHub username"
+  }),
+  telegram: z.string().optional().refine((val) => !val || /^@?[a-zA-Z0-9_]{5,32}$/.test(val), {
+    message: "Invalid Telegram username"
+  }),
+  twitter: z.string().optional().refine((val) => !val || /^@?[a-zA-Z0-9_]{1,15}$/.test(val), {
+    message: "Invalid Twitter handle"
+  }),
 });

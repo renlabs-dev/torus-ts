@@ -6,7 +6,6 @@ import { api } from "~/trpc/react";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -81,12 +80,10 @@ export default function CreateSignalForm() {
                     <FormControl>
                       <Input
                         placeholder="Brief title for your demand signal"
+                        maxLength={100}
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>
-                      A concise title that summarizes your demand signal.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -100,16 +97,12 @@ export default function CreateSignalForm() {
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
-                        maxLength={200}
+                        maxLength={8000}
                         placeholder="Detailed description of your demand signal..."
                         className="min-h-[120px] resize-none"
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Provide detailed information about your demand signal and
-                      requirements.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -133,9 +126,6 @@ export default function CreateSignalForm() {
                         }
                       />
                     </FormControl>
-                    <FormDescription>
-                      The percentage allocation you propose (0-100%).
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -155,7 +145,7 @@ export default function CreateSignalForm() {
                         <FormLabel>Discord</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Discord username"
+                            placeholder="Discord username (e.g., username)"
                             {...field}
                             value={field.value ?? ""}
                           />
@@ -173,7 +163,7 @@ export default function CreateSignalForm() {
                         <FormLabel>GitHub</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="GitHub username"
+                            placeholder="GitHub username (e.g., octocat)"
                             {...field}
                             value={field.value ?? ""}
                           />
@@ -191,7 +181,7 @@ export default function CreateSignalForm() {
                         <FormLabel>Telegram</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Telegram username"
+                            placeholder="Telegram username (e.g., @username)"
                             {...field}
                             value={field.value ?? ""}
                           />
@@ -209,7 +199,7 @@ export default function CreateSignalForm() {
                         <FormLabel>Twitter</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Twitter handle"
+                            placeholder="Twitter handle (e.g., @username)"
                             {...field}
                             value={field.value ?? ""}
                           />
