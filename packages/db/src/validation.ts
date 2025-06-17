@@ -130,7 +130,7 @@ export const AGENT_DEMAND_SIGNAL_INSERT_SCHEMA = createInsertSchema(
       .string()
       .min(1, "Description is required")
       .max(8000, "Description cannot exceed 8000 characters"),
-    iscord: z
+    discord: z
       .string()
       .trim()
       .regex(/^[a-zA-Z0-9._]{2,32}$/, "Invalid Discord username")
