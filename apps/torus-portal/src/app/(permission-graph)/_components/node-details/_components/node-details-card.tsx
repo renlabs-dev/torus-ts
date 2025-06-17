@@ -8,6 +8,12 @@ import {
 } from "@torus-ts/ui/components/accordion";
 import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
 import { formatDuration, formatScope } from "../../permission-graph-utils";
 import type {
   CachedAgentData,
@@ -18,6 +24,7 @@ import type {
 } from "../../permission-graph-types";
 import { ActionButtons } from "./action-buttons";
 import { LinkButtons } from "./link-buttons";
+import { SignalsAccordion } from "./signals-accordion";
 
 interface NodeDetailsCardProps {
   nodePermissions: PermissionWithType[];
@@ -33,6 +40,7 @@ export function NodeDetailsCard({
   graphData,
   nodePermissions,
   permissionDetails,
+  selectedNode,
 }: NodeDetailsCardProps) {
   if (!graphData) return null;
 
@@ -68,133 +76,148 @@ export function NodeDetailsCard({
     };
   });
 
+  const PermissionsContent = () => (
+    <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-32rem)]">
+      {processedPermissions.length > 0 ? (
+        <Accordion type="single" collapsible className="w-full">
+          {processedPermissions.map(
+            ({
+              details,
+              isOutgoing,
+              connectedAddress,
+              sourceId,
+              targetId,
+            }) => (
+              <AccordionItem
+                key={`${sourceId}-${targetId}`}
+                value={`${sourceId}-${targetId}`}
+                className="border bg-accent mb-2"
+              >
+                <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
+                  <div className="flex flex-col gap-1 w-full pr-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-white">
+                        {isOutgoing ? "← Granted " : "→ Received "}
+                        Permission{" "}
+                        {smallAddress(String(details?.permission_id))}
+                      </span>
+                    </div>
+                    <LinkButtons
+                      grantor_key={details?.grantor_key}
+                      grantee_key={details?.grantee_key}
+                      scope={details?.scope}
+                    />
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
+                  <div className="flex flex-col gap-1 space-between">
+                    <div className="flex items-center gap-2 text-gray-400 font-mono">
+                      <span className="text-xs text-gray-500">
+                        {isOutgoing ? "Granted To" : "Received From"}
+                      </span>
+                    </div>
+                    <div className="flex flex-row justify-between gap-2">
+                      <span>{smallAddress(connectedAddress, 10)}</span>
+                      <ActionButtons connectedAddress={connectedAddress} />
+                    </div>
+                  </div>
+                  {details && (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <span className="text-xs text-gray-500">Scope</span>
+                          <div className="text-sm text-gray-300">
+                            {formatScope(details.scope)}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500">
+                            {details.duration === null ? "Duration" : "Expires in"}
+                          </span>
+                          <div className="text-sm text-gray-300">
+                            {formatDuration(
+                              Number(details.remainingBlocks ?? 0),
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <span className="text-xs text-gray-500">
+                            Executions
+                          </span>
+                          <div className="text-sm text-gray-300">
+                            {details.execution_count}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500">
+                            Permission ID
+                          </span>
+                          <div className="text-sm text-gray-300">
+                            {smallAddress(connectedAddress, 8)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          {/* TODO ADD ENFORCEMENT */}
+                          {/* <span className="text-xs text-gray-500">
+                          Enforcement
+                        </span> */}
+                          <div className="font-mono text-gray-300 break-all">
+                            {/*todo edit*/}
+                            {/* {details.enforcement} */}
+                            {/* {smallAddress(details.enforcement, 4)} */}
+                          </div>
+                        </div>
+
+                        {details.parent_id && (
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Parent ID
+                            </span>
+                            <div className="text-sm text-gray-300">
+                              {details.parent_id}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            ),
+          )}
+        </Accordion>
+      ) : (
+        <span className="text-gray-500 text-center mt-8">
+          No permissions found for this agent
+        </span>
+      )}
+    </ScrollArea>
+  );
+
   return (
     <Card className="w-full flex-1 flex flex-col z-50 border-none">
-      <h2 className="text-lg font-semibold flex-shrink-0 mb-4">
-        Applied Permissions
-      </h2>
-
-      <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-28rem)]">
-        {processedPermissions.length > 0 ? (
-          <Accordion type="single" collapsible className="w-full">
-            {processedPermissions.map(
-              ({
-                details,
-                isOutgoing,
-                connectedAddress,
-                sourceId,
-                targetId,
-              }) => (
-                <AccordionItem
-                  key={`${sourceId}-${targetId}`}
-                  value={`${sourceId}-${targetId}`}
-                  className="border bg-accent mb-2"
-                >
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
-                    <div className="flex flex-col gap-1 w-full pr-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-white">
-                          {isOutgoing ? "← Granted " : "→ Received "}
-                          Permission{" "}
-                          {smallAddress(String(details?.permission_id))}
-                        </span>
-                      </div>
-                      <LinkButtons
-                        grantor_key={details?.grantor_key}
-                        grantee_key={details?.grantee_key}
-                        scope={details?.scope}
-                      />
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
-                    <div className="flex flex-col gap-1 space-between">
-                      <div className="flex items-center gap-2 text-gray-400 font-mono">
-                        <span className="text-xs text-gray-500">
-                          {isOutgoing ? "Granted To" : "Received From"}
-                        </span>
-                      </div>
-                      <div className="flex flex-row justify-between gap-2">
-                        <span>{smallAddress(connectedAddress, 10)}</span>
-                        <ActionButtons connectedAddress={connectedAddress} />
-                      </div>
-                    </div>
-                    {details && (
-                      <>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <span className="text-xs text-gray-500">Scope</span>
-                            <div className="text-sm text-gray-300">
-                              {formatScope(details.scope)}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-xs text-gray-500">
-                              {details.duration === null ? "Duration" : "Expires in"}
-                            </span>
-                            <div className="text-sm text-gray-300">
-                              {formatDuration(
-                                Number(details.remainingBlocks ?? 0),
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <span className="text-xs text-gray-500">
-                              Executions
-                            </span>
-                            <div className="text-sm text-gray-300">
-                              {details.execution_count}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-xs text-gray-500">
-                              Permission ID
-                            </span>
-                            <div className="text-sm text-gray-300">
-                              {smallAddress(connectedAddress, 8)}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            {/* TODO ADD ENFORCEMENT */}
-                            {/* <span className="text-xs text-gray-500">
-                            Enforcement
-                          </span> */}
-                            <div className="font-mono text-gray-300 break-all">
-                              {/*todo edit*/}
-                              {/* {details.enforcement} */}
-                              {/* {smallAddress(details.enforcement, 4)} */}
-                            </div>
-                          </div>
-
-                          {details.parent_id && (
-                            <div>
-                              <span className="text-xs text-gray-500">
-                                Parent ID
-                              </span>
-                              <div className="text-sm text-gray-300">
-                                {details.parent_id}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              ),
-            )}
-          </Accordion>
-        ) : (
-          <span className="text-gray-500 text-center mt-8">
-            No permissions found for this agent
-          </span>
-        )}
-      </ScrollArea>
+      <Tabs defaultValue="permissions" className="w-full flex flex-col flex-1">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+          <TabsTrigger value="signals">Signals</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="permissions" className="flex-1 mt-0">
+          <PermissionsContent />
+        </TabsContent>
+        
+        <TabsContent value="signals" className="flex-1 mt-0">
+          <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-32rem)]">
+            <SignalsAccordion selectedNode={selectedNode} />
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </Card>
   );
 }
