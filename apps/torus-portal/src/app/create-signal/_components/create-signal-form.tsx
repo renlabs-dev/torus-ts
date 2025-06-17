@@ -121,9 +121,12 @@ export default function CreateSignalForm() {
                         max="100"
                         placeholder="0-100"
                         {...field}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value) || "0")
-                        }
+                        onChange={(e) => {
+                          const n = parseInt(e.target.value, 10);
+                          // Send undefined to trigger “required” validation when empty,
+                          // otherwise the parsed number.
+                          field.onChange(Number.isFinite(n) ? n : undefined);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />

@@ -3,7 +3,7 @@ import CreateSignalForm from "./_components/create-signal-form";
 import Image from "next/image";
 export default function Page() {
   return (
-    <div className="flex min-h-svh">
+    <main className="flex min-h-svh">
       <div className="fixed top-[3.9rem] left-2 right-96 z-10">
         <PortalNavigationTabs />
       </div>
@@ -20,6 +20,6 @@ export default function Page() {
       <div className="flex flex-1 items-center justify-center bg-card animate-fade-down">
         <CreateSignalForm />
       </div>
-    </div>
+    </main>
   );
 }

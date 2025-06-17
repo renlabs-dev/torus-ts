@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { Network, Shield, Plus, Radio } from "lucide-react";
+import { cn } from "@torus-ts/ui/lib/utils";
 
 export default function PortalNavigationTabs() {
   const router = useRouter();
@@ -72,7 +73,9 @@ export default function PortalNavigationTabs() {
       {/* Desktop Tabs */}
       <div className="hidden md:block w-fit">
         <Tabs value={currentTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList
+            className={cn("grid w-full", `grid-cols-${navigationItems.length}`)}
+          >
             {navigationItems.map((item) => {
               const Icon = item.icon;
               return (

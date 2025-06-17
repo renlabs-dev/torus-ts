@@ -73,7 +73,11 @@ export function useGraphData() {
 
   return {
     graphData,
-    isLoading: isLoadingPermissions || isLoadingWeights || isLoadingSignals || lastBlock.isLoading,
+    isLoading:
+      isLoadingPermissions ||
+      isLoadingWeights ||
+      isLoadingSignals ||
+      lastBlock.isLoading,
     permissionDetails,
     allComputedWeights,
     allSignals,
