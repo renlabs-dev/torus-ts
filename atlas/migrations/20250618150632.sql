@@ -1,0 +1,2 @@
+-- Create "agent_demand_signal" table
+CREATE TABLE "public"."agent_demand_signal" ("id" serial NOT NULL, "agent_key" character varying(256) NOT NULL, "title" text NOT NULL, "description" text NOT NULL, "proposed_allocation" integer NOT NULL, "discord" text NULL, "github" text NULL, "telegram" text NULL, "twitter" text NULL, "created_at" timestamptz NOT NULL DEFAULT now(), "updated_at" timestamptz NOT NULL DEFAULT now(), "deleted_at" timestamptz NULL, PRIMARY KEY ("id"), CONSTRAINT "percent_check" CHECK ((proposed_allocation >= 0) AND (proposed_allocation <= 100)));
