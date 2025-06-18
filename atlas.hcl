@@ -20,7 +20,7 @@ env "local" {
         dir = "file://atlas/migrations"
     }
     vars = {
-            search_path = "public"
-        }
+        search_path = "public"
+    }
     exclude = ["drizzle"]
 }
