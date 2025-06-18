@@ -49,6 +49,12 @@ jobs:
 
       - uses: ariga/setup-atlas@v0
 
+      - run: git fetch origin main:main
+
+      - name: Run lint
+        run: |
+          atlas migrate lint --env local --git-base origin/main
+
       - name: Verify migrations hash
         run: |
           (cd atlas/migrations && cp atlas.sum atlas.sum.orig)
@@ -148,8 +154,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: git fetch origin main:main
-
       - name: Import Secrets
         uses: ./.github/actions/import-db-secrets
         with:
@@ -158,10 +162,6 @@ jobs:
           vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
       - uses: ariga/setup-atlas@v0
-
-      - name: Run lint
-        run: |
-          atlas migrate lint --env local --git-base origin/main
 
       - name: Generate migrations report
         run: |
