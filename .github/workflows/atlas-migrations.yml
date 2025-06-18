@@ -91,7 +91,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: start db
+      - name: Start db
         run: |
           docker compose up -d postgres
           docker ps
@@ -103,7 +103,7 @@ jobs:
           vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
           vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
-      - name: fetch url and test connection
+      - name: Fetch URL and test connection
         id: shadow-db
         run: |
           # Get the container IP
@@ -132,7 +132,7 @@ jobs:
       - name: Apply migrations
         run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
 
-      - name: delete db
+      - name: Delete DB
         run: docker compose down -v
 
   apply-migrations:
