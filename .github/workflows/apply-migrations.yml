@@ -106,6 +106,13 @@ jobs:
           docker compose up -d postgres
           docker ps
 
+      - name: Import DB Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
       - name: fetch url and test connection
         id: shadow-db
         run: |
@@ -116,7 +123,6 @@ jobs:
           DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db"
 
           echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
-          # steps.shadow-db.outputs.db_url
 
           echo "Waiting for PostgreSQL to be ready..."
           until pg_isready -d "${DATABASE_URL}"; do 
@@ -124,6 +130,12 @@ jobs:
             sleep 1
           done
           echo "PostgreSQL is ready!"
+
+      - name: Dump target database
+        run: pg_dump -Fc -v -b "${POSTGRES_URL}" -f database.dump
+
+      - name: Load dump into shadow database
+        run: pg_restore -v --no-owner --no-acl --role=postgres -d "${{ steps.shadow-db.outputs.db_url }}" database.dump
 
       - name: delete db
         run: docker compose down -v
