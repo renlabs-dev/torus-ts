@@ -8,6 +8,10 @@ on:
         type: boolean
         required: false
         default: false
+  pull_request:
+    branches:
+      - main
+      - dev
   push:
     branches:
       - main
@@ -64,7 +68,10 @@ jobs:
 
   apply-migrations:
     needs: check-migrations
-    if: ${{ !inputs.rollback && needs.check-migrations.outputs.has_pending == 'true' }}
+    if: |
+      !inputs.rollback && 
+      needs.check-migrations.outputs.has_pending == 'true' && 
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -120,7 +127,9 @@ jobs:
 
   rollback-migrations:
     needs: check-migrations
-    if: ${{ inputs.rollback }}
+    if: |
+      inputs.rollback && 
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -168,7 +177,9 @@ jobs:
 
   restart-apps:
     needs: [check-migrations, apply-migrations, rollback-migrations]
-    if: ${{ needs.apply-migrations.result == 'success' || needs.rollback-migrations.result == 'success' }}
+    if: |
+      github.event_name == 'push' && 
+      (needs.apply-migrations.result == 'success' || needs.rollback-migrations.result == 'success')
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
