@@ -41,15 +41,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Import Secrets
-        id: import-secrets
-        uses: hashicorp/vault-action@v3
+        uses: ./.github/actions/import-db-secrets
         with:
-          method: approle
-          url: ${{ secrets.VAULT_ADDR }}
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
       - uses: ariga/setup-atlas@v0
 
@@ -100,14 +96,11 @@ jobs:
       - run: git fetch origin main:main
 
       - name: Import Secrets
-        uses: hashicorp/vault-action@v3
+        uses: ./.github/actions/import-db-secrets
         with:
-          method: approle
-          url: ${{ secrets.VAULT_ADDR }}
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
       - uses: ariga/setup-atlas@v0
 
@@ -154,14 +147,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Import Secrets
-        uses: hashicorp/vault-action@v3
+        uses: ./.github/actions/import-db-secrets
         with:
-          method: approle
-          url: ${{ secrets.VAULT_ADDR }}
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
       - uses: ariga/setup-atlas@v0
 
