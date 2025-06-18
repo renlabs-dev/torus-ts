@@ -45,7 +45,7 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps test_db_url | POSTGRES_URL
 
       - uses: ariga/setup-atlas@v0
 
@@ -103,7 +103,7 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps test_db_url | POSTGRES_URL
 
       - uses: ariga/setup-atlas@v0
 
@@ -157,7 +157,7 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps test_db_url | POSTGRES_URL
 
       - uses: ariga/setup-atlas@v0
 
