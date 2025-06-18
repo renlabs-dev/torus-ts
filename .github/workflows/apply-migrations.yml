@@ -12,6 +12,10 @@ on:
     branches:
       - main
       - dev
+    types:
+      - opened
+      - reopened
+      - synchronize
   push:
     branches:
       - main
@@ -83,8 +87,8 @@ jobs:
   apply-migrations:
     needs: check-migrations
     if: |
-      !inputs.rollback && 
-      needs.check-migrations.outputs.has_pending == 'true' && 
+      !inputs.rollback &&
+      needs.check-migrations.outputs.has_pending == 'true' &&
       github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -142,7 +146,7 @@ jobs:
   rollback-migrations:
     needs: check-migrations
     if: |
-      inputs.rollback && 
+      inputs.rollback &&
       github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -192,7 +196,7 @@ jobs:
   restart-apps:
     needs: [check-migrations, apply-migrations, rollback-migrations]
     if: |
-      github.event_name == 'push' && 
+      github.event_name == 'push' &&
       (needs.apply-migrations.result == 'success' || needs.rollback-migrations.result == 'success')
     runs-on: ubuntu-latest
     container:
