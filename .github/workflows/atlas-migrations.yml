@@ -135,7 +135,7 @@ jobs:
           echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
 
           echo "Waiting for PostgreSQL to be ready..."
-          until pg_isready -d "${DATABASE_URL}"; do 
+          until pg_isready -d "${DATABASE_URL}"; do
             echo "PostgreSQL is unavailable - sleeping"
             sleep 1
           done
