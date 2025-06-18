@@ -1,5 +1,5 @@
-name: "Import DB Secrets from Vault"
-description: "Imports DB secrets from HashiCorp Vault"
+name: "Import DB Secrets"
+description: "Import database secrets from Vault based on environment"
 
 inputs:
   vault_addr:
@@ -15,7 +15,19 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Import Secrets from Vault
+    - name: Set environment
+      id: set-env
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          ENV_NAME=${{ github.event.pull_request.base.ref == 'main' && 'prod' || 'dev' }}
+        else
+          ENV_NAME=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+        fi
+        echo "env_name=$ENV_NAME" >> $GITHUB_OUTPUT
+
+    - name: Import Secrets
+      id: import-secrets
       uses: hashicorp/vault-action@v3
       with:
         method: approle
@@ -23,4 +35,4 @@ runs:
         roleId: ${{ inputs.vault_role_id }}
         secretId: ${{ inputs.vault_secret_id }}
         secrets: |
-          torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
