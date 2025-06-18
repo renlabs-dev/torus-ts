@@ -126,8 +126,10 @@ jobs:
       - name: Fetch URL and test connection
         id: shadow-db
         run: |
+          CONTAINER_ID=$(docker compose ps -q postgres)
+
           # Get the container IP
-          DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' torus-ts-postgres-1)
+          DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
 
           # Use the database URL in your application
           DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
