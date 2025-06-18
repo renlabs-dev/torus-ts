@@ -1,4 +1,4 @@
-name: Apply/Revert Migrations
+name: Atlas Migrations
 
 on:
   workflow_dispatch:
@@ -24,14 +24,15 @@ on:
     paths:
       - "atlas/migrations/**"
       - atlas.hcl
-      - ".github/workflows/apply-migrations.yml"
+      - ".github/workflows/atlas-migrations.yml"
+      - ".github/actions/import-db-secrets/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
-  check-migrations:
+  check:
     if: ${{ !inputs.rollback }}
     runs-on: ubuntu-latest
     outputs:
@@ -41,17 +42,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Import Secrets
-        id: import-secrets
-        uses: hashicorp/vault-action@v3
+        uses: ./.github/actions/import-db-secrets
         with:
-          method: approle
-          url: ${{ secrets.VAULT_ADDR }}
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
       - uses: ariga/setup-atlas@v0
+
+      - run: git fetch origin main:main
+
+      - name: Run lint
+        run: |
+          atlas migrate lint --env local --git-base origin/main
 
       - name: Verify migrations hash
         run: |
@@ -65,14 +68,28 @@ jobs:
             exit 1
           fi
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Verify non-generated migrations
         run: |
-          atlas migrate diff --env local --to "${POSTGRES_URL}"
+          atlas migrate diff --env local
 
           cd atlas/migrations
           if ! cmp -s atlas.sum atlas.sum.orig; then
             echo "❌ Schema changes detected that require new migrations!"
-            echo "Please run 'atlas migrate diff' locally to generate the required migrations,"
+            echo "Please run 'atlas migrate diff --env local' locally to generate the required migrations,"
             echo "review them, and include them in your PR."
             exit 1
           fi
@@ -84,11 +101,66 @@ jobs:
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "$output"
 
-  apply-migrations:
-    needs: check-migrations
+  shadow-apply-check:
+    needs: check
+    if: |
+      github.event_name == 'pull_request' &&
+      github.base_ref == 'main' &&
+      needs.check.outputs.has_pending == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start db
+        run: |
+          docker compose up -d postgres
+          docker ps
+
+      - name: Import DB Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+      - name: Fetch URL and test connection
+        id: shadow-db
+        run: |
+          CONTAINER_ID=$(docker compose ps -q postgres)
+
+          # Get the container IP
+          DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
+
+          # Use the database URL in your application
+          DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
+
+          echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
+
+          echo "Waiting for PostgreSQL to be ready..."
+          timeout 60s bash -c 'until pg_isready -d "${DATABASE_URL}"; do sleep 1; done'
+          echo "PostgreSQL is ready!"
+
+      - name: Dump target database
+        run: pg_dump -Fc -v -b "${POSTGRES_URL}" -f database.dump
+
+      - name: Load dump into shadow database
+        run: pg_restore -v --no-owner --no-acl --role=postgres -d "${{ steps.shadow-db.outputs.db_url }}" database.dump
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Apply migrations
+        run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
+
+      - name: Delete DB
+        if: always()
+        run: docker compose down -v
+
+  apply:
+    needs: check
     if: |
       !inputs.rollback &&
-      needs.check-migrations.outputs.has_pending == 'true' &&
+      needs.check.outputs.has_pending == 'true' &&
       github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -97,23 +169,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: git fetch origin main:main
-
       - name: Import Secrets
-        uses: hashicorp/vault-action@v3
+        uses: ./.github/actions/import-db-secrets
         with:
-          method: approle
-          url: ${{ secrets.VAULT_ADDR }}
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
       - uses: ariga/setup-atlas@v0
-
-      - name: Run lint
-        run: |
-          atlas migrate lint --env local --git-base origin/main
 
       - name: Generate migrations report
         run: |
@@ -143,8 +206,8 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-  rollback-migrations:
-    needs: check-migrations
+  rollback:
+    needs: check
     if: |
       inputs.rollback &&
       github.event_name == 'push'
@@ -154,14 +217,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Import Secrets
-        uses: hashicorp/vault-action@v3
+        uses: ./.github/actions/import-db-secrets
         with:
-          method: approle
-          url: ${{ secrets.VAULT_ADDR }}
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
       - uses: ariga/setup-atlas@v0
 
@@ -194,10 +254,10 @@ jobs:
           if-no-files-found: error
 
   restart-apps:
-    needs: [check-migrations, apply-migrations, rollback-migrations]
+    needs: [check, apply, rollback]
     if: |
       github.event_name == 'push' &&
-      (needs.apply-migrations.result == 'success' || needs.rollback-migrations.result == 'success')
+      (needs.apply.result == 'success' || needs.rollback.result == 'success')
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
