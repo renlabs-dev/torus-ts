@@ -1,4 +1,4 @@
-name: Apply/Revert Migrations
+name: Atlas Migrations
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ on:
     paths:
       - "atlas/migrations/**"
       - atlas.hcl
-      - ".github/workflows/apply-migrations.yml"
+      - ".github/workflows/atlas-migrations.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -80,22 +80,11 @@ jobs:
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "$output"
 
-  prod-schema-check:
+  shadow-apply-check:
     needs: check-migrations
     if: |
       github.event_name == 'pull_request' &&
-      github.base_ref == 'main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: test
-        run: |
-          echo "this is a test"
-
-  test-schema-check:
-    needs: check-migrations
-    if: |
-      github.event_name == 'push' &&
-      github.ref_name == 'feature/migrations' &&
+      github.base_ref == 'main' &&
       needs.check-migrations.outputs.has_pending == 'true'
     runs-on: ubuntu-latest
     steps:
