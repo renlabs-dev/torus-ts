@@ -69,12 +69,12 @@ jobs:
 
       - name: Verify non-generated migrations
         run: |
-          atlas migrate diff --env local --to "${POSTGRES_URL}"
+          atlas migrate diff --env local
 
           cd atlas/migrations
           if ! cmp -s atlas.sum atlas.sum.orig; then
             echo "❌ Schema changes detected that require new migrations!"
-            echo "Please run 'atlas migrate diff' locally to generate the required migrations,"
+            echo "Please run 'atlas migrate diff --env local' locally to generate the required migrations,"
             echo "review them, and include them in your PR."
             exit 1
           fi
