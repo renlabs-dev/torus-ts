@@ -120,7 +120,7 @@ jobs:
           DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' torus-ts-postgres-1)
 
           # Use the database URL in your application
-          DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db"
+          DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
 
           echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
 
@@ -136,6 +136,11 @@ jobs:
 
       - name: Load dump into shadow database
         run: pg_restore -v --no-owner --no-acl --role=postgres -d "${{ steps.shadow-db.outputs.db_url }}" database.dump
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Apply migrations
+        run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
 
       - name: delete db
         run: docker compose down -v
