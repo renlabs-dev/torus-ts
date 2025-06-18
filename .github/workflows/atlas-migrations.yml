@@ -153,6 +153,7 @@ jobs:
         run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
 
       - name: Delete DB
+        if: always()
         run: docker compose down -v
 
   apply:
