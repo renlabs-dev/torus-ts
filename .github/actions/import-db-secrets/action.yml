@@ -1,0 +1,26 @@
+name: "Import DB Secrets from Vault"
+description: "Imports DB secrets from HashiCorp Vault"
+
+inputs:
+  vault_addr:
+    description: "Vault address"
+    required: true
+  vault_role_id:
+    description: "Vault role ID"
+    required: true
+  vault_secret_id:
+    description: "Vault secret ID"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Import Secrets from Vault
+      uses: hashicorp/vault-action@v3
+      with:
+        method: approle
+        url: ${{ inputs.vault_addr }}
+        roleId: ${{ inputs.vault_role_id }}
+        secretId: ${{ inputs.vault_secret_id }}
+        secrets: |
+          torus_infra/data/${{ github.ref_name == 'main' && 'prod' || 'dev' }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
