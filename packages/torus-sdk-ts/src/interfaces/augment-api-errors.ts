@@ -531,6 +531,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoTargetsSpecified: AugmentedError<ApiType>;
       /**
+       * Not authorized to edit a stream emission permission.
+       **/
+      NotAuthorizedToEdit: AugmentedError<ApiType>;
+      /**
        * Not authorized to revoke
        **/
       NotAuthorizedToRevoke: AugmentedError<ApiType>;
@@ -538,6 +542,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Not authorized to toggle permission state
        **/
       NotAuthorizedToToggle: AugmentedError<ApiType>;
+      /**
+       * Stream emission permission is not editable
+       **/
+      NotEditable: AugmentedError<ApiType>;
       /**
        * Not the grantee of the permission
        **/

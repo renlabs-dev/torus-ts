@@ -12,9 +12,14 @@ import type {
   Api,
   CustomMetadataState,
   GrantEmissionPermission,
+  UpdateEmissionPermission,
   Proposal,
 } from "@torus-network/sdk";
-import { grantEmissionPermission, sb_balance } from "@torus-network/sdk";
+import {
+  grantEmissionPermission,
+  sb_balance,
+  updateEmissionPermission,
+} from "@torus-network/sdk";
 import { toNano } from "@torus-network/torus-utils/subspace";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import * as React from "react";
@@ -141,6 +146,10 @@ interface TorusContextType {
   grantEmissionPermissionTransaction: (
     props: Omit<GrantEmissionPermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
+
+  updateEmissionPermissionTransaction: (
+    props: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers,
+  ) => Promise<void>;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -247,19 +256,18 @@ export function TorusProvider({
       );
       return undefined;
     }
-    
+
     const sortedAccounts = accountsWithBalance.sort((a, b) => {
       const balanceA = a.freeBalance;
       const balanceB = b.freeBalance;
-      
+
       if (balanceA > balanceB) return -1; // a comes first (higher balance)
-      if (balanceA < balanceB) return 1;  // b comes first (higher balance)
-      return 0; 
+      if (balanceA < balanceB) return 1; // b comes first (higher balance)
+      return 0;
     });
 
     return sortedAccounts;
   }
-
 
   async function handleGetWallets(): Promise<void> {
     const [error, allAccounts] = await tryAsync(getWallets());
@@ -775,6 +783,40 @@ export function TorusProvider({
     });
   }
 
+  async function updateEmissionPermissionTransaction({
+    permissionId,
+    newTargets,
+    newStreams,
+    newDistributionControl,
+    callback,
+    refetchHandler,
+  }: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = updateEmissionPermission({
+      api,
+      permissionId,
+      newTargets,
+      newStreams,
+      newDistributionControl,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Update Emission Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
   return (
     <TorusContext.Provider
       value={{
@@ -812,6 +854,7 @@ export function TorusProvider({
         updateDelegatingVotingPower,
         voteProposal,
         grantEmissionPermissionTransaction,
+        updateEmissionPermissionTransaction,
       }}
     >
       {children}

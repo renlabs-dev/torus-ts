@@ -433,6 +433,10 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       togglePermissionAccumulation: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, accumulating: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, bool]>;
       /**
+       * Allows Grantor/Grantee to edit stream emission permission
+       **/
+      updateEmissionPermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, newTargets: BTreeMap<AccountId32, u16>, newStreams: Option<BTreeMap<H256, Percent>> | null | Uint8Array | BTreeMap<H256, Percent>, newDistributionControl: Option<PalletPermission0PermissionEmissionDistributionControl> | null | Uint8Array | PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string) => SubmittableExtrinsic<ApiType>, [H256, BTreeMap<AccountId32, u16>, Option<BTreeMap<H256, Percent>>, Option<PalletPermission0PermissionEmissionDistributionControl>]>;
+      /**
        * Generic tx
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
