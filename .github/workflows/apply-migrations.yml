@@ -95,7 +95,8 @@ jobs:
     needs: check-migrations
     if: |
       github.event_name == 'push' &&
-      github.ref_name == 'feature/migrations'
+      github.ref_name == 'feature/migrations' &&
+      needs.check-migrations.outputs.has_pending == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
