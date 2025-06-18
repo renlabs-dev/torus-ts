@@ -80,6 +80,17 @@ jobs:
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "$output"
 
+  prod-schema-check:
+    needs: check-migrations
+    if: |
+      github.event_name == 'pull_request' &&
+      github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: test
+        run: |
+          echo "this is a test"
+
   apply-migrations:
     needs: check-migrations
     if: |
