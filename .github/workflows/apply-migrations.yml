@@ -91,6 +91,43 @@ jobs:
         run: |
           echo "this is a test"
 
+  test-schema-check:
+    needs: check-migrations
+    if: |
+      github.event_name == 'push' &&
+      github.ref_name == 'feature/migrations'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: start db
+        run: |
+          docker compose up -d postgres
+          docker ps
+
+      - name: fetch url and test connection
+        id: shadow-db
+        run: |
+          # Get the container IP
+          DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' torus-ts-postgres-1)
+
+          # Use the database URL in your application
+          DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db"
+
+          echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
+          # steps.shadow-db.outputs.db_url
+
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready -d "${DATABASE_URL}"; do 
+            echo "PostgreSQL is unavailable - sleeping"
+            sleep 1
+          done
+          echo "PostgreSQL is ready!"
+
+      - name: delete db
+        run: docker compose down -v
+
   apply-migrations:
     needs: check-migrations
     if: |
