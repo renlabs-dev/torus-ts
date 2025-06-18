@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-migrations:
+  check:
     if: ${{ !inputs.rollback }}
     runs-on: ubuntu-latest
     outputs:
@@ -87,11 +87,11 @@ jobs:
           echo "$output"
 
   shadow-apply-check:
-    needs: check-migrations
+    needs: check
     if: |
       github.event_name == 'pull_request' &&
       github.base_ref == 'main' &&
-      needs.check-migrations.outputs.has_pending == 'true'
+      needs.check.outputs.has_pending == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -141,11 +141,11 @@ jobs:
       - name: Delete DB
         run: docker compose down -v
 
-  apply-migrations:
-    needs: check-migrations
+  apply:
+    needs: check
     if: |
       !inputs.rollback &&
-      needs.check-migrations.outputs.has_pending == 'true' &&
+      needs.check.outputs.has_pending == 'true' &&
       github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -191,8 +191,8 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-  rollback-migrations:
-    needs: check-migrations
+  rollback:
+    needs: check
     if: |
       inputs.rollback &&
       github.event_name == 'push'
@@ -239,10 +239,10 @@ jobs:
           if-no-files-found: error
 
   restart-apps:
-    needs: [check-migrations, apply-migrations, rollback-migrations]
+    needs: [check, apply, rollback]
     if: |
       github.event_name == 'push' &&
-      (needs.apply-migrations.result == 'success' || needs.rollback-migrations.result == 'success')
+      (needs.apply.result == 'success' || needs.rollback.result == 'success')
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
