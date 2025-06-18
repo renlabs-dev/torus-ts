@@ -52,10 +52,24 @@ jobs:
       - name: Verify migrations hash
         run: |
           (cd atlas/migrations && cp atlas.sum atlas.sum.orig)
+
           atlas migrate hash --env local
+
           cd atlas/migrations
           if ! cmp -s atlas.sum atlas.sum.orig; then
             echo "❌ Migration hash mismatch detected. Please run 'atlas migrate hash' locally and commit changes."
+            exit 1
+          fi
+
+      - name: Verify non-generated migrations
+        run: |
+          atlas migrate diff --env local --to "${POSTGRES_URL}"
+
+          cd atlas/migrations
+          if ! cmp -s atlas.sum atlas.sum.orig; then
+            echo "❌ Schema changes detected that require new migrations!"
+            echo "Please run 'atlas migrate diff' locally to generate the required migrations,"
+            echo "review them, and include them in your PR."
             exit 1
           fi
 
