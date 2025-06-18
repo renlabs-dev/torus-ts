@@ -7,13 +7,14 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { JSX } from "react";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { updateSearchParams } from "~/utils/query-params";
 import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
 
 type TabId = "torus" | "base";
-type ViewType = "wallet" | null;
+type ViewType = "wallet";
 
 interface TabConfig {
   text: string;
@@ -34,9 +35,9 @@ const TABS: readonly TabConfig[] = [
     component: <TransferToken />,
     params: "base",
   },
-] as const;
+];
 
-const DEFAULT_TAB = TABS[0]!;
+const DEFAULT_TAB = TABS[0];
 
 const getTabUpdates = (tabId: TabId): TabUpdates => {
   const baseUpdates: TabUpdates = {
@@ -69,25 +70,28 @@ function WalletOptions() {
     (value: string) => {
       const updates = getTabUpdates(value as TabId);
       const newQuery = updateSearchParams(searchParams, updates);
-      router.push("/?" + newQuery);
+      router.push(`/?${newQuery}`);
     },
     [searchParams, router],
   );
 
-  const isValidTab = useMemo(() => 
-    TABS.some((tab) => tab.params === currentTab),
-    [currentTab]
+  const isValidTab = useMemo(
+    () => TABS.some((tab) => tab.params === currentTab),
+    [currentTab],
   );
 
   useEffect(() => {
-    if (!isValidTab && DEFAULT_TAB.params !== currentTab) {
-      handleTabChange(DEFAULT_TAB.params);
+    if (!isValidTab && currentTab !== DEFAULT_TAB?.params) {
+      handleTabChange(DEFAULT_TAB?.params ?? "");
     }
   }, [currentTab, handleTabChange, isValidTab]);
 
-  const activeTab = useMemo(() => 
-    TABS.find((tab) => tab.params === currentTab)?.params ?? DEFAULT_TAB.params,
-    [currentTab]
+  const activeTab = useMemo(
+    () =>
+      TABS.find((tab) => tab.params === currentTab)?.params ??
+      DEFAULT_TAB?.params ??
+      "",
+    [currentTab],
   );
 
   return (
@@ -99,7 +103,7 @@ function WalletOptions() {
       <TabsList className="grid w-full grid-cols-2">
         {TABS.map((tab) => (
           <TabsTrigger
-            key={tab.text}
+            key={tab.params}
             value={tab.params}
             onClick={() => handleTabChange(tab.params)}
           >
@@ -116,16 +120,23 @@ function WalletOptions() {
   );
 }
 
+type RouteComponents = Record<ViewType, JSX.Element>;
+
+const isValidViewType = (value: string | null): value is ViewType =>
+  value === "wallet";
+
 export function WalletActions() {
   const searchParams = useSearchParams();
-  const view = searchParams.get("view") as ViewType;
+  const rawView = searchParams.get("view");
 
-  const routeComponents = useMemo(() => ({
-    wallet: <WalletOptions />,
-    // bridge: <BridgeAction />,
-  }), []);
+  const view: ViewType = isValidViewType(rawView) ? rawView : "wallet";
 
-  return routeComponents[view ?? "wallet"];
+  const routeComponents: RouteComponents = useMemo(
+    () => ({
+      wallet: <WalletOptions />,
+    }),
+    [],
+  );
+
+  return routeComponents[view];
 }
-
-export default WalletActions;
