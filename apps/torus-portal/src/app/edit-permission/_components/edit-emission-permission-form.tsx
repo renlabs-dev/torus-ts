@@ -5,45 +5,48 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 import { Button } from "@torus-ts/ui/components/button";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@torus-ts/ui/components/form";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@torus-ts/ui/components/select";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Loader2 } from "lucide-react";
-import { 
-  queryPermissionsByGrantor, 
-  queryPermission 
-} from "@torus-network/sdk";
+import { queryPermissionsByGrantor, queryPermission } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { EditEmissionPermissionFormComponent } from "./edit-emission-permission-form-content";
-import { 
+import {
   editEmissionPermissionSchema,
-  permissionSelectionSchema 
+  permissionSelectionSchema,
 } from "./edit-emission-permission-form-schema";
-import type { 
+import type {
   EditEmissionPermissionFormData,
   PermissionSelectionFormData,
-  PermissionInfo 
+  PermissionInfo,
 } from "./edit-emission-permission-form-schema";
-import { 
-  transformFormDataToUpdateSDK, 
+import {
+  transformFormDataToUpdateSDK,
   transformPermissionToFormData,
-  hasEditablePermissions 
+  hasEditablePermissions,
 } from "./edit-emission-permission-form-utils";
 
 interface EditEmissionPermissionFormProps {
@@ -53,19 +56,21 @@ interface EditEmissionPermissionFormProps {
 export default function EditEmissionPermissionForm({
   onSuccess,
 }: EditEmissionPermissionFormProps) {
-  const { updateEmissionPermissionTransaction, api, selectedAccount } = useTorus();
+  const { updateEmissionPermissionTransaction, api, selectedAccount } =
+    useTorus();
   const { toast } = useToast();
-  
+
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  
+
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
   const [availablePermissions, setAvailablePermissions] = useState<
     { permissionId: string; grantor: string; grantee: string }[]
   >([]);
-  const [selectedPermissionInfo, setSelectedPermissionInfo] = useState<PermissionInfo | null>(null);
-  
+  const [selectedPermissionInfo, setSelectedPermissionInfo] =
+    useState<PermissionInfo | null>(null);
+
   // Form for permission selection
   const selectionForm = useForm<PermissionSelectionFormData>({
     resolver: zodResolver(permissionSelectionSchema),
@@ -73,15 +78,15 @@ export default function EditEmissionPermissionForm({
       permissionId: "",
     },
   });
-  
+
   // Main edit form
   const editForm = useForm<EditEmissionPermissionFormData>({
     resolver: zodResolver(editEmissionPermissionSchema),
   });
-  
+
   const loadAvailablePermissions = useCallback(async () => {
     if (!api || !selectedAccount?.address) return;
-    
+
     setIsLoadingPermissions(true);
     try {
       const userAddress = checkSS58(selectedAccount.address);
@@ -93,10 +98,10 @@ export default function EditEmissionPermissionForm({
         });
         return;
       }
-      
+
       // Query permissions where user is grantor
       const grantorResult = await queryPermissionsByGrantor(api, userAddress);
-      
+
       if (grantorResult[0] !== undefined) {
         toast({
           title: "Error",
@@ -105,31 +110,32 @@ export default function EditEmissionPermissionForm({
         });
         return;
       }
-      
+
       const grantorPerms = grantorResult[1];
-      
+
       if (!hasEditablePermissions(grantorPerms)) {
         setAvailablePermissions([]);
         return;
       }
-      
+
       // Get detailed permission info to filter emission permissions
       const permissionPromises = grantorPerms.map(async (permId) => {
         const permissionResult = await queryPermission(api, permId);
-        if (permissionResult[0] !== undefined || !permissionResult[1]) return null;
-        
+        if (permissionResult[0] !== undefined || !permissionResult[1])
+          return null;
+
         const permission = permissionResult[1];
-        
+
         // Only include emission permissions
         if (!("Emission" in permission.scope)) return null;
-        
+
         return {
           permissionId: permId,
           grantor: permission.grantor,
           grantee: permission.grantee,
         };
       });
-      
+
       const [error, results] = await tryAsync(Promise.all(permissionPromises));
       if (error !== undefined) {
         toast({
@@ -139,13 +145,13 @@ export default function EditEmissionPermissionForm({
         });
         return;
       }
-      
+
       const validPermissions = results.filter(Boolean) as {
         permissionId: string;
         grantor: string;
         grantee: string;
       }[];
-      
+
       setAvailablePermissions(validPermissions);
     } catch (error) {
       console.error("Error loading permissions:", error);
@@ -158,21 +164,21 @@ export default function EditEmissionPermissionForm({
       setIsLoadingPermissions(false);
     }
   }, [api, selectedAccount?.address, toast]);
-  
+
   // Load available permissions when component mounts or account changes
   useEffect(() => {
     if (!api || !selectedAccount?.address) {
       setAvailablePermissions([]);
       return;
     }
-    
+
     void loadAvailablePermissions();
   }, [api, selectedAccount?.address, loadAvailablePermissions]);
-  
+
   // Handle permission selection
   const handlePermissionSelect = async (permissionId: string) => {
     if (!api || !selectedAccount?.address) return;
-    
+
     const permissionResult = await queryPermission(api, permissionId);
     if (permissionResult[0] !== undefined || !permissionResult[1]) {
       toast({
@@ -182,22 +188,22 @@ export default function EditEmissionPermissionForm({
       });
       return;
     }
-    
+
     const permission = permissionResult[1];
-    
+
     try {
       // Get current block number for grantor edit permission checks
       const [blockError, blockInfo] = await tryAsync(api.query.system.number());
       const currentBlock = blockError ? 0n : blockInfo.toBigInt();
-      
+
       const permissionInfo = transformPermissionToFormData(
         permission,
-        currentBlock
+        currentBlock,
       );
       permissionInfo.permissionId = permissionId;
-      
+
       setSelectedPermissionInfo(permissionInfo);
-      
+
       // Pre-populate the edit form with current data
       editForm.reset({
         selectedPermission: {
@@ -205,7 +211,9 @@ export default function EditEmissionPermissionForm({
         },
         newTargets: permissionInfo.currentTargets,
         newStreams: permissionInfo.currentStreams ?? [],
-        newDistributionControl: permissionInfo.currentDistribution ?? { type: "Manual" },
+        newDistributionControl: permissionInfo.currentDistribution ?? {
+          type: "Manual",
+        },
       });
     } catch (error) {
       console.error("Error processing permission:", error);
@@ -216,13 +224,13 @@ export default function EditEmissionPermissionForm({
       });
     }
   };
-  
+
   const handleSubmit = useCallback(
     async (data: EditEmissionPermissionFormData) => {
       try {
         setTransactionStatus("loading");
         const transformedData = transformFormDataToUpdateSDK(data);
-        
+
         await updateEmissionPermissionTransaction({
           ...transformedData,
           callback: (result) => {
@@ -261,14 +269,21 @@ export default function EditEmissionPermissionForm({
         });
       }
     },
-    [updateEmissionPermissionTransaction, toast, selectionForm, editForm, onSuccess, loadAvailablePermissions]
+    [
+      updateEmissionPermissionTransaction,
+      toast,
+      selectionForm,
+      editForm,
+      onSuccess,
+      loadAvailablePermissions,
+    ],
   );
-  
+
   const mutation = {
     isPending: transactionStatus === "loading",
     mutate: handleSubmit,
   };
-  
+
   if (!selectedAccount?.address) {
     return (
       <Card>
@@ -281,7 +296,7 @@ export default function EditEmissionPermissionForm({
       </Card>
     );
   }
-  
+
   if (isLoadingPermissions) {
     return (
       <Card>
@@ -297,19 +312,20 @@ export default function EditEmissionPermissionForm({
       </Card>
     );
   }
-  
+
   if (availablePermissions.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>No Editable Permissions</CardTitle>
           <CardDescription>
-            You don't have any emission permissions that you can edit. You need to be the grantor of a permission with appropriate revocation terms.
+            You don't have any emission permissions that you can edit. You need
+            to be the grantor of a permission with appropriate revocation terms.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => void loadAvailablePermissions()}
           >
             Refresh
@@ -318,7 +334,7 @@ export default function EditEmissionPermissionForm({
       </Card>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Permission Selection */}
@@ -351,9 +367,11 @@ export default function EditEmissionPermissionForm({
                     </FormControl>
                     <SelectContent>
                       {availablePermissions.map((perm) => (
-                        <SelectItem key={perm.permissionId} value={perm.permissionId}>
+                        <SelectItem
+                          key={perm.permissionId}
+                          value={perm.permissionId}
+                        >
                           <div className="flex items-center gap-2">
-                            <Badge variant="default">Grantor</Badge>
                             <span className="font-mono text-sm">
                               {perm.permissionId.substring(0, 10)}...
                             </span>
@@ -372,10 +390,10 @@ export default function EditEmissionPermissionForm({
           </Form>
         </CardContent>
       </Card>
-      
+
       {/* Edit Form */}
       {selectedPermissionInfo && (
-        <EditEmissionPermissionFormComponent 
+        <EditEmissionPermissionFormComponent
           form={editForm}
           mutation={mutation}
           permissionInfo={selectedPermissionInfo}
