@@ -83,11 +83,11 @@ export function validateFormSync({
   return Object.keys(errors).length > 0 ? errors : undefined;
 }
 
-export async function validateForm(
-  warpCore: WarpCore,
+export function validateForm(
+  _warpCore: WarpCore,
   { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
-  accounts: Record<ProtocolType, AccountInfo>,
-): Promise<ValidationError | Record<string, unknown>> {
+  _accounts: Record<ProtocolType, AccountInfo>,
+): ValidationError | Record<string, unknown> {
   // Validate recipient is not empty
   if (!recipient || recipient.trim() === "") {
     return createValidationError(
@@ -173,22 +173,24 @@ export async function validateFormWithBalance(
   if (basicValidation) {
     // Convert sync errors to async format
     const firstError = Object.values(basicValidation)[0];
-    return createValidationError(
-      "validation_error",
-      firstError as string,
-      "form",
-    );
+    if (!firstError) {
+      return createValidationError(
+        "validation_error",
+        "Unknown validation error",
+        "form",
+      );
+    }
+    return createValidationError("validation_error", firstError, "form");
   }
 
-  const [tokenError, token] = trySync(() =>
-    getTokenByIndex(warpCore, tokenIndex),
-  );
-  if (tokenError || !token) {
-    logger.error("Error getting token:", tokenError);
-    const details = tokenError
-      ? `Token retrieval failed: ${errorToString(tokenError, 200)}`
-      : "Token configuration not found";
-    return createValidationError("token_error", details, "form");
+  const token = getTokenByIndex(warpCore, tokenIndex);
+  if (!token) {
+    logger.error("Token configuration not found", new Error("Token not found"));
+    return createValidationError(
+      "token_error",
+      "Token configuration not found",
+      "form",
+    );
   }
 
   const [amountError, amountWei] = trySync(() => toWei(amount, token.decimals));
@@ -209,6 +211,17 @@ export async function validateFormWithBalance(
     return createValidationError("account_error", details, "form");
   }
 
+  if (!publicKey) {
+    logger.error("No public key available", new Error("No public key"));
+    return createValidationError(
+      "account_error",
+      "No public key available. Please ensure your wallet is properly connected.",
+      "form",
+    );
+  }
+
+  const senderPubKey = await publicKey;
+
   // Check if amount exceeds available balance
   const [balanceError, currentBalance] = await tryAsync(
     token.getBalance(warpCore.multiProvider, address),
@@ -223,13 +236,15 @@ export async function validateFormWithBalance(
   }
 
   // Get the maximum transferable amount (considering gas fees)
+  const maxTransferAmountParams = {
+    balance: currentBalance,
+    destination,
+    sender: address,
+    senderPubKey,
+  };
+
   const [maxAmountError, maxTransferAmount] = await tryAsync(
-    warpCore.getMaxTransferAmount({
-      balance: currentBalance,
-      destination,
-      sender: address,
-      senderPubKey: await publicKey,
-    }),
+    warpCore.getMaxTransferAmount(maxTransferAmountParams),
   );
 
   if (maxAmountError) {
@@ -268,8 +283,6 @@ export async function validateFormWithBalance(
       "amount",
     );
   }
-
-  const senderPubKey = await publicKey;
 
   const [validateError, result] = await tryAsync(
     warpCore.validateTransfer({
