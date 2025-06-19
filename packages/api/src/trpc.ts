@@ -19,8 +19,13 @@ import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
 import { trySync } from "@torus-network/torus-utils/try-catch";
+import type { ChainAwareReteNetwork } from "@torus-ts/dsl";
+import { createChainAwareReteNetwork, createChainWatcher, validateConstraint } from "@torus-ts/dsl";
+import { constraintSchema, permissionDetailsSchema } from "@torus-ts/db/schema";
+import { eq } from "drizzle-orm";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
+let globalRete: ChainAwareReteNetwork | null = null;
 let globalWSAPI: ApiPromise | null = null;
 
 const getEnv = validateEnvOrExit({
@@ -32,6 +37,110 @@ const getEnv = validateEnvOrExit({
 function cacheCreateDb() {
   globalDb = globalDb ?? createDb();
   return globalDb;
+}
+
+async function cacheLoadConstraints(db: ReturnType<typeof createDb>){
+  if (!globalRete) {
+    console.log("🚀 Initializing constraint system during server startup...");
+    
+    // This will create the RETE network and load existing constraints
+    globalRete = await initializeConstraintSystemInternal(db);
+    
+    console.log("✅ Constraint system initialized successfully during startup");
+  }
+  return globalRete;
+}
+
+async function initializeConstraintSystemInternal(db: ReturnType<typeof createDb>) {
+  // Use environment variable for WebSocket endpoint
+  const wsEndpoint =
+    process.env.NEXT_PUBLIC_TORUS_RPC_URL ??
+    "wss://api.testnet.torus.network";
+
+  // Create network with constraint violation callback
+  const network = createChainAwareReteNetwork(
+    wsEndpoint,
+    async (constraintId: string) => {
+      console.log(`🚨 CONSTRAINT VIOLATION DETECTED: ${constraintId}`);
+      // Handle violation here if needed
+    },
+  );
+
+  console.log("🚀 Initialized ChainAwareReteNetwork with violation callback");
+
+  // Initialize and start chain watcher automatically
+  const chainWatcher = createChainWatcher(network);
+  console.log("🔗 Initialized ChainWatcher");
+
+  // Start watching blockchain events automatically
+  chainWatcher
+    .startWatching()
+    .then(() => {
+      console.log("👀 Chain watcher started automatically");
+    })
+    .catch((error) => {
+      console.error("❌ Failed to start chain watcher automatically:", error);
+    });
+  
+  // Load existing constraints from database
+  await loadExistingConstraintsInternal(db, network);
+  
+  return network;
+}
+
+async function loadExistingConstraintsInternal(db: ReturnType<typeof createDb>, network: ChainAwareReteNetwork) {
+  try {
+    console.log("🔄 Loading existing constraints from database...");
+    
+    // Query all constraint records from the database
+    const constraintRecords = await db
+      .select()
+      .from(constraintSchema);
+    
+    console.log(`📊 Found ${constraintRecords.length} existing constraints in database`);
+    
+    for (const record of constraintRecords) {
+      try {
+        // Parse the constraint body from the database
+        const constraintBody = superjson.parse(record.body);
+        
+        // We need to get the permission ID from the permission_details table
+        const permissionDetails = await db
+          .select()
+          .from(permissionDetailsSchema)
+          .where(eq(permissionDetailsSchema.constraint_id, record.id))
+          .limit(1);
+        
+        const constrainedPermission = permissionDetails[0];
+        if (!constrainedPermission) {
+          console.warn(`⚠️  No permission details found for constraint ${record.id}`);
+          continue;
+        }
+        
+        // Validate the parsed constraint body and create the constraint object
+        const constraintData = {
+          permId: constrainedPermission.permission_id,
+          body: constraintBody
+        };
+        
+        // Use validateConstraint to ensure the constraint is properly typed
+        const constraint = validateConstraint(constraintData);
+        
+        // Add constraint to the network with fact fetching
+        const result = await network.addConstraintWithFacts(constraint);
+        
+        console.log(`✅ Loaded constraint ${constraint.permId} with production ID: ${result.productionId}`);
+        
+      } catch (error) {
+        console.error(`❌ Failed to load constraint ${record.id}:`, error);
+      }
+    }
+    
+    console.log("🎉 Finished loading existing constraints from database");
+    
+  } catch (error) {
+    console.error("❌ Failed to load existing constraints from database:", error);
+  }
 }
 
 async function cacheCreateWSAPI() {
@@ -60,6 +169,7 @@ export interface TRPCContext {
   authOrigin: string;
   allocatorAddress: SS58Address;
   wsAPI: Promise<ApiPromise>;
+  reteNetwork: Promise<ChainAwareReteNetwork>;
 }
 
 export interface AuthenticatedTRPCContext extends TRPCContext {
@@ -75,6 +185,11 @@ export const createTRPCContext = (opts: {
 }) => {
   const db = cacheCreateDb();
   const wsAPI = cacheCreateWSAPI();
+  
+  const reteNetwork = cacheLoadConstraints(db).catch((error) => {
+    console.error("❌ Failed to load constraint system:", error);
+    process.exit(5);
+  });
   const { jwtSecret } = opts;
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
   console.log(">>> tRPC Request from", source);
@@ -126,6 +241,7 @@ export const createTRPCContext = (opts: {
     authOrigin: opts.authOrigin,
     allocatorAddress: opts.allocatorAddress,
     wsAPI,
+    reteNetwork,
   };
 };
 
