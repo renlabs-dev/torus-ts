@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import type { SS58Address } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
 import { Loader2, Plus, Trash2, Wand2, Lock, AlertCircle } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
@@ -31,6 +32,7 @@ import {
 } from "@torus-ts/ui/components/select";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 import type {
   EditEmissionPermissionForm,
@@ -55,7 +57,7 @@ export function EditEmissionPermissionFormComponent({
   permissionInfo,
   onClose,
 }: EditEmissionPermissionFormProps) {
-  const { api, selectedAccount } = useTorus();
+  const { api, selectedAccount, isAccountConnected } = useTorus();
 
   const availableStreams = useAvailableStreams(
     api,
@@ -151,6 +153,7 @@ export function EditEmissionPermissionFormComponent({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <CardContent className="space-y-6">
+            <WalletConnectionWarning isAccountConnected={isAccountConnected} />
             <PermissionInfo />
 
             {/* Targets */}
@@ -161,7 +164,9 @@ export function EditEmissionPermissionFormComponent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => appendTarget({ account: "", weight: "" })}
+                  onClick={() =>
+                    appendTarget({ account: "" as SS58Address, weight: "" })
+                  }
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Target

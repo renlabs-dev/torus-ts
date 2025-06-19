@@ -1,11 +1,6 @@
 import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
-
-// Re-use validation helpers from create permission
-const validateAddress = (address: string) => {
-  if (!address) return false;
-  return /^5[A-Za-z0-9]{47}$/.test(address);
-};
+import { SS58_SCHEMA } from "@torus-network/sdk";
 
 const validateWeight = (value: string) => {
   const num = parseInt(value);
@@ -23,15 +18,12 @@ export const editEmissionPermissionSchema = z.object({
   selectedPermission: z.object({
     permissionId: z.string(),
   }),
-  
+
   // Updated targets
   newTargets: z
     .array(
       z.object({
-        account: z
-          .string()
-          .min(1, "Account address is required")
-          .refine(validateAddress, "Must be a valid SS58 address"),
+        account: SS58_SCHEMA,
         weight: z
           .string()
           .min(1, "Weight is required")
@@ -39,7 +31,7 @@ export const editEmissionPermissionSchema = z.object({
       }),
     )
     .min(1, "At least one target is required"),
-  
+
   // Updated streams
   newStreams: z
     .array(
@@ -66,54 +58,61 @@ export const editEmissionPermissionSchema = z.object({
       }, 0);
       return total <= 100;
     }, "Total percentage across all streams cannot exceed 100%"),
-  
+
   // Updated distribution control
-  newDistributionControl: z.discriminatedUnion("type", [
-    z.object({
-      type: z.literal("Manual"),
-    }),
-    z.object({
-      type: z.literal("Automatic"),
-      threshold: z
-        .string()
-        .min(1, "Threshold is required")
-        .refine((val) => {
-          const num = parseFloat(val);
-          return !isNaN(num) && num > 0;
-        }, "Must be a positive number"),
-    }),
-    z.object({
-      type: z.literal("AtBlock"),
-      blockNumber: z
-        .string()
-        .min(1, "Block number is required")
-        .refine((val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        }, "Must be a positive integer"),
-    }),
-    z.object({
-      type: z.literal("Interval"),
-      blocks: z
-        .string()
-        .min(1, "Block interval is required")
-        .refine((val) => {
-          const num = parseInt(val);
-          return !isNaN(num) && num > 0;
-        }, "Must be a positive integer"),
-    }),
-  ]).optional(),
+  newDistributionControl: z
+    .discriminatedUnion("type", [
+      z.object({
+        type: z.literal("Manual"),
+      }),
+      z.object({
+        type: z.literal("Automatic"),
+        threshold: z
+          .string()
+          .min(1, "Threshold is required")
+          .refine((val) => {
+            const num = parseFloat(val);
+            return !isNaN(num) && num > 0;
+          }, "Must be a positive number"),
+      }),
+      z.object({
+        type: z.literal("AtBlock"),
+        blockNumber: z
+          .string()
+          .min(1, "Block number is required")
+          .refine((val) => {
+            const num = parseInt(val);
+            return !isNaN(num) && num > 0;
+          }, "Must be a positive integer"),
+      }),
+      z.object({
+        type: z.literal("Interval"),
+        blocks: z
+          .string()
+          .min(1, "Block interval is required")
+          .refine((val) => {
+            const num = parseInt(val);
+            return !isNaN(num) && num > 0;
+          }, "Must be a positive integer"),
+      }),
+    ])
+    .optional(),
 });
 
-export type PermissionSelectionFormData = z.infer<typeof permissionSelectionSchema>;
-export type EditEmissionPermissionFormData = z.infer<typeof editEmissionPermissionSchema>;
+export type PermissionSelectionFormData = z.infer<
+  typeof permissionSelectionSchema
+>;
+export type EditEmissionPermissionFormData = z.infer<
+  typeof editEmissionPermissionSchema
+>;
 
 export interface EditEmissionPermissionMutation {
   isPending: boolean;
   mutate: (data: EditEmissionPermissionFormData) => void;
 }
 
-export type EditEmissionPermissionForm = UseFormReturn<EditEmissionPermissionFormData>;
+export type EditEmissionPermissionForm =
+  UseFormReturn<EditEmissionPermissionFormData>;
 
 // Permission info for display
 export interface PermissionInfo {
@@ -124,7 +123,7 @@ export interface PermissionInfo {
   canEditDistribution: boolean;
   currentTargets: { account: string; weight: string }[];
   currentStreams: { streamId: string; percentage: string }[] | null;
-  currentDistribution: 
+  currentDistribution:
     | { type: "Manual" }
     | { type: "Automatic"; threshold: string }
     | { type: "AtBlock"; blockNumber: string }
