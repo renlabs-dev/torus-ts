@@ -179,7 +179,7 @@ jobs:
           echo "$EOF" >> $GITHUB_OUTPUT
 
       - name: Find existing migration comment
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: peter-evans/find-comment@v2
         id: find-comment
         with:
@@ -188,7 +188,7 @@ jobs:
           body-includes: "Database Migration Results 🗃️"
 
       - name: Post or update migration results as PR comment
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
