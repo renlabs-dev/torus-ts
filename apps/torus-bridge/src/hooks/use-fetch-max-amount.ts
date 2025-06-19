@@ -59,7 +59,18 @@ async function fetchMaxAmount(
     return undefined;
   }
 
-  const senderPubKey = await publicKey;
+  const [senderPubKeyErr, senderPubKey] =
+    publicKey instanceof Promise
+      ? await tryAsync(publicKey)
+      : [undefined, publicKey];
+  if (senderPubKeyErr) {
+    logger.warn("Error getting sender public key:", senderPubKeyErr);
+    toast({
+      title: "Error calculating maximum transfer amount",
+      description: "Unable to retrieve sender public key",
+    });
+    return undefined;
+  }
 
   const [maxAmountError, maxAmount] = await tryAsync(
     warpCore.getMaxTransferAmount({
