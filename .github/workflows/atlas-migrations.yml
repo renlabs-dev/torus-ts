@@ -155,7 +155,6 @@ jobs:
       - name: Apply migrations (dry-run)
         id: dry-run
         run: |
-          # Capture the output in a variable
           OUTPUT=$(atlas migrate apply --dry-run --env local --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
           echo "dry_run_output<<EOF" >> $GITHUB_OUTPUT
           echo "$OUTPUT" >> $GITHUB_OUTPUT
@@ -164,14 +163,22 @@ jobs:
       - name: Apply migrations
         id: apply
         run: |
-          # Capture the output in a variable
           OUTPUT=$(atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
           echo "apply_output<<EOF" >> $GITHUB_OUTPUT
           echo "$OUTPUT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Post migration results as PR comment
-        if: github.event_name == 'pull_request'
+      - name: Find existing migration comment
+        if: always() && github.event_name == 'pull_request'
+        uses: peter-evans/find-comment@v2
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "Database Migration Results 🗃️"
+
+      - name: Post or update migration results as PR comment
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
@@ -179,6 +186,8 @@ jobs:
             const applyOutput = `${{ steps.apply.outputs.apply_output }}`;
 
             const body = `### Database Migration Results 🗃️
+
+            #### Last Run: ${new Date().toISOString()}
 
             #### Dry Run Output
             \`\`\`
@@ -189,14 +198,30 @@ jobs:
             \`\`\`
             ${applyOutput}
             \`\`\`
+
+            ---
+            *Last updated by workflow run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*
             `;
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: body
-            });
+            const existingCommentId = '${{ steps.find-comment.outputs.comment-id }}';
+
+            if (existingCommentId) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingCommentId,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
 
       - name: Delete DB
         if: always()
