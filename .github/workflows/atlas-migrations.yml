@@ -138,7 +138,10 @@ jobs:
           echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
 
           echo "Waiting for PostgreSQL to be ready..."
-          timeout 60s bash -c 'until pg_isready -d "${DATABASE_URL}"; do sleep 1; done'
+          until pg_isready -d "${DATABASE_URL}"; do
+            echo "PostgreSQL is unavailable - sleeping"
+            sleep 1
+          done
           echo "PostgreSQL is ready!"
 
       - name: Dump target database
@@ -148,6 +151,9 @@ jobs:
         run: pg_restore -v --no-owner --no-acl --role=postgres -d "${{ steps.shadow-db.outputs.db_url }}" database.dump
 
       - uses: ariga/setup-atlas@v0
+
+      - name: Apply migrations (dry-run)
+        run: atlas migrate apply --dry-run --env local --url "${{ steps.shadow-db.outputs.db_url }}"
 
       - name: Apply migrations
         run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s

@@ -24,3 +24,9 @@ env "local" {
     }
     exclude = ["drizzle"]
 }
+
+lint {
+  non_linear {
+    error = true
+  }
+}
