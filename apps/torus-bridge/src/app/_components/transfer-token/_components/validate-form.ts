@@ -5,6 +5,7 @@ import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { getTokenByIndex } from "~/hooks/token";
+import { isPromise } from "~/utils/helpers";
 import { logger } from "~/utils/logger";
 import type { TransferFormValues } from "~/utils/types";
 
@@ -40,10 +41,9 @@ export async function validateForm(
     return { form: "Error retrieving account information" };
   }
 
-  const [senderPubKeyErr, senderPubKey] =
-    publicKey instanceof Promise
-      ? await tryAsync(publicKey)
-      : [undefined, publicKey];
+  const [senderPubKeyErr, senderPubKey] = isPromise(publicKey)
+    ? await tryAsync(publicKey)
+    : [undefined, publicKey];
   if (senderPubKeyErr) {
     logger.warn("Error getting sender public key:", senderPubKeyErr);
     return { form: "Error retrieving account information" };

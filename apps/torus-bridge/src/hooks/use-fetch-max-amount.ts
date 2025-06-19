@@ -13,6 +13,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { logger } from "../utils/logger";
 import { useWarpCore } from "./token";
+import { isPromise } from "~/utils/helpers";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;
@@ -59,10 +60,9 @@ async function fetchMaxAmount(
     return undefined;
   }
 
-  const [senderPubKeyErr, senderPubKey] =
-    publicKey instanceof Promise
-      ? await tryAsync(publicKey)
-      : [undefined, publicKey];
+  const [senderPubKeyErr, senderPubKey] = isPromise(publicKey)
+    ? await tryAsync(publicKey)
+    : [undefined, publicKey];
   if (senderPubKeyErr) {
     logger.warn("Error getting sender public key:", senderPubKeyErr);
     toast({
