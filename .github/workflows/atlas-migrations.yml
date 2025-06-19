@@ -154,22 +154,32 @@ jobs:
 
       - name: Apply migrations (dry-run)
         id: dry-run
+        shell: bash
         run: |
-          OUTPUT=$(atlas migrate apply --dry-run --env local --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
-          echo "dry_run_output<<EOF" >> $GITHUB_OUTPUT
-          echo "$OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Redirect both stdout and stderr to a file
+          atlas migrate apply --dry-run --env local --url "${{ steps.shadow-db.outputs.db_url }}" > dry_run.log 2>&1
+
+          # Create a properly escaped output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "dry_run_output<<$EOF" >> $GITHUB_OUTPUT
+          cat dry_run.log >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
 
       - name: Apply migrations
         id: apply
+        shell: bash
         run: |
-          OUTPUT=$(atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
-          echo "apply_output<<EOF" >> $GITHUB_OUTPUT
-          echo "$OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Redirect both stdout and stderr to a file
+          atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s > apply.log 2>&1
+
+          # Create a properly escaped output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "apply_output<<$EOF" >> $GITHUB_OUTPUT
+          cat apply.log >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
 
       - name: Find existing migration comment
-        if: always() && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         uses: peter-evans/find-comment@v2
         id: find-comment
         with:
@@ -178,12 +188,12 @@ jobs:
           body-includes: "Database Migration Results 🗃️"
 
       - name: Post or update migration results as PR comment
-        if: always() && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
-            const dryRunOutput = `${{ steps.dry-run.outputs.dry_run_output }}`;
-            const applyOutput = `${{ steps.apply.outputs.apply_output }}`;
+            const dryRunOutput = `${{ steps.dry-run.outputs.dry_run_output }}`.trim();
+            const applyOutput = `${{ steps.apply.outputs.apply_output }}`.trim();
 
             const body = `### Database Migration Results 🗃️
 
@@ -191,22 +201,25 @@ jobs:
 
             #### Dry Run Output
             \`\`\`
-            ${dryRunOutput}
+            ${dryRunOutput || 'No output from dry run'}
             \`\`\`
 
             #### Applied Migrations
             \`\`\`
-            ${applyOutput}
+            ${applyOutput || 'No output from migration apply'}
             \`\`\`
 
             ---
             *Last updated by workflow run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*
             `;
 
+            // Debug logging
+            console.log('Dry Run Output Length:', dryRunOutput.length);
+            console.log('Apply Output Length:', applyOutput.length);
+
             const existingCommentId = '${{ steps.find-comment.outputs.comment-id }}';
 
             if (existingCommentId) {
-              // Update existing comment
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -214,7 +227,6 @@ jobs:
                 body: body
               });
             } else {
-              // Create new comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
