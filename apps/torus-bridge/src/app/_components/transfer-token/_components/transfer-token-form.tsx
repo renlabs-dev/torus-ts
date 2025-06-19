@@ -26,14 +26,20 @@ import { RecipientSection } from "../_sections/recipient-section";
 import { SelectChainSection } from "../_sections/select-chain-section";
 import { TokenSection } from "../_sections/token-section";
 import { WalletTransactionReview } from "../../shared/wallet-review";
-import { validateForm } from "./validate-form";
+import { validateFormSync, validateFormWithBalance } from "./validate-form";
 import { useValidationErrors } from "./use-validation-errors";
 
 interface ValidationError {
   form?: string;
   amount?: string;
   details?: string;
-  errorType?: 'insufficient_funds' | 'gas_estimation' | 'base_eth_insufficient' | 'token_error' | 'account_error' | 'validation_error';
+  errorType?:
+    | "insufficient_funds"
+    | "gas_estimation"
+    | "base_eth_insufficient"
+    | "token_error"
+    | "account_error"
+    | "validation_error";
 }
 
 interface FormWithToastProps {
@@ -44,9 +50,16 @@ interface FormWithToastProps {
   setIsReview: (b: boolean) => void;
 }
 
-function FormWithToast({ errors, isReview, resetForm, isValidating, setIsReview }: FormWithToastProps) {
+function FormWithToast({
+  errors,
+  isReview,
+  resetForm,
+  isValidating,
+  setIsReview,
+}: FormWithToastProps) {
+  console.log("FormWithToast - errors:", errors);
   useValidationErrors(errors as ValidationError);
-  
+
   return (
     <Form className="flex flex-col">
       <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -113,15 +126,45 @@ export function TransferTokenForm() {
     };
   }, [warpCore, fromParam, toParam]);
 
-  const validate = (values: TransferFormValues) =>
-    validateForm(warpCore, values, accounts);
+  const validate = (values: TransferFormValues) => validateFormSync(values);
 
-  const onSubmitForm = (values: TransferFormValues) => {
+  const onSubmitForm = async (
+    values: TransferFormValues,
+    { setErrors }: any,
+  ) => {
     logger.debug(
       "Reviewing transfer form values for:",
       values.origin,
       values.destination,
     );
+
+    // Do full validation before entering review mode
+    const validationResult = await validateFormWithBalance(
+      warpCore,
+      values,
+      accounts,
+    );
+
+    logger.debug("Validation result:", validationResult);
+
+    if (
+      validationResult &&
+      typeof validationResult === "object" &&
+      "errorType" in validationResult
+    ) {
+      // If there's a validation error, set it in state and don't enter review mode
+      const error = validationResult as ValidationError;
+      logger.debug("Setting validation error:", error);
+
+      // Set the error in Formik errors for the button
+      if (error.amount) {
+        setErrors({ amount: error.details });
+      } else {
+        setErrors({ form: error.details });
+      }
+      return;
+    }
+
     setIsReview(true);
   };
 
@@ -165,12 +208,12 @@ export function TransferTokenForm() {
       validateOnBlur={false}
     >
       {({ isValidating, resetForm, errors }) => (
-        <FormWithToast 
-          errors={errors} 
-          isReview={isReview} 
-          resetForm={resetForm} 
-          isValidating={isValidating} 
-          setIsReview={setIsReview} 
+        <FormWithToast
+          errors={errors}
+          isReview={isReview}
+          resetForm={resetForm}
+          isValidating={isValidating}
+          setIsReview={setIsReview}
         />
       )}
     </Formik>
