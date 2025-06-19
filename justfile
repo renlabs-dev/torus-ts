@@ -61,10 +61,12 @@ create-package:
 
 # == Database Management with Atlas ==
 
+local-db-url := "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"
+
 # Spawn a local development database
 db-dev-up:
     docker compose up -d postgres
-    while ! pg_isready -d "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"; do sleep 1; done
+    while ! pg_isready -d "{{local-db-url}}"; do sleep 1; done
 
 # Spin down the local development database
 db-dev-down:
@@ -83,7 +85,7 @@ db-generate *args:
 # Apply all pending migrations (on local dev DB)
 db-apply:
     atlas migrate apply --env local \
-        --url "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"
+        --url "{{local-db-url}}"
 
 # Lint all migration files
 db-lint:
@@ -97,7 +99,7 @@ db-reset: db-dev-purge db-dev-up db-apply
 # # Clean current dev DB schema
 # db-wipe:
 #     atlas schema clean \
-#         --url "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"
+#         --url "{{local-db-url}}"
 
 # # Full reset: clean DB and reapply all migrations
 # db-reset: db-wipe db-apply
