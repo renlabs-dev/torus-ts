@@ -732,7 +732,7 @@ export interface UpdateEmissionPermission {
   you can send all the values, 
   but only if the revocation term: is RevocableByGrantor
   is RevocableAfter(N) and CurrentBlock > N
-  think of it as the revocation term defining wether
+  think of it as the revocation term defining whether
   the grantor can modify the contract without
   breaching the "terms of service"
  */

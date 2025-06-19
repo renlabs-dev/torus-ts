@@ -76,7 +76,7 @@ function ConstraintFlow() {
 
   // Fetch permissions with constraints
   const { data: permissionsWithConstraints } =
-    trpcApi.permission.withConstraints.useQuery();
+    trpcApi.permission.allWithConstraints.useQuery();
 
   // Initialize permission ID from existing node
   useEffect(() => {
@@ -94,8 +94,11 @@ function ConstraintFlow() {
   const isEditingConstraint = useMemo(() => {
     if (!selectedPermissionId || !permissionsWithConstraints) return false;
     return permissionsWithConstraints.some(
-      (item) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any) =>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         item.permission.permission_id === selectedPermissionId &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         item.constraint !== null,
     );
   }, [selectedPermissionId, permissionsWithConstraints]);
@@ -197,8 +200,11 @@ function ConstraintFlow() {
 
     // Find the permission with constraint
     const permissionWithConstraint = permissionsWithConstraints.find(
-      (item) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any) =>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         item.permission.permission_id === selectedPermissionId &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         item.constraint !== null,
     );
 
