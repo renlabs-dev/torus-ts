@@ -99,7 +99,16 @@ db-lint:
     git fetch origin main
     atlas migrate lint lint --env local --git-base origin/main
 
+
+# Reset the local development database and apply all migrations
+# This will remove all data and reapply migrations from scratch.
 db-reset: db-dev-purge db-dev-up db-apply
+
+# Reset migrations not in base branch (useful for clean regeneration)
+db-migrations-reset base="dev":
+    git fetch origin
+    git restore --source=origin/{{base}} -- atlas/migrations/
+    git restore --source=origin/{{base}} -- atlas/migrations/atlas.sum
 
 # NOTE: The following commands are disabled due to issues with Atlas schema cleaning
 # See: https://t.torus.network/PoEmc
