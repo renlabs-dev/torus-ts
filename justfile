@@ -58,13 +58,55 @@ test filter="*":
 create-package:
   pnpm turbo gen init
 
+
+# == Database Management with Atlas ==
+
+# Spawn a local development database
+db-dev-up:
+    docker compose up -d postgres
+    while ! pg_isready -d "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"; do sleep 1; done
+
+# Spin down the local development database
+db-dev-down:
+    docker compose down postgres
+
+# Purge the local development database (removes all data)
+# This completely removes the database volume, so all data will be lost.
+db-dev-purge:
+    docker compose down -v postgres
+
+# Generate a new migration based on schema changes
+# Usage: just db-generate [name]
+db-generate *args:
+    atlas migrate diff {{args}} --env local
+
+# Apply all pending migrations (on local dev DB)
+db-apply:
+    atlas migrate apply --env local \
+        --url "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"
+
+# Lint all migration files
+db-lint:
+    git fetch origin main
+    atlas migrate lint lint --env local --git-base origin/main
+
+db-reset: db-dev-purge db-dev-up db-apply
+
+##### THIS DOESN'T WORK, PLEASE CHECK: https://t.torus.network/PoEmc
+
+# # Clean current dev DB schema
+# db-wipe:
+#     atlas schema clean \
+#         --url "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"
+
+# # Full reset: clean DB and reapply all migrations
+# db-reset: db-wipe db-apply
+#####################################################################
+
+
 # -- DB --
-
-db-push:
-  pnpm exec scripts/dev-helper with-env turbo -F @torus-ts/db push
-
 db-dump:
-  cd packages/db; pnpm exec drizzle-kit export > drizzle/dump.sql
+  cd packages/db; pnpm exec drizzle-kit export --dialect postgresql --schema src/schema.ts > drizzle/dump.sql
 
 db-studio:
   pnpm exec scripts/dev-helper with-env turbo -F @torus-ts/db dev
