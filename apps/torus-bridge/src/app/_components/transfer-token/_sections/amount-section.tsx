@@ -22,7 +22,7 @@ export function AmountSection({ isReview }: Readonly<{ isReview: boolean }>) {
 
     // Allow empty string, numbers, and decimal points
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
-      setFieldValue("amount", value);
+      void setFieldValue("amount", value);
     }
   };
 

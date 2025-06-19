@@ -48,7 +48,6 @@ export function useValidationErrors(
 
     // Handle custom validation errors (from validateForm)
     if (
-      errors &&
       typeof errors === "object" &&
       "details" in errors &&
       "errorType" in errors
@@ -67,7 +66,7 @@ export function useValidationErrors(
     }
 
     // Handle Formik errors (simple string errors)
-    if (errors && typeof errors === "object") {
+    if (typeof errors === "object") {
       const formikErrors = errors as Record<string, unknown>;
       const errorEntries = Object.entries(formikErrors);
 

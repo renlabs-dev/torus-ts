@@ -33,8 +33,6 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
 
   const hasError =
     Object.keys(touched).length > 0 && Object.keys(errors).length > 0;
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  const firstError = `${Object.values(errors)[0]}` || "Unknown error";
 
   const variant = hasError ? "destructive" : "default";
   const accountReadyContent = isAccountReady ? text : "Connect wallet";

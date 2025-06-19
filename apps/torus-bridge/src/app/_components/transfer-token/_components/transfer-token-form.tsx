@@ -18,6 +18,7 @@ import { logger } from "~/utils/logger";
 import { updateSearchParams } from "~/utils/query-params";
 import type { TransferFormValues } from "~/utils/types";
 import { Form, Formik } from "formik";
+import type { FormikHelpers } from "formik";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AmountSection } from "../_sections/amount-section";
@@ -130,7 +131,7 @@ export function TransferTokenForm() {
 
   const onSubmitForm = async (
     values: TransferFormValues,
-    { setErrors }: any,
+    { setErrors }: FormikHelpers<TransferFormValues>,
   ) => {
     logger.debug(
       "Reviewing transfer form values for:",
@@ -148,11 +149,10 @@ export function TransferTokenForm() {
     logger.debug("Validation result:", validationResult);
 
     if (
-      validationResult &&
       typeof validationResult === "object" &&
       "errorType" in validationResult
     ) {
-      // If there's a validation error, set it in state and don't enter review mode
+      // If there's a validation error, set it in Formik and don't enter review mode
       const error = validationResult as ValidationError;
       logger.debug("Setting validation error:", error);
 
@@ -160,7 +160,7 @@ export function TransferTokenForm() {
       if (error.amount) {
         setErrors({ amount: error.details });
       } else {
-        setErrors({ form: error.details });
+        setErrors({ recipient: error.details });
       }
       return;
     }
