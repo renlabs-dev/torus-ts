@@ -1,13 +1,6 @@
 name: Atlas Migrations
 
 on:
-  workflow_dispatch:
-    inputs:
-      rollback:
-        description: "Rollback last migration"
-        type: boolean
-        required: false
-        default: false
   pull_request:
     branches:
       - main
@@ -33,7 +26,6 @@ concurrency:
 
 jobs:
   check:
-    if: ${{ !inputs.rollback }}
     runs-on: ubuntu-latest
     outputs:
       has_pending: ${{ steps.migration-status.outputs.has_pending }}
@@ -128,13 +120,8 @@ jobs:
         id: shadow-db
         run: |
           CONTAINER_ID=$(docker compose ps -q postgres)
-
-          # Get the container IP
           DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
-
-          # Use the database URL in your application
           DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
-
           echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
 
           echo "Waiting for PostgreSQL to be ready..."
@@ -165,7 +152,6 @@ jobs:
   apply:
     needs: check
     if: |
-      !inputs.rollback &&
       needs.check.outputs.has_pending == 'true' &&
       github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -212,58 +198,11 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-  rollback:
-    needs: check
-    if: |
-      inputs.rollback &&
-      github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Import Secrets
-        uses: ./.github/actions/import-db-secrets
-        with:
-          vault_addr: ${{ secrets.VAULT_ADDR }}
-          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
-          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
-
-      - uses: ariga/setup-atlas@v0
-
-      - name: Generate rollback report
-        run: |
-          mkdir -p ./rollback-artifacts
-          echo "Rollback execution timestamp: $(date)" > ./rollback-artifacts/rollback-report.txt
-          echo "Branch: ${{ github.ref_name }}" >> ./rollback-artifacts/rollback-report.txt
-          echo "Commit: ${{ github.sha }}" >> ./rollback-artifacts/rollback-report.txt
-          echo -e "\nCurrent migration status:" >> ./rollback-artifacts/rollback-report.txt
-          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt
-          echo -e "\nChanges to be rolled back:" >> ./rollback-artifacts/rollback-report.txt
-          atlas migrate down --env local --dry-run --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt 2>&1
-
-      - name: Atlas migrate down
-        run: atlas migrate down --env local --url "${POSTGRES_URL}"
-
-      - name: Update rollback report with final status
-        run: |
-          echo -e "\nFinal migration status:" >> ./rollback-artifacts/rollback-report.txt
-          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./rollback-artifacts/rollback-report.txt
-
-      - name: Upload rollback report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: rollback-report-${{ github.sha }}
-          path: ./rollback-artifacts/
-          retention-days: 90
-          if-no-files-found: error
-
   restart-apps:
-    needs: [check, apply, rollback]
+    needs: [check, apply]
     if: |
       github.event_name == 'push' &&
-      (needs.apply.result == 'success' || needs.rollback.result == 'success')
+      needs.apply.result == 'success'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
