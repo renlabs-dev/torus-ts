@@ -95,14 +95,20 @@ export function EditEmissionPermissionFormComponent({
     // Add available streams with current percentages if they exist
     availableStreams.data.forEach((stream) => {
       const existingStream = permissionInfo.currentStreams?.find(
-        (s) => s.streamId === stream.streamId
+        (s) => s.streamId === stream.streamId,
       );
       appendStream({
         streamId: stream.streamId,
         percentage: existingStream?.percentage ?? "",
       });
     });
-  }, [availableStreams.data, streamFields.length, removeStream, appendStream, permissionInfo.currentStreams]);
+  }, [
+    availableStreams.data,
+    streamFields.length,
+    removeStream,
+    appendStream,
+    permissionInfo.currentStreams,
+  ]);
 
   const onSubmit = (data: EditEmissionPermissionFormData) => {
     mutation.mutate(data);
@@ -124,7 +130,8 @@ export function EditEmissionPermissionFormComponent({
           </p>
         ) : (
           <p className="text-sm">
-            Your edit permissions are limited by the revocation terms. You can only edit targets.
+            Your edit permissions are limited by the revocation terms. You can
+            only edit targets.
           </p>
         )}
       </AlertDescription>
@@ -132,11 +139,12 @@ export function EditEmissionPermissionFormComponent({
   );
 
   return (
-    <Card>
+    <Card className="border-none w-full">
       <CardHeader>
         <CardTitle>Edit Emission Permission</CardTitle>
         <CardDescription>
-          Modify the selected emission permission. Available fields depend on the permission's revocation terms.
+          Modify the selected emission permission. Available fields depend on
+          the permission's revocation terms.
         </CardDescription>
       </CardHeader>
 
@@ -159,7 +167,7 @@ export function EditEmissionPermissionFormComponent({
                   Add Target
                 </Button>
               </div>
-              
+
               {targetFields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 items-end">
                   <FormField
@@ -206,7 +214,8 @@ export function EditEmissionPermissionFormComponent({
                 </div>
               ))}
               <p className="text-sm text-muted-foreground">
-                Specify the accounts that will receive emissions and their relative weights for distribution.
+                Specify the accounts that will receive emissions and their
+                relative weights for distribution.
               </p>
             </div>
 
@@ -432,7 +441,7 @@ export function EditEmissionPermissionFormComponent({
             </div>
 
             {/* Submit Actions */}
-            <div className="flex justify-end space-x-4 pt-4">
+            <div className="flex justify-end space-x-4 pt-4 pb-12">
               {onClose && (
                 <Button type="button" variant="outline" onClick={onClose}>
                   Cancel

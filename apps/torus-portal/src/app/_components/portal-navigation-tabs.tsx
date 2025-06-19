@@ -20,7 +20,7 @@ export default function PortalNavigationTabs() {
     () => [
       {
         value: "permission-graph",
-        label: "Permission Graph",
+        label: "Hypergraph",
         icon: Network,
         path: "/",
       },
@@ -44,7 +44,7 @@ export default function PortalNavigationTabs() {
       },
       {
         value: "create-signal",
-        label: "Create Signaling",
+        label: "Create Signal",
         icon: Radio,
         path: "/create-signal",
       },
@@ -77,7 +77,7 @@ export default function PortalNavigationTabs() {
   return (
     <>
       {/* Desktop Tabs */}
-      <div className="hidden md:block w-fit">
+      <div className="hidden sm:block w-fit">
         <Tabs value={currentTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-5">
             {navigationItems.map((item) => {
@@ -98,7 +98,7 @@ export default function PortalNavigationTabs() {
       </div>
 
       {/* Mobile Select - Full width breaking out of parent constraints */}
-      <div className="md:hidden fixed left-0 right-0 px-2 z-20">
+      <div className="sm:hidden fixed left-0 right-0 px-2 z-20">
         <Select value={currentTab} onValueChange={handleTabChange}>
           <SelectTrigger className="w-full">
             <SelectValue>

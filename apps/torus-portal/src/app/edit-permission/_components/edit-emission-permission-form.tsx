@@ -28,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Badge } from "@torus-ts/ui/components/badge";
 import { Loader2 } from "lucide-react";
 import { queryPermissionsByGrantor, queryPermission } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
@@ -286,7 +285,7 @@ export default function EditEmissionPermissionForm({
 
   if (!selectedAccount?.address) {
     return (
-      <Card>
+      <Card className="border-none w-full">
         <CardHeader>
           <CardTitle>Connect Wallet</CardTitle>
           <CardDescription>
@@ -299,7 +298,7 @@ export default function EditEmissionPermissionForm({
 
   if (isLoadingPermissions) {
     return (
-      <Card>
+      <Card className="border-none w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -315,7 +314,7 @@ export default function EditEmissionPermissionForm({
 
   if (availablePermissions.length === 0) {
     return (
-      <Card>
+      <Card className="border-none w-full">
         <CardHeader>
           <CardTitle>No Editable Permissions</CardTitle>
           <CardDescription>
@@ -336,9 +335,9 @@ export default function EditEmissionPermissionForm({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 w-full">
       {/* Permission Selection */}
-      <Card>
+      <Card className="border-none w-full">
         <CardHeader>
           <CardTitle>Select Permission to Edit</CardTitle>
           <CardDescription>
