@@ -214,7 +214,7 @@ export default function CreateSignalForm() {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-4">
+              <div className="flex justify-end space-x-4 pb-12">
                 <Button
                   type="button"
                   variant="outline"

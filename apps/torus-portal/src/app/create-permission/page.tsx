@@ -11,7 +11,6 @@ export default function Page() {
     <>
       <PortalFormLayout 
         imageSrc="/form-bg-permission.svg"
-        showScrollArea={true}
         imageAlt="Abstract decorative background illustrating emission permissions"
       >
         <GrantEmissionPermissionForm

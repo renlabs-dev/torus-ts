@@ -8,14 +8,12 @@ interface PortalFormLayoutProps {
   children: React.ReactNode;
   imageSrc?: string;
   imageAlt?: string;
-  showScrollArea?: boolean;
 }
 
 export default function PortalFormLayout({
   children,
   imageSrc = "/form-bg-signal.svg",
   imageAlt = "Abstract decorative background",
-  showScrollArea = false,
 }: PortalFormLayoutProps) {
   return (
     <main className="flex min-h-svh">
@@ -34,17 +32,11 @@ export default function PortalFormLayout({
       </div>
 
       <div className="flex flex-1 bg-card animate-fade-down">
-        {showScrollArea ? (
-          <ScrollArea className="flex-1 h-svh">
-            <div className="flex items-center justify-center pt-16">
-              {children}
-            </div>
-          </ScrollArea>
-        ) : (
-          <div className="flex flex-1 items-center justify-center">
+        <ScrollArea className="flex-1 h-svh">
+          <div className="flex items-center justify-center pt-16">
             {children}
           </div>
-        )}
+        </ScrollArea>
       </div>
     </main>
   );

@@ -11,7 +11,6 @@ export default function EditPermissionPage() {
   return (
     <PortalFormLayout
       imageSrc="/form-bg-permission-edit.svg"
-      showScrollArea={true}
       imageAlt="Abstract decorative background illustrating permission editing"
     >
       <EditEmissionPermissionForm />
