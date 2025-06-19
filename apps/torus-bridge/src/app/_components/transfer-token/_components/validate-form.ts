@@ -40,7 +40,14 @@ export async function validateForm(
     return { form: "Error retrieving account information" };
   }
 
-  const senderPubKey = await publicKey;
+  const [senderPubKeyErr, senderPubKey] =
+    publicKey instanceof Promise
+      ? await tryAsync(publicKey)
+      : [undefined, publicKey];
+  if (senderPubKeyErr) {
+    logger.warn("Error getting sender public key:", senderPubKeyErr);
+    return { form: "Error retrieving account information" };
+  }
 
   const [validateError, result] = await tryAsync(
     warpCore.validateTransfer({
