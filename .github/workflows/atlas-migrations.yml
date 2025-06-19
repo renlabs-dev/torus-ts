@@ -20,7 +20,7 @@ on:
     branches:
       - main
       - dev
-      - feature/migrations
+      # - feature/migrations
     paths:
       - "atlas/migrations/**"
       - atlas.hcl
