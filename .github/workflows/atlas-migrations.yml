@@ -104,7 +104,8 @@ jobs:
   shadow-apply-check:
     needs: check
     if: |
-      github.event_name == 'push' &&
+      github.event_name == 'pull_request' &&
+      github.base_ref == 'main' &&
       needs.check.outputs.has_pending == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -204,7 +205,9 @@ jobs:
   apply:
     needs: check
     if: |
-      !always()
+      !inputs.rollback &&
+      needs.check.outputs.has_pending == 'true' &&
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
