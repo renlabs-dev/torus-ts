@@ -335,13 +335,14 @@ export default function EditEmissionPermissionForm({
   }
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="w-full">
       {/* Permission Selection */}
       <Card className="border-none w-full">
         <CardHeader>
-          <CardTitle>Select Permission to Edit</CardTitle>
+          <CardTitle>Edit Emission Permission</CardTitle>
           <CardDescription>
-            Choose from permissions where you are the grantor.
+            Modify the selected emission permission. Available fields depend on
+            the permission's revocation terms.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -370,14 +371,7 @@ export default function EditEmissionPermissionForm({
                           key={perm.permissionId}
                           value={perm.permissionId}
                         >
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm">
-                              {perm.permissionId.substring(0, 10)}...
-                            </span>
-                            <span className="text-muted-foreground text-sm">
-                              → {perm.grantee.substring(0, 8)}...
-                            </span>
-                          </div>
+                          {perm.permissionId}
                         </SelectItem>
                       ))}
                     </SelectContent>

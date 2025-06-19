@@ -7,13 +7,7 @@ import { Loader2, Plus, Trash2, Wand2, Lock, AlertCircle } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@torus-ts/ui/components/card";
+import { Card, CardContent } from "@torus-ts/ui/components/card";
 import {
   Form,
   FormControl,
@@ -142,14 +136,6 @@ export function EditEmissionPermissionFormComponent({
 
   return (
     <Card className="border-none w-full">
-      <CardHeader>
-        <CardTitle>Edit Emission Permission</CardTitle>
-        <CardDescription>
-          Modify the selected emission permission. Available fields depend on
-          the permission's revocation terms.
-        </CardDescription>
-      </CardHeader>
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <CardContent className="space-y-6">
