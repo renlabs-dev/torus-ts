@@ -38,7 +38,7 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
 
   const variant = hasError ? "destructive" : "default";
   const accountReadyContent = isAccountReady ? text : "Connect wallet";
-  const content = hasError ? firstError : accountReadyContent;
+  const content = hasError ? "Erro" : accountReadyContent;
   const type = isAccountReady ? "submit" : "button";
   const onClick = isAccountReady ? undefined : connectFn;
 
