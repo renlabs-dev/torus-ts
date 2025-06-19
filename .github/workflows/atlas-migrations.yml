@@ -152,10 +152,50 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - name: Apply migrations (dry-run)
-        run: atlas migrate apply --dry-run --env local --url "${{ steps.shadow-db.outputs.db_url }}"
+        id: dry-run
+        run: |
+          # Capture the output in a variable
+          OUTPUT=$(atlas migrate apply --dry-run --env local --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
+          echo "dry_run_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Apply migrations
-        run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
+        id: apply
+        run: |
+          # Capture the output in a variable
+          OUTPUT=$(atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
+          echo "apply_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post migration results as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const dryRunOutput = `${{ steps.dry-run.outputs.dry_run_output }}`;
+            const applyOutput = `${{ steps.apply.outputs.apply_output }}`;
+
+            const body = `### Database Migration Results 🗃️
+
+            #### Dry Run Output
+            \`\`\`
+            ${dryRunOutput}
+            \`\`\`
+
+            #### Applied Migrations
+            \`\`\`
+            ${applyOutput}
+            \`\`\`
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
 
       - name: Delete DB
         if: always()
