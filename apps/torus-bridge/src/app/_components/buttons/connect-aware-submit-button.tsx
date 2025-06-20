@@ -36,16 +36,14 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
 
   const variant = hasError ? "destructive" : "default";
   const accountReadyContent = isAccountReady ? text : "Connect wallet";
-  const content = hasError ? "Erro" : accountReadyContent;
+  const content = hasError ? "Please fix errors above" : accountReadyContent;
   const type = isAccountReady ? "submit" : "button";
   const onClick = isAccountReady ? undefined : connectFn;
 
-  // Automatically clear error state after a timeout
   const clearErrors = useCallback(() => {
     setErrors({});
     void setTouched({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setErrors, setTouched, errors, touched]);
+  }, [setErrors, setTouched]);
 
   useTimeout(clearErrors, 3500);
 

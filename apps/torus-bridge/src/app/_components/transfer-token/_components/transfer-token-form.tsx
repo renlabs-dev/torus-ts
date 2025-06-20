@@ -29,19 +29,7 @@ import { TokenSection } from "../_sections/token-section";
 import { WalletTransactionReview } from "../../shared/wallet-review";
 import { validateFormSync, validateFormWithBalance } from "./validate-form";
 import { useValidationErrors } from "./use-validation-errors";
-
-interface ValidationError {
-  form?: string;
-  amount?: string;
-  details?: string;
-  errorType?:
-    | "insufficient_funds"
-    | "gas_estimation"
-    | "base_eth_insufficient"
-    | "token_error"
-    | "account_error"
-    | "validation_error";
-}
+import { isValidationError } from "~/utils/validation-helpers";
 
 interface FormWithToastProps {
   errors: Record<string, unknown>;
@@ -59,7 +47,7 @@ function FormWithToast({
   setIsReview,
 }: FormWithToastProps) {
   console.log("FormWithToast - errors:", errors);
-  useValidationErrors(errors as ValidationError);
+  useValidationErrors(errors);
 
   return (
     <Form className="flex flex-col">
@@ -148,19 +136,15 @@ export function TransferTokenForm() {
 
     logger.debug("Validation result:", validationResult);
 
-    if (
-      typeof validationResult === "object" &&
-      "errorType" in validationResult
-    ) {
+    if (isValidationError(validationResult)) {
       // If there's a validation error, set it in Formik and don't enter review mode
-      const error = validationResult as ValidationError;
-      logger.debug("Setting validation error:", error);
+      logger.debug("Setting validation error:", validationResult);
 
       // Set the error in Formik errors for the button
-      if (error.amount) {
-        setErrors({ amount: error.details });
+      if (validationResult.amount) {
+        setErrors({ amount: validationResult.details });
       } else {
-        setErrors({ recipient: error.details });
+        setErrors({ recipient: validationResult.details });
       }
       return;
     }

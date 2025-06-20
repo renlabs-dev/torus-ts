@@ -7,36 +7,14 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { getTokenByIndex } from "~/hooks/token";
 import { logger } from "~/utils/logger";
 import type { TransferFormValues } from "~/utils/types";
-
-const INSUFFICIENT_FUNDS_REGEX = /insufficient.[funds|lamports]/i;
-const EMPTY_ACCOUNT_REGEX = /AccountNotFound/i;
-const GAS_ESTIMATION_REGEX = /gas.*(estimation|required)/i;
-const BASE_ETH_INSUFFICIENT_REGEX = /insufficient.*eth/i;
-
-interface ValidationError {
-  form?: string;
-  amount?: string;
-  details?: string;
-  errorType?:
-    | "insufficient_funds"
-    | "gas_estimation"
-    | "base_eth_insufficient"
-    | "token_error"
-    | "account_error"
-    | "validation_error";
-}
-
-function createValidationError(
-  type: ValidationError["errorType"],
-  details: string,
-  field?: "form" | "amount",
-): ValidationError {
-  const error: ValidationError = { details, errorType: type };
-  if (field) {
-    error[field] = "Error";
-  }
-  return error;
-}
+import { ValidationErrorType, ValidationField } from "~/types/validation";
+import type { ValidationResult } from "~/types/validation";
+import {
+  VALIDATION_REGEX,
+  createValidationError,
+  validateRequiredField,
+  validatePositiveNumber,
+} from "~/utils/validation-helpers";
 
 export function validateFormSync({
   origin,
@@ -47,38 +25,29 @@ export function validateFormSync({
 }: TransferFormValues): Record<string, string> | void {
   const errors: Record<string, string> = {};
 
-  // Validate recipient is not empty
-  if (!recipient || recipient.trim() === "") {
-    errors.recipient = "Recipient address is required";
+  const recipientError = validateRequiredField(recipient, "Recipient address");
+  if (recipientError) errors.recipient = recipientError;
+
+  const amountError = validateRequiredField(amount, "Amount");
+  if (amountError) {
+    errors.amount = amountError;
+  } else if (amount) {
+    const positiveNumberError = validatePositiveNumber(amount, "Amount");
+    if (positiveNumberError) errors.amount = positiveNumberError;
   }
 
-  // Validate amount is not empty
-  if (!amount || amount.trim() === "") {
-    errors.amount = "Amount is required";
-  } else {
-    // Validate amount is a valid number
-    const amountNumber = parseFloat(amount);
-    if (isNaN(amountNumber)) {
-      errors.amount = "Amount must be a valid number";
-    } else if (amountNumber <= 0) {
-      errors.amount = "Amount must be greater than 0";
-    }
-  }
-
-  // Validate tokenIndex is defined
   if (tokenIndex === undefined) {
     errors.tokenIndex = "Token selection is required";
   }
 
-  // Validate origin chain is selected
-  if (!origin || origin.trim() === "") {
-    errors.origin = "Origin chain is required";
-  }
+  const originError = validateRequiredField(origin, "Origin chain");
+  if (originError) errors.origin = originError;
 
-  // Validate destination chain is selected
-  if (!destination || destination.trim() === "") {
-    errors.destination = "Destination chain is required";
-  }
+  const destinationError = validateRequiredField(
+    destination,
+    "Destination chain",
+  );
+  if (destinationError) errors.destination = destinationError;
 
   return Object.keys(errors).length > 0 ? errors : undefined;
 }
@@ -87,73 +56,65 @@ export function validateForm(
   _warpCore: WarpCore,
   { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
   _accounts: Record<ProtocolType, AccountInfo>,
-): ValidationError | Record<string, unknown> {
-  // Validate recipient is not empty
-  if (!recipient || recipient.trim() === "") {
+): ValidationResult {
+  const recipientError = validateRequiredField(recipient, "Recipient address");
+  if (recipientError) {
     return createValidationError(
-      "validation_error",
-      "Recipient address is required. Please enter a valid recipient address and try again.",
-      "form",
+      ValidationErrorType.VALIDATION_ERROR,
+      `${recipientError}. Please enter a valid recipient address and try again.`,
+      ValidationField.FORM,
     );
   }
 
-  // Validate amount is not empty
-  if (!amount || amount.trim() === "") {
+  const amountError = validateRequiredField(amount, "Amount");
+  if (amountError) {
     return createValidationError(
-      "validation_error",
-      "Amount is required. Please enter a valid amount and try again.",
-      "amount",
+      ValidationErrorType.VALIDATION_ERROR,
+      `${amountError}. Please enter a valid amount and try again.`,
+      ValidationField.AMOUNT,
     );
   }
 
-  // Validate amount is a valid number
-  const amountNumber = parseFloat(amount);
-  if (isNaN(amountNumber)) {
-    return createValidationError(
-      "validation_error",
-      "Amount must be a valid number. Please enter a valid amount and try again.",
-      "amount",
-    );
+  if (amount) {
+    const positiveNumberError = validatePositiveNumber(amount, "Amount");
+    if (positiveNumberError) {
+      return createValidationError(
+        ValidationErrorType.VALIDATION_ERROR,
+        `${positiveNumberError}. Please enter a valid amount and try again.`,
+        ValidationField.AMOUNT,
+      );
+    }
   }
 
-  // Validate amount is positive
-  if (amountNumber <= 0) {
-    return createValidationError(
-      "validation_error",
-      "Amount must be greater than 0. Please enter a positive amount and try again.",
-      "amount",
-    );
-  }
-
-  // Validate tokenIndex is defined
   if (tokenIndex === undefined) {
     return createValidationError(
-      "validation_error",
+      ValidationErrorType.VALIDATION_ERROR,
       "Token selection is required. Please select a valid token and try again.",
-      "form",
+      ValidationField.FORM,
     );
   }
 
-  // Validate origin chain is selected
-  if (!origin || origin.trim() === "") {
+  const originError = validateRequiredField(origin, "Origin chain");
+  if (originError) {
     return createValidationError(
-      "validation_error",
-      "Origin chain is required. Please select a valid origin chain and try again.",
-      "form",
+      ValidationErrorType.VALIDATION_ERROR,
+      `${originError}. Please select a valid origin chain and try again.`,
+      ValidationField.FORM,
     );
   }
 
-  // Validate destination chain is selected
-  if (!destination || destination.trim() === "") {
+  const destinationError = validateRequiredField(
+    destination,
+    "Destination chain",
+  );
+  if (destinationError) {
     return createValidationError(
-      "validation_error",
-      "Destination chain is required. Please select a valid destination chain and try again.",
-      "form",
+      ValidationErrorType.VALIDATION_ERROR,
+      `${destinationError}. Please select a valid destination chain and try again.`,
+      ValidationField.FORM,
     );
   }
 
-  // For basic validations, return empty object to indicate success
-  // Complex validations (balance check, etc.) will be done in onSubmit
   return {};
 }
 
@@ -161,8 +122,7 @@ export async function validateFormWithBalance(
   warpCore: WarpCore,
   { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
   accounts: Record<ProtocolType, AccountInfo>,
-): Promise<ValidationError | Record<string, unknown>> {
-  // First do basic validation
+): Promise<ValidationResult> {
   const basicValidation = validateFormSync({
     origin,
     destination,
@@ -170,26 +130,38 @@ export async function validateFormWithBalance(
     amount,
     recipient,
   });
+
   if (basicValidation) {
-    // Convert sync errors to async format
     const firstError = Object.values(basicValidation)[0];
     if (!firstError) {
       return createValidationError(
-        "validation_error",
+        ValidationErrorType.VALIDATION_ERROR,
         "Unknown validation error",
-        "form",
+        ValidationField.FORM,
       );
     }
-    return createValidationError("validation_error", firstError, "form");
+    return createValidationError(
+      ValidationErrorType.VALIDATION_ERROR,
+      firstError,
+      ValidationField.FORM,
+    );
   }
 
   const token = getTokenByIndex(warpCore, tokenIndex);
   if (!token) {
     logger.error("Token configuration not found", new Error("Token not found"));
     return createValidationError(
-      "token_error",
+      ValidationErrorType.TOKEN_ERROR,
       "Token configuration not found",
-      "form",
+      ValidationField.FORM,
+    );
+  }
+
+  if (!amount) {
+    return createValidationError(
+      ValidationErrorType.VALIDATION_ERROR,
+      "Amount is required",
+      ValidationField.AMOUNT,
     );
   }
 
@@ -197,45 +169,69 @@ export async function validateFormWithBalance(
   if (amountError) {
     logger.error("Error converting amount to wei:", amountError);
     const details = `Amount conversion failed: ${errorToString(amountError, 200)}. Please check your input format.`;
-    return createValidationError("validation_error", details, "amount");
+    return createValidationError(
+      ValidationErrorType.VALIDATION_ERROR,
+      details,
+      ValidationField.AMOUNT,
+    );
+  }
+
+  if (!origin) {
+    return createValidationError(
+      ValidationErrorType.VALIDATION_ERROR,
+      "Origin chain is required",
+      ValidationField.FORM,
+    );
   }
 
   const [accountError, { address, publicKey } = {}] = trySync(() =>
     getAccountAddressAndPubKey(warpCore.multiProvider, origin, accounts),
   );
+
   if (accountError || !address) {
     logger.error("Error getting account address:", accountError);
     const details = accountError
       ? `Account retrieval failed: ${errorToString(accountError, 200)}`
       : "No account address found. Please ensure your wallet is properly connected.";
-    return createValidationError("account_error", details, "form");
+    return createValidationError(
+      ValidationErrorType.ACCOUNT_ERROR,
+      details,
+      ValidationField.FORM,
+    );
   }
 
   if (!publicKey) {
     logger.error("No public key available", new Error("No public key"));
     return createValidationError(
-      "account_error",
+      ValidationErrorType.ACCOUNT_ERROR,
       "No public key available. Please ensure your wallet is properly connected.",
-      "form",
+      ValidationField.FORM,
     );
   }
 
   const senderPubKey = await publicKey;
 
-  // Check if amount exceeds available balance
   const [balanceError, currentBalance] = await tryAsync(
     token.getBalance(warpCore.multiProvider, address),
   );
+
   if (balanceError) {
     logger.error("Error getting token balance:", balanceError);
     return createValidationError(
-      "token_error",
+      ValidationErrorType.TOKEN_ERROR,
       `Failed to fetch balance: ${errorToString(balanceError, 200)}. Please try again.`,
-      "form",
+      ValidationField.FORM,
     );
   }
 
-  // Get the maximum transferable amount (considering gas fees)
+  if (!destination) {
+    return createValidationError(
+      ValidationErrorType.VALIDATION_ERROR,
+      "Destination chain is required",
+      ValidationField.FORM,
+    );
+  }
+
   const maxTransferAmountParams = {
     balance: currentBalance,
     destination,
@@ -250,9 +246,9 @@ export async function validateFormWithBalance(
   if (maxAmountError) {
     logger.error("Error getting max transfer amount:", maxAmountError);
     return createValidationError(
-      "token_error",
+      ValidationErrorType.TOKEN_ERROR,
       `Failed to calculate maximum transfer amount: ${errorToString(maxAmountError, 200)}. Please try again.`,
-      "form",
+      ValidationField.FORM,
     );
   }
 
@@ -278,9 +274,17 @@ export async function validateFormWithBalance(
     });
 
     return createValidationError(
-      "insufficient_funds",
+      ValidationErrorType.INSUFFICIENT_FUNDS,
       `Amount exceeds maximum transferable: ${formattedAmount} ${token.symbol}. Maximum is ${formattedMaxAmount} ${token.symbol} (including gas fees). Use "Max" button or enter a smaller amount.`,
-      "amount",
+      ValidationField.AMOUNT,
+    );
+  }
+
+  if (!recipient) {
+    return createValidationError(
+      ValidationErrorType.VALIDATION_ERROR,
+      "Recipient is required",
+      ValidationField.FORM,
     );
   }
 
@@ -297,57 +301,58 @@ export async function validateFormWithBalance(
   if (validateError) {
     logger.error("Error validating transfer:", validateError);
     const errorMsg = errorToString(validateError, 40);
-
     const fullErrorMessage = `${errorMsg} ${validateError.message || ""}`;
     const detailedError = errorToString(validateError, 500);
 
     if (
-      INSUFFICIENT_FUNDS_REGEX.test(fullErrorMessage) ||
-      EMPTY_ACCOUNT_REGEX.test(fullErrorMessage)
+      VALIDATION_REGEX.INSUFFICIENT_FUNDS.test(fullErrorMessage) ||
+      VALIDATION_REGEX.EMPTY_ACCOUNT.test(fullErrorMessage)
     ) {
       const [balanceError, currentBalance] = await tryAsync(
         token.getBalance(warpCore.multiProvider, address),
       );
+
       if (balanceError) {
         logger.error("Error getting token balance:", balanceError);
         return createValidationError(
-          "token_error",
+          ValidationErrorType.TOKEN_ERROR,
           `Failed to fetch balance: ${errorToString(balanceError, 200)}. Please try again.`,
-          "form",
+          ValidationField.FORM,
         );
       }
+
       const formattedBalance = currentBalance.getDecimalFormattedAmount();
       const formattedAmount = token
         .amount(amountWei)
         .getDecimalFormattedAmount();
 
       return createValidationError(
-        "insufficient_funds",
+        ValidationErrorType.INSUFFICIENT_FUNDS,
         `Insufficient balance: You have ${formattedBalance} ${token.symbol} and are trying to transfer ${formattedAmount} ${token.symbol}. Please adjust the amount and try again.`,
-        "form",
+        ValidationField.FORM,
       );
     }
 
-    if (GAS_ESTIMATION_REGEX.test(fullErrorMessage)) {
+    if (VALIDATION_REGEX.GAS_ESTIMATION.test(fullErrorMessage)) {
       return createValidationError(
-        "gas_estimation",
+        ValidationErrorType.GAS_ESTIMATION,
         `Gas estimation failed: ${detailedError}. Please ensure you have enough ETH to cover the gas fees on the origin chain.`,
-        "form",
+        ValidationField.FORM,
       );
     }
 
-    if (BASE_ETH_INSUFFICIENT_REGEX.test(fullErrorMessage)) {
+    if (VALIDATION_REGEX.BASE_ETH_INSUFFICIENT.test(fullErrorMessage)) {
       return createValidationError(
-        "base_eth_insufficient",
+        ValidationErrorType.BASE_ETH_INSUFFICIENT,
         `Insufficient ETH on Base: ${detailedError}. You need ETH on Base to pay for transaction gas fees when bridging from Base. Please add some ETH to your Base wallet.`,
-        "form",
+        ValidationField.FORM,
       );
     }
 
     return createValidationError(
-      "validation_error",
+      ValidationErrorType.VALIDATION_ERROR,
       `Transfer validation failed: ${detailedError}. Please check your inputs and try again.`,
-      "form",
+      ValidationField.FORM,
     );
   }
 
