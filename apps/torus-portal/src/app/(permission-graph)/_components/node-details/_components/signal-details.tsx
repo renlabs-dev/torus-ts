@@ -9,6 +9,7 @@ import {
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Calendar, User, Users, Percent } from "lucide-react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 
 interface SignalDetailsProps {
   selectedNode: CustomGraphNode;
@@ -39,7 +40,7 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
   ].filter((social) => social.value);
 
   return (
-    <div className="w-full space-y-6 pt-8">
+    <div className="w-full space-y-6 py-8">
       {/* Main Signal Info */}
       <Card>
         <CardHeader>
@@ -60,9 +61,12 @@ export function SignalDetails({ selectedNode }: SignalDetailsProps) {
         <CardContent className="space-y-4">
           <div>
             <h4 className="font-medium mb-2">Description</h4>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {signalData.description}
-            </p>
+            <div className="text-sm text-muted-foreground max-w-none overflow-x-auto">
+              <MarkdownView
+                source={signalData.description}
+                className="prose prose-sm dark:prose-invert max-w-none"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

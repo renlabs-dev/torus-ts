@@ -16,16 +16,12 @@ interface PermissionNodeDetailsProps {
   permissionDetails?: PermissionDetails;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
-  onBackgroundClick?: () => void;
 }
 
 export const NodeDetails = memo(function NodeDetails({
   selectedNode,
   graphData,
   permissionDetails,
-  // TODO : When click on the background, it should close the details
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onBackgroundClick,
 }: PermissionNodeDetailsProps) {
   const nodePermissions = useMemo(
     () => (graphData ? getNodePermissions(selectedNode, graphData) : []),

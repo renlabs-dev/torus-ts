@@ -1,12 +1,6 @@
 import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
-
-// Basic validation helpers
-const validateAddress = (address: string) => {
-  if (!address) return false;
-  // Basic SS58 address validation - should start with 5 and be 48 characters
-  return /^5[A-Za-z0-9]{47}$/.test(address);
-};
+import { SS58_SCHEMA } from "@torus-network/sdk";
 
 const validatePositiveNumber = (value: string) => {
   const num = parseFloat(value);
@@ -38,7 +32,7 @@ export const allocationSchema = z.discriminatedUnion("type", [
             .regex(/^0x[a-fA-F0-9]{64}$/, "Must be a valid 32-byte hex hash"),
           percentage: z
             .string()
-            .min(1, "Percentage is required")
+            .min(1, "Required")
             .refine((val) => {
               const num = parseFloat(val);
               return !isNaN(num) && num >= 0 && num <= 100;
@@ -117,14 +111,7 @@ export const revocationSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("RevocableByArbiters"),
-    accounts: z
-      .array(
-        z
-          .string()
-          .min(1, "Address is required")
-          .refine(validateAddress, "Must be a valid SS58 address"),
-      )
-      .min(1, "At least one arbiter is required"),
+    accounts: z.array(SS58_SCHEMA).min(1, "At least one arbiter is required"),
     requiredVotes: z
       .string()
       .min(1, "Required votes is required")
@@ -153,12 +140,7 @@ export const enforcementSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("ControlledBy"),
     controllers: z
-      .array(
-        z
-          .string()
-          .min(1, "Address is required")
-          .refine(validateAddress, "Must be a valid SS58 address"),
-      )
+      .array(SS58_SCHEMA)
       .min(1, "At least one controller is required"),
     requiredVotes: z
       .string()
@@ -172,18 +154,12 @@ export const enforcementSchema = z.discriminatedUnion("type", [
 
 // Main form schema
 export const grantEmissionPermissionSchema = z.object({
-  grantee: z
-    .string()
-    .min(1, "Grantee address is required")
-    .refine(validateAddress, "Must be a valid SS58 address"),
+  grantee: SS58_SCHEMA,
   allocation: allocationSchema,
   targets: z
     .array(
       z.object({
-        account: z
-          .string()
-          .min(1, "Account address is required")
-          .refine(validateAddress, "Must be a valid SS58 address"),
+        account: SS58_SCHEMA,
         weight: z
           .string()
           .min(1, "Weight is required")

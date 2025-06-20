@@ -76,7 +76,7 @@ function ConstraintFlow() {
 
   // Fetch permissions with constraints
   const { data: permissionsWithConstraints } =
-    trpcApi.permission.withConstraints.useQuery();
+    trpcApi.permission.allWithConstraints.useQuery();
 
   // Initialize permission ID from existing node
   useEffect(() => {

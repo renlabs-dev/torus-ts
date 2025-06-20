@@ -34,6 +34,7 @@ import {
   queryLastBlock,
   queryMinAllowedStake,
   queryPermission,
+  queryPermissionsByGrantee,
   queryPermissionsByGrantor,
   queryProposals,
   queryRecyclingPercentage,
@@ -466,6 +467,19 @@ export function usePermissionsByGrantor(
     queryKey: ["permissions_by_grantor", address],
     enabled: api != null && address != null,
     queryFn: () => queryPermissionsByGrantor(api!, address!),
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePermissionsByGrantee(
+  api: Api | Nullish,
+  address: SS58Address | Nullish,
+) {
+  return useQuery({
+    queryKey: ["permissions_by_grantee", address],
+    enabled: api != null && address != null,
+    queryFn: () => queryPermissionsByGrantee(api!, address!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

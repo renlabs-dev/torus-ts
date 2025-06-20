@@ -10,6 +10,7 @@ import { Badge } from "@torus-ts/ui/components/badge";
 import { Calendar, Users, Percent, ExternalLink } from "lucide-react";
 import { api } from "~/trpc/react";
 import type { CustomGraphNode } from "../../permission-graph-types";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 
 interface SignalsAccordionProps {
   selectedNode?: CustomGraphNode;
@@ -72,8 +73,11 @@ export function SignalsAccordion({ selectedNode }: SignalsAccordionProps) {
           <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
             <div>
               <span className="text-xs text-gray-500">Description</span>
-              <div className="text-sm text-gray-300 mt-1 whitespace-pre-wrap">
-                {signal.description}
+              <div className="text-sm text-gray-300 mt-1 max-w-none overflow-x-auto">
+                <MarkdownView 
+                  source={signal.description} 
+                  className="prose prose-xs dark:prose-invert max-w-none"
+                />
               </div>
             </div>
 
