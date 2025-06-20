@@ -197,11 +197,8 @@ function ConstraintFlow() {
 
     // Find the permission with constraint
     const permissionWithConstraint = permissionsWithConstraints.find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (item: any) =>
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (item) =>
         item.permission.permission_id === selectedPermissionId &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         item.constraint !== null,
     );
 
