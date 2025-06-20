@@ -33,7 +33,6 @@ interface NodeDetailsCardProps {
   permissionDetails?: PermissionDetails;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
-  onBackgroundClick?: () => void;
 }
 
 export function NodeDetailsCard({
@@ -77,17 +76,11 @@ export function NodeDetailsCard({
   });
 
   const PermissionsContent = () => (
-    <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-32rem)]">
+    <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-30rem)]">
       {processedPermissions.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
           {processedPermissions.map(
-            ({
-              details,
-              isOutgoing,
-              connectedAddress,
-              sourceId,
-              targetId,
-            }) => (
+            ({ details, isOutgoing, connectedAddress, sourceId, targetId }) => (
               <AccordionItem
                 key={`${sourceId}-${targetId}`}
                 value={`${sourceId}-${targetId}`}
@@ -132,7 +125,9 @@ export function NodeDetailsCard({
                         </div>
                         <div>
                           <span className="text-xs text-gray-500">
-                            {details.duration === null ? "Duration" : "Expires in"}
+                            {details.duration === null
+                              ? "Duration"
+                              : "Expires in"}
                           </span>
                           <div className="text-sm text-gray-300">
                             {formatDuration(
@@ -207,11 +202,11 @@ export function NodeDetailsCard({
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
           <TabsTrigger value="signals">Signals</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="permissions" className="flex-1 mt-0">
           <PermissionsContent />
         </TabsContent>
-        
+
         <TabsContent value="signals" className="flex-1 mt-0">
           <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-32rem)]">
             <SignalsAccordion selectedNode={selectedNode} />

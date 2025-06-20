@@ -28,7 +28,6 @@ interface PermissionGraphDetailsProps {
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onBackgroundClick?: () => void;
 }
 
 export const PermissionGraphNodeDetails = memo(
@@ -42,7 +41,6 @@ export const PermissionGraphNodeDetails = memo(
     setCachedAgentData,
     isOpen,
     onOpenChange,
-    onBackgroundClick,
   }: PermissionGraphDetailsProps) {
     if (!selectedNode) {
       return <PermissionGraphOverview graphData={graphData} />;
@@ -53,7 +51,7 @@ export const PermissionGraphNodeDetails = memo(
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange} modal={false}>
         <SheetContent
-          className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto"
+          className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto space-y-2£"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
         >
@@ -62,32 +60,28 @@ export const PermissionGraphNodeDetails = memo(
               {isSignalNode ? "Signal details" : "Agent details"}
             </SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col gap-8 items-start justify-start w-full h-full">
-            {isSignalNode ? (
-              <SignalDetails selectedNode={selectedNode} />
-            ) : (
-              <>
-                <div className="w-full">
-                  <PermissionNodeAgentCard
-                    nodeId={selectedNode.id}
-                    fullAddress={selectedNode.fullAddress}
-                    allComputedWeights={allComputedWeights}
-                    getCachedAgentData={getCachedAgentData}
-                    setCachedAgentData={setCachedAgentData}
-                  />
-                </div>
 
-                <NodeDetails
-                  selectedNode={selectedNode}
-                  graphData={graphData}
-                  permissionDetails={permissionDetails}
-                  getCachedAgentData={getCachedAgentData}
-                  setCachedAgentData={setCachedAgentData}
-                  onBackgroundClick={onBackgroundClick}
-                />
-              </>
-            )}
-          </div>
+          {isSignalNode ? (
+            <SignalDetails selectedNode={selectedNode} />
+          ) : (
+            <div className="w-full flex flex-col gap-4">
+              <PermissionNodeAgentCard
+                nodeId={selectedNode.id}
+                fullAddress={selectedNode.fullAddress}
+                allComputedWeights={allComputedWeights}
+                getCachedAgentData={getCachedAgentData}
+                setCachedAgentData={setCachedAgentData}
+              />
+
+              <NodeDetails
+                selectedNode={selectedNode}
+                graphData={graphData}
+                permissionDetails={permissionDetails}
+                getCachedAgentData={getCachedAgentData}
+                setCachedAgentData={setCachedAgentData}
+              />
+            </div>
+          )}
         </SheetContent>
       </Sheet>
     );
