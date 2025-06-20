@@ -51,7 +51,7 @@ export const PermissionGraphNodeDetails = memo(
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange} modal={false}>
         <SheetContent
-          className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto space-y-2£"
+          className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto space-y-2"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
         >

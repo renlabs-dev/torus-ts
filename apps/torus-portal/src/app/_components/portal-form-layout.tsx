@@ -17,10 +17,10 @@ export default function PortalFormLayout({
 }: PortalFormLayoutProps) {
   return (
     <main className="flex min-h-svh">
-      <div className="fixed top-[3.9rem] left-2 right-96 z-10">
+      <div className="fixed top-[3.9rem] left-2 z-10 max-w-fit">
         <PortalNavigationTabs />
       </div>
-      
+
       <div className="relative bg-card hidden lg:block w-[60%] animate-fade-down animate-delay-300">
         <Image
           src={imageSrc}
