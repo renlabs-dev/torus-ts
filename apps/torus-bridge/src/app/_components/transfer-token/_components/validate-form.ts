@@ -15,6 +15,7 @@ import {
   validateRequiredField,
   validatePositiveNumber,
 } from "~/utils/validation-helpers";
+import { isPromise } from "~/utils/helpers";
 
 export function validateFormSync({
   origin,
@@ -200,16 +201,17 @@ export async function validateFormWithBalance(
     );
   }
 
-  if (!publicKey) {
-    logger.error("No public key available", new Error("No public key"));
+  const [senderPubKeyErr, senderPubKey] = isPromise(publicKey)
+    ? await tryAsync(publicKey)
+    : [undefined, publicKey];
+  if (senderPubKeyErr) {
+    logger.error("Error getting sender public key:", senderPubKeyErr);
     return createValidationError(
       ValidationErrorType.ACCOUNT_ERROR,
-      "No public key available. Please ensure your wallet is properly connected.",
+      `Failed to get sender public key: ${errorToString(senderPubKeyErr, 200)}. Please try again.`,
       ValidationField.FORM,
     );
   }
-
-  const senderPubKey = await publicKey;
 
   const [balanceError, currentBalance] = await tryAsync(
     token.getBalance(warpCore.multiProvider, address),

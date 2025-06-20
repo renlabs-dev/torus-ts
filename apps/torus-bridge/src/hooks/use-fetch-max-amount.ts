@@ -13,6 +13,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { logger } from "../utils/logger";
 import { useWarpCore } from "./token";
+import { isPromise } from "~/utils/helpers";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;
@@ -59,7 +60,20 @@ async function fetchMaxAmount(
     return undefined;
   }
 
-  const senderPubKey = await publicKey;
+  const [senderPubKeyErr, senderPubKey] = isPromise(publicKey)
+    ? await tryAsync(publicKey)
+    : [undefined, publicKey];
+  if (senderPubKeyErr) {
+    logger.warn("Error getting sender public key:", senderPubKeyErr);
+    toast({
+      title: "Error calculating maximum transfer amount",
+      description:
+        senderPubKeyErr instanceof Error
+          ? senderPubKeyErr.message
+          : "Unable to calculate max amount",
+    });
+    return undefined;
+  }
 
   const [maxAmountError, maxAmount] = await tryAsync(
     warpCore.getMaxTransferAmount({
