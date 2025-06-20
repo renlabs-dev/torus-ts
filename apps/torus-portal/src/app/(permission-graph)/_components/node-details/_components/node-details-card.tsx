@@ -76,7 +76,7 @@ export function NodeDetailsCard({
   });
 
   const PermissionsContent = () => (
-    <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-30rem)]">
+    <ScrollArea className="h-[calc(100vh-30rem)]">
       {processedPermissions.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
           {processedPermissions.map(
@@ -208,7 +208,7 @@ export function NodeDetailsCard({
         </TabsContent>
 
         <TabsContent value="signals" className="flex-1 mt-0">
-          <ScrollArea className="h-full max-h-full pb-4 md:pb-0 md:max-h-[calc(100vh-32rem)]">
+          <ScrollArea className="h-[calc(100vh-32rem)] pb-4 md:pb-0">
             <SignalsAccordion selectedNode={selectedNode} />
           </ScrollArea>
         </TabsContent>

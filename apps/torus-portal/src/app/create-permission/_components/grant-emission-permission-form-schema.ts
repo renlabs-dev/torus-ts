@@ -32,7 +32,7 @@ export const allocationSchema = z.discriminatedUnion("type", [
             .regex(/^0x[a-fA-F0-9]{64}$/, "Must be a valid 32-byte hex hash"),
           percentage: z
             .string()
-            .min(1, "Percentage is required")
+            .min(1, "Required")
             .refine((val) => {
               const num = parseFloat(val);
               return !isNaN(num) && num >= 0 && num <= 100;

@@ -160,48 +160,70 @@ export function EditEmissionPermissionFormComponent({
               </div>
 
               {targetFields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 items-end">
-                  <FormField
-                    control={form.control}
-                    name={`newTargets.${index}.account`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel>Account Address</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Account Address" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`newTargets.${index}.weight`}
-                    render={({ field }) => (
-                      <FormItem className="w-32">
-                        <FormLabel>Weight</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Weight"
-                            type="number"
-                            min="0"
-                            max="65535"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeTarget(index)}
-                    className="py-[1.4em]"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div key={field.id} className="space-y-2">
+                  <div className="flex gap-2 items-end">
+                    <FormField
+                      control={form.control}
+                      name={`newTargets.${index}.account`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Account Address</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Account Address" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`newTargets.${index}.weight`}
+                      render={({ field }) => (
+                        <FormItem className="w-32">
+                          <FormLabel>Weight</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Weight"
+                              type="number"
+                              min="0"
+                              max="65535"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeTarget(index)}
+                      className="py-[1.4em]"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {/* Error messages below the row */}
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <FormField
+                        control={form.control}
+                        name={`newTargets.${index}.account`}
+                        render={() => (
+                          <FormMessage />
+                        )}
+                      />
+                    </div>
+                    <div className="w-32">
+                      <FormField
+                        control={form.control}
+                        name={`newTargets.${index}.weight`}
+                        render={() => (
+                          <FormMessage />
+                        )}
+                      />
+                    </div>
+                    <div className="w-10"></div> {/* Spacer for button alignment */}
+                  </div>
                 </div>
               ))}
               <p className="text-sm text-muted-foreground">
@@ -263,57 +285,79 @@ export function EditEmissionPermissionFormComponent({
                 )?.isRootStream;
 
                 return (
-                  <div key={field.id} className="flex gap-2 items-end">
-                    <FormField
-                      control={form.control}
-                      name={`newStreams.${index}.streamId`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>
-                            {isRootStream && <Badge>Root Stream</Badge>}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Stream ID"
-                              disabled={!canEditStreams}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                  <div key={field.id} className="space-y-2">
+                    <div className="flex gap-2 items-end">
+                      <FormField
+                        control={form.control}
+                        name={`newStreams.${index}.streamId`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>
+                              {isRootStream && <Badge>Root Stream</Badge>}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Stream ID"
+                                disabled={!canEditStreams}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`newStreams.${index}.percentage`}
+                        render={({ field }) => (
+                          <FormItem className="w-32">
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Percentage"
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                disabled={!canEditStreams}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      {canEditStreams && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeStream(index)}
+                          className="py-[1.4em]"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`newStreams.${index}.percentage`}
-                      render={({ field }) => (
-                        <FormItem className="w-32">
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Percentage"
-                              type="number"
-                              min="0"
-                              max="100"
-                              step="0.1"
-                              disabled={!canEditStreams}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {canEditStreams && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeStream(index)}
-                        className="py-[1.4em]"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    </div>
+                    {/* Error messages below the row */}
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <FormField
+                          control={form.control}
+                          name={`newStreams.${index}.streamId`}
+                          render={() => (
+                            <FormMessage />
+                          )}
+                        />
+                      </div>
+                      <div className="w-32">
+                        <FormField
+                          control={form.control}
+                          name={`newStreams.${index}.percentage`}
+                          render={() => (
+                            <FormMessage />
+                          )}
+                        />
+                      </div>
+                      <div className={canEditStreams ? "w-10" : "w-0"}></div> {/* Conditional spacer for button alignment */}
+                    </div>
                   </div>
                 );
               })}
