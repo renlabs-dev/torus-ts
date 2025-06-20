@@ -1,11 +1,6 @@
 "use client";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
@@ -36,6 +31,7 @@ import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
 import { trySync } from "@torus-network/torus-utils/try-catch";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 type ViewType =
   | "whitelist-agent"
@@ -130,14 +126,10 @@ export function ShapeNetworkModal() {
           </DialogTitle>
         </DialogHeader>
 
-        {!isAccountConnected && (
-          <Alert variant="destructive">
-            <AlertTitle>Wallet Required</AlertTitle>
-            <AlertDescription>
-              Please connect a wallet to {viewList[selectedView].label}
-            </AlertDescription>
-          </Alert>
-        )}
+        <WalletConnectionWarning
+          formType={viewList[selectedView].label}
+          isAccountConnected={isAccountConnected}
+        />
 
         <Select
           value={selectedView}

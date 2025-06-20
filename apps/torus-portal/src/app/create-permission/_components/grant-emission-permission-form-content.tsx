@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 
+import type { SS58Address } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
 import { Loader2, Plus, Trash2, Wand2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
@@ -40,6 +41,7 @@ import type {
   GrantEmissionPermissionMutation,
 } from "./grant-emission-permission-form-schema";
 import { Badge } from "@torus-ts/ui/components/badge";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 interface GrantEmissionPermissionFormProps {
   form: GrantEmissionPermissionForm;
@@ -55,7 +57,7 @@ export function GrantEmissionPermissionFormComponent({
   mutation,
   onClose,
 }: GrantEmissionPermissionFormProps) {
-  const { api, selectedAccount } = useTorus();
+  const { api, selectedAccount, isAccountConnected } = useTorus();
 
   const availableStreams = useAvailableStreams(
     api,
@@ -149,8 +151,11 @@ export function GrantEmissionPermissionFormComponent({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Basic Information */}
             <CardContent className="space-y-4">
+              <WalletConnectionWarning
+                isAccountConnected={isAccountConnected}
+              />
+              {/* Basic Information */}
               <FormField
                 control={form.control}
                 name="grantee"
@@ -285,50 +290,72 @@ export function GrantEmissionPermissionFormComponent({
                     )?.isRootStream;
 
                     return (
-                      <div key={field.id} className="flex gap-2 items-end">
-                        <FormField
-                          control={form.control}
-                          name={`allocation.streams.${index}.streamId`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>
-                                {isRootStream && <Badge>Root Stream</Badge>}
-                              </FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder={"Stream ID"} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`allocation.streams.${index}.percentage`}
-                          render={({ field }) => (
-                            <FormItem className="w-32">
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="Percentage"
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  step="0.1"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeStream(index)}
-                          className="py-[1.4em]"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div key={field.id} className="space-y-2">
+                        <div className="flex gap-2 items-end">
+                          <FormField
+                            control={form.control}
+                            name={`allocation.streams.${index}.streamId`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>
+                                  {isRootStream && <Badge>Root Stream</Badge>}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder={"Stream ID"} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`allocation.streams.${index}.percentage`}
+                            render={({ field }) => (
+                              <FormItem className="w-32">
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Percentage"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeStream(index)}
+                            className="py-[1.4em]"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {/* Error messages below the row */}
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <FormField
+                              control={form.control}
+                              name={`allocation.streams.${index}.streamId`}
+                              render={() => (
+                                <FormMessage />
+                              )}
+                            />
+                          </div>
+                          <div className="w-32">
+                            <FormField
+                              control={form.control}
+                              name={`allocation.streams.${index}.percentage`}
+                              render={() => (
+                                <FormMessage />
+                              )}
+                            />
+                          </div>
+                          <div className="w-10"></div> {/* Spacer for button alignment */}
+                        </div>
                       </div>
                     );
                   })}
@@ -345,44 +372,66 @@ export function GrantEmissionPermissionFormComponent({
               <h4 className="font-medium mb-1 w-fit">Targets</h4>
 
               {targetFields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 items-end">
-                  <FormField
-                    control={form.control}
-                    name={`targets.${index}.account`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input {...field} placeholder="Account Address" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`targets.${index}.weight`}
-                    render={({ field }) => (
-                      <FormItem className="w-32">
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Weight"
-                            type="number"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeTarget(index)}
-                    className="py-[1.4em]"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div key={field.id} className="space-y-2">
+                  <div className="flex gap-2 items-end">
+                    <FormField
+                      control={form.control}
+                      name={`targets.${index}.account`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <Input {...field} placeholder="Account Address" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`targets.${index}.weight`}
+                      render={({ field }) => (
+                        <FormItem className="w-32">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Weight"
+                              type="number"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeTarget(index)}
+                      className="py-[1.4em]"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {/* Error messages below the row */}
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <FormField
+                        control={form.control}
+                        name={`targets.${index}.account`}
+                        render={() => (
+                          <FormMessage />
+                        )}
+                      />
+                    </div>
+                    <div className="w-32">
+                      <FormField
+                        control={form.control}
+                        name={`targets.${index}.weight`}
+                        render={() => (
+                          <FormMessage />
+                        )}
+                      />
+                    </div>
+                    <div className="w-10"></div> {/* Spacer for button alignment */}
+                  </div>
                 </div>
               ))}
               <div className="flex items-center justify-between">
@@ -390,7 +439,9 @@ export function GrantEmissionPermissionFormComponent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => appendTarget({ account: "", weight: "" })}
+                  onClick={() =>
+                    appendTarget({ account: "" as SS58Address, weight: "" })
+                  }
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Target
@@ -596,32 +647,46 @@ export function GrantEmissionPermissionFormComponent({
                     </Button>
                   </div>
                   {arbiterFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-end">
-                      <FormField
-                        control={form.control}
-                        name={`revocation.accounts.${index}`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Arbiter Address</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="e.g. 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="py-[1.4em]"
-                        onClick={() => removeArbiter(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div key={field.id} className="space-y-2">
+                      <div className="flex gap-2 items-end">
+                        <FormField
+                          control={form.control}
+                          name={`revocation.accounts.${index}`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Arbiter Address</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="e.g. 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="py-[1.4em]"
+                          onClick={() => removeArbiter(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {/* Error message below the row */}
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <FormField
+                            control={form.control}
+                            name={`revocation.accounts.${index}`}
+                            render={() => (
+                              <FormMessage />
+                            )}
+                          />
+                        </div>
+                        <div className="w-10"></div> {/* Spacer for button alignment */}
+                      </div>
                     </div>
                   ))}
                   <FormField

@@ -30,7 +30,9 @@ import {
 import type { Api } from "./_common";
 import { SbQueryError } from "./_common";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
-import { BTreeMap, GenericAccountId32, u16 } from "@polkadot/types";
+import { BTreeMap } from "@polkadot/types";
+import type { u16 } from "@polkadot/types";
+import type { Percent } from "@polkadot/types/interfaces";
 
 const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });
 
@@ -709,4 +711,60 @@ export function togglePermission(
   enable: boolean,
 ) {
   return api.tx.permission0.togglePermissionAccumulation(permissionId, enable);
+}
+// updateEmissionPermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, newTargets: BTreeMap<AccountId32, u16>, newStreams: Option<BTreeMap<H256, Percent>> | null | Uint8Array | BTreeMap<H256, Percent>, newDistributionControl: Option<PalletPermission0PermissionEmissionDistributionControl> | null | Uint8Array | PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string) => SubmittableExtrinsic<ApiType>, [H256, BTreeMap<AccountId32, u16>, Option<BTreeMap<H256, Percent>>, Option<PalletPermission0PermissionEmissionDistributionControl>]>;
+
+export interface UpdateEmissionPermission {
+  api: ApiPromise;
+  permissionId: PermissionId;
+  newTargets?: [SS58Address, number][];
+  newStreams?: Map<StreamId, number>;
+  newDistributionControl?: DistributionControl;
+}
+
+/**
+  If you call as a grantee:
+  you can only provide the new_targets,
+  whenever you want, no limits. if the grantee sends
+  new_streams/new_distribution_control, the extrinsic fails.
+
+  If you call as a grantor:
+  you can send all the values, 
+  but only if the revocation term: is RevocableByGrantor
+  is RevocableAfter(N) and CurrentBlock > N
+  think of it as the revocation term defining whether
+  the grantor can modify the contract without
+  breaching the "terms of service"
+ */
+export function updateEmissionPermission({
+  api,
+  permissionId,
+  newTargets,
+  newStreams,
+  newDistributionControl,
+}: UpdateEmissionPermission) {
+  const targetsMap = newTargets
+    ? new BTreeMap<AccountId32, u16>(
+        api.registry,
+        "AccountId32",
+        "u16",
+        new Map(newTargets),
+      )
+    : new BTreeMap<AccountId32, u16>(
+        api.registry,
+        "AccountId32",
+        "u16",
+        new Map(),
+      );
+
+  const streamsMap = newStreams
+    ? new BTreeMap<H256, Percent>(api.registry, "H256", "Percent", newStreams)
+    : null;
+
+  return api.tx.permission0.updateEmissionPermission(
+    permissionId,
+    targetsMap,
+    streamsMap,
+    newDistributionControl ?? null,
+  );
 }

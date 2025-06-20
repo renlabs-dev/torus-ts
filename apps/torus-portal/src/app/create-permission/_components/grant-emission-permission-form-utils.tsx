@@ -77,7 +77,7 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
     case "RevocableByArbiters":
       revocation = {
         RevocableByArbiters: {
-          accounts: data.revocation.accounts as SS58Address[],
+          accounts: data.revocation.accounts,
           requiredVotes: BigInt(parseInt(data.revocation.requiredVotes)),
         },
       };
@@ -96,7 +96,7 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
   } else {
     enforcement = {
       ControlledBy: {
-        controllers: data.enforcement.controllers as SS58Address[],
+        controllers: data.enforcement.controllers,
         requiredVotes: BigInt(parseInt(data.enforcement.requiredVotes)),
       },
     };
