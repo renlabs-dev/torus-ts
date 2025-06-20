@@ -20,6 +20,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@torus-ts/ui/components/tabs";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureInput } from "@trpc/server";
 import { Input } from "@torus-ts/ui/components/input";
@@ -96,12 +103,35 @@ export default function CreateSignalForm() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea
-                        maxLength={8000}
-                        placeholder="Detailed description of your demand signal..."
-                        className="min-h-[120px] resize-none"
-                        {...field}
-                      />
+                      <Tabs defaultValue="edit" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="edit">Edit</TabsTrigger>
+                          <TabsTrigger value="preview">Preview</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="edit">
+                          <Textarea
+                            maxLength={8000}
+                            placeholder="Detailed description of your demand signal... (Markdown supported)"
+                            className="min-h-[200px] resize-none"
+                            {...field}
+                          />
+                        </TabsContent>
+                        <TabsContent value="preview">
+                          <div className="min-h-[200px] rounded-md border p-3 bg-muted/50">
+                            {field.value ? (
+                              <MarkdownView
+                                source={field.value}
+                                className="prose prose-sm dark:prose-invert max-w-none"
+                              />
+                            ) : (
+                              <p className="text-muted-foreground text-sm">
+                                No content to preview. Switch to Edit tab to add
+                                content.
+                              </p>
+                            )}
+                          </div>
+                        </TabsContent>
+                      </Tabs>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
