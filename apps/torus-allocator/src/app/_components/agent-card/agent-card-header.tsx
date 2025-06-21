@@ -16,7 +16,7 @@ import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { AgentIcon } from "../../agent-icon";
+import { AgentIcon } from "../agent-icon";
 import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
 import { buildSocials, AgentCardSocialsInfo } from "./agent-card-socials-info";
 
