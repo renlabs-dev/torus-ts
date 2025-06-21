@@ -20,7 +20,7 @@ import type { TransferFormValues } from "~/utils/types";
 import { Form, Formik } from "formik";
 import type { FormikHelpers } from "formik";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AmountSection } from "../_sections/amount-section";
 import { ButtonSection } from "../_sections/button-section";
 import { RecipientSection } from "../_sections/recipient-section";
@@ -37,6 +37,8 @@ interface FormWithToastProps {
   resetForm: () => void;
   isValidating: boolean;
   setIsReview: (b: boolean) => void;
+  setFieldValue: (field: string, value: string | number | undefined) => void;
+  isSubmitting: boolean;
 }
 
 function FormWithToast({
@@ -45,9 +47,18 @@ function FormWithToast({
   resetForm,
   isValidating,
   setIsReview,
+  setFieldValue,
+  isSubmitting,
 }: FormWithToastProps) {
   console.log("FormWithToast - errors:", errors);
   useValidationErrors(errors);
+
+  const handleFieldChange = useCallback(
+    (field: string, value: string | number | undefined) => {
+      setFieldValue(field, value);
+    },
+    [setFieldValue],
+  );
 
   return (
     <Form className="flex flex-col">
@@ -69,7 +80,7 @@ function FormWithToast({
             <ButtonSection
               resetForm={resetForm}
               isReview={isReview}
-              isValidating={isValidating}
+              isValidating={isValidating || isSubmitting}
               setIsReview={setIsReview}
             />
           </CardFooter>
@@ -191,13 +202,15 @@ export function TransferTokenForm() {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({ isValidating, resetForm, errors }) => (
+      {({ isValidating, resetForm, errors, setFieldValue, isSubmitting }) => (
         <FormWithToast
           errors={errors}
           isReview={isReview}
           resetForm={resetForm}
           isValidating={isValidating}
           setIsReview={setIsReview}
+          setFieldValue={setFieldValue}
+          isSubmitting={isSubmitting}
         />
       )}
     </Formik>

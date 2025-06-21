@@ -13,17 +13,24 @@ export function useValidationErrors(
 ) {
   const { toast } = useToast();
   const lastErrorRef = useRef<string>("");
+  const lastErrorTimeRef = useRef<number>(0);
 
   const showToast = useCallback(
     (title: string, description: string) => {
       const errorKey = `${title}:${description}`;
-      if (lastErrorRef.current !== errorKey) {
+      const now = Date.now();
+
+      if (
+        lastErrorRef.current !== errorKey ||
+        now - lastErrorTimeRef.current > 3000
+      ) {
         lastErrorRef.current = errorKey;
+        lastErrorTimeRef.current = now;
         toast({
           title,
           description,
           variant: "destructive" as const,
-          duration: 8 * 1_000,
+          duration: 6 * 1_000,
         });
       }
     },

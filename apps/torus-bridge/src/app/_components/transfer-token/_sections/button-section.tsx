@@ -53,7 +53,8 @@ export function ButtonSection({
     return (
       <ConnectAwareSubmitButton
         chainName={values.origin}
-        text={isValidating ? "Validating..." : "Continue"}
+        text="Continue"
+        isLoading={isValidating}
       />
     );
   }
