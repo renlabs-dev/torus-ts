@@ -4,6 +4,8 @@ import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
 
 const AUTH_ORIGIN_DEFAULT = "dao.torus.network";
+// const BASE_URL_DEFAULT = "https://dao.torus.network";
+const BASE_URL_DEFAULT = "https://pr-236.torus-governance.torus.network";
 
 const NodeEnvSchema = z
   .enum(["development", "production", "test"])
@@ -22,6 +24,7 @@ export const envSchema = {
   POSTGRES_URL: z.string().url(),
   PINATA_JWT: z.string(),
   PORT: z.string(),
+  BASE_URL: z.string().default(BASE_URL_DEFAULT),
 
   // Discord Authentication
   DISCORD_CLIENT_ID: z.string().nonempty(),

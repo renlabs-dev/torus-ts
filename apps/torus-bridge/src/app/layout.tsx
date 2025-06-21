@@ -4,17 +4,30 @@ import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { AppContextProvider } from "~/context/app-context-provider";
-import { EnvScript } from "~/env";
-import type { Metadata } from "next";
+import { EnvScript, env } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
+import { Seo, createSeoMetadata } from "@torus-ts/ui/components/seo";
 
-export const metadata: Metadata = {
-  robots: "all",
-  title: "Torus Base Bridge",
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description:
-    "Simple, secure, and easy-to-use wallet for the Torus ecosystem.",
-};
+export const generateMetadata = () =>
+  createSeoMetadata({
+    title: "Torus Base Bridge",
+    description: "Secure Cross-Chain Transfers with Torus Bridge",
+    keywords: [
+      "torus bridge",
+      "cross-chain bridge",
+      "token bridge",
+      "blockchain bridge",
+      "crypto bridge",
+      "multi-chain transfers",
+      "secure asset transfer",
+      "interoperability protocol",
+      "cross-chain interoperability",
+      "substrate bridge",
+      "torus network bridge",
+    ],
+    baseUrl: env("BASE_URL"),
+    canonical: "/",
+  });
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
@@ -29,6 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
+      <Seo />
       <AppContextProvider>{children}</AppContextProvider>
     </Layout>
   );

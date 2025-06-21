@@ -13,6 +13,13 @@ if (process?.env) {
 // warning: DO NOT expose any sensitive data on the schema default values!
 export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
+  BASE_URL: z
+    .string()
+    .default(
+      process.env.NODE_ENV === "production"
+        ? "https://torus.network"
+        : "https://testnet.torus.network",
+    ),
 
   /**
    * Specify your client-side environment variables schema here.
@@ -20,6 +27,7 @@ export const envSchema = {
    */
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
+  NEXT_PUBLIC_GA_ID: z.string().default("G-7YCMH64Q4J"),
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

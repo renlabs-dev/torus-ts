@@ -3,22 +3,30 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { GovernanceProvider } from "~/context/governance-provider";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import DiscordAuthProvider from "../context/auth-provider";
 
-const APP_NAME = "Torus DAO";
-
-export const metadata: Metadata = {
-  robots: "all",
-  title: APP_NAME,
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite DAO.",
-};
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Torus DAO - Decentralized Governance",
+    description:
+      "Participate in the governance of Torus Network. Vote on proposals, create initiatives, and help shape the future of the network.",
+    keywords: [
+      "torus dao",
+      "torus governance",
+      "torus network",
+      "blockchain governance",
+      "dao voting",
+    ],
+    ogSiteName: "Torus DAO",
+    baseUrl: env("BASE_URL"),
+    canonical: "/",
+  });
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
