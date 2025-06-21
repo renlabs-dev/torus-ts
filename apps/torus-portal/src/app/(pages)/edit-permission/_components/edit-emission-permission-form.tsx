@@ -29,7 +29,7 @@ import {
   transformFormDataToUpdateSDK,
   transformPermissionToFormData,
 } from "./edit-emission-permission-form-utils";
-import PermissionSelector from "~/app/_components/permission-selector";
+import { PermissionSelector } from "~/app/_components/permission-selector";
 
 interface EditEmissionPermissionFormProps {
   onSuccess?: () => void;
@@ -184,7 +184,6 @@ export default function EditEmissionPermissionForm({
           <Form {...selectionForm}>
             <PermissionSelector
               control={selectionForm.control}
-              name="permissionId"
               selectedPermissionId={selectionForm.watch("permissionId")}
               onPermissionIdChange={(value) => {
                 selectionForm.setValue("permissionId", value);

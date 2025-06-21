@@ -21,74 +21,47 @@ import { Grid2x2Check, Copy } from "lucide-react";
 import type { Control } from "react-hook-form";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api as trpcApi } from "~/trpc/react";
-
-interface DetailRowProps {
-  label: string;
-  value: string;
-  isMono?: boolean;
-  className?: string;
-}
-
-function DetailRow({ label, value, isMono = false, className = "" }: DetailRowProps) {
-  return (
-    <div>
-      <span className="font-medium">{label}:</span>
-      <span className={`ml-2 text-muted-foreground ${isMono ? "font-mono" : ""} ${className}`}>
-        {value}
-      </span>
-    </div>
-  );
-}
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 
 interface PermissionSelectorProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>;
-  name: string;
+  control: Control<{
+    permissionId: string;
+  }>;
   selectedPermissionId: string;
   onPermissionIdChange: (permissionId: string) => void;
 }
 
-export default function PermissionSelector({
+export function PermissionSelector({
   control,
-  name,
   selectedPermissionId,
   onPermissionIdChange,
 }: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected } = useTorus();
 
-  // Get permissions with constraints by grantor from database
-  const {
-    data: permissionsData,
-    isLoading: isLoadingPermissions,
-    error: permissionsError,
-  } = trpcApi.permission.withConstraintsByGrantor.useQuery(
-    { grantor: selectedAccount?.address ?? "" },
-    { enabled: !!selectedAccount?.address },
-  );
+  const { data: permissionsData, error: permissionsError } =
+    trpcApi.permission.withConstraintsByGrantor.useQuery(
+      { grantor: selectedAccount?.address ?? "" },
+      { enabled: !!selectedAccount?.address },
+    );
 
-  // Filter only emission permissions and extract permission IDs
-  const emissionPermissions =
-    permissionsData?.filter(
-      (item) => item.permissionDetails?.scope === "EMISSION",
-    ) ?? [];
-
-  const displayPermissions = emissionPermissions.map(
+  const displayPermissions = permissionsData?.map(
     (item) => item.permission.permission_id,
   );
 
-  const hasPermissions = displayPermissions.length > 0;
+  const hasPermissions = displayPermissions && displayPermissions.length > 0;
 
-  // Get the last permission (most recently created)
-  const lastPermissionId = hasPermissions
-    ? displayPermissions[displayPermissions.length - 1]
-    : undefined;
+  const lastPermissionId =
+    hasPermissions && displayPermissions[displayPermissions.length - 1];
 
-  // Find selected permission details from the loaded data
   const selectedPermissionData = permissionsData?.find(
     (item) => item.permission.permission_id === selectedPermissionId,
   );
 
-  // Helper function to check if a permission has a constraint
   const hasConstraint = (permissionId: string): boolean => {
     const permission = permissionsData?.find(
       (item) => item.permission.permission_id === permissionId,
@@ -96,7 +69,6 @@ export default function PermissionSelector({
     return !!permission?.constraint;
   };
 
-  // Auto-select the last permission when permissions are loaded
   useEffect(() => {
     if (hasPermissions && !selectedPermissionId && lastPermissionId) {
       onPermissionIdChange(lastPermissionId);
@@ -109,25 +81,65 @@ export default function PermissionSelector({
     lastPermissionId,
   ]);
 
-  const getPlaceholderText = () => {
+  function getPlaceholderText() {
     if (!isAccountConnected) return "Connect wallet to view permissions";
-    if (isLoadingPermissions) return "Loading permissions...";
     if (permissionsError) return "Error loading permissions";
     if (!hasPermissions) return "No permissions available";
     return "Select permission";
-  };
+  }
+
+  function getDetailRows() {
+    if (!selectedPermissionData?.permissionDetails) return [];
+
+    const details = selectedPermissionData.permissionDetails;
+
+    return [
+      {
+        label: "Permission ID",
+        value: smallAddress(selectedPermissionData.permission.permission_id),
+      },
+      {
+        label: "Grantor",
+        value: smallAddress(details.grantor_key),
+      },
+      {
+        label: "Grantee",
+        value: smallAddress(details.grantee_key),
+      },
+      {
+        label: "Scope",
+        value: details.scope,
+      },
+      {
+        label: "Duration",
+        value: details.duration?.toString() ?? "N/A",
+      },
+      {
+        label: "Revocation",
+        value: details.revocation.toString(),
+      },
+      {
+        label: "Created At",
+        value: details.createdAt.toLocaleDateString(),
+      },
+      {
+        label: "Execution Count",
+        value: details.execution_count.toString(),
+      },
+    ];
+  }
 
   return (
     <div className="space-y-2">
       <FormField
         control={control}
-        name={name}
+        name="permissionId"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Select Permission</FormLabel>
             <div className="flex items-center gap-2">
               <Select
-                value={field.value as string}
+                value={field.value}
                 onValueChange={(value: string) => {
                   field.onChange(value);
                   onPermissionIdChange(value);
@@ -140,7 +152,7 @@ export default function PermissionSelector({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {displayPermissions.map((permissionId) => (
+                  {displayPermissions?.map((permissionId) => (
                     <SelectItem key={permissionId} value={permissionId}>
                       <div className="flex items-center justify-between w-full">
                         {hasConstraint(permissionId) && (
@@ -168,61 +180,25 @@ export default function PermissionSelector({
         )}
       />
 
-      {/* Permission Details */}
-      {selectedPermissionId && selectedPermissionData && (
-        <div className="mt-4 p-3 bg-accent border">
-          <h3 className="text-sm font-semibold mb-2">Permission Details</h3>
-          {selectedPermissionData.permissionDetails ? (
-            <div className="space-y-2 text-xs">
-              <DetailRow
-                label="Permission ID"
-                value={smallAddress(selectedPermissionData.permission.permission_id)}
-                isMono
-              />
-              <DetailRow
-                label="Grantor"
-                value={smallAddress(selectedPermissionData.permissionDetails.grantor_key)}
-                isMono
-              />
-              <DetailRow
-                label="Grantee"
-                value={smallAddress(selectedPermissionData.permissionDetails.grantee_key)}
-                isMono
-              />
-              <DetailRow
-                label="Scope"
-                value={selectedPermissionData.permissionDetails.scope}
-              />
-              <DetailRow
-                label="Duration"
-                value={selectedPermissionData.permissionDetails.duration?.toString() ?? "N/A"}
-              />
-              <DetailRow
-                label="Revocation"
-                value={selectedPermissionData.permissionDetails.revocation.toString()}
-              />
-              <DetailRow
-                label="Created At"
-                value={selectedPermissionData.permissionDetails.createdAt.toLocaleDateString()}
-              />
-              <DetailRow
-                label="Execution Count"
-                value={selectedPermissionData.permissionDetails.execution_count.toString()}
-              />
-              {selectedPermissionData.constraint && (
-                <DetailRow
-                  label="Has Constraint"
-                  value="✓ Yes"
-                  className="text-green-600"
-                />
-              )}
-            </div>
-          ) : (
-            <div className="text-xs text-red-500">
-              Permission details not available
-            </div>
-          )}
-        </div>
+      {selectedPermissionId && selectedPermissionData?.permissionDetails && (
+        <Card>
+          <CardHeader className="p-4">
+            <CardTitle className="text-sm font-semibold">
+              Permission Details
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="text-xs p-4 pt-0">
+            {getDetailRows().map((row) => (
+              <div key={row.label}>
+                <span className="font-medium">{row.label}:</span>
+                <span className={"ml-2 text-muted-foreground"}>
+                  {row.value}
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
