@@ -6,8 +6,8 @@ import { Icons } from "@torus-ts/ui/components//icons";
 import { Card } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { PortalAgentImageItem } from "./portal-agent-image-item";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { AgentCardImage } from "./agent-card-image";
 
 // Format weight to max 3 chars
 function formatWeight(weight: number): string {
@@ -16,7 +16,7 @@ function formatWeight(weight: number): string {
   if (weight >= 10) return Math.round(weight).toString();
   if (weight >= 1) return Math.round(weight).toString();
   if (weight < 0.1) return "0";
-  
+
   // For 0.1 to 0.99, show as 0.X
   const firstDecimal = Math.floor(weight * 10) % 10;
   return "0." + firstDecimal;
@@ -83,7 +83,7 @@ export function buildSocials(
   return result;
 }
 
-export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
+export function AgentCard(props: Readonly<PortalAgentCardProps>) {
   const { agentKey, iconUrl, currentBlock, socialsList, title, agentWeight } =
     props;
 
@@ -92,7 +92,7 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
 
   return (
     <Card
-      className={`w-full border bg-gradient-to-t from-[#0A0B13] to-background p-6 transition
+      className={`w-full border bg-gradient-to-tr from-zinc-900 to-background p-6 transition
         duration-300`}
     >
       <div
@@ -100,7 +100,7 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
           "flex w-full flex-col items-center gap-6 md:flex-row md:gap-3"
         }
       >
-        <PortalAgentImageItem iconUrl={iconUrl} />
+        <AgentCardImage iconUrl={iconUrl} />
 
         <div className="flex h-full w-full flex-col justify-between gap-3">
           <div className="justify-betweed flex w-fit items-center gap-4">
@@ -124,13 +124,20 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
         </div>
       </div>
 
-      <div className="mt-2 text-sm flex flex-wrap items-center justify-between gap-2 border px-2 sm:px-4 py-1">
-        <Label className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}>
+      <div
+        className="mt-2 text-sm flex flex-wrap items-center justify-between gap-2 border px-2
+          sm:px-4 py-1"
+      >
+        <Label
+          className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}
+        >
           <Anvil size={14} />
           <span>{formatWeight(agentWeight)}%</span>
         </Label>
 
-        <Label className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}>
+        <Label
+          className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}
+        >
           <Cuboid size={14} />
           <span>{currentBlock}</span>
         </Label>
@@ -144,7 +151,9 @@ export function PortalAgentItem(props: Readonly<PortalAgentCardProps>) {
         >
           <IdCard size={14} className="shrink-0" />
           <span className="hidden sm:block">{smallAddress(agentKey, 5)}</span>
-          <span className="block sm:hidden text-xs">{smallAddress(agentKey, 3)}</span>
+          <span className="block sm:hidden text-xs">
+            {smallAddress(agentKey, 3)}
+          </span>
         </CopyButton>
       </div>
     </Card>

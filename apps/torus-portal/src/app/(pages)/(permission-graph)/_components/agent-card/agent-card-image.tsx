@@ -4,19 +4,13 @@ import Image from "next/image";
 import { Icons } from "@torus-ts/ui/components/icons";
 import { useEffect, useState } from "react";
 
-interface AgentImageProps {
+interface AgentCardImageProps {
   iconBlob?: Blob | null;
   iconUrl?: string | null;
   alt?: string;
-  className?: string;
 }
 
-export function PortalAgentImageItem({
-  iconBlob,
-  iconUrl,
-  alt = "Agent icon",
-  className = "aspect-square rounded-sm shadow-xl md:h-32 md:w-32",
-}: AgentImageProps) {
+export function AgentCardImage({ iconBlob, iconUrl }: AgentCardImageProps) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   // Handle blob to URL conversion if blob is provided
@@ -36,10 +30,10 @@ export function PortalAgentImageItem({
     return (
       <Image
         src={imageSource}
-        alt={alt}
+        alt="Agent icon"
         width={1000}
         height={1000}
-        className={className}
+        className="aspect-square rounded-sm shadow-xl md:h-32 md:w-32"
       />
     );
   }
