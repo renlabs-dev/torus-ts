@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { api } from "../../../trpc/react";
+import { api } from "~/trpc/react";
 import type { Edge, Node } from "@xyflow/react";
 import { validateConstraintForm } from "./constraint-utils";
 import { useTorus } from "@torus-ts/torus-provider";
