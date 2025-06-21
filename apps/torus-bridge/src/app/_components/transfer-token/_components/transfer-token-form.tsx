@@ -37,7 +37,6 @@ interface FormWithToastProps {
   resetForm: () => void;
   isValidating: boolean;
   setIsReview: (b: boolean) => void;
-  setFieldValue: (field: string, value: string | number | undefined) => void;
   isSubmitting: boolean;
 }
 
@@ -47,18 +46,9 @@ function FormWithToast({
   resetForm,
   isValidating,
   setIsReview,
-  setFieldValue,
   isSubmitting,
 }: FormWithToastProps) {
-  console.log("FormWithToast - errors:", errors);
   useValidationErrors(errors);
-
-  const handleFieldChange = useCallback(
-    (field: string, value: string | number | undefined) => {
-      setFieldValue(field, value);
-    },
-    [setFieldValue],
-  );
 
   return (
     <Form className="flex flex-col">
@@ -202,14 +192,13 @@ export function TransferTokenForm() {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({ isValidating, resetForm, errors, setFieldValue, isSubmitting }) => (
+      {({ isValidating, resetForm, errors, isSubmitting }) => (
         <FormWithToast
           errors={errors}
           isReview={isReview}
           resetForm={resetForm}
           isValidating={isValidating}
           setIsReview={setIsReview}
-          setFieldValue={setFieldValue}
           isSubmitting={isSubmitting}
         />
       )}

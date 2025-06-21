@@ -76,3 +76,32 @@ export function validatePositiveNumber(
   }
   return undefined;
 }
+
+// Utility function to format error messages consistently
+export function formatErrorMessage(
+  baseMessage: string,
+  details?: string,
+  suggestion?: string,
+): string {
+  let message = baseMessage;
+  if (details) {
+    message += `: ${details}`;
+  }
+  if (suggestion) {
+    message += `. ${suggestion}`;
+  }
+  return message;
+}
+
+// Utility function to create consistent validation error messages
+export function createFieldValidationError(
+  fieldName: string,
+  issue: string,
+  suggestion?: string,
+): string {
+  return formatErrorMessage(
+    `${fieldName} validation failed`,
+    issue,
+    suggestion ?? `Please check your ${fieldName.toLowerCase()} and try again.`,
+  );
+}

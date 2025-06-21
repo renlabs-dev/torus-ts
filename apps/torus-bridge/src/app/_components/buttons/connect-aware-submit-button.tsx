@@ -22,10 +22,9 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   const protocol = useChainProtocol(chainName) ?? ProtocolType.Ethereum;
   const connectFns = useConnectFns();
   const connectFn = connectFns[protocol];
-
   const multiProvider = useMultiProvider();
   const account = useAccountForChain(multiProvider, chainName);
-  const isAccountReady = account?.isReady;
+  const isAccountReady = account?.isReady ?? false;
 
   const { errors, setErrors, touched, setTouched } =
     useFormikContext<FormValues>();
@@ -35,29 +34,20 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   const hasError =
     Object.keys(touched).length > 0 && Object.keys(errors).length > 0;
 
-  const variant = hasError ? "destructive" : "default";
-  const accountReadyContent = isAccountReady ? text : "Connect wallet";
-  const content = hasError ? "Please fix errors above" : accountReadyContent;
-
-  const type = hasError || !isAccountReady ? "button" : "submit";
-
   const clearErrors = useCallback(() => {
     setErrors({});
     void setTouched({});
   }, [setErrors, setTouched]);
 
   const handleClick = useCallback(() => {
-    if (isAccountReady) {
-      if (hasError) return;
-      else connectFn();
+    if (!isAccountReady) {
+      connectFn();
     }
-  }, [isAccountReady, hasError, connectFn]);
+  }, [isAccountReady, connectFn]);
 
   useEffect(() => {
     if (hasError) {
-      timeoutRef.current = setTimeout(() => {
-        clearErrors();
-      }, 2000);
+      timeoutRef.current = setTimeout(clearErrors, 2000);
     }
 
     return () => {
@@ -67,29 +57,53 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
     };
   }, [hasError, clearErrors]);
 
-  return (
-    <Button
-      type={type}
-      variant={variant}
-      onClick={handleClick}
-      className="w-full transition-all duration-200 ease-in-out"
-      disabled={isLoading}
-      title={
-        hasError
-          ? "Errors will clear automatically in 2 seconds"
-          : isLoading
-            ? "Validating form..."
-            : undefined
-      }
-    >
-      {isLoading ? (
+  const getButtonContent = () => {
+    if (isLoading) {
+      return (
         <div className="flex items-center gap-2">
           <Loading className="h-4 w-4 animate-spin" />
           <span>Validating...</span>
         </div>
-      ) : (
-        <span className="transition-opacity duration-200">{content}</span>
-      )}
+      );
+    }
+
+    if (hasError) {
+      return "Please fix errors above";
+    }
+
+    return isAccountReady ? text : "Connect wallet";
+  };
+
+  const getButtonProps = () => {
+    const baseProps = {
+      className: "w-full transition-all duration-200 ease-in-out",
+      disabled: isLoading,
+      variant: hasError ? ("destructive" as const) : ("default" as const),
+    };
+
+    if (hasError || !isAccountReady) {
+      return {
+        ...baseProps,
+        type: "button" as const,
+        onClick: handleClick,
+        title: hasError
+          ? "Errors will clear automatically in 2 seconds"
+          : undefined,
+      };
+    }
+
+    return {
+      ...baseProps,
+      type: "submit" as const,
+      title: isLoading ? "Validating form..." : undefined,
+    };
+  };
+
+  return (
+    <Button {...getButtonProps()}>
+      <span className="transition-opacity duration-200">
+        {getButtonContent()}
+      </span>
     </Button>
   );
 }

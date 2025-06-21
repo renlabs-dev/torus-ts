@@ -20,46 +20,25 @@ interface TabConfig {
   text: string;
   component: React.ReactNode;
   params: TabId;
+  updates: Record<string, string | null>;
 }
-
-type TabUpdates = Record<string, string | null>;
 
 const TABS: readonly TabConfig[] = [
   {
     text: "Torus ⟷ Torus EVM",
     component: <TransferEVM />,
     params: "torus",
+    updates: { tab: "torus", from: null, to: null, mode: "bridge" },
   },
   {
-    text: "Torus EVM ⟷ Base",
+    text: "Torus ⟷ Base",
     component: <TransferToken />,
     params: "base",
+    updates: { tab: "base", from: "torus", to: "base", mode: null },
   },
 ];
 
 const DEFAULT_TAB = TABS[0];
-
-const getTabUpdates = (tabId: TabId): TabUpdates => {
-  const baseUpdates: TabUpdates = {
-    tab: tabId,
-    from: null,
-    to: null,
-    mode: null,
-  };
-
-  if (tabId === "torus") {
-    return {
-      ...baseUpdates,
-      mode: "bridge",
-    };
-  }
-
-  return {
-    ...baseUpdates,
-    from: "torus",
-    to: "base",
-  };
-};
 
 function WalletOptions() {
   const searchParams = useSearchParams();
@@ -68,9 +47,11 @@ function WalletOptions() {
 
   const handleTabChange = useCallback(
     (value: string) => {
-      const updates = getTabUpdates(value as TabId);
-      const newQuery = updateSearchParams(searchParams, updates);
-      router.push(`/?${newQuery}`);
+      const tab = TABS.find((t) => t.params === value);
+      if (tab) {
+        const newQuery = updateSearchParams(searchParams, tab.updates);
+        router.push(`/?${newQuery}`);
+      }
     },
     [searchParams, router],
   );
@@ -128,7 +109,6 @@ const isValidViewType = (value: string | null): value is ViewType =>
 export function WalletActions() {
   const searchParams = useSearchParams();
   const rawView = searchParams.get("view");
-
   const view: ViewType = isValidViewType(rawView) ? rawView : "wallet";
 
   const routeComponents: RouteComponents = useMemo(

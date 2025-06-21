@@ -15,103 +15,55 @@ import {
   validateRequiredField,
   validatePositiveNumber,
 } from "~/utils/validation-helpers";
-import { isPromise } from "~/utils/helpers";
 
-export function validateFormSync({
-  origin,
-  destination,
-  tokenIndex,
-  amount,
-  recipient,
-}: TransferFormValues): Record<string, string> | void {
+export function validateFormSync(
+  values: TransferFormValues,
+): Record<string, string> | undefined {
   const errors: Record<string, string> = {};
 
-  const recipientError = validateRequiredField(recipient, "Recipient address");
-  if (recipientError) errors.recipient = recipientError;
+  // Validate all required fields
+  const validations = [
+    { field: "recipient", value: values.recipient, name: "Recipient address" },
+    { field: "amount", value: values.amount, name: "Amount" },
+    { field: "origin", value: values.origin, name: "Origin chain" },
+    {
+      field: "destination",
+      value: values.destination,
+      name: "Destination chain",
+    },
+  ];
 
-  const amountError = validateRequiredField(amount, "Amount");
-  if (amountError) {
-    errors.amount = amountError;
-  } else if (amount) {
-    const positiveNumberError = validatePositiveNumber(amount, "Amount");
-    if (positiveNumberError) errors.amount = positiveNumberError;
+  for (const { field, value, name } of validations) {
+    const error = validateRequiredField(value, name);
+    if (error) errors[field] = error;
   }
 
-  if (tokenIndex === undefined) {
+  // Special validation for amount
+  if (values.amount && !errors.amount) {
+    const positiveError = validatePositiveNumber(values.amount, "Amount");
+    if (positiveError) errors.amount = positiveError;
+  }
+
+  // Special validation for tokenIndex
+  if (values.tokenIndex === undefined) {
     errors.tokenIndex = "Token selection is required";
   }
-
-  const originError = validateRequiredField(origin, "Origin chain");
-  if (originError) errors.origin = originError;
-
-  const destinationError = validateRequiredField(
-    destination,
-    "Destination chain",
-  );
-  if (destinationError) errors.destination = destinationError;
 
   return Object.keys(errors).length > 0 ? errors : undefined;
 }
 
 export function validateForm(
   _warpCore: WarpCore,
-  { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
+  values: TransferFormValues,
   _accounts: Record<ProtocolType, AccountInfo>,
 ): ValidationResult {
-  const recipientError = validateRequiredField(recipient, "Recipient address");
-  if (recipientError) {
+  const errors = validateFormSync(values);
+
+  if (errors) {
+    const firstError = Object.values(errors)[0];
     return createValidationError(
       ValidationErrorType.VALIDATION_ERROR,
-      `${recipientError}. Please enter a valid recipient address and try again.`,
-      ValidationField.FORM,
-    );
-  }
-
-  const amountError = validateRequiredField(amount, "Amount");
-  if (amountError) {
-    return createValidationError(
-      ValidationErrorType.VALIDATION_ERROR,
-      `${amountError}. Please enter a valid amount and try again.`,
-      ValidationField.AMOUNT,
-    );
-  }
-
-  if (amount) {
-    const positiveNumberError = validatePositiveNumber(amount, "Amount");
-    if (positiveNumberError) {
-      return createValidationError(
-        ValidationErrorType.VALIDATION_ERROR,
-        `${positiveNumberError}. Please enter a valid amount and try again.`,
-        ValidationField.AMOUNT,
-      );
-    }
-  }
-
-  if (tokenIndex === undefined) {
-    return createValidationError(
-      ValidationErrorType.VALIDATION_ERROR,
-      "Token selection is required. Please select a valid token and try again.",
-      ValidationField.FORM,
-    );
-  }
-
-  const originError = validateRequiredField(origin, "Origin chain");
-  if (originError) {
-    return createValidationError(
-      ValidationErrorType.VALIDATION_ERROR,
-      `${originError}. Please select a valid origin chain and try again.`,
-      ValidationField.FORM,
-    );
-  }
-
-  const destinationError = validateRequiredField(
-    destination,
-    "Destination chain",
-  );
-  if (destinationError) {
-    return createValidationError(
-      ValidationErrorType.VALIDATION_ERROR,
-      `${destinationError}. Please select a valid destination chain and try again.`,
+      `${firstError}. Please fix the error and try again.`,
       ValidationField.FORM,
     );
   }
@@ -121,26 +73,13 @@ export function validateForm(
 
 export async function validateFormWithBalance(
   warpCore: WarpCore,
-  { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
+  values: TransferFormValues,
   accounts: Record<ProtocolType, AccountInfo>,
 ): Promise<ValidationResult> {
-  const basicValidation = validateFormSync({
-    origin,
-    destination,
-    tokenIndex,
-    amount,
-    recipient,
-  });
-
-  if (basicValidation) {
-    const firstError = Object.values(basicValidation)[0];
-    if (!firstError) {
-      return createValidationError(
-        ValidationErrorType.VALIDATION_ERROR,
-        "Unknown validation error",
-        ValidationField.FORM,
-      );
-    }
+  // Basic validation first
+  const basicErrors = validateFormSync(values);
+  if (basicErrors) {
+    const firstError = Object.values(basicErrors)[0];
     return createValidationError(
       ValidationErrorType.VALIDATION_ERROR,
       firstError,
@@ -148,6 +87,9 @@ export async function validateFormWithBalance(
     );
   }
 
+  const { origin, destination, tokenIndex, amount, recipient } = values;
+
+  // Token validation
   const token = getTokenByIndex(warpCore, tokenIndex);
   if (!token) {
     logger.error("Token configuration not found", new Error("Token not found"));
@@ -158,6 +100,7 @@ export async function validateFormWithBalance(
     );
   }
 
+  // Amount conversion
   if (!amount) {
     return createValidationError(
       ValidationErrorType.VALIDATION_ERROR,
@@ -169,22 +112,14 @@ export async function validateFormWithBalance(
   const [amountError, amountWei] = trySync(() => toWei(amount, token.decimals));
   if (amountError) {
     logger.error("Error converting amount to wei:", amountError);
-    const details = `Amount conversion failed: ${errorToString(amountError, 200)}. Please check your input format.`;
     return createValidationError(
       ValidationErrorType.VALIDATION_ERROR,
-      details,
+      `Amount conversion failed: ${errorToString(amountError, 200)}. Please check your input format.`,
       ValidationField.AMOUNT,
     );
   }
 
-  if (!origin) {
-    return createValidationError(
-      ValidationErrorType.VALIDATION_ERROR,
-      "Origin chain is required",
-      ValidationField.FORM,
-    );
-  }
-
+  // Account validation
   const [accountError, { address, publicKey } = {}] = trySync(() =>
     getAccountAddressAndPubKey(warpCore.multiProvider, origin, accounts),
   );
@@ -201,18 +136,18 @@ export async function validateFormWithBalance(
     );
   }
 
-  const [senderPubKeyErr, senderPubKey] = isPromise(publicKey)
-    ? await tryAsync(publicKey)
-    : [undefined, publicKey];
-  if (senderPubKeyErr) {
-    logger.error("Error getting sender public key:", senderPubKeyErr);
+  if (!publicKey) {
+    logger.error("No public key available", new Error("No public key"));
     return createValidationError(
       ValidationErrorType.ACCOUNT_ERROR,
-      `Failed to get sender public key: ${errorToString(senderPubKeyErr, 200)}. Please try again.`,
+      "No public key available. Please ensure your wallet is properly connected.",
       ValidationField.FORM,
     );
   }
 
+  const senderPubKey = await publicKey;
+
+  // Balance validation
   const [balanceError, currentBalance] = await tryAsync(
     token.getBalance(warpCore.multiProvider, address),
   );
@@ -226,14 +161,7 @@ export async function validateFormWithBalance(
     );
   }
 
-  if (!destination) {
-    return createValidationError(
-      ValidationErrorType.VALIDATION_ERROR,
-      "Destination chain is required",
-      ValidationField.FORM,
-    );
-  }
-
+  // Max transfer amount validation
   const maxTransferAmountParams = {
     balance: currentBalance,
     destination,
@@ -254,26 +182,10 @@ export async function validateFormWithBalance(
     );
   }
 
-  logger.debug("Balance check:", {
-    amountWei: amountWei,
-    currentBalance: currentBalance.amount.toString(),
-    maxTransferAmount: maxTransferAmount.amount.toString(),
-    amountWeiBigInt: BigInt(amountWei),
-    comparison: BigInt(amountWei) > maxTransferAmount.amount,
-  });
-
+  // Balance check
   if (BigInt(amountWei) > maxTransferAmount.amount) {
     const formattedAmount = token.amount(amountWei).getDecimalFormattedAmount();
     const formattedMaxAmount = maxTransferAmount.getDecimalFormattedAmount();
-
-    logger.debug("Insufficient balance detected:", {
-      amountWei: amountWei,
-      currentBalance: currentBalance.amount.toString(),
-      maxTransferAmount: maxTransferAmount.amount.toString(),
-      formattedAmount,
-      formattedMaxAmount,
-      tokenSymbol: token.symbol,
-    });
 
     return createValidationError(
       ValidationErrorType.INSUFFICIENT_FUNDS,
@@ -282,14 +194,7 @@ export async function validateFormWithBalance(
     );
   }
 
-  if (!recipient) {
-    return createValidationError(
-      ValidationErrorType.VALIDATION_ERROR,
-      "Recipient is required",
-      ValidationField.FORM,
-    );
-  }
-
+  // Final transfer validation
   const [validateError, result] = await tryAsync(
     warpCore.validateTransfer({
       originTokenAmount: token.amount(amountWei),
@@ -306,23 +211,11 @@ export async function validateFormWithBalance(
     const fullErrorMessage = `${errorMsg} ${validateError.message || ""}`;
     const detailedError = errorToString(validateError, 500);
 
+    // Handle specific error types
     if (
       VALIDATION_REGEX.INSUFFICIENT_FUNDS.test(fullErrorMessage) ||
       VALIDATION_REGEX.EMPTY_ACCOUNT.test(fullErrorMessage)
     ) {
-      const [balanceError, currentBalance] = await tryAsync(
-        token.getBalance(warpCore.multiProvider, address),
-      );
-
-      if (balanceError) {
-        logger.error("Error getting token balance:", balanceError);
-        return createValidationError(
-          ValidationErrorType.TOKEN_ERROR,
-          `Failed to fetch balance: ${errorToString(balanceError, 200)}. Please try again.`,
-          ValidationField.FORM,
-        );
-      }
-
       const formattedBalance = currentBalance.getDecimalFormattedAmount();
       const formattedAmount = token
         .amount(amountWei)

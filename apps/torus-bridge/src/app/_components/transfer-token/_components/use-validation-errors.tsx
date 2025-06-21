@@ -38,37 +38,25 @@ export function useValidationErrors(
   );
 
   useEffect(() => {
-    console.log("useValidationErrors received:", errors);
-
     if (!errors || Object.keys(errors).length === 0) {
       lastErrorRef.current = "";
       return;
     }
 
-    if (isValidationError(errors)) {
-      if (errors.details && errors.errorType) {
-        console.log("Showing toast for validation error:", errors);
-        const toastConfig = getToastConfigForError(
-          errors.errorType,
-          errors.details,
-        );
-
-        showToast(toastConfig.title, toastConfig.description);
-      }
+    if (isValidationError(errors) && errors.details && errors.errorType) {
+      const toastConfig = getToastConfigForError(
+        errors.errorType,
+        errors.details,
+      );
+      showToast(toastConfig.title, toastConfig.description);
       return;
     }
 
     const errorEntries = Object.entries(errors);
-
     if (errorEntries.length > 0) {
       const firstEntry = errorEntries[0];
       if (firstEntry) {
-        const [field, errorMessage] = firstEntry;
-        console.log("Showing toast for Formik error:", {
-          field,
-          errorMessage,
-        });
-
+        const [, errorMessage] = firstEntry;
         if (typeof errorMessage === "string") {
           showToast("Validation Error", errorMessage);
         }
