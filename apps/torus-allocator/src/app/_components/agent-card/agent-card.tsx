@@ -1,9 +1,9 @@
 import { Card } from "@torus-ts/ui/components/card";
 import Link from "next/link";
-import { AgentCardContent } from "./components/agent-card-content";
-import { AgentCardFooter } from "./components/agent-card-footer";
-import { AgentCardHeader } from "./components/agent-card-header";
-import { CardHoverEffect } from "./components/agent-card-hover-effect";
+import { AgentCardContent } from "./agent-card-content";
+import { AgentCardFooter } from "./agent-card-footer";
+import { AgentCardHeader } from "./agent-card-header";
+import { CardHoverEffect } from "./agent-card-hover-effect";
 
 interface AgentCardProps {
   id: number;
