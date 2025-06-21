@@ -18,7 +18,7 @@ on:
 
 jobs:
   pr-check:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     outputs:
       skip: ${{ github.event_name == 'push' && steps.findPr.outputs.number != '' }}
       pr_exists: ${{ steps.findPr.outputs.number != '' }}

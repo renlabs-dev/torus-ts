@@ -29,7 +29,7 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     outputs:
       torus-wallet: ${{ steps.changed.outputs.torus-wallet }}
       torus-page: ${{ steps.changed.outputs.torus-page }}

@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     outputs:
       has_pending: ${{ steps.migration-status.outputs.has_pending }}
     steps:
@@ -99,7 +99,7 @@ jobs:
       github.event_name == 'pull_request' &&
       github.base_ref == 'main' &&
       needs.check.outputs.has_pending == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -154,7 +154,7 @@ jobs:
     if: |
       needs.check.outputs.has_pending == 'true' &&
       github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -203,7 +203,7 @@ jobs:
     if: |
       github.event_name == 'push' &&
       needs.apply.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
     env:
