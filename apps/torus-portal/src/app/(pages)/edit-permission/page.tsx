@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import PortalFormLayout from "../_components/portal-form-layout";
+import PortalFormLayout from "~/app/_components/portal-form-layout";
 import EditEmissionPermissionForm from "./_components/edit-emission-permission-form";
 
 export const metadata: Metadata = {

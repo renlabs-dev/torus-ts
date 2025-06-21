@@ -2,7 +2,7 @@
 
 import { fetchAgentMetadata } from "@torus-network/sdk";
 import { Card } from "@torus-ts/ui/components/card";
-import { PortalAgentItem } from "../../../../_components/portal-agent-item";
+
 import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
@@ -13,6 +13,7 @@ import type {
   ComputedWeightsList,
 } from "../../permission-graph-types";
 import { Button } from "@torus-ts/ui/components/button";
+import { PortalAgentItem } from "~/app/_components/portal-agent-item";
 
 interface PermissionNodeAgentCardProps {
   nodeId: string;

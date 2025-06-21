@@ -7,7 +7,7 @@ import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
-import { PortalHeader } from "./_components/portal-header";
+import { PortalHeader } from "../_components/portal-header";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 

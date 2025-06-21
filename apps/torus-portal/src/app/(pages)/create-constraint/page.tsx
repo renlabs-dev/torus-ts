@@ -1,4 +1,4 @@
-import PortalNavigationTabs from "../_components/portal-navigation-tabs";
+import PortalNavigationTabs from "~/app/_components/portal-navigation-tabs";
 import ConstraintFlowWrapper from "./_components/constraint-flow";
 
 export default function Page() {

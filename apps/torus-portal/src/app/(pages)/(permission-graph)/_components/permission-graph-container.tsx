@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import PortalNavigationTabs from "../../_components/portal-navigation-tabs";
+
 import type {
   CustomGraphNode,
   CachedAgentData,
@@ -18,6 +18,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { useGraphData } from "./force-graph/use-graph-data";
 import { PermissionGraph } from "./force-graph/force-graph-canvas";
 import { Loading } from "@torus-ts/ui/components/loading";
+import PortalNavigationTabs from "~/app/_components/portal-navigation-tabs";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -29,8 +30,13 @@ export default function PermissionGraphContainer() {
 
   const agentCache = useRef(new AgentLRUCache(10));
 
-  const { graphData, isLoading, permissionDetails, allComputedWeights, allSignals } =
-    useGraphData();
+  const {
+    graphData,
+    isLoading,
+    permissionDetails,
+    allComputedWeights,
+    allSignals,
+  } = useGraphData();
   const { selectedAccount } = useTorus();
 
   // Handle initial selected node from query params
