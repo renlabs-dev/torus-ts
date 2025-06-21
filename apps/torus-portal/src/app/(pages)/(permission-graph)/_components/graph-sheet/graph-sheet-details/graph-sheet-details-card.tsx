@@ -22,9 +22,9 @@ import type {
   PermissionDetails,
   PermissionWithType,
 } from "../../permission-graph-types";
-import { ActionButtons } from "./action-buttons";
-import { LinkButtons } from "./link-buttons";
-import { SignalsAccordion } from "./signals-accordion";
+import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons";
+import { GraphSheetDetailsActionButtons } from "./graph-sheet-details-action-buttons";
+import { GraphSheetDetailsSignalsAccordion } from "./graph-sheet-details-signals-accordion";
 
 interface NodeDetailsCardProps {
   nodePermissions: PermissionWithType[];
@@ -95,7 +95,7 @@ export function NodeDetailsCard({
                         {smallAddress(String(details?.permission_id))}
                       </span>
                     </div>
-                    <LinkButtons
+                    <GraphSheetDetailsLinkButtons
                       grantor_key={details?.grantor_key}
                       grantee_key={details?.grantee_key}
                       scope={details?.scope}
@@ -111,7 +111,9 @@ export function NodeDetailsCard({
                     </div>
                     <div className="flex flex-row justify-between gap-2">
                       <span>{smallAddress(connectedAddress, 10)}</span>
-                      <ActionButtons connectedAddress={connectedAddress} />
+                      <GraphSheetDetailsActionButtons
+                        connectedAddress={connectedAddress}
+                      />
                     </div>
                   </div>
                   {details && (
@@ -209,7 +211,7 @@ export function NodeDetailsCard({
 
         <TabsContent value="signals" className="flex-1 mt-0">
           <ScrollArea className="h-[calc(100vh-32rem)] pb-4 md:pb-0">
-            <SignalsAccordion selectedNode={selectedNode} />
+            <GraphSheetDetailsSignalsAccordion selectedNode={selectedNode} />
           </ScrollArea>
         </TabsContent>
       </Tabs>

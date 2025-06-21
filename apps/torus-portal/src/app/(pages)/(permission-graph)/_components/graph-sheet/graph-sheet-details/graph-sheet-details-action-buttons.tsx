@@ -236,8 +236,7 @@ export function AddressActionButton({
   }
 }
 
-// Button group component for common patterns
-interface ActionButtonProps {
+interface GraphSheetDetailsActionButtonsProps {
   connectedAddress: string;
   showCopy?: boolean;
   showExplorer?: boolean;
@@ -246,14 +245,14 @@ interface ActionButtonProps {
   className?: string;
 }
 
-export function ActionButtons({
+export function GraphSheetDetailsActionButtons({
   connectedAddress,
   showCopy = true,
   showExplorer = true,
   showGo = true,
   iconSize = 16,
   className = "flex items-center gap-2",
-}: ActionButtonProps): JSX.Element {
+}: GraphSheetDetailsActionButtonsProps): JSX.Element {
   return (
     <TooltipProvider>
       <div className={className}>

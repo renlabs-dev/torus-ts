@@ -26,7 +26,7 @@ interface LinkButtonsProps {
   iconColor?: string;
 }
 
-export function LinkButtons({
+export function GraphSheetDetailsLinkButtons({
   grantor_key,
   grantee_key,
   scope,
