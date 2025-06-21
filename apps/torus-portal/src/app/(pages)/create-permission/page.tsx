@@ -10,10 +10,7 @@ export default function Page() {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   return (
     <>
-      <PortalFormContainer
-        imageSrc="/form-bg-permission.svg"
-        imageAlt="Abstract decorative background illustrating emission permissions"
-      >
+      <PortalFormContainer imageSrc="/form-bg-permission.svg">
         <GrantEmissionPermissionForm
           onSuccess={() => setIsSuccessDialogOpen(true)}
         />
