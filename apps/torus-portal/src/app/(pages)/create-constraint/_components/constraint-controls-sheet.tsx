@@ -17,7 +17,7 @@ import ConstraintExamplesSelector from "./constraint-examples-selector";
 
 import { Info } from "lucide-react";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
-import PermissionSelector from "~/app/_components/permission-selector";
+import { PermissionSelector } from "~/app/_components/permission-selector";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -68,7 +68,6 @@ export default function ConstraintControlsSheet({
             <Form {...form}>
               <PermissionSelector
                 control={form.control}
-                name="permissionId"
                 selectedPermissionId={selectedPermissionId}
                 onPermissionIdChange={onPermissionIdChange}
               />
