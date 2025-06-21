@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { NumExprType, BaseConstraintType } from "../../../utils/dsl";
+import type { BaseConstraintType, NumExprType } from "@torus-ts/dsl";
 import { H256_HEX, SS58_SCHEMA } from "@torus-network/sdk";
 
 export const uintSchema = z

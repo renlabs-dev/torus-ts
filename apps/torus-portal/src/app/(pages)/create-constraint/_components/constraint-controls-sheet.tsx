@@ -10,15 +10,14 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@torus-ts/ui/components/sheet";
-import {
-  Form,
-} from "@torus-ts/ui/components/form";
+import { Form } from "@torus-ts/ui/components/form";
 import { useForm } from "react-hook-form";
 
 import ConstraintExamplesSelector from "./constraint-examples-selector";
-import PermissionSelector from "../../_components/permission-selector";
+
 import { Info } from "lucide-react";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
+import PermissionSelector from "~/app/_components/permission-selector";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -65,7 +64,7 @@ export default function ConstraintControlsSheet({
 
           <div className="flex flex-col gap-6 py-6">
             <ConstraintTutorialDialog />
-            
+
             <Form {...form}>
               <PermissionSelector
                 control={form.control}
