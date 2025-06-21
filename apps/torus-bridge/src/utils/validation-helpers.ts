@@ -24,43 +24,23 @@ export function createValidationError(
   return error;
 }
 
+const ERROR_TITLES: Record<ValidationErrorType, string> = {
+  [ValidationErrorType.INSUFFICIENT_FUNDS]: "Insufficient Balance",
+  [ValidationErrorType.GAS_ESTIMATION]: "Gas Estimation Failed",
+  [ValidationErrorType.BASE_ETH_INSUFFICIENT]: "Insufficient ETH on Base",
+  [ValidationErrorType.TOKEN_ERROR]: "Token Configuration Error",
+  [ValidationErrorType.ACCOUNT_ERROR]: "Account Connection Error",
+  [ValidationErrorType.VALIDATION_ERROR]: "Validation Error",
+} as const;
+
 export function getToastConfigForError(
   errorType: ValidationErrorType,
   details: string,
 ): ToastConfig {
-  const configs: Record<
-    ValidationErrorType,
-    Omit<ToastConfig, "description">
-  > = {
-    [ValidationErrorType.INSUFFICIENT_FUNDS]: {
-      title: "Insufficient Balance",
-      variant: "destructive",
-    },
-    [ValidationErrorType.GAS_ESTIMATION]: {
-      title: "Gas Estimation Failed",
-      variant: "destructive",
-    },
-    [ValidationErrorType.BASE_ETH_INSUFFICIENT]: {
-      title: "Insufficient ETH on Base",
-      variant: "destructive",
-    },
-    [ValidationErrorType.TOKEN_ERROR]: {
-      title: "Token Configuration Error",
-      variant: "destructive",
-    },
-    [ValidationErrorType.ACCOUNT_ERROR]: {
-      title: "Account Connection Error",
-      variant: "destructive",
-    },
-    [ValidationErrorType.VALIDATION_ERROR]: {
-      title: "Validation Error",
-      variant: "destructive",
-    },
-  };
-
   return {
-    ...configs[errorType],
+    title: ERROR_TITLES[errorType],
     description: details,
+    variant: "destructive",
   };
 }
 
