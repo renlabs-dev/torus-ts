@@ -4,20 +4,20 @@ import { useState } from "react";
 
 import GrantEmissionPermissionForm from "./_components/grant-emission-permission-form";
 import { PermissionSuccessDialog } from "./_components/permission-success-dialog";
-import PortalFormLayout from "~/app/_components/portal-form-layout";
+import PortalFormContainer from "~/app/_components/portal-form-container";
 
 export default function Page() {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   return (
     <>
-      <PortalFormLayout
+      <PortalFormContainer
         imageSrc="/form-bg-permission.svg"
         imageAlt="Abstract decorative background illustrating emission permissions"
       >
         <GrantEmissionPermissionForm
           onSuccess={() => setIsSuccessDialogOpen(true)}
         />
-      </PortalFormLayout>
+      </PortalFormContainer>
 
       <PermissionSuccessDialog
         isOpen={isSuccessDialogOpen}

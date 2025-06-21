@@ -1,13 +1,13 @@
-import PortalFormLayout from "~/app/_components/portal-form-layout";
+import PortalFormContainer from "~/app/_components/portal-form-container";
 import CreateSignalForm from "./_components/create-signal-form";
 
 export default function Page() {
   return (
-    <PortalFormLayout
+    <PortalFormContainer
       imageSrc="/form-bg-signal.svg"
       imageAlt="Abstract decorative background illustrating signal creation"
     >
       <CreateSignalForm />
-    </PortalFormLayout>
+    </PortalFormContainer>
   );
 }
