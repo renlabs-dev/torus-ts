@@ -12,12 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
-import {
-  Form,
-} from "@torus-ts/ui/components/form";
+import { Form } from "@torus-ts/ui/components/form";
 import { queryPermission } from "@torus-network/sdk";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import PermissionSelector from "../../_components/permission-selector";
 import { EditEmissionPermissionFormComponent } from "./edit-emission-permission-form-content";
 import {
   editEmissionPermissionSchema,
@@ -32,6 +29,7 @@ import {
   transformFormDataToUpdateSDK,
   transformPermissionToFormData,
 } from "./edit-emission-permission-form-utils";
+import PermissionSelector from "~/app/_components/permission-selector";
 
 interface EditEmissionPermissionFormProps {
   onSuccess?: () => void;
@@ -63,7 +61,6 @@ export default function EditEmissionPermissionForm({
   const editForm = useForm<EditEmissionPermissionFormData>({
     resolver: zodResolver(editEmissionPermissionSchema),
   });
-
 
   // Handle permission selection
   const handlePermissionSelect = async (permissionId: string) => {
@@ -171,7 +168,6 @@ export default function EditEmissionPermissionForm({
     isPending: transactionStatus === "loading",
     mutate: handleSubmit,
   };
-
 
   return (
     <div className="w-full">
