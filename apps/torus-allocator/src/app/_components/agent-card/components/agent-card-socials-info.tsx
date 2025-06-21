@@ -52,7 +52,7 @@ export function buildSocials(
   );
 }
 
-export function SocialsInfo({
+export function AgentCardSocialsInfo({
   socials,
 }: {
   socials: { name: string; href: string; icon: React.ReactNode }[];

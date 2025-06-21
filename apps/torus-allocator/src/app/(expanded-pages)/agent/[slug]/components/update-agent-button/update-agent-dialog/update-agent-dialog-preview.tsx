@@ -1,9 +1,9 @@
 "use client";
 
 import { Card } from "@torus-ts/ui/components/card";
-import { AgentCardContent } from "~/app/_components/agent-item-card/components/agent-card-content";
-import type { AgentHeaderProps } from "~/app/_components/agent-item-card/components/agent-card-header";
-import { AgentCardHeader } from "~/app/_components/agent-item-card/components/agent-card-header";
+import { AgentCardContent } from "~/app/_components/agent-card/components/agent-card-content";
+import type { AgentHeaderProps } from "~/app/_components/agent-card/components/agent-card-header";
+import { AgentCardHeader } from "~/app/_components/agent-card/components/agent-card-header";
 import { api } from "~/trpc/react";
 import type { UpdateAgentForm } from "./update-agent-dialog-form-schema";
 
