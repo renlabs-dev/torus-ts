@@ -4,17 +4,17 @@ import Image from "next/image";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import PortalNavigationTabs from "./portal-navigation-tabs";
 
-interface PortalFormLayoutProps {
+interface PortalFormContainerProps {
   children: React.ReactNode;
   imageSrc?: string;
   imageAlt?: string;
 }
 
-export default function PortalFormLayout({
+export default function PortalFormContainer({
   children,
   imageSrc = "/form-bg-signal.svg",
   imageAlt = "Abstract decorative background",
-}: PortalFormLayoutProps) {
+}: PortalFormContainerProps) {
   return (
     <main className="flex min-h-svh">
       <div className="fixed top-[3.9rem] left-2 z-10 max-w-fit">
