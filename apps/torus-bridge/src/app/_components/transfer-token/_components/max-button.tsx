@@ -44,6 +44,7 @@ export function MaxButton({
       onClick={onClick}
       variant="outline"
       disabled={disabled}
+      title="Set maximum transferable amount (including gas fees)"
     >
       {isLoading ? (
         <div className="flex items-center">

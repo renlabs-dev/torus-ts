@@ -6,73 +6,85 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { updateSearchParams } from "~/utils/query-params";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useCallback, useEffect } from "react";
+import type { JSX } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { updateSearchParams } from "~/utils/query-params";
 import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
 
-const tabs = [
+type TabId = "torus" | "base";
+type ViewType = "wallet";
+
+interface TabConfig {
+  text: string;
+  component: React.ReactNode;
+  params: TabId;
+  updates: Record<string, string | null>;
+}
+
+const TABS: readonly TabConfig[] = [
   {
     text: "Torus ⟷ Torus EVM",
     component: <TransferEVM />,
     params: "torus",
+    updates: { tab: "torus", from: null, to: null, mode: "bridge" },
   },
   {
-    text: "Torus EVM ⟷ Base",
+    text: "Torus ⟷ Base",
     component: <TransferToken />,
     params: "base",
+    updates: { tab: "base", from: "torus", to: "base", mode: null },
   },
-] as const;
+];
 
-const defaultTab = tabs[0];
+const DEFAULT_TAB = TABS[0];
 
 function WalletOptions() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const currentTab = searchParams.get("tab");
+  const currentTab = searchParams.get("tab") as TabId | null;
 
   const handleTabChange = useCallback(
     (value: string) => {
-      const updates: Record<string, string | null> = {};
-
-      updates.tab = value;
-      if (value === "torus") {
-        updates.from = null;
-        updates.to = null;
-        updates.mode = "bridge";
-      } else if (value === "base") {
-        updates.mode = null;
-        updates.from = "base";
-        updates.to = "torus";
+      const tab = TABS.find((t) => t.params === value);
+      if (tab) {
+        const newQuery = updateSearchParams(searchParams, tab.updates);
+        router.push(`/?${newQuery}`);
       }
-
-      const newQuery = updateSearchParams(searchParams, updates);
-      router.push("/?" + newQuery);
     },
     [searchParams, router],
   );
 
+  const isValidTab = useMemo(
+    () => TABS.some((tab) => tab.params === currentTab),
+    [currentTab],
+  );
+
   useEffect(() => {
-    const isValid = tabs.some((v) => v.params === currentTab);
-    if (!isValid && defaultTab.params !== currentTab) {
-      handleTabChange(defaultTab.params);
+    if (!isValidTab && currentTab !== DEFAULT_TAB?.params) {
+      handleTabChange(DEFAULT_TAB?.params ?? "");
     }
-  }, [currentTab, handleTabChange]);
+  }, [currentTab, handleTabChange, isValidTab]);
+
+  const activeTab = useMemo(
+    () =>
+      TABS.find((tab) => tab.params === currentTab)?.params ??
+      DEFAULT_TAB?.params ??
+      "",
+    [currentTab],
+  );
 
   return (
     <Tabs
-      value={
-        tabs.find((tab) => tab.params === currentTab)?.params ??
-        defaultTab.params
-      }
-      onValueChange={(value) => handleTabChange(value)}
+      value={activeTab}
+      onValueChange={handleTabChange}
       className="animate-fade flex w-full flex-col gap-4"
     >
       <TabsList className="grid w-full grid-cols-2">
-        {tabs.map((tab) => (
+        {TABS.map((tab) => (
           <TabsTrigger
-            key={tab.text}
+            key={tab.params}
             value={tab.params}
             onClick={() => handleTabChange(tab.params)}
           >
@@ -80,28 +92,31 @@ function WalletOptions() {
           </TabsTrigger>
         ))}
       </TabsList>
-      {tabs.map((tab) => {
-        return (
-          <TabsContent key={tab.params} value={tab.params}>
-            {tab.component}
-          </TabsContent>
-        );
-      })}
+      {TABS.map((tab) => (
+        <TabsContent key={tab.params} value={tab.params}>
+          {tab.component}
+        </TabsContent>
+      ))}
     </Tabs>
   );
 }
 
+type RouteComponents = Record<ViewType, JSX.Element>;
+
+const isValidViewType = (value: string | null): value is ViewType =>
+  value === "wallet";
+
 export function WalletActions() {
   const searchParams = useSearchParams();
+  const rawView = searchParams.get("view");
+  const view: ViewType = isValidViewType(rawView) ? rawView : "wallet";
 
-  const view = searchParams.get("view") as "wallet" | null;
+  const routeComponents: RouteComponents = useMemo(
+    () => ({
+      wallet: <WalletOptions />,
+    }),
+    [],
+  );
 
-  const routeComponents = {
-    wallet: <WalletOptions />,
-    // bridge: <BridgeAction />,
-  };
-
-  return routeComponents[view ?? "wallet"];
+  return routeComponents[view];
 }
-
-export default WalletActions;

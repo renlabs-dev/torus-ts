@@ -18,15 +18,67 @@ import { logger } from "~/utils/logger";
 import { updateSearchParams } from "~/utils/query-params";
 import type { TransferFormValues } from "~/utils/types";
 import { Form, Formik } from "formik";
+import type { FormikHelpers } from "formik";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AmountSection } from "../_sections/amount-section";
 import { ButtonSection } from "../_sections/button-section";
 import { RecipientSection } from "../_sections/recipient-section";
 import { SelectChainSection } from "../_sections/select-chain-section";
 import { TokenSection } from "../_sections/token-section";
 import { WalletTransactionReview } from "../../shared/wallet-review";
-import { validateForm } from "./validate-form";
+import { validateFormSync, validateFormWithBalance } from "./validate-form";
+import { useValidationErrors } from "./use-validation-errors";
+import { isValidationError } from "~/utils/validation-helpers";
+
+interface FormWithToastProps {
+  errors: Record<string, unknown>;
+  isReview: boolean;
+  resetForm: () => void;
+  isValidating: boolean;
+  setIsReview: (b: boolean) => void;
+  isSubmitting: boolean;
+}
+
+function FormWithToast({
+  errors,
+  isReview,
+  resetForm,
+  isValidating,
+  setIsReview,
+  isSubmitting,
+}: FormWithToastProps) {
+  useValidationErrors(errors);
+
+  return (
+    <Form className="flex flex-col">
+      <div className="flex w-full flex-col gap-4 md:flex-row">
+        <Card className="animate-fade flex w-full flex-col gap-4 p-6 md:w-3/5">
+          <SelectChainSection isReview={isReview} />
+          <div className="mt-3.5 flex items-end justify-between space-x-4">
+            <TokenSection isReview={isReview} />
+            <AmountSection isReview={isReview} />
+          </div>
+          <RecipientSection isReview={isReview} />
+        </Card>
+        <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
+          <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
+          <CardContent className="p-0">
+            <WalletTransactionReview isReview={isReview} />
+          </CardContent>
+          <CardFooter className="w-full px-0 pb-0 pt-6">
+            <ButtonSection
+              resetForm={resetForm}
+              isReview={isReview}
+              isValidating={isValidating || isSubmitting}
+              setIsReview={setIsReview}
+            />
+          </CardFooter>
+        </Card>
+      </div>
+    </Form>
+  );
+}
 
 export function TransferTokenForm() {
   const searchParams = useSearchParams();
@@ -64,15 +116,40 @@ export function TransferTokenForm() {
     };
   }, [warpCore, fromParam, toParam]);
 
-  const validate = (values: TransferFormValues) =>
-    validateForm(warpCore, values, accounts);
+  const validate = (values: TransferFormValues) => validateFormSync(values);
 
-  const onSubmitForm = (values: TransferFormValues) => {
+  const onSubmitForm = async (
+    values: TransferFormValues,
+    { setErrors }: FormikHelpers<TransferFormValues>,
+  ) => {
     logger.debug(
       "Reviewing transfer form values for:",
       values.origin,
       values.destination,
     );
+
+    // Do full validation before entering review mode
+    const validationResult = await validateFormWithBalance(
+      warpCore,
+      values,
+      accounts,
+    );
+
+    logger.debug("Validation result:", validationResult);
+
+    if (isValidationError(validationResult)) {
+      // If there's a validation error, set it in Formik and don't enter review mode
+      logger.debug("Setting validation error:", validationResult);
+
+      // Set the error in Formik errors for the button
+      if (validationResult.amount) {
+        setErrors({ amount: validationResult.details });
+      } else {
+        setErrors({ recipient: validationResult.details });
+      }
+      return;
+    }
+
     setIsReview(true);
   };
 
@@ -115,33 +192,15 @@ export function TransferTokenForm() {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({ isValidating, resetForm }) => (
-        <Form className="flex flex-col">
-          <div className="flex w-full flex-col gap-4 md:flex-row">
-            <Card className="animate-fade flex w-full flex-col gap-4 p-6 md:w-3/5">
-              <SelectChainSection isReview={isReview} />
-              <div className="mt-3.5 flex items-end justify-between space-x-4">
-                <TokenSection isReview={isReview} />
-                <AmountSection isReview={isReview} />
-              </div>
-              <RecipientSection isReview={isReview} />
-            </Card>
-            <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
-              <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
-              <CardContent className="p-0">
-                <WalletTransactionReview isReview={isReview} />
-              </CardContent>
-              <CardFooter className="w-full px-0 pb-0 pt-6">
-                <ButtonSection
-                  resetForm={resetForm}
-                  isReview={isReview}
-                  isValidating={isValidating}
-                  setIsReview={setIsReview}
-                />
-              </CardFooter>
-            </Card>
-          </div>
-        </Form>
+      {({ isValidating, resetForm, errors, isSubmitting }) => (
+        <FormWithToast
+          errors={errors}
+          isReview={isReview}
+          resetForm={resetForm}
+          isValidating={isValidating}
+          setIsReview={setIsReview}
+          isSubmitting={isSubmitting}
+        />
       )}
     </Formik>
   );

@@ -9,8 +9,22 @@ import { MaxButton } from "../_components/max-button";
 import { TokenBalance } from "../_components/token-balance";
 
 export function AmountSection({ isReview }: Readonly<{ isReview: boolean }>) {
-  const { values } = useFormikContext<TransferFormValues>();
+  const { values, setFieldValue } = useFormikContext<TransferFormValues>();
   const { balance } = useOriginBalance(values);
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Prevent negative values
+    if (value.startsWith("-")) {
+      return;
+    }
+
+    // Allow empty string, numbers, and decimal points
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      void setFieldValue("amount", value);
+    }
+  };
 
   return (
     <div className="flex-1">
@@ -25,7 +39,9 @@ export function AmountSection({ isReview }: Readonly<{ isReview: boolean }>) {
           className="w-full"
           type="number"
           step="any"
+          min="0"
           disabled={isReview}
+          onChange={handleAmountChange}
         />
         <MaxButton disabled={isReview} balance={balance} />
       </div>
