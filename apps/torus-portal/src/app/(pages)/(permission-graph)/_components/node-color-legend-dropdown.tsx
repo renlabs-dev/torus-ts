@@ -57,7 +57,7 @@ const nodeColorLegend: NodeColorInfo[] = [
   },
 ];
 
-export function NodeColorLegend() {
+export function NodeColorLegendDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -10,7 +10,7 @@ import type {
 import ForceGraph from "./force-graph-animation";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 
-export function PermissionGraph({
+export function ForceGraphCanvas({
   data,
   onNodeClick,
   userAddress,

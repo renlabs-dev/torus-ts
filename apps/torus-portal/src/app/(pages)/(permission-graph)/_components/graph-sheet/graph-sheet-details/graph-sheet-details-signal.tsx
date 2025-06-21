@@ -15,7 +15,7 @@ interface SignalDetailsProps {
   selectedNode: CustomGraphNode;
 }
 
-export function SignalDetails({ selectedNode }: SignalDetailsProps) {
+export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
   const signalData = selectedNode.signalData;
 
   if (!signalData) {

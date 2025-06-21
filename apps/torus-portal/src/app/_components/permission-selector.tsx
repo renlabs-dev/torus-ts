@@ -36,11 +36,7 @@ interface PermissionSelectorProps {
   onPermissionIdChange: (permissionId: string) => void;
 }
 
-export function PermissionSelector({
-  control,
-  selectedPermissionId,
-  onPermissionIdChange,
-}: PermissionSelectorProps) {
+export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected } = useTorus();
 
   const { data: permissionsData, error: permissionsError } =
@@ -59,7 +55,7 @@ export function PermissionSelector({
     hasPermissions && displayPermissions[displayPermissions.length - 1];
 
   const selectedPermissionData = permissionsData?.find(
-    (item) => item.permission.permission_id === selectedPermissionId,
+    (item) => item.permission.permission_id === props.selectedPermissionId,
   );
 
   const hasConstraint = (permissionId: string): boolean => {
@@ -70,15 +66,16 @@ export function PermissionSelector({
   };
 
   useEffect(() => {
-    if (hasPermissions && !selectedPermissionId && lastPermissionId) {
-      onPermissionIdChange(lastPermissionId);
+    if (hasPermissions && !props.selectedPermissionId && lastPermissionId) {
+      props.onPermissionIdChange(lastPermissionId);
     }
   }, [
     displayPermissions,
-    selectedPermissionId,
-    onPermissionIdChange,
+    props.selectedPermissionId,
+    props.onPermissionIdChange,
     hasPermissions,
     lastPermissionId,
+    props,
   ]);
 
   function getPlaceholderText() {
@@ -132,7 +129,7 @@ export function PermissionSelector({
   return (
     <div className="space-y-2">
       <FormField
-        control={control}
+        control={props.control}
         name="permissionId"
         render={({ field }) => (
           <FormItem>
@@ -142,7 +139,7 @@ export function PermissionSelector({
                 value={field.value}
                 onValueChange={(value: string) => {
                   field.onChange(value);
-                  onPermissionIdChange(value);
+                  props.onPermissionIdChange(value);
                 }}
                 disabled={!isAccountConnected || !hasPermissions}
               >
@@ -164,9 +161,9 @@ export function PermissionSelector({
                   ))}
                 </SelectContent>
               </Select>
-              {selectedPermissionId && (
+              {props.selectedPermissionId && (
                 <CopyButton
-                  copy={selectedPermissionId}
+                  copy={props.selectedPermissionId}
                   variant="outline"
                   className="h-9 px-2"
                   message="Permission ID copied to clipboard."
@@ -180,26 +177,27 @@ export function PermissionSelector({
         )}
       />
 
-      {selectedPermissionId && selectedPermissionData?.permissionDetails && (
-        <Card>
-          <CardHeader className="p-4">
-            <CardTitle className="text-sm font-semibold">
-              Permission Details
-            </CardTitle>
-          </CardHeader>
+      {props.selectedPermissionId &&
+        selectedPermissionData?.permissionDetails && (
+          <Card>
+            <CardHeader className="p-4">
+              <CardTitle className="text-sm font-semibold">
+                Permission Details
+              </CardTitle>
+            </CardHeader>
 
-          <CardContent className="text-xs p-4 pt-0">
-            {getDetailRows().map((row) => (
-              <div key={row.label}>
-                <span className="font-medium">{row.label}:</span>
-                <span className={"ml-2 text-muted-foreground"}>
-                  {row.value}
-                </span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            <CardContent className="text-xs p-4 pt-0">
+              {getDetailRows().map((row) => (
+                <div key={row.label}>
+                  <span className="font-medium">{row.label}:</span>
+                  <span className={"ml-2 text-muted-foreground"}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }
