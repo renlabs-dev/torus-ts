@@ -29,7 +29,7 @@ jobs:
       !inputs.skip_build && 
       !contains(github.event.head_commit.message, 'skip build')
     permissions: write-all
-    runs-on: ubuntu-22.04-32core-karl
+    runs-on: ubicloud-standard-16
     steps:
       - uses: actions/checkout@v4
 
@@ -67,7 +67,7 @@ jobs:
             ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ env.SANITIZED_REF }}
 
   clean-stale:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
 
@@ -94,7 +94,7 @@ jobs:
       always() &&
       (needs.clean-stale.result == 'success') &&
       (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped')
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
 
