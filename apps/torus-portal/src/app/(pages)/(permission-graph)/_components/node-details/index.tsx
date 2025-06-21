@@ -8,7 +8,6 @@ import type {
   SignalsList,
 } from "../permission-graph-types";
 import { memo } from "react";
-import { PermissionNodeAgentCard } from "./_components/agent-card";
 import {
   Sheet,
   SheetContent,
@@ -17,6 +16,7 @@ import {
 } from "@torus-ts/ui/components/sheet";
 import { PermissionGraphOverview } from "../permission-graph-overview";
 import { SignalDetails } from "./_components/signal-details";
+import { AgentCardContainer } from "../agent-card/agent-card-container";
 
 interface PermissionGraphDetailsProps {
   selectedNode: CustomGraphNode | null;
@@ -65,7 +65,7 @@ export const PermissionGraphNodeDetails = memo(
             <SignalDetails selectedNode={selectedNode} />
           ) : (
             <div className="w-full flex flex-col gap-4">
-              <PermissionNodeAgentCard
+              <AgentCardContainer
                 nodeId={selectedNode.id}
                 fullAddress={selectedNode.fullAddress}
                 allComputedWeights={allComputedWeights}

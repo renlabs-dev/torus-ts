@@ -7,15 +7,15 @@ import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { getAllocatorBaseUrl } from "../../permission-graph-utils";
+import { getAllocatorBaseUrl } from "../permission-graph-utils";
 import type {
   CachedAgentData,
   ComputedWeightsList,
-} from "../../permission-graph-types";
+} from "../permission-graph-types";
 import { Button } from "@torus-ts/ui/components/button";
-import { PortalAgentItem } from "~/app/_components/portal-agent-item";
+import { AgentCard } from "./agent-card";
 
-interface PermissionNodeAgentCardProps {
+interface AgentCardContainerProps {
   nodeId: string;
   fullAddress?: string;
   allComputedWeights?: ComputedWeightsList;
@@ -23,14 +23,14 @@ interface PermissionNodeAgentCardProps {
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
 
-export const PermissionNodeAgentCard = memo(
+export const AgentCardContainer = memo(
   function PermissionNodeAgentCard({
     nodeId,
     fullAddress,
     allComputedWeights,
     getCachedAgentData,
     setCachedAgentData,
-  }: PermissionNodeAgentCardProps) {
+  }: AgentCardContainerProps) {
     const [iconUrl, setIconUrl] = useState<string | null>(null);
     const [socials, setSocials] = useState<Record<string, string>>({});
     const initialAgentName = useMemo(
@@ -237,7 +237,7 @@ export const PermissionNodeAgentCard = memo(
         {isLoading ? (
           <p>Loading agent details...</p>
         ) : (
-          <PortalAgentItem
+          <AgentCard
             agentKey={fullAddress ?? nodeId}
             iconUrl={iconUrl ?? ""}
             socialsList={socials}
