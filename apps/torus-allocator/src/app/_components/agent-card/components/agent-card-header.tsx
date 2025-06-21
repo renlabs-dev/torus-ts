@@ -18,7 +18,7 @@ import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import { AgentIcon } from "../../agent-icon";
 import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
-import { buildSocials, SocialsInfo } from "./socials-info";
+import { buildSocials, AgentCardSocialsInfo } from "./agent-card-socials-info";
 
 export interface AgentPreviewData {
   title?: string;
@@ -157,7 +157,7 @@ export function AgentCardHeader({
         <AgentIcon icon={iconUrl} alt={`${name} icon`} variant="compact" />
         <div className="mt-1 flex h-full w-full flex-col justify-between gap-3">
           <div className="flex w-full items-center justify-between gap-4">
-            <SocialsInfo socials={socialsList} />
+            <AgentCardSocialsInfo socials={socialsList} />
             <AgentBadge
               isInitialized={isInitialized}
               isAgentSelected={isAgentSelected}

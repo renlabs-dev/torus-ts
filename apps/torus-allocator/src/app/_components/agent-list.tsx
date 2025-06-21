@@ -1,10 +1,10 @@
 import { api } from "~/trpc/server";
-import { AgentItemCard } from "./agent-item-card";
+import { AgentCard } from "./agent-card/agent-card";
 import { PaginationNav } from "./pagination-nav";
 
 export const ITEMS_PER_PAGE = 9;
 
-interface FetchAgentItemCardsProps {
+interface FetchAgentCardsProps {
   page?: number;
   search?: string | null;
   orderBy?: "createdAt.desc" | undefined;
@@ -14,7 +14,7 @@ export async function AgentList({
   page = 1,
   search = undefined,
   orderBy,
-}: FetchAgentItemCardsProps) {
+}: FetchAgentCardsProps) {
   const result = await api.agent.paginated({
     page,
     limit: ITEMS_PER_PAGE,
@@ -28,7 +28,7 @@ export async function AgentList({
     <div className="flex w-full flex-col">
       <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {agents.map((agent) => (
-          <AgentItemCard
+          <AgentCard
             id={agent.id}
             key={agent.id}
             name={agent.name ?? "<MISSING_NAME>"}
