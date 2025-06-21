@@ -51,7 +51,7 @@ export interface RegisterAgent {
 
 export type UpdateAgent = Pick<
   RegisterAgent,
-  "name" | "url" | "metadata" | "callback"
+  "url" | "metadata" | "callback"
 >;
 
 export interface AddCustomProposal {

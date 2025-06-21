@@ -92,7 +92,13 @@ export default function UpdateAgentDialog({
 
   const handleDialogChange = useCallback(
     (open: boolean) => {
-      if (!open && form.formState.isDirty && !isUploading) {
+      const hasEditableChanges =
+        form.formState.isDirty &&
+        Object.keys(form.formState.dirtyFields).some(
+          (field) => field !== "name",
+        );
+
+      if (!open && hasEditableChanges && !isUploading) {
         setShowConfirmClose(true);
         return;
       }
@@ -126,11 +132,10 @@ export default function UpdateAgentDialog({
       handleImageChange,
       mutate: async (data: UpdateAgentFormData) => {
         setIsUploading(true);
-        const { name, apiUrl } = data;
+        const { apiUrl } = data;
         const cid = await uploadMetadata(data, imageFile);
 
         await updateAgent({
-          name,
           url: apiUrl ?? "",
           metadata: cidToIpfsUri(cid),
           callback: (tx) => {
@@ -161,7 +166,12 @@ export default function UpdateAgentDialog({
         form={form}
         updateAgentMutation={updateAgentMutation}
         imageFile={imageFile}
-        hasUnsavedChanges={form.formState.isDirty}
+        hasUnsavedChanges={
+          form.formState.isDirty &&
+          Object.keys(form.formState.dirtyFields).some(
+            (field) => field !== "name",
+          )
+        }
       />
       {transactionStatus.status && (
         <div className="mt-4 border rounded-md p-3 bg-black/5">

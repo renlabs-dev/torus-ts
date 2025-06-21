@@ -54,7 +54,11 @@ export function UpdateAgentDialogForm({
                     Name <span className="text-red-500">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Ex.: Chatbot Assistant" />
+                    <Input
+                      {...field}
+                      disabled
+                      className="bg-muted/50 cursor-not-allowed"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

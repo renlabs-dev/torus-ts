@@ -536,7 +536,6 @@ export function TorusProvider({
   }
 
   async function updateAgent({
-    name,
     url,
     metadata,
     callback,
@@ -544,7 +543,6 @@ export function TorusProvider({
     if (!api?.tx.torus0?.updateAgent) return;
 
     const transaction = api.tx.torus0.updateAgent(
-      name,
       url,
       metadata,
       undefined,
@@ -790,7 +788,8 @@ export function TorusProvider({
     newDistributionControl,
     callback,
     refetchHandler,
-  }: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers): Promise<void> {
+  }: Omit<UpdateEmissionPermission, "api"> &
+    TransactionHelpers): Promise<void> {
     if (!api) {
       console.log("API not connected");
       return;

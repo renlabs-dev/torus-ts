@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
+import { z } from "zod";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
@@ -63,11 +63,7 @@ export const updateAgentSocialsSchema = z.object({
 });
 
 export const updateAgentSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Name is required")
-    .max(50, "Name cannot exceed 50 characters"),
+  name: z.string().trim(),
   title: z
     .string()
     .trim()
