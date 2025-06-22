@@ -23,13 +23,6 @@ async function connectToChainRpc(wsEndpoint: string) {
 }
 
 const api = await connectToChainRpc(NODE_URL);
-const storage = createStorageRouter(api);
-// const testResult = await exampleUsage(api);
-// console.log(testResult);
-// const x = await storage.system.number.get();
-// const y = await api.query.system.number();
-// console.log(y)
-// console.log(x)
 
 // // ====
 

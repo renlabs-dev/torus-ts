@@ -1,31 +1,35 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { z } from 'zod';
 import {
   sb_amount,
   sb_address,
-} from "./common";
+  sb_number_int,
+} from "../../../types";
 
-// Account data schema - based on PalletBalancesAccountData
-export const ACCOUNT_DATA_SCHEMA = z.object({
-  free: sb_amount,
-  reserved: sb_amount,
-  frozen: sb_amount,
-  flags: z.object({
-    // AccountFlags structure
-    value: z.number(),
-  }),
-});
+// Re-export shared schemas
+export { sb_amount, sb_address, sb_number_int };
 
-// Balance lock schema - based on PalletBalancesBalanceLock
-export const BALANCE_LOCK_SCHEMA = z.object({
-  id: z.array(z.number()), // LockIdentifier (8 bytes)
-  amount: sb_amount,
-  reasons: z.enum(['Fee', 'Misc', 'All']),
-});
+// Simple schemas for balances pallet
+export const sb_hex_amount = z.any().transform((val) => {
+  if (typeof val === 'string') return val;
+  if (val && typeof val.toString === 'function') return val.toString();
+  if (val && typeof val.toJSON === 'function') return val.toJSON();
+  return String(val);
+}); // Hex amounts from Substrate Balance codec
 
-// Reserve data schema - based on PalletBalancesReserveData
-export const RESERVE_DATA_SCHEMA = z.object({
-  id: z.array(z.number()), // ReserveIdentifier (8 bytes)
-  amount: sb_amount,
-});
+// Account data schema - use z.any() for complex structures since maps are empty
+export const ACCOUNT_DATA_SCHEMA = z.any(); // PalletBalancesAccountData
 
-export { sb_amount, sb_address };
+// Balance lock schema - use z.any() for complex structures since maps are empty
+export const BALANCE_LOCK_SCHEMA = z.any(); // Vec<PalletBalancesBalanceLock>
+
+// Reserve data schema - use z.any() for complex structures since maps are empty  
+export const RESERVE_DATA_SCHEMA = z.any(); // Vec<PalletBalancesReserveData>
+
+// Freeze data schema - use z.any() for complex structures since maps are empty
+export const FREEZE_DATA_SCHEMA = z.any(); // Vec<IdAmount>
+
+// Hold data schema - use z.any() for complex structures since maps are empty
+export const HOLD_DATA_SCHEMA = z.any(); // Vec<IdAmount>

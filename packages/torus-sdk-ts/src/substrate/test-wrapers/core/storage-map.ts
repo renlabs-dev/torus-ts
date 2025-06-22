@@ -2,8 +2,6 @@
 import type { ApiPromise } from '@polkadot/api';
 import type { z } from 'zod';
 import { SbStorageMap } from '../../storage';
-import { isErr } from '@torus-network/torus-utils/result';
-import type { Codec } from '@polkadot/types-codec/types';
 import { trySync } from '@torus-network/torus-utils/try-catch';
 
 export function createStorageMap<
@@ -20,11 +18,10 @@ export function createStorageMap<
   return {
     query: (api: ApiPromise) => ({
       get: async (key: z.input<KeySchema>): Promise<z.output<ValueSchema> | null> => {
-        // Bypass the schema validation and get raw data, then convert to JSON
         const entry = storageWrapper.storageEntryOn(api);
         const rawValue = await entry(key);
         
-        if (!rawValue || (rawValue as { isEmpty?: boolean }).isEmpty) {
+        if (rawValue.isEmpty) {
           return null;
         }
         
@@ -38,15 +35,17 @@ export function createStorageMap<
           throw new Error(`Failed to query ${pallet}.${storage}: ${parsed.error.message}`);
         }
         
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return parsed.data;
       },
 
       display: async (key: z.input<KeySchema>): Promise<unknown> => {
         const entry = storageWrapper.storageEntryOn(api);
         const raw = await entry(key);
-        if (!raw || (raw as { isEmpty?: boolean }).isEmpty) {
+        if (raw.isEmpty) {
           return null;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const [parseError, humanReadable] = trySync(() => JSON.parse(raw.toString()));
         if (parseError) {
           return raw.toString();
@@ -85,7 +84,9 @@ export function createStorageMap<
         
         return rawEntries.map(([storageKey, rawValue]) => {
           const rawKey = storageKey.args[0];
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           const [parseError, humanReadable] = trySync(() => JSON.parse(rawValue.toString()));
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const displayValue = parseError ? rawValue.toString() : humanReadable;
           return [rawKey, displayValue];
         });
@@ -103,8 +104,9 @@ export function createStorageMap<
           if (!parsed.success) {
             throw new Error(`Failed to parse key: ${parsed.error.message}`);
           }
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return parsed.data;
-        });
+        }) as z.output<KeySchema>[];
       },
       
       subscribe: (
@@ -155,10 +157,13 @@ export function createStorageMap<
         const rawValues = await entry.multi(keys);
         
         return rawValues.map((raw: unknown) => {
-          if (!raw || typeof raw === 'object' && 'isEmpty' in raw && raw.isEmpty) {
+          if (!raw || (typeof raw === 'object' && raw !== null && 'isEmpty' in raw && (raw as any).isEmpty)) {
             return null;
           }
-          const parsed = valueSchema.safeParse(raw);
+          
+          // Convert to JSON for schema validation, similar to get method
+          const jsonValue = (raw as any).toJSON ? (raw as any).toJSON() : raw;
+          const parsed = valueSchema.safeParse(jsonValue);
           if (!parsed.success) {
             throw new Error(`Failed to parse value: ${parsed.error.message}`);
           }

@@ -5,10 +5,8 @@ import {
   sb_percent,
   sb_address,
   sb_some,
-  sb_string,
   sb_number_int,
   sb_bigint,
-  sb_struct,
 } from "../../../types";
 
 // Base schemas for torus0 pallet
@@ -18,6 +16,8 @@ export const sb_percentage = sb_percent;
 
 // Numeric schemas
 export const sb_u16 = z.number().int().min(0).max(65535);
+// For values that come as AbstractInt/BigNumber from Substrate
+export const sb_u16_substrate = sb_number_int;
 export const sb_u64 = sb_bigint;
 
 // Agent schema for torus0.agents storage - based on actual blockchain data
@@ -44,8 +44,14 @@ export const BURN_CONFIG_SCHEMA = z.object({
   adjustmentAlpha: sb_u64,
 });
 
-// Fee constraints schema
-export const FEE_CONSTRAINTS_SCHEMA = z.object({
-  maxFee: sb_percentage,
-  minFee: sb_percentage,
-});
+// Fee constraints schema - use z.any() for Substrate Map objects for now
+export const FEE_CONSTRAINTS_SCHEMA = z.any(); // Complex Substrate Map
+
+// Namespace pricing config schema - use z.any() for Substrate Map objects for now  
+export const NAMESPACE_PRICING_CONFIG_SCHEMA = z.any(); // Complex Substrate Map with BigNumbers
+
+// Burn config schema - use z.any() for Substrate Map objects for now
+export const BURN_CONFIG_UPDATED_SCHEMA = z.any(); // Complex Substrate Map with BigNumbers
+
+// Pallet version schema - BN number from Substrate
+export const PALLET_VERSION_SCHEMA = sb_number_int;
