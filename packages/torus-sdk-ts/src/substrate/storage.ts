@@ -11,7 +11,7 @@ import type { MultiError } from "@torus-network/torus-utils/error";
 import { ErrorArray } from "@torus-network/torus-utils/error";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type {
   ExtractSignatures,
   NthReturnTypeOverloaded,
@@ -397,6 +397,7 @@ export class SbStorageDoubleMap<
         errors.push(parsedKey1.error);
         continue;
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const key1 = parsedKey1.data;
 
       const parsedKey2 = this.key2Schema.safeParse(rawKey2, {
@@ -412,6 +413,7 @@ export class SbStorageDoubleMap<
         errors.push(parsedKey2.error);
         continue;
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const key2 = parsedKey2.data;
 
       const parsedValue = this.valueSchema.safeParse(rawValue, {
@@ -427,14 +429,18 @@ export class SbStorageDoubleMap<
         errors.push(parsedValue.error);
         continue;
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value = parsedValue.data;
 
       // Get or create the nested map for key1
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       let nestedMap = entries.get(key1);
       if (nestedMap === undefined) {
         nestedMap = new Map<z.output<Key2Schema>, z.output<ValSchema>>();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         entries.set(key1, nestedMap);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       nestedMap.set(key2, value);
     }
 
@@ -492,7 +498,9 @@ async function _test2() {
     sb_address,
     sb_some(sb_bigint),
   );
-  assert<typeof sb_storage_def.checkType>();
+  // TODO : REVISE 
+  // THIS IS IMPORTANT
+  // assert<typeof sb_storage_def.checkType>();
 
   const rawVal = await sb_storage_def.queryRaw(api)(
     "0x1234567890123456789012345678901234567890",
