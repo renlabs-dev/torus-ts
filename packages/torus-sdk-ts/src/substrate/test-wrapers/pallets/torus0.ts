@@ -5,9 +5,14 @@ import {
   sb_block_number, 
   sb_percentage, 
   sb_address, 
-  sb_u16,
+  sb_u16_substrate,
   AGENT_SCHEMA,
+  BURN_CONFIG_UPDATED_SCHEMA,
+  FEE_CONSTRAINTS_SCHEMA,
+  NAMESPACE_PRICING_CONFIG_SCHEMA,
+  PALLET_VERSION_SCHEMA,
 } from '../schemas/torus0';
+import { z } from 'zod';
 
 export const torus0Storages = {
   // Simple value storages
@@ -15,24 +20,32 @@ export const torus0Storages = {
   agentUpdateCooldown: createStorageValue('torus0', 'agentUpdateCooldown', sb_block_number),
   burn: createStorageValue('torus0', 'burn', sb_amount),
   dividendsParticipationWeight: createStorageValue('torus0', 'dividendsParticipationWeight', sb_percentage),
-  immunityPeriod: createStorageValue('torus0', 'immunityPeriod', sb_u16),
-  maxAgentUrlLength: createStorageValue('torus0', 'maxAgentUrlLength', sb_u16),
-  maxAllowedAgents: createStorageValue('torus0', 'maxAllowedAgents', sb_u16),
-  maxAllowedValidators: createStorageValue('torus0', 'maxAllowedValidators', sb_u16),
-  maxNameLength: createStorageValue('torus0', 'maxNameLength', sb_u16),
-  maxRegistrationsPerBlock: createStorageValue('torus0', 'maxRegistrationsPerBlock', sb_u16),
+  maxAgentUrlLength: createStorageValue('torus0', 'maxAgentUrlLength', sb_u16_substrate),
+  maxAllowedValidators: createStorageValue('torus0', 'maxAllowedValidators', sb_u16_substrate),
+  maxNameLength: createStorageValue('torus0', 'maxNameLength', sb_u16_substrate),
+  maxRegistrationsPerBlock: createStorageValue('torus0', 'maxRegistrationsPerBlock', sb_u16_substrate),
   minAllowedStake: createStorageValue('torus0', 'minAllowedStake', sb_amount),
-  minNameLength: createStorageValue('torus0', 'minNameLength', sb_u16),
+  minNameLength: createStorageValue('torus0', 'minNameLength', sb_u16_substrate),
   minValidatorStake: createStorageValue('torus0', 'minValidatorStake', sb_amount),
-  registrationsThisBlock: createStorageValue('torus0', 'registrationsThisBlock', sb_u16),
-  registrationsThisInterval: createStorageValue('torus0', 'registrationsThisInterval', sb_u16),
-  rewardInterval: createStorageValue('torus0', 'rewardInterval', sb_u16),
+  registrationsThisBlock: createStorageValue('torus0', 'registrationsThisBlock', sb_u16_substrate),
+  registrationsThisInterval: createStorageValue('torus0', 'registrationsThisInterval', sb_u16_substrate),
+  rewardInterval: createStorageValue('torus0', 'rewardInterval', sb_u16_substrate),
+  
+  // Additional value storages discovered from blockchain
+  burnConfig: createStorageValue('torus0', 'burnConfig', BURN_CONFIG_UPDATED_SCHEMA),
+  feeConstraints: createStorageValue('torus0', 'feeConstraints', FEE_CONSTRAINTS_SCHEMA),
+  namespacePricingConfig: createStorageValue('torus0', 'namespacePricingConfig', NAMESPACE_PRICING_CONFIG_SCHEMA),
+  palletVersion: createStorageValue('torus0', 'palletVersion', PALLET_VERSION_SCHEMA),
   
   // Map storages
   agents: createStorageMap('torus0', 'agents', sb_address, AGENT_SCHEMA),
-  // Note: These are double maps, need createStorageDoubleMap instead
-  // stakedBy: createStorageMap('torus0', 'stakedBy', sb_address, sb_some(sb_amount)),
-  // stakingTo: createStorageMap('torus0', 'stakingTo', sb_address, sb_some(sb_amount)),
+  namespaceCount: createStorageMap('torus0', 'namespaceCount', sb_address, z.number()), // Map: AccountId32 -> u32
+  namespaces: createStorageMap('torus0', 'namespaces', z.string(), z.unknown()), // Map but no data currently
+  
+  // Double map storages (currently commented out as they need createStorageDoubleMap)
+  // stakedBy: AccountId32 -> AccountId32 -> Balance (36 entries found)
+  // stakingTo: AccountId32 -> AccountId32 -> Balance (36 entries found)
+  // These return hex amounts like: 0x00000000000000004563918244f40000
 } as const;
 
 // Type for the router

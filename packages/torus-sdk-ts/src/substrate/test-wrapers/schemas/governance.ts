@@ -2,7 +2,6 @@ import { z } from 'zod';
 import {
   sb_amount,
   sb_address,
-  sb_some,
   sb_block_number,
   sb_percentage,
   sb_u32,
