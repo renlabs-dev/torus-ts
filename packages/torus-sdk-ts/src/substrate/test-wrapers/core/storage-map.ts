@@ -157,11 +157,13 @@ export function createStorageMap<
         const rawValues = await entry.multi(keys);
         
         return rawValues.map((raw: unknown) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
           if (!raw || (typeof raw === 'object' && raw !== null && 'isEmpty' in raw && (raw as any).isEmpty)) {
             return null;
           }
           
           // Convert to JSON for schema validation, similar to get method
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
           const jsonValue = (raw as any).toJSON ? (raw as any).toJSON() : raw;
           const parsed = valueSchema.safeParse(jsonValue);
           if (!parsed.success) {
