@@ -15,9 +15,9 @@ import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";
-import { SS58_SCHEMA } from "../address";
+import { SS58_SCHEMA } from "../address.js";
 
-export { sb_enum } from "./sb_enum";
+export { sb_enum } from "./sb_enum.js";
 
 // == Zod ==
 

@@ -1,4 +1,4 @@
-import { trySync, trySyncStr } from "../try-catch";
+import { trySync, trySyncStr } from "../try-catch.js";
 
 // You can add more examples here
 // You also can youse the mocks created here for your examples

@@ -4,7 +4,7 @@ import "@polkadot/api/augment";
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
-import { checkSS58, SS58Address } from "./address";
+import { checkSS58, SS58Address } from "./address.js";
 import {
   generateRootStreamId,
   queryAccumulatedStreamsForAccount,
@@ -14,8 +14,8 @@ import {
   queryPermissionsByGrantor,
   StreamId,
   buildAvailableStreamsFor,
-} from "./modules/permission0";
-import { sb_address, sb_bigint, sb_h256, sb_some } from "./types";
+} from "./modules/permission0.js";
+import { sb_address, sb_bigint, sb_h256, sb_some } from "./types/index.js";
 
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
