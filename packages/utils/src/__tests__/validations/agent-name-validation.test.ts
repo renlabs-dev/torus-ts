@@ -120,7 +120,7 @@ describe("AgentNameValidation", () => {
       ({ value, error }) => {
         const result = schema.safeParse(value);
         expect(result.success).toBe(false);
-        if (!result.success) {
+        if (!result.success && result.error.issues[0]) {
           expect(result.error.issues[0].message).toBe(error);
         }
       },

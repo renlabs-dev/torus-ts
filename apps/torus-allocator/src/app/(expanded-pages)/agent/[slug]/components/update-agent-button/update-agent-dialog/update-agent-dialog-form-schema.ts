@@ -1,6 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { readOnlyAgentNameField } from "@torus-network/torus-utils/validations/agent-name-validation";
+import { readOnlyAgentNameField } from "@torus-network/torus-utils/agent-name-validation";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;

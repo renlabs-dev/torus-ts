@@ -106,7 +106,7 @@ export default function UpdateAgentDialog({
       setIsOpen(open);
       if (!open) form.reset();
     },
-    [isUploading, hasUnsavedChanges, setIsOpen],
+    [isUploading, hasUnsavedChanges, setIsOpen, form],
   );
 
   useEffect(() => {
