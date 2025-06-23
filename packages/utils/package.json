@@ -33,7 +33,9 @@
     "./try-catch": "./src/try-catch.ts",
     "./mutation-handler": "./src/mutation-handler.ts",
     "./discord-bot-interaction": "./src/discord-bot-interaction.ts",
-    "./logger": "./src/logger.ts"
+    "./logger": "./src/logger.ts",
+    "./validations": "./src/validations.ts",
+    "./agent-name-validation": "./src/validations/agent-name-validation.ts"
   },
   "dependencies": {
     "@polkadot/util": "catalog:",

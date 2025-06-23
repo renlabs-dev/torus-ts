@@ -1,5 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
+import { readOnlyAgentNameField } from "@torus-network/torus-utils/validations/agent-name-validation";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
@@ -63,7 +64,7 @@ export const updateAgentSocialsSchema = z.object({
 });
 
 export const updateAgentSchema = z.object({
-  name: z.string().trim(),
+  name: readOnlyAgentNameField(),
   title: z
     .string()
     .trim()
