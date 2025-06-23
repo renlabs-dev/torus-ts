@@ -90,22 +90,23 @@ export default function UpdateAgentDialog({
     }
   }, [agent, agentMetadata, form]);
 
+  const hasUnsavedChanges = useMemo(() => {
+    return (
+      form.formState.isDirty &&
+      Object.keys(form.formState.dirtyFields).some((field) => field !== "name")
+    );
+  }, [form.formState.isDirty, form.formState.dirtyFields]);
+
   const handleDialogChange = useCallback(
     (open: boolean) => {
-      const hasEditableChanges =
-        form.formState.isDirty &&
-        Object.keys(form.formState.dirtyFields).some(
-          (field) => field !== "name",
-        );
-
-      if (!open && hasEditableChanges && !isUploading) {
+      if (!open && hasUnsavedChanges && !isUploading) {
         setShowConfirmClose(true);
         return;
       }
       setIsOpen(open);
       if (!open) form.reset();
     },
-    [isUploading, form, setIsOpen],
+    [isUploading, hasUnsavedChanges, setIsOpen],
   );
 
   useEffect(() => {
@@ -166,12 +167,7 @@ export default function UpdateAgentDialog({
         form={form}
         updateAgentMutation={updateAgentMutation}
         imageFile={imageFile}
-        hasUnsavedChanges={
-          form.formState.isDirty &&
-          Object.keys(form.formState.dirtyFields).some(
-            (field) => field !== "name",
-          )
-        }
+        hasUnsavedChanges={hasUnsavedChanges}
       />
       {transactionStatus.status && (
         <div className="mt-4 border rounded-md p-3 bg-black/5">
