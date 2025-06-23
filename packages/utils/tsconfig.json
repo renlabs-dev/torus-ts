@@ -1,5 +1,5 @@
 {
-  "extends": "@torus-ts/tsconfig/internal-package.json",
+  "extends": "@torus-ts/tsconfig/external-package.json",
   "compilerOptions": {
     "types": ["vitest/importMeta"]
   }
