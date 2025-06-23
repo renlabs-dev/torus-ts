@@ -2,7 +2,6 @@
 
 import React, { useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 import {
   Select,
   SelectContent,
@@ -76,31 +75,10 @@ export default function PortalNavigationTabs() {
 
   return (
     <>
-      {/* Desktop Tabs */}
-      <div className="hidden sm:block w-fit">
-        <Tabs value={currentTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-5">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <TabsTrigger
-                  key={item.value}
-                  value={item.value}
-                  className="flex items-center gap-2"
-                >
-                  <Icon size={16} />
-                  {item.label}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
-      </div>
-
       {/* Mobile Select - Full width breaking out of parent constraints */}
-      <div className="sm:hidden fixed left-0 right-0 px-2 z-20">
+      <div className="relative left-0 right-0 z-20">
         <Select value={currentTab} onValueChange={handleTabChange}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-fit">
             <SelectValue>
               {currentItem && (
                 <div className="flex items-center gap-2">
