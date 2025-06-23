@@ -115,19 +115,33 @@ export function EditEmissionPermissionFormComponent({
       <AlertCircle className="h-4 w-4" />
       <AlertDescription>
         <div className="flex items-center gap-2 mb-2">
-          <Badge variant="default">Grantor</Badge>
+          <Badge
+            variant={
+              permissionInfo.userRole === "grantor" ? "default" : "secondary"
+            }
+          >
+            {permissionInfo.userRole === "grantor" ? "Grantor" : "Grantee"}
+          </Badge>
           <span className="text-sm">
             Permission: {permissionInfo.permissionId.substring(0, 16)}...
           </span>
         </div>
-        {canEditStreams && canEditDistribution ? (
-          <p className="text-sm">
-            You can edit all fields based on the permission's revocation terms.
-          </p>
+        {permissionInfo.userRole === "grantor" ? (
+          canEditStreams && canEditDistribution ? (
+            <p className="text-sm">
+              As grantor, you can edit all fields based on the permission's
+              revocation terms.
+            </p>
+          ) : (
+            <p className="text-sm">
+              As grantor, your edit permissions are limited by the revocation
+              terms. You can only edit targets.
+            </p>
+          )
         ) : (
           <p className="text-sm">
-            Your edit permissions are limited by the revocation terms. You can
-            only edit targets.
+            As grantee, you can only edit target accounts and their weights.
+            Stream and distribution changes are not permitted.
           </p>
         )}
       </AlertDescription>
@@ -208,21 +222,18 @@ export function EditEmissionPermissionFormComponent({
                       <FormField
                         control={form.control}
                         name={`newTargets.${index}.account`}
-                        render={() => (
-                          <FormMessage />
-                        )}
+                        render={() => <FormMessage />}
                       />
                     </div>
                     <div className="w-32">
                       <FormField
                         control={form.control}
                         name={`newTargets.${index}.weight`}
-                        render={() => (
-                          <FormMessage />
-                        )}
+                        render={() => <FormMessage />}
                       />
                     </div>
-                    <div className="w-10"></div> {/* Spacer for button alignment */}
+                    <div className="w-10"></div>{" "}
+                    {/* Spacer for button alignment */}
                   </div>
                 </div>
               ))}
@@ -342,21 +353,18 @@ export function EditEmissionPermissionFormComponent({
                         <FormField
                           control={form.control}
                           name={`newStreams.${index}.streamId`}
-                          render={() => (
-                            <FormMessage />
-                          )}
+                          render={() => <FormMessage />}
                         />
                       </div>
                       <div className="w-32">
                         <FormField
                           control={form.control}
                           name={`newStreams.${index}.percentage`}
-                          render={() => (
-                            <FormMessage />
-                          )}
+                          render={() => <FormMessage />}
                         />
                       </div>
-                      <div className={canEditStreams ? "w-10" : "w-0"}></div> {/* Conditional spacer for button alignment */}
+                      <div className={canEditStreams ? "w-10" : "w-0"}></div>{" "}
+                      {/* Conditional spacer for button alignment */}
                     </div>
                   </div>
                 );

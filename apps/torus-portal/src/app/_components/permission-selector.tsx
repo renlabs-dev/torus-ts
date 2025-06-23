@@ -5,7 +5,9 @@ import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
@@ -40,8 +42,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected } = useTorus();
 
   const { data: permissionsData, error: permissionsError } =
-    trpcApi.permission.withConstraintsByGrantor.useQuery(
-      { grantor: selectedAccount?.address ?? "" },
+    trpcApi.permission.withConstraintsByGrantorAndGrantee.useQuery(
+      { address: selectedAccount?.address ?? "" },
       { enabled: !!selectedAccount?.address },
     );
 
@@ -51,8 +53,30 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
   const hasPermissions = displayPermissions && displayPermissions.length > 0;
 
-  const lastPermissionId =
-    hasPermissions && displayPermissions[displayPermissions.length - 1];
+  // Prioritize grantor permissions for auto-selection
+  const getDefaultPermissionId = () => {
+    if (!permissionsData?.length) return null;
+
+    // First try to find a grantor permission
+    const grantorPermission = permissionsData.find(
+      (item) =>
+        item.permissionDetails?.grantor_key === selectedAccount?.address,
+    );
+
+    if (grantorPermission) {
+      return grantorPermission.permission.permission_id;
+    }
+
+    // Fall back to first grantee permission
+    const granteePermission = permissionsData.find(
+      (item) =>
+        item.permissionDetails?.grantee_key === selectedAccount?.address,
+    );
+
+    return granteePermission?.permission.permission_id ?? null;
+  };
+
+  const defaultPermissionId = getDefaultPermissionId();
 
   const selectedPermissionData = permissionsData?.find(
     (item) => item.permission.permission_id === props.selectedPermissionId,
@@ -66,15 +90,15 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   };
 
   useEffect(() => {
-    if (hasPermissions && !props.selectedPermissionId && lastPermissionId) {
-      props.onPermissionIdChange(lastPermissionId);
+    if (hasPermissions && !props.selectedPermissionId && defaultPermissionId) {
+      props.onPermissionIdChange(defaultPermissionId);
     }
   }, [
     displayPermissions,
     props.selectedPermissionId,
     props.onPermissionIdChange,
     hasPermissions,
-    lastPermissionId,
+    defaultPermissionId,
     props,
   ]);
 
@@ -149,16 +173,70 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {displayPermissions?.map((permissionId) => (
-                    <SelectItem key={permissionId} value={permissionId}>
-                      <div className="flex items-center justify-between w-full">
-                        {hasConstraint(permissionId) && (
-                          <Grid2x2Check className="h-4 w-4 text-green-500 mr-2" />
+                  {(() => {
+                    if (!permissionsData) return null;
+
+                    // Separate permissions by role
+                    const grantorPermissions = permissionsData.filter(
+                      (item) =>
+                        item.permissionDetails?.grantor_key ===
+                        selectedAccount?.address,
+                    );
+                    const granteePermissions = permissionsData.filter(
+                      (item) =>
+                        item.permissionDetails?.grantee_key ===
+                        selectedAccount?.address,
+                    );
+
+                    return (
+                      <>
+                        {granteePermissions.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>As Grantee</SelectLabel>
+                            {granteePermissions.map((permissionItem) => {
+                              const permissionId =
+                                permissionItem.permission.permission_id;
+                              return (
+                                <SelectItem
+                                  key={permissionId}
+                                  value={permissionId}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {hasConstraint(permissionId) && (
+                                      <Grid2x2Check className="h-4 w-4 text-green-500" />
+                                    )}
+                                    <span>{smallAddress(permissionId)}</span>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
                         )}
-                        <span>{smallAddress(permissionId)}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                        {grantorPermissions.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>As Grantor</SelectLabel>
+                            {grantorPermissions.map((permissionItem) => {
+                              const permissionId =
+                                permissionItem.permission.permission_id;
+                              return (
+                                <SelectItem
+                                  key={permissionId}
+                                  value={permissionId}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {hasConstraint(permissionId) && (
+                                      <Grid2x2Check className="h-4 w-4 text-green-500" />
+                                    )}
+                                    <span>{smallAddress(permissionId)}</span>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
+                        )}
+                      </>
+                    );
+                  })()}
                 </SelectContent>
               </Select>
               {props.selectedPermissionId && (

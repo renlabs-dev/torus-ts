@@ -119,6 +119,7 @@ export interface PermissionInfo {
   permissionId: string;
   grantor: string;
   grantee: string;
+  userRole: "grantor" | "grantee";
   canEditStreams: boolean;
   canEditDistribution: boolean;
   currentTargets: { account: string; weight: string }[];
