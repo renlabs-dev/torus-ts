@@ -12,50 +12,73 @@
 
 import { z } from "zod";
 
+/**
+ * Regular expression for validating agent names
+ * Matches: a-z, 0-9, hyphens, underscores
+ * Must start and end with alphanumeric characters
+ * Length: 1-63 characters
+ */
 export const AGENT_NAME_REGEX = /^[a-z0-9]([a-z0-9-_]{0,61}[a-z0-9])?$/;
 
 /**
+ * Error messages for agent name validation
+ */
+const errorMessages = {
+  required: "Agent name is required",
+  tooLong: "Agent name cannot exceed 63 characters",
+  invalidStart: "Agent name cannot start with a hyphen or underscore",
+  invalidEnd: "Agent name cannot end with a hyphen or underscore",
+  uppercase: "Agent name cannot contain uppercase letters",
+  invalidChars:
+    "Agent name can only contain lowercase letters, numbers, hyphens, and underscores",
+};
+
+/**
  * Validates an agent name and returns an error message if invalid, null if valid
+ *
+ * @param name - The agent name to validate
+ * @returns Error message string if invalid, null if valid
+ *
+ * @example
+ * ```typescript
+ * validateAgentName("my-agent") // null (valid)
+ * validateAgentName("-agent") // "Agent name cannot start with a hyphen or underscore"
+ * validateAgentName("") // "Agent name is required"
+ * ```
  */
 export const validateAgentName = (name: string): string | null => {
-  if (!name) {
-    return "Agent name is required";
-  }
-
-  if (name.length > 63) {
-    return "Agent name cannot exceed 63 characters";
-  }
-
-  if (!AGENT_NAME_REGEX.test(name)) {
-    if (name.startsWith("-") || name.startsWith("_")) {
-      return "Agent name cannot start with a hyphen or underscore";
-    }
-    if (name.endsWith("-") || name.endsWith("_")) {
-      return "Agent name cannot end with a hyphen or underscore";
-    }
-    if (/[A-Z]/.test(name)) {
-      return "Agent name cannot contain uppercase letters";
-    }
-    if (/[^a-z0-9-_]/.test(name)) {
-      return "Agent name can only contain lowercase letters, numbers, hyphens, and underscores";
-    }
-    return "Agent name must be 1-63 characters, start and end with alphanumeric characters";
-  }
-
+  if (!name) return errorMessages.required;
+  if (name.length > 63) return errorMessages.tooLong;
+  if (name.startsWith("-") || name.startsWith("_"))
+    return errorMessages.invalidStart;
+  if (name.endsWith("-") || name.endsWith("_")) return errorMessages.invalidEnd;
+  if (/[A-Z]/.test(name)) return errorMessages.uppercase;
+  if (!AGENT_NAME_REGEX.test(name)) return errorMessages.invalidChars;
   return null;
 };
 
 /**
  * Returns true if the agent name is valid, false otherwise
+ *
+ * @param name - The agent name to check
+ * @returns true if valid, false if invalid
+ *
+ * @example
+ * ```typescript
+ * isValidAgentName("my-agent") // true
+ * isValidAgentName("-agent") // false
+ * isValidAgentName("") // false
+ * ```
  */
-export const isValidAgentName = (name: string): boolean => {
-  return validateAgentName(name) === null;
-};
+export const isValidAgentName = (name: string): boolean =>
+  validateAgentName(name) === null;
 
 /**
- * Custom Zod field for agent name validation
+ * Custom Zod field for required agent name validation
  *
- * Usage:
+ * @returns Zod schema for required agent name field
+ *
+ * @example
  * ```typescript
  * const schema = z.object({
  *   name: agentNameField(),
@@ -66,16 +89,21 @@ export const isValidAgentName = (name: string): boolean => {
 export const agentNameField = () =>
   z
     .string()
-    .min(1, "Agent name is required")
+    .min(1, errorMessages.required)
     .refine(
-      (name) => validateAgentName(name) === null,
-      (name) => ({ message: validateAgentName(name) ?? "Invalid agent name" }),
+      (name) => isValidAgentName(name),
+      (name) => ({
+        message: validateAgentName(name) ?? errorMessages.invalidChars,
+      }),
     );
 
 /**
  * Custom Zod field for optional agent name validation
+ * Accepts undefined but rejects empty strings and invalid names
  *
- * Usage:
+ * @returns Zod schema for optional agent name field
+ *
+ * @example
  * ```typescript
  * const schema = z.object({
  *   name: optionalAgentNameField(),
@@ -88,20 +116,22 @@ export const optionalAgentNameField = () =>
     .string()
     .optional()
     .refine(
-      (name) =>
-        name === undefined || (name !== "" && validateAgentName(name) === null),
-      (name) => {
-        if (name === undefined) return { message: "Invalid agent name" };
-        if (name === "") return { message: "Agent name cannot be empty" };
-        const error = validateAgentName(name);
-        return { message: error || "Invalid agent name" };
-      },
+      (name) => name === undefined || isValidAgentName(name),
+      (name) => ({
+        message:
+          name === undefined
+            ? errorMessages.invalidChars
+            : (validateAgentName(name) ?? errorMessages.invalidChars),
+      }),
     );
 
 /**
  * Custom Zod field for read-only agent name (for update forms)
+ * Accepts any string since the field is immutable and cannot be changed
  *
- * Usage:
+ * @returns Zod schema for read-only agent name field
+ *
+ * @example
  * ```typescript
  * const schema = z.object({
  *   name: readOnlyAgentNameField(),
