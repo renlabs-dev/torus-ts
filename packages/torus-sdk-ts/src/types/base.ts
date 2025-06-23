@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { sb_bigint, sb_number } from "./zod";
+import { sb_bigint, sb_number } from "./zod.js";
 import type { H256 } from "@polkadot/types/interfaces";
 import { U8aFixed } from "@polkadot/types";
 

@@ -5,8 +5,8 @@ import {
 } from "@torus-network/torus-utils/ipfs";
 import type { ZodSchema } from "zod";
 import { z } from "zod";
-import type { AgentMetadata } from "./agent_metadata/agent_metadata";
-import { AGENT_METADATA_SCHEMA } from "./agent_metadata/agent_metadata";
+import type { AgentMetadata } from "./agent_metadata/agent_metadata.js";
+import { AGENT_METADATA_SCHEMA } from "./agent_metadata/agent_metadata.js";
 
 const CUSTOM_METADATA_SCHEMA = z.object({
   title: z.string().optional(),

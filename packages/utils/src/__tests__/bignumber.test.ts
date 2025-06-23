@@ -1,6 +1,7 @@
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { BigNumberBrand, buildTaggedBigNumberClass } from "../bignumber";
+
+import { BigNumberBrand, buildTaggedBigNumberClass } from "../bignumber.js";
 
 /**
  * BigNumber Test Suite

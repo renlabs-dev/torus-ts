@@ -1,12 +1,13 @@
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import { describe, expect, it } from "vitest";
+
 import {
   DECIMALS,
   formatToken,
   fromRems,
   makeTorAmount,
   toRems,
-} from "../subspace";
+} from "../subspace.js";
 
 describe("TorAmount", () => {
   it("should correctly apply ROUND_HALF_EVEN (banker's rounding)", () => {

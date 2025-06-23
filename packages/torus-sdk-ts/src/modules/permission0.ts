@@ -9,8 +9,8 @@ import type { Nullable } from "@torus-network/torus-utils/typing";
 import { if_let, match } from "rustie";
 import { z } from "zod";
 
-import type { SS58Address } from "../address";
-import type { ToBigInt, ZError } from "../types";
+import type { SS58Address } from "../address.js";
+import type { ToBigInt, ZError } from "../types/index.js";
 import {
   sb_address,
   sb_array,
@@ -26,9 +26,9 @@ import {
   sb_percent,
   sb_some,
   sb_struct,
-} from "../types";
-import type { Api } from "./_common";
-import { SbQueryError } from "./_common";
+} from "../types/index.js";
+import type { Api } from "./_common.js";
+import { SbQueryError } from "./_common.js";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { BTreeMap } from "@polkadot/types";
 import type { u16 } from "@polkadot/types";

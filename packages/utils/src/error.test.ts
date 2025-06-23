@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { MultiError } from "./error";
-import { chainErr, ErrorArray } from "./error";
+import type { MultiError } from "./error.js";
+import { chainErr, ErrorArray } from "./error.js";
 
 describe("chainErr", () => {
   it("should chain error messages with default Error constructor", () => {

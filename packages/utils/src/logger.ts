@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { Err, Result } from "./result.ts";
+import type { Err, Result } from "./result.js";
 
 function getCallerInfo(): string {
   const stack = new Error().stack;
