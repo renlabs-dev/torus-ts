@@ -139,6 +139,7 @@ export function transformFormDataToUpdateSDK(
   // Transform targets (always provided)
   const targets: [SS58Address, number][] = newTargets.map((target) => [
     target.account as SS58Address,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     parseInt(target.weight),
   ]);
 
