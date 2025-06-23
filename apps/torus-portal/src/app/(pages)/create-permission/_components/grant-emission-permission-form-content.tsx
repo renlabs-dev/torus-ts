@@ -135,7 +135,12 @@ export function GrantEmissionPermissionFormComponent({
   ]);
 
   const onSubmit = (data: GrantEmissionPermissionFormData) => {
-    mutation.mutate(data);
+    // Set grantee to the selected account address
+    const submissionData = {
+      ...data,
+      grantee: selectedAccount?.address as SS58Address,
+    };
+    mutation.mutate(submissionData);
   };
 
   return (
@@ -150,34 +155,11 @@ export function GrantEmissionPermissionFormComponent({
         </CardHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <CardContent className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent>
               <WalletConnectionWarning
                 isAccountConnected={isAccountConnected}
               />
-              {/* Basic Information */}
-              <FormField
-                control={form.control}
-                name="grantee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Grantee Address <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="e.g. 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <p className="text-sm text-muted-foreground mt-2">
-                Specify the recipient who will receive the emission permission
-                and be able to allocate streams.
-              </p>
             </CardContent>
 
             {/* Allocation */}
@@ -340,21 +322,18 @@ export function GrantEmissionPermissionFormComponent({
                             <FormField
                               control={form.control}
                               name={`allocation.streams.${index}.streamId`}
-                              render={() => (
-                                <FormMessage />
-                              )}
+                              render={() => <FormMessage />}
                             />
                           </div>
                           <div className="w-32">
                             <FormField
                               control={form.control}
                               name={`allocation.streams.${index}.percentage`}
-                              render={() => (
-                                <FormMessage />
-                              )}
+                              render={() => <FormMessage />}
                             />
                           </div>
-                          <div className="w-10"></div> {/* Spacer for button alignment */}
+                          <div className="w-10"></div>{" "}
+                          {/* Spacer for button alignment */}
                         </div>
                       </div>
                     );
@@ -416,21 +395,18 @@ export function GrantEmissionPermissionFormComponent({
                       <FormField
                         control={form.control}
                         name={`targets.${index}.account`}
-                        render={() => (
-                          <FormMessage />
-                        )}
+                        render={() => <FormMessage />}
                       />
                     </div>
                     <div className="w-32">
                       <FormField
                         control={form.control}
                         name={`targets.${index}.weight`}
-                        render={() => (
-                          <FormMessage />
-                        )}
+                        render={() => <FormMessage />}
                       />
                     </div>
-                    <div className="w-10"></div> {/* Spacer for button alignment */}
+                    <div className="w-10"></div>{" "}
+                    {/* Spacer for button alignment */}
                   </div>
                 </div>
               ))}
@@ -680,12 +656,11 @@ export function GrantEmissionPermissionFormComponent({
                           <FormField
                             control={form.control}
                             name={`revocation.accounts.${index}`}
-                            render={() => (
-                              <FormMessage />
-                            )}
+                            render={() => <FormMessage />}
                           />
                         </div>
-                        <div className="w-10"></div> {/* Spacer for button alignment */}
+                        <div className="w-10"></div>{" "}
+                        {/* Spacer for button alignment */}
                       </div>
                     </div>
                   ))}
