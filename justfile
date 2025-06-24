@@ -108,7 +108,7 @@ db-apply:
 db-lint:
     @atlas version > /dev/null || (echo "Atlas is required but not installed" && exit 1)
     git fetch origin main
-    atlas migrate lint lint --env local --git-base origin/main
+    atlas migrate lint --env local --git-base origin/main
 
 
 # Reset the local development database and apply all migrations
