@@ -2,11 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  namespaceSegmentField,
   isValidNamespaceSegment,
+  namespacePathField,
 } from "@torus-network/torus-utils/validation";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import {
   Card,
   CardContent,
@@ -35,13 +36,14 @@ import { Info } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import type { SS58Address } from "@torus-network/sdk";
 
 // HTTP method options
 const HTTP_METHODS = ["get", "post", "patch", "delete", "update"] as const;
 
 const createNamespaceSchema = z
   .object({
-    path: namespaceSegmentField(),
+    path: namespacePathField(),
     method: z.enum([...HTTP_METHODS, "custom"]),
     customMethod: z.string().optional(),
   })
@@ -71,7 +73,12 @@ interface CreateNamespaceFormProps {
 export default function CreateNamespaceForm({
   onSuccess,
 }: CreateNamespaceFormProps) {
-  const { createNamespaceTransaction, isAccountConnected } = useTorus();
+  const {
+    createNamespaceTransaction,
+    isAccountConnected,
+    api,
+    selectedAccount,
+  } = useTorus();
   const { toast } = useToast();
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
@@ -96,14 +103,38 @@ export default function CreateNamespaceForm({
   const watchedPath = watch("path");
   const watchedCustomMethod = watch("customMethod");
 
-  // Generate the full namespace path preview
+  const namespaceEntries = useNamespaceEntriesOf(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
+
+  const agentPrefix = (() => {
+    if (
+      !namespaceEntries.data ||
+      namespaceEntries.data.length === 0 ||
+      !namespaceEntries.data[0]?.path
+    ) {
+      return null;
+    }
+
+    const entry = namespaceEntries.data[0];
+    if (entry.path.length >= 2) {
+      const agentName = entry.path[1];
+      return `agent.${agentName}.`;
+    }
+
+    return "";
+  })();
+
   const generateFullPath = useCallback(() => {
     if (!watchedPath) return "";
 
     const method =
       watchedMethod === "custom" ? watchedCustomMethod : watchedMethod;
-    return `${watchedPath}.${method ?? "[method]"}`;
-  }, [watchedPath, watchedMethod, watchedCustomMethod]);
+
+    const fullPath = agentPrefix ? `${agentPrefix}${watchedPath}` : watchedPath;
+    return `${fullPath}.${method ?? "[method]"}`;
+  }, [watchedPath, watchedMethod, watchedCustomMethod, agentPrefix]);
 
   const fullPath = generateFullPath();
 
@@ -122,7 +153,11 @@ export default function CreateNamespaceForm({
           return;
         }
 
-        const fullNamespacePath = `${data.path}.${method}`;
+        const pathWithPrefix = agentPrefix
+          ? `${agentPrefix}${data.path}`
+          : data.path;
+
+        const fullNamespacePath = `${pathWithPrefix}.${method}`;
 
         setTransactionStatus({
           status: "STARTING",
@@ -167,169 +202,170 @@ export default function CreateNamespaceForm({
         });
       }
     },
-    [createNamespaceTransaction, onSuccess, toast, form],
+    [createNamespaceTransaction, onSuccess, toast, form, agentPrefix],
   );
 
   return (
-    <div className="w-full max-w-2xl p-6">
-      <Card className="border-none w-full">
-        <CardHeader>
-          <CardTitle>Create Namespace</CardTitle>
-          <CardDescription>
-            Create a new namespace on the Torus Network. The method suffix helps
-            agent APIs recognize the functionality of the namespace.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Namespace Path Field */}
+    <Card className="border-none w-full">
+      <CardHeader>
+        <CardTitle>Create Namespace</CardTitle>
+        <CardDescription>
+          Create a new namespace on the Torus Network.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={control}
+              name="path"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Namespace Path</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center">
+                      <span className="font-mono text-sm text-muted-foreground mr-1 text-nowrap">
+                        {agentPrefix ?? "agent.loading."}
+                      </span>
+
+                      <Input
+                        {...field}
+                        placeholder={
+                          agentPrefix
+                            ? "endpoint.get"
+                            : "agent.alice.endpoint.get"
+                        }
+                        disabled={!isAccountConnected}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Must start and end with alphanumeric characters. Can contain
+                    lowercase letters, numbers, hyphens, underscores, and plus
+                    signs.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="method"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>REST Method</FormLabel>
+                  <FormControl>
+                    <ToggleGroup
+                      type="single"
+                      value={field.value}
+                      onValueChange={(value) => {
+                        if (value) {
+                          field.onChange(value);
+                          // Clear custom method when switching away from custom
+                          if (value !== "custom") {
+                            setValue("customMethod", "");
+                          }
+                        }
+                      }}
+                      className="justify-start flex-wrap"
+                      disabled={!isAccountConnected}
+                    >
+                      {HTTP_METHODS.map((method) => (
+                        <ToggleGroupItem
+                          key={method}
+                          value={method}
+                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                        >
+                          {method.toUpperCase()}
+                        </ToggleGroupItem>
+                      ))}
+                      <ToggleGroupItem
+                        value="custom"
+                        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                      >
+                        CUSTOM
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </FormControl>
+                  <FormDescription>
+                    Select the REST method that this namespace endpoint will
+                    handle. This is appended to the end of the path. The method
+                    suffix helps agent APIs recognize the functionality of the
+                    namespace.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {watchedMethod === "custom" && (
               <FormField
                 control={control}
-                name="path"
+                name="customMethod"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Namespace Path</FormLabel>
+                    <FormLabel>Custom Method</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="agent.alice.twitter"
+                        placeholder="custom-action"
                         disabled={!isAccountConnected}
                       />
                     </FormControl>
                     <FormDescription>
-                      Must start and end with alphanumeric characters. Can
-                      contain lowercase letters, numbers, hyphens, underscores,
-                      and plus signs.
+                      Enter a custom method name. Must start and end with
+                      alphanumeric characters and contain only lowercase
+                      letters, numbers, hyphens, underscores, and plus signs.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            )}
 
-              {/* HTTP Method Toggle Group */}
-              <FormField
-                control={control}
-                name="method"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>HTTP Method</FormLabel>
-                    <FormControl>
-                      <ToggleGroup
-                        type="single"
-                        value={field.value}
-                        onValueChange={(value) => {
-                          if (value) {
-                            field.onChange(value);
-                            // Clear custom method when switching away from custom
-                            if (value !== "custom") {
-                              setValue("customMethod", "");
-                            }
-                          }
-                        }}
-                        className="justify-start flex-wrap"
-                        disabled={!isAccountConnected}
-                      >
-                        {HTTP_METHODS.map((method) => (
-                          <ToggleGroupItem
-                            key={method}
-                            value={method}
-                            className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                          >
-                            {method.toUpperCase()}
-                          </ToggleGroupItem>
-                        ))}
-                        <ToggleGroupItem
-                          value="custom"
-                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                        >
-                          CUSTOM
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                    </FormControl>
-                    <FormDescription>
-                      Select the HTTP method that this namespace endpoint will
-                      handle. This is appended to the end of the path.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="rounded-md border border-border bg-muted p-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Info className="h-4 w-4" />
+                Full Namespace Path
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                <code className="rounded bg-background px-2 py-1 text-foreground">
+                  {fullPath === "" ? "Type a path..." : fullPath}
+                </code>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                This path will be created on the Torus Network and can be used
+                by agents to handle API requests.
+              </div>
+            </div>
+
+            {transactionStatus.status && (
+              <TransactionStatus
+                status={transactionStatus.status}
+                message={transactionStatus.message}
               />
+            )}
 
-              {/* Custom Method Field - only shown when "custom" is selected */}
-              {watchedMethod === "custom" && (
-                <FormField
-                  control={control}
-                  name="customMethod"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Custom Method</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="custom-action"
-                          disabled={!isAccountConnected}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enter a custom method name. Must start and end with
-                        alphanumeric characters and contain only lowercase
-                        letters, numbers, hyphens, underscores, and plus signs.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              {/* Full Path Preview */}
-              {fullPath && (
-                <div className="rounded-md border border-border bg-muted p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Info className="h-4 w-4" />
-                    Full Namespace Path
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    <code className="rounded bg-background px-2 py-1 text-foreground">
-                      {fullPath}
-                    </code>
-                  </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    This path will be created on the Torus Network and can be
-                    used by agents to handle API requests.
-                  </div>
-                </div>
-              )}
-
-              {/* Transaction Status */}
-              {transactionStatus.status && (
-                <TransactionStatus
-                  status={transactionStatus.status}
-                  message={transactionStatus.message}
-                />
-              )}
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={
-                  !isAccountConnected ||
-                  transactionStatus.status === "PENDING" ||
-                  transactionStatus.status === "STARTING"
-                }
-              >
-                {!isAccountConnected
-                  ? "Connect Wallet to Continue"
-                  : transactionStatus.status === "PENDING" ||
-                      transactionStatus.status === "STARTING"
-                    ? "Creating Namespace..."
-                    : "Create Namespace"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                !isAccountConnected ||
+                transactionStatus.status === "PENDING" ||
+                transactionStatus.status === "STARTING"
+              }
+            >
+              {!isAccountConnected
+                ? "Connect Wallet to Continue"
+                : transactionStatus.status === "PENDING" ||
+                    transactionStatus.status === "STARTING"
+                  ? "Creating Namespace..."
+                  : "Create Namespace"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }
