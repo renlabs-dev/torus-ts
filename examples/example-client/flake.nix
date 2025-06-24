@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -8,16 +8,11 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        lib = pkgs.lib;
-        nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [
-          # `systemd` provides libudev for `npm:usb` because of Solana adapter on
-          # Hyperlane, we should enable it only on Linux
-          pkgs.systemd
-        ];
+        # lib = pkgs.lib;
+
         buildInputs = [
           # Node.js
-          pkgs.nodejs_20
-          pkgs.pnpm
+          pkgs.nodejs_22
         ];
         shellPkgs = [
           # Run project-specific commands
@@ -28,7 +23,7 @@
       in
       {
         devShell = pkgs.mkShell {
-          inherit nativeBuildInputs buildInputs;
+          inherit buildInputs;
           packages = shellPkgs;
         };
       });

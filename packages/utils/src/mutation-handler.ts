@@ -1,4 +1,4 @@
-import { tryAsync } from "./try-catch";
+import { tryAsync } from "./try-catch.js";
 
 interface MutationOptions {
   success?: string;

@@ -58,6 +58,17 @@ test filter="*":
 create-package:
   pnpm turbo gen init
 
+publish:
+  pnpm run -F "@torus-network/sdk" -F "@torus-network/torus-utils" build
+  # how to bump / manage versions?
+  pnpm publish -F "@torus-network/sdk" -F "@torus-network/torus-utils" --no-git-checks
+
+changeset-add:
+  pnpm changeset add
+
+changeset-version:
+  pnpm changeset version
+
 
 # == Database Management with Atlas ==
 
@@ -123,6 +134,7 @@ db-migrations-reset base="dev":
 
 
 # -- DB --
+
 db-dump:
   cd packages/db; pnpm exec drizzle-kit export --dialect postgresql --schema src/schema.ts > drizzle/dump.sql
 
@@ -153,6 +165,7 @@ clean-output:
       -name 'dist' -o \
       -name '.turbo' \
     \) -prune -exec rm -rf '{}' +
+
 
 # == Github Actions ==
 
