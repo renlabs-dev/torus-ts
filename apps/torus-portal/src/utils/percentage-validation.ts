@@ -62,3 +62,16 @@ export const createStreamPercentageValidator = () =>
       itemErrorMessage: "Contributes to total over 100%",
     },
   );
+
+/**
+ * Creates a superRefine validator specifically for target-like objects with weight strings.
+ */
+export const createTargetWeightValidator = () =>
+  createPercentageArrayValidator(
+    (target: { weight: string }) => target.weight,
+    {
+      percentageField: "weight",
+      totalErrorMessage: "Total percent must not exceed 100",
+      itemErrorMessage: "Contributes to total over 100%",
+    },
+  );
