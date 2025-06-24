@@ -44,15 +44,18 @@ async function testQueryNamespaceEntriesOf() {
     console.log("✅ queryNamespaceEntriesOf succeeded");
     console.log("📊 Result:", result);
 
-    // The result is now an array of tuples: [pathSegments, metadata]
+    // The result is now an array of NamespaceEntry records
     console.log("📈 Number of namespace entries:", result.length);
 
     // Log first few entries if any exist
     if (result.length > 0) {
       console.log("🔍 Sample namespace entries:");
       result.slice(0, 3).forEach((entry, index) => {
-        const [pathSegments, metadata] = entry;
-        console.log(`  Entry ${index + 1}:`, pathSegments, "=>", metadata);
+        console.log(`  Entry ${index + 1}:`, {
+          path: entry.path,
+          createdAt: entry.createdAt,
+          deposit: entry.deposit,
+        });
       });
     } else {
       console.log("ℹ️ No namespace entries found for this agent");

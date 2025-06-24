@@ -1,9 +1,6 @@
-import type { ApiPromise } from "@polkadot/api";
-
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { z } from "zod";
 import { validateNamespacePath } from "@torus-network/torus-utils/validation";
-import { match } from "rustie";
 
 import type { SS58Address } from "../address.js";
 import {
@@ -15,6 +12,7 @@ import {
   sb_string,
   sb_struct,
 } from "../types/zod.js";
+import type { Api } from "./_common.js";
 import { handleDoubleMapEntries } from "./_common.js";
 
 // ==== Namespaces ====
@@ -42,10 +40,16 @@ const NAMESPACE_METADATA_SCHEMA = sb_struct({
   deposit: sb_bigint,
 });
 
+export interface NamespaceEntry {
+  path: string[];
+  createdAt: bigint;
+  deposit: bigint;
+}
+
 export async function queryNamespaceEntriesOf(
-  api: ApiPromise,
+  api: Api,
   agent: SS58Address,
-) {
+): Promise<NamespaceEntry[]> {
   const ownership = { Account: agent };
 
   const [queryErr, queryRes] = await tryAsync(
@@ -69,29 +73,20 @@ export async function queryNamespaceEntriesOf(
   }
 
   const [entriesMap] = result;
-  const namespaceEntries: [string[], { createdAt: bigint; deposit: bigint }][] =
-    [];
+  const namespaceEntries: NamespaceEntry[] = [];
 
-  // Kelvin will eat my purple for everything bellow this line
-  for (const [ownershipKey, pathsMap] of entriesMap) {
-    match(ownershipKey)({
-      Account(accountAddress) {
-        if (accountAddress !== agent) {
-          throw new Error(
-            `Unexpected ownership key: expected ${agent}, got ${accountAddress}`,
-          );
-        }
-
-        for (const [pathSegments, metadata] of pathsMap) {
-          namespaceEntries.push([pathSegments, metadata]);
-        }
-      },
-      System() {
-        throw new Error(
-          `Unexpected ownership type: expected Account, got System`,
-        );
-      },
-    });
+  for (const [_ownershipKey, pathsMap] of entriesMap) {
+    // match(ownershipKey)({
+    //   Account(_accountAddress) {},
+    //   System() {},
+    // });
+    for (const [pathSegments, metadata] of pathsMap) {
+      namespaceEntries.push({
+        path: pathSegments,
+        createdAt: metadata.createdAt,
+        deposit: metadata.deposit,
+      });
+    }
   }
 
   return namespaceEntries;
