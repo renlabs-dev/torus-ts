@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
 import { SS58_SCHEMA } from "@torus-network/sdk";
+import { createStreamPercentageValidator } from "~/utils/percentage-validation";
 
 const validateWeight = (value: string) => {
   const num = parseInt(value);
@@ -50,14 +51,10 @@ export const editEmissionPermissionSchema = z.object({
       }),
     )
     .optional()
-    .refine((streams) => {
-      if (!streams || streams.length === 0) return true;
-      const total = streams.reduce((sum, stream) => {
-        const percentage = parseFloat(stream.percentage || "0");
-        return sum + (isNaN(percentage) ? 0 : percentage);
-      }, 0);
-      return total <= 100;
-    }, "Total percentage across all streams cannot exceed 100%"),
+    .superRefine((streams, ctx) => {
+      if (!streams || streams.length === 0) return;
+      createStreamPercentageValidator()(streams, ctx);
+    }),
 
   // Updated distribution control
   newDistributionControl: z
