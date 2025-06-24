@@ -12,6 +12,9 @@ import { AgentIcon } from "~/app/_components/agent-icon";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 import { AgentInfoCard } from "./components/agent-info-card";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { Suspense } from "react";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
 interface AgentPageProps {
   params: Promise<{ slug: string }>;
@@ -24,22 +27,39 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
 
   const agentKey = slug;
 
-  const [mdl, penalties, computedAgentWeight] = await Promise.all([
+  const [mdl, penalties] = await Promise.all([
     api.agent.byKeyLastBlock({ key: agentKey }),
     api.penalty.byAgentKey({ agentKey }),
-    api.computedAgentWeight.all(),
   ]);
 
   if (!mdl?.metadataUri) return notFound();
 
-  const { metadata, images } = await fetchAgentMetadata(mdl.metadataUri, {
-    fetchImages: true,
-  }).catch((e) => {
-    console.error("Failed to fetch agent metadata:", e);
-    return notFound();
-  });
+  const [agentMetadataError, agentMetadata] = await tryAsync(
+    fetchAgentMetadata(mdl.metadataUri, { fetchImages: true }),
+  );
+  if (agentMetadataError !== undefined) {
+    console.error("Failed to fetch agent metadata:", agentMetadataError);
+    notFound();
+  }
 
-  const icon = images.icon;
+  const { metadata, images } = agentMetadata;
+
+  // Convert Blob to data URL for client component
+  let icon: string | undefined = undefined;
+  if (images.icon) {
+    const arrayBuffer = await images.icon.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mimeType = images.icon.type || "image/png";
+    icon = `data:${mimeType};base64,${base64}`;
+  }
+
+  const [computedAgentError, computedAgentWeight] = await tryAsync(
+    api.computedAgentWeight.all(),
+  );
+  if (computedAgentError !== undefined) {
+    console.error("Error fetching computed agent weight:", computedAgentError);
+    notFound();
+  }
   const globalWeight = computedAgentWeight.find((d) => d.agentKey === agentKey);
   const networkAllocation = globalWeight
     ? (globalWeight.percComputedWeight * 100).toFixed(2)
@@ -68,7 +88,13 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
         <div className="mb-12 flex flex-col gap-6 md:flex-row">
           <div className="mb-12 flex flex-col gap-6 md:w-2/3">
             <Card className="mb-6 flex flex-col gap-6 md:flex-row">
-              <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
+              <Suspense
+                fallback={
+                  <Skeleton className="aspect-square h-48 w-48 rounded-sm" />
+                }
+              >
+                <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
+              </Suspense>
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
                 <h1 className="text-start text-3xl font-semibold">
                   {mdl.name}
