@@ -38,9 +38,9 @@ export const torus0Storages = {
   palletVersion: createStorageValue('torus0', 'palletVersion', PALLET_VERSION_SCHEMA),
   
   // Map storages
-  agents: createStorageMap('torus0', 'agents', sb_address, AGENT_SCHEMA),
-  namespaceCount: createStorageMap('torus0', 'namespaceCount', sb_address, z.number()), // Map: AccountId32 -> u32
-  namespaces: createStorageMap('torus0', 'namespaces', z.string(), z.unknown()), // Map but no data currently
+  agents: createStorageMap('torus0', 'agents', z.any(), AGENT_SCHEMA),
+  namespaceCount: createStorageMap('torus0', 'namespaceCount', z.any(), z.number()), // Map: AccountId32 -> u32
+  namespaces: createStorageMap('torus0', 'namespaces', z.any(), z.unknown()), // Map but no data currently
   
   // Double map storages (currently commented out as they need createStorageDoubleMap)
   // stakedBy: AccountId32 -> AccountId32 -> Balance (36 entries found)
