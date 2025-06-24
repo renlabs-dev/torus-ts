@@ -29,6 +29,7 @@
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/db": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
+    "shadcn-dropzone": "^0.2.1",
     "@torus-ts/ui": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/react-query": "catalog:",

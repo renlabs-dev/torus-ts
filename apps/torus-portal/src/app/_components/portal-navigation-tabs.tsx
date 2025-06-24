@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Network, Shield, Plus, Radio, Edit } from "lucide-react";
+import { Network, Shield, Plus, Radio, Edit, Grid2x2Plus } from "lucide-react";
 
 export default function PortalNavigationTabs() {
   const router = useRouter();
@@ -46,6 +46,12 @@ export default function PortalNavigationTabs() {
         label: "Create Signal",
         icon: Radio,
         path: "/create-signal",
+      },
+      {
+        value: "register-agent",
+        label: "Register Agent",
+        icon: Grid2x2Plus,
+        path: "/register-agent",
       },
     ],
     [],

@@ -90,6 +90,9 @@ const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
     method: "POST",
     body,
   });
+  if (!res.ok) {
+    throw new Error(`Failed to upload file: ${res.statusText}`);
+  }
   const { cid } = PIN_FILE_RESULT.parse(await res.json());
   return { cid };
 };
