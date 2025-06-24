@@ -205,12 +205,9 @@ export const isValidNamespacePath = (path: string): boolean => {
  * ```
  */
 export const namespacePathField = () =>
-  z
-    .string()
-    .min(1, pathErrorMessages.required)
-    .refine(
-      (path) => isValidNamespacePath(path),
-      (path) => ({
-        message: validateNamespacePath(path)[0] ?? pathErrorMessages.generic,
-      }),
-    );
+  z.string().refine(
+    (path) => isValidNamespacePath(path),
+    (path) => ({
+      message: validateNamespacePath(path)[0] ?? pathErrorMessages.generic,
+    }),
+  );
