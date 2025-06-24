@@ -1,10 +1,11 @@
+"use client";
+
 import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
 import Image from "next/image";
-import BlobImage from "./blob-image";
 
 interface AgentIconProps {
-  icon?: Blob | string | null;
+  icon?: string | null;
   alt?: string;
   className?: string;
   containerClassName?: string;
@@ -37,14 +38,6 @@ export function AgentIcon({
     "h-36 w-36 opacity-30 md:h-20 md:w-20",
     fallbackIconClassName,
   );
-
-  if (icon && icon instanceof Blob) {
-    return (
-      <div className={containerStyles}>
-        <BlobImage blob={icon} alt={alt} />
-      </div>
-    );
-  }
 
   if (icon && typeof icon === "string") {
     return (

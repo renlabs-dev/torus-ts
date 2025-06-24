@@ -13,6 +13,8 @@ import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 import { AgentInfoCard } from "./components/agent-info-card";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { Suspense } from "react";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
 interface AgentPageProps {
   params: Promise<{ slug: string }>;
@@ -55,8 +57,14 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
 
   const { metadata, images } = agentMetadata;
 
-  // Blob URL for the icon
-  const icon = images.icon;
+  // Convert Blob to data URL for client component
+  let icon: string | undefined = undefined;
+  if (images.icon) {
+    const arrayBuffer = await images.icon.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mimeType = images.icon.type || "image/png";
+    icon = `data:${mimeType};base64,${base64}`;
+  }
 
   const [computedAgentError, computedAgentWeight] = await tryAsync(
     api.computedAgentWeight.all(),
@@ -94,7 +102,13 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
         <div className="mb-12 flex flex-col gap-6 md:flex-row">
           <div className="mb-12 flex flex-col gap-6 md:w-2/3">
             <Card className="mb-6 flex flex-col gap-6 md:flex-row">
-              <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
+              <Suspense
+                fallback={
+                  <Skeleton className="aspect-square h-48 w-48 rounded-sm" />
+                }
+              >
+                <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
+              </Suspense>
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
                 <h1 className="text-start text-3xl font-semibold">
                   {mdl.name}
