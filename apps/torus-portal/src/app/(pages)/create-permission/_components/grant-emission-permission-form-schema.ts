@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
 import { SS58_SCHEMA } from "@torus-network/sdk";
+import { createStreamPercentageValidator } from "~/utils/percentage-validation";
 
 const validatePositiveNumber = (value: string) => {
   const num = parseFloat(value);
@@ -40,13 +41,7 @@ export const allocationSchema = z.discriminatedUnion("type", [
         }),
       )
       .min(1, "At least one stream is required")
-      .refine((streams) => {
-        const total = streams.reduce((sum, stream) => {
-          const percentage = parseFloat(stream.percentage || "0");
-          return sum + (isNaN(percentage) ? 0 : percentage);
-        }, 0);
-        return total <= 100;
-      }, "Total percentage across all streams cannot exceed 100%"),
+      .superRefine(createStreamPercentageValidator()),
   }),
 ]);
 
