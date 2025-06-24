@@ -6,7 +6,7 @@ import {
   optionalAgentNameField,
   readOnlyAgentNameField,
   AGENT_NAME_REGEX,
-} from "../../validations/agent-name-validation";
+} from "../../validations/agent-name-validation.js";
 
 describe("AgentNameValidation", () => {
   const testCases = {
