@@ -45,6 +45,7 @@ import {
   queryTreasuryEmissionFee,
   queryUnrewardedProposals,
   queryWhitelist,
+  queryNamespaceEntriesOf,
 } from "@torus-network/sdk";
 import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
 import SuperJSON from "superjson";
@@ -480,6 +481,19 @@ export function usePermissionsByGrantee(
     queryKey: ["permissions_by_grantee", address],
     enabled: api != null && address != null,
     queryFn: () => queryPermissionsByGrantee(api!, address!),
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useNamespaceEntriesOf(
+  api: Api | Nullish,
+  agent: SS58Address | Nullish,
+) {
+  return useQuery({
+    queryKey: ["namespace_entries_of", agent],
+    enabled: api != null && agent != null,
+    queryFn: () => queryNamespaceEntriesOf(api!, agent!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

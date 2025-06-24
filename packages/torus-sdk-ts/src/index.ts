@@ -12,6 +12,7 @@ export * from "./modules/_common.js";
 export * from "./modules/subspace.js";
 export * from "./modules/governance.js";
 export * from "./modules/permission0.js";
+export * from "./modules/torus0.js";
 
 // == EVM ==
 export * from "./evm.js";
