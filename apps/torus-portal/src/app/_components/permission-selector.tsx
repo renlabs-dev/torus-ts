@@ -5,7 +5,9 @@ import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
@@ -36,16 +38,12 @@ interface PermissionSelectorProps {
   onPermissionIdChange: (permissionId: string) => void;
 }
 
-export function PermissionSelector({
-  control,
-  selectedPermissionId,
-  onPermissionIdChange,
-}: PermissionSelectorProps) {
+export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected } = useTorus();
 
   const { data: permissionsData, error: permissionsError } =
-    trpcApi.permission.withConstraintsByGrantor.useQuery(
-      { grantor: selectedAccount?.address ?? "" },
+    trpcApi.permission.withConstraintsByGrantorAndGrantee.useQuery(
+      { address: selectedAccount?.address ?? "" },
       { enabled: !!selectedAccount?.address },
     );
 
@@ -55,11 +53,33 @@ export function PermissionSelector({
 
   const hasPermissions = displayPermissions && displayPermissions.length > 0;
 
-  const lastPermissionId =
-    hasPermissions && displayPermissions[displayPermissions.length - 1];
+  // Prioritize grantor permissions for auto-selection
+  const getDefaultPermissionId = () => {
+    if (!permissionsData?.length) return null;
+
+    // First try to find a grantor permission
+    const grantorPermission = permissionsData.find(
+      (item) =>
+        item.permissionDetails?.grantor_key === selectedAccount?.address,
+    );
+
+    if (grantorPermission) {
+      return grantorPermission.permission.permission_id;
+    }
+
+    // Fall back to first grantee permission
+    const granteePermission = permissionsData.find(
+      (item) =>
+        item.permissionDetails?.grantee_key === selectedAccount?.address,
+    );
+
+    return granteePermission?.permission.permission_id ?? null;
+  };
+
+  const defaultPermissionId = getDefaultPermissionId();
 
   const selectedPermissionData = permissionsData?.find(
-    (item) => item.permission.permission_id === selectedPermissionId,
+    (item) => item.permission.permission_id === props.selectedPermissionId,
   );
 
   const hasConstraint = (permissionId: string): boolean => {
@@ -70,15 +90,16 @@ export function PermissionSelector({
   };
 
   useEffect(() => {
-    if (hasPermissions && !selectedPermissionId && lastPermissionId) {
-      onPermissionIdChange(lastPermissionId);
+    if (hasPermissions && !props.selectedPermissionId && defaultPermissionId) {
+      props.onPermissionIdChange(defaultPermissionId);
     }
   }, [
     displayPermissions,
-    selectedPermissionId,
-    onPermissionIdChange,
+    props.selectedPermissionId,
+    props.onPermissionIdChange,
     hasPermissions,
-    lastPermissionId,
+    defaultPermissionId,
+    props,
   ]);
 
   function getPlaceholderText() {
@@ -132,7 +153,7 @@ export function PermissionSelector({
   return (
     <div className="space-y-2">
       <FormField
-        control={control}
+        control={props.control}
         name="permissionId"
         render={({ field }) => (
           <FormItem>
@@ -142,7 +163,7 @@ export function PermissionSelector({
                 value={field.value}
                 onValueChange={(value: string) => {
                   field.onChange(value);
-                  onPermissionIdChange(value);
+                  props.onPermissionIdChange(value);
                 }}
                 disabled={!isAccountConnected || !hasPermissions}
               >
@@ -152,21 +173,75 @@ export function PermissionSelector({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {displayPermissions?.map((permissionId) => (
-                    <SelectItem key={permissionId} value={permissionId}>
-                      <div className="flex items-center justify-between w-full">
-                        {hasConstraint(permissionId) && (
-                          <Grid2x2Check className="h-4 w-4 text-green-500 mr-2" />
+                  {(() => {
+                    if (!permissionsData) return null;
+
+                    // Separate permissions by role
+                    const grantorPermissions = permissionsData.filter(
+                      (item) =>
+                        item.permissionDetails?.grantor_key ===
+                        selectedAccount?.address,
+                    );
+                    const granteePermissions = permissionsData.filter(
+                      (item) =>
+                        item.permissionDetails?.grantee_key ===
+                        selectedAccount?.address,
+                    );
+
+                    return (
+                      <>
+                        {granteePermissions.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>As Grantee</SelectLabel>
+                            {granteePermissions.map((permissionItem) => {
+                              const permissionId =
+                                permissionItem.permission.permission_id;
+                              return (
+                                <SelectItem
+                                  key={permissionId}
+                                  value={permissionId}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {hasConstraint(permissionId) && (
+                                      <Grid2x2Check className="h-4 w-4 text-green-500" />
+                                    )}
+                                    <span>{smallAddress(permissionId)}</span>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
                         )}
-                        <span>{smallAddress(permissionId)}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                        {grantorPermissions.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>As Grantor</SelectLabel>
+                            {grantorPermissions.map((permissionItem) => {
+                              const permissionId =
+                                permissionItem.permission.permission_id;
+                              return (
+                                <SelectItem
+                                  key={permissionId}
+                                  value={permissionId}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {hasConstraint(permissionId) && (
+                                      <Grid2x2Check className="h-4 w-4 text-green-500" />
+                                    )}
+                                    <span>{smallAddress(permissionId)}</span>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
+                        )}
+                      </>
+                    );
+                  })()}
                 </SelectContent>
               </Select>
-              {selectedPermissionId && (
+              {props.selectedPermissionId && (
                 <CopyButton
-                  copy={selectedPermissionId}
+                  copy={props.selectedPermissionId}
                   variant="outline"
                   className="h-9 px-2"
                   message="Permission ID copied to clipboard."
@@ -180,26 +255,27 @@ export function PermissionSelector({
         )}
       />
 
-      {selectedPermissionId && selectedPermissionData?.permissionDetails && (
-        <Card>
-          <CardHeader className="p-4">
-            <CardTitle className="text-sm font-semibold">
-              Permission Details
-            </CardTitle>
-          </CardHeader>
+      {props.selectedPermissionId &&
+        selectedPermissionData?.permissionDetails && (
+          <Card>
+            <CardHeader className="p-4">
+              <CardTitle className="text-sm font-semibold">
+                Permission Details
+              </CardTitle>
+            </CardHeader>
 
-          <CardContent className="text-xs p-4 pt-0">
-            {getDetailRows().map((row) => (
-              <div key={row.label}>
-                <span className="font-medium">{row.label}:</span>
-                <span className={"ml-2 text-muted-foreground"}>
-                  {row.value}
-                </span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            <CardContent className="text-xs p-4 pt-0">
+              {getDetailRows().map((row) => (
+                <div key={row.label}>
+                  <span className="font-medium">{row.label}:</span>
+                  <span className={"ml-2 text-muted-foreground"}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

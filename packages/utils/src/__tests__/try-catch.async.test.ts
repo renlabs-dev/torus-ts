@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tryAsync, tryAsyncStr } from "../try-catch";
+import { tryAsync, tryAsyncStr } from "../try-catch.js";
 
 // TODO: test `tryAsyncRaw`
 

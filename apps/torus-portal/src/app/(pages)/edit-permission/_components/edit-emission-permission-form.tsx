@@ -14,6 +14,7 @@ import {
 } from "@torus-ts/ui/components/card";
 import { Form } from "@torus-ts/ui/components/form";
 import { queryPermission } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { EditEmissionPermissionFormComponent } from "./edit-emission-permission-form-content";
 import {
@@ -86,6 +87,7 @@ export default function EditEmissionPermissionForm({
       const permissionInfo = transformPermissionToFormData(
         permission,
         currentBlock,
+        selectedAccount.address as SS58Address,
       );
       permissionInfo.permissionId = permissionId;
 

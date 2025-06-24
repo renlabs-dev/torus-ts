@@ -16,17 +16,21 @@ interface SignalsAccordionProps {
   selectedNode?: CustomGraphNode;
 }
 
-export function SignalsAccordion({ selectedNode }: SignalsAccordionProps) {
+export function GraphSheetDetailsSignalsAccordion({
+  selectedNode,
+}: SignalsAccordionProps) {
   const { data: allSignals, isLoading } = api.signal.all.useQuery();
 
   const nodeSignals = useMemo(() => {
     if (!allSignals || !selectedNode?.id) return [];
-    
-    return allSignals.filter(signal => signal.agentKey === selectedNode.id);
+
+    return allSignals.filter((signal) => signal.agentKey === selectedNode.id);
   }, [allSignals, selectedNode?.id]);
 
   if (isLoading) {
-    return <div className="text-gray-500 text-center mt-8">Loading signals...</div>;
+    return (
+      <div className="text-gray-500 text-center mt-8">Loading signals...</div>
+    );
   }
 
   if (nodeSignals.length === 0) {
@@ -37,12 +41,17 @@ export function SignalsAccordion({ selectedNode }: SignalsAccordionProps) {
     );
   }
 
-  const socialLinks = (signal: typeof nodeSignals[0]) => [
-    { name: "Discord", value: signal.discord, prefix: "" },
-    { name: "GitHub", value: signal.github, prefix: "https://github.com/" },
-    { name: "Telegram", value: signal.telegram, prefix: "https://t.me/" },
-    { name: "Twitter", value: signal.twitter, prefix: "https://twitter.com/" },
-  ].filter((social) => social.value);
+  const socialLinks = (signal: (typeof nodeSignals)[0]) =>
+    [
+      { name: "Discord", value: signal.discord, prefix: "" },
+      { name: "GitHub", value: signal.github, prefix: "https://github.com/" },
+      { name: "Telegram", value: signal.telegram, prefix: "https://t.me/" },
+      {
+        name: "Twitter",
+        value: signal.twitter,
+        prefix: "https://twitter.com/",
+      },
+    ].filter((social) => social.value);
 
   return (
     <Accordion type="single" collapsible className="w-full">
@@ -74,8 +83,8 @@ export function SignalsAccordion({ selectedNode }: SignalsAccordionProps) {
             <div>
               <span className="text-xs text-gray-500">Description</span>
               <div className="text-sm text-gray-300 mt-1 max-w-none overflow-x-auto">
-                <MarkdownView 
-                  source={signal.description} 
+                <MarkdownView
+                  source={signal.description}
                   className="prose prose-xs dark:prose-invert max-w-none"
                 />
               </div>
@@ -89,7 +98,9 @@ export function SignalsAccordion({ selectedNode }: SignalsAccordionProps) {
                 </div>
               </div>
               <div>
-                <span className="text-xs text-gray-500">Proposed Allocation</span>
+                <span className="text-xs text-gray-500">
+                  Proposed Allocation
+                </span>
                 <div className="text-sm text-gray-300">
                   {signal.proposedAllocation}%
                 </div>
@@ -98,11 +109,18 @@ export function SignalsAccordion({ selectedNode }: SignalsAccordionProps) {
 
             {socialLinks(signal).length > 0 && (
               <div>
-                <span className="text-xs text-gray-500 block mb-2">Contact Information</span>
+                <span className="text-xs text-gray-500 block mb-2">
+                  Contact Information
+                </span>
                 <div className="grid grid-cols-2 gap-2">
                   {socialLinks(signal).map((social) => (
-                    <div key={social.name} className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">{social.name}</span>
+                    <div
+                      key={social.name}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="text-xs text-gray-400">
+                        {social.name}
+                      </span>
                       {social.prefix ? (
                         <a
                           href={`${social.prefix}${social.value}`}
@@ -114,7 +132,9 @@ export function SignalsAccordion({ selectedNode }: SignalsAccordionProps) {
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <span className="text-xs text-gray-300">{social.value}</span>
+                        <span className="text-xs text-gray-300">
+                          {social.value}
+                        </span>
                       )}
                     </div>
                   ))}

@@ -47,6 +47,10 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": []
+    },
+    "publish": {
+      "dependsOn": ["build", "test"],
+      "outputs": []
     }
   },
   "globalEnv": [

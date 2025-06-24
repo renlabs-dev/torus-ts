@@ -8,7 +8,7 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { CID } from "multiformats";
 import { z } from "zod";
 
-export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 100;
+export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 201;
 
 const z_url = z.string().url();
 

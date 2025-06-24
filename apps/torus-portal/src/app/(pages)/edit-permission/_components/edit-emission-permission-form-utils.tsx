@@ -13,10 +13,24 @@ import type {
 export function transformPermissionToFormData(
   permission: PermissionContract,
   currentBlock: bigint,
+  userAddress: SS58Address,
 ): PermissionInfo {
-  // Determine edit permissions based on revocation terms
-  const canEditStreams = canGrantorEdit(permission, currentBlock);
-  const canEditDistribution = canGrantorEdit(permission, currentBlock);
+  // Determine edit permissions based on role and revocation terms
+  const isGrantor = permission.grantor === userAddress;
+
+  // Based on SDK comments at lines 726-738 in permission0.ts:
+  // If you call as a grantee: you can only provide the new_targets,
+  // whenever you want, no limits. if the grantee sends
+  // new_streams/new_distribution_control, the extrinsic fails.
+  // If you call as a grantor: you can send all the values,
+  // but only if the revocation term: is RevocableByGrantor
+  // is RevocableAfter(N) and CurrentBlock > N
+  const canEditStreams = isGrantor
+    ? canGrantorEdit(permission, currentBlock)
+    : false;
+  const canEditDistribution = isGrantor
+    ? canGrantorEdit(permission, currentBlock)
+    : false;
 
   // Extract current emission scope data
   const emissionScope = if_let(permission.scope, "Emission")(
@@ -55,6 +69,7 @@ export function transformPermissionToFormData(
     permissionId: "", // Will be set by caller
     grantor: permission.grantor,
     grantee: permission.grantee,
+    userRole: isGrantor ? "grantor" : "grantee",
     canEditStreams,
     canEditDistribution,
     currentTargets,

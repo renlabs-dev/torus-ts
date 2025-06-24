@@ -1,15 +1,14 @@
 import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
 import { SS58_SCHEMA } from "@torus-network/sdk";
+import {
+  createStreamPercentageValidator,
+  createTargetWeightValidator,
+} from "~/utils/percentage-validation";
 
 const validatePositiveNumber = (value: string) => {
   const num = parseFloat(value);
   return !isNaN(num) && num > 0;
-};
-
-const validateWeight = (value: string) => {
-  const num = parseInt(value);
-  return !isNaN(num) && num >= 0 && num <= 65535; // u16 range
 };
 
 // Schema for allocation types
@@ -40,13 +39,7 @@ export const allocationSchema = z.discriminatedUnion("type", [
         }),
       )
       .min(1, "At least one stream is required")
-      .refine((streams) => {
-        const total = streams.reduce((sum, stream) => {
-          const percentage = parseFloat(stream.percentage || "0");
-          return sum + (isNaN(percentage) ? 0 : percentage);
-        }, 0);
-        return total <= 100;
-      }, "Total percentage across all streams cannot exceed 100%"),
+      .superRefine(createStreamPercentageValidator()),
   }),
 ]);
 
@@ -162,11 +155,15 @@ export const grantEmissionPermissionSchema = z.object({
         account: SS58_SCHEMA,
         weight: z
           .string()
-          .min(1, "Weight is required")
-          .refine(validateWeight, "Must be between 0 and 65535"),
+          .min(1, "Required")
+          .refine((val) => {
+            const num = parseFloat(val);
+            return !isNaN(num) && num >= 0 && num <= 100;
+          }, "Must be between 0 and 100"),
       }),
     )
-    .min(1, "At least one target is required"),
+    .min(1, "At least one target is required")
+    .superRefine(createTargetWeightValidator()),
   distribution: distributionSchema,
   duration: durationSchema,
   revocation: revocationSchema,

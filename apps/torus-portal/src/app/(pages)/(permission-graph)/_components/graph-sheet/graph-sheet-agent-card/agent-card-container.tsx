@@ -7,13 +7,14 @@ import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { getAllocatorBaseUrl } from "../permission-graph-utils";
+
+import { Button } from "@torus-ts/ui/components/button";
+import { AgentCard } from "./agent-card";
 import type {
   CachedAgentData,
   ComputedWeightsList,
-} from "../permission-graph-types";
-import { Button } from "@torus-ts/ui/components/button";
-import { AgentCard } from "./agent-card";
+} from "../../permission-graph-types";
+import { getAllocatorBaseUrl } from "../../permission-graph-utils";
 
 interface AgentCardContainerProps {
   nodeId: string;

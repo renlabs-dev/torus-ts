@@ -1,11 +1,10 @@
 import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
 import { SS58_SCHEMA } from "@torus-network/sdk";
-
-const validateWeight = (value: string) => {
-  const num = parseInt(value);
-  return !isNaN(num) && num >= 0 && num <= 65535; // u16 range
-};
+import {
+  createStreamPercentageValidator,
+  createTargetWeightValidator,
+} from "~/utils/percentage-validation";
 
 // Permission selection schema
 export const permissionSelectionSchema = z.object({
@@ -26,11 +25,15 @@ export const editEmissionPermissionSchema = z.object({
         account: SS58_SCHEMA,
         weight: z
           .string()
-          .min(1, "Weight is required")
-          .refine(validateWeight, "Must be between 0 and 65535"),
+          .min(1, "Required")
+          .refine((val) => {
+            const num = parseFloat(val);
+            return !isNaN(num) && num >= 0 && num <= 100;
+          }, "Must be between 0 and 100"),
       }),
     )
-    .min(1, "At least one target is required"),
+    .min(1, "At least one target is required")
+    .superRefine(createTargetWeightValidator()),
 
   // Updated streams
   newStreams: z
@@ -50,14 +53,10 @@ export const editEmissionPermissionSchema = z.object({
       }),
     )
     .optional()
-    .refine((streams) => {
-      if (!streams || streams.length === 0) return true;
-      const total = streams.reduce((sum, stream) => {
-        const percentage = parseFloat(stream.percentage || "0");
-        return sum + (isNaN(percentage) ? 0 : percentage);
-      }, 0);
-      return total <= 100;
-    }, "Total percentage across all streams cannot exceed 100%"),
+    .superRefine((streams, ctx) => {
+      if (!streams || streams.length === 0) return;
+      createStreamPercentageValidator()(streams, ctx);
+    }),
 
   // Updated distribution control
   newDistributionControl: z
@@ -119,6 +118,7 @@ export interface PermissionInfo {
   permissionId: string;
   grantor: string;
   grantee: string;
+  userRole: "grantor" | "grantee";
   canEditStreams: boolean;
   canEditDistribution: boolean;
   currentTargets: { account: string; weight: string }[];

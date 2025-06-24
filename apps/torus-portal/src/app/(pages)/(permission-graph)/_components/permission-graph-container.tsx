@@ -8,17 +8,17 @@ import type {
   CachedAgentData,
 } from "./permission-graph-types";
 import { AgentLRUCache } from "./permission-graph-utils";
-import { PermissionGraphNodeDetails } from "./node-details";
 import PermissionGraphSearch from "./permission-graph-search";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import { MousePointerClick } from "lucide-react";
-import { NodeColorLegend } from "./node-color-legend";
+import { NodeColorLegendDropdown } from "./node-color-legend-dropdown";
 import { MyAgentButton } from "./my-agent-button";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useGraphData } from "./force-graph/use-graph-data";
-import { PermissionGraph } from "./force-graph/force-graph-canvas";
+import { ForceGraphCanvas } from "./force-graph/force-graph-canvas";
 import { Loading } from "@torus-ts/ui/components/loading";
 import PortalNavigationTabs from "~/app/_components/portal-navigation-tabs";
+import { GraphSheet } from "./graph-sheet/graph-sheet";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -106,7 +106,7 @@ export default function PermissionGraphContainer() {
           sm:flex-row justify-between gap-2"
       >
         <div className="flex items-center">
-          <NodeColorLegend />
+          <NodeColorLegendDropdown />
         </div>
         <div
           className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-1
@@ -144,7 +144,7 @@ export default function PermissionGraphContainer() {
           <PermissionGraphOverview graphData={graphData} />
         </div>
       </div>
-      <PermissionGraphNodeDetails
+      <GraphSheet
         selectedNode={selectedNode}
         graphData={graphData}
         permissionDetails={permissionDetails}
@@ -156,7 +156,7 @@ export default function PermissionGraphContainer() {
         onOpenChange={setIsSheetOpen}
       />
       <div className="w-full h-full animate-fade animate-delay-1000">
-        <PermissionGraph
+        <ForceGraphCanvas
           data={graphData}
           onNodeClick={handleNodeSelect}
           userAddress={selectedAccount?.address}

@@ -1,4 +1,6 @@
 import type { ApiPromise } from "@polkadot/api";
+import { z } from "zod";
+
 import type { AgentApplication, SS58Address } from "@torus-network/sdk";
 import {
   acceptApplication,
@@ -11,7 +13,7 @@ import {
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { z } from "zod";
+
 import type { WorkerProps } from "../common";
 import {
   applicationIsPending,
@@ -22,6 +24,7 @@ import {
   sleep,
   sleepUntilNewBlock,
 } from "../common";
+import { DiscordRoleManager } from "../common/discord-role";
 import type { VotesByNumericId } from "../db";
 import {
   countCadreKeys,
@@ -35,20 +38,63 @@ const getEnv = validateEnvOrExit({
   TORUS_CURATOR_MNEMONIC: z
     .string()
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
+  DISCORD_BOT_SECRET: z.string().min(1),
+  NEXT_PUBLIC_TORUS_CHAIN_ENV: z.string().min(1),
 });
 
 const log = BasicLogger.create({ name: "process-dao-applications" });
+
 const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
+
+interface DiscordConfig {
+  serverId: string;
+  daoRoleId: string;
+}
+
+const discordDaoRoleConfigs: Record<string, DiscordConfig> = {
+  production: {
+    serverId: "1306654856286699590", // "Torus" Discord server
+    daoRoleId: "1306686252560420905", // "Curator DAO" role
+  },
+  // Potential test server
+  // other: {
+  //   serverId: "1234",
+  //   daoRoleId: "4556",
+  // }
+};
 
 /**
  * Processes DAO governance actions based on accumulated cadre votes.
- * Handles application approvals/denials, whitelist removals, and agent penalties
- * in a continuous loop with error handling for blockchain interactions.
  *
- * @param props - Contains API connection and state for tracking the last processed block
+ * Handles application approvals/denials, whitelist removals, and agent
+ * penalties in a continuous loop with error handling for blockchain
+ * interactions.
+ *
+ * @param props - Contains API connection and state for tracking the last
+ * processed block
  */
 export async function processApplicationsWorker(props: WorkerProps) {
   const env = getEnv(process.env);
+  const chainEnv = env.NEXT_PUBLIC_TORUS_CHAIN_ENV;
+
+  const discordSecret = env.DISCORD_BOT_SECRET;
+
+  const roleConfigName = chainEnv === "mainnet" ? "production" : chainEnv;
+  const roleConfig = discordDaoRoleConfigs[roleConfigName];
+  const daoRoleManager =
+    roleConfig != null
+      ? DiscordRoleManager.create(
+          discordSecret,
+          roleConfig.serverId,
+          roleConfig.daoRoleId,
+        )
+      : null;
+  if (daoRoleManager == null) {
+    log.warn(
+      `Discord role manager not configured for chain environment ${chainEnv}, role management will be skipped.`,
+    );
+  }
+
   while (true) {
     const workerRes = await tryAsync(
       (async () => {
@@ -95,7 +141,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
         const [_cadreVotesErr, cadreVotes] = cadreVotesRes;
 
         const processCadreRes = await tryAsync(
-          processCadreVotes(cadreVotes, vote_threshold),
+          processCadreVotes(cadreVotes, vote_threshold, daoRoleManager),
         );
         if (log.ifResultIsErr(processCadreRes)) return;
 

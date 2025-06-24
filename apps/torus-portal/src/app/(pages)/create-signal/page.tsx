@@ -3,10 +3,7 @@ import CreateSignalForm from "./_components/create-signal-form";
 
 export default function Page() {
   return (
-    <PortalFormContainer
-      imageSrc="/form-bg-signal.svg"
-      imageAlt="Abstract decorative background illustrating signal creation"
-    >
+    <PortalFormContainer imageSrc="/form-bg-signal.svg">
       <CreateSignalForm />
     </PortalFormContainer>
   );

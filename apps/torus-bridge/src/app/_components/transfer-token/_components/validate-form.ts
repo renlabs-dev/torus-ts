@@ -5,6 +5,7 @@ import type { AccountInfo } from "@hyperlane-xyz/widgets";
 import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { getTokenByIndex } from "~/hooks/token";
+import { isPromise } from "~/utils/helpers";
 import { logger } from "~/utils/logger";
 import type { TransferFormValues } from "~/utils/types";
 
@@ -13,80 +14,62 @@ const emptyAccountErrMsg = /AccountNotFound/i;
 
 export async function validateForm(
   warpCore: WarpCore,
-  values: TransferFormValues,
+  { origin, destination, tokenIndex, amount, recipient }: TransferFormValues,
   accounts: Record<ProtocolType, AccountInfo>,
 ) {
-  const { origin, destination, tokenIndex, amount, recipient } = values;
-
-  // Get token
   const [tokenError, token] = trySync(() =>
     getTokenByIndex(warpCore, tokenIndex),
   );
-
-  if (tokenError !== undefined) {
+  if (tokenError || !token) {
     logger.error("Error getting token:", tokenError);
-    return { form: errorToString(tokenError, 40) };
+    return {
+      form: tokenError ? errorToString(tokenError, 40) : "Token is required",
+    };
   }
 
-  if (!token) return { token: "Token is required" };
-
-  // Convert amount to Wei
   const [amountError, amountWei] = trySync(() => toWei(amount, token.decimals));
-
-  if (amountError !== undefined) {
+  if (amountError) {
     logger.error("Error converting amount to wei:", amountError);
     return { amount: "Invalid amount" };
   }
 
-  // Get account address and public key
-  const [accountError, accountSuccess] = trySync(() =>
+  const [accountError, { address, publicKey } = {}] = trySync(() =>
     getAccountAddressAndPubKey(warpCore.multiProvider, origin, accounts),
   );
-
-  if (accountError !== undefined) {
-    logger.error("Error getting account address and public key:", accountError);
+  if (accountError || !address) {
+    logger.error("Error getting account address:", accountError);
     return { form: "Error retrieving account information" };
   }
 
-  const { address, publicKey: senderPubKey } = accountSuccess;
-
-  if (!address || !senderPubKey) {
+  const [senderPubKeyErr, senderPubKey] = isPromise(publicKey)
+    ? await tryAsync(publicKey)
+    : [undefined, publicKey];
+  if (senderPubKeyErr) {
+    logger.warn("Error getting sender public key:", senderPubKeyErr);
     return { form: "Error retrieving account information" };
   }
 
-  // Get sender public key
-  const [pubKeyError, resolvedPubKey] = await tryAsync(senderPubKey);
-
-  if (pubKeyError !== undefined) {
-    logger.error("Error resolving sender public key:", pubKeyError);
-    return { form: "Error retrieving account keys" };
-  }
-
-  // Validate transfer
   const [validateError, result] = await tryAsync(
     warpCore.validateTransfer({
       originTokenAmount: token.amount(amountWei),
       destination,
       recipient,
       sender: address,
-      senderPubKey: resolvedPubKey,
+      senderPubKey,
     }),
   );
 
-  if (validateError !== undefined) {
+  if (validateError) {
     logger.error("Error validating transfer:", validateError);
-
-    let errorMsg = errorToString(validateError, 40);
+    const errorMsg = errorToString(validateError, 40);
     const fullError = `${errorMsg} ${validateError.message}`;
-
-    if (
-      insufficientFundsErrMsg.test(fullError) ||
-      emptyAccountErrMsg.test(fullError)
-    ) {
-      errorMsg = "Insufficient funds for gas fees";
-    }
-
-    return { form: errorMsg };
+    return {
+      form:
+        insufficientFundsErrMsg.test(fullError) ||
+        emptyAccountErrMsg.test(fullError)
+          ? "Insufficient funds for gas fees"
+          : errorMsg,
+    };
   }
 
   return result;

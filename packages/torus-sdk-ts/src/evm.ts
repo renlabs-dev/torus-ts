@@ -7,7 +7,7 @@ import {
 import { assert } from "tsafe";
 import type { Chain, WalletClient } from "viem";
 import { encodeFunctionData } from "viem";
-import type { SS58Address } from "./address";
+import type { SS58Address } from "./address.js";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 export { waitForTransactionReceipt } from "@wagmi/core";

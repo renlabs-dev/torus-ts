@@ -48,18 +48,19 @@ interface ViewSpec {
 }
 
 const viewList: Record<ViewType, ViewSpec> = {
-  "whitelist-agent": {
-    label: "Whitelist an agent",
-    description: "Submit an application to whitelist a new agent",
-    icon: <Grid2x2Plus className="h-4 w-4 text-purple-500" />,
-    component: <CreateAgentApplication />,
-  },
   "register-agent": {
     label: "Register an agent",
-    description: "Register a previously whitelisted agent",
+    description: "Register an agent on the network",
     icon: <Grid2x2Check className="h-4 w-4 text-green-500" />,
     component: <RegisterAgent />,
     separatorAfter: true,
+  },
+  "whitelist-agent": {
+    label: "Whitelist an agent",
+    description:
+      "Submit an application to whitelist and receive emissions from root",
+    icon: <Grid2x2Plus className="h-4 w-4 text-purple-500" />,
+    component: <CreateAgentApplication />,
   },
   "create-proposal": {
     label: "Create a proposal",

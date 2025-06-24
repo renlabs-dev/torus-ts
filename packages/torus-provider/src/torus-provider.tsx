@@ -17,6 +17,7 @@ import type {
 } from "@torus-network/sdk";
 import {
   grantEmissionPermission,
+  registerAgent,
   sb_balance,
   updateEmissionPermission,
 } from "@torus-network/sdk";
@@ -88,7 +89,7 @@ interface TorusContextType {
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
-  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
+  registerAgentTransaction: (registerAgent: RegisterAgent) => Promise<void>;
   updateAgent: (updateAgent: UpdateAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
@@ -114,7 +115,7 @@ interface TorusContextType {
     | SubmittableExtrinsic<"promise", ISubmittableResult>
     | undefined;
 
-  registerAgentTransaction: ({
+  getRegisterAgentFee: ({
     agentKey,
     name,
     url,
@@ -496,7 +497,11 @@ export function TorusProvider({
 
   // == Subspace ==
 
-  const registerAgentTransaction = ({
+  // TODO: refactor
+  // This was a gambiarra duplicated function by vinicius that is only used
+  // to get the fee of this transaction, so even though this is not exaclty
+  // getRegisterAgentFee is better named now then registerAgentTransaction
+  const getRegisterAgentFee = ({
     agentKey,
     name,
     url,
@@ -507,21 +512,25 @@ export function TorusProvider({
     return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
   };
 
-  async function registerAgent({
+  async function registerAgentTransaction({
     agentKey,
     name,
     url,
     metadata,
     callback,
   }: RegisterAgent): Promise<void> {
-    if (!api?.tx.torus0?.registerAgent) return;
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
 
-    const transaction = api.tx.torus0.registerAgent(
+    const transaction = registerAgent({
+      api,
       agentKey,
       name,
       url,
       metadata,
-    );
+    });
 
     await sendTransaction({
       api,
@@ -835,8 +844,8 @@ export function TorusProvider({
         isAccountConnected,
         isInitialized,
         openWalletModal,
-        registerAgent,
         registerAgentTransaction,
+        getRegisterAgentFee,
         updateAgent,
         removeStake,
         removeStakeTransaction,

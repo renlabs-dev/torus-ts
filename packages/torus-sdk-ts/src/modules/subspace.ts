@@ -4,8 +4,8 @@ import type { ApiPromise } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import type { Percent } from "@polkadot/types/interfaces";
 import type { z } from "zod";
-import type { SS58Address } from "../address";
-import type { Balance } from "../types";
+import type { SS58Address } from "../address.js";
+import type { Balance } from "../types/index.js";
 import {
   sb_address,
   sb_balance,
@@ -16,9 +16,9 @@ import {
   sb_some,
   sb_string,
   sb_struct,
-} from "../types";
-import type { Api } from "./_common";
-import { handleDoubleMapEntries, handleMapEntries } from "./_common";
+} from "../types/index.js";
+import type { Api } from "./_common.js";
+import { handleDoubleMapEntries, handleMapEntries } from "./_common.js";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // ==== Balances ====
@@ -303,10 +303,7 @@ export async function queryStakeIn(api: Api): Promise<{
   };
 }
 
-
-export async function getPermissions(
-  api: Api)
-{
+export async function getPermissions(api: Api) {
   const [queryError, q] = await tryAsync(api.query.permission0.permissions());
   if (queryError !== undefined) {
     console.error("Error querying permissions:", queryError);
@@ -452,210 +449,6 @@ export async function queryAgents(api: Api) {
   return agents;
 }
 
-// == Permissions ==
-
-// Permission types schemas
-// const sb_permission_id = sb_string; // H256 is typically represented as hex string
-
-// // Simplified enum-like structure for Rust enums
-// const sb_permission_duration = sb_struct({
-//   UntilBlock: sb_option_default(sb_bigint, 0n),
-//   Indefinite: sb_option_default(sb_bigint, 0n),
-// });
-
-// const sb_revocation_terms = sb_struct({
-//   Irrevocable: sb_option_default(sb_bigint, 0n),
-//   RevocableByGrantor: sb_option_default(sb_bigint, 0n),
-//   RevocableByArbiters: sb_option_default(sb_struct({
-//     accounts: sb_string, // Will be a Vec<AccountId> serialized as string
-//     required_votes: sb_bigint,
-//   }), { accounts: "", required_votes: 0n }),
-//   RevocableAfter: sb_option_default(sb_bigint, 0n),
-// });
-
-// const sb_enforcement_authority = sb_struct({
-//   None: sb_option_default(sb_bigint, 0n),
-//   ControlledBy: sb_option_default(sb_struct({
-//     controllers: sb_string, // Will be a Vec<AccountId> serialized as string
-//     required_votes: sb_bigint,
-//   }), { controllers: "", required_votes: 0n }),
-// });
-
-// const sb_permission_scope = sb_struct({
-//   Emission: sb_option_default(sb_string, ""), // Simplified for now
-//   Curator: sb_option_default(sb_string, ""),  // Simplified for now
-// });
-
-// const sb_permission_contract = sb_struct({
-//   grantor: sb_address,
-//   grantee: sb_address,
-//   scope: sb_permission_scope,
-//   duration: sb_permission_duration,
-//   revocation: sb_revocation_terms,
-//   enforcement: sb_enforcement_authority,
-//   last_execution: sb_option_default(sb_bigint, 0n),
-//   execution_count: sb_bigint,
-//   parent: sb_option_default(sb_permission_id, ""),
-//   created_at: sb_bigint,
-// });
-
-// export type PermissionContract = z.infer<typeof sb_permission_contract>;
-
-// /**
-//  * Query a specific permission by ID
-//  */
-// export async function queryPermission(
-//   api: Api,
-//   permissionId: string,
-// ): Promise<PermissionContract | null> {
-//   const [queryError, q] = await tryAsync(api.query.permission0.permissions(permissionId));
-//   if (queryError !== undefined) {
-//     console.error("Error querying permission:", queryError);
-//     throw queryError;
-//   }
-
-//   if (q.isNone) {
-//     return null;
-//   }
-
-//   const [parseError, permission] = trySync(() => sb_permission_contract.parse(q.unwrap()));
-//   if (parseError !== undefined) {
-//     console.error("Error parsing permission:", parseError);
-//     throw parseError;
-//   }
-
-//   return permission;
-// }
-
-// /**
-//  * Query all permissions in the system
-//  */
-// export async function queryAllPermissions(api: Api): Promise<Map<string, PermissionContract>> {
-//   const [queryError, q] = await tryAsync(api.query.permission0.permissions.entries());
-//   if (queryError !== undefined) {
-//     console.error("Error querying all permissions:", queryError);
-//     throw queryError;
-//   }
-
-//   const [handleError, result] = trySync(() =>
-//     handleMapEntries(q, sb_permission_id, sb_permission_contract),
-//   );
-//   if (handleError !== undefined) {
-//     console.error("Error handling permissions map entries:", handleError);
-//     throw handleError;
-//   }
-
-//   const [permissions, errs] = result;
-//   for (const err of errs) {
-//     console.error("ERROR parsing permission:", err);
-//   }
-
-//   return permissions;
-// }
-
-// /**
-//  * Query permissions by grantor (permissions granted by an account)
-//  */
-// export async function queryPermissionsByGrantor(
-//   api: Api,
-//   grantor: SS58Address,
-// ): Promise<string[]> {
-//   const [queryError, q] = await tryAsync(api.query.permission0.permissionsByGrantor(grantor));
-//   if (queryError !== undefined) {
-//     console.error("Error querying permissions by grantor:", queryError);
-//     throw queryError;
-//   }
-
-//   if (q.isNone) {
-//     return [];
-//   }
-
-//   const [parseError, permissionIds] = trySync(() => 
-//     q.unwrap().map((id: any) => sb_permission_id.parse(id))
-//   );
-//   if (parseError !== undefined) {
-//     console.error("Error parsing permission IDs:", parseError);
-//     throw parseError;
-//   }
-
-//   return permissionIds;
-// }
-
-// /**
-//  * Query permissions by grantee (permissions received by an account)
-//  */
-// export async function queryPermissionsByGrantee(
-//   api: Api,
-//   grantee: SS58Address,
-// ): Promise<string[]> {
-//   const [queryError, q] = await tryAsync(api.query.permission0.permissionsByGrantee(grantee));
-//   if (queryError !== undefined) {
-//     console.error("Error querying permissions by grantee:", queryError);
-//     throw queryError;
-//   }
-
-//   if (q.isNone) {
-//     return [];
-//   }
-
-//   const [parseError, permissionIds] = trySync(() => 
-//     q.unwrap().map((id: any) => sb_permission_id.parse(id))
-//   );
-//   if (parseError !== undefined) {
-//     console.error("Error parsing permission IDs:", parseError);
-//     throw parseError;
-//   }
-
-//   return permissionIds;
-// }
-
-// /**
-//  * Query permissions between specific grantor and grantee
-//  */
-// export async function queryPermissionsByParticipants(
-//   api: Api,
-//   grantor: SS58Address,
-//   grantee: SS58Address,
-// ): Promise<string[]> {
-//   const [queryError, q] = await tryAsync(
-//     api.query.permission0.permissionsByParticipants([grantor, grantee])
-//   );
-//   if (queryError !== undefined) {
-//     console.error("Error querying permissions by participants:", queryError);
-//     throw queryError;
-//   }
-
-//   if (q.isNone) {
-//     return [];
-//   }
-
-//   const [parseError, permissionIds] = trySync(() => 
-//     q.unwrap().map((id: any) => sb_permission_id.parse(id))
-//   );
-//   if (parseError !== undefined) {
-//     console.error("Error parsing permission IDs:", parseError);
-//     throw parseError;
-//   }
-
-//   return permissionIds;
-// }
-
-// /**
-//  * Check if a specific permission exists
-//  */
-// export async function queryPermissionExists(
-//   api: Api,
-//   permissionId: string,
-// ): Promise<boolean> {
-//   const [queryError, q] = await tryAsync(api.query.permission0.permissions(permissionId));
-//   if (queryError !== undefined) {
-//     console.error("Error querying permission existence:", queryError);
-//     throw queryError;
-//   }
-
-//   return q.isSome;
-// }
-
 // == Weights ==
 
 export async function setChainWeights(
@@ -681,4 +474,25 @@ export async function setChainWeights(
   }
 
   return signedTx;
+}
+
+export interface RegisterAgent {
+  api: ApiPromise;
+  agentKey: SS58Address;
+  name: string;
+  url: string;
+  metadata: string;
+}
+
+/**
+ * Register an agent on the network
+ */
+export function registerAgent({
+  api,
+  agentKey,
+  name,
+  url,
+  metadata,
+}: RegisterAgent) {
+  return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
 }

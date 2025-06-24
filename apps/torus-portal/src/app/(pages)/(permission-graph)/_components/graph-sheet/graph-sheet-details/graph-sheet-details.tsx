@@ -7,10 +7,10 @@ import type {
   CachedAgentData,
 } from "../../permission-graph-types";
 import { getNodePermissions } from "../../permission-graph-utils";
-import { useMemo, memo } from "react";
-import { NodeDetailsCard } from "./node-details-card";
+import { useMemo } from "react";
+import { NodeDetailsCard } from "./graph-sheet-details-card";
 
-interface PermissionNodeDetailsProps {
+interface GraphSheetDetailsProps {
   selectedNode: CustomGraphNode;
   graphData: CustomGraphData | null;
   permissionDetails?: PermissionDetails;
@@ -18,11 +18,11 @@ interface PermissionNodeDetailsProps {
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
 
-export const NodeDetails = memo(function NodeDetails({
+export function GraphSheetDetails({
   selectedNode,
   graphData,
   permissionDetails,
-}: PermissionNodeDetailsProps) {
+}: GraphSheetDetailsProps) {
   const nodePermissions = useMemo(
     () => (graphData ? getNodePermissions(selectedNode, graphData) : []),
     [selectedNode, graphData],
@@ -38,4 +38,4 @@ export const NodeDetails = memo(function NodeDetails({
       selectedNode={selectedNode}
     />
   );
-});
+}
