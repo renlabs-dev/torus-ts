@@ -78,7 +78,7 @@ const viewList: Record<ViewType, ViewSpec> = {
 export function ShapeNetworkModal() {
   const { isAccountConnected } = useTorus();
   const { isInitialized } = useGovernance();
-  const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");
+  const [selectedView, setSelectedView] = useState<ViewType>("register-agent");
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
