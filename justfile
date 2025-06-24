@@ -63,6 +63,12 @@ publish:
   # how to bump / manage versions?
   pnpm publish -F "@torus-network/sdk" -F "@torus-network/torus-utils" --no-git-checks
 
+changeset-add:
+  pnpm changeset add
+
+changeset-version:
+  pnpm changeset version
+
 
 # == Database Management with Atlas ==
 
