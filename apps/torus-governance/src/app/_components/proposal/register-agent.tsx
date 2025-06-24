@@ -49,6 +49,9 @@ import { Controller, useForm } from "react-hook-form";
 import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
 import { z } from "zod";
+import Link from "next/link";
+import { getLinks } from "@torus-ts/ui/lib/data";
+import { env } from "~/env";
 
 const registerAgentSchema = z.object({
   agentKey: z.string().min(1, "Agent address is required"),
@@ -390,6 +393,8 @@ export function RegisterAgent() {
 
   const registerViewDisabled = socialsViewDisabled;
 
+  const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
@@ -482,6 +487,20 @@ export function RegisterAgent() {
                     />
                   </FormControl>
                   <FormMessage />
+                  {formValues.name && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Link
+                        // TODO: add link to namespace docs
+                        href={links.docs}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-foreground transition-colors"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Link>
+                      Your name on the namespace: agent.{formValues.name}
+                    </div>
+                  )}
                 </FormItem>
               )}
             />
