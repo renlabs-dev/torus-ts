@@ -1,6 +1,6 @@
 // == Transactions ==
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address, PermissionId } from "@torus-network/sdk";
 
 export interface TransactionResult {
   finalized: boolean;
@@ -77,4 +77,8 @@ export interface AddAgentApplication extends TransactionHelpers {
 
 export interface UpdateDelegatingVotingPower extends TransactionHelpers {
   isDelegating: boolean;
+}
+
+export interface RevokePermission extends TransactionHelpers {
+  permissionId: PermissionId;
 }

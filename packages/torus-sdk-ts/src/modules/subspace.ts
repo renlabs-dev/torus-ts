@@ -496,3 +496,17 @@ export function registerAgent({
 }: RegisterAgent) {
   return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
 }
+
+/**
+ * Create a new namespace, automatically creating missing intermediate nodes
+ */
+export function createNamespace(api: ApiPromise, path: string) {
+  return api.tx.torus0.createNamespace(path);
+}
+
+/**
+ * Delete a namespace and all its children
+ */
+export function deleteNamespace(api: ApiPromise, path: string) {
+  return api.tx.torus0.deleteNamespace(path);
+}
