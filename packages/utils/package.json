@@ -82,6 +82,10 @@
     "./agent-name-validation": {
       "types": "./dist/validations/agent-name-validation.d.ts",
       "default": "./dist/validations/agent-name-validation.js"
+    },
+    "./validation": {
+      "types": "./dist/validations/index.d.ts",
+      "default": "./dist/validations/index.js"
     }
   },
   "dependencies": {

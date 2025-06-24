@@ -12,6 +12,21 @@
 
 import { z } from "zod";
 
+import type { Result } from "../result.js";
+import { makeErr, makeOk } from "../result.js";
+
+/**
+ * Maximum length of a namespace segment
+ */
+export const NAMESPACE_SEGMENT_MAX_LENGTH = 63;
+
+/**
+ * Maximum length of a namespace path
+ */
+export const NAMESPACE_PATH_MAX_LENGTH = 255;
+
+// ==== Namespace segments ====
+
 /**
  * Regular expression for validating namespace segments
  * Matches: a-z, 0-9, hyphens, underscores, plus signs
@@ -23,40 +38,47 @@ export const NAMESPACE_SEGMENT_REGEX = /^[a-z0-9]([a-z0-9-_+]{0,61}[a-z0-9])?$/;
 /**
  * Error messages for namespace segment validation
  */
-const errorMessages = {
-  required: "Namespace segment is required",
-  tooLong: "Namespace segment cannot exceed 63 characters",
-  invalidStart: "Namespace segment must start with a lowercase letter or digit",
-  invalidEnd: "Namespace segment must end with a lowercase letter or digit",
-  uppercase: "Namespace segment cannot contain uppercase letters",
+const segmentErrorMessages = {
+  required: "Path segment is required",
+  tooLong: `Path segment cannot exceed ${NAMESPACE_SEGMENT_MAX_LENGTH} characters`,
+  invalidStart: "Path segment must start with a lowercase letter or digit",
+  invalidEnd: "Path segment must end with a lowercase letter or digit",
+  uppercase: "Path segment cannot contain uppercase letters",
   invalidChars:
-    "Namespace segment can only contain lowercase letters, numbers, hyphens, underscores, and plus signs",
-  generic: "Namespace segment is invalid",
+    "Path segment can only contain lowercase letters, numbers, hyphens, underscores, and plus signs",
+  generic: "Path segment is invalid",
 };
 
 /**
- * Validates a namespace segment and returns an error message if invalid, null if valid
+ * Validates a namespace segment
  *
  * @param segment - The namespace segment to validate
- * @returns Error message string if invalid, null if valid
+ * @returns Result with segment if valid, error message if invalid
  *
  * @example
  * ```typescript
- * validateNamespaceSegment("my-segment") // null (valid)
- * validateNamespaceSegment("my+segment") // null (valid)
- * validateNamespaceSegment("-segment") // "Namespace segment must start with a lowercase letter or digit"
- * validateNamespaceSegment("") // "Namespace segment is required"
+ * validateNamespaceSegment("my-segment") // [undefined, "my-segment"]
+ * validateNamespaceSegment("my+segment") // [undefined, "my+segment"]
+ * validateNamespaceSegment("-segment") // ["Path segment must start with a lowercase letter or digit", undefined]
+ * validateNamespaceSegment("") // ["Path segment is required", undefined]
  * ```
  */
-export const validateNamespaceSegment = (segment: string): string | null => {
-  if (!segment) return errorMessages.required;
-  if (segment.length > 63) return errorMessages.tooLong;
-  if (/[A-Z]/.test(segment)) return errorMessages.uppercase;
-  if (!/^[a-z0-9]/.test(segment)) return errorMessages.invalidStart;
-  if (!/[a-z0-9]$/.test(segment)) return errorMessages.invalidEnd;
-  if (!/^[a-z0-9-_+]*$/.test(segment)) return errorMessages.invalidChars;
-  if (!NAMESPACE_SEGMENT_REGEX.test(segment)) return errorMessages.generic;
-  return null;
+export const validateNamespaceSegment = (
+  segment: string,
+): Result<string, string> => {
+  const e = (err: string) => makeErr(err);
+
+  if (!segment) return e(segmentErrorMessages.required);
+  if (segment.length > NAMESPACE_SEGMENT_MAX_LENGTH)
+    return e(segmentErrorMessages.tooLong);
+  if (/[A-Z]/.test(segment)) return e(segmentErrorMessages.uppercase);
+  if (!/^[a-z0-9]/.test(segment)) return e(segmentErrorMessages.invalidStart);
+  if (!/[a-z0-9]$/.test(segment)) return e(segmentErrorMessages.invalidEnd);
+  if (!/^[a-z0-9-_+]*$/.test(segment))
+    return e(segmentErrorMessages.invalidChars);
+  if (!NAMESPACE_SEGMENT_REGEX.test(segment))
+    return e(segmentErrorMessages.generic);
+  return makeOk(segment);
 };
 
 /**
@@ -73,8 +95,10 @@ export const validateNamespaceSegment = (segment: string): string | null => {
  * isValidNamespaceSegment("") // false
  * ```
  */
-export const isValidNamespaceSegment = (segment: string): boolean =>
-  validateNamespaceSegment(segment) === null;
+export const isValidNamespaceSegment = (segment: string): boolean => {
+  const [error] = validateNamespaceSegment(segment);
+  return error === undefined;
+};
 
 /**
  * Custom Zod field for required namespace segment validation
@@ -92,10 +116,101 @@ export const isValidNamespaceSegment = (segment: string): boolean =>
 export const namespaceSegmentField = () =>
   z
     .string()
-    .min(1, errorMessages.required)
+    .min(1, segmentErrorMessages.required)
     .refine(
       (segment) => isValidNamespaceSegment(segment),
       (segment) => ({
-        message: validateNamespaceSegment(segment) ?? errorMessages.generic,
+        message:
+          validateNamespaceSegment(segment)[0] ?? segmentErrorMessages.generic,
+      }),
+    );
+
+// ==== Namespace paths ====
+
+const pathErrorMessages = {
+  required: "Path is required",
+  tooLong: `Path cannot exceed ${NAMESPACE_PATH_MAX_LENGTH} characters`,
+  emptySegment: "Path segment is empty",
+  invalidSegment: (errMsg: string) => `Path is invalid: ${errMsg}`,
+  generic: "Path is invalid",
+};
+
+/**
+ * Validates a namespace path consisting of dot-separated segments
+ *
+ * @param path - The namespace path to validate (e.g., "api.v2.users")
+ * @returns Result with array of segments if valid, error message if invalid
+ *
+ * @example
+ * ```typescript
+ * validateNamespacePath("api.v2.users") // [undefined, ["api", "v2", "users"]]
+ * validateNamespacePath("my-app.config") // [undefined, ["my-app", "config"]]
+ * validateNamespacePath("api..users") // ["Path segment is empty", undefined]
+ * validateNamespacePath("") // ["Path is required", undefined]
+ * validateNamespacePath("Test.api") // ["Path is invalid: Path segment cannot contain uppercase letters", undefined]
+ * ```
+ */
+export const validateNamespacePath = (
+  path: string,
+): Result<string[], string> => {
+  const e = (err: string) => makeErr(err);
+
+  if (!path) return e(pathErrorMessages.required);
+  if (path.length > NAMESPACE_PATH_MAX_LENGTH)
+    return e(pathErrorMessages.tooLong);
+
+  const segments = path.split(".");
+  for (const segment of segments) {
+    if (!segment) return e(pathErrorMessages.emptySegment);
+    const [error] = validateNamespaceSegment(segment);
+    if (error) {
+      const msg = pathErrorMessages.invalidSegment(error);
+      return e(msg);
+    }
+  }
+
+  return makeOk(segments);
+};
+
+/**
+ * Returns true if the namespace path is valid, false otherwise
+ *
+ * @param path - The namespace path to check
+ * @returns true if valid, false if invalid
+ *
+ * @example
+ * ```typescript
+ * isValidNamespacePath("api.v2.users") // true
+ * isValidNamespacePath("my-app.config") // true
+ * isValidNamespacePath("api..users") // false
+ * isValidNamespacePath("") // false
+ * ```
+ */
+export const isValidNamespacePath = (path: string): boolean => {
+  const [error] = validateNamespacePath(path);
+  return error === undefined;
+};
+
+/**
+ * Custom Zod field for required namespace path validation
+ *
+ * @returns Zod schema for required namespace path field
+ *
+ * @example
+ * ```typescript
+ * const schema = z.object({
+ *   path: namespacePathField(),
+ *   // ... other fields
+ * });
+ * ```
+ */
+export const namespacePathField = () =>
+  z
+    .string()
+    .min(1, pathErrorMessages.required)
+    .refine(
+      (path) => isValidNamespacePath(path),
+      (path) => ({
+        message: validateNamespacePath(path)[0] ?? pathErrorMessages.generic,
       }),
     );

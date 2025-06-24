@@ -35,7 +35,7 @@ const errorMessages = {
 };
 
 /**
- * Validates an agent name and returns an error message if invalid, null if valid
+ * Validates an agent name and returns
  *
  * @param name - The agent name to validate
  * @returns Error message string if invalid, null if valid
