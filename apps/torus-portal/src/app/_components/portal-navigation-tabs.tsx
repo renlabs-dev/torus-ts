@@ -63,6 +63,7 @@ export default function PortalNavigationTabs() {
     if (pathname === "/edit-permission") return "edit-permission";
     if (pathname === "/create-constraint") return "create-constraint";
     if (pathname === "/create-signal") return "create-signal";
+    if (pathname === "/register-agent") return "register-agent";
     return "permission-graph";
   };
   const currentTab = getCurrentTab();
