@@ -45,13 +45,20 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { SS58Address } from "@torus-network/sdk";
 
-// HTTP method options
 const HTTP_METHODS = ["get", "post", "patch", "delete", "update"] as const;
 
 const createNamespaceSchema = z
   .object({
-    selectedPrefix: z.string().min(1, "Please select a prefix"),
-    path: namespacePathField(),
+    path: z.string().refine(
+      (val) => {
+        if (val === "") return true;
+        const pathResult = namespacePathField().safeParse(val);
+        return pathResult.success;
+      },
+      {
+        message: "Must be a valid namespace path or empty",
+      },
+    ),
     method: z.enum([...HTTP_METHODS, "custom"]),
     customMethod: z.string().optional(),
   })
@@ -144,12 +151,10 @@ export default function CreateNamespaceForm({
     return Array.from(prefixes).sort();
   }, [namespaceEntries.data]);
 
-  // Reset prefix when account changes
   useEffect(() => {
     setSelectedPrefix("");
   }, [selectedAccount?.address]);
 
-  // Auto-select first prefix when data loads
   useEffect(() => {
     if (prefixOptions.length > 0 && !selectedPrefix) {
       const basePrefix = prefixOptions.find((p) => p.split(".").length === 3);
@@ -159,15 +164,18 @@ export default function CreateNamespaceForm({
   }, [prefixOptions, selectedPrefix]);
 
   const generateFullPath = useCallback(() => {
-    if (!watchedPath) return "";
-
     const method =
       watchedMethod === "custom" ? watchedCustomMethod : watchedMethod;
 
-    const fullPath = selectedPrefix
-      ? `${selectedPrefix}${watchedPath}`
-      : watchedPath;
-    return `${fullPath}.${method ?? "[method]"}`;
+    if (selectedPrefix) {
+      const fullPath = watchedPath
+        ? `${selectedPrefix}${watchedPath}`
+        : selectedPrefix.slice(0, -1);
+      return `${fullPath}.${method ?? "[method]"}`;
+    }
+
+    if (!watchedPath) return "";
+    return `${watchedPath}.${method ?? "[method]"}`;
   }, [watchedPath, watchedMethod, watchedCustomMethod, selectedPrefix]);
 
   const fullPath = generateFullPath();
@@ -188,7 +196,9 @@ export default function CreateNamespaceForm({
         }
 
         const pathWithPrefix = selectedPrefix
-          ? `${selectedPrefix}${data.path}`
+          ? data.path
+            ? `${selectedPrefix}${data.path}`
+            : selectedPrefix.slice(0, -1)
           : data.path;
 
         const fullNamespacePath = `${pathWithPrefix}.${method}`;
@@ -297,7 +307,7 @@ export default function CreateNamespaceForm({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder="endpoint"
+                          placeholder="namespace path"
                           disabled={!isAccountConnected || !selectedPrefix}
                         />
                       )}
@@ -306,8 +316,9 @@ export default function CreateNamespaceForm({
                 </div>
               </FormControl>
               <FormDescription>
-                Choose a prefix from existing namespaces and add your path
-                extension. Must start and end with alphanumeric characters.
+                Choose a prefix from existing namespaces and optionally add a
+                path extension. Leave the path empty to create a namespace at
+                the selected prefix level.
               </FormDescription>
               <FormField
                 control={control}
