@@ -12,6 +12,7 @@ import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken, fromNano } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { agentNameField } from "@torus-network/torus-utils/agent-name-validation";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -56,7 +57,7 @@ import { env } from "~/env";
 const registerAgentSchema = z.object({
   agentKey: z.string().min(1, "Agent address is required"),
   agentApiUrl: z.string().optional(),
-  name: z.string().min(1, "Agent name is required"),
+  name: agentNameField(),
   shortDescription: z
     .string()
     .min(1, "Short description is required")
@@ -493,11 +494,16 @@ export function RegisterAgent() {
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="My Agent's Name"
+                      placeholder="my-agent-name"
                       type="text"
+                      maxLength={63}
                       required
                     />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Must start and end with alphanumeric characters. Can contain
+                    lowercase letters, numbers, hyphens, and underscores.
+                  </p>
                   <FormMessage />
                   {formValues.name && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

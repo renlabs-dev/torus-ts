@@ -45,7 +45,7 @@ export function UpdateAgentDialogPreview({
   const previewImage = form.watch("imageUrl");
 
   const headerProps: AgentHeaderProps = {
-    name: formValues.name,
+    name: formValues.name ?? "",
     agentKey,
     metadataUri: agent.metadataUri,
     registrationBlock: agent.registrationBlock,

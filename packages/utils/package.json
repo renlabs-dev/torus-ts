@@ -71,9 +71,17 @@
       "types": "./dist/mutation-handler.d.ts",
       "default": "./dist/mutation-handler.js"
     },
+    "./discord-bot-interaction": {
+      "types": "./dist/discord-bot-interaction.d.ts",
+      "default": "./dist/discord-bot-interaction.js"
+    },
     "./logger": {
       "types": "./dist/logger.d.ts",
       "default": "./dist/logger.js"
+    },
+    "./agent-name-validation": {
+      "types": "./dist/validations/agent-name-validation.d.ts",
+      "default": "./dist/validations/agent-name-validation.js"
     }
   },
   "dependencies": {

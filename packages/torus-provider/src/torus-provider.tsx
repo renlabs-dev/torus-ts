@@ -549,7 +549,6 @@ export function TorusProvider({
   }
 
   async function updateAgent({
-    name,
     url,
     metadata,
     callback,
@@ -557,7 +556,6 @@ export function TorusProvider({
     if (!api?.tx.torus0?.updateAgent) return;
 
     const transaction = api.tx.torus0.updateAgent(
-      name,
       url,
       metadata,
       undefined,
