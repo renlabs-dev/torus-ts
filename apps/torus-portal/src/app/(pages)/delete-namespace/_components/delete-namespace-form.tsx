@@ -200,7 +200,8 @@ export default function DeleteNamespaceForm({
         </CardTitle>
         <CardDescription>
           Select a namespace path and choose where to cut it. The selected
-          segment and everything after it will be deleted.
+          segment and everything after it will be deleted. If you have any
+          active permissions, you need to delete them first.
         </CardDescription>
       </CardHeader>
       <CardContent>
