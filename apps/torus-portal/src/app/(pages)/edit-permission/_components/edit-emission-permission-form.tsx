@@ -14,7 +14,7 @@ import {
 } from "@torus-ts/ui/components/card";
 import { Form } from "@torus-ts/ui/components/form";
 import { queryPermission } from "@torus-network/sdk";
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address, PermissionContract } from "@torus-network/sdk";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { EditEmissionPermissionFormComponent } from "./edit-emission-permission-form-content";
 import {
@@ -31,6 +31,7 @@ import {
   transformPermissionToFormData,
 } from "./edit-emission-permission-form-utils";
 import { PermissionSelector } from "~/app/_components/permission-selector";
+import { RevokePermissionButton } from "./revoke-permission-button";
 
 interface EditEmissionPermissionFormProps {
   onSuccess?: () => void;
@@ -49,6 +50,9 @@ export default function EditEmissionPermissionForm({
 
   const [selectedPermissionInfo, setSelectedPermissionInfo] =
     useState<PermissionInfo | null>(null);
+  const [selectedPermission, setSelectedPermission] =
+    useState<PermissionContract | null>(null);
+  const [currentBlock, setCurrentBlock] = useState<bigint>(0n);
 
   // Form for permission selection
   const selectionForm = useForm<PermissionSelectionFormData>({
@@ -82,16 +86,18 @@ export default function EditEmissionPermissionForm({
     try {
       // Get current block number for grantor edit permission checks
       const [blockError, blockInfo] = await tryAsync(api.query.system.number());
-      const currentBlock = blockError ? 0n : blockInfo.toBigInt();
+      const currentBlockNumber = blockError ? 0n : blockInfo.toBigInt();
 
       const permissionInfo = transformPermissionToFormData(
         permission,
-        currentBlock,
+        currentBlockNumber,
         selectedAccount.address as SS58Address,
       );
       permissionInfo.permissionId = permissionId;
 
       setSelectedPermissionInfo(permissionInfo);
+      setSelectedPermission(permission);
+      setCurrentBlock(currentBlockNumber);
 
       // Pre-populate the edit form with current data
       editForm.reset({
@@ -193,6 +199,27 @@ export default function EditEmissionPermissionForm({
               }}
             />
           </Form>
+          
+          {/* Revoke Permission Button */}
+          {selectedAccount && (
+            <div className="mt-4 flex justify-end">
+              <RevokePermissionButton
+                permissionId={selectionForm.watch("permissionId") || null}
+                permission={selectedPermission}
+                currentBlock={currentBlock}
+                userAddress={selectedAccount.address}
+                onSuccess={() => {
+                  // Reset forms and state on successful revocation
+                  selectionForm.reset();
+                  editForm.reset();
+                  setSelectedPermissionInfo(null);
+                  setSelectedPermission(null);
+                  setCurrentBlock(0n);
+                  onSuccess?.();
+                }}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
