@@ -9,7 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Network, Shield, Plus, Radio, Edit, Grid2x2Plus } from "lucide-react";
+import {
+  Network,
+  Shield,
+  Plus,
+  Radio,
+  Edit,
+  Grid2x2Plus,
+  FolderPen,
+} from "lucide-react";
 
 export default function PortalNavigationTabs() {
   const router = useRouter();
@@ -53,6 +61,12 @@ export default function PortalNavigationTabs() {
         icon: Grid2x2Plus,
         path: "/register-agent",
       },
+      {
+        value: "create-namespace",
+        label: "Create Namespace",
+        icon: FolderPen,
+        path: "/create-namespace",
+      },
     ],
     [],
   );
@@ -64,6 +78,7 @@ export default function PortalNavigationTabs() {
     if (pathname === "/create-constraint") return "create-constraint";
     if (pathname === "/create-signal") return "create-signal";
     if (pathname === "/register-agent") return "register-agent";
+    if (pathname === "/create-namespace") return "create-namespace";
     return "permission-graph";
   };
   const currentTab = getCurrentTab();
