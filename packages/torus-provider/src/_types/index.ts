@@ -1,5 +1,7 @@
 // == Transactions ==
 
+import type { SS58Address } from "@torus-network/sdk";
+
 export interface TransactionResult {
   finalized: boolean;
   message: string | null;
@@ -42,7 +44,7 @@ export interface RemoveVote extends TransactionHelpers {
 }
 
 export interface RegisterAgent {
-  agentKey: string;
+  agentKey: SS58Address;
   name: string;
   url: string;
   metadata: string;
