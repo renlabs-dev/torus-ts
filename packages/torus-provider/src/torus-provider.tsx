@@ -20,6 +20,7 @@ import {
   registerAgent,
   revokePermission,
   sb_balance,
+  updateAgent,
   updateEmissionPermission,
 } from "@torus-network/sdk";
 import { toNano } from "@torus-network/torus-utils/subspace";
@@ -92,7 +93,7 @@ interface TorusContextType {
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
   registerAgentTransaction: (registerAgent: RegisterAgent) => Promise<void>;
-  updateAgent: (updateAgent: UpdateAgent) => Promise<void>;
+  updateAgentTransaction: (updateAgent: UpdateAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addDaoTreasuryTransferProposal: (
@@ -548,19 +549,17 @@ export function TorusProvider({
     });
   }
 
-  async function updateAgent({
+  async function updateAgentTransaction({
     url,
     metadata,
     callback,
   }: UpdateAgent): Promise<void> {
-    if (!api?.tx.torus0?.updateAgent) return;
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
 
-    const transaction = api.tx.torus0.updateAgent(
-      url,
-      metadata,
-      undefined,
-      undefined,
-    );
+    const transaction = updateAgent(api, url, metadata, null, null);
 
     await sendTransaction({
       api,
@@ -875,7 +874,7 @@ export function TorusProvider({
         openWalletModal,
         registerAgentTransaction,
         getRegisterAgentFee,
-        updateAgent,
+        updateAgentTransaction,
         removeStake,
         removeStakeTransaction,
         removeVoteProposal,

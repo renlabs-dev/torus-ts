@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/
 import type { BTreeSet, Bytes, Null, Option, Struct, U256, U8aFixed, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletEmission0ConsensusMember, PalletEvmCodeMetadata, PalletGovernanceApplicationAgentApplication, PalletGovernanceConfigGovernanceConfiguration, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletPermission0PermissionEnforcementReferendum, PalletPermission0PermissionPermissionContract, PalletTorus0Agent, PalletTorus0BurnBurnConfiguration, PalletTorus0FeeValidatorFeeConstraints, PalletTorus0NamespaceNamespaceMetadata, PalletTorus0NamespaceNamespacePricingConfig, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, TorusRuntimeRuntimeHoldReason } from '@polkadot/types/lookup';
+import type { EthereumBlock, EthereumReceiptReceiptV3, EthereumTransactionTransactionV2, FpRpcTransactionStatus, FrameSupportDispatchPerDispatchClassWeight, FrameSupportTokensMiscIdAmount, FrameSystemAccountInfo, FrameSystemCodeUpgradeAuthorization, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletEmission0ConsensusMember, PalletEvmCodeMetadata, PalletGovernanceApplicationAgentApplication, PalletGovernanceConfigGovernanceConfiguration, PalletGovernanceProposal, PalletGovernanceProposalUnrewardedProposal, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletMultisigMultisig, PalletPermission0PermissionEnforcementReferendum, PalletPermission0PermissionPermissionContract, PalletTorus0Agent, PalletTorus0BurnBurnConfiguration, PalletTorus0FeeValidatorFeeConstraints, PalletTorus0NamespaceNamespaceMetadata, PalletTorus0NamespaceNamespaceOwnership, PalletTorus0NamespaceNamespacePricingConfig, PalletTransactionPaymentReleases, SpConsensusAuraSr25519AppSr25519Public, SpConsensusGrandpaAppPublic, SpRuntimeDigest, TorusRuntimeRuntimeHoldReason } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -169,6 +169,10 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       agentApplications: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Option<PalletGovernanceApplicationAgentApplication>>, [u32]> & QueryableStorageEntry<ApiType, [u32]>;
       /**
+       * Determines if new agents can be registered on the chain.
+       **/
+      agentsFrozen: AugmentedQuery<ApiType, () => Observable<bool>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
        * List of allocator keys, which are the default validators on the network.
        **/
       allocators: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
@@ -182,6 +186,10 @@ declare module '@polkadot/api-base/types/storage' {
        * Global governance configuration files.
        **/
       globalGovernanceConfig: AugmentedQuery<ApiType, () => Observable<PalletGovernanceConfigGovernanceConfiguration>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Determines if new namespaces can be created on the chain.
+       **/
+      namespacesFrozen: AugmentedQuery<ApiType, () => Observable<bool>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * List of keys that are NOT delegating their voting power. By default, all
        * keys delegate their voting power.
@@ -479,12 +487,12 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Count of namespaces registered per account
        **/
-      namespaceCount: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<u32>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      namespaceCount: AugmentedQuery<ApiType, (arg: PalletTorus0NamespaceNamespaceOwnership | { System: any } | { Account: any } | string | Uint8Array) => Observable<u32>, [PalletTorus0NamespaceNamespaceOwnership]> & QueryableStorageEntry<ApiType, [PalletTorus0NamespaceNamespaceOwnership]>;
       namespacePricingConfig: AugmentedQuery<ApiType, () => Observable<PalletTorus0NamespaceNamespacePricingConfig>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Namespace registry - maps (owner, path) to metadata
        **/
-      namespaces: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: Bytes | string | Uint8Array) => Observable<Option<PalletTorus0NamespaceNamespaceMetadata>>, [AccountId32, Bytes]> & QueryableStorageEntry<ApiType, [AccountId32, Bytes]>;
+      namespaces: AugmentedQuery<ApiType, (arg1: PalletTorus0NamespaceNamespaceOwnership | { System: any } | { Account: any } | string | Uint8Array, arg2: Bytes | string | Uint8Array) => Observable<Option<PalletTorus0NamespaceNamespaceMetadata>>, [PalletTorus0NamespaceNamespaceOwnership, Bytes]> & QueryableStorageEntry<ApiType, [PalletTorus0NamespaceNamespaceOwnership, Bytes]>;
       /**
        * Number of agent registrations that happened this block.
        **/
