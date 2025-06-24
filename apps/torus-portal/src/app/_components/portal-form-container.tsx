@@ -28,7 +28,7 @@ export default function PortalFormContainer(props: PortalFormContainerProps) {
 
       <div className="flex flex-1 bg-card animate-fade-down">
         <ScrollArea className="flex-1 h-svh">
-          <div className="flex items-center justify-center pt-16">
+          <div className="flex justify-center pt-16 min-h-full">
             {props.children}
           </div>
         </ScrollArea>
