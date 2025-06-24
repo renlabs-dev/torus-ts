@@ -30,8 +30,8 @@ import {
 import type { Api } from "./_common.js";
 import { SbQueryError } from "./_common.js";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
-import { BTreeMap } from "@polkadot/types";
-import type { u16 } from "@polkadot/types";
+import { BTreeMap, BTreeSet } from "@polkadot/types";
+import type { Bytes, u16 } from "@polkadot/types";
 import type { Percent } from "@polkadot/types/interfaces";
 
 const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });
@@ -774,4 +774,24 @@ export function updateEmissionPermission({
  **/
 export function revokePermission(api: ApiPromise, permissionId: PermissionId) {
   return api.tx.permission0.revokePermission(permissionId);
+}
+
+/**
+ * Grant a permission over namespaces
+ */
+export function grantNamespacePermission(
+  api: ApiPromise,
+  grantee: SS58Address,
+  paths: string[],
+  duration: PermissionDuration,
+  revocation: RevocationTerms,
+) {
+  const pathsSet = new BTreeSet<Bytes>(api.registry, "Bytes", paths);
+
+  return api.tx.permission0.grantNamespacePermission(
+    grantee,
+    pathsSet,
+    duration,
+    revocation,
+  );
 }
