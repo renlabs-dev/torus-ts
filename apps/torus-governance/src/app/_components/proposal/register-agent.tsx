@@ -7,7 +7,7 @@ import {
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
   checkSS58,
 } from "@torus-network/sdk";
-import { smallFilename, strToFile } from "@torus-network/torus-utils/files";
+import { smallFilename } from "@torus-network/torus-utils/files";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken, fromNano } from "@torus-network/torus-utils/subspace";
@@ -73,6 +73,15 @@ const registerAgentSchema = z.object({
   website: z.string().optional(),
   icon: z.instanceof(File).optional(),
 });
+
+export const strToFile = (
+  str: string,
+  filename: string,
+  type: string = "text/plain",
+) => {
+  const file = new File([str], filename, { type });
+  return file;
+};
 
 const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();
@@ -244,7 +253,7 @@ export function RegisterAgent() {
     }
 
     const metadataJson = JSON.stringify(metadata, null, 2);
-    const file = strToFile(metadataJson, `${name}-agent-metadata.json`);
+    const file = strToFile(metadataJson, `${name}-agent-metadata.json`); // ? should be "application/json" instead of the default "plain/text"?
 
     const [metadataError, metadataResult] = await tryAsync(pinFile(file));
     setUploading(false);
