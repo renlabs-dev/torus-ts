@@ -26,7 +26,7 @@ export default function UpdateAgentDialog({
   setIsOpen,
   handleDialogChangeRef,
 }: UpdateAgentDialogProps) {
-  const { updateAgent } = useTorus();
+  const { updateAgentTransaction } = useTorus();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
@@ -129,7 +129,7 @@ export default function UpdateAgentDialog({
         const { apiUrl } = data;
         const cid = await uploadMetadata(data, imageFile);
 
-        await updateAgent({
+        await updateAgentTransaction({
           url: apiUrl ?? "",
           metadata: cidToIpfsUri(cid),
           callback: (tx) => {
@@ -147,7 +147,7 @@ export default function UpdateAgentDialog({
       isUploading,
       handleImageChange,
       imageFile,
-      updateAgent,
+      updateAgentTransaction,
       setIsOpen,
       setTransactionStatus,
     ],

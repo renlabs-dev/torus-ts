@@ -515,6 +515,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidThreshold: AugmentedError<ApiType>;
       /**
+       * Namespace creation was disabled by a curator.
+       **/
+      NamespaceCreationDisabled: AugmentedError<ApiType>;
+      /**
        * Tried granting unknown namespace.
        **/
       NamespaceDoesNotExist: AugmentedError<ApiType>;
@@ -714,6 +718,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AgentNameTooShort: AugmentedError<ApiType>;
       /**
+       * Agent Creation was disabled by a curator.
+       **/
+      AgentsFrozen: AugmentedError<ApiType>;
+      /**
        * The agent already updated recently
        **/
       AgentUpdateOnCooldown: AugmentedError<ApiType>;
@@ -801,6 +809,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Namespace not found
        **/
       NamespaceNotFound: AugmentedError<ApiType>;
+      /**
+       * Namespace Creation was disabled by a curator.
+       **/
+      NamespacesFrozen: AugmentedError<ApiType>;
       /**
        * Insufficient balance to register.
        **/

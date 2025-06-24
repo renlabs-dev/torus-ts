@@ -150,6 +150,28 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     faucet: {
       /**
+       * Request tokens from the faucet by performing proof of work
+       * 
+       * This extrinsic is only available on testnets. It requires the user to perform
+       * proof-of-work by finding a nonce that, when combined with a recent block hash
+       * and the user's account ID, produces a hash that meets the difficulty requirement.
+       * 
+       * The account must have a total balance (free + staked) below the threshold to be eligible.
+       * 
+       * # Parameters
+       * * `origin` - Must be None (unsigned)
+       * * `block_number` - A recent block number (within 3 blocks)
+       * * `nonce` - A value that makes the resulting hash meet the difficulty requirement
+       * * `work` - The hash result of the proof of work
+       * * `key` - The account ID that will receive the tokens
+       * 
+       * # Weight
+       * * Read operations: 16
+       * * Write operations: 28
+       * * Does not pay fees
+       **/
+      faucet: AugmentedSubmittable<(blockNumber: u64 | AnyNumber | Uint8Array, nonce: u64 | AnyNumber | Uint8Array, work: Bytes | string | Uint8Array, key: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u64, Bytes, MultiAddress]>;
+      /**
        * Generic tx
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
@@ -227,6 +249,8 @@ declare module '@polkadot/api-base/types/submittable' {
        * Submits a new agent application on behalf of a given key.
        **/
       submitApplication: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, metadata: Bytes | string | Uint8Array, removing: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes, bool]>;
+      toggleAgentFreezing: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      toggleNamespaceFreezing: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Casts a vote for an open proposal.
        **/
@@ -618,7 +642,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Updates origin's key agent metadata.
        **/
-      updateAgent: AugmentedSubmittable<(name: Bytes | string | Uint8Array, url: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, stakingFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, weightControlFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Option<Bytes>, Option<Percent>, Option<Percent>]>;
+      updateAgent: AugmentedSubmittable<(url: Bytes | string | Uint8Array, metadata: Option<Bytes> | null | Uint8Array | Bytes | string, stakingFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber, weightControlFee: Option<Percent> | null | Uint8Array | Percent | AnyNumber) => SubmittableExtrinsic<ApiType>, [Bytes, Option<Bytes>, Option<Percent>, Option<Percent>]>;
       /**
        * Generic tx
        **/

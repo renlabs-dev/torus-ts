@@ -510,3 +510,21 @@ export function createNamespace(api: ApiPromise, path: string) {
 export function deleteNamespace(api: ApiPromise, path: string) {
   return api.tx.torus0.deleteNamespace(path);
 }
+
+/**
+ * Updates origin's key agent metadata.
+ */
+export function updateAgent(
+  api: ApiPromise,
+  url: string,
+  metadata?: string | null,
+  stakingFee?: number | null,
+  weightControlFee?: number | null,
+) {
+  return api.tx.torus0.updateAgent(
+    url,
+    metadata ?? null,
+    stakingFee ?? null,
+    weightControlFee ?? null,
+  );
+}
