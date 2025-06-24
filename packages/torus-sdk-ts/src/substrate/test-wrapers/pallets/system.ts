@@ -37,7 +37,7 @@ export const systemStorages = {
   extrinsicCount: createStorageValue('system', 'extrinsicCount', sb_optional_number), // Number of extrinsics
   
   // Map storages
-  account: createStorageMap('system', 'account', sb_address, ACCOUNT_INFO_SCHEMA), // AccountId -> AccountInfo
+  account: createStorageMap('system', 'account', z.any(), ACCOUNT_INFO_SCHEMA), // AccountId -> AccountInfo
   blockHash: createStorageMap('system', 'blockHash', sb_blocks, sb_hash), // BlockNumber -> Hash
   eventTopics: createStorageMap('system', 'eventTopics', z.any(), z.array(z.any())), // Hash -> Vec<EventIndex>
   extrinsicData: createStorageMap('system', 'extrinsicData', sb_number_int, z.any()), // ExtrinsicIndex -> Vec<u8>
