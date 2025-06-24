@@ -86,6 +86,10 @@
     "./validation": {
       "types": "./dist/validations/index.d.ts",
       "default": "./dist/validations/index.js"
+    },
+    "./namespace-validation": {
+      "types": "./dist/validations/namespace-validation.d.ts",
+      "default": "./dist/validations/namespace-validation.js"
     }
   },
   "dependencies": {
