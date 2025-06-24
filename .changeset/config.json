@@ -5,7 +5,29 @@
   "fixed": [],
   "linked": [["@torus-network/sdk", "@torus-network/torus-utils"]],
   "access": "restricted",
-  "baseBranch": "main",
+  "baseBranch": "dev",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": [
+    "torus-cache",
+    "torus-bridge",
+    "torus-page",
+    "torus-portal",
+    "torus-worker",
+    "torus-allocator",
+    "torus-wallet",
+    "torus-governance",
+    "@torus-ts/ui",
+    "@torus-ts/env-validation",
+    "@torus-ts/query-provider",
+    "@torus-ts/torus-provider",
+    "@torus-ts/db",
+    "@torus-ts/api",
+    "@torus-ts/dsl",
+    "@torus-ts/github"
+  ],
+  "_ignore": [
+    "@torus-ts/eslint-config",
+    "@torus-ts/tsconfig",
+    "@torus-ts/prettier-config"
+  ]
 }
