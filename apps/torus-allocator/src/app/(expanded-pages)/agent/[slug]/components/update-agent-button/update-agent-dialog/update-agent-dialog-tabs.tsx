@@ -26,7 +26,6 @@ interface UpdateAgentDialogTabsProps {
   form: UpdateAgentForm;
   updateAgentMutation: UpdateAgentMutation;
   imageFile: File | null;
-  hasUnsavedChanges: boolean;
 }
 
 export function UpdateAgentDialogTabs({
@@ -34,7 +33,6 @@ export function UpdateAgentDialogTabs({
   form,
   updateAgentMutation,
   imageFile,
-  hasUnsavedChanges,
 }: UpdateAgentDialogTabsProps) {
   const [activeTab, setActiveTab] = useState("edit");
 
@@ -156,7 +154,7 @@ export function UpdateAgentDialogTabs({
                 type="button"
                 variant="outline"
                 onClick={handleSubmit}
-                disabled={updateAgentMutation.isPending || !hasUnsavedChanges}
+                disabled={updateAgentMutation.isPending}
               >
                 <Save className="h-4 w-4" />
                 {updateAgentMutation.isPending ? "Saving..." : "Save Changes"}
