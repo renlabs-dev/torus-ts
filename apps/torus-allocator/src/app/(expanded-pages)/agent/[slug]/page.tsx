@@ -57,8 +57,14 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
 
   const { metadata, images } = agentMetadata;
 
-  // Blob URL for the icon
-  const icon = images.icon;
+  // Convert Blob to data URL for client component
+  let icon: string | undefined = undefined;
+  if (images.icon) {
+    const arrayBuffer = await images.icon.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mimeType = images.icon.type || "image/png";
+    icon = `data:${mimeType};base64,${base64}`;
+  }
 
   const [computedAgentError, computedAgentWeight] = await tryAsync(
     api.computedAgentWeight.all(),
