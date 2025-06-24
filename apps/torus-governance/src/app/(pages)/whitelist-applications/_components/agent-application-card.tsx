@@ -34,12 +34,9 @@ export function AgentApplicationCard({
   const topRightContent = (
     <>
       {agentVoted && <AgentApplicationVoteLabel vote={agentVoted} />}
-      {activeAgent ? (
-        <AgentActivityLabel />
-      ) : (
-        agentApplicationStatus && (
-          <AgentStatusLabel status={agentApplicationStatus} />
-        )
+      {activeAgent && <AgentActivityLabel />}
+      {agentApplicationStatus && (
+        <AgentStatusLabel status={agentApplicationStatus} />
       )}
     </>
   );
