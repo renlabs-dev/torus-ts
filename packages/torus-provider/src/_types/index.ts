@@ -82,3 +82,11 @@ export interface UpdateDelegatingVotingPower extends TransactionHelpers {
 export interface RevokePermission extends TransactionHelpers {
   permissionId: PermissionId;
 }
+
+export interface CreateNamespace extends TransactionHelpers {
+  path: string;
+}
+
+export interface DeleteNamespace extends TransactionHelpers {
+  path: string;
+}
