@@ -16,6 +16,8 @@ import type {
   Proposal,
 } from "@torus-network/sdk";
 import {
+  createNamespace,
+  deleteNamespace,
   grantEmissionPermission,
   registerAgent,
   revokePermission,
@@ -32,6 +34,8 @@ import type {
   AddAgentApplication,
   AddCustomProposal,
   AddDaoTreasuryTransferProposal,
+  CreateNamespace,
+  DeleteNamespace,
   RegisterAgent,
   RemoveVote,
   RevokePermission,
@@ -156,6 +160,10 @@ interface TorusContextType {
   ) => Promise<void>;
 
   revokePermissionTransaction: (props: RevokePermission) => Promise<void>;
+
+  createNamespaceTransaction: (props: CreateNamespace) => Promise<void>;
+
+  deleteNamespaceTransaction: (props: DeleteNamespace) => Promise<void>;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -853,6 +861,56 @@ export function TorusProvider({
     });
   }
 
+  async function createNamespaceTransaction({
+    path,
+    callback,
+    refetchHandler,
+  }: CreateNamespace): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = createNamespace(api, path);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Create Namespace",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
+  async function deleteNamespaceTransaction({
+    path,
+    callback,
+    refetchHandler,
+  }: DeleteNamespace): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = deleteNamespace(api, path);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Delete Namespace",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
   return (
     <TorusContext.Provider
       value={{
@@ -892,6 +950,8 @@ export function TorusProvider({
         grantEmissionPermissionTransaction,
         updateEmissionPermissionTransaction,
         revokePermissionTransaction,
+        createNamespaceTransaction,
+        deleteNamespaceTransaction,
       }}
     >
       {children}
