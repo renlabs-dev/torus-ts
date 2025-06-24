@@ -29,11 +29,18 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@torus-ts/ui/components/select";
 import { Button } from "@torus-ts/ui/components/button";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { Info } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { SS58Address } from "@torus-network/sdk";
@@ -43,6 +50,7 @@ const HTTP_METHODS = ["get", "post", "patch", "delete", "update"] as const;
 
 const createNamespaceSchema = z
   .object({
+    selectedPrefix: z.string().min(1, "Please select a prefix"),
     path: namespacePathField(),
     method: z.enum([...HTTP_METHODS, "custom"]),
     customMethod: z.string().optional(),
@@ -103,28 +111,52 @@ export default function CreateNamespaceForm({
   const watchedPath = watch("path");
   const watchedCustomMethod = watch("customMethod");
 
+  const [selectedPrefix, setSelectedPrefix] = useState("");
+
   const namespaceEntries = useNamespaceEntriesOf(
     api,
     selectedAccount?.address as SS58Address,
   );
 
-  const agentPrefix = (() => {
-    if (
-      !namespaceEntries.data ||
-      namespaceEntries.data.length === 0 ||
-      !namespaceEntries.data[0]?.path
-    ) {
-      return null;
+  const prefixOptions = useMemo(() => {
+    if (!namespaceEntries.data || namespaceEntries.data.length === 0) {
+      return [];
     }
 
-    const entry = namespaceEntries.data[0];
-    if (entry.path.length >= 2) {
-      const agentName = entry.path[1];
-      return `agent.${agentName}.`;
-    }
+    const prefixes = new Set<string>();
 
-    return "";
-  })();
+    namespaceEntries.data.forEach((entry) => {
+      if (entry.path.length >= 2) {
+        const agentName = entry.path[1];
+        prefixes.add(`agent.${agentName}.`);
+      }
+    });
+
+    namespaceEntries.data.forEach((entry) => {
+      if (entry.path.length >= 3) {
+        for (let i = 3; i <= entry.path.length; i++) {
+          const prefix = entry.path.slice(0, i).join(".") + ".";
+          prefixes.add(prefix);
+        }
+      }
+    });
+
+    return Array.from(prefixes).sort();
+  }, [namespaceEntries.data]);
+
+  // Reset prefix when account changes
+  useEffect(() => {
+    setSelectedPrefix("");
+  }, [selectedAccount?.address]);
+
+  // Auto-select first prefix when data loads
+  useEffect(() => {
+    if (prefixOptions.length > 0 && !selectedPrefix) {
+      const basePrefix = prefixOptions.find((p) => p.split(".").length === 3);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedPrefix(basePrefix ?? prefixOptions[0]!);
+    }
+  }, [prefixOptions, selectedPrefix]);
 
   const generateFullPath = useCallback(() => {
     if (!watchedPath) return "";
@@ -132,9 +164,11 @@ export default function CreateNamespaceForm({
     const method =
       watchedMethod === "custom" ? watchedCustomMethod : watchedMethod;
 
-    const fullPath = agentPrefix ? `${agentPrefix}${watchedPath}` : watchedPath;
+    const fullPath = selectedPrefix
+      ? `${selectedPrefix}${watchedPath}`
+      : watchedPath;
     return `${fullPath}.${method ?? "[method]"}`;
-  }, [watchedPath, watchedMethod, watchedCustomMethod, agentPrefix]);
+  }, [watchedPath, watchedMethod, watchedCustomMethod, selectedPrefix]);
 
   const fullPath = generateFullPath();
 
@@ -153,8 +187,8 @@ export default function CreateNamespaceForm({
           return;
         }
 
-        const pathWithPrefix = agentPrefix
-          ? `${agentPrefix}${data.path}`
+        const pathWithPrefix = selectedPrefix
+          ? `${selectedPrefix}${data.path}`
           : data.path;
 
         const fullNamespacePath = `${pathWithPrefix}.${method}`;
@@ -202,7 +236,7 @@ export default function CreateNamespaceForm({
         });
       }
     },
-    [createNamespaceTransaction, onSuccess, toast, form, agentPrefix],
+    [createNamespaceTransaction, onSuccess, toast, form, selectedPrefix],
   );
 
   return (
@@ -216,38 +250,71 @@ export default function CreateNamespaceForm({
       <CardContent>
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={control}
-              name="path"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Namespace Path</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center">
-                      <span className="font-mono text-sm text-muted-foreground mr-1 text-nowrap">
-                        {agentPrefix ?? "agent.loading."}
-                      </span>
+            <FormItem>
+              <FormLabel>Namespace Path</FormLabel>
+              <FormControl>
+                <div className="flex gap-2">
+                  <div className="w-fit">
+                    {!isAccountConnected ? (
+                      <div className="text-sm text-muted-foreground p-3 border rounded-md h-10 flex items-center">
+                        Connect wallet...
+                      </div>
+                    ) : namespaceEntries.isLoading ? (
+                      <div className="text-sm text-muted-foreground p-3 border rounded-md h-10 flex items-center">
+                        Loading...
+                      </div>
+                    ) : prefixOptions.length === 0 ? (
+                      <div
+                        className="text-sm text-muted-foreground p-3 text-nowrap border rounded-md h-10 flex
+                          items-center"
+                      >
+                        No prefixes found
+                      </div>
+                    ) : (
+                      <Select
+                        value={selectedPrefix}
+                        onValueChange={setSelectedPrefix}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose prefix..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {prefixOptions.map((prefix) => (
+                            <SelectItem key={prefix} value={prefix}>
+                              <span className="font-mono">{prefix}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
 
-                      <Input
-                        {...field}
-                        placeholder={
-                          agentPrefix
-                            ? "endpoint.get"
-                            : "agent.alice.endpoint.get"
-                        }
-                        disabled={!isAccountConnected}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Must start and end with alphanumeric characters. Can contain
-                    lowercase letters, numbers, hyphens, underscores, and plus
-                    signs.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  {/* Path Input */}
+                  <div className="w-full">
+                    <FormField
+                      control={control}
+                      name="path"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          placeholder="endpoint"
+                          disabled={!isAccountConnected || !selectedPrefix}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+              </FormControl>
+              <FormDescription>
+                Choose a prefix from existing namespaces and add your path
+                extension. Must start and end with alphanumeric characters.
+              </FormDescription>
+              <FormField
+                control={control}
+                name="path"
+                render={() => <FormMessage />}
+              />
+            </FormItem>
 
             <FormField
               control={control}
@@ -262,7 +329,6 @@ export default function CreateNamespaceForm({
                       onValueChange={(value) => {
                         if (value) {
                           field.onChange(value);
-                          // Clear custom method when switching away from custom
                           if (value !== "custom") {
                             setValue("customMethod", "");
                           }
@@ -331,7 +397,7 @@ export default function CreateNamespaceForm({
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
                 <code className="rounded bg-background px-2 py-1 text-foreground">
-                  {fullPath === "" ? "Type a path..." : fullPath}
+                  {fullPath}
                 </code>
               </div>
               <div className="mt-2 text-xs text-muted-foreground">

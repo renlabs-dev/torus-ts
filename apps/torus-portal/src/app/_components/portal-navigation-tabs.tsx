@@ -17,6 +17,7 @@ import {
   Edit,
   Grid2x2Plus,
   FolderPen,
+  FolderX,
 } from "lucide-react";
 
 export default function PortalNavigationTabs() {
@@ -67,6 +68,12 @@ export default function PortalNavigationTabs() {
         icon: FolderPen,
         path: "/create-namespace",
       },
+      {
+        value: "delete-namespace",
+        label: "Delete Namespace",
+        icon: FolderX,
+        path: "/delete-namespace",
+      },
     ],
     [],
   );
@@ -79,6 +86,7 @@ export default function PortalNavigationTabs() {
     if (pathname === "/create-signal") return "create-signal";
     if (pathname === "/register-agent") return "register-agent";
     if (pathname === "/create-namespace") return "create-namespace";
+    if (pathname === "/delete-namespace") return "delete-namespace";
     return "permission-graph";
   };
   const currentTab = getCurrentTab();
