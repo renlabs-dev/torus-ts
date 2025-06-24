@@ -61,7 +61,7 @@ create-package:
 publish:
   pnpm run -F "@torus-network/sdk" -F "@torus-network/torus-utils" build
   # how to bump / manage versions?
-  pnpm publish -F "@torus-network/sdk" -F "@torus-network/torus-utils" --no-git-checks
+  pnpm publish -F "@torus-network/sdk" -F "@torus-network/torus-utils"
 
 changeset-add:
   pnpm changeset add
