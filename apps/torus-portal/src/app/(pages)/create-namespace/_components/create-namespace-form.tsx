@@ -135,14 +135,14 @@ export default function CreateNamespaceForm({
     namespaceEntries.data.forEach((entry) => {
       if (entry.path.length >= 2) {
         const agentName = entry.path[1];
-        prefixes.add(`agent.${agentName}.`);
+        prefixes.add(`agent.${agentName}`);
       }
     });
 
     namespaceEntries.data.forEach((entry) => {
       if (entry.path.length >= 3) {
         for (let i = 3; i <= entry.path.length; i++) {
-          const prefix = entry.path.slice(0, i).join(".") + ".";
+          const prefix = entry.path.slice(0, i).join(".");
           prefixes.add(prefix);
         }
       }
@@ -157,7 +157,7 @@ export default function CreateNamespaceForm({
 
   useEffect(() => {
     if (prefixOptions.length > 0 && !selectedPrefix) {
-      const basePrefix = prefixOptions.find((p) => p.split(".").length === 3);
+      const basePrefix = prefixOptions.find((p) => p.split(".").length === 2);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedPrefix(basePrefix ?? prefixOptions[0]!);
     }
@@ -169,8 +169,8 @@ export default function CreateNamespaceForm({
 
     if (selectedPrefix) {
       const fullPath = watchedPath
-        ? `${selectedPrefix}${watchedPath}`
-        : selectedPrefix.slice(0, -1);
+        ? `${selectedPrefix}.${watchedPath}`
+        : selectedPrefix;
       return `${fullPath}.${method ?? "[method]"}`;
     }
 
@@ -197,8 +197,8 @@ export default function CreateNamespaceForm({
 
         const pathWithPrefix = selectedPrefix
           ? data.path
-            ? `${selectedPrefix}${data.path}`
-            : selectedPrefix.slice(0, -1)
+            ? `${selectedPrefix}.${data.path}`
+            : selectedPrefix
           : data.path;
 
         const fullNamespacePath = `${pathWithPrefix}.${method}`;
@@ -263,7 +263,7 @@ export default function CreateNamespaceForm({
             <FormItem>
               <FormLabel>Namespace Path</FormLabel>
               <FormControl>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <div className="w-fit">
                     {!isAccountConnected ? (
                       <div className="text-sm text-muted-foreground p-3 border rounded-md h-10 flex items-center">
@@ -278,7 +278,7 @@ export default function CreateNamespaceForm({
                         className="text-sm text-muted-foreground p-3 text-nowrap border rounded-md h-10 flex
                           items-center"
                       >
-                        No prefixes found
+                        Agent registration required
                       </div>
                     ) : (
                       <Select
@@ -299,6 +299,8 @@ export default function CreateNamespaceForm({
                     )}
                   </div>
 
+                  <span className="text-muted-foreground font-mono">.</span>
+
                   {/* Path Input */}
                   <div className="w-full">
                     <FormField
@@ -307,8 +309,16 @@ export default function CreateNamespaceForm({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder="namespace path"
-                          disabled={!isAccountConnected || !selectedPrefix}
+                          placeholder={
+                            prefixOptions.length === 0
+                              ? "Agent registration required"
+                              : "namespace path"
+                          }
+                          disabled={
+                            !isAccountConnected ||
+                            !selectedPrefix ||
+                            prefixOptions.length === 0
+                          }
                         />
                       )}
                     />
@@ -316,9 +326,20 @@ export default function CreateNamespaceForm({
                 </div>
               </FormControl>
               <FormDescription>
-                Choose a prefix from existing namespaces and optionally add a
-                path extension. Leave the path empty to create a namespace at
-                the selected prefix level.
+                {prefixOptions.length === 0 &&
+                isAccountConnected &&
+                !namespaceEntries.isLoading ? (
+                  <span className="text-orange-600 font-medium">
+                    You must be registered as an agent before creating
+                    namespaces. Please register your agent first.
+                  </span>
+                ) : (
+                  <>
+                    Choose a prefix from existing namespaces and optionally add
+                    a path extension. Leave the path empty to create a namespace
+                    at the selected prefix level.
+                  </>
+                )}
               </FormDescription>
               <FormField
                 control={control}
@@ -346,7 +367,9 @@ export default function CreateNamespaceForm({
                         }
                       }}
                       className="justify-start flex-wrap"
-                      disabled={!isAccountConnected}
+                      disabled={
+                        !isAccountConnected || prefixOptions.length === 0
+                      }
                     >
                       {HTTP_METHODS.map((method) => (
                         <ToggleGroupItem
@@ -387,7 +410,9 @@ export default function CreateNamespaceForm({
                       <Input
                         {...field}
                         placeholder="custom-action"
-                        disabled={!isAccountConnected}
+                        disabled={
+                          !isAccountConnected || prefixOptions.length === 0
+                        }
                       />
                     </FormControl>
                     <FormDescription>
@@ -408,7 +433,7 @@ export default function CreateNamespaceForm({
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
                 <code className="rounded bg-background px-2 py-1 text-foreground">
-                  {fullPath}
+                  {fullPath === "" ? "Type a path..." : fullPath}
                 </code>
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
@@ -429,16 +454,19 @@ export default function CreateNamespaceForm({
               className="w-full"
               disabled={
                 !isAccountConnected ||
+                prefixOptions.length === 0 ||
                 transactionStatus.status === "PENDING" ||
                 transactionStatus.status === "STARTING"
               }
             >
               {!isAccountConnected
                 ? "Connect Wallet to Continue"
-                : transactionStatus.status === "PENDING" ||
-                    transactionStatus.status === "STARTING"
-                  ? "Creating Namespace..."
-                  : "Create Namespace"}
+                : prefixOptions.length === 0 && !namespaceEntries.isLoading
+                  ? "Agent Registration Required"
+                  : transactionStatus.status === "PENDING" ||
+                      transactionStatus.status === "STARTING"
+                    ? "Creating Namespace..."
+                    : "Create Namespace"}
             </Button>
           </form>
         </Form>
