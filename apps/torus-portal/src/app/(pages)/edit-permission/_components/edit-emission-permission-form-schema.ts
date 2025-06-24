@@ -6,11 +6,6 @@ import {
   createTargetWeightValidator,
 } from "~/utils/percentage-validation";
 
-const validateWeight = (value: string) => {
-  const num = parseInt(value);
-  return !isNaN(num) && num >= 0 && num <= 65535; // u16 range
-};
-
 // Permission selection schema
 export const permissionSelectionSchema = z.object({
   permissionId: z.string().min(1, "Please select a permission to edit"),

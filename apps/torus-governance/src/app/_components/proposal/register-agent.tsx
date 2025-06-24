@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { SS58Address } from "@torus-network/sdk";
 import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
@@ -95,17 +96,14 @@ type TabsViews = "agent-info" | "about" | "socials" | "register";
 export function RegisterAgent() {
   const {
     isAccountConnected,
-    registerAgent,
+    registerAgentTransaction,
     accountFreeBalance,
     burnAmount,
     agents,
     lastBlock,
-    whitelist,
   } = useGovernance();
   const { toast } = useToast();
-  const { registerAgentTransaction, estimateFee, selectedAccount } = useTorus();
-  const { data: whitelistedApplications, isFetching: isFetchingWhitelist } =
-    whitelist;
+  const { getRegisterAgentFee, estimateFee, selectedAccount } = useTorus();
 
   const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
   const [uploading, setUploading] = useState(false);
@@ -142,8 +140,8 @@ export function RegisterAgent() {
   useEffect(() => {
     async function fetchFee() {
       if (!selectedAccount?.address) return;
-      const transaction = registerAgentTransaction({
-        agentKey: selectedAccount.address,
+      const transaction = getRegisterAgentFee({
+        agentKey: selectedAccount.address as SS58Address,
         name: "Estimating fee",
         metadata: "Estimating fee",
         url: "Estimating fee",
@@ -161,7 +159,7 @@ export function RegisterAgent() {
       setEstimatedFee(adjustedFee);
     }
     void fetchFee();
-  }, [estimateFee, registerAgentTransaction, selectedAccount, toast]);
+  }, [estimateFee, getRegisterAgentFee, selectedAccount, toast]);
 
   const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
   useEffect(() => {
@@ -270,26 +268,7 @@ export function RegisterAgent() {
     }
 
     const parsedAgentKey = checkSS58(data.agentKey);
-    if (isFetchingWhitelist) {
-      toast.error("Whitelist is still loading. Please try again later.");
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Whitelist is still loading.",
-      });
-      return;
-    }
-    if (!whitelistedApplications?.includes(parsedAgentKey)) {
-      toast.error(
-        "Agent not whitelisted. Whitelist required for registration.",
-      );
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Agent not whitelisted.",
-      });
-      return;
-    }
+
     if (agents.data?.has(parsedAgentKey)) {
       toast.error(
         "Agent already registered. Make sure you are using the correct address.",
@@ -332,7 +311,7 @@ export function RegisterAgent() {
     console.info("Pinned metadata at:", cidToIpfsUri(cid));
 
     const [registerError, _] = await tryAsync(
-      registerAgent({
+      registerAgentTransaction({
         agentKey: parsedAgentKey,
         name: data.name,
         url: parsedAgentApiUrl.data,

@@ -80,7 +80,7 @@ interface GovernanceContextType {
   lastBlock: UseQueryResult<LastBlock, Error>;
   proposals: UseQueryResult<Proposal[], Error>;
   proposalsWithMeta: ProposalState[] | undefined;
-  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
+  registerAgentTransaction: (registerAgent: RegisterAgent) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   rewardAllocation: UseQueryResult<bigint, Error>;
   selectedAccount: InjectedAccountWithMeta | null;
@@ -113,7 +113,7 @@ export function GovernanceProvider({
     handleSelectWallet,
     isAccountConnected,
     isInitialized,
-    registerAgent,
+    registerAgentTransaction,
     removeVoteProposal,
     selectedAccount,
     torusCacheUrl,
@@ -236,7 +236,7 @@ export function GovernanceProvider({
         networkConfigs,
         proposals,
         proposalsWithMeta,
-        registerAgent,
+        registerAgentTransaction,
         removeVoteProposal,
         rewardAllocation,
         selectedAccount,
