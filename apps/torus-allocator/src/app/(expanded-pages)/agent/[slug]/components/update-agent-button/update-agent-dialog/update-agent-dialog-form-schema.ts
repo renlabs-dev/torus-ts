@@ -1,6 +1,5 @@
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { readOnlyAgentNameField } from "@torus-network/torus-utils/agent-name-validation";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
@@ -62,6 +61,17 @@ export const updateAgentSocialsSchema = z.object({
       message: "Discord URL must be https://discord.gg/*",
     }),
 });
+
+/**
+ * Custom zod field for read-only Agent name (for update forms)
+ * Accepts any string since the field is immutable and cannot be changed
+ */
+export const readOnlyAgentNameField = () =>
+  z
+    .string()
+    .trim()
+    .optional()
+    .describe("Agent name (immutable, cannot be changed)");
 
 export const updateAgentSchema = z.object({
   name: readOnlyAgentNameField(),

@@ -3,8 +3,6 @@ import {
   validateAgentName,
   isValidAgentName,
   agentNameField,
-  optionalAgentNameField,
-  readOnlyAgentNameField,
   AGENT_NAME_REGEX,
 } from "../../validations/agent-name-validation.js";
 
@@ -25,19 +23,19 @@ describe("AgentNameValidation", () => {
     invalid: [
       {
         value: "-test",
-        error: "Agent name cannot start with a hyphen or underscore",
+        error: "Agent name must start with a lowercase letter or digit",
       },
       {
         value: "_test",
-        error: "Agent name cannot start with a hyphen or underscore",
+        error: "Agent name must start with a lowercase letter or digit",
       },
       {
         value: "test-",
-        error: "Agent name cannot end with a hyphen or underscore",
+        error: "Agent name must end with a lowercase letter or digit",
       },
       {
         value: "test_",
-        error: "Agent name cannot end with a hyphen or underscore",
+        error: "Agent name must end with a lowercase letter or digit",
       },
       { value: "Test1", error: "Agent name cannot contain uppercase letters" },
       {
@@ -52,8 +50,7 @@ describe("AgentNameValidation", () => {
       }, // 64 chars
       {
         value: "+test",
-        error:
-          "Agent name can only contain lowercase letters, numbers, hyphens, and underscores",
+        error: "Agent name must start with a lowercase letter or digit",
       },
       {
         value: "hello world1",
@@ -125,51 +122,5 @@ describe("AgentNameValidation", () => {
         }
       },
     );
-  });
-
-  describe("optionalAgentNameField", () => {
-    const schema = optionalAgentNameField();
-
-    it.each(testCases.valid)("should accept valid name '%s'", (name) => {
-      expect(schema.safeParse(name).success).toBe(true);
-    });
-
-    it("should accept undefined", () => {
-      expect(schema.safeParse(undefined).success).toBe(true);
-    });
-
-    it.each(testCases.invalid.filter((tc) => tc.value !== ""))(
-      "should reject invalid name '$value' with error '$error'",
-      ({ value, error }) => {
-        const result = schema.safeParse(value);
-        expect(result.success).toBe(false);
-        if (!result.success && result.error.issues[0]) {
-          expect(result.error.issues[0].message).toBe(error);
-        }
-      },
-    );
-  });
-
-  describe("readOnlyAgentNameField", () => {
-    const schema = readOnlyAgentNameField();
-
-    it.each([
-      "valid-name",
-      "invalid@name",
-      "UPPERCASE",
-      "",
-      "test",
-      "  test  ",
-    ])("should accept any string '%s'", (value) => {
-      const result = schema.safeParse(value);
-      expect(result.success).toBe(true);
-      if (result.success && value.trim() !== "") {
-        expect(result.data).toBe(value.trim());
-      }
-    });
-
-    it("should accept undefined", () => {
-      expect(schema.safeParse(undefined).success).toBe(true);
-    });
   });
 });
