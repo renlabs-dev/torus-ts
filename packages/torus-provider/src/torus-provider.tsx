@@ -18,6 +18,7 @@ import type {
 import {
   grantEmissionPermission,
   registerAgent,
+  revokePermission,
   sb_balance,
   updateEmissionPermission,
 } from "@torus-network/sdk";
@@ -32,6 +33,7 @@ import type {
   AddDaoTreasuryTransferProposal,
   RegisterAgent,
   RemoveVote,
+  RevokePermission,
   Stake,
   Transfer,
   TransferStake,
@@ -151,6 +153,8 @@ interface TorusContextType {
   updateEmissionPermissionTransaction: (
     props: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
+
+  revokePermissionTransaction: (props: RevokePermission) => Promise<void>;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -827,6 +831,31 @@ export function TorusProvider({
     });
   }
 
+  async function revokePermissionTransaction({
+    permissionId,
+    callback,
+    refetchHandler,
+  }: RevokePermission): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = revokePermission(api, permissionId);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Revoke Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
   return (
     <TorusContext.Provider
       value={{
@@ -865,6 +894,7 @@ export function TorusProvider({
         voteProposal,
         grantEmissionPermissionTransaction,
         updateEmissionPermissionTransaction,
+        revokePermissionTransaction,
       }}
     >
       {children}

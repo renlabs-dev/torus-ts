@@ -768,3 +768,10 @@ export function updateEmissionPermission({
     newDistributionControl ?? null,
   );
 }
+
+/**
+ * Revoke a permission. The caller must met revocation constraints or be a root key.
+ **/
+export function revokePermission(api: ApiPromise, permissionId: PermissionId) {
+  return api.tx.permission0.revokePermission(permissionId);
+}
