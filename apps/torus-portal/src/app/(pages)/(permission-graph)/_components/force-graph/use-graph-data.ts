@@ -14,7 +14,7 @@ export function useGraphData() {
   const lastBlock = useLastBlock(api);
 
   const { data: rawPermissionDetails, isLoading: isLoadingPermissions } =
-    trpcApi.permission.allWithEmissionsAndNamespaces.useQuery();
+    trpcApi.permission.allWithCompletePermissions.useQuery();
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     trpcApi.computedAgentWeight.all.useQuery();

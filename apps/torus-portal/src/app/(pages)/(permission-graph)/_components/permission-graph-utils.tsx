@@ -62,7 +62,7 @@ export const getNodePermissions = (
 
     if (
       (sourceId === node.id || targetId === node.id) &&
-      link.linkType === "permission"
+      (link.linkType === "permission_ownership" || link.linkType === "permission_target")
     ) {
       if (!permissionsMap.has(key)) {
         permissionsMap.set(key, {

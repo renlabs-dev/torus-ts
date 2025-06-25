@@ -18,8 +18,25 @@ export interface CustomGraphNode extends NodeObject {
   val?: number;
   fullAddress?: string;
   role?: string;
-  nodeType?: "agent" | "signal";
+  nodeType?: "allocator" | "root_agent" | "permission" | "target_agent" | "signal";
   signalData?: SignalData;
+  permissionData?: PermissionNodeData;
+  agentData?: AgentNodeData;
+}
+
+export interface PermissionNodeData {
+  permissionId: string;
+  permissionType: "emission" | "namespace";
+  grantorKey: string;
+  granteeKey: string;
+  scope?: string;
+  duration?: string | null;
+}
+
+export interface AgentNodeData {
+  accountId: string;
+  isWhitelisted?: boolean;
+  isAllocated?: boolean;
 }
 
 export interface SignalData {
@@ -36,13 +53,18 @@ export interface SignalData {
 }
 
 export interface CustomGraphLink extends LinkObject {
-  linkType: string;
+  linkType: "allocation" | "permission_ownership" | "permission_target" | "signal";
   id?: string;
   scope?: string;
   // Link Customization
   linkDirectionalParticles?: number;
   linkDirectionalParticleWidth?: number;
   linkColor?: string;
+  linkDirectionalArrowLength?: number;
+  linkDirectionalArrowRelPos?: number;
+  linkDirectionalParticleSpeed?: number;
+  linkDirectionalParticleResolution?: number;
+  linkWidth?: number;
 }
 
 export interface CustomGraphData {
@@ -73,7 +95,7 @@ export interface PermissionWithDetails {
 
 // Type for the new permission API response
 export type PermissionDetailsBase = NonNullable<
-  inferProcedureOutput<AppRouter["permission"]["allWithEmissionsAndNamespaces"]>
+  inferProcedureOutput<AppRouter["permission"]["allWithCompletePermissions"]>
 >;
 
 // Enhanced permission details with computed fields for graph display
