@@ -570,8 +570,8 @@ export const permissionHierarchiesSchema = createTable("permission_hierarchies",
   parentPermissionId: varchar("parent_permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
   ...timeFields(),
 }, (t) => [
-  // Primary key on both IDs
-  { primaryKey: { columns: [t.childPermissionId, t.parentPermissionId] } }
+  { primaryKey: { columns: [t.childPermissionId, t.parentPermissionId] } },
+  unique().on(t.childPermissionId, t.parentPermissionId),
 ]);
 
 /**
@@ -581,7 +581,8 @@ export const permissionRevocationArbitersSchema = createTable("permission_revoca
   permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
   accountId: ss58Address("account_id").notNull(),
 }, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.accountId] } }
+  { primaryKey: { columns: [t.permissionId, t.accountId] } },
+  unique().on(t.permissionId, t.accountId),
 ]);
 
 /**
@@ -591,7 +592,8 @@ export const permissionEnforcementControllersSchema = createTable("permission_en
   permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
   accountId: ss58Address("account_id").notNull(),
 }, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.accountId] } }
+  { primaryKey: { columns: [t.permissionId, t.accountId] } },
+  unique().on(t.permissionId, t.accountId),
 ]);
 
 /**
@@ -673,6 +675,7 @@ export const emissionStreamAllocationsSchema = createTable("emission_stream_allo
   ...timeFields(),
 }, (t) => [
   { primaryKey: { columns: [t.permissionId, t.streamId] } },
+  unique().on(t.permissionId, t.streamId),
   check("valid_percentage", sql`${t.percentage} >= 0 AND ${t.percentage} <= 100`),
 ]);
 
@@ -687,6 +690,7 @@ export const emissionDistributionTargetsSchema = createTable("emission_distribut
   ...timeFields(),
 }, (t) => [
   { primaryKey: { columns: [t.permissionId, t.targetAccountId] } },
+  unique().on(t.permissionId, t.targetAccountId),
   check("valid_weight", sql`${t.weight} >= 0 AND ${t.weight} <= 65535`),
 ]);
 
@@ -720,7 +724,8 @@ export const namespacePermissionPathsSchema = createTable("namespace_permission_
   permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => namespacePermissionsSchema.permissionId, { onDelete: "cascade" }),
   namespacePath: text("namespace_path").notNull(),
 }, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.namespacePath] } }
+  { primaryKey: { columns: [t.permissionId, t.namespacePath] } },
+  unique().on(t.permissionId, t.namespacePath),
 ]);
 
 /**
