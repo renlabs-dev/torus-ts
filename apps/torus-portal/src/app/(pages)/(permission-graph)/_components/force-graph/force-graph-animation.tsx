@@ -31,6 +31,14 @@ const ForceGraph = memo(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           linkForce.distance(GRAPH_CONSTANTS.LINK_DISTANCE);
         }
+        
+        // Configure charge force to prevent nodes from being too close
+        const chargeForce = fgRef.current.d3Force("charge");
+        if (chargeForce && typeof chargeForce.strength === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          chargeForce.strength(-100);
+        }
+        
         fgRef.current.tickFrame();
       }
     });

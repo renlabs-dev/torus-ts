@@ -100,6 +100,10 @@ export function createNodes(
       node.fx = 0;
       node.fy = 0;
       node.fz = 0;
+      // Make the fixed position more stable
+      node.x = 0;
+      node.y = 0;
+      node.z = 0;
     }
 
     return node;
@@ -258,6 +262,9 @@ export function createGraphData(
   const agentWeightMap = createAgentWeightMap(computedWeights);
   const uniqueAddresses = new Set<string>();
 
+  // Always add the allocator address to ensure it appears in the graph
+  uniqueAddresses.add(allocatorAddress);
+
   if (permissionDetails && permissionDetails.length > 0) {
     permissionDetails.forEach((permission) => {
       if (permission.grantorKey) uniqueAddresses.add(permission.grantorKey);
@@ -266,7 +273,6 @@ export function createGraphData(
   }
 
   if (computedWeights && computedWeights.length > 0) {
-    uniqueAddresses.add(allocatorAddress);
     computedWeights.forEach((agent) => {
       uniqueAddresses.add(agent.agentKey);
     });
