@@ -3,7 +3,7 @@
 
 import "@polkadot/api/augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { comprehensiveStorageTests, exampleUsage } from "./substrate/test-wrapers/tests-suit";
+import { storageUnitTests, exampleUsage } from "./substrate/test-wrapers/tests-suit";
 
 // $ pnpm exec tsx src/main.ts
 
@@ -26,7 +26,7 @@ const api = await connectToChainRpc(NODE_URL);
 // ============================================================================
 
 // Run comprehensive tests for all 48 storage entries across 3 pallets
-await comprehensiveStorageTests(api);
+await storageUnitTests(api);
 
 // === EXPLORATION CODE (disabled, uncomment to explore blockchain structure) ===
 // const allPallets = Object.keys(api.query).sort();

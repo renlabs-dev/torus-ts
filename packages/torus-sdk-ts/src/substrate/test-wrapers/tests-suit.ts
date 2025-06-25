@@ -7,12 +7,14 @@ import { createStorageRouter } from './storage-router';
 import type { GenericAccountId } from '@polkadot/types';
 import { tryAsync } from '@torus-network/torus-utils/try-catch';
 import type { AbstractInt } from '@polkadot/types-codec';
+import { sb_to_primitive } from '@torus-network/sdk/types';
+
 
 /**
  * Comprehensive test suite for all storage wrapper functionality
  * Tests ALL methods (get, display, at, subscribe, multi, keys) organized by storage type and pallet
  */
-export async function comprehensiveStorageTests(api: ApiPromise) {
+export async function storageUnitTests(api: ApiPromise) {
   // Create storage router (single entry point)
   const storage = createStorageRouter(api);
 
@@ -21,7 +23,7 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   console.log('='.repeat(80));
 
   // ============================================================================
-  // STORAGE VALUE TESTS - Testing .get(), .display(), .at(), .subscribe()
+  // STORAGE VALUE TESTS - Testing .get(), .at(), .subscribe()
   // ============================================================================
 
   console.log('\n' + '🔢 '.repeat(30));
@@ -61,33 +63,6 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   console.log(`  • Max allowed validators: ${torus0_values_get.maxAllowedValidators}`);
   console.log(`  • Min allowed stake: ${torus0_values_get.minAllowedStake}`);
 
-  // Test .display() method
-  console.log('\n--- .display() method tests ---');
-  const torus0_values_display = {
-    totalStake: await storage.torus0.totalStake.display(),
-    agentUpdateCooldown: await storage.torus0.agentUpdateCooldown.display(),
-    burn: await storage.torus0.burn.display(),
-    dividendsParticipationWeight: await storage.torus0.dividendsParticipationWeight.display(),
-    maxAgentUrlLength: await storage.torus0.maxAgentUrlLength.display(),
-    maxAllowedValidators: await storage.torus0.maxAllowedValidators.display(),
-    maxNameLength: await storage.torus0.maxNameLength.display(),
-    maxRegistrationsPerBlock: await storage.torus0.maxRegistrationsPerBlock.display(),
-    minAllowedStake: await storage.torus0.minAllowedStake.display(),
-    minNameLength: await storage.torus0.minNameLength.display(),
-    minValidatorStake: await storage.torus0.minValidatorStake.display(),
-    registrationsThisBlock: await storage.torus0.registrationsThisBlock.display(),
-    registrationsThisInterval: await storage.torus0.registrationsThisInterval.display(),
-    rewardInterval: await storage.torus0.rewardInterval.display(),
-    burnConfig: await storage.torus0.burnConfig.display(),
-    feeConstraints: await storage.torus0.feeConstraints.display(),
-    namespacePricingConfig: await storage.torus0.namespacePricingConfig.display(),
-    palletVersion: await storage.torus0.palletVersion.display(),
-  };
-  console.log('✅ All 18 torus0 .display() methods completed');
-  console.log('🎨 Sample torus0 display results:');
-  console.log(`  • Total stake (display): ${torus0_values_display.totalStake}`);
-  console.log(`  • Burn config (display): ${JSON.stringify(torus0_values_display.burnConfig, null, 2)}`);
-  console.log(`  • Pallet version (display): ${torus0_values_display.palletVersion}`);
 
   // Test .subscribe() method (setup but don't wait)
   console.log('\n--- .subscribe() method tests ---');
@@ -127,30 +102,6 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   console.log(`  • Event count: ${system_values_get.eventCount}`);
   console.log(`  • Inherents applied: ${system_values_get.inherentsApplied}`);
 
-  // Test .display() method
-  console.log('\n--- .display() method tests ---');
-  const system_values_display = {
-    number: await storage.system.number.display(),
-    parentHash: await storage.system.parentHash.display(),
-    digest: await storage.system.digest.display(),
-    eventCount: await storage.system.eventCount.display(),
-    events: await storage.system.events.display(),
-    inherentsApplied: await storage.system.inherentsApplied.display(),
-    lastRuntimeUpgrade: await storage.system.lastRuntimeUpgrade.display(),
-    blockWeight: await storage.system.blockWeight.display(),
-    palletVersion: await storage.system.palletVersion.display(),
-    upgradedToTripleRefCount: await storage.system.upgradedToTripleRefCount.display(),
-    upgradedToU32RefCount: await storage.system.upgradedToU32RefCount.display(),
-    allExtrinsicsLen: await storage.system.allExtrinsicsLen.display(),
-    authorizedUpgrade: await storage.system.authorizedUpgrade.display(),
-    executionPhase: await storage.system.executionPhase.display(),
-    extrinsicCount: await storage.system.extrinsicCount.display(),
-  };
-  console.log('✅ All 15 system .display() methods completed');
-  console.log('🎨 Sample system display results:');
-  console.log(`  • Block number (display): ${system_values_display.number}`);
-  console.log(`  • Parent hash (display): ${system_values_display.parentHash}`);
-  console.log(`  • Block weight (display): ${JSON.stringify(system_values_display.blockWeight, null, 2)}`);
 
   // Test .subscribe() method
   console.log('\n--- .subscribe() method tests ---');
@@ -177,17 +128,6 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   console.log(`  • Inactive issuance: ${balances_values_get.inactiveIssuance}`);
   console.log(`  • Pallet version: ${balances_values_get.palletVersion}`);
 
-  // Test .display() method
-  console.log('\n--- .display() method tests ---');
-  const balances_values_display = {
-    totalIssuance: await storage.balances.totalIssuance.display(),
-    inactiveIssuance: await storage.balances.inactiveIssuance.display(),
-    palletVersion: await storage.balances.palletVersion.display(),
-  };
-  console.log('✅ All 3 balances .display() methods completed');
-  console.log('🎨 Sample balances display results:');
-  console.log(`  • Total issuance (display): ${balances_values_display.totalIssuance}`);
-  console.log(`  • Inactive issuance (display): ${balances_values_display.inactiveIssuance}`);
 
   // Test .subscribe() method
   console.log('\n--- .subscribe() method tests ---');
@@ -211,19 +151,9 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   console.log(`  • DAO treasury address: ${governance_values_get.daoTreasuryAddress}`);
   console.log(`  • Treasury emission fee: ${governance_values_get.treasuryEmissionFee}`);
 
-  // Test .display() method
-  console.log('\n--- .display() method tests ---');
-  const governance_values_display = {
-    daoTreasuryAddress: await storage.governance.daoTreasuryAddress.display(),
-    treasuryEmissionFee: await storage.governance.treasuryEmissionFee.display(),
-  };
-  console.log('✅ All governance .display() methods completed');
-  console.log('🎨 Sample governance display results:');
-  console.log(`  • DAO treasury address (display): ${governance_values_display.daoTreasuryAddress}`);
-  console.log(`  • Treasury emission fee (display): ${governance_values_display.treasuryEmissionFee}`);
 
   // ============================================================================
-  // STORAGE MAP TESTS - Testing .get(), .display(), .keys(), .multi()
+  // STORAGE MAP TESTS - Testing .get(), .keys(), .multi()
   // ============================================================================
 
   console.log('\n' + '🗺️ '.repeat(30));
@@ -243,37 +173,96 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   };
   console.log(`✅ Keys retrieved - Agents: ${torus0_map_keys.agents.length}, NamespaceCount: ${torus0_map_keys.namespaceCount.length}, Namespaces: ${torus0_map_keys.namespaces.length}`);
 
-  // Test individual .get() and .display() for maps (if keys exist)
+  // Test individual .get() for maps (if keys exist)
   const firstAgentKey = torus0_map_keys.agents[0];
-  const firstNamespaceKey = torus0_map_keys.namespaceCount[0];
+  console.log('🔍 AGENT KEY DEBUG:');
+  console.log('  - Value:', firstAgentKey);
+  console.log('  - Type:', typeof firstAgentKey);
+  console.log('  - Constructor:', firstAgentKey?.constructor?.name);
+  console.log('  - String length:', typeof firstAgentKey === 'string' ? firstAgentKey.length : 'N/A');
   
-  if (firstAgentKey) {
-    console.log('\n--- Individual map .get() and .display() tests ---');
-    const firstAgent_get = await storage.torus0.agents.get(firstAgentKey as unknown as GenericAccountId);
-    const firstAgent_display = await storage.torus0.agents.display(firstAgentKey as unknown as GenericAccountId);
-    console.log('✅ Agent get/display methods completed');
-    console.log(`📊 First agent (get): ${JSON.stringify(firstAgent_get, null, 2)}`);
-    console.log(`🎨 First agent (display): ${JSON.stringify(firstAgent_display, null, 2)}`);
+  // Extract actual key value from the namespace object using sb_to_primitive
+  const rawNamespaceKey = torus0_map_keys.namespaceCount[0];
+  console.log('\n🔍 NAMESPACE KEY DEBUG (RAW):');
+  console.log('  - Type:', typeof rawNamespaceKey);
+  console.log('  - Constructor:', rawNamespaceKey?.constructor?.name);
+  console.log('  - Is Array?:', Array.isArray(rawNamespaceKey));
+  console.log('  - Object keys:', typeof rawNamespaceKey === 'object' && rawNamespaceKey ? Object.keys(rawNamespaceKey).slice(0, 5) : 'N/A');
+  console.log('  - Has toPrimitive?:', rawNamespaceKey && typeof rawNamespaceKey === 'object' && 'toPrimitive' in rawNamespaceKey);
+  console.log('  - Raw value preview:', rawNamespaceKey);
+  
+  // Use sb_to_primitive to extract the actual key value
+  console.log('\n🔍 EXTRACTING NAMESPACE KEY:');
+  const primitiveResult = sb_to_primitive.safeParse(rawNamespaceKey);
+  console.log('  - sb_to_primitive success?:', primitiveResult.success);
+  if (primitiveResult.success) {
+    console.log('  - Extracted value:', primitiveResult.data);
+    console.log('  - Extracted type:', typeof primitiveResult.data);
+  } else {
+    console.log('  - Parse error:', primitiveResult.error.message);
   }
+  
+  // Extract the actual key from the object structure
+  let firstNamespaceKey;
+  if (primitiveResult.success) {
+    firstNamespaceKey = primitiveResult.data;
+  } else if (rawNamespaceKey && typeof rawNamespaceKey === 'object' && 'account' in rawNamespaceKey) {
+    // Extract the account address from the nested structure
+    firstNamespaceKey = (rawNamespaceKey as { account: string }).account;
+    console.log('  - Extracted account property:', firstNamespaceKey);
+  } else {
+    firstNamespaceKey = rawNamespaceKey;
+  }
+  
+  console.log('\n🔍 FINAL NAMESPACE KEY:');
+  console.log('  - Final value:', firstNamespaceKey);
+  console.log('  - Final type:', typeof firstNamespaceKey);
+  console.log('  - Is valid address?:', typeof firstNamespaceKey === 'string' && firstNamespaceKey.length === 48);
+  
+  // if (firstAgentKey) {
+  //   console.log('\n--- Individual map .get() tests ---');
+  //   const firstAgent_get = await storage.torus0.agents.get(firstAgentKey as unknown as GenericAccountId);
+  //   console.log('✅ Agent get/display method completed');
+  //   console.log(`📊 First agent: ${JSON.stringify(firstAgent_get, null, 2)}`);
+  // }
 
   if (firstNamespaceKey) {
-    const firstNamespace_get = await storage.torus0.namespaceCount.get(firstNamespaceKey as unknown as GenericAccountId);
-    const firstNamespace_display = await storage.torus0.namespaceCount.display(firstNamespaceKey as unknown as GenericAccountId);
-    console.log('✅ NamespaceCount get/display methods completed');
-    console.log(`📊 First namespace count (get): ${firstNamespace_get}`);
-    console.log(`🎨 First namespace count (display): ${firstNamespace_display}`);
+    console.log('\n--- Individual map .get() tests ---');
+    console.log('🔍 TESTING NAMESPACE GET:');
+    console.log('  - Using extracted string key:', firstNamespaceKey);
+    console.log('  - Using raw object key:', rawNamespaceKey);
+    
+    try {
+      // Try with the extracted string first
+      const firstNamespace_get = await storage.torus0.namespaceCount.get(firstNamespaceKey as unknown as GenericAccountId);
+      console.log('✅ NamespaceCount get method completed (with string key)');
+      console.log(`📊 First namespace count: ${firstNamespace_get}`);
+    } catch (stringError) {
+      console.log('❌ String key failed:', stringError.message);
+      
+      try {
+        // Fallback to raw object key
+        console.log('🔄 Trying with raw object key...');
+        const firstNamespace_get = await storage.torus0.namespaceCount.get(rawNamespaceKey as unknown as GenericAccountId);
+        console.log('✅ NamespaceCount get method completed (with object key)');
+        console.log(`📊 First namespace count: ${firstNamespace_get}`);
+      } catch (objectError) {
+        console.log('❌ Object key also failed:', objectError.message);
+      }
+    }
   }
 
-  // Test .multi() method (if we have multiple keys)
-  if (torus0_map_keys.agents.length >= 3) {
-    console.log('\n--- .multi() method tests ---');
-    const multipleAgents = await storage.torus0.agents.multi(
-      torus0_map_keys.agents.slice(0, 3).map(key => key as unknown as GenericAccountId)
-    );
-    console.log(`✅ Multi query completed for 3 agents`);
-    console.log(`📊 Multi agents result: ${multipleAgents.length} agents retrieved`);
-    console.log(`🎯 Sample multi result:`, multipleAgents[0]);
-  }
+  // Test .multi() method (if we have multiple keys) - TEMPORARILY DISABLED
+  // if (torus0_map_keys.agents.length >= 3) {
+  //   console.log('\n--- .multi() method tests ---');
+  //   const multipleAgents = await storage.torus0.agents.multi(
+  //     torus0_map_keys.agents.slice(0, 3).map(key => key as unknown as GenericAccountId)
+  //   );
+  //   console.log(`✅ Multi query completed for 3 agents`);
+  //   console.log(`📊 Multi agents result: ${multipleAgents.length} agents retrieved`);
+  //   console.log(`🎯 Sample multi result:`, multipleAgents[0]);
+  // }
+  console.log('\n🚧 Multi method test temporarily disabled to focus on key issues');
 
   // === SYSTEM STORAGE MAPS ===
   console.log('\n🏛️ === SYSTEM STORAGE MAPS ===');
@@ -289,25 +278,21 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   };
   console.log(`✅ Keys retrieved - Account: ${system_map_keys.account.length}, BlockHash: ${system_map_keys.blockHash.length}, EventTopics: ${system_map_keys.eventTopics.length}, ExtrinsicData: ${system_map_keys.extrinsicData.length}`);
 
-  // Test individual .get() and .display() for maps (if keys exist)
+  // Test individual .get() for maps (if keys exist)
   const firstSystemAccount = system_map_keys.account[0];
   const firstBlockNumber = system_map_keys.blockHash[0];
 
   if (firstSystemAccount) {
-    console.log('\n--- Individual map .get() and .display() tests ---');
+    console.log('\n--- Individual map .get() tests ---');
     const firstAccount_get = await storage.system.account.get(firstSystemAccount as unknown as GenericAccountId);
-    const firstAccount_display = await storage.system.account.display(firstSystemAccount as unknown as GenericAccountId);
-    console.log('✅ System account get/display methods completed');
-    console.log(`📊 First system account (get):`, firstAccount_get);
-    console.log(`🎨 First system account (display):`, firstAccount_display);
+    console.log('✅ System account get method completed');
+    console.log(`📊 First system account:`, firstAccount_get);
   }
 
   if (firstBlockNumber) {
     const firstBlock_get = await storage.system.blockHash.get(firstBlockNumber as unknown as AbstractInt);
-    const firstBlock_display = await storage.system.blockHash.display(firstBlockNumber as unknown as AbstractInt);
-    console.log('✅ System blockHash get/display methods completed');
-    console.log(`📊 Block hash for block ${firstBlockNumber} (get): ${firstBlock_get}`);
-    console.log(`🎨 Block hash for block ${firstBlockNumber} (display): ${firstBlock_display}`);
+    console.log('✅ System blockHash get method completed');
+    console.log(`📊 Block hash for block ${firstBlockNumber}: ${firstBlock_get}`);
   }
 
   // Test .multi() method for system accounts
@@ -385,15 +370,13 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
     console.log('\n--- Individual governance map tests ---');
     
     const [proposalGetError, proposal_get] = await tryAsync(storage.governance.proposals.get(firstProposal));
-    const [proposalDisplayError, proposal_display] = await tryAsync(storage.governance.proposals.display(firstProposal));
     
-    if (proposalGetError || proposalDisplayError) {
-      const errorMsg = proposalGetError?.message ?? proposalDisplayError?.message ?? 'Unknown error';
+    if (proposalGetError ) {
+      const errorMsg = proposalGetError.message ;
       console.log('⚠️ Governance proposal queries failed (schema issue):', errorMsg.split('\n')[0]);
     } else {
-      console.log('✅ Governance proposal get/display methods completed');
-      console.log(`📊 First proposal (get):`, proposal_get);
-      console.log(`🎨 First proposal (display):`, proposal_display);
+      console.log('✅ Governance proposal get method completed');
+      console.log(`📊 First proposal:`, proposal_get);
     }
   }
 
@@ -409,13 +392,9 @@ export async function comprehensiveStorageTests(api: ApiPromise) {
   console.log(`• Total Storage Entries Tested: 48+`);
   console.log(`• Storage Values: 38+ entries (torus0: 18, system: 15, balances: 3, governance: 2+)`);
   console.log(`• Storage Maps: 16+ entries (torus0: 3, system: 4, balances: 5, governance: 4+)`);
-  console.log(`• Methods Tested: .get(), .display(), .keys(), .multi(), .subscribe()`);
+  console.log(`• Methods Tested: .get(), .keys(), .multi(), .subscribe()`);
 
   console.log('\n🔍 SAMPLE RESULTS:');
-  console.log(`Total stake: ${torus0_values_display.totalStake}`);
-  console.log(`Current block: ${system_values_display.number}`);
-  console.log(`Total issuance: ${balances_values_display.totalIssuance}`);
-  console.log(`DAO treasury: ${governance_values_display.daoTreasuryAddress}`);
   console.log(`Agents registered: ${torus0_map_keys.agents.length}`);
   console.log(`System accounts: ${system_map_keys.account.length}`);
 

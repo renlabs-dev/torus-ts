@@ -3,6 +3,7 @@ import type { ApiPromise } from '@polkadot/api';
 import type { z } from 'zod';
 import { SbStorageMap } from '../../storage';
 import { trySync } from '@torus-network/torus-utils/try-catch';
+import { sb_to_primitive } from '../../../types/zod';
 
 export function createStorageMap<
   KeySchema extends z.ZodTypeAny,
@@ -25,9 +26,8 @@ export function createStorageMap<
           return null;
         }
         
-        // Convert to JSON first, then validate
-        const jsonValue = rawValue.toJSON();
-        const parsed = valueSchema.safeParse(jsonValue, {
+        // Pass raw value directly to schema for proper substrate type handling
+        const parsed = valueSchema.safeParse(rawValue, {
           path: ["storage", pallet, storage, String(key)],
         });
         
@@ -37,20 +37,6 @@ export function createStorageMap<
         
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return parsed.data;
-      },
-
-      display: async (key: z.input<KeySchema>): Promise<unknown> => {
-        const entry = storageWrapper.storageEntryOn(api);
-        const raw = await entry(key);
-        if (raw.isEmpty) {
-          return null;
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        const [parseError, humanReadable] = trySync(() => JSON.parse(raw.toString()));
-        if (parseError) {
-          return raw.toString();
-        }
-        return humanReadable;
       },
       
       entries: async (): Promise<[z.output<KeySchema>, z.output<ValueSchema>][]> => {
@@ -67,28 +53,13 @@ export function createStorageMap<
             throw new Error(`Failed to parse key: ${parsedKey.error.message}`);
           }
           
-          // Convert value to JSON and parse
-          const jsonValue = rawValue.toJSON();
-          const parsedValue = valueSchema.safeParse(jsonValue);
+          // Parse raw value directly with schema
+          const parsedValue = valueSchema.safeParse(rawValue);
           if (!parsedValue.success) {
             throw new Error(`Failed to parse value: ${parsedValue.error.message}`);
           }
           
           return [parsedKey.data, parsedValue.data];
-        });
-      },
-
-      displayEntries: async (): Promise<[unknown, unknown][]> => {
-        const entry = storageWrapper.storageEntryOn(api);
-        const rawEntries = await entry.entries();
-        
-        return rawEntries.map(([storageKey, rawValue]) => {
-          const rawKey = storageKey.args[0];
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-          const [parseError, humanReadable] = trySync(() => JSON.parse(rawValue.toString()));
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const displayValue = parseError ? rawValue.toString() : humanReadable;
-          return [rawKey, displayValue];
         });
       },
       
@@ -97,9 +68,13 @@ export function createStorageMap<
         const entry = storageWrapper.storageEntryOn(api);
         const rawKeys = await entry.keys();
         
-        // Extract the actual keys from the storage keys
+        // Return raw keys for .get() calls - don't transform them
+        // The keys need to remain in their original substrate format for API calls
         return rawKeys.map(storageKey => {
           const rawKey = storageKey.args[0];
+          
+          // With z.any(), just return the raw key as-is
+          // The .get() method expects the original substrate key format
           const parsed = keySchema.safeParse(rawKey);
           if (!parsed.success) {
             throw new Error(`Failed to parse key: ${parsed.error.message}`);
@@ -162,10 +137,8 @@ export function createStorageMap<
             return null;
           }
           
-          // Convert to JSON for schema validation, similar to get method
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
-          const jsonValue = (raw as any).toJSON ? (raw as any).toJSON() : raw;
-          const parsed = valueSchema.safeParse(jsonValue);
+          // Parse raw value directly with schema
+          const parsed = valueSchema.safeParse(raw);
           if (!parsed.success) {
             throw new Error(`Failed to parse value: ${parsed.error.message}`);
           }

@@ -15,6 +15,7 @@ import {
   LAST_RUNTIME_UPGRADE_SCHEMA,
 } from '../schemas/system';
 import { z } from 'zod';
+import { sb_to_primitive } from '../../../types/zod';
 
 export const systemStorages = {
   // Simple value storages
@@ -37,10 +38,10 @@ export const systemStorages = {
   extrinsicCount: createStorageValue('system', 'extrinsicCount', sb_optional_number), // Number of extrinsics
   
   // Map storages
-  account: createStorageMap('system', 'account', z.any(), ACCOUNT_INFO_SCHEMA), // AccountId -> AccountInfo
+  account: createStorageMap('system', 'account', sb_address, sb_to_primitive), // AccountId -> AccountInfo (use sb_to_primitive to handle map data)
   blockHash: createStorageMap('system', 'blockHash', sb_blocks, sb_hash), // BlockNumber -> Hash
-  eventTopics: createStorageMap('system', 'eventTopics', z.any(), z.array(z.any())), // Hash -> Vec<EventIndex>
-  extrinsicData: createStorageMap('system', 'extrinsicData', sb_number_int, z.any()), // ExtrinsicIndex -> Vec<u8>
+  eventTopics: createStorageMap('system', 'eventTopics', sb_hash, sb_to_primitive), // Hash -> Vec<EventIndex>
+  extrinsicData: createStorageMap('system', 'extrinsicData', sb_number_int, sb_to_primitive), // ExtrinsicIndex -> Vec<u8>
 } as const;
 
 export type SystemStorageRouter = typeof systemStorages;
