@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Grid2x2Check, Copy } from "lucide-react";
+import { Copy } from "lucide-react";
 import type { Control } from "react-hook-form";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { api as trpcApi } from "~/trpc/react";
@@ -29,6 +29,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import type { PermissionWithDetails } from "../(pages)/edit-permission/_components/revoke-permission-button";
 
 interface PermissionSelectorProps {
   control: Control<{
@@ -36,71 +37,104 @@ interface PermissionSelectorProps {
   }>;
   selectedPermissionId: string;
   onPermissionIdChange: (permissionId: string) => void;
+  onPermissionDataChange?: (data: PermissionWithDetails | null) => void;
 }
 
 export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected } = useTorus();
 
   const { data: permissionsData, error: permissionsError } =
-    trpcApi.permission.withConstraintsByGrantorAndGrantee.useQuery(
-      { address: selectedAccount?.address ?? "" },
-      { enabled: !!selectedAccount?.address },
-    );
+    trpcApi.permission.allWithEmissionsAndNamespaces.useQuery(undefined, {
+      enabled: !!selectedAccount?.address,
+    });
 
-  const displayPermissions = permissionsData?.map(
-    (item) => item.permission.permission_id,
+  // Filter permissions for the current account
+  const userPermissions = permissionsData?.filter(
+    (item) =>
+      item.permissions.grantorAccountId === selectedAccount?.address ||
+      item.permissions.granteeAccountId === selectedAccount?.address,
   );
 
-  const hasPermissions = displayPermissions && displayPermissions.length > 0;
+  const hasPermissions = userPermissions && userPermissions.length > 0;
+
+  // Helper function to determine permission type
+  const getPermissionType = (item: PermissionWithDetails | null) => {
+    if (item?.emission_permissions) return "Emission";
+    if (item?.namespace_permissions) return "Namespace";
+    return "Unknown";
+  };
 
   // Prioritize grantor permissions for auto-selection
   const getDefaultPermissionId = () => {
-    if (!permissionsData?.length) return null;
+    if (!userPermissions?.length) return null;
 
     // First try to find a grantor permission
-    const grantorPermission = permissionsData.find(
-      (item) =>
-        item.permissionDetails?.grantor_key === selectedAccount?.address,
+    const grantorPermission = userPermissions.find(
+      (item) => item.permissions.grantorAccountId === selectedAccount?.address,
     );
 
     if (grantorPermission) {
-      return grantorPermission.permission.permission_id;
+      return grantorPermission.permissions.permissionId;
     }
 
     // Fall back to first grantee permission
-    const granteePermission = permissionsData.find(
-      (item) =>
-        item.permissionDetails?.grantee_key === selectedAccount?.address,
+    const granteePermission = userPermissions.find(
+      (item) => item.permissions.granteeAccountId === selectedAccount?.address,
     );
 
-    return granteePermission?.permission.permission_id ?? null;
+    return granteePermission?.permissions.permissionId ?? null;
   };
 
   const defaultPermissionId = getDefaultPermissionId();
 
-  const selectedPermissionData = permissionsData?.find(
-    (item) => item.permission.permission_id === props.selectedPermissionId,
+  const selectedPermissionData = userPermissions?.find(
+    (item) => item.permissions.permissionId === props.selectedPermissionId,
   );
 
-  const hasConstraint = (permissionId: string): boolean => {
-    const permission = permissionsData?.find(
-      (item) => item.permission.permission_id === permissionId,
-    );
-    return !!permission?.constraint;
-  };
+  // Handle wallet switching - reset selection when account changes
+  useEffect(() => {
+    if (selectedAccount?.address) {
+      // Clear current selection when wallet changes
+      if (props.selectedPermissionId && userPermissions) {
+        // Check if current selection is valid for new account
+        const isCurrentSelectionValid = userPermissions.some(
+          (item) =>
+            item.permissions.permissionId === props.selectedPermissionId,
+        );
 
+        if (!isCurrentSelectionValid) {
+          // Clear invalid selection
+          props.onPermissionIdChange("");
+        }
+      }
+    }
+  }, [
+    selectedAccount?.address,
+    userPermissions,
+    props.selectedPermissionId,
+    props.onPermissionIdChange,
+    props,
+  ]);
+
+  // Auto-select first permission when conditions are met
   useEffect(() => {
     if (hasPermissions && !props.selectedPermissionId && defaultPermissionId) {
       props.onPermissionIdChange(defaultPermissionId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    displayPermissions,
+    hasPermissions,
     props.selectedPermissionId,
     props.onPermissionIdChange,
-    hasPermissions,
     defaultPermissionId,
-    props,
   ]);
+
+  // Update permission data when selection changes
+  useEffect(() => {
+    if (props.onPermissionDataChange) {
+      props.onPermissionDataChange(selectedPermissionData ?? null);
+    }
+  }, [selectedPermissionData, props.onPermissionDataChange, props]);
 
   function getPlaceholderText() {
     if (!isAccountConnected) return "Connect wallet to view permissions";
@@ -110,42 +144,48 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   }
 
   function getDetailRows() {
-    if (!selectedPermissionData?.permissionDetails) return [];
+    if (!selectedPermissionData) return [];
 
-    const details = selectedPermissionData.permissionDetails;
+    const permission = selectedPermissionData.permissions;
+    const permissionType = getPermissionType(selectedPermissionData);
 
     return [
       {
         label: "Permission ID",
-        value: smallAddress(selectedPermissionData.permission.permission_id),
+        value: smallAddress(permission.permissionId),
+      },
+      {
+        label: "Type",
+        value: permissionType,
       },
       {
         label: "Grantor",
-        value: smallAddress(details.grantor_key),
+        value: smallAddress(permission.grantorAccountId),
       },
       {
         label: "Grantee",
-        value: smallAddress(details.grantee_key),
-      },
-      {
-        label: "Scope",
-        value: details.scope,
+        value: smallAddress(permission.granteeAccountId),
       },
       {
         label: "Duration",
-        value: details.duration?.toString() ?? "N/A",
+        value:
+          permission.durationType === "indefinite"
+            ? "Indefinite"
+            : `Until Block ${permission.durationBlockNumber?.toString() ?? "N/A"}`,
       },
       {
         label: "Revocation",
-        value: details.revocation.toString(),
+        value: permission.revocationType
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (l) => l.toUpperCase()),
       },
       {
         label: "Created At",
-        value: details.createdAt.toLocaleDateString(),
+        value: permission.createdAt.toLocaleDateString(),
       },
       {
         label: "Execution Count",
-        value: details.execution_count.toString(),
+        value: permission.executionCount.toString(),
       },
     ];
   }
@@ -164,6 +204,13 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                 onValueChange={(value: string) => {
                   field.onChange(value);
                   props.onPermissionIdChange(value);
+                  // Update permission data immediately when selection changes
+                  const newPermissionData = userPermissions?.find(
+                    (item) => item.permissions.permissionId === value,
+                  );
+                  if (props.onPermissionDataChange) {
+                    props.onPermissionDataChange(newPermissionData ?? null);
+                  }
                 }}
                 disabled={!isAccountConnected || !hasPermissions}
               >
@@ -174,17 +221,17 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                 </FormControl>
                 <SelectContent>
                   {(() => {
-                    if (!permissionsData) return null;
+                    if (!userPermissions) return null;
 
                     // Separate permissions by role
-                    const grantorPermissions = permissionsData.filter(
+                    const grantorPermissions = userPermissions.filter(
                       (item) =>
-                        item.permissionDetails?.grantor_key ===
+                        item.permissions.grantorAccountId ===
                         selectedAccount?.address,
                     );
-                    const granteePermissions = permissionsData.filter(
+                    const granteePermissions = userPermissions.filter(
                       (item) =>
-                        item.permissionDetails?.grantee_key ===
+                        item.permissions.granteeAccountId ===
                         selectedAccount?.address,
                     );
 
@@ -193,19 +240,20 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                         {granteePermissions.length > 0 && (
                           <SelectGroup>
                             <SelectLabel>As Grantee</SelectLabel>
-                            {granteePermissions.map((permissionItem) => {
+                            {granteePermissions.map((item) => {
                               const permissionId =
-                                permissionItem.permission.permission_id;
+                                item.permissions.permissionId;
+                              const permissionType = getPermissionType(item);
                               return (
                                 <SelectItem
                                   key={permissionId}
                                   value={permissionId}
                                 >
                                   <div className="flex items-center gap-2">
-                                    {hasConstraint(permissionId) && (
-                                      <Grid2x2Check className="h-4 w-4 text-green-500" />
-                                    )}
                                     <span>{smallAddress(permissionId)}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                      ({permissionType})
+                                    </span>
                                   </div>
                                 </SelectItem>
                               );
@@ -215,19 +263,20 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                         {grantorPermissions.length > 0 && (
                           <SelectGroup>
                             <SelectLabel>As Grantor</SelectLabel>
-                            {grantorPermissions.map((permissionItem) => {
+                            {grantorPermissions.map((item) => {
                               const permissionId =
-                                permissionItem.permission.permission_id;
+                                item.permissions.permissionId;
+                              const permissionType = getPermissionType(item);
                               return (
                                 <SelectItem
                                   key={permissionId}
                                   value={permissionId}
                                 >
                                   <div className="flex items-center gap-2">
-                                    {hasConstraint(permissionId) && (
-                                      <Grid2x2Check className="h-4 w-4 text-green-500" />
-                                    )}
                                     <span>{smallAddress(permissionId)}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                      ({permissionType})
+                                    </span>
                                   </div>
                                 </SelectItem>
                               );
@@ -255,27 +304,26 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         )}
       />
 
-      {props.selectedPermissionId &&
-        selectedPermissionData?.permissionDetails && (
-          <Card>
-            <CardHeader className="p-4">
-              <CardTitle className="text-sm font-semibold">
-                Permission Details
-              </CardTitle>
-            </CardHeader>
+      {props.selectedPermissionId && selectedPermissionData && (
+        <Card>
+          <CardHeader className="p-4">
+            <CardTitle className="text-sm font-semibold">
+              Permission Details
+            </CardTitle>
+          </CardHeader>
 
-            <CardContent className="text-xs p-4 pt-0">
-              {getDetailRows().map((row) => (
-                <div key={row.label}>
-                  <span className="font-medium">{row.label}:</span>
-                  <span className={"ml-2 text-muted-foreground"}>
-                    {row.value}
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+          <CardContent className="text-xs p-4 pt-0">
+            {getDetailRows().map((row) => (
+              <div key={row.label}>
+                <span className="font-medium">{row.label}:</span>
+                <span className={"ml-2 text-muted-foreground"}>
+                  {row.value}
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

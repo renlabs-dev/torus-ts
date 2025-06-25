@@ -103,7 +103,6 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
   }
 
   return {
-    grantee: data.grantee,
     allocation,
     targets,
     distribution,

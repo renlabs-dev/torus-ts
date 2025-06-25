@@ -74,6 +74,10 @@ changeset-version:
 
 local-db-url := "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"
 
+# Install Atlas CLI
+atlas-install:
+  curl -sSf https://atlasgo.sh | sh
+
 # Spawn a local development database
 db-dev-up:
     @echo "Starting local development database..."

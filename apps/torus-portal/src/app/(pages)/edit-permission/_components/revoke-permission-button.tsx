@@ -17,13 +17,36 @@ import {
 } from "@torus-ts/ui/components/alert-dialog";
 import { Trash2, Loader2 } from "lucide-react";
 import type { PermissionContract } from "@torus-network/sdk";
+import type { InferSelectModel } from "drizzle-orm";
+import type {
+  permissionsSchema,
+  emissionPermissionsSchema,
+  namespacePermissionsSchema,
+} from "@torus-ts/db/schema";
 import { match } from "rustie";
+
+// Types for the new database structure
+type PermissionData = InferSelectModel<typeof permissionsSchema>;
+type EmissionPermissionData = InferSelectModel<
+  typeof emissionPermissionsSchema
+>;
+type NamespacePermissionData = InferSelectModel<
+  typeof namespacePermissionsSchema
+>;
+
+export interface PermissionWithDetails {
+  permissions: PermissionData;
+  emission_permissions: EmissionPermissionData | null;
+  namespace_permissions: NamespacePermissionData | null;
+}
 
 interface RevokePermissionButtonProps {
   /** The selected permission ID */
   permissionId: string | null;
-  /** The permission contract data for checking revocation terms */
-  permission: PermissionContract | null;
+  /** The permission data from database (new structure) - takes precedence over permission */
+  permissionData?: PermissionWithDetails | null;
+  /** The permission contract data for checking revocation terms (legacy support) */
+  permission?: PermissionContract | null;
   /** Current blockchain block number */
   currentBlock: bigint;
   /** Current user's address */
@@ -34,6 +57,7 @@ interface RevokePermissionButtonProps {
 
 export function RevokePermissionButton({
   permissionId,
+  permissionData,
   permission,
   currentBlock,
   userAddress,
@@ -43,30 +67,84 @@ export function RevokePermissionButton({
   const { toast } = useToast();
   const [isRevoking, setIsRevoking] = useState(false);
 
+  // Get the permission type
+  const getPermissionType = () => {
+    if (permissionData) {
+      if (permissionData.emission_permissions) return "Emission";
+      if (permissionData.namespace_permissions) return "Namespace";
+      return "Unknown";
+    }
+    // Legacy support for PermissionContract
+    if (permission) {
+      return match(permission.scope)({
+        Emission() {
+          return "Emission";
+        },
+        Namespace() {
+          return "Namespace";
+        },
+        Curator() {
+          return "Curator";
+        },
+      });
+    }
+    return "Unknown";
+  };
+
   // Check if the user can revoke this permission
   const canRevoke = (() => {
-    if (!permission || !permissionId) return false;
+    if (!permissionId) return false;
 
-    const isGrantor = permission.grantor === userAddress;
+    // Use new database structure if available
+    if (permissionData) {
+      const perm = permissionData.permissions;
+      const isGrantor = perm.grantorAccountId === userAddress;
 
-    // Only grantors can revoke permissions, and only if revocation terms allow it
-    if (!isGrantor) return false;
+      // Only grantors can revoke permissions, and only if revocation terms allow it
+      if (!isGrantor) return false;
 
-    return match(permission.revocation)({
-      RevocableByGrantor() {
-        return true;
-      },
-      RevocableAfter(blockNumber) {
-        return currentBlock > BigInt(blockNumber);
-      },
-      Irrevocable() {
-        return false;
-      },
-      RevocableByArbiters() {
-        // For now, we don't support arbiter-based revocations in the UI
-        return false;
-      },
-    });
+      switch (perm.revocationType) {
+        case "revocable_by_grantor":
+          return true;
+        case "revocable_after":
+          return perm.revocationBlockNumber
+            ? currentBlock > perm.revocationBlockNumber
+            : false;
+        case "irrevocable":
+          return false;
+        case "revocable_by_arbiters":
+          // For now, we don't support arbiter-based revocations in the UI
+          return false;
+        default:
+          return false;
+      }
+    }
+
+    // Legacy support for PermissionContract
+    if (permission) {
+      const isGrantor = permission.grantor === userAddress;
+
+      // Only grantors can revoke permissions, and only if revocation terms allow it
+      if (!isGrantor) return false;
+
+      return match(permission.revocation)({
+        RevocableByGrantor() {
+          return true;
+        },
+        RevocableAfter(blockNumber) {
+          return currentBlock > BigInt(blockNumber);
+        },
+        Irrevocable() {
+          return false;
+        },
+        RevocableByArbiters() {
+          // For now, we don't support arbiter-based revocations in the UI
+          return false;
+        },
+      });
+    }
+
+    return false;
   })();
 
   const handleRevoke = async () => {
@@ -110,86 +188,133 @@ export function RevokePermissionButton({
 
   // Get the reason why revocation is not allowed
   const getDisabledReason = () => {
-    if (!permission || !permissionId) return "No permission selected";
+    if (!permissionId) return "No permission selected";
 
-    const isGrantor = permission.grantor === userAddress;
-    if (!isGrantor) return "Only the grantor can revoke permissions";
+    // Use new database structure if available
+    if (permissionData) {
+      const perm = permissionData.permissions;
+      const isGrantor = perm.grantorAccountId === userAddress;
+      if (!isGrantor) return "Only the grantor can revoke permissions";
 
-    return match(permission.revocation)({
-      RevocableByGrantor() {
-        return null; // Can revoke
-      },
-      RevocableAfter(blockNumber) {
-        if (currentBlock > BigInt(blockNumber)) {
+      switch (perm.revocationType) {
+        case "revocable_by_grantor":
           return null; // Can revoke
-        }
-        return `Permission can only be revoked after block ${blockNumber}`;
-      },
-      Irrevocable() {
-        return "This permission is irrevocable";
-      },
-      RevocableByArbiters() {
-        return "This permission requires arbiter approval to revoke";
-      },
-    });
+        case "revocable_after":
+          if (
+            perm.revocationBlockNumber &&
+            currentBlock > perm.revocationBlockNumber
+          ) {
+            return null; // Can revoke
+          }
+          return `Permission can only be revoked after block ${perm.revocationBlockNumber?.toString() ?? "N/A"}`;
+        case "irrevocable":
+          return "This permission is irrevocable";
+        case "revocable_by_arbiters":
+          return "This permission requires arbiter approval to revoke";
+        default:
+          return "Unknown revocation type";
+      }
+    }
+
+    // Legacy support for PermissionContract
+    if (permission) {
+      const isGrantor = permission.grantor === userAddress;
+      if (!isGrantor) return "Only the grantor can revoke permissions";
+
+      return match(permission.revocation)({
+        RevocableByGrantor() {
+          return null; // Can revoke
+        },
+        RevocableAfter(blockNumber) {
+          if (currentBlock > BigInt(blockNumber)) {
+            return null; // Can revoke
+          }
+          return `Permission can only be revoked after block ${blockNumber}`;
+        },
+        Irrevocable() {
+          return "This permission is irrevocable";
+        },
+        RevocableByArbiters() {
+          return "This permission requires arbiter approval to revoke";
+        },
+      });
+    }
+
+    return "No permission data available";
   };
 
   const disabledReason = getDisabledReason();
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="destructive"
-          size="sm"
-          disabled={!canRevoke || isRevoking}
-          title={disabledReason ?? "Revoke this permission"}
-        >
-          {isRevoking ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2 className="h-4 w-4" />
-          )}
-          Revoke Permission
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Revoke Permission</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to revoke this permission? This action cannot
-            be undone and will immediately terminate the permission's effects.
-            {permission && (
-              <span className="mt-2 text-sm">
-                <strong>Permission Details:</strong>
-                <br />
-                Grantor: {permission.grantor}
-                <br />
-                Grantee: {permission.grantee}
-                <br />
-                ID: {permissionId}
-              </span>
-            )}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleRevoke}
-            className="bg-red-600 hover:bg-red-700"
-            disabled={isRevoking}
+    <div className="flex items-center gap-3">
+      {/* Show disabled reason when button is disabled */}
+      {disabledReason && (
+        <span className="text-sm text-muted-foreground">{disabledReason}</span>
+      )}
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={!canRevoke || isRevoking}
+            title={disabledReason ?? "Revoke this permission"}
           >
             {isRevoking ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Revoking...
-              </>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Revoke Permission"
+              <Trash2 className="h-4 w-4" />
             )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+            Revoke Permission
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke Permission</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to revoke this permission? This action
+              cannot be undone and will immediately terminate the permission's
+              effects.
+              {(permissionData ?? permission) && (
+                <span className="mt-2 text-sm">
+                  <strong>Permission Details:</strong>
+                  <br />
+                  Type: {getPermissionType()}
+                  <br />
+                  Grantor:{" "}
+                  {permissionData
+                    ? permissionData.permissions.grantorAccountId
+                    : permission?.grantor}
+                  <br />
+                  Grantee:{" "}
+                  {permissionData
+                    ? permissionData.permissions.granteeAccountId
+                    : permission?.grantee}
+                  <br />
+                  ID: {permissionId}
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRevoke}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isRevoking}
+            >
+              {isRevoking ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Revoking...
+                </>
+              ) : (
+                "Revoke Permission"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

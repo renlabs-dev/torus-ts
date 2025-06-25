@@ -31,6 +31,21 @@ const ForceGraph = memo(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           linkForce.distance(GRAPH_CONSTANTS.LINK_DISTANCE);
         }
+        
+        // Configure charge force to spread nodes apart
+        const chargeForce = fgRef.current.d3Force("charge");
+        if (chargeForce && typeof chargeForce.strength === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          chargeForce.strength(-300);
+        }
+        
+        // Add center force to keep nodes from drifting too far
+        const centerForce = fgRef.current.d3Force("center");
+        if (centerForce && typeof centerForce.strength === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          centerForce.strength(0.1);
+        }
+        
         fgRef.current.tickFrame();
       }
     });

@@ -62,7 +62,7 @@ export const getNodePermissions = (
 
     if (
       (sourceId === node.id || targetId === node.id) &&
-      link.linkType === "permission"
+      (link.linkType === "permission_ownership" || link.linkType === "permission_target")
     ) {
       if (!permissionsMap.has(key)) {
         permissionsMap.set(key, {
@@ -82,14 +82,14 @@ export const sortPermissions = (
 ): PermissionWithType[] => {
   return permissions.sort((a, b) => {
     const detailsA = permissionDetails.find(
-      (p) => p.grantor_key === a.source && p.grantee_key === a.target,
+      (p) => p.grantorKey === a.source && p.granteeKey === a.target,
     );
     const detailsB = permissionDetails.find(
-      (p) => p.grantor_key === b.source && p.grantee_key === b.target,
+      (p) => p.grantorKey === b.source && p.granteeKey === b.target,
     );
 
-    const idA = detailsA?.permission_id ?? "";
-    const idB = detailsB?.permission_id ?? "";
+    const idA = detailsA?.permissionId ?? "";
+    const idB = detailsB?.permissionId ?? "";
 
     return Number(idA) - Number(idB);
   });

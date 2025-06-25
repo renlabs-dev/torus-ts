@@ -46,8 +46,8 @@ export function NodeDetailsCard({
   const processedPermissions = nodePermissions.map((permission) => {
     const details = permissionDetails?.find(
       (p) =>
-        p.grantor_key === permission.source &&
-        p.grantee_key === permission.target,
+        p.grantorKey === permission.source &&
+        p.granteeKey === permission.target,
     );
     const isOutgoing = permission.type === "outgoing";
     const connectedNode = graphData.nodes.find(
@@ -92,12 +92,12 @@ export function NodeDetailsCard({
                       <span className="font-medium text-white">
                         {isOutgoing ? "← Granted " : "→ Received "}
                         Permission{" "}
-                        {smallAddress(String(details?.permission_id))}
+                        {smallAddress(String(details?.permissionId))}
                       </span>
                     </div>
                     <GraphSheetDetailsLinkButtons
-                      grantor_key={details?.grantor_key}
-                      grantee_key={details?.grantee_key}
+                      grantor_key={details?.grantorKey}
+                      grantee_key={details?.granteeKey}
                       scope={details?.scope}
                     />
                   </div>
@@ -122,7 +122,7 @@ export function NodeDetailsCard({
                         <div>
                           <span className="text-xs text-gray-500">Scope</span>
                           <div className="text-sm text-gray-300">
-                            {formatScope(details.scope)}
+                            {formatScope(details.scope ?? "")}
                           </div>
                         </div>
                         <div>
@@ -145,7 +145,7 @@ export function NodeDetailsCard({
                             Executions
                           </span>
                           <div className="text-sm text-gray-300">
-                            {details.execution_count}
+                            {details.permissions.executionCount}
                           </div>
                         </div>
                         <div>
@@ -171,13 +171,13 @@ export function NodeDetailsCard({
                           </div>
                         </div>
 
-                        {details.parent_id && (
+                        {details.parentId && (
                           <div>
                             <span className="text-xs text-gray-500">
                               Parent ID
                             </span>
                             <div className="text-sm text-gray-300">
-                              {details.parent_id}
+                              {details.parentId}
                             </div>
                           </div>
                         )}

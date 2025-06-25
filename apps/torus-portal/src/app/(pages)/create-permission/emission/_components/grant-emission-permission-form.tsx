@@ -9,6 +9,7 @@ import { GrantEmissionPermissionFormComponent } from "./grant-emission-permissio
 import { grantEmissionPermissionSchema } from "./grant-emission-permission-form-schema";
 import type { GrantEmissionPermissionFormData } from "./grant-emission-permission-form-schema";
 import { transformFormDataToSDK } from "./grant-emission-permission-form-utils";
+import type { SS58Address } from "@torus-network/sdk";
 interface GrantEmissionPermissionFormProps {
   onSuccess?: () => void;
 }
@@ -16,7 +17,7 @@ interface GrantEmissionPermissionFormProps {
 export default function GrantEmissionPermissionForm({
   onSuccess,
 }: GrantEmissionPermissionFormProps) {
-  const { grantEmissionPermissionTransaction } = useTorus();
+  const { grantEmissionPermissionTransaction, selectedAccount } = useTorus();
   const { toast } = useToast();
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -24,8 +25,8 @@ export default function GrantEmissionPermissionForm({
 
   const form = useForm<GrantEmissionPermissionFormData>({
     resolver: zodResolver(grantEmissionPermissionSchema),
+    mode: "onChange",
     defaultValues: {
-      grantee: "",
       allocation: {
         type: "Streams",
         streams: [],
@@ -56,6 +57,7 @@ export default function GrantEmissionPermissionForm({
         const transformedData = transformFormDataToSDK(data);
 
         await grantEmissionPermissionTransaction({
+          grantee: selectedAccount?.address as SS58Address,
           ...transformedData,
           callback: (result) => {
             if (result.status === "SUCCESS" && result.finalized) {

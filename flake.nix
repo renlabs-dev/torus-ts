@@ -24,6 +24,11 @@
           pkgs.just
           # Run Github actions locally
           pkgs.act
+
+          # Atlas Community does not have some features
+          # e.g. data.external_schema
+          ## Database migration tool
+          #pkgs.atlas
         ];
       in
       {
