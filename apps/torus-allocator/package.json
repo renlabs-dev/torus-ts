@@ -20,6 +20,7 @@
     "@react-three/fiber": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
+    "@torus-ts/dsl": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-network/sdk": "workspace:*",

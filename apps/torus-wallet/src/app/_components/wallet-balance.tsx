@@ -11,8 +11,8 @@ import { Suspense, useMemo } from "react";
 import { TorusAnimation } from "./torus-animation";
 
 const BALANCE_ICONS = {
-  free: <Lock size={16} />,
-  staked: <Unlock size={16} />,
+  free: <Unlock size={16} />,
+  staked: <Lock size={16} />,
   total: <Scale size={16} />,
 };
 
@@ -33,7 +33,7 @@ function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
       {!isLoading ? (
         <p className="text-muted-foreground flex items-end gap-2 font-bold text-white">
           {formatToken(amount)}
-          <span>TOR</span>
+          <span>TORUS</span>
         </p>
       ) : (
         <Skeleton className="w-1/2 py-3" />

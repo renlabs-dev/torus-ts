@@ -26,7 +26,7 @@ export default function UpdateAgentDialog({
   setIsOpen,
   handleDialogChangeRef,
 }: UpdateAgentDialogProps) {
-  const { updateAgent } = useTorus();
+  const { updateAgentTransaction } = useTorus();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
@@ -92,14 +92,14 @@ export default function UpdateAgentDialog({
 
   const handleDialogChange = useCallback(
     (open: boolean) => {
-      if (!open && form.formState.isDirty && !isUploading) {
+      if (!open && !isUploading) {
         setShowConfirmClose(true);
         return;
       }
       setIsOpen(open);
       if (!open) form.reset();
     },
-    [isUploading, form, setIsOpen],
+    [isUploading, setIsOpen, form],
   );
 
   useEffect(() => {
@@ -126,11 +126,10 @@ export default function UpdateAgentDialog({
       handleImageChange,
       mutate: async (data: UpdateAgentFormData) => {
         setIsUploading(true);
-        const { name, apiUrl } = data;
+        const { apiUrl } = data;
         const cid = await uploadMetadata(data, imageFile);
 
-        await updateAgent({
-          name,
+        await updateAgentTransaction({
           url: apiUrl ?? "",
           metadata: cidToIpfsUri(cid),
           callback: (tx) => {
@@ -148,7 +147,7 @@ export default function UpdateAgentDialog({
       isUploading,
       handleImageChange,
       imageFile,
-      updateAgent,
+      updateAgentTransaction,
       setIsOpen,
       setTransactionStatus,
     ],
@@ -161,7 +160,6 @@ export default function UpdateAgentDialog({
         form={form}
         updateAgentMutation={updateAgentMutation}
         imageFile={imageFile}
-        hasUnsavedChanges={form.formState.isDirty}
       />
       {transactionStatus.status && (
         <div className="mt-4 border rounded-md p-3 bg-black/5">

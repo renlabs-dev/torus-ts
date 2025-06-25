@@ -38,7 +38,7 @@ const handler = async (req: Request) => {
       onError({ error, path }) {
         console.error(`>>> tRPC Error on '${path}'`, error);
       },
-    })
+    }),
   );
 
   if (error !== undefined) {
@@ -47,7 +47,7 @@ const handler = async (req: Request) => {
       JSON.stringify({
         message: "Internal Server Error in tRPC handler",
       }),
-      { status: 500 }
+      { status: 500 },
     );
     setCorsHeaders(errorResponse);
     return errorResponse;

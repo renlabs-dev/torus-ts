@@ -1,8 +1,8 @@
 import { assert } from "tsafe";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
-import { makeErr, makeErrFrom, makeOk } from "../result";
-import type { Result } from "../result";
+import { makeErr, makeErrFrom, makeOk } from "../result.js";
+import type { Result } from "../result.js";
 import {
   ensureError,
   tryAsync,
@@ -10,7 +10,7 @@ import {
   tryAsyncStr,
   trySyncRaw,
   trySyncStr,
-} from "../try-catch";
+} from "../try-catch.js";
 
 const coinFlip = () => !Math.round(Math.random());
 const asyncCoinFlip = () => Promise.resolve(!Math.round(Math.random()));

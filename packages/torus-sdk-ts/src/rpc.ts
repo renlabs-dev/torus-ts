@@ -1,16 +1,16 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { Header } from "@polkadot/types/interfaces";
 import type { IU8a } from "@polkadot/types/types";
-import type { Api } from "./modules/_common";
-import type { Blocks } from "./types";
-import { sb_blocks } from "./types";
+import type { Api } from "./modules/_common.js";
+import type { Blocks } from "./types/index.js";
+import { sb_blocks } from "./types/index.js";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 export interface LastBlock {
   blockHeader: Header;
   blockNumber: Blocks;
   blockHash: IU8a;
-  blockHashHex: string;
+  blockHashHex: `${string}`;
   apiAtBlock: Api;
 }
 

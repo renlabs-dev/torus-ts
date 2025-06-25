@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletPermission0PermissionEnforcementReferendum, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
+import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletPermission0PermissionEnforcementReferendum, PalletTorus0NamespaceNamespaceOwnership, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -174,6 +174,10 @@ declare module '@polkadot/api-base/types/events' {
     };
     governance: {
       /**
+       * The agent freezing feature was toggled by a curator.
+       **/
+      AgentFreezingToggled: AugmentedEvent<ApiType, [curator: AccountId32, newState: bool], { curator: AccountId32, newState: bool }>;
+      /**
        * An application has been accepted.
        **/
       ApplicationAccepted: AugmentedEvent<ApiType, [u32]>;
@@ -189,6 +193,10 @@ declare module '@polkadot/api-base/types/events' {
        * An application has expired.
        **/
       ApplicationExpired: AugmentedEvent<ApiType, [u32]>;
+      /**
+       * The namespace freezing feature was toggled by a curator.
+       **/
+      NamespaceFreezingToggled: AugmentedEvent<ApiType, [curator: AccountId32, newState: bool], { curator: AccountId32, newState: bool }>;
       /**
        * A penalty was applied to an agent.
        **/
@@ -396,6 +404,14 @@ declare module '@polkadot/api-base/types/events' {
        * network
        **/
       AgentUpdated: AugmentedEvent<ApiType, [AccountId32]>;
+      /**
+       * Namespace created
+       **/
+      NamespaceCreated: AugmentedEvent<ApiType, [owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes], { owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes }>;
+      /**
+       * Namespace deleted
+       **/
+      NamespaceDeleted: AugmentedEvent<ApiType, [owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes], { owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes }>;
       /**
        * Event created when stake has been transferred from the coldkey
        * account onto the key staking account

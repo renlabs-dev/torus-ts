@@ -18,7 +18,7 @@ on:
 
 jobs:
   pr-check:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     outputs:
       skip: ${{ github.event_name == 'push' && steps.findPr.outputs.number != '' }}
       pr_exists: ${{ steps.findPr.outputs.number != '' }}
@@ -54,6 +54,19 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-page
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-portal:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-portal == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-portal
       skip_build: ${{ inputs.skip_build || false }}
 
   torus-wallet:
@@ -154,6 +167,19 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-page
+
+  torus-portal-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' && 
+      github.ref_name != 'dev' && 
+      github.ref_name != 'cicd' && 
+      needs.turbo-check.outputs.torus-portal == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-portal
 
   torus-wallet-dry-run:
     needs: [turbo-check, pr-check]
@@ -325,6 +351,27 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-page
+      delete: true
+
+  torus-portal-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.torus-portal == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-portal
+
+  torus-portal-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-portal
       delete: true
 
   torus-wallet-pr-activate:

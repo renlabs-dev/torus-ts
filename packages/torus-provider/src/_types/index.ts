@@ -1,9 +1,12 @@
 // == Transactions ==
 
+import type { SS58Address, PermissionId } from "@torus-network/sdk";
+
 export interface TransactionResult {
   finalized: boolean;
   message: string | null;
   status: "SUCCESS" | "ERROR" | "PENDING" | "STARTING" | null;
+  hash?: string;
 }
 
 // TODO: amount field should be `bigint`
@@ -41,17 +44,14 @@ export interface RemoveVote extends TransactionHelpers {
 }
 
 export interface RegisterAgent {
-  agentKey: string;
+  agentKey: SS58Address;
   name: string;
   url: string;
   metadata: string;
   callback?: (status: TransactionResult) => void;
 }
 
-export type UpdateAgent = Pick<
-  RegisterAgent,
-  "name" | "url" | "metadata" | "callback"
->;
+export type UpdateAgent = Pick<RegisterAgent, "url" | "metadata" | "callback">;
 
 export interface AddCustomProposal {
   IpfsHash: string;
@@ -74,4 +74,16 @@ export interface AddAgentApplication extends TransactionHelpers {
 
 export interface UpdateDelegatingVotingPower extends TransactionHelpers {
   isDelegating: boolean;
+}
+
+export interface RevokePermission extends TransactionHelpers {
+  permissionId: PermissionId;
+}
+
+export interface CreateNamespace extends TransactionHelpers {
+  path: string;
+}
+
+export interface DeleteNamespace extends TransactionHelpers {
+  path: string;
 }

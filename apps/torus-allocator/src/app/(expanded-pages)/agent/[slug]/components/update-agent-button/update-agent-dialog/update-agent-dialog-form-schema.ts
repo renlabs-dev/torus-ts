@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
+import { z } from "zod";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
@@ -62,12 +62,19 @@ export const updateAgentSocialsSchema = z.object({
     }),
 });
 
-export const updateAgentSchema = z.object({
-  name: z
+/**
+ * Custom zod field for read-only Agent name (for update forms)
+ * Accepts any string since the field is immutable and cannot be changed
+ */
+export const readOnlyAgentNameField = () =>
+  z
     .string()
     .trim()
-    .min(1, "Name is required")
-    .max(50, "Name cannot exceed 50 characters"),
+    .optional()
+    .describe("Agent name (immutable, cannot be changed)");
+
+export const updateAgentSchema = z.object({
+  name: readOnlyAgentNameField(),
   title: z
     .string()
     .trim()

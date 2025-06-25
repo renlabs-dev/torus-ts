@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { MultiError } from "../error";
-import { ErrorArray } from "../error";
+import type { MultiError } from "../error.js";
+import { ErrorArray } from "../error.js";
 
 describe("ErrorArray", () => {
   it("should create an ErrorArray from multiple errors", () => {

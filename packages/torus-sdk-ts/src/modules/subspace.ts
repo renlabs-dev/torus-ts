@@ -1,9 +1,11 @@
+// TODO: refactor / split modules
+
 import type { ApiPromise } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import type { Percent } from "@polkadot/types/interfaces";
 import type { z } from "zod";
-import type { SS58Address } from "../address";
-import type { Balance } from "../types";
+import type { SS58Address } from "../address.js";
+import type { Balance } from "../types/index.js";
 import {
   sb_address,
   sb_balance,
@@ -14,9 +16,9 @@ import {
   sb_some,
   sb_string,
   sb_struct,
-} from "../types";
-import type { Api } from "./_common";
-import { handleDoubleMapEntries, handleMapEntries } from "./_common";
+} from "../types/index.js";
+import type { Api } from "./_common.js";
+import { handleDoubleMapEntries, handleMapEntries } from "./_common.js";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // ==== Balances ====
@@ -301,6 +303,21 @@ export async function queryStakeIn(api: Api): Promise<{
   };
 }
 
+export async function getPermissions(api: Api) {
+  const [queryError, q] = await tryAsync(api.query.permission0.permissions());
+  if (queryError !== undefined) {
+    console.error("Error querying permissions:", queryError);
+    throw queryError;
+  }
+
+  const [parseError, permissions] = trySync(() => sb_some(sb_string).parse(q));
+  if (parseError !== undefined) {
+    console.error("Error parsing permissions:", parseError);
+    throw parseError;
+  }
+
+  return permissions;
+}
 export async function queryStakeOut(api: Api): Promise<{
   total: bigint;
   perAddr: Map<SS58Address, bigint>;
@@ -457,4 +474,57 @@ export async function setChainWeights(
   }
 
   return signedTx;
+}
+
+export interface RegisterAgent {
+  api: ApiPromise;
+  agentKey: SS58Address;
+  name: string;
+  url: string;
+  metadata: string;
+}
+
+/**
+ * Register an agent on the network
+ */
+export function registerAgent({
+  api,
+  agentKey,
+  name,
+  url,
+  metadata,
+}: RegisterAgent) {
+  return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
+}
+
+/**
+ * Create a new namespace, automatically creating missing intermediate nodes
+ */
+export function createNamespace(api: ApiPromise, path: string) {
+  return api.tx.torus0.createNamespace(path);
+}
+
+/**
+ * Delete a namespace and all its children
+ */
+export function deleteNamespace(api: ApiPromise, path: string) {
+  return api.tx.torus0.deleteNamespace(path);
+}
+
+/**
+ * Updates origin's key agent metadata.
+ */
+export function updateAgent(
+  api: ApiPromise,
+  url: string,
+  metadata?: string | null,
+  stakingFee?: number | null,
+  weightControlFee?: number | null,
+) {
+  return api.tx.torus0.updateAgent(
+    url,
+    metadata ?? null,
+    stakingFee ?? null,
+    weightControlFee ?? null,
+  );
 }

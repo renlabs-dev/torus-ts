@@ -2,8 +2,8 @@
 
 import { ViewSelector } from "~/app/_components/view-selector";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { AgentItemCard } from "../../_components/agent-item-card";
 import { Filter } from "../../_components/filter-content";
+import { AgentCard } from "~/app/_components/agent-card/agent-card";
 
 export default function AllocatedAgentsPage() {
   const { delegatedAgents } = useDelegateAgentStore();
@@ -24,7 +24,7 @@ export default function AllocatedAgentsPage() {
       ) : (
         <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {delegatedAgents.map((agent) => (
-            <AgentItemCard
+            <AgentCard
               id={agent.id}
               key={agent.id}
               name={agent.name}

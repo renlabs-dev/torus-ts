@@ -11,9 +11,22 @@ import type {
   AgentApplication,
   Api,
   CustomMetadataState,
+  GrantEmissionPermission,
+  GrantNamespacePermission,
+  UpdateEmissionPermission,
   Proposal,
 } from "@torus-network/sdk";
-import { sb_balance } from "@torus-network/sdk";
+import {
+  createNamespace,
+  deleteNamespace,
+  grantEmissionPermission,
+  grantNamespacePermission,
+  registerAgent,
+  revokePermission,
+  sb_balance,
+  updateAgent,
+  updateEmissionPermission,
+} from "@torus-network/sdk";
 import { toNano } from "@torus-network/torus-utils/subspace";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import * as React from "react";
@@ -23,11 +36,15 @@ import type {
   AddAgentApplication,
   AddCustomProposal,
   AddDaoTreasuryTransferProposal,
+  CreateNamespace,
+  DeleteNamespace,
   RegisterAgent,
   RemoveVote,
+  RevokePermission,
   Stake,
   Transfer,
   TransferStake,
+  TransactionHelpers,
   UpdateAgent,
   UpdateDelegatingVotingPower,
   Vote,
@@ -52,6 +69,7 @@ type TransactionExtrinsicPromise =
   | undefined;
 
 interface TorusContextType {
+  // TODO: Test changing `api` on `TorusProvider` to `ApiPromise` instead of `Api`
   api: Api | null;
   torusCacheUrl: string;
 
@@ -80,8 +98,8 @@ interface TorusContextType {
   voteProposal: (vote: Vote) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
 
-  registerAgent: (registerAgent: RegisterAgent) => Promise<void>;
-  updateAgent: (updateAgent: UpdateAgent) => Promise<void>;
+  registerAgentTransaction: (registerAgent: RegisterAgent) => Promise<void>;
+  updateAgentTransaction: (updateAgent: UpdateAgent) => Promise<void>;
   addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
   AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
   addDaoTreasuryTransferProposal: (
@@ -106,7 +124,7 @@ interface TorusContextType {
     | SubmittableExtrinsic<"promise", ISubmittableResult>
     | undefined;
 
-  registerAgentTransaction: ({
+  getRegisterAgentFee: ({
     agentKey,
     name,
     url,
@@ -134,6 +152,23 @@ interface TorusContextType {
     TransferStake,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
+
+  grantEmissionPermissionTransaction: (
+    props: Omit<GrantEmissionPermission, "api"> & TransactionHelpers,
+  ) => Promise<void>;
+
+  grantNamespacePermissionTransaction: (
+    props: Omit<GrantNamespacePermission, "api"> & TransactionHelpers,
+  ) => Promise<void>;
+  updateEmissionPermissionTransaction: (
+    props: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers,
+  ) => Promise<void>;
+
+  revokePermissionTransaction: (props: RevokePermission) => Promise<void>;
+
+  createNamespaceTransaction: (props: CreateNamespace) => Promise<void>;
+
+  deleteNamespaceTransaction: (props: DeleteNamespace) => Promise<void>;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -241,7 +276,16 @@ export function TorusProvider({
       return undefined;
     }
 
-    return accountsWithBalance;
+    const sortedAccounts = accountsWithBalance.sort((a, b) => {
+      const balanceA = a.freeBalance;
+      const balanceB = b.freeBalance;
+
+      if (balanceA > balanceB) return -1; // a comes first (higher balance)
+      if (balanceA < balanceB) return 1; // b comes first (higher balance)
+      return 0;
+    });
+
+    return sortedAccounts;
   }
 
   async function handleGetWallets(): Promise<void> {
@@ -471,7 +515,11 @@ export function TorusProvider({
 
   // == Subspace ==
 
-  const registerAgentTransaction = ({
+  // TODO: refactor
+  // This was a gambiarra duplicated function by vinicius that is only used
+  // to get the fee of this transaction, so even though this is not exaclty
+  // getRegisterAgentFee is better named now then registerAgentTransaction
+  const getRegisterAgentFee = ({
     agentKey,
     name,
     url,
@@ -482,21 +530,25 @@ export function TorusProvider({
     return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
   };
 
-  async function registerAgent({
+  async function registerAgentTransaction({
     agentKey,
     name,
     url,
     metadata,
     callback,
   }: RegisterAgent): Promise<void> {
-    if (!api?.tx.torus0?.registerAgent) return;
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
 
-    const transaction = api.tx.torus0.registerAgent(
+    const transaction = registerAgent({
+      api,
       agentKey,
       name,
       url,
       metadata,
-    );
+    });
 
     await sendTransaction({
       api,
@@ -510,21 +562,17 @@ export function TorusProvider({
     });
   }
 
-  async function updateAgent({
-    name,
+  async function updateAgentTransaction({
     url,
     metadata,
     callback,
   }: UpdateAgent): Promise<void> {
-    if (!api?.tx.torus0?.updateAgent) return;
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
 
-    const transaction = api.tx.torus0.updateAgent(
-      name,
-      url,
-      metadata,
-      undefined,
-      undefined
-    );
+    const transaction = updateAgent(api, url, metadata, null, null);
 
     await sendTransaction({
       api,
@@ -717,6 +765,192 @@ export function TorusProvider({
       toast,
     });
   }
+
+  async function grantEmissionPermissionTransaction({
+    grantee,
+    allocation,
+    targets,
+    distribution,
+    duration,
+    revocation,
+    enforcement,
+    callback,
+    refetchHandler,
+  }: Omit<GrantEmissionPermission, "api"> & TransactionHelpers): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = grantEmissionPermission({
+      api,
+      grantee,
+      allocation,
+      targets,
+      distribution,
+      duration,
+      revocation,
+      enforcement,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Grant Emission Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
+  async function grantNamespacePermissionTransaction({
+    grantee,
+    paths,
+    duration,
+    revocation,
+    callback,
+    refetchHandler,
+  }: Omit<GrantNamespacePermission, "api"> &
+    TransactionHelpers): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = grantNamespacePermission({
+      api,
+      grantee,
+      paths,
+      duration,
+      revocation,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Grant Namespace Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
+  async function updateEmissionPermissionTransaction({
+    permissionId,
+    newTargets,
+    newStreams,
+    newDistributionControl,
+    callback,
+    refetchHandler,
+  }: Omit<UpdateEmissionPermission, "api"> &
+    TransactionHelpers): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = updateEmissionPermission({
+      api,
+      permissionId,
+      newTargets,
+      newStreams,
+      newDistributionControl,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Update Emission Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
+  async function revokePermissionTransaction({
+    permissionId,
+    callback,
+    refetchHandler,
+  }: RevokePermission): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = revokePermission(api, permissionId);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Revoke Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
+  async function createNamespaceTransaction({
+    path,
+    callback,
+    refetchHandler,
+  }: CreateNamespace): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = createNamespace(api, path);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Create Namespace",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
+  async function deleteNamespaceTransaction({
+    path,
+    callback,
+    refetchHandler,
+  }: DeleteNamespace): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = deleteNamespace(api, path);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Delete Namespace",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
   return (
     <TorusContext.Provider
       value={{
@@ -736,9 +970,9 @@ export function TorusProvider({
         isAccountConnected,
         isInitialized,
         openWalletModal,
-        registerAgent,
         registerAgentTransaction,
-        updateAgent,
+        getRegisterAgentFee,
+        updateAgentTransaction,
         removeStake,
         removeStakeTransaction,
         removeVoteProposal,
@@ -753,6 +987,12 @@ export function TorusProvider({
         transferTransaction,
         updateDelegatingVotingPower,
         voteProposal,
+        grantEmissionPermissionTransaction,
+        grantNamespacePermissionTransaction,
+        updateEmissionPermissionTransaction,
+        revokePermissionTransaction,
+        createNamespaceTransaction,
+        deleteNamespaceTransaction,
       }}
     >
       {children}

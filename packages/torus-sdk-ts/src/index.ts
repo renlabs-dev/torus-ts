@@ -2,34 +2,37 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 // === Address ===
-export * from "./address";
+export * from "./address.js";
 
 // == RPC ==
-export * from "./rpc";
+export * from "./rpc.js";
 
 // == Modules ==
-export * from "./modules/_common";
-export * from "./modules/subspace";
-export * from "./modules/governance";
+export * from "./modules/_common.js";
+export * from "./modules/subspace.js";
+export * from "./modules/governance.js";
+export * from "./modules/permission0.js";
+export * from "./modules/torus0.js";
 
 // == EVM ==
-export * from "./evm";
+export * from "./evm.js";
 
 // == Constants ==
-export * from "./constants";
+export * from "./constants.js";
 
 // == Cached Queries ==
-export * from "./cached-queries";
+export * from "./cached-queries.js";
 
 // == Types ==
-export * from "./types/base";
-export * from "./types/index";
-export * from "./types/sb_enum";
-export * from "./types/zod";
+export * from "./types/base.js";
+export * from "./types/index.js";
+export * from "./types/sb_enum.js";
+export * from "./types/zod.js";
+export * from "./types/events.js";
 
 // == Metadata ==
-export * from "./metadata";
-export * from "./agent_metadata/agent_metadata";
+export * from "./metadata.js";
+export * from "./agent_metadata/agent_metadata.js";
 
 export async function setup(wsEndpoint: string): Promise<ApiPromise> {
   console.log("Connecting to ", wsEndpoint);

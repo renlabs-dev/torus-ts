@@ -33,12 +33,3 @@ export const smallFilename = (name: string, maxLength = 20): string => {
 
   return `${start}...${end}`;
 };
-
-export const strToFile = (
-  str: string,
-  filename: string,
-  type: string = "text/plain",
-) => {
-  const file = new File([str], filename, { type });
-  return file;
-};

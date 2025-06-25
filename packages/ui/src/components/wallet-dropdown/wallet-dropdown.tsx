@@ -98,6 +98,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
             <WalletCards className="!h-5 !w-5" />
             <span className="text-sm">
               <WalletLabel
+                isInitialized={isInitialized}
                 selectedAccount={selectedAccount}
                 shouldDisplayText={shouldDisplayText}
               />

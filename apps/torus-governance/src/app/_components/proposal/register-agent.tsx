@@ -1,16 +1,18 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { SS58Address } from "@torus-network/sdk";
 import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
   checkSS58,
 } from "@torus-network/sdk";
-import { smallFilename, strToFile } from "@torus-network/torus-utils/files";
+import { smallFilename } from "@torus-network/torus-utils/files";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken, fromNano } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { agentNameField } from "@torus-network/sdk/types/namespace";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -48,11 +50,14 @@ import { Controller, useForm } from "react-hook-form";
 import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
 import { z } from "zod";
+import Link from "next/link";
+import { getLinks } from "@torus-ts/ui/lib/data";
+import { env } from "~/env";
 
 const registerAgentSchema = z.object({
   agentKey: z.string().min(1, "Agent address is required"),
   agentApiUrl: z.string().optional(),
-  name: z.string().min(1, "Agent name is required"),
+  name: agentNameField(),
   shortDescription: z
     .string()
     .min(1, "Short description is required")
@@ -70,6 +75,15 @@ const registerAgentSchema = z.object({
   icon: z.instanceof(File).optional(),
 });
 
+export const strToFile = (
+  str: string,
+  filename: string,
+  type: string = "text/plain",
+) => {
+  const file = new File([str], filename, { type });
+  return file;
+};
+
 const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();
   body.set("file", file);
@@ -77,6 +91,9 @@ const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
     method: "POST",
     body,
   });
+  if (!res.ok) {
+    throw new Error(`Failed to upload file: ${res.statusText}`);
+  }
   const { cid } = PIN_FILE_RESULT.parse(await res.json());
   return { cid };
 };
@@ -95,17 +112,14 @@ type TabsViews = "agent-info" | "about" | "socials" | "register";
 export function RegisterAgent() {
   const {
     isAccountConnected,
-    registerAgent,
+    registerAgentTransaction,
     accountFreeBalance,
     burnAmount,
     agents,
     lastBlock,
-    whitelist,
   } = useGovernance();
   const { toast } = useToast();
-  const { registerAgentTransaction, estimateFee, selectedAccount } = useTorus();
-  const { data: whitelistedApplications, isFetching: isFetchingWhitelist } =
-    whitelist;
+  const { getRegisterAgentFee, estimateFee, selectedAccount } = useTorus();
 
   const [currentTab, setCurrentTab] = useState<TabsViews>("agent-info");
   const [uploading, setUploading] = useState(false);
@@ -142,8 +156,8 @@ export function RegisterAgent() {
   useEffect(() => {
     async function fetchFee() {
       if (!selectedAccount?.address) return;
-      const transaction = registerAgentTransaction({
-        agentKey: selectedAccount.address,
+      const transaction = getRegisterAgentFee({
+        agentKey: selectedAccount.address as SS58Address,
         name: "Estimating fee",
         metadata: "Estimating fee",
         url: "Estimating fee",
@@ -161,7 +175,7 @@ export function RegisterAgent() {
       setEstimatedFee(adjustedFee);
     }
     void fetchFee();
-  }, [estimateFee, registerAgentTransaction, selectedAccount, toast]);
+  }, [estimateFee, getRegisterAgentFee, selectedAccount, toast]);
 
   const [userHasEnoughBalance, setUserHasEnoughBalance] = useState(false);
   useEffect(() => {
@@ -188,7 +202,7 @@ export function RegisterAgent() {
 
   async function doMetadataPin(): Promise<CID | null> {
     setUploading(true);
-    
+
     // Handle icon file if present
     let imageObj: Record<string, Record<string, string>> = {};
     const iconFile = getValues("icon");
@@ -201,7 +215,7 @@ export function RegisterAgent() {
       }
       imageObj = { images: { icon: cidToIpfsUri(iconResult.cid) } };
     }
-    
+
     const {
       website,
       twitter,
@@ -213,7 +227,7 @@ export function RegisterAgent() {
       body,
       name,
     } = getValues();
-    
+
     const metadata = {
       title,
       short_description: shortDescription,
@@ -227,11 +241,13 @@ export function RegisterAgent() {
         discord: discord ? parseUrl(discord) : undefined,
       },
     };
-    
+
     const validatedMetadata = AGENT_METADATA_SCHEMA.safeParse(metadata);
     if (!validatedMetadata.success) {
       setUploading(false);
-      toast.error(validatedMetadata.error.errors.map((e) => e.message).join(", "));
+      toast.error(
+        validatedMetadata.error.errors.map((e) => e.message).join(", "),
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -239,24 +255,26 @@ export function RegisterAgent() {
       });
       return null;
     }
-    
+
     const metadataJson = JSON.stringify(metadata, null, 2);
-    const file = strToFile(metadataJson, `${name}-agent-metadata.json`);
-    
+    const file = strToFile(metadataJson, `${name}-agent-metadata.json`); // ? should be "application/json" instead of the default "plain/text"?
+
     const [metadataError, metadataResult] = await tryAsync(pinFile(file));
     setUploading(false);
-    
+
     if (metadataError !== undefined) {
       toast.error(metadataError.message || "Error uploading agent metadata");
       return null;
     }
-    
+
     return metadataResult.cid;
   }
 
   async function onSubmit(data: RegisterAgentFormData): Promise<void> {
     if (!userHasEnoughBalance) {
-      toast.error(`Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`);
+      toast.error(
+        `Insufficient balance. Required: ${formatToken(estimatedFee + (burnAmount.data ?? 0n))} but got ${formatToken(accountFreeBalance.data ?? 0n)}`,
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -266,26 +284,11 @@ export function RegisterAgent() {
     }
 
     const parsedAgentKey = checkSS58(data.agentKey);
-    if (isFetchingWhitelist) {
-      toast.error("Whitelist is still loading. Please try again later.");
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Whitelist is still loading.",
-      });
-      return;
-    }
-    if (!whitelistedApplications?.includes(parsedAgentKey)) {
-      toast.error("Agent not whitelisted. Whitelist required for registration.");
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Agent not whitelisted.",
-      });
-      return;
-    }
+
     if (agents.data?.has(parsedAgentKey)) {
-      toast.error("Agent already registered. Make sure you are using the correct address.");
+      toast.error(
+        "Agent already registered. Make sure you are using the correct address.",
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -303,7 +306,9 @@ export function RegisterAgent() {
           : data.agentApiUrl,
       );
     if (!parsedAgentApiUrl.success) {
-      toast.error(parsedAgentApiUrl.error.errors.map((e) => e.message).join(", "));
+      toast.error(
+        parsedAgentApiUrl.error.errors.map((e) => e.message).join(", "),
+      );
       setTransactionStatus({
         status: "ERROR",
         finalized: true,
@@ -322,15 +327,15 @@ export function RegisterAgent() {
     console.info("Pinned metadata at:", cidToIpfsUri(cid));
 
     const [registerError, _] = await tryAsync(
-      registerAgent({
+      registerAgentTransaction({
         agentKey: parsedAgentKey,
         name: data.name,
         url: parsedAgentApiUrl.data,
         metadata: cidToIpfsUri(cid),
         callback: (tx) => setTransactionStatus(tx),
-      })
+      }),
     );
-    
+
     if (registerError !== undefined) {
       toast.error(registerError.message || "Error registering agent");
       setTransactionStatus({
@@ -400,6 +405,8 @@ export function RegisterAgent() {
   );
 
   const registerViewDisabled = socialsViewDisabled;
+
+  const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
   return (
     <Form {...form}>
@@ -487,12 +494,31 @@ export function RegisterAgent() {
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="My Agent's Name"
+                      placeholder="my-agent-name"
                       type="text"
+                      maxLength={63}
                       required
                     />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Must start and end with alphanumeric characters. Can contain
+                    lowercase letters, numbers, hyphens, and underscores.
+                  </p>
                   <FormMessage />
+                  {formValues.name && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Link
+                        // TODO: add link to namespace docs
+                        href={links.docs}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-foreground transition-colors"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Link>
+                      Your name on the namespace: agent.{formValues.name}
+                    </div>
+                  )}
                 </FormItem>
               )}
             />

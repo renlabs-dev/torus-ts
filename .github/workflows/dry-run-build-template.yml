@@ -15,7 +15,7 @@ concurrency:
 jobs:
   check-pr:
     name: Check for existing PR
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     outputs:
       pr_exists: ${{ steps.findPr.outputs.number != '' }}
       pr_number: ${{ steps.findPr.outputs.number }}
@@ -32,7 +32,7 @@ jobs:
     needs: check-pr
     if: needs.check-pr.outputs.pr_exists == 'false'
     permissions: write-all
-    runs-on: ubuntu-22.04-32core-karl
+    runs-on: ubicloud-standard-16
     steps:
       - uses: actions/checkout@v4
 

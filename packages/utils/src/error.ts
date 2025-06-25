@@ -1,3 +1,51 @@
+type ErrorCtr = new (message: string, options?: ErrorOptions) => Error;
+
+/**
+ * Creates an error with a chained message that preserves the original error as the cause.
+ *
+ * This utility function helps create more descriptive error messages by prepending
+ * a context message to the original error message while preserving the original
+ * error as the cause. This is particularly useful when handling errors from
+ * lower-level operations and adding domain-specific context.
+ *
+ * @param msg - The context message to prepend to the error
+ * @param errCtr - Optional error constructor to use (defaults to Error)
+ * @returns A function that takes an error and returns a new error with chained message
+ *
+ * @example
+ * ```ts
+ * // Basic usage
+ * try {
+ *   await someOperation();
+ * } catch (err) {
+ *   throw chainErr("Failed to perform operation")(err);
+ *   // Results in: Error: Failed to perform operation: Original error message
+ * }
+ *
+ * // With custom error constructor
+ * class ValidationError extends Error {}
+ *
+ * try {
+ *   await validateData();
+ * } catch (err) {
+ *   throw chainErr("Validation failed", ValidationError)(err);
+ *   // Results in: ValidationError: Validation failed: Original validation error
+ * }
+ *
+ * // In async operations with Result types
+ * const [err, data] = await someAsyncOperation();
+ * if (err !== undefined) {
+ *   throw chainErr("Failed to fetch data")(err);
+ * }
+ * ```
+ */
+export const chainErr =
+  (msg: string, errCtr: ErrorCtr = Error) =>
+  (err: Error) =>
+    new errCtr(`${msg}: ${err.message}`, { cause: err });
+
+// ==== MultiError ====
+
 /**
  * Type representing an error that combines both Error and Array<Error> interfaces.
  * Allows an error object to be treated as both a single error and a collection of errors.
@@ -120,3 +168,4 @@ export class ErrorArray extends Array<Error> implements MultiError {
     this.stack = stackMsgs.join("\n");
   }
 }
+
