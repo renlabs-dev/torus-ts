@@ -23,22 +23,6 @@ export function createStorageValue<Schema extends z.ZodTypeAny>(
         return result[1];
       },
       
-      // New method for beautiful visualization
-      display: async (): Promise<unknown> => {
-        const result = await storageWrapper.queryRaw(api)();
-
-        // Convert raw codec to human-readable format for display
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        const [parseError, humanReadable] = trySync(() => JSON.parse(result.toString()));
-        
-        if (parseError) {
-          // If JSON parsing fails, return toString() for display
-          return result.toString();
-        }
-        
-        return humanReadable;
-      },
-      
       subscribe: (callback: (value: z.output<Schema>) => void) => {
         const entry = storageWrapper.storageEntryOn(api);
         return entry((raw: never) => {

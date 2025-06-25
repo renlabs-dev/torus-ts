@@ -12,6 +12,7 @@ import {
   NAMESPACE_PRICING_CONFIG_SCHEMA,
   PALLET_VERSION_SCHEMA,
 } from '../schemas/torus0';
+import { sb_to_primitive } from '../../../types/zod';
 import { z } from 'zod';
 
 export const torus0Storages = {
@@ -37,10 +38,10 @@ export const torus0Storages = {
   namespacePricingConfig: createStorageValue('torus0', 'namespacePricingConfig', NAMESPACE_PRICING_CONFIG_SCHEMA),
   palletVersion: createStorageValue('torus0', 'palletVersion', PALLET_VERSION_SCHEMA),
   
-  // Map storages
-  agents: createStorageMap('torus0', 'agents', z.any(), AGENT_SCHEMA),
-  namespaceCount: createStorageMap('torus0', 'namespaceCount', z.any(), z.number()), // Map: AccountId32 -> u32
-  namespaces: createStorageMap('torus0', 'namespaces', z.any(), z.unknown()), // Map but no data currently
+  // Map storages  
+  agents: createStorageMap('torus0', 'agents', sb_address, AGENT_SCHEMA),
+  namespaceCount: createStorageMap('torus0', 'namespaceCount', sb_address, sb_to_primitive), // Map: AccountId32 -> u32 (use sb_to_primitive to handle substrate values)
+  namespaces: createStorageMap('torus0', 'namespaces', sb_address, sb_to_primitive), // Map but no data currently
   
   // Double map storages (currently commented out as they need createStorageDoubleMap)
   // stakedBy: AccountId32 -> AccountId32 -> Balance (36 entries found)
