@@ -24,6 +24,8 @@
           pkgs.just
           # Run Github actions locally
           pkgs.act
+          # Database migration tool
+          pkgs.atlas
         ];
       in
       {

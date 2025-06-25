@@ -1,1 +1,1 @@
-DROP TYPE application_status;
+DROP TYPE "public"."application_status";
