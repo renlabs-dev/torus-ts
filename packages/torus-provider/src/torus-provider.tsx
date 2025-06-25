@@ -12,6 +12,7 @@ import type {
   Api,
   CustomMetadataState,
   GrantEmissionPermission,
+  GrantNamespacePermission,
   UpdateEmissionPermission,
   Proposal,
 } from "@torus-network/sdk";
@@ -19,6 +20,7 @@ import {
   createNamespace,
   deleteNamespace,
   grantEmissionPermission,
+  grantNamespacePermission,
   registerAgent,
   revokePermission,
   sb_balance,
@@ -155,6 +157,9 @@ interface TorusContextType {
     props: Omit<GrantEmissionPermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
 
+  grantNamespacePermissionTransaction: (
+    props: Omit<GrantNamespacePermission, "api"> & TransactionHelpers,
+  ) => Promise<void>;
   updateEmissionPermissionTransaction: (
     props: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
@@ -801,6 +806,41 @@ export function TorusProvider({
     });
   }
 
+  async function grantNamespacePermissionTransaction({
+    grantee,
+    paths,
+    duration,
+    revocation,
+    callback,
+    refetchHandler,
+  }: Omit<GrantNamespacePermission, "api"> &
+    TransactionHelpers): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = grantNamespacePermission({
+      api,
+      grantee,
+      paths,
+      duration,
+      revocation,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Grant Namespace Permission",
+      wsEndpoint,
+      refetchHandler,
+      toast,
+    });
+  }
+
   async function updateEmissionPermissionTransaction({
     permissionId,
     newTargets,
@@ -948,6 +988,7 @@ export function TorusProvider({
         updateDelegatingVotingPower,
         voteProposal,
         grantEmissionPermissionTransaction,
+        grantNamespacePermissionTransaction,
         updateEmissionPermissionTransaction,
         revokePermissionTransaction,
         createNamespaceTransaction,

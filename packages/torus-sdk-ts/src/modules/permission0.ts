@@ -775,16 +775,24 @@ export function revokePermission(api: ApiPromise, permissionId: PermissionId) {
   return api.tx.permission0.revokePermission(permissionId);
 }
 
+export interface GrantNamespacePermission {
+  api: ApiPromise;
+  grantee: SS58Address;
+  paths: string[];
+  duration: PermissionDuration;
+  revocation: RevocationTerms;
+}
+
 /**
  * Grant a permission over namespaces
  */
-export function grantNamespacePermission(
-  api: ApiPromise,
-  grantee: SS58Address,
-  paths: string[],
-  duration: PermissionDuration,
-  revocation: RevocationTerms,
-) {
+export function grantNamespacePermission({
+  api,
+  grantee,
+  paths,
+  duration,
+  revocation,
+}: GrantNamespacePermission) {
   const pathsSet = new BTreeSet<Bytes>(api.registry, "Bytes", paths);
 
   return api.tx.permission0.grantNamespacePermission(
