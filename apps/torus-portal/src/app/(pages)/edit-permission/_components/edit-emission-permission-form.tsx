@@ -31,7 +31,11 @@ import {
   transformPermissionToFormData,
 } from "./edit-emission-permission-form-utils";
 import { PermissionSelector } from "~/app/_components/permission-selector";
-import { RevokePermissionButton } from "./revoke-permission-button";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import {
+  PermissionWithDetails,
+  RevokePermissionButton,
+} from "./revoke-permission-button";
 
 interface EditEmissionPermissionFormProps {
   onSuccess?: () => void;
@@ -52,6 +56,8 @@ export default function EditEmissionPermissionForm({
     useState<PermissionInfo | null>(null);
   const [selectedPermission, setSelectedPermission] =
     useState<PermissionContract | null>(null);
+  const [selectedPermissionData, setSelectedPermissionData] =
+    useState<PermissionWithDetails | null>(null);
   const [currentBlock, setCurrentBlock] = useState<bigint>(0n);
 
   // Form for permission selection
@@ -88,28 +94,41 @@ export default function EditEmissionPermissionForm({
       const [blockError, blockInfo] = await tryAsync(api.query.system.number());
       const currentBlockNumber = blockError ? 0n : blockInfo.toBigInt();
 
-      const permissionInfo = transformPermissionToFormData(
-        permission,
-        currentBlockNumber,
-        selectedAccount.address as SS58Address,
-      );
-      permissionInfo.permissionId = permissionId;
-
-      setSelectedPermissionInfo(permissionInfo);
+      // Always set the permission and block for revoke functionality
       setSelectedPermission(permission);
       setCurrentBlock(currentBlockNumber);
 
-      // Pre-populate the edit form with current data
-      editForm.reset({
-        selectedPermission: {
-          permissionId,
-        },
-        newTargets: permissionInfo.currentTargets,
-        newStreams: permissionInfo.currentStreams ?? [],
-        newDistributionControl: permissionInfo.currentDistribution ?? {
-          type: "Manual",
-        },
-      });
+      // Only process emission permission details for edit functionality
+      const isEmissionPermission =
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        permission.scope && "Emission" in permission.scope;
+
+      if (isEmissionPermission) {
+        const permissionInfo = transformPermissionToFormData(
+          permission,
+          currentBlockNumber,
+          selectedAccount.address as SS58Address,
+        );
+        permissionInfo.permissionId = permissionId;
+
+        setSelectedPermissionInfo(permissionInfo);
+
+        // Pre-populate the edit form with current data
+        editForm.reset({
+          selectedPermission: {
+            permissionId,
+          },
+          newTargets: permissionInfo.currentTargets,
+          newStreams: permissionInfo.currentStreams ?? [],
+          newDistributionControl: permissionInfo.currentDistribution ?? {
+            type: "Manual",
+          },
+        });
+      } else {
+        // For namespace permissions, clear the edit form info since we can't edit them
+        setSelectedPermissionInfo(null);
+        editForm.reset();
+      }
     } catch (error) {
       console.error("Error processing permission:", error);
       toast({
@@ -182,10 +201,10 @@ export default function EditEmissionPermissionForm({
       {/* Permission Selection */}
       <Card className="border-none w-full">
         <CardHeader>
-          <CardTitle>Edit Emission Permission</CardTitle>
+          <CardTitle>Edit Permission</CardTitle>
           <CardDescription>
-            Modify the selected emission permission. Available fields depend on
-            the permission's revocation terms.
+            Modify the selected permission. Available fields depend on the
+            permission's type and revocation terms.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -197,14 +216,18 @@ export default function EditEmissionPermissionForm({
                 selectionForm.setValue("permissionId", value);
                 void handlePermissionSelect(value);
               }}
+              onPermissionDataChange={(data) => {
+                setSelectedPermissionData(data as PermissionWithDetails);
+              }}
             />
           </Form>
-          
+
           {/* Revoke Permission Button */}
           {selectedAccount && (
             <div className="mt-4 flex justify-end">
               <RevokePermissionButton
                 permissionId={selectionForm.watch("permissionId") || null}
+                permissionData={selectedPermissionData}
                 permission={selectedPermission}
                 currentBlock={currentBlock}
                 userAddress={selectedAccount.address}
@@ -214,6 +237,7 @@ export default function EditEmissionPermissionForm({
                   editForm.reset();
                   setSelectedPermissionInfo(null);
                   setSelectedPermission(null);
+                  setSelectedPermissionData(null);
                   setCurrentBlock(0n);
                   onSuccess?.();
                 }}
@@ -223,13 +247,27 @@ export default function EditEmissionPermissionForm({
         </CardContent>
       </Card>
 
-      {/* Edit Form */}
-      {selectedPermissionInfo && (
-        <EditEmissionPermissionFormComponent
-          form={editForm}
-          mutation={mutation}
-          permissionInfo={selectedPermissionInfo}
-        />
+      {/* Edit Form - Only show for emission permissions */}
+      {selectedPermissionInfo &&
+        selectedPermissionData?.emission_permissions && (
+          <EditEmissionPermissionFormComponent
+            form={editForm}
+            mutation={mutation}
+            permissionInfo={selectedPermissionInfo}
+          />
+        )}
+
+      {/* Info message for namespace permissions */}
+      {selectedPermissionData?.namespace_permissions && (
+        <Card className="border-none w-full mt-4">
+          <CardHeader>
+            <CardTitle>Namespace Permission</CardTitle>
+            <CardDescription>
+              Namespace permissions can only be revoked. Edit functionality is
+              not available for namespace permissions.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       )}
     </div>
   );
