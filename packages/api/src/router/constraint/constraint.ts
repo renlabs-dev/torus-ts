@@ -16,6 +16,7 @@ import {
   createChainAwareReteNetwork,
   safeParseConstraintJson,
   createChainWatcher,
+  validateConstraint,
 } from "@torus-ts/dsl";
 import type { Constraint, SpecificFact, BoolExprType, NumExprType, BaseConstraintType, CompOp } from "@torus-ts/dsl";
 import {
@@ -40,8 +41,71 @@ let globalChainWatcher: ReturnType<typeof createChainWatcher> | null = null;
 
 import { match } from "rustie";
 
+/**
+ * Load existing constraints from database and add them to the RETE network
+ */
+async function loadExistingConstraints(db: DB, network: ReturnType<typeof createChainAwareReteNetwork>) {
+  try {
+    console.log("🔄 Loading existing constraints from database...");
+    console.log("🔍 [DEBUG] Database connection:", !!db);
+    console.log("🔍 [DEBUG] Network instance:", !!network);
+    
+    // Query all constraint records from the database
+    console.log("🔍 [DEBUG] Querying constraint table...");
+    const constraintRecords = await db
+      .select()
+      .from(constraintSchema);
+    
+    console.log(`📊 Found ${constraintRecords.length} existing constraints in database`);
+    console.log("🔍 [DEBUG] Constraint records:", constraintRecords);
+    
+    for (const record of constraintRecords) {
+      try {
+        // Parse the constraint body from the database
+        const constraintBody = superjson.parse(record.body);
+        
+        // We need to get the permission ID from the permission_details table
+        const permissionDetails = await db
+          .select()
+          .from(permissionDetailsSchema)
+          .where(eq(permissionDetailsSchema.constraint_id, record.id))
+          .limit(1);
+        
+        const constrainedPermission = permissionDetails[0];
+        if (!constrainedPermission) {
+          console.warn(`⚠️  No permission details found for constraint ${record.id}`);
+          continue;
+        }
+        
+        // Validate the parsed constraint body and create the constraint object
+        const constraintData = {
+          permId: constrainedPermission.permission_id,
+          body: constraintBody
+        };
+        
+        // Use validateConstraint to ensure the constraint is properly typed
+        const constraint = validateConstraint(constraintData);
+        
+        // Add constraint to the network with fact fetching
+        const result = await network.addConstraintWithFacts(constraint);
+        
+        console.log(`✅ Loaded constraint ${constraint.permId} with production ID: ${result.productionId}`);
+        
+      } catch (error) {
+        console.error(`❌ Failed to load constraint ${record.id}:`, error);
+      }
+    }
+    
+    console.log("🎉 Finished loading existing constraints from database");
+    
+  } catch (error) {
+    console.error("❌ Failed to load existing constraints from database:", error);
+  }
+}
+
 // Initialize the network if it doesn't exist
-function getOrCreateReteNetwork() {
+async function getOrCreateReteNetwork(db?: DB) {
+  
   if (!globalReteNetwork) {
     // Use environment variable for WebSocket endpoint
     const wsEndpoint =
@@ -100,22 +164,31 @@ function getOrCreateReteNetwork() {
     );
 
     console.log(
-      "Initialized global ChainAwareReteNetwork with violation callback",
+      "🚀 Initialized global ChainAwareReteNetwork with violation callback",
     );
 
     // Initialize and start chain watcher automatically
     globalChainWatcher = createChainWatcher(globalReteNetwork);
-    console.log("Initialized global ChainWatcher");
+    console.log("🔗 Initialized global ChainWatcher");
 
     // Start watching blockchain events automatically
     globalChainWatcher
       .startWatching()
       .then(() => {
-        console.log("Chain watcher started automatically");
+        console.log("👀 Chain watcher started automatically");
       })
       .catch((error) => {
-        console.error("Failed to start chain watcher automatically:", error);
+        console.error("❌ Failed to start chain watcher automatically:", error);
       });
+    
+    // Load existing constraints from database if db is provided
+    if (db) {
+      console.log("🔍 [DEBUG] DB provided, loading existing constraints...");
+      await loadExistingConstraints(db, globalReteNetwork);
+      console.log("🔍 [DEBUG] Finished loading existing constraints");
+    } else {
+      console.log("⚠️  [DEBUG] No database provided to getOrCreateReteNetwork");
+    }
   }
   return globalReteNetwork;
 }
@@ -442,10 +515,35 @@ export const constraintRouter = {
 
       if (existingPermission.length > 0) {
         console.log(
-          `[DEBUG] Permission ${constraint.permId} already exists in database, skipping database creation`,
+          `[DEBUG] Permission ${constraint.permId} already exists in database`,
+        );
+        
+        // Still need to create the constraint record and link it
+        const [constraintRecord] = await ctx.db
+          .insert(constraintSchema)
+          .values({
+            body: superjson.stringify(constraint.body),
+          })
+          .returning();
+        
+        if (!constraintRecord) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create constraint record in database",
+          });
+        }
+        
+        // Update the existing permission details to link to this constraint
+        await ctx.db
+          .update(permissionDetailsSchema)
+          .set({ constraint_id: constraintRecord.id })
+          .where(eq(permissionDetailsSchema.permission_id, constraint.permId));
+        
+        console.log(
+          `[DEBUG] Created constraint record with ID: ${constraintRecord.id} and linked to existing permission`,
         );
       } else {
-        // 3. Store permission and constraint data in database
+        // 3. Store permission and constraint data in database (creates new permission)
         const constraintRecord = await storePermissionAndConstraintInDB(
           ctx.db,
           constraint,
@@ -456,8 +554,8 @@ export const constraintRouter = {
         );
       }
 
-      // 4. Get the Rete network and add constraint
-      const network = getOrCreateReteNetwork();
+      // 4. Get the Rete network from context and add constraint
+      const network = await ctx.reteNetwork;
 
       // Add constraint with automatic fact fetching
       let result: {
@@ -502,8 +600,8 @@ export const constraintRouter = {
    */
   checkActivation: publicProcedure
     .input(constraintIdSchema)
-    .query(({ input }) => {
-      const network = getOrCreateReteNetwork();
+    .query(async ({ ctx, input }) => {
+      const network = await ctx.reteNetwork;
       const isActivated = network.isConstraintActivated(input.constraintId);
 
       return {
@@ -517,8 +615,8 @@ export const constraintRouter = {
    */
   getEvaluationStatus: publicProcedure
     .input(constraintIdSchema)
-    .query(({ input }) => {
-      const network = getOrCreateReteNetwork();
+    .query(async ({ ctx, input }) => {
+      const network = await ctx.reteNetwork;
       const status = network.getConstraintEvaluationStatus(input.constraintId);
 
       return {
@@ -532,8 +630,8 @@ export const constraintRouter = {
    */
   getDetailedStatus: publicProcedure
     .input(constraintIdSchema)
-    .query(({ input }) => {
-      const network = getOrCreateReteNetwork();
+    .query(async ({ ctx, input }) => {
+      const network = await ctx.reteNetwork;
       const statusInfo = network.getConstraintStatus(input.constraintId);
 
       return {
@@ -554,8 +652,8 @@ export const constraintRouter = {
    */
   getActivations: publicProcedure
     .input(constraintIdSchema)
-    .query(({ input }) => {
-      const network = getOrCreateReteNetwork();
+    .query(async ({ ctx, input }) => {
+      const network = await ctx.reteNetwork;
       const activations = network.getConstraintActivations(input.constraintId);
 
       return {
@@ -577,8 +675,8 @@ export const constraintRouter = {
   /**
    * Get network visualization for debugging
    */
-  getNetworkState: publicProcedure.query(() => {
-    const network = getOrCreateReteNetwork();
+  getNetworkState: publicProcedure.query(async ({ ctx }) => {
+    const network = await ctx.reteNetwork;
     const visualization = network.visualizeNetwork();
 
     return {
@@ -590,8 +688,8 @@ export const constraintRouter = {
   /**
    * Get structured network components for detailed inspection
    */
-  getNetworkComponents: publicProcedure.query(() => {
-    const network = getOrCreateReteNetwork();
+  getNetworkComponents: publicProcedure.query(async ({ ctx }) => {
+    const network = await ctx.reteNetwork;
     const components = network.getNetworkComponents();
 
     return {
@@ -603,8 +701,8 @@ export const constraintRouter = {
   /**
    * Health check for the constraint system
    */
-  healthCheck: publicProcedure.query(() => {
-    const network = getOrCreateReteNetwork();
+  healthCheck: publicProcedure.query(async ({ ctx }) => {
+    const network = await ctx.reteNetwork;
 
     return {
       status: "healthy",
@@ -613,5 +711,32 @@ export const constraintRouter = {
       //chainWatcherActive: globalChainWatcher?.isCurrentlyWatching() || false,
       timestamp: new Date().toISOString(),
     };
+  }),
+
+  /**
+   * Debug endpoint to check database content
+   */
+  debugDatabase: publicProcedure.query(async ({ ctx }) => {
+    try {
+      const constraintRecords = await ctx.db.select().from(constraintSchema);
+      const permissionRecords = await ctx.db.select().from(permissionSchema); 
+      const permissionDetails = await ctx.db.select().from(permissionDetailsSchema);
+
+      return {
+        constraintCount: constraintRecords.length,
+        permissionCount: permissionRecords.length,
+        permissionDetailsCount: permissionDetails.length,
+        sampleConstraints: constraintRecords.slice(0, 3),
+        samplePermissions: permissionRecords.slice(0, 3),
+        samplePermissionDetails: permissionDetails.slice(0, 3),
+      };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : String(error),
+        constraintCount: 0,
+        permissionCount: 0,
+        permissionDetailsCount: 0,
+      };
+    }
   }),
 } satisfies TRPCRouterRecord;
