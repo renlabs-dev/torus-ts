@@ -30,6 +30,8 @@ import {
   penalizeAgentVotesSchema,
   permissionsSchema,
   emissionPermissionsSchema,
+  namespacePermissionsSchema,
+  namespacePermissionPathsSchema,
   emissionStreamAllocationsSchema,
   emissionDistributionTargetsSchema,
   permissionEnforcementControllersSchema,
@@ -49,6 +51,8 @@ export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type NewProposal = typeof proposalSchema.$inferInsert;
 export type NewPermission = typeof permissionsSchema.$inferInsert;
 export type NewEmissionPermission = typeof emissionPermissionsSchema.$inferInsert;
+export type NewNamespacePermission = typeof namespacePermissionsSchema.$inferInsert;
+export type NewNamespacePermissionPath = typeof namespacePermissionPathsSchema.$inferInsert;
 export type NewEmissionStreamAllocation = typeof emissionStreamAllocationsSchema.$inferInsert;
 export type NewEmissionDistributionTarget = typeof emissionDistributionTargetsSchema.$inferInsert;
 export type NewPermissionEnforcementController = typeof permissionEnforcementControllersSchema.$inferInsert;
@@ -531,6 +535,8 @@ export async function getUserWeightMap(): Promise<
 export async function upsertPermissions(permissions: {
   permission: NewPermission;
   emissionPermission?: NewEmissionPermission;
+  namespacePermission?: NewNamespacePermission;
+  namespacePaths?: NewNamespacePermissionPath[];
   streamAllocations?: NewEmissionStreamAllocation[];
   distributionTargets?: NewEmissionDistributionTarget[];
   enforcementControllers?: NewPermissionEnforcementController[];
@@ -540,7 +546,9 @@ export async function upsertPermissions(permissions: {
   await db.transaction(async (tx) => {
     for (const { 
       permission, 
-      emissionPermission, 
+      emissionPermission,
+      namespacePermission,
+      namespacePaths,
       streamAllocations, 
       distributionTargets, 
       enforcementControllers, 
@@ -578,39 +586,69 @@ export async function upsertPermissions(permissions: {
           });
       }
 
+      // STEP 3: Insert namespace permission data (if namespace scope)
+      if (namespacePermission) {
+        await tx
+          .insert(namespacePermissionsSchema)
+          .values(namespacePermission)
+          .onConflictDoNothing({
+            target: [namespacePermissionsSchema.permissionId],
+          });
+      }
+
+      // STEP 4: Insert namespace paths
+      if (namespacePaths && namespacePaths.length > 0) {
+        await tx
+          .insert(namespacePermissionPathsSchema)
+          .values(namespacePaths)
+          .onConflictDoNothing({
+            target: [namespacePermissionPathsSchema.permissionId, namespacePermissionPathsSchema.namespacePath],
+          });
+      }
+
       if (streamAllocations && streamAllocations.length > 0) {
         await tx
           .insert(emissionStreamAllocationsSchema)
           .values(streamAllocations)
-          .onConflictDoNothing();
+          .onConflictDoNothing({
+            target: [emissionStreamAllocationsSchema.permissionId, emissionStreamAllocationsSchema.streamId],
+          });
       }
 
       if (distributionTargets && distributionTargets.length > 0) {
         await tx
           .insert(emissionDistributionTargetsSchema)
           .values(distributionTargets)
-          .onConflictDoNothing();
+          .onConflictDoNothing({
+            target: [emissionDistributionTargetsSchema.permissionId, emissionDistributionTargetsSchema.targetAccountId],
+          });
       }
 
       if (enforcementControllers && enforcementControllers.length > 0) {
         await tx
           .insert(permissionEnforcementControllersSchema)
           .values(enforcementControllers)
-          .onConflictDoNothing();
+          .onConflictDoNothing({
+            target: [permissionEnforcementControllersSchema.permissionId, permissionEnforcementControllersSchema.accountId],
+          });
       }
 
       if (revocationArbiters && revocationArbiters.length > 0) {
         await tx
           .insert(permissionRevocationArbitersSchema)
           .values(revocationArbiters)
-          .onConflictDoNothing();
+          .onConflictDoNothing({
+            target: [permissionRevocationArbitersSchema.permissionId, permissionRevocationArbitersSchema.accountId],
+          });
       }
 
       if (hierarchy) {
         await tx
           .insert(permissionHierarchiesSchema)
           .values(hierarchy)
-          .onConflictDoNothing();
+          .onConflictDoNothing({
+            target: [permissionHierarchiesSchema.childPermissionId, permissionHierarchiesSchema.parentPermissionId],
+          });
       }
     }
   });

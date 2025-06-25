@@ -20,7 +20,7 @@ import {
   normalizeApplicationValue,
   sleep,
 } from "../common";
-import type { NewApplication, NewProposal, NewPermission, NewEmissionPermission, NewEmissionStreamAllocation, NewEmissionDistributionTarget, NewPermissionEnforcementController, NewPermissionRevocationArbiter, NewPermissionHierarchy } from "../db";
+import type { NewApplication, NewProposal, NewPermission, NewEmissionPermission, NewEmissionStreamAllocation, NewEmissionDistributionTarget, NewPermissionEnforcementController, NewPermissionRevocationArbiter, NewPermissionHierarchy, NewNamespacePermission, NewNamespacePermissionPath } from "../db";
 import {
   queryProposalsDB,
   SubspaceAgentToDatabase,
@@ -44,19 +44,22 @@ function permissionContractToDatabase(
 ): {
   permission: NewPermission;
   emissionPermission?: NewEmissionPermission;
+  namespacePermission?: NewNamespacePermission;
+  namespacePaths?: NewNamespacePermissionPath[];
   streamAllocations?: NewEmissionStreamAllocation[];
   distributionTargets?: NewEmissionDistributionTarget[];
   enforcementControllers?: NewPermissionEnforcementController[];
   revocationArbiters?: NewPermissionRevocationArbiter[];
   hierarchy?: NewPermissionHierarchy;
 } | null {
-  // Only process emission permissions, skip curator permissions
-  const isEmissionPermission = match(contract.scope)({
+  // Process emission and namespace permissions, skip curator permissions
+  const shouldProcess = match(contract.scope)({
     Emission: () => true,
+    Namespace: () => true,
     Curator: () => false,
   });
 
-  if (!isEmissionPermission) {
+  if (!shouldProcess) {
     return null; // Skip curator permissions
   }
 
@@ -133,6 +136,8 @@ function permissionContractToDatabase(
   });
 
   let emissionPermission: NewEmissionPermission | undefined;
+  let namespacePermission: NewNamespacePermission | undefined;
+  let namespacePaths: NewNamespacePermissionPath[] | undefined;
   let streamAllocations: NewEmissionStreamAllocation[] | undefined;
   let distributionTargets: NewEmissionDistributionTarget[] | undefined;
   let enforcementControllers: NewPermissionEnforcementController[] | undefined;
@@ -215,6 +220,18 @@ function permissionContractToDatabase(
         weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
       }));
     },
+    Namespace: (namespace) => {
+      // Handle namespace permissions
+      namespacePermission = {
+        permissionId: permissionId,
+      };
+
+      // Extract namespace paths - each path becomes a separate database entry
+      namespacePaths = namespace.paths.map((pathSegments) => ({
+        permissionId: permissionId,
+        namespacePath: pathSegments.join('.'), // Convert segments array to dot-separated string
+      }));
+    },
     Curator: () => {
       // This case should never be reached due to early return above
     },
@@ -260,6 +277,8 @@ function permissionContractToDatabase(
   return {
     permission,
     emissionPermission,
+    namespacePermission,
+    namespacePaths,
     streamAllocations,
     distributionTargets,
     enforcementControllers,
@@ -416,6 +435,8 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
   const permissionsData: {
     permission: NewPermission;
     emissionPermission?: NewEmissionPermission;
+    namespacePermission?: NewNamespacePermission;
+    namespacePaths?: NewNamespacePermissionPath[];
     streamAllocations?: NewEmissionStreamAllocation[];
     distributionTargets?: NewEmissionDistributionTarget[];
     enforcementControllers?: NewPermissionEnforcementController[];
@@ -429,7 +450,7 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
       const permissionData = permissionContractToDatabase(permissionId, contract);
       if (permissionData) {
         permissionsData.push(permissionData);
-        log.info(`Block ${lastBlockNumber}: added emission permission ${permissionId} to batch`);
+        log.info(`Block ${lastBlockNumber}: added permission ${permissionId} to batch`);
       } else {
         log.info(`Block ${lastBlockNumber}: skipped curator permission ${permissionId}`);
       }
