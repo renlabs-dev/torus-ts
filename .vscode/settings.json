@@ -32,8 +32,8 @@
   ],
 
   // Formatting
-  "tsImportSorter.configuration.autoFormat": "off",
-  "tsImportSorter.configuration.maxLineLength": 80,
+  "tsImportSorter.configuration.autoFormat": "onSave",
+  // "tsImportSorter.configuration.maxLineLength": 80,
   "tsImportSorter.configuration.wrappingStyle": {
     "maxBindingNamesPerLine": 0,
     "maxDefaultAndBindingNamesPerLine": 0,

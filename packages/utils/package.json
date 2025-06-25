@@ -78,10 +78,6 @@
     "./logger": {
       "types": "./dist/logger.d.ts",
       "default": "./dist/logger.js"
-    },
-    "./validation": {
-      "types": "./dist/validations/index.d.ts",
-      "default": "./dist/validations/index.js"
     }
   },
   "dependencies": {

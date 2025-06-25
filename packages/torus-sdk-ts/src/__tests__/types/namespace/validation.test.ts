@@ -7,7 +7,7 @@ import {
   validateNamespacePath,
   isValidNamespacePath,
   namespacePathField,
-} from "../../validations/namespace-validation.js";
+} from "../../../types/namespace/namespace-path.js";
 
 describe("NamespaceSegmentValidation", () => {
   const testCases = {
@@ -161,9 +161,15 @@ describe("NamespacePathValidation", () => {
       { path: "db.prod-01.users", segments: ["db", "prod-01", "users"] },
       { path: "service+core.api+v2", segments: ["service+core", "api+v2"] },
       { path: "a.b.c.d.e.f.g", segments: ["a", "b", "c", "d", "e", "f", "g"] },
-      { path: "snake_case.kebab-case.plus+sign", segments: ["snake_case", "kebab-case", "plus+sign"] },
+      {
+        path: "snake_case.kebab-case.plus+sign",
+        segments: ["snake_case", "kebab-case", "plus+sign"],
+      },
       { path: "1.2.3", segments: ["1", "2", "3"] },
-      { path: "a" + "b".repeat(61) + "c", segments: ["a" + "b".repeat(61) + "c"] }, // 63 char segment
+      {
+        path: "a" + "b".repeat(61) + "c",
+        segments: ["a" + "b".repeat(61) + "c"],
+      }, // 63 char segment
     ],
     invalid: [
       { path: "", error: "Path is required" },
@@ -172,20 +178,72 @@ describe("NamespacePathValidation", () => {
       { path: "api.", error: "Path segment is empty" },
       { path: ".api", error: "Path segment is empty" },
       { path: "api..users", error: "Path segment is empty" },
-      { path: "a" + "b".repeat(254) + "c", error: "Path cannot exceed 255 characters" }, // 256 chars
-      { path: "-api", error: "Path is invalid: Path segment must start with a lowercase letter or digit" },
-      { path: "_api", error: "Path is invalid: Path segment must start with a lowercase letter or digit" },
-      { path: "+api", error: "Path is invalid: Path segment must start with a lowercase letter or digit" },
-      { path: "api-", error: "Path is invalid: Path segment must end with a lowercase letter or digit" },
-      { path: "api_", error: "Path is invalid: Path segment must end with a lowercase letter or digit" },
-      { path: "api+", error: "Path is invalid: Path segment must end with a lowercase letter or digit" },
-      { path: "Api.v2", error: "Path is invalid: Path segment cannot contain uppercase letters" },
-      { path: "api.V2", error: "Path is invalid: Path segment cannot contain uppercase letters" },
-      { path: "api.users@host", error: "Path is invalid: Path segment can only contain lowercase letters, numbers, hyphens, underscores, and plus signs" },
-      { path: "api.hello world", error: "Path is invalid: Path segment can only contain lowercase letters, numbers, hyphens, underscores, and plus signs" },
-      { path: "api.-users", error: "Path is invalid: Path segment must start with a lowercase letter or digit" },
-      { path: "api.users-", error: "Path is invalid: Path segment must end with a lowercase letter or digit" },
-      { path: "a" + "b".repeat(62) + "c.api", error: "Path is invalid: Path segment cannot exceed 63 characters" }, // 64 char segment
+      {
+        path: "a" + "b".repeat(254) + "c",
+        error: "Path cannot exceed 255 characters",
+      }, // 256 chars
+      {
+        path: "-api",
+        error:
+          "Path is invalid: Path segment must start with a lowercase letter or digit",
+      },
+      {
+        path: "_api",
+        error:
+          "Path is invalid: Path segment must start with a lowercase letter or digit",
+      },
+      {
+        path: "+api",
+        error:
+          "Path is invalid: Path segment must start with a lowercase letter or digit",
+      },
+      {
+        path: "api-",
+        error:
+          "Path is invalid: Path segment must end with a lowercase letter or digit",
+      },
+      {
+        path: "api_",
+        error:
+          "Path is invalid: Path segment must end with a lowercase letter or digit",
+      },
+      {
+        path: "api+",
+        error:
+          "Path is invalid: Path segment must end with a lowercase letter or digit",
+      },
+      {
+        path: "Api.v2",
+        error: "Path is invalid: Path segment cannot contain uppercase letters",
+      },
+      {
+        path: "api.V2",
+        error: "Path is invalid: Path segment cannot contain uppercase letters",
+      },
+      {
+        path: "api.users@host",
+        error:
+          "Path is invalid: Path segment can only contain lowercase letters, numbers, hyphens, underscores, and plus signs",
+      },
+      {
+        path: "api.hello world",
+        error:
+          "Path is invalid: Path segment can only contain lowercase letters, numbers, hyphens, underscores, and plus signs",
+      },
+      {
+        path: "api.-users",
+        error:
+          "Path is invalid: Path segment must start with a lowercase letter or digit",
+      },
+      {
+        path: "api.users-",
+        error:
+          "Path is invalid: Path segment must end with a lowercase letter or digit",
+      },
+      {
+        path: "a" + "b".repeat(62) + "c.api",
+        error: "Path is invalid: Path segment cannot exceed 63 characters",
+      }, // 64 char segment
     ],
   };
 

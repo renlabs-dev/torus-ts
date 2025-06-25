@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   isValidNamespaceSegment,
   namespacePathField,
-} from "@torus-network/torus-utils/validation";
+} from "@torus-network/sdk/types/namespace";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";

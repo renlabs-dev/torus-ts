@@ -13,6 +13,10 @@
     "./types": {
       "default": "./dist/types/index.js",
       "types": "./dist/types/index.d.ts"
+    },
+    "./types/namespace": {
+      "default": "./dist/types/namespace/index.js",
+      "types": "./dist/types/namespace/index.d.ts"
     }
   },
   "files": [

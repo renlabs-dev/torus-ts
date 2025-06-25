@@ -1,8 +1,9 @@
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { z } from "zod";
-import { validateNamespacePath } from "@torus-network/torus-utils/validation";
+
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import type { SS58Address } from "../address.js";
+import { validateNamespacePath } from "../types/namespace/index.js";
 import {
   sb_address,
   sb_bigint,
