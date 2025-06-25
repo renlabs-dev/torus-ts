@@ -1,3 +1,6 @@
+-- atlas:nolint destructive
+
+-- migration.sql --
 -- Create enum type "emission_allocation_type"
 CREATE TYPE "public"."emission_allocation_type" AS ENUM ('streams', 'fixed_amount');
 -- Create enum type "emission_distribution_type"
