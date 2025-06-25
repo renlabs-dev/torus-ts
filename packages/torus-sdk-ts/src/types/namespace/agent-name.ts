@@ -12,6 +12,26 @@
 
 import { z } from "zod";
 
+import type { Brand } from "@torus-network/torus-utils";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+
+/**
+ * Branded string type for a validated agent name.
+ *
+ * Use {@link validateAgentName} to create instances of this type.
+ *
+ * @example
+ * ```ts
+ * const [error, agentName] = validateAgentName("my-agent");
+ * if (!error) {
+ *   // agentName is now of type AgentName
+ *   processAgentName(agentName);
+ * }
+ * ```
+ */
+export type AgentName = Brand<"AgentName", string>;
+
 /**
  * Regular expression for validating agent names
  * Matches: a-z, 0-9, hyphens, underscores
@@ -35,27 +55,29 @@ const errorMessages = {
 };
 
 /**
- * Validates an agent name and returns
+ * Validates an agent name
  *
  * @param name - The agent name to validate
- * @returns Error message string if invalid, null if valid
+ * @returns Result with name if valid, error message if invalid
  *
  * @example
  * ```typescript
- * validateAgentName("my-agent") // null (valid)
- * validateAgentName("-agent") // "Agent name must start with a lowercase letter or digit"
- * validateAgentName("") // "Agent name is required"
+ * validateAgentName("my-agent") // [undefined, AgentName("my-agent")]
+ * validateAgentName("-agent") // ["Agent name must start with a lowercase letter or digit", undefined]
+ * validateAgentName("") // ["Agent name is required", undefined]
  * ```
  */
-export const validateAgentName = (name: string): string | null => {
-  if (!name) return errorMessages.required;
-  if (name.length > 63) return errorMessages.tooLong;
-  if (/[A-Z]/.test(name)) return errorMessages.uppercase;
-  if (!/^[a-z0-9]/.test(name)) return errorMessages.invalidStart;
-  if (!/[a-z0-9]$/.test(name)) return errorMessages.invalidEnd;
-  if (!/^[a-z0-9-_]*$/.test(name)) return errorMessages.invalidChars;
-  if (!AGENT_NAME_REGEX.test(name)) return errorMessages.generic;
-  return null;
+export const validateAgentName = (name: string): Result<AgentName, string> => {
+  const e = (err: string) => makeErr(err);
+
+  if (!name) return e(errorMessages.required);
+  if (name.length > 63) return e(errorMessages.tooLong);
+  if (/[A-Z]/.test(name)) return e(errorMessages.uppercase);
+  if (!/^[a-z0-9]/.test(name)) return e(errorMessages.invalidStart);
+  if (!/[a-z0-9]$/.test(name)) return e(errorMessages.invalidEnd);
+  if (!/^[a-z0-9-_]*$/.test(name)) return e(errorMessages.invalidChars);
+  if (!AGENT_NAME_REGEX.test(name)) return e(errorMessages.generic);
+  return makeOk(name as AgentName);
 };
 
 /**
@@ -71,8 +93,10 @@ export const validateAgentName = (name: string): string | null => {
  * isValidAgentName("") // false
  * ```
  */
-export const isValidAgentName = (name: string): boolean =>
-  validateAgentName(name) === null;
+export const isValidAgentName = (name: string): boolean => {
+  const [error] = validateAgentName(name);
+  return error === undefined;
+};
 
 /**
  * Custom Zod field for required agent name validation
@@ -94,6 +118,6 @@ export const agentNameField = () =>
     .refine(
       (name) => isValidAgentName(name),
       (name) => ({
-        message: validateAgentName(name) ?? errorMessages.generic,
+        message: validateAgentName(name)[0] ?? errorMessages.generic,
       }),
     );

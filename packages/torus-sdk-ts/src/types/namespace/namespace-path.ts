@@ -12,8 +12,47 @@
 
 import { z } from "zod";
 
-import type { Result } from "../result.js";
-import { makeErr, makeOk } from "../result.js";
+import type { Brand } from "@torus-network/torus-utils";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+
+/**
+ * Branded string type for a validated single segment of a namespace path.
+ *
+ * Use {@link validateNamespaceSegment} to create instances of this type.
+ *
+ * @example
+ * ```ts
+ * const [error, segment] = validateNamespaceSegment("my-segment");
+ * if (!error) {
+ *   // segment is now of type NamespaceSegment
+ *   processSegment(segment);
+ * }
+ * ```
+ */
+export type NamespaceSegment = Brand<"NamespaceSegment", string>;
+
+/**
+ * Branded array type for a validated namespace path consisting of dot-separated
+ * segments.
+ *
+ * Represents a complete namespace path that has been validated to ensure all
+ * segments conform to the namespace format rules and the total path length is
+ * within limits.
+ *
+ * Use {@link validateNamespacePath} to create instances of this type.
+ *
+ * @example
+ * ```ts
+ * const [error, pathSegments] = validateNamespacePath("api.v2.users");
+ * if (!error) {
+ *   // pathSegments is now of type NamespacePath
+ *   // Contains: ["api", "v2", "users"]
+ *   processNamespacePath(pathSegments);
+ * }
+ * ```
+ */
+export type NamespacePath = Brand<"NamespacePath", string[]>;
 
 /**
  * Maximum length of a namespace segment
@@ -57,15 +96,15 @@ const segmentErrorMessages = {
  *
  * @example
  * ```typescript
- * validateNamespaceSegment("my-segment") // [undefined, "my-segment"]
- * validateNamespaceSegment("my+segment") // [undefined, "my+segment"]
+ * validateNamespaceSegment("my-segment") // [undefined, NamespaceSegment("my-segment")]
+ * validateNamespaceSegment("my+segment") // [undefined, NamespaceSegment("my+segment")]
  * validateNamespaceSegment("-segment") // ["Path segment must start with a lowercase letter or digit", undefined]
  * validateNamespaceSegment("") // ["Path segment is required", undefined]
  * ```
  */
 export const validateNamespaceSegment = (
   segment: string,
-): Result<string, string> => {
+): Result<NamespaceSegment, string> => {
   const e = (err: string) => makeErr(err);
 
   if (!segment) return e(segmentErrorMessages.required);
@@ -78,7 +117,7 @@ export const validateNamespaceSegment = (
     return e(segmentErrorMessages.invalidChars);
   if (!NAMESPACE_SEGMENT_REGEX.test(segment))
     return e(segmentErrorMessages.generic);
-  return makeOk(segment);
+  return makeOk(segment as NamespaceSegment);
 };
 
 /**
@@ -143,8 +182,8 @@ const pathErrorMessages = {
  *
  * @example
  * ```typescript
- * validateNamespacePath("api.v2.users") // [undefined, ["api", "v2", "users"]]
- * validateNamespacePath("my-app.config") // [undefined, ["my-app", "config"]]
+ * validateNamespacePath("api.v2.users") // [undefined, NamespacePath(["api", "v2", "users"])]
+ * validateNamespacePath("my-app.config") // [undefined, NamespacePath(["my-app", "config"])]
  * validateNamespacePath("api..users") // ["Path segment is empty", undefined]
  * validateNamespacePath("") // ["Path is required", undefined]
  * validateNamespacePath("Test.api") // ["Path is invalid: Path segment cannot contain uppercase letters", undefined]
@@ -152,7 +191,7 @@ const pathErrorMessages = {
  */
 export const validateNamespacePath = (
   path: string,
-): Result<string[], string> => {
+): Result<NamespacePath, string> => {
   const e = (err: string) => makeErr(err);
 
   if (!path) return e(pathErrorMessages.required);
@@ -169,7 +208,7 @@ export const validateNamespacePath = (
     }
   }
 
-  return makeOk(segments);
+  return makeOk(segments as NamespacePath);
 };
 
 /**

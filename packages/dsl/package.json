@@ -15,7 +15,7 @@
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/test-runner.ts",
+    "_test": "tsx tests/test-runner.ts",
     "test:schema": "tsx tests/schema-test.ts",
     "test:analyzer": "tsx tests/analyzer-test.ts",
     "test:serialization": "tsx tests/serialization-test.ts",

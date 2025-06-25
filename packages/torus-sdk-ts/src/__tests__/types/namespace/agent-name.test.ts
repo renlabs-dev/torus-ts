@@ -4,7 +4,7 @@ import {
   isValidAgentName,
   agentNameField,
   AGENT_NAME_REGEX,
-} from "../../validations/agent-name-validation.js";
+} from "../../../types/namespace/agent-name.js";
 
 describe("AgentNameValidation", () => {
   const testCases = {
@@ -62,16 +62,20 @@ describe("AgentNameValidation", () => {
 
   describe("validateAgentName", () => {
     it.each(testCases.valid)(
-      "should return null for valid name '%s'",
+      "should return Ok result for valid name '%s'",
       (name) => {
-        expect(validateAgentName(name)).toBeNull();
+        const [error, result] = validateAgentName(name);
+        expect(error).toBeUndefined();
+        expect(result).toBe(name);
       },
     );
 
     it.each(testCases.invalid)(
-      "should return error '$error' for invalid name '$value'",
+      "should return Err result '$error' for invalid name '$value'",
       ({ value, error }) => {
-        expect(validateAgentName(value)).toBe(error);
+        const [err, result] = validateAgentName(value);
+        expect(err).toBe(error);
+        expect(result).toBeUndefined();
       },
     );
   });
