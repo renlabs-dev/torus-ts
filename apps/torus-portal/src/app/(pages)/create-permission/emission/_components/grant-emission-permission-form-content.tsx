@@ -35,13 +35,13 @@ import {
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 
+import { Badge } from "@torus-ts/ui/components/badge";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import type {
   GrantEmissionPermissionForm,
   GrantEmissionPermissionFormData,
   GrantEmissionPermissionMutation,
 } from "./grant-emission-permission-form-schema";
-import { Badge } from "@torus-ts/ui/components/badge";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 interface GrantEmissionPermissionFormProps {
   form: GrantEmissionPermissionForm;

@@ -712,7 +712,6 @@ export function togglePermission(
 ) {
   return api.tx.permission0.togglePermissionAccumulation(permissionId, enable);
 }
-// updateEmissionPermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, newTargets: BTreeMap<AccountId32, u16>, newStreams: Option<BTreeMap<H256, Percent>> | null | Uint8Array | BTreeMap<H256, Percent>, newDistributionControl: Option<PalletPermission0PermissionEmissionDistributionControl> | null | Uint8Array | PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string) => SubmittableExtrinsic<ApiType>, [H256, BTreeMap<AccountId32, u16>, Option<BTreeMap<H256, Percent>>, Option<PalletPermission0PermissionEmissionDistributionControl>]>;
 
 export interface UpdateEmissionPermission {
   api: ApiPromise;
