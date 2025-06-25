@@ -36,6 +36,7 @@ export default function PermissionGraphContainer() {
     allComputedWeights,
     allSignals,
   } = useGraphData();
+
   const { selectedAccount } = useTorus();
 
   // Handle initial selected node from query params

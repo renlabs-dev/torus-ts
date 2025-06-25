@@ -3,7 +3,7 @@ import type {
   CustomGraphNode,
   CustomGraphLink,
   CustomGraphData,
-  PermissionDetailsBase,
+  PermissionDetails,
   SignalsList,
 } from "../permission-graph-types";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
@@ -20,9 +20,7 @@ function getRandomParticleSpeed(): number {
   );
 }
 
-export type PermissionDetail = PermissionDetailsBase[number] & {
-  remainingBlocks?: number;
-};
+export type PermissionDetail = PermissionDetails[number];
 
 export interface ComputedWeight {
   agentKey: string;
@@ -115,25 +113,35 @@ export function createPermissionLinks(
     return [];
   }
 
-  return permissionDetails.map((permission) => ({
-    linkType: "permission",
-    source: permission.grantorKey,
-    target: permission.granteeKey,
-    id: permission.permissionId,
-    scope: permission.scope,
-    duration: permission.duration,
-    parentId: permission.parentId ?? "",
-    enforcement: "default_enforcement",
-    linkDirectionalArrowLength:
-      GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowLength,
-    linkDirectionalArrowRelPos:
-      GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowRelPos,
-    linkDirectionalParticles: GRAPH_CONSTANTS.MIN_PARTICLES,
-    linkDirectionalParticleSpeed: getRandomParticleSpeed(),
-    linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
-    linkWidth: GRAPH_CONSTANTS.PERMISSION_LINK.width,
-    linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_LINK,
-  }));
+  return permissionDetails
+    .filter((permission) => 
+      permission.grantorKey && 
+      permission.granteeKey && 
+      permission.permissionId
+    )
+    .map((permission) => ({
+      linkType: "permission",
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      source: permission.grantorKey!,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      target: permission.granteeKey!,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      id: permission.permissionId!,
+      scope: permission.scope ?? "UNKNOWN",
+      duration: permission.duration,
+      parentId: permission.parentId ?? "",
+      enforcement: "default_enforcement",
+      permissionType: permission.permissionType,
+      linkDirectionalArrowLength:
+        GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowLength,
+      linkDirectionalArrowRelPos:
+        GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowRelPos,
+      linkDirectionalParticles: GRAPH_CONSTANTS.MIN_PARTICLES,
+      linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+      linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+      linkWidth: GRAPH_CONSTANTS.PERMISSION_LINK.width,
+      linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_LINK,
+    }));
 }
 
 export function createAllocationLinks(
@@ -252,8 +260,8 @@ export function createGraphData(
 
   if (permissionDetails && permissionDetails.length > 0) {
     permissionDetails.forEach((permission) => {
-      uniqueAddresses.add(permission.grantorKey);
-      uniqueAddresses.add(permission.granteeKey);
+      if (permission.grantorKey) uniqueAddresses.add(permission.grantorKey);
+      if (permission.granteeKey) uniqueAddresses.add(permission.granteeKey);
     });
   }
 
