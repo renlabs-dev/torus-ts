@@ -26,6 +26,14 @@ export const makeErrFrom =
   (...args: Args): Err<E> =>
     makeErr(new constr(...args));
 
+/** Extracts the Ok value type from a Result */
+export type OkType<R extends Result<unknown, unknown>> =
+  R extends Ok<infer T> ? T : never;
+
+/** Extracts the Err value type from a Result */
+export type ErrType<R extends Result<unknown, unknown>> =
+  R extends Err<infer E> ? E : never;
+
 // ==== Result utilities ====
 
 export const isErr = <T, E>(result: Result<T, E>): result is Err<E> =>
