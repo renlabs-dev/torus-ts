@@ -246,67 +246,75 @@ export function RevokePermissionButton({
   const disabledReason = getDisabledReason();
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="destructive"
-          size="sm"
-          disabled={!canRevoke || isRevoking}
-          title={disabledReason ?? "Revoke this permission"}
-        >
-          {isRevoking ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2 className="h-4 w-4" />
-          )}
-          Revoke Permission
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Revoke Permission</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to revoke this permission? This action cannot
-            be undone and will immediately terminate the permission's effects.
-            {(permissionData ?? permission) && (
-              <span className="mt-2 text-sm">
-                <strong>Permission Details:</strong>
-                <br />
-                Type: {getPermissionType()}
-                <br />
-                Grantor:{" "}
-                {permissionData
-                  ? permissionData.permissions.grantorAccountId
-                  : permission?.grantor}
-                <br />
-                Grantee:{" "}
-                {permissionData
-                  ? permissionData.permissions.granteeAccountId
-                  : permission?.grantee}
-                <br />
-                ID: {permissionId}
-              </span>
-            )}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleRevoke}
-            className="bg-red-600 hover:bg-red-700"
-            disabled={isRevoking}
+    <div className="flex items-center gap-3">
+      {/* Show disabled reason when button is disabled */}
+      {disabledReason && (
+        <span className="text-sm text-muted-foreground">{disabledReason}</span>
+      )}
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={!canRevoke || isRevoking}
+            title={disabledReason ?? "Revoke this permission"}
           >
             {isRevoking ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Revoking...
-              </>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Revoke Permission"
+              <Trash2 className="h-4 w-4" />
             )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+            Revoke Permission
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke Permission</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to revoke this permission? This action
+              cannot be undone and will immediately terminate the permission's
+              effects.
+              {(permissionData ?? permission) && (
+                <span className="mt-2 text-sm">
+                  <strong>Permission Details:</strong>
+                  <br />
+                  Type: {getPermissionType()}
+                  <br />
+                  Grantor:{" "}
+                  {permissionData
+                    ? permissionData.permissions.grantorAccountId
+                    : permission?.grantor}
+                  <br />
+                  Grantee:{" "}
+                  {permissionData
+                    ? permissionData.permissions.granteeAccountId
+                    : permission?.grantee}
+                  <br />
+                  ID: {permissionId}
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRevoke}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isRevoking}
+            >
+              {isRevoking ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Revoking...
+                </>
+              ) : (
+                "Revoke Permission"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

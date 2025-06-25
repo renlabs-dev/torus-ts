@@ -240,7 +240,7 @@ export default function EditEmissionPermissionForm({
 
           {/* Revoke Permission Button */}
           {selectedAccount && (
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex justify-end items-center">
               <RevokePermissionButton
                 permissionId={selectionForm.watch("permissionId") || null}
                 permissionData={selectedPermissionData}
