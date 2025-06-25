@@ -1,0 +1,235 @@
+name: Atlas Migrations
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    types:
+      - opened
+      - reopened
+      - synchronize
+  push:
+    branches:
+      - main
+      - dev
+      - feature/migrations
+    paths:
+      - "atlas/migrations/**"
+      - atlas.hcl
+      - ".github/workflows/atlas-migrations.yml"
+      - ".github/actions/import-db-secrets/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubicloud-standard-2
+    outputs:
+      has_pending: ${{ steps.migration-status.outputs.has_pending }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+      - uses: ariga/setup-atlas@v0
+
+      - run: git fetch origin main:main
+
+      - name: Run lint
+        run: |
+          atlas migrate lint --env local --git-base origin/main
+
+      - name: Verify migrations hash
+        run: |
+          (cd atlas/migrations && cp atlas.sum atlas.sum.orig)
+
+          atlas migrate hash --env local
+
+          cd atlas/migrations
+          if ! cmp -s atlas.sum atlas.sum.orig; then
+            echo "❌ Migration hash mismatch detected. Please run 'atlas migrate hash' locally and commit changes."
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Verify non-generated migrations
+        run: |
+          atlas migrate diff --env local
+
+          cd atlas/migrations
+          if ! cmp -s atlas.sum atlas.sum.orig; then
+            echo "❌ Schema changes detected that require new migrations!"
+            echo "Please run 'atlas migrate diff --env local' locally to generate the required migrations,"
+            echo "review them, and include them in your PR."
+            exit 1
+          fi
+
+      - name: Check migration status
+        id: migration-status
+        run: |
+          output=$(atlas migrate status --env local --url "${POSTGRES_URL}")
+          echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+          echo "$output"
+
+  shadow-apply-check:
+    needs: check
+    if: |
+      github.event_name == 'pull_request' &&
+      github.base_ref == 'main' &&
+      needs.check.outputs.has_pending == 'true'
+    runs-on: ubicloud-standard-2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start db
+        run: |
+          docker compose up -d postgres
+          docker ps
+
+      - name: Import DB Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+      - name: Fetch URL and test connection
+        id: shadow-db
+        run: |
+          CONTAINER_ID=$(docker compose ps -q postgres)
+          DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
+          DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
+          echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
+
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready -d "${DATABASE_URL}"; do
+            echo "PostgreSQL is unavailable - sleeping"
+            sleep 1
+          done
+          echo "PostgreSQL is ready!"
+
+      - name: Dump target database
+        run: pg_dump -Fc -v -b "${POSTGRES_URL}" -f database.dump
+
+      - name: Load dump into shadow database
+        run: pg_restore -v --no-owner --no-acl --role=postgres -d "${{ steps.shadow-db.outputs.db_url }}" database.dump
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Apply migrations (dry-run)
+        run: atlas migrate apply --dry-run --env local --url "${{ steps.shadow-db.outputs.db_url }}"
+
+      - name: Apply migrations
+        run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
+
+      - name: Delete DB
+        if: always()
+        run: docker compose down -v
+
+  apply:
+    needs: check
+    if: |
+      needs.check.outputs.has_pending == 'true' &&
+      github.event_name == 'push'
+    runs-on: ubicloud-standard-2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Import Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.VAULT_ADDR }}
+          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Generate migrations report
+        run: |
+          mkdir -p ./migration-artifacts
+          echo "Migration execution timestamp: $(date)" > ./migration-artifacts/migrations-report.txt
+          echo "Branch: ${{ github.ref_name }}" >> ./migration-artifacts/migrations-report.txt
+          echo "Commit: ${{ github.sha }}" >> ./migration-artifacts/migrations-report.txt
+          echo -e "\nCurrent migration status:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
+          echo -e "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate apply --env local --dry-run --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt 2>&1
+
+      - name: Apply migrations
+        run: atlas migrate apply --env local --url "${POSTGRES_URL}" --lock-timeout 120s
+
+      - name: Update migrations report with final status
+        run: |
+          echo -e "\nFinal migration status:" >> ./migration-artifacts/migrations-report.txt
+          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
+
+      - name: Upload migrations report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migrations-report-${{ github.sha }}
+          path: ./migration-artifacts/
+          retention-days: 90
+          if-no-files-found: error
+
+  restart-apps:
+    needs: [check, apply]
+    if: |
+      github.event_name == 'push' &&
+      needs.apply.result == 'success'
+    runs-on: ubicloud-standard-2
+    container:
+      image: ghcr.io/renlabs-dev/devops-ci:latest
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+      VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+    strategy:
+      matrix:
+        app:
+          - torus-allocator
+          - torus-cache
+          - torus-governance
+          - torus-worker
+          - torus-portal
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubernetes authentication
+        run: /apps/k8s_auth_w_approle_sa.sh
+
+      - name: Set environment variables
+        run: |
+          echo "NAMESPACE=torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps" >> $GITHUB_ENV
+
+      - name: Restart apps (${{ matrix.app }})
+        run: |
+          kubectl rollout restart -n ${NAMESPACE} deployment -l app=${{ matrix.app }}
+          kubectl rollout status -n ${NAMESPACE} deployment -l app=${{ matrix.app }}  --timeout=300s
