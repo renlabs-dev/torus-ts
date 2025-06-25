@@ -17,7 +17,6 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { useGraphData } from "./force-graph/use-graph-data";
 import { ForceGraphCanvas } from "./force-graph/force-graph-canvas";
 import { Loading } from "@torus-ts/ui/components/loading";
-import PortalNavigationTabs from "~/app/_components/portal-navigation-tabs";
 import { GraphSheet } from "./graph-sheet/graph-sheet";
 
 export default function PermissionGraphContainer() {
@@ -119,7 +118,6 @@ export default function PermissionGraphContainer() {
       <div className="absolute top-[3.9rem] left-2 right-2 z-10">
         {/* Desktop layout */}
         <div className="hidden lg:flex items-center gap-2 w-full animate-fade-down">
-          <PortalNavigationTabs />
           <PermissionGraphOverview graphData={graphData} />
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
           <div className="flex-1">
@@ -132,7 +130,6 @@ export default function PermissionGraphContainer() {
         {/* Mobile/Tablet layout - stacked */}
         <div className="flex flex-col gap-2 lg:hidden">
           <div className="flex items-center gap-2 overflow-x-auto">
-            <PortalNavigationTabs />
             <MyAgentButton
               graphData={graphData}
               onNodeClick={handleNodeSelect}

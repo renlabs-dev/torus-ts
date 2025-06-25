@@ -251,4 +251,51 @@ export const permissionRouter = {
         orderBy: (amounts, { desc }) => [desc(amounts.lastUpdated)],
       });
     }),
+
+  allWithCompletePermissions: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db
+      .select()
+      .from(permissionsSchema)
+      .leftJoin(
+        emissionPermissionsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          emissionPermissionsSchema.permissionId,
+        ),
+      )
+      .leftJoin(
+        namespacePermissionsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          namespacePermissionsSchema.permissionId,
+        ),
+      )
+      .leftJoin(
+        emissionStreamAllocationsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          emissionStreamAllocationsSchema.permissionId,
+        ),
+      )
+      .leftJoin(
+        emissionDistributionTargetsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          emissionDistributionTargetsSchema.permissionId,
+        ),
+      )
+      .leftJoin(
+        accumulatedStreamAmountsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          accumulatedStreamAmountsSchema.permissionId,
+        ),
+      )
+      .where(isNull(permissionsSchema.deletedAt))
+      .orderBy(
+        permissionsSchema.createdAt,
+        emissionStreamAllocationsSchema.streamId,
+        emissionDistributionTargetsSchema.targetAccountId,
+      );
+  }),
 } satisfies TRPCRouterRecord;
