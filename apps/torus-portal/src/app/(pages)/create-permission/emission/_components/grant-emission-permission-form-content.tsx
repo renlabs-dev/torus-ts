@@ -64,6 +64,8 @@ export function GrantEmissionPermissionFormComponent({
     checkSS58IfDefined(selectedAccount?.address),
   );
 
+  console.log(availableStreams.data);
+
   const {
     fields: targetFields,
     append: appendTarget,
@@ -144,8 +146,8 @@ export function GrantEmissionPermissionFormComponent({
   };
 
   return (
-    <div className="pb-12 px-6 w-full mx-auto flex items-end justify-end">
-      <Card className="mx-auto max-w-2xl border-0">
+    <div className="pb-12 w-full mx-auto flex items-end justify-end">
+      <Card className="border-0">
         <CardHeader>
           <CardTitle>Grant Emission Permission</CardTitle>
           <CardDescription>

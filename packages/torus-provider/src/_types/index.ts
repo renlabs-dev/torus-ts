@@ -51,10 +51,7 @@ export interface RegisterAgent {
   callback?: (status: TransactionResult) => void;
 }
 
-export type UpdateAgent = Pick<
-  RegisterAgent,
-  "url" | "metadata" | "callback"
->;
+export type UpdateAgent = Pick<RegisterAgent, "url" | "metadata" | "callback">;
 
 export interface AddCustomProposal {
   IpfsHash: string;
