@@ -4,7 +4,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -73,17 +73,33 @@ export default function EditEmissionPermissionForm({
     resolver: zodResolver(editEmissionPermissionSchema),
   });
 
+  // Reset all state when wallet changes
+  useEffect(() => {
+    if (selectedAccount?.address) {
+      // Clear all state when wallet switches
+      selectionForm.reset({ permissionId: "" });
+      editForm.reset();
+      setSelectedPermissionInfo(null);
+      setSelectedPermission(null);
+      setSelectedPermissionData(null);
+      setCurrentBlock(0n);
+      setTransactionStatus("idle");
+    }
+  }, [selectedAccount?.address, selectionForm, editForm]);
+
   // Handle permission selection
   const handlePermissionSelect = async (permissionId: string) => {
-    if (!api || !selectedAccount?.address) return;
+    if (!api || !selectedAccount?.address || !permissionId) return;
 
     const permissionResult = await queryPermission(api, permissionId);
     if (permissionResult[0] !== undefined || !permissionResult[1]) {
-      toast({
-        title: "Error",
-        description: "Failed to load permission details",
-        variant: "destructive",
-      });
+      // Silently fail for wallet switching scenarios to avoid unnecessary error toasts
+      // Clear any existing state when permission query fails
+      setSelectedPermissionInfo(null);
+      setSelectedPermission(null);
+      setSelectedPermissionData(null);
+      setCurrentBlock(0n);
+      editForm.reset();
       return;
     }
 
@@ -217,7 +233,7 @@ export default function EditEmissionPermissionForm({
                 void handlePermissionSelect(value);
               }}
               onPermissionDataChange={(data) => {
-                setSelectedPermissionData(data as PermissionWithDetails);
+                setSelectedPermissionData(data);
               }}
             />
           </Form>

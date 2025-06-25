@@ -91,6 +91,32 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     (item) => item.permissions.permissionId === props.selectedPermissionId,
   );
 
+  // Handle wallet switching - reset selection when account changes
+  useEffect(() => {
+    if (selectedAccount?.address) {
+      // Clear current selection when wallet changes
+      if (props.selectedPermissionId && userPermissions) {
+        // Check if current selection is valid for new account
+        const isCurrentSelectionValid = userPermissions.some(
+          (item) =>
+            item.permissions.permissionId === props.selectedPermissionId,
+        );
+
+        if (!isCurrentSelectionValid) {
+          // Clear invalid selection
+          props.onPermissionIdChange("");
+        }
+      }
+    }
+  }, [
+    selectedAccount?.address,
+    userPermissions,
+    props.selectedPermissionId,
+    props.onPermissionIdChange,
+    props,
+  ]);
+
+  // Auto-select first permission when conditions are met
   useEffect(() => {
     if (hasPermissions && !props.selectedPermissionId && defaultPermissionId) {
       props.onPermissionIdChange(defaultPermissionId);
