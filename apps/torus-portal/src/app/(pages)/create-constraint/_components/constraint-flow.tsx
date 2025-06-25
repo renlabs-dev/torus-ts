@@ -95,7 +95,7 @@ function ConstraintFlow() {
     if (!selectedPermissionId || !permissionsWithConstraints) return false;
     return permissionsWithConstraints.some(
       (item) =>
-        item.permission.permission_id === selectedPermissionId &&
+        item.permission.permissionId === selectedPermissionId &&
         item.constraint !== null,
     );
   }, [selectedPermissionId, permissionsWithConstraints]);
@@ -198,7 +198,7 @@ function ConstraintFlow() {
     // Find the permission with constraint
     const permissionWithConstraint = permissionsWithConstraints.find(
       (item) =>
-        item.permission.permission_id === selectedPermissionId &&
+        item.permission.permissionId === selectedPermissionId &&
         item.constraint !== null,
     );
 

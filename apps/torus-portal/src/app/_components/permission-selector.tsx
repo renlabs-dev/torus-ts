@@ -48,7 +48,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     );
 
   const displayPermissions = permissionsData?.map(
-    (item) => item.permission.permission_id,
+    (item) => item.permission.permissionId,
   );
 
   const hasPermissions = displayPermissions && displayPermissions.length > 0;
@@ -79,12 +79,12 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   const defaultPermissionId = getDefaultPermissionId();
 
   const selectedPermissionData = permissionsData?.find(
-    (item) => item.permission.permission_id === props.selectedPermissionId,
+    (item) => item.permission.permissionId === props.selectedPermissionId,
   );
 
   const hasConstraint = (permissionId: string): boolean => {
     const permission = permissionsData?.find(
-      (item) => item.permission.permission_id === permissionId,
+      (item) => item.permission.permissionId === permissionId,
     );
     return !!permission?.constraint;
   };
@@ -117,15 +117,15 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     return [
       {
         label: "Permission ID",
-        value: smallAddress(selectedPermissionData.permission.permission_id),
+        value: smallAddress(selectedPermissionData.permission.permissionId),
       },
       {
         label: "Grantor",
-        value: smallAddress(details.grantor_key),
+        value: smallAddress(details.grantorKey),
       },
       {
         label: "Grantee",
-        value: smallAddress(details.grantee_key),
+        value: smallAddress(details.granteeKey),
       },
       {
         label: "Scope",
@@ -145,7 +145,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       },
       {
         label: "Execution Count",
-        value: details.execution_count.toString(),
+        value: details.executionCount.toString(),
       },
     ];
   }

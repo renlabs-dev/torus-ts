@@ -14,7 +14,7 @@ import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
 import { penaltyRouter } from "./router/penalty/penalty";
 import { permissionDetailsRouter } from "./router/permission/permission-details";
-import { constraintRouter } from "./router/constraint/constraint";
+// import { constraintRouter } from "./router/constraint/constraint";
 import { createTRPCRouter } from "./trpc";
 import { permissionRouter } from "./router/permission/permission";
 import { signalRouter } from "./router/permission/signal";
@@ -41,8 +41,8 @@ export const appRouter = createTRPCRouter({
   commentInteraction: commentInteractionRouter,
   penalty: penaltyRouter,
 
-  // Constraint Management
-  constraint: constraintRouter,
+  // Constraint Management (commented out due to schema incompatibility)
+  // constraint: constraintRouter,
 
   // Discord Auth
   discordInfo: discordInfoRouter,

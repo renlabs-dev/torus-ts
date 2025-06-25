@@ -37,9 +37,9 @@ export function createNodes(
 ): CustomGraphNode[] {
   return Array.from(uniqueAddresses).map((address) => {
     const isGrantor =
-      permissionDetails?.some((p) => p.grantor_key === address) ?? false;
+      permissionDetails?.some((p) => p.grantorKey === address) ?? false;
     const isGrantee =
-      permissionDetails?.some((p) => p.grantee_key === address) ?? false;
+      permissionDetails?.some((p) => p.granteeKey === address) ?? false;
     const isAllocator = address === allocatorAddress;
 
     const hasWeight = agentWeightMap.has(address);
@@ -117,12 +117,12 @@ export function createPermissionLinks(
 
   return permissionDetails.map((permission) => ({
     linkType: "permission",
-    source: permission.grantor_key,
-    target: permission.grantee_key,
-    id: permission.permission_id,
+    source: permission.grantorKey,
+    target: permission.granteeKey,
+    id: permission.permissionId,
     scope: permission.scope,
     duration: permission.duration,
-    parentId: permission.parent_id ?? "",
+    parentId: permission.parentId ?? "",
     enforcement: "default_enforcement",
     linkDirectionalArrowLength:
       GRAPH_CONSTANTS.PERMISSION_LINK.directionalArrowLength,
@@ -252,8 +252,8 @@ export function createGraphData(
 
   if (permissionDetails && permissionDetails.length > 0) {
     permissionDetails.forEach((permission) => {
-      uniqueAddresses.add(permission.grantor_key);
-      uniqueAddresses.add(permission.grantee_key);
+      uniqueAddresses.add(permission.grantorKey);
+      uniqueAddresses.add(permission.granteeKey);
     });
   }
 
