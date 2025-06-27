@@ -9,6 +9,7 @@ import { logger } from "../utils/logger";
 import type { TransferFormValues } from "../utils/types";
 import { getTokenByIndex, useWarpCore } from "./token";
 import { useMultiProvider } from "./use-multi-provider";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const FEE_QUOTE_REFRESH_INTERVAL = 15_000; // 10s
 
@@ -43,13 +44,45 @@ async function fetchFeeQuotes(
   sender?: Address,
   senderPubKey?: Promise<HexString>,
 ): Promise<{ interchainQuote: TokenAmount; localQuote: TokenAmount } | null> {
-  const originToken = getTokenByIndex(warpCore, tokenIndex);
-  if (!destination || !sender || !originToken) return null;
+  // Get token by index
+  const [tokenError, originToken] = trySync(() =>
+    getTokenByIndex(warpCore, tokenIndex),
+  );
+
+  if (tokenError !== undefined) {
+    logger.error(`Error getting token with index ${tokenIndex}:`, tokenError);
+    return null;
+  }
+
+  // Validate required parameters
+  if (!destination || !sender || !originToken || !senderPubKey) {
+    return null;
+  }
+
   logger.debug("Fetching fee quotes");
-  return warpCore.estimateTransferRemoteFees({
-    originToken,
-    destination,
-    sender,
-    senderPubKey: await senderPubKey,
-  });
+
+  // Get sender public key
+  const [pubKeyError, resolvedPubKey] = await tryAsync(senderPubKey);
+
+  if (pubKeyError !== undefined) {
+    logger.error("Error resolving sender public key:", pubKeyError);
+    return null;
+  }
+
+  // Estimate transfer fees
+  const [feeError, feeQuotes] = await tryAsync(
+    warpCore.estimateTransferRemoteFees({
+      originToken,
+      destination,
+      sender,
+      senderPubKey: resolvedPubKey,
+    }),
+  );
+
+  if (feeError !== undefined) {
+    logger.error(`Error estimating transfer fees to ${destination}:`, feeError);
+    return null;
+  }
+
+  return feeQuotes;
 }

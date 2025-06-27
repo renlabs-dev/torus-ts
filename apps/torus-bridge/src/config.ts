@@ -16,7 +16,7 @@ export const evmChainValues = {
     testnet: {
       name: "torustestnet",
       displayName: "Torus Testnet EVM",
-      chainId: 21001,
+      chainId: 21000,
     },
   },
   base: {
@@ -28,7 +28,7 @@ export const evmChainValues = {
     testnet: {
       name: "base",
       displayName: "Base",
-      chainId: 84532,
+      chainId: 8453, // TODO : Change in the future, 84532 did not work, even thought it was the ID for the testnet.
     },
   },
 } satisfies Record<string, Record<ChainEnv, ChainValues>>;

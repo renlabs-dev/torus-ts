@@ -1,3 +1,5 @@
+import { trySync } from "@torus-network/torus-utils/try-catch";
+
 /**
  * Utility to simplify setting/removing query params.
  *
@@ -10,15 +12,30 @@ export function updateSearchParams(
   currentSearchParams: URLSearchParams,
   updates: Record<string, string | null>,
 ): string {
-  const params = new URLSearchParams(currentSearchParams.toString());
+  const [paramsError, params] = trySync(
+    () => new URLSearchParams(currentSearchParams.toString()),
+  );
 
-  Object.entries(updates).forEach(([key, value]) => {
-    if (value === null) {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
+  if (paramsError !== undefined) {
+    console.error("Error creating URLSearchParams:", paramsError);
+    return currentSearchParams.toString(); // Return original params if there's an error
+  }
+
+  const [updateError] = trySync(() => {
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    return true;
   });
+
+  if (updateError !== undefined) {
+    console.error("Error updating search parameters:", updateError);
+    return currentSearchParams.toString(); // Return original params if there's an error
+  }
 
   return params.toString();
 }

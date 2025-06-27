@@ -26,49 +26,18 @@ export function WalletBalance() {
   const { chainId: torusEvmChainId } = getChainValues("torus");
   const { chainId: baseChainId } = getChainValues("base");
 
-  // Torus
   const { api, isAccountConnected, isInitialized, selectedAccount } =
     useTorus();
 
-  // EVM
   const { address: evmAddress } = wagmi.useAccount();
-
-  // -- Torus EVM --
-
-  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
-  if (torusEvmClient == null) throw new Error("Torus EVM client not found");
-
-  const { chain: torusEvmChain } = torusEvmClient;
-
-  const { data: torusEvmBalance } = wagmi.useBalance({
-    address: evmAddress,
-    chainId: torusEvmChain.id,
-  });
-
-  // -- Base --
-
-  const baseClient = wagmi.useClient({ chainId: baseChainId });
-  if (baseClient == null) throw new Error("Base client not found");
-
-  const { chain: baseChain } = baseClient;
-
-  const { data: baseBalance } = wagmi.useReadContract({
-    chainId: baseChain.id,
-    // TODO: hardcoded contract address
-    address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: evmAddress ? [evmAddress] : undefined,
-  });
-
-  // -- Torus --
 
   const accountFreeBalance = useFreeBalance(
     api,
     selectedAccount?.address as SS58Address,
   );
+
   if (accountFreeBalance.isError) {
-    console.error(accountFreeBalance.error);
+    console.error("Error fetching free balance:", accountFreeBalance.error);
   }
   const userAccountFreeBalance = useCallback(() => {
     if (
@@ -84,6 +53,38 @@ export function WalletBalance() {
 
     return 0n;
   }, [accountFreeBalance, isAccountConnected, isInitialized]);
+
+  const torusEvmClient = wagmi.useClient({ chainId: torusEvmChainId });
+
+  const baseClient = wagmi.useClient({ chainId: baseChainId });
+
+  if (!torusEvmClient) {
+    console.error("Torus EVM client not found for chainId:", torusEvmChainId);
+    return (
+      <div className="text-red-600">Error: Torus EVM client unavailable</div>
+    );
+  }
+
+  if (!baseClient) {
+    console.error("Base client not found for chainId:", baseChainId);
+    return <div className="text-red-600">Error: Base client unavailable</div>;
+  }
+
+  const { chain: torusEvmChain } = torusEvmClient;
+  const { chain: baseChain } = baseClient;
+
+  const { data: torusEvmBalance } = wagmi.useBalance({
+    address: evmAddress,
+    chainId: torusEvmChain.id,
+  });
+
+  const { data: baseBalance } = wagmi.useReadContract({
+    chainId: baseChain.id,
+    address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: evmAddress ? [evmAddress] : undefined,
+  });
 
   const balancesList = [
     {
@@ -114,7 +115,6 @@ export function WalletBalance() {
     },
     {
       amount: baseBalance ?? null,
-      // amount: baseBalance,
       label: `${baseChain.name}`,
       icon: (
         <Image

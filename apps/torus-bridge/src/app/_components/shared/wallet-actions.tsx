@@ -8,7 +8,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { updateSearchParams } from "~/utils/query-params";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { TransferEVM } from "../transfer-evm";
 import { TransferToken } from "../transfer-token";
 
@@ -32,30 +32,33 @@ function WalletOptions() {
   const router = useRouter();
   const currentTab = searchParams.get("tab");
 
-  const handleTabChange = (value: string) => {
-    const updates: Record<string, string | null> = {};
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const updates: Record<string, string | null> = {};
 
-    updates.tab = value;
-    if (value === "torus") {
-      updates.from = null;
-      updates.to = null;
-      updates.mode = "bridge";
-    } else if (value === "base") {
-      updates.mode = null;
-      updates.from = "base";
-      updates.to = "torus";
-    }
+      updates.tab = value;
+      if (value === "torus") {
+        updates.from = null;
+        updates.to = null;
+        updates.mode = "bridge";
+      } else if (value === "base") {
+        updates.mode = null;
+        updates.from = "base";
+        updates.to = "torus";
+      }
 
-    const newQuery = updateSearchParams(searchParams, updates);
-    router.push("/?" + newQuery);
-  };
+      const newQuery = updateSearchParams(searchParams, updates);
+      router.push("/?" + newQuery);
+    },
+    [searchParams, router],
+  );
 
   useEffect(() => {
-    if (!currentTab || !tabs.some((view) => view.params === currentTab)) {
+    const isValid = tabs.some((v) => v.params === currentTab);
+    if (!isValid && defaultTab.params !== currentTab) {
       handleTabChange(defaultTab.params);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab, router, searchParams]);
+  }, [currentTab, handleTabChange]);
 
   return (
     <Tabs

@@ -1,6 +1,7 @@
 import { isAbacusWorksChain } from "@hyperlane-xyz/registry";
 import type { ChainName, MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { toTitleCase } from "@hyperlane-xyz/utils";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 export function getChainDisplayName(
   multiProvider: MultiProtocolProvider,
@@ -8,11 +9,25 @@ export function getChainDisplayName(
   shortName = false,
 ) {
   if (!chain) return "Unknown";
-  const metadata = multiProvider.tryGetChainMetadata(chain);
-  if (!metadata) return "Unknown";
-  const displayName = shortName
-    ? metadata.displayNameShort
-    : metadata.displayName;
+
+  const [metadataError, metadata] = trySync(() =>
+    multiProvider.tryGetChainMetadata(chain),
+  );
+
+  if (metadataError !== undefined || !metadata) {
+    console.warn(`Error getting chain metadata for ${chain}:`, metadataError);
+    return "Unknown";
+  }
+
+  const [displayNameError, displayName] = trySync(() =>
+    shortName ? metadata.displayNameShort : metadata.displayName,
+  );
+
+  if (displayNameError !== undefined) {
+    console.warn(`Error getting display name for ${chain}:`, displayNameError);
+    return metadata.displayName ?? toTitleCase(metadata.name);
+  }
+
   return displayName ?? metadata.displayName ?? toTitleCase(metadata.name);
 }
 
@@ -21,13 +36,40 @@ export function isPermissionlessChain(
   chain: ChainName,
 ) {
   if (!chain) return true;
-  const metadata = multiProvider.tryGetChainMetadata(chain);
-  return !metadata || !isAbacusWorksChain(metadata);
+
+  const [metadataError, metadata] = trySync(() =>
+    multiProvider.tryGetChainMetadata(chain),
+  );
+
+  if (metadataError !== undefined) {
+    console.warn(`Error getting chain metadata for ${chain}:`, metadataError);
+    return true;
+  }
+
+  if (!metadata) return true;
+
+  const [abacusError, isAbacus] = trySync(() => isAbacusWorksChain(metadata));
+
+  if (abacusError !== undefined) {
+    console.warn(`Error checking if ${chain} is an Abacus chain:`, abacusError);
+    return true;
+  }
+
+  return !isAbacus;
 }
 
 export function hasPermissionlessChain(
   multiProvider: MultiProtocolProvider,
   ids: ChainName[],
 ) {
-  return !ids.every((c) => !isPermissionlessChain(multiProvider, c));
+  const [everyError, everyResult] = trySync(() =>
+    ids.every((c) => !isPermissionlessChain(multiProvider, c)),
+  );
+
+  if (everyError !== undefined) {
+    console.warn("Error checking for permissionless chains:", everyError);
+    return true; // Conservative approach - assume permissionless chain present on error
+  }
+
+  return !everyResult;
 }
