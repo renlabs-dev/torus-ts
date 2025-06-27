@@ -19,18 +19,17 @@ export function useRecipientBalanceWatcher(
     recipient: "",
   });
   useEffect(() => {
+    const prev = prevRecipientBalance.current;
     if (
       recipient &&
       balance &&
+      prev.recipient === recipient &&
       prevRecipientBalance.current.balance &&
       prevRecipientBalance.current.recipient === recipient &&
       balance.token.equals(prevRecipientBalance.current.balance.token) &&
       balance.amount > prevRecipientBalance.current.balance.amount
     ) {
-      toast({
-        title: "Success!",
-        description: `Transfer completed to ${recipient}`,
-      });
+      toast.success(`Transfer completed to ${recipient}`);
     }
 
     prevRecipientBalance.current = { balance, recipient: recipient };

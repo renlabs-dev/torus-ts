@@ -12,27 +12,61 @@ import { config } from "~/consts/config";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 export function CosmosWalletProvider({
   children,
 }: Readonly<PropsWithChildren<unknown>>) {
   const chainMetadata = useMultiProvider().metadata;
+
   const { chains, assets } = useMemo(() => {
-    const multiProvider = new MultiProtocolProvider({
-      ...chainMetadata,
-      cosmoshub,
-    });
-    return getCosmosKitChainConfigs(multiProvider);
+    const [providerError, multiProvider] = trySync(
+      () =>
+        new MultiProtocolProvider({
+          ...chainMetadata,
+          cosmoshub,
+        }),
+    );
+
+    if (providerError !== undefined) {
+      console.error("Error creating MultiProtocolProvider:", providerError);
+      // Return empty defaults in case of error
+      return { chains: [], assets: [] };
+    }
+
+    const [configError, configs] = trySync(() =>
+      getCosmosKitChainConfigs(multiProvider),
+    );
+
+    if (configError !== undefined) {
+      console.error("Error getting Cosmos Kit chain configs:", configError);
+      return { chains: [], assets: [] };
+    }
+
+    return configs;
   }, [chainMetadata]);
-  const leapWithoutSnap = leapWallets.filter(
-    (wallet) => !wallet.walletName.includes("snap"),
+
+  // Handle Leap wallet initialization
+  const [walletError, leapWithoutSnap] = trySync(() =>
+    leapWallets.filter((wallet) => !wallet.walletName.includes("snap")),
   );
+
+  if (walletError !== undefined) {
+    console.warn("Error filtering leap wallets (non-critical):", walletError);
+  }
+
+  // Create a safe wallet array
+  const wallets = [
+    ...keplrWallets,
+    ...cosmostationWallets,
+    ...(leapWithoutSnap ?? []),
+  ];
 
   return (
     <ChainProvider
       chains={chains}
       assetLists={assets}
-      wallets={[...keplrWallets, ...cosmostationWallets, ...leapWithoutSnap]}
+      wallets={wallets}
       walletConnectOptions={{
         signClient: {
           projectId: config.walletConnectProjectId,
@@ -58,7 +92,6 @@ export function CosmosWalletProvider({
           };
         },
       }}
-      modalTheme={{ defaultTheme: "dark" }}
     >
       {children}
     </ChainProvider>
