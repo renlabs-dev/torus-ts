@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { UnsavedChangesDialog } from "~/app/_components/unsaved-changes-dialog";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
+import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
 import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
 import { updateAgentSchema } from "./update-agent-dialog-form-schema";
@@ -27,7 +28,6 @@ export default function UpdateAgentDialog({
   handleDialogChangeRef,
 }: UpdateAgentDialogProps) {
   const { updateAgentTransaction } = useTorus();
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
 
@@ -52,6 +52,8 @@ export default function UpdateAgentDialog({
     },
   );
 
+  const currentImageBlobUrl = useBlobUrl(agentMetadata?.images.icon);
+
   const form = useForm<UpdateAgentFormData>({
     resolver: zodResolver(updateAgentSchema),
     mode: "onChange",
@@ -62,6 +64,7 @@ export default function UpdateAgentDialog({
       description: "",
       website: "",
       apiUrl: "",
+      imageUrl: "",
       socials: {
         twitter: "",
         github: "",
@@ -80,6 +83,7 @@ export default function UpdateAgentDialog({
         description: agentMetadata.metadata.description || "",
         website: agentMetadata.metadata.website ?? "",
         apiUrl: agent.apiUrl ?? "",
+        imageUrl: currentImageBlobUrl ?? "",
         socials: {
           twitter: agentMetadata.metadata.socials?.twitter ?? "",
           github: agentMetadata.metadata.socials?.github ?? "",
@@ -88,7 +92,7 @@ export default function UpdateAgentDialog({
         },
       });
     }
-  }, [agent, agentMetadata, form]);
+  }, [agent, agentMetadata, currentImageBlobUrl, form]);
 
   const handleDialogChange = useCallback(
     (open: boolean) => {
@@ -113,7 +117,6 @@ export default function UpdateAgentDialog({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        setImageFile(file);
         form.setValue("imageUrl", URL.createObjectURL(file));
       }
     },
@@ -127,7 +130,7 @@ export default function UpdateAgentDialog({
       mutate: async (data: UpdateAgentFormData) => {
         setIsUploading(true);
         const { apiUrl } = data;
-        const cid = await uploadMetadata(data, imageFile);
+        const cid = await uploadMetadata(data);
 
         await updateAgentTransaction({
           url: apiUrl ?? "",
@@ -146,7 +149,6 @@ export default function UpdateAgentDialog({
     [
       isUploading,
       handleImageChange,
-      imageFile,
       updateAgentTransaction,
       setIsOpen,
       setTransactionStatus,
@@ -159,7 +161,6 @@ export default function UpdateAgentDialog({
         agentKey={agentKey}
         form={form}
         updateAgentMutation={updateAgentMutation}
-        imageFile={imageFile}
       />
       {transactionStatus.status && (
         <div className="mt-4 border rounded-md p-3 bg-black/5">

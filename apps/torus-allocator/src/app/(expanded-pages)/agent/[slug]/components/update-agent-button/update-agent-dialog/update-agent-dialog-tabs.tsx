@@ -25,14 +25,12 @@ interface UpdateAgentDialogTabsProps {
   agentKey: string;
   form: UpdateAgentForm;
   updateAgentMutation: UpdateAgentMutation;
-  imageFile: File | null;
 }
 
 export function UpdateAgentDialogTabs({
   agentKey,
   form,
   updateAgentMutation,
-  imageFile,
 }: UpdateAgentDialogTabsProps) {
   const [activeTab, setActiveTab] = useState("edit");
 
@@ -111,7 +109,6 @@ export function UpdateAgentDialogTabs({
                 setActiveTab={setActiveTab}
                 form={form}
                 updateAgentMutation={updateAgentMutation}
-                imageFile={imageFile}
               />
             </div>
 
