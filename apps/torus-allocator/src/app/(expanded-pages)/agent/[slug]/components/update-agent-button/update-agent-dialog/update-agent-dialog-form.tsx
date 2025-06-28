@@ -24,13 +24,11 @@ interface UpdateAgentDialogFormProps {
   setActiveTab: (tab: string) => void;
   setIsOpen?: (isOpen: boolean) => void;
   form: UpdateAgentForm;
-  imageFile: File | null;
 }
 
 export function UpdateAgentDialogForm({
   updateAgentMutation,
   form,
-  imageFile,
 }: UpdateAgentDialogFormProps) {
   const onSubmit = (data: UpdateAgentFormData) => {
     void updateAgentMutation.mutate({
@@ -210,13 +208,10 @@ This agent specializes in providing technical support by analyzing issues and of
                     <FormMessage />
                   </div>
 
-                  {(field.value ?? imageFile) && (
+                  {field.value && (
                     <div className="rounded-md overflow-hidden w-24 h-24 border flex-shrink-0 bg-muted">
                       <Image
-                        src={
-                          field.value ??
-                          (imageFile ? URL.createObjectURL(imageFile) : "")
-                        }
+                        src={field.value || ""}
                         alt="Agent Icon Preview"
                         className="w-full h-full object-cover"
                         width={256}
