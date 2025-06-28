@@ -96,6 +96,9 @@ export default function UpdateAgentDialog({
 
   const handleDialogChange = useCallback(
     (open: boolean) => {
+      if (!open && isUploading) {
+        return;
+      }
       if (!open && !isUploading) {
         setShowConfirmClose(true);
         return;
