@@ -12,7 +12,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { ArrowLeft, ArrowRight, Eye, Pencil, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, LoaderCircle, Pencil, Save } from "lucide-react";
 import { useState } from "react";
 import { UpdateAgentDialogForm } from "./update-agent-dialog-form";
 import type {
@@ -91,11 +91,11 @@ export function UpdateAgentDialogTabs({
         className="mt-6 w-full"
       >
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="edit">
+          <TabsTrigger value="edit" disabled={updateAgentMutation.isPending}>
             <Pencil className="h-4 w-4 mr-2" />
             <span>Edit Details</span>
           </TabsTrigger>
-          <TabsTrigger value="preview">
+          <TabsTrigger value="preview" disabled={updateAgentMutation.isPending}>
             <Eye className="h-4 w-4 mr-2" />
             <span>Preview</span>
           </TabsTrigger>
@@ -152,8 +152,13 @@ export function UpdateAgentDialogTabs({
                 variant="outline"
                 onClick={handleSubmit}
                 disabled={updateAgentMutation.isPending}
+                className="flex items-center gap-2"
               >
-                <Save className="h-4 w-4" />
+                {updateAgentMutation.isPending ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
                 {updateAgentMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </div>
