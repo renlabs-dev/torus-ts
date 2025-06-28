@@ -23,11 +23,8 @@ export const cidToIpfsUri = (cid: string): string => `ipfs://${cid}`;
 
 export const uploadMetadata = async (
   metadata: UpdateAgentFormData,
-  imageFile: File | null,
 ): Promise<string> => {
-  const icon = imageFile
-    ? cidToIpfsUri(await pinFile(imageFile).then(({ cid }) => cid))
-    : undefined;
+  const icon = metadata.imageUrl;
 
   const images = icon ? { icon } : undefined;
 

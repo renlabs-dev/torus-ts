@@ -137,7 +137,7 @@ export interface MetadataType {
 export interface UpdateAgentMutation {
   isPending: boolean;
   mutate: (data: UpdateAgentFormData) => void;
-  handleImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export type UpdateAgentForm = UseFormReturn<UpdateAgentFormData>;
