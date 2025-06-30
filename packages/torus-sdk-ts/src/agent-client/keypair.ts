@@ -7,8 +7,8 @@ import {
 } from "@polkadot/util-crypto";
 import base64url from "base64url";
 import { randomUUID } from "crypto";
+import { getCurrentProtocolVersion } from "../agent/jwt-sr25519.js";
 
-const PROTOCOL_VERSION = "1.0.0";
 
 export class Keypair {
   private mnemonic: string;
@@ -44,38 +44,6 @@ export class Keypair {
     };
   }
 
-  async signRequest(method: string, path: string) {
-    await this.initialized;
-
-    if (!this.publicKey || !this.privateKey || !this.address) {
-      throw new Error("Keypair not initialized");
-    }
-
-    const timestamp = Date.now();
-    const requestData = {
-      userWalletAddress: this.address,
-      userPublicKey: this.publicKey,
-      method,
-      path,
-      timestamp,
-      _protocol_metadata: {
-        version: PROTOCOL_VERSION,
-      },
-    };
-
-    const message = new TextEncoder().encode(JSON.stringify(requestData));
-    const signature = sr25519Sign(message, {
-      publicKey: this.toUint8Array(this.publicKey),
-      secretKey: this.toUint8Array(this.privateKey),
-    });
-
-    return {
-      signature: this.toHex(signature),
-      publicKey: this.publicKey,
-      walletAddress: this.address,
-      timestamp,
-    };
-  }
 
   async createJWT() {
     await this.initialized;
@@ -97,6 +65,9 @@ export class Keypair {
       iat: now,
       exp: now + 3600,
       nonce: randomUUID(),
+      _protocol_metadata: {
+        version: getCurrentProtocolVersion(),
+      },
     };
 
     const encodedHeader = base64url.default.encode(JSON.stringify(header));

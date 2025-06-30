@@ -2,14 +2,26 @@ import { sr25519Verify, sr25519Sign } from "@polkadot/util-crypto";
 import base64url from "base64url";
 import { z } from "zod";
 
+const CURRENT_PROTOCOL_VERSION = "1.0.0";
+const SUPPORTED_PROTOCOL_VERSIONS = ["1.0.0"];
+
 /**
  * Custom JWT algorithm implementation for SR25519 signatures.
  * Provides standard JWT compliance while using Substrate's SR25519 cryptography.
  */
 
+/**
+ * Get the current protocol version
+ */
+export const getCurrentProtocolVersion = () => CURRENT_PROTOCOL_VERSION;
+
 export interface JWTHeader {
   alg: string;
   typ: string;
+}
+
+export interface ProtocolMetadata {
+  version: string;
 }
 
 export interface SR25519JWTPayload {
@@ -18,6 +30,7 @@ export interface SR25519JWTPayload {
   iat: number; // Issued at timestamp
   exp: number; // Expiration timestamp
   nonce: string; // Unique nonce for replay prevention
+  _protocol_metadata: ProtocolMetadata; // Protocol version information
   [key: string]: any; // Allow additional claims
 }
 
@@ -146,10 +159,22 @@ export function verifyJWT(
       !payload.publicKey ||
       !payload.iat ||
       !payload.exp ||
-      !payload.nonce
+      !payload.nonce ||
+      !payload._protocol_metadata ||
+      !payload._protocol_metadata.version
     ) {
       return {
         Error: { error: "Missing required JWT claims", code: "MISSING_CLAIMS" },
+      };
+    }
+
+    // Validate protocol version
+    if (!SUPPORTED_PROTOCOL_VERSIONS.includes(payload._protocol_metadata.version)) {
+      return {
+        Error: { 
+          error: `Unsupported protocol version: ${payload._protocol_metadata.version}`, 
+          code: "UNSUPPORTED_ALGORITHM" 
+        },
       };
     }
 
@@ -222,6 +247,9 @@ export const JWTPayloadSchema = z
     iat: z.number().int().positive("Issued at must be positive integer"),
     exp: z.number().int().positive("Expiration must be positive integer"),
     nonce: z.string().uuid("Nonce must be a valid UUID"),
+    _protocol_metadata: z.object({
+      version: z.string().min(1, "Protocol version is required")
+    })
   })
   .refine((data) => data.exp > data.iat, {
     message: "Expiration must be after issue time",

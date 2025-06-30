@@ -2,6 +2,7 @@ import { mnemonicGenerate, sr25519Sign } from "@polkadot/util-crypto";
 import { Keypair } from "../agent-client/index.js";
 import { randomUUID } from "crypto";
 import base64url from "base64url";
+import { getCurrentProtocolVersion } from "../agent/jwt-sr25519.js";
 
 async function generateTestMnemonic() {
   const { cryptoWaitReady } = await import("@polkadot/util-crypto");
@@ -27,7 +28,10 @@ async function createOldJWTToken(mnemonic: string) {
     publicKey: keyInfo.publicKey,
     iat: yesterday,
     exp: nextYear,
-    nonce: randomUUID()
+    nonce: randomUUID(),
+    _protocol_metadata: {
+      version: getCurrentProtocolVersion(),
+    },
   };
   
   const header = { alg: "SR25519", typ: "JWT" };
@@ -48,51 +52,6 @@ async function createOldJWTToken(mnemonic: string) {
   return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
 }
 
-async function testAuthenticatedHelloEndpoint() {
-  const serverUrl = "http://localhost:3002";
-
-  const testMnemonic = await generateTestMnemonic();
-  console.log("🔑 Generated test mnemonic:", testMnemonic);
-
-  const keypair = new Keypair(testMnemonic);
-  const keyInfo = await keypair.getKeyInfo();
-
-  console.log("🔑 Client authentication info:");
-  console.log(`Address: ${keyInfo.address}`);
-  console.log(`Public Key: ${keyInfo.publicKey}\n`);
-
-  try {
-    const authData = await keypair.signRequest("POST", "/hello");
-
-    const response = await fetch(`${serverUrl}/hello`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Signature": authData.signature,
-        "X-Public-Key": authData.publicKey,
-        "X-Wallet-Address": authData.walletAddress,
-        "X-Timestamp": authData.timestamp.toString(),
-      },
-      body: JSON.stringify({
-        name: "Authenticated User",
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `HTTP error! status: ${response.status}, body: ${errorText}`,
-      );
-    }
-
-    const result = await response.json();
-    console.log("✅ Authenticated request success:", result);
-    return result;
-  } catch (error) {
-    console.error("❌ Authenticated request error:", error);
-    throw error;
-  }
-}
 
 async function testUnauthenticatedRequest() {
   const serverUrl = "http://localhost:3002";
@@ -211,48 +170,10 @@ async function runAuthenticatedTests() {
 
   await testOldJWTRejection();
 
-  console.log("🔏 Testing message signature authentication...\n");
-  const testCases = ["Alice", "Bob", "Charlie"];
-
-  for (const name of testCases) {
-    try {
-      console.log(`Testing signature auth request with name: "${name}"`);
-
-      const keypair = new Keypair(testMnemonic);
-      const authData = await keypair.signRequest("POST", "/hello");
-
-      const response = await fetch("http://localhost:3002/hello", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Signature": authData.signature,
-          "X-Public-Key": authData.publicKey,
-          "X-Wallet-Address": authData.walletAddress,
-          "X-Timestamp": authData.timestamp.toString(),
-        },
-        body: JSON.stringify({ name }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          `HTTP error! status: ${response.status}, body: ${errorText}`,
-        );
-        continue;
-      }
-
-      const result = await response.json();
-      console.log(`✅ Result: ${result.message}`);
-      console.log(`   Timestamp: ${result.timestamp}`);
-      console.log(`   User Address: ${result.userAddress}\n`);
-    } catch (error) {
-      console.error(`❌ Failed for name "${name}":`, error);
-    }
-  }
 }
 
 // Export for programmatic use
-export { testAuthenticatedHelloEndpoint, runAuthenticatedTests };
+export { runAuthenticatedTests };
 
 // Run tests if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
