@@ -15,12 +15,9 @@ import {
 } from './helpers.js';
 import { 
   type TokenData, 
-  type RequestData, 
   type AuthTokenResult,
   decodeAuthToken, 
-  validateRequestSignature, 
-  ensureTrailingSlash, 
-  getCurrentProtocolVersion 
+  ensureTrailingSlash
 } from './utils.js';
 
 /**
@@ -249,34 +246,6 @@ export class Agent {
   }
 
   private getAuthRequestData(c: Context): AuthTokenResult | null {
-    // Try signature-based authentication first
-    const signature = c.req.header('X-Signature');
-    const publicKey = c.req.header('X-Public-Key');
-    const walletAddress = c.req.header('X-Wallet-Address');
-    const timestamp = parseInt(c.req.header('X-Timestamp') || '0');
-
-    if (signature && publicKey && walletAddress && timestamp) {
-      const requestData: RequestData = {
-        userWalletAddress: walletAddress as SS58Address,
-        userPublicKey: publicKey,
-        method: c.req.method,
-        path: c.req.path,
-        timestamp,
-        _protocol_metadata: {
-          version: getCurrentProtocolVersion(),
-        },
-      };
-
-      const validatedRequest = validateRequestSignature(signature, requestData);
-      if (validatedRequest) {
-        return { success: true, data: { userWalletAddress: validatedRequest.userWalletAddress, userPublicKey: validatedRequest.userPublicKey } };
-      } else {
-        // Signature validation failed
-        return { success: false, error: "Invalid signature or expired request", code: 'SIGNATURE_INVALID' };
-      }
-    }
-
-    // Fallback to JWT token authentication
     const token = c.req
       .header(this.options?.auth?.headerName ?? 'Authorization')
       ?.split(' ')[1];
@@ -284,7 +253,7 @@ export class Agent {
     if (token) {
       const jwtMaxAge = this.options?.auth?.jwtMaxAge;
       const authResult = decodeAuthToken(token, jwtMaxAge);
-      return authResult; // Return the full AuthTokenResult (success or failure)
+      return authResult;
     }
 
     return null;
