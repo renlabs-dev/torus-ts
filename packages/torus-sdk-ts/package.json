@@ -17,6 +17,14 @@
     "./types/namespace": {
       "default": "./dist/types/namespace/index.js",
       "types": "./dist/types/namespace/index.d.ts"
+    },
+    "./agent": {
+      "default": "./dist/agent/index.js",
+      "types": "./dist/agent/index.d.ts"
+    },
+    "./agent-client": {
+      "default": "./dist/agent-client/index.js",
+      "types": "./dist/agent-client/index.d.ts"
     }
   },
   "files": [
@@ -39,11 +47,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "@hono/zod-openapi": "^0.18.3",
     "@polkadot/api": "catalog:",
     "@polkadot/types": "catalog:",
     "@polkadot/util-crypto": "catalog:",
     "@torus-network/torus-utils": "workspace:*",
     "@wagmi/core": "2.16.3",
+    "base64url": "^3.0.1",
+    "hono": "^4.7.6",
+    "hono-rate-limiter": "^0.4.2",
+    "jsonwebtoken": "^9.0.2",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "superjson": "2.2.1",
@@ -55,6 +69,7 @@
     "@polkadot/typegen": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
+    "@types/jsonwebtoken": "^9.0.9",
     "tsx": "catalog:",
     "vitest": "catalog:"
   }
