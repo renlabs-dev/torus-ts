@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import { Agent } from '../agent/index.js';
 
-// Create a test server with authenticated hello endpoint
 const agent = new Agent({
   address: 'test-agent-address',
-  port: 3002, // Different port to avoid conflicts
+  port: 3002,
+  auth: {
+    jwtMaxAge: 300
+  },
   docs: {
     info: {
       title: 'Authenticated Test Agent API',
@@ -13,11 +15,10 @@ const agent = new Agent({
   }
 });
 
-// Define the authenticated hello endpoint
 agent.method('hello', {
   method: 'post',
   auth: {
-    required: true // Require authentication
+    required: true
   },
   input: z.object({
     name: z.string()
@@ -56,6 +57,5 @@ agent.method('hello', {
   }
 });
 
-// Start the server
 console.log('Starting authenticated test server on port 3002...');
 agent.run();

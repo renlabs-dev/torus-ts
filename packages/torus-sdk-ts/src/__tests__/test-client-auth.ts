@@ -1,60 +1,59 @@
-import { mnemonicGenerate } from "@polkadot/util-crypto";
+import { mnemonicGenerate, sr25519Sign } from "@polkadot/util-crypto";
 import { Keypair } from "../agent-client/index.js";
-import * as jwt from "jsonwebtoken";
-import { sr25519Sign } from "@polkadot/util-crypto";
+import { randomUUID } from "crypto";
 import base64url from "base64url";
 
-// Generate a valid test mnemonic
 async function generateTestMnemonic() {
   const { cryptoWaitReady } = await import("@polkadot/util-crypto");
   await cryptoWaitReady();
   return mnemonicGenerate();
 }
 
-// Create a JWT token for testing
 async function createJWTToken(mnemonic: string) {
   const keypair = new Keypair(mnemonic);
+  return await keypair.createJWT();
+}
+
+// Create a JWT token with custom iat and exp for testing JWT age window
+async function createOldJWTToken(mnemonic: string) {
+  const keypair = new Keypair(mnemonic);
   const keyInfo = await keypair.getKeyInfo();
-
-  if (!keyInfo.publicKey || !keyInfo.privateKey || !keyInfo.address) {
-    throw new Error("Failed to get keypair info");
-  }
-
-  // Create JWT payload - must match TokenDataSchema (only userWalletAddress and userPublicKey)
+  
+  const yesterday = Math.floor(Date.now() / 1000) - (24 * 60 * 60);
+  const nextYear = Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60);
+  
   const payload = {
-    userWalletAddress: keyInfo.address,
-    userPublicKey: keyInfo.publicKey,
+    sub: keyInfo.address,
+    publicKey: keyInfo.publicKey,
+    iat: yesterday,
+    exp: nextYear,
+    nonce: randomUUID()
   };
-
-  // Create the header and payload parts using base64url encoding
+  
   const header = { alg: "SR25519", typ: "JWT" };
+  
   const encodedHeader = base64url.default.encode(JSON.stringify(header));
   const encodedPayload = base64url.default.encode(JSON.stringify(payload));
-
-  // Sign the header.payload with SR25519
-  const message = new TextEncoder().encode(
-    `${encodedHeader}.${encodedPayload}`,
-  );
+  
+  const signingInput = `${encodedHeader}.${encodedPayload}`;
+  const message = new TextEncoder().encode(signingInput);
+  
   const signature = sr25519Sign(message, {
-    publicKey: new Uint8Array(Buffer.from(keyInfo.publicKey, "hex")),
-    secretKey: new Uint8Array(Buffer.from(keyInfo.privateKey, "hex")),
+    publicKey: new Uint8Array(Buffer.from(keyInfo.publicKey!, "hex")),
+    secretKey: new Uint8Array(Buffer.from(keyInfo.privateKey!, "hex")),
   });
-
-  // The signature should be exactly 64 bytes
-  // Convert Uint8Array to Buffer for proper base64url encoding
+  
   const encodedSignature = base64url.default.encode(Buffer.from(signature));
-
+  
   return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
 }
 
 async function testAuthenticatedHelloEndpoint() {
   const serverUrl = "http://localhost:3002";
 
-  // Generate a valid mnemonic for testing
   const testMnemonic = await generateTestMnemonic();
   console.log("🔑 Generated test mnemonic:", testMnemonic);
 
-  // Create keypair for authentication
   const keypair = new Keypair(testMnemonic);
   const keyInfo = await keypair.getKeyInfo();
 
@@ -63,7 +62,6 @@ async function testAuthenticatedHelloEndpoint() {
   console.log(`Public Key: ${keyInfo.publicKey}\n`);
 
   try {
-    // Sign the request
     const authData = await keypair.signRequest("POST", "/hello");
 
     const response = await fetch(`${serverUrl}/hello`, {
@@ -127,12 +125,12 @@ async function testUnauthenticatedRequest() {
 }
 
 async function testJWTAuthentication() {
-  console.log("🔐 Testing JWT authentication...\n");
+  console.log("🔐 Testing SR25519 JWT authentication...\n");
 
   const testMnemonic = await generateTestMnemonic();
   const jwtToken = await createJWTToken(testMnemonic);
 
-  console.log("Generated JWT token:", jwtToken.slice(0, 50) + "...\n");
+  console.log("Generated SR25519 JWT token:", jwtToken.slice(0, 50) + "...\n");
 
   try {
     const response = await fetch("http://localhost:3002/hello", {
@@ -153,28 +151,66 @@ async function testJWTAuthentication() {
     }
 
     const result = await response.json();
-    console.log("✅ JWT Authentication success:", result);
+    console.log("✅ SR25519 JWT Authentication success:", result);
     console.log(`   Message: ${result.message}`);
     console.log(`   User Address: ${result.userAddress}\n`);
   } catch (error) {
-    console.error("❌ JWT Authentication error:", error);
+    console.error("❌ SR25519 JWT Authentication error:", error);
+  }
+}
+
+async function testOldJWTRejection() {
+  console.log("🕰️ Testing JWT age window rejection (should fail)...\n");
+
+  const testMnemonic = await generateTestMnemonic();
+  const oldJwtToken = await createOldJWTToken(testMnemonic);
+
+  console.log("Generated old JWT token (iat=yesterday, exp=next year):", oldJwtToken.slice(0, 50) + "...\n");
+
+  try {
+    const response = await fetch("http://localhost:3002/hello", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${oldJwtToken}`,
+      },
+      body: JSON.stringify({ name: "Old JWT User" }),
+    });
+
+    if (response.status === 401) {
+      const errorResponse = await response.json();
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response body:`, errorResponse);
+      
+      if (errorResponse.code === 'TOO_OLD') {
+        console.log("✅ Correctly rejected old JWT token with proper error message");
+        console.log(`   Error: ${errorResponse.message}`);
+        console.log(`   Code: ${errorResponse.code}\n`);
+      } else {
+        console.log("❌ Unexpected error code - expected 'TOO_OLD'\n");
+      }
+    } else {
+      const responseText = await response.text();
+      console.log(`❌ Unexpected response status: ${response.status}`);
+      console.log(`Response body: ${responseText}\n`);
+    }
+  } catch (error) {
+    console.error("❌ Error testing old JWT rejection:", error);
   }
 }
 
 async function runAuthenticatedTests() {
   console.log("🚀 Starting authenticated client tests...\n");
 
-  // Generate a valid mnemonic for all tests
   const testMnemonic = await generateTestMnemonic();
   console.log("🔑 Using test mnemonic:", testMnemonic, "\n");
 
-  // Test unauthenticated request first (should fail)
   await testUnauthenticatedRequest();
 
-  // Test JWT authentication
   await testJWTAuthentication();
 
-  // Test message signature authentication (should succeed)
+  await testOldJWTRejection();
+
   console.log("🔏 Testing message signature authentication...\n");
   const testCases = ["Alice", "Bob", "Charlie"];
 
