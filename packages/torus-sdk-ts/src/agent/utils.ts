@@ -1,8 +1,8 @@
 import { sr25519Verify } from "@polkadot/util-crypto";
 import { type SS58Address, SS58_SCHEMA } from "@torus-network/sdk";
-import base64url from "base64url";
-import * as jwt from "jsonwebtoken";
 import { z } from "zod";
+import { match } from "rustie";
+import { verifyJWT, type JWTErrorCode } from "./jwt-sr25519.js";
 
 export const ensureTrailingSlash = (path: string) => {
   return path.startsWith("/") ? path : `/${path}`;
@@ -15,7 +15,7 @@ const TokenDataSchema = z.object({
       message: "Invalid SS58 address",
     })
     .describe("SS58 encoded address"),
-  userPublicKey: z.string(),
+  userPublicKey: z.string().describe("SR25519 public key in hex format"),
 });
 
 const ProtocolMetadataSchema = z.object({
@@ -37,6 +37,19 @@ const RequestDataSchema = z.object({
 });
 
 export type TokenData = z.infer<typeof TokenDataSchema>;
+
+export type AuthErrorCode = 
+  | JWTErrorCode
+  | 'SIGNATURE_INVALID'
+  | 'SIGNATURE_EXPIRED'
+  | 'MISSING_AUTH_HEADERS'
+  | 'UNSUPPORTED_AUTH_METHOD'
+  | 'RATE_LIMITED'
+  | 'INSUFFICIENT_STAKE';
+
+export type AuthTokenResult = 
+  | { success: true; data: TokenData }
+  | { success: false; error: string; code: AuthErrorCode };
 
 export type ProtocolMetadata = z.infer<typeof ProtocolMetadataSchema>;
 
@@ -81,48 +94,45 @@ export const validateRequestSignature = (
   }
 };
 
-export const decodeAuthToken = (token: string): TokenData | null => {
+export const decodeAuthToken = (token: string, maxAge?: number): AuthTokenResult => {
   try {
-    const [encodedHeader, encodedPayload, encodedSignature] = token.split(".");
+    const verificationResult = verifyJWT(token, maxAge);
+    
+    return match(verificationResult)({
+      Error: (error): AuthTokenResult => ({
+        success: false,
+        error: error.error,
+        code: error.code
+      }),
+      Success: (result): AuthTokenResult => {
+        const { payload } = result;
+        
+        const tokenData = {
+          userWalletAddress: payload.sub,
+          userPublicKey: payload.publicKey,
+        };
 
-    if (!encodedHeader || !encodedPayload || !encodedSignature) {
-      throw new Error("Invalid JWT token");
-    }
+        const tokenDataParsed = TokenDataSchema.safeParse(tokenData);
+        if (!tokenDataParsed.success) {
+          return {
+            success: false,
+            error: "Invalid token payload format", 
+            code: 'INVALID_FORMAT'
+          };
+        }
 
-    const message = new TextEncoder().encode(
-      `${encodedHeader}.${encodedPayload}`,
-    );
-    const signature = base64url.default.toBuffer(encodedSignature);
-
-    const decodedPayload = jwt.decode(token);
-
-    if (!decodedPayload) {
-      throw new Error("Invalid JWT token");
-    }
-
-    const tokenDataParsed = TokenDataSchema.safeParse(decodedPayload);
-
-    if (!tokenDataParsed.success) {
-      throw new Error("Invalid JWT token");
-    }
-
-    const tokenData = tokenDataParsed.data;
-
-    const publicKey = new Uint8Array(
-      Buffer.from(tokenData.userPublicKey, "hex"),
-    );
-
-    const isValid = sr25519Verify(message, signature, publicKey);
-
-    if (!isValid) {
-      return null;
-    }
-
-    return tokenData;
+        return {
+          success: true,
+          data: tokenDataParsed.data
+        };
+      }
+    });
   } catch (error) {
-    console.error("error", error);
-
-    return null;
+    return {
+      success: false,
+      error: `JWT verification failed: ${error instanceof Error ? error.message : String(error)}`,
+      code: 'INVALID_FORMAT'
+    };
   }
 };
 

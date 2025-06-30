@@ -4,9 +4,11 @@ import {
   mnemonicToMiniSecret,
   sr25519PairFromSeed,
   sr25519Sign,
-} from '@polkadot/util-crypto';
+} from "@polkadot/util-crypto";
+import base64url from "base64url";
+import { randomUUID } from "crypto";
 
-const PROTOCOL_VERSION = '1.0.0';
+const PROTOCOL_VERSION = "1.0.0";
 
 export class Keypair {
   private mnemonic: string;
@@ -46,7 +48,7 @@ export class Keypair {
     await this.initialized;
 
     if (!this.publicKey || !this.privateKey || !this.address) {
-      throw new Error('Keypair not initialized');
+      throw new Error("Keypair not initialized");
     }
 
     const timestamp = Date.now();
@@ -75,11 +77,49 @@ export class Keypair {
     };
   }
 
+  async createJWT() {
+    await this.initialized;
+
+    if (!this.publicKey || !this.privateKey || !this.address) {
+      throw new Error("Keypair not initialized");
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    const header = {
+      alg: "SR25519",
+      typ: "JWT",
+    };
+
+    const payload = {
+      sub: this.address,
+      publicKey: this.publicKey,
+      iat: now,
+      exp: now + 3600,
+      nonce: randomUUID(),
+    };
+
+    const encodedHeader = base64url.default.encode(JSON.stringify(header));
+    const encodedPayload = base64url.default.encode(JSON.stringify(payload));
+
+    const signingInput = `${encodedHeader}.${encodedPayload}`;
+    const message = new TextEncoder().encode(signingInput);
+
+    const signature = sr25519Sign(message, {
+      publicKey: this.toUint8Array(this.publicKey),
+      secretKey: this.toUint8Array(this.privateKey),
+    });
+
+    const encodedSignature = base64url.default.encode(Buffer.from(signature));
+
+    return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
+  }
+
   private toUint8Array(hex: string) {
-    return new Uint8Array(Buffer.from(hex, 'hex'));
+    return new Uint8Array(Buffer.from(hex, "hex"));
   }
 
   private toHex(array: Uint8Array<ArrayBufferLike>) {
-    return Buffer.from(array).toString('hex');
+    return Buffer.from(array).toString("hex");
   }
 }

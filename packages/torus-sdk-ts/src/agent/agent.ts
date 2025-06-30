@@ -13,7 +13,15 @@ import {
   connectToChainRpc,
   getTotalStake,
 } from './helpers.js';
-import { type TokenData, type RequestData, decodeAuthToken, validateRequestSignature, ensureTrailingSlash, getCurrentProtocolVersion } from './utils.js';
+import { 
+  type TokenData, 
+  type RequestData, 
+  type AuthTokenResult,
+  decodeAuthToken, 
+  validateRequestSignature, 
+  ensureTrailingSlash, 
+  getCurrentProtocolVersion 
+} from './utils.js';
 
 /**
  * User type definition
@@ -52,6 +60,8 @@ type AgentOptions = {
     headerName?: string;
     /** The callback to be called after the authentication is successful */
     onAfterAuth?: (user: User) => Promise<void> | void;
+    /** Maximum age of JWT tokens in seconds. If now - iat > jwtMaxAge, reject the token. @default 3600 (1 hour) */
+    jwtMaxAge?: number;
   };
   stakeLimiter?: StakeLimiterOptions;
   /** Documentation configuration */
@@ -238,7 +248,7 @@ export class Agent {
     });
   }
 
-  private getAuthRequestData(c: Context): { userWalletAddress: SS58Address } | null {
+  private getAuthRequestData(c: Context): AuthTokenResult | null {
     // Try signature-based authentication first
     const signature = c.req.header('X-Signature');
     const publicKey = c.req.header('X-Public-Key');
@@ -259,7 +269,10 @@ export class Agent {
 
       const validatedRequest = validateRequestSignature(signature, requestData);
       if (validatedRequest) {
-        return { userWalletAddress: validatedRequest.userWalletAddress };
+        return { success: true, data: { userWalletAddress: validatedRequest.userWalletAddress, userPublicKey: validatedRequest.userPublicKey } };
+      } else {
+        // Signature validation failed
+        return { success: false, error: "Invalid signature or expired request", code: 'SIGNATURE_INVALID' };
       }
     }
 
@@ -269,10 +282,9 @@ export class Agent {
       ?.split(' ')[1];
 
     if (token) {
-      const decodedToken = decodeAuthToken(token);
-      if (decodedToken) {
-        return { userWalletAddress: decodedToken.userWalletAddress };
-      }
+      const jwtMaxAge = this.options?.auth?.jwtMaxAge;
+      const authResult = decodeAuthToken(token, jwtMaxAge);
+      return authResult; // Return the full AuthTokenResult (success or failure)
     }
 
     return null;
@@ -295,13 +307,13 @@ export class Agent {
     const httpMethod = options?.method ?? 'post';
 
     const keyGenerator = (c: Context) => {
-      const requestData = this.getAuthRequestData(c);
+      const authResult = this.getAuthRequestData(c);
 
-      if (!requestData) {
+      if (!authResult || !authResult.success) {
         return '';
       }
 
-      return c.req.header('x-forwarded-for') ?? requestData.userWalletAddress;
+      return c.req.header('x-forwarded-for') ?? authResult.data.userWalletAddress;
     };
 
     const getStakeLimiterMiddleware = () => {
@@ -312,14 +324,14 @@ export class Agent {
       }
 
       const limit = async (c: Context) => {
-        const requestData = this.getAuthRequestData(c);
+        const authResult = this.getAuthRequestData(c);
 
-        if (!requestData) {
+        if (!authResult || !authResult.success) {
           return 0;
         }
 
         const stake = await getTotalStake(this.api)(
-          requestData.userWalletAddress,
+          authResult.data.userWalletAddress,
         );
 
         if (!stakeLimiter.limit) {
@@ -327,7 +339,7 @@ export class Agent {
         }
 
         return stakeLimiter.limit({
-          userWalletAddress: requestData.userWalletAddress,
+          userWalletAddress: authResult.data.userWalletAddress,
           userTotalStake: stake,
         });
       };
@@ -406,11 +418,17 @@ export class Agent {
     const handler = async (c: Context) => {
       let authData: { userWalletAddress: SS58Address } | null = null;
       if (options.auth?.required) {
-        authData = this.getAuthRequestData(c);
+        const authResult = this.getAuthRequestData(c);
 
-        if (!authData) {
-          return c.json({ message: 'Missing or invalid authentication' }, 401);
+        if (!authResult) {
+          return c.json({ message: 'Missing authentication headers', code: 'MISSING_AUTH_HEADERS' }, 401);
         }
+
+        if (!authResult.success) {
+          return c.json({ message: authResult.error, code: authResult.code }, 401);
+        }
+
+        authData = { userWalletAddress: authResult.data.userWalletAddress };
       }
 
       const isMultipartFormData =
