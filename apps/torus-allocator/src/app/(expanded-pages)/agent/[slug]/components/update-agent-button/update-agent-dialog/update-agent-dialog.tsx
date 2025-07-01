@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/ui/components/transaction-status";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useRouter } from "next/navigation";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,6 +28,7 @@ export default function UpdateAgentDialog({
   setIsOpen,
   handleDialogChangeRef,
 }: UpdateAgentDialogProps) {
+  const router = useRouter();
   const { updateAgentTransaction } = useTorus();
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
@@ -201,6 +203,7 @@ export default function UpdateAgentDialog({
             if (tx.status === "SUCCESS" && !tx.message?.includes("included")) {
               setIsOpen(false);
               setIsUploading(false);
+              router.refresh();
             }
 
             if (tx.status === "ERROR") {
@@ -219,6 +222,7 @@ export default function UpdateAgentDialog({
       setIsOpen,
       setTransactionStatus,
       currentImageBlobUrl,
+      router,
     ],
   );
 
