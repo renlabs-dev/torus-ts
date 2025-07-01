@@ -1,6 +1,7 @@
 "use client";
 
 import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export const strToFile = (
   str: string,
@@ -25,9 +26,22 @@ export const blobUrlToFile = async (
   blobUrl: string,
   filename: string,
 ): Promise<File> => {
-  const response = await fetch(blobUrl);
-  const blob = await response.blob();
-  return new File([blob], filename, { type: blob.type });
+  const [responseErr, response] = await tryAsync(fetch(blobUrl));
+  if (responseErr) {
+    throw new Error(`Failed to fetch blob URL: ${responseErr.message}`);
+  }
+
+  const [blobErr, blob] = await tryAsync(response.blob());
+  if (blobErr) {
+    throw new Error(`Failed to fetch blob URL: ${blobErr.message}`);
+  }
+
+  const mimeType = blob.type;
+  const extension = mimeType.split("/")[1] ?? "bin";
+  const baseName = filename.replace(/\.[^/.]+$/, "");
+  const finalFilename = `${baseName}.${extension}`;
+
+  return new File([blob], finalFilename, { type: mimeType });
 };
 
 const getIconCid = async (

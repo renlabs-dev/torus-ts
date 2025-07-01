@@ -59,8 +59,19 @@ export default function UpdateAgentDialog({
   const currentImageBlobUrl = useBlobUrl(agentMetadata?.images.icon);
 
   useEffect(() => {
+    if (currentImagePreview && currentImagePreview !== currentImageBlobUrl) {
+      URL.revokeObjectURL(currentImagePreview);
+    }
     setCurrentImagePreview(currentImageBlobUrl);
-  }, [currentImageBlobUrl]);
+  }, [currentImageBlobUrl, currentImagePreview]);
+
+  useEffect(() => {
+    return () => {
+      if (currentImagePreview) {
+        URL.revokeObjectURL(currentImagePreview);
+      }
+    };
+  }, [currentImagePreview]);
 
   const [originalFormData, setOriginalFormData] =
     useState<UpdateAgentFormData | null>(null);
