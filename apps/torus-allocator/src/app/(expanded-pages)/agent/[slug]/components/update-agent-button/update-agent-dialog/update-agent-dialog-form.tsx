@@ -32,6 +32,9 @@ export function UpdateAgentDialogForm({
   form,
   currentImagePreview,
 }: UpdateAgentDialogFormProps) {
+  const imageFile = form.watch("imageFile");
+  const imageBlobUrl = imageFile ? URL.createObjectURL(imageFile) : null;
+
   const onSubmit = (data: UpdateAgentFormData) => {
     void updateAgentMutation.mutate({
       ...data,
@@ -212,7 +215,7 @@ This agent specializes in providing technical support by analyzing issues and of
                       <Image
                         src={
                           field.value
-                            ? URL.createObjectURL(field.value)
+                            ? (imageBlobUrl ?? "")
                             : (currentImagePreview ?? "")
                         }
                         alt="Agent Icon Preview"
