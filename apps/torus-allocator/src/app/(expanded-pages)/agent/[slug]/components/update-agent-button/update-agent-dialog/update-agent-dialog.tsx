@@ -83,7 +83,7 @@ export default function UpdateAgentDialog({
   });
 
   useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
+    const subscription = form.watch((_value, { type }) => {
       if (type === "change") {
         setHasUnsavedChanges(true);
       }

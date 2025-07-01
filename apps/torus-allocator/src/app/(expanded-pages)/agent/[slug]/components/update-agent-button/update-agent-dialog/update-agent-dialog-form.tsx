@@ -197,10 +197,7 @@ This agent specializes in providing technical support by analyzing issues and of
                       <Input
                         type="file"
                         accept="image/*"
-                        onChange={(e) =>
-                          updateAgentMutation.handleImageChange &&
-                          updateAgentMutation.handleImageChange(e)
-                        }
+                        onChange={updateAgentMutation.handleImageChange}
                         className="cursor-pointer"
                       />
                     </FormControl>
@@ -210,7 +207,7 @@ This agent specializes in providing technical support by analyzing issues and of
                     <FormMessage />
                   </div>
 
-                  {(field.value || currentImagePreview) && (
+                  {(field.value ?? currentImagePreview) && (
                     <div className="rounded-md overflow-hidden w-24 h-24 border flex-shrink-0 bg-muted">
                       <Image
                         src={
