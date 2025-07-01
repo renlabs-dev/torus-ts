@@ -216,7 +216,7 @@ This agent specializes in providing technical support by analyzing issues and of
                         src={
                           field.value
                             ? URL.createObjectURL(field.value)
-                            : currentImagePreview!
+                            : (currentImagePreview ?? "")
                         }
                         alt="Agent Icon Preview"
                         className="w-full h-full object-cover"

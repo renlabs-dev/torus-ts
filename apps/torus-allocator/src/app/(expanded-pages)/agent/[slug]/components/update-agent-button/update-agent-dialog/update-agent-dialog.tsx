@@ -14,11 +14,7 @@ import { api } from "~/trpc/react";
 import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
 import { updateAgentSchema } from "./update-agent-dialog-form-schema";
 import { UpdateAgentDialogTabs } from "./update-agent-dialog-tabs";
-import {
-  cidToIpfsUri,
-  uploadMetadata,
-  pinFile,
-} from "./update-agent-dialog-util";
+import { cidToIpfsUri, uploadMetadata } from "./update-agent-dialog-util";
 
 interface UpdateAgentDialogProps {
   agentKey: string;
