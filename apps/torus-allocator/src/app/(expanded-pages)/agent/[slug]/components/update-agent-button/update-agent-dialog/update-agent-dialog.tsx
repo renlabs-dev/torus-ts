@@ -14,7 +14,11 @@ import { api } from "~/trpc/react";
 import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
 import { updateAgentSchema } from "./update-agent-dialog-form-schema";
 import { UpdateAgentDialogTabs } from "./update-agent-dialog-tabs";
-import { cidToIpfsUri, uploadMetadata } from "./update-agent-dialog-util";
+import {
+  cidToIpfsUri,
+  uploadMetadata,
+  pinFile,
+} from "./update-agent-dialog-util";
 
 interface UpdateAgentDialogProps {
   agentKey: string;
@@ -30,6 +34,9 @@ export default function UpdateAgentDialog({
   const { updateAgentTransaction } = useTorus();
   const [isUploading, setIsUploading] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
+  const [currentImagePreview, setCurrentImagePreview] = useState<string | null>(
+    null,
+  );
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -54,6 +61,10 @@ export default function UpdateAgentDialog({
 
   const currentImageBlobUrl = useBlobUrl(agentMetadata?.images.icon);
 
+  useEffect(() => {
+    setCurrentImagePreview(currentImageBlobUrl);
+  }, [currentImageBlobUrl]);
+
   const form = useForm<UpdateAgentFormData>({
     resolver: zodResolver(updateAgentSchema),
     mode: "onChange",
@@ -64,7 +75,7 @@ export default function UpdateAgentDialog({
       description: "",
       website: "",
       apiUrl: "",
-      imageUrl: "",
+      imageFile: undefined,
       socials: {
         twitter: "",
         github: "",
@@ -83,7 +94,7 @@ export default function UpdateAgentDialog({
         description: agentMetadata.metadata.description || "",
         website: agentMetadata.metadata.website ?? "",
         apiUrl: agent.apiUrl ?? "",
-        imageUrl: currentImageBlobUrl ?? "",
+        imageFile: undefined,
         socials: {
           twitter: agentMetadata.metadata.socials?.twitter ?? "",
           github: agentMetadata.metadata.socials?.github ?? "",
@@ -92,7 +103,7 @@ export default function UpdateAgentDialog({
         },
       });
     }
-  }, [agent, agentMetadata, currentImageBlobUrl, form]);
+  }, [agent, agentMetadata, form]);
 
   const handleDialogChange = useCallback(
     (open: boolean) => {
@@ -104,7 +115,9 @@ export default function UpdateAgentDialog({
         return;
       }
       setIsOpen(open);
-      if (!open) form.reset();
+      if (!open) {
+        form.reset();
+      }
     },
     [isUploading, setIsOpen, form],
   );
@@ -120,7 +133,7 @@ export default function UpdateAgentDialog({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        form.setValue("imageUrl", URL.createObjectURL(file));
+        form.setValue("imageFile", file);
       }
     },
     [form],
@@ -133,7 +146,11 @@ export default function UpdateAgentDialog({
       mutate: async (data: UpdateAgentFormData) => {
         setIsUploading(true);
         const { apiUrl } = data;
-        const cid = await uploadMetadata(data);
+
+        const cid = await uploadMetadata(
+          data,
+          currentImageBlobUrl ?? undefined,
+        );
 
         await updateAgentTransaction({
           url: apiUrl ?? "",
@@ -155,6 +172,7 @@ export default function UpdateAgentDialog({
       updateAgentTransaction,
       setIsOpen,
       setTransactionStatus,
+      currentImageBlobUrl,
     ],
   );
 
@@ -164,6 +182,7 @@ export default function UpdateAgentDialog({
         agentKey={agentKey}
         form={form}
         updateAgentMutation={updateAgentMutation}
+        currentImagePreview={currentImagePreview}
       />
       {transactionStatus.status && (
         <div className="mt-4 border rounded-md p-3 bg-black/5">

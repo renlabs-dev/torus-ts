@@ -12,7 +12,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { ArrowLeft, ArrowRight, Eye, LoaderCircle, Pencil, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  LoaderCircle,
+  Pencil,
+  Save,
+} from "lucide-react";
 import { useState } from "react";
 import { UpdateAgentDialogForm } from "./update-agent-dialog-form";
 import type {
@@ -25,12 +32,14 @@ interface UpdateAgentDialogTabsProps {
   agentKey: string;
   form: UpdateAgentForm;
   updateAgentMutation: UpdateAgentMutation;
+  currentImagePreview?: string | null;
 }
 
 export function UpdateAgentDialogTabs({
   agentKey,
   form,
   updateAgentMutation,
+  currentImagePreview,
 }: UpdateAgentDialogTabsProps) {
   const [activeTab, setActiveTab] = useState("edit");
 
@@ -109,6 +118,7 @@ export function UpdateAgentDialogTabs({
                 setActiveTab={setActiveTab}
                 form={form}
                 updateAgentMutation={updateAgentMutation}
+                currentImagePreview={currentImagePreview}
               />
             </div>
 

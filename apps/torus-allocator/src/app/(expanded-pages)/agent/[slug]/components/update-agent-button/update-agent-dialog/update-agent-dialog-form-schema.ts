@@ -104,13 +104,7 @@ export const updateAgentSchema = z.object({
       message: "Must be a valid URL",
     })
     .optional(),
-  imageUrl: z
-    .string()
-    .trim()
-    .refine((val) => !val || z.string().url().safeParse(val).success, {
-      message: "Must be a valid URL",
-    })
-    .optional(),
+  imageFile: z.instanceof(File).optional(),
   socials: updateAgentSocialsSchema,
 });
 

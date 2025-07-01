@@ -24,11 +24,13 @@ interface UpdateAgentDialogFormProps {
   setActiveTab: (tab: string) => void;
   setIsOpen?: (isOpen: boolean) => void;
   form: UpdateAgentForm;
+  currentImagePreview?: string | null;
 }
 
 export function UpdateAgentDialogForm({
   updateAgentMutation,
   form,
+  currentImagePreview,
 }: UpdateAgentDialogFormProps) {
   const onSubmit = (data: UpdateAgentFormData) => {
     void updateAgentMutation.mutate({
@@ -183,7 +185,7 @@ This agent specializes in providing technical support by analyzing issues and of
 
           <FormField
             control={form.control}
-            name="imageUrl"
+            name="imageFile"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
@@ -208,10 +210,14 @@ This agent specializes in providing technical support by analyzing issues and of
                     <FormMessage />
                   </div>
 
-                  {field.value && (
+                  {(field.value || currentImagePreview) && (
                     <div className="rounded-md overflow-hidden w-24 h-24 border flex-shrink-0 bg-muted">
                       <Image
-                        src={field.value || ""}
+                        src={
+                          field.value
+                            ? URL.createObjectURL(field.value)
+                            : currentImagePreview!
+                        }
                         alt="Agent Icon Preview"
                         className="w-full h-full object-cover"
                         width={256}
