@@ -30,25 +30,29 @@ export const blobUrlToFile = async (
   return new File([blob], filename, { type: blob.type });
 };
 
+const getIconCid = async (
+  metadata: UpdateAgentFormData,
+  currentImageBlobUrl?: string,
+): Promise<string | undefined> => {
+  if (metadata.imageFile) {
+    const { cid } = await pinFile(metadata.imageFile);
+    return cidToIpfsUri(cid);
+  }
+
+  if (currentImageBlobUrl) {
+    const file = await blobUrlToFile(currentImageBlobUrl, "agent-icon.png");
+    const { cid } = await pinFile(file);
+    return cidToIpfsUri(cid);
+  }
+
+  return undefined;
+};
+
 export const uploadMetadata = async (
   metadata: UpdateAgentFormData,
   currentImageBlobUrl?: string,
 ): Promise<string> => {
-  let icon: string | undefined;
-
-  if (metadata.imageFile) {
-    // New image file selected
-    const { cid } = await pinFile(metadata.imageFile);
-    icon = cidToIpfsUri(cid);
-  } else if (currentImageBlobUrl) {
-    // Use existing image from blob URL
-    const imageFile = await blobUrlToFile(
-      currentImageBlobUrl,
-      "agent-icon.png",
-    );
-    const { cid } = await pinFile(imageFile);
-    icon = cidToIpfsUri(cid);
-  }
+  const icon = await getIconCid(metadata, currentImageBlobUrl);
 
   const images = icon ? { icon } : undefined;
 
