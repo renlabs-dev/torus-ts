@@ -42,7 +42,7 @@ export function UpdateAgentDialogPreview({
   }
 
   const formValues = form.getValues();
-  const previewImage = form.watch("imageUrl");
+  const previewImage = form.watch("imageFile");
 
   const headerProps: AgentHeaderProps = {
     name: formValues.name ?? "",
@@ -61,7 +61,7 @@ export function UpdateAgentDialogPreview({
         telegram: formValues.socials.telegram,
       },
       website: formValues.website,
-      iconUrl: previewImage ?? undefined,
+      iconUrl: previewImage ? URL.createObjectURL(previewImage) : undefined,
     },
   };
 
