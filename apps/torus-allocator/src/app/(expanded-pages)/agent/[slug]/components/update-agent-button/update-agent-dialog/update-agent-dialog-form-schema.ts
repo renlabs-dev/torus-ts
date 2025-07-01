@@ -27,6 +27,14 @@ const ensureHttpsProtocol = (val: string | undefined): string => {
   return `https://${cleanedVal}`;
 };
 
+export const MAX_FILE_SIZE = 512000; // 512KB
+export const ACCEPTED_FILE_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+];
+
 export const updateAgentSocialsSchema = z.object({
   twitter: z
     .string()
@@ -62,19 +70,12 @@ export const updateAgentSocialsSchema = z.object({
     }),
 });
 
-/**
- * Custom zod field for read-only Agent name (for update forms)
- * Accepts any string since the field is immutable and cannot be changed
- */
-export const readOnlyAgentNameField = () =>
-  z
+export const updateAgentSchema = z.object({
+  name: z
     .string()
     .trim()
     .optional()
-    .describe("Agent name (immutable, cannot be changed)");
-
-export const updateAgentSchema = z.object({
-  name: readOnlyAgentNameField(),
+    .describe("Agent name (immutable, cannot be changed)"),
   title: z
     .string()
     .trim()
@@ -100,7 +101,15 @@ export const updateAgentSchema = z.object({
       message: "Must be a valid URL",
     })
     .optional(),
-  imageFile: z.instanceof(File).optional(),
+  imageFile: z
+    .instanceof(File)
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: `File size must be less than ${(MAX_FILE_SIZE / 1000).toFixed(0)}KB`,
+    })
+    .refine((file) => ACCEPTED_FILE_TYPES.includes(file.type), {
+      message: "File must be PNG, JPEG, GIF, or WebP format",
+    })
+    .optional(),
   socials: updateAgentSocialsSchema,
 });
 

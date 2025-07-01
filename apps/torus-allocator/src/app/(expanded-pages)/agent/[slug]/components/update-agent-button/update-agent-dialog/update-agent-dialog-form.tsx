@@ -16,7 +16,11 @@ import type {
   UpdateAgentFormData,
   UpdateAgentMutation,
 } from "./update-agent-dialog-form-schema";
-import { updateAgentSchema } from "./update-agent-dialog-form-schema";
+import {
+  ACCEPTED_FILE_TYPES,
+  MAX_FILE_SIZE,
+  updateAgentSchema,
+} from "./update-agent-dialog-form-schema";
 
 interface UpdateAgentDialogFormProps {
   agentKey: string;
@@ -39,6 +43,34 @@ export function UpdateAgentDialogForm({
     void updateAgentMutation.mutate({
       ...data,
     });
+  };
+
+  const onChangeImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      form.setError("imageFile", {
+        type: "manual",
+        message: `File size must be less than ${(MAX_FILE_SIZE / 1000).toFixed(0)}KB`,
+      });
+      return;
+    }
+
+    const isValidType = Object.keys(ACCEPTED_FILE_TYPES).includes(file.type);
+    if (!isValidType) {
+      form.setError("imageFile", {
+        type: "manual",
+        message: "File must be PNG, JPEG, GIF, or WebP format",
+      });
+      return;
+    }
+
+    form.clearErrors("imageFile");
+    updateAgentMutation.handleImageChange(e);
   };
 
   return (
@@ -199,13 +231,15 @@ This agent specializes in providing technical support by analyzing issues and of
                     <FormControl>
                       <Input
                         type="file"
-                        accept="image/*"
-                        onChange={updateAgentMutation.handleImageChange}
+                        accept={Object.keys(ACCEPTED_FILE_TYPES).join(",")}
+                        onChange={onChangeImageFile}
                         className="cursor-pointer"
                       />
                     </FormControl>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Recommended size: 256x256px
+                      Square Image (Max 512x512) • Max{" "}
+                      {(MAX_FILE_SIZE / 1000).toFixed(0)}KB • PNG, JPEG, GIF,
+                      WebP
                     </p>
                     <FormMessage />
                   </div>
