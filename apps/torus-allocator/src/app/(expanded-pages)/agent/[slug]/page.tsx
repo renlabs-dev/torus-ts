@@ -111,7 +111,7 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
               </Suspense>
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
                 <h1 className="text-start text-3xl font-semibold">
-                  {mdl.name}
+                  {metadata.title}
                 </h1>
                 <p className="text-card-foreground">
                   {metadata.short_description}
