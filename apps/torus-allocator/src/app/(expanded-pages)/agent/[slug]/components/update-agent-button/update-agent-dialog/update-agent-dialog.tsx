@@ -62,6 +62,9 @@ export default function UpdateAgentDialog({
     setCurrentImagePreview(currentImageBlobUrl);
   }, [currentImageBlobUrl]);
 
+  const [originalFormData, setOriginalFormData] =
+    useState<UpdateAgentFormData | null>(null);
+
   const form = useForm<UpdateAgentFormData>({
     resolver: zodResolver(updateAgentSchema),
     mode: "onChange",
@@ -109,6 +112,7 @@ export default function UpdateAgentDialog({
         },
       };
 
+      setOriginalFormData(originalData);
       form.reset(originalData);
       setHasUnsavedChanges(false);
     }
@@ -131,15 +135,21 @@ export default function UpdateAgentDialog({
 
         setIsOpen(false);
         form.reset();
+        if (originalFormData) {
+          form.reset(originalFormData);
+        }
         return;
       }
       setIsOpen(open);
       if (!open) {
         form.reset();
+        if (originalFormData) {
+          form.reset(originalFormData);
+        }
         setHasUnsavedChanges(false);
       }
     },
-    [isUploading, setIsOpen, form, hasUnsavedChanges],
+    [isUploading, setIsOpen, form, hasUnsavedChanges, originalFormData],
   );
 
   useEffect(() => {
@@ -220,7 +230,10 @@ export default function UpdateAgentDialog({
         onConfirm={() => {
           setShowConfirmClose(false);
           setIsOpen(false);
-          form.reset();
+          // Reset to original data instead of empty defaults
+          if (originalFormData) {
+            form.reset(originalFormData);
+          }
           setHasUnsavedChanges(false);
         }}
       />
