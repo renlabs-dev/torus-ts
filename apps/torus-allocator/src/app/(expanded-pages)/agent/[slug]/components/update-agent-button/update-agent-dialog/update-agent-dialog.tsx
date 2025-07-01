@@ -37,6 +37,7 @@ export default function UpdateAgentDialog({
   const [currentImagePreview, setCurrentImagePreview] = useState<string | null>(
     null,
   );
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
     {
@@ -86,8 +87,17 @@ export default function UpdateAgentDialog({
   });
 
   useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      if (type === "change") {
+        setHasUnsavedChanges(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  useEffect(() => {
     if (agent && agentMetadata) {
-      form.reset({
+      const originalData = {
         name: agent.name ?? "",
         title: agentMetadata.metadata.title || "",
         shortDescription: agentMetadata.metadata.short_description || "",
@@ -101,7 +111,10 @@ export default function UpdateAgentDialog({
           telegram: agentMetadata.metadata.socials?.telegram ?? "",
           discord: agentMetadata.metadata.socials?.discord ?? "",
         },
-      });
+      };
+
+      form.reset(originalData);
+      setHasUnsavedChanges(false);
     }
   }, [agent, agentMetadata, form]);
 
@@ -111,15 +124,26 @@ export default function UpdateAgentDialog({
         return;
       }
       if (!open && !isUploading) {
-        setShowConfirmClose(true);
+        const formValues = form.getValues();
+        const hasNewImage = formValues.imageFile !== undefined;
+        const hasChanges = hasNewImage || hasUnsavedChanges;
+
+        if (hasChanges) {
+          setShowConfirmClose(true);
+          return;
+        }
+
+        setIsOpen(false);
+        form.reset();
         return;
       }
       setIsOpen(open);
       if (!open) {
         form.reset();
+        setHasUnsavedChanges(false);
       }
     },
-    [isUploading, setIsOpen, form],
+    [isUploading, setIsOpen, form, hasUnsavedChanges],
   );
 
   useEffect(() => {
@@ -134,6 +158,7 @@ export default function UpdateAgentDialog({
       const file = e.target.files?.[0];
       if (file) {
         form.setValue("imageFile", file);
+        setHasUnsavedChanges(true);
       }
     },
     [form],
@@ -200,6 +225,7 @@ export default function UpdateAgentDialog({
           setShowConfirmClose(false);
           setIsOpen(false);
           form.reset();
+          setHasUnsavedChanges(false);
         }}
       />
     </>
