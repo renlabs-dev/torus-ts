@@ -200,10 +200,14 @@ export default function UpdateAgentDialog({
           callback: (tx) => {
             if (tx.status === "SUCCESS" && !tx.message?.includes("included")) {
               setIsOpen(false);
+              setIsUploading(false);
+            }
+
+            if (tx.status === "ERROR") {
+              setIsUploading(false);
             }
 
             setTransactionStatus(tx);
-            setIsUploading(false);
           },
         });
       },
@@ -227,12 +231,10 @@ export default function UpdateAgentDialog({
         currentImagePreview={currentImagePreview}
       />
       {transactionStatus.status && (
-        <div className="mt-4 border rounded-md p-3 bg-black/5">
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
-          />
-        </div>
+        <TransactionStatus
+          status={transactionStatus.status}
+          message={transactionStatus.message}
+        />
       )}
       <UnsavedChangesDialog
         open={showConfirmClose}
@@ -241,7 +243,6 @@ export default function UpdateAgentDialog({
         onConfirm={() => {
           setShowConfirmClose(false);
           setIsOpen(false);
-          // Reset to original data instead of empty defaults
           if (originalFormData) {
             form.reset(originalFormData);
           }
