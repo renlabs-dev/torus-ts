@@ -38,13 +38,13 @@ export function UpdateAgentDialogPreview({
     },
   );
 
-  if (isLoading || !agent?.metadataUri) {
-    return <AgentPreviewSkeleton />;
-  }
-
   const formValues = form.getValues();
   const previewImage = form.watch("imageFile");
   const previewImageBlobUrl = useBlobUrl(previewImage);
+
+  if (isLoading || !agent?.metadataUri) {
+    return <AgentPreviewSkeleton />;
+  }
 
   const headerProps: AgentHeaderProps = {
     name: formValues.name ?? "",
