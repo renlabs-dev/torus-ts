@@ -302,6 +302,42 @@ export async function queryPermissionsByParticipants(
 }
 
 /**
+ * Query all namespace permissions from the blockchain.
+ * Filters all permissions to return only those with Namespace scope.
+ *
+ * @return A map of PermissionId -> PermissionContract for all namespace permissions
+ */
+export async function queryNamespacePermissions(
+  api: Api,
+): Promise<
+  Result<
+    Map<PermissionId, PermissionContract>,
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
+  >
+> {
+  const [permissionsError, allPermissions] = await queryPermissions(api);
+  if (permissionsError) return makeErr(permissionsError);
+
+  const namespacePermissions = new Map<PermissionId, PermissionContract>();
+
+  for (const [permissionId, permission] of allPermissions) {
+    match(permission.scope)({
+      Namespace: () => {
+        namespacePermissions.set(permissionId, permission);
+      },
+      Emission: () => {
+        // Skip emission permissions
+      },
+      Curator: () => {
+        // Skip curator permissions
+      },
+    });
+  }
+
+  return makeOk(namespacePermissions);
+}
+
+/**
  * Query accumulated stream amounts for an account
  *
  * @returns A map (StreamId -> PermissionId -> Amount)
