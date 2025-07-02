@@ -1,34 +1,27 @@
-import { serve } from '@hono/node-server';
-import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
-import type { Balance, SS58Address } from '@torus-network/sdk';
-import type { Context } from 'hono';
-import { rateLimiter } from 'hono-rate-limiter';
-import { cors } from 'hono/cors';
-import { z } from 'zod';
-
+import { serve } from "@hono/node-server";
+import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
+import type { Balance, SS58Address } from "@torus-network/sdk";
+import type { Context } from "hono";
+import { rateLimiter } from "hono-rate-limiter";
+import { cors } from "hono/cors";
+import { z } from "zod";
+import { match } from "rustie";
+import { queryNamespacePermissions } from "../modules/permission0.js";
+import { queryAgents } from "../modules/subspace.js";
+import type { ApiPromise, Helpers } from "./helpers.js";
+import type { AuthTokenResult } from "./utils.js";
 import {
-  type ApiPromise,
-  type Helpers,
   checkTransaction,
   connectToChainRpc,
   getTotalStake,
-} from './helpers.js';
-import { 
-  type TokenData, 
-  type AuthTokenResult,
-  decodeAuthToken, 
-  ensureTrailingSlash
-} from './utils.js';
+} from "./helpers.js";
+import { decodeAuthToken, ensureTrailingSlash } from "./utils.js";
 
-/**
- * User type definition
- */
-type User = {
-  /** The wallet address of the user */
+interface User {
   walletAddress: SS58Address;
-};
+}
 
-type StakeLimiterOptions = {
+interface StakeLimiterOptions {
   /** Whether to enable the rate limiter. @default false */
   enabled: boolean;
   /** The limit of requests per minute */
@@ -41,13 +34,15 @@ type StakeLimiterOptions = {
   }) => number;
   /** The time window in milliseconds for the rate limit. @default 60000 */
   window: number;
-};
+}
 
 /**
  * Configuration options for the Agent class
  */
-type AgentOptions = {
-  /** The address of the agent */
+interface AgentOptions {
+  /** The SS58 address key of this agent (used for querying namespace permissions) */
+  agentKey: SS58Address;
+  /** The address identifier of the agent (used for namespace path generation) */
   address: string;
   /** Port number for the server to listen on. @default 3000 */
   port?: number;
@@ -75,7 +70,7 @@ type AgentOptions = {
       version: string;
     };
   };
-};
+}
 
 /**
  * Options for defining a method's input and output schemas
@@ -83,17 +78,26 @@ type AgentOptions = {
  * @template O - Output schema type for successful responses
  * @template E - Error schema type
  */
-type MethodOptions<
+interface MethodOptions<
   I extends z.ZodSchema,
   O extends z.ZodSchema,
   E extends z.ZodSchema | undefined,
-> = {
+> {
   /** The HTTP method to use for the method. @default 'post' */
-  method?: 'get' | 'post';
+  method?: "get" | "post" | "put" | "patch" | "delete";
   stakeLimiter?: StakeLimiterOptions;
   auth?: {
     /** Whether the method requires authentication. @default false */
     required?: boolean;
+  };
+  /** Namespace permission configuration for this endpoint */
+  namespace?: {
+    /** Whether to enable namespace permission checking for this endpoint. @default true */
+    enabled?: boolean;
+    /** Custom namespace path for this endpoint. If not provided, uses agent.<agent_name>.<endpoint_name> */
+    path?: string;
+    /** List of RPC endpoint URLs for checking namespace permissions on the Torus blockchain. @default ['wss://api.testnet.torus.network'] */
+    rpcUrls?: string[];
   };
   /** Input validation schema */
   input:
@@ -121,7 +125,7 @@ type MethodOptions<
       schema: E;
     };
   };
-};
+}
 
 type CallbackContext = {
   user?: User;
@@ -200,12 +204,18 @@ type MethodCallback<
  * agent.run();
  * ```
  */
-export class Agent {
+export class AgentServer {
   /** Hono application instance */
   private app: OpenAPIHono = new OpenAPIHono();
   private api!: ApiPromise;
   /** Agent configuration options */
   private options: AgentOptions;
+  /** Resolved agent name from blockchain lookup */
+  private agentName: string | null = null;
+  /** Cached namespace permissions that this agent is delegating (namespace path -> grantees[]) */
+  private delegatedNamespacePermissions: Map<string, SS58Address[]> = new Map();
+  /** Promise that resolves when initialization is complete */
+  private initPromise: Promise<void> | null = null;
 
   /**
    * Creates a new Agent instance
@@ -213,19 +223,130 @@ export class Agent {
    */
   constructor(options: AgentOptions) {
     this.options = options;
-    this.init();
+
+    // Setup initialization middleware that runs before all requests
+    this.app.use("*", this.initMiddleware);
+    this.app.use("*", cors());
+
+    // Setup docs immediately - they don't depend on blockchain data
+    this.setupDocs();
   }
+
+  /**
+   * Middleware that ensures initialization is complete before processing requests
+   */
+  private initMiddleware = async (c: Context, next: () => Promise<void>) => {
+    if (!this.initPromise) {
+      console.log("Initializing agent server...");
+      this.initPromise = this.init();
+    }
+    await this.initPromise;
+    await next();
+  };
 
   /**
    * Initializes the Agent instance
    * @private
    */
   private async init() {
-    this.app.use('*', cors());
-
     this.api = await connectToChainRpc();
 
-    this.setupDocs();
+    // Resolve agent name from blockchain
+    await this.resolveAgentName();
+
+    // Load and cache namespace permissions that this agent is delegating
+    await this.loadDelegatedNamespacePermissions();
+
+    console.log("Agent initialization complete.");
+  }
+
+  /**
+   * Resolves the agent name from the blockchain by matching agentKey
+   * @private
+   */
+  private async resolveAgentName() {
+    try {
+      console.log(`Resolving agent name for key: ${this.options.agentKey}`);
+      const agents = await queryAgents(this.api);
+
+      // Find the agent with matching key
+      const matchingAgent = agents.get(this.options.agentKey);
+
+      if (matchingAgent) {
+        this.agentName = matchingAgent.name;
+        console.log(`Resolved agent name: ${this.agentName}`);
+      } else {
+        throw new Error(`Agent not found for key: ${this.options.agentKey}`);
+      }
+    } catch (error) {
+      console.error("Failed to resolve agent name:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Loads and caches namespace permissions that this agent is delegating
+   * @private
+   */
+  private async loadDelegatedNamespacePermissions() {
+    try {
+      console.log(
+        `Loading delegated namespace permissions for agent key: ${this.options.agentKey}`,
+      );
+
+      const [error, namespacePermissions] = await queryNamespacePermissions(
+        this.api,
+      );
+
+      if (error) {
+        console.error("Failed to query namespace permissions:", error);
+        return;
+      }
+
+      // Filter for permissions where this agent is the grantor and organize by namespace path
+      Array.from(namespacePermissions.entries())
+        .filter(
+          ([_, permission]) => permission.grantor === this.options.agentKey,
+        )
+        .forEach(([permissionId, permission]) => {
+          match(permission.scope)({
+            Namespace: (namespaceScope) => {
+              if (namespaceScope.paths.length > 0) {
+                // For each path in this permission, add the grantee to the list
+                namespaceScope.paths.forEach((path) => {
+                  const normalizedPath = path.toLowerCase(); // Normalize to lowercase
+                  const existingGrantees =
+                    this.delegatedNamespacePermissions.get(normalizedPath) ??
+                    [];
+                  if (!existingGrantees.includes(permission.grantee)) {
+                    existingGrantees.push(permission.grantee);
+                    this.delegatedNamespacePermissions.set(
+                      normalizedPath,
+                      existingGrantees,
+                    );
+                  }
+                });
+                console.log(
+                  `Cached namespace permission ${permissionId} for grantee ${permission.grantee} with paths:`,
+                  namespaceScope.paths,
+                );
+              }
+            },
+            Emission: () => {
+              // Skip emission permissions
+            },
+            Curator: () => {
+              // Skip curator permissions
+            },
+          });
+        });
+
+      console.log(
+        `Loaded namespace permissions for ${this.delegatedNamespacePermissions.size} paths`,
+      );
+    } catch (error) {
+      console.error("Error loading delegated namespace permissions:", error);
+    }
   }
 
   /**
@@ -239,24 +360,67 @@ export class Agent {
       return;
     }
 
-    this.app.doc(docs?.path ?? '/docs', {
-      openapi: '3.0.0',
+    this.app.doc(docs.path ?? "/docs", {
+      openapi: "3.0.0",
       info: docs.info,
     });
   }
 
   private getAuthRequestData(c: Context): AuthTokenResult | null {
     const token = c.req
-      .header(this.options?.auth?.headerName ?? 'Authorization')
-      ?.split(' ')[1];
+      .header(this.options.auth?.headerName ?? "Authorization")
+      ?.split(" ")[1];
 
     if (token) {
-      const jwtMaxAge = this.options?.auth?.jwtMaxAge;
+      const jwtMaxAge = this.options.auth?.jwtMaxAge;
       const authResult = decodeAuthToken(token, jwtMaxAge);
       return authResult;
     }
 
     return null;
+  }
+
+  /**
+   * Checks if a user has permission to access a specific namespace path using cached permissions.
+   * @param userAddress - The SS58 address of the user
+   * @param namespacePath - The namespace path to check (e.g., 'agent.alice.memory.twitter')
+   * @returns boolean - true if the user has permission, false otherwise
+   */
+  private checkNamespacePermission(
+    userAddress: SS58Address,
+    namespacePath: string,
+  ): boolean {
+    const normalizedPath = namespacePath.toLowerCase();
+
+    const exactMatchGrantees =
+      this.delegatedNamespacePermissions.get(normalizedPath);
+    if (exactMatchGrantees?.includes(userAddress)) {
+      console.log(
+        `User ${userAddress} has exact permission for ${normalizedPath}`,
+      );
+      return true;
+    }
+    console.log(
+      `User ${userAddress} does not have permission for namespace ${normalizedPath}`,
+    );
+    return false;
+  }
+
+  private getNamespacePath(
+    endpointName: string,
+    httpMethod: string,
+    customPath?: string,
+  ): string {
+    if (customPath) {
+      return customPath;
+    }
+
+    if (!this.agentName) {
+      throw new Error(
+        "Agent name not resolved. Cannot generate namespace path.",
+      );
+    }
+    return `agent.${this.agentName.toLowerCase()}.${endpointName.toLowerCase()}.${httpMethod.toLowerCase()}`;
   }
 
   /**
@@ -273,16 +437,18 @@ export class Agent {
     options: MethodOptions<I, O, E>,
     callback: MethodCallback<I, O, E>,
   ) {
-    const httpMethod = options?.method ?? 'post';
+    const httpMethod = options?.method ?? "post";
 
     const keyGenerator = (c: Context) => {
       const authResult = this.getAuthRequestData(c);
 
-      if (!authResult || !authResult.success) {
-        return '';
+      if (!authResult?.success) {
+        return "";
       }
 
-      return c.req.header('x-forwarded-for') ?? authResult.data.userWalletAddress;
+      return (
+        c.req.header("x-forwarded-for") ?? authResult.data.userWalletAddress
+      );
     };
 
     const getStakeLimiterMiddleware = () => {
@@ -295,7 +461,7 @@ export class Agent {
       const limit = async (c: Context) => {
         const authResult = this.getAuthRequestData(c);
 
-        if (!authResult || !authResult.success) {
+        if (!authResult?.success) {
           return 0;
         }
 
@@ -328,20 +494,20 @@ export class Agent {
       security: options.auth?.required ? [{ Bearer: [] }] : undefined,
       middleware: getStakeLimiterMiddleware() ?? undefined,
       request: {
-        ...(httpMethod === 'post'
+        ...(httpMethod === "post"
           ? {
               body: {
                 content: {
-                  ...(typeof options.input === 'object' &&
-                  'multipartFormData' in options.input &&
+                  ...(typeof options.input === "object" &&
+                  "multipartFormData" in options.input &&
                   options.input.multipartFormData
                     ? {
-                        'multipart/form-data': {
+                        "multipart/form-data": {
                           schema: options.input.schema,
                         },
                       }
                     : {
-                        'application/json': {
+                        "application/json": {
                           schema: options.input,
                         },
                       }),
@@ -354,7 +520,7 @@ export class Agent {
         200: {
           description: options.output.ok.description,
           content: {
-            'application/json': {
+            "application/json": {
               schema: options.output.ok.schema,
             },
           },
@@ -362,7 +528,7 @@ export class Agent {
         400: {
           description: options.output.err.description,
           content: {
-            'application/json': {
+            "application/json": {
               schema: options.output.err.schema,
             },
           },
@@ -370,9 +536,9 @@ export class Agent {
         ...(options.auth?.required
           ? {
               401: {
-                description: 'Unauthorized',
+                description: "Unauthorized",
                 content: {
-                  'application/json': {
+                  "application/json": {
                     schema: z.object({
                       message: z.string(),
                     }),
@@ -390,31 +556,62 @@ export class Agent {
         const authResult = this.getAuthRequestData(c);
 
         if (!authResult) {
-          return c.json({ message: 'Missing authentication headers', code: 'MISSING_AUTH_HEADERS' }, 401);
+          return c.json(
+            {
+              message: "Missing authentication headers",
+              code: "MISSING_AUTH_HEADERS",
+            },
+            401,
+          );
         }
 
         if (!authResult.success) {
-          return c.json({ message: authResult.error, code: authResult.code }, 401);
+          return c.json(
+            { message: authResult.error, code: authResult.code },
+            401,
+          );
         }
 
         authData = { userWalletAddress: authResult.data.userWalletAddress };
       }
 
+      if (options.namespace?.enabled !== false && authData) {
+        const namespacePath = this.getNamespacePath(
+          name,
+          httpMethod,
+          options.namespace?.path,
+        );
+        const hasPermission = this.checkNamespacePermission(
+          authData.userWalletAddress,
+          namespacePath,
+        );
+
+        if (!hasPermission) {
+          return c.json(
+            {
+              message: `Access denied: insufficient permissions for namespace ${namespacePath}`,
+              code: "NAMESPACE_ACCESS_DENIED",
+            },
+            403,
+          );
+        }
+      }
+
       const isMultipartFormData =
-        'multipartFormData' in options.input && options.input.multipartFormData;
+        "multipartFormData" in options.input && options.input.multipartFormData;
 
       let input: unknown;
       if (
-        httpMethod === 'post' &&
-        typeof options.input === 'object' &&
-        'multipartFormData' in options.input &&
+        httpMethod === "post" &&
+        typeof options.input === "object" &&
+        "multipartFormData" in options.input &&
         options.input.multipartFormData
       ) {
         const formData = await c.req.formData();
         input = Object.fromEntries(formData.entries());
       }
 
-      if (httpMethod === 'post' && !isMultipartFormData) {
+      if (httpMethod === "post" && !isMultipartFormData) {
         input = await c.req.json();
       }
 
@@ -431,7 +628,7 @@ export class Agent {
 
       const result = await callback(input, context);
 
-      if ('ok' in result) {
+      if ("ok" in result) {
         return c.json(result.ok);
       }
 

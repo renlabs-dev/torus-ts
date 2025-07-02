@@ -1,55 +1,58 @@
 // Simple client test to call the hello endpoint
 
 async function testHelloEndpoint() {
-  const serverUrl = 'http://localhost:3001';
-  
+  const serverUrl = "http://localhost:3001";
+
   try {
     const response = await fetch(`${serverUrl}/hello`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: 'World'
-      })
+        name: "World",
+      }),
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result = await response.json();
-    console.log('✅ Success:', result);
+    const result = await response.json() as { message: string; timestamp: string };
+    console.log("✅ Success:", result);
     return result;
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error("❌ Error:", error);
     throw error;
   }
 }
 
 // Test with different names
 async function runTests() {
-  console.log('🚀 Starting client tests...\n');
-  
-  const testCases = ['World', 'Alice', 'Bob', 'Torus'];
-  
+  console.log("🚀 Starting client tests...\n");
+
+  const testCases = ["World", "Alice", "Bob", "Torus"];
+
   for (const name of testCases) {
     try {
       console.log(`Testing with name: "${name}"`);
-      const response = await fetch('http://localhost:3001/hello', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3001/hello", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name }),
       });
 
       console.log(`Response status: ${response.status}`);
-      console.log(`Response headers:`, Object.fromEntries(response.headers.entries()));
-      
+      console.log(
+        `Response headers:`,
+        Object.fromEntries(response.headers.entries()),
+      );
+
       const responseText = await response.text();
       console.log(`Raw response: "${responseText}"`);
-      
+
       try {
         const result = JSON.parse(responseText);
         console.log(`Result: ${result.message}`);
