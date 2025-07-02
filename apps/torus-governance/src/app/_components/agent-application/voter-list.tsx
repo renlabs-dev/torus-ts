@@ -6,7 +6,7 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
-import { useLayoutEffect, useState} from "react";
+import { useLayoutEffect, useState } from "react";
 
 interface VoterListProps {
   voters:
@@ -19,7 +19,7 @@ interface VoterListProps {
         vote: "ACCEPT" | "REFUSE" | "REMOVE";
         applicationId: number;
         userName?: string | null;
-        avatarUrl?: string | null; 
+        avatarUrl?: string | null;
       }[]
     | undefined;
   isLoading: boolean;
@@ -29,10 +29,11 @@ interface VoterListProps {
 export function VoterList(props: Readonly<VoterListProps>) {
   const { isError, isLoading, voters } = props;
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
+  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(
+    null,
+  );
 
   const { toast } = useToast();
-
 
   useLayoutEffect(() => {
     if (!containerNode) {
@@ -144,12 +145,14 @@ export function VoterList(props: Readonly<VoterListProps>) {
               onClick={() => handleCopyAddress(address)}
             >
               <div className="flex items-center gap-3">
-                  <span className="font-medium">{userName}</span>
-                  <span className="text-sm text-muted-foreground">
-                   ({smallAddress(address)})
+                <span className="font-medium">{userName}</span>
+                <span className="text-sm text-muted-foreground">
+                  ({smallAddress(address)})
                 </span>
               </div>
-              <div className="flex flex-col items-end">{getVoteLabel(vote)}</div>
+              <div className="flex flex-col items-end">
+                {getVoteLabel(vote)}
+              </div>
             </Button>
           );
         })}

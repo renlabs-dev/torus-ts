@@ -9,7 +9,6 @@ import base64url from "base64url";
 import { randomUUID } from "crypto";
 import { getCurrentProtocolVersion } from "../agent/jwt-sr25519.js";
 
-
 export class Keypair {
   private mnemonic: string;
   private seed: Uint8Array<ArrayBufferLike> | null = null;
@@ -43,7 +42,6 @@ export class Keypair {
       address: this.address,
     };
   }
-
 
   async createJWT() {
     await this.initialized;

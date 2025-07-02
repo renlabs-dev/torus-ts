@@ -168,4 +168,3 @@ export class ErrorArray extends Array<Error> implements MultiError {
     this.stack = stackMsgs.join("\n");
   }
 }
-

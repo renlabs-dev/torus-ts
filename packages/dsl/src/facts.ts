@@ -6,8 +6,8 @@ import type {
   BoolExprType,
   BaseConstraintType,
   Constraint,
-  CompOp
-} from './types';
+  CompOp,
+} from "./types";
 
 /**
  * Base type for all facts
@@ -20,29 +20,28 @@ export interface Fact {
  * Facts about addresses/accounts
  */
 export interface StakeOfFact extends Fact {
-  type: 'StakeOf';
+  type: "StakeOf";
   account: AccountId;
   amount?: UInt; // Optional: actual value when known
 }
-
 
 /**
  * Facts about permissions
  */
 export interface PermissionExistsFact extends Fact {
-  type: 'PermissionExists';
+  type: "PermissionExists";
   permId: PermId;
   exists?: boolean; // Optional: actual value when known
 }
 
 export interface PermissionEnabledFact extends Fact {
-  type: 'PermissionEnabled';
+  type: "PermissionEnabled";
   permId: PermId;
   enabled?: boolean; // Optional: actual value when known
 }
 
 export interface InactiveUnlessRedelegatedFact extends Fact {
-  type: 'InactiveUnlessRedelegated';
+  type: "InactiveUnlessRedelegated";
   account: AccountId;
   percentage: UInt;
   isRedelegated?: boolean; // Optional: actual value when known
@@ -52,7 +51,7 @@ export interface InactiveUnlessRedelegatedFact extends Fact {
  * Block-related facts
  */
 export interface BlockFact extends Fact {
-  type: 'Block';
+  type: "Block";
   number: UInt;
   timestamp: UInt;
 }
@@ -72,7 +71,7 @@ export type SpecificFact =
  * Note: This is not a fact but a request to perform a comparison
  */
 export interface ComparisonFact extends Fact {
-  type: 'Comparison';
+  type: "Comparison";
   op: CompOp;
   left: NumExprType;
   right: NumExprType;
@@ -85,28 +84,28 @@ export interface ComparisonFact extends Fact {
  */
 export function extractFactsFromNumExpr(expr: NumExprType): SpecificFact[] {
   const facts: SpecificFact[] = [];
-  
+
   switch (expr.$) {
-    case 'StakeOf':
+    case "StakeOf":
       facts.push({
-        type: 'StakeOf',
-        account: expr.account
+        type: "StakeOf",
+        account: expr.account,
       });
       break;
-      
-    case 'Add':
-    case 'Sub':
+
+    case "Add":
+    case "Sub":
       // Recursively extract facts from both operands
       facts.push(...extractFactsFromNumExpr(expr.left));
       facts.push(...extractFactsFromNumExpr(expr.right));
       break;
-      
+
     // UIntLiteral and BlockNumber don't represent specific facts about addresses or permissions
-    case 'UIntLiteral':
-    case 'BlockNumber':
+    case "UIntLiteral":
+    case "BlockNumber":
       break;
   }
-  
+
   return facts;
 }
 
@@ -120,31 +119,31 @@ export function extractFactsFromBaseConstraint(
   constraint: BaseConstraintType,
 ): SpecificFact[] {
   const facts: SpecificFact[] = [];
-  
+
   switch (constraint.$) {
-    case 'PermissionExists':
+    case "PermissionExists":
       facts.push({
-        type: 'PermissionExists',
-        permId: constraint.pid
+        type: "PermissionExists",
+        permId: constraint.pid,
       });
       break;
-      
-    case 'PermissionEnabled':
+
+    case "PermissionEnabled":
       facts.push({
-        type: 'PermissionEnabled',
-        permId: constraint.pid
+        type: "PermissionEnabled",
+        permId: constraint.pid,
       });
       break;
-      
-    case 'InactiveUnlessRedelegated':
+
+    case "InactiveUnlessRedelegated":
       facts.push({
-        type: 'InactiveUnlessRedelegated',
+        type: "InactiveUnlessRedelegated",
         account: constraint.account,
-        percentage: constraint.percentage
+        percentage: constraint.percentage,
       });
       break;
   }
-  
+
   return facts;
 }
 
@@ -156,40 +155,40 @@ export function extractFactsFromBaseConstraint(
  */
 export function extractFactsFromBoolExpr(
   expr: BoolExprType,
-  permId: PermId
+  permId: PermId,
 ): (SpecificFact | ComparisonFact)[] {
   const facts: (SpecificFact | ComparisonFact)[] = [];
-  
+
   switch (expr.$) {
-    case 'Base':
+    case "Base":
       facts.push(...extractFactsFromBaseConstraint(expr.body));
       break;
-      
-    case 'CompExpr':
+
+    case "CompExpr":
       // Add the comparison itself as a comparison fact
       facts.push({
-        type: 'Comparison',
+        type: "Comparison",
         op: expr.op,
         left: expr.left,
-        right: expr.right
+        right: expr.right,
       });
-      
+
       // Also extract facts from both sides of the comparison
       facts.push(...extractFactsFromNumExpr(expr.left));
       facts.push(...extractFactsFromNumExpr(expr.right));
       break;
-      
-    case 'Not':
+
+    case "Not":
       facts.push(...extractFactsFromBoolExpr(expr.body, permId));
       break;
-      
-    case 'And':
-    case 'Or':
+
+    case "And":
+    case "Or":
       facts.push(...extractFactsFromBoolExpr(expr.left, permId));
       facts.push(...extractFactsFromBoolExpr(expr.right, permId));
       break;
   }
-  
+
   return facts;
 }
 
@@ -199,7 +198,7 @@ export function extractFactsFromBoolExpr(
  * @returns Array of all extracted facts and comparisons
  */
 export function extractFactsFromConstraint(
-  constraint: Constraint
+  constraint: Constraint,
 ): (SpecificFact | ComparisonFact)[] {
   return extractFactsFromBoolExpr(constraint.body, constraint.permId);
 }
@@ -209,35 +208,41 @@ export function extractFactsFromConstraint(
  * @param items Array of facts and comparisons to categorize
  * @returns Object with items categorized by type
  */
-export function categorizeFacts(
-  items: (SpecificFact | ComparisonFact)[]
-): {
+export function categorizeFacts(items: (SpecificFact | ComparisonFact)[]): {
   addressFacts: StakeOfFact[];
-  permissionFacts: (PermissionExistsFact | PermissionEnabledFact | InactiveUnlessRedelegatedFact)[];
+  permissionFacts: (
+    | PermissionExistsFact
+    | PermissionEnabledFact
+    | InactiveUnlessRedelegatedFact
+  )[];
   comparisonFacts: ComparisonFact[];
 } {
   const addressFacts: StakeOfFact[] = [];
-  const permissionFacts: (PermissionExistsFact | PermissionEnabledFact | InactiveUnlessRedelegatedFact)[] = [];
+  const permissionFacts: (
+    | PermissionExistsFact
+    | PermissionEnabledFact
+    | InactiveUnlessRedelegatedFact
+  )[] = [];
   const comparisonFacts: ComparisonFact[] = [];
-  
+
   for (const item of items) {
-    if (item.type === 'StakeOf') {
+    if (item.type === "StakeOf") {
       addressFacts.push(item);
-    } else if (item.type === 'Comparison') {
+    } else if (item.type === "Comparison") {
       comparisonFacts.push(item);
     } else if (
-      item.type === 'PermissionExists' || 
-      item.type === 'PermissionEnabled' || 
-      item.type === 'InactiveUnlessRedelegated'
+      item.type === "PermissionExists" ||
+      item.type === "PermissionEnabled" ||
+      item.type === "InactiveUnlessRedelegated"
     ) {
       permissionFacts.push(item);
     }
   }
-  
+
   return {
     addressFacts,
     permissionFacts,
-    comparisonFacts
+    comparisonFacts,
   };
 }
 
@@ -249,7 +254,7 @@ export function categorizeFacts(
 export function deduplicateFacts<T extends Fact>(facts: T[]): T[] {
   const seen = new Set<string>();
   const uniqueFacts: T[] = [];
-  
+
   for (const fact of facts) {
     const key = JSON.stringify(fact);
     if (!seen.has(key)) {
@@ -257,6 +262,6 @@ export function deduplicateFacts<T extends Fact>(facts: T[]): T[] {
       uniqueFacts.push(fact);
     }
   }
-  
+
   return uniqueFacts;
 }

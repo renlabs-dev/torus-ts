@@ -1,8 +1,4 @@
-import type { 
-  Constraint, 
-  BoolExprType, 
-  BaseConstraintType,
-} from "./types";
+import type { Constraint, BoolExprType, BaseConstraintType } from "./types";
 import { CompOp } from "./types";
 
 /**
@@ -26,7 +22,7 @@ export function processConstraint(constraint: Constraint): {
   analysis: ConstraintAnalysis;
 } {
   const analysis = analyzeConstraint(constraint);
-  
+
   return {
     constraint,
     analysis,
@@ -40,7 +36,7 @@ export function processConstraint(constraint: Constraint): {
  */
 function analyzeConstraint(constraint: Constraint): ConstraintAnalysis {
   const { permId, body } = constraint;
-  
+
   // Default analysis
   const analysis: ConstraintAnalysis = {
     permId,
@@ -49,10 +45,10 @@ function analyzeConstraint(constraint: Constraint): ConstraintAnalysis {
     description: "Generic constraint",
     operations: [],
   };
-  
+
   // Analyze the boolean expression
   analyzeExpr(body, analysis);
-  
+
   return analysis;
 }
 
@@ -62,7 +58,7 @@ function analyzeConstraint(constraint: Constraint): ConstraintAnalysis {
  * @param analysis The analysis object to update
  */
 function analyzeExpr(expr: BoolExprType, analysis: ConstraintAnalysis): void {
-  switch(expr.$) {
+  switch (expr.$) {
     case "Base":
       analyzeBase(expr.body, analysis);
       break;
@@ -95,8 +91,11 @@ function analyzeExpr(expr: BoolExprType, analysis: ConstraintAnalysis): void {
  * @param base The base constraint to analyze
  * @param analysis The analysis object to update
  */
-function analyzeBase(base: BaseConstraintType, analysis: ConstraintAnalysis): void {
-  switch(base.$) {
+function analyzeBase(
+  base: BaseConstraintType,
+  analysis: ConstraintAnalysis,
+): void {
+  switch (base.$) {
     case "PermissionExists":
       analysis.type = "Permission Requirement";
       analysis.description = `Requires permission ${base.pid} to exist`;
@@ -126,8 +125,8 @@ export function createSampleConstraint(): Constraint {
         $: "Base",
         body: {
           $: "PermissionEnabled",
-          pid: "admin"
-        }
+          pid: "admin",
+        },
       },
       right: {
         $: "Or",
@@ -136,22 +135,22 @@ export function createSampleConstraint(): Constraint {
           op: CompOp.Gt,
           left: {
             $: "StakeOf",
-            account: "account123"
+            account: "account123",
           },
           right: {
             $: "UIntLiteral",
-            value: BigInt(1000)
-          }
+            value: BigInt(1000),
+          },
         },
         right: {
           $: "Base",
           body: {
             $: "InactiveUnlessRedelegated",
             account: "account456",
-            percentage: BigInt(75)
-          }
-        }
-      }
-    }
+            percentage: BigInt(75),
+          },
+        },
+      },
+    },
   };
 }

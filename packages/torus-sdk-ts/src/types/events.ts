@@ -13,7 +13,9 @@ export const PermissionAccumulationToggledEvent = sb_struct({
   toggled_by: sb_option(z.string().pipe(SS58_SCHEMA)),
 });
 
-export type PermissionAccumulationToggledEvent = z.infer<typeof PermissionAccumulationToggledEvent>;
+export type PermissionAccumulationToggledEvent = z.infer<
+  typeof PermissionAccumulationToggledEvent
+>;
 
 /**
  * Schema for PermissionRevoked event data
