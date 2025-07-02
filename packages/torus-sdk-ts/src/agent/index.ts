@@ -1,4 +1,4 @@
-import { z } from 'zod';
-import { Agent } from './agent.js';
+import { z } from "zod";
+import { AgentServer } from "./agent.js";
 
-export { Agent, z };
+export { AgentServer as Agent, z };

@@ -3,15 +3,15 @@ import type {
   BoolExprType,
   BaseConstraintType,
   NumExprType,
-  CompOp
-} from './types';
+  CompOp,
+} from "./types";
 
 /**
  * Represents an atomic fact extracted from a boolean expression
  */
-export type AtomicFact = 
-  | { type: 'BaseConstraint'; constraint: BaseConstraintType }
-  | { type: 'Comparison'; op: CompOp; left: NumExprType; right: NumExprType };
+export type AtomicFact =
+  | { type: "BaseConstraint"; constraint: BaseConstraintType }
+  | { type: "Comparison"; op: CompOp; left: NumExprType; right: NumExprType };
 
 /**
  * Result of analyzing a constraint
@@ -26,26 +26,28 @@ export interface ConstraintAnalysisResult {
 /**
  * Represents the structure of a boolean expression for reconstruction
  */
-export type BoolExprStructure = 
-  | { type: 'AtomicFact'; factIndex: number }
-  | { type: 'Not'; body: BoolExprStructure }
-  | { type: 'And'; left: BoolExprStructure; right: BoolExprStructure }
-  | { type: 'Or'; left: BoolExprStructure; right: BoolExprStructure };
+export type BoolExprStructure =
+  | { type: "AtomicFact"; factIndex: number }
+  | { type: "Not"; body: BoolExprStructure }
+  | { type: "And"; left: BoolExprStructure; right: BoolExprStructure }
+  | { type: "Or"; left: BoolExprStructure; right: BoolExprStructure };
 
 /**
  * Decomposes a constraint into atomic facts and logical structure
  * @param constraint The constraint to analyze
  * @returns Analysis result containing atomic facts and expression structure
  */
-export function analyzeConstraint(constraint: Constraint): ConstraintAnalysisResult {
+export function analyzeConstraint(
+  constraint: Constraint,
+): ConstraintAnalysisResult {
   const atomicFacts: AtomicFact[] = [];
   const structure = extractBoolExprStructure(constraint.body, atomicFacts);
-  
+
   return {
     permId: constraint.permId,
     atomicFacts,
     structure,
-    complexity: countComplexity(structure)
+    complexity: countComplexity(structure),
   };
 }
 
@@ -56,50 +58,50 @@ export function analyzeConstraint(constraint: Constraint): ConstraintAnalysisRes
  * @returns The structure representation of the expression
  */
 function extractBoolExprStructure(
-  expr: BoolExprType, 
-  facts: AtomicFact[]
+  expr: BoolExprType,
+  facts: AtomicFact[],
 ): BoolExprStructure {
   switch (expr.$) {
-    case 'Base': {
+    case "Base": {
       // Base constraint is an atomic fact
       const factIndex = facts.length;
       facts.push({
-        type: 'BaseConstraint',
-        constraint: expr.body
+        type: "BaseConstraint",
+        constraint: expr.body,
       });
-      return { type: 'AtomicFact', factIndex };
+      return { type: "AtomicFact", factIndex };
     }
-    
-    case 'CompExpr': {
+
+    case "CompExpr": {
       // Comparison expression is an atomic fact
       const factIndex = facts.length;
       facts.push({
-        type: 'Comparison',
+        type: "Comparison",
         op: expr.op,
         left: expr.left,
-        right: expr.right
+        right: expr.right,
       });
-      return { type: 'AtomicFact', factIndex };
+      return { type: "AtomicFact", factIndex };
     }
-    
-    case 'Not': {
+
+    case "Not": {
       // Negation operator
       const body = extractBoolExprStructure(expr.body, facts);
-      return { type: 'Not', body };
+      return { type: "Not", body };
     }
-    
-    case 'And': {
+
+    case "And": {
       // AND operator
       const left = extractBoolExprStructure(expr.left, facts);
       const right = extractBoolExprStructure(expr.right, facts);
-      return { type: 'And', left, right };
+      return { type: "And", left, right };
     }
-    
-    case 'Or': {
+
+    case "Or": {
       // OR operator
       const left = extractBoolExprStructure(expr.left, facts);
       const right = extractBoolExprStructure(expr.right, facts);
-      return { type: 'Or', left, right };
+      return { type: "Or", left, right };
     }
   }
 }
@@ -111,13 +113,15 @@ function extractBoolExprStructure(
  */
 function countComplexity(structure: BoolExprStructure): number {
   switch (structure.type) {
-    case 'AtomicFact':
+    case "AtomicFact":
       return 1;
-    case 'Not':
+    case "Not":
       return 1 + countComplexity(structure.body);
-    case 'And':
-    case 'Or':
-      return 1 + countComplexity(structure.left) + countComplexity(structure.right);
+    case "And":
+    case "Or":
+      return (
+        1 + countComplexity(structure.left) + countComplexity(structure.right)
+      );
   }
 }
 
@@ -129,49 +133,55 @@ function countComplexity(structure: BoolExprStructure): number {
  */
 export function reconstructBoolExpr(
   structure: BoolExprStructure,
-  facts: AtomicFact[]
+  facts: AtomicFact[],
 ): BoolExprType {
   switch (structure.type) {
-    case 'AtomicFact': {
+    case "AtomicFact": {
       const fact = facts[structure.factIndex];
       if (!fact) {
         throw new Error(`Invalid fact index: ${structure.factIndex}`);
       }
-      
-      if (fact.type === 'BaseConstraint') {
+
+      if (fact.type === "BaseConstraint") {
         return {
-          $: 'Base',
-          body: fact.constraint
+          $: "Base",
+          body: fact.constraint,
         };
-      } else { // Comparison
-        const compFact = fact as { type: 'Comparison'; op: CompOp; left: NumExprType; right: NumExprType };
+      } else {
+        // Comparison
+        const compFact = fact as {
+          type: "Comparison";
+          op: CompOp;
+          left: NumExprType;
+          right: NumExprType;
+        };
         return {
-          $: 'CompExpr',
+          $: "CompExpr",
           op: compFact.op,
           left: compFact.left,
-          right: compFact.right
+          right: compFact.right,
         };
       }
     }
-    
-    case 'Not':
+
+    case "Not":
       return {
-        $: 'Not',
-        body: reconstructBoolExpr(structure.body, facts)
+        $: "Not",
+        body: reconstructBoolExpr(structure.body, facts),
       };
-    
-    case 'And':
+
+    case "And":
       return {
-        $: 'And',
+        $: "And",
         left: reconstructBoolExpr(structure.left, facts),
-        right: reconstructBoolExpr(structure.right, facts)
+        right: reconstructBoolExpr(structure.right, facts),
       };
-    
-    case 'Or':
+
+    case "Or":
       return {
-        $: 'Or',
+        $: "Or",
         left: reconstructBoolExpr(structure.left, facts),
-        right: reconstructBoolExpr(structure.right, facts)
+        right: reconstructBoolExpr(structure.right, facts),
       };
   }
 }
@@ -186,10 +196,10 @@ export function flattenToCNF(expr: BoolExprType): BoolExprType[] {
   // Step 1: Extract facts and structure
   const facts: AtomicFact[] = [];
   const structure = extractBoolExprStructure(expr, facts);
-  
+
   // Step 2: Convert to CNF
   const cnfStructure = toCNF(structure);
-  
+
   // Step 3: Extract clauses
   return extractClauses(cnfStructure, facts);
 }
@@ -203,33 +213,33 @@ export function flattenToCNF(expr: BoolExprType): BoolExprType[] {
 function toCNF(structure: BoolExprStructure): BoolExprStructure {
   // This is a simplified CNF conversion
   // A complete implementation would handle De Morgan's laws and distributivity
-  
+
   switch (structure.type) {
-    case 'AtomicFact':
+    case "AtomicFact":
       return structure;
-      
-    case 'Not':
-      if (structure.body.type === 'Not') {
+
+    case "Not":
+      if (structure.body.type === "Not") {
         // Double negation elimination: ¬¬A = A
         return toCNF(structure.body.body);
       }
       return {
-        type: 'Not',
-        body: toCNF(structure.body)
+        type: "Not",
+        body: toCNF(structure.body),
       };
-      
-    case 'And':
+
+    case "And":
       return {
-        type: 'And',
+        type: "And",
         left: toCNF(structure.left),
-        right: toCNF(structure.right)
+        right: toCNF(structure.right),
       };
-      
-    case 'Or':
+
+    case "Or":
       return {
-        type: 'Or',
+        type: "Or",
         left: toCNF(structure.left),
-        right: toCNF(structure.right)
+        right: toCNF(structure.right),
       };
   }
 }
@@ -240,16 +250,19 @@ function toCNF(structure: BoolExprStructure): BoolExprStructure {
  * @param facts The atomic facts
  * @returns Array of boolean expressions representing clauses
  */
-function extractClauses(structure: BoolExprStructure, facts: AtomicFact[]): BoolExprType[] {
-  if (structure.type !== 'And') {
+function extractClauses(
+  structure: BoolExprStructure,
+  facts: AtomicFact[],
+): BoolExprType[] {
+  if (structure.type !== "And") {
     // If it's not an AND, it's a single clause
     return [reconstructBoolExpr(structure, facts)];
   }
-  
+
   // For AND, combine clauses from both sides
   return [
     ...extractClauses(structure.left, facts),
-    ...extractClauses(structure.right, facts)
+    ...extractClauses(structure.right, facts),
   ];
 }
 
@@ -260,7 +273,7 @@ function extractClauses(structure: BoolExprStructure, facts: AtomicFact[]): Bool
  */
 export function describeAtomicFacts(facts: AtomicFact[]): string[] {
   return facts.map((fact, index) => {
-    if (fact.type === 'BaseConstraint') {
+    if (fact.type === "BaseConstraint") {
       return `Fact #${index}: Base constraint of type "${fact.constraint.$}"`;
     } else {
       return `Fact #${index}: Comparison "${fact.op}" between expressions`;
@@ -275,34 +288,39 @@ export function describeAtomicFacts(facts: AtomicFact[]): string[] {
  * @returns A tree-like string representation of the structure
  */
 export function visualizeStructure(
-  structure: BoolExprStructure, 
+  structure: BoolExprStructure,
   facts: AtomicFact[],
-  indent = 0
+  indent = 0,
 ): string {
-  const padding = ' '.repeat(indent * 2);
-  
+  const padding = " ".repeat(indent * 2);
+
   switch (structure.type) {
-    case 'AtomicFact': {
+    case "AtomicFact": {
       const fact = facts[structure.factIndex];
       if (!fact) {
         return `${padding}Fact #${structure.factIndex}: INVALID INDEX`;
       }
-      
-      if (fact.type === 'BaseConstraint') {
+
+      if (fact.type === "BaseConstraint") {
         return `${padding}Fact #${structure.factIndex}: Base(${fact.constraint.$})`;
       } else {
-        const compFact = fact as { type: 'Comparison'; op: CompOp; left: NumExprType; right: NumExprType };
+        const compFact = fact as {
+          type: "Comparison";
+          op: CompOp;
+          left: NumExprType;
+          right: NumExprType;
+        };
         return `${padding}Fact #${structure.factIndex}: Compare(${compFact.op})`;
       }
     }
-    
-    case 'Not':
+
+    case "Not":
       return `${padding}NOT\n${visualizeStructure(structure.body, facts, indent + 1)}`;
-    
-    case 'And':
+
+    case "And":
       return `${padding}AND\n${visualizeStructure(structure.left, facts, indent + 1)}\n${visualizeStructure(structure.right, facts, indent + 1)}`;
-    
-    case 'Or':
+
+    case "Or":
       return `${padding}OR\n${visualizeStructure(structure.left, facts, indent + 1)}\n${visualizeStructure(structure.right, facts, indent + 1)}`;
   }
 }

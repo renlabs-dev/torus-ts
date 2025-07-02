@@ -16,6 +16,7 @@ The DSL allows defining constraints with the following components:
 - **NumExpr**: Numeric expressions (literals, block numbers, stake amounts, etc.)
 
 Example constraint:
+
 ```typescript
 const constraint = {
   permId: "transfer_permission",
@@ -25,13 +26,13 @@ const constraint = {
       $: "CompExpr",
       op: CompOp.Gt,
       left: { $: "StakeOf", account: "alice" },
-      right: { $: "UIntLiteral", value: BigInt(1000) }
+      right: { $: "UIntLiteral", value: BigInt(1000) },
     },
     right: {
       $: "Base",
-      body: { $: "PermissionExists", pid: "transfer_tokens" }
-    }
-  }
+      body: { $: "PermissionExists", pid: "transfer_tokens" },
+    },
+  },
 };
 ```
 
@@ -40,11 +41,13 @@ const constraint = {
 Facts represent the current state of the world and are classified into:
 
 - **Account Facts**:
+
   - `StakeOfFact`: The stake amount of an account
   - `WeightSetFact`: The weight set from one account to another
   - `WeightPowerFromFact`: The weight power from one account to another
 
 - **Permission Facts**:
+
   - `PermissionExistsFact`: Whether a permission exists
   - `PermissionEnabledFact`: Whether a permission is enabled
   - `MaxDelegationDepthFact`: The maximum delegation depth for a permission
@@ -60,10 +63,12 @@ Facts are stored in Working Memory and indexed by account ID or permission ID fo
 The Rete network consists of:
 
 - **Alpha Network**: Filters individual facts
+
   - Indexed by fact type and entity ID (account/permission)
   - Facts are updated in place when new values arrive
 
 - **Beta Network**: Joins related facts
+
   - Builds on alpha memories to create combinations of facts
   - Maintains history of combinations (tokens)
 
@@ -74,6 +79,7 @@ The Rete network consists of:
 ### 4. Fact Updates and Propagation
 
 When a fact is updated:
+
 1. The working memory updates the fact in place
 2. Alpha memories update their copies of the fact
 3. The fact is propagated through the beta network
@@ -90,6 +96,7 @@ We have implemented:
 2. **Fact Extraction**: Functions to extract facts from constraints.
 
 3. **Rete Network**:
+
    - Alpha network with fact indexing
    - Beta network with token joining
    - Production nodes for constraint activation
@@ -127,21 +134,21 @@ const network = new ReteNetwork();
 
 // Add a constraint to the network
 const constraint = {
-  permId: 'stake_constraint',
+  permId: "stake_constraint",
   body: {
-    $: 'CompExpr',
+    $: "CompExpr",
     op: CompOp.Gt,
-    left: { $: 'StakeOf', account: 'alice' },
-    right: { $: 'UIntLiteral', value: BigInt(1000) }
-  }
+    left: { $: "StakeOf", account: "alice" },
+    right: { $: "UIntLiteral", value: BigInt(1000) },
+  },
 };
 const productionId = network.addConstraint(constraint);
 
 // Add a fact to the network
 const stakeFact: StakeOfFact = {
-  type: 'StakeOf',
-  account: 'alice',
-  amount: BigInt(1500)
+  type: "StakeOf",
+  account: "alice",
+  amount: BigInt(1500),
 };
 network.addFact(stakeFact);
 
@@ -151,9 +158,9 @@ console.log(`Constraint activated: ${isActivated}`);
 
 // Update the fact
 const updatedStake: StakeOfFact = {
-  type: 'StakeOf',
-  account: 'alice',
-  amount: BigInt(2000)
+  type: "StakeOf",
+  account: "alice",
+  amount: BigInt(2000),
 };
 network.addFact(updatedStake);
 ```

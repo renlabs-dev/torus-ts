@@ -39,9 +39,7 @@ export function TransactionsSheet() {
           <ReceiptText size={20} />
         </Button>
       </SheetTrigger>
-      <SheetContent
-        className="z-[70] w-[335px] flex h-full flex-col gap-4"
-      >
+      <SheetContent className="z-[70] w-[335px] flex h-full flex-col gap-4">
         <SheetHeader>
           <SheetTitle className="text-lg font-semibold">
             Transactions

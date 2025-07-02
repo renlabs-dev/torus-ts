@@ -5,7 +5,10 @@ import "@polkadot/api/augment";
 import type { ApiPromise } from "@polkadot/api";
 import type { Percent } from "@polkadot/types/interfaces";
 import type { SS58Address } from "../address.js";
-import { queryCachedStakeFrom, queryCachedStakeOut } from "../cached-queries.js";
+import {
+  queryCachedStakeFrom,
+  queryCachedStakeOut,
+} from "../cached-queries.js";
 import {
   sb_address,
   sb_amount,

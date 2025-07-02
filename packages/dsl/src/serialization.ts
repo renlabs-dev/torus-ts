@@ -10,8 +10,10 @@ import type { Constraint } from "./types";
  * @returns JSON string representation of the constraint
  */
 export function serializeConstraint(constraint: Constraint): string {
-  return JSON.stringify(constraint, (key, value) => 
-    typeof value === 'bigint' ? { type: 'bigint', value: value.toString() } : value
+  return JSON.stringify(constraint, (key, value) =>
+    typeof value === "bigint"
+      ? { type: "bigint", value: value.toString() }
+      : value,
   );
 }
 
@@ -22,7 +24,7 @@ export function serializeConstraint(constraint: Constraint): string {
  */
 export function deserializeConstraint(json: string): Constraint {
   return JSON.parse(json, (key, value) => {
-    if (value && typeof value === 'object' && value.type === 'bigint') {
+    if (value && typeof value === "object" && value.type === "bigint") {
       return BigInt(value.value);
     }
     return value;
@@ -35,9 +37,11 @@ export function deserializeConstraint(json: string): Constraint {
  * @returns A constraint with all BigInt values converted to strings
  */
 export function constraintToPrimitives(constraint: Constraint): any {
-  return JSON.parse(JSON.stringify(constraint, (key, value) =>
-    typeof value === 'bigint' ? value.toString() : value
-  ));
+  return JSON.parse(
+    JSON.stringify(constraint, (key, value) =>
+      typeof value === "bigint" ? value.toString() : value,
+    ),
+  );
 }
 
 /**
@@ -46,22 +50,22 @@ export function constraintToPrimitives(constraint: Constraint): any {
  * @returns The object with string values converted to BigInt where appropriate
  */
 export function convertStringsToBigInt(obj: any): any {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj !== "object") {
     return obj;
   }
-  
+
   if (Array.isArray(obj)) {
-    return obj.map(item => convertStringsToBigInt(item));
+    return obj.map((item) => convertStringsToBigInt(item));
   }
-  
+
   // Special case for NumExpr UIntLiteral
-  if (obj.$ === 'UIntLiteral' && typeof obj.value === 'string') {
+  if (obj.$ === "UIntLiteral" && typeof obj.value === "string") {
     return {
       ...obj,
-      value: BigInt(obj.value)
+      value: BigInt(obj.value),
     };
   }
-  
+
   const result: any = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -69,6 +73,6 @@ export function convertStringsToBigInt(obj: any): any {
       result[key] = convertStringsToBigInt(obj[key]);
     }
   }
-  
+
   return result;
 }

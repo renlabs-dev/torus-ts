@@ -1,4 +1,10 @@
-import type { LastBlock, Proposal, SS58Address, PermissionContract, PermissionId } from "@torus-network/sdk";
+import type {
+  LastBlock,
+  Proposal,
+  SS58Address,
+  PermissionContract,
+  PermissionId,
+} from "@torus-network/sdk";
 import {
   checkSS58,
   CONSTANTS,
@@ -20,7 +26,19 @@ import {
   normalizeApplicationValue,
   sleep,
 } from "../common";
-import type { NewApplication, NewProposal, NewPermission, NewEmissionPermission, NewEmissionStreamAllocation, NewEmissionDistributionTarget, NewPermissionEnforcementController, NewPermissionRevocationArbiter, NewPermissionHierarchy, NewNamespacePermission, NewNamespacePermissionPath } from "../db";
+import type {
+  NewApplication,
+  NewProposal,
+  NewPermission,
+  NewEmissionPermission,
+  NewEmissionStreamAllocation,
+  NewEmissionDistributionTarget,
+  NewPermissionEnforcementController,
+  NewPermissionRevocationArbiter,
+  NewPermissionHierarchy,
+  NewNamespacePermission,
+  NewNamespacePermissionPath,
+} from "../db";
 import {
   queryProposalsDB,
   SubspaceAgentToDatabase,
@@ -90,7 +108,8 @@ function permissionContractToDatabase(
   });
 
   const revocationRequiredVotes = match(contract.revocation)({
-    RevocableByArbiters: (arbiters) => BigInt(arbiters.requiredVotes.toString()),
+    RevocableByArbiters: (arbiters) =>
+      BigInt(arbiters.requiredVotes.toString()),
     Irrevocable: () => null,
     RevocableByGrantor: () => null,
     RevocableAfter: () => null,
@@ -202,11 +221,13 @@ function permissionContractToDatabase(
       // Handle stream allocations (if streams-based)
       match(emission.allocation)({
         Streams: (streams) => {
-          streamAllocations = Array.from(streams.entries()).map(([streamId, percentage]) => ({
-            permissionId: permissionId,
-            streamId: streamId,
-            percentage: percentage, // 0-100, matches Substrate Percent type
-          }));
+          streamAllocations = Array.from(streams.entries()).map(
+            ([streamId, percentage]) => ({
+              permissionId: permissionId,
+              streamId: streamId,
+              percentage: percentage, // 0-100, matches Substrate Percent type
+            }),
+          );
         },
         FixedAmount: () => {
           // No stream allocations for fixed amount
@@ -214,11 +235,13 @@ function permissionContractToDatabase(
       });
 
       // Handle distribution targets (all emission permissions have targets)
-      distributionTargets = Array.from(emission.targets.entries()).map(([accountId, weight]) => ({
-        permissionId: permissionId,
-        targetAccountId: accountId,
-        weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
-      }));
+      distributionTargets = Array.from(emission.targets.entries()).map(
+        ([accountId, weight]) => ({
+          permissionId: permissionId,
+          targetAccountId: accountId,
+          weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
+        }),
+      );
     },
     Namespace: (namespace) => {
       // Handle namespace permissions
@@ -229,14 +252,13 @@ function permissionContractToDatabase(
       // Extract namespace paths - each path becomes a separate database entry
       namespacePaths = namespace.paths.map((pathSegments) => ({
         permissionId: permissionId,
-        namespacePath: pathSegments.join('.'), // Convert segments array to dot-separated string
+        namespacePath: pathSegments.join("."), // Convert segments array to dot-separated string
       }));
     },
     Curator: () => {
       // This case should never be reached due to early return above
     },
   });
-
 
   // Handle enforcement authorities
   match(contract.enforcement)({
@@ -245,7 +267,7 @@ function permissionContractToDatabase(
         (controller: SS58Address): NewPermissionEnforcementController => ({
           permissionId: permissionId,
           accountId: controller,
-        })
+        }),
       );
     },
     None: () => {
@@ -260,7 +282,7 @@ function permissionContractToDatabase(
         (arbiter: SS58Address): NewPermissionRevocationArbiter => ({
           permissionId: permissionId,
           accountId: arbiter,
-        })
+        }),
       );
     },
     Irrevocable: () => {
@@ -426,11 +448,16 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
   const permissionsQueryResult = await queryPermissions(lastBlock.apiAtBlock);
   const [permissionsMapErr, permissionsMap] = permissionsQueryResult;
   if (permissionsMapErr) {
-    log.error(`Block ${lastBlockNumber}: queryPermissions failed:`, permissionsMapErr);
+    log.error(
+      `Block ${lastBlockNumber}: queryPermissions failed:`,
+      permissionsMapErr,
+    );
     return;
   }
 
-  log.info(`Block ${lastBlockNumber}: found ${permissionsMap.size} permissions from blockchain`);
+  log.info(
+    `Block ${lastBlockNumber}: found ${permissionsMap.size} permissions from blockchain`,
+  );
 
   const permissionsData: {
     permission: NewPermission;
@@ -444,15 +471,22 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
     hierarchy?: NewPermissionHierarchy;
   }[] = [];
 
-  // Transform each permission to database format  
+  // Transform each permission to database format
   for (const [permissionId, contract] of permissionsMap.entries()) {
     try {
-      const permissionData = permissionContractToDatabase(permissionId, contract);
+      const permissionData = permissionContractToDatabase(
+        permissionId,
+        contract,
+      );
       if (permissionData) {
         permissionsData.push(permissionData);
-        log.info(`Block ${lastBlockNumber}: added permission ${permissionId} to batch`);
+        log.info(
+          `Block ${lastBlockNumber}: added permission ${permissionId} to batch`,
+        );
       } else {
-        log.info(`Block ${lastBlockNumber}: skipped curator permission ${permissionId}`);
+        log.info(
+          `Block ${lastBlockNumber}: skipped curator permission ${permissionId}`,
+        );
       }
     } catch (error) {
       log.error(`Failed to transform permission ${permissionId}:`, error);
@@ -464,7 +498,9 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
     `Block ${lastBlockNumber}: upserting ${permissionsData.length} permissions`,
   );
 
-  const upsertPermissionsRes = await tryAsync(upsertPermissions(permissionsData));
+  const upsertPermissionsRes = await tryAsync(
+    upsertPermissions(permissionsData),
+  );
   if (log.ifResultIsErr(upsertPermissionsRes)) return;
 
   log.info(`Block ${lastBlockNumber}: permissions upserted`);

@@ -50,12 +50,8 @@ interface TransactionsState {
     options?: TransactionQueryOptions,
   ) => TransactionQueryResult;
   getTransactionById: (id: string) => Transaction | undefined;
-  isTransactionCompleted: (
-    status: TransactionResult["status"],
-  ) => boolean;
-  isTransactionError: (
-    status: TransactionResult["status"],
-  ) => boolean;
+  isTransactionCompleted: (status: TransactionResult["status"]) => boolean;
+  isTransactionError: (status: TransactionResult["status"]) => boolean;
   clearTransactions: (walletAddress: SS58Address) => void;
   getLastTransactionTimestamp: () => number;
 }

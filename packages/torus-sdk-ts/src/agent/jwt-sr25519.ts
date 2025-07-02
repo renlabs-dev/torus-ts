@@ -31,7 +31,6 @@ export interface SR25519JWTPayload {
   exp: number; // Expiration timestamp
   nonce: string; // Unique nonce for replay prevention
   _protocol_metadata: ProtocolMetadata; // Protocol version information
-  [key: string]: any; // Allow additional claims
 }
 
 export type JWTErrorCode =
@@ -160,7 +159,6 @@ export function verifyJWT(
       !payload.iat ||
       !payload.exp ||
       !payload.nonce ||
-      !payload._protocol_metadata ||
       !payload._protocol_metadata.version
     ) {
       return {
@@ -169,11 +167,13 @@ export function verifyJWT(
     }
 
     // Validate protocol version
-    if (!SUPPORTED_PROTOCOL_VERSIONS.includes(payload._protocol_metadata.version)) {
+    if (
+      !SUPPORTED_PROTOCOL_VERSIONS.includes(payload._protocol_metadata.version)
+    ) {
       return {
-        Error: { 
-          error: `Unsupported protocol version: ${payload._protocol_metadata.version}`, 
-          code: "UNSUPPORTED_ALGORITHM" 
+        Error: {
+          error: `Unsupported protocol version: ${payload._protocol_metadata.version}`,
+          code: "UNSUPPORTED_ALGORITHM",
         },
       };
     }
@@ -248,8 +248,8 @@ export const JWTPayloadSchema = z
     exp: z.number().int().positive("Expiration must be positive integer"),
     nonce: z.string().uuid("Nonce must be a valid UUID"),
     _protocol_metadata: z.object({
-      version: z.string().min(1, "Protocol version is required")
-    })
+      version: z.string().min(1, "Protocol version is required"),
+    }),
   })
   .refine((data) => data.exp > data.iat, {
     message: "Expiration must be after issue time",

@@ -31,7 +31,7 @@ export function TransactionExport({
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
   const allTransactions = useTransactionsStore((state) => state.transactions);
-  const transactions = walletAddress 
+  const transactions = walletAddress
     ? getAllTransactionsForWallet(allTransactions, walletAddress)
     : [];
 

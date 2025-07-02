@@ -1,18 +1,16 @@
-import type { 
-  Constraint
-} from "./types";
-import { ZodError } from 'zod';
-import { ConstraintSchema } from './schema';
+import type { Constraint } from "./types";
+import { ZodError } from "zod";
+import { ConstraintSchema } from "./schema";
 
 /**
  * Validation error thrown when constraint validation fails
  */
 export class ConstraintValidationError extends Error {
   path: string;
-  
+
   constructor(path: string, message: string) {
     super(message);
-    this.name = 'ConstraintValidationError';
+    this.name = "ConstraintValidationError";
     this.path = path;
   }
 }
@@ -33,7 +31,7 @@ export function validateConstraint(data: any): Constraint {
       // Convert ZodError to ConstraintValidationError
       const firstError = error.errors[0];
       if (firstError) {
-        const path = firstError.path.join('.');
+        const path = firstError.path.join(".");
         throw new ConstraintValidationError(path, firstError.message);
       } else {
         throw new ConstraintValidationError("", "Validation failed");
@@ -50,7 +48,7 @@ export function validateConstraint(data: any): Constraint {
 export class JsonParseError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'JsonParseError';
+    this.name = "JsonParseError";
   }
 }
 
@@ -67,7 +65,7 @@ export function parseConstraintJson(jsonString: string): Constraint {
     // First try to parse the JSON
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(jsonString);
-    
+
     // Then validate it as a constraint
     return validateConstraint(data);
   } catch (error) {
@@ -75,12 +73,12 @@ export function parseConstraintJson(jsonString: string): Constraint {
     if (error instanceof ConstraintValidationError) {
       throw error;
     }
-    
+
     // If it's a JSON parsing error, wrap it in our custom error
     if (error instanceof SyntaxError) {
       throw new JsonParseError(`Invalid JSON format: ${error.message}`);
     }
-    
+
     // Re-throw any other errors
     throw error;
   }
@@ -91,20 +89,27 @@ export function parseConstraintJson(jsonString: string): Constraint {
  * @param jsonString The JSON string to parse
  * @returns A result object with success flag and either parsed constraint or error
  */
-export function safeParseConstraintJson(jsonString: string): 
-  { success: true; data: Constraint } | 
-  { success: false; error: JsonParseError | ConstraintValidationError } {
+export function safeParseConstraintJson(
+  jsonString: string,
+):
+  | { success: true; data: Constraint }
+  | { success: false; error: JsonParseError | ConstraintValidationError } {
   try {
     const data = parseConstraintJson(jsonString);
     return { success: true, data };
   } catch (error) {
-    if (error instanceof JsonParseError || error instanceof ConstraintValidationError) {
+    if (
+      error instanceof JsonParseError ||
+      error instanceof ConstraintValidationError
+    ) {
       return { success: false, error };
     }
     // Convert any unexpected errors to JsonParseError
-    return { 
-      success: false, 
-      error: new JsonParseError(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`)
+    return {
+      success: false,
+      error: new JsonParseError(
+        `Unexpected error: ${error instanceof Error ? error.message : String(error)}`,
+      ),
     };
   }
 }
