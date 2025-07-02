@@ -1,29 +1,28 @@
-import {
-  type Balance,
-  type SS58Address,
-  type SS58Address as TSS58Address,
-  queryStakeIn,
-  setup,
-} from '@torus-network/sdk';
+import type { Balance, SS58Address } from "@torus-network/sdk";
 
-const NODE_URL = 'wss://api.testnet.torus.network';
+import { queryStakeIn, setup } from "@torus-network/sdk";
+
+const NODE_URL = "wss://api.testnet.torus.network";
 
 export const connectToChainRpc = async () => setup(NODE_URL);
 
 export type ApiPromise = Awaited<ReturnType<typeof connectToChainRpc>>;
 
-export type Helpers = {
+export interface Helpers {
   checkTransaction: ({
     blockHash,
     transactionHash,
-  }: { blockHash: string; transactionHash: string }) => Promise<{
+  }: {
+    blockHash: string;
+    transactionHash: string;
+  }) => Promise<{
     isValid: boolean;
   }>;
   getTotalStake: (walletAddress: SS58Address) => Promise<Balance>;
-};
+}
 
 export const checkTransaction = (api: ApiPromise) => {
-  const f: Helpers['checkTransaction'] = async ({
+  const f: Helpers["checkTransaction"] = async ({
     blockHash,
     transactionHash,
   }) => {
@@ -38,13 +37,10 @@ export const checkTransaction = (api: ApiPromise) => {
       const extrinsicHash = extrinsic.hash.toHex();
 
       allRecords
-        // @ts-ignore
         .filter(
-          // @ts-ignore
           ({ phase }) =>
             phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index),
         )
-        // @ts-ignore
         .forEach(({ event }) => {
           if (extrinsicHash === transactionHash) {
             const success = api.events.system.ExtrinsicSuccess.is(event);
@@ -70,9 +66,9 @@ export const checkTransaction = (api: ApiPromise) => {
 };
 
 export const getTotalStake = (api: ApiPromise) => {
-  const f: Helpers['getTotalStake'] = async (walletAddress) => {
+  const f: Helpers["getTotalStake"] = async (walletAddress) => {
     const { perAddr } = await queryStakeIn(api);
-    const stakedBalance = perAddr.get(walletAddress as unknown as TSS58Address);
+    const stakedBalance = perAddr.get(walletAddress as unknown as SS58Address);
 
     if (!stakedBalance) {
       return 0n;

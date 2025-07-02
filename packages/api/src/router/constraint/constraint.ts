@@ -2,7 +2,7 @@
 // /* eslint-disable @typescript-eslint/no-base-to-string */
 // /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
- 
+
 // /* eslint-disable @typescript-eslint/no-unused-vars */
 // /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 // /* eslint-disable no-debugger */
@@ -59,16 +59,16 @@
 //           console.error(`❌ No global RETE network available for constraint ${constraintId}`);
 //           return;
 //         }
-        
+
 //         const api = await globalReteNetwork.getFetcher().ensureConnected();
-        
+
 //         // Get the constraint to find its associated permission ID
 //         const constraint = globalReteNetwork.getConstraint(constraintId);
 //         if (!constraint) {
 //           console.error(`❌ Could not find constraint ${constraintId}`);
 //           return;
 //         }
-        
+
 //         // Toggle the permission that this constraint applies to
 //         void togglePermission(api, sb_h256.parse(constraint.permId), false);
 //         // Here you could implement various enforcement actions:
@@ -388,7 +388,7 @@
 //           message: `Permission with ID "${constraint.permId}" does not exist on the Torus blockchain. Please verify the permission ID is correct and has been created on-chain before adding constraints.`,
 //         });
 //       }
-      
+
 //       if (permissionData) {
 //         // guarantees we only process streams TODO: also accept fixed amount
 //         const scope = permissionData.scope;
@@ -411,7 +411,6 @@
 //         });
 //       }
 
-
 //       // Check if allocator address is in enforcement authorities
 //       const allocatorAddress = ctx.allocatorAddress
 //       const hasAllocatorAuthority = match(permissionData.enforcement)({
@@ -429,7 +428,6 @@
 //           message: `Permission "${constraint.permId}" does not grant enforcement authority to the allocator (${allocatorAddress}). The allocator must be included in the permission's enforcement authorities to add constraints.`,
 //         });
 //       }
-
 
 //       // 2. Check if permission already exists in database
 //       const existingPermission = await ctx.db
@@ -450,14 +448,14 @@
 //             body: superjson.stringify(constraint.body),
 //           })
 //           .returning();
-        
+
 //         if (!constraintRecord) {
 //           throw new TRPCError({
 //             code: "INTERNAL_SERVER_ERROR",
 //             message: "Failed to create constraint record in database",
 //           });
 //         }
-        
+
 //         console.log(
 //           `[DEBUG] Created constraint record in DB with ID: ${constraintRecord.id}`,
 //         );

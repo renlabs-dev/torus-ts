@@ -35,7 +35,7 @@ export type NumExprType =
 export type BaseConstraintType =
   | { $: "PermissionExists"; pid: PermId }
   | { $: "PermissionEnabled"; pid: PermId }
-  | { $: "InactiveUnlessRedelegated"; account: AccountId;  percentage: UInt}; // Has to be delegated; actually a decimal 0  <= x <= 100
+  | { $: "InactiveUnlessRedelegated"; account: AccountId; percentage: UInt }; // Has to be delegated; actually a decimal 0  <= x <= 100
 
 /**
  * Boolean expression types

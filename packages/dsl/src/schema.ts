@@ -1,15 +1,12 @@
-import { z } from 'zod';
-import {
-  CompOp
-  
-  
-  
-  
-  
-  
-  
-} from './types';
-import type {Constraint, BoolExprType, BaseConstraintType, NumExprType, UInt} from './types';
+import { z } from "zod";
+import { CompOp } from "./types";
+import type {
+  Constraint,
+  BoolExprType,
+  BaseConstraintType,
+  NumExprType,
+  UInt,
+} from "./types";
 
 /**
  * Type mapping from TypeScript types to Zod schemas
@@ -40,99 +37,100 @@ export const createSchemaMap = (): SchemaMap => {
     CompOp.Lt,
     CompOp.Gte,
     CompOp.Lte,
-    CompOp.Eq
+    CompOp.Eq,
   ]);
-  
+
   // UInt schema with conversion from string/number to BigInt
   // Use transform to ensure we always get a bigint
   const UIntSchema = z.union([
-    z.string().transform(val => BigInt(val)),
-    z.number().transform(val => BigInt(val)),
-    z.bigint()
+    z.string().transform((val) => BigInt(val)),
+    z.number().transform((val) => BigInt(val)),
+    z.bigint(),
   ]) as z.ZodType<UInt>;
-  
+
   const AccountIdSchema = z.string();
   const PermIdSchema = z.string();
-  
+
   // Create recursive schemas using z.lazy()
   // NumExpr schema
-  const NumExprSchema: z.ZodType<NumExprType> = z.lazy(() => 
-    z.discriminatedUnion('$', [
+  const NumExprSchema: z.ZodType<NumExprType> = z.lazy(() =>
+    z.discriminatedUnion("$", [
       z.object({
-        $: z.literal('UIntLiteral'),
-        value: UIntSchema
+        $: z.literal("UIntLiteral"),
+        value: UIntSchema,
       }),
       z.object({
-        $: z.literal('BlockNumber')
+        $: z.literal("BlockNumber"),
       }),
       z.object({
-        $: z.literal('StakeOf'),
-        account: AccountIdSchema
+        $: z.literal("StakeOf"),
+        account: AccountIdSchema,
       }),
       z.object({
-        $: z.literal('Add'),
+        $: z.literal("Add"),
         left: NumExprSchema,
-        right: NumExprSchema
+        right: NumExprSchema,
       }),
       z.object({
-        $: z.literal('Sub'),
+        $: z.literal("Sub"),
         left: NumExprSchema,
-        right: NumExprSchema
+        right: NumExprSchema,
       }),
-    ])
+    ]),
   );
 
   // BaseConstraint schema
-  const BaseConstraintSchema: z.ZodType<BaseConstraintType> = z.discriminatedUnion('$', [
-    z.object({
-      $: z.literal('PermissionExists'),
-      pid: PermIdSchema
-    }),
-    z.object({
-      $: z.literal('PermissionEnabled'),
-      pid: PermIdSchema
-    }),
-    z.object({
-      $: z.literal('InactiveUnlessRedelegated'),
-      account: AccountIdSchema,
-      percentage: UIntSchema // This is a UInt, but represents a percentage
-    })
-  ]);
+  const BaseConstraintSchema: z.ZodType<BaseConstraintType> =
+    z.discriminatedUnion("$", [
+      z.object({
+        $: z.literal("PermissionExists"),
+        pid: PermIdSchema,
+      }),
+      z.object({
+        $: z.literal("PermissionEnabled"),
+        pid: PermIdSchema,
+      }),
+      z.object({
+        $: z.literal("InactiveUnlessRedelegated"),
+        account: AccountIdSchema,
+        percentage: UIntSchema, // This is a UInt, but represents a percentage
+      }),
+    ]);
 
   // BoolExpr schema
-  const BoolExprSchema: z.ZodType<BoolExprType> = z.lazy(() => 
-    z.discriminatedUnion('$', [
+  const BoolExprSchema: z.ZodType<BoolExprType> = z.lazy(() =>
+    z.discriminatedUnion("$", [
       z.object({
-        $: z.literal('Not'),
-        body: BoolExprSchema
+        $: z.literal("Not"),
+        body: BoolExprSchema,
       }),
       z.object({
-        $: z.literal('And'),
+        $: z.literal("And"),
         left: BoolExprSchema,
-        right: BoolExprSchema
+        right: BoolExprSchema,
       }),
       z.object({
-        $: z.literal('Or'),
+        $: z.literal("Or"),
         left: BoolExprSchema,
-        right: BoolExprSchema
+        right: BoolExprSchema,
       }),
       z.object({
-        $: z.literal('CompExpr'),
+        $: z.literal("CompExpr"),
         op: CompOpSchema,
         left: NumExprSchema,
-        right: NumExprSchema
+        right: NumExprSchema,
       }),
       z.object({
-        $: z.literal('Base'),
-        body: BaseConstraintSchema
-      })
-    ])
+        $: z.literal("Base"),
+        body: BaseConstraintSchema,
+      }),
+    ]),
   );
 
   // Constraint schema
   const ConstraintSchema: z.ZodType<Constraint> = z.object({
     permId: PermIdSchema,
-    body: BoolExprSchema
+    body: BoolExprSchema,
   });
 
   return {
@@ -143,7 +141,7 @@ export const createSchemaMap = (): SchemaMap => {
     NumExpr: NumExprSchema,
     BaseConstraint: BaseConstraintSchema,
     BoolExpr: BoolExprSchema,
-    Constraint: ConstraintSchema
+    Constraint: ConstraintSchema,
   };
 };
 
@@ -175,8 +173,9 @@ export function validateWithZod(data: unknown): Constraint {
  * @param data The data to validate
  * @returns A result object with success flag and either validated data or error
  */
-export function safeValidateWithZod(data: unknown): 
-  { success: true; data: Constraint } | { success: false; error: z.ZodError } {
+export function safeValidateWithZod(
+  data: unknown,
+): { success: true; data: Constraint } | { success: false; error: z.ZodError } {
   const result = ConstraintSchema.safeParse(data);
   if (result.success) {
     return { success: true, data: result.data };
