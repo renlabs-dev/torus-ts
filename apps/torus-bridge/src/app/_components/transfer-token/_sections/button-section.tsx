@@ -1,13 +1,13 @@
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
+import type { FieldErrors } from "react-hook-form";
 import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useStore } from "~/utils/store";
-import { useTransferFormContext } from "../_components/transfer-form-context";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { FieldErrors } from "react-hook-form";
 import type { TransferFormValues } from "~/utils/types";
+import { useTransferFormContext } from "../_components/transfer-form-context";
 
 export function ButtonSection({
   isReview,

@@ -87,13 +87,15 @@ export function TransferTokenForm() {
   const form = useForm<TransferFormValues>({
     resolver: zodResolver(transferFormSchema),
     defaultValues: initialValues,
-    mode: "onChange",
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   const {
     handleSubmit,
     reset,
     formState: { isValidating, isValid, errors },
+    trigger,
   } = form;
 
   const onSubmitForm = (values: TransferFormValues) => {
