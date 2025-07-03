@@ -1,3 +1,4 @@
 /src/interfaces
 !src/interfaces/definitions.ts
 !src/interfaces/README.md
+/src/__tests__
