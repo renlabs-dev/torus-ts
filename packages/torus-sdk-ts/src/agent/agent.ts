@@ -1,39 +1,21 @@
 import { serve } from "@hono/node-server";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import type { Balance, SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk";
 import type { Context } from "hono";
-import { rateLimiter } from "hono-rate-limiter";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { match } from "rustie";
+import type { EventRecord } from "@polkadot/types/interfaces";
+import type { Codec } from "@polkadot/types/types";
 import { queryNamespacePermissions } from "../modules/permission0.js";
 import { queryAgents } from "../modules/subspace.js";
 import type { ApiPromise, Helpers } from "./helpers.js";
 import type { AuthTokenResult } from "./utils.js";
-import {
-  checkTransaction,
-  connectToChainRpc,
-  getTotalStake,
-} from "./helpers.js";
+import { checkTransaction, connectToChainRpc } from "./helpers.js";
 import { decodeAuthToken, ensureTrailingSlash } from "./utils.js";
 
 interface User {
   walletAddress: SS58Address;
-}
-
-interface StakeLimiterOptions {
-  /** Whether to enable the rate limiter. @default false */
-  enabled: boolean;
-  /** The limit of requests per minute */
-  limit: ({
-    userWalletAddress,
-    userTotalStake,
-  }: {
-    userWalletAddress: SS58Address;
-    userTotalStake: Balance;
-  }) => number;
-  /** The time window in milliseconds for the rate limit. @default 60000 */
-  window: number;
 }
 
 /**
@@ -55,7 +37,6 @@ interface AgentOptions {
     /** Maximum age of JWT tokens in seconds. If now - iat > jwtMaxAge, reject the token. @default 3600 (1 hour) */
     jwtMaxAge?: number;
   };
-  stakeLimiter?: StakeLimiterOptions;
   /** Documentation configuration */
   docs: {
     /** Whether to enable OpenAPI documentation. @default true */
@@ -85,7 +66,6 @@ interface MethodOptions<
 > {
   /** The HTTP method to use for the method. @default 'post' */
   method?: "get" | "post" | "put" | "patch" | "delete";
-  stakeLimiter?: StakeLimiterOptions;
   auth?: {
     /** Whether the method requires authentication. @default false */
     required?: boolean;
@@ -213,9 +193,11 @@ export class AgentServer {
   /** Resolved agent name from blockchain lookup */
   private agentName: string | null = null;
   /** Cached namespace permissions that this agent is delegating (namespace path -> grantees[]) */
-  private delegatedNamespacePermissions: Map<string, SS58Address[]> = new Map();
+  private delegatedNamespacePermissions = new Map<string, SS58Address[]>();
   /** Promise that resolves when initialization is complete */
   private initPromise: Promise<void> | null = null;
+  /** Subscription to blockchain events for real-time permission updates */
+  private eventSubscription: (() => void) | null = null;
 
   /**
    * Creates a new Agent instance
@@ -257,6 +239,9 @@ export class AgentServer {
     // Load and cache namespace permissions that this agent is delegating
     await this.loadDelegatedNamespacePermissions();
 
+    // Start listening for blockchain events to keep permissions up-to-date
+    await this.startEventListening();
+
     console.log("Agent initialization complete.");
   }
 
@@ -281,6 +266,89 @@ export class AgentServer {
     } catch (error) {
       console.error("Failed to resolve agent name:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Starts listening to blockchain events for permission changes
+   * @private
+   */
+  private async startEventListening() {
+    console.log("Starting blockchain event listener for permission updates...");
+
+    // Subscribe to system events - this returns an unsubscribe function
+    const unsubscribe = await this.api.query.system.events(
+      (events: EventRecord[]) => {
+        this.handleChainEvents(events);
+      },
+    );
+
+    this.eventSubscription = unsubscribe;
+    console.log("Blockchain event listener started successfully");
+  }
+
+  /**
+   * Handle blockchain events and update namespace permissions cache
+   * @private
+   */
+  private handleChainEvents(events: EventRecord[]) {
+    for (const record of events) {
+      const { event } = record;
+      // Only handle permission0 events that involve our agent
+      if (event.section === "permission0") {
+        switch (event.method) {
+          case "PermissionGranted":
+          case "PermissionRevoked":
+          case "PermissionExpired":
+            this.handlePermissionChange(event.method, event.data);
+            break;
+
+          default:
+            // Ignore other permission events
+            break;
+        }
+      }
+    }
+  }
+
+  /**
+   * Handle permission change events (granted, revoked, expired)
+   * @private
+   */
+  private handlePermissionChange(eventMethod: string, eventData: Codec[]) {
+    try {
+      // Event data structure: [grantor, grantee, permissionId]
+      const [grantor, grantee, permissionId] = eventData;
+
+      if (!grantor || !grantee || !permissionId) {
+        return;
+      }
+
+      const grantorStr = grantor.toString();
+
+      // Only care about permissions involving our agent as grantor
+      if (grantorStr === this.options.agentKey) {
+        console.log(
+          `Permission ${eventMethod.toLowerCase()} by our agent: ${permissionId.toString()}`,
+        );
+        // Refresh the cached permissions
+        void this.loadDelegatedNamespacePermissions();
+      }
+    } catch (error) {
+      console.error(`Error handling ${eventMethod} event:`, error);
+    }
+  }
+
+  /**
+   * Stops the blockchain event listener
+   * @private
+   */
+  private stopEventListening() {
+    if (this.eventSubscription) {
+      console.log("Stopping blockchain event listener...");
+      this.eventSubscription();
+      this.eventSubscription = null;
+      console.log("Blockchain event listener stopped");
     }
   }
 
@@ -437,62 +505,12 @@ export class AgentServer {
     options: MethodOptions<I, O, E>,
     callback: MethodCallback<I, O, E>,
   ) {
-    const httpMethod = options?.method ?? "post";
-
-    const keyGenerator = (c: Context) => {
-      const authResult = this.getAuthRequestData(c);
-
-      if (!authResult?.success) {
-        return "";
-      }
-
-      return (
-        c.req.header("x-forwarded-for") ?? authResult.data.userWalletAddress
-      );
-    };
-
-    const getStakeLimiterMiddleware = () => {
-      const stakeLimiter = options.stakeLimiter ?? this.options.stakeLimiter;
-
-      if (!stakeLimiter?.enabled) {
-        return null;
-      }
-
-      const limit = async (c: Context) => {
-        const authResult = this.getAuthRequestData(c);
-
-        if (!authResult?.success) {
-          return 0;
-        }
-
-        const stake = await getTotalStake(this.api)(
-          authResult.data.userWalletAddress,
-        );
-
-        if (!stakeLimiter.limit) {
-          return 0;
-        }
-
-        return stakeLimiter.limit({
-          userWalletAddress: authResult.data.userWalletAddress,
-          userTotalStake: stake,
-        });
-      };
-
-      return [
-        rateLimiter({
-          limit,
-          windowMs: stakeLimiter.window,
-          keyGenerator,
-        }),
-      ];
-    };
+    const httpMethod = options.method ?? "post";
 
     const newMethodSchema = createRoute({
       method: httpMethod,
       path: ensureTrailingSlash(name),
       security: options.auth?.required ? [{ Bearer: [] }] : undefined,
-      middleware: getStakeLimiterMiddleware() ?? undefined,
       request: {
         ...(httpMethod === "post"
           ? {
@@ -623,7 +641,6 @@ export class AgentServer {
           address: this.options.address,
         },
         checkTransaction: checkTransaction(this.api),
-        getTotalStake: getTotalStake(this.api),
       };
 
       const result = await callback(input, context);
