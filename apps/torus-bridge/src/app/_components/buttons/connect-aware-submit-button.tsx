@@ -1,15 +1,10 @@
 import type { ChainName } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
-import {
-  useAccountForChain,
-  useConnectFns,
-  useTimeout,
-} from "@hyperlane-xyz/widgets";
+import { useAccountForChain, useConnectFns } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui/components/button";
+import type { FieldErrors } from "react-hook-form";
 import { useChainProtocol } from "~/hooks/chain/use-chain-protocol";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import { useCallback } from "react";
-import type { FieldErrors } from "react-hook-form";
 import type { TransferFormValues } from "~/utils/types";
 
 interface Props {
@@ -43,15 +38,6 @@ export function ConnectAwareSubmitButton({
   const content = hasError ? String(firstError) : accountReadyContent;
   const type = isAccountReady ? "submit" : "button";
   const onClick = isAccountReady ? undefined : connectFn;
-
-  // Automatically clear error state after a timeout
-  const clearErrors = useCallback(() => {
-    // Note: In React Hook Form, errors are managed by the form state
-    // This timeout is kept for UI consistency but errors will be cleared
-    // when the form is re-validated
-  }, []);
-
-  useTimeout(clearErrors, 3500);
 
   return (
     <Button
