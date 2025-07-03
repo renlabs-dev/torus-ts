@@ -46,8 +46,8 @@ export function NodeDetailsCard({
   const processedPermissions = nodePermissions.map((permission) => {
     const details = permissionDetails?.find(
       (p) =>
-        p.grantorKey === permission.source &&
-        p.granteeKey === permission.target,
+        p.permissions.grantorAccountId === permission.source &&
+        p.permissions.granteeAccountId === permission.target,
     );
     const isOutgoing = permission.type === "outgoing";
     const connectedNode = graphData.nodes.find(
@@ -92,13 +92,13 @@ export function NodeDetailsCard({
                       <span className="font-medium text-white">
                         {isOutgoing ? "← Granted " : "→ Received "}
                         Permission{" "}
-                        {smallAddress(String(details?.permissionId))}
+                        {smallAddress(String(details?.permissions.permissionId))}
                       </span>
                     </div>
                     <GraphSheetDetailsLinkButtons
-                      grantor_key={details?.grantorKey}
-                      grantee_key={details?.granteeKey}
-                      scope={details?.scope}
+                      grantor_key={details?.permissions.grantorAccountId}
+                      grantee_key={details?.permissions.granteeAccountId}
+                      scope={details?.permissionType?.toUpperCase() ?? "UNKNOWN"}
                     />
                   </div>
                 </AccordionTrigger>
@@ -122,12 +122,12 @@ export function NodeDetailsCard({
                         <div>
                           <span className="text-xs text-gray-500">Scope</span>
                           <div className="text-sm text-gray-300">
-                            {formatScope(details.scope ?? "")}
+                            {formatScope(details.permissionType ?? "")}
                           </div>
                         </div>
                         <div>
                           <span className="text-xs text-gray-500">
-                            {details.duration === null
+                            {details.permissions.durationType === "indefinite"
                               ? "Duration"
                               : "Expires in"}
                           </span>
@@ -171,16 +171,7 @@ export function NodeDetailsCard({
                           </div>
                         </div>
 
-                        {details.parentId && (
-                          <div>
-                            <span className="text-xs text-gray-500">
-                              Parent ID
-                            </span>
-                            <div className="text-sm text-gray-300">
-                              {details.parentId}
-                            </div>
-                          </div>
-                        )}
+                        {/* Parent ID removed as not available in new schema */}
                       </div>
                     </>
                   )}

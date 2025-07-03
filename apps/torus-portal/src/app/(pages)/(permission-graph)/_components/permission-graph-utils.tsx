@@ -82,14 +82,14 @@ export const sortPermissions = (
 ): PermissionWithType[] => {
   return permissions.sort((a, b) => {
     const detailsA = permissionDetails.find(
-      (p) => p.grantorKey === a.source && p.granteeKey === a.target,
+      (p) => p.permissions.grantorAccountId === a.source && p.permissions.granteeAccountId === a.target,
     );
     const detailsB = permissionDetails.find(
-      (p) => p.grantorKey === b.source && p.granteeKey === b.target,
+      (p) => p.permissions.grantorAccountId === b.source && p.permissions.granteeAccountId === b.target,
     );
 
-    const idA = detailsA?.permissionId ?? "";
-    const idB = detailsB?.permissionId ?? "";
+    const idA = detailsA?.permissions.permissionId ?? "";
+    const idB = detailsB?.permissions.permissionId ?? "";
 
     return Number(idA) - Number(idB);
   });

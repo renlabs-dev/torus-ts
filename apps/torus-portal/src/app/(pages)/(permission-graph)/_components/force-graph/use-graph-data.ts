@@ -22,7 +22,7 @@ export function useGraphData() {
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery();
 
-  // Transform the new database structure to the format expected by the graph components
+  // Transform the database structure for graph components
   const permissionDetails = useMemo((): PermissionDetails | undefined => {
     if (!rawPermissionDetails) return undefined;
 
@@ -56,21 +56,11 @@ export function useGraphData() {
           ? "namespace"
           : undefined;
 
-      // Create legacy-compatible structure for graph components
+      // Return enhanced permission data with computed fields
       return {
         ...item,
         remainingBlocks,
         permissionType,
-        // Legacy field mappings for backward compatibility
-        grantorKey: permission.grantorAccountId,
-        granteeKey: permission.granteeAccountId,
-        permissionId: permission.permissionId,
-        scope: permissionType?.toUpperCase() ?? "UNKNOWN",
-        duration:
-          permission.durationType === "indefinite"
-            ? null
-            : permission.durationBlockNumber?.toString(),
-        parentId: null, // Not available in new schema yet
         executionCount: permission.executionCount,
       };
     });

@@ -58,7 +58,7 @@ export function createPermissionNodes(
   }
 
   return permissionDetails.map((permission, index) => {
-    const permissionId = permission.permissionId ?? `perm-${Math.random()}`;
+    const permissionId = permission.permissions.permissionId;
     const permissionType = permission.permissionType ?? "emission";
     
     // Position permission nodes in a middle ring
@@ -79,10 +79,10 @@ export function createPermissionNodes(
       permissionData: {
         permissionId,
         permissionType,
-        grantorKey: permission.grantorKey ?? "",
-        granteeKey: permission.granteeKey ?? "",
-        scope: permission.scope,
-        duration: permission.duration,
+        grantorAccountId: permission.permissions.grantorAccountId,
+        granteeAccountId: permission.permissions.granteeAccountId,
+        scope: permission.permissionType?.toUpperCase() ?? "UNKNOWN",
+        duration: permission.permissions.durationType === "indefinite" ? null : permission.permissions.durationBlockNumber?.toString(),
       },
     };
   });
@@ -110,8 +110,8 @@ export function createAgentNodes(
   // Add all grantors and grantees from permissions
   if (permissionDetails) {
     permissionDetails.forEach(permission => {
-      if (permission.grantorKey) allAgentKeys.add(permission.grantorKey);
-      if (permission.granteeKey) allAgentKeys.add(permission.granteeKey);
+      if (permission.permissions.grantorAccountId) allAgentKeys.add(permission.permissions.grantorAccountId);
+      if (permission.permissions.granteeAccountId) allAgentKeys.add(permission.permissions.granteeAccountId);
     });
   }
   
@@ -183,17 +183,17 @@ export function createPermissionOwnershipLinks(
 
   return permissionDetails
     .filter((permission) => 
-      permission.grantorKey && 
-      permission.permissionId &&
-      nodeIds.has(permission.grantorKey) &&
-      nodeIds.has(`permission-${permission.permissionId}`)
+      permission.permissions.grantorAccountId && 
+      permission.permissions.permissionId &&
+      nodeIds.has(permission.permissions.grantorAccountId) &&
+      nodeIds.has(`permission-${permission.permissions.permissionId}`)
     )
     .map((permission) => ({
       linkType: "permission_ownership",
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      source: permission.grantorKey!,
-      target: `permission-${permission.permissionId}`,
-      id: `ownership-${permission.permissionId}`,
+       
+      source: permission.permissions.grantorAccountId,
+      target: `permission-${permission.permissions.permissionId}`,
+      id: `ownership-${permission.permissions.permissionId}`,
       linkDirectionalArrowLength: 4,
       linkDirectionalArrowRelPos: 1,
       linkDirectionalParticles: 1,
@@ -214,17 +214,17 @@ export function createPermissionTargetLinks(
 
   return permissionDetails
     .filter((permission) => 
-      permission.granteeKey && 
-      permission.permissionId &&
-      nodeIds.has(`permission-${permission.permissionId}`) &&
-      nodeIds.has(permission.granteeKey)
+      permission.permissions.granteeAccountId && 
+      permission.permissions.permissionId &&
+      nodeIds.has(`permission-${permission.permissions.permissionId}`) &&
+      nodeIds.has(permission.permissions.granteeAccountId)
     )
     .map((permission) => ({
       linkType: "permission_target",
-      source: `permission-${permission.permissionId}`,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      target: permission.granteeKey!,
-      id: `target-${permission.permissionId}`,
+      source: `permission-${permission.permissions.permissionId}`,
+       
+      target: permission.permissions.granteeAccountId,
+      id: `target-${permission.permissions.permissionId}`,
       linkDirectionalArrowLength: 6,
       linkDirectionalArrowRelPos: 1,
       linkDirectionalParticles: 2,

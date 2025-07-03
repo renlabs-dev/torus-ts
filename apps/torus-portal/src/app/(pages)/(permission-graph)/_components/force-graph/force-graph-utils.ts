@@ -121,8 +121,8 @@ export function createGraphData(
   ) {
     const grantorKeys = new Set<string>();
     permissionDetails.forEach((permission) => {
-      if (permission.grantorKey) {
-        grantorKeys.add(permission.grantorKey);
+      if (permission.permissions.grantorAccountId) {
+        grantorKeys.add(permission.permissions.grantorAccountId);
       }
     });
 
@@ -170,7 +170,7 @@ export function createGraphData(
     const permissionMap = new Map<string, PermissionDetail[]>();
 
     permissionDetails.forEach((permission) => {
-      const permissionId = permission.permissionId ?? `perm-${Math.random()}`;
+      const permissionId = permission.permissions.permissionId;
 
       if (!permissionMap.has(permissionId)) {
         permissionMap.set(permissionId, []);
@@ -189,7 +189,7 @@ export function createGraphData(
 
         const permissionType = permission.permissionType ?? "emission";
 
-        if (permission.grantorKey && rootNodeIds.has(permission.grantorKey)) {
+        if (permission.permissions.grantorAccountId && rootNodeIds.has(permission.permissions.grantorAccountId)) {
           // Check for duplicate permission node creation
           const permissionNodeId = `permission-${permissionId}`;
           if (createdPermissionIds.has(permissionNodeId)) {
@@ -216,10 +216,10 @@ export function createGraphData(
             permissionData: {
               permissionId,
               permissionType,
-              grantorKey: permission.grantorKey,
-              granteeKey: permission.granteeKey ?? "",
-              scope: permission.scope,
-              duration: permission.duration,
+              grantorAccountId: permission.permissions.grantorAccountId,
+              granteeAccountId: permission.permissions.granteeAccountId,
+              scope: permissionType.toUpperCase(),
+              duration: permission.permissions.durationType === "indefinite" ? null : permission.permissions.durationBlockNumber?.toString(),
             },
           };
           nodes.push(permissionNode);
@@ -227,7 +227,7 @@ export function createGraphData(
           // Create permission ownership link: Root Node → Permission
           links.push({
             linkType: "permission_ownership",
-            source: permission.grantorKey,
+            source: permission.permissions.grantorAccountId,
             target: `permission-${permissionId}`,
             id: `ownership-${permissionId}`,
             linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_LINK,
@@ -251,13 +251,13 @@ export function createGraphData(
             }
           });
 
-          // Fallback: if no distribution targets, use granteeKey
+          // Fallback: if no distribution targets, use granteeAccountId
           if (
             permissions.every((p) => !p.emission_distribution_targets) &&
-            permission.granteeKey &&
-            !rootNodeIds.has(permission.granteeKey)
+            permission.permissions.granteeAccountId &&
+            !rootNodeIds.has(permission.permissions.granteeAccountId)
           ) {
-            targetAgentIds.add(permission.granteeKey);
+            targetAgentIds.add(permission.permissions.granteeAccountId);
           }
         }
       },
@@ -291,7 +291,7 @@ export function createGraphData(
         const permission = permissions[0];
         if (!permission) return;
 
-        if (permission.grantorKey && rootNodeIds.has(permission.grantorKey)) {
+        if (permission.permissions.grantorAccountId && rootNodeIds.has(permission.permissions.grantorAccountId)) {
           // Create links to distribution targets
           permissions.forEach((perm) => {
             if (perm.emission_distribution_targets?.targetAccountId) {
@@ -319,15 +319,15 @@ export function createGraphData(
             }
           });
 
-          // Fallback: if no distribution targets, link to granteeKey
+          // Fallback: if no distribution targets, link to granteeAccountId
           if (
             permissions.every((p) => !p.emission_distribution_targets) &&
-            permission.granteeKey
+            permission.permissions.granteeAccountId
           ) {
             links.push({
               linkType: "permission_target",
               source: `permission-${permissionId}`,
-              target: permission.granteeKey,
+              target: permission.permissions.granteeAccountId,
               id: `target-${permissionId}`,
               linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_TO_TARGET_LINK,
               linkWidth: 2,
