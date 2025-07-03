@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "agent-test-client"
+version = "0.1.0"
+description = "Simple Python client for testing TypeScript agent-server"
+authors = ["Torus Team"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+substrate-interface = "^1.7.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
