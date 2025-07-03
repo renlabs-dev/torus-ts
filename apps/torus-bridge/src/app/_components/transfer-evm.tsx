@@ -56,6 +56,7 @@ export function TransferEVM() {
       finalized: false,
     },
   );
+  const [isSwitchingChain, setIsSwitchingChain] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -125,6 +126,52 @@ export function TransferEVM() {
       setMode(modeParam ?? DEFAULT_MODE);
     }
   }, [hasMounted, searchParams]);
+
+  // Auto-switch to Torus EVM chain when mode is withdraw
+  useEffect(() => {
+    if (
+      hasMounted &&
+      mode === "withdraw" &&
+      chain &&
+      chain.id !== torusEvmChainId &&
+      switchChain &&
+      !isSwitchingChain
+    ) {
+      const switchToTorusEVM = async () => {
+        setIsSwitchingChain(true);
+
+        const [switchError] = trySync(() =>
+          switchChain({ chainId: torusEvmChainId }),
+        );
+
+        if (switchError !== undefined) {
+          console.error(
+            "Error auto-switching to Torus EVM chain:",
+            switchError,
+          );
+          toast.error("Failed to switch to Torus EVM network automatically.");
+        } else {
+          toast({
+            title: "Network switched",
+            description:
+              "Automatically switched to Torus EVM network for withdrawal.",
+          });
+        }
+
+        setIsSwitchingChain(false);
+      };
+
+      void switchToTorusEVM();
+    }
+  }, [
+    hasMounted,
+    mode,
+    chain,
+    torusEvmChainId,
+    switchChain,
+    toast,
+    isSwitchingChain,
+  ]);
 
   const evmSS58Addr = useMemo(
     () => (userInputEthAddr ? convertH160ToSS58(userInputEthAddr) : ""),
@@ -205,22 +252,11 @@ export function TransferEVM() {
       return;
     }
 
-    // Check if on the correct chain
+    // Verify we're on the correct chain (should be automatic, but double-check)
     if (chain.id !== torusEvmChainId) {
-      const [switchError] = trySync(() =>
-        switchChain({ chainId: torusEvmChainId }),
+      toast.error(
+        "Please wait for network switch to complete, then try again.",
       );
-
-      if (switchError !== undefined) {
-        console.error("Error switching chain:", switchError);
-        toast.error("Failed to switch network.");
-        return;
-      }
-
-      toast({
-        title: "Wait, you were connected to the wrong network.",
-        description: "We switched you to Torus. Please try to withdraw again.",
-      });
       return;
     }
 
@@ -312,7 +348,6 @@ export function TransferEVM() {
     chain,
     selectedAccount,
     torusEvmChainId,
-    switchChain,
     amountRems,
     refetchHandler,
     wagmiConfig,
@@ -469,6 +504,12 @@ export function TransferEVM() {
           )}
         </CardContent>
         <CardFooter className="flex w-full flex-col gap-3 px-0 pb-0 pt-6">
+          {isSwitchingChain && (
+            <div className="flex items-center gap-2 text-sm text-blue-500">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
+              Switching to Torus EVM network...
+            </div>
+          )}
           {transactionStatus.status && (
             <TransactionStatus
               status={transactionStatus.status}
@@ -480,12 +521,18 @@ export function TransferEVM() {
             className="w-full"
             disabled={
               transactionStatus.status === "PENDING" ||
+              isSwitchingChain ||
               !amount ||
               (mode === "bridge" && !userInputEthAddr) ||
-              (mode === "withdraw" && !selectedAccount)
+              (mode === "withdraw" && !selectedAccount) ||
+              (mode === "withdraw" && chain?.id !== torusEvmChainId)
             }
           >
-            {mode === "bridge" ? "Bridge" : "Withdraw"}
+            {mode === "bridge"
+              ? "Bridge"
+              : isSwitchingChain
+                ? "Switching Network..."
+                : "Withdraw"}
           </Button>
         </CardFooter>
       </Card>
