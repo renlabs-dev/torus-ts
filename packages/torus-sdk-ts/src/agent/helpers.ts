@@ -61,4 +61,3 @@ export const checkTransaction = (api: ApiPromise) => {
 
   return f;
 };
-
