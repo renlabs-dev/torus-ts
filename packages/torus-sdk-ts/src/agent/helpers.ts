@@ -1,6 +1,4 @@
-import type { Balance, SS58Address } from "@torus-network/sdk";
-
-import { queryStakeIn, setup } from "@torus-network/sdk";
+import { setup } from "@torus-network/sdk";
 
 const NODE_URL = "wss://api.testnet.torus.network";
 
@@ -18,7 +16,6 @@ export interface Helpers {
   }) => Promise<{
     isValid: boolean;
   }>;
-  getTotalStake: (walletAddress: SS58Address) => Promise<Balance>;
 }
 
 export const checkTransaction = (api: ApiPromise) => {
@@ -65,17 +62,3 @@ export const checkTransaction = (api: ApiPromise) => {
   return f;
 };
 
-export const getTotalStake = (api: ApiPromise) => {
-  const f: Helpers["getTotalStake"] = async (walletAddress) => {
-    const { perAddr } = await queryStakeIn(api);
-    const stakedBalance = perAddr.get(walletAddress as unknown as SS58Address);
-
-    if (!stakedBalance) {
-      return 0n;
-    }
-
-    return stakedBalance;
-  };
-
-  return f;
-};
