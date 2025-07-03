@@ -1,16 +1,10 @@
-import { mnemonicGenerate, sr25519Sign } from "@polkadot/util-crypto";
-import { Keypair } from "../agent-client/index.js";
+import { sr25519Sign } from "@polkadot/util-crypto";
+import { Keypair, AgentClient } from "../agent-client/index.js";
 import { randomUUID } from "crypto";
 import base64url from "base64url";
 import { getCurrentProtocolVersion } from "../agent/jwt-sr25519.js";
 
 const TEST_MNEMONIC = "";
-
-async function _generateTestMnemonic() {
-  const { cryptoWaitReady } = await import("@polkadot/util-crypto");
-  await cryptoWaitReady();
-  return mnemonicGenerate();
-}
 
 async function createJWTToken(mnemonic: string) {
   const keypair = new Keypair(mnemonic);
@@ -172,6 +166,31 @@ async function testOldJWTRejection() {
   }
 }
 
+async function testSimpleAgentClient() {
+  console.log("🤖 Testing simplified AgentClient...\n");
+
+  const keypair = new Keypair(TEST_MNEMONIC);
+  const client = new AgentClient({
+    keypair,
+    baseUrl: "http://localhost:3002",
+  });
+
+  try {
+    const response = await client.call({
+      endpoint: "hello",
+      data: { name: "Simple Client User" },
+    });
+
+    if (response.success) {
+      console.log("✅ AgentClient success:", response.data);
+    } else {
+      console.log("❌ AgentClient error:", response.error);
+    }
+  } catch (error) {
+    console.error("❌ AgentClient unexpected error:", error);
+  }
+}
+
 async function runAuthenticatedTests() {
   console.log("🚀 Starting authenticated client tests...\n");
 
@@ -180,6 +199,8 @@ async function runAuthenticatedTests() {
   await testJWTAuthentication();
 
   await testOldJWTRejection();
+
+  await testSimpleAgentClient();
 }
 
 // Export for programmatic use
