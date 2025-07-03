@@ -1,14 +1,15 @@
-import { z } from 'zod';
+import { z } from "zod";
+
 import {
+  sb_address,
   sb_amount,
   sb_blocks,
   sb_percent,
-  sb_address,
   sb_some,
-} from "../../../types";
+} from "../../../types/index.js";
 
 // Shared base schemas used across multiple pallets
-export { sb_amount, sb_address, sb_some };
+export { sb_address, sb_amount, sb_some };
 export const sb_block_number = sb_blocks;
 export const sb_percentage = sb_percent;
 
@@ -27,4 +28,4 @@ export const sb_bytes = z.array(z.number().int().min(0).max(255)); // Vec<u8>
 // Common option schema for null/empty storage values
 export const sb_null_option = z.null();
 
-export * from "../../../types"
+export * from "../../../types/index.js"

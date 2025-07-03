@@ -1,19 +1,18 @@
-import { createStorageValue } from '../core/storage-value';
-import { createStorageMap } from '../core/storage-map';
-import { 
-  sb_amount, 
-  sb_block_number, 
-  sb_percentage, 
-  sb_address, 
-  sb_u16_substrate,
+import { sb_to_primitive } from "../../../types/zod.js";
+import { createStorageMap } from "../core/storage-map.js";
+import { createStorageValue } from "../core/storage-value.js";
+import {
   AGENT_SCHEMA,
   BURN_CONFIG_UPDATED_SCHEMA,
   FEE_CONSTRAINTS_SCHEMA,
   NAMESPACE_PRICING_CONFIG_SCHEMA,
   PALLET_VERSION_SCHEMA,
-} from '../schemas/torus0';
-import { sb_to_primitive } from '../../../types/zod';
-import { z } from 'zod';
+  sb_address,
+  sb_amount,
+  sb_block_number,
+  sb_percentage,
+  sb_u16_substrate,
+} from "../schemas/torus0.js";
 
 export const torus0Storages = {
   // Simple value storages

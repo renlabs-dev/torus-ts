@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { z } from 'zod';
-import {
-  sb_amount,
-  sb_address,
-  sb_number_int,
-} from "../../../types";
+import { z } from "zod";
+
+import { sb_address, sb_amount, sb_number_int } from "../../../types/index.js";
 
 // Re-export shared schemas
-export { sb_amount, sb_address, sb_number_int };
+export { sb_address, sb_amount, sb_number_int };
 
 // Simple schemas for balances pallet
 export const sb_hex_amount = z.any().transform((val) => {

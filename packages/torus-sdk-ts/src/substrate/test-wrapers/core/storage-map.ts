@@ -1,9 +1,8 @@
 // storage/core/storage-map.ts
-import type { ApiPromise } from '@polkadot/api';
-import type { z } from 'zod';
-import { SbStorageMap } from '../../storage';
-import { trySync } from '@torus-network/torus-utils/try-catch';
-import { sb_to_primitive } from '../../../types/zod';
+import type { ApiPromise } from "@polkadot/api";
+import type { z } from "zod";
+
+import { SbStorageMap } from "../../storage.js";
 
 export function createStorageMap<
   KeySchema extends z.ZodTypeAny,

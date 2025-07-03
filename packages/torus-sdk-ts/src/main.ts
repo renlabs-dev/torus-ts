@@ -4,12 +4,11 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 
-import { storageUnitTests } from "./substrate/";
+import { storageUnitTests } from "./substrate/test-wrapers/tests-suit.js";
 
 const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
 
 // // $ pnpm exec tsx src/main.ts
-:
 const NODE_URL = "wss://api.testnet.torus.network";
 
 async function connectToChainRpc(wsEndpoint: string) {

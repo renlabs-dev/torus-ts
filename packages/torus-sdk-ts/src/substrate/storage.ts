@@ -7,6 +7,10 @@
 */
 
 import type { ApiPromise } from "@polkadot/api";
+import type { Equals, Extends } from "tsafe";
+import { assert } from "tsafe";
+import type { z } from "zod";
+
 import type { MultiError } from "@torus-network/torus-utils/error";
 import { ErrorArray } from "@torus-network/torus-utils/error";
 import type { Result } from "@torus-network/torus-utils/result";
@@ -16,11 +20,8 @@ import type {
   ExtractSignatures,
   NthReturnTypeOverloaded,
 } from "@torus-network/torus-utils/typing";
-import type { Equals, Extends } from "tsafe";
-import { assert } from "tsafe";
-import type { z } from "zod";
 
-import { sb_address, sb_amount, sb_bigint, sb_some } from "../types";
+import { sb_address, sb_amount, sb_bigint, sb_some } from "../types/index.js";
 
 type Api = ApiPromise;
 

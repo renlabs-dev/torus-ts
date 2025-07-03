@@ -1,8 +1,9 @@
-import { torus0Storages } from './pallets/torus0';
-import { systemStorages } from './pallets/system';
-import { balancesStorages } from './pallets/balances';
-import { governanceStorages } from './pallets/governance';
-import type { ApiPromise } from '@polkadot/api';
+import type { ApiPromise } from "@polkadot/api";
+
+import { balancesStorages } from "./pallets/balances.js";
+import { governanceStorages } from "./pallets/governance.js";
+import { systemStorages } from "./pallets/system.js";
+import { torus0Storages } from "./pallets/torus0.js";
 
 export const createStorageRouter = (api: ApiPromise) => {
   return {

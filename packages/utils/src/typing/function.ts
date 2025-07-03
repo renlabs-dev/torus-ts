@@ -5,7 +5,7 @@ import type { Equals as Eq } from "tsafe";
 import { assert } from "tsafe";
 import type { IsEqual } from "type-fest";
 
-import type { Nat, Succ, ToNum, Zero } from "./nat";
+import type { Nat, Succ, ToNum, Zero } from "./nat.js";
 
 declare const _default: unique symbol;
 /**

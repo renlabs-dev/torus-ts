@@ -1,16 +1,16 @@
-import { createStorageValue } from '../core/storage-value';
-import { createStorageMap } from '../core/storage-map';
-import { 
+import { sb_null } from "@torus-network/sdk/types";
+
+import { createStorageMap } from "../core/storage-map.js";
+import { createStorageValue } from "../core/storage-value.js";
+import {
+  AGENT_APPLICATION_SCHEMA,
+  GOVERNANCE_CONFIG_SCHEMA,
+  PROPOSAL_SCHEMA,
+  sb_address,
   sb_percentage,
-  sb_address, 
   sb_u32,
   sb_u64,
-  PROPOSAL_SCHEMA,
-  AGENT_APPLICATION_SCHEMA,
-  GOVERNANCE_CONFIG_SCHEMA
-} from '../schemas/governance';
-import { sb_null } from '@torus-network/sdk/types';
-
+} from "../schemas/governance.js";
 
 export const governanceStorages = {
   // Governance pallet value storages

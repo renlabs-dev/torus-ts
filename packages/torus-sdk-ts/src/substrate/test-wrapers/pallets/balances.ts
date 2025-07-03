@@ -1,15 +1,15 @@
-import { createStorageValue } from '../core/storage-value';
-import { createStorageMap } from '../core/storage-map';
-import { 
-  sb_address,
-  sb_number_int,
-  sb_hex_amount,
+import { createStorageMap } from "../core/storage-map.js";
+import { createStorageValue } from "../core/storage-value.js";
+import {
   ACCOUNT_DATA_SCHEMA,
   BALANCE_LOCK_SCHEMA,
-  RESERVE_DATA_SCHEMA,
   FREEZE_DATA_SCHEMA,
   HOLD_DATA_SCHEMA,
-} from '../schemas/balances';
+  RESERVE_DATA_SCHEMA,
+  sb_address,
+  sb_hex_amount,
+  sb_number_int,
+} from "../schemas/balances.js";
 
 export const balancesStorages = {
   // Simple value storages

@@ -1,19 +1,18 @@
-import { z } from 'zod';
+import { AGENT_SCHEMA } from "../../../modules/subspace.js";
 import {
-  sb_amount,
-  sb_blocks,
-  sb_percent,
   sb_address,
-  sb_some,
-  sb_number_int,
+  sb_amount,
   sb_bigint,
-  sb_to_primitive,
+  sb_blocks,
+  sb_number_int,
+  sb_percent,
+  sb_some,
   sb_struct,
-} from "../../../types";
-import { AGENT_SCHEMA } from "../../../modules/subspace";
+  sb_to_primitive,
+} from "../../../types/index.js";
 
 // Base schemas for torus0 pallet
-export { sb_amount, sb_address, sb_some };
+export { sb_address, sb_amount, sb_some };
 export const sb_block_number = sb_blocks;
 export const sb_percentage = sb_percent;
 

@@ -1,13 +1,13 @@
-import { z } from 'zod';
+import { z } from "zod";
+
 import {
-  sb_amount,
   sb_address,
+  sb_amount,
   sb_block_number,
   sb_percentage,
   sb_u32,
   sb_u64,
-} from "./common";
-
+} from "./common.js";
 
 // Proposal data variants - based on PalletGovernanceProposalProposalData
 export const PROPOSAL_DATA_SCHEMA = z.union([
@@ -110,6 +110,4 @@ export const GOVERNANCE_CONFIG_SCHEMA = z.object({
   proposalRewardInterval: sb_block_number,
 });
 
-
-export { sb_percentage, sb_address, sb_u32, sb_u64 };
-
+export { sb_address, sb_percentage, sb_u32, sb_u64 };

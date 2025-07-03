@@ -1,8 +1,9 @@
-import type { ApiPromise } from '@polkadot/api';
-import type { z } from 'zod';
-import { SbStorageValue } from '../../storage';
-import { isErr } from '@torus-network/torus-utils/result';
-import { trySync } from '@torus-network/torus-utils/try-catch';
+import type { ApiPromise } from "@polkadot/api";
+import type { z } from "zod";
+
+import { isErr } from "@torus-network/torus-utils/result";
+
+import { SbStorageValue } from "../../storage.js";
 
 export function createStorageValue<Schema extends z.ZodTypeAny>(
   pallet: string,

@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { z } from 'zod';
+import { z } from "zod";
+
 import {
-  sb_blocks,
-  sb_number_int,
   sb_address,
   sb_amount,
-} from "../../../types";
+  sb_blocks,
+  sb_number_int,
+} from "../../../types/index.js";
 
 // Re-export shared schemas
-export { sb_blocks, sb_number_int, sb_address, sb_amount };
+export { sb_address, sb_amount, sb_blocks, sb_number_int };
 
 // System-specific schemas
 export const sb_string = z.string();

@@ -2,13 +2,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type { ApiPromise } from '@polkadot/api';
-import { createStorageRouter } from './storage-router';
-import type { GenericAccountId } from '@polkadot/types';
-import { tryAsync } from '@torus-network/torus-utils/try-catch';
-import type { AbstractInt } from '@polkadot/types-codec';
-import { sb_to_primitive } from '@torus-network/sdk/types';
+import type { ApiPromise } from "@polkadot/api";
+import type { GenericAccountId } from "@polkadot/types";
+import type { AbstractInt } from "@polkadot/types-codec";
 
+import { sb_to_primitive } from "@torus-network/sdk/types";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { createStorageRouter } from "./storage-router.js";
 
 /**
  * Comprehensive test suite for all storage wrapper functionality
@@ -178,16 +179,17 @@ export async function storageUnitTests(api: ApiPromise) {
   console.log('🔍 AGENT KEY DEBUG:');
   console.log('  - Value:', firstAgentKey);
   console.log('  - Type:', typeof firstAgentKey);
-  console.log('  - Constructor:', firstAgentKey?.constructor?.name);
+  console.log('  - Constructor:', firstAgentKey?.constructor.name);
   console.log('  - String length:', typeof firstAgentKey === 'string' ? firstAgentKey.length : 'N/A');
   
   // Extract actual key value from the namespace object using sb_to_primitive
   const rawNamespaceKey = torus0_map_keys.namespaceCount[0];
   console.log('\n🔍 NAMESPACE KEY DEBUG (RAW):');
   console.log('  - Type:', typeof rawNamespaceKey);
-  console.log('  - Constructor:', rawNamespaceKey?.constructor?.name);
+  console.log('  - Constructor:', rawNamespaceKey?.constructor.name);
   console.log('  - Is Array?:', Array.isArray(rawNamespaceKey));
-  console.log('  - Object keys:', typeof rawNamespaceKey === 'object' && rawNamespaceKey ? Object.keys(rawNamespaceKey).slice(0, 5) : 'N/A');
+  console.log('  - Object keys:', typeof rawNamespaceKey === 'object' ? Object.keys(rawNamespaceKey).slice(0, 5) : 'N/A');
+
   console.log('  - Has toPrimitive?:', rawNamespaceKey && typeof rawNamespaceKey === 'object' && 'toPrimitive' in rawNamespaceKey);
   console.log('  - Raw value preview:', rawNamespaceKey);
   
@@ -236,18 +238,20 @@ export async function storageUnitTests(api: ApiPromise) {
       // Try with the extracted string first
       const firstNamespace_get = await storage.torus0.namespaceCount.get(firstNamespaceKey as unknown as GenericAccountId);
       console.log('✅ NamespaceCount get method completed (with string key)');
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       console.log(`📊 First namespace count: ${firstNamespace_get}`);
     } catch (stringError) {
-      console.log('❌ String key failed:', stringError.message);
+      console.log('❌ String key failed:', stringError instanceof Error ? stringError.message : String(stringError));
       
       try {
         // Fallback to raw object key
         console.log('🔄 Trying with raw object key...');
         const firstNamespace_get = await storage.torus0.namespaceCount.get(rawNamespaceKey as unknown as GenericAccountId);
         console.log('✅ NamespaceCount get method completed (with object key)');
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         console.log(`📊 First namespace count: ${firstNamespace_get}`);
       } catch (objectError) {
-        console.log('❌ Object key also failed:', objectError.message);
+        console.log('❌ Object key also failed:', objectError instanceof Error ? objectError.message : String(objectError));
       }
     }
   }

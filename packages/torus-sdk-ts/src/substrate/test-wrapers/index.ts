@@ -1,2 +1,2 @@
-export { createStorageRouter } from './storage-router';
-export type { StorageRouter } from './storage-router';
+export { createStorageRouter } from "./storage-router.js";
+export type { StorageRouter } from "./storage-router.js";

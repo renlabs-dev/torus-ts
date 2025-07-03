@@ -1,6 +1,5 @@
 // TODO: split `zod.ts` into multiple files
 
-import { AbstractInt } from "@polkadot/types-codec";
 import {
   bool,
   BTreeSet,
@@ -11,11 +10,14 @@ import {
   Option as polkadot_Option,
   Struct,
 } from "@polkadot/types";
+import { AbstractInt } from "@polkadot/types-codec";
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
 import type { ZodRawShape, ZodType, ZodTypeDef } from "zod";
 import { z } from "zod";
+
+import type { Option } from "@torus-network/torus-utils";
+
 import { SS58_SCHEMA } from "../address.js";
 
 export { sb_enum } from "./sb_enum.js";
@@ -165,7 +167,6 @@ export const sb_some = <T extends z.ZodType<unknown, z.ZodTypeDef, Codec>>(
 ): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   sb_option<T>(inner).transform(
     (val, ctx): z.output<T> =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       match(val)({
         None: () => {
           ctx.addIssue({
@@ -175,7 +176,6 @@ export const sb_some = <T extends z.ZodType<unknown, z.ZodTypeDef, Codec>>(
           });
           return z.NEVER;
         },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         Some: (value) => value,
       }),
   );
@@ -188,9 +188,9 @@ export const sb_bool = bool_schema.transform((val) => val.toPrimitive());
 
 // == Numbers ==
 
-// export interface _ToBigInt {
-//   toBigInt(): bigint;
-// }
+export interface ToBigInt {
+  toBigInt(): bigint;
+}
 
 // export const _ToBigInt_schema = z.unknown().transform<_ToBigInt>((val, ctx) => {
 //   if (!(typeof val === "object" && val !== null)) {

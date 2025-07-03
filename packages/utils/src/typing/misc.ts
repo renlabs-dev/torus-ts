@@ -5,6 +5,11 @@
 export type Nullish = null | undefined;
 
 /**
+ * A type that can be either T or null, used to handle nullable values.
+ */
+export type Nullable<T> = T | null;
+
+/**
  * Extracts the type of elements from an array type.
  * If the input type is not an array, returns `never`.
  *
