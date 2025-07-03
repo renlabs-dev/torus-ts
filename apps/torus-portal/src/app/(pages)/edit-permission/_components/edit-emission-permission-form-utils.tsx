@@ -32,6 +32,7 @@ export function transformPermissionToFormData(
     ? canGrantorEdit(permission, currentBlock)
     : false;
 
+
   // Extract current emission scope data
   const emissionScope = if_let(permission.scope, "Emission")(
     (scope) => scope,

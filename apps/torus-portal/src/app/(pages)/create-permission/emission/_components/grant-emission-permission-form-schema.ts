@@ -147,7 +147,6 @@ export const enforcementSchema = z.discriminatedUnion("type", [
 
 // Main form schema
 export const grantEmissionPermissionSchema = z.object({
-  grantee: SS58_SCHEMA,
   allocation: allocationSchema,
   targets: z
     .array(
