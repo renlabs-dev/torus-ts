@@ -4,8 +4,7 @@ import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useStore } from "~/utils/store";
-import type { TransferFormValues } from "~/utils/types";
-import { useFormikContext } from "formik";
+import { useTransferFormContext } from "../_components/transfer-form-context";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export function ButtonSection({
@@ -19,7 +18,11 @@ export function ButtonSection({
   resetForm: () => void;
   setIsReview: (b: boolean) => void;
 }>) {
-  const { values } = useFormikContext<TransferFormValues>();
+  const {
+    watch,
+    formState: { errors },
+  } = useTransferFormContext();
+  const values = watch();
   const chainDisplayName = useChainDisplayName(values.destination);
   const setTransferLoading = useStore((s) => s.setTransferLoading);
 
@@ -54,6 +57,7 @@ export function ButtonSection({
       <ConnectAwareSubmitButton
         chainName={values.origin}
         text={isValidating ? "Validating..." : "Continue"}
+        errors={errors}
       />
     );
   }

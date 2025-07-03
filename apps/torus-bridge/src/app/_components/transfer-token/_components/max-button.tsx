@@ -4,9 +4,8 @@ import { SpinnerIcon, useAccounts } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui/components/button";
 import { useFetchMaxAmount } from "~/hooks/use-fetch-max-amount";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import type { TransferFormValues } from "~/utils/types";
+import { useTransferFormContext } from "./transfer-form-context";
 import BigNumber from "bignumber.js";
-import { useFormikContext } from "formik";
 
 export function MaxButton({
   balance,
@@ -15,7 +14,8 @@ export function MaxButton({
   balance?: TokenAmount;
   disabled?: boolean;
 }>) {
-  const { values, setFieldValue } = useFormikContext<TransferFormValues>();
+  const { watch, setValue } = useTransferFormContext();
+  const values = watch();
   const { origin, destination, tokenIndex } = values;
   const multiProvider = useMultiProvider();
   const { accounts } = useAccounts(multiProvider);
@@ -35,7 +35,7 @@ export function MaxButton({
       4,
       BigNumber.ROUND_FLOOR,
     );
-    void setFieldValue("amount", roundedAmount);
+    setValue("amount", roundedAmount);
   };
 
   return (
