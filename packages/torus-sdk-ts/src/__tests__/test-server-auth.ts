@@ -52,7 +52,7 @@ agent.method(
     try {
       return {
         ok: {
-          message: `Hello ${input.name}! You are authenticated as ${context.user?.walletAddress}`,
+          message: `Hello ${input.name}!`,
           timestamp: new Date().toISOString(),
           userAddress: context.user?.walletAddress || "unknown",
         },
