@@ -6,22 +6,25 @@ import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useStore } from "~/utils/store";
 import { useTransferFormContext } from "../_components/transfer-form-context";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { FieldErrors } from "react-hook-form";
+import type { TransferFormValues } from "~/utils/types";
 
 export function ButtonSection({
   isReview,
   isValidating,
   setIsReview,
   resetForm,
+  isValid,
+  errors,
 }: Readonly<{
   isReview: boolean;
   isValidating: boolean;
   resetForm: () => void;
   setIsReview: (b: boolean) => void;
+  isValid: boolean;
+  errors: FieldErrors<TransferFormValues>;
 }>) {
-  const {
-    watch,
-    formState: { errors },
-  } = useTransferFormContext();
+  const { watch } = useTransferFormContext();
   const values = watch();
   const chainDisplayName = useChainDisplayName(values.destination);
   const setTransferLoading = useStore((s) => s.setTransferLoading);
@@ -58,6 +61,7 @@ export function ButtonSection({
         chainName={values.origin}
         text={isValidating ? "Validating..." : "Continue"}
         errors={errors}
+        disabled={!isValid}
       />
     );
   }

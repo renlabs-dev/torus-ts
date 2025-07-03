@@ -16,12 +16,14 @@ interface Props {
   chainName: ChainName;
   text: string;
   errors?: FieldErrors<TransferFormValues>;
+  disabled?: boolean;
 }
 
-export function ConnectAwareSubmitButton<FormValues = unknown>({
+export function ConnectAwareSubmitButton({
   chainName,
   text,
   errors,
+  disabled,
 }: Readonly<Props>) {
   const protocol = useChainProtocol(chainName) ?? ProtocolType.Ethereum;
   const connectFns = useConnectFns();
@@ -32,15 +34,13 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   const isAccountReady = account?.isReady;
 
   const hasError = errors && Object.keys(errors).length > 0;
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   const firstError = errors
-    ? `${Object.values(errors)[0]?.message || Object.values(errors)[0]}` ||
-      "Unknown error"
+    ? (Object.values(errors)[0]?.message ?? "Unknown error")
     : "";
 
   const variant = hasError ? "destructive" : "default";
   const accountReadyContent = isAccountReady ? text : "Connect wallet";
-  const content = hasError ? firstError : accountReadyContent;
+  const content = hasError ? String(firstError) : accountReadyContent;
   const type = isAccountReady ? "submit" : "button";
   const onClick = isAccountReady ? undefined : connectFn;
 
@@ -54,7 +54,13 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   useTimeout(clearErrors, 3500);
 
   return (
-    <Button type={type} variant={variant} onClick={onClick} className="w-full">
+    <Button
+      type={type}
+      variant={variant}
+      onClick={onClick}
+      className="w-full"
+      disabled={disabled}
+    >
       {content}
     </Button>
   );
