@@ -7,14 +7,14 @@ import { useDestinationBalance } from "~/hooks/balance/use-destination-balance";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import { useRecipientBalanceWatcher } from "~/hooks/use-balance-watcher";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import type { TransferFormValues } from "~/utils/types";
-import { useFormikContext } from "formik";
+import { useTransferFormContext } from "../_components/transfer-form-context";
 import { TokenBalance } from "../_components/token-balance";
 
 export function RecipientSection({
   isReview,
 }: Readonly<{ isReview: boolean }>) {
-  const { values } = useFormikContext<TransferFormValues>();
+  const { watch } = useTransferFormContext();
+  const values = watch();
   const { balance } = useDestinationBalance(values);
   useRecipientBalanceWatcher(values.recipient, balance);
 
@@ -38,14 +38,15 @@ export function RecipientSection({
 }
 
 function SelfButton({ disabled }: Readonly<{ disabled?: boolean }>) {
-  const { values, setFieldValue } = useFormikContext<TransferFormValues>();
+  const { watch, setValue } = useTransferFormContext();
+  const values = watch();
   const multiProvider = useMultiProvider();
   const chainDisplayName = useChainDisplayName(values.destination);
   const address = useAccountAddressForChain(multiProvider, values.destination);
   const { toast } = useToast();
   const onClick = () => {
     if (disabled) return;
-    if (address) void setFieldValue("recipient", address);
+    if (address) setValue("recipient", address);
     else
       toast.error(
         `No account found for for chain ${chainDisplayName}, is your wallet connected?`,

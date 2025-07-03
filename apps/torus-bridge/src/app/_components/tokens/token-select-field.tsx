@@ -2,14 +2,13 @@ import type { IToken } from "@hyperlane-xyz/sdk";
 import { ChevronIcon } from "@hyperlane-xyz/widgets";
 import { Button } from "@torus-ts/ui/components/button";
 import { TokenIcon } from "~/app/_components/token-icon";
-import { useField, useFormikContext } from "formik";
+import { useTransferFormContext } from "../transfer-token/_components/transfer-form-context";
 import { useEffect, useState } from "react";
 import {
   getIndexForToken,
   getTokenByIndex,
   useWarpCore,
 } from "../../../hooks/token";
-import type { TransferFormValues } from "../../../utils/types";
 import { TokenListModal } from "./token-list-modal";
 
 interface Props {
@@ -18,8 +17,9 @@ interface Props {
 }
 
 export function TokenSelectField({ name, disabled }: Readonly<Props>) {
-  const { values } = useFormikContext<TransferFormValues>();
-  const [field, , helpers] = useField<number | undefined>(name);
+  const { watch, setValue } = useTransferFormContext();
+  const values = watch();
+  const tokenIndex = values.tokenIndex;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutomaticSelection, setIsAutomaticSelection] = useState(false);
 
@@ -44,13 +44,13 @@ export function TokenSelectField({ name, disabled }: Readonly<Props>) {
       newFieldValue = undefined;
       newIsAutomatic = false;
     }
-    void helpers.setValue(newFieldValue);
+    setValue("tokenIndex", newFieldValue);
     setIsAutomaticSelection(newIsAutomatic);
-  }, [warpCore, origin, destination, helpers]);
+  }, [warpCore, origin, destination, setValue]);
 
   const onSelectToken = (newToken: IToken) => {
-    // Set the token address value in formik state
-    void helpers.setValue(getIndexForToken(warpCore, newToken));
+    // Set the token address value in form state
+    setValue("tokenIndex", getIndexForToken(warpCore, newToken));
   };
 
   const onClickField = () => {
@@ -60,7 +60,7 @@ export function TokenSelectField({ name, disabled }: Readonly<Props>) {
   return (
     <>
       <TokenButton
-        token={getTokenByIndex(warpCore, field.value)}
+        token={getTokenByIndex(warpCore, tokenIndex)}
         disabled={isAutomaticSelection || disabled}
         onClick={onClickField}
         isAutomatic={isAutomaticSelection}

@@ -3,13 +3,13 @@
 import { Label } from "@torus-ts/ui/components/label";
 import { TextField } from "~/app/_components/text-field";
 import { useOriginBalance } from "~/hooks/balance/use-origin-balance";
-import type { TransferFormValues } from "~/utils/types";
-import { useFormikContext } from "formik";
+import { useTransferFormContext } from "../_components/transfer-form-context";
 import { MaxButton } from "../_components/max-button";
 import { TokenBalance } from "../_components/token-balance";
 
 export function AmountSection({ isReview }: Readonly<{ isReview: boolean }>) {
-  const { values } = useFormikContext<TransferFormValues>();
+  const { watch } = useTransferFormContext();
+  const values = watch();
   const { balance } = useOriginBalance(values);
 
   return (

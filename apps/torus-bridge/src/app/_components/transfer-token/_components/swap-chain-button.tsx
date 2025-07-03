@@ -1,14 +1,14 @@
 import { Button } from "@torus-ts/ui/components/button";
 import { updateSearchParams } from "~/utils/query-params";
-import type { TransferFormValues } from "~/utils/types";
-import { useFormikContext } from "formik";
+import { useTransferFormContext } from "./transfer-form-context";
 import { ArrowLeftRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export function SwapChainsButton({
   disabled,
 }: Readonly<{ disabled?: boolean }>) {
-  const { values, setFieldValue } = useFormikContext<TransferFormValues>();
+  const { watch, setValue } = useTransferFormContext();
+  const values = watch();
   const { origin, destination } = values;
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -19,10 +19,10 @@ export function SwapChainsButton({
     const newFrom = destination;
     const newTo = origin;
 
-    void setFieldValue("origin", newFrom);
-    void setFieldValue("destination", newTo);
-    void setFieldValue("tokenIndex", undefined);
-    void setFieldValue("recipient", "");
+    setValue("origin", newFrom);
+    setValue("destination", newTo);
+    setValue("tokenIndex", undefined);
+    setValue("recipient", "");
 
     handleChainChange(newFrom, newTo);
   };
