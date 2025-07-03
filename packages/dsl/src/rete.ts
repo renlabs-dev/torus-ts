@@ -591,8 +591,7 @@ function evaluateBoolExpression(
         evaluateBoolExpression(expr.right, facts)
       );
 
-    case "CompExpr": // Comparison expression - evaluate numeric comparison
-    {
+    case "CompExpr": { // Comparison expression - evaluate numeric comparison
       const leftValue = evaluateNumericExpression(expr.left, facts);
       const rightValue = evaluateNumericExpression(expr.right, facts);
 
