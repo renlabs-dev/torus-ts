@@ -10,27 +10,34 @@ const SUPPORTED_PROTOCOL_VERSIONS = ["1.0.0"];
  * Provides standard JWT compliance while using Substrate's SR25519 cryptography.
  */
 
-/**
- * Get the current protocol version
- */
 export const getCurrentProtocolVersion = () => CURRENT_PROTOCOL_VERSION;
 
-export interface JWTHeader {
-  alg: string;
-  typ: string;
-}
+export const JWTHeaderSchema = z.object({
+  alg: z.string(),
+  typ: z.string(),
+});
+
+export const JWTPayloadSchema = z
+  .object({
+    sub: z.string().min(1, "Subject is required"),
+    publicKey: z.string().regex(/^[0-9a-fA-F]+$/, "Public key must be hex"),
+    iat: z.number().int().positive("Issued at must be positive integer"),
+    exp: z.number().int().positive("Expiration must be positive integer"),
+    nonce: z.string().uuid("Nonce must be a valid UUID"),
+    _protocol_metadata: z.object({
+      version: z.string().min(1, "Protocol version is required"),
+    }),
+  })
+  .refine((data) => data.exp > data.iat, {
+    message: "Expiration must be after issue time",
+    path: ["exp"],
+  });
+
+export type JWTHeader = z.infer<typeof JWTHeaderSchema>;
+export type SR25519JWTPayload = z.infer<typeof JWTPayloadSchema>;
 
 export interface ProtocolMetadata {
   version: string;
-}
-
-export interface SR25519JWTPayload {
-  sub: string; // Subject: wallet address
-  publicKey: string; // SR25519 public key (hex)
-  iat: number; // Issued at timestamp
-  exp: number; // Expiration timestamp
-  nonce: string; // Unique nonce for replay prevention
-  _protocol_metadata: ProtocolMetadata; // Protocol version information
 }
 
 export type JWTErrorCode =
@@ -127,7 +134,16 @@ export function verifyJWT(
 
     // Decode header
     const headerStr = base64url.default.decode(encodedHeader);
-    const header: JWTHeader = JSON.parse(headerStr);
+    const headerResult = JWTHeaderSchema.safeParse(JSON.parse(headerStr));
+    if (!headerResult.success) {
+      return {
+        Error: {
+          error: `Invalid JWT header: ${headerResult.error.message}`,
+          code: "INVALID_FORMAT",
+        },
+      };
+    }
+    const header = headerResult.data;
 
     // Validate algorithm
     if (header.alg !== "SR25519") {
@@ -150,23 +166,17 @@ export function verifyJWT(
 
     // Decode payload
     const payloadStr = base64url.default.decode(encodedPayload);
-    const payload: SR25519JWTPayload = JSON.parse(payloadStr);
-
-    // Validate required claims
-    if (
-      !payload.sub ||
-      !payload.publicKey ||
-      !payload.iat ||
-      !payload.exp ||
-      !payload.nonce ||
-      !payload._protocol_metadata.version
-    ) {
+    const payloadResult = JWTPayloadSchema.safeParse(JSON.parse(payloadStr));
+    if (!payloadResult.success) {
       return {
-        Error: { error: "Missing required JWT claims", code: "MISSING_CLAIMS" },
+        Error: {
+          error: `Invalid JWT payload: ${payloadResult.error.message}`,
+          code: "INVALID_FORMAT",
+        },
       };
     }
+    const payload = payloadResult.data;
 
-    // Validate protocol version
     if (
       !SUPPORTED_PROTOCOL_VERSIONS.includes(payload._protocol_metadata.version)
     ) {
@@ -178,20 +188,17 @@ export function verifyJWT(
       };
     }
 
-    // Check expiration
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp < now) {
       return { Error: { error: "Token has expired", code: "EXPIRED" } };
     }
 
-    // Check issued at (allow 1 minute clock skew)
     if (payload.iat > now + 60) {
       return {
         Error: { error: "Token used before issue time", code: "FUTURE_TOKEN" },
       };
     }
 
-    // Check token age if maxAge is specified
     if (maxAge !== undefined) {
       const tokenAge = now - payload.iat;
       if (tokenAge > maxAge) {
@@ -204,10 +211,8 @@ export function verifyJWT(
       }
     }
 
-    // Decode signature
     const signature = base64url.default.toBuffer(encodedSignature);
 
-    // Verify signature
     const signingInput = `${encodedHeader}.${encodedPayload}`;
     const publicKey = new Uint8Array(Buffer.from(payload.publicKey, "hex"));
 
@@ -236,22 +241,3 @@ export function verifyJWT(
     };
   }
 }
-
-/**
- * Standard JWT claims validation schema
- */
-export const JWTPayloadSchema = z
-  .object({
-    sub: z.string().min(1, "Subject is required"),
-    publicKey: z.string().regex(/^[0-9a-fA-F]+$/, "Public key must be hex"),
-    iat: z.number().int().positive("Issued at must be positive integer"),
-    exp: z.number().int().positive("Expiration must be positive integer"),
-    nonce: z.string().uuid("Nonce must be a valid UUID"),
-    _protocol_metadata: z.object({
-      version: z.string().min(1, "Protocol version is required"),
-    }),
-  })
-  .refine((data) => data.exp > data.iat, {
-    message: "Expiration must be after issue time",
-    path: ["exp"],
-  });
