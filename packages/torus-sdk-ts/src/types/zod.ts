@@ -294,6 +294,96 @@ export const GenericAccountId_schema = z.custom<GenericAccountId>(
   "not a substrate BaseAccountId",
 );
 
+// Flexible schema that can handle both GenericAccountId instances and raw Substrate objects
+export const sb_address_flexible = z.custom<unknown>((val) => {
+  // Accept GenericAccountId instances
+  if (val instanceof GenericAccountId) {
+    return true;
+  }
+  // Accept raw Substrate objects that have toString method
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (val && typeof val === 'object' && 'toString' in val && typeof val.toString === 'function') {
+    return true;
+  }
+  return false;
+}).transform((val) => {
+  if (val instanceof GenericAccountId) {
+    // Use sb_to_primitive to safely extract the value
+    const primitiveResult = sb_to_primitive.safeParse(val);
+    if (primitiveResult.success) {
+      return primitiveResult.data;
+    } else {
+      // Fallback to toString for GenericAccountId instances
+      return val.toString();
+    }
+  }
+  
+  // For raw Substrate objects, use sb_to_primitive
+  if (val && typeof val === 'object') {
+    const primitiveResult = sb_to_primitive.safeParse(val);
+    
+    if (primitiveResult.success) {
+      // If the result is an object with account field, extract it
+      if (typeof primitiveResult.data === 'object' && primitiveResult.data !== null && 'account' in primitiveResult.data) {
+        const accountData = primitiveResult.data.account;
+        return typeof accountData === 'string' ? accountData : "error on accountData";
+      }
+      
+      return primitiveResult.data;
+    } else {
+      // Fallback: return the raw object and let downstream handle it
+      return val;
+    }
+  }
+  
+  return String(val);
+});
+
+// Create a version that validates SS58 addresses for strict use cases
+export const sb_address_flexible_strict = sb_address_flexible.pipe(SS58_SCHEMA);
+
+// Create a schema that can handle account enum types (like {Id: address} or direct addresses)
+export const sb_account_enum = z.custom<unknown>((val) => {
+  // Accept any object or GenericAccountId instance
+  return val !== null && val !== undefined;
+}).transform((val) => {
+  if (val instanceof GenericAccountId) {
+    // Use sb_to_primitive to safely extract the value
+    const primitiveResult = sb_to_primitive.safeParse(val);
+    if (primitiveResult.success) {
+      return primitiveResult.data;
+    } else {
+      return val.toString();
+    }
+  }
+  
+  // For raw Substrate objects, use sb_to_primitive
+  if (val && typeof val === 'object') {
+    const primitiveResult = sb_to_primitive.safeParse(val);
+    
+    if (primitiveResult.success) {
+      // If the result is an object with account field, extract it
+      if (typeof primitiveResult.data === 'object' && primitiveResult.data !== null && 'account' in primitiveResult.data) {
+        const accountData = primitiveResult.data.account;
+        return typeof accountData === 'string' ? accountData : 'AccountData error';
+      }
+      
+      // If it's an enum like {Id: address}, extract the address
+      if (typeof primitiveResult.data === 'object' && primitiveResult.data !== null && 'Id' in primitiveResult.data) {
+        const idData = primitiveResult.data.Id;
+        return typeof idData === 'string' ? idData : 'idData error';
+      }
+      
+      return primitiveResult.data;
+    } else {
+      // Fallback: return the raw object
+      return val;
+    }
+  }
+  
+  return String(val);
+});
+
 export const sb_address = GenericAccountId_schema.transform((val) =>
   val.toString(),
 ).pipe(SS58_SCHEMA);

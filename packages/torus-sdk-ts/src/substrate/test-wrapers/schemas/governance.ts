@@ -1,13 +1,17 @@
 import { z } from "zod";
 
+import { sb_number_int, sb_bigint } from "@torus-network/sdk/types";
+
 import {
   sb_address,
   sb_amount,
   sb_block_number,
   sb_percentage,
-  sb_u32,
-  sb_u64,
 } from "./common.js";
+
+// Use substrate-compatible number schemas instead of simple zod numbers
+const sb_u32 = sb_number_int;
+const sb_u64 = sb_bigint;
 
 // Proposal data variants - based on PalletGovernanceProposalProposalData
 export const PROPOSAL_DATA_SCHEMA = z.union([

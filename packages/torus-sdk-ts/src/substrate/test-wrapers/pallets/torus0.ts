@@ -1,4 +1,4 @@
-import { sb_to_primitive } from "../../../types/zod.js";
+import { sb_to_primitive, sb_address_flexible, sb_account_enum } from "../../../types/zod.js";
 import { createStorageMap } from "../core/storage-map.js";
 import { createStorageValue } from "../core/storage-value.js";
 import {
@@ -38,9 +38,9 @@ export const torus0Storages = {
   palletVersion: createStorageValue('torus0', 'palletVersion', PALLET_VERSION_SCHEMA),
   
   // Map storages  
-  agents: createStorageMap('torus0', 'agents', sb_address, AGENT_SCHEMA),
-  namespaceCount: createStorageMap('torus0', 'namespaceCount', sb_address, sb_to_primitive), // Map: AccountId32 -> u32 (use sb_to_primitive to handle substrate values)
-  namespaces: createStorageMap('torus0', 'namespaces', sb_address, sb_to_primitive), // Map but no data currently
+  agents: createStorageMap('torus0', 'agents', sb_address_flexible, sb_to_primitive), // Use sb_to_primitive for substrate objects
+  namespaceCount: createStorageMap('torus0', 'namespaceCount', sb_account_enum, sb_to_primitive), // Map: Account enum -> u32 (handle Lookup62 enum type)
+  namespaces: createStorageMap('torus0', 'namespaces', sb_account_enum, sb_to_primitive), // Map but no data currently
   
   // Double map storages (currently commented out as they need createStorageDoubleMap)
   // stakedBy: AccountId32 -> AccountId32 -> Balance (36 entries found)

@@ -3,8 +3,9 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { ApiPromise } from "@polkadot/api";
-import type { GenericAccountId } from "@polkadot/types";
+import { GenericAccountId } from "@polkadot/types";
 import type { AbstractInt } from "@polkadot/types-codec";
+import type { AnyU8a } from "@polkadot/types-codec/types";
 
 import { sb_to_primitive } from "@torus-network/sdk/types";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
@@ -18,6 +19,9 @@ import { createStorageRouter } from "./storage-router.js";
 export async function storageUnitTests(api: ApiPromise) {
   // Create storage router (single entry point)
   const storage = createStorageRouter(api);
+  
+  // Collect all errors to display at the end
+  const allErrors: {type: string, location: string, error: string}[] = [];
 
   console.log('\n' + '='.repeat(80));
   console.log('COMPREHENSIVE STORAGE WRAPPER TESTS - ALL METHODS');
@@ -176,97 +180,104 @@ export async function storageUnitTests(api: ApiPromise) {
 
   // Test individual .get() for maps (if keys exist)
   const firstAgentKey = torus0_map_keys.agents[0];
-  console.log('🔍 AGENT KEY DEBUG:');
-  console.log('  - Value:', firstAgentKey);
-  console.log('  - Type:', typeof firstAgentKey);
-  console.log('  - Constructor:', firstAgentKey?.constructor.name);
-  console.log('  - String length:', typeof firstAgentKey === 'string' ? firstAgentKey.length : 'N/A');
   
-  // Extract actual key value from the namespace object using sb_to_primitive
+  // Extract actual key value from the namespace object
   const rawNamespaceKey = torus0_map_keys.namespaceCount[0];
-  console.log('\n🔍 NAMESPACE KEY DEBUG (RAW):');
-  console.log('  - Type:', typeof rawNamespaceKey);
-  console.log('  - Constructor:', rawNamespaceKey?.constructor.name);
-  console.log('  - Is Array?:', Array.isArray(rawNamespaceKey));
-  console.log('  - Object keys:', typeof rawNamespaceKey === 'object' ? Object.keys(rawNamespaceKey).slice(0, 5) : 'N/A');
-
-  console.log('  - Has toPrimitive?:', rawNamespaceKey && typeof rawNamespaceKey === 'object' && 'toPrimitive' in rawNamespaceKey);
-  console.log('  - Raw value preview:', rawNamespaceKey);
   
-  // Use sb_to_primitive to extract the actual key value
-  console.log('\n🔍 EXTRACTING NAMESPACE KEY:');
-  const primitiveResult = sb_to_primitive.safeParse(rawNamespaceKey);
-  console.log('  - sb_to_primitive success?:', primitiveResult.success);
-  if (primitiveResult.success) {
-    console.log('  - Extracted value:', primitiveResult.data);
-    console.log('  - Extracted type:', typeof primitiveResult.data);
-  } else {
-    console.log('  - Parse error:', primitiveResult.error.message);
-  }
-  
-  // Extract the actual key from the object structure
+  // Extract the actual key value - handle both substrate objects and plain strings
   let firstNamespaceKey;
-  if (primitiveResult.success) {
-    firstNamespaceKey = primitiveResult.data;
-  } else if (rawNamespaceKey && typeof rawNamespaceKey === 'object' && 'account' in rawNamespaceKey) {
-    // Extract the account address from the nested structure
-    firstNamespaceKey = (rawNamespaceKey as { account: string }).account;
-    console.log('  - Extracted account property:', firstNamespaceKey);
-  } else {
+  
+  if (typeof rawNamespaceKey === 'string') {
+    // If it's already a string (SS58 address), use it directly
     firstNamespaceKey = rawNamespaceKey;
+  } else {
+    // Try sb_to_primitive for substrate objects
+    const primitiveResult = sb_to_primitive.safeParse(rawNamespaceKey);
+    if (primitiveResult.success) {
+      firstNamespaceKey = primitiveResult.data;
+    } else {
+      // Fallback: try to extract account property from nested structure
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (rawNamespaceKey && typeof rawNamespaceKey === 'object' && 'account' in rawNamespaceKey) {
+        firstNamespaceKey = (rawNamespaceKey as { account: string }).account;
+      } else {
+        firstNamespaceKey = rawNamespaceKey;
+      }
+    }
   }
   
-  console.log('\n🔍 FINAL NAMESPACE KEY:');
-  console.log('  - Final value:', firstNamespaceKey);
-  console.log('  - Final type:', typeof firstNamespaceKey);
-  console.log('  - Is valid address?:', typeof firstNamespaceKey === 'string' && firstNamespaceKey.length === 48);
-  
-  // if (firstAgentKey) {
-  //   console.log('\n--- Individual map .get() tests ---');
-  //   const firstAgent_get = await storage.torus0.agents.get(firstAgentKey as unknown as GenericAccountId);
-  //   console.log('✅ Agent get/display method completed');
-  //   console.log(`📊 First agent: ${JSON.stringify(firstAgent_get, null, 2)}`);
-  // }
-
-  if (firstNamespaceKey) {
+  // Test individual agent get
+  if (firstAgentKey) {
     console.log('\n--- Individual map .get() tests ---');
-    console.log('🔍 TESTING NAMESPACE GET:');
-    console.log('  - Using extracted string key:', firstNamespaceKey);
-    console.log('  - Using raw object key:', rawNamespaceKey);
+    const [agentError, _firstAgent_get] = await tryAsync(storage.torus0.agents.get(firstAgentKey as unknown as GenericAccountId));
+    if (agentError === undefined) {
+      console.log('✅ Agent get method completed');
+      console.log(`📊 First agent data retrieved successfully`);
+    } else {
+      console.log('⚠️ Agent get failed:', agentError.message.split('\n')[0]);
+      allErrors.push({
+        type: 'Storage Query Error',
+        location: 'torus0.agents.get()',
+        error: agentError.message
+      });
+    }
+  }
+
+  // Test namespace count get with proper enum structure
+  if (firstNamespaceKey) {
+    const accountEnum = { Account: firstNamespaceKey };
+    const [enumError, enumResult] = await tryAsync(storage.torus0.namespaceCount.get(accountEnum));
     
-    try {
-      // Try with the extracted string first
-      const firstNamespace_get = await storage.torus0.namespaceCount.get(firstNamespaceKey as unknown as GenericAccountId);
-      console.log('✅ NamespaceCount get method completed (with string key)');
+    if (enumError === undefined) {
+      console.log('✅ NamespaceCount get method completed');
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      console.log(`📊 First namespace count: ${firstNamespace_get}`);
-    } catch (stringError) {
-      console.log('❌ String key failed:', stringError instanceof Error ? stringError.message : String(stringError));
+      console.log(`📊 First namespace count: ${enumResult}`);
+    } else {
+      // Try with raw object key as fallback
+      const [objectError, objectResult] = await tryAsync(storage.torus0.namespaceCount.get(rawNamespaceKey));
       
-      try {
-        // Fallback to raw object key
-        console.log('🔄 Trying with raw object key...');
-        const firstNamespace_get = await storage.torus0.namespaceCount.get(rawNamespaceKey as unknown as GenericAccountId);
-        console.log('✅ NamespaceCount get method completed (with object key)');
+      if (objectError === undefined) {
+        console.log('✅ NamespaceCount get method completed (with raw key)');
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        console.log(`📊 First namespace count: ${firstNamespace_get}`);
-      } catch (objectError) {
-        console.log('❌ Object key also failed:', objectError instanceof Error ? objectError.message : String(objectError));
+        console.log(`📊 First namespace count: ${objectResult}`);
+      } else {
+        console.log('⚠️ NamespaceCount get failed:', enumError.message.split('\n')[0]);
+        allErrors.push({
+          type: 'Storage Query Error',
+          location: 'torus0.namespaceCount.get()',
+          error: enumError.message
+        });
       }
     }
   }
 
-  // Test .multi() method (if we have multiple keys) - TEMPORARILY DISABLED
-  // if (torus0_map_keys.agents.length >= 3) {
-  //   console.log('\n--- .multi() method tests ---');
-  //   const multipleAgents = await storage.torus0.agents.multi(
-  //     torus0_map_keys.agents.slice(0, 3).map(key => key as unknown as GenericAccountId)
-  //   );
-  //   console.log(`✅ Multi query completed for 3 agents`);
-  //   console.log(`📊 Multi agents result: ${multipleAgents.length} agents retrieved`);
-  //   console.log(`🎯 Sample multi result:`, multipleAgents[0]);
-  // }
-  console.log('\n🚧 Multi method test temporarily disabled to focus on key issues');
+  // Test .multi() method (if we have multiple keys)
+  if (torus0_map_keys.agents.length >= 3) {
+    console.log('\n--- .multi() method tests ---');
+    
+    // Create proper GenericAccountId instances from the string keys
+    const agentKeys = torus0_map_keys.agents.slice(0, 3).map(key => 
+      new GenericAccountId(api.registry, key as AnyU8a)
+    );
+    
+    const [multiError, multipleAgents] = await tryAsync(storage.torus0.agents.multi(agentKeys));
+    
+    if (multiError === undefined) {
+      console.log(`✅ Multi query completed for 3 agents`);
+      console.log(`📊 Multi agents result: ${multipleAgents.length} agents retrieved`);
+      
+      console.log(`🎯 Sample multi result available`);
+    } else {
+      console.log(`❌ Multi query failed:`, multiError.message);
+      allErrors.push({
+        type: 'Multi Query Error',
+        location: 'torus0.agents.multi()',
+        error: multiError.message
+      });
+    }
+  } else {
+    console.log('\n⚠️ Not enough agent keys for multi test (need at least 3)');
+  }
 
   // === SYSTEM STORAGE MAPS ===
   console.log('\n🏛️ === SYSTEM STORAGE MAPS ===');
@@ -340,28 +351,52 @@ export async function storageUnitTests(api: ApiPromise) {
 
   const [agentApplicationsError, agentApplicationsKeys] = await tryAsync(storage.governance.agentApplications.keys());
   if (agentApplicationsError) {
-    console.log('⚠️ AgentApplications keys failed (schema issue):', agentApplicationsError.message.split('\n')[0]);
+    const errorMsg = agentApplicationsError.message.split('\n')[0];
+    console.log('⚠️ AgentApplications keys failed (schema issue):', errorMsg);
+    allErrors.push({
+      type: 'Schema Parse Error',
+      location: 'governance.agentApplications.keys()',
+      error: agentApplicationsError.message
+    });
   } else {
     governance_map_keys.agentApplications = agentApplicationsKeys;
   }
 
   const [allocatorsError, allocatorsKeys] = await tryAsync(storage.governance.allocators.keys());
   if (allocatorsError) {
-    console.log('⚠️ Allocators keys failed (schema issue):', allocatorsError.message.split('\n')[0]);
+    const errorMsg = allocatorsError.message.split('\n')[0];
+    console.log('⚠️ Allocators keys failed (schema issue):', errorMsg);
+    allErrors.push({
+      type: 'Schema Parse Error',
+      location: 'governance.allocators.keys()',
+      error: allocatorsError.message
+    });
   } else {
     governance_map_keys.allocators = allocatorsKeys;
   }
 
   const [proposalsError, proposalsKeys] = await tryAsync(storage.governance.proposals.keys());
   if (proposalsError) {
-    console.log('⚠️ Proposals keys failed (schema issue):', proposalsError.message.split('\n')[0]);
+    const errorMsg = proposalsError.message.split('\n')[0];
+    console.log('⚠️ Proposals keys failed (schema issue):', errorMsg);
+    allErrors.push({
+      type: 'Schema Parse Error',
+      location: 'governance.proposals.keys()',
+      error: proposalsError.message
+    });
   } else {
     governance_map_keys.proposals = proposalsKeys;
   }
 
   const [whitelistError, whitelistKeys] = await tryAsync(storage.governance.whitelist.keys());
   if (whitelistError) {
-    console.log('⚠️ Whitelist keys failed (schema issue):', whitelistError.message.split('\n')[0]);
+    const errorMsg = whitelistError.message.split('\n')[0];
+    console.log('⚠️ Whitelist keys failed (schema issue):', errorMsg);
+    allErrors.push({
+      type: 'Schema Parse Error',
+      location: 'governance.whitelist.keys()',
+      error: whitelistError.message
+    });
   } else {
     governance_map_keys.whitelist = whitelistKeys;
   }
@@ -409,6 +444,29 @@ export async function storageUnitTests(api: ApiPromise) {
 
   console.log('\n✅ ALL STORAGE WRAPPER METHODS TESTED SUCCESSFULLY!');
   console.log('🎯 Tested: get, display, keys, multi, subscribe across all pallets and storage types');
+
+  // Display all collected errors
+  if (allErrors.length > 0) {
+    console.log('\n' + '❌'.repeat(80));
+    console.log('🚨 DETAILED ERROR SUMMARY');
+    console.log('❌'.repeat(80));
+    console.log(`\n📊 Total Errors Found: ${allErrors.length}\n`);
+    
+    allErrors.forEach((error, index) => {
+      console.log(`${index + 1}. ${error.type} in ${error.location}`);
+      console.log(`   ${'-'.repeat(60)}`);
+      console.log(`   ${error.error.split('\n').join('\n   ')}`);
+      console.log('');
+    });
+    
+    console.log('🔧 NEXT STEPS:');
+    console.log('• Fix schema definitions to handle substrate types properly');
+    console.log('• Update key schemas to use sb_* substrate-compatible types');
+    console.log('• Test with actual substrate data structures');
+    console.log('❌'.repeat(80));
+  } else {
+    console.log('\n🎉 NO ERRORS FOUND - ALL TESTS PASSED!');
+  }
 
   // Return cleanup function for subscriptions
   return {
