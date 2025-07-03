@@ -11,52 +11,64 @@ gen-types name: (dump-metadata name)
 
 # == Dev ==
 
+# Install dependencies
 install:
   pnpm install
 
-fix: lint-fix format-fix
-
+# List all packages in the workspace
 ls:
   pnpm exec turbo ls
 
-build:
-  pnpm exec ./scripts/dev-helper with-env turbo run build
-
+# Run a development command for a package
 dev name *args:
   pnpm exec ./scripts/dev-helper dev {{name}} {{args}}
 
+# Run a development command for a package and watch for changes
 dev-watch name *args:
   pnpm exec ./scripts/dev-helper dev --watch {{name}} {{args}}
 
+build filter="*":
+  pnpm exec ./scripts/dev-helper with-env turbo run build -F "{{filter}}"
+
+# Typecheck code (with TypeScript)
 typecheck filter="*":
   pnpm exec turbo run typecheck --continue -F "{{filter}}"
 
-format:
-  pnpm exec turbo run format --continue
+# Check code formatting (with Prettier)
+format filter="*":
+  pnpm exec turbo run format --continue -F "{{filter}}"
 
+# Format code (with Prettier)
 format-fix filter="*":
   pnpm exec turbo run format-fix --continue -F "{{filter}}"
 
+# Lint code (with ESLint)
 lint filter="*":
   pnpm exec turbo run lint --continue -F "{{filter}}"
 
-lint-fix:
-  pnpm exec turbo run lint-fix --continue
+# Fix linting issues (with ESLint)
+lint-fix filter="*":
+  pnpm exec turbo run lint-fix --continue -F "{{filter}}"
+
+# Run all code fixes
+fix: lint-fix format-fix
 
 lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
 
-check-all:
-  pnpm exec turbo run typecheck lint
+check-all filter="*":
+  pnpm exec turbo run typecheck lint -F "{{filter}}"
 
-check name:
-  pnpm exec turbo run typecheck lint -F {{name}}
+check filter="*":
+  pnpm exec turbo run typecheck lint -F "{{filter}}"
 
 test filter="*":
   pnpm exec turbo run test --continue -F "{{filter}}"
 
 create-package:
   pnpm turbo gen init
+
+# == Publishing ==
 
 publish:
   pnpm run -F "@torus-network/sdk" -F "@torus-network/torus-utils" build
