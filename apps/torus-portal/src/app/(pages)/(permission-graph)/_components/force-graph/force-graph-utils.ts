@@ -1,8 +1,9 @@
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+
 import type {
-  CustomGraphNode,
-  CustomGraphLink,
   CustomGraphData,
+  CustomGraphLink,
+  CustomGraphNode,
   PermissionDetails,
   SignalsList,
 } from "../permission-graph-types";
@@ -37,7 +38,6 @@ export function createGraphData(
   allocatorAddress: string,
   signals?: SignalsList,
 ): CustomGraphData | null {
-
   if (
     (!permissionDetails || permissionDetails.length === 0) &&
     (!computedWeights || computedWeights.length === 0)
@@ -178,7 +178,6 @@ export function createGraphData(
       permissionMap.get(permissionId)?.push(permission);
     });
 
-
     // Track created permission nodes to prevent duplicates
     const createdPermissionIds = new Set<string>();
 
@@ -224,7 +223,6 @@ export function createGraphData(
             },
           };
           nodes.push(permissionNode);
-
 
           // Create permission ownership link: Root Node → Permission
           links.push({
@@ -307,7 +305,7 @@ export function createGraphData(
                 target: targetId,
                 id: `target-${permissionId}-${targetId}`,
                 linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_TO_TARGET_LINK,
-                linkWidth: Math.max(1, Math.ceil((weight / 65535) * 4)), // Scale width by weight
+                linkWidth: Math.max(1, Math.ceil((weight / 65535) * 4)),
                 linkDirectionalArrowLength: 6,
                 linkDirectionalArrowRelPos: 1,
                 linkDirectionalParticles: Math.max(
@@ -375,7 +373,6 @@ export function createGraphData(
       }
     });
   }
-
 
   return { nodes, links };
 }
