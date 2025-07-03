@@ -16,6 +16,7 @@ import { PermissionGraphOverview } from "../permission-graph-overview";
 import { AgentCardContainer } from "./graph-sheet-agent-card/agent-card-container";
 import { GraphSheetDetails } from "./graph-sheet-details/graph-sheet-details";
 import { GraphSheetDetailsSignal } from "./graph-sheet-details/graph-sheet-details-signal";
+import { GraphSheetDetailsPermission } from "./graph-sheet-details/graph-sheet-details-permission";
 
 interface GraphSheetProps {
   selectedNode: CustomGraphNode | null;
@@ -35,6 +36,7 @@ export function GraphSheet(props: GraphSheetProps) {
   }
 
   const isSignalNode = props.selectedNode.nodeType === "signal";
+  const isPermissionNode = props.selectedNode.nodeType === "permission";
 
   return (
     <Sheet open={props.isOpen} onOpenChange={props.onOpenChange} modal={false}>
@@ -45,12 +47,17 @@ export function GraphSheet(props: GraphSheetProps) {
       >
         <SheetHeader>
           <SheetTitle>
-            {isSignalNode ? "Signal details" : "Agent details"}
+            {isSignalNode ? "Signal details" : isPermissionNode ? "Permission details" : "Agent details"}
           </SheetTitle>
         </SheetHeader>
 
         {isSignalNode ? (
           <GraphSheetDetailsSignal selectedNode={props.selectedNode} />
+        ) : isPermissionNode ? (
+          <GraphSheetDetailsPermission 
+            selectedNode={props.selectedNode}
+            permissionDetails={props.permissionDetails}
+          />
         ) : (
           <div className="w-full flex flex-col gap-4">
             <AgentCardContainer

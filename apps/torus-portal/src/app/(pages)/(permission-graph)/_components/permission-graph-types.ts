@@ -27,8 +27,8 @@ export interface CustomGraphNode extends NodeObject {
 export interface PermissionNodeData {
   permissionId: string;
   permissionType: "emission" | "namespace";
-  grantorKey: string;
-  granteeKey: string;
+  grantorAccountId: string;
+  granteeAccountId: string;
   scope?: string;
   duration?: string | null;
 }
@@ -102,13 +102,7 @@ export type PermissionDetailsBase = NonNullable<
 export type PermissionDetails = (PermissionDetailsBase[number] & {
   remainingBlocks?: number;
   permissionType?: "emission" | "namespace";
-  // Legacy field mappings for backward compatibility with graph utils
-  grantorKey?: string;
-  granteeKey?: string;
-  permissionId?: string;
-  scope?: string;
-  duration?: string | null;
-  parentId?: string | null;
+  executionCount?: number;
 })[];
 
 export type ComputedWeightsList = NonNullable<

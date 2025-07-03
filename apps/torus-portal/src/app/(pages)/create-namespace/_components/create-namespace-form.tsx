@@ -1,13 +1,22 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Info } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import type { SS58Address } from "@torus-network/sdk";
 import {
   isValidNamespaceSegment,
   namespacePathField,
 } from "@torus-network/sdk/types/namespace";
+
+import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
   CardContent,
@@ -26,26 +35,20 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@torus-ts/ui/components/toggle-group";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Button } from "@torus-ts/ui/components/button";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@torus-ts/ui/components/toggle-group";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { Info } from "lucide-react";
-import { useCallback, useState, useMemo, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import type { SS58Address } from "@torus-network/sdk";
 
-const HTTP_METHODS = ["get", "post", "patch", "delete", "update"] as const;
+const HTTP_METHODS = ["get", "post", "patch", "delete"] as const;
 
 const createNamespaceSchema = z
   .object({

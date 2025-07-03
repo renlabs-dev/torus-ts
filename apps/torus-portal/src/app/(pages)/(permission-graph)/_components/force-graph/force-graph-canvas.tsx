@@ -1,14 +1,16 @@
 "use client";
 
 import { Suspense } from "react";
+
+import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
+
 import type {
   CustomGraphData,
   CustomGraphNode,
 } from "../permission-graph-types";
 import ForceGraph from "./force-graph-animation";
-import { Bloom, EffectComposer } from "@react-three/postprocessing";
 
 export function ForceGraphCanvas({
   data,
@@ -37,15 +39,6 @@ export function ForceGraphCanvas({
         penumbra={1}
         shadow-mapSize={[128, 128]}
         shadow-bias={0.00005}
-      />
-      <Stars
-        radius={2000}
-        depth={50}
-        count={2000}
-        factor={4}
-        saturation={0}
-        fade
-        speed={1}
       />
 
       <Suspense fallback={null}>
