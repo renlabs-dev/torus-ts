@@ -48,7 +48,7 @@ import {
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
-const HTTP_METHODS = ["get", "post", "patch", "delete"] as const;
+const HTTP_METHODS = ["get", "post", "patch", "delete", "put"] as const;
 
 const createNamespaceSchema = z
   .object({
