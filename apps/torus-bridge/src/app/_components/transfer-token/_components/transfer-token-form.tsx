@@ -40,7 +40,23 @@ const transferFormSchema = z.object({
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
       message: "Amount must be a positive number",
     }),
-  recipient: z.string().min(1, "Recipient address is required"),
+  recipient: z
+    .string()
+    .min(42, "Recipient address must be at least 42 characters")
+    .max(48, "Recipient address must be at most 48 characters")
+    .refine(
+      (val) => {
+        // Check if it's a valid Ethereum address (0x followed by 40 hex characters)
+        const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+        // Check if it's a valid Substrate address (starts with specific prefixes and has correct length)
+        const substrateAddressRegex = /^[1-9A-HJ-NP-Za-km-z]{47,48}$/;
+
+        return ethAddressRegex.test(val) || substrateAddressRegex.test(val);
+      },
+      {
+        message: "Please enter a valid Ethereum or Substrate address",
+      },
+    ),
 });
 
 export type TransferFormSchema = z.infer<typeof transferFormSchema>;
