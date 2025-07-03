@@ -1073,7 +1073,7 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/jsonwebtoken':
-        specifier: ^9.0.6
+        specifier: ^9.0.9
         version: 9.0.9
       eslint:
         specifier: 'catalog:'
