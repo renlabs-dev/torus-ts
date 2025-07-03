@@ -49,7 +49,6 @@ export function createAllocatorNode(allocatorAddress: string): CustomGraphNode {
   };
 }
 
-
 export function createPermissionNodes(
   permissionDetails: PermissionDetail[] | undefined,
 ): CustomGraphNode[] {
@@ -60,11 +59,11 @@ export function createPermissionNodes(
   return permissionDetails.map((permission, index) => {
     const permissionId = permission.permissionId ?? `perm-${Math.random()}`;
     const permissionType = permission.permissionType ?? "emission";
-    
+
     // Position permission nodes in a middle ring
     const angle = (index * 2 * Math.PI) / permissionDetails.length;
     const radius = 250;
-    
+
     return {
       id: `permission-${permissionId}`,
       name: `${permissionType.toUpperCase()}`,
@@ -92,47 +91,51 @@ export function createAgentNodes(
   permissionDetails: PermissionDetail[] | undefined,
   computedWeights: ComputedWeight[] | undefined,
   allocatorAddress: string,
-): { rootNodes: CustomGraphNode[], otherAgentNodes: CustomGraphNode[] } {
+): { rootNodes: CustomGraphNode[]; otherAgentNodes: CustomGraphNode[] } {
   const allAgentKeys = new Set<string>();
   const rootAgentKeys = new Set<string>();
-  
+
   // Add allocator
   allAgentKeys.add(allocatorAddress);
-  
+
   // Add all agents with computed weights as root nodes
   if (computedWeights) {
-    computedWeights.forEach(agent => {
+    computedWeights.forEach((agent) => {
       allAgentKeys.add(agent.agentKey);
       rootAgentKeys.add(agent.agentKey);
     });
   }
-  
+
   // Add all grantors and grantees from permissions
   if (permissionDetails) {
-    permissionDetails.forEach(permission => {
+    permissionDetails.forEach((permission) => {
       if (permission.grantorKey) allAgentKeys.add(permission.grantorKey);
       if (permission.granteeKey) allAgentKeys.add(permission.granteeKey);
     });
   }
-  
-  const allAgentKeysArray = Array.from(allAgentKeys).filter(key => key !== allocatorAddress);
+
+  const allAgentKeysArray = Array.from(allAgentKeys).filter(
+    (key) => key !== allocatorAddress,
+  );
   const rootNodes: CustomGraphNode[] = [];
   const otherAgentNodes: CustomGraphNode[] = [];
-  
+
   allAgentKeysArray.forEach((agentKey, index) => {
     const isRootAgent = rootAgentKeys.has(agentKey);
     const angle = (index * 2 * Math.PI) / allAgentKeysArray.length;
-    
+
     if (isRootAgent) {
       // Create root node with weight-based sizing
-      const agentWeight = computedWeights?.find(w => w.agentKey === agentKey);
+      const agentWeight = computedWeights?.find((w) => w.agentKey === agentKey);
       const rawWeight = agentWeight?.percComputedWeight ?? 1;
-      const weight = Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
+      const weight =
+        Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 1;
       const val = Math.max(
-        Math.pow(weight, GRAPH_CONSTANTS.WEIGHT_POWER) / GRAPH_CONSTANTS.SCALE_FACTOR,
+        Math.pow(weight, GRAPH_CONSTANTS.WEIGHT_POWER) /
+          GRAPH_CONSTANTS.SCALE_FACTOR,
         GRAPH_CONSTANTS.ROOT_NODE_SIZE,
       );
-      
+
       rootNodes.push({
         id: agentKey,
         name: smallAddress(agentKey),
@@ -169,7 +172,7 @@ export function createAgentNodes(
       });
     }
   });
-  
+
   return { rootNodes, otherAgentNodes };
 }
 
@@ -182,11 +185,12 @@ export function createPermissionOwnershipLinks(
   }
 
   return permissionDetails
-    .filter((permission) => 
-      permission.grantorKey && 
-      permission.permissionId &&
-      nodeIds.has(permission.grantorKey) &&
-      nodeIds.has(`permission-${permission.permissionId}`)
+    .filter(
+      (permission) =>
+        permission.grantorKey &&
+        permission.permissionId &&
+        nodeIds.has(permission.grantorKey) &&
+        nodeIds.has(`permission-${permission.permissionId}`),
     )
     .map((permission) => ({
       linkType: "permission_ownership",
@@ -213,11 +217,12 @@ export function createPermissionTargetLinks(
   }
 
   return permissionDetails
-    .filter((permission) => 
-      permission.granteeKey && 
-      permission.permissionId &&
-      nodeIds.has(`permission-${permission.permissionId}`) &&
-      nodeIds.has(permission.granteeKey)
+    .filter(
+      (permission) =>
+        permission.granteeKey &&
+        permission.permissionId &&
+        nodeIds.has(`permission-${permission.permissionId}`) &&
+        nodeIds.has(permission.granteeKey),
     )
     .map((permission) => ({
       linkType: "permission_target",
@@ -346,10 +351,13 @@ export function createGraphData(
     return null;
   }
 
-
   // Create all nodes first
   const allocatorNode = createAllocatorNode(allocatorAddress);
-  const { rootNodes, otherAgentNodes } = createAgentNodes(permissionDetails, computedWeights, allocatorAddress);
+  const { rootNodes, otherAgentNodes } = createAgentNodes(
+    permissionDetails,
+    computedWeights,
+    allocatorAddress,
+  );
   const permissionNodes = createPermissionNodes(permissionDetails);
   const signalNodes = createSignalNodes(signals);
 
@@ -361,25 +369,45 @@ export function createGraphData(
     ...permissionNodes,
     ...signalNodes,
   ];
-  const nodeIds = new Set(allNodes.map(node => node.id));
+  const nodeIds = new Set(allNodes.map((node) => node.id));
 
   // Create links and filter out any that reference non-existent nodes
   const allocationLinks = createAllocationLinks(
     computedWeights,
     allocatorAddress,
     [], // No existing links to check against
-  ).filter(link => {
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-    return sourceId && targetId && nodeIds.has(String(sourceId)) && nodeIds.has(String(targetId));
+  ).filter((link) => {
+    const sourceId =
+      typeof link.source === "object" ? link.source.id : link.source;
+    const targetId =
+      typeof link.target === "object" ? link.target.id : link.target;
+    return (
+      sourceId &&
+      targetId &&
+      nodeIds.has(String(sourceId)) &&
+      nodeIds.has(String(targetId))
+    );
   });
 
-  const permissionOwnershipLinks = createPermissionOwnershipLinks(permissionDetails, nodeIds);
-  const permissionTargetLinks = createPermissionTargetLinks(permissionDetails, nodeIds);
-  const signalLinks = createSignalLinks(signals).filter(link => {
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-    return sourceId && targetId && nodeIds.has(String(sourceId)) && nodeIds.has(String(targetId));
+  const permissionOwnershipLinks = createPermissionOwnershipLinks(
+    permissionDetails,
+    nodeIds,
+  );
+  const permissionTargetLinks = createPermissionTargetLinks(
+    permissionDetails,
+    nodeIds,
+  );
+  const signalLinks = createSignalLinks(signals).filter((link) => {
+    const sourceId =
+      typeof link.source === "object" ? link.source.id : link.source;
+    const targetId =
+      typeof link.target === "object" ? link.target.id : link.target;
+    return (
+      sourceId &&
+      targetId &&
+      nodeIds.has(String(sourceId)) &&
+      nodeIds.has(String(targetId))
+    );
   });
 
   return {

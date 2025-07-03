@@ -91,8 +91,7 @@ export function NodeDetailsCard({
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-white">
                         {isOutgoing ? "← Granted " : "→ Received "}
-                        Permission{" "}
-                        {smallAddress(String(details?.permissionId))}
+                        Permission {smallAddress(String(details?.permissionId))}
                       </span>
                     </div>
                     <GraphSheetDetailsLinkButtons
