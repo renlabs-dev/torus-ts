@@ -484,249 +484,381 @@ export const governanceNotificationSchema = createTable(
 // ==== Permissions ====
 
 export const permissionDurationType = pgEnum("permission_duration_type", [
-  "until_block", 
-  "indefinite"
+  "until_block",
+  "indefinite",
 ]);
 
 export const permissionRevocationType = pgEnum("permission_revocation_type", [
   "irrevocable",
-  "revocable_by_grantor", 
+  "revocable_by_grantor",
   "revocable_by_arbiters",
-  "revocable_after"
+  "revocable_after",
 ]);
 
 export const permissionEnforcementType = pgEnum("permission_enforcement_type", [
   "none",
-  "controlled_by"
+  "controlled_by",
 ]);
 
 export const emissionAllocationType = pgEnum("emission_allocation_type", [
   "streams",
-  "fixed_amount"
+  "fixed_amount",
 ]);
 
 export const emissionDistributionType = pgEnum("emission_distribution_type", [
   "manual",
-  "automatic", 
+  "automatic",
   "at_block",
-  "interval"
+  "interval",
 ]);
 
 /**
  * Main permissions table - stores core permission data
  */
-export const permissionsSchema = createTable("permissions", {
-  id: uuid("id").primaryKey().defaultRandom(), // Internal database ID
-  permissionId: varchar("permission_id", { length: 66 }).notNull().unique(), // Substrate H256 hash
-  grantorAccountId: ss58Address("grantor_account_id").notNull(),
-  granteeAccountId: ss58Address("grantee_account_id").notNull(),
-  
-  durationType: permissionDurationType("duration_type").notNull(),
-  durationBlockNumber: bigint("duration_block_number"), // NULL for indefinite
-  
-  revocationType: permissionRevocationType("revocation_type").notNull(),
-  revocationBlockNumber: bigint("revocation_block_number"), // For revocable_after
-  revocationRequiredVotes: bigint("revocation_required_votes"), // For revocable_by_arbiters (u32 range)
-  
-  enforcementType: permissionEnforcementType("enforcement_type").notNull().default("none"),
-  enforcementRequiredVotes: bigint("enforcement_required_votes"), // For controlled_by (u32 range)
-  
-  lastExecutionBlock: bigint("last_execution_block"),
-  executionCount: integer("execution_count").notNull().default(0),
-  createdAtBlock: bigint("created_at_block").notNull(),
-  
-  ...timeFields(),
-}, (t) => [
-  // Constraints for valid data
-  check("valid_duration", sql`
+export const permissionsSchema = createTable(
+  "permissions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(), // Internal database ID
+    permissionId: varchar("permission_id", { length: 66 }).notNull().unique(), // Substrate H256 hash
+    grantorAccountId: ss58Address("grantor_account_id").notNull(),
+    granteeAccountId: ss58Address("grantee_account_id").notNull(),
+
+    durationType: permissionDurationType("duration_type").notNull(),
+    durationBlockNumber: bigint("duration_block_number"), // NULL for indefinite
+
+    revocationType: permissionRevocationType("revocation_type").notNull(),
+    revocationBlockNumber: bigint("revocation_block_number"), // For revocable_after
+    revocationRequiredVotes: bigint("revocation_required_votes"), // For revocable_by_arbiters (u32 range)
+
+    enforcementType: permissionEnforcementType("enforcement_type")
+      .notNull()
+      .default("none"),
+    enforcementRequiredVotes: bigint("enforcement_required_votes"), // For controlled_by (u32 range)
+
+    lastExecutionBlock: bigint("last_execution_block"),
+    executionCount: integer("execution_count").notNull().default(0),
+    createdAtBlock: bigint("created_at_block").notNull(),
+
+    ...timeFields(),
+  },
+  (t) => [
+    // Constraints for valid data
+    check(
+      "valid_duration",
+      sql`
     (${t.durationType} = 'until_block' AND ${t.durationBlockNumber} IS NOT NULL) OR
     (${t.durationType} = 'indefinite' AND ${t.durationBlockNumber} IS NULL)
-  `),
-  check("valid_revocation_after", sql`
+  `,
+    ),
+    check(
+      "valid_revocation_after",
+      sql`
     (${t.revocationType} = 'revocable_after' AND ${t.revocationBlockNumber} IS NOT NULL) OR
     (${t.revocationType} != 'revocable_after' AND ${t.revocationBlockNumber} IS NULL)
-  `),
-  check("valid_arbiters", sql`
+  `,
+    ),
+    check(
+      "valid_arbiters",
+      sql`
     (${t.revocationType} = 'revocable_by_arbiters' AND ${t.revocationRequiredVotes} IS NOT NULL) OR
     (${t.revocationType} != 'revocable_by_arbiters' AND ${t.revocationRequiredVotes} IS NULL)
-  `),
-  check("valid_enforcement", sql`
+  `,
+    ),
+    check(
+      "valid_enforcement",
+      sql`
     (${t.enforcementType} = 'controlled_by' AND ${t.enforcementRequiredVotes} IS NOT NULL) OR
     (${t.enforcementType} = 'none' AND ${t.enforcementRequiredVotes} IS NULL)
-  `),
-  // Indexes for performance
-  index("permissions_substrate_id_idx").on(t.permissionId), // Critical for Substrate lookups
-  index("permissions_grantor_idx").on(t.grantorAccountId),
-  index("permissions_grantee_idx").on(t.granteeAccountId),
-  index("permissions_duration_idx").on(t.durationType, t.durationBlockNumber),
-  index("permissions_created_at_idx").on(t.createdAtBlock),
-]);
+  `,
+    ),
+    // Indexes for performance
+    index("permissions_substrate_id_idx").on(t.permissionId), // Critical for Substrate lookups
+    index("permissions_grantor_idx").on(t.grantorAccountId),
+    index("permissions_grantee_idx").on(t.granteeAccountId),
+    index("permissions_duration_idx").on(t.durationType, t.durationBlockNumber),
+    index("permissions_created_at_idx").on(t.createdAtBlock),
+  ],
+);
 
 /**
  * Separate table for parent-child permission relationships
  */
-export const permissionHierarchiesSchema = createTable("permission_hierarchies", {
-  childPermissionId: varchar("child_permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  parentPermissionId: varchar("parent_permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  ...timeFields(),
-}, (t) => [
-  { primaryKey: { columns: [t.childPermissionId, t.parentPermissionId] } },
-  unique().on(t.childPermissionId, t.parentPermissionId),
-]);
+export const permissionHierarchiesSchema = createTable(
+  "permission_hierarchies",
+  {
+    childPermissionId: varchar("child_permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    parentPermissionId: varchar("parent_permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    ...timeFields(),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.childPermissionId, t.parentPermissionId] } },
+    unique().on(t.childPermissionId, t.parentPermissionId),
+  ],
+);
 
 /**
  * Revocation arbiters (for revocable_by_arbiters permissions)
  */
-export const permissionRevocationArbitersSchema = createTable("permission_revocation_arbiters", {
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  accountId: ss58Address("account_id").notNull(),
-}, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.accountId] } },
-  unique().on(t.permissionId, t.accountId),
-]);
+export const permissionRevocationArbitersSchema = createTable(
+  "permission_revocation_arbiters",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    accountId: ss58Address("account_id").notNull(),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.permissionId, t.accountId] } },
+    unique().on(t.permissionId, t.accountId),
+  ],
+);
 
 /**
  * Enforcement controllers (for controlled_by permissions)
  */
-export const permissionEnforcementControllersSchema = createTable("permission_enforcement_controllers", {
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  accountId: ss58Address("account_id").notNull(),
-}, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.accountId] } },
-  unique().on(t.permissionId, t.accountId),
-]);
+export const permissionEnforcementControllersSchema = createTable(
+  "permission_enforcement_controllers",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    accountId: ss58Address("account_id").notNull(),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.permissionId, t.accountId] } },
+    unique().on(t.permissionId, t.accountId),
+  ],
+);
 
 /**
  * Tracking revocation votes
  */
-export const permissionRevocationVotesSchema = createTable("permission_revocation_votes", {
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  voterAccountId: ss58Address("voter_account_id").notNull(),
-  votedAt: timestampzNow("voted_at"),
-}, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.voterAccountId] } },
-  index("revocation_votes_permission_idx").on(t.permissionId),
-]);
+export const permissionRevocationVotesSchema = createTable(
+  "permission_revocation_votes",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    voterAccountId: ss58Address("voter_account_id").notNull(),
+    votedAt: timestampzNow("voted_at"),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.permissionId, t.voterAccountId] } },
+    index("revocation_votes_permission_idx").on(t.permissionId),
+  ],
+);
 
 /**
  * Tracking enforcement votes/states
  */
-export const permissionEnforcementTrackingSchema = createTable("permission_enforcement_tracking", {
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  controllerAccountId: ss58Address("controller_account_id").notNull(),
-  voteState: boolean("vote_state").notNull(),
-  votedAt: timestampzNow("voted_at"),
-}, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.controllerAccountId] } },
-  index("enforcement_tracking_permission_idx").on(t.permissionId),
-]);
+export const permissionEnforcementTrackingSchema = createTable(
+  "permission_enforcement_tracking",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    controllerAccountId: ss58Address("controller_account_id").notNull(),
+    voteState: boolean("vote_state").notNull(),
+    votedAt: timestampzNow("voted_at"),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.permissionId, t.controllerAccountId] } },
+    index("enforcement_tracking_permission_idx").on(t.permissionId),
+  ],
+);
 
 /**
  * Emission permissions
  */
-export const emissionPermissionsSchema = createTable("emission_permissions", {
-  permissionId: varchar("permission_id", { length: 66 }).primaryKey().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  
-  // Allocation type and data
-  allocationType: emissionAllocationType("allocation_type").notNull(),
-  fixedAmount: numeric("fixed_amount", { precision: 65, scale: 12 }), // For fixed_amount allocations
-  
-  // Distribution control
-  distributionType: emissionDistributionType("distribution_type").notNull(),
-  distributionThreshold: numeric("distribution_threshold", { precision: 65, scale: 12 }), // For automatic
-  distributionTargetBlock: bigint("distribution_target_block"), // For at_block
-  distributionIntervalBlocks: bigint("distribution_interval_blocks"), // For interval
-  
-  accumulating: boolean("accumulating").notNull().default(true),
-  
-  ...timeFields(),
-}, (t) => [
-  // Constraints for valid data
-  check("valid_fixed_amount", sql`
+export const emissionPermissionsSchema = createTable(
+  "emission_permissions",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .primaryKey()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+
+    // Allocation type and data
+    allocationType: emissionAllocationType("allocation_type").notNull(),
+    fixedAmount: numeric("fixed_amount", { precision: 65, scale: 12 }), // For fixed_amount allocations
+
+    // Distribution control
+    distributionType: emissionDistributionType("distribution_type").notNull(),
+    distributionThreshold: numeric("distribution_threshold", {
+      precision: 65,
+      scale: 12,
+    }), // For automatic
+    distributionTargetBlock: bigint("distribution_target_block"), // For at_block
+    distributionIntervalBlocks: bigint("distribution_interval_blocks"), // For interval
+
+    accumulating: boolean("accumulating").notNull().default(true),
+
+    ...timeFields(),
+  },
+  (t) => [
+    // Constraints for valid data
+    check(
+      "valid_fixed_amount",
+      sql`
     (${t.allocationType} = 'fixed_amount' AND ${t.fixedAmount} IS NOT NULL) OR
     (${t.allocationType} = 'streams' AND ${t.fixedAmount} IS NULL)
-  `),
-  check("valid_automatic", sql`
+  `,
+    ),
+    check(
+      "valid_automatic",
+      sql`
     (${t.distributionType} = 'automatic' AND ${t.distributionThreshold} IS NOT NULL) OR
     (${t.distributionType} != 'automatic' AND ${t.distributionThreshold} IS NULL)
-  `),
-  check("valid_at_block", sql`
+  `,
+    ),
+    check(
+      "valid_at_block",
+      sql`
     (${t.distributionType} = 'at_block' AND ${t.distributionTargetBlock} IS NOT NULL) OR
     (${t.distributionType} != 'at_block' AND ${t.distributionTargetBlock} IS NULL)
-  `),
-  check("valid_interval", sql`
+  `,
+    ),
+    check(
+      "valid_interval",
+      sql`
     (${t.distributionType} = 'interval' AND ${t.distributionIntervalBlocks} IS NOT NULL) OR
     (${t.distributionType} != 'interval' AND ${t.distributionIntervalBlocks} IS NULL)
-  `),
-  // Indexes
-  index("emission_allocation_type_idx").on(t.allocationType),
-  index("emission_distribution_type_idx").on(t.distributionType),
-  index("emission_accumulating_idx").on(t.accumulating),
-]);
+  `,
+    ),
+    // Indexes
+    index("emission_allocation_type_idx").on(t.allocationType),
+    index("emission_distribution_type_idx").on(t.distributionType),
+    index("emission_accumulating_idx").on(t.accumulating),
+  ],
+);
 
 /**
  * Stream allocations (for stream-based permissions)
  */
-export const emissionStreamAllocationsSchema = createTable("emission_stream_allocations", {
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => emissionPermissionsSchema.permissionId, { onDelete: "cascade" }),
-  streamId: varchar("stream_id", { length: 66 }).notNull(), // Substrate H256 hash, same as permission IDs
-  percentage: integer("percentage").notNull(), // 0-100 (matches Substrate Percent type)
-  
-  ...timeFields(),
-}, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.streamId] } },
-  unique().on(t.permissionId, t.streamId),
-  check("valid_percentage", sql`${t.percentage} >= 0 AND ${t.percentage} <= 100`),
-]);
+export const emissionStreamAllocationsSchema = createTable(
+  "emission_stream_allocations",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => emissionPermissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    streamId: varchar("stream_id", { length: 66 }).notNull(), // Substrate H256 hash, same as permission IDs
+    percentage: integer("percentage").notNull(), // 0-100 (matches Substrate Percent type)
+
+    ...timeFields(),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.permissionId, t.streamId] } },
+    unique().on(t.permissionId, t.streamId),
+    check(
+      "valid_percentage",
+      sql`${t.percentage} >= 0 AND ${t.percentage} <= 100`,
+    ),
+  ],
+);
 
 /**
  * Distribution targets with weights
  */
-export const emissionDistributionTargetsSchema = createTable("emission_distribution_targets", {
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => emissionPermissionsSchema.permissionId, { onDelete: "cascade" }),
-  targetAccountId: ss58Address("target_account_id").notNull(),
-  weight: integer("weight").notNull(), // 0-65535
-  
-  ...timeFields(),
-}, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.targetAccountId] } },
-  unique().on(t.permissionId, t.targetAccountId),
-  check("valid_weight", sql`${t.weight} >= 0 AND ${t.weight} <= 65535`),
-]);
+export const emissionDistributionTargetsSchema = createTable(
+  "emission_distribution_targets",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => emissionPermissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    targetAccountId: ss58Address("target_account_id").notNull(),
+    weight: integer("weight").notNull(), // 0-65535
+
+    ...timeFields(),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.permissionId, t.targetAccountId] } },
+    unique().on(t.permissionId, t.targetAccountId),
+    check("valid_weight", sql`${t.weight} >= 0 AND ${t.weight} <= 65535`),
+  ],
+);
 
 /**
  * Accumulated stream amounts (runtime state)
  */
-export const accumulatedStreamAmountsSchema = createTable("accumulated_stream_amounts", {
-  grantorAccountId: ss58Address("grantor_account_id").notNull(),
-  streamId: varchar("stream_id", { length: 66 }).notNull(), // Substrate H256 hash, same as permission IDs
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  accumulatedAmount: numeric("accumulated_amount", { precision: 65, scale: 12 }).notNull().default("0"),
-  lastUpdated: timestampzNow("last_updated"),
-}, (t) => [
-  { primaryKey: { columns: [t.grantorAccountId, t.streamId, t.permissionId] } },
-  index("accumulated_streams_grantor_stream_idx").on(t.grantorAccountId, t.streamId),
-]);
+export const accumulatedStreamAmountsSchema = createTable(
+  "accumulated_stream_amounts",
+  {
+    grantorAccountId: ss58Address("grantor_account_id").notNull(),
+    streamId: varchar("stream_id", { length: 66 }).notNull(), // Substrate H256 hash, same as permission IDs
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => permissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    accumulatedAmount: numeric("accumulated_amount", {
+      precision: 65,
+      scale: 12,
+    })
+      .notNull()
+      .default("0"),
+    lastUpdated: timestampzNow("last_updated"),
+  },
+  (t) => [
+    {
+      primaryKey: { columns: [t.grantorAccountId, t.streamId, t.permissionId] },
+    },
+    index("accumulated_streams_grantor_stream_idx").on(
+      t.grantorAccountId,
+      t.streamId,
+    ),
+  ],
+);
 
 /**
  * Namespace permissions
  */
 export const namespacePermissionsSchema = createTable("namespace_permissions", {
-  permissionId: varchar("permission_id", { length: 66 }).primaryKey().references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-  
+  permissionId: varchar("permission_id", { length: 66 })
+    .primaryKey()
+    .references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
+
   ...timeFields(),
 });
 
 /**
  * Namespace paths for each permission
  */
-export const namespacePermissionPathsSchema = createTable("namespace_permission_paths", {
-  permissionId: varchar("permission_id", { length: 66 }).notNull().references(() => namespacePermissionsSchema.permissionId, { onDelete: "cascade" }),
-  namespacePath: text("namespace_path").notNull(),
-}, (t) => [
-  { primaryKey: { columns: [t.permissionId, t.namespacePath] } },
-  unique().on(t.permissionId, t.namespacePath),
-]);
+export const namespacePermissionPathsSchema = createTable(
+  "namespace_permission_paths",
+  {
+    permissionId: varchar("permission_id", { length: 66 })
+      .notNull()
+      .references(() => namespacePermissionsSchema.permissionId, {
+        onDelete: "cascade",
+      }),
+    namespacePath: text("namespace_path").notNull(),
+  },
+  (t) => [
+    { primaryKey: { columns: [t.permissionId, t.namespacePath] } },
+    unique().on(t.permissionId, t.namespacePath),
+  ],
+);
 
 /**
  * Stores the body of a constraint
