@@ -1,5 +1,5 @@
 import { Input } from "@torus-ts/ui/components/input";
-import { useFormContext, Controller } from "react-hook-form";
+import { useTransferFormContext } from "~/app/_components/transfer-token/_components/transfer-form-context";
 import type { ChangeEvent, InputHTMLAttributes, Ref } from "react";
 import { forwardRef } from "react";
 import type { TransferFormValues } from "~/utils/types";
@@ -10,7 +10,7 @@ export function TextField({
 }: {
   name: keyof TransferFormValues;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "name">) {
-  const { register } = useFormContext<TransferFormValues>();
+  const { register } = useTransferFormContext();
 
   return (
     <input

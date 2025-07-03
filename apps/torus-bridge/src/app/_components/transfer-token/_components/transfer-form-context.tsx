@@ -31,5 +31,11 @@ export function useTransferForm() {
 
 // Hook to get form values and methods
 export function useTransferFormContext() {
-  return useFormContext<TransferFormValues>();
+  const context = useContext(TransferFormContext);
+  if (!context) {
+    throw new Error(
+      "useTransferFormContext must be used within TransferFormProvider",
+    );
+  }
+  return context;
 }
