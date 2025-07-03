@@ -1,16 +1,18 @@
 "use client";
 
-import { memo, useMemo, useRef } from "react";
+import { memo, useMemo, useRef, useState } from "react";
+
+import { useFrame } from "@react-three/fiber";
 import dynamic from "next/dynamic";
-import type { NodeObject, LinkObject, GraphMethods } from "r3f-forcegraph";
+import type { GraphMethods, LinkObject, NodeObject } from "r3f-forcegraph";
+
 import type {
   CustomGraphData,
   CustomGraphNode,
 } from "../permission-graph-types";
-import { useGraphInteractions } from "./use-graph-interactions";
-import { getNodeColor, getLinkWidth } from "./force-graph-highlight-utils";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
-import { useFrame } from "@react-three/fiber";
+import { getLinkWidth, getNodeColor } from "./force-graph-highlight-utils";
+import { useGraphInteractions } from "./use-graph-interactions";
 
 const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
 
@@ -24,28 +26,31 @@ const ForceGraph = memo(
   function ForceGraph(props: ForceGraphProps) {
     const fgRef = useRef<GraphMethods | undefined>(undefined);
 
+    const [forcesConfigured, setForcesConfigured] = useState(false);
+
     useFrame(() => {
       if (fgRef.current?.d3Force) {
+        if (!forcesConfigured) {
+          const chargeForce = fgRef.current.d3Force("charge");
+          if (chargeForce && typeof chargeForce.strength === "function") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            chargeForce.strength(GRAPH_CONSTANTS.CHARGE_STRENGTH);
+          }
+          setForcesConfigured(true);
+        }
         const linkForce = fgRef.current.d3Force("link");
         if (linkForce && typeof linkForce.distance === "function") {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           linkForce.distance(GRAPH_CONSTANTS.LINK_DISTANCE);
         }
-        
-        // Configure charge force to spread nodes apart
-        const chargeForce = fgRef.current.d3Force("charge");
-        if (chargeForce && typeof chargeForce.strength === "function") {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          chargeForce.strength(-300);
-        }
-        
+
         // Add center force to keep nodes from drifting too far
         const centerForce = fgRef.current.d3Force("center");
         if (centerForce && typeof centerForce.strength === "function") {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           centerForce.strength(0.1);
         }
-        
+
         fgRef.current.tickFrame();
       }
     });

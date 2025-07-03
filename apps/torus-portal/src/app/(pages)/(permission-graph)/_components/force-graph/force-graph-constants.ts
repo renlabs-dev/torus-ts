@@ -1,6 +1,7 @@
 export const GRAPH_CONSTANTS = {
   // Animation constants
   LINK_DISTANCE: 100,
+  CHARGE_STRENGTH: -100,
 
   // Node constants
   ALLOCATOR_NODE_SIZE: 200,
