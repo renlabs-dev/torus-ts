@@ -64,12 +64,8 @@ const ForceGraph = memo(
 
     const formatedData = useMemo(() => {
       return {
-        nodes: props.graphData.nodes.map((node) => ({
-          ...node,
-        })),
-        links: props.graphData.links.map((link) => ({
-          ...link,
-        })),
+        nodes: props.graphData.nodes,
+        links: props.graphData.links,
       };
     }, [props.graphData.nodes, props.graphData.links]);
 

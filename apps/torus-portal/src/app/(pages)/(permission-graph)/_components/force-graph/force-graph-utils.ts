@@ -9,16 +9,31 @@ import type {
 } from "../permission-graph-types";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
 
-/**
- * Generates a random particle speed between min and max values.
- */
-function getRandomParticleSpeed(): number {
-  return (
-    Math.random() *
-      (GRAPH_CONSTANTS.PARTICLE_SPEED_MAX -
-        GRAPH_CONSTANTS.PARTICLE_SPEED_MIN) +
-    GRAPH_CONSTANTS.PARTICLE_SPEED_MIN
+function getDeterministicValue(seed: string, min: number, max: number): number {
+  // Simple hash function to generate deterministic "random" values
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  // Normalize to 0-1 range
+  const normalized = Math.abs(hash) / 2147483647;
+  
+  return normalized * (max - min) + min;
+}
+
+function getDeterministicParticleSpeed(seed: string): number {
+  return getDeterministicValue(
+    seed,
+    GRAPH_CONSTANTS.PARTICLE_SPEED_MIN,
+    GRAPH_CONSTANTS.PARTICLE_SPEED_MAX
   );
+}
+
+function getDeterministicZ(seed: string, range: number): number {
+  return getDeterministicValue(seed + "_z", -range / 2, range / 2);
 }
 
 export type PermissionDetail = PermissionDetails[number];
@@ -28,10 +43,6 @@ export interface ComputedWeight {
   percComputedWeight: number;
 }
 
-/**
- * Creates the complete graph data with the simple hierarchy:
- * ALLOCATOR → ROOT_NODES → PERMISSIONS → TARGET_AGENTS
- */
 export function createGraphData(
   permissionDetails: PermissionDetail[] | undefined,
   computedWeights: ComputedWeight[] | undefined,
@@ -85,7 +96,7 @@ export function createGraphData(
         nodeType: "root_agent",
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
-        z: (Math.random() - 0.5) * 100,
+        z: getDeterministicZ(agent.agentKey, 100),
         agentData: {
           accountId: agent.agentKey,
           isWhitelisted: true,
@@ -104,7 +115,7 @@ export function createGraphData(
         linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
         linkWidth: 2,
         linkDirectionalParticles: 2,
-        linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.agentKey),
         linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
       });
     });
@@ -112,6 +123,7 @@ export function createGraphData(
 
   // 3. PERMISSION NODES & 4. TARGET AGENT NODES
   const targetAgentIds = new Set<string>();
+  const createdPermissionIds = new Set<string>();
 
   // If no computed weights, create root nodes from permission grantors as fallback
   if (
@@ -121,8 +133,8 @@ export function createGraphData(
   ) {
     const grantorKeys = new Set<string>();
     permissionDetails.forEach((permission) => {
-      if (permission.grantorKey) {
-        grantorKeys.add(permission.grantorKey);
+      if (permission.permissions.grantorAccountId) {
+        grantorKeys.add(permission.permissions.grantorAccountId);
       }
     });
 
@@ -140,7 +152,7 @@ export function createGraphData(
         nodeType: "root_agent",
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
-        z: (Math.random() - 0.5) * 100,
+        z: getDeterministicZ(agentKey, 100),
         agentData: {
           accountId: agentKey,
           isWhitelisted: true,
@@ -159,7 +171,7 @@ export function createGraphData(
         linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
         linkWidth: 2,
         linkDirectionalParticles: 1,
-        linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agentKey),
         linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
       });
     });
@@ -170,16 +182,13 @@ export function createGraphData(
     const permissionMap = new Map<string, PermissionDetail[]>();
 
     permissionDetails.forEach((permission) => {
-      const permissionId = permission.permissionId ?? `perm-${Math.random()}`;
+      const permissionId = permission.permissions.permissionId;
 
       if (!permissionMap.has(permissionId)) {
         permissionMap.set(permissionId, []);
       }
       permissionMap.get(permissionId)?.push(permission);
     });
-
-    // Track created permission nodes to prevent duplicates
-    const createdPermissionIds = new Set<string>();
 
     // First pass: create permission nodes and collect target agents
     Array.from(permissionMap.entries()).forEach(
@@ -189,13 +198,13 @@ export function createGraphData(
 
         const permissionType = permission.permissionType ?? "emission";
 
-        if (permission.grantorKey && rootNodeIds.has(permission.grantorKey)) {
+        if (
+          permission.permissions.grantorAccountId &&
+          rootNodeIds.has(permission.permissions.grantorAccountId)
+        ) {
           // Check for duplicate permission node creation
           const permissionNodeId = `permission-${permissionId}`;
           if (createdPermissionIds.has(permissionNodeId)) {
-            console.error(
-              `❌ DUPLICATE: Attempted to create permission node ${permissionNodeId} twice!`,
-            );
             return;
           }
           createdPermissionIds.add(permissionNodeId);
@@ -212,14 +221,17 @@ export function createGraphData(
             nodeType: "permission",
             x: Math.cos(angle) * radius,
             y: Math.sin(angle) * radius,
-            z: (Math.random() - 0.5) * 60,
+            z: getDeterministicZ(permissionId, 60),
             permissionData: {
               permissionId,
               permissionType,
-              grantorKey: permission.grantorKey,
-              granteeKey: permission.granteeKey ?? "",
-              scope: permission.scope,
-              duration: permission.duration,
+              grantorAccountId: permission.permissions.grantorAccountId,
+              granteeAccountId: permission.permissions.granteeAccountId,
+              scope: permissionType.toUpperCase(),
+              duration:
+                permission.permissions.durationType === "indefinite"
+                  ? null
+                  : permission.permissions.durationBlockNumber?.toString(),
             },
           };
           nodes.push(permissionNode);
@@ -227,7 +239,7 @@ export function createGraphData(
           // Create permission ownership link: Root Node → Permission
           links.push({
             linkType: "permission_ownership",
-            source: permission.grantorKey,
+            source: permission.permissions.grantorAccountId,
             target: `permission-${permissionId}`,
             id: `ownership-${permissionId}`,
             linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_LINK,
@@ -235,29 +247,33 @@ export function createGraphData(
             linkDirectionalArrowLength: 4,
             linkDirectionalArrowRelPos: 1,
             linkDirectionalParticles: 1,
-            linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+            linkDirectionalParticleSpeed: getDeterministicParticleSpeed(permissionId),
             linkDirectionalParticleResolution:
               GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
           });
 
           // Collect distribution targets from emissionDistributionTargetsSchema
+          // Use Set to ensure we only collect unique targets
+          const uniqueTargetsForThisPermission = new Set<string>();
           permissions.forEach((perm) => {
             if (perm.emission_distribution_targets?.targetAccountId) {
               const targetId =
                 perm.emission_distribution_targets.targetAccountId;
+              uniqueTargetsForThisPermission.add(targetId);
+
               if (!rootNodeIds.has(targetId)) {
                 targetAgentIds.add(targetId);
               }
             }
           });
 
-          // Fallback: if no distribution targets, use granteeKey
+          // Fallback: if no distribution targets, use granteeAccountId
           if (
             permissions.every((p) => !p.emission_distribution_targets) &&
-            permission.granteeKey &&
-            !rootNodeIds.has(permission.granteeKey)
+            permission.permissions.granteeAccountId &&
+            !rootNodeIds.has(permission.permissions.granteeAccountId)
           ) {
-            targetAgentIds.add(permission.granteeKey);
+            targetAgentIds.add(permission.permissions.granteeAccountId);
           }
         }
       },
@@ -279,7 +295,7 @@ export function createGraphData(
         nodeType: "target_agent",
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
-        z: (Math.random() - 0.5) * 80,
+        z: getDeterministicZ(agentId, 80),
         agentData: { accountId: agentId },
       };
       nodes.push(targetNode);
@@ -291,50 +307,65 @@ export function createGraphData(
         const permission = permissions[0];
         if (!permission) return;
 
-        if (permission.grantorKey && rootNodeIds.has(permission.grantorKey)) {
-          // Create links to distribution targets
+        if (
+          permission.permissions.grantorAccountId &&
+          rootNodeIds.has(permission.permissions.grantorAccountId)
+        ) {
+          // Create links to distribution targets (deduplicated)
+          const uniqueTargetLinks = new Map<
+            string,
+            { targetId: string; weight: number }
+          >();
           permissions.forEach((perm) => {
             if (perm.emission_distribution_targets?.targetAccountId) {
               const targetId =
                 perm.emission_distribution_targets.targetAccountId;
               const weight = perm.emission_distribution_targets.weight;
 
-              links.push({
-                linkType: "permission_target",
-                source: `permission-${permissionId}`,
-                target: targetId,
-                id: `target-${permissionId}-${targetId}`,
-                linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_TO_TARGET_LINK,
-                linkWidth: Math.max(1, Math.ceil((weight / 65535) * 4)),
-                linkDirectionalArrowLength: 6,
-                linkDirectionalArrowRelPos: 1,
-                linkDirectionalParticles: Math.max(
-                  1,
-                  Math.ceil((weight / 65535) * 3),
-                ),
-                linkDirectionalParticleSpeed: getRandomParticleSpeed(),
-                linkDirectionalParticleResolution:
-                  GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
-              });
+              // Use the highest weight if there are duplicates
+              const existing = uniqueTargetLinks.get(targetId);
+              if (!existing || weight > existing.weight) {
+                uniqueTargetLinks.set(targetId, { targetId, weight });
+              }
             }
           });
 
-          // Fallback: if no distribution targets, link to granteeKey
+          uniqueTargetLinks.forEach(({ targetId, weight }) => {
+            links.push({
+              linkType: "permission_target",
+              source: `permission-${permissionId}`,
+              target: targetId,
+              id: `target-${permissionId}-${targetId}`,
+              linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_TO_TARGET_LINK,
+              linkWidth: Math.max(1, Math.ceil((weight / 65535) * 4)),
+              linkDirectionalArrowLength: 6,
+              linkDirectionalArrowRelPos: 1,
+              linkDirectionalParticles: Math.max(
+                1,
+                Math.ceil((weight / 65535) * 3),
+              ),
+              linkDirectionalParticleSpeed: getDeterministicParticleSpeed(targetId),
+              linkDirectionalParticleResolution:
+                GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+            });
+          });
+
+          // Fallback: if no distribution targets, link to granteeAccountId
           if (
-            permissions.every((p) => !p.emission_distribution_targets) &&
-            permission.granteeKey
+            uniqueTargetLinks.size === 0 &&
+            permission.permissions.granteeAccountId
           ) {
             links.push({
               linkType: "permission_target",
               source: `permission-${permissionId}`,
-              target: permission.granteeKey,
+              target: permission.permissions.granteeAccountId,
               id: `target-${permissionId}`,
               linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_TO_TARGET_LINK,
               linkWidth: 2,
               linkDirectionalArrowLength: 6,
               linkDirectionalArrowRelPos: 1,
               linkDirectionalParticles: 2,
-              linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+              linkDirectionalParticleSpeed: getDeterministicParticleSpeed(permission.permissions.granteeAccountId),
               linkDirectionalParticleResolution:
                 GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
             });
@@ -358,7 +389,6 @@ export function createGraphData(
       };
       nodes.push(signalNode);
 
-      // Only create signal link if the agent exists in our graph
       const nodeExists = nodes.some((node) => node.id === signal.agentKey);
       if (nodeExists) {
         links.push({
