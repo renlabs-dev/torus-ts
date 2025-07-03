@@ -1,13 +1,15 @@
-import { sb_to_primitive, sb_address_flexible, sb_account_enum } from "../../../types/zod.js";
+import {
+  sb_account_enum,
+  sb_address_flexible,
+  sb_to_primitive,
+} from "../../../types/zod.js";
 import { createStorageMap } from "../core/storage-map.js";
 import { createStorageValue } from "../core/storage-value.js";
 import {
-  AGENT_SCHEMA,
   BURN_CONFIG_UPDATED_SCHEMA,
   FEE_CONSTRAINTS_SCHEMA,
   NAMESPACE_PRICING_CONFIG_SCHEMA,
   PALLET_VERSION_SCHEMA,
-  sb_address,
   sb_amount,
   sb_block_number,
   sb_percentage,

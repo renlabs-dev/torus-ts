@@ -3,9 +3,7 @@ import { sb_null, sb_to_primitive } from "@torus-network/sdk/types";
 import { createStorageMap } from "../core/storage-map.js";
 import { createStorageValue } from "../core/storage-value.js";
 import {
-  AGENT_APPLICATION_SCHEMA,
   GOVERNANCE_CONFIG_SCHEMA,
-  PROPOSAL_SCHEMA,
   sb_address,
   sb_percentage,
   sb_u32,

@@ -1,74 +1,69 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { z } from "zod";
-
 import {
   sb_address,
-  sb_amount,
+  sb_bigint,
   sb_blocks,
   sb_number_int,
+  sb_bool,
+  sb_h256,
+  sb_string,
+  sb_struct,
+  sb_array,
+  sb_option,
+  sb_substrate_type,
+  sb_basic_enum,
 } from "../../../types/index.js";
+import { PALLET_BALANCES_ACCOUNT_DATA_SCHEMA } from "./balances.js";
 
 // Re-export shared schemas
-export { sb_address, sb_amount, sb_blocks, sb_number_int };
+export { sb_address, sb_blocks, sb_number_int, sb_string, sb_bool, sb_h256 };
 
-// System-specific schemas
-export const sb_string = z.string();
-
-// Boolean schema - Substrate Bool codec that converts to JSON boolean
-export const sb_boolean = z.any().transform((val) => {
-  if (typeof val === 'boolean') return val;
-  if (val && typeof val.toPrimitive === 'function') return val.toPrimitive();
-  if (val && typeof val.toJSON === 'function') return val.toJSON();
-  return Boolean(val);
+// SpWeightsWeightV2Weight schema - based on types-lookup.ts line 38-42
+export const SP_WEIGHTS_WEIGHT_V2_SCHEMA = sb_struct({
+  refTime: sb_bigint,    // Compact<u64>
+  proofSize: sb_bigint,  // Compact<u64>
 });
 
-// Hash schema - Substrate Hash codec that converts to JSON string
-export const sb_hash = z.any().transform((val) => {
-  if (typeof val === 'string') return val;
-  if (val && typeof val.toString === 'function') return val.toString();
-  return String(val);
+export type SpWeightsWeightV2Weight = z.infer<typeof SP_WEIGHTS_WEIGHT_V2_SCHEMA>;
+
+
+// FrameSupportDispatchDispatchClass enum - based on types-lookup.ts line 123-129
+export const FRAME_SUPPORT_DISPATCH_DISPATCH_CLASS_SCHEMA = sb_basic_enum(['Normal', 'Operational', 'Mandatory'] as const);
+
+export type FrameSupportDispatchDispatchClass = z.infer<typeof FRAME_SUPPORT_DISPATCH_DISPATCH_CLASS_SCHEMA>;
+
+// FrameSupportDispatchPays enum - based on types-lookup.ts line 131-136
+export const FRAME_SUPPORT_DISPATCH_PAYS_SCHEMA = sb_basic_enum(['Yes', 'No'] as const);
+
+export type FrameSupportDispatchPays = z.infer<typeof FRAME_SUPPORT_DISPATCH_PAYS_SCHEMA>;
+
+// FrameSupportDispatchDispatchInfo schema - based on types-lookup.ts line 116-121
+export const FRAME_SUPPORT_DISPATCH_DISPATCH_INFO_SCHEMA = sb_struct({
+  weight: SP_WEIGHTS_WEIGHT_V2_SCHEMA,                       // SpWeightsWeightV2Weight
+  class: FRAME_SUPPORT_DISPATCH_DISPATCH_CLASS_SCHEMA,       // FrameSupportDispatchDispatchClass
+  paysFee: FRAME_SUPPORT_DISPATCH_PAYS_SCHEMA,               // FrameSupportDispatchPays
 });
 
-// AccountInfo schema - based on actual blockchain data
-export const ACCOUNT_INFO_SCHEMA = z.object({
-  nonce: z.number(),
-  consumers: z.number(),
-  providers: z.number(),
-  sufficients: z.number(),
-  data: z.object({
-    free: z.string(), // Hex amount like "0x000000000000000658ac2fd3ba55f000"
-    reserved: z.number(),
-    frozen: z.number(),
-    flags: z.string(), // Hex flags like "0x80000000000000000000000000000000"
-  }),
-});
+export type FrameSupportDispatchDispatchInfo = z.infer<typeof FRAME_SUPPORT_DISPATCH_DISPATCH_INFO_SCHEMA>;
 
-// Block weight schema - complex Substrate Map
-export const BLOCK_WEIGHT_SCHEMA = z.any(); // Complex Substrate Map with weight info
+// Use the shared substrate type schema for all complex types
+export const SP_RUNTIME_DIGEST_SCHEMA = sb_substrate_type;
+export const FRAME_SUPPORT_DISPATCH_PER_DISPATCH_CLASS_WEIGHT_SCHEMA = sb_substrate_type;
+export const FRAME_SYSTEM_ACCOUNT_INFO_SCHEMA = sb_substrate_type;
+export const LAST_RUNTIME_UPGRADE_SCHEMA = sb_substrate_type;
 
-// Digest schema - complex structure with logs (Substrate Map)
-export const DIGEST_SCHEMA = z.any(); // Complex Substrate Map with logs
+// For events, use an array of substrate types
+export const EVENTS_SCHEMA = sb_array(sb_substrate_type);
 
-// Event schema - complex Substrate structure
-export const EVENT_SCHEMA = z.any(); // Complex Substrate event array
+// Export type aliases
+export type SpRuntimeDigest = string; // hex string
+export type FrameSupportDispatchPerDispatchClassWeight = string; // hex string
+export type FrameSystemAccountInfo = string; // hex string
+export type LastRuntimeUpgrade = string; // hex string
+export type Events = string[]; // array of hex strings
 
-// Last runtime upgrade schema - use z.any() for Substrate Map  
-export const LAST_RUNTIME_UPGRADE_SCHEMA = z.any(); // Complex Substrate Map
 
 // Optional value schemas for storage that can be null (Substrate Option codec)
-export const sb_optional_number = z.any().transform((val) => {
-  if (val === null || val === undefined) return null;
-  if (val && typeof val.toPrimitive === 'function') return val.toPrimitive();
-  if (val && typeof val.toJSON === 'function') return val.toJSON();
-  if (typeof val === 'number') return val;
-  return null;
-});
-
-export const sb_optional_any = z.any().transform((val) => {
-  if (val === null || val === undefined) return null;
-  if (val && typeof val.toPrimitive === 'function') return val.toPrimitive();
-  if (val && typeof val.toJSON === 'function') return val.toJSON();
-  return val;
-});
+export const sb_optional_number = sb_option(sb_number_int);
+export const sb_optional_string = sb_option(sb_string);
+export const sb_optional_any = sb_option(sb_string); // Generic optional for compatibility

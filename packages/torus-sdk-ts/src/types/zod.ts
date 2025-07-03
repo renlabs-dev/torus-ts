@@ -263,6 +263,16 @@ export const sb_string = Bytes_schema.transform<string>((val, ctx) => {
   return val.toUtf8();
 });
 
+// Raw bytes without UTF-8 conversion - returns hex string
+export const sb_bytes = Bytes_schema.transform<string>((val) => val.toHex());
+
+// Generic substrate codec schema - handles any substrate type with toHex method
+export const sb_substrate_type = z.custom<{ toHex(): string }>((val) => {
+  return val && typeof val === 'object' && val !== null && 'toHex' in val && typeof val.toHex === 'function';
+}, "not a substrate type with toHex method").transform((val) => {
+  return val.toHex();
+});
+
 // == Enum ==
 
 export const Enum_schema = z.custom<Enum>(

@@ -1,32 +1,69 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { z } from "zod";
+import type { z } from "zod";
 
-import { sb_address, sb_amount, sb_number_int } from "../../../types/index.js";
+import {
+  sb_address,
+  sb_array,
+  sb_basic_enum,
+  sb_bigint,
+  sb_number_int,
+  sb_string,
+  sb_struct,
+} from "../../../types/index.js";
 
 // Re-export shared schemas
-export { sb_address, sb_amount, sb_number_int };
+export { sb_address, sb_bigint, sb_number_int };
 
-// Simple schemas for balances pallet
-export const sb_hex_amount = z.any().transform((val) => {
-  if (typeof val === 'string') return val;
-  if (val && typeof val.toString === 'function') return val.toString();
-  if (val && typeof val.toJSON === 'function') return val.toJSON();
-  return String(val);
-}); // Hex amounts from Substrate Balance codec
+// PalletBalancesAccountData schema - based on types-lookup.ts line 23-29
+export const PALLET_BALANCES_ACCOUNT_DATA_SCHEMA = sb_struct({
+  free: sb_bigint,      // u128
+  reserved: sb_bigint,  // u128
+  frozen: sb_bigint,    // u128
+  flags: sb_bigint,     // u128
+});
 
-// Account data schema - use z.any() for complex structures since maps are empty
-export const ACCOUNT_DATA_SCHEMA = z.any(); // PalletBalancesAccountData
+export type PalletBalancesAccountData = z.infer<typeof PALLET_BALANCES_ACCOUNT_DATA_SCHEMA>;
 
-// Balance lock schema - use z.any() for complex structures since maps are empty
-export const BALANCE_LOCK_SCHEMA = z.any(); // Vec<PalletBalancesBalanceLock>
+// Balance lock schema - PalletBalancesBalanceLock
+export const BALANCE_LOCK_SCHEMA = sb_struct({
+  id: sb_string,        // Lock identifier (usually 8 bytes as string)
+  amount: sb_bigint,    // u128
+  reasons: sb_basic_enum(['Fee', 'Misc', 'All'] as const), // LockReasons enum
+});
 
-// Reserve data schema - use z.any() for complex structures since maps are empty  
-export const RESERVE_DATA_SCHEMA = z.any(); // Vec<PalletBalancesReserveData>
+export type BalanceLock = z.infer<typeof BALANCE_LOCK_SCHEMA>;
 
-// Freeze data schema - use z.any() for complex structures since maps are empty
-export const FREEZE_DATA_SCHEMA = z.any(); // Vec<IdAmount>
+// Array of balance locks - Vec<PalletBalancesBalanceLock>
+export const BALANCE_LOCKS_SCHEMA = sb_array(BALANCE_LOCK_SCHEMA);
 
-// Hold data schema - use z.any() for complex structures since maps are empty
-export const HOLD_DATA_SCHEMA = z.any(); // Vec<IdAmount>
+// Reserve data schema - PalletBalancesReserveData
+export const RESERVE_DATA_SCHEMA = sb_struct({
+  id: sb_string,        // Reserve identifier
+  amount: sb_bigint,    // u128
+});
+
+export type ReserveData = z.infer<typeof RESERVE_DATA_SCHEMA>;
+
+// Array of reserve data - Vec<PalletBalancesReserveData>
+export const RESERVES_SCHEMA = sb_array(RESERVE_DATA_SCHEMA);
+
+// Freeze data schema - PalletBalancesIdAmount
+export const FREEZE_DATA_SCHEMA = sb_struct({
+  id: sb_string,        // Freeze identifier
+  amount: sb_bigint,    // u128
+});
+
+export type FreezeData = z.infer<typeof FREEZE_DATA_SCHEMA>;
+
+// Array of freeze data - Vec<PalletBalancesIdAmount>
+export const FREEZES_SCHEMA = sb_array(FREEZE_DATA_SCHEMA);
+
+// Hold data schema - PalletBalancesIdAmount  
+export const HOLD_DATA_SCHEMA = sb_struct({
+  id: sb_string,        // Hold identifier
+  amount: sb_bigint,    // u128
+});
+
+export type HoldData = z.infer<typeof HOLD_DATA_SCHEMA>;
+
+// Array of hold data - Vec<PalletBalancesIdAmount>
+export const HOLDS_SCHEMA = sb_array(HOLD_DATA_SCHEMA);
