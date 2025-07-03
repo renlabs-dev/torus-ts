@@ -34,6 +34,10 @@ export * from "./types/events.js";
 export * from "./metadata.js";
 export * from "./agent_metadata/agent_metadata.js";
 
+// == Agent ==
+export * as AgentServer from "./agent/index.js";
+export * as AgentClient from "./agent-client/index.js";
+
 export async function setup(wsEndpoint: string): Promise<ApiPromise> {
   console.log("Connecting to ", wsEndpoint);
   const provider = new WsProvider(wsEndpoint);

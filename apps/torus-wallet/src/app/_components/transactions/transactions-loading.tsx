@@ -45,14 +45,20 @@ export function TransactionLoadingState({
 
 export function TransactionsInitialLoading() {
   return (
-    <TransactionLoadingState message="Loading transactions..." variant="fullHeight" />
+    <TransactionLoadingState
+      message="Loading transactions..."
+      variant="fullHeight"
+    />
   );
 }
 
 export function TransactionsLoadingMore() {
   return (
     <div className="flex justify-center py-4">
-      <TransactionLoadingState message="Loading more transactions..." variant="centered" />
+      <TransactionLoadingState
+        message="Loading more transactions..."
+        variant="centered"
+      />
     </div>
   );
 }

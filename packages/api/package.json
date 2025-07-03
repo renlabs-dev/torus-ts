@@ -40,7 +40,7 @@
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/jsonwebtoken": "^9.0.9",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

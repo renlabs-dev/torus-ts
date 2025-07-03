@@ -465,7 +465,7 @@
 //       // Working Memory with all facts
 //       console.log('   💾 Working Memory:');
 //       console.log(`      - Total Facts: ${components.workingMemory.totalFacts}`);
-      
+
 //       console.log(`      - Account Facts (${Object.keys(components.workingMemory.accountFacts).length} accounts):`);
 //       Object.entries(components.workingMemory.accountFacts).forEach(([account, facts]) => {
 //         console.log(`        👤 ${account}:`);
@@ -473,7 +473,7 @@
 //           console.log(`           📄 ${fact.type}: ${superjson.stringify(fact.details)}`);
 //         });
 //       });
-      
+
 //       console.log(`      - Permission Facts (${Object.keys(components.workingMemory.permissionFacts).length} permissions):`);
 //       Object.entries(components.workingMemory.permissionFacts).forEach(([permId, facts]) => {
 //         console.log(`        🔐 ${permId}:`);
@@ -481,7 +481,7 @@
 //           console.log(`           📄 ${fact.type}: ${superjson.stringify(fact.details)}`);
 //         });
 //       });
-      
+
 //       if (components.workingMemory.currentBlock) {
 //         console.log(
 //           `      - Current Block: #${components.workingMemory.currentBlock.number} (timestamp: ${components.workingMemory.currentBlock.timestamp})`,

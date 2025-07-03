@@ -1,5 +1,5 @@
 // Re-export all types from types.ts
-export * from './types';
+export * from "./types";
 
 // Import specific types for helper functions
 import type {
@@ -9,9 +9,8 @@ import type {
   NumExprType,
   CompOp,
   PermId,
-  AccountId
-} from './types';
-
+  AccountId,
+} from "./types";
 
 /**
  * Helper functions to create constraint expressions
@@ -55,10 +54,14 @@ export const BaseConstraint = {
    * @param account The account to check
    * @param percentage The percentage threshold
    */
-  inactiveUnlessRedelegated: (account: AccountId, percentage: number | bigint): BaseConstraintType => ({
+  inactiveUnlessRedelegated: (
+    account: AccountId,
+    percentage: number | bigint,
+  ): BaseConstraintType => ({
     $: "InactiveUnlessRedelegated",
     account,
-    percentage: typeof percentage === "number" ? BigInt(percentage) : percentage,
+    percentage:
+      typeof percentage === "number" ? BigInt(percentage) : percentage,
   }),
 };
 
@@ -72,8 +75,16 @@ export const NumExpr = {
   }),
   blockNumber: (): NumExprType => ({ $: "BlockNumber" }),
   stakeOf: (account: AccountId): NumExprType => ({ $: "StakeOf", account }),
-  add: (left: NumExprType, right: NumExprType): NumExprType => ({ $: "Add", left, right }),
-  sub: (left: NumExprType, right: NumExprType): NumExprType => ({ $: "Sub", left, right }),
+  add: (left: NumExprType, right: NumExprType): NumExprType => ({
+    $: "Add",
+    left,
+    right,
+  }),
+  sub: (left: NumExprType, right: NumExprType): NumExprType => ({
+    $: "Sub",
+    left,
+    right,
+  }),
 };
 
 /**
@@ -86,7 +97,11 @@ export const BoolExpr = {
     left,
     right,
   }),
-  or: (left: BoolExprType, right: BoolExprType): BoolExprType => ({ $: "Or", left, right }),
+  or: (left: BoolExprType, right: BoolExprType): BoolExprType => ({
+    $: "Or",
+    left,
+    right,
+  }),
   comp: (op: CompOp, left: NumExprType, right: NumExprType): BoolExprType => ({
     $: "CompExpr",
     op,
@@ -97,28 +112,28 @@ export const BoolExpr = {
 };
 
 // Export constraint processing functionality
-export * from './processor';
+export * from "./processor";
 
 // Export constraint validation functionality
-export * from './validation';
+export * from "./validation";
 
 // Export constraint serialization functionality
-export * from './serialization';
+export * from "./serialization";
 
 // Export Zod schema
-export * from './schema';
+export * from "./schema";
 
 // Export analyzer functionality for RETE algorithm
-export * from './analyzer';
+export * from "./analyzer";
 
 // Export facts extraction functionality
-export * from './facts';
+export * from "./facts";
 
 // Export Rete network implementation
-export * from './rete';
+export * from "./rete";
 
 // Export chain fetcher functionality
-export * from './chain-fetcher';
+export * from "./chain-fetcher";
 
 // Export chain watcher functionality
-export * from './chain-watcher';
+export * from "./chain-watcher";
