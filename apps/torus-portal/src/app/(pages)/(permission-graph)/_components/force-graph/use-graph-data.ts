@@ -26,6 +26,7 @@ export function useGraphData() {
   const permissionDetails = useMemo((): PermissionDetails | undefined => {
     if (!rawPermissionDetails) return undefined;
 
+    // Keep all rows as-is - the graph logic will handle the grouping
     return rawPermissionDetails.map((item) => {
       const permission = item.permissions;
       let remainingBlocks: number;
