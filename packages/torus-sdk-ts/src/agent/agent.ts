@@ -382,7 +382,7 @@ export class AgentServer {
               if (namespaceScope.paths.length > 0) {
                 // For each path in this permission, add the grantee to the list
                 namespaceScope.paths.forEach((path) => {
-                  const normalizedPath = path.toLowerCase(); // Normalize to lowercase
+                  const normalizedPath = path.join(".").toLowerCase();
                   const existingGrantees =
                     this.delegatedNamespacePermissions.get(normalizedPath) ??
                     [];
