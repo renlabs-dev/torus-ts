@@ -23,9 +23,10 @@ export function useGraphData() {
     trpcApi.signal.all.useQuery();
 
   // Transform the database structure for graph components
+  const currentBlockNumber = lastBlock.data?.blockNumber ? Number(lastBlock.data.blockNumber) : 0;
+  
   const permissionDetails = useMemo((): PermissionDetails | undefined => {
     if (!rawPermissionDetails) return undefined;
-
 
     // Keep all rows as-is - the graph logic will handle the grouping
     return rawPermissionDetails.map((item) => {
@@ -35,17 +36,11 @@ export function useGraphData() {
       // Handle duration calculation with new schema
       if (permission.durationType === "indefinite") {
         remainingBlocks = GRAPH_CONSTANTS.INDEFINITE_PERMISSION_BLOCKS;
-      } else if (permission.durationBlockNumber && lastBlock.data) {
+      } else if (permission.durationBlockNumber && currentBlockNumber > 0) {
         const expirationBlock = Number(permission.durationBlockNumber);
-        const currentBlock = lastBlock.data.blockNumber
-          ? Number(lastBlock.data.blockNumber)
-          : 0;
-
-        if (currentBlock === 0) {
-          remainingBlocks = expirationBlock;
-        } else {
-          remainingBlocks = Math.max(0, expirationBlock - currentBlock);
-        }
+        remainingBlocks = Math.max(0, expirationBlock - currentBlockNumber);
+      } else if (permission.durationBlockNumber) {
+        remainingBlocks = Number(permission.durationBlockNumber);
       } else {
         remainingBlocks = 0;
       }
@@ -65,7 +60,7 @@ export function useGraphData() {
         executionCount: permission.executionCount,
       };
     });
-  }, [rawPermissionDetails, lastBlock]);
+  }, [rawPermissionDetails, currentBlockNumber]);
 
 
   const computedWeights: ComputedWeight[] | undefined = useMemo(() => {

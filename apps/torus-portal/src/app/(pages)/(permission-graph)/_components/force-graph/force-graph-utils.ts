@@ -9,13 +9,31 @@ import type {
 } from "../permission-graph-types";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
 
-function getRandomParticleSpeed(): number {
-  return (
-    Math.random() *
-      (GRAPH_CONSTANTS.PARTICLE_SPEED_MAX -
-        GRAPH_CONSTANTS.PARTICLE_SPEED_MIN) +
-    GRAPH_CONSTANTS.PARTICLE_SPEED_MIN
+function getDeterministicValue(seed: string, min: number, max: number): number {
+  // Simple hash function to generate deterministic "random" values
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  // Normalize to 0-1 range
+  const normalized = Math.abs(hash) / 2147483647;
+  
+  return normalized * (max - min) + min;
+}
+
+function getDeterministicParticleSpeed(seed: string): number {
+  return getDeterministicValue(
+    seed,
+    GRAPH_CONSTANTS.PARTICLE_SPEED_MIN,
+    GRAPH_CONSTANTS.PARTICLE_SPEED_MAX
   );
+}
+
+function getDeterministicZ(seed: string, range: number): number {
+  return getDeterministicValue(seed + "_z", -range / 2, range / 2);
 }
 
 export type PermissionDetail = PermissionDetails[number];
@@ -78,7 +96,7 @@ export function createGraphData(
         nodeType: "root_agent",
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
-        z: (Math.random() - 0.5) * 100,
+        z: getDeterministicZ(agent.agentKey, 100),
         agentData: {
           accountId: agent.agentKey,
           isWhitelisted: true,
@@ -97,7 +115,7 @@ export function createGraphData(
         linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
         linkWidth: 2,
         linkDirectionalParticles: 2,
-        linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.agentKey),
         linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
       });
     });
@@ -134,7 +152,7 @@ export function createGraphData(
         nodeType: "root_agent",
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
-        z: (Math.random() - 0.5) * 100,
+        z: getDeterministicZ(agentKey, 100),
         agentData: {
           accountId: agentKey,
           isWhitelisted: true,
@@ -153,7 +171,7 @@ export function createGraphData(
         linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
         linkWidth: 2,
         linkDirectionalParticles: 1,
-        linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agentKey),
         linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
       });
     });
@@ -203,7 +221,7 @@ export function createGraphData(
             nodeType: "permission",
             x: Math.cos(angle) * radius,
             y: Math.sin(angle) * radius,
-            z: (Math.random() - 0.5) * 60,
+            z: getDeterministicZ(permissionId, 60),
             permissionData: {
               permissionId,
               permissionType,
@@ -229,7 +247,7 @@ export function createGraphData(
             linkDirectionalArrowLength: 4,
             linkDirectionalArrowRelPos: 1,
             linkDirectionalParticles: 1,
-            linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+            linkDirectionalParticleSpeed: getDeterministicParticleSpeed(permissionId),
             linkDirectionalParticleResolution:
               GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
           });
@@ -277,7 +295,7 @@ export function createGraphData(
         nodeType: "target_agent",
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
-        z: (Math.random() - 0.5) * 80,
+        z: getDeterministicZ(agentId, 80),
         agentData: { accountId: agentId },
       };
       nodes.push(targetNode);
@@ -326,7 +344,7 @@ export function createGraphData(
                 1,
                 Math.ceil((weight / 65535) * 3),
               ),
-              linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+              linkDirectionalParticleSpeed: getDeterministicParticleSpeed(targetId),
               linkDirectionalParticleResolution:
                 GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
             });
@@ -347,7 +365,7 @@ export function createGraphData(
               linkDirectionalArrowLength: 6,
               linkDirectionalArrowRelPos: 1,
               linkDirectionalParticles: 2,
-              linkDirectionalParticleSpeed: getRandomParticleSpeed(),
+              linkDirectionalParticleSpeed: getDeterministicParticleSpeed(permission.permissions.granteeAccountId),
               linkDirectionalParticleResolution:
                 GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
             });

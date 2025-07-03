@@ -1,23 +1,27 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { MousePointerClick } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import { Loading } from "@torus-ts/ui/components/loading";
+
+import PortalNavigationTabs from "~/app/_components/portal-navigation-tabs";
+
+import { ForceGraphCanvas } from "./force-graph/force-graph-canvas";
+import { useGraphData } from "./force-graph/use-graph-data";
+import { GraphSheet } from "./graph-sheet/graph-sheet";
+import { MyAgentButton } from "./my-agent-button";
+import { NodeColorLegendDropdown } from "./node-color-legend-dropdown";
+import { PermissionGraphOverview } from "./permission-graph-overview";
+import PermissionGraphSearch from "./permission-graph-search";
 import type {
-  CustomGraphNode,
   CachedAgentData,
+  CustomGraphNode,
 } from "./permission-graph-types";
 import { AgentLRUCache } from "./permission-graph-utils";
-import PermissionGraphSearch from "./permission-graph-search";
-import { PermissionGraphOverview } from "./permission-graph-overview";
-import { MousePointerClick } from "lucide-react";
-import { NodeColorLegendDropdown } from "./node-color-legend-dropdown";
-import { MyAgentButton } from "./my-agent-button";
-import { useTorus } from "@torus-ts/torus-provider";
-import { useGraphData } from "./force-graph/use-graph-data";
-import { ForceGraphCanvas } from "./force-graph/force-graph-canvas";
-import { Loading } from "@torus-ts/ui/components/loading";
-import { GraphSheet } from "./graph-sheet/graph-sheet";
 
 export default function PermissionGraphContainer() {
   const router = useRouter();
@@ -119,6 +123,7 @@ export default function PermissionGraphContainer() {
       <div className="absolute top-[3.9rem] left-2 right-2 z-10">
         {/* Desktop layout */}
         <div className="hidden lg:flex items-center gap-2 w-full animate-fade-down">
+          <PortalNavigationTabs />
           <PermissionGraphOverview graphData={graphData} />
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
           <div className="flex-1">
@@ -136,9 +141,12 @@ export default function PermissionGraphContainer() {
               onNodeClick={handleNodeSelect}
             />
           </div>
-          <PermissionGraphSearch
-            graphNodes={graphData.nodes.map((node) => node.id)}
-          />
+          <div className="flex items-center gap-2 overflow-x-auto">
+            <PortalNavigationTabs />
+            <PermissionGraphSearch
+              graphNodes={graphData.nodes.map((node) => node.id)}
+            />
+          </div>
           <PermissionGraphOverview graphData={graphData} />
         </div>
       </div>
