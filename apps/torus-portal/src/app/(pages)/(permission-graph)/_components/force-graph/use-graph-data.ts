@@ -14,7 +14,7 @@ export function useGraphData() {
   const lastBlock = useLastBlock(api);
 
   const { data: rawPermissionDetails, isLoading: isLoadingPermissions } =
-    trpcApi.permissionDetails.all.useQuery();
+    trpcApi.permission.allWithCompletePermissions.useQuery();
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     trpcApi.computedAgentWeight.all.useQuery();
@@ -22,24 +22,25 @@ export function useGraphData() {
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery();
 
+  // Transform the new database structure to the format expected by the graph components
   const permissionDetails = useMemo((): PermissionDetails | undefined => {
     if (!rawPermissionDetails) return undefined;
 
-    return rawPermissionDetails.map((detail) => {
+    // Keep all rows as-is - the graph logic will handle the grouping
+    return rawPermissionDetails.map((item) => {
+      const permission = item.permissions;
       let remainingBlocks: number;
 
-      if (detail.duration === null) {
+      // Handle duration calculation with new schema
+      if (permission.durationType === "indefinite") {
         remainingBlocks = GRAPH_CONSTANTS.INDEFINITE_PERMISSION_BLOCKS;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (lastBlock) {
-        const expirationBlock = parseInt(detail.duration, 10);
-        const currentBlock = lastBlock.data?.blockNumber
+      } else if (permission.durationBlockNumber && lastBlock.data) {
+        const expirationBlock = Number(permission.durationBlockNumber);
+        const currentBlock = lastBlock.data.blockNumber
           ? Number(lastBlock.data.blockNumber)
           : 0;
 
-        if (isNaN(expirationBlock)) {
-          remainingBlocks = 0;
-        } else if (currentBlock === 0) {
+        if (currentBlock === 0) {
           remainingBlocks = expirationBlock;
         } else {
           remainingBlocks = Math.max(0, expirationBlock - currentBlock);
@@ -48,9 +49,29 @@ export function useGraphData() {
         remainingBlocks = 0;
       }
 
+      // Determine permission type
+      const permissionType = item.emission_permissions
+        ? "emission"
+        : item.namespace_permissions
+          ? "namespace"
+          : undefined;
+
+      // Create legacy-compatible structure for graph components
       return {
-        ...detail,
+        ...item,
         remainingBlocks,
+        permissionType,
+        // Legacy field mappings for backward compatibility
+        grantorKey: permission.grantorAccountId,
+        granteeKey: permission.granteeAccountId,
+        permissionId: permission.permissionId,
+        scope: permissionType?.toUpperCase() ?? "UNKNOWN",
+        duration:
+          permission.durationType === "indefinite"
+            ? null
+            : permission.durationBlockNumber?.toString(),
+        parentId: null, // Not available in new schema yet
+        executionCount: permission.executionCount,
       };
     });
   }, [rawPermissionDetails, lastBlock]);
@@ -64,12 +85,12 @@ export function useGraphData() {
 
   const graphData = useMemo(() => {
     return createGraphData(
-      rawPermissionDetails,
+      permissionDetails,
       computedWeights,
       allocatorAddress,
       allSignals,
     );
-  }, [rawPermissionDetails, computedWeights, allocatorAddress, allSignals]);
+  }, [permissionDetails, computedWeights, allocatorAddress, allSignals]);
 
   return {
     graphData,

@@ -27,6 +27,7 @@ import {
   sb_some,
   sb_struct,
 } from "../types/index.js";
+import { sb_namespace_path } from "./torus0.js";
 import type { Api } from "./_common.js";
 import { SbQueryError } from "./_common.js";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
@@ -97,11 +98,20 @@ export const CURATOR_SCOPE_SCHEMA = sb_struct({
 
 export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
 
+// ---- Namespace Types ----
+
+export const NAMESPACE_SCOPE_SCHEMA = sb_struct({
+  paths: sb_array(sb_namespace_path),
+});
+
+export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
+
 // ---- Permission Scope ----
 
 export const PERMISSION_SCOPE_SCHEMA = sb_enum({
   Emission: EMISSION_SCOPE_SCHEMA,
   Curator: CURATOR_SCOPE_SCHEMA,
+  Namespace: NAMESPACE_SCOPE_SCHEMA,
 });
 
 export type PermissionScope = z.infer<typeof PERMISSION_SCOPE_SCHEMA>;
@@ -469,6 +479,11 @@ export async function isPermissionEnabled(
     },
     Curator() {
       // Curator permissions don't have an accumulating field
+      // Consider them always "enabled" if they exist and aren't expired
+      return true;
+    },
+    Namespace() {
+      // Namespace permissions don't have an accumulating field
       // Consider them always "enabled" if they exist and aren't expired
       return true;
     },

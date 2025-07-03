@@ -1,5 +1,5 @@
 import PortalNavigationTabs from "~/app/_components/portal-navigation-tabs";
-import ConstraintFlowWrapper from "./_components/constraint-flow";
+// import ConstraintFlowWrapper from "./_components/constraint-flow";
 
 export default function Page() {
   return (
@@ -7,7 +7,7 @@ export default function Page() {
       <div className="absolute top-[3.9rem] left-2 right-96 z-10">
         <PortalNavigationTabs />
       </div>
-      <ConstraintFlowWrapper />
+      {/* <ConstraintFlowWrapper /> */}
     </main>
   );
 }

@@ -64,8 +64,6 @@ export function GrantEmissionPermissionFormComponent({
     checkSS58IfDefined(selectedAccount?.address),
   );
 
-  console.log(availableStreams.data);
-
   const {
     fields: targetFields,
     append: appendTarget,
@@ -716,7 +714,14 @@ export function GrantEmissionPermissionFormComponent({
                     Cancel
                   </Button>
                 )}
-                <Button type="submit" disabled={mutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={
+                    mutation.isPending ||
+                    !isAccountConnected ||
+                    !form.formState.isValid
+                  }
+                >
                   {mutation.isPending ? "Creating..." : "Create Permission"}
                 </Button>
               </div>

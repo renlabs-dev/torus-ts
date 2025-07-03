@@ -1,14 +1,20 @@
 "use client";
 
-import { useTorus } from "@torus-ts/torus-provider";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useState } from "react";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+import type { SS58Address } from "@torus-network/sdk";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
 import { GrantEmissionPermissionFormComponent } from "./grant-emission-permission-form-content";
-import { grantEmissionPermissionSchema } from "./grant-emission-permission-form-schema";
 import type { GrantEmissionPermissionFormData } from "./grant-emission-permission-form-schema";
+import { grantEmissionPermissionSchema } from "./grant-emission-permission-form-schema";
 import { transformFormDataToSDK } from "./grant-emission-permission-form-utils";
+
 interface GrantEmissionPermissionFormProps {
   onSuccess?: () => void;
 }
@@ -16,7 +22,7 @@ interface GrantEmissionPermissionFormProps {
 export default function GrantEmissionPermissionForm({
   onSuccess,
 }: GrantEmissionPermissionFormProps) {
-  const { grantEmissionPermissionTransaction } = useTorus();
+  const { grantEmissionPermissionTransaction, selectedAccount } = useTorus();
   const { toast } = useToast();
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -24,8 +30,8 @@ export default function GrantEmissionPermissionForm({
 
   const form = useForm<GrantEmissionPermissionFormData>({
     resolver: zodResolver(grantEmissionPermissionSchema),
+    mode: "onChange",
     defaultValues: {
-      grantee: "",
       allocation: {
         type: "Streams",
         streams: [],
@@ -56,6 +62,7 @@ export default function GrantEmissionPermissionForm({
         const transformedData = transformFormDataToSDK(data);
 
         await grantEmissionPermissionTransaction({
+          grantee: selectedAccount?.address as SS58Address,
           ...transformedData,
           callback: (result) => {
             if (result.status === "SUCCESS" && result.finalized) {
@@ -87,7 +94,13 @@ export default function GrantEmissionPermissionForm({
         });
       }
     },
-    [grantEmissionPermissionTransaction, toast, form, onSuccess],
+    [
+      grantEmissionPermissionTransaction,
+      selectedAccount?.address,
+      onSuccess,
+      form,
+      toast,
+    ],
   );
 
   const mutation = {
