@@ -396,7 +396,7 @@ export class AgentServer {
                 });
                 console.log(
                   `Cached namespace permission ${permissionId} for grantee ${permission.grantee} with paths:`,
-                  namespaceScope.paths,
+                  namespaceScope.paths.map(path => path.join(".")),
                 );
               }
             },
