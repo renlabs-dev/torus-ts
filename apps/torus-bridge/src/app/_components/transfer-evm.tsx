@@ -134,10 +134,9 @@ export function TransferEVM() {
       mode === "withdraw" &&
       chain &&
       chain.id !== torusEvmChainId &&
-      switchChain &&
       !isSwitchingChain
     ) {
-      const switchToTorusEVM = async () => {
+      const switchToTorusEVM = () => {
         setIsSwitchingChain(true);
 
         const [switchError] = trySync(() =>

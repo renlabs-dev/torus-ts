@@ -12,11 +12,10 @@ import {
 import { TokenListModal } from "./token-list-modal";
 
 interface Props {
-  name: string;
   disabled?: boolean;
 }
 
-export function TokenSelectField({ name, disabled }: Readonly<Props>) {
+export function TokenSelectField({ disabled }: Readonly<Props>) {
   const { watch, setValue } = useTransferFormContext();
   const values = watch();
   const tokenIndex = values.tokenIndex;

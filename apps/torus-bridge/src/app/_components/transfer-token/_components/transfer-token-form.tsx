@@ -30,16 +30,20 @@ import { TokenSection } from "../_sections/token-section";
 import { WalletTransactionReview } from "../../shared/wallet-review";
 import { TransferFormProvider } from "./transfer-form-context";
 
-// Zod schema for form validation
 const transferFormSchema = z.object({
   origin: z.string().min(1, "Origin chain is required"),
   destination: z.string().min(1, "Destination chain is required"),
   tokenIndex: z.number().or(z.undefined()),
-  amount: z.string().min(1, "Amount is required"),
+  amount: z
+    .string()
+    .min(1, "Amount is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: "Amount must be a positive number",
+    }),
   recipient: z.string().min(1, "Recipient address is required"),
 });
 
-type TransferFormSchema = z.infer<typeof transferFormSchema>;
+export type TransferFormSchema = z.infer<typeof transferFormSchema>;
 
 export function TransferTokenForm() {
   const searchParams = useSearchParams();
@@ -52,7 +56,10 @@ export function TransferTokenForm() {
 
   const warpCore = useWarpCore();
   const multiProvider = useMultiProvider();
-  const { accounts } = useAccounts(multiProvider, config.addressBlacklist);
+  const { accounts: _accounts } = useAccounts(
+    multiProvider,
+    config.addressBlacklist,
+  );
 
   const initialValues = useMemo<TransferFormValues>(() => {
     if (fromParam && toParam) {
@@ -86,7 +93,7 @@ export function TransferTokenForm() {
   const {
     handleSubmit,
     reset,
-    formState: { isValidating, errors },
+    formState: { isValidating, isValid, errors },
   } = form;
 
   const onSubmitForm = (values: TransferFormValues) => {
@@ -151,6 +158,8 @@ export function TransferTokenForm() {
                 isReview={isReview}
                 isValidating={isValidating}
                 setIsReview={setIsReview}
+                isValid={isValid}
+                errors={errors}
               />
             </CardFooter>
           </Card>
