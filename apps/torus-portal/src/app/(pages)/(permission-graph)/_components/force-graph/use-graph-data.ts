@@ -26,6 +26,7 @@ export function useGraphData() {
   const permissionDetails = useMemo((): PermissionDetails | undefined => {
     if (!rawPermissionDetails) return undefined;
 
+
     // Keep all rows as-is - the graph logic will handle the grouping
     return rawPermissionDetails.map((item) => {
       const permission = item.permissions;
@@ -65,6 +66,7 @@ export function useGraphData() {
       };
     });
   }, [rawPermissionDetails, lastBlock]);
+
 
   const computedWeights: ComputedWeight[] | undefined = useMemo(() => {
     return allComputedWeights?.map((agent) => ({
