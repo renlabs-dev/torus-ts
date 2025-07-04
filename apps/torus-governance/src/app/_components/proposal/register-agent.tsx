@@ -66,7 +66,10 @@ const registerAgentSchema = z.object({
       `Max ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters`,
     ),
   title: z.string().min(1, "Agent title is required"),
-  body: z.string().min(1, "Agent description is required"),
+  body: z
+    .string()
+    .min(1, "Agent description is required")
+    .max(50_000, "Agent description must be less than 50,000 characters"),
   twitter: z.string().optional(),
   github: z.string().optional(),
   telegram: z.string().optional(),
@@ -587,9 +590,14 @@ export function RegisterAgent() {
                       {...field}
                       placeholder="Describe your agent (Markdown supported, HTML tags are not supported)"
                       rows={5}
+                      maxLength={50000}
                       required
                     />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {new Intl.NumberFormat("en-US").format(field.value.length)}{" "}
+                    / 50,000 characters
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

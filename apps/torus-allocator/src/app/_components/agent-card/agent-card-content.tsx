@@ -30,7 +30,9 @@ export function AgentCardContent({
   return (
     <CardContent>
       <Separator className="mb-4" />
-      <p className="text-sm md:min-h-14 break-words">{displayDescription}</p>
+      <p className="text-sm md:min-h-16 line-clamp-3 break-words">
+        {displayDescription}
+      </p>
     </CardContent>
   );
 }

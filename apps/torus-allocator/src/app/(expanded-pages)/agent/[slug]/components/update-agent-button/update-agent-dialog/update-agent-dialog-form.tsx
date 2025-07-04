@@ -16,7 +16,11 @@ import type {
   UpdateAgentFormData,
   UpdateAgentMutation,
 } from "./update-agent-dialog-form-schema";
-import { updateAgentSchema } from "./update-agent-dialog-form-schema";
+import {
+  ACCEPTED_FILE_TYPES,
+  MAX_FILE_SIZE,
+  updateAgentSchema,
+} from "./update-agent-dialog-form-schema";
 
 interface UpdateAgentDialogFormProps {
   agentKey: string;
@@ -24,18 +28,50 @@ interface UpdateAgentDialogFormProps {
   setActiveTab: (tab: string) => void;
   setIsOpen?: (isOpen: boolean) => void;
   form: UpdateAgentForm;
-  imageFile: File | null;
+  currentImagePreview?: string | null;
 }
 
 export function UpdateAgentDialogForm({
   updateAgentMutation,
   form,
-  imageFile,
+  currentImagePreview,
 }: UpdateAgentDialogFormProps) {
+  const imageFile = form.watch("imageFile");
+  const imageBlobUrl = imageFile ? URL.createObjectURL(imageFile) : null;
+
   const onSubmit = (data: UpdateAgentFormData) => {
     void updateAgentMutation.mutate({
       ...data,
     });
+  };
+
+  const acceptedFileTypesMessage = `File must be ${ACCEPTED_FILE_TYPES.map((aft) => aft.toUpperCase()).join(", ")} format`;
+
+  const onChangeImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      form.setError("imageFile", {
+        type: "manual",
+        message: `File size must be less than ${(MAX_FILE_SIZE / 1000).toFixed(0)}KB`,
+      });
+      return;
+    }
+
+    if (!ACCEPTED_FILE_TYPES.includes(file.type.split("/")[1] ?? "")) {
+      form.setError("imageFile", {
+        type: "manual",
+        message: acceptedFileTypesMessage,
+      });
+      return;
+    }
+
+    form.clearErrors("imageFile");
+    updateAgentMutation.handleImageChange(e);
   };
 
   return (
@@ -123,7 +159,7 @@ export function UpdateAgentDialogForm({
                     {...field}
                     placeholder="Ex.: ## About This Agent
 This agent specializes in providing technical support by analyzing issues and offering step-by-step solutions. It can help with software troubleshooting, guide users through complex processes, and learn from interactions."
-                    maxLength={5000}
+                    maxLength={50_000}
                     rows={6}
                     className="resize-y"
                   />
@@ -185,7 +221,7 @@ This agent specializes in providing technical support by analyzing issues and of
 
           <FormField
             control={form.control}
-            name="imageUrl"
+            name="imageFile"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
@@ -196,26 +232,26 @@ This agent specializes in providing technical support by analyzing issues and of
                     <FormControl>
                       <Input
                         type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          updateAgentMutation.handleImageChange &&
-                          updateAgentMutation.handleImageChange(e)
-                        }
+                        accept={`image/${ACCEPTED_FILE_TYPES.join(",image/")}`}
+                        onChange={onChangeImageFile}
                         className="cursor-pointer"
                       />
                     </FormControl>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Recommended size: 256x256px
+                      Square Image (Max 512x512) • Max{" "}
+                      {(MAX_FILE_SIZE / 1000).toFixed(0)}KB •{" "}
+                      {acceptedFileTypesMessage}
                     </p>
                     <FormMessage />
                   </div>
 
-                  {(field.value ?? imageFile) && (
+                  {(field.value ?? currentImagePreview) && (
                     <div className="rounded-md overflow-hidden w-24 h-24 border flex-shrink-0 bg-muted">
                       <Image
                         src={
-                          field.value ??
-                          (imageFile ? URL.createObjectURL(imageFile) : "")
+                          field.value
+                            ? (imageBlobUrl ?? "")
+                            : (currentImagePreview ?? "")
                         }
                         alt="Agent Icon Preview"
                         className="w-full h-full object-cover"
