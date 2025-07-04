@@ -70,6 +70,7 @@ export function UpdateAgentDialogForm({
       return;
     }
 
+    form.clearErrors("imageFile");
     updateAgentMutation.handleImageChange(e);
   };
 
