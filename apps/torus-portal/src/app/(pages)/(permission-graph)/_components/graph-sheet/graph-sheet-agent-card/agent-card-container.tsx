@@ -51,10 +51,7 @@ export const AgentCardContainer = memo(
       return allComputedWeights.find((weight) => weight.agentKey === nodeId);
     }, [allComputedWeights, nodeId]);
 
-    const agentQuery = api.agent.byKeyLastBlock.useQuery(
-      { key: nodeId },
-      { enabled: !!nodeId },
-    );
+    const agentQuery = api.agent.byKeyLastBlock.useQuery({ key: nodeId });
 
     const handleGoToAllocator = useCallback(() => {
       if (agentQuery.data) {
@@ -235,20 +232,25 @@ export const AgentCardContainer = memo(
       );
     }
 
+    if (isLoading) {
+      return (
+        <Card className="flex-1 flex flex-col z-50 border-none">
+          <p>Loading agent details...</p>
+        </Card>
+      );
+    }
+
     return (
       <Card className="flex-1 flex flex-col gap-4 z-50 border-none w-full mt-4">
-        {isLoading ? (
-          <p>Loading agent details...</p>
-        ) : (
-          <AgentCard
-            agentKey={fullAddress ?? nodeId}
-            iconUrl={iconUrl ?? ""}
-            socialsList={socials}
-            title={agentName}
-            currentBlock={currentBlock}
-            agentWeight={weightFactor}
-          />
-        )}
+        <AgentCard
+          agentKey={fullAddress ?? nodeId}
+          iconUrl={iconUrl ?? ""}
+          socialsList={socials}
+          title={agentName}
+          currentBlock={currentBlock}
+          agentWeight={weightFactor}
+        />
+
         <Button variant="outline" onClick={handleGoToAllocator}>
           View Agent in Allocator.
         </Button>
