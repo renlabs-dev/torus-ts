@@ -23,7 +23,6 @@ import type {
   CustomGraphNode,
 } from "../../permission-graph-types";
 import { formatDuration, formatScope } from "../../permission-graph-utils";
-import { GraphSheetDetailsActionButtons } from "./graph-sheet-details-action-buttons";
 import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons";
 import { GraphSheetDetailsSignalsAccordion } from "./graph-sheet-details-signals-accordion";
 
@@ -43,11 +42,41 @@ export function NodeDetailsCard({
   if (!graphData) return null;
 
   const processedPermissions = nodePermissions.map((permission) => {
-    const details = allPermissions?.find(
-      (p) =>
-        p.permissions.grantorAccountId === permission.source &&
-        p.permissions.granteeAccountId === permission.target,
-    );
+    // Extract permission ID from node ID if it's a permission node
+    const getPermissionId = (nodeId: string | number | object | undefined) => {
+      if (!nodeId) return null;
+      const id =
+        typeof nodeId === "object" && "id" in nodeId ? nodeId.id : nodeId;
+      if (typeof id !== "string") return null;
+      return id.startsWith("permission-")
+        ? id.replace("permission-", "")
+        : null;
+    };
+
+    const sourcePermissionId = getPermissionId(permission.source);
+    const targetPermissionId = getPermissionId(permission.target);
+
+    // Try to find by permission ID first (most reliable)
+    const permissionId = sourcePermissionId ?? targetPermissionId;
+
+    const details = allPermissions?.find((p) => {
+      if (permissionId) {
+        return p.permissions.permissionId === permissionId;
+      }
+      // Fallback to account ID matching (for non-permission nodes)
+      const sourceId =
+        typeof permission.source === "object" && "id" in permission.source
+          ? permission.source.id
+          : permission.source;
+      const targetId =
+        typeof permission.target === "object" && "id" in permission.target
+          ? permission.target.id
+          : permission.target;
+      return (
+        p.permissions.grantorAccountId === sourceId &&
+        p.permissions.granteeAccountId === targetId
+      );
+    });
     const isOutgoing = permission.type === "outgoing";
     const connectedNode = graphData.nodes.find(
       (n) => n.id === (isOutgoing ? permission.target : permission.source),
@@ -79,7 +108,7 @@ export function NodeDetailsCard({
       {processedPermissions.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
           {processedPermissions.map(
-            ({ details, isOutgoing, connectedAddress, sourceId, targetId }) => (
+            ({ details, isOutgoing, sourceId, targetId }) => (
               <AccordionItem
                 key={`${sourceId}-${targetId}`}
                 value={`${sourceId}-${targetId}`}
@@ -110,19 +139,6 @@ export function NodeDetailsCard({
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
-                  <div className="flex flex-col gap-1 space-between">
-                    <div className="flex items-center gap-2 text-gray-400 font-mono">
-                      <span className="text-xs text-gray-500">
-                        {isOutgoing ? "Granted To" : "Received From"}
-                      </span>
-                    </div>
-                    <div className="flex flex-row justify-between gap-2">
-                      <span>{smallAddress(connectedAddress, 10)}</span>
-                      <GraphSheetDetailsActionButtons
-                        connectedAddress={connectedAddress}
-                      />
-                    </div>
-                  </div>
                   {details && (
                     <>
                       <div className="grid grid-cols-2 gap-2">
@@ -168,25 +184,11 @@ export function NodeDetailsCard({
                             Permission ID
                           </span>
                           <div className="text-sm text-gray-300">
-                            {smallAddress(connectedAddress, 8)}
+                            {smallAddress(
+                              String(details.permissions.permissionId),
+                            )}
                           </div>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          {/* TODO ADD ENFORCEMENT */}
-                          {/* <span className="text-xs text-gray-500">
-                          Enforcement
-                        </span> */}
-                          <div className="font-mono text-gray-300 break-all">
-                            {/*todo edit*/}
-                            {/* {details.enforcement} */}
-                            {/* {smallAddress(details.enforcement, 4)} */}
-                          </div>
-                        </div>
-
-                        {/* Parent ID removed as not available in new schema */}
                       </div>
                     </>
                   )}
