@@ -643,9 +643,16 @@ export default function RegisterAgentForm() {
                           {...field}
                           placeholder="Describe your agent (Markdown supported, HTML tags are not supported)"
                           rows={5}
+                          maxLength={50000}
                           required
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Intl.NumberFormat("en-US").format(
+                          field.value.length,
+                        )}{" "}
+                        / 50,000 characters
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
