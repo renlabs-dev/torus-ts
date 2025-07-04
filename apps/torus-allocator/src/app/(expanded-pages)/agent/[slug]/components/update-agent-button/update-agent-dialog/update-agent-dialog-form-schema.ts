@@ -27,13 +27,8 @@ const ensureHttpsProtocol = (val: string | undefined): string => {
   return `https://${cleanedVal}`;
 };
 
-export const MAX_FILE_SIZE = 512000; // 512KB
-export const ACCEPTED_FILE_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/gif",
-  "image/webp",
-];
+export const MAX_FILE_SIZE = 512_000; // 512KB
+export const ACCEPTED_FILE_TYPES = ["png", "jpg", "jpeg", "gif", "webp"];
 
 export const updateAgentSocialsSchema = z.object({
   twitter: z
@@ -106,9 +101,12 @@ export const updateAgentSchema = z.object({
     .refine((file) => file.size <= MAX_FILE_SIZE, {
       message: `File size must be less than ${(MAX_FILE_SIZE / 1000).toFixed(0)}KB`,
     })
-    .refine((file) => ACCEPTED_FILE_TYPES.includes(file.type), {
-      message: "File must be PNG, JPEG, GIF, or WebP format",
-    })
+    .refine(
+      (file) => ACCEPTED_FILE_TYPES.includes(file.type.split("/")[1] ?? ""),
+      {
+        message: `File must be ${ACCEPTED_FILE_TYPES.join(", ")} format`,
+      },
+    )
     .optional(),
   socials: updateAgentSocialsSchema,
 });

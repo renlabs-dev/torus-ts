@@ -45,6 +45,8 @@ export function UpdateAgentDialogForm({
     });
   };
 
+  const acceptedFileTypesMessage = `File must be ${ACCEPTED_FILE_TYPES.map((aft) => aft.toUpperCase()).join(", ")} format`;
+
   const onChangeImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
@@ -60,16 +62,14 @@ export function UpdateAgentDialogForm({
       return;
     }
 
-    const isValidType = Object.keys(ACCEPTED_FILE_TYPES).includes(file.type);
-    if (!isValidType) {
+    if (!ACCEPTED_FILE_TYPES.includes(file.type.split("/")[1] ?? "")) {
       form.setError("imageFile", {
         type: "manual",
-        message: "File must be PNG, JPEG, GIF, or WebP format",
+        message: acceptedFileTypesMessage,
       });
       return;
     }
 
-    form.clearErrors("imageFile");
     updateAgentMutation.handleImageChange(e);
   };
 
@@ -231,15 +231,15 @@ This agent specializes in providing technical support by analyzing issues and of
                     <FormControl>
                       <Input
                         type="file"
-                        accept={Object.keys(ACCEPTED_FILE_TYPES).join(",")}
+                        accept={`image/${ACCEPTED_FILE_TYPES.join(",image/")}`}
                         onChange={onChangeImageFile}
                         className="cursor-pointer"
                       />
                     </FormControl>
                     <p className="text-xs text-muted-foreground mt-1">
                       Square Image (Max 512x512) • Max{" "}
-                      {(MAX_FILE_SIZE / 1000).toFixed(0)}KB • PNG, JPEG, GIF,
-                      WebP
+                      {(MAX_FILE_SIZE / 1000).toFixed(0)}KB •{" "}
+                      {acceptedFileTypesMessage}
                     </p>
                     <FormMessage />
                   </div>
