@@ -159,7 +159,7 @@ export function UpdateAgentDialogForm({
                     {...field}
                     placeholder="Ex.: ## About This Agent
 This agent specializes in providing technical support by analyzing issues and offering step-by-step solutions. It can help with software troubleshooting, guide users through complex processes, and learn from interactions."
-                    maxLength={5000}
+                    maxLength={50_000}
                     rows={6}
                     className="resize-y"
                   />
