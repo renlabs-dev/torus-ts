@@ -84,6 +84,9 @@ const config = {
             display: "none",
           },
         },
+        ".word-break-break-word": {
+          "word-break": "break-word",
+        },
       });
     }),
   ],
