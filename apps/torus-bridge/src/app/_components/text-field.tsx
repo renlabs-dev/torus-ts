@@ -1,12 +1,20 @@
 import { Input } from "@torus-ts/ui/components/input";
-import type { FieldAttributes } from "formik";
-import { Field } from "formik";
+import { useTransferFormContext } from "~/app/_components/transfer-token/_components/transfer-form-context";
 import type { ChangeEvent, InputHTMLAttributes, Ref } from "react";
 import { forwardRef } from "react";
+import type { TransferFormValues } from "~/utils/types";
 
-export function TextField({ ...props }: FieldAttributes<unknown>) {
+export function TextField({
+  name,
+  ...props
+}: {
+  name: keyof TransferFormValues;
+} & Omit<InputHTMLAttributes<HTMLInputElement>, "name">) {
+  const { register } = useTransferFormContext();
+
   return (
-    <Field
+    <input
+      {...register(name)}
       {...props}
       className="rounded-radius border-border bg-dark w-full border p-[0.3em] pl-2"
     />

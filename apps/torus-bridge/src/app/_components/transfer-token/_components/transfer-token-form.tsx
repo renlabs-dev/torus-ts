@@ -17,16 +17,49 @@ import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { logger } from "~/utils/logger";
 import { updateSearchParams } from "~/utils/query-params";
 import type { TransferFormValues } from "~/utils/types";
-import { Form, Formik } from "formik";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { AmountSection } from "../_sections/amount-section";
 import { ButtonSection } from "../_sections/button-section";
 import { RecipientSection } from "../_sections/recipient-section";
 import { SelectChainSection } from "../_sections/select-chain-section";
 import { TokenSection } from "../_sections/token-section";
 import { WalletTransactionReview } from "../../shared/wallet-review";
-import { validateForm } from "./validate-form";
+import { TransferFormProvider } from "./transfer-form-context";
+
+const transferFormSchema = z.object({
+  origin: z.string().min(1, "Origin chain is required"),
+  destination: z.string().min(1, "Destination chain is required"),
+  tokenIndex: z.number().or(z.undefined()),
+  amount: z
+    .string()
+    .min(1, "Amount is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: "Amount must be a positive number",
+    }),
+  recipient: z
+    .string()
+    .min(42, "Recipient address must be at least 42 characters")
+    .max(48, "Recipient address must be at most 48 characters")
+    .refine(
+      (val) => {
+        // Check if it's a valid Ethereum address (0x followed by 40 hex characters)
+        const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+        // Check if it's a valid Substrate address (starts with specific prefixes and has correct length)
+        const substrateAddressRegex = /^[1-9A-HJ-NP-Za-km-z]{47,48}$/;
+
+        return ethAddressRegex.test(val) || substrateAddressRegex.test(val);
+      },
+      {
+        message: "Please enter a valid Ethereum or Substrate address",
+      },
+    ),
+});
+
+export type TransferFormSchema = z.infer<typeof transferFormSchema>;
 
 export function TransferTokenForm() {
   const searchParams = useSearchParams();
@@ -39,7 +72,10 @@ export function TransferTokenForm() {
 
   const warpCore = useWarpCore();
   const multiProvider = useMultiProvider();
-  const { accounts } = useAccounts(multiProvider, config.addressBlacklist);
+  const { accounts: _accounts } = useAccounts(
+    multiProvider,
+    config.addressBlacklist,
+  );
 
   const initialValues = useMemo<TransferFormValues>(() => {
     if (fromParam && toParam) {
@@ -64,8 +100,19 @@ export function TransferTokenForm() {
     };
   }, [warpCore, fromParam, toParam]);
 
-  const validate = (values: TransferFormValues) =>
-    validateForm(warpCore, values, accounts);
+  const form = useForm<TransferFormValues>({
+    resolver: zodResolver(transferFormSchema),
+    defaultValues: initialValues,
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+
+  const {
+    handleSubmit,
+    reset,
+    formState: { isValidating, isValid, errors },
+    trigger,
+  } = form;
 
   const onSubmitForm = (values: TransferFormValues) => {
     logger.debug(
@@ -107,42 +154,35 @@ export function TransferTokenForm() {
   ]);
 
   return (
-    <Formik<TransferFormValues>
-      initialValues={initialValues}
-      onSubmit={onSubmitForm}
-      enableReinitialize
-      validate={validate}
-      validateOnChange={false}
-      validateOnBlur={false}
-    >
-      {({ isValidating, resetForm }) => (
-        <Form className="flex flex-col">
-          <div className="flex w-full flex-col gap-4 md:flex-row">
-            <Card className="animate-fade flex w-full flex-col gap-4 p-6 md:w-3/5">
-              <SelectChainSection isReview={isReview} />
-              <div className="mt-3.5 flex items-end justify-between space-x-4">
-                <TokenSection isReview={isReview} />
-                <AmountSection isReview={isReview} />
-              </div>
-              <RecipientSection isReview={isReview} />
-            </Card>
-            <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
-              <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
-              <CardContent className="p-0">
-                <WalletTransactionReview isReview={isReview} />
-              </CardContent>
-              <CardFooter className="w-full px-0 pb-0 pt-6">
-                <ButtonSection
-                  resetForm={resetForm}
-                  isReview={isReview}
-                  isValidating={isValidating}
-                  setIsReview={setIsReview}
-                />
-              </CardFooter>
-            </Card>
-          </div>
-        </Form>
-      )}
-    </Formik>
+    <TransferFormProvider form={form}>
+      <form onSubmit={handleSubmit(onSubmitForm)} className="flex flex-col">
+        <div className="flex w-full flex-col gap-4 md:flex-row">
+          <Card className="animate-fade flex w-full flex-col gap-4 p-6 md:w-3/5">
+            <SelectChainSection isReview={isReview} />
+            <div className="mt-3.5 flex items-end justify-between space-x-4">
+              <TokenSection isReview={isReview} />
+              <AmountSection isReview={isReview} />
+            </div>
+            <RecipientSection isReview={isReview} />
+          </Card>
+          <Card className="animate-fade flex w-full flex-col justify-between p-6 md:w-2/5">
+            <CardHeader className="px-0 pt-0">Review Transaction</CardHeader>
+            <CardContent className="p-0">
+              <WalletTransactionReview isReview={isReview} />
+            </CardContent>
+            <CardFooter className="w-full px-0 pb-0 pt-6">
+              <ButtonSection
+                resetForm={reset}
+                isReview={isReview}
+                isValidating={isValidating}
+                setIsReview={setIsReview}
+                isValid={isValid}
+                errors={errors}
+              />
+            </CardFooter>
+          </Card>
+        </div>
+      </form>
+    </TransferFormProvider>
   );
 }
