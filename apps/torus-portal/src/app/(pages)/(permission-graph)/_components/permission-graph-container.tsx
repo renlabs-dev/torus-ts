@@ -45,18 +45,18 @@ export default function PermissionGraphContainer() {
 
   // Handle initial selected node from query params
   useEffect(() => {
-    const agentId = searchParams.get("agent");
-    if (agentId && graphData) {
-      const node = graphData.nodes.find((n) => n.id === agentId);
-      if (node && (!selectedNode || selectedNode.id !== agentId)) {
+    const nodeId = searchParams.get("id");
+    if (nodeId && graphData) {
+      const node = graphData.nodes.find((n) => n.id === nodeId);
+      if (node && (!selectedNode || selectedNode.id !== nodeId)) {
         setSelectedNode(node);
         setIsSheetOpen(true); // Open sheet when node is selected from search
       }
-    } else if (agentId && !graphData) {
-      // If we have an agent ID but no graph data yet, wait for it
+    } else if (nodeId && !graphData) {
+      // If we have a node ID but no graph data yet, wait for it
       return;
-    } else if (!agentId && selectedNode) {
-      // If no agent in URL but we have a selected node, clear it
+    } else if (!nodeId && selectedNode) {
+      // If no node ID in URL but we have a selected node, clear it
       setSelectedNode(null);
       setIsSheetOpen(false);
     }
@@ -68,7 +68,7 @@ export default function PermissionGraphContainer() {
       setIsSheetOpen(true);
       // Update query parameter instead of navigation
       const params = new URLSearchParams(searchParams.toString());
-      params.set("agent", node.id);
+      params.set("id", node.id);
       router.replace(`/?${params.toString()}`, { scroll: false });
     },
     [router, searchParams],
@@ -159,7 +159,17 @@ export default function PermissionGraphContainer() {
         getCachedAgentData={getCachedAgentData}
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
+        onOpenChange={(isOpen) => {
+          setIsSheetOpen(isOpen);
+          if (!isOpen) {
+            // Clear query parameter when sheet closes
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("id");
+            const newUrl = params.toString() ? `/?${params.toString()}` : "/";
+            router.replace(newUrl, { scroll: false });
+            setSelectedNode(null);
+          }
+        }}
       />
       <div className="w-full h-full animate-fade animate-delay-1000">
         <ForceGraphCanvas
