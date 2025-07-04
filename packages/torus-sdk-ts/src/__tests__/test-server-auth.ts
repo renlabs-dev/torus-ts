@@ -4,7 +4,6 @@ import { Agent } from "../agent/index.js";
 
 const agent = new Agent({
   agentKey: "5D5FbRRUvQxdQnJLgNW6BdgZ86CRGreKRahzhxmdSj2REBnt" as SS58Address, // Mock agent key for testing
-  address: "test-agent-address",
   port: 3002,
   auth: {
     jwtMaxAge: 300,

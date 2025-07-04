@@ -22,6 +22,13 @@ async function createOldJWTToken(mnemonic: string) {
   const payload = {
     sub: keyInfo.address,
     publicKey: keyInfo.publicKey,
+    keyType: "sr25519",
+    addressInfo: {
+      addressType: "ss58",
+      metadata: {
+        prefix: 42
+      }
+    },
     iat: yesterday,
     exp: nextYear,
     nonce: randomUUID(),

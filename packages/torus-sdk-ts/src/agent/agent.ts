@@ -24,8 +24,6 @@ interface User {
 interface AgentOptions {
   /** The SS58 address key of this agent (used for querying namespace permissions) */
   agentKey: SS58Address;
-  /** The address identifier of the agent (used for namespace path generation) */
-  address: string;
   /** Port number for the server to listen on. @default 3000 */
   port?: number;
   /** Authentication configuration */
@@ -109,10 +107,6 @@ interface MethodOptions<
 
 type CallbackContext = {
   user?: User;
-  agent: {
-    /** The address of the agent */
-    address: string;
-  };
 } & Helpers;
 
 /**
@@ -637,9 +631,6 @@ export class AgentServer {
         ...(authData
           ? { user: { walletAddress: authData.userWalletAddress } }
           : {}),
-        agent: {
-          address: this.options.address,
-        },
         checkTransaction: checkTransaction(this.api),
       };
 

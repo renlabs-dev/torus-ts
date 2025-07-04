@@ -38,6 +38,13 @@ def create_jwt_token(mnemonic: str) -> str:
     payload = {
         "sub": keypair.ss58_address,
         "publicKey": keypair.public_key.hex(),
+        "keyType": "sr25519",
+        "addressInfo": {
+            "addressType": "ss58",
+            "metadata": {
+                "prefix": 42
+            }
+        },
         "iat": now,
         "exp": now + 3600,  # 1 hour from now
         "nonce": str(uuid.uuid4()),

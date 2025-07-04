@@ -21,6 +21,11 @@ export const JWTPayloadSchema = z
   .object({
     sub: z.string().min(1, "Subject is required"),
     publicKey: z.string().regex(/^[0-9a-fA-F]+$/, "Public key must be hex"),
+    keyType: z.string().min(1, "Key type is required"),
+    addressInfo: z.object({
+      addressType: z.string().min(1, "Address type is required"),
+      metadata: z.record(z.any()),
+    }),
     iat: z.number().int().positive("Issued at must be positive integer"),
     exp: z.number().int().positive("Expiration must be positive integer"),
     nonce: z.string().uuid("Nonce must be a valid UUID"),

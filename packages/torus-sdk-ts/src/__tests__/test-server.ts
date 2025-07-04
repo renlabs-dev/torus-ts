@@ -5,7 +5,6 @@ import { Agent } from "../agent/index.js";
 // Create a simple test server with a hello endpoint
 const agent = new Agent({
   agentKey: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" as SS58Address, // Mock agent key for testing
-  address: "test-agent-address",
   port: 3001,
   docs: {
     info: {
