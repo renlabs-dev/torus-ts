@@ -69,6 +69,23 @@ export const decodeAuthToken = (
       Success: (result): AuthTokenResult => {
         const { payload } = result;
 
+        // TODO: better parsing of formats
+        if (payload.keyType !== 'sr25519') {
+          return {
+            success: false,
+            error: `Unsupported key type: ${payload.keyType}`,
+            code: "INVALID_FORMAT",
+          };
+        }
+
+        if (payload.addressInfo.addressType !== 'ss58') {
+          return {
+            success: false,
+            error: `Unsupported address type: ${payload.addressInfo.addressType}`,
+            code: "INVALID_FORMAT",
+          };
+        }
+
         const tokenData = {
           userWalletAddress: payload.sub,
           userPublicKey: payload.publicKey,

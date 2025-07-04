@@ -60,6 +60,13 @@ export class Keypair {
     const payload = {
       sub: this.address,
       publicKey: this.publicKey,
+      keyType: "sr25519",
+      addressInfo: {
+        addressType: "ss58",
+        metadata: {
+          prefix: 42
+        }
+      },
       iat: now,
       exp: now + 3600,
       nonce: randomUUID(),
