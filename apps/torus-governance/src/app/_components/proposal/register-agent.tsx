@@ -584,7 +584,7 @@ export function RegisterAgent() {
               name="body"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Agent Description </FormLabel>
+                  <FormLabel>Agent Description</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
