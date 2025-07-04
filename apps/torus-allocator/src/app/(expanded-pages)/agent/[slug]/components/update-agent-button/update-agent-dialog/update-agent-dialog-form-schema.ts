@@ -81,7 +81,11 @@ export const updateAgentSchema = z.object({
     .trim()
     .min(1, "Short description is required")
     .max(200, "Short description cannot exceed 200 characters"),
-  description: z.string().trim().min(1, "Description is required"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required")
+    .max(50_000, "Description must be less than 50,000 characters"),
   website: z
     .string()
     .trim()
